@@ -1,0 +1,13 @@
+{
+  "note": "S2 Relax cycle: 43 normal attacks per stack x 20 stacks -> heal proc -> team Attack Damage 20.99% for 7s. Modeled as an 860-hit trigger. Taunt/invuln/heal portions dropped (defensive).",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 860 },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "attackDamagePct", "value": 20.99, "durationSec": 7 }
+      ]
+    }
+  ]
+}

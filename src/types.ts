@@ -1,0 +1,63 @@
+export type Weapon = 'AR' | 'SG' | 'RL' | 'SR' | 'MG' | 'SMG' | 'Pistol';
+export type BurstType = 'I' | 'II' | 'III' | 'Λ';
+export type Element = 'Fire' | 'Water' | 'Wind' | 'Electric' | 'Iron';
+export type NikkeClass = 'Attacker' | 'Supporter' | 'Defender';
+
+export interface BaseStats {
+  resourceId: number;
+  atk: number;
+  hp: number;
+  def: number;
+  critRate: number;    // percent, e.g. 15
+  critDamage: number;  // percent multiplier, e.g. 150
+  maxLevel: number;
+  grade: { ratio: number; atk: number; hp: number; def: number };
+  core: { atk: number; hp: number; def: number };
+}
+
+export interface CharacterData {
+  slug: string;
+  name: string;
+  imageUrl: string | null;
+  weapon: Weapon;
+  burst: BurstType;
+  burstCooldownSec: number;
+  class: NikkeClass;
+  element: Element;
+  normalAttackMultiplier: number; // % of ATK per trigger pull (all pellets/hits included)
+  coreAttackMultiplier: number;   // % — 200 = core hits deal 2x
+  ammo: number;
+  reloadFrames: number;           // wall-clock reload, 60fps frames
+  chargeFrames: number;           // RL/SR frames to full charge (0 otherwise)
+  chargeMultiplier: number;       // % — total charge factor, e.g. 250
+  hitsPerShot: number;            // hits per trigger pull (for hit-count skill triggers)
+  rl3: number | null;             // burst gen: % of gauge generated per 3 seconds
+  burstGaugePerShot: number | null;
+  skills: { skill1: string; skill2: string; burst: string };
+}
+
+export interface LevelMultiplier {
+  attack: number[];
+  hp: number[];
+  def: number[];
+}
+
+export interface DataFile {
+  syncedAt: string;
+  characters: Record<string, CharacterData & { baseStats: BaseStats | null }>;
+}
+
+// ---- sim configuration ----
+
+export interface SimConfig {
+  slugs: string[];          // 5 slugs, slot order 1..5
+  bossElement: Element | null;
+  bossDef: number;          // flat enemy DEF subtracted from effective ATK
+  level: number;
+  copies: number;           // 0-10 → grade = min(3, c), core = clamp(c-3, 0, 7)
+  doll: boolean;
+  ol: 0 | 5;
+  coreHitRate: number;      // 0..1, default 0
+  rangeBonus: boolean;      // +0.3 major modifier
+  durationSec: number;      // 180
+}

@@ -1,5 +1,9 @@
 # NIKKE Solo Raid Damage Simulator — v1 Design
 
+> **Status (2026-07-12): v1 is built and running** — see `README.md` for usage. Base ATK now comes
+> from the DB (`base_stats`, see `base-stats-handoff.md`) instead of user input; gear (OL0/OL5) and
+> doll bonuses come from `gear_doll.md` via `--ol` / `--doll`. The open questions below are resolved.
+
 ## Goal
 
 A plug-and-play team builder: user inputs 5 Nikkes, the sim runs a 180-second (3-minute) solo raid fight and outputs expected total damage + DPS per Nikke, with a breakdown of where the damage came from (normal attacks, skill procs, burst damage) and buff uptimes.

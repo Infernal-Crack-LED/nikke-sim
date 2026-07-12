@@ -1,0 +1,14 @@
+{
+  "_comment": "Overload gear lines. Roll ranges from nikke.gg/overload-equipment (15 roll levels; max = level 15). Up to 3 lines per piece, 4 OL pieces. stat maps to a sim buff bucket; inert stats (hitRatePct, defPct) are allowed but do nothing in v1.",
+  "lines": {
+    "elem":      { "name": "Increase Elemental Damage",  "stat": "elementDamagePct", "min": 9.54,  "max": 29.16 },
+    "atk":       { "name": "Increase ATK",               "stat": "atkPct",           "min": 4.77,  "max": 14.63 },
+    "ammo":      { "name": "Increase Max Ammo Capacity", "stat": "maxAmmoPct",       "min": 27.84, "max": 85.37 },
+    "chargedmg": { "name": "Increase Charge Damage",     "stat": "chargeDamagePct",  "min": 4.77,  "max": 14.63 },
+    "chargespd": { "name": "Increase Charge Speed",      "stat": "chargeSpeedPct",   "min": 1.98,  "max": 6.09 },
+    "critrate":  { "name": "Increase Critical Rate",     "stat": "critRatePct",      "min": 2.30,  "max": 7.07 },
+    "critdmg":   { "name": "Increase Critical Damage",   "stat": "critDamagePct",    "min": 6.64,  "max": 20.36 },
+    "hitrate":   { "name": "Increase Hit Rate",          "stat": "hitRatePct",       "min": 4.77,  "max": 14.63 },
+    "def":       { "name": "Increase DEF",               "stat": "defPct",           "min": 4.77,  "max": 14.63 }
+  }
+}

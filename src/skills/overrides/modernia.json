@@ -1,0 +1,20 @@
+{
+  "note": "Burst Destroy Mode: each hit deals +2.24% final ATK for 15s (the parser reads it as a 1/s DoT, massively undercounting at 60 hits/s) + unlimited ammo 15s + Full Burst Time +5s for the team.",
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "fullBurstExtend", "seconds": 5 }]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "unlimitedAmmo", "durationSec": 15 },
+        { "kind": "buff", "stat": "extraHitDamagePct", "value": 2.24, "durationSec": 15 }
+      ]
+    }
+  ]
+}

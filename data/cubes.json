@@ -1,0 +1,59 @@
+{
+  "_comment": "Harmony cubes, real values from cubes.md. Every cube grants flat ATK by level (atkByLevel, shared) plus 'Damage as strong element' from level 5 (elemByLevel, shared, only applies with elemental advantage), plus its own effect. ammoRefundPer10 = bullets refunded per 10 bullets fired (Bastion). Cubes with effectStat null only contribute base stats + elemental damage ('Other' on the site).",
+  "atkByLevel": [390, 450, 520, 600, 690, 790, 910, 1050, 1200, 1380, 1590, 1830, 2100, 2420, 2780],
+  "elemByLevel": [0, 0, 0, 0, 8.48, 8.48, 8.48, 8.48, 10.6, 12.72, 14.84, 14.84, 16.96, 16.96, 19.09],
+  "cubes": {
+    "resilience": {
+      "name": "Resilience",
+      "effectStat": "reloadSpeedPct",
+      "effectByLevel": [14.84, 14.84, 22.27, 22.27, 22.27, 22.27, 29.69, 29.69, 29.69, 29.69, 29.69, 29.69, 29.69, 29.69, 29.69],
+      "image": "img/resilience.webp"
+    },
+    "bastion": {
+      "name": "Bastion",
+      "effectStat": "ammoRefundPer10",
+      "effectByLevel": [1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+      "image": "img/bastion.webp"
+    },
+    "wingman": {
+      "name": "Wingman",
+      "effectStat": "maxAmmoPct",
+      "effectByLevel": [14.84, 14.84, 22.29, 22.29, 22.29, 22.29, 29.69, 29.69, 29.69, 29.69, 29.69, 29.69, 29.69, 29.69, 29.69]
+    },
+    "onslaught": {
+      "name": "Onslaught",
+      "effectStat": "chargeDamagePct",
+      "effectByLevel": [2.54, 2.54, 3.81, 3.81, 3.81, 3.81, 5.09, 5.09, 5.09, 5.09, 5.09, 5.09, 5.09, 5.09, 5.09]
+    },
+    "adjutant": {
+      "name": "Adjutant",
+      "effectStat": "chargeSpeedPct",
+      "effectByLevel": [1.06, 1.06, 1.59, 1.59, 1.59, 1.59, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12, 2.12]
+    },
+    "quantum": {
+      "name": "Quantum",
+      "effectStat": "chargeSpeedPct",
+      "effectByLevel": [2.33, 2.33, 3.5, 3.5, 3.5, 3.5, 4.66, 4.66, 4.66, 4.66, 4.66, 4.66, 4.66, 4.66, 4.66]
+    },
+    "assault": {
+      "name": "Assault",
+      "effectStat": "hitRatePct",
+      "effectByLevel": [2.54, 2.54, 3.81, 3.81, 3.81, 3.81, 5.09, 5.09, 5.09, 5.09, 5.09, 5.09, 5.09, 5.09, 5.09]
+    },
+    "piercing": {
+      "name": "Piercing",
+      "effectStat": "pierceDamagePct",
+      "effectByLevel": [7.07, 7.07, 10.6, 10.6, 10.6, 10.6, 14.14, 14.14, 14.14, 14.14, 14.14, 14.14, 14.14, 14.14, 14.14]
+    },
+    "destruction": {
+      "name": "Destruction",
+      "effectStat": "partsDamagePct",
+      "effectByLevel": [15.95, 15.95, 23.92, 23.92, 23.92, 23.92, 31.9, 31.9, 31.9, 31.9, 31.9, 31.9, 31.9, 31.9, 31.9]
+    },
+    "other": {
+      "name": "Other",
+      "effectStat": null,
+      "effectByLevel": []
+    }
+  }
+}

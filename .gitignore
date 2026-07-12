@@ -6,3 +6,6 @@
 
 # node
 node_modules/
+
+# build output (regenerated from source via vite build)
+dist/

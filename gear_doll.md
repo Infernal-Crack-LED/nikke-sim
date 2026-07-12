@@ -44,6 +44,7 @@ def 2058
 +37% def
 
 Equipment stats by class and OL gear level
+Stats are broken down into each piece from when i recorded them, to get the real atk, add the 3 numbers together
 DEF 0
 atk 4010 2551 729
 hp 60111 195360 45084
