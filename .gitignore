@@ -1,0 +1,8 @@
+# secrets / local env
+.env
+
+# local git credential tooling (machine-specific, not project source)
+.git-credential-pat.sh
+
+# node
+node_modules/
