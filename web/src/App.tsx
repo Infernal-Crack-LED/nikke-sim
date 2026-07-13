@@ -53,17 +53,6 @@ const olTiers = (olTiersJson as any).tiers as Array<Record<string, number>>;
 const olTierValues = (tier: number): Record<string, number> =>
   olTiers.find((t) => t.tier === tier) ?? olTiers.find((t) => t.tier === 11)!;
 
-// Feature flag: OL line entry + best-OL breakpoints. Damage-ranked best-OL now
-// lives in the Character Calc tab (src/olcalc.ts).
-const OL_UI_ENABLED = true;
-
-// Feature flag: the tab system + team/roster/character calculators. Backends in
-// src/teamcalc.ts + src/olcalc.ts (heuristic search on the shared engine).
-const CALC_TABS_ENABLED = true;
-
-// Feature flag: Discord login + saved teams. Wired to the bakery-bot API
-// (web/src/auth.ts); backend deployed at appweb-production-a479.up.railway.app.
-const AUTH_ENABLED = true;
 type CalcTab = 'sim' | 'team' | 'roster' | 'character' | 'dps';
 const CALC_TABS: { key: CalcTab; label: string }[] = [
   { key: 'sim', label: 'Sim' },
@@ -249,7 +238,7 @@ function slotToUnitOptions(s: SlotState): UnitOptions {
     mode: s.mode,
     mpPriority: s.mpPriority,
     skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
-    lines: OL_UI_ENABLED ? buildOlLines(s) : undefined,
+    lines: buildOlLines(s),
   };
 }
 
@@ -652,7 +641,7 @@ export function App() {
     setLevel(b.g.level ?? '400');
   };
 
-  // ---- Discord auth + saved teams (behind AUTH_ENABLED) ----
+  // ---- Discord auth + saved teams ----
   const [user, setUser] = useState<AuthUser | null>(null);
   const [teams, setTeams] = useState<SavedTeam[]>([]);
   const [showTeams, setShowTeams] = useState(false);
@@ -660,7 +649,6 @@ export function App() {
   const [savedFlash, setSavedFlash] = useState(false);
 
   useEffect(() => {
-    if (!AUTH_ENABLED) return;
     captureTokenFromUrl();
     if (getToken()) fetchMe().then(setUser).catch(() => setUser(null));
   }, []);
@@ -1331,7 +1319,7 @@ export function App() {
             )}
           </div>
         )}
-        {OL_UI_ENABLED && (
+        {(
           <div className='ol'>
             <div className='ol-base'>
               <label>
@@ -1655,8 +1643,7 @@ export function App() {
         <div className='header-row'>
           <h1>NIKKE Solo Raid Sim</h1>
           <div className='share-actions'>
-            {AUTH_ENABLED &&
-              (user ? (
+            {(user ? (
                 <>
                   <button
                     className='share-btn'
@@ -1713,7 +1700,7 @@ export function App() {
         </p>
       </header>
 
-      {CALC_TABS_ENABLED && (
+      {(
         <nav className='tabs-bar'>
           {CALC_TABS.map((t) => (
             <button
@@ -1944,7 +1931,7 @@ export function App() {
         </div>
       </section>
 
-      {(!CALC_TABS_ENABLED || tab === 'sim') && (
+      {tab === 'sim' && (
         <>
       <section className='team'>
         {slots.map((slot, i) => (
@@ -1954,7 +1941,7 @@ export function App() {
         ))}
       </section>
 
-      {OL_UI_ENABLED && (
+      {(
         <section className='ol-calc'>
           <div className='toggles'>
             <button onClick={() => setShowOlCalc(!showOlCalc)}>
@@ -2187,9 +2174,9 @@ export function App() {
         </>
       )}
 
-      {CALC_TABS_ENABLED && tab !== 'sim' && renderCalcTab()}
+      {tab !== 'sim' && renderCalcTab()}
 
-      {AUTH_ENABLED && showTeams && (
+      {showTeams && (
         <div className='modal-backdrop' onClick={() => setShowTeams(false)}>
           <div className='modal' onClick={(e) => e.stopPropagation()}>
             <div className='modal-head'>
