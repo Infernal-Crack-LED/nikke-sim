@@ -44,18 +44,19 @@ export interface Build {
 export const BUILD_VERSION = 1;
 
 // ---- isomorphic base64url of a UTF-8 string --------------------------------
+// `Buffer` in node, `btoa`/`atob` in the browser. Referenced via globalThis so
+// this file compiles under both the DOM (web) and node tsconfigs.
+const nodeBuffer: any = (globalThis as any).Buffer;
 function bytesToB64(bytes: Uint8Array): string {
-  if (typeof Buffer !== 'undefined') return Buffer.from(bytes).toString('base64');
+  if (nodeBuffer) return nodeBuffer.from(bytes).toString('base64');
   let bin = '';
   for (const b of bytes) bin += String.fromCharCode(b);
-  // eslint-disable-next-line no-undef
-  return btoa(bin);
+  return (globalThis as any).btoa(bin);
 }
 function b64ToBytes(b64: string): Uint8Array {
-  if (typeof Buffer !== 'undefined') return new Uint8Array(Buffer.from(b64, 'base64'));
-  // eslint-disable-next-line no-undef
-  const bin = atob(b64);
-  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  if (nodeBuffer) return new Uint8Array(nodeBuffer.from(b64, 'base64'));
+  const bin = (globalThis as any).atob(b64);
+  return Uint8Array.from(bin, (c: string) => c.charCodeAt(0));
 }
 function b64urlEncode(str: string): string {
   const bytes = new TextEncoder().encode(str);

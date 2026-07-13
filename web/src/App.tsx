@@ -14,6 +14,24 @@ import {
   CARD_W,
   type Canvas2DLike,
 } from '../../src/share/teamCard';
+import {
+  encodeBuild,
+  decodeBuild,
+  BUILD_VERSION,
+  type Build,
+} from '../../src/share/build-code';
+import {
+  captureTokenFromUrl,
+  clearToken,
+  deleteTeam,
+  fetchMe,
+  fetchTeams,
+  getToken,
+  loginUrl,
+  saveTeam,
+  type AuthUser,
+  type SavedTeam,
+} from './auth';
 import charactersJson from '../../data/characters.json';
 import cubesJson from '../../data/cubes.json';
 import multJson from '../../data/level-multiplier.json';
@@ -40,6 +58,10 @@ const OL_UI_ENABLED = false;
 // Feature flag: the tab system + team/roster/character calculators are WIP,
 // front-end scaffolds only (search logic is a backend handoff). Hidden for now.
 const CALC_TABS_ENABLED = false;
+
+// Feature flag: Discord login + saved teams. Wired to the bakery-bot API
+// (web/src/auth.ts); backend deployed at appweb-production-a479.up.railway.app.
+const AUTH_ENABLED = true;
 type CalcTab = 'sim' | 'team' | 'roster' | 'character';
 const CALC_TABS: { key: CalcTab; label: string }[] = [
   { key: 'sim', label: 'Sim' },
@@ -238,6 +260,35 @@ function loadStoredTeam(): SlotState[] | null {
   } catch {
     return null;
   }
+}
+
+const ELEMENT_SET = new Set(['Fire', 'Water', 'Wind', 'Electric', 'Iron']);
+const coerceWeakness = (w: unknown): Element | null =>
+  typeof w === 'string' && ELEMENT_SET.has(w) ? (w as Element) : null;
+
+// one slot of a decoded build → a full SlotState (merge over defaults, drop a
+// slug that's no longer in the data, reset UI-only expansion flags)
+function slotFromBuild(sb: any): SlotState {
+  const slug =
+    sb && typeof sb.slug === 'string' && data.characters[sb.slug]
+      ? sb.slug
+      : null;
+  return {
+    ...defaultSlot(slug),
+    ...sb,
+    slug,
+    cubeCustom: false,
+    dupeCustom: false,
+    olElem: typeof sb?.olElem === 'string' ? sb.olElem : '',
+    olAtk: typeof sb?.olAtk === 'string' ? sb.olAtk : '',
+    olExtra: Array.isArray(sb?.olExtra) ? sb.olExtra : [],
+  };
+}
+
+// full build from the ?b= param, if present and valid
+function bootBuild(): Build | null {
+  const b = new URLSearchParams(window.location.search).get('b');
+  return b ? decodeBuild(b) : null;
 }
 
 const fmt = (n: number) =>
@@ -440,8 +491,12 @@ function CharSearch({
 }
 
 export function App() {
+  // a full ?b= build (team + loadout + globals) prefills everything and wins
+  // over ?team= / localStorage; computed once on mount
+  const boot = useMemo(bootBuild, []);
   const [slots, setSlots] = useState<SlotState[]>(() => {
-    // shareable prefill takes priority: ?team=liter,crown,naga,modernia,alice
+    if (boot) return boot.s.map(slotFromBuild);
+    // shareable prefill: ?team=liter,crown,naga,modernia,alice
     const param = new URLSearchParams(window.location.search).get('team');
     if (param) {
       const team = param
@@ -452,12 +507,16 @@ export function App() {
     // otherwise restore the last team from a previous session
     return loadStoredTeam() ?? emptyTeam();
   });
-  const [weakness, setWeakness] = useState<Element | null>(null);
-  const [bossDef, setBossDef] = useState('0');
-  const [core, setCore] = useState<number>(0);
-  const [coreCustom, setCoreCustom] = useState(false);
-  const [coreCustomVal, setCoreCustomVal] = useState('10');
-  const [level, setLevel] = useState('400');
+  const [weakness, setWeakness] = useState<Element | null>(
+    boot ? coerceWeakness(boot.g.weakness) : null,
+  );
+  const [bossDef, setBossDef] = useState(boot?.g.bossDef ?? '0');
+  const [core, setCore] = useState<number>(boot?.g.core ?? 0);
+  const [coreCustom, setCoreCustom] = useState(boot?.g.coreCustom ?? false);
+  const [coreCustomVal, setCoreCustomVal] = useState(
+    boot?.g.coreCustomVal ?? '10',
+  );
+  const [level, setLevel] = useState(boot?.g.level ?? '400');
   const [showRotation, setShowRotation] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showBuffs, setShowBuffs] = useState(false);
@@ -485,6 +544,104 @@ export function App() {
   const applyScopeLock = () => {
     setAll({ cubeId: 'none', doll: false, ol: 0, stars: 3, core: 7 });
     setLevel('400');
+  };
+
+  // ---- build code (full team + loadout + globals) ----
+  const buildFromState = (): Build => ({
+    v: BUILD_VERSION,
+    g: { weakness, bossDef, core, coreCustom, coreCustomVal, level },
+    s: slots.map((s) => ({
+      slug: s.slug,
+      cubeId: s.cubeId,
+      cubeLevel: s.cubeLevel,
+      ol: s.ol,
+      doll: s.doll,
+      stars: s.stars,
+      core: s.core,
+      skill1: s.skill1,
+      skill2: s.skill2,
+      burst: s.burst,
+      lambdaStage: s.lambdaStage,
+      mode: s.mode,
+      mpPriority: s.mpPriority,
+      olElem: s.olElem,
+      olAtk: s.olAtk,
+      olExtra: s.olExtra,
+    })),
+  });
+  const applyBuild = (b: Build) => {
+    setSlots(b.s.map(slotFromBuild));
+    setWeakness(coerceWeakness(b.g.weakness));
+    setBossDef(b.g.bossDef ?? '0');
+    setCore(typeof b.g.core === 'number' ? b.g.core : 0);
+    setCoreCustom(!!b.g.coreCustom);
+    setCoreCustomVal(b.g.coreCustomVal ?? '10');
+    setLevel(b.g.level ?? '400');
+  };
+
+  // ---- Discord auth + saved teams (behind AUTH_ENABLED) ----
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [teams, setTeams] = useState<SavedTeam[]>([]);
+  const [showTeams, setShowTeams] = useState(false);
+  const [authErr, setAuthErr] = useState<string | null>(null);
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  useEffect(() => {
+    if (!AUTH_ENABLED) return;
+    captureTokenFromUrl();
+    if (getToken()) fetchMe().then(setUser).catch(() => setUser(null));
+  }, []);
+
+  const refreshTeams = () =>
+    fetchTeams()
+      .then(setTeams)
+      .catch((e) => setAuthErr((e as Error).message ?? String(e)));
+  const openTeams = () => {
+    setShowTeams(true);
+    setAuthErr(null);
+    refreshTeams();
+  };
+  const onLogout = () => {
+    clearToken();
+    setUser(null);
+    setTeams([]);
+    setShowTeams(false);
+  };
+  const suggestedName = () => {
+    const names = slots
+      .map((s) => (s.slug ? data.characters[s.slug].name : null))
+      .filter(Boolean) as string[];
+    return names.slice(0, 2).join(' / ') || 'My team';
+  };
+  const onSaveTeam = async () => {
+    const name = window.prompt('Save team as:', suggestedName());
+    if (!name?.trim()) return;
+    try {
+      await saveTeam(name.trim(), encodeBuild(buildFromState()));
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 1500);
+      if (showTeams) refreshTeams();
+    } catch (e) {
+      window.alert(`Save failed: ${(e as Error).message ?? e}`);
+    }
+  };
+  const onLoadTeam = (t: SavedTeam) => {
+    const b = decodeBuild(t.code);
+    if (!b) {
+      window.alert('This saved team is in an unrecognized format.');
+      return;
+    }
+    applyBuild(b);
+    setShowTeams(false);
+  };
+  const onDeleteTeam = async (t: SavedTeam) => {
+    if (!window.confirm(`Delete "${t.name}"?`)) return;
+    try {
+      await deleteTeam(t.id);
+      setTeams((ts) => ts.filter((x) => x.id !== t.id));
+    } catch (e) {
+      window.alert(`Delete failed: ${(e as Error).message ?? e}`);
+    }
   };
 
   // build a shareable link that prefills the team via the ?team= param.
@@ -795,6 +952,40 @@ export function App() {
         <div className='header-row'>
           <h1>NIKKE Solo Raid Sim</h1>
           <div className='share-actions'>
+            {AUTH_ENABLED &&
+              (user ? (
+                <>
+                  <button
+                    className='share-btn'
+                    onClick={onSaveTeam}
+                    disabled={slots.every((s) => !s.slug)}
+                    title='save this team + full loadout to your account'
+                  >
+                    {savedFlash ? '✓ Saved' : '💾 Save team'}
+                  </button>
+                  <button
+                    className='share-btn'
+                    onClick={openTeams}
+                    title='your saved teams'
+                  >
+                    📋 My teams
+                  </button>
+                  <span className='user-chip' title='logged in'>
+                    {user.username}
+                    <button className='logout' onClick={onLogout} title='log out'>
+                      ⏻
+                    </button>
+                  </span>
+                </>
+              ) : (
+                <button
+                  className='share-btn discord'
+                  onClick={() => (window.location.href = loginUrl())}
+                  title='save teams to your Discord account'
+                >
+                  Log in with Discord
+                </button>
+              ))}
             <button
               className='share-btn'
               onClick={onShare}
@@ -1610,6 +1801,62 @@ export function App() {
       )}
 
       {CALC_TABS_ENABLED && tab !== 'sim' && renderCalcTab()}
+
+      {AUTH_ENABLED && showTeams && (
+        <div className='modal-backdrop' onClick={() => setShowTeams(false)}>
+          <div className='modal' onClick={(e) => e.stopPropagation()}>
+            <div className='modal-head'>
+              <h2>My teams</h2>
+              <button className='modal-x' onClick={() => setShowTeams(false)}>
+                ×
+              </button>
+            </div>
+            <p className='muted'>
+              Each saved team restores the full loadout — cubes, gear, dolls,
+              dupes, skill levels and the boss options.
+            </p>
+            <button className='calc-run' onClick={onSaveTeam}>
+              💾 Save current team
+            </button>
+            {authErr && <div className='banner warn'>{authErr}</div>}
+            {teams.length === 0 && !authErr && (
+              <div className='muted pad'>no saved teams yet</div>
+            )}
+            <ul className='team-list'>
+              {teams.map((t) => (
+                <li key={t.id}>
+                  <div className='team-meta'>
+                    <b>{t.name}</b>
+                    <span className='muted'>
+                      {(() => {
+                        const b = decodeBuild(t.code);
+                        const names = (b?.s ?? [])
+                          .map((s) =>
+                            s.slug ? (data.characters[s.slug]?.name ?? s.slug) : null,
+                          )
+                          .filter(Boolean);
+                        return names.length ? names.join(' · ') : 'empty';
+                      })()}
+                    </span>
+                  </div>
+                  <div className='team-actions'>
+                    <button className='load-btn' onClick={() => onLoadTeam(t)}>
+                      Load
+                    </button>
+                    <button
+                      className='chip'
+                      title='delete'
+                      onClick={() => onDeleteTeam(t)}
+                    >
+                      ×
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       <footer className='muted'>
         v1 assumptions: 0 enemy debuffs · full HP · expected-value crits ·
