@@ -1,0 +1,64 @@
+{
+  "note": "Tier audit (Bossing A). Structured Function/Effect kit text defeats the parser; rebuilt offensive steady-state. Duo unit with Eunhwa: Tactical Upgrade. Mode 'duo (w/ Eunhwa:TU)' (default — solo TEmma self-taunts via Exposure and is not used): Environment Setup interval drops 30s->10s = permanent Damage Taken 3.9% on the boss; LT Formation grants Projectile Explosion 2.32% team (its Critical Damage 23.51% is Absolute-squad-only = just the two supports, skipped). Mode 'solo': AS Formation grants team True Damage 30.97% + Projectile Explosion 3.09% continuously; Environment Setup at natural 10/30s uptime -> damageTaken 1.3 avg. Burst: casterAtk 40.07%/10s (parser-correct, restated); its Enhanced-Environment doubling (+3.9 taken for 10s) folded as +1.3 avg in duo. Heals/taunts skipped.",
+  "modes": ["duo (w/ Eunhwa:TU)", "solo"],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "enemy" },
+      "mode": "duo (w/ Eunhwa:TU)",
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": 3.9 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "enemy" },
+      "mode": "solo",
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": 1.3 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "mode": "duo (w/ Eunhwa:TU)",
+      "effects": [
+        { "kind": "buff", "stat": "projectileExplosionPct", "value": 2.32 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "mode": "solo",
+      "effects": [
+        { "kind": "buff", "stat": "trueDamagePct", "value": 30.97 },
+        { "kind": "buff", "stat": "projectileExplosionPct", "value": 3.09 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 40.07, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "mode": "duo (w/ Eunhwa:TU)",
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": 1.3, "durationSec": 10 }
+      ]
+    }
+  ]
+}

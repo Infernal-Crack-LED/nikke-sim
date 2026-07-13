@@ -1,33 +1,72 @@
 {
-  "note": "Embarrassment is modeled as her permanent operating mode (it re-triggers on every full-charge shot and dominates the fight). Each full charge that isn't already in Embarrassment fires one charged normal, then deals 290% Distributed Damage, dumps her ammo, and force-reloads at -50% reload speed -- i.e. one charged shot per reload cycle. Modeled by: passive maxAmmoPct -100 (floors magazine to 1 -> one shot then reload) + reloadSpeedPct -50 (the fixed slow reload) + a permanent ATK +118.7% (Effect 5, refreshed every cycle so effectively always on), and a shotFired 290% distributed hit (fires ~once per cycle because ammo is 1). S2's Overconfident (burst) line -- 447.7% Distributed every 2s for 10s -- is modeled as a burstCast DoT (interval 2s, duration 10s = 5 ticks); parser had dropped it under an unsupported trigger. Burst's ATK +220%/10s is left to the parser (correct); its Pierce buffs and S1/S2 Pierce buffs are inert (pierceDamagePct is v1-inert), and 'Gain Pierce' is likewise inert. KEY UNCERTAINTIES / approximations, flagged: (1) The burst's 'Immunity to Embarrassment for 10s' is NOT modeled -- during the 10s burst she should revert to a full 6-round magazine + normal reload (many more charged normals) with no 290% procs; instead she keeps the 1-shot slow-reload cadence, so her burst-window normal damage is UNDER-counted while ~1-2 stray 290% procs are OVER-counted (partial offset). Modeling the immunity via a counter-buff was rejected because it would instead re-proc 290% on every burst normal shot (a larger over-count). (2) The first magazine fires all 6 starting rounds before the -100 max-ammo cap applies on reload, a minor early-fight over-count of normals + 290% procs. (3) The S2 DoT loses the 'distributed' flavor (dot has no flavor field), but distributed damage vs a single boss deals full value and she carries no distributedDamagePct, so no boost is lost.",
+  "note": "TIER AUDIT: Embarrassment requires HOLDING a full charge an extra 0.5s (Prydwen) — a manual action the AI never performs, so on auto she is a plain SR (no 118.7% ATK, no 290% procs, normal magazine). Modes added: 'auto (no Embarrassment)' [default — user validation runs are full-auto] keeps only S2's burst DoT + burst buffs; 'manual (Embarrassment cycle)' preserves the previous permanent-cycle model. ORIGINAL NOTE: Embarrassment is modeled as her permanent operating mode (it re-triggers on every full-charge shot and dominates the fight). Each full charge that isn't already in Embarrassment fires one charged normal, then deals 290% Distributed Damage, dumps her ammo, and force-reloads at -50% reload speed -- i.e. one charged shot per reload cycle. Modeled by: passive maxAmmoPct -100 (floors magazine to 1 -> one shot then reload) + reloadSpeedPct -50 (the fixed slow reload) + a permanent ATK +118.7% (Effect 5, refreshed every cycle so effectively always on), and a shotFired 290% distributed hit (fires ~once per cycle because ammo is 1). S2's Overconfident (burst) line -- 447.7% Distributed every 2s for 10s -- is modeled as a burstCast DoT (interval 2s, duration 10s = 5 ticks); parser had dropped it under an unsupported trigger. Burst's ATK +220%/10s is left to the parser (correct); its Pierce buffs and S1/S2 Pierce buffs are inert (pierceDamagePct is v1-inert), and 'Gain Pierce' is likewise inert. KEY UNCERTAINTIES / approximations, flagged: (1) The burst's 'Immunity to Embarrassment for 10s' is NOT modeled -- during the 10s burst she should revert to a full 6-round magazine + normal reload (many more charged normals) with no 290% procs; instead she keeps the 1-shot slow-reload cadence, so her burst-window normal damage is UNDER-counted while ~1-2 stray 290% procs are OVER-counted (partial offset). Modeling the immunity via a counter-buff was rejected because it would instead re-proc 290% on every burst normal shot (a larger over-count). (2) The first magazine fires all 6 starting rounds before the -100 max-ammo cap applies on reload, a minor early-fight over-count of normals + 290% procs. (3) The S2 DoT loses the 'distributed' flavor (dot has no flavor field), but distributed damage vs a single boss deals full value and she carries no distributedDamagePct, so no boost is lost.",
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "maxAmmoPct", "value": -100 },
-        { "kind": "buff", "stat": "reloadSpeedPct", "value": -50 },
-        { "kind": "buff", "stat": "atkPct", "value": 118.7 }
-      ]
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -100
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": -50
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 118.7
+        }
+      ],
+      "mode": "manual (Embarrassment cycle)"
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "flatDamage", "atkPct": 290, "flavor": "distributed" }
-      ]
+        {
+          "kind": "flatDamage",
+          "atkPct": 290,
+          "flavor": "distributed"
+        }
+      ],
+      "mode": "manual (Embarrassment cycle)"
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "dot", "atkPct": 447.7, "durationSec": 10, "intervalSec": 2 }
+        {
+          "kind": "dot",
+          "atkPct": 447.7,
+          "durationSec": 10,
+          "intervalSec": 2
+        }
       ]
     }
+  ],
+  "modes": [
+    "auto (no Embarrassment)",
+    "manual (Embarrassment cycle)"
   ]
 }

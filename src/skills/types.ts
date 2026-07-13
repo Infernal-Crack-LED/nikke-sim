@@ -17,6 +17,7 @@ export type StatKey =
   | 'attackDamagePct'   // "Attack Damage" — Damage Up bucket
   | 'sustainedDamagePct'
   | 'sequentialDamagePct'
+  | 'casterMaxHpPct' // grants Max HP = % of caster's Max HP (feeds atkOfMaxHpPct consumers)
   | 'partsDamagePct'    // parsed but inert in v1 (no parts on the boss)
   | 'pierceDamagePct'   // parsed but inert in v1
   | 'damageTakenPct'    // debuff on the boss (positive = boss takes more)
@@ -70,6 +71,8 @@ export type EffectDef =
       atkPct: number;
       flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
       core?: boolean; // direct core strike: receives the core bucket, scaled by core-rate
+      crit?: boolean;    // this hit can crit (e.g. Ein's Near Feathers)
+      noRange?: boolean; // excluded from the +30% full-range bonus (Prydwen-confirmed for Near Feathers)
     }
   | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
@@ -84,6 +87,7 @@ export type EffectDef =
       chargeTimeSec?: number;   // full-charge time (charge weapons)
       chargeMultPct?: number;   // "Full Charge Damage: N% of damage"
       maxAmmo?: number;
+      trueNormals?: boolean;    // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
       durationSec: number;
     }
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge

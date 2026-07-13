@@ -1,0 +1,26 @@
+{
+  "note": "Tier audit (Bossing A). Extrasensory gauge: starts 100%, decays, burst recharges to 100% \u2014 thresholds >70% gate ATK 53.69 and >55% gate True Damage 48.62 (parser skipped; steady state with regular bursts keeps her above the gates most of the fight) -> modeled as permanent self passives. S2's 472.18% true proc per 48 hits parses. Burst ATK 73.16 parses. Slight optimism during deep gauge dips.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 53.69
+        },
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 48.62
+        }
+      ]
+    }
+  ]
+}

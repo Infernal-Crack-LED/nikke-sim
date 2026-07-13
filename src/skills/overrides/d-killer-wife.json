@@ -1,0 +1,21 @@
+{
+  "note": "Tier audit (Bossing A). PARSER BUG FIXED: S2's 'Activates when attacking with Full Charge for 8 time(s)' (and 5 times) parsed as shotFired -> the team burst-CDR 7s fired on EVERY shot, flooding cooldowns (an SR fires ~120 shots/fight; real cadence is ~once per rotation per Prydwen: '8 Full Charges ... roughly once per rotation'). Now hitCount 8 -> team burstCdr 7, hitCount 5 -> team Attack Damage 5.06%/10s (~permanent, matching the review). S1 (FB-enter Pierce Damage 13.55%/10s team) parser-faithful, kept in parser. Burst kept in parser: 269.28% nuke; the Wipe-Out part-hit Core-Damage/casterAtk riders parse approximately (hitCount-gated) — partless test bosses make them inert anyway.",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 8 },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "burstCdr", "seconds": 7 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 5 },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "attackDamagePct", "value": 5.06, "durationSec": 10 }
+      ]
+    }
+  ]
+}

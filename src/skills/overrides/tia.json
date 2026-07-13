@@ -1,0 +1,37 @@
+{
+  "note": "Tier audit (Bossing A). Her S1 blocks trigger off her cover/shield cycle ('when recovering Cover's HP' etc.) which recurs every rotation in practice (she is the shield half of the Tia/Naga duo) \u2014 parser skipped both. Modeled as fullBurstEnter: team burst CDR 13s + team Attack Damage 32.11%/10s. Her burst 'Re-enters Burst Stage 1' (rotation quirk) and defensive shield/taunt/heal effects skipped. NOTE: pairs with naga's 'with shielder' mode \u2014 Tia IS the shielder.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 13
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 32.11,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

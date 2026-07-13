@@ -68,6 +68,9 @@ function parseTrigger(header: string, slot: SkillSlot): TriggerDef {
   if (/normal attack hits|attack hits|when performing a normal attack/.test(clause)) {
     return { kind: 'hitCount', count: 1 };
   }
+  // "attacking with Full Charge for N time(s)" / "N full charge attacks" = every Nth shot
+  const fcCount = clause.match(/full[- ]charge (?:attacks? )?for (\d+) time|(\d+) full[- ]charge/);
+  if (fcCount) return { kind: 'hitCount', count: Number(fcCount[1] ?? fcCount[2]) };
   if (/full[- ]charge/.test(clause)) return { kind: 'shotFired' };
   if (/last (bullet|round|ammo)/.test(clause)) return { kind: 'lastBullet' };
   // v1 assumes the boss deals no damage, so everyone stays at full HP and no ally dies

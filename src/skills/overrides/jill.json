@@ -1,0 +1,40 @@
+{
+  "note": "Tier audit (Bossing A). Acid Ammo: 'upon reloading to max, the first round deals sustained damage 192%/s for 30s' \u2014 re-applied every reload (~5s cadence) so effectively permanent; the parser's one-shot 30s passive dot died at t=30 -> duration extended to whole fight. Burst forced-reload economy unsupported (warned). S1 normalAttack +30 passive, burst-cast team True Damage 34.99 parse fine.",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 192,
+          "durationSec": 99999,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 40.03,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}
