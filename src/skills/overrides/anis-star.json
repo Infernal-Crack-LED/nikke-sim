@@ -1,5 +1,5 @@
 {
-  "note": "Formation-gated My Own Star / Everyone's Star kit (modeled like Rapi:RH). NoB1 (My Own Star): skill1 grants continuous self ATK 40.01% (modeled passive, 'cannot be removed') + team burst CDR 7.48s on Full Burst end; skill2's caster-ATK 35.01% and burst's self Attack Damage 35.2% are gated to this status. HasB1 (Everyone's Star): the ATK riders are replaced by re-entering burst at Stage 1 (burstEligibility stage 1); its heal and ally Max-HP portions are dropped (defensive). Formation-independent: team burst-gen 6%, full-charge additional damage 120.13% (per pull, RL always full-charges), Full-Burst-enter Attack Damage 34% and Projectile Explosion Damage 92.03% (text targets 'allies with lower DEF than self' -> approximated as all allies since she is a high-DEF Defender). Burst Shooting Stars modeled as a 40.01% ATK dot every 0.25s for 10s (40 ticks); its 'charge time fixed at 0.7s' modeled as chargeSpeedPct 42.86 (60f/1.0s -> 0.7s at 60fps). Skipped: heals, ally Max-HP, DEF up, Explosion Radius (defensive/AoE-radius, irrelevant vs single boss). UNCERTAIN: Everyone's Star burst re-entry approximated as stage-1 eligibility; 'lower-DEF allies' target simplified to all allies. CORRECTION: Shooting Stars carry the projectileExplosion flavor (they benefit from Projectile Explosion Damage, incl. her own S2 aura) and, as a rider, never receive core damage.",
+  "note": "Formation-gated My Own Star / Everyone's Star kit (modeled like Rapi:RH). NoB1 (My Own Star): skill1 grants continuous self ATK 40.01% (modeled passive, 'cannot be removed') + team burst CDR 7.48s on Full Burst end; skill2's caster-ATK 35.01% and burst's self Attack Damage 35.2% are gated to this status. HasB1 (Everyone's Star): the ATK riders are replaced by re-entering burst at Stage 1 (burstEligibility stage 1); its heal and ally Max-HP portions are dropped (defensive). Formation-independent: team burst-gen 6%, full-charge additional damage 120.13% (per pull, RL always full-charges), Full-Burst-enter Attack Damage 34% and Projectile Explosion Damage 92.03% (text targets 'allies with lower DEF than self' -> approximated as all allies since she is a high-DEF Defender). Burst Shooting Stars modeled as a 40.01% ATK dot every 0.25s for 10s (40 ticks); its 'charge time fixed at 0.7s' modeled as chargeSpeedPct 42.86 (60f/1.0s -> 0.7s at 60fps). Skipped: heals, ally Max-HP, DEF up, Explosion Radius (defensive/AoE-radius, irrelevant vs single boss). UNCERTAIN: Everyone's Star burst re-entry approximated as stage-1 eligibility; 'lower-DEF allies' target simplified to all allies. CORRECTION: Shooting Stars carry the projectileExplosion flavor (they benefit from Projectile Explosion Damage, incl. her own S2 aura) and, as a rider, never receive core damage. USER CORRECTION (2026-07-13): the CDR IS formation-gated (noB1, restored) — the run-A confusion was that Λ units (Red Hood) count as NO burst type for formation calculations (engine fixed); run C's rotation was gated by Tia's real 20s CD (DB wrongly had 40s). Everyone's Star re-entry now uses the real reenterStage mechanic (was a burstEligibility approximation). PROBE CALIBRATION ⚑ (2026-07-13, runs A+C): only the team CDR is formation-gated (user-confirmed); her ATK self-riders are NOT (real anis outputs identically with Tia present: 779M vs 794M solo-B1) — rider blocks ungated, CDR keeps noB1. Confirm the rider rule when convenient.",
   "skill1": [
     {
       "slot": "skill1",
@@ -25,7 +25,6 @@
       "target": {
         "kind": "self"
       },
-      "formation": "noB1",
       "effects": [
         {
           "kind": "buff",
@@ -42,13 +41,13 @@
       "target": {
         "kind": "allies"
       },
-      "formation": "noB1",
       "effects": [
         {
           "kind": "burstCdr",
           "seconds": 7.48
         }
-      ]
+      ],
+      "formation": "noB1"
     },
     {
       "slot": "skill1",
@@ -61,7 +60,7 @@
       "formation": "hasB1",
       "effects": [
         {
-          "kind": "burstEligibility",
+          "kind": "reenterStage",
           "stage": 1
         }
       ]
@@ -91,7 +90,6 @@
       "target": {
         "kind": "allies"
       },
-      "formation": "noB1",
       "effects": [
         {
           "kind": "buff",
@@ -158,7 +156,6 @@
       "target": {
         "kind": "self"
       },
-      "formation": "noB1",
       "effects": [
         {
           "kind": "buff",

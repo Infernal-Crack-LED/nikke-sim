@@ -49,8 +49,10 @@ RANGE_ELIGIBLE (engine); the earlier blanket MG range-exemption is subsumed (MG 
 only in mid-far, ~23% of the fight). Wind-up no-core estimate (first 18 rounds) stands ⚑.
 Also implemented: 1s unhittable windows at each band transition; units whose EFFECTIVE reload
 is <=1s snap-refill during the window, others keep their mag; in-progress reloads continue.
-RECALIBRATED under the new model: SR bolt recovery 30f -> 20f (helm 0.97-0.98 clean fights;
-velvet 1.13 flagged); nayuta SR-swap cycle 2.3 -> 2.13s.
+MEASURED 2026-07-13 (helm frame recording, docs/"helm 2 6 mag rotations.mov"): SR fire cycle
+= 1.37s exactly (charge 60f + bolt recovery 22f); reload begins immediately after the final
+shot; first shot needs only charge + projectile travel. SR_BOLT_RECOVERY_FRAMES = 22 is now a
+MEASURED constant (⚑ removed). Any SR still reading off owns the error in its kit model.
 
 ### U6 — Fight-level warm spots (largely dissolved by the 2026-07-13 rules)
 Clarified: "T2-style" meant the specific T2 SAMPLE run read uniformly warm vs the same units

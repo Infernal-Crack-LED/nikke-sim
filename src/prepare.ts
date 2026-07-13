@@ -23,6 +23,7 @@ export interface PreparedUnit {
   mpPriority?: boolean; // stackedNuke units (Maiden:IR): jump the burst queue at max MP stacks
   chargeFrames?: number; // override charFixes: hand-measured real fire cycle (charge + recovery)
   reloadFrames?: number; // override charFixes: hand-measured real reload (e.g. padded animations)
+  burstCooldownSec?: number; // override charFixes: corrected burst cooldown (bad DB data)
   noBoltRecovery?: boolean; // charFixes: this SR's DB chargeFrames already includes the bolt recovery
   loadout: string[]; // human-readable, for the report
 }
@@ -133,6 +134,7 @@ export function prepareUnit(
     mpPriority: opts?.mpPriority,
     chargeFrames: deps.overrides[char.slug]?.charFixes?.chargeFrames,
     reloadFrames: deps.overrides[char.slug]?.charFixes?.reloadFrames,
+    burstCooldownSec: deps.overrides[char.slug]?.charFixes?.burstCooldownSec,
     noBoltRecovery: deps.overrides[char.slug]?.charFixes?.noBoltRecovery,
     loadout,
   };

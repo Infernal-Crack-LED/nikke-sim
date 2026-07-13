@@ -28,7 +28,7 @@ const TARGETS = new Set([
   'alliesTopAtk', 'alliesLowestAtk', 'alliesOfElement', 'alliesOfClass',
 ]);
 const EFFECTS = new Set([
-  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'burstEligibility', 'burstFirst',
+  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
   'instantReload', 'storedHit', 'stun', 'stackedNuke',
 ]);

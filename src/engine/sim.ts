@@ -21,11 +21,13 @@ import type { Block, EffectDef, StatKey, TargetDef } from '../skills/types.js';
 const FPS = 60;
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
 const FULL_BURST_FRAMES = 10 * FPS;
-// Standard SRs pause ~0.5s (bolt cycle) between full-charge shots (user-validated on
-// helm/velvet/nayuta). Weapon-swap states are exempt (Red Hood's own B3 window, SWHA's
-// Fully Active, Nayuta's SR mode — all swaps), as are units whose DB chargeFrames already
-// include the recovery (charFixes.noBoltRecovery: SWHA, liberalio).
-const SR_BOLT_RECOVERY_FRAMES = 20;
+// Standard SRs pause 22 frames (bolt cycle) between full-charge shots — MEASURED from the
+// user's Helm recording (docs/"helm 2 6 mag rotations.mov": 1.37s shot-to-shot over six
+// intervals; reload starts immediately after the final shot, recovery does not delay it).
+// Weapon-swap states are exempt (Red Hood's own B3 window, SWHA's Fully Active, Nayuta's SR
+// mode), as are units whose DB chargeFrames already include the cycle
+// (charFixes.noBoltRecovery: SWHA, liberalio).
+const SR_BOLT_RECOVERY_FRAMES = 22;
 
 // Canon fire cadence per weapon type (doc values; per trigger pull).
 // MG's "60 rps" counts belt rounds (hits): pulls/s = 60 / hitsPerShot and each
@@ -213,21 +215,22 @@ export function runSim(
     // charFixes: hand-measured weapon-data corrections (e.g. true SR fire cycle)
     const charFix = prepared?.[idx]?.chargeFrames;
     const reloadFix = prepared?.[idx]?.reloadFrames;
+    const cdFix = prepared?.[idx]?.burstCooldownSec;
     const char =
-      charFix || reloadFix
+      charFix || reloadFix || cdFix
         ? {
             ...rawChar,
             ...(charFix ? { chargeFrames: charFix } : {}),
             ...(reloadFix ? { reloadFrames: reloadFix } : {}),
+            ...(cdFix ? { burstCooldownSec: cdFix } : {}),
           }
         : rawChar;
     if (!char.baseStats) throw new Error(`${char.slug} has no base stats in the DB`);
     const skills = prepared?.[idx]?.skills ?? resolveSkills(char);
-    // "no OTHER Burst 1 allies" — the unit itself never counts (Anis: Star is
-    // herself a B1; her My Own Star state applies when she's the only one)
-    const teamHasB1 = chars.some(
-      (c, i) => i !== idx && (c.burst === 'I' || c.burst === 'Λ')
-    );
+    // "no OTHER Burst 1 allies" — the unit itself never counts, and Λ units count
+    // as NO burst type for formation calculations (user-confirmed: Red Hood as B3
+    // does not flip Anis: Star's My Own Star off)
+    const teamHasB1 = chars.some((c, i) => i !== idx && c.burst === 'I');
     const selectedMode = prepared?.[idx]?.mode ?? skills.modes?.[0];
     const activeBlocks = skills.blocks.filter(
       (b) =>
@@ -678,6 +681,8 @@ export function runSim(
         case 'burstFirst':
           for (const t of resolveTargets(block.target, ownerIdx)) t.burstFirstPending = true;
           break;
+        case 'reenterStage':
+          break; // handled by the rotation (stage hold) after the cast resolves
         case 'advantageVs':
           for (const t of resolveTargets(block.target, ownerIdx)) t.advantageVs.add(e.element);
           break;
@@ -870,8 +875,20 @@ export function runSim(
         });
         cand.fbMissedSinceBurst = 0; // MP spent (blocks above already read it)
         if (castStage !== 3) {
-          stage = (stage + 1) as 1 | 2 | 3;
-          stageGapFrames = STAGE_CAST_GAP_FRAMES;
+          // "Re-enters Burst Stage N": hold the stage so a second eligible unit
+          // can also cast this rotation (Tia + Anis:Star pairing)
+          const reenters = cand.blocks.some(
+            (b) =>
+              b.trigger.kind === 'burstCast' &&
+              (b.trigger.stage ?? castStage) === castStage &&
+              b.effects.some((e) => e.kind === 'reenterStage' && e.stage === castStage)
+          );
+          if (reenters && units.some((u) => u.idx !== cand.idx && eligible(u))) {
+            stageGapFrames = STAGE_CAST_GAP_FRAMES; // stage stays; next pick is another unit
+          } else {
+            stage = (stage + 1) as 1 | 2 | 3;
+            stageGapFrames = STAGE_CAST_GAP_FRAMES;
+          }
         }
       } else {
         stallFrames++;

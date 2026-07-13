@@ -28,6 +28,8 @@ interface Comp {
   name: string;
   slugs: string[];
   boss: Element | null;
+  modes?: Record<string, string>;
+  lambda?: Record<string, 1 | 2 | 3>;
   real: Record<string, number>;
 }
 
@@ -95,6 +97,64 @@ const COMPS: Comp[] = [
       cinderella: 1_278_372_685, 'mast-romantic-maid': 130_547_286,
     },
   },
+  {
+    name: 'PA MiKa (boss Iron)',
+    slugs: ['anis-star', 'mint', 'prika', 'alice', 'red-hood'],
+    boss: 'Iron',
+    modes: { mint: 'duet (w/ Mint)', prika: 'duet (w/ Mint)' },
+    lambda: { 'red-hood': 3 },
+    real: { 'anis-star': 794_599_189, mint: 200_098_310, prika: 167_821_197, alice: 403_927_220, 'red-hood': 853_335_540 },
+  },
+  {
+    name: 'PB elec battery (boss Water)',
+    slugs: ['moran', 'trina', 'cinderella', 'neon-vision-eye'],
+    boss: 'Water',
+    real: { moran: 222_265_637, trina: 50_865_273, cinderella: 582_734_714, 'neon-vision-eye': 467_167_997 },
+  },
+  {
+    name: 'PC shields (boss Fire)',
+    slugs: ['tia', 'anis-star', 'naga', 'snow-white-heavy-arms', 'helm'],
+    boss: 'Fire',
+    modes: { naga: 'with shielder' },
+    real: { tia: 159_872_551, 'anis-star': 779_423_317, naga: 174_159_371, 'snow-white-heavy-arms': 1_320_261_601, helm: 651_956_107 },
+  },
+  {
+    name: 'PD Eva duo (boss Wind)',
+    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'diesel-winter-sweets', 'helm'],
+    boss: 'Wind',
+    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
+    real: { 'emma-tactical-upgrade': 138_646_718, 'eunhwa-tactical-upgrade': 303_333_340, 'diesel-winter-sweets': 547_126_157, helm: 272_995_802 },
+  },
+  {
+    name: 'PE elec DPS (boss Water)',
+    slugs: ['rouge', 'crown', 'ein', 'ada', 'cinderella'],
+    boss: 'Water',
+    real: { rouge: 106_697_867, crown: 147_601_675, ein: 560_265_791, ada: 460_220_219, cinderella: 342_564_640 },
+  },
+  {
+    name: 'PF maiden solo (boss Water)',
+    slugs: ['maiden-ice-rose'],
+    boss: 'Water',
+    real: { 'maiden-ice-rose': 76_562_316 },
+  },
+  {
+    name: 'PG iron sweep (boss Electric)',
+    slugs: ['d-killer-wife', 'takina', 'milk-blooming-bunny', 'maxwell', 'liberalio'],
+    boss: 'Electric',
+    real: { 'd-killer-wife': 57_763_039, takina: 427_401_745, 'milk-blooming-bunny': 391_185_987, maxwell: 126_550_353, liberalio: 484_567_921 },
+  },
+  {
+    name: 'PH water B3s (boss Fire)',
+    slugs: ['little-mermaid', 'crown', 'quency-escape-queen', 'dorothy-serendipity', 'guillotine-winter-slayer'],
+    boss: 'Fire',
+    real: { 'little-mermaid': 341_555_086, crown: 161_315_337, 'quency-escape-queen': 594_108_107, 'dorothy-serendipity': 766_349_052, 'guillotine-winter-slayer': 273_898_861 },
+  },
+  {
+    name: 'PI misc B3s (boss Water)',
+    slugs: ['anis-star', 'grave', 'chisato', 'jill', 'noir'],
+    boss: 'Water',
+    real: { 'anis-star': 602_820_156, grave: 288_074_223, chisato: 492_040_764, jill: 518_351_294, noir: 160_557_828 },
+  },
 ];
 
 // deep-clone an override and let the variant mutate it; return undefined = drop unit's override
@@ -110,6 +170,8 @@ function run(comp: Comp, patch: Patch = {}) {
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
     doll: DOLL,
     ol: 0,
+    mode: comp.modes?.[slug],
+    lambdaStage: comp.lambda?.[slug],
   }));
   const cfg: SimConfig = {
     slugs: comp.slugs, bossElement: comp.boss, bossDef: 0, level: 400, copies: 10,
