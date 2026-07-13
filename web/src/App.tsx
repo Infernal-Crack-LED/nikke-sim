@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { runSim, type SimResult } from '../../src/engine/sim';
 import { prepareTeam, type UnitOptions } from '../../src/prepare';
 import type { OverrideFile } from '../../src/skills/index';
@@ -228,6 +228,29 @@ function buildOlLines(
   push('atk', s.olAtk);
   for (const line of s.olExtra) if (line.type) push(line.type, line.value);
   return out;
+}
+
+// SlotState (the per-character card's state) → engine UnitOptions. Shared by the
+// Sim tab and the DPS test's variable units.
+function slotToUnitOptions(s: SlotState): UnitOptions {
+  return {
+    cube:
+      s.cubeId === 'none'
+        ? undefined
+        : { id: s.cubeId, level: Math.min(15, Math.max(1, s.cubeLevel || 15)) },
+    ol: s.ol,
+    doll: s.doll,
+    stars: Math.min(3, Math.max(0, s.stars)),
+    core: Math.min(7, Math.max(0, s.core)),
+    lambdaStage:
+      s.lambdaStage && s.slug && data.characters[s.slug].burst === 'Λ'
+        ? s.lambdaStage
+        : undefined,
+    mode: s.mode,
+    mpPriority: s.mpPriority,
+    skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
+    lines: OL_UI_ENABLED ? buildOlLines(s) : undefined,
+  };
 }
 
 const defaultSlot = (slug: string | null): SlotState => ({
@@ -551,7 +574,8 @@ export function App() {
   // DPS test: a scope-locked control group (3 or 4) + variable groups that fill
   // the rest (2 or 1). Each complete group forms a variant team we sim.
   const [dpsControl, setDpsControl] = useState<string[]>([]);
-  const [dpsGroups, setDpsGroups] = useState<string[][]>([[]]);
+  // each variable group holds full per-character SlotStates (configurable cards)
+  const [dpsGroups, setDpsGroups] = useState<SlotState[][]>([]);
   const [dpsResults, setDpsResults] = useState<
     | {
         group: string[];
@@ -740,28 +764,7 @@ export function App() {
       rangeBonus: true,
       durationSec: 180,
     };
-    const unitOpts: UnitOptions[] = slots.map((s) => ({
-      // 'none' → omit the cube entirely (backend adds no cube stats when unset)
-      cube:
-        s.cubeId === 'none'
-          ? undefined
-          : {
-              id: s.cubeId,
-              level: Math.min(15, Math.max(1, s.cubeLevel || 15)),
-            },
-      ol: s.ol,
-      doll: s.doll,
-      stars: Math.min(3, Math.max(0, s.stars)),
-      core: Math.min(7, Math.max(0, s.core)),
-      lambdaStage:
-        s.lambdaStage && s.slug && data.characters[s.slug].burst === 'Λ'
-          ? s.lambdaStage
-          : undefined,
-      mode: s.mode,
-      mpPriority: s.mpPriority,
-      skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
-      lines: OL_UI_ENABLED ? buildOlLines(s) : undefined,
-    }));
+    const unitOpts: UnitOptions[] = slots.map(slotToUnitOptions);
     try {
       const prepared = prepareTeam(chars, unitOpts, {
         overrides,
@@ -1005,11 +1008,22 @@ export function App() {
   // ---- DPS test: scope-locked control + variable groups ----
   const dpsGroupSize = Math.max(1, 5 - dpsControl.length); // 2 if control=3, 1 if 4
   const dpsControlValid = dpsControl.length === 3 || dpsControl.length === 4;
+  const emptyGroup = (size: number): SlotState[] =>
+    Array.from({ length: size }, () => defaultSlot(null));
   const setControl = (next: string[]) => {
     setDpsControl(next);
-    setDpsGroups([[]]); // group size may have changed — reset variable groups
+    const size = 5 - next.length;
+    // reset variable groups whenever the group size may have changed
+    setDpsGroups(next.length === 3 || next.length === 4 ? [emptyGroup(size)] : []);
     setDpsResults(null);
   };
+  const setGroupUnit = (gi: number, ui: number, patch: Partial<SlotState>) =>
+    setDpsGroups((gs) =>
+      gs.map((g, j) =>
+        j === gi ? g.map((u, k) => (k === ui ? { ...u, ...patch } : u)) : g,
+      ),
+    );
+  const groupComplete = (g: SlotState[]) => g.every((u) => u.slug);
   const runDpsTest = () =>
     runCalc(() => {
       const deps = {
@@ -1019,21 +1033,22 @@ export function App() {
         olLines: olLinesData,
       };
       const cfg = { ...calcCfg(), level: 400 }; // scope lock = lvl 400
-      const complete = dpsGroups.filter((g) => g.length === dpsGroupSize);
-      const results = complete
+      const results = dpsGroups
+        .filter(groupComplete)
         .map((group) => {
-          const slugs = [...dpsControl, ...group];
+          const slugs = [...dpsControl, ...group.map((u) => u.slug!)];
           const cs = slugs.map((s) => data.characters[s]);
-          const prepared = prepareTeam(
-            cs as any,
-            slugs.map(() => SCOPE_LOCK_LOADOUT),
-            deps as any,
-          );
+          // control = scope-lock; variable units use their configured card
+          const opts = [
+            ...dpsControl.map(() => SCOPE_LOCK_LOADOUT),
+            ...group.map(slotToUnitOptions),
+          ];
+          const prepared = prepareTeam(cs as any, opts, deps as any);
           const r = runSim(cs as any, mult, { ...cfg, slugs } as SimConfig, prepared);
           const varUnits = r.units.slice(dpsControl.length); // the group's units
           const varDamage = varUnits.reduce((s, u) => s + u.totalDamage, 0);
           return {
-            group,
+            group: group.map((u) => u.slug!),
             teamDamage: r.teamDamage,
             teamDps: r.teamDps,
             fullBurstUptime: r.fullBurstUptime,
@@ -1076,6 +1091,323 @@ export function App() {
       </table>
     </div>
   );
+
+  // the full per-character card (portrait, picker, gear/dupes/skills/cube/OL) —
+  // reused by the Sim tab and the DPS test's variable units.
+  const renderCard = (
+    slot: SlotState,
+    onChange: (patch: Partial<SlotState>) => void,
+    slotLabel: string,
+  ) => {
+    const c = slot.slug ? data.characters[slot.slug] : null;
+    return (
+      <div className='card'>
+        <div className='slot-head'>
+          <span className='muted'>{slotLabel}</span>
+          {c && (
+            <span className='tag'>
+              B{c.burst} · {c.weapon} · {c.element}
+            </span>
+          )}
+        </div>
+        {c?.imageUrl ? (
+          <img className='portrait' src={c.imageUrl} alt={c.name} />
+        ) : (
+          <div className='portrait empty'>?</div>
+        )}
+        <CharPicker slot={slot} onPick={(slug) => onChange({ slug })} />
+        {c?.burst === 'Λ' && (
+          <div className='pills small'>
+            {([0, 1, 2, 3] as const).map((st) => (
+              <button
+                key={st}
+                title='Λ burst: which stage she operates as'
+                className={slot.lambdaStage === st ? 'on' : ''}
+                onClick={() => onChange({ lambdaStage: st })}
+              >
+                {st === 0 ? 'Auto' : `as B${st}`}
+              </button>
+            ))}
+          </div>
+        )}
+        {(() => {
+          const modes = slot.slug ? overrides[slot.slug]?.modes : undefined;
+          if (!modes?.length) return null;
+          return (
+            <div className='pills small'>
+              {modes.map((m) => (
+                <button
+                  key={m}
+                  title='kit mode (assumed 100% uptime)'
+                  className={(slot.mode ?? modes[0]) === m ? 'on' : ''}
+                  onClick={() => onChange({ mode: m })}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          );
+        })()}
+        {slot.slug &&
+          JSON.stringify(overrides[slot.slug] ?? {}).includes('"stackedNuke"') && (
+            <div className='pills small'>
+              <button
+                title='override the burst order to cast her burst once MP is fully stacked'
+                className={slot.mpPriority ? 'on' : ''}
+                onClick={() => onChange({ mpPriority: !slot.mpPriority })}
+              >
+                {slot.mpPriority ? '☑' : '☐'} burst at 12 MP
+              </button>
+            </div>
+          )}
+        <div className='card-group-label'>gear</div>
+        <div className='pills small'>
+          <button
+            className={slot.ol === 0 ? 'on' : ''}
+            onClick={() => onChange({ ol: 0 })}
+          >
+            OL 0
+          </button>
+          <button
+            className={slot.ol === 5 ? 'on' : ''}
+            onClick={() => onChange({ ol: 5 })}
+          >
+            OL 5
+          </button>
+          <button
+            className={slot.doll ? 'on' : ''}
+            onClick={() => onChange({ doll: !slot.doll })}
+          >
+            Doll 15
+          </button>
+        </div>
+        <div className='card-group-label'>dupes</div>
+        <div className='pills small'>
+          {DUPE_PRESETS.map((p) => (
+            <button
+              key={p.label}
+              className={
+                !slot.dupeCustom && slot.stars === p.stars && slot.core === p.core
+                  ? 'on'
+                  : ''
+              }
+              onClick={() =>
+                onChange({ stars: p.stars, core: p.core, dupeCustom: false })
+              }
+            >
+              {p.label}
+            </button>
+          ))}
+          <button
+            title='custom stars / core'
+            className={slot.dupeCustom ? 'on' : ''}
+            onClick={() => onChange({ dupeCustom: !slot.dupeCustom })}
+          >
+            …
+          </button>
+        </div>
+        {slot.dupeCustom && (
+          <>
+            <div className='pills small' title='Limit Break stars'>
+              <span className='muted pill-label'>Stars</span>
+              {STAR_LEVELS.map((st) => (
+                <button
+                  key={st}
+                  className={slot.stars === st ? 'on' : ''}
+                  onClick={() => onChange({ stars: st })}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+            <div className='pills small' title='Core enhancement'>
+              <span className='muted pill-label'>Core</span>
+              {CORE_LEVELS.map((cr) => (
+                <button
+                  key={cr}
+                  className={slot.core === cr ? 'on' : ''}
+                  onClick={() => onChange({ core: cr })}
+                >
+                  {cr}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        <div className='card-group-label'>skills</div>
+        {(
+          [
+            ['S1', 'skill1'],
+            ['S2', 'skill2'],
+            ['Burst', 'burst'],
+          ] as const
+        ).map(([label, key]) => {
+          const hasData = !!(slot.slug && skillLevelData[slot.slug]);
+          return (
+            <div
+              key={key}
+              className='pills small'
+              title={
+                hasData
+                  ? `${label} skill level`
+                  : `${label} skill level — no per-level data for this nikke; values stay at max`
+              }
+            >
+              <span className='muted pill-label'>{label}</span>
+              {SKILL_LEVELS.map((lv) => (
+                <button
+                  key={lv}
+                  className={slot[key] === lv ? 'on' : ''}
+                  onClick={() => onChange({ [key]: lv })}
+                >
+                  {lv}
+                </button>
+              ))}
+            </div>
+          );
+        })}
+        <div className='card-group-label'>cube</div>
+        <div className='cube'>
+          {CUBE_IDS.map((id) => {
+            const cube = cubes.cubes[id];
+            const effect = cube.effectStat
+              ? STAT_LABELS[cube.effectStat] ?? cube.effectStat
+              : 'base stats + elemental damage';
+            return (
+              <button
+                key={id}
+                title={`${cube.name} — ${effect}`}
+                className={slot.cubeId === id ? 'on' : ''}
+                onClick={() => onChange({ cubeId: id })}
+              >
+                {cubes.cubes[id].image ? (
+                  <img
+                    src={'/' + cubes.cubes[id].image.replace('img/', '')}
+                    alt={id}
+                  />
+                ) : (
+                  'Other'
+                )}
+              </button>
+            );
+          })}
+          <button
+            title='No cube — no flat ATK, no elemental damage, no effect'
+            className={slot.cubeId === 'none' ? 'on' : ''}
+            onClick={() => onChange({ cubeId: 'none' })}
+          >
+            None
+          </button>
+        </div>
+        {slot.cubeId !== 'none' && (
+          <div className='pills small'>
+            {CUBE_LEVELS.map((l) => (
+              <button
+                key={l}
+                className={!slot.cubeCustom && slot.cubeLevel === l ? 'on' : ''}
+                onClick={() => onChange({ cubeLevel: l, cubeCustom: false })}
+              >
+                L{l}
+              </button>
+            ))}
+            <button
+              title='custom cube level'
+              className={slot.cubeCustom ? 'on' : ''}
+              onClick={() => onChange({ cubeCustom: !slot.cubeCustom })}
+            >
+              …
+            </button>
+            {slot.cubeCustom && (
+              <input
+                className='num'
+                value={slot.cubeLevel}
+                onChange={(e) =>
+                  onChange({ cubeLevel: Number(e.target.value) || 1 })
+                }
+              />
+            )}
+          </div>
+        )}
+        {OL_UI_ENABLED && (
+          <div className='ol'>
+            <div className='ol-base'>
+              <label>
+                ELE
+                <input
+                  className='num'
+                  value={slot.olElem}
+                  placeholder='%'
+                  onChange={(e) => onChange({ olElem: e.target.value })}
+                />
+              </label>
+              <label>
+                ATK
+                <input
+                  className='num'
+                  value={slot.olAtk}
+                  placeholder='%'
+                  onChange={(e) => onChange({ olAtk: e.target.value })}
+                />
+              </label>
+            </div>
+            {slot.olExtra.map((line, li) => (
+              <div className='ol-line' key={li}>
+                <select
+                  value={line.type}
+                  onChange={(e) =>
+                    onChange({
+                      olExtra: slot.olExtra.map((l, j) =>
+                        j === li ? { ...l, type: e.target.value } : l,
+                      ),
+                    })
+                  }
+                >
+                  {OL_LINE_TYPES.map((t) => (
+                    <option key={t.key} value={t.key}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className='num'
+                  value={line.value}
+                  placeholder='%'
+                  onChange={(e) =>
+                    onChange({
+                      olExtra: slot.olExtra.map((l, j) =>
+                        j === li ? { ...l, value: e.target.value } : l,
+                      ),
+                    })
+                  }
+                />
+                <button
+                  className='ol-rm'
+                  title='remove line'
+                  onClick={() =>
+                    onChange({
+                      olExtra: slot.olExtra.filter((_, j) => j !== li),
+                    })
+                  }
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <button
+              className='ol-add'
+              onClick={() =>
+                onChange({
+                  olExtra: [...slot.olExtra, { type: 'ammo', value: '' }],
+                })
+              }
+            >
+              + OL line
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderCalcTab = () => {
     if (tab === 'team') {
@@ -1120,18 +1452,15 @@ export function App() {
       );
     }
     if (tab === 'dps') {
-      const canRun =
-        dpsControlValid &&
-        dpsGroups.some((g) => g.length === dpsGroupSize) &&
-        !calcBusy;
+      const canRun = dpsControlValid && dpsGroups.some(groupComplete) && !calcBusy;
       return (
         <section className='calc-tab'>
           <h2>DPS Test</h2>
           <p className='muted'>
-            A fixed <b>control group</b> (3 or 4 nikkes) plus swap-in variable
-            groups. Every unit is <b>scope-locked</b> (no cube / no doll / OL0 /
-            3★ · 7 core · lvl 400) so candidates compete on equal footing; boss
-            options come from the teamwide row above.
+            A fixed <b>control group</b> (3 or 4 nikkes) — scope-locked (no cube /
+            no doll / OL0 / 3★ · 7 core · lvl 400) — plus swap-in variable groups
+            you configure with the <b>full per-character cards</b>. Boss options
+            come from the teamwide row above.
           </p>
 
           <div className='field'>
@@ -1166,57 +1495,39 @@ export function App() {
                 {dpsGroupSize > 1 ? 's' : ''} each
               </div>
               {dpsGroups.map((group, gi) => (
-                <div className='dps-group' key={gi}>
-                  <span className='muted pill-label'>{gi + 1}</span>
-                  <div className='chips'>
-                    {group.map((slug) => (
+                <div className='dps-group-block' key={gi}>
+                  <div className='dps-group-head'>
+                    <span className='card-group-label'>group {gi + 1}</span>
+                    {dpsGroups.length > 1 && (
                       <button
-                        key={slug}
                         className='chip'
-                        title='remove'
+                        title='remove group'
                         onClick={() =>
-                          setDpsGroups((gs) =>
-                            gs.map((g, j) =>
-                              j === gi ? g.filter((s) => s !== slug) : g,
-                            ),
-                          )
+                          setDpsGroups((gs) => gs.filter((_, j) => j !== gi))
                         }
                       >
-                        {data.characters[slug]?.name ?? slug} ×
+                        remove group ×
                       </button>
+                    )}
+                  </div>
+                  <div className='dps-cards'>
+                    {group.map((unit, ui) => (
+                      <Fragment key={ui}>
+                        {renderCard(
+                          unit,
+                          (p) => setGroupUnit(gi, ui, p),
+                          `unit ${ui + 1}`,
+                        )}
+                      </Fragment>
                     ))}
                   </div>
-                  {group.length < dpsGroupSize && (
-                    <CharSearch
-                      placeholder='add nikke…'
-                      exclude={[...dpsControl, ...group]}
-                      onPick={(slug) =>
-                        setDpsGroups((gs) =>
-                          gs.map((g, j) =>
-                            j === gi && g.length < dpsGroupSize
-                              ? [...g, slug]
-                              : g,
-                          ),
-                        )
-                      }
-                    />
-                  )}
-                  {dpsGroups.length > 1 && (
-                    <button
-                      className='ol-rm'
-                      title='remove group'
-                      onClick={() =>
-                        setDpsGroups((gs) => gs.filter((_, j) => j !== gi))
-                      }
-                    >
-                      ×
-                    </button>
-                  )}
                 </div>
               ))}
               <button
                 className='ol-add'
-                onClick={() => setDpsGroups((gs) => [...gs, []])}
+                onClick={() =>
+                  setDpsGroups((gs) => [...gs, emptyGroup(dpsGroupSize)])
+                }
               >
                 + add group
               </button>
@@ -1633,326 +1944,11 @@ export function App() {
       {(!CALC_TABS_ENABLED || tab === 'sim') && (
         <>
       <section className='team'>
-        {slots.map((slot, i) => {
-          const c = slot.slug ? data.characters[slot.slug] : null;
-          return (
-            <div className='card' key={i}>
-              <div className='slot-head'>
-                <span className='muted'>slot {i + 1}</span>
-                {c && (
-                  <span className='tag'>
-                    B{c.burst} · {c.weapon} · {c.element}
-                  </span>
-                )}
-              </div>
-              {c?.imageUrl ? (
-                <img className='portrait' src={c.imageUrl} alt={c.name} />
-              ) : (
-                <div className='portrait empty'>?</div>
-              )}
-              <CharPicker slot={slot} onPick={(slug) => setSlot(i, { slug })} />
-              {c?.burst === 'Λ' && (
-                <div className='pills small'>
-                  {([0, 1, 2, 3] as const).map((st) => (
-                    <button
-                      key={st}
-                      title='Λ burst: which stage she operates as'
-                      className={slot.lambdaStage === st ? 'on' : ''}
-                      onClick={() => setSlot(i, { lambdaStage: st })}
-                    >
-                      {st === 0 ? 'Auto' : `as B${st}`}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {(() => {
-                const modes = slot.slug ? overrides[slot.slug]?.modes : undefined;
-                if (!modes?.length) return null;
-                return (
-                  <div className='pills small'>
-                    {modes.map((m) => (
-                      <button
-                        key={m}
-                        title='kit mode (assumed 100% uptime)'
-                        className={(slot.mode ?? modes[0]) === m ? 'on' : ''}
-                        onClick={() => setSlot(i, { mode: m })}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                );
-              })()}
-              {slot.slug &&
-                JSON.stringify(overrides[slot.slug] ?? {}).includes('"stackedNuke"') && (
-                  <div className='pills small'>
-                    <button
-                      title='override the burst order to cast her burst once MP is fully stacked'
-                      className={slot.mpPriority ? 'on' : ''}
-                      onClick={() => setSlot(i, { mpPriority: !slot.mpPriority })}
-                    >
-                      {slot.mpPriority ? '☑' : '☐'} burst at 12 MP
-                    </button>
-                  </div>
-                )}
-              <div className='card-group-label'>gear</div>
-              <div className='pills small'>
-                <button
-                  className={slot.ol === 0 ? 'on' : ''}
-                  onClick={() => setSlot(i, { ol: 0 })}
-                >
-                  OL 0
-                </button>
-                <button
-                  className={slot.ol === 5 ? 'on' : ''}
-                  onClick={() => setSlot(i, { ol: 5 })}
-                >
-                  OL 5
-                </button>
-                <button
-                  className={slot.doll ? 'on' : ''}
-                  onClick={() => setSlot(i, { doll: !slot.doll })}
-                >
-                  Doll 15
-                </button>
-              </div>
-              <div className='card-group-label'>dupes</div>
-              <div className='pills small'>
-                {DUPE_PRESETS.map((p) => (
-                  <button
-                    key={p.label}
-                    className={
-                      !slot.dupeCustom &&
-                      slot.stars === p.stars &&
-                      slot.core === p.core
-                        ? 'on'
-                        : ''
-                    }
-                    onClick={() =>
-                      setSlot(i, {
-                        stars: p.stars,
-                        core: p.core,
-                        dupeCustom: false,
-                      })
-                    }
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                <button
-                  title='custom stars / core'
-                  className={slot.dupeCustom ? 'on' : ''}
-                  onClick={() => setSlot(i, { dupeCustom: !slot.dupeCustom })}
-                >
-                  …
-                </button>
-              </div>
-              {slot.dupeCustom && (
-                <>
-                  <div className='pills small' title='Limit Break stars'>
-                    <span className='muted pill-label'>Stars</span>
-                    {STAR_LEVELS.map((st) => (
-                      <button
-                        key={st}
-                        className={slot.stars === st ? 'on' : ''}
-                        onClick={() => setSlot(i, { stars: st })}
-                      >
-                        {st}
-                      </button>
-                    ))}
-                  </div>
-                  <div className='pills small' title='Core enhancement'>
-                    <span className='muted pill-label'>Core</span>
-                    {CORE_LEVELS.map((cr) => (
-                      <button
-                        key={cr}
-                        className={slot.core === cr ? 'on' : ''}
-                        onClick={() => setSlot(i, { core: cr })}
-                      >
-                        {cr}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-              <div className='card-group-label'>skills</div>
-              {(
-                [
-                  ['S1', 'skill1'],
-                  ['S2', 'skill2'],
-                  ['Burst', 'burst'],
-                ] as const
-              ).map(([label, key]) => {
-                const hasData = !!(slot.slug && skillLevelData[slot.slug]);
-                return (
-                  <div
-                    key={key}
-                    className='pills small'
-                    title={
-                      hasData
-                        ? `${label} skill level`
-                        : `${label} skill level — no per-level data for this nikke; values stay at max`
-                    }
-                  >
-                    <span className='muted pill-label'>{label}</span>
-                    {SKILL_LEVELS.map((lv) => (
-                      <button
-                        key={lv}
-                        className={slot[key] === lv ? 'on' : ''}
-                        onClick={() => setSlot(i, { [key]: lv })}
-                      >
-                        {lv}
-                      </button>
-                    ))}
-                  </div>
-                );
-              })}
-              <div className='card-group-label'>cube</div>
-              <div className='cube'>
-                {CUBE_IDS.map((id) => {
-                  const cube = cubes.cubes[id];
-                  const effect = cube.effectStat
-                    ? STAT_LABELS[cube.effectStat] ?? cube.effectStat
-                    : 'base stats + elemental damage';
-                  return (
-                  <button
-                    key={id}
-                    title={`${cube.name} — ${effect}`}
-                    className={slot.cubeId === id ? 'on' : ''}
-                    onClick={() => setSlot(i, { cubeId: id })}
-                  >
-                    {cubes.cubes[id].image ? (
-                      <img
-                        src={'/' + cubes.cubes[id].image.replace('img/', '')}
-                        alt={id}
-                      />
-                    ) : (
-                      'Other'
-                    )}
-                  </button>
-                  );
-                })}
-                <button
-                  title='No cube — no flat ATK, no elemental damage, no effect'
-                  className={slot.cubeId === 'none' ? 'on' : ''}
-                  onClick={() => setSlot(i, { cubeId: 'none' })}
-                >
-                  None
-                </button>
-              </div>
-              {slot.cubeId !== 'none' && (
-                <div className='pills small'>
-                  {CUBE_LEVELS.map((l) => (
-                    <button
-                      key={l}
-                      className={
-                        !slot.cubeCustom && slot.cubeLevel === l ? 'on' : ''
-                      }
-                      onClick={() =>
-                        setSlot(i, { cubeLevel: l, cubeCustom: false })
-                      }
-                    >
-                      L{l}
-                    </button>
-                  ))}
-                  <button
-                    title='custom cube level'
-                    className={slot.cubeCustom ? 'on' : ''}
-                    onClick={() => setSlot(i, { cubeCustom: !slot.cubeCustom })}
-                  >
-                    …
-                  </button>
-                  {slot.cubeCustom && (
-                    <input
-                      className='num'
-                      value={slot.cubeLevel}
-                      onChange={(e) =>
-                        setSlot(i, { cubeLevel: Number(e.target.value) || 1 })
-                      }
-                    />
-                  )}
-                </div>
-              )}
-              {OL_UI_ENABLED && (
-              <div className='ol'>
-                <div className='ol-base'>
-                  <label>
-                    ELE
-                    <input
-                      className='num'
-                      value={slot.olElem}
-                      placeholder='%'
-                      onChange={(e) => setSlot(i, { olElem: e.target.value })}
-                    />
-                  </label>
-                  <label>
-                    ATK
-                    <input
-                      className='num'
-                      value={slot.olAtk}
-                      placeholder='%'
-                      onChange={(e) => setSlot(i, { olAtk: e.target.value })}
-                    />
-                  </label>
-                </div>
-                {slot.olExtra.map((line, li) => (
-                  <div className='ol-line' key={li}>
-                    <select
-                      value={line.type}
-                      onChange={(e) =>
-                        setSlot(i, {
-                          olExtra: slot.olExtra.map((l, j) =>
-                            j === li ? { ...l, type: e.target.value } : l,
-                          ),
-                        })
-                      }
-                    >
-                      {OL_LINE_TYPES.map((t) => (
-                        <option key={t.key} value={t.key}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      className='num'
-                      value={line.value}
-                      placeholder='%'
-                      onChange={(e) =>
-                        setSlot(i, {
-                          olExtra: slot.olExtra.map((l, j) =>
-                            j === li ? { ...l, value: e.target.value } : l,
-                          ),
-                        })
-                      }
-                    />
-                    <button
-                      className='ol-rm'
-                      title='remove line'
-                      onClick={() =>
-                        setSlot(i, {
-                          olExtra: slot.olExtra.filter((_, j) => j !== li),
-                        })
-                      }
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <button
-                  className='ol-add'
-                  onClick={() =>
-                    setSlot(i, {
-                      olExtra: [...slot.olExtra, { type: 'ammo', value: '' }],
-                    })
-                  }
-                >
-                  + OL line
-                </button>
-              </div>
-              )}
-            </div>
-          );
-        })}
+        {slots.map((slot, i) => (
+          <Fragment key={i}>
+            {renderCard(slot, (p) => setSlot(i, p), `slot ${i + 1}`)}
+          </Fragment>
+        ))}
       </section>
 
       {OL_UI_ENABLED && (

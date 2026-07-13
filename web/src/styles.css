@@ -192,11 +192,13 @@ input.num {
 .calc-result table { width: 100%; }
 .calc-result td { padding: 6px 10px; }
 .calc-result tr.hl td { background: rgba(91, 157, 255, 0.12); }
-.dps-group {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  padding: 6px 0; border-top: 1px solid var(--border);
+.dps-group-block { margin: 6px 0 14px; }
+.dps-group-head { display: flex; align-items: center; gap: 12px; }
+.dps-group-head .card-group-label { border-top: 0; margin: 0; padding: 0; }
+.dps-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 210px));
+  gap: 12px; margin-top: 6px;
 }
-.dps-group .picker { min-width: 180px; }
 
 /* best-OL calculator */
 .ol-calc { margin-top: 16px; }
