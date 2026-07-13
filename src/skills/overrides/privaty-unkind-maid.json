@@ -1,0 +1,21 @@
+{
+  "note": "B-tier triage (2026-07-13). S1's 'hitting the target with 30 pellet(s): 202.84% to 2 nearest enemies' was skipped (pellet phrasing) -> hitCount 30 (SG pellets count via hitsPerShot). S2 per-shot reload/ATK stack bits stay parser-side.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 202.84
+        }
+      ]
+    }
+  ]
+}

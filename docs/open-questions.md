@@ -1,75 +1,122 @@
-# Open mechanics questions (for user research)
+# Open mechanics questions
 
-Running record of unresolved game-mechanics questions that block sim accuracy.
-Add entries as they come up; strike through when answered (record the answer inline).
+Running record of game-mechanics questions affecting sim accuracy, reorganized 2026-07-13.
+Unanswered items are what's left to research; answered items keep their resolution and where
+it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flagged for review).
 
-## Q1 — the ×0.59 proc factor (2026-07-12)
-Privaty:T's S2 procs (last-bullet 256.17% + Designated 1687%) scaled by ×0.59 land her at
-1091M vs 1104M real (T4); Liberalio's S1 procs (202.5%/core-hit) scaled by the same ×0.59 land
-1141M vs 1142M real (T1). SWHA's dwarves needed the same factor until the real mechanism was
-found (sequential-AD dilution). BUT helm's 178.98% and anis-star's 120.13% full-charge procs
-validate at FULL value — so it is not a universal "additional damage" rule.
-0.59 ≈ 1/1.7 ≈ losing the +50% FB + +30% range major bucket.
-**Question: do proc hits like Privaty's last-bullet and Liberalio's core-hit additional damage
-receive the +50% full-burst damage bonus and the +30% full-range bonus? What distinguishes them
-from helm/anis procs (which clearly get full value)?**
-UPDATE (tier audit): Prydwen documents Ein's Near Feathers as "affected by Full Burst
-Multiplier (0.5×) but NOT Damage Distance (0.3×)" — so range-exemption is a real per-skill
-property. Losing only range = ÷1.2, not the needed ÷1.7, so the ×0.59 units would need to lose
-FB too. Prydwen may document this per unit — check privaty/liberalio reviews for wording.
+---
 
-## Q2 — MG spool vs Privaty ammo cut (crown-T4 0.71)
-Max Ammo ▼ clips the current belt (confirmed) and MG wind-up resets on reload (confirmed) —
-i.e. real mechanics are as-simmed or harsher, yet real Crown does BEST in the Privaty comp
-(373-375M vs 215-290M elsewhere, reproduced twice). Full spool persistence overshoots (1.36).
-**Question: does the MG wind-up ramp take ~3.75s (our cubic, calibrated to "8s to empty 300")
-or is it much faster in practice? Anything else Privaty grants MGs that would offset the cut?**
+## UNANSWERED
 
-## Q3 — CCW review (unit too new for Wayback)
-CCW reads 1.33 hot (T5, MG mode). Need her Prydwen review pasted to re-derive:
-whether the 833.79% core-strike rider receives the core bucket (we model core:true),
-her 900%/5s dot, the 6000% burst nuke interactions, and MG-mode cadence.
+### U1 — What rule separates the two proc classes? ⚑ (calibration applied; NARROWED 2026-07-13)
+UPDATE: per user, riders in general never get the +30% range bonus (now an engine-wide rule) and
+never core — so the open question narrows to: which riders ALSO lose the +50% FB bonus (noFb)?
+Current noFb set: privaty, liberalio, LM sequentials, SBS proc set, maiden. Full-FB set: helm,
+anis-star, neon-VE, ein feathers.
+Two empirically distinct classes of skill-proc damage:
+- **Full-majors class** (validates ~1.0 WITH the +50% FB and +30% range bonuses): on-hit
+  "additional damage" procs — helm 178.98%, anis-star 120.13%, neon-VE 437.98/262.79%.
+- **Exempt class** (validates ~1.0 only WITHOUT both majors, the ×0.59 factor): privaty
+  last-bullet 256.17% + Designated 1687%, liberalio 202.5% core-hit ×5, little-mermaid
+  sequentials (253.44%/s + 850% barrage), maiden 547.62% (partial — see U2).
+Per user decision the exemptions are calibrated in via noRange+noFb effect flags. The
+underlying rule is unknown (user: optimal range is unreliable to test — the practice boss
+moves fore/aft). Data point: Prydwen documents Ein's Near Feathers as FB-boosted but
+range-exempt, so per-skill exemptions officially exist.
 
-## Q4 — Maiden: Ice Rose without burst reads 0.60 cold
-With her burst never cast (real T2), sim gives 151M vs 251M real. Her non-burst kit
-(normals + MP auras) is undercounted ~40%. Candidates: RL cadence, the "MP replenished"
-ally aura value, unmodeled passive damage.
+### U2 — Maiden: Ice Rose residual (now 1.60 hot)
+547.62% procs on every full-charged normal attack (user-confirmed; shotFired + no core/range/FB
+— all rider exemptions applied). Still hot, and projExpl-on-RL-normals warmed her normals
+further (1.37 → 1.60). Whatever remains is value/cadence: an internal cooldown, a smaller
+effective value, or twin-rocket semantics. Probe run F reads her cleanly (no burst).
 
-## Q5 — mild systematic edges (park until majors are done)
-Mast:RM 0.84-0.86 (both fights, never-bursting B2) · Neon:VE 0.87 · SBS 1.13 ·
-Little Mermaid 1.15/1.02 · Nayuta 1.13.
+### U3 — CCW residual (1.32 → 1.18 after the universal rider-range rule) — mostly resolved
+User's ".59-family" hunch confirmed: her riders losing the range bonus took her to 1.18. The
+last ~18% may be the 833.79% core-strike bucket or the 900%/5s cadence; park unless a probe
+run says otherwise.
 
-## Q6 — "total ammo expended by allies" triggers + sequential value reading (Little Mermaid)
-LM's 37%-gauge-per-400-ammo and Bubble-Barrage-per-500-ammo count TEAM ammo (MG comps hit the
-threshold every ~3s). Engine models them as her own hits (5-8x undercount). But per-hit ×10
-barrage at true cadence would overshoot her badly (→~1.36) — unless "Deals 85% ... attacks
-sequentially for 10 time(s)" is a SPLIT TOTAL vs single target for HER (while Cinderella's
-burst sequential is confirmed per-hit ×10). **Question: vs one boss, does LM's Bubble Barrage
-deal 85%×10 or 85% total? Same for her 63.36%×4/s full-burst attack?**
+### ~~U4~~ — ADOPTED 2026-07-13: projExpl DOES buff regular RL normals
+User's masking hypothesis confirmed empirically: with projExplOnRlNormals ON (now default) AND
+the universal rider-range exemption, anis-star and RRH stay centered (their projectile riders
+lose range while their RL normals gain projExpl — the two errors had been cancelling). SBS
+needed her proc set moved to the noFb class (1.30 → 1.14), consistent with U1's taxonomy.
 
-## Q7 — RESOLVED: Nayuta lands 1.03 (T5)
-Per-Prydwen model (530.46%/shot stage rider = 150 full-screen + 380.46 stage stacking,
-ramp-averaged stack gates) + the SR bolt-recovery cycle (1.8s charge → 2.3s) = ratio 1.03.
-Third independent confirmation of the +0.5s SR recovery (helm, velvet, nayuta swap).
+### ~~U5~~ — ANSWERED 2026-07-13: MG rounds never miss — only core-hit vs body-hit
+User: there are no misses. So the implemented estimates are the right mechanism family:
+wind-up rounds (first 18, before the 2-frame ladder portion) land on BODY not core, and MG
+normals get no range bonus. Both stand as implemented; exact wind-up core-rate is an estimate ⚑.
 
-## Q8 — which SRs carry the +0.5s bolt recovery?
-Confirmed needed: helm, velvet (DB 60f = charge only), nayuta's 1.8s swap. NOT needed: SWHA
-(kit-fixed 1.2s, validated 1.07-1.15), liberalio (DB 90f already ≈ 1.0s charge + recovery,
-validated ~1.0). Unknown: alice (listed 1.5s charge, DB 90f), red-hood, maxwell, other SRs.
-**Question: is the recovery universal (and some DB chargeFrames already bake it in), or
-kit-dependent? A controlled alice/red-hood run would settle their cycle.**
+### U6 — Fight-level warm spots (largely dissolved by the 2026-07-13 rules)
+Clarified: "T2-style" meant the specific T2 SAMPLE run read uniformly warm vs the same units
+in other fights — sample variance or comp-specific modeling, not an archetype. After the
+rider-range + projExpl + MG rules, the per-fight spreads mostly closed (board 0.89-1.18
+except maiden). Revisit only if probe runs reopen it.
 
-## Q9 — Prydwen contradicts our projectile-bucket rule
-Prydwen (Emma:TU review): Projectile Explosion DMG "affects Explosive types of damage, such as
-RRH's Attachment AND REGULAR RL ATTACKS ... functions as ATK DMG but only affects the base
-multiplier itself". Our validated rule (user-provided, RRH share-matched): projectile bucket is
-its own multiplier on FLAVORED hits only, RL normals never benefit. Keeping our rule; flag for
-adjudication — if regular RL normals do get projExpl on the base multiplier, Anis:Star/SBS/RL
-units gain a small bucket from projExpl team buffs (Mint duet, Emma:TU, Anis:Star's own aura).
+### U7 — Unvalidated new models → PROBE PLAN GENERATED (docs/probe-runs.md)
+9 runs (A-I) covering 27 probe units with validated anchors in every run, honoring the paired
+comps (mint+prika duet, emma+eunhwa duo, tia→naga shielder, rouge→cindy, trina→elec).
 
-## Q10 — pierceDamagePct is inert but shouldn't be for pierce-tagged units
-DKW review: Pierce Damage "empowers any attacks tagged with Pierce (regardless of whether
-there is any surface to pierce)" — i.e. a dmgUp-bucket buff for units WITH pierce (red-hood
-permanent, alice >80% HP, grave, SWHA during full charge). Engine treats it as inert, which
-under-models zwei-T / d-killer-wife / mint-duet support value for pierce carries.
-Needs: per-unit hasPierce tracking + pierceDamagePct in the dmgUp bucket for their hits.
+---
+
+## ANSWERED
+
+### A1 (Q2) — MG wind-up & the Privaty ammo-cut paradox — RESOLVED 2026-07-13
+(a) Wind-up is skipped when total reload-speed buffs exceed 100% at reload (the reload still
+happens, just fast) — implemented; crown-under-Privaty went 0.71 → 1.00. (b) The 3.75s cubic
+wind-up was stale community lore: the user measured the exact frame ladder
+(docs/nikke_mg_windup_model.md — 35 rounds / 142 frames, then 60/s; hard reset per
+reload/stun, no partial retention) — implemented verbatim as MG_RAMP_INTERVALS; the
+mgWindupSec/mgWindupExp knobs and A/B harness were removed. Also: Max Ammo ▼ clips the
+current belt; max-ammo sources stack ADDITIVELY (important for future OL ammo lines).
+
+### A2 (Q4) — Maiden 547.62% trigger — ANSWERED 2026-07-13
+Procs on every normal attack where she full charged = every shot under sim conditions.
+Implemented as shotFired (twin rockets are one attack). Residual → U2.
+
+### A3 (Q5) — Mast:RM split readings — RESOLVED 2026-07-13
+Correction from user: she WAS bursting (leftmost B2). Two fixes: Hangover stun re-gated from
+every-3rd-global-FB-end to every 3rd of HER OWN bursts (the sim was stunning her sober), plus
+the corrected MG wind-up. Now 1.03/1.10.
+
+### A4 (Q6) — Little Mermaid Bubble Barrage — ANSWERED 2026-07-13
+Per-hit confirmed: barrage 85%×10 = 850%, FB attack 63.36%×4; this damage never cores.
+Driven by the new teamAmmo trigger (total ally ammo consumed; infinite ammo doesn't count —
+engine's consumption path matches the in-game rule naturally). With the U1 exemption: 1.03-1.07.
+
+### A5 (Q7) — Nayuta — RESOLVED (1.03 in T5)
+530.46%/shot stage rider (150 full-screen + 380.46 stage extra DO stack), ramp-averaged
+Memory-Absorption gates, 2.3s SR-mode cycle (bolt recovery).
+
+### A6 (Q8) — SR bolt recovery — ANSWERED 2026-07-13
+All standard SRs pause ~0.5s after each full-charge shot. Only exception: weapon-swap states —
+which covers Red Hood's own post-B3 10s window exactly (her Red Wolf swap), plus SWHA Fully
+Active and Nayuta SR mode. Units whose DB chargeFrames already bake the cycle in (SWHA
+kit-fixed 1.2s, liberalio 90f) are exempt via charFixes.noBoltRecovery. Engine-wide
+(SR_BOLT_RECOVERY_FRAMES = 30).
+
+### A7 (Q10) — Pierce Damage ▲ — ANSWERED 2026-07-13
+Boosts pierce-TAGGED units' hits regardless of pierce surfaces existing. Only kit-confirmed
+pierce qualifies: red-hood permanent (hasPierce: true), CCW Snipe mode only (pierceModes),
+base Cinderella none (was wrongly assumed). Implemented: hasPierce/pierceModes on OverrideFile;
+pierceDamagePct joins the Damage Up bucket for tagged units.
+
+### A8 (Q3) — CCW review — PROVIDED 2026-07-13
+User supplied the full review; mechanics reconciled (334.2%/s basic verified, swap semantics,
+nuke lands on FB-enter-after-her-burst which matches engine ordering, pierce Snipe-only).
+Residual heat → U3.
+
+### A9 (Q11) — MG class heat after the measured ladder — CALIBRATED 2026-07-13 ⚑
+User estimates implemented (confirmation ask in U5): wind-up rounds before the 2-frame ladder
+portion don't core; MG normals get no range bonus. MG class centered (crown 1.18 → 1.04 avg).
+
+### A10 — Resolved during the original validation passes (2026-07-12)
+- Distributed damage deals the same TOTAL vs 1 target as vs many — never model a split.
+- Frame-0 rule: all full-burst buffs apply before any burst damage — burst nukes get the +50%
+  multiplier, FB-entry auras, and same-cast stage buffs (engine reordered; independently
+  confirmed by Prydwen's liberalio nuke math and Ein's S1 note). Fixed cinderella 0.55 → 1.09.
+- Sustained/True/Sequential Damage ▲ gate on hit flavor, not globally.
+- Cinderella is genuinely a Defender (DB correct); only her normal attacks core.
+- The advantaged-Anis anomaly was a loadout-basis artifact; the elemental bucket is fine.
+- Collection-item / Helm-burst charge buffs multiply BASE charge damage (chargeDamageMultPct).
+- Scope-lock validation basis: no cube, no doll, OL0, 3★ core 7, sync 400, 10/10/10, treasure
+  on, partless boss, 100% core exposure, full auto.

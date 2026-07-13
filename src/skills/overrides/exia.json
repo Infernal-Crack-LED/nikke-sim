@@ -1,0 +1,89 @@
+{
+  "note": "TREASURE KIT (user-provided screenshot 2026-07-13; absent from synergy API/DB \u2014 override replaces all slots; base SR row matches, universal bolt recovery applies). Bossing A. S2 (Phase 1): Collect Hacking Code \u2014 self ATK 28% x5 stacks/5s per landed full charge (hitCount 1, engine stacking; at ~2s cycle holds ~2-3 stacks, cap on burst windows); on last round: Electric allies ATK 5.8% of caster x5/15s (casterAtkPct stacking). S1 (Phase 3): enemy ATK/DEF down inert; FB start self reload speed +95%/10s. Burst (Phase 2, 20s): 122.32% to 10 highest-DEF enemies (single boss = one hit) + DEF down inert; when Hacking Code fully stacked: +122.32% additional AND Damage Taken \u25b2 18.04%/10s on the boss (stacks usually full by burst time -> modeled unconditional, slight optimism early).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 95,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 28,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Electric"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 5.8,
+          "durationSec": 15,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 122.32
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 122.32
+        },
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 18.04,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

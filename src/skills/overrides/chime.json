@@ -1,0 +1,42 @@
+{
+  "note": "B-tier triage (2026-07-13). 'The king' is ONE designated ally \u2014 the parser applied her casterAtk 46.46 / normalAttack 46.22 to ALL allies (5x over-buff) -> narrowed to alliesTopAtk 1 (the carry). Burst re-enter-stage-2 quirk unmodeled (warned).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 46.46
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 46.22,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

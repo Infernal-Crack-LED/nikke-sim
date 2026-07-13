@@ -796,18 +796,9 @@ export function App() {
   const onShareImage = async () => {
     const blob = await buildShareImage();
     if (!blob) return;
-    const file = new File([blob], 'nikke-team.png', { type: 'image/png' });
+    // Copy the PNG straight to the clipboard (Chromium/Safari). Falls back to a
+    // download where the async clipboard image API isn't available (e.g. Firefox).
     const nav = navigator as any;
-    // native share sheet (mobile / supported desktop) — best for real sharing
-    if (nav.canShare?.({ files: [file] })) {
-      try {
-        await nav.share({ files: [file], title: 'NIKKE Solo Raid Sim' });
-        return;
-      } catch {
-        return; // user cancelled
-      }
-    }
-    // else copy the image to the clipboard, falling back to a download
     try {
       if (nav.clipboard?.write && (window as any).ClipboardItem) {
         await nav.clipboard.write([
@@ -818,7 +809,7 @@ export function App() {
         return;
       }
     } catch {
-      /* clipboard blocked — download instead */
+      /* clipboard image write blocked/unsupported — download instead */
     }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -998,9 +989,9 @@ export function App() {
               className='share-btn'
               onClick={onShareImage}
               disabled={!r}
-              title='share or save a summary image of the results'
+              title='copy a summary image of the results to your clipboard'
             >
-              {imaged ? '✓ Image' : '🖼 Share image'}
+              {imaged ? '✓ Copied' : '🖼 Copy image'}
             </button>
           </div>
         </div>

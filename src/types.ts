@@ -60,4 +60,6 @@ export interface SimConfig {
   coreHitRate: number;      // 0..1, default 0
   rangeBonus: boolean;      // +0.3 major modifier
   durationSec: number;      // 180
+  // --- experimental / A-B knobs (undefined = current default behaviour) ---
+  projExplOnRlNormals?: boolean; // U4: RL normals get projExpl in Damage Up (default ON per user, 2026-07-13)
 }

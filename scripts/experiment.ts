@@ -254,3 +254,26 @@ report(t4, 'privaty no-256-proc', {
     return o;
   },
 });
+
+
+// ---- Q1 calibration: proc range/FB exemptions ----
+const t5c = COMPS.find(c => c.name.startsWith('T5'));
+const libPatch = (noFb) => (o) => {
+  for (const b of o.skill1 ?? []) for (const e of b.effects) {
+    if (e.kind === 'flatDamage' && e.atkPct === 202.5) { e.noRange = true; if (noFb) e.noFb = true; }
+  }
+  return o;
+};
+const privPatch = (noFb) => (o) => {
+  for (const b of o.skill2 ?? []) for (const e of b.effects) {
+    if (e.kind === 'flatDamage' || e.kind === 'dot') { e.noRange = true; if (noFb) e.noFb = true; }
+  }
+  return o;
+};
+report(t1, 'Q1 lib noRange', { liberalio: libPatch(false) });
+report(t1, 'Q1 lib noRange+noFb', { liberalio: libPatch(true) });
+report(t5c, 'Q1 lib noRange+noFb (T5)', { liberalio: libPatch(true) });
+report(t4, 'Q1 priv noRange', { privaty: privPatch(false) });
+report(t4, 'Q1 priv noRange+noFb', { privaty: privPatch(true) });
+
+

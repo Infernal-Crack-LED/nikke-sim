@@ -1,0 +1,37 @@
+{
+  "note": "B-tier triage (2026-07-13). S2's 'after firing 300 times: 167.45% to all enemies' was skipped -> hitCount 300 (her twin-rocket hits count 2/shot, so ~every 150 shots). Rest parses (burst 2439.36 distributed + 792 nukes).",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 300
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 167.45
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 6.16
+        }
+      ]
+    }
+  ]
+}

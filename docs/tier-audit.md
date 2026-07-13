@@ -43,7 +43,7 @@ Slug notes: prydwen `siren` = our `little-mermaid`; prydwen `helm-treasure`/`pri
 - [x] helm-treasure (our `helm`) — FIXED this session (charge cycle 90f → 0.92-1.01)
 - [x] liberalio — FIXED (202.5%; 1.16 residual, open Q1)
 - [x] milk-blooming-bunny — FIXED (auto/manual modes)
-- [x] neon-vision-eye — 0.84-0.87 (mild cold, open Q5)
+- [x] neon-vision-eye — FIXED (Super Firepower exact) → 1.02
 - [x] privaty-treasure (our `privaty`) — 1.29→ open Q1 (×0.59 proc factor)
 - [x] scarlet-black-shadow — 1.13 (mild, open Q5)
 - [x] snow-white-heavy-arms — FIXED (sequential AD dilution → 1.07/1.15)
@@ -68,9 +68,9 @@ Slug notes: prydwen `siren` = our `little-mermaid`; prydwen `helm-treasure`/`pri
 - [x] sparkling-summer-anis — audited, no change
 
 ### A
-- [x] exia-treasure — DATA GAP (kit unavailable)
+- [x] exia-treasure — MODELED (user screenshot)
 - [x] label — skipped (Bossing B)
-- [x] miranda-treasure — DATA GAP (kit unavailable)
+- [x] miranda-treasure — MODELED (user screenshot)
 - [x] soline-frost-ticket — audited, approximation noted
 - [x] tia — FIXED (shield-cycle CDR/AD)
 - [x] zwei-treasure — audited (pierce gap → Q10)
@@ -330,3 +330,108 @@ Every SSS/SS/S unit and all reachable A units audited. Outstanding: miranda-trea
 exia-treasure (kit data unavailable in synergy API/DB — need blablalink or manual entry),
 mari (blocked on Q10 pierce support). 52 overrides all valid; 7-fight regression unchanged;
 site rebuilt.
+
+### miranda-treasure (our `miranda`) — DATA GAP CLOSED (2026-07-13)
+User provided the treasure kit screenshot. Full-slot override: S1 self ATK 50.06 per 30 hits,
+S2 FB crit package incl. the famous 85.42% crit-snapshot to the top-ATK carry (1 round ≈ 1.5s),
+burst ATK 40.4 + CD 56.23 to top-2 allies. Base weapon row already matched (SMG 120, CD 20s).
+
+### exia-treasure (our `exia`) — DATA GAP CLOSED (2026-07-13)
+User provided the treasure kit screenshot. Full-slot override: Hacking Code ATK stacks (28x5),
+last-bullet Electric-ally casterAtk stacks, burst 2x122.32% + 18.04% taken debuff. Standard SR
+→ universal bolt recovery applies.
+
+
+## Mechanics-calibration leg (2026-07-13, post-handoff)
+Implemented from the user's answers: Q1 proc exemptions CALIBRATED (liberalio 1.00/1.10,
+privaty 0.97 — noRange+noFb on their procs, flagged for review); Q5 mast stun re-gated to her
+own casts (1.12/1.06); Q6 teamAmmo trigger + LM per-hit barrage with exemptions (1.03-1.07);
+Q8 universal SR bolt recovery (swap-exempt; helm/velvet charFixes retired, SWHA/liberalio
+noBoltRecovery). Miranda:T + Exia:T modeled from user screenshots (data gaps closed).
+Q2 crown-under-privaty RESOLVED by the spool-skip (0.71→1.00); windup duration calibration
+pending user's in-game measurement (mgWindupSec knob + scripts/mg-windup-ab.ts ready).
+Q4 maiden unresolved (per-shot 1.92 vs burst-gated 0.60 — proc semantics question logged).
+CCW 1.33 blocked on Q2 windup. Current board: 30/35 readings within 0.94-1.16.
+
+### neon-vision-eye — FIXED (2026-07-13; queue-marking oversight corrected)
+Bossing SS. Was pre-checked as "validated 0.87, parked" and never got the Prydwen pass — user
+caught it. Super Firepower now exact: gauge starts full, Super on her casts 1/4/7 (new
+everyN+everyNOffset gate); each 10s window grants all THREE riders (+262.79%/shot extra,
+ATK +35.05, AD +45.03 — the latter two were entirely unmodeled; the first was a hitCount:12
+smear). 0.87 → 1.02. Also reinforces the proc-class pattern: her on-hit "additional damage"
+keeps full majors (helm/anis class), unlike the Q1-exempt sequential/last-bullet class.
+
+
+## Rider-rules leg (2026-07-13, second pass)
+User rulings implemented: (1) riders NEVER get the +30% range bonus — engine-wide for all
+flatDamage/dot/storedHit/extraHit/stackedNuke damage; (2) projExpl DOES buff regular RL
+normals (Damage Up bucket) — default ON, masking hypothesis confirmed (anis/RRH stable);
+(3) MG estimates stand (no misses — core-or-body confirmed). Fallout fixed: SBS proc set →
+noFb class (1.30→1.14), mihara DoT stack average refit 10.8→12 (0.91→0.93), CCW 1.32→1.18.
+Maiden worsened to 1.60 (U2 sharpened). Board: 0.89-1.18 everywhere except maiden.
+Probe plan for all unvalidated overrides: docs/probe-runs.md (runs A-I).
+
+## Roster prune + rules addendum (2026-07-13)
+- burstFirst effect: Prika (duet) always takes the FIRST B2, Mint every one after — slot-order
+  independent (user rule; engine burst-priority override, same family as Maiden's mpPriority).
+- Red Hood Red Wolf window: infinite ammo (no reloads) + ammo restored at window end.
+- Roster prune: Prydwen Bossing C/D/E/F units dropped from data/characters.json and from all
+  future syncs (data/bossing-tiers.json consumed by sync.ts; scripts/fetch-bossing-tiers.py
+  refreshes it, scripts/apply-tier-prune.py applies). Unknown ratings kept.
+
+## Straggler pass (2026-07-13) — bossing-A units the story-tier queue missed
+(Found via the DB's prydwen_tiers after the roster prune; the original queue used Story tiers
+as ordering proxy and missed low-story/high-bossing units.)
+
+### helm-aquamarine — AUDITED, no change (clean parse: escalating CDR, bossElement gates)
+### volume — AUDITED, no change (clean parse: escalating CDR + crit packages)
+### arcana — AUDITED, no change (parses; unsupported S2-cooldown line is moot in the
+event-triggered model; large casterAtk self-chains kept as parsed)
+### isabel — AUDITED, no change (Marked-Target burst chain parses cumulatively incl. the
+negative fullBurstExtend -5s quirk; phase repeats warned)
+### eve — FIXED (override): Exospine system rebuilt — Unstable Energy 720% per ~59 hits
+(44 crits at 75% crit rate), sequential-flavored (noFb ⚑); Mk2 = sequentialDamagePct +100 +
+casterAtk +50 for 10s; Electric-gated taken debuff via bossElement. Review reconciliation
+pending (wayback rate-limited).
+### guillotine-winter-slayer — FIXED (override): Hero Level 11 steady-state auras (Water-ally
+elemAdv 12.76 + casterAtk 10.01), burst dot 229.57%/s x10s (20.87 x level); EXP ATK stacks
+stay parser-side (1.81 x100).
+### soda-twinkling-bunny — FIXED (override): Golden Chip economy time-averaged — +3s FB
+extension per rotation ⚑, ~100% per FB normal cast proc ⚑, 628.7% burst nuke, first-burst-only
+ATK 65.25 (everyN 99 offset 1). Chip-count dynamics flagged as approximation.
+
+## B-tier triage (2026-07-13) — parse-quality sweep, fixes only where damage-relevant
+### batch 1: dolla ✓clean · alice-WB ✓serviceable (tiny stack pieces warned) · crust
+✓serviceable (Maillard cycle partial, buff-bot) · delta-NT ✓serviceable (formation defensive
+bits skipped) · a2 — bounded gap (Mode B berserk ramp parsed as flat base values, warned) ·
+**chime FIXED** ("the king" single-ally buffs were hitting ALL allies, 5x over → alliesTopAtk 1)
+· **2b FIXED** (per-300-hits 167.45% AoE proc was skipped → hitCount 300)
+### batch 2: dolla ✓clean (escalating) · julia ✓serviceable (crescendo 2nd nuke skipped,
+warned) · mana ✓serviceable (Metal system partial, big pieces in) · leona ✓bounded (pellet
+mechanics unmodeled) · label ✓bounded (defensive/revive kit) · guilty ✓bounded (ATK-duplicate
+stacks unmodeled) · **dorothy FIXED** (S2 216% distributed = 20s-cooldown cycle, was one-shot
+at t0; burst compresses to 2s for 10s) · **laplace FIXED** (burst beam swap had damagePct 0 —
+rebuilt: 1455.72% first hit + 22.2%/pull true-damage beam + 11.9% rider)
+### batch 3+4: marciana/rapunzel ✓clean-by-vacancy (pure heal kits) · noise/mica-SB/rem/
+sakura/viper/yulha ✓serviceable (defensive gaps are v1-by-design) · **phantom FIXED** (Calling
+Card AD 75.17 → passive, always-marked vs single boss) · **privaty-UM FIXED** (per-30-pellet
+202.84% proc → hitCount 30) · **sakura-BiS FIXED** (S2 sustained field was one-shot at t0 →
+permanent 192%/s uptime-avg ⚑) · **vesti-TU FIXED** (burst 492.3% true nuke skipped — stacked
+"Burst Skill true" prefixes defeat the parser regex — restated)
+
+B-TIER SWEEP COMPLETE: all 26 examined; 8 fixed (chime, 2b, dorothy, laplace, phantom,
+privaty-UM, sakura-BiS, vesti-TU), rest clean/serviceable/bounded. Every surviving roster
+unit (101) has now had at least a parse-level examination; everything Bossing A+ has had the
+full Prydwen treatment.
+
+## Straggler review reconciliation (slow-fetch landed, 2026-07-13)
+- eve: hitCount-59 cadence confirmed exactly (AR 12RPS, 4.9s/proc); ADDED the missed
+  3-per-10th-hit ammo refund; Mk2 doubling via sequentialDamagePct noted ~20% conservative ⚑.
+- soda-TB: chip economy confirmed; ADDED her padded reload (+49 frames, review-measured) via
+  new charFixes.reloadFrames (182).
+- guillotine-WS: AR confirmed; ADDED max-level reload loop (10.26% per ~30 core hits —
+  review: "potentially infinite shooting").
+- arcana: UPGRADED from no-change to FIXED — her 180%/180% buffs are Wheel-of-Fortune-gated
+  (every 2nd FB-end, Electric B3 targets); parser fired them ungated to everyone every FB end.
+  Modeled with everyN 2 offset 1.
+- isabel/volume/aqua-marine-helm snapshots were profile-only stubs; parse-level audit stands.

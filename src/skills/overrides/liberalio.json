@@ -1,5 +1,5 @@
 {
-  "note": "Raging/Gentle Current mode: Raging Current (Attack Damage +231% continuously) triggers on a full charge against the STAGE TARGET; Gentle Current (fixes charge at 1s) triggers on a full charge against a non-stage-target Rapture. In a solo raid there is a single boss = the stage target, so every full charge maintains Raging Current and Gentle Current never fires — S2 is modeled as a permanent self Attack Damage 231% (passive) and the Gentle Current branch is dropped. The charge-speed increase/decrease immunity is inert/defensive and skipped. S1: ATK 160%/3s on Full Burst entry (self); Attack Damage 20.83%/60s from core full-charges, modeled as always-up via shotFired (assumes she lands core hits, an SR steady-state); charge-speed 12.74% to the lowest-ATK B3 ally, approximated by the engine as top-3-ATK allies; and 40.5% additional damage per full charge that 'Activates 5 times' = 5 hits per full charge -> 202.5% flatDamage per shot (user-confirmed reading; validated vs a real scope-lock run, single-hit read left her 0.70 cold). Burst (self Attack Damage 50%/10s + 925% nuke) is faithful in the parser, so the burst slot is omitted. FIXED (review): the S1 charge-speed buff targets the 1 Burst-3 ally with the LOWEST final ATK (was mis-parsed as top-3-ATK allies); excludeSelf reflects her S2 immunity to charge-speed effects. Remaining known gaps: her charge-speed immunity vs OTHER sources is not enforced (rarely relevant), the S1 20.83% Attack Damage rider is core-hit-gated via requiresCore (inert at core-rate 0; at any core exposure its 60s duration keeps it up, matching in-game).",
+  "note": "Raging/Gentle Current mode: Raging Current (Attack Damage +231% continuously) triggers on a full charge against the STAGE TARGET; Gentle Current (fixes charge at 1s) triggers on a full charge against a non-stage-target Rapture. In a solo raid there is a single boss = the stage target, so every full charge maintains Raging Current and Gentle Current never fires — S2 is modeled as a permanent self Attack Damage 231% (passive) and the Gentle Current branch is dropped. The charge-speed increase/decrease immunity is inert/defensive and skipped. S1: ATK 160%/3s on Full Burst entry (self); Attack Damage 20.83%/60s from core full-charges, modeled as always-up via shotFired (assumes she lands core hits, an SR steady-state); charge-speed 12.74% to the lowest-ATK B3 ally, approximated by the engine as top-3-ATK allies; and 40.5% additional damage per full charge that 'Activates 5 times' = 5 hits per full charge -> 202.5% flatDamage per shot (user-confirmed reading; validated vs a real scope-lock run, single-hit read left her 0.70 cold). Burst (self Attack Damage 50%/10s + 925% nuke) is faithful in the parser, so the burst slot is omitted. FIXED (review): the S1 charge-speed buff targets the 1 Burst-3 ally with the LOWEST final ATK (was mis-parsed as top-3-ATK allies); excludeSelf reflects her S2 immunity to charge-speed effects. Remaining known gaps: her charge-speed immunity vs OTHER sources is not enforced (rarely relevant), the S1 20.83% Attack Damage rider is core-hit-gated via requiresCore (inert at core-rate 0; at any core exposure its 60s duration keeps it up, matching in-game). Q8: charFixes.noBoltRecovery — her chargeFrames already reflect the full validated cycle (kit-fixed 1.2s / DB 90f). Q1 CALIBRATED (flag for manual review): her 202.5% core-hit procs are exempt from the +30% range and +50% full-burst majors — calibrated vs two real scope-lock runs (T1 1.16->1.00, T5 1.25->1.10); mechanism unconfirmed (user researching).",
   "skill1": [
     {
       "slot": "skill1",
@@ -47,7 +47,9 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 202.5
+          "atkPct": 202.5,
+          "noRange": true,
+          "noFb": true
         }
       ]
     },
@@ -89,5 +91,8 @@
         }
       ]
     }
-  ]
+  ],
+  "charFixes": {
+    "noBoltRecovery": true
+  }
 }

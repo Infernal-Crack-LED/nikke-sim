@@ -20,7 +20,7 @@ const STATS = new Set([
   'normalAttackPct', 'burstGenPct', 'hitRatePct', 'defPct',
 ]);
 const TRIGGERS = new Set([
-  'passive', 'burstCast', 'fullBurstEnter', 'fullBurstEnd', 'hitCount',
+  'passive', 'burstCast', 'fullBurstEnter', 'fullBurstEnd', 'hitCount', 'teamAmmo',
   'shotFired', 'lastBullet', 'stageEnter', 'bossElement',
 ]);
 const TARGETS = new Set([
@@ -28,7 +28,7 @@ const TARGETS = new Set([
   'alliesTopAtk', 'alliesLowestAtk', 'alliesOfElement', 'alliesOfClass',
 ]);
 const EFFECTS = new Set([
-  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'burstEligibility',
+  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'burstEligibility', 'burstFirst',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
   'instantReload', 'storedHit', 'stun', 'stackedNuke',
 ]);
@@ -65,7 +65,7 @@ function checkEffect(e: any, path: string, errors: string[]) {
 
 function validate(slug: string): boolean {
   const c: any = data.characters[slug];
-  if (!c) { console.log(`✗ ${slug}: unknown slug`); return false; }
+  if (!c) { console.log(`- ${slug}: not in roster (Bossing C-or-below prune) — override kept on disk, skipped`); return true; }
   const override = loadOverride(slug);
   if (!override) { console.log(`✗ ${slug}: no override file`); return false; }
 

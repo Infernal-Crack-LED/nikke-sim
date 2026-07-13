@@ -1,0 +1,38 @@
+{
+  "note": "B-tier triage (2026-07-13). Burst's '492.3% as Burst Skill true damage' was skipped (stacked 'Burst Skill true' prefixes defeat the parser regex) -> restated with flavor true so her trueDamagePct 60 buff applies. Missile Guide charge cycle + S2 per-shot pieces stay parser-side.",
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 60,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 492.3,
+          "flavor": "true"
+        }
+      ]
+    }
+  ]
+}

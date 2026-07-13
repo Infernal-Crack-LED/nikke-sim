@@ -104,7 +104,7 @@ for (let i = 0; i < argv.length; i++) {
   } else slugs.push(a.toLowerCase());
 }
 
-if (slugs.length !== 5) usage(`need exactly 5 nikkes, got ${slugs.length}`);
+if (slugs.length < 1 || slugs.length > 5) usage(`need 1-5 nikkes, got ${slugs.length}`);
 
 const chars = slugs.map((slug) => {
   const c = data.characters[slug];
@@ -123,7 +123,7 @@ const flexOk =
   counts.I >= 1 && counts.I <= 2 &&
   counts.II >= 1 && counts.II <= 2 &&
   counts.III >= 2 && counts.III <= 3 &&
-  counts.I + counts.II + counts.III + counts['Λ'] === 5;
+  counts.I + counts.II + counts.III + counts['Λ'] === slugs.length;
 const strictOk = counts.I >= 1 && counts.II >= 1 && counts.III >= 2;
 if (!(strictOk || counts['Λ'] > 0) || !flexOk) {
   console.error(
@@ -170,10 +170,11 @@ try {
 }
 
 function perSlot(raw: string | undefined, sep: string): (string | undefined)[] {
-  if (!raw) return [undefined, undefined, undefined, undefined, undefined];
+  const n = slugs.length;
+  if (!raw) return Array(n).fill(undefined);
   const parts = String(raw).split(sep).map((s) => s.trim());
-  if (parts.length === 1) return Array(5).fill(parts[0]);
-  if (parts.length !== 5) usage(`expected 1 or 5 ${sep}-separated entries, got ${parts.length}`);
+  if (parts.length === 1) return Array(n).fill(parts[0]);
+  if (parts.length !== n) usage(`expected 1 or ${n} ${sep}-separated entries, got ${parts.length}`);
   return parts.map((p) => (p === '' || p === '-' ? undefined : p));
 }
 

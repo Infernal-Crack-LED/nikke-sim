@@ -1,0 +1,109 @@
+{
+  "note": "TREASURE KIT (user-provided screenshot 2026-07-13; kit text absent from synergy API/DB \u2014 this override replaces all slots with the treasure kit; base weapon row matches). Bossing S buffer. S1 (Phase 3): per 30 of her normal attacks \u2014 Hit Rate buffs inert; SELF ATK 50.06%/5s at SMG cadence (~1.5s per 30 hits) = effectively permanent, modeled hitCount 30. S2 (Phase 2) on FB enter: allies Crit Damage 32.99%/10s; self Crit Rate 30.1 + Attack Damage 23.7/10s; 1 highest-ATK ally (except caster): Crit Rate 85.42% 'for 1 round' -> modeled as 1.5s (one SR carry shot; the famous Miranda crit-snapshot for RH/Alice). Burst (20s): 2 highest-ATK allies (except caster): ATK 40.4% + Crit Damage 56.23%/10s. alliesTopAtk cannot exclude caster in-engine; she is a low-ATK support so top-2 rarely includes her (noted).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 50.06,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 32.99,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 30.1,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 23.7,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 85.42,
+          "durationSec": 1.5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 40.4,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 56.23,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "note": "B-tier triage (2026-07-13). Burst 'Laplace Bazooka' swap parsed with damagePct 0 \u2014 rebuilt: First Damage 1455.72% on cast, then a 10s beam at 22.2%/pull whose normal damage is TRUE damage (trueNormals; her S1 true-damage buffs apply), plus the parsed 11.9% true rider per hit. Beam cadence approximated at the engine's default 4 pulls/s (no beam weapon class). S2 parts-hit body transfer inert (partless boss).",
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1455.72,
+          "flavor": "true"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 22.2,
+          "durationSec": 10,
+          "trueNormals": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 11.9,
+          "flavor": "true"
+        }
+      ]
+    }
+  ]
+}

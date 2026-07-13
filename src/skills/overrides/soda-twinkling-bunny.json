@@ -1,0 +1,76 @@
+{
+  "note": "Tier audit straggler (Bossing A). Golden Chip economy time-averaged: starts at 50 chips, burst consumes 17, regen +1 per 3 FB normal casts (SG ~1.5/s) -> stays >=20 for the first ~2 bursts, >=10 into late fight. Stage effects 'trigger repeatedly' (cumulative): S2 stage-3 entry FB extension +2+3 -> flat +3s average per rotation ⚑ (early +5, late +2). Per-FB-normal-cast proc: Time Ext I+II are cumulative 52.04+85.02=137.06 early, 52.04 late -> averaged 100 per cast, fbGate inFb ⚑. Burst: 628.7% nuke always; the >=30-chip ATK 65.25/15s only realistically on the FIRST burst (everyN 99 offset 1 = once); hit-rate stage inert. REVIEW-RECONCILED: chip economy math confirmed (net-negative, starts 50, -17/burst, ~+15 per 2 rotations); first-burst-only >=30 gate and +3s avg extension stand. ADDED her padded reload animation: +49 frames on every reload (review-measured) -> charFixes.reloadFrames 182 (2.03s stated + 0.82s padding + cover delay).",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 100
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 628.7
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "everyN": 99,
+      "everyNOffset": 1,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 65.25,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "charFixes": {
+    "reloadFrames": 182
+  }
+}

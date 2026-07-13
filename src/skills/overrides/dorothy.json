@@ -1,0 +1,41 @@
+{
+  "note": "B-tier triage (2026-07-13). S2's 216% Distributed nuke is a ~20s-cooldown skill (parser fired it once at t0) -> periodic dot, interval 20s, whole fight. Her burst's 'Cooldown of Skill 2 \u25bc18s for 10s' -> an extra burstCast stream at 2s interval for 10s. S1 lastBullet CDR/parts parsed, kept parser-side. Brand accumulation unmodeled (warned).",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 216,
+          "durationSec": 99999,
+          "intervalSec": 20,
+          "flavor": "distributed"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 216,
+          "durationSec": 10,
+          "intervalSec": 2,
+          "flavor": "distributed"
+        }
+      ]
+    }
+  ]
+}

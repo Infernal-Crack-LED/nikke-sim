@@ -41,7 +41,8 @@ export type TriggerDef =
   | { kind: 'burstCast'; stage?: 1 | 2 | 3 } // when the owner casts their burst (optionally only at that stage — Λ kits)
   | { kind: 'fullBurstEnter' }              // when full burst begins
   | { kind: 'fullBurstEnd' }
-  | { kind: 'hitCount'; count: number }     // every N normal-attack hits by the owner
+  | { kind: 'hitCount'; count: number }
+  | { kind: 'teamAmmo'; count: number } // fires each time TOTAL ally ammo consumed crosses count (infinite-ammo shots don't consume)     // every N normal-attack hits by the owner
   | { kind: 'shotFired' }                   // every trigger pull by the owner
   | { kind: 'lastBullet' }                  // on the owner's last bullet / reload start
   | { kind: 'stageEnter'; stage: 1 | 2 | 3 } // when a stage-N burst is cast by anyone
@@ -73,12 +74,15 @@ export type EffectDef =
       core?: boolean; // direct core strike: receives the core bucket, scaled by core-rate
       crit?: boolean;    // this hit can crit (e.g. Ein's Near Feathers)
       noRange?: boolean; // excluded from the +30% full-range bonus (Prydwen-confirmed for Near Feathers)
+      noFb?: boolean;    // excluded from the +50% full-burst bonus (Q1-calibrated proc exemption)
     }
   | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
       atkPct: number;
       durationSec: number;
       intervalSec?: number;
+      noRange?: boolean;
+      noFb?: boolean;
       flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
     }
   | {
@@ -98,6 +102,7 @@ export type EffectDef =
       flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
     }
   | { kind: 'burstEligibility'; stage: 1 | 2 | 3 }            // unit may also burst at this stage (Rapi:RH Combat Assist)
+  | { kind: 'burstFirst' }                                    // takes the FIRST eligible burst of its stage regardless of slot order (Prika duet opener)
   | { kind: 'advantageVs'; element: string }                  // counts as elementally advantaged vs this boss element
   | { kind: 'burstCdr'; seconds: number; oncePerBattle?: boolean } // reduce targets' burst cooldowns
   | { kind: 'escalating'; steps: EffectDef[] }                // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
@@ -129,6 +134,9 @@ export interface Block {
   // effects apply only on every Nth activation of this block's trigger
   // (e.g. Mast's Hangover: every 3rd full-burst end)
   everyN?: number;
+  // phase for everyN: fire on activations ≡ offset (mod everyN), e.g. offset 1 + everyN 3
+  // fires on the 1st, 4th, 7th… activation (Neon:VE starts at full Firepower Gauge)
+  everyNOffset?: number;
   // core-hit gate: the block's in-game trigger needs a core hit, so it is
   // inert when the fight has no core exposure (e.g. Liberalio's 20.83% rider)
   requiresCore?: boolean;
@@ -143,4 +151,6 @@ export interface CharacterSkills {
   warnings: string[];
   source: 'parser' | 'override' | 'parser+override';
   modes?: string[]; // user-selectable kit modes declared by the override (first = default)
+  hasPierce?: boolean; // kit's attacks are Pierce-tagged → Pierce Damage ▲ feeds Damage Up
+  pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
 }

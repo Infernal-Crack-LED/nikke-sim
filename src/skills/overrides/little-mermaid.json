@@ -1,54 +1,107 @@
 {
-  "note": "Burst-I Wind supporter. skill1 overridden to recover the parser-dropped gauge fill: block1 'Focusing status / focuses fire' has no numeric effect and is skipped; block2 (team burst-CDR 7.48s on Full Burst end) and block3 (team Attack Damage 4% for 10s on Full Burst enter) are re-included verbatim; block4 'Fills Burst Gauge 37% each time allies expend 400 ammo' is a TEAM-ammo trigger with no engine equivalent, modeled conservatively as this unit's own hitCount 400 (she is an SMG, 1 hit/shot, so her hits == her ammo). Real team ammo hits 400 faster than she alone does, so this UNDERFILLS -- flagged; effect is mostly burst-cadence, not her own damage. skill2 overridden (parser skipped 3 of 4 blocks on unsupported triggers): block1 Bubble applies Damage Taken 5.05% to the boss continuously -> modeled as a passive enemy debuff; block2 Explosive Bubble (after 50 normals) REMOVES Bubble and re-applies the same 5.05% (plus a 3s stun) -- it relocates the debuff, it does NOT stack to 10.1%, so it is intentionally not added again (stun skipped, boss doesn't act); block3 'every 1s during Full Burst, 63.36% x4 to random enemies' = 253.44%/s modeled as a dot on Full Burst enter, interval 1s, duration 10s (one full-burst window); block4 Bubble Barrage '85% x10 each time allies expend 500 ammo' = 850%, modeled with the same self-ammo proxy as hitCount 500 (UNDERCOUNTS team ammo -- flagged). burst omitted: the parser's team Attack Damage 10.13% + 33.26% reload and self ATK 17.28%-of-caster blocks are already faithful.",
+  "note": "Burst-I Wind supporter. skill1 overridden to recover the parser-dropped gauge fill: block1 'Focusing status / focuses fire' has no numeric effect and is skipped; block2 (team burst-CDR 7.48s on Full Burst end) and block3 (team Attack Damage 4% for 10s on Full Burst enter) are re-included verbatim; block4 'Fills Burst Gauge 37% each time allies expend 400 ammo' is a TEAM-ammo trigger with no engine equivalent, modeled conservatively as this unit's own hitCount 400 (she is an SMG, 1 hit/shot, so her hits == her ammo). Real team ammo hits 400 faster than she alone does, so this UNDERFILLS -- flagged; effect is mostly burst-cadence, not her own damage. skill2 overridden (parser skipped 3 of 4 blocks on unsupported triggers): block1 Bubble applies Damage Taken 5.05% to the boss continuously -> modeled as a passive enemy debuff; block2 Explosive Bubble (after 50 normals) REMOVES Bubble and re-applies the same 5.05% (plus a 3s stun) -- it relocates the debuff, it does NOT stack to 10.1%, so it is intentionally not added again (stun skipped, boss doesn't act); block3 'every 1s during Full Burst, 63.36% x4 to random enemies' = 253.44%/s modeled as a dot on Full Burst enter, interval 1s, duration 10s (one full-burst window); block4 Bubble Barrage '85% x10 each time allies expend 500 ammo' = 850%, modeled with the same self-ammo proxy as hitCount 500 (UNDERCOUNTS team ammo -- flagged). burst omitted: the parser's team Attack Damage 10.13% + 33.26% reload and self ATK 17.28%-of-caster blocks are already faithful. Q6 UPDATE (2026-07-13): the 37% gauge fill (per 400) and Bubble Barrage 850% = 85x10 PER-HIT (user-confirmed) now fire on TEAM ammo consumed via the new teamAmmo trigger (was her own hits, a 5-8x undercount in MG comps). Barrage core:false (user-confirmed; flatDamage default). Q1-family CALIBRATION (flag for manual review): her sequential attacks (FB 253.44%/s dot + 850% barrage) exempted from range+FB majors like privaty/liberalio procs; lands T3/T6 near 1.0.",
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnd" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "burstCdr", "seconds": 7.48 }
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 4, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 4,
+          "durationSec": 10
+        }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 400 },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "teamAmmo",
+        "count": 400
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "fillGauge", "pct": 37 }
+        {
+          "kind": "fillGauge",
+          "pct": 37
+        }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": 5.05 }
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 5.05
+        }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "dot", "atkPct": 253.44, "durationSec": 10, "intervalSec": 1 }
+        {
+          "kind": "dot",
+          "atkPct": 253.44,
+          "durationSec": 10,
+          "intervalSec": 1,
+          "noRange": true,
+          "noFb": true
+        }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 500 },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "teamAmmo",
+        "count": 500
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "flatDamage", "atkPct": 850 }
+        {
+          "kind": "flatDamage",
+          "atkPct": 850,
+          "noRange": true,
+          "noFb": true
+        }
       ]
     }
   ]

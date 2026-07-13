@@ -1,5 +1,5 @@
 {
-  "note": "Treasure kit (synced from synergy entry 198 via the treasure remap). S1 (parser-kept): FB team buffs incl. Max Ammo -50.66% which accelerates everyone's last-bullet procs. S2 override: 256.17% + Damage Taken 10.01% on every own last bullet (parser-faithful, kept); the 1687% nuke only hits targets in Designated Target status (applied by her burst for 10s, every other rotation) -> modeled as a burst-cast dot ticking every ~3s x3 (her last-bullet cadence during FB with halved mag: ~30 rounds / 12 rps + ~1s reload). Burst (parser-kept + stat fix): Superior Elemental Code Attack Damage 130% = elemAdvantageDamagePct (damage-up only with elemental advantage), 1407.64% nuke; the 3s boss stun and ATK-down are irrelevant in v1 (boss never acts).",
+  "note": "Treasure kit (synced from synergy entry 198 via the treasure remap). S1 (parser-kept): FB team buffs incl. Max Ammo -50.66% which accelerates everyone's last-bullet procs. S2 override: 256.17% + Damage Taken 10.01% on every own last bullet (parser-faithful, kept); the 1687% nuke only hits targets in Designated Target status (applied by her burst for 10s, every other rotation) -> modeled as a burst-cast dot ticking every ~3s x3 (her last-bullet cadence during FB with halved mag: ~30 rounds / 12 rps + ~1s reload). Burst (parser-kept + stat fix): Superior Elemental Code Attack Damage 130% = elemAdvantageDamagePct (damage-up only with elemental advantage), 1407.64% nuke; the 3s boss stun and ATK-down are irrelevant in v1 (boss never acts). Q1 CALIBRATED (flag for manual review): the 256.17% last-bullet proc and the 1687% Designated hits are exempt from the +30% range and +50% full-burst majors — calibrated vs real T4 runs (1.29->0.97); mechanism unconfirmed (user researching).",
   "skill2": [
     {
       "slot": "skill2",
@@ -18,7 +18,9 @@
         },
         {
           "kind": "flatDamage",
-          "atkPct": 256.17
+          "atkPct": 256.17,
+          "noRange": true,
+          "noFb": true
         }
       ]
     },
@@ -35,7 +37,9 @@
           "kind": "dot",
           "atkPct": 1687,
           "durationSec": 10,
-          "intervalSec": 3
+          "intervalSec": 3,
+          "noRange": true,
+          "noFb": true
         }
       ]
     }
