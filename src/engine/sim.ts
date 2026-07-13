@@ -21,14 +21,55 @@ import type { Block, EffectDef, StatKey, TargetDef } from '../skills/types.js';
 const FPS = 60;
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
 const FULL_BURST_FRAMES = 10 * FPS;
+// Standard SRs pause ~0.5s (bolt cycle) between full-charge shots (user-validated on
+// helm/velvet/nayuta). Weapon-swap states are exempt (Red Hood's own B3 window, SWHA's
+// Fully Active, Nayuta's SR mode — all swaps), as are units whose DB chargeFrames already
+// include the recovery (charFixes.noBoltRecovery: SWHA, liberalio).
+const SR_BOLT_RECOVERY_FRAMES = 20;
 
 // Canon fire cadence per weapon type (doc values; per trigger pull).
-// MG's canon "60 rps" counts belt rounds (hits): pulls/s = 60 / hitsPerShot and
-// each pull consumes hitsPerShot ammo, which reproduces "8 s to empty 300 ammo".
+// MG's "60 rps" counts belt rounds (hits): pulls/s = 60 / hitsPerShot and each
+// pull consumes hitsPerShot ammo. MG wind-up follows the measured frame ladder
+// below (docs/nikke_mg_windup_model.md), not a fitted curve.
 const PULLS_PER_SEC: Record<string, number> = {
   AR: 12, SMG: 20, SG: 1.5, MG: 60, Pistol: 4,
 };
-const MG_SPOOL_FRAMES = 3.75 * FPS;    // ramp to max fire rate; cubic ramp ≈ doc's "8 s to empty 300 ammo"
+// Frame intervals between MG rounds 1→35 (measured, 60fps; identical across units).
+// 142 frames of ramp, then 1 round/frame. Wind-up restarts from the top of the
+// ladder on every reload/stun (no partial retention) unless reload-speed buffs
+// exceed 100% (user-confirmed skip).
+const MG_RAMP_INTERVALS = [
+  23, 14, 10, 8, 7, 6, 5, 5, 4, 4, 4,
+  3, 3, 3, 3, 3, 3,
+  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+];
+// Q11 calibration (user estimates, flagged for review): rounds fired before the ladder
+// reaches its 2-frame portion (the first 18 rounds of each wind-up) don't land on the
+// core; MG normals never receive the +30% optimal-range bonus (every range is optimal
+// for an MG, so the bonus doesn't exist for them).
+const MG_NO_CORE_RAMP_ROUNDS = 18;
+
+// Test-boss range script (user-measured, 2026-07-13; fight timer 3:00 counts down):
+// mid 0-33s, near 33-70, far 70-106, mid-far 106-144, near 144-176, mid-far 176-180.
+// At each transition the boss is unhittable for 1s; during that window units whose
+// EFFECTIVE reload time is <=1s get a free full reload (longer reloads keep their mag).
+const BOSS_RANGE_SCRIPT: Array<{ fromSec: number; band: 'near' | 'mid' | 'midfar' | 'far' }> = [
+  { fromSec: 0, band: 'mid' },
+  { fromSec: 33, band: 'near' },
+  { fromSec: 70, band: 'far' },
+  { fromSec: 106, band: 'midfar' },
+  { fromSec: 144, band: 'near' },
+  { fromSec: 176, band: 'midfar' },
+];
+// Which weapon classes sit inside their effective range per band (user's mapping).
+// RL has no effective range and NEVER receives the bonus.
+const RANGE_ELIGIBLE: Record<string, Set<string>> = {
+  near: new Set(['SG']),
+  mid: new Set(['SMG', 'AR']),
+  midfar: new Set(['MG', 'SR']),
+  far: new Set(['SR']),
+};
+const UNHITTABLE_FRAMES = 60;
 
 // element → the element it beats
 const BEATS: Record<Element, Element> = {
@@ -55,6 +96,8 @@ interface Dot {
   sustained?: boolean;
   sequential?: boolean;
   trueFlavor?: boolean;
+  noRange?: boolean;
+  noFb?: boolean;
   projFlavor?: 'attachment' | 'explosion';
 }
 
@@ -78,6 +121,7 @@ interface UnitState {
   blocks: Block[];
   warnings: string[];
   skillSource: string;
+  hasPierce: boolean;     // kit's attacks are Pierce-tagged (Q10)
   ammoRefundPer10: number;  // Bastion cube: bullets refunded per 10 fired
   bulletsSinceRefund: number;
   burstGenMult: number;
@@ -85,6 +129,7 @@ interface UnitState {
   stunnedUntilFrame: number; // self-stun (Mast's Hangover): no firing/charging/reloading
   fbMissedSinceBurst: number; // full bursts this unit sat out since it last burst (Maiden:IR MP)
   mpPriority: boolean;       // jump the burst queue once fbMissedSinceBurst hits mpThreshold
+  burstFirstPending: boolean; // takes the first eligible burst of its stage (Prika duet opener)
   mpThreshold: number;
   extraStages: Set<number>; // extra burst stages this unit may fill (Combat Assist)
   lambdaStage: number | null; // Λ units: pinned to burst ONLY at this stage
@@ -93,9 +138,12 @@ interface UnitState {
   ammo: number;
   fireAcc: number;
   chargeProgress: number;
+  boltRecoveryFrames: number; // remaining post-shot bolt-cycle frames (SR)
+  noBoltRecovery: boolean;
   reloadProgress: number;
   reloading: boolean;
-  spoolFrames: number;
+  mgRampRound: number;  // rounds fired since wind-up start (indexes the ramp ladder)
+  mgCooldown: number;   // fractional frames until the next round
   // skills runtime
   buffs: BuffInstance[];
   storedHits: Map<
@@ -164,7 +212,15 @@ export function runSim(
   const units: UnitState[] = chars.map((rawChar, idx) => {
     // charFixes: hand-measured weapon-data corrections (e.g. true SR fire cycle)
     const charFix = prepared?.[idx]?.chargeFrames;
-    const char = charFix ? { ...rawChar, chargeFrames: charFix } : rawChar;
+    const reloadFix = prepared?.[idx]?.reloadFrames;
+    const char =
+      charFix || reloadFix
+        ? {
+            ...rawChar,
+            ...(charFix ? { chargeFrames: charFix } : {}),
+            ...(reloadFix ? { reloadFrames: reloadFix } : {}),
+          }
+        : rawChar;
     if (!char.baseStats) throw new Error(`${char.slug} has no base stats in the DB`);
     const skills = prepared?.[idx]?.skills ?? resolveSkills(char);
     // "no OTHER Burst 1 allies" — the unit itself never counts (Anis: Star is
@@ -204,6 +260,9 @@ export function runSim(
       blocks: activeBlocks,
       warnings: [...skills.warnings],
       skillSource: skills.source,
+      hasPierce:
+        skills.hasPierce === true ||
+        (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
       ammoRefundPer10: extra.filter((e) => e.stat === 'ammoRefundPer10').reduce((s, e) => s + e.value, 0),
       bulletsSinceRefund: 0,
       burstGenMult:
@@ -212,6 +271,7 @@ export function runSim(
       stunnedUntilFrame: -1,
       fbMissedSinceBurst: 0,
       mpPriority: prepared?.[idx]?.mpPriority ?? false,
+      burstFirstPending: false,
       mpThreshold: activeBlocks.reduce(
         (t, b) =>
           b.effects.reduce(
@@ -225,10 +285,13 @@ export function runSim(
       advantageVs: new Set(),
       ammo: char.ammo,
       fireAcc: 0,
+      boltRecoveryFrames: 0,
+      noBoltRecovery: prepared?.[idx]?.noBoltRecovery ?? false,
       chargeProgress: 0,
       reloadProgress: 0,
       reloading: false,
-      spoolFrames: 0,
+      mgRampRound: 0,
+      mgCooldown: 0,
       buffs: [],
       storedHits: new Map(),
       hitCounters: new Map(),
@@ -255,6 +318,9 @@ export function runSim(
 
   const enemyBuffs: BuffInstance[] = [];
   const dots: Dot[] = [];
+  // teamAmmo triggers: fire whenever TOTAL ally ammo consumed crosses each block's count
+  // (infinite-ammo shots never consume, matching the in-game rule)
+  const teamAmmoBlocks: Array<{ unitIdx: number; block: Block; bi: number; residual: number }> = [];
   const usedOncePerBattle = new Set<string>();
   const totalFrames = cfg.durationSec * FPS;
   const rotationLog: string[] = [];
@@ -270,6 +336,15 @@ export function runSim(
           (1 + stat(u, 'burstGenPct', frame) / 100),
       0
     ) / FPS;
+
+  const transitionFrames = BOSS_RANGE_SCRIPT.slice(1).map((r) => r.fromSec * FPS);
+  const bandAt = (frame: number): 'near' | 'mid' | 'midfar' | 'far' => {
+    let band = BOSS_RANGE_SCRIPT[0].band;
+    for (const r of BOSS_RANGE_SCRIPT) if (frame >= r.fromSec * FPS) band = r.band;
+    return band;
+  };
+  const bossUnhittable = (frame: number) =>
+    transitionFrames.some((t) => frame >= t && frame < t + UNHITTABLE_FRAMES);
 
   let gauge = 0;
   let stage: 1 | 2 | 3 = 1;
@@ -320,11 +395,19 @@ export function runSim(
       sequential?: boolean;
       trueFlavor?: boolean;
       noRange?: boolean;
+      noFb?: boolean;
       projFlavor?: 'attachment' | 'explosion';
     }
   ) {
     const fb = fbEndFrame > frame;
-    let major = 1 + (fb ? 0.5 : 0) + (cfg.rangeBonus && !opts.noRange ? 0.3 : 0);
+    // +30% effective-range bonus: band-gated per weapon class (test-boss movement script);
+    // riders (noRange) and RLs never receive it.
+    const inRange =
+      cfg.rangeBonus &&
+      !opts.noRange &&
+      u.char.weapon !== 'RL' &&
+      RANGE_ELIGIBLE[bandAt(frame)].has(u.char.weapon);
+    let major = 1 + (fb && !opts.noFb ? 0.5 : 0) + (inRange ? 0.3 : 0);
     if (opts.crit) {
       const critRate = Math.min(1, Math.max(0, (u.critRate + stat(u, 'critRatePct', frame)) / 100));
       major += critRate * ((u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100);
@@ -357,13 +440,25 @@ export function runSim(
     const projAttachment =
       opts.projFlavor === 'attachment' ? stat(u, 'projectileAttachmentPct', frame) : 0;
     const projFactor = 1 + (projExplosion + projAttachment) / 100;
+    // Q10: Pierce Damage ▲ empowers Pierce-tagged units' attacks — a Damage Up
+    // bucket addition, only for units whose kit is Pierce-tagged (hasPierce).
+    const pierce = u.hasPierce ? stat(u, 'pierceDamagePct', frame) : 0;
+    // Q9 A/B: Prydwen says projExpl also hits regular RL normal attacks
+    // "as ATK DMG on the base multiplier". Off by default (our validated rule is
+    // flavored-hits-only); on → RL normals get projExpl in the Damage Up bucket.
+    const rlNormalProjExpl =
+      (cfg.projExplOnRlNormals ?? true) && u.char.weapon === 'RL' && opts.category === 'normal'
+        ? stat(u, 'projectileExplosionPct', frame)
+        : 0;
     const dmgUp =
       1 +
       (stat(u, 'attackDamagePct', frame) +
         (opts.sustained ? stat(u, 'sustainedDamagePct', frame) : 0) +
         (opts.sequential ? stat(u, 'sequentialDamagePct', frame) : 0) +
         (opts.trueFlavor ? stat(u, 'trueDamagePct', frame) : 0) +
-        (advantaged(u) ? stat(u, 'elemAdvantageDamagePct', frame) : 0)) /
+        (advantaged(u) ? stat(u, 'elemAdvantageDamagePct', frame) : 0) +
+        pierce +
+        rlNormalProjExpl) /
         100;
     // Distributed Damage debuffs share the taken bucket, but only affect
     // distributed sources and only while a Damage Taken ▲ is active on the boss
@@ -426,7 +521,11 @@ export function runSim(
     const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
     owner.blockActivations.set(bKey, activations);
     // everyN gate: effects land only on every Nth trigger activation
-    if (block.everyN && activations % block.everyN !== 0) return;
+    // (everyNOffset shifts the phase: fire when activations ≡ offset mod N)
+    if (block.everyN) {
+      const off = block.everyNOffset ?? 0;
+      if (activations < Math.max(off, 1) || (activations - off) % block.everyN !== 0) return;
+    }
     // core-gated blocks never fire in zero-core fights
     if (block.requiresCore && cfg.coreHitRate <= 0) return;
     // full-burst-state gate ('inFb' / 'outFb'), evaluated when the trigger fires
@@ -489,7 +588,8 @@ export function runSim(
             crit: e.crit === true,
             core: e.core === true,
             charge: false,
-            noRange: e.noRange === true,
+            noRange: true, // riders never get the +30% range bonus (user rule, 2026-07-13)
+            noFb: e.noFb === true,
             category,
             distributed: e.flavor === 'distributed',
             sustained: e.flavor === 'sustained',
@@ -516,6 +616,8 @@ export function runSim(
             sustained: e.flavor === 'sustained',
             sequential: e.flavor === 'sequential',
             trueFlavor: e.flavor === 'true',
+            noRange: e.noRange === true,
+            noFb: e.noFb === true,
             projFlavor:
               e.flavor === 'projectileAttachment'
                 ? 'attachment'
@@ -573,6 +675,9 @@ export function runSim(
         case 'burstEligibility':
           for (const t of resolveTargets(block.target, ownerIdx)) t.extraStages.add(e.stage);
           break;
+        case 'burstFirst':
+          for (const t of resolveTargets(block.target, ownerIdx)) t.burstFirstPending = true;
+          break;
         case 'advantageVs':
           for (const t of resolveTargets(block.target, ownerIdx)) t.advantageVs.add(e.element);
           break;
@@ -608,6 +713,7 @@ export function runSim(
             const hpEquivPct = e.hpPct ? ((e.hpPct / 100) * owner.maxHp * 100) / eff : 0;
             dealDamage(owner, (e.atkPct + hpEquivPct) * stacks, frame, {
               crit: false, core: false, charge: false, category,
+            noRange: true,
             });
           }
           break;
@@ -646,6 +752,12 @@ export function runSim(
     const pct = (u.doll.maxAmmoPct ?? 0) + stat(u, 'maxAmmoPct', frame);
     return Math.max(1, Math.round(base * (1 + pct / 100)));
   }
+
+  units.forEach((u) =>
+    u.blocks.forEach((b, bi) => {
+      if (b.trigger.kind === 'teamAmmo') teamAmmoBlocks.push({ unitIdx: u.idx, block: b, bi, residual: 0 });
+    })
+  );
 
   // passives on at frame 0 (boss-element conditionals count when the element matches)
   units.forEach((u) =>
@@ -690,11 +802,14 @@ export function runSim(
         }
         return u.char.burst === want || u.extraStages.has(stage);
       };
-      // a max-MP unit with priority enabled jumps the leftmost order
+      // burst-order overrides: a pending burstFirst unit (Prika duet opener) outranks
+      // everything; then max-MP priority (Maiden); then the leftmost order
       const cand =
+        units.find((u) => u.burstFirstPending && eligible(u)) ??
         units.find((u) => u.mpPriority && u.fbMissedSinceBurst >= u.mpThreshold && eligible(u)) ??
         units.find(eligible);
       if (cand) {
+        cand.burstFirstPending = false;
         cand.burstCasts++;
         cand.burstCdFrames = Math.round(cand.char.burstCooldownSec * FPS);
         rotationCasters.push(cand.idx);
@@ -739,6 +854,7 @@ export function runSim(
                   sustained: entry.sustained,
                   sequential: entry.sequential,
                   trueFlavor: entry.trueFlavor,
+                  noRange: true,
                   projFlavor: entry.projFlavor,
                 });
                 entry.releasable = 0;
@@ -762,6 +878,16 @@ export function runSim(
       }
     }
 
+    // ---- boss unhittable windows (range transitions) ----
+    const unhittable = bossUnhittable(frame);
+    if (unhittable && transitionFrames.includes(frame)) {
+      // window start: fast reloaders (effective reload <= 1s) snap-refill their mag
+      for (const u of units) {
+        const effReload = (u.char.reloadFrames ?? 0) / (1 + stat(u, 'reloadSpeedPct', frame) / 100);
+        if (effReload <= FPS && !u.reloading) u.ammo = maxAmmo(u, frame);
+      }
+    }
+
     // ---- per-unit weapon FSM ----
     for (const u of units) {
       if (u.burstCdFrames > 0) u.burstCdFrames--;
@@ -773,12 +899,19 @@ export function runSim(
       }
 
       if (frame < u.stunnedUntilFrame) {
-        u.spoolFrames = 0; // MG spool resets while stunned
+        u.mgRampRound = 0; // MG wind-up resets while stunned
+        u.mgCooldown = 0;
         continue;
       }
 
       if (u.reloading) {
-        u.spoolFrames = 0;
+        // MG wind-up bug (user-confirmed): a reload only re-winds the MG when
+        // the unit's total reload-speed buffs are ≤ 100%. Above 100% the ramp
+        // is kept (no re-windup) — why Crown+Privaty MGs fire at full rate.
+        if (stat(u, 'reloadSpeedPct', frame) <= 100) {
+          u.mgRampRound = 0;
+          u.mgCooldown = 0;
+        }
         u.reloadProgress += 1 + stat(u, 'reloadSpeedPct', frame) / 100;
         if (u.reloadProgress >= u.char.reloadFrames) {
           u.reloading = false;
@@ -788,25 +921,51 @@ export function runSim(
         continue;
       }
 
+      // boss unhittable (range transition): hold fire; in-progress reloads
+      // (handled above) still advance through the window
+      if (unhittable) continue;
+
       const unlimited = sum(u.buffs, 'unlimitedAmmo', frame) > 0;
 
       const chargeFrames = u.swap?.chargeFrames ?? u.char.chargeFrames;
       if (chargeFrames > 0) {
-        // RL/SR (or swapped charge weapon): charge → fire full-charge shot → recharge
-        u.chargeProgress += 1 + stat(u, 'chargeSpeedPct', frame) / 100;
-        if (u.chargeProgress >= chargeFrames) {
-          u.chargeProgress = 0;
-          firePull(u, frame, true, unlimited);
+        // RL/SR (or swapped charge weapon): charge → fire full-charge shot → recharge.
+        // Standard SRs insert a bolt-cycle recovery (not charge-speed-scaled) after
+        // each shot; swap states and noBoltRecovery units are exempt.
+        if (u.boltRecoveryFrames > 0) {
+          u.boltRecoveryFrames--;
+        } else {
+          u.chargeProgress += 1 + stat(u, 'chargeSpeedPct', frame) / 100;
+          if (u.chargeProgress >= chargeFrames) {
+            u.chargeProgress = 0;
+            firePull(u, frame, true, unlimited);
+            if (u.char.weapon === 'SR' && !u.swap && !u.noBoltRecovery) {
+              u.boltRecoveryFrames = SR_BOLT_RECOVERY_FRAMES;
+            }
+          }
+        }
+      } else if (u.char.weapon === 'MG') {
+        // Measured wind-up ladder: round n+1 lands MG_RAMP_INTERVALS[n] frames after
+        // round n (then 1/frame at steady state). Attack-speed compresses the ladder.
+        const speedMult =
+          1 + (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) / 100;
+        u.mgCooldown -= speedMult;
+        while (u.mgCooldown <= 0 && !u.reloading) {
+          // one belt round; a "pull" (damage event) lands every hitsPerShot rounds
+          u.fireAcc += 1;
+          if (u.fireAcc >= u.char.hitsPerShot) {
+            u.fireAcc -= u.char.hitsPerShot;
+            firePull(u, frame, false, unlimited);
+          }
+          const iv =
+            u.mgRampRound < MG_RAMP_INTERVALS.length ? MG_RAMP_INTERVALS[u.mgRampRound] : 1;
+          u.mgRampRound++;
+          u.mgCooldown += iv;
         }
       } else {
         const speedMult =
           1 + (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) / 100;
-        let rate = (PULLS_PER_SEC[u.char.weapon] ?? 4) / FPS;
-        if (u.char.weapon === 'MG') {
-          rate /= u.char.hitsPerShot;
-          u.spoolFrames++;
-          rate *= Math.min(1, Math.pow(u.spoolFrames / MG_SPOOL_FRAMES, 3));
-        }
+        const rate = (PULLS_PER_SEC[u.char.weapon] ?? 4) / FPS;
         u.fireAcc += rate * speedMult;
         while (u.fireAcc >= 1 && !u.reloading) {
           u.fireAcc -= 1;
@@ -821,7 +980,7 @@ export function runSim(
         dealDamage(units[d.ownerIdx], d.atkPct, frame, {
           crit: false, core: false, charge: false, category: d.category,
           distributed: d.distributed, sustained: d.sustained, sequential: d.sequential,
-          trueFlavor: d.trueFlavor,
+          trueFlavor: d.trueFlavor, noRange: true, noFb: d.noFb,
           projFlavor: d.projFlavor,
         });
         d.nextTickFrame += d.intervalFrames;
@@ -833,8 +992,12 @@ export function runSim(
     const normalScale =
       1 + ((u.doll.normalAttackPct ?? 0) + stat(u, 'normalAttackPct', frame)) / 100;
     const baseMult = u.swap?.damagePct ?? u.char.normalAttackMultiplier;
+    const isMg = u.char.weapon === 'MG' && !u.swap;
     dealDamage(u, baseMult * normalScale, frame, {
-      crit: true, core: true, charge: charged, category: 'normal',
+      crit: true,
+      core: !(isMg && u.mgRampRound < MG_NO_CORE_RAMP_ROUNDS),
+      charge: charged,
+      category: 'normal',
       trueFlavor: !!u.swap?.trueNormals,
     });
     u.pulls++;
@@ -842,7 +1005,7 @@ export function runSim(
     const extraPerHit = stat(u, 'extraHitDamagePct', frame);
     if (extraPerHit > 0) {
       dealDamage(u, extraPerHit * u.char.hitsPerShot, frame, {
-        crit: false, core: false, charge: false, category: 'burst',
+        crit: false, core: false, charge: false, category: 'burst', noRange: true,
       });
     }
 
@@ -863,6 +1026,14 @@ export function runSim(
     if (!unlimited) {
       const consumed = u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
       u.ammo -= consumed;
+      for (const t of teamAmmoBlocks) {
+        t.residual += consumed;
+        const need = (t.block.trigger as { kind: 'teamAmmo'; count: number }).count;
+        while (t.residual >= need) {
+          t.residual -= need;
+          applyBlock(t.unitIdx, t.block, t.bi, frame);
+        }
+      }
       // Bastion: N bullets refunded per 10 fired
       if (u.ammoRefundPer10 > 0) {
         u.bulletsSinceRefund += consumed;

@@ -1,5 +1,5 @@
 {
-  "note": "MP gauge + Max-HP scaling kit, both only partly supportable. skill1 omitted entirely: its two blocks are pure MP-gauge bookkeeping (no stat/damage) and blk3 is a Max HP buff (+6.34% x10) that has no engine bucket and only feeds HP-based damage - unsupportable. skill2 overridden: blk1 fires 'when MP is replenished' which happens on Full Burst entry, so modeled as fullBurstEnter -> Electric-Code allies get Elem-Advantage Attack Damage +40.9% and ATK +20.9% of caster ATK (10s); target is alliesOfElement Electric which does not exclude self as the text does - minor, slightly generous. blk2 fires 'when MP is used' = on her burst, so burstCast -> self Elem-Advantage Attack Damage +31.68% (10s); its companion 'ATK +3.2% of caster final Max HP' is DROPPED (no Max-HP-to-ATK bucket in v1). blk3 (547.62% on every full charge) kept verbatim. Burst: 'Deals 1372.8% of (10% of Max HP + ATK), attacks repeatedly based on MP.' The Max HP portion is UNSUPPORTABLE and dropped (likely a large undercount for a high-HP Defender), and MP-at-cast can't be tracked literally; modeled as a steady-state 4 repeats of the ATK-only portion => 1372.8 x 4 = 5491.2% at burst cast. Both the MP count (could range ~4-12) and the omitted HP scaling are significant uncertainty flags - this burst is a conservative lower bound. CORRECTION (validated vs real elec-weak sample): the 547.62% hit reads 'when attacking with Full Charge for 1 TIME(s)' -- once per MP cycle, not per-shot; gated to her burst cast (0 procs when she never bursts, matching her real 251M = normals only). Her MP-used self buffs now include the previously-dropped ATK 3.2% of final Max HP. BURST CORRECTED (user-specified MP mechanic): +1 MP per full burst she does NOT burst in (cap 12), all consumed on her burst -> 1372.8% of (10% final Max HP + ATK) PER MP stack (stackedNuke effect; the previously-dropped Max-HP portion is included now).",
+  "note": "MP gauge + Max-HP scaling kit, both only partly supportable. skill1 omitted entirely: its two blocks are pure MP-gauge bookkeeping (no stat/damage) and blk3 is a Max HP buff (+6.34% x10) that has no engine bucket and only feeds HP-based damage - unsupportable. skill2 overridden: blk1 fires 'when MP is replenished' which happens on Full Burst entry, so modeled as fullBurstEnter -> Electric-Code allies get Elem-Advantage Attack Damage +40.9% and ATK +20.9% of caster ATK (10s); target is alliesOfElement Electric which does not exclude self as the text does - minor, slightly generous. blk2 fires 'when MP is used' = on her burst, so burstCast -> self Elem-Advantage Attack Damage +31.68% (10s); its companion 'ATK +3.2% of caster final Max HP' is DROPPED (no Max-HP-to-ATK bucket in v1). blk3 (547.62% on every full charge) kept verbatim. Burst: 'Deals 1372.8% of (10% of Max HP + ATK), attacks repeatedly based on MP.' The Max HP portion is UNSUPPORTABLE and dropped (likely a large undercount for a high-HP Defender), and MP-at-cast can't be tracked literally; modeled as a steady-state 4 repeats of the ATK-only portion => 1372.8 x 4 = 5491.2% at burst cast. Both the MP count (could range ~4-12) and the omitted HP scaling are significant uncertainty flags - this burst is a conservative lower bound. CORRECTION (validated vs real elec-weak sample): the 547.62% hit reads 'when attacking with Full Charge for 1 TIME(s)' -- once per MP cycle, not per-shot; gated to her burst cast (0 procs when she never bursts, matching her real 251M = normals only). Her MP-used self buffs now include the previously-dropped ATK 3.2% of final Max HP. BURST CORRECTED (user-specified MP mechanic): +1 MP per full burst she does NOT burst in (cap 12), all consumed on her burst -> 1372.8% of (10% final Max HP + ATK) PER MP stack (stackedNuke effect; the previously-dropped Max-HP portion is included now). Q4 ANSWERED (user, 2026-07-13): the 547.62% procs on EVERY full-charged normal attack (always, in sim terms) -> shotFired (once per shot; her twin rockets are one attack). Q1-family range/FB exemption applied like the other proc kits; residual heat flagged for review.",
   "skill2": [
     {
       "slot": "skill2",
@@ -62,7 +62,7 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "burstCast"
+        "kind": "shotFired"
       },
       "target": {
         "kind": "enemy"
@@ -70,7 +70,9 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 547.62
+          "atkPct": 547.62,
+          "noRange": true,
+          "noFb": true
         }
       ]
     }

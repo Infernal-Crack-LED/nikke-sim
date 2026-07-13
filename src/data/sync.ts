@@ -4,7 +4,7 @@
 // the sim runs offline and deterministically.
 import 'dotenv/config';
 import pg from 'pg';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { CharacterData, DataFile } from '../types.js';
 
 const SYNERGY_API = 'https://api.nikke-synergy.com/rest/v1/attack_damage_characters';
@@ -14,6 +14,12 @@ const SYNERGY_HEADERS = { apikey: 'dummy-key', Authorization: 'Bearer dummy-key'
 // entry is the kit players actually run (favorite-item upgrade of the same
 // unit). Re-point them and prefer the API's skill text over the DB's.
 // (helm already maps to her treasure entry, 145.)
+// Units rated Bossing C or below on Prydwen (DB column prydwen_tiers.bossing) are dropped
+// at sync time — never fielded in raid comps, only waste bundle size and coverage compute.
+// Unknown/missing tiers are kept (safe default). data/bossing-tiers.json is regenerated as
+// the checked-in record of what was applied.
+const EXCLUDED_TIERS = new Set(['C', 'D', 'E', 'F']);
+
 const TREASURE_SYNERGY_IDS: Record<string, number> = {
   privaty: 198,
   tove: 172,
@@ -28,7 +34,7 @@ async function main() {
   await client.connect();
 
   const { rows } = await client.query(
-    `select id, name, synergy_id, image_url, attributes, base_stats from nikke_characters`
+    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers from nikke_characters`
   );
   const metaRow = await client.query(
     `select value from bot_meta where key = 'nikke_level_multiplier'`
@@ -44,7 +50,15 @@ async function main() {
 
   const characters: DataFile['characters'] = {};
   const skipped: string[] = [];
+  const bossingTiers: Record<string, string> = {};
+  let tierDropped = 0;
   for (const row of rows) {
+    const tier = row.prydwen_tiers?.bossing ?? '?';
+    bossingTiers[row.id] = tier;
+    if (EXCLUDED_TIERS.has(tier)) {
+      tierDropped++;
+      continue;
+    }
     const a = row.attributes ?? {};
     const treasureId = TREASURE_SYNERGY_IDS[row.id];
     const api =
@@ -99,6 +113,19 @@ async function main() {
   const out: DataFile = { syncedAt: new Date().toISOString(), characters };
   writeFileSync(new URL('../../data/characters.json', import.meta.url), JSON.stringify(out, null, 1));
   writeFileSync(
+    new URL('../../data/bossing-tiers.json', import.meta.url),
+    JSON.stringify(
+      {
+        updated: new Date().toISOString().slice(0, 10),
+        source: 'bakery-bot DB nikke_characters.prydwen_tiers.bossing',
+        excludedTiers: [...EXCLUDED_TIERS].sort(),
+        tiers: Object.fromEntries(Object.entries(bossingTiers).sort()),
+      },
+      null,
+      1
+    )
+  );
+  writeFileSync(
     new URL('../../data/level-multiplier.json', import.meta.url),
     JSON.stringify(levelMultiplier)
   );
@@ -106,7 +133,7 @@ async function main() {
   const total = Object.keys(characters).length;
   const noStats = Object.values(characters).filter((c) => !c.baseStats).length;
   const noApi = rows.filter((r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id)).length;
-  console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API)`);
+  console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API, ${tierDropped} dropped as Bossing C-or-below)`);
   if (skipped.length) console.log('skipped:', skipped.join(', '));
 }
 

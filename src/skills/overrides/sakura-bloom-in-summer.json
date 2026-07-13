@@ -1,0 +1,39 @@
+{
+  "note": "B-tier triage (2026-07-13). S2's 256%/s sustained field is a cooldown skill force-cast by S1 (parser fired it once at t0) -> modeled as a permanent dot at 15s-per-~20s uptime average = 192%/s \u2691. AD 15.64 companion buff likewise permanent-averaged at 11.7. Burst nuke 4571.4% + 35.16%/s dot parse fine and stay parser-side.",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 192,
+          "durationSec": 99999,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 11.7
+        }
+      ]
+    }
+  ]
+}
