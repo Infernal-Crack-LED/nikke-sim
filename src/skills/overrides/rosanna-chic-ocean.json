@@ -1,0 +1,21 @@
+{
+  "note": "Parts-support kit. Skill1 override adds the part-destruction ATK stacks the parser drops (unsupported trigger): modeled as steady-state max stacks -> permanent all-ally ATK 15% of caster (3% x 5). The battle-start Parts Damage 24.26% buff is kept for fidelity (partsDamagePct is inert in v1). Skill2 omitted: parser is faithful (inert Parts Damage buff + the 70.4%/s-for-15s sustained-damage dot, which the engine already routes through the sustainedDamagePct bucket). Burst omitted: parser faithfully emits ally Sustained Damage 20.32% and enemy Damage Taken 32.23%. UNCERTAIN/OPTIMISTIC: v1 assumes a single boss with no destructible parts, so the part-destroy trigger would never actually fire; modeling it at full 5-stack uptime assumes solo-raid part-breaking keeps it maxed, which the engine does not simulate. This may over-count her contribution.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "partsDamagePct", "value": 24.26, "durationSec": 15 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 15 }
+      ]
+    }
+  ]
+}

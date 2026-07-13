@@ -8,8 +8,10 @@ import {
   characterStat,
   copiesToGradeCore,
   DOLL_ATK,
+  DOLL_HP,
   dollBonus,
   gearAtk,
+  gearHp,
   type DollBonus,
 } from '../stats.js';
 import { resolveSkills } from '../skills/index.js';
@@ -49,6 +51,11 @@ interface Dot {
   nextTickFrame: number;
   intervalFrames: number;
   category: 'skill' | 'burst';
+  distributed?: boolean;
+  sustained?: boolean;
+  sequential?: boolean;
+  trueFlavor?: boolean;
+  projFlavor?: 'attachment' | 'explosion';
 }
 
 interface WeaponSwap {
@@ -63,6 +70,7 @@ interface UnitState {
   idx: number;
   char: CharacterData;
   staticAtk: number;
+  maxHp: number; // final Max HP (for HP-scaled ATK buffs)
   critRate: number;       // %
   critDamage: number;     // % multiplier (150 = crit ×1.5)
   doll: DollBonus;
@@ -73,6 +81,13 @@ interface UnitState {
   bulletsSinceRefund: number;
   burstGenMult: number;
   swap: WeaponSwap | null;  // "Changes the weapon in use" state
+  stunnedUntilFrame: number; // self-stun (Mast's Hangover): no firing/charging/reloading
+  fbMissedSinceBurst: number; // full bursts this unit sat out since it last burst (Maiden:IR MP)
+  mpPriority: boolean;       // jump the burst queue once fbMissedSinceBurst hits mpThreshold
+  mpThreshold: number;
+  extraStages: Set<number>; // extra burst stages this unit may fill (Combat Assist)
+  lambdaStage: number | null; // Λ units: pinned to burst ONLY at this stage
+  advantageVs: Set<string>; // boss elements this unit counts as advantaged against
   // weapon runtime
   ammo: number;
   fireAcc: number;
@@ -82,6 +97,21 @@ interface UnitState {
   spoolFrames: number;
   // skills runtime
   buffs: BuffInstance[];
+  storedHits: Map<
+    string,
+    {
+      atkPct: number;
+      category: 'skill' | 'burst';
+      distributed?: boolean;
+      sustained?: boolean;
+      sequential?: boolean;
+      trueFlavor?: boolean;
+      projFlavor?: 'attachment' | 'explosion';
+      releasable: number;
+      fresh: number;      // charges added this frame — not releasable until next frame
+      freshFrame: number;
+    }
+  >;
   hitCounters: Map<string, number>;
   blockActivations: Map<string, number>;
   burstCdFrames: number;
@@ -128,12 +158,30 @@ export function runSim(
   cfg: SimConfig,
   prepared?: PreparedUnit[]
 ): SimResult {
-  const { grade, core } = copiesToGradeCore(cfg.copies);
+  const fallback = copiesToGradeCore(cfg.copies);
 
-  const units: UnitState[] = chars.map((char, idx) => {
+  const units: UnitState[] = chars.map((rawChar, idx) => {
+    // charFixes: hand-measured weapon-data corrections (e.g. true SR fire cycle)
+    const charFix = prepared?.[idx]?.chargeFrames;
+    const char = charFix ? { ...rawChar, chargeFrames: charFix } : rawChar;
     if (!char.baseStats) throw new Error(`${char.slug} has no base stats in the DB`);
     const skills = prepared?.[idx]?.skills ?? resolveSkills(char);
+    // "no OTHER Burst 1 allies" — the unit itself never counts (Anis: Star is
+    // herself a B1; her My Own Star state applies when she's the only one)
+    const teamHasB1 = chars.some(
+      (c, i) => i !== idx && (c.burst === 'I' || c.burst === 'Λ')
+    );
+    const selectedMode = prepared?.[idx]?.mode ?? skills.modes?.[0];
+    const activeBlocks = skills.blocks.filter(
+      (b) =>
+        (!b.formation || (b.formation === 'hasB1') === teamHasB1) &&
+        (!b.mode || b.mode === selectedMode)
+    );
     const unitOl = prepared?.[idx]?.ol ?? cfg.ol;
+    // Limit-Break stars (grade 0-3) and Core enhancement (0-7) are per-unit;
+    // fall back to the global copies count when a unit doesn't specify them.
+    const grade = Math.min(3, Math.max(0, prepared?.[idx]?.stars ?? fallback.grade));
+    const core = Math.min(7, Math.max(0, prepared?.[idx]?.core ?? fallback.core));
     const atk =
       characterStat(char.baseStats, mult, 'atk', cfg.level, grade, core) +
       gearAtk(char.class, unitOl) +
@@ -141,14 +189,18 @@ export function runSim(
     const extra = prepared?.[idx]?.extraStats ?? [];
     const flatAtk = extra.filter((e) => e.stat === 'flatAtk').reduce((s, e) => s + e.value, 0);
     const useDoll = prepared?.[idx]?.doll ?? cfg.doll;
-    const state: UnitState = {
+      const state: UnitState = {
       idx,
       char,
       staticAtk: atk + flatAtk,
+      maxHp:
+        characterStat(char.baseStats, mult, 'hp', cfg.level, grade, core) +
+        gearHp(char.class, unitOl) +
+        (useDoll ? DOLL_HP : 0),
       critRate: char.baseStats.critRate ?? 15,
       critDamage: char.baseStats.critDamage ?? 150,
       doll: useDoll ? dollBonus(char.weapon) : {},
-      blocks: skills.blocks,
+      blocks: activeBlocks,
       warnings: [...skills.warnings],
       skillSource: skills.source,
       ammoRefundPer10: extra.filter((e) => e.stat === 'ammoRefundPer10').reduce((s, e) => s + e.value, 0),
@@ -156,6 +208,20 @@ export function runSim(
       burstGenMult:
         1 + extra.filter((e) => e.stat === 'burstGenPct').reduce((s, e) => s + e.value, 0) / 100,
       swap: null,
+      stunnedUntilFrame: -1,
+      fbMissedSinceBurst: 0,
+      mpPriority: prepared?.[idx]?.mpPriority ?? false,
+      mpThreshold: activeBlocks.reduce(
+        (t, b) =>
+          b.effects.reduce(
+            (t2, e) => (e.kind === 'stackedNuke' ? (e.maxStacks ?? 12) : t2),
+            t
+          ),
+        12
+      ),
+      extraStages: new Set(),
+      lambdaStage: char.burst === 'Λ' ? (prepared?.[idx]?.lambdaStage ?? null) : null,
+      advantageVs: new Set(),
       ammo: char.ammo,
       fireAcc: 0,
       chargeProgress: 0,
@@ -163,6 +229,7 @@ export function runSim(
       reloading: false,
       spoolFrames: 0,
       buffs: [],
+      storedHits: new Map(),
       hitCounters: new Map(),
       blockActivations: new Map(),
       burstCdFrames: 0,
@@ -225,11 +292,14 @@ export function runSim(
   const stat = (u: UnitState, key: StatKey, frame: number) => sum(u.buffs, key, frame);
 
   const advantaged = (u: UnitState) =>
-    cfg.bossElement !== null && BEATS[u.char.element] === cfg.bossElement;
+    cfg.bossElement !== null &&
+    (BEATS[u.char.element] === cfg.bossElement || u.advantageVs.has(cfg.bossElement));
 
   function effectiveAtk(u: UnitState, frame: number): number {
     return (
-      u.staticAtk * (1 + stat(u, 'atkPct', frame) / 100) + stat(u, 'casterAtkPct', frame)
+      u.staticAtk * (1 + stat(u, 'atkPct', frame) / 100) +
+      stat(u, 'casterAtkPct', frame) +
+      (stat(u, 'atkOfMaxHpPct', frame) / 100) * u.maxHp
     );
   }
 
@@ -243,6 +313,10 @@ export function runSim(
       charge: boolean;
       category: 'normal' | 'skill' | 'burst';
       distributed?: boolean;
+      sustained?: boolean;
+      sequential?: boolean;
+      trueFlavor?: boolean;
+      projFlavor?: 'attachment' | 'explosion';
     }
   ) {
     const fb = fbEndFrame > frame;
@@ -259,24 +333,45 @@ export function runSim(
     }
     const elem = advantaged(u) ? 1.1 + stat(u, 'elementDamagePct', frame) / 100 : 1;
     const chargeMult = u.swap?.chargeMultPct ?? u.char.chargeMultiplier;
+    // Collection items and Helm-style burst buffs scale by BASE charge damage
+    // (chargeMult × pct); ordinary charge-damage buffs add flat percentage points.
+    const baseCharge = chargeMult / 100;
     const charge =
       opts.charge && chargeMult > 0
-        ? chargeMult / 100 +
-          (stat(u, 'chargeDamagePct', frame) + (u.doll.chargeDamagePct ?? 0)) / 100
+        ? baseCharge +
+          (baseCharge *
+            ((u.doll.chargeDamagePct ?? 0) + stat(u, 'chargeDamageMultPct', frame))) /
+            100 +
+          stat(u, 'chargeDamagePct', frame) / 100
         : 1;
+    // Projectile Attachment/Explosion Damage is its OWN multiplier bucket on
+    // the flavored hit (multiplicative with Damage Up), not additive within it.
+    // It applies ONLY to explosion/attachment-flavored hits (RRH's projectiles,
+    // Anis: Star's stars) — normal attacks, RL included, never benefit.
+    const projExplosion =
+      opts.projFlavor === 'explosion' ? stat(u, 'projectileExplosionPct', frame) : 0;
+    const projAttachment =
+      opts.projFlavor === 'attachment' ? stat(u, 'projectileAttachmentPct', frame) : 0;
+    const projFactor = 1 + (projExplosion + projAttachment) / 100;
     const dmgUp =
       1 +
       (stat(u, 'attackDamagePct', frame) +
-        stat(u, 'sustainedDamagePct', frame) +
-        stat(u, 'trueDamagePct', frame) +
-        stat(u, 'projectileExplosionPct', frame) +
+        (opts.sustained ? stat(u, 'sustainedDamagePct', frame) : 0) +
+        (opts.sequential ? stat(u, 'sequentialDamagePct', frame) : 0) +
+        (opts.trueFlavor ? stat(u, 'trueDamagePct', frame) : 0) +
         (advantaged(u) ? stat(u, 'elemAdvantageDamagePct', frame) : 0)) /
         100;
-    const taken = 1 + sum(enemyBuffs, 'damageTakenPct', frame) / 100;
+    // Distributed Damage debuffs share the taken bucket, but only affect
+    // distributed sources and only while a Damage Taken ▲ is active on the boss
+    const dmgTakenSum = sum(enemyBuffs, 'damageTakenPct', frame);
+    const distDebuff =
+      opts.distributed && dmgTakenSum > 0 ? sum(enemyBuffs, 'distributedDamagePct', frame) : 0;
+    const taken = 1 + (dmgTakenSum + distDebuff) / 100;
     const distributed = opts.distributed ? 1 + stat(u, 'distributedDamagePct', frame) / 100 : 1;
 
     const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
-    const dmg = baseAtk * (atkPct / 100) * major * elem * charge * dmgUp * taken * distributed;
+    const dmg =
+      baseAtk * (atkPct / 100) * major * elem * charge * dmgUp * projFactor * taken * distributed;
     u.damage[opts.category] += dmg;
   }
 
@@ -288,6 +383,12 @@ export function runSim(
       case 'nonBurstCasters': return units.filter((u) => !rotationCasters.includes(u.idx));
       case 'alliesTopAtk':
         return [...units].sort((a, b) => b.staticAtk - a.staticAtk).slice(0, t.count);
+      case 'alliesLowestAtk':
+        return units
+          .filter((u) => !t.burst || u.char.burst === t.burst || u.char.burst === 'Λ')
+          .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
+          .sort((a, b) => a.staticAtk - b.staticAtk)
+          .slice(0, t.count);
       case 'alliesOfElement': return units.filter((u) => u.char.element === t.element);
       case 'alliesOfClass': return units.filter((u) => u.char.class === t.cls);
       case 'enemy': return [];
@@ -320,6 +421,15 @@ export function runSim(
     const bKey = `${ownerIdx}:${block.slot}:${blockIdx}`;
     const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
     owner.blockActivations.set(bKey, activations);
+    // everyN gate: effects land only on every Nth trigger activation
+    if (block.everyN && activations % block.everyN !== 0) return;
+    // core-gated blocks never fire in zero-core fights
+    if (block.requiresCore && cfg.coreHitRate <= 0) return;
+    // full-burst-state gate ('inFb' / 'outFb'), evaluated when the trigger fires
+    if (block.fbGate) {
+      const fbActive = fbEndFrame > frame;
+      if ((block.fbGate === 'inFb') !== fbActive) return;
+    }
     block.effects.forEach((e: EffectDef, ei) =>
       applyEffect(ownerIdx, block, e, `${bKey}:${ei}`, activations, frame)
     );
@@ -339,7 +449,10 @@ export function runSim(
       switch (e.kind) {
         case 'buff': {
           if (block.target.kind === 'enemy') {
-            if (e.stat === 'damageTakenPct' && e.value > 0) {
+            if (
+              (e.stat === 'damageTakenPct' || e.stat === 'distributedDamagePct') &&
+              e.value > 0
+            ) {
               applyBuff(enemyBuffs, key, e.stat, e.value, e.durationSec, e.maxStacks ?? 1, frame);
             }
             // other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0
@@ -356,16 +469,30 @@ export function runSim(
               alwaysOn ? undefined : e.durationSec,
               e.maxStacks ?? 1, frame
             );
+            // Max Ammo ▼ clips the CURRENT belt when it lands (user-confirmed);
+            // increases never clip. Stacking stays additive inside maxAmmo().
+            if (e.stat === 'maxAmmoPct' && e.value < 0) {
+              t.ammo = Math.min(t.ammo, maxAmmo(t, frame));
+            }
           }
           break;
         }
         case 'flatDamage':
           dealDamage(owner, e.atkPct, frame, {
             crit: false,
-            core: false,
+            core: e.core === true,
             charge: false,
             category,
             distributed: e.flavor === 'distributed',
+            sustained: e.flavor === 'sustained',
+            sequential: e.flavor === 'sequential',
+            trueFlavor: e.flavor === 'true',
+            projFlavor:
+              e.flavor === 'projectileAttachment'
+                ? 'attachment'
+                : e.flavor === 'projectileExplosion'
+                  ? 'explosion'
+                  : undefined,
           });
           break;
         case 'dot': {
@@ -377,6 +504,16 @@ export function runSim(
             nextTickFrame: frame + intervalFrames,
             intervalFrames,
             category,
+            distributed: e.flavor === 'distributed',
+            sustained: e.flavor === 'sustained',
+            sequential: e.flavor === 'sequential',
+            trueFlavor: e.flavor === 'true',
+            projFlavor:
+              e.flavor === 'projectileAttachment'
+                ? 'attachment'
+                : e.flavor === 'projectileExplosion'
+                  ? 'explosion'
+                  : undefined,
           });
           break;
         }
@@ -394,7 +531,41 @@ export function runSim(
           owner.ammo = maxAmmo(owner, frame);
           break;
         case 'fillGauge':
-          gauge = Math.min(100, gauge + e.pct);
+          // gauge is locked during full burst — fills landing then are wasted
+          if (fbEndFrame <= frame) gauge = Math.min(100, gauge + e.pct);
+          break;
+        case 'storedHit': {
+          const entry = owner.storedHits.get(key) ?? {
+            atkPct: e.atkPct,
+            category,
+            distributed: e.flavor === 'distributed',
+            sustained: e.flavor === 'sustained',
+            sequential: e.flavor === 'sequential',
+            trueFlavor: e.flavor === 'true',
+            projFlavor:
+              e.flavor === 'projectileAttachment'
+                ? ('attachment' as const)
+                : e.flavor === 'projectileExplosion'
+                  ? ('explosion' as const)
+                  : undefined,
+            releasable: 0,
+            fresh: 0,
+            freshFrame: frame,
+          };
+          if (entry.freshFrame !== frame) {
+            entry.releasable += entry.fresh;
+            entry.fresh = 0;
+            entry.freshFrame = frame;
+          }
+          entry.fresh += e.charges ?? 1;
+          owner.storedHits.set(key, entry);
+          break;
+        }
+        case 'burstEligibility':
+          for (const t of resolveTargets(block.target, ownerIdx)) t.extraStages.add(e.stage);
+          break;
+        case 'advantageVs':
+          for (const t of resolveTargets(block.target, ownerIdx)) t.advantageVs.add(e.element);
           break;
         case 'burstCdr':
           if (e.oncePerBattle) {
@@ -419,6 +590,25 @@ export function runSim(
         case 'unlimitedAmmo':
           for (const t of resolveTargets(block.target, ownerIdx)) {
             applyBuff(t.buffs, key, 'unlimitedAmmo', 1, e.durationSec, 1, frame);
+          }
+          break;
+        case 'stackedNuke': {
+          const stacks = Math.min(owner.fbMissedSinceBurst, e.maxStacks ?? 12);
+          if (stacks > 0) {
+            const eff = Math.max(1, effectiveAtk(owner, frame));
+            const hpEquivPct = e.hpPct ? ((e.hpPct / 100) * owner.maxHp * 100) / eff : 0;
+            dealDamage(owner, (e.atkPct + hpEquivPct) * stacks, frame, {
+              crit: false, core: false, charge: false, category,
+            });
+          }
+          break;
+        }
+        case 'stun':
+          for (const t of resolveTargets(block.target, ownerIdx)) {
+            t.stunnedUntilFrame = Math.max(
+              t.stunnedUntilFrame,
+              frame + Math.round(e.durationSec * FPS)
+            );
           }
           break;
         case 'instantReload':
@@ -469,29 +659,48 @@ export function runSim(
     // ---- full burst end ----
     if (fbEndFrame === frame) {
       units.forEach((u) => fireTriggered(u, 'fullBurstEnd', frame));
+      // units that sat this rotation out accrue a missed-burst stack (MP)
+      units.forEach((u) => {
+        if (!rotationCasters.includes(u.idx)) u.fbMissedSinceBurst++;
+      });
       rotationCasters = [];
       stage = 1;
     }
 
     // ---- burst rotation ----
-    gauge = Math.min(100, gauge + gaugeRate(frame));
+    // the gauge only builds OUTSIDE full burst; during FB it is locked
+    if (!fbActive) gauge = Math.min(100, gauge + gaugeRate(frame));
     if (stageGapFrames > 0) stageGapFrames--;
     if (!fbActive && gauge >= 100 && stageGapFrames === 0) {
       const want = romanStage[stage];
-      const cand = units.find(
-        (u) => (u.char.burst === want || u.char.burst === 'Λ') && u.burstCdFrames <= 0
-      );
+      const eligible = (u: UnitState) => {
+        if (u.burstCdFrames > 0) return false;
+        if (u.char.burst === 'Λ') {
+          // pinned Λ (e.g. "Red Hood operates as B2") only fills its chosen stage
+          return u.lambdaStage === null || u.lambdaStage === stage;
+        }
+        return u.char.burst === want || u.extraStages.has(stage);
+      };
+      // a max-MP unit with priority enabled jumps the leftmost order
+      const cand =
+        units.find((u) => u.mpPriority && u.fbMissedSinceBurst >= u.mpThreshold && eligible(u)) ??
+        units.find(eligible);
       if (cand) {
         cand.burstCasts++;
         cand.burstCdFrames = Math.round(cand.char.burstCooldownSec * FPS);
         rotationCasters.push(cand.idx);
         rotationLog.push(`${(frame / FPS).toFixed(1)}s  B${want} ${cand.char.name}`);
-        cand.blocks.forEach((b, bi) => {
-          if (b.trigger.kind === 'burstCast' && (b.trigger.stage ?? stage) === stage) {
-            applyBlock(cand.idx, b, bi, frame);
-          }
-        });
         const castStage = stage;
+        // Stage 3: full burst begins BEFORE the caster's burst effects resolve —
+        // in-game the burst nuke lands with FB active, so it gets the +50% FB
+        // bonus, the fullBurstEnter team auras, and same-cast stageEnter buffs
+        // (e.g. Cinderella's Max-HP→ATK conversion). Stages 1/2 stay pre-FB.
+        if (stage === 3) {
+          fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
+          pendingFbExtendSec = 0;
+          gauge = 0;
+          fullBursts++;
+        }
         units.forEach((u) =>
           u.blocks.forEach((b, bi) => {
             if (b.trigger.kind === 'stageEnter' && b.trigger.stage === castStage) {
@@ -499,14 +708,43 @@ export function runSim(
             }
           })
         );
-        if (stage === 3) {
-          fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
-          pendingFbExtendSec = 0;
-          gauge = 0;
-          fullBursts++;
+        if (castStage === 3) {
           units.forEach((u) => fireTriggered(u, 'fullBurstEnter', frame));
+          // release stored hits (e.g. Rapi:RH's attached projectiles exploding)
+          // AFTER enter-buffs so FB auras apply to them; charges added this
+          // frame (from the stage-3 cast itself) wait for the next full burst
+          for (const u of units) {
+            for (const entry of u.storedHits.values()) {
+              if (entry.freshFrame < frame) {
+                entry.releasable += entry.fresh;
+                entry.fresh = 0;
+                entry.freshFrame = frame;
+              }
+              if (entry.releasable > 0) {
+                dealDamage(u, entry.atkPct * entry.releasable, frame, {
+                  crit: false,
+                  core: false,
+                  charge: false,
+                  category: entry.category,
+                  distributed: entry.distributed,
+                  sustained: entry.sustained,
+                  sequential: entry.sequential,
+                  trueFlavor: entry.trueFlavor,
+                  projFlavor: entry.projFlavor,
+                });
+                entry.releasable = 0;
+              }
+            }
+          }
           rotationLog.push(`${(frame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
-        } else {
+        }
+        cand.blocks.forEach((b, bi) => {
+          if (b.trigger.kind === 'burstCast' && (b.trigger.stage ?? castStage) === castStage) {
+            applyBlock(cand.idx, b, bi, frame);
+          }
+        });
+        cand.fbMissedSinceBurst = 0; // MP spent (blocks above already read it)
+        if (castStage !== 3) {
           stage = (stage + 1) as 1 | 2 | 3;
           stageGapFrames = STAGE_CAST_GAP_FRAMES;
         }
@@ -523,6 +761,11 @@ export function runSim(
         u.swap = null;
         u.ammo = maxAmmo(u, frame);
         u.chargeProgress = 0;
+      }
+
+      if (frame < u.stunnedUntilFrame) {
+        u.spoolFrames = 0; // MG spool resets while stunned
+        continue;
       }
 
       if (u.reloading) {
@@ -568,6 +811,9 @@ export function runSim(
       if (frame === d.nextTickFrame && frame <= d.endFrame) {
         dealDamage(units[d.ownerIdx], d.atkPct, frame, {
           crit: false, core: false, charge: false, category: d.category,
+          distributed: d.distributed, sustained: d.sustained, sequential: d.sequential,
+          trueFlavor: d.trueFlavor,
+          projFlavor: d.projFlavor,
         });
         d.nextTickFrame += d.intervalFrames;
       }

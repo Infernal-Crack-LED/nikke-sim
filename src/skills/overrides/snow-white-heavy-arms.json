@@ -1,0 +1,159 @@
+{
+  "note": "Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses). Baseline auto-fire per shot = 41.9% (AoE, boss) + 105.59% x 5 loaded ammo = 527.95% (sequential), modeled as a shotFired flat hit. Fully Active mode (2 post-burst shots at 3.2s charge): Auto Fire Ready loads 15 ammo -> volley 105.59x15 per shot; the EXTRA over baseline ((1583.85-527.95) x 2 = 2111.8%) is a burstCast flat lump. PRYDWEN-CONFIRMED (review, quoted): 'Sequential attack damage \\u25b2158.4%' is an ATK DMG (damage-up bucket) buff, 'diluted by ... other support buffs' -> modeled as stat sequentialDamagePct 158.4 for 6.5s applying ONLY to sequential-flavored hits (the 527.95 baseline volley + the lump), diluted at deal time against live Attack Damage buffs; and '528% Charge Damage (making it 778%)' confirms additive charge points. Fully Active is modeled as a weaponSwap on burstCast (same 69.04% shot, charge time fixed at 3.2s, ~6.5s = exactly 2 rounds) which kills the phantom 1.2s-cadence shots the old lump model left in that window; Charge Damage +528% ('for 1 round' x2 uses) runs 6.5s to cover both swap rounds with crit/core intact. Validated vs two real scope-lock T4 runs: 1.31 -> 0.99. SKIPPED: DEF +42.24% (defensive); Lock-On targeting and Max-Lock-On/ammo caps beyond the ammo counts used above (single boss); charge-time fixes at 1.2s/3.2s (sim uses fixed cadence — this is the main approximation, may overcount ~3 phantom baseline auto-fires during the slower Fully Active window); Pierce and Parts-damage buckets (inert); Fully-Active use-count bookkeeping and normal-attack removal (sim always full-charges); burst's 41.9% to destructible projectiles (none vs single boss). Parts-damage +62.64% kept for fidelity though inert. RECALIBRATED post burst-ordering fix: the old x2.584-baked lump read 1.42-1.43 vs two real scope-lock runs.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 4.2
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 41.9
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 527.95,
+          "flavor": "sequential"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 2111.8,
+          "flavor": "sequential"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 46.84,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 62.64,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 73.92,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 528,
+          "durationSec": 6.5
+        },
+        {
+          "kind": "buff",
+          "stat": "sequentialDamagePct",
+          "value": 158.4,
+          "durationSec": 6.5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 84.48,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 69.04,
+          "chargeTimeSec": 3.2,
+          "durationSec": 6.5
+        }
+      ]
+    }
+  ]
+}

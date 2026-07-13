@@ -1,0 +1,36 @@
+{
+  "note": "RL charge-attacker. S1: on full-burst enter, buffs the allies who already burst this rotation (target burstCasters, more faithful than the parser's blanket 'allies') with ATK 60% of caster's ATK and True Damage 50% for 10s; the 10% lifesteal is defensive, skipped. S2 Flash Grenade Toss: a 420% True-Damage grenade every 2s during Full Burst, and the S2 burst rider (Flash Grenade interval -1s for 10s) shortens that to ~1s during the burst window. Full burst is ~25% uptime, so steady-state that is roughly one grenade every ~4s of battle ~= one per ~3 of Ada's shots -> modeled as hitCount:3 flatDamage 420 (true). This is a throughput approximation: it spreads the procs across the whole battle instead of gating them to Full Burst, but total proc count matches; count=3 and the interval-reduction folding are estimates, flagged uncertain. Burst: ATK 40% and True Damage 42% for 10s modeled directly. Special Modification (Charge Speed -300%, Charge Damage +1500% for '1 round') is modeled as a weaponSwap because the engine's charge-speed term is additive (1 + pct/100), so a literal -300% would make charge progress negative and she would never fire. Instead: chargeTimeSec 4 (approximates ~4x slower charging from -300% speed) and chargeMultPct 1750 (base 250% charge multiplier + 1500% charge damage, since the engine sums chargeMult/100 + chargeDamagePct/100), damagePct 61.3 (her base normal multiplier) for 10s (approximating '1 round' as the burst window). Both the 4s charge time and the 10s window are approximations, flagged uncertain. All numbers verbatim from skill text.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "burstCasters" },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 60, "durationSec": 10 },
+        { "kind": "buff", "stat": "trueDamagePct", "value": 50, "durationSec": 10 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 3 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 420, "flavor": "true" }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 40, "durationSec": 10 },
+        { "kind": "buff", "stat": "trueDamagePct", "value": 42, "durationSec": 10 },
+        { "kind": "weaponSwap", "damagePct": 61.3, "chargeTimeSec": 4, "chargeMultPct": 1750, "durationSec": 10 }
+      ]
+    }
+  ]
+}

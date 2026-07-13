@@ -10,6 +10,17 @@ import type { CharacterData, DataFile } from '../types.js';
 const SYNERGY_API = 'https://api.nikke-synergy.com/rest/v1/attack_damage_characters';
 const SYNERGY_HEADERS = { apikey: 'dummy-key', Authorization: 'Bearer dummy-key' };
 
+// The DB matched these slugs to the PLAIN synergy entry, but the Treasure (宝)
+// entry is the kit players actually run (favorite-item upgrade of the same
+// unit). Re-point them and prefer the API's skill text over the DB's.
+// (helm already maps to her treasure entry, 145.)
+const TREASURE_SYNERGY_IDS: Record<string, number> = {
+  privaty: 198,
+  tove: 172,
+  zwei: 199,
+  moran: 200,
+};
+
 async function main() {
   const url = process.env.DATABASE_PUBLIC_URL;
   if (!url) throw new Error('DATABASE_PUBLIC_URL not set (add it to .env)');
@@ -35,7 +46,22 @@ async function main() {
   const skipped: string[] = [];
   for (const row of rows) {
     const a = row.attributes ?? {};
-    const api = row.synergy_id != null ? bySynergyId.get(row.synergy_id) : undefined;
+    const treasureId = TREASURE_SYNERGY_IDS[row.id];
+    const api =
+      treasureId != null
+        ? bySynergyId.get(treasureId)
+        : row.synergy_id != null
+          ? bySynergyId.get(row.synergy_id)
+          : undefined;
+    if (treasureId != null && api) {
+      // the DB attributes carry the plain kit — the treasure entry wins
+      a.skill1En = api.skill_1_en;
+      a.skill2En = api.skill_2_en;
+      a.burstSkillEn = api.burst_skill_en;
+      a.normalAttackMultiplier = api.normal_attack_multiplier ?? a.normalAttackMultiplier;
+      a.ammo = api.ammo ?? a.ammo;
+      if (api.burst_cooltime) a.burstCooldown = api.burst_cooltime / 60;
+    }
     if (!a.weapon || !a.burst) {
       skipped.push(`${row.id} (missing weapon/burst)`);
       continue;

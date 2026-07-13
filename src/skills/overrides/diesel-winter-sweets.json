@@ -1,0 +1,14 @@
+{
+  "note": "Only skill1 needs an override; the parser's skill2 (Full-Charge sustained 318.14% x2 for 3s, and the Full-Burst 63.33%/s-for-9s DoT on the stage target) and burst (Damage Taken +25.09% for 10s, 18.43%/s and 181.2%/s DoTs for 9s) are already faithful for v1 and left to the parser. S1 has two mutually exclusive states: Intro (she used her own Burst this cycle) or Highlight (she did not). The parser wrongly stacks both, double-counting Crit Damage (20.28 + 20.28) and applying both sustained buffs (60.19% + 235.03%). She is a Burst III with a team-amp burst (Damage Taken +25.09%), so the sim casts her burst and she is in Intro every rotation: modeled as Intro only -> Crit Damage +20.28% (permanent, undispellable) and Sustained Damage +60.19% for 10s, both on entering Full Burst. Skipped: the Highlight branch (Crit Dmg 20.28% and the larger Sustained 235.03%), which is mutually exclusive with Intro and only applies if she is run as a non-bursting sub-DPS -- flagged as the key uncertainty, since a Highlight build would deal materially more sustained damage. Also skipped in skill2/burst (already handled by the parser omitting them): the part-destruction Sustained 68.04% (no parts on a single boss in v1, so it never triggers), Mute/Noise-Pollution and Mute-stack mechanics (defensive, hit-rate inert).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "critDamagePct", "value": 20.28 },
+        { "kind": "buff", "stat": "sustainedDamagePct", "value": 60.19, "durationSec": 10 }
+      ]
+    }
+  ]
+}

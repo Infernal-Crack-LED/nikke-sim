@@ -1,0 +1,22 @@
+{
+  "note": "Treasure kit (synced via TREASURE_SYNERGY_IDS moran:200). Hand-verified vs Prydwen review (Bossing SSS): 'she now becomes a CDR, with her Burst Skill CD reduced to 20 seconds'. Fervor ('Activates when Raptures appear: Cooldown of Burst Skill ▼ 20 sec continuously') is ALWAYS active in solo raids -> modeled as burstCdr 20 on her own burstCast, turning her 40s CD into an effective 20s so she bursts every rotation. S1's 47.18% per-5-hits proc is text-gated 'while weapon is changed' (= during her burst weapon swap; blablalink wording) -> fbGate inFb approximates the 10s swap window since she bursts every rotation and the swap spans the FB window. S2's team burst-CDR 7.48s on FB enter requires Fervor, which is always on -> parser's unconditional read is correct, kept here verbatim. Burst kept: weapon swap 14.7%/shot AR w/ unlimited ammo 10s + team ATK 42.57% of caster (casterAtkPct). Damage Taken ▼35.14% on allies is a defensive reduction (ally-side damageTakenPct is inert in the engine, kept for fidelity). Skipped as defensive: DEF-per-HP-lost, taunts, Perseverance max-HP phases, lifesteal.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 5 },
+      "target": { "kind": "enemy" },
+      "fbGate": "inFb",
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 47.18 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "burstCdr", "seconds": 20 }
+      ]
+    }
+  ]
+}

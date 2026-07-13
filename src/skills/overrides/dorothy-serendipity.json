@@ -1,0 +1,45 @@
+{
+  "note": "SG water attacker; pellets = hits (hitsPerShot 10), so pellet-count triggers map to hitCount. S1: hitting the target with 80 pellets (hitCount:80, re-triggers every ~8 shots -> effectively permanent in sustained fire) grants Attack Damage 72%; Hit Rate 98.18% kept for fidelity (inert). 'Pellet count fixed at 1' + 'Gains Pierce' are NOT modeled: the engine fires a fixed 10 hits/shot and Pierce is inert on a single boss, so the pellet-consolidation mechanic can't be expressed - left as-is and flagged uncertain (net effect on a lone boss is roughly a wash but genuinely unclear). S1 second block (160 pellets -> Expand Pierce range 200%) omitted: pierce is inert on a single boss. S2: passive Pierce Damage 55.08% kept (inert, fidelity); the 'only during Full Burst' ATK 75.24% (which the parser dropped as an unsupported trigger) is modeled on fullBurstEnter for 10s (~full-burst length); Hit Rate 40.68% kept for fidelity (inert). Burst: Attack Speed 65% and ATK 88.12% kept; 'Number of pellets +5 for 15s' can't be expressed directly, so per guidance it is approximated as normalAttackPct +50% (5 extra pellets on a base of 10 = +50% normal-attack output) for 15s - note this ignores any interaction with the S1 pellet-fixed-at-1 state. All numbers verbatim from skill text.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 80 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "attackDamagePct", "value": 72 },
+        { "kind": "buff", "stat": "hitRatePct", "value": 98.18 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 55.08 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 75.24, "durationSec": 10 },
+        { "kind": "buff", "stat": "hitRatePct", "value": 40.68, "durationSec": 10 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "attackSpeedPct", "value": 65, "durationSec": 15 },
+        { "kind": "buff", "stat": "atkPct", "value": 88.12, "durationSec": 15 },
+        { "kind": "buff", "stat": "normalAttackPct", "value": 50, "durationSec": 15 }
+      ]
+    }
+  ]
+}

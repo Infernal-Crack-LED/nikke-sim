@@ -1,0 +1,43 @@
+{
+  "note": "S1 blk1 kept verbatim (471.86% every 50 hits). S1 blk2 is Annihilation-State-only: every 10 shots deals 15.62% to nearest 2 enemies (single boss -> 1 target) and applies Anti A.T. Field (Damage Taken +0.83%, stacks to 30). Annihilation State is up ~9s of the 40s burst cycle, so as steady-state throughput the '10 shots in-mode' proc becomes ~every 44 overall shots (9/40 time fraction, ignoring the in-mode fire-rate boost from Emergency Repair, so conservative). The Damage Taken debuff is modeled at its 30-stack cap (24.9%) as a near-permanent boss debuff; this is slightly generous since it only rebuilds each cycle and reaching 30 stacks assumes ~300 shots inside the 9s window (may be optimistic) - flagged as uncertain. Burst: Annihilation State self-buffs kept (normal-atk -40%, 21% reload, ATK +46.8% of caster ATK, Attack Damage +36%, all 9s). Annihilation finisher fires after the state ends for 6.62% x stack count; modeled as one 198.6% hit (6.62 x 30 cap) at burst cast (9s timing shift ignored). skill2 omitted: blk1 (Attack Damage +30.97% on Full Burst entry) is already parsed faithfully and Emergency Repair (blk2) is defensive/utility (heating, ammo clear, HP recovery, fixed reload) - skipped.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 50 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 471.86 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 44 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 15.62 },
+        { "kind": "buff", "stat": "damageTakenPct", "value": 0.83, "durationSec": 30, "maxStacks": 30 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "normalAttackPct", "value": -40, "durationSec": 9 },
+        { "kind": "instantReload", "fraction": 0.21 },
+        { "kind": "buff", "stat": "casterAtkPct", "value": 46.8, "durationSec": 9 },
+        { "kind": "buff", "stat": "attackDamagePct", "value": 36, "durationSec": 9 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 198.6 }
+      ]
+    }
+  ]
+}

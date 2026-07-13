@@ -1,0 +1,4 @@
+{
+  "note": "Reviewed whole kit; parser output is faithful for all three slots, so no slot is overridden. Skill1 (entering Full Burst -> top-2 ATK allies get Charge Speed 4.48% + ATK 43.1% for 10s) is parsed correctly as fullBurstEnter. Skill2 (Crit Rate 4.83% + Crit Damage 13.91%) is gated on 'above 5 enemy units, excluding Nikkes'; in a single-boss solo raid that condition is never met, so the parser correctly drops it (deliberately left inactive). Burst is the signature weapon swap and the parser already models it as weaponSwap (813.42%/shot, 300% full-charge, 2s charge time, 1 ammo, 10s); charge cadence is specified directly so no attackSpeedPct rider is needed. Nothing to add.",
+  "skill2": []
+}

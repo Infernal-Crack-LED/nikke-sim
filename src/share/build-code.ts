@@ -1,0 +1,94 @@
+// Compact, versioned, isomorphic codec for a full sim "build" — the entire
+// team + per-slot loadout + global boss options. This is the payload the share
+// link (?b=) carries and the payload a saved team stores (keyed by Discord id).
+// One format, three consumers: the web app, the DB, and the bot.
+//
+// Format: base64url( JSON( Build ) ). The version field lets the shape evolve
+// without breaking old links / saved rows. Kept dependency-free and identical
+// across browser (btoa/atob) and node (Buffer) by base64ing the UTF-8 bytes.
+
+export interface SlotBuild {
+  slug: string | null;
+  cubeId: string; // 'resilience' | 'bastion' | 'other' | 'none'
+  cubeLevel: number;
+  ol: 0 | 5;
+  doll: boolean;
+  stars: number; // 0-3
+  core: number; // 0-7
+  skill1: number; // 1-10
+  skill2: number;
+  burst: number;
+  lambdaStage?: 0 | 1 | 2 | 3;
+  mode?: string;
+  mpPriority?: boolean;
+  olElem?: string;
+  olAtk?: string;
+  olExtra?: { type: string; value: string }[];
+}
+
+export interface GlobalsBuild {
+  weakness: string | null; // boss weakness element, or null
+  bossDef: string;
+  core: number; // core-visibility preset 0..1
+  coreCustom: boolean;
+  coreCustomVal: string;
+  level: string; // synchro
+}
+
+export interface Build {
+  v: number; // format version
+  g: GlobalsBuild;
+  s: SlotBuild[]; // exactly 5
+}
+
+export const BUILD_VERSION = 1;
+
+// ---- isomorphic base64url of a UTF-8 string --------------------------------
+function bytesToB64(bytes: Uint8Array): string {
+  if (typeof Buffer !== 'undefined') return Buffer.from(bytes).toString('base64');
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  // eslint-disable-next-line no-undef
+  return btoa(bin);
+}
+function b64ToBytes(b64: string): Uint8Array {
+  if (typeof Buffer !== 'undefined') return new Uint8Array(Buffer.from(b64, 'base64'));
+  // eslint-disable-next-line no-undef
+  const bin = atob(b64);
+  return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+}
+function b64urlEncode(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  return bytesToB64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlDecode(code: string): string {
+  const b64 = code.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
+  return new TextDecoder().decode(b64ToBytes(b64 + pad));
+}
+
+// ---- encode / decode -------------------------------------------------------
+export function encodeBuild(build: Build): string {
+  return b64urlEncode(JSON.stringify(build));
+}
+
+// Returns null for anything malformed or an unknown version — callers should
+// treat null as "no valid build" (fall back to empty team).
+export function decodeBuild(code: string): Build | null {
+  try {
+    const obj = JSON.parse(b64urlDecode(code.trim()));
+    if (
+      !obj ||
+      typeof obj !== 'object' ||
+      obj.v !== BUILD_VERSION ||
+      !obj.g ||
+      !Array.isArray(obj.s) ||
+      obj.s.length !== 5
+    ) {
+      return null;
+    }
+    return obj as Build;
+  } catch {
+    return null;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "note": "Only skill2 needs override. Blk1 (all allies Pierce Damage +18.36% for 5s on full-charge) is kept for fidelity but pierceDamagePct is inert in v1. Blk2 is gated on 'Spy Lens fully stacked' (10 stacks of +4.44% Min Effective Range from full charges, Spy Lens itself is an inert range stat); as an SR that full-charges continuously she reaches and holds 10 stacks after a brief ramp, so the 'ATK +16% continuously' is modeled as an always-on passive self buff (the parser dropped it because the trigger was unsupported). 'Gain Pierce continuously' skipped (pierce inert). skill1 omitted: blk1 (ATK +15.2% of caster ATK to allies on full charge) is parsed faithfully and blk2 Spy Lens (Min Effective Range) is inert. burst omitted: allies Attack Damage +55.04% / Pierce +10.13% parsed faithfully, self Min Effective Range +55.56% is inert.",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 18.36, "durationSec": 5 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 16 }
+      ]
+    }
+  ]
+}

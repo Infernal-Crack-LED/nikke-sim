@@ -1,0 +1,72 @@
+{
+  "note": "HP-stacking nuke carry. S1: on every stage-3 burst cast she gains ATK = 2.71% of her final Max HP for 10s; Beautiful (Max HP +1.6% x12 via her Decoy) is baked in as 2.71 x 1.192 = 3.23% (steady state after the ~36s ramp). Her charge-speed ramp (+100% after the first full charge until reload) is averaged to a permanent +80% (5 of 6 shots in each mag get it). S1's 136.6% per full-charge hit kept per shot. Burst: 1365.92% x 10 sequential hits + 28.9% x 12 Beautiful mirror = 14006% total flat. Decoy itself is defensive (skipped).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkOfMaxHpPct",
+          "value": 3.23,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 80
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 136.6
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 14006
+        }
+      ]
+    }
+  ]
+}

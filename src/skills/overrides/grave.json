@@ -1,0 +1,33 @@
+{
+  "note": "Whole-kit Overheat model. S1: while in Heat Emission (her default, non-Prediction state, held most of the fight) she grants the team Burst Gauge filling speed +38.96% and Pierce Damage +48.4% (inert) continuously -> modeled as passive; slightly overcounts during the ~10s Prediction windows when Heat Emission is off. Heat-Emission self-heal and the Prediction-end 'remove 100% of bullets / Reload Ratio -50%' mechanic dropped (heal + defensive weapon-state, no damage). S2 Overheat ramp: Overheat I (+15.48% ATK after 15 normal hits, cleared on full reload) modeled as a hitCount-15 self buff, approximated as sustained (ignores the per-reload reset). Overheat II (+20.66% ATK) at 30 hits and Overheat III (+30.8% Attack Damage) at 60 hits only exist while in Prediction (her burst window), so both are tied to her burst cast for the 10s Prediction duration; the 30/60-hit build-up is approximated as full-window uptime (slight overcount early in the window). Burst slot omitted: parser output is faithful (unlimited ammo, self crit rate 85.19% + pierce, team Attack Damage 48.2% + pierce + max ammo); the HP-drain self-cost is skipped as defensive.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "burstGenPct", "value": 38.96 },
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 48.4 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 15 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 15.48 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 20.66, "durationSec": 10 },
+        { "kind": "buff", "stat": "attackDamagePct", "value": 30.8, "durationSec": 10 }
+      ]
+    }
+  ]
+}

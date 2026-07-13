@@ -6,14 +6,17 @@ export type SkillSlot = 'skill1' | 'skill2' | 'burst';
 export type StatKey =
   | 'atkPct'            // ATK ▲ x% (scales target's own ATK)
   | 'casterAtkPct'      // ATK ▲ x% of caster's ATK (flat add)
+  | 'atkOfMaxHpPct'     // ATK ▲ x% of the unit's own final Max HP (flat add — Cinderella, Maiden:IR)
   | 'critRatePct'
   | 'critDamagePct'
   | 'coreDamagePct'
   | 'elementDamagePct'
-  | 'chargeDamagePct'
+  | 'chargeDamagePct'     // additive percentage points in the charge bucket
+  | 'chargeDamageMultPct' // scales by BASE charge damage (collection items, Helm's max-treasure burst)
   | 'chargeSpeedPct'
   | 'attackDamagePct'   // "Attack Damage" — Damage Up bucket
   | 'sustainedDamagePct'
+  | 'sequentialDamagePct'
   | 'partsDamagePct'    // parsed but inert in v1 (no parts on the boss)
   | 'pierceDamagePct'   // parsed but inert in v1
   | 'damageTakenPct'    // debuff on the boss (positive = boss takes more)
@@ -26,6 +29,7 @@ export type StatKey =
   | 'projectileExplosionPct' // Damage Up bucket; only RL kits carry it
   | 'elemAdvantageDamagePct' // Damage Up bucket, active only with elemental advantage
   | 'distributedDamagePct'   // boosts the caster's own distributed-damage hits
+  | 'projectileAttachmentPct' // boosts the caster's projectile-attachment procs
   | 'normalAttackPct'        // scales the normal attack multiplier (like the SMG/SG doll line)
   | 'burstGenPct'            // scales the unit's burst gauge contribution
   | 'hitRatePct'        // inert in v1 (100% accuracy assumed)
@@ -50,13 +54,30 @@ export type TargetDef =
   | { kind: 'burstCasters' }                // allies who cast a burst this rotation
   | { kind: 'nonBurstCasters' }
   | { kind: 'alliesTopAtk'; count: number }
+  | {
+      kind: 'alliesLowestAtk'; // "N [Burst X] ally unit(s) with the lowest final ATK"
+      count: number;
+      burst?: 'I' | 'II' | 'III';
+      excludeSelf?: boolean; // e.g. Liberalio is immune to charge-speed buffs
+    }
   | { kind: 'alliesOfElement'; element: string }
   | { kind: 'alliesOfClass'; cls: string };
 
 export type EffectDef =
   | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number }
-  | { kind: 'flatDamage'; atkPct: number; flavor?: 'distributed' | 'true' } // instant hit, % of caster final ATK
-  | { kind: 'dot'; atkPct: number; durationSec: number; intervalSec?: number } // ticks every intervalSec (default 1)
+  | {
+      kind: 'flatDamage'; // instant hit, % of caster final ATK
+      atkPct: number;
+      flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
+      core?: boolean; // direct core strike: receives the core bucket, scaled by core-rate
+    }
+  | {
+      kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
+      atkPct: number;
+      durationSec: number;
+      intervalSec?: number;
+      flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
+    }
   | {
       kind: 'weaponSwap'; // "Changes the weapon in use:" — temporary weapon override
       damagePct: number;        // per-shot multiplier while swapped
@@ -66,11 +87,26 @@ export type EffectDef =
       durationSec: number;
     }
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
+  | {
+      kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
+      atkPct: number;    // per charge, % of caster's final ATK at release time
+      charges?: number;  // charges added per activation (default 1)
+      flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
+    }
+  | { kind: 'burstEligibility'; stage: 1 | 2 | 3 }            // unit may also burst at this stage (Rapi:RH Combat Assist)
+  | { kind: 'advantageVs'; element: string }                  // counts as elementally advantaged vs this boss element
   | { kind: 'burstCdr'; seconds: number; oncePerBattle?: boolean } // reduce targets' burst cooldowns
   | { kind: 'escalating'; steps: EffectDef[] }                // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
   | { kind: 'fullBurstExtend'; seconds: number }
   | { kind: 'unlimitedAmmo'; durationSec: number }
   | { kind: 'instantReload'; fraction?: number }              // refill magazine (fraction of max, default full)
+  | { kind: 'stun'; durationSec: number }                     // target can't fire/charge/reload (bursting unaffected)
+  | {
+      kind: 'stackedNuke'; // Maiden:IR MP — hits once per full burst the unit SAT OUT since its last burst
+      atkPct: number;      // per stack, % of final ATK
+      hpPct?: number;      // per stack, % of final Max HP added on top
+      maxStacks?: number;  // default 12
+    }
   | { kind: 'ignored'; note: string }                         // recognized, deliberately unmodeled (defensive etc.)
   | { kind: 'unsupported'; raw: string };                     // unparseable — surfaces as a warning
 
@@ -79,10 +115,28 @@ export interface Block {
   trigger: TriggerDef;
   target: TargetDef;
   effects: EffectDef[];
+  // static squad-formation gate, evaluated once at sim setup (e.g. Rapi:RH's
+  // Combat Assist only applies when the team has no Burst I unit). The unit
+  // itself never counts ("no OTHER Burst 1 allies").
+  formation?: 'noB1' | 'hasB1';
+  // mode gate: block active only when the unit's selected mode matches (the
+  // override's top-level `modes` array declares the choices; first = default)
+  mode?: string;
+  // effects apply only on every Nth activation of this block's trigger
+  // (e.g. Mast's Hangover: every 3rd full-burst end)
+  everyN?: number;
+  // core-hit gate: the block's in-game trigger needs a core hit, so it is
+  // inert when the fight has no core exposure (e.g. Liberalio's 20.83% rider)
+  requiresCore?: boolean;
+  // full-burst-state gate, checked when the trigger fires: 'inFb' blocks only
+  // activate during full burst, 'outFb' only outside it (e.g. Velvet's S1
+  // "when attacking with Full Charge while not in Full Burst")
+  fbGate?: 'inFb' | 'outFb';
 }
 
 export interface CharacterSkills {
   blocks: Block[];
   warnings: string[];
   source: 'parser' | 'override' | 'parser+override';
+  modes?: string[]; // user-selectable kit modes declared by the override (first = default)
 }

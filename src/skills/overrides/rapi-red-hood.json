@@ -1,0 +1,205 @@
+{
+  "note": "Whole-kit model; her three skills only make sense together. S1 Combat Assist: with NO Burst 1 ally she fills the B1 slot (stage-1 eligibility) and grants team CDR 7.48s + Attack Damage 8.02% on each full burst; WITH a B1 ally she instead self-buffs ATK 95.04% on full burst. S2: counts as elementally advantaged vs Electric, and every 120 normal attacks launches an attachable projectile (88.11% attach + 88.11% explosion, scaled by her passive attachment/explosion buffs; explosions are storedHits that batch-release at the NEXT full burst entry (after auras like Anis: Star's apply), matching the in-game attach-now-explode-on-FB behavior). Burst at stage 1 (Combat Assist): 20s self CDR -> effective 20s cooldown as a B1, team ATK 18.01% of caster. Burst at stage 3: 2808% nuke + attachment buff. Stage-3 'S2 requirement -60 for 10s' halves the projectile requirement (120->60), doubling proc rate during the window where her +421.2% attachment buff is active: modeled as one extra attach+explosion pair every 2s for 10s on her stage-3 cast.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "burstEligibility",
+          "stage": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 8.02,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "hasB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 95.04,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "advantageVs",
+          "element": "Electric"
+        },
+        {
+          "kind": "buff",
+          "stat": "projectileAttachmentPct",
+          "value": 150.72
+        },
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 100.6
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 88.11,
+          "flavor": "projectileAttachment"
+        },
+        {
+          "kind": "storedHit",
+          "atkPct": 88.11,
+          "flavor": "projectileExplosion"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 20
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 18.01,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 2808
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "projectileAttachmentPct",
+          "value": 421.2,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 88.11,
+          "durationSec": 10,
+          "intervalSec": 2,
+          "flavor": "projectileAttachment"
+        },
+        {
+          "kind": "storedHit",
+          "atkPct": 88.11,
+          "charges": 5,
+          "flavor": "projectileExplosion"
+        }
+      ]
+    }
+  ]
+}

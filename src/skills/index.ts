@@ -11,6 +11,10 @@ const SLOTS: SkillSlot[] = ['skill1', 'skill2', 'burst'];
 
 export interface OverrideFile {
   note?: string;
+  modes?: string[]; // user-selectable kit modes (first = default)
+  // hand-measured corrections to DB weapon data (e.g. real SR fire cycle =
+  // charge + bolt recovery, where the DB only records the charge time)
+  charFixes?: { chargeFrames?: number };
   skill1?: Block[];
   skill2?: Block[];
   burst?: Block[];
@@ -53,5 +57,5 @@ export function resolveSkills(
     blocks = scaleBlocks(blocks, scaling.arrays, scaling.levels, warnings);
   }
 
-  return { blocks, warnings, source };
+  return { blocks, warnings, source, modes: override?.modes };
 }

@@ -19,7 +19,16 @@ body {
 }
 
 .app { max-width: 1180px; margin: 0 auto; padding: 24px 20px 60px; }
+.header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.share-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 header h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: 0.2px; }
+.share-btn {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--accent);
+  border-radius: 8px; padding: 6px 14px; cursor: pointer; font-size: 13px; font-weight: 600;
+  white-space: nowrap;
+}
+.share-btn:hover:not(:disabled) { background: var(--accent); color: #0b1220; }
+.share-btn:disabled { opacity: 0.4; cursor: not-allowed; border-color: var(--border); }
 .muted { color: var(--muted); }
 .pad { padding: 8px 10px; }
 .big { font-size: 18px; color: var(--text); }
@@ -31,6 +40,10 @@ header h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: 0.2px; }
   padding: 14px 16px; margin: 18px 0;
 }
 .field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+.global.bulk { margin-top: -8px; gap: 12px 22px; padding: 10px 16px; background: var(--panel2); }
+.global.bulk .field label { color: var(--accent); }
+.pills button.scope-lock { border-color: var(--accent); color: var(--text); font-weight: 600; }
+.pills button.scope-lock:hover { background: var(--accent); color: #0b1220; }
 .pills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .pills button {
   background: var(--panel2); color: var(--text); border: 1px solid var(--border);
@@ -39,6 +52,7 @@ header h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: 0.2px; }
 .pills button:hover { border-color: var(--accent); }
 .pills button.on { background: var(--accent); border-color: var(--accent); color: #0b1220; font-weight: 600; }
 .pills.small button { padding: 2px 9px; font-size: 12px; }
+.pill-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; min-width: 30px; }
 input.num {
   width: 76px; background: var(--panel2); border: 1px solid var(--border); color: var(--text);
   border-radius: 8px; padding: 4px 8px; font-size: 13px;
@@ -50,8 +64,15 @@ input.num {
 @media (max-width: 560px) { .team { grid-template-columns: 1fr; } }
 .card {
   background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-  padding: 10px; display: flex; flex-direction: column; gap: 8px;
+  padding: 10px; display: flex; flex-direction: column; gap: 6px;
 }
+/* group heading that also acts as a hairline divider between option groups */
+.card-group-label {
+  font-size: 9px; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted);
+  margin-top: 4px; padding-top: 7px; border-top: 1px solid var(--border);
+}
+.card .pill-label { flex: 0 0 34px; min-width: 34px; }
+.card .pills.small button { padding: 2px 8px; }
 .slot-head { display: flex; justify-content: space-between; font-size: 11px; }
 .tag { color: var(--muted); }
 .portrait {
@@ -87,6 +108,63 @@ input.num {
 .cube button.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; color: var(--text); }
 .cube img { height: 30px; }
 
+/* OL lines (per card) */
+.ol { display: flex; flex-direction: column; gap: 5px; border-top: 1px solid var(--border); padding-top: 7px; }
+.ol-base { display: flex; gap: 6px; }
+.ol-base label, .ol-line { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+.ol input.num { width: 100%; min-width: 0; }
+.ol-base label { flex: 1; }
+.ol-line select {
+  flex: 1; min-width: 0; background: var(--panel2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 3px 4px; font-size: 11px;
+}
+.ol-line .num { flex: 0 0 46px; }
+.ol-rm {
+  flex: 0 0 auto; background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 6px; padding: 1px 6px; cursor: pointer; line-height: 1;
+}
+.ol-rm:hover { color: var(--warn); border-color: var(--warn); }
+.ol-add {
+  background: none; border: 1px dashed var(--border); color: var(--muted);
+  border-radius: 6px; padding: 3px; cursor: pointer; font-size: 11px;
+}
+.ol-add:hover { color: var(--accent); border-color: var(--accent); }
+
+/* calc tabs */
+.tabs-bar { display: flex; gap: 4px; margin: 14px 0 4px; border-bottom: 1px solid var(--border); }
+.tabs-bar button {
+  background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted);
+  padding: 8px 14px; cursor: pointer; font-size: 14px; margin-bottom: -1px;
+}
+.tabs-bar button:hover { color: var(--text); }
+.tabs-bar button.on { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+.calc-tab { margin-top: 18px; }
+.calc-tab h2 { font-size: 18px; margin: 0 0 4px; }
+.calc-tab .field { max-width: 480px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip {
+  background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 999px; padding: 3px 10px; cursor: pointer; font-size: 12px;
+}
+.chip:hover { border-color: var(--warn); color: var(--warn); }
+.chip.clear { color: var(--muted); border-style: dashed; }
+.calc-run {
+  margin: 14px 0; background: var(--accent); color: #0b1220; border: 0;
+  border-radius: 8px; padding: 8px 18px; cursor: pointer; font-size: 14px; font-weight: 600;
+}
+.calc-run:disabled { opacity: 0.45; cursor: not-allowed; }
+.calc-pending code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
+
+/* best-OL calculator */
+.ol-calc { margin-top: 16px; }
+.ol-tier { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.ol-tier .num { width: 56px; }
+.ol-calc-unit { padding: 8px 0; border-top: 1px solid var(--border); }
+.ol-calc-unit:first-of-type { border-top: 0; }
+.ol-calc-cols { display: flex; flex-wrap: wrap; gap: 24px; }
+.ol-calc-cols ul { margin: 2px 0 8px; padding-left: 18px; color: var(--muted); font-size: 12px; }
+.ol-calc-cols b { color: var(--text); }
+
 /* results */
 .banner {
   margin: 16px 0; padding: 10px 14px; border-radius: 8px;
@@ -101,7 +179,7 @@ th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacin
 tbody tr:last-child td { border-bottom: 0; }
 .r { text-align: right; }
 .share { color: var(--accent); font-weight: 600; }
-.adv { color: var(--warn); }
+.adv { color: #4ecb71; }
 
 .toggles { display: flex; gap: 8px; margin: 14px 0; }
 .toggles button {

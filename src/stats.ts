@@ -34,6 +34,19 @@ export function gearAtk(cls: NikkeClass, ol: 0 | 5): number {
   return GEAR_ATK[cls][ol];
 }
 
+// Full T10 set HP (3 HP pieces summed) by class, OL0/OL5 — from gear_doll.md.
+const GEAR_HP: Record<NikkeClass, { 0: number; 5: number }> = {
+  Defender: { 0: 60111 + 195360 + 45084, 5: 90167 + 293040 + 67626 },
+  Attacker: { 0: 49181 + 159840 + 36887, 5: 73771 + 239760 + 55331 },
+  Supporter: { 0: 54646 + 177600 + 40985, 5: 81969 + 266400 + 61477 },
+};
+
+export function gearHp(cls: NikkeClass, ol: 0 | 5): number {
+  return GEAR_HP[cls][ol];
+}
+
+export const DOLL_HP = 301800;
+
 export const DOLL_ATK = 9688;
 
 // Doll special line by weapon (gear_doll.md). normalAttackPct scales the normal

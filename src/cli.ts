@@ -43,6 +43,8 @@ loadout (per-slot lists are comma- or semicolon-separated in slot order; a singl
   --lines <s1;s2;s3;s4;s5>      OL lines per slot: type[*count][@value] joined by '+',
                                 e.g. "elem*4+atk*4;;;ammo*2;" (types: see data/ol-lines.json)
   --skill-levels <l1,..,l5>     skill levels per slot as n or s1/s2/burst, e.g. 10/4/10 (default 10)
+  --lambda-as <1|2|3,...>       pin a Λ unit (Red Hood) to burst ONLY at that stage, per slot ('-' = auto)
+  --mode <m1,..,m5>             kit mode per slot for mode-switch units, e.g. CCW snipe|mg ('-' = default)
   --best-ol <1-5>               after the sim, greedy-search the best OL lines for that slot
 
   --list [filter]       list available slugs and exit
@@ -64,7 +66,7 @@ if (argv[0] === '--coverage') {
   let clean = 0, warned = 0, overridden = 0;
   const rows: Array<[string, number, string]> = [];
   for (const c of Object.values(data.characters)) {
-    const s = resolveSkills(c);
+    const s = resolveSkills(c, loadOverride(c.slug));
     if (s.source !== 'parser') overridden++;
     if (s.warnings.length) { warned++; rows.push([c.slug, s.warnings.length, s.warnings[0]]); }
     else clean++;
@@ -195,6 +197,27 @@ perSlot(opts.ol as string, ',').forEach((spec, i) => {
 perSlot(opts.doll as string, ',').forEach((spec, i) => {
   if (spec === undefined) return;
   unitOpts[i].doll = /^y(es)?$|^true$|^1$|^on$/i.test(spec);
+});
+
+perSlot(opts.mode as string, ',').forEach((spec, i) => {
+  if (spec === undefined) return;
+  const modes = loadOverride(slugs[i])?.modes;
+  if (!modes?.length) usage(`--mode set for slot ${i + 1} (${chars[i].name}) but their kit declares no modes`);
+  const match = modes.find((m) => m.toLowerCase().startsWith(spec.toLowerCase()));
+  if (!match) usage(`unknown mode "${spec}" for ${chars[i].name} (options: ${modes.join(', ')})`);
+  unitOpts[i].mode = match;
+});
+
+perSlot(opts['mp-priority'] as string, ',').forEach((spec, i) => {
+  if (spec === undefined) return;
+  unitOpts[i].mpPriority = /^y(es)?$|^true$|^1$|^on$/i.test(spec);
+});
+
+perSlot(opts['lambda-as'] as string, ',').forEach((spec, i) => {
+  if (spec === undefined) return;
+  if (!['1', '2', '3'].includes(spec)) usage(`--lambda-as entries must be 1, 2, or 3 (got "${spec}")`);
+  if (chars[i].burst !== 'Λ') usage(`--lambda-as set for slot ${i + 1} (${chars[i].name}) but they are B${chars[i].burst}, not Λ`);
+  unitOpts[i].lambdaStage = Number(spec) as 1 | 2 | 3;
 });
 
 perSlot(opts.lines as string, ';').forEach((spec, i) => {

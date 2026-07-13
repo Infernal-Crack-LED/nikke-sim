@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { runSim, type SimResult } from '../../src/engine/sim';
 import { prepareTeam, type UnitOptions } from '../../src/prepare';
 import type { OverrideFile } from '../../src/skills/index';
@@ -8,13 +8,72 @@ import type {
   LevelMultiplier,
   SimConfig,
 } from '../../src/types';
+import {
+  drawTeamCard,
+  cardHeight,
+  CARD_W,
+  type Canvas2DLike,
+} from '../../src/share/teamCard';
 import charactersJson from '../../data/characters.json';
 import cubesJson from '../../data/cubes.json';
 import multJson from '../../data/level-multiplier.json';
+import skillLevelsJson from '../../data/skill-levels.json';
+import olLinesJson from '../../data/ol-lines.json';
+import olTiersJson from '../../data/ol-tiers.json';
 
 const data = charactersJson as unknown as DataFile;
 const cubes = cubesJson as any;
 const mult = multJson as unknown as LevelMultiplier;
+// per-skill-level value tables (blablalink), keyed by slug — enables skill
+// levels below 10; slugs missing here just stay at max level
+const skillLevelData = skillLevelsJson as any;
+const olLinesData = olLinesJson as any;
+// per-tier OL substat values (from docs/ol-lines.csv)
+const olTiers = (olTiersJson as any).tiers as Array<Record<string, number>>;
+const olTierValues = (tier: number): Record<string, number> =>
+  olTiers.find((t) => t.tier === tier) ?? olTiers.find((t) => t.tier === 11)!;
+
+// Feature flag: OL line entry + best-OL calculator are WIP, hidden for now.
+// Flip to true to expose them (or wire to an env/query flag later).
+const OL_UI_ENABLED = false;
+
+// Feature flag: the tab system + team/roster/character calculators are WIP,
+// front-end scaffolds only (search logic is a backend handoff). Hidden for now.
+const CALC_TABS_ENABLED = false;
+type CalcTab = 'sim' | 'team' | 'roster' | 'character';
+const CALC_TABS: { key: CalcTab; label: string }[] = [
+  { key: 'sim', label: 'Sim' },
+  { key: 'team', label: 'Team Calc' },
+  { key: 'roster', label: 'Roster Calc' },
+  { key: 'character', label: 'Character Calc' },
+];
+
+// ---- best-OL breakpoint math (pure; damage-ranked selection is backend) ----
+const CHARGE_SPEED_BREAKPOINTS = [5, 8, 11, 15, 18, 21]; // %, RL/SR targets
+
+// NIKKE max ammo = floor(base * (1 + totalAmmoPct/100))
+function ammoLineRows(base: number, perLinePct: number) {
+  return [1, 2, 3, 4].map((lines) => {
+    const pct = lines * perLinePct;
+    return { lines, pct, ammo: Math.floor(base * (1 + pct / 100)) };
+  });
+}
+function ammoBreakpoints(base: number, perLinePct: number) {
+  const maxAmmo = Math.floor(base * (1 + (4 * perLinePct) / 100));
+  const out: { ammo: number; minPct: number; linesNeeded: number }[] = [];
+  for (let v = base + 1; v <= maxAmmo; v++) {
+    const minPct = (v / base - 1) * 100;
+    const linesNeeded = Math.ceil(minPct / perLinePct - 1e-9);
+    if (linesNeeded <= 4) out.push({ ammo: v, minPct, linesNeeded });
+  }
+  return out;
+}
+function chargeSpeedRows(perLinePct: number) {
+  return CHARGE_SPEED_BREAKPOINTS.map((target) => {
+    const linesNeeded = Math.ceil(target / perLinePct - 1e-9);
+    return { target, linesNeeded, actual: linesNeeded * perLinePct };
+  });
+}
 
 // bundle the hand-verified skill overrides
 const overrideModules = import.meta.glob('../../src/skills/overrides/*.json', {
@@ -34,6 +93,18 @@ const ELEMENTS: (Element | null)[] = [
   'Electric',
   'Iron',
 ];
+
+// The boss's element, given the element it is weak to (i.e. the element the
+// user picks). A nikke of the weakness element is elementally advantaged, which
+// the engine models as BEATS[nikke.element] === bossElement — so bossElement is
+// the element the chosen weakness beats.
+const WEAKNESS_TO_BOSS: Record<Element, Element> = {
+  Electric: 'Water',
+  Iron: 'Electric',
+  Wind: 'Iron',
+  Fire: 'Wind',
+  Water: 'Fire',
+};
 const CUBE_IDS = ['resilience', 'bastion', 'other'] as const;
 const CUBE_LEVELS = [7, 10, 15] as const;
 const CORE_PRESETS = [
@@ -48,23 +119,126 @@ const allChars = Object.values(data.characters).sort((a, b) =>
   a.name.localeCompare(b.name),
 );
 
+// 'none' = no cube equipped at all (no flat ATK, no elemental damage, no effect);
+// distinct from the 'other' cube, which still grants base stats + elemental damage.
+type CubeChoice = (typeof CUBE_IDS)[number] | 'none';
+
 interface SlotState {
   slug: string | null;
-  cubeId: (typeof CUBE_IDS)[number];
+  cubeId: CubeChoice;
   cubeLevel: number;
   cubeCustom: boolean;
   ol: 0 | 5;
   doll: boolean;
+  lambdaStage: 0 | 1 | 2 | 3; // Λ units only; 0 = auto (any stage)
+  stars: number; // Limit Break stars / grade 0-3
+  core: number; // Core enhancement 0-7
+  dupeCustom: boolean; // show the granular star/core buttons instead of presets
+  mode?: string; // kit mode for mode-switch units (undefined = default)
+  mpPriority?: boolean; // stackedNuke units: jump the burst queue at max MP
+  skill1: number; // skill-1 level 1-10
+  skill2: number; // skill-2 level 1-10
+  burst: number; // burst-skill level 1-10
+  olElem: string; // total Elemental Damage % from OL lines (textbox)
+  olAtk: string; // total ATK % from OL lines (textbox)
+  olExtra: { type: string; value: string }[]; // additional OL lines
+}
+
+const STAR_LEVELS = [0, 1, 2, 3] as const;
+const CORE_LEVELS = [0, 1, 2, 3, 4, 5, 6, 7] as const;
+const SKILL_LEVELS = [4, 7, 10] as const; // common breakpoints
+// common dupe presets; "…" expands to the granular star/core buttons
+const DUPE_PRESETS = [
+  { label: '0', stars: 0, core: 0 },
+  { label: 'MLB', stars: 3, core: 0 },
+  { label: 'Core 7', stars: 3, core: 7 },
+] as const;
+
+// OL line types the user can add (keys match data/ol-lines.json)
+const OL_LINE_TYPES = [
+  { key: 'ammo', label: 'Max Ammo' },
+  { key: 'chargedmg', label: 'Charge DMG' },
+  { key: 'chargespd', label: 'Charge Speed' },
+  { key: 'critrate', label: 'Crit Rate' },
+  { key: 'critdmg', label: 'Crit DMG' },
+  { key: 'elem', label: 'Elemental DMG' },
+  { key: 'atk', label: 'ATK' },
+  { key: 'hitrate', label: 'Hit Rate' },
+  { key: 'def', label: 'DEF' },
+] as const;
+const OL_STAT_BY_TYPE: Record<string, string> = {
+  elem: 'elementDamagePct',
+  atk: 'atkPct',
+  ammo: 'maxAmmoPct',
+  chargedmg: 'chargeDamagePct',
+  chargespd: 'chargeSpeedPct',
+  critrate: 'critRatePct',
+  critdmg: 'critDamagePct',
+  hitrate: 'hitRatePct',
+  def: 'defPct',
+};
+
+// turn a slot's manual OL entries into engine LineSelection[] (count 1 per
+// entry; the textbox value is the total % for that stat). the sim resolves
+// `type` against data/ol-lines.json and adds `value * count` to the stat.
+function buildOlLines(
+  s: SlotState,
+): { type: string; count: number; value: number }[] {
+  const out: { type: string; count: number; value: number }[] = [];
+  const push = (type: string, raw: string) => {
+    const v = Number(raw);
+    if (Number.isFinite(v) && v > 0) out.push({ type, count: 1, value: v });
+  };
+  push('elem', s.olElem);
+  push('atk', s.olAtk);
+  for (const line of s.olExtra) if (line.type) push(line.type, line.value);
+  return out;
 }
 
 const defaultSlot = (slug: string | null): SlotState => ({
   slug,
-  cubeId: 'other',
+  cubeId: 'resilience',
   cubeLevel: 15,
   cubeCustom: false,
   ol: 0,
-  doll: false,
+  doll: true,
+  lambdaStage: 0,
+  stars: 3,
+  core: 0,
+  dupeCustom: false,
+  skill1: 10,
+  skill2: 10,
+  burst: 10,
+  olElem: '',
+  olAtk: '',
+  olExtra: [],
 });
+
+// remember the last team + loadout across refreshes
+const TEAM_STORAGE_KEY = 'nikke-sim.team.v1';
+
+const emptyTeam = (): SlotState[] =>
+  Array.from({ length: 5 }, () => defaultSlot(null));
+
+function loadStoredTeam(): SlotState[] | null {
+  try {
+    const raw = localStorage.getItem(TEAM_STORAGE_KEY);
+    if (!raw) return null;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr) || arr.length !== 5) return null;
+    // merge over defaults so slots saved before a schema change still load,
+    // and drop any slug no longer present in the data
+    return arr.map((s) => {
+      const slug =
+        s && typeof s.slug === 'string' && data.characters[s.slug]
+          ? s.slug
+          : null;
+      return { ...defaultSlot(null), ...s, slug };
+    });
+  } catch {
+    return null;
+  }
+}
 
 const fmt = (n: number) =>
   n >= 1e9
@@ -74,6 +248,91 @@ const fmt = (n: number) =>
       : n >= 1e3
         ? `${(n / 1e3).toFixed(1)}K`
         : n.toFixed(0);
+
+// ---- team-buff summary (built from the prepared skill blocks) -------------
+const STAT_LABELS: Record<string, string> = {
+  atkPct: 'ATK ▲',
+  casterAtkPct: 'ATK ▲ (of caster ATK)',
+  critRatePct: 'Crit Rate ▲',
+  critDamagePct: 'Crit DMG ▲',
+  coreDamagePct: 'Core DMG ▲',
+  elementDamagePct: 'Elemental DMG ▲',
+  chargeDamagePct: 'Charge DMG ▲',
+  chargeSpeedPct: 'Charge Speed ▲',
+  attackDamagePct: 'Attack DMG ▲',
+  sustainedDamagePct: 'Sustained DMG ▲',
+  partsDamagePct: 'Parts DMG ▲',
+  pierceDamagePct: 'Pierce DMG ▲',
+  damageTakenPct: 'DMG Taken ▲',
+  maxAmmoPct: 'Max Ammo ▲',
+  reloadSpeedPct: 'Reload Speed ▲',
+  attackSpeedPct: 'Attack Speed ▲',
+  fireRatePct: 'Fire Rate ▲',
+  extraHitDamagePct: 'Extra Hit DMG',
+  trueDamagePct: 'True DMG ▲',
+  projectileExplosionPct: 'Proj. Explosion DMG ▲',
+  elemAdvantageDamagePct: 'Elem. Advantage DMG ▲',
+  distributedDamagePct: 'Distributed DMG ▲',
+  projectileAttachmentPct: 'Proj. Attachment DMG ▲',
+  normalAttackPct: 'Normal Attack ▲',
+  burstGenPct: 'Burst Gen ▲',
+  hitRatePct: 'Hit Rate ▲',
+  defPct: 'DEF ▲',
+};
+
+function targetLabel(t: any): string {
+  switch (t?.kind) {
+    case 'self': return 'self';
+    case 'allies': return 'all allies';
+    case 'enemy': return 'boss';
+    case 'burstCasters': return 'burst casters';
+    case 'nonBurstCasters': return 'non-burst casters';
+    case 'alliesTopAtk': return `top ${t.count} ATK allies`;
+    case 'alliesOfElement': return `${t.element} allies`;
+    case 'alliesOfClass': return `${t.cls} allies`;
+    default: return 'allies';
+  }
+}
+
+function triggerLabel(tr: any): string {
+  switch (tr?.kind) {
+    case 'passive': return 'always';
+    case 'burstCast': return tr.stage ? `on burst ${tr.stage}` : 'on burst';
+    case 'fullBurstEnter': return 'full burst';
+    case 'fullBurstEnd': return 'full burst end';
+    case 'hitCount': return `every ${tr.count} hits`;
+    case 'shotFired': return 'per shot';
+    case 'lastBullet': return 'last bullet';
+    case 'stageEnter': return `stage ${tr.stage} burst`;
+    case 'bossElement': return `boss is ${tr.element}`;
+    default: return 'conditional';
+  }
+}
+
+// pull every buff effect out of a block's effects (flattening escalating steps)
+function collectBuffs(effects: any[]): any[] {
+  const out: any[] = [];
+  for (const e of effects ?? []) {
+    if (e?.kind === 'buff') out.push(e);
+    else if (e?.kind === 'escalating') out.push(...collectBuffs(e.steps));
+  }
+  return out;
+}
+
+function buffLines(blocks: any[]): string[] {
+  const lines: string[] = [];
+  for (const block of blocks ?? []) {
+    for (const e of collectBuffs(block.effects)) {
+      const stat = STAT_LABELS[e.stat] ?? e.stat;
+      const dur = e.durationSec ? ` · ${e.durationSec}s` : '';
+      const stacks = e.maxStacks && e.maxStacks > 1 ? ` ×${e.maxStacks}` : '';
+      lines.push(
+        `${stat} ${e.value}%${stacks} → ${targetLabel(block.target)}${dur} (${triggerLabel(block.trigger)})`,
+      );
+    }
+  }
+  return lines;
+}
 
 function CharPicker({
   slot,
@@ -127,33 +386,143 @@ function CharPicker({
   );
 }
 
+// search box that adds a nikke on pick (for blocked list / single-char picks);
+// clears after each pick and hides anything already excluded
+function CharSearch({
+  placeholder,
+  exclude,
+  onPick,
+}: {
+  placeholder: string;
+  exclude: string[];
+  onPick: (slug: string) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const q = query.toLowerCase();
+  const matches = allChars
+    .filter((c) => !exclude.includes(c.slug))
+    .filter(
+      (c) => !q || c.slug.includes(q) || c.name.toLowerCase().includes(q),
+    )
+    .slice(0, 12);
+  return (
+    <div className='picker'>
+      <input
+        value={query}
+        placeholder={placeholder}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onChange={(e) => setQuery(e.target.value)}
+      />
+      {open && (
+        <div className='picker-list'>
+          {matches.map((c) => (
+            <button
+              key={c.slug}
+              onMouseDown={() => {
+                onPick(c.slug);
+                setQuery('');
+              }}
+            >
+              {c.imageUrl && <img src={c.imageUrl} alt='' loading='lazy' />}
+              <span>{c.name}</span>
+              <span className='muted'>
+                B{c.burst} · {c.weapon} · {c.element}
+              </span>
+            </button>
+          ))}
+          {!matches.length && <div className='muted pad'>no matches</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function App() {
-  const [slots, setSlots] = useState<SlotState[]>([
-    defaultSlot('liter'),
-    defaultSlot('crown'),
-    defaultSlot('naga'),
-    defaultSlot('modernia'),
-    defaultSlot('alice'),
-  ]);
-  const [element, setElement] = useState<Element | null>(null);
+  const [slots, setSlots] = useState<SlotState[]>(() => {
+    // shareable prefill takes priority: ?team=liter,crown,naga,modernia,alice
+    const param = new URLSearchParams(window.location.search).get('team');
+    if (param) {
+      const team = param
+        .split(',')
+        .map((s) => (data.characters[s.trim()] ? s.trim() : null));
+      return Array.from({ length: 5 }, (_, i) => defaultSlot(team[i] ?? null));
+    }
+    // otherwise restore the last team from a previous session
+    return loadStoredTeam() ?? emptyTeam();
+  });
+  const [weakness, setWeakness] = useState<Element | null>(null);
   const [bossDef, setBossDef] = useState('0');
   const [core, setCore] = useState<number>(0);
   const [coreCustom, setCoreCustom] = useState(false);
   const [coreCustomVal, setCoreCustomVal] = useState('10');
   const [level, setLevel] = useState('400');
-  const [copies, setCopies] = useState('3');
   const [showRotation, setShowRotation] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
+  const [showBuffs, setShowBuffs] = useState(false);
+  const [shared, setShared] = useState(false);
+  const [imaged, setImaged] = useState(false);
+  const [showOlCalc, setShowOlCalc] = useState(false);
+  const [olTier, setOlTier] = useState(11); // best-OL calc tier (default 11)
+  const [tab, setTab] = useState<CalcTab>('sim');
+  const [blocked, setBlocked] = useState<string[]>([]); // don't-own / excluded
+  const [calcChar, setCalcChar] = useState<string | null>(null); // Character Calc
 
   const setSlot = (i: number, patch: Partial<SlotState>) =>
     setSlots((s) =>
       s.map((slot, j) => (j === i ? { ...slot, ...patch } : slot)),
     );
 
+  // bulk-apply a loadout choice to every slot at once
+  const setAll = (patch: Partial<SlotState>) =>
+    setSlots((s) => s.map((slot) => ({ ...slot, ...patch })));
+
+  // whether every slot already matches — drives the "on" look on bulk buttons
+  const allHave = (pred: (s: SlotState) => boolean) => slots.every(pred);
+
+  // "scope lock" preset: no cubes, no doll, OL0 gear, 3★/7 core, 400 synchro
+  const applyScopeLock = () => {
+    setAll({ cubeId: 'none', doll: false, ol: 0, stars: 3, core: 7 });
+    setLevel('400');
+  };
+
+  // build a shareable link that prefills the team via the ?team= param.
+  // positions are preserved (empty slots become empty entries).
+  const buildShareUrl = () => {
+    const team = slots.map((s) => s.slug ?? '').join(',');
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.searchParams.set('team', team);
+    return url.toString();
+  };
+
+  const onShare = async () => {
+    const url = buildShareUrl();
+    try {
+      await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 1500);
+    } catch {
+      // clipboard blocked (insecure context / permissions) — show the link
+      window.prompt('Copy this team link:', url);
+    }
+  };
+
+  // persist the team + loadout so it survives a refresh
+  useEffect(() => {
+    try {
+      localStorage.setItem(TEAM_STORAGE_KEY, JSON.stringify(slots));
+    } catch {
+      /* storage unavailable (private mode / quota) — skip persistence */
+    }
+  }, [slots]);
+
   const sim = useMemo((): {
     result?: SimResult;
     error?: string;
     compWarning?: string;
+    teamBuffs?: { name: string; position: number; lines: string[] }[];
   } => {
     if (slots.some((s) => !s.slug))
       return { error: 'pick 5 nikkes to run the sim' };
@@ -167,10 +536,10 @@ export function App() {
       : core;
     const cfg: SimConfig = {
       slugs: slots.map((s) => s.slug!),
-      bossElement: element,
+      bossElement: weakness ? WEAKNESS_TO_BOSS[weakness] : null,
       bossDef: Number(bossDef) || 0,
       level: Math.min(1200, Math.max(1, Number(level) || 400)),
-      copies: Math.min(10, Math.max(0, Number(copies) || 3)),
+      copies: 0, // dupes are per-unit now (stars + core); this global fallback is unused
       doll: false,
       ol: 0,
       coreHitRate: coreRate,
@@ -178,23 +547,43 @@ export function App() {
       durationSec: 180,
     };
     const unitOpts: UnitOptions[] = slots.map((s) => ({
-      cube: {
-        id: s.cubeId,
-        level: Math.min(15, Math.max(1, s.cubeLevel || 15)),
-      },
+      // 'none' → omit the cube entirely (backend adds no cube stats when unset)
+      cube:
+        s.cubeId === 'none'
+          ? undefined
+          : {
+              id: s.cubeId,
+              level: Math.min(15, Math.max(1, s.cubeLevel || 15)),
+            },
       ol: s.ol,
       doll: s.doll,
+      stars: Math.min(3, Math.max(0, s.stars)),
+      core: Math.min(7, Math.max(0, s.core)),
+      lambdaStage:
+        s.lambdaStage && s.slug && data.characters[s.slug].burst === 'Λ'
+          ? s.lambdaStage
+          : undefined,
+      mode: s.mode,
+      mpPriority: s.mpPriority,
+      skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
+      lines: OL_UI_ENABLED ? buildOlLines(s) : undefined,
     }));
     try {
       const prepared = prepareTeam(chars, unitOpts, {
         overrides,
-        skillLevels: {},
+        skillLevels: skillLevelData,
         cubes,
-        olLines: { lines: {} },
+        olLines: olLinesData,
       });
       const result = runSim(chars as any, mult, cfg, prepared);
+      const teamBuffs = result.units.map((u, i) => ({
+        name: u.name,
+        position: u.position,
+        lines: buffLines(prepared[i].skills.blocks),
+      }));
       return {
         result,
+        teamBuffs,
         compWarning: compOk
           ? undefined
           : `composition is ${counts.I}×BI ${counts.II}×BII ${counts.III}×BIII ${counts['Λ']}×BΛ — expected 1×BI, 1×BII, 2×BIII + flex; rotation may stall`,
@@ -202,38 +591,259 @@ export function App() {
     } catch (e) {
       return { error: (e as Error).message };
     }
-  }, [
-    slots,
-    element,
-    bossDef,
-    core,
-    coreCustom,
-    coreCustomVal,
-    level,
-    copies,
-  ]);
+  }, [slots, weakness, bossDef, core, coreCustom, coreCustomVal, level]);
 
   const r = sim.result;
+
+  const coreLabel = () =>
+    coreCustom ? `${coreCustomVal}% core` : `${Math.round(core * 100)}% core`;
+
+  // Render the summary card to a PNG via the shared, isomorphic drawTeamCard
+  // (same code the bot uses). This wrapper is the browser-specific part: create
+  // + size the canvas, scale for DPR, and export a blob.
+  const buildShareImage = async (): Promise<Blob | null> => {
+    if (!r) return null;
+    const dpr = 2;
+    const cv = document.createElement('canvas');
+    cv.width = CARD_W * dpr;
+    cv.height = cardHeight(r.units.length) * dpr;
+    const ctx = cv.getContext('2d');
+    if (!ctx) return null; // jsdom / no canvas support
+    ctx.scale(dpr, dpr);
+    drawTeamCard(
+      ctx as unknown as Canvas2DLike,
+      {
+        teamDamage: r.teamDamage,
+        teamDps: r.teamDps,
+        fullBursts: r.fullBursts,
+        fullBurstUptime: r.fullBurstUptime,
+        units: r.units.map((u) => ({
+          name: u.name,
+          burst: u.burst,
+          weapon: u.weapon,
+          element: u.element,
+          advantaged: u.advantaged,
+          share: u.share,
+          totalDamage: u.totalDamage,
+        })),
+      },
+      {
+        weakness,
+        level: Math.min(1200, Math.max(1, Number(level) || 400)),
+        coreLabel: coreLabel(),
+      },
+    );
+    return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'));
+  };
+
+  const onShareImage = async () => {
+    const blob = await buildShareImage();
+    if (!blob) return;
+    const file = new File([blob], 'nikke-team.png', { type: 'image/png' });
+    const nav = navigator as any;
+    // native share sheet (mobile / supported desktop) — best for real sharing
+    if (nav.canShare?.({ files: [file] })) {
+      try {
+        await nav.share({ files: [file], title: 'NIKKE Solo Raid Sim' });
+        return;
+      } catch {
+        return; // user cancelled
+      }
+    }
+    // else copy the image to the clipboard, falling back to a download
+    try {
+      if (nav.clipboard?.write && (window as any).ClipboardItem) {
+        await nav.clipboard.write([
+          new (window as any).ClipboardItem({ 'image/png': blob }),
+        ]);
+        setImaged(true);
+        setTimeout(() => setImaged(false), 1500);
+        return;
+      }
+    } catch {
+      /* clipboard blocked — download instead */
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'nikke-team.png';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setImaged(true);
+    setTimeout(() => setImaged(false), 1500);
+  };
+
+  // shared blocked-character panel (Team Calc + Roster Calc) — exclude nikkes
+  // the user doesn't own from the search
+  const blockedPanel = (
+    <div className='field'>
+      <label title='nikkes you do not own / want excluded from the search'>
+        Blocked characters
+      </label>
+      <CharSearch
+        placeholder='block a nikke…'
+        exclude={blocked}
+        onPick={(slug) => setBlocked((b) => [...b, slug])}
+      />
+      {blocked.length > 0 && (
+        <div className='chips'>
+          {blocked.map((slug) => (
+            <button
+              key={slug}
+              className='chip'
+              title='remove'
+              onClick={() =>
+                setBlocked((b) => b.filter((s) => s !== slug))
+              }
+            >
+              {data.characters[slug]?.name ?? slug} ×
+            </button>
+          ))}
+          <button className='chip clear' onClick={() => setBlocked([])}>
+            clear all
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  // frontend scaffold for the calc tabs — the actual search/optimization is a
+  // backend handoff (docs/calc-tabs-handoff.md), so results show a pending note
+  const pendingNote = (what: string) => (
+    <div className='notes calc-pending'>
+      <b>{what}</b> is not wired yet — this is the front-end scaffold. The search
+      runs the shared engine on the backend; see{' '}
+      <code>docs/calc-tabs-handoff.md</code>. Assumptions come from the teamwide
+      options above (boss weakness, DEF, core visibility, synchro) and the
+      “Apply to all” loadout row.
+    </div>
+  );
+
+  const renderCalcTab = () => {
+    if (tab === 'team') {
+      return (
+        <section className='calc-tab'>
+          <h2>Team Calc</h2>
+          <p className='muted'>
+            Finds the strongest 5-nikke team for the chosen boss weakness
+            {weakness ? ` (${weakness})` : ' (no element selected)'} under the
+            teamwide options above.
+          </p>
+          {blockedPanel}
+          <button className='calc-run' disabled>
+            Calculate best team{weakness ? ` for ${weakness}` : ''}
+          </button>
+          {pendingNote('Best-team search')}
+        </section>
+      );
+    }
+    if (tab === 'roster') {
+      return (
+        <section className='calc-tab'>
+          <h2>Roster Calc</h2>
+          <p className='muted'>
+            Builds the top 5 teams with no character reused across teams (same
+            scoring as Team Calc).
+          </p>
+          {blockedPanel}
+          <button className='calc-run' disabled>
+            Calculate top 5 teams
+          </button>
+          {pendingNote('Top-5-teams search')}
+        </section>
+      );
+    }
+    // character
+    const cc = calcChar ? data.characters[calcChar] : null;
+    return (
+      <section className='calc-tab'>
+        <h2>Character Calc</h2>
+        <p className='muted'>
+          Pick one nikke; a supporting team is generated around them. Main
+          workhorse for best-OL calcs and testing new characters.
+        </p>
+        <div className='field'>
+          <label>Character</label>
+          {cc ? (
+            <div className='chips'>
+              <button
+                className='chip'
+                title='change'
+                onClick={() => setCalcChar(null)}
+              >
+                {cc.name} ({cc.weapon} · {cc.element}) ×
+              </button>
+            </div>
+          ) : (
+            <CharSearch
+              placeholder='pick a nikke…'
+              exclude={[]}
+              onPick={(slug) => setCalcChar(slug)}
+            />
+          )}
+        </div>
+        <button className='calc-run' disabled={!cc}>
+          Generate team &amp; analyze
+        </button>
+        {pendingNote('Character analysis + best-OL')}
+      </section>
+    );
+  };
 
   return (
     <div className='app'>
       <header>
-        <h1>NIKKE Solo Raid Sim</h1>
+        <div className='header-row'>
+          <h1>NIKKE Solo Raid Sim</h1>
+          <div className='share-actions'>
+            <button
+              className='share-btn'
+              onClick={onShare}
+              disabled={slots.every((s) => !s.slug)}
+              title='copy a link that prefills this team'
+            >
+              {shared ? '✓ Link copied' : '🔗 Share team'}
+            </button>
+            <button
+              className='share-btn'
+              onClick={onShareImage}
+              disabled={!r}
+              title='share or save a summary image of the results'
+            >
+              {imaged ? '✓ Image' : '🖼 Share image'}
+            </button>
+          </div>
+        </div>
         <p className='muted'>
           180s fight · all skills factored at 10/10/10 · leftmost burst priority
           · gear + doll from your recorded stats
         </p>
       </header>
 
+      {CALC_TABS_ENABLED && (
+        <nav className='tabs-bar'>
+          {CALC_TABS.map((t) => (
+            <button
+              key={t.key}
+              className={tab === t.key ? 'on' : ''}
+              onClick={() => setTab(t.key)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+      )}
+
       <section className='global'>
         <div className='field'>
-          <label>Boss element</label>
+          <label title='the element that is strong against the boss'>
+            Boss weakness
+          </label>
           <div className='pills'>
             {ELEMENTS.map((e) => (
               <button
                 key={e ?? 'none'}
-                className={element === e ? 'on' : ''}
-                onClick={() => setElement(e)}
+                className={weakness === e ? 'on' : ''}
+                onClick={() => setWeakness(e)}
               >
                 {e ?? 'None'}
               </button>
@@ -280,7 +890,7 @@ export function App() {
           </div>
         </div>
         <div className='field'>
-          <label>Synchro / Dupes</label>
+          <label>Synchro level</label>
           <div className='pills'>
             <input
               className='num'
@@ -288,16 +898,160 @@ export function App() {
               onChange={(e) => setLevel(e.target.value)}
               title='synchro level'
             />
-            <input
-              className='num'
-              value={copies}
-              onChange={(e) => setCopies(e.target.value)}
-              title='copies (0-3 LB, 4-10 core)'
-            />
           </div>
         </div>
       </section>
 
+      <section className='global bulk'>
+        <div className='field'>
+          <label>Preset</label>
+          <div className='pills small'>
+            <button
+              className={
+                'scope-lock' +
+                (allHave(
+                  (s) =>
+                    s.cubeId === 'none' &&
+                    !s.doll &&
+                    s.ol === 0 &&
+                    s.stars === 3 &&
+                    s.core === 7,
+                ) && level === '400'
+                  ? ' on'
+                  : '')
+              }
+              title='no cubes · no doll · OL0 gear · 3★ / 7 core · 400 synchro'
+              onClick={applyScopeLock}
+            >
+              🔒 Scope Lock
+            </button>
+          </div>
+        </div>
+        <div className='field'>
+          <label>All cubes</label>
+          <div className='pills small'>
+            {CUBE_IDS.map((id) => (
+              <button
+                key={id}
+                className={allHave((s) => s.cubeId === id) ? 'on' : ''}
+                onClick={() => setAll({ cubeId: id })}
+              >
+                {cubes.cubes[id].name}
+              </button>
+            ))}
+            <button
+              className={allHave((s) => s.cubeId === 'none') ? 'on' : ''}
+              onClick={() => setAll({ cubeId: 'none' })}
+            >
+              None
+            </button>
+          </div>
+        </div>
+        <div className='field'>
+          <label>All cube levels</label>
+          <div className='pills small'>
+            {CUBE_LEVELS.map((l) => (
+              <button
+                key={l}
+                className={
+                  allHave((s) => !s.cubeCustom && s.cubeLevel === l) ? 'on' : ''
+                }
+                onClick={() => setAll({ cubeLevel: l, cubeCustom: false })}
+              >
+                L{l}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className='field'>
+          <label>All gear</label>
+          <div className='pills small'>
+            <button
+              className={allHave((s) => s.ol === 0) ? 'on' : ''}
+              onClick={() => setAll({ ol: 0 })}
+            >
+              OL 0
+            </button>
+            <button
+              className={allHave((s) => s.ol === 5) ? 'on' : ''}
+              onClick={() => setAll({ ol: 5 })}
+            >
+              OL 5
+            </button>
+          </div>
+        </div>
+        <div className='field'>
+          <label>All dolls</label>
+          <div className='pills small'>
+            <button
+              className={allHave((s) => s.doll) ? 'on' : ''}
+              onClick={() => setAll({ doll: true })}
+            >
+              Doll 15
+            </button>
+            <button
+              className={allHave((s) => !s.doll) ? 'on' : ''}
+              onClick={() => setAll({ doll: false })}
+            >
+              none
+            </button>
+          </div>
+        </div>
+        <div className='field'>
+          <label>All stars</label>
+          <div className='pills small'>
+            {STAR_LEVELS.map((st) => (
+              <button
+                key={st}
+                className={allHave((s) => s.stars === st) ? 'on' : ''}
+                onClick={() => setAll({ stars: st })}
+              >
+                {st}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className='field'>
+          <label>All cores</label>
+          <div className='pills small'>
+            {CORE_LEVELS.map((cr) => (
+              <button
+                key={cr}
+                className={allHave((s) => s.core === cr) ? 'on' : ''}
+                onClick={() => setAll({ core: cr })}
+              >
+                {cr}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className='field'>
+          <label title='sets S1, S2 and Burst for every nikke'>
+            All skills
+          </label>
+          <div className='pills small'>
+            {SKILL_LEVELS.map((lv) => (
+              <button
+                key={lv}
+                className={
+                  allHave(
+                    (s) =>
+                      s.skill1 === lv && s.skill2 === lv && s.burst === lv,
+                  )
+                    ? 'on'
+                    : ''
+                }
+                onClick={() => setAll({ skill1: lv, skill2: lv, burst: lv })}
+              >
+                {lv}/{lv}/{lv}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {(!CALC_TABS_ENABLED || tab === 'sim') && (
+        <>
       <section className='team'>
         {slots.map((slot, i) => {
           const c = slot.slug ? data.characters[slot.slug] : null;
@@ -317,6 +1071,51 @@ export function App() {
                 <div className='portrait empty'>?</div>
               )}
               <CharPicker slot={slot} onPick={(slug) => setSlot(i, { slug })} />
+              {c?.burst === 'Λ' && (
+                <div className='pills small'>
+                  {([0, 1, 2, 3] as const).map((st) => (
+                    <button
+                      key={st}
+                      title='Λ burst: which stage she operates as'
+                      className={slot.lambdaStage === st ? 'on' : ''}
+                      onClick={() => setSlot(i, { lambdaStage: st })}
+                    >
+                      {st === 0 ? 'Auto' : `as B${st}`}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {(() => {
+                const modes = slot.slug ? overrides[slot.slug]?.modes : undefined;
+                if (!modes?.length) return null;
+                return (
+                  <div className='pills small'>
+                    {modes.map((m) => (
+                      <button
+                        key={m}
+                        title='kit mode (assumed 100% uptime)'
+                        className={(slot.mode ?? modes[0]) === m ? 'on' : ''}
+                        onClick={() => setSlot(i, { mode: m })}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
+              {slot.slug &&
+                JSON.stringify(overrides[slot.slug] ?? {}).includes('"stackedNuke"') && (
+                  <div className='pills small'>
+                    <button
+                      title='override the burst order to cast her burst once MP is fully stacked'
+                      className={slot.mpPriority ? 'on' : ''}
+                      onClick={() => setSlot(i, { mpPriority: !slot.mpPriority })}
+                    >
+                      {slot.mpPriority ? '☑' : '☐'} burst at 12 MP
+                    </button>
+                  </div>
+                )}
+              <div className='card-group-label'>gear</div>
               <div className='pills small'>
                 <button
                   className={slot.ol === 0 ? 'on' : ''}
@@ -337,11 +1136,108 @@ export function App() {
                   Doll 15
                 </button>
               </div>
+              <div className='card-group-label'>dupes</div>
+              <div className='pills small'>
+                {DUPE_PRESETS.map((p) => (
+                  <button
+                    key={p.label}
+                    className={
+                      !slot.dupeCustom &&
+                      slot.stars === p.stars &&
+                      slot.core === p.core
+                        ? 'on'
+                        : ''
+                    }
+                    onClick={() =>
+                      setSlot(i, {
+                        stars: p.stars,
+                        core: p.core,
+                        dupeCustom: false,
+                      })
+                    }
+                  >
+                    {p.label}
+                  </button>
+                ))}
+                <button
+                  title='custom stars / core'
+                  className={slot.dupeCustom ? 'on' : ''}
+                  onClick={() => setSlot(i, { dupeCustom: !slot.dupeCustom })}
+                >
+                  …
+                </button>
+              </div>
+              {slot.dupeCustom && (
+                <>
+                  <div className='pills small' title='Limit Break stars'>
+                    <span className='muted pill-label'>Stars</span>
+                    {STAR_LEVELS.map((st) => (
+                      <button
+                        key={st}
+                        className={slot.stars === st ? 'on' : ''}
+                        onClick={() => setSlot(i, { stars: st })}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                  <div className='pills small' title='Core enhancement'>
+                    <span className='muted pill-label'>Core</span>
+                    {CORE_LEVELS.map((cr) => (
+                      <button
+                        key={cr}
+                        className={slot.core === cr ? 'on' : ''}
+                        onClick={() => setSlot(i, { core: cr })}
+                      >
+                        {cr}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+              <div className='card-group-label'>skills</div>
+              {(
+                [
+                  ['S1', 'skill1'],
+                  ['S2', 'skill2'],
+                  ['Burst', 'burst'],
+                ] as const
+              ).map(([label, key]) => {
+                const hasData = !!(slot.slug && skillLevelData[slot.slug]);
+                return (
+                  <div
+                    key={key}
+                    className='pills small'
+                    title={
+                      hasData
+                        ? `${label} skill level`
+                        : `${label} skill level — no per-level data for this nikke; values stay at max`
+                    }
+                  >
+                    <span className='muted pill-label'>{label}</span>
+                    {SKILL_LEVELS.map((lv) => (
+                      <button
+                        key={lv}
+                        className={slot[key] === lv ? 'on' : ''}
+                        onClick={() => setSlot(i, { [key]: lv })}
+                      >
+                        {lv}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
+              <div className='card-group-label'>cube</div>
               <div className='cube'>
-                {CUBE_IDS.map((id) => (
+                {CUBE_IDS.map((id) => {
+                  const cube = cubes.cubes[id];
+                  const effect = cube.effectStat
+                    ? STAT_LABELS[cube.effectStat] ?? cube.effectStat
+                    : 'base stats + elemental damage';
+                  return (
                   <button
                     key={id}
-                    title={cubes.cubes[id].name}
+                    title={`${cube.name} — ${effect}`}
                     className={slot.cubeId === id ? 'on' : ''}
                     onClick={() => setSlot(i, { cubeId: id })}
                   >
@@ -354,42 +1250,251 @@ export function App() {
                       'Other'
                     )}
                   </button>
-                ))}
+                  );
+                })}
+                <button
+                  title='No cube — no flat ATK, no elemental damage, no effect'
+                  className={slot.cubeId === 'none' ? 'on' : ''}
+                  onClick={() => setSlot(i, { cubeId: 'none' })}
+                >
+                  None
+                </button>
               </div>
-              <div className='pills small'>
-                {CUBE_LEVELS.map((l) => (
+              {slot.cubeId !== 'none' && (
+                <div className='pills small'>
+                  {CUBE_LEVELS.map((l) => (
+                    <button
+                      key={l}
+                      className={
+                        !slot.cubeCustom && slot.cubeLevel === l ? 'on' : ''
+                      }
+                      onClick={() =>
+                        setSlot(i, { cubeLevel: l, cubeCustom: false })
+                      }
+                    >
+                      L{l}
+                    </button>
+                  ))}
                   <button
-                    key={l}
-                    className={
-                      !slot.cubeCustom && slot.cubeLevel === l ? 'on' : ''
-                    }
-                    onClick={() =>
-                      setSlot(i, { cubeLevel: l, cubeCustom: false })
-                    }
+                    title='custom cube level'
+                    className={slot.cubeCustom ? 'on' : ''}
+                    onClick={() => setSlot(i, { cubeCustom: !slot.cubeCustom })}
                   >
-                    L{l}
+                    …
                   </button>
+                  {slot.cubeCustom && (
+                    <input
+                      className='num'
+                      value={slot.cubeLevel}
+                      onChange={(e) =>
+                        setSlot(i, { cubeLevel: Number(e.target.value) || 1 })
+                      }
+                    />
+                  )}
+                </div>
+              )}
+              {OL_UI_ENABLED && (
+              <div className='ol'>
+                <div className='ol-base'>
+                  <label>
+                    ELE
+                    <input
+                      className='num'
+                      value={slot.olElem}
+                      placeholder='%'
+                      onChange={(e) => setSlot(i, { olElem: e.target.value })}
+                    />
+                  </label>
+                  <label>
+                    ATK
+                    <input
+                      className='num'
+                      value={slot.olAtk}
+                      placeholder='%'
+                      onChange={(e) => setSlot(i, { olAtk: e.target.value })}
+                    />
+                  </label>
+                </div>
+                {slot.olExtra.map((line, li) => (
+                  <div className='ol-line' key={li}>
+                    <select
+                      value={line.type}
+                      onChange={(e) =>
+                        setSlot(i, {
+                          olExtra: slot.olExtra.map((l, j) =>
+                            j === li ? { ...l, type: e.target.value } : l,
+                          ),
+                        })
+                      }
+                    >
+                      {OL_LINE_TYPES.map((t) => (
+                        <option key={t.key} value={t.key}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      className='num'
+                      value={line.value}
+                      placeholder='%'
+                      onChange={(e) =>
+                        setSlot(i, {
+                          olExtra: slot.olExtra.map((l, j) =>
+                            j === li ? { ...l, value: e.target.value } : l,
+                          ),
+                        })
+                      }
+                    />
+                    <button
+                      className='ol-rm'
+                      title='remove line'
+                      onClick={() =>
+                        setSlot(i, {
+                          olExtra: slot.olExtra.filter((_, j) => j !== li),
+                        })
+                      }
+                    >
+                      ×
+                    </button>
+                  </div>
                 ))}
                 <button
-                  className={slot.cubeCustom ? 'on' : ''}
-                  onClick={() => setSlot(i, { cubeCustom: true })}
+                  className='ol-add'
+                  onClick={() =>
+                    setSlot(i, {
+                      olExtra: [...slot.olExtra, { type: 'ammo', value: '' }],
+                    })
+                  }
                 >
-                  …
+                  + OL line
                 </button>
-                {slot.cubeCustom && (
-                  <input
-                    className='num'
-                    value={slot.cubeLevel}
-                    onChange={(e) =>
-                      setSlot(i, { cubeLevel: Number(e.target.value) || 1 })
-                    }
-                  />
-                )}
               </div>
+              )}
             </div>
           );
         })}
       </section>
+
+      {OL_UI_ENABLED && (
+        <section className='ol-calc'>
+          <div className='toggles'>
+            <button onClick={() => setShowOlCalc(!showOlCalc)}>
+              {showOlCalc ? 'hide' : 'show'} best-OL calculator
+            </button>
+            {showOlCalc && (
+              <label className='ol-tier'>
+                tier
+                <input
+                  className='num'
+                  type='number'
+                  min={1}
+                  max={15}
+                  value={olTier}
+                  onChange={(e) =>
+                    setOlTier(
+                      Math.min(15, Math.max(1, Number(e.target.value) || 11)),
+                    )
+                  }
+                />
+              </label>
+            )}
+          </div>
+          {showOlCalc &&
+            (() => {
+              const tv = olTierValues(olTier);
+              const filled = slots
+                .map((s) => (s.slug ? data.characters[s.slug] : null))
+                .filter(Boolean) as any[];
+              if (!filled.length)
+                return <div className='notes'>pick nikkes to analyze</div>;
+              return (
+                <div className='notes'>
+                  <p className='muted'>
+                    Assumes 8/12 lines are 4× ATK + 4× ELE; the remaining 4 are
+                    free. Values shown at tier {olTier} ({tv.ammo}% ammo,{' '}
+                    {tv.chargespd}% charge speed per line). Damage-ranked pick of
+                    the best 4 is computed by the backend (pending — see{' '}
+                    <code>docs/ol-calculator-handoff.md</code>).
+                  </p>
+                  {filled.map((c) => {
+                    const isCharge = c.weapon === 'RL' || c.weapon === 'SR';
+                    const candidates = [
+                      'Max Ammo',
+                      'Crit Rate',
+                      'Crit DMG',
+                      ...(isCharge ? ['Charge Speed', 'Charge DMG'] : []),
+                    ];
+                    const ammoRows = ammoLineRows(c.ammo, tv.ammo);
+                    const bps = ammoBreakpoints(c.ammo, tv.ammo);
+                    return (
+                      <div key={c.slug} className='ol-calc-unit'>
+                        <b>
+                          {c.name}{' '}
+                          <span className='muted'>
+                            ({c.weapon} · base {c.ammo} ammo)
+                          </span>
+                        </b>
+                        <div className='muted'>
+                          remaining-4 candidates: {candidates.join(', ')}
+                        </div>
+                        <div className='ol-calc-cols'>
+                          <div>
+                            <div className='muted'>max ammo by # of lines</div>
+                            <ul>
+                              {ammoRows.map((r) => (
+                                <li key={r.lines}>
+                                  {r.lines}× (+{r.pct.toFixed(1)}%) →{' '}
+                                  <b>{r.ammo}</b> ammo
+                                </li>
+                              ))}
+                            </ul>
+                            <div className='muted'>ammo breakpoints</div>
+                            <ul>
+                              {bps.length ? (
+                                bps.map((b) => (
+                                  <li key={b.ammo}>
+                                    <b>{b.ammo}</b> ammo needs ≥
+                                    {b.minPct.toFixed(1)}% ({b.linesNeeded} line
+                                    {b.linesNeeded > 1 ? 's' : ''})
+                                  </li>
+                                ))
+                              ) : (
+                                <li>none within 4 lines</li>
+                              )}
+                            </ul>
+                          </div>
+                          {isCharge && (
+                            <div>
+                              <div className='muted'>
+                                charge-speed breakpoints
+                              </div>
+                              <ul>
+                                {chargeSpeedRows(tv.chargespd).map((r) => (
+                                  <li key={r.target}>
+                                    {r.target}% →{' '}
+                                    {r.linesNeeded <= 4 ? (
+                                      <>
+                                        {r.linesNeeded} line
+                                        {r.linesNeeded > 1 ? 's' : ''} (
+                                        {r.actual.toFixed(1)}%)
+                                      </>
+                                    ) : (
+                                      <span className='muted'>&gt;4 lines</span>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+        </section>
+      )}
 
       {sim.error && <div className='banner'>{sim.error}</div>}
       {sim.compWarning && <div className='banner warn'>{sim.compWarning}</div>}
@@ -426,6 +1531,14 @@ export function App() {
                         ▲
                       </span>
                     )}
+                    {u.warnings.length > 0 && (
+                      <span
+                        title={`not fully modeled — ${u.warnings.length} skipped/unparsed effect${u.warnings.length > 1 ? 's' : ''} (see modeling notes)`}
+                      >
+                        {' '}
+                        ⚠️
+                      </span>
+                    )}
                   </td>
                   <td className='r'>{fmt(u.totalDamage)}</td>
                   <td className='r share'>{(u.share * 100).toFixed(1)}%</td>
@@ -441,6 +1554,9 @@ export function App() {
           </table>
 
           <div className='toggles'>
+            <button onClick={() => setShowBuffs(!showBuffs)}>
+              {showBuffs ? 'hide' : 'show'} team buffs
+            </button>
             <button onClick={() => setShowNotes(!showNotes)}>
               {showNotes ? 'hide' : 'show'} modeling notes
             </button>
@@ -448,24 +1564,37 @@ export function App() {
               {showRotation ? 'hide' : 'show'} rotation log
             </button>
           </div>
+          {showBuffs && sim.teamBuffs && (
+            <div className='notes'>
+              {sim.teamBuffs.map((u) => (
+                <div key={u.position}>
+                  <b>{u.name}</b>
+                  <ul>
+                    {u.lines.length ? (
+                      u.lines.map((n, i) => <li key={i}>{n}</li>)
+                    ) : (
+                      <li>no team buffs</li>
+                    )}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
           {showNotes && (
             <div className='notes'>
               {r.units.map((u) => {
                 const notes = [...u.warnings];
-                if (u.skillSource === 'parser')
-                  notes.unshift('skills auto-parsed (not hand-verified)');
-                else if (u.skillSource === 'parser+override')
-                  notes.unshift('skills partially hand-verified');
-                else notes.unshift('skills hand-verified');
                 if (u.loadout.length)
                   notes.unshift(`loadout: ${u.loadout.join(' | ')}`);
                 return (
                   <div key={u.position}>
                     <b>{u.name}</b>
                     <ul>
-                      {notes.map((n, i) => (
-                        <li key={i}>{n}</li>
-                      ))}
+                      {notes.length ? (
+                        notes.map((n, i) => <li key={i}>{n}</li>)
+                      ) : (
+                        <li>no notes</li>
+                      )}
                     </ul>
                   </div>
                 );
@@ -477,6 +1606,10 @@ export function App() {
           )}
         </section>
       )}
+        </>
+      )}
+
+      {CALC_TABS_ENABLED && tab !== 'sim' && renderCalcTab()}
 
       <footer className='muted'>
         v1 assumptions: 0 enemy debuffs · full HP · expected-value crits ·

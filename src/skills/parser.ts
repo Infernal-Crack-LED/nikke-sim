@@ -11,9 +11,11 @@ const STAT_MAP: Array<[RegExp, StatKey]> = [
   [/^damage to interruption parts$/i, 'partsDamagePct'],
   [/^damage to parts$/i, 'partsDamagePct'],
   [/^elemental advantage attack damage$/i, 'elemAdvantageDamagePct'],
+  [/^superior elemental code attack damage$/i, 'elemAdvantageDamagePct'],
   [/^true damage$/i, 'trueDamagePct'],
   [/^distributed damage$/i, 'distributedDamagePct'],
   [/^projectile explosion damage$/i, 'projectileExplosionPct'],
+  [/^projectile attachment damage$/i, 'projectileAttachmentPct'],
   [/^normal attack damage multiplier$/i, 'normalAttackPct'],
   [/^burst gauge filling speed$/i, 'burstGenPct'],
   [/^charge damage multiplier$/i, 'chargeDamagePct'],
@@ -54,7 +56,7 @@ function parseTrigger(header: string, slot: SkillSlot): TriggerDef {
   if (/using (the )?burst skill/.test(clause)) return { kind: 'burstCast' };
   if (/full burst ends|end of full burst/.test(clause)) return { kind: 'fullBurstEnd' };
   const count = clause.match(
-    /(?:normal attack|attack)s? hits? (\d+) time|(?:after|when) (?:landing )?(\d+) (?:normal attack|attack)|when landing (\d+) (?:normal attack|attack)/
+    /(?:normal attack|attack)s? hits? (\d+) time|(?:after|when) (?:landing )?(\d+) (?:normal |basic )?attack|hitting the target with (\d+) pellets/
   );
   if (count) return { kind: 'hitCount', count: Number(count[1] ?? count[2] ?? count[3]) };
   const stageEnter = clause.match(/entering burst stage (\d)/);
@@ -63,11 +65,15 @@ function parseTrigger(header: string, slot: SkillSlot): TriggerDef {
   if (bossElem) {
     return { kind: 'bossElement', element: bossElem[1][0].toUpperCase() + bossElem[1].slice(1) };
   }
-  if (/normal attack hits|attack hits/.test(clause)) return { kind: 'hitCount', count: 1 };
+  if (/normal attack hits|attack hits|when performing a normal attack/.test(clause)) {
+    return { kind: 'hitCount', count: 1 };
+  }
   if (/full[- ]charge/.test(clause)) return { kind: 'shotFired' };
   if (/last (bullet|round|ammo)/.test(clause)) return { kind: 'lastBullet' };
   // v1 assumes the boss deals no damage, so everyone stays at full HP and no ally dies
-  if (/when (hp is )?above [\d.]+%|start of (the )?battle/.test(clause)) return { kind: 'passive' };
+  if (/when (hp is )?above [\d.]+%|start of (the )?battle|when the target appears/.test(clause)) {
+    return { kind: 'passive' };
+  }
   if (/ally from the same squad still on the battlefield/.test(clause)) {
     return slot === 'burst' ? { kind: 'burstCast' } : { kind: 'passive' };
   }
@@ -83,6 +89,13 @@ function parseTarget(header: string): { target: TargetDef; warn?: string } {
   if (/allies who did not/.test(t)) return { target: { kind: 'nonBurstCasters' } };
   const topAtk = t.match(/(\d+) (?:ally unit\(?s?\)?|allies) with the highest (?:final )?atk/);
   if (topAtk) return { target: { kind: 'alliesTopAtk', count: Number(topAtk[1]) } };
+  const lowAtk = t.match(
+    /(\d+) (?:burst (\d) )?(?:ally unit\(?s?\)?|allies) with the lowest (?:final )?atk/
+  );
+  if (lowAtk) {
+    const burst = lowAtk[2] ? (['I', 'II', 'III'][Number(lowAtk[2]) - 1] as any) : undefined;
+    return { target: { kind: 'alliesLowestAtk', count: Number(lowAtk[1]), ...(burst ? { burst } : {}) } };
+  }
   const elemAllies = t.match(/all (fire|water|wind|electric|iron) code allies/);
   if (elemAllies) {
     const element = elemAllies[1][0].toUpperCase() + elemAllies[1].slice(1);
@@ -117,13 +130,25 @@ function parseEffectLine(line: string): EffectDef | null {
     /deals? ([\d.]+)% of (?:the caster'?s? )?final atk as (?:additional |burst skill |sustained |true |distributed )?damage(?: every ([\d.]+) sec)?(?:.*?for ([\d.]+) sec)?/i
   );
   if (dmg) {
-    const flavor = /as true damage/i.test(l) ? 'true' : /as distributed damage/i.test(l) ? 'distributed' : undefined;
+    const flavor = /as true damage/i.test(l) ? 'true'
+      : /as distributed damage/i.test(l) ? 'distributed'
+      : /as sustained damage/i.test(l) ? 'sustained'
+      : undefined;
+    // "Attacks sequentially for N time(s)" — the hit lands N times
+    const seq = l.match(/attacks sequentially for (\d+) time/i);
+    if (seq && !dmg[3]) {
+      const n = Number(seq[1]);
+      return flavor
+        ? { kind: 'flatDamage', atkPct: Number(dmg[1]) * n, flavor }
+        : { kind: 'flatDamage', atkPct: Number(dmg[1]) * n };
+    }
     if (dmg[3]) {
       return {
         kind: 'dot',
         atkPct: Number(dmg[1]),
         durationSec: Number(dmg[3]),
         intervalSec: dmg[2] ? Number(dmg[2]) : 1,
+        ...(flavor ? { flavor } : {}),
       };
     }
     return flavor ? { kind: 'flatDamage', atkPct: Number(dmg[1]), flavor } : { kind: 'flatDamage', atkPct: Number(dmg[1]) };
@@ -220,6 +245,7 @@ export function parseSkill(text: string, slot: SkillSlot): { blocks: Block[]; wa
       effects.push(escalating);
     } else {
       let swap: { kind: 'weaponSwap' } & Record<string, any> | null = null;
+      const swapRiders: Array<Record<string, any>> = []; // buffs whose duration = swap duration
       for (const line of effectLines) {
         if (/^effect changes according|^previous effects/i.test(line)) continue;
         // "Changes the weapon in use:" opens a key/value spec consumed here
@@ -230,23 +256,36 @@ export function parseSkill(text: string, slot: SkillSlot): { blocks: Block[]; wa
         }
         if (swap) {
           const kv =
-            line.match(/^damage:\s*([\d.]+)% of (?:final )?atk/i) ? ['damagePct', 1] :
-            line.match(/^full charge damage:\s*([\d.]+)%/i) ? ['chargeMultPct', 1] :
-            line.match(/^charge time:\s*([\d.]+) sec/i) ? ['chargeTimeSec', 1] :
-            line.match(/^max ammunition capacity:\s*([\d.]+)/i) ? ['maxAmmo', 1] :
-            line.match(/^duration:\s*([\d.]+) sec/i) ? ['durationSec', 1] : null;
+            line.match(/^damage:\s*([\d.]+)% of (?:the )?(?:final )?atk/i) ? 'damagePct' :
+            line.match(/^full charge damage:\s*([\d.]+)%/i) ? 'chargeMultPct' :
+            line.match(/^charge time:\s*([\d.]+) sec/i) ? 'chargeTimeSec' :
+            line.match(/^max ammunition capacity:\s*([\d.]+)/i) ? 'maxAmmo' :
+            line.match(/^duration:\s*([\d.]+) sec/i) ? 'durationSec' : null;
           if (kv) {
-            const m = line.match(/([\d.]+)/)!;
-            swap[kv[0] as string] = Number(m[1]);
+            swap[kv] = Number(line.match(/([\d.]+)/)![1]);
             continue;
           }
-          if (/^(snipe mode|additional effects?|attack speed|reload|number of pellets)/i.test(line)) continue;
+          const atkSpeed = line.match(/^attack speed:?\s*([▲▼])\s*([\d.]+)%/i);
+          if (atkSpeed) {
+            const rider = {
+              kind: 'buff', stat: 'attackSpeedPct',
+              value: Number(atkSpeed[2]) * (atkSpeed[1] === '▼' ? -1 : 1),
+              durationSec: 10,
+            };
+            swapRiders.push(rider);
+            effects.push(rider as EffectDef);
+            continue;
+          }
+          if (/^(snipe mode|additional effects?|reload|(number of )?pellet ?count|number of pellets)/i.test(line)) continue;
           // anything else ends the spec and parses normally
           swap = null;
         }
         const e = parseEffectLine(line);
         if (e) effects.push(e);
       }
+      // riders inherit the swap's (possibly later-parsed) duration
+      const swapEffect = effects.find((e) => e.kind === 'weaponSwap') as any;
+      if (swapEffect) for (const r of swapRiders) r.durationSec = swapEffect.durationSec;
     }
 
     const real = effects.filter((e) => e.kind !== 'ignored');

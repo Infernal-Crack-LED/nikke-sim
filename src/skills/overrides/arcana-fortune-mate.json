@@ -1,0 +1,59 @@
+{
+  "note": "Whole-kit steady-state model of her Making Memories mode. Burst grants Making Memories (self Crit Rate 20.09% + Attack Damage 29.99%, both 'continuously' -> permanent) plus the 554.4% nuke. While in Making Memories her normal attacks build phases (S2): at 2 hits a reload, at 4 hits Happy Memories (+1 pellet, x3), at 6 hits Precious Moments (ATK 2.49%, x3); reaching Happy Memories also grants Snapshots of Youth (Normal Atk Mult +10%, x3). Steady state assumes all mode buffs are maxed while she fights, so they are modeled as permanent self-buffs keyed to burstCast (origin of the mode): Precious Moments atkPct 2.49 x3, Snapshots normalAttackPct 10 x3, and Happy Memories's +3 pellets modeled as normalAttackPct 10 x3 (one extra pellet on a 10-pellet base = +10% normal damage; slight undercount vs the true multiplicative pellet x snapshot interaction, ~1.6x vs ~1.69x). S1 buffs 'all shotgun-wielding allies' by 13% of caster ATK per Precious Moments stack -> 39% at 3 stacks (fullBurstEnd); S2 buffs the same group +55% Attack Damage on burst. The sim has no weapon-typed target, so both use alliesOfClass Attacker: her real teams are built around shotgun DPS and SG wielders are overwhelmingly Attackers, making the Attacker class a closer match than all-5 (which would waste the buff on supporters/B1). Caveats: no except-self target exists, so the 55% (game text: except self) also over-buffs Arcana herself; and the mode buffs assume permanent max uptime rather than only-while-in-Making-Memories. Skipped: all reloads (Reload 6 / Reload 2 rounds, uptime QoL) and the Full-Burst-end removal of Making Memories/Snapshots (mode cleanup), both non-damage.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnd" },
+      "target": { "kind": "alliesOfClass", "cls": "Attacker" },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 39, "durationSec": 15 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "normalAttackPct", "value": 10, "maxStacks": 3 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "alliesOfClass", "cls": "Attacker" },
+      "effects": [
+        { "kind": "buff", "stat": "attackDamagePct", "value": 55, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 2.49, "maxStacks": 3 },
+        { "kind": "buff", "stat": "normalAttackPct", "value": 10, "maxStacks": 3 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "critRatePct", "value": 20.09 },
+        { "kind": "buff", "stat": "attackDamagePct", "value": 29.99 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 554.4 }
+      ]
+    }
+  ]
+}

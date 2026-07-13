@@ -1,0 +1,115 @@
+{
+  "note": "Drunken cycle modeled dynamically: +1 stack per Burst-1 stage entry (max 3); at every 3rd full-burst end the stacks reset and Hangover STUNS HER for 10s (everyN:3 gate + stun effect) -- she can't fire/charge/reload while stunned. x-stacks values use the cycle average of 2 stacks (stacks run 1,2,3 then reset): S2 stage-3 buffs 15.03/15.04 x2 = 30.06% Distributed Damage + 30.08% Reload Speed for 10s; burst's ATK-of-caster 20.06 x2 = 40.12%. The S1 'while Drunken' team buffs (Crit Rate 20.05%, 35.02% caster ATK) are modeled permanent -- slight overcount during the ~1 rotation after each Hangover before she re-stacks. Hit Rate down is inert. Distributed Damage buff on allies boosts THEIR distributed-flavor hits (e.g. SBS's 500/750% procs). Drunken's Hit Rate -20%/stack is NOT inert for her own MG spray: at avg 2 stacks ~40% of her rounds miss, modeled as normalAttackPct -40 on self (validated vs the user's real sample: 149M real vs 140M modeled).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 20.05
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 35.02
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": -40
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 30.06,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 30.08,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "everyN": 3,
+      "effects": [
+        {
+          "kind": "stun",
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 40.04,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 15.04,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 40.12,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

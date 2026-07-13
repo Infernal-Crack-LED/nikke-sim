@@ -1,0 +1,55 @@
+name: Deploy
+
+# On every push to main: run the safety checks, then — only if they pass —
+# deploy the sim site to Railway via the CLI. Auth is a Railway PROJECT TOKEN
+# stored as the `RAILWAY_TOKEN` repo secret (the SAME bakery-bot project token,
+# so this service lives in the bakery-bot Railway project). Mirror of
+# bakery-bot/.github/workflows/deploy.yml.
+#
+# Setup (one-time):
+#   1. Railway → the bakery-bot project → create the `nikke-sim` service.
+#   2. GitHub → this repo → Settings → Secrets and variables → Actions → add
+#      `RAILWAY_TOKEN` = the same project token bakery-bot uses.
+#   3. Keep the repo disconnected from the Railway service so only this drives deploys.
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: typecheck · test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+
+  deploy:
+    name: deploy to Railway
+    needs: test # a red build never deploys
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      # Use the commit subject as the Railway deployment title. Read via
+      # `git log` (NOT ${{ github.event.head_commit.message }}) so a crafted
+      # commit message can't inject shell into the runner.
+      - name: Capture commit message
+        run: echo "DEPLOY_MSG=$(git log -1 --pretty=%s)" >> "$GITHUB_ENV"
+      - name: Deploy sim
+        run: railway up --ci --service "nikke-sim" --message "$DEPLOY_MSG"
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

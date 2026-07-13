@@ -1,0 +1,31 @@
+{
+  "note": "Ghost-gauge kit modeled at steady state. skill1 is left to the parser: its two Water-ally buffs (ATK 16.2% of caster's ATK at >=1 ghost, Elemental Advantage Attack Damage 35% at >4 ghosts) parse correctly as permanent buffs, which matches the steady state where a fast MG team keeps the ghost count high; the capture bookkeeping (100 team hits / 6s recurring interval, max 13) has no direct effect of its own. skill2 overridden: block1 (self ATK 40% for 10s on burst) re-included verbatim; block2 (at max ghost capacity, a further capture deals 1100% to all enemies) modeled as a periodic proc using the skill1 'Recurring interval: 6 sec' as the steady-state capture cadence -> passive dot of 1100% every 6s. This is OPTIMISTIC on uptime: it ignores the ~78s ramp to 13 ghosts and the burst-driven ghost drain (below), so real proc uptime is lower -- flagged as the main uncertainty. burst overridden because the parser emitted BOTH mutually-exclusive branches (double count) and did not multiply by the sequential hit count. Modeled the non-max branch conservatively: 800% x 6 sequential = 4800% (single boss -> all sequential hits land). The 13-ghost branch (800% x 13 = 10400%) is not modeled since burst drains 6-9 ghosts and the ~40s cooldown rarely allows a refill back to max; ghost-count decrements are steady-state abstractions with no direct effect. Stun/possession/defensive text skipped.",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 40, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "dot", "atkPct": 1100, "durationSec": 180, "intervalSec": 6 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 4800 }
+      ]
+    }
+  ]
+}

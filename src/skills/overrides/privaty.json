@@ -1,0 +1,43 @@
+{
+  "note": "Treasure kit (synced from synergy entry 198 via the treasure remap). S1 (parser-kept): FB team buffs incl. Max Ammo -50.66% which accelerates everyone's last-bullet procs. S2 override: 256.17% + Damage Taken 10.01% on every own last bullet (parser-faithful, kept); the 1687% nuke only hits targets in Designated Target status (applied by her burst for 10s, every other rotation) -> modeled as a burst-cast dot ticking every ~3s x3 (her last-bullet cadence during FB with halved mag: ~30 rounds / 12 rps + ~1s reload). Burst (parser-kept + stat fix): Superior Elemental Code Attack Damage 130% = elemAdvantageDamagePct (damage-up only with elemental advantage), 1407.64% nuke; the 3s boss stun and ATK-down are irrelevant in v1 (boss never acts).",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 10.01,
+          "durationSec": 10
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 256.17
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 1687,
+          "durationSec": 10,
+          "intervalSec": 3
+        }
+      ]
+    }
+  ]
+}

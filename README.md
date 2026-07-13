@@ -41,7 +41,8 @@ Loadout (per-slot lists in slot order; one entry applies to all 5):
 
 - 60 fps frame simulation: weapon fire cycles (AR 12/s, SMG 20/s, SG 1.5/s, MG 60 rounds/s with 3.75 s spin-up, RL/SR charge), ammo/reload/Bastion refunds, burst gauge (`rl3`/3 %/s), stage I→II→III→full-burst rotation gated by real cooldowns (CDR modeled, incl. once-per-battle Λ refunds).
 - Stats reconstructed exactly from the DB (`base_stats` + synchro curve) + gear ATK by class/OL + doll + cube flat ATK.
-- Skills: prose parser → structured effects in formula buckets, hand-verified overrides in `src/skills/overrides/*.json` take precedence. Unmodeled effects are surfaced as modeling notes — never silently dropped.
+- Skills: prose parser → structured effects in formula buckets, hand-verified overrides in `src/skills/overrides/*.json` take precedence (all Prydwen bossing-tier S+ units are hand-verified; see `docs/override-guide.md` for authoring, `scripts/kit.ts` + `scripts/validate-overrides.ts` for tooling). Unmodeled effects are surfaced as modeling notes — never silently dropped.
+- Λ units (Red Hood) burst at any stage by default; pin them with `--lambda-as` (CLI) or the "as B1/B2/B3" pills (site).
 
 ## v1 assumptions
 

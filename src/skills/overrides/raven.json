@@ -1,0 +1,13 @@
+{
+  "note": "Only S2 is overridden; S1 and Burst are left to the parser, which reads them faithfully. S1: the 'Full Charge -> 68.46% sustained damage every 1s, stacks up to 10, 5s' DoT is correctly modeled per-shot because the engine spawns an independent 5s DoT on each shot and they stack concurrently; at her charge cadence (~0.7 shots/s) steady-state concurrent stacks stay below the 10 cap, so no override is needed. S1 also grants self ATK +47.52% of caster's ATK on Full Burst entry (parser correct). Burst: 492.3% nuke + A.N. Mode Sustained Damage +89.44% (10s) are parsed correctly ('A.N. Mode:' / 'Removes Single Point Attack' are inert flavor lines). S2 override: the two 'Vital Attack: Damage to Parts +21.12%' buffs are inert in v1 (no parts) and are omitted. The 'Single Point Attack: Sustained Damage +47.32% (15s)' buff triggers on part destruction, which v1 does not simulate as a discrete event; it is modeled as a steady-state passive (always on), since solo-raid bosses have destructible parts and this buff is refreshable and central to her sustained-DPS identity. UNCERTAIN/approximation flags: (1) treating a part-destruction trigger as permanently active is a steady-state assumption that over-rates her early-fight ramp; (2) A.N. Mode is supposed to REMOVE Single Point Attack during burst, but the engine cannot remove a passive buff, so during the ~10s/40s A.N. window her sustained-damage bucket double-counts (47.32% + 89.44% instead of 89.44%) — a modest overcount flagged here; the conservative alternative is to drop this block entirely, which would badly under-rate her.",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "sustainedDamagePct", "value": 47.32 }
+      ]
+    }
+  ]
+}

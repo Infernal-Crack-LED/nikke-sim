@@ -1,5 +1,5 @@
 {
-  "note": "Lambda burst is stage-conditional. Step 1: team ATK 77.55% of caster ATK + own 40s CD refund (once per battle). Step 2: defensive + CD refund (once per battle). Step 3 Red Wolf: approximated as self ATK 71.42% for 10s (the S2 rider); the temporary weapon swap itself is not modeled. S1 excess-charge-speed -> charge-damage conversion not modeled.",
+  "note": "Lambda burst is stage-conditional. Step 1: team ATK 77.55% of caster ATK + own 40s CD refund (once per battle). Step 2: defensive + CD refund (once per battle). Step 3 Red Wolf: weapon swap (51.46%/shot, 250% full charge, 10s, keeps her 1s SR charge cycle) + self ATK 71.42% for 10s (the S2 rider). S1 excess-charge-speed -> charge-damage conversion not modeled.",
   "burst": [
     {
       "slot": "burst",
@@ -23,7 +23,10 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast", "stage": 3 },
       "target": { "kind": "self" },
-      "effects": [{ "kind": "buff", "stat": "atkPct", "value": 71.42, "durationSec": 10 }]
+      "effects": [
+        { "kind": "weaponSwap", "damagePct": 51.46, "chargeMultPct": 250, "durationSec": 10 },
+        { "kind": "buff", "stat": "atkPct", "value": 71.42, "durationSec": 10 }
+      ]
     }
   ],
   "skill2": []

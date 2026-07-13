@@ -1,0 +1,40 @@
+{
+  "note": "S1 kept faithful and extended: every 60 normal hits applies Damage Taken +12.56% (3s) and 158.43% additional damage to the boss, plus a 20-round self reload modeled as instantReload fraction 20/300 = 0.0667 (the parser dropped this as unsupported). S2's '60 core hits' additional-damage proc (109.64%) cannot see the runtime core-hit rate from a hitCount trigger, so it is approximated as one proc per 120 normal hits (assuming ~50% core-hit rate); this is the main approximation and will over/under-count at other core rates. S2's 'beginning of Full Burst -> Crit Rate +14.6% (10s)' was skipped by the parser (unsupported trigger); modeled here as a fullBurstEnter self buff. Burst slot left to parser (self ATK 62.54% 10s + Reloading Speed 67.2% 20s) as faithful.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 60 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": 12.56, "durationSec": 3 },
+        { "kind": "flatDamage", "atkPct": 158.43 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 60 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "instantReload", "fraction": 0.0667 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 120 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 109.64 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "critRatePct", "value": 14.6, "durationSec": 10 }
+      ]
+    }
+  ]
+}

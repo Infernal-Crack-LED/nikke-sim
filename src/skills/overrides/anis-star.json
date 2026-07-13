@@ -1,0 +1,172 @@
+{
+  "note": "Formation-gated My Own Star / Everyone's Star kit (modeled like Rapi:RH). NoB1 (My Own Star): skill1 grants continuous self ATK 40.01% (modeled passive, 'cannot be removed') + team burst CDR 7.48s on Full Burst end; skill2's caster-ATK 35.01% and burst's self Attack Damage 35.2% are gated to this status. HasB1 (Everyone's Star): the ATK riders are replaced by re-entering burst at Stage 1 (burstEligibility stage 1); its heal and ally Max-HP portions are dropped (defensive). Formation-independent: team burst-gen 6%, full-charge additional damage 120.13% (per pull, RL always full-charges), Full-Burst-enter Attack Damage 34% and Projectile Explosion Damage 92.03% (text targets 'allies with lower DEF than self' -> approximated as all allies since she is a high-DEF Defender). Burst Shooting Stars modeled as a 40.01% ATK dot every 0.25s for 10s (40 ticks); its 'charge time fixed at 0.7s' modeled as chargeSpeedPct 42.86 (60f/1.0s -> 0.7s at 60fps). Skipped: heals, ally Max-HP, DEF up, Explosion Radius (defensive/AoE-radius, irrelevant vs single boss). UNCERTAIN: Everyone's Star burst re-entry approximated as stage-1 eligibility; 'lower-DEF allies' target simplified to all allies. CORRECTION: Shooting Stars carry the projectileExplosion flavor (they benefit from Projectile Explosion Damage, incl. her own S2 aura) and, as a rider, never receive core damage.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 40.01
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "hasB1",
+      "effects": [
+        {
+          "kind": "burstEligibility",
+          "stage": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 120.13
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 35.01,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 92.03,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 34,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 40.01,
+          "durationSec": 10,
+          "intervalSec": 0.25,
+          "flavor": "projectileExplosion"
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 42.86,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 35.2,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

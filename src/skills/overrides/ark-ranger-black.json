@@ -1,0 +1,93 @@
+{
+  "note": "Battery/Transformation kit modeled at steady state. Skill1: Damage-to-Parts 20% (inert, kept for fidelity); the Transformation ATK 156.19% is modeled as a permanent self buff, and the 30-normal-attack Sustained Damage 59.6%/5s as a hitCount:30 trigger (AR, 1 hit/pull). The battery gauge itself (part-destruction +50% charge, 1%/0.2s drain, 100%->transform threshold, and the burst's Battery +50/+100/-50 blocks) is a resource system that can't be tracked literally, so it is dropped and Transformation is assumed maintained. Skill2: the Ark Black Collider (45.87% ATK/sec 'until Transformation canceled') is modeled as a whole-fight passive DoT (durationSec 600 to span any raid; ticks 1/sec); the Full-Burst Sustained Damage 77.5%/10s is kept but its 'assault rifle' restriction can't be expressed, so it targets all Wind allies (over-inclusive). Burst slot omitted: the parser already renders its damage-relevant blocks faithfully (266.69% ATK/sec DoT for 10s to highest-HP enemy + self Sustained Damage 135.83%/10s); only its battery blocks are dropped as resource. UNCERTAINTY: 100% Transformation uptime assumes the battery is kept topped by part destruction, which v1 (single boss, no parts) does not simulate. If part-destruction income is unavailable, real uptime is far lower (burst-only would give roughly 25%), so both the 156.19% ATK and the Collider DoT here are optimistic upper bounds on her throughput.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 156.19
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 59.6,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 45.87,
+          "durationSec": 600,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Wind"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 77.5,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

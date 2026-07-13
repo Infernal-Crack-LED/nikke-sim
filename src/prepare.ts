@@ -16,6 +16,12 @@ export interface PreparedUnit {
   extraStats: ExtraStat[];
   ol?: 0 | 5;      // per-unit overload gear level (falls back to cfg.ol)
   doll?: boolean;  // per-unit doll (falls back to cfg.doll)
+  lambdaStage?: 1 | 2 | 3; // Λ units only: burst ONLY at this stage (Red Hood "operating as BX")
+  stars?: number;  // per-unit Limit Break stars / grade 0-3 (falls back to cfg.copies)
+  core?: number;   // per-unit Core enhancement 0-7 (falls back to cfg.copies)
+  mode?: string;   // selected kit mode (from the override's `modes`; default = first)
+  mpPriority?: boolean; // stackedNuke units (Maiden:IR): jump the burst queue at max MP stacks
+  chargeFrames?: number; // override charFixes: hand-measured real fire cycle (charge + recovery)
   loadout: string[]; // human-readable, for the report
 }
 
@@ -29,6 +35,11 @@ export interface UnitOptions {
   cube?: { id: string; level: number }; // level 1-15
   ol?: 0 | 5;
   doll?: boolean;
+  lambdaStage?: 1 | 2 | 3;
+  stars?: number; // Limit Break stars / grade 0-3
+  core?: number;  // Core enhancement 0-7
+  mode?: string;  // kit mode (must match an entry in the override's `modes`)
+  mpPriority?: boolean;
   lines?: LineSelection[];
   skillLevels?: SkillLevels;
 }
@@ -75,6 +86,14 @@ export function prepareUnit(
   const loadout: string[] = [];
   if (opts?.ol !== undefined) loadout.push(`OL${opts.ol} gear`);
   if (opts?.doll !== undefined && opts.doll) loadout.push('Doll 15');
+  if (opts?.lambdaStage) loadout.push(`bursts as B${opts.lambdaStage}`);
+  const mode = skills.modes?.length
+    ? (opts?.mode && skills.modes.includes(opts.mode) ? opts.mode : skills.modes[0])
+    : undefined;
+  if (mode) loadout.push(`mode: ${mode}`);
+  if (opts?.mpPriority) loadout.push('bursts at max MP');
+  if (opts?.stars !== undefined || opts?.core !== undefined)
+    loadout.push(`${opts?.stars ?? 0}★ · core ${opts?.core ?? 0}`);
   if (levels !== MAX_SKILL_LEVELS && (levels.skill1 < 10 || levels.skill2 < 10 || levels.burst < 10)) {
     loadout.push(`skills ${levels.skill1}/${levels.skill2}/${levels.burst}`);
   }
@@ -100,7 +119,19 @@ export function prepareUnit(
     loadout.push(`${line.name} ×${sel.count} @ ${value}%`);
   }
 
-  return { skills, extraStats, ol: opts?.ol, doll: opts?.doll, loadout };
+  return {
+    skills,
+    extraStats,
+    ol: opts?.ol,
+    doll: opts?.doll,
+    lambdaStage: opts?.lambdaStage,
+    stars: opts?.stars,
+    core: opts?.core,
+    mode,
+    mpPriority: opts?.mpPriority,
+    chargeFrames: deps.overrides[char.slug]?.charFixes?.chargeFrames,
+    loadout,
+  };
 }
 
 export function prepareTeam(

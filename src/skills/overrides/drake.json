@@ -1,0 +1,24 @@
+{
+  "note": "Two parser fixes. Skill1: 'at the beginning of Full Burst' was not recognized as a Full-Burst trigger, so the team ATK 11.85%/10s was dropped; re-added as fullBurstEnter -> all allies (Hit Rate 11.85% kept as inert hitRatePct for fidelity). Skill2: 'after 10 attack(s)' on a shotgun. Per the guide, a hit counter counts pellets (SG pull = 10 hits) and 'N normal attacks = N hits' holds only for 1-hit weapons; Drake fires 10 pellets/pull, so 10 attacks = 10 pulls = 100 hits -> hitCount:100 (the parser's naive count:10 fired every single pull, ~10x too often). The skill hits '3 lowest-HP enemies' but with a single boss it lands one 98.55% ATK instant. Burst omitted: parser already renders it faithfully (1254% ATK nuke + self Max Ammo 72.18%/10s). UNCERTAINTY: the SG 'attack' = pull vs hit reading drives skill2's cadence 10x either way; I took 'attack = trigger pull' per the guide's 1-hit-weapon qualifier.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "hitRatePct", "value": 11.85, "durationSec": 10 },
+        { "kind": "buff", "stat": "atkPct", "value": 11.85, "durationSec": 10 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 100 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 98.55 }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import { JSDOM } from 'jsdom';
 import { readFileSync, readdirSync } from 'node:fs';
 
 const dom = new JSDOM('<!doctype html><html><body><div id="root"></div></body></html>', {
-  url: 'http://localhost:4173/',
+  url: 'http://localhost:4173/?team=liter,crown,naga,modernia,alice',
   pretendToBeVisual: true,
   runScripts: 'outside-only',
 });
