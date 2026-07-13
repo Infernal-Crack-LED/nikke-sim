@@ -594,12 +594,24 @@ export function App() {
       s.map((slot, j) => (j === i ? { ...slot, ...patch } : slot)),
     );
 
-  // bulk-apply a loadout choice to every slot at once
-  const setAll = (patch: Partial<SlotState>) =>
-    setSlots((s) => s.map((slot) => ({ ...slot, ...patch })));
+  // bulk-apply a loadout choice at once. On the DPS tab it targets the variable
+  // group nikkes (the control stays scope-locked); elsewhere it targets the slots.
+  const setAll = (patch: Partial<SlotState>) => {
+    if (tab === 'dps') {
+      setDpsGroups((gs) => gs.map((g) => g.map((u) => ({ ...u, ...patch }))));
+    } else {
+      setSlots((s) => s.map((slot) => ({ ...slot, ...patch })));
+    }
+  };
 
-  // whether every slot already matches — drives the "on" look on bulk buttons
-  const allHave = (pred: (s: SlotState) => boolean) => slots.every(pred);
+  // whether every target already matches — drives the "on" look on bulk buttons
+  const allHave = (pred: (s: SlotState) => boolean) => {
+    if (tab === 'dps') {
+      const units = dpsGroups.flat();
+      return units.length > 0 && units.every(pred);
+    }
+    return slots.every(pred);
+  };
 
   // "scope lock" preset: no cubes, no doll, OL0 gear, 3★/7 core, 400 synchro
   const applyScopeLock = () => {
