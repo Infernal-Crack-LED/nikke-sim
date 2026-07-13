@@ -64,13 +64,24 @@ const CALC_TABS_ENABLED = true;
 // Feature flag: Discord login + saved teams. Wired to the bakery-bot API
 // (web/src/auth.ts); backend deployed at appweb-production-a479.up.railway.app.
 const AUTH_ENABLED = true;
-type CalcTab = 'sim' | 'team' | 'roster' | 'character';
+type CalcTab = 'sim' | 'team' | 'roster' | 'character' | 'dps';
 const CALC_TABS: { key: CalcTab; label: string }[] = [
   { key: 'sim', label: 'Sim' },
   { key: 'team', label: 'Team Calc' },
   { key: 'roster', label: 'Roster Calc' },
   { key: 'character', label: 'Character Calc' },
+  { key: 'dps', label: 'DPS Test' },
 ];
+
+// scope-lock loadout (per-unit): no cube, no doll, OL0, 3★ / 7 core, 10/10/10.
+// Applied to every unit in the DPS test so candidates compete on equal footing.
+const SCOPE_LOCK_LOADOUT: UnitOptions = {
+  ol: 0,
+  doll: false,
+  stars: 3,
+  core: 7,
+  skillLevels: { skill1: 10, skill2: 10, burst: 10 },
+};
 
 // ---- best-OL breakpoint math (pure; damage-ranked selection is backend) ----
 const CHARGE_SPEED_BREAKPOINTS = [5, 8, 11, 15, 18, 21]; // %, RL/SR targets
@@ -537,6 +548,22 @@ export function App() {
     unitSlug: string;
     ol: BestOlAtTierResult;
   } | null>(null);
+  // DPS test: a scope-locked control group (3 or 4) + variable groups that fill
+  // the rest (2 or 1). Each complete group forms a variant team we sim.
+  const [dpsControl, setDpsControl] = useState<string[]>([]);
+  const [dpsGroups, setDpsGroups] = useState<string[][]>([[]]);
+  const [dpsResults, setDpsResults] = useState<
+    | {
+        group: string[];
+        teamDamage: number;
+        teamDps: number;
+        fullBurstUptime: number;
+        varDamage: number;
+        varShare: number;
+        varUnits: { slug: string; name: string; totalDamage: number; share: number }[];
+      }[]
+    | null
+  >(null);
 
   const setSlot = (i: number, patch: Partial<SlotState>) =>
     setSlots((s) =>
@@ -975,6 +1002,55 @@ export function App() {
       setCharResult({ team: analysis.team, unitSlug: calcChar, ol });
     });
 
+  // ---- DPS test: scope-locked control + variable groups ----
+  const dpsGroupSize = Math.max(1, 5 - dpsControl.length); // 2 if control=3, 1 if 4
+  const dpsControlValid = dpsControl.length === 3 || dpsControl.length === 4;
+  const setControl = (next: string[]) => {
+    setDpsControl(next);
+    setDpsGroups([[]]); // group size may have changed — reset variable groups
+    setDpsResults(null);
+  };
+  const runDpsTest = () =>
+    runCalc(() => {
+      const deps = {
+        overrides,
+        skillLevels: skillLevelData,
+        cubes,
+        olLines: olLinesData,
+      };
+      const cfg = { ...calcCfg(), level: 400 }; // scope lock = lvl 400
+      const complete = dpsGroups.filter((g) => g.length === dpsGroupSize);
+      const results = complete
+        .map((group) => {
+          const slugs = [...dpsControl, ...group];
+          const cs = slugs.map((s) => data.characters[s]);
+          const prepared = prepareTeam(
+            cs as any,
+            slugs.map(() => SCOPE_LOCK_LOADOUT),
+            deps as any,
+          );
+          const r = runSim(cs as any, mult, { ...cfg, slugs } as SimConfig, prepared);
+          const varUnits = r.units.slice(dpsControl.length); // the group's units
+          const varDamage = varUnits.reduce((s, u) => s + u.totalDamage, 0);
+          return {
+            group,
+            teamDamage: r.teamDamage,
+            teamDps: r.teamDps,
+            fullBurstUptime: r.fullBurstUptime,
+            varDamage,
+            varShare: r.teamDamage ? varDamage / r.teamDamage : 0,
+            varUnits: varUnits.map((u) => ({
+              slug: u.slug,
+              name: u.name,
+              totalDamage: u.totalDamage,
+              share: u.share,
+            })),
+          };
+        })
+        .sort((a, b) => b.teamDamage - a.teamDamage);
+      setDpsResults(results);
+    });
+
   // compact result table for a generated team
   const teamResultView = (t: TeamResult, highlight?: string) => (
     <div className='calc-result'>
@@ -1040,6 +1116,158 @@ export function App() {
               {teamResultView(t)}
             </div>
           ))}
+        </section>
+      );
+    }
+    if (tab === 'dps') {
+      const canRun =
+        dpsControlValid &&
+        dpsGroups.some((g) => g.length === dpsGroupSize) &&
+        !calcBusy;
+      return (
+        <section className='calc-tab'>
+          <h2>DPS Test</h2>
+          <p className='muted'>
+            A fixed <b>control group</b> (3 or 4 nikkes) plus swap-in variable
+            groups. Every unit is <b>scope-locked</b> (no cube / no doll / OL0 /
+            3★ · 7 core · lvl 400) so candidates compete on equal footing; boss
+            options come from the teamwide row above.
+          </p>
+
+          <div className='field'>
+            <label>Control group — pick 3 or 4 ({dpsControl.length}/4)</label>
+            <div className='chips'>
+              {dpsControl.map((slug) => (
+                <button
+                  key={slug}
+                  className='chip'
+                  title='remove'
+                  onClick={() =>
+                    setControl(dpsControl.filter((s) => s !== slug))
+                  }
+                >
+                  {data.characters[slug]?.name ?? slug} ×
+                </button>
+              ))}
+            </div>
+            {dpsControl.length < 4 && (
+              <CharSearch
+                placeholder='add control nikke…'
+                exclude={dpsControl}
+                onPick={(slug) => setControl([...dpsControl, slug])}
+              />
+            )}
+          </div>
+
+          {dpsControlValid ? (
+            <>
+              <div className='card-group-label'>
+                variable groups — {dpsGroupSize} nikke
+                {dpsGroupSize > 1 ? 's' : ''} each
+              </div>
+              {dpsGroups.map((group, gi) => (
+                <div className='dps-group' key={gi}>
+                  <span className='muted pill-label'>{gi + 1}</span>
+                  <div className='chips'>
+                    {group.map((slug) => (
+                      <button
+                        key={slug}
+                        className='chip'
+                        title='remove'
+                        onClick={() =>
+                          setDpsGroups((gs) =>
+                            gs.map((g, j) =>
+                              j === gi ? g.filter((s) => s !== slug) : g,
+                            ),
+                          )
+                        }
+                      >
+                        {data.characters[slug]?.name ?? slug} ×
+                      </button>
+                    ))}
+                  </div>
+                  {group.length < dpsGroupSize && (
+                    <CharSearch
+                      placeholder='add nikke…'
+                      exclude={[...dpsControl, ...group]}
+                      onPick={(slug) =>
+                        setDpsGroups((gs) =>
+                          gs.map((g, j) =>
+                            j === gi && g.length < dpsGroupSize
+                              ? [...g, slug]
+                              : g,
+                          ),
+                        )
+                      }
+                    />
+                  )}
+                  {dpsGroups.length > 1 && (
+                    <button
+                      className='ol-rm'
+                      title='remove group'
+                      onClick={() =>
+                        setDpsGroups((gs) => gs.filter((_, j) => j !== gi))
+                      }
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                className='ol-add'
+                onClick={() => setDpsGroups((gs) => [...gs, []])}
+              >
+                + add group
+              </button>
+              <button className='calc-run' onClick={runDpsTest} disabled={!canRun}>
+                {calcBusy ? 'Running…' : 'Run DPS test'}
+              </button>
+            </>
+          ) : (
+            <p className='muted'>Pick 3 or 4 control nikkes to begin.</p>
+          )}
+
+          {dpsResults && (
+            <div className='calc-result'>
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>variable group</th>
+                    <th className='r'>group dmg</th>
+                    <th className='r'>group share</th>
+                    <th className='r'>team dmg</th>
+                    <th className='r'>FB%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dpsResults.map((res, i) => (
+                    <tr key={i} className={i === 0 ? 'hl' : ''}>
+                      <td className='muted'>{i + 1}</td>
+                      <td>
+                        {res.varUnits.map((u) => u.name).join(' + ')}
+                      </td>
+                      <td className='r'>{fmt(res.varDamage)}</td>
+                      <td className='r share'>
+                        {(res.varShare * 100).toFixed(1)}%
+                      </td>
+                      <td className='r'>
+                        <b>{fmt(res.teamDamage)}</b>
+                      </td>
+                      <td className='r muted'>
+                        {(res.fullBurstUptime * 100).toFixed(0)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className='muted'>
+                Ranked by team damage. “Group dmg” is the combined damage of the
+                variable nikke{dpsGroupSize > 1 ? 's' : ''} in each variant.
+              </p>
+            </div>
+          )}
         </section>
       );
     }

@@ -192,6 +192,11 @@ input.num {
 .calc-result table { width: 100%; }
 .calc-result td { padding: 6px 10px; }
 .calc-result tr.hl td { background: rgba(91, 157, 255, 0.12); }
+.dps-group {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 6px 0; border-top: 1px solid var(--border);
+}
+.dps-group .picker { min-width: 180px; }
 
 /* best-OL calculator */
 .ol-calc { margin-top: 16px; }
