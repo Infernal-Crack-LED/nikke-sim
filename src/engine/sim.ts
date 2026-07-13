@@ -25,7 +25,7 @@ const FULL_BURST_FRAMES = 10 * FPS;
 // helm/velvet/nayuta). Weapon-swap states are exempt (Red Hood's own B3 window, SWHA's
 // Fully Active, Nayuta's SR mode — all swaps), as are units whose DB chargeFrames already
 // include the recovery (charFixes.noBoltRecovery: SWHA, liberalio).
-const SR_BOLT_RECOVERY_FRAMES = 30;
+const SR_BOLT_RECOVERY_FRAMES = 20;
 
 // Canon fire cadence per weapon type (doc values; per trigger pull).
 // MG's "60 rps" counts belt rounds (hits): pulls/s = 60 / hitsPerShot and each

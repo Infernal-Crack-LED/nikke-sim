@@ -435,3 +435,10 @@ full Prydwen treatment.
   (every 2nd FB-end, Electric B3 targets); parser fired them ungated to everyone every FB end.
   Modeled with everyN 2 offset 1.
 - isabel/volume/aqua-marine-helm snapshots were profile-only stubs; parse-level audit stands.
+
+## Range-band model (2026-07-13, user-measured)
+Test boss movement script + per-band weapon range eligibility + RL-never rule + 1s unhittable
+transition windows (with <=1s-reload snap-refills) implemented as ground truth. Board re-centered
+(mean ~0.99). Recalibrated: SR bolt recovery 30f→20f, nayuta swap 2.13s. Remaining outliers:
+maiden 1.47 (U2), CCW 1.18 (U3), crown-T2 1.14, velvet 1.13 ⚑, T4 comp-wide ~0.90 floor.
+All probe-run predictions shifted — maiden solo now 96.1M.

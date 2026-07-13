@@ -41,10 +41,16 @@ the universal rider-range exemption, anis-star and RRH stay centered (their proj
 lose range while their RL normals gain projExpl — the two errors had been cancelling). SBS
 needed her proc set moved to the noFb class (1.30 → 1.14), consistent with U1's taxonomy.
 
-### ~~U5~~ — ANSWERED 2026-07-13: MG rounds never miss — only core-hit vs body-hit
-User: there are no misses. So the implemented estimates are the right mechanism family:
-wind-up rounds (first 18, before the 2-frame ladder portion) land on BODY not core, and MG
-normals get no range bonus. Both stand as implemented; exact wind-up core-rate is an estimate ⚑.
+### ~~U5~~ — SUPERSEDED by the measured range-band model (2026-07-13, later)
+User measured the test boss's movement: range bands mid/near/far/mid-far on a fixed timeline,
++30% bonus only for weapon classes inside their effective range per band (near=SG, mid=SMG+AR,
+mid-far=MG+SR, far=SR), and RL NEVER receives it. Implemented as BOSS_RANGE_SCRIPT +
+RANGE_ELIGIBLE (engine); the earlier blanket MG range-exemption is subsumed (MG gets the bonus
+only in mid-far, ~23% of the fight). Wind-up no-core estimate (first 18 rounds) stands ⚑.
+Also implemented: 1s unhittable windows at each band transition; units whose EFFECTIVE reload
+is <=1s snap-refill during the window, others keep their mag; in-progress reloads continue.
+RECALIBRATED under the new model: SR bolt recovery 30f -> 20f (helm 0.97-0.98 clean fights;
+velvet 1.13 flagged); nayuta SR-swap cycle 2.3 -> 2.13s.
 
 ### U6 — Fight-level warm spots (largely dissolved by the 2026-07-13 rules)
 Clarified: "T2-style" meant the specific T2 SAMPLE run read uniformly warm vs the same units
