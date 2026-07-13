@@ -32,6 +32,8 @@ import {
   type AuthUser,
   type SavedTeam,
 } from './auth';
+import { makeCalc, type TeamResult } from '../../src/teamcalc';
+import { bestOlAtTier, type BestOlAtTierResult } from '../../src/olcalc';
 import charactersJson from '../../data/characters.json';
 import cubesJson from '../../data/cubes.json';
 import multJson from '../../data/level-multiplier.json';
@@ -51,13 +53,13 @@ const olTiers = (olTiersJson as any).tiers as Array<Record<string, number>>;
 const olTierValues = (tier: number): Record<string, number> =>
   olTiers.find((t) => t.tier === tier) ?? olTiers.find((t) => t.tier === 11)!;
 
-// Feature flag: OL line entry + best-OL calculator are WIP, hidden for now.
-// Flip to true to expose them (or wire to an env/query flag later).
-const OL_UI_ENABLED = false;
+// Feature flag: OL line entry + best-OL breakpoints. Damage-ranked best-OL now
+// lives in the Character Calc tab (src/olcalc.ts).
+const OL_UI_ENABLED = true;
 
-// Feature flag: the tab system + team/roster/character calculators are WIP,
-// front-end scaffolds only (search logic is a backend handoff). Hidden for now.
-const CALC_TABS_ENABLED = false;
+// Feature flag: the tab system + team/roster/character calculators. Backends in
+// src/teamcalc.ts + src/olcalc.ts (heuristic search on the shared engine).
+const CALC_TABS_ENABLED = true;
 
 // Feature flag: Discord login + saved teams. Wired to the bakery-bot API
 // (web/src/auth.ts); backend deployed at appweb-production-a479.up.railway.app.
@@ -527,6 +529,14 @@ export function App() {
   const [tab, setTab] = useState<CalcTab>('sim');
   const [blocked, setBlocked] = useState<string[]>([]); // don't-own / excluded
   const [calcChar, setCalcChar] = useState<string | null>(null); // Character Calc
+  const [calcBusy, setCalcBusy] = useState(false);
+  const [teamResult, setTeamResult] = useState<TeamResult | null>(null);
+  const [rosterResults, setRosterResults] = useState<TeamResult[] | null>(null);
+  const [charResult, setCharResult] = useState<{
+    team: TeamResult;
+    unitSlug: string;
+    ol: BestOlAtTierResult;
+  } | null>(null);
 
   const setSlot = (i: number, patch: Partial<SlotState>) =>
     setSlots((s) =>
@@ -863,15 +873,131 @@ export function App() {
     </div>
   );
 
-  // frontend scaffold for the calc tabs — the actual search/optimization is a
-  // backend handoff (docs/calc-tabs-handoff.md), so results show a pending note
-  const pendingNote = (what: string) => (
-    <div className='notes calc-pending'>
-      <b>{what}</b> is not wired yet — this is the front-end scaffold. The search
-      runs the shared engine on the backend; see{' '}
-      <code>docs/calc-tabs-handoff.md</code>. Assumptions come from the teamwide
-      options above (boss weakness, DEF, core visibility, synchro) and the
-      “Apply to all” loadout row.
+  // ---- calc tabs: shared inputs + async runners (Team/Roster/Character) ----
+  // Boss options + the "Apply to all" loadout (taken from slot 1) become the
+  // uniform assumption the search runs every candidate under.
+  const calcCfg = () => ({
+    bossElement: weakness ? WEAKNESS_TO_BOSS[weakness] : null,
+    bossDef: Number(bossDef) || 0,
+    level: Math.min(1200, Math.max(1, Number(level) || 400)),
+    copies: 0,
+    doll: false,
+    ol: 0 as const,
+    coreHitRate: coreCustom
+      ? Math.min(1, Math.max(0, Number(coreCustomVal) / 100 || 0))
+      : core,
+    rangeBonus: true,
+    durationSec: 180,
+  });
+  const calcLoadout = (): UnitOptions => {
+    const s = slots[0];
+    return {
+      cube:
+        s.cubeId === 'none'
+          ? undefined
+          : { id: s.cubeId, level: Math.min(15, Math.max(1, s.cubeLevel || 15)) },
+      ol: s.ol,
+      doll: s.doll,
+      stars: Math.min(3, Math.max(0, s.stars)),
+      core: Math.min(7, Math.max(0, s.core)),
+      skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
+    };
+  };
+  const newCalc = () =>
+    makeCalc({
+      chars: data.characters as any,
+      mult,
+      deps: {
+        overrides,
+        skillLevels: skillLevelData,
+        cubes,
+        olLines: olLinesData,
+      },
+      cfg: calcCfg(),
+      loadout: calcLoadout(),
+      blocked,
+    });
+
+  // run a (blocking) calc off the paint frame so the "calculating…" state shows
+  const runCalc = async (fn: () => void) => {
+    setCalcBusy(true);
+    await new Promise((r) => setTimeout(r, 30));
+    try {
+      fn();
+    } finally {
+      setCalcBusy(false);
+    }
+  };
+  const runBestTeam = () =>
+    runCalc(() => {
+      setRosterResults(null);
+      setCharResult(null);
+      setTeamResult(newCalc().bestTeam());
+    });
+  const runTopTeams = () =>
+    runCalc(() => {
+      setTeamResult(null);
+      setCharResult(null);
+      setRosterResults(newCalc().topTeams(5));
+    });
+  const runCharacter = () =>
+    runCalc(() => {
+      setTeamResult(null);
+      setRosterResults(null);
+      if (!calcChar) return;
+      const analysis = newCalc().characterAnalysis(calcChar);
+      if (!analysis) {
+        setCharResult(null);
+        return;
+      }
+      // best-OL for the pinned unit inside its generated team
+      const cs = analysis.team.slugs.map((s) => data.characters[s]);
+      const idx = analysis.team.slugs.indexOf(calcChar);
+      const prepared = prepareTeam(
+        cs as any,
+        analysis.team.slugs.map(() => calcLoadout()),
+        {
+          overrides,
+          skillLevels: skillLevelData,
+          cubes,
+          olLines: olLinesData,
+        },
+      );
+      const ol = bestOlAtTier(
+        cs as any,
+        mult,
+        { ...calcCfg(), slugs: analysis.team.slugs } as SimConfig,
+        prepared,
+        idx,
+        olTiers as any,
+        olTier,
+      );
+      setCharResult({ team: analysis.team, unitSlug: calcChar, ol });
+    });
+
+  // compact result table for a generated team
+  const teamResultView = (t: TeamResult, highlight?: string) => (
+    <div className='calc-result'>
+      <div className='summary muted'>
+        team <b className='big'>{fmt(t.teamDamage)}</b> · {fmt(t.teamDps)} DPS ·{' '}
+        {(t.fullBurstUptime * 100).toFixed(0)}% FB uptime
+      </div>
+      <table>
+        <tbody>
+          {t.units.map((u) => (
+            <tr key={u.slug} className={u.slug === highlight ? 'hl' : ''}>
+              <td className='muted'>B{u.burst}</td>
+              <td>
+                {u.name}
+                {u.advantaged && <span className='adv' title='advantage'> ▲</span>}
+              </td>
+              <td className='r'>{u.weapon}</td>
+              <td className='r share'>{(u.share * 100).toFixed(1)}%</td>
+              <td className='r'>{fmt(u.totalDamage)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 
@@ -883,13 +1009,15 @@ export function App() {
           <p className='muted'>
             Finds the strongest 5-nikke team for the chosen boss weakness
             {weakness ? ` (${weakness})` : ' (no element selected)'} under the
-            teamwide options above.
+            teamwide options + “Apply to all” loadout above.
           </p>
           {blockedPanel}
-          <button className='calc-run' disabled>
-            Calculate best team{weakness ? ` for ${weakness}` : ''}
+          <button className='calc-run' onClick={runBestTeam} disabled={calcBusy}>
+            {calcBusy
+              ? 'Calculating…'
+              : `Calculate best team${weakness ? ` for ${weakness}` : ''}`}
           </button>
-          {pendingNote('Best-team search')}
+          {teamResult && teamResultView(teamResult)}
         </section>
       );
     }
@@ -899,13 +1027,19 @@ export function App() {
           <h2>Roster Calc</h2>
           <p className='muted'>
             Builds the top 5 teams with no character reused across teams (same
-            scoring as Team Calc).
+            scoring as Team Calc). Takes a few seconds — it runs hundreds of
+            fights.
           </p>
           {blockedPanel}
-          <button className='calc-run' disabled>
-            Calculate top 5 teams
+          <button className='calc-run' onClick={runTopTeams} disabled={calcBusy}>
+            {calcBusy ? 'Calculating…' : 'Calculate top 5 teams'}
           </button>
-          {pendingNote('Top-5-teams search')}
+          {rosterResults?.map((t, i) => (
+            <div key={i}>
+              <div className='card-group-label'>team {i + 1}</div>
+              {teamResultView(t)}
+            </div>
+          ))}
         </section>
       );
     }
@@ -915,8 +1049,8 @@ export function App() {
       <section className='calc-tab'>
         <h2>Character Calc</h2>
         <p className='muted'>
-          Pick one nikke; a supporting team is generated around them. Main
-          workhorse for best-OL calcs and testing new characters.
+          Pick one nikke; the best supporting team is generated around them, then
+          their best-OL is computed inside it. Workhorse for best-OL + new chars.
         </p>
         <div className='field'>
           <label>Character</label>
@@ -925,7 +1059,10 @@ export function App() {
               <button
                 className='chip'
                 title='change'
-                onClick={() => setCalcChar(null)}
+                onClick={() => {
+                  setCalcChar(null);
+                  setCharResult(null);
+                }}
               >
                 {cc.name} ({cc.weapon} · {cc.element}) ×
               </button>
@@ -938,10 +1075,34 @@ export function App() {
             />
           )}
         </div>
-        <button className='calc-run' disabled={!cc}>
-          Generate team &amp; analyze
+        <button
+          className='calc-run'
+          onClick={runCharacter}
+          disabled={!cc || calcBusy}
+        >
+          {calcBusy ? 'Calculating…' : 'Generate team & analyze'}
         </button>
-        {pendingNote('Character analysis + best-OL')}
+        {charResult && (
+          <>
+            {teamResultView(charResult.team, charResult.unitSlug)}
+            <div className='notes'>
+              <b>{data.characters[charResult.unitSlug].name} — best OL</b> (tier{' '}
+              {charResult.ol.tier}): fixed{' '}
+              {charResult.ol.fixed.map((l) => `${l.count}×${l.label}`).join(' + ')}
+              {' + '}
+              <b>
+                {charResult.ol.free.length
+                  ? charResult.ol.free
+                      .map((l) => `${l.count}×${l.label}`)
+                      .join(' + ')
+                  : '(none)'}
+              </b>{' '}
+              <span className='muted'>
+                (+{charResult.ol.gainPct.toFixed(1)}% over the 8 fixed lines)
+              </span>
+            </div>
+          </>
+        )}
       </section>
     );
   };
@@ -1603,9 +1764,8 @@ export function App() {
                   <p className='muted'>
                     Assumes 8/12 lines are 4× ATK + 4× ELE; the remaining 4 are
                     free. Values shown at tier {olTier} ({tv.ammo}% ammo,{' '}
-                    {tv.chargespd}% charge speed per line). Damage-ranked pick of
-                    the best 4 is computed by the backend (pending — see{' '}
-                    <code>docs/ol-calculator-handoff.md</code>).
+                    {tv.chargespd}% charge speed per line). For the damage-ranked
+                    pick of the best 4 lines, use the <b>Character Calc</b> tab.
                   </p>
                   {filled.map((c) => {
                     const isCharge = c.weapon === 'RL' || c.weapon === 'SR';

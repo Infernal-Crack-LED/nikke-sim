@@ -188,6 +188,10 @@ input.num {
 }
 .calc-run:disabled { opacity: 0.45; cursor: not-allowed; }
 .calc-pending code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
+.calc-result { margin: 10px 0 18px; }
+.calc-result table { width: 100%; }
+.calc-result td { padding: 6px 10px; }
+.calc-result tr.hl td { background: rgba(91, 157, 255, 0.12); }
 
 /* best-OL calculator */
 .ol-calc { margin-top: 16px; }
