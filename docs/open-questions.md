@@ -13,6 +13,10 @@ validate at FULL value — so it is not a universal "additional damage" rule.
 **Question: do proc hits like Privaty's last-bullet and Liberalio's core-hit additional damage
 receive the +50% full-burst damage bonus and the +30% full-range bonus? What distinguishes them
 from helm/anis procs (which clearly get full value)?**
+UPDATE (tier audit): Prydwen documents Ein's Near Feathers as "affected by Full Burst
+Multiplier (0.5×) but NOT Damage Distance (0.3×)" — so range-exemption is a real per-skill
+property. Losing only range = ÷1.2, not the needed ÷1.7, so the ×0.59 units would need to lose
+FB too. Prydwen may document this per unit — check privaty/liberalio reviews for wording.
 
 ## Q2 — MG spool vs Privaty ammo cut (crown-T4 0.71)
 Max Ammo ▼ clips the current belt (confirmed) and MG wind-up resets on reload (confirmed) —
@@ -34,3 +38,38 @@ ally aura value, unmodeled passive damage.
 ## Q5 — mild systematic edges (park until majors are done)
 Mast:RM 0.84-0.86 (both fights, never-bursting B2) · Neon:VE 0.87 · SBS 1.13 ·
 Little Mermaid 1.15/1.02 · Nayuta 1.13.
+
+## Q6 — "total ammo expended by allies" triggers + sequential value reading (Little Mermaid)
+LM's 37%-gauge-per-400-ammo and Bubble-Barrage-per-500-ammo count TEAM ammo (MG comps hit the
+threshold every ~3s). Engine models them as her own hits (5-8x undercount). But per-hit ×10
+barrage at true cadence would overshoot her badly (→~1.36) — unless "Deals 85% ... attacks
+sequentially for 10 time(s)" is a SPLIT TOTAL vs single target for HER (while Cinderella's
+burst sequential is confirmed per-hit ×10). **Question: vs one boss, does LM's Bubble Barrage
+deal 85%×10 or 85% total? Same for her 63.36%×4/s full-burst attack?**
+
+## Q7 — RESOLVED: Nayuta lands 1.03 (T5)
+Per-Prydwen model (530.46%/shot stage rider = 150 full-screen + 380.46 stage stacking,
+ramp-averaged stack gates) + the SR bolt-recovery cycle (1.8s charge → 2.3s) = ratio 1.03.
+Third independent confirmation of the +0.5s SR recovery (helm, velvet, nayuta swap).
+
+## Q8 — which SRs carry the +0.5s bolt recovery?
+Confirmed needed: helm, velvet (DB 60f = charge only), nayuta's 1.8s swap. NOT needed: SWHA
+(kit-fixed 1.2s, validated 1.07-1.15), liberalio (DB 90f already ≈ 1.0s charge + recovery,
+validated ~1.0). Unknown: alice (listed 1.5s charge, DB 90f), red-hood, maxwell, other SRs.
+**Question: is the recovery universal (and some DB chargeFrames already bake it in), or
+kit-dependent? A controlled alice/red-hood run would settle their cycle.**
+
+## Q9 — Prydwen contradicts our projectile-bucket rule
+Prydwen (Emma:TU review): Projectile Explosion DMG "affects Explosive types of damage, such as
+RRH's Attachment AND REGULAR RL ATTACKS ... functions as ATK DMG but only affects the base
+multiplier itself". Our validated rule (user-provided, RRH share-matched): projectile bucket is
+its own multiplier on FLAVORED hits only, RL normals never benefit. Keeping our rule; flag for
+adjudication — if regular RL normals do get projExpl on the base multiplier, Anis:Star/SBS/RL
+units gain a small bucket from projExpl team buffs (Mint duet, Emma:TU, Anis:Star's own aura).
+
+## Q10 — pierceDamagePct is inert but shouldn't be for pierce-tagged units
+DKW review: Pierce Damage "empowers any attacks tagged with Pierce (regardless of whether
+there is any surface to pierce)" — i.e. a dmgUp-bucket buff for units WITH pierce (red-hood
+permanent, alice >80% HP, grave, SWHA during full charge). Engine treats it as inert, which
+under-models zwei-T / d-killer-wife / mint-duet support value for pierce carries.
+Needs: per-unit hasPierce tracking + pierceDamagePct in the dmgUp bucket for their hits.

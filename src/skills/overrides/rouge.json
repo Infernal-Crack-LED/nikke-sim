@@ -1,22 +1,79 @@
 {
-  "note": "Support coin kit. Skill1: fires every 8 full-charge attacks (SR = 1 hit/pull, so hitCount 8, not the parser's every-shot) -> team burst CDR 7s; its Max-HP grant is skipped (defensive, no restore). Skill2 coin chain: only the Sword Coin Attack Damage 6.65% is offensive -> modeled as a permanent all-ally buff ('self and 2 allies on both sides' in a 5-slot squad = whole team). Shield Coin (Damage Taken down) and Double Sword Coin (Max HP up) are defensive and skipped. Burst slot omitted: the parser already emits the ATK 15.07%-of-caster team buff faithfully; the three coin-gated Max-HP grants are defensive and correctly dropped.",
+  "note": "Support coin kit. Skill1: fires every 8 full-charge attacks (SR = 1 hit/pull, so hitCount 8, not the parser's every-shot) -> team burst CDR 7s; its Max-HP grant is skipped (defensive, no restore). Skill2 coin chain: only the Sword Coin Attack Damage 6.65% is offensive -> modeled as a permanent all-ally buff ('self and 2 allies on both sides' in a 5-slot squad = whole team). Shield Coin (Damage Taken down) and Double Sword Coin (Max HP up) are defensive and skipped. Burst slot omitted: the parser already emits the ATK 15.07%-of-caster team buff faithfully; the three coin-gated Max-HP grants are defensive and correctly dropped. TIER AUDIT: her Max-HP grants feed HP-scaling carries (Cinderella's 2.71%-of-MaxHP ATK — the Rouge+Cindy synergy) via the new casterMaxHpPct stat. Burst: team casterAtk 15.07 + Max HP grant time-averaged across coin progression (10.15 Sword / 20.1 Shield@30FC / 30.02 DoubleSword@5casts -> ~22 avg per 10s cast). S2's permanent Double-Sword 15.08% (from ~t=100s -> avg 7.5) added as passive. Inert for teammates without atkOfMaxHpPct.",
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 8 },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 8
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "burstCdr", "seconds": 7 }
+        {
+          "kind": "burstCdr",
+          "seconds": 7
+        }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 6.65 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 6.65
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 7.5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 15.07,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 22,
+          "durationSec": 10
+        }
       ]
     }
   ]

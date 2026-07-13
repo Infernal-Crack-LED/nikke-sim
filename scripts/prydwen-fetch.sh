@@ -14,7 +14,13 @@ print(rows[-1][1] if len(rows) > 1 else '')")
   [ -n "$TS" ] && SNAP="http://web.archive.org/web/$TS/https://www.prydwen.gg/nikke/characters/$SLUG/"
 fi
 if [ -z "$SNAP" ]; then echo "NO_SNAPSHOT"; exit 0; fi
-curl -sL "$SNAP" -A "Mozilla/5.0" --compressed --max-time 90 | python3 -c "
+BODY=""
+for i in 1 2 3 4; do
+  BODY=$(curl -sL "$SNAP" -A "Mozilla/5.0" --compressed --max-time 90)
+  [ ${#BODY} -gt 5000 ] && break
+  sleep $((i * 8))
+done
+printf '%s' "$BODY" | python3 -c "
 import re, html, sys
 raw = sys.stdin.read()
 txt = re.sub(r'<script[^>]*>.*?</script>', ' ', raw, flags=re.S)

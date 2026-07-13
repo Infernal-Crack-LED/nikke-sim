@@ -1,0 +1,31 @@
+{
+  "note": "Tier audit (Bossing A). S1's Explore-Route-gated permanents (Distributed Damage 49.58 caster-bucket + Core Damage 25.25 + Crit Rate 16.73) were skipped \u2014 the route fills early and stays, modeled as passives. S2 staged ATK stacking left to the parser approximation. Burst parses (AD 57.08 + 1736.31% distributed nuke).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 49.58
+        },
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 25.25
+        },
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 16.73
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,7 @@ import { loadOverride } from '../src/skills/overrides-node.js';
 import type { DataFile, LevelMultiplier, SimConfig } from '../src/types.js';
 
 const STATS = new Set([
-  'atkPct', 'casterAtkPct', 'atkOfMaxHpPct', 'critRatePct', 'critDamagePct', 'coreDamagePct',
+  'atkPct', 'casterAtkPct', 'casterMaxHpPct', 'atkOfMaxHpPct', 'critRatePct', 'critDamagePct', 'coreDamagePct',
   'elementDamagePct', 'chargeDamagePct', 'chargeSpeedPct', 'attackDamagePct',
   'sustainedDamagePct', 'sequentialDamagePct', 'partsDamagePct', 'pierceDamagePct', 'damageTakenPct',
   'maxAmmoPct', 'reloadSpeedPct', 'attackSpeedPct', 'fireRatePct',

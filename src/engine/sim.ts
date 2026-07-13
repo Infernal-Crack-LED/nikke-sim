@@ -64,6 +64,7 @@ interface WeaponSwap {
   chargeFrames?: number;
   chargeMultPct?: number;
   maxAmmo?: number;
+  trueNormals?: boolean;
 }
 
 interface UnitState {
@@ -296,10 +297,12 @@ export function runSim(
     (BEATS[u.char.element] === cfg.bossElement || u.advantageVs.has(cfg.bossElement));
 
   function effectiveAtk(u: UnitState, frame: number): number {
+    // casterMaxHpPct buffs arrive as flat Max HP (converted at apply time)
+    const liveMaxHp = u.maxHp + stat(u, 'maxHpFlat' as StatKey, frame);
     return (
       u.staticAtk * (1 + stat(u, 'atkPct', frame) / 100) +
       stat(u, 'casterAtkPct', frame) +
-      (stat(u, 'atkOfMaxHpPct', frame) / 100) * u.maxHp
+      (stat(u, 'atkOfMaxHpPct', frame) / 100) * liveMaxHp
     );
   }
 
@@ -316,11 +319,12 @@ export function runSim(
       sustained?: boolean;
       sequential?: boolean;
       trueFlavor?: boolean;
+      noRange?: boolean;
       projFlavor?: 'attachment' | 'explosion';
     }
   ) {
     const fb = fbEndFrame > frame;
-    let major = 1 + (fb ? 0.5 : 0) + (cfg.rangeBonus ? 0.3 : 0);
+    let major = 1 + (fb ? 0.5 : 0) + (cfg.rangeBonus && !opts.noRange ? 0.3 : 0);
     if (opts.crit) {
       const critRate = Math.min(1, Math.max(0, (u.critRate + stat(u, 'critRatePct', frame)) / 100));
       major += critRate * ((u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100);
@@ -459,13 +463,16 @@ export function runSim(
             break;
           }
           const value =
-            e.stat === 'casterAtkPct' ? (e.value / 100) * owner.staticAtk : e.value;
+            e.stat === 'casterAtkPct' ? (e.value / 100) * owner.staticAtk
+            : e.stat === 'casterMaxHpPct' ? (e.value / 100) * owner.maxHp
+            : e.value;
+          const statKey = e.stat === 'casterMaxHpPct' ? ('maxHpFlat' as StatKey) : e.stat;
           // always-on triggers keep their buffs up regardless of listed duration
           const alwaysOn =
             block.trigger.kind === 'passive' || block.trigger.kind === 'bossElement';
           for (const t of resolveTargets(block.target, ownerIdx)) {
             applyBuff(
-              t.buffs, key, e.stat, value,
+              t.buffs, key, statKey, value,
               alwaysOn ? undefined : e.durationSec,
               e.maxStacks ?? 1, frame
             );
@@ -479,9 +486,10 @@ export function runSim(
         }
         case 'flatDamage':
           dealDamage(owner, e.atkPct, frame, {
-            crit: false,
+            crit: e.crit === true,
             core: e.core === true,
             charge: false,
+            noRange: e.noRange === true,
             category,
             distributed: e.flavor === 'distributed',
             sustained: e.flavor === 'sustained',
@@ -524,6 +532,7 @@ export function runSim(
             chargeFrames: e.chargeTimeSec ? Math.round(e.chargeTimeSec * FPS) : undefined,
             chargeMultPct: e.chargeMultPct,
             maxAmmo: e.maxAmmo,
+            trueNormals: e.trueNormals,
           };
           owner.chargeProgress = 0;
           owner.reloading = false;
@@ -826,6 +835,7 @@ export function runSim(
     const baseMult = u.swap?.damagePct ?? u.char.normalAttackMultiplier;
     dealDamage(u, baseMult * normalScale, frame, {
       crit: true, core: true, charge: charged, category: 'normal',
+      trueFlavor: !!u.swap?.trueNormals,
     });
     u.pulls++;
 

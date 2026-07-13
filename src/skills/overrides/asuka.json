@@ -1,0 +1,21 @@
+{
+  "note": "Tier audit (Bossing A). S1 ATK 96.98%/25s triggers 'when recovery takes effect' \u2014 skipped by parser, but her meta comps always include recurring heals (Rei aura, Crown S2, Mast), so uptime is ~permanent -> modeled as a passive self ATK 96.98. If run with zero healers this over-buffs (rare). Rest of kit parses (S2 FB elemAdvantage 30.02 + coreDamage 60.07, burst AD 150.04/10s).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 96.98
+        }
+      ]
+    }
+  ]
+}

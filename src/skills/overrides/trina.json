@@ -1,0 +1,29 @@
+{
+  "note": "Tier audit (Bossing A). S2's 94.15% Attack Damage + 50.82% reload targets '1 leftmost Electric Code ally with assault rifles' \u2014 the parser applied it to ALL allies (5x over-buff). No leftmost/weapon-filter target exists; approximated as alliesOfElement Electric (narrower; exact when the comp runs one Electric AR carry, e.g. Trina->Moran). Burst kept in parser (team AD 20.9 + maxAmmo 20; the 'Burst Skill damage of AoE skills' rider unsupported, warned).",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Electric"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 94.15,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 50.82,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}
