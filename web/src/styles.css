@@ -265,17 +265,26 @@ footer { margin-top: 28px; font-size: 12px; }
   border-top: 1px solid var(--border); margin-top: 40px; background: var(--panel);
 }
 .social-row {
-  max-width: 1180px; margin: 0 auto; padding: 22px 20px 6px;
-  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+  max-width: 1180px; margin: 0 auto; padding: 22px 20px 8px;
+  display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
 }
-.social-btn {
-  display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
-  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
-  border-left: 3px solid var(--brand, var(--accent));
-  border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600;
+/* rounded brand tile (the corner rounding common to social-share rows) */
+.social-tile {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; text-decoration: none; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.12);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
-.social-btn:hover { border-color: var(--brand, var(--accent)); background: var(--panel); }
-.social-glyph { font-size: 15px; line-height: 1; color: var(--brand, var(--accent)); }
+.social-tile.round { border-radius: 50%; }
+.social-tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+.social-tile svg { width: 22px; height: 22px; display: block; }
+.social-tile img { width: 100%; height: 100%; object-fit: cover; }
+/* accessible label kept in the DOM but visually hidden */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
 .site-footer-by {
   max-width: 1180px; margin: 0 auto; padding: 6px 20px 24px;
   text-align: center; color: var(--muted); font-size: 12px;
@@ -292,10 +301,10 @@ footer { margin-top: 28px; font-size: 12px; }
   background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
   padding: 18px 20px; margin-bottom: 26px;
 }
-.dev-callout-badge {
-  flex: 0 0 auto; width: 46px; height: 46px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; font-size: 26px;
-  background: var(--panel2); border: 1px solid var(--border);
+.dev-callout-avatar {
+  flex: 0 0 auto; width: 72px; height: 72px; border-radius: 50%;
+  object-fit: cover; border: 2px solid var(--border);
+  background: var(--panel2);
 }
 .dev-callout-body h2 { margin: 2px 0 8px; font-size: 18px; }
 .dev-callout-body p { margin: 0 0 12px; color: var(--muted); line-height: 1.6; max-width: 620px; }

@@ -33,12 +33,12 @@ export function DevBadge({ current }: { current: Route }) {
   if (current === 'dev') return null;
   return (
     <a className='dev-badge' href={hrefFor('dev')} title='About the developer'>
-      👋 Meet the dev
+      Meet the dev
     </a>
   );
 }
 
-// Shared social footer rendered on every page.
+// Shared social footer rendered on every page — brand tiles, rounded corners.
 export function SiteFooter() {
   return (
     <footer className='site-footer'>
@@ -46,14 +46,22 @@ export function SiteFooter() {
         {socials.map((s) => (
           <a
             key={s.label}
-            className='social-btn'
+            className={
+              'social-tile' + (s.icon.kind === 'img' && s.icon.round ? ' round' : '')
+            }
             href={s.href}
             target='_blank'
             rel='noreferrer'
-            style={{ ['--brand' as any]: s.color }}
+            aria-label={s.label}
+            title={s.label}
+            style={{ background: s.brand }}
           >
-            <span className='social-glyph'>{s.glyph}</span>
-            {s.label}
+            {s.icon.kind === 'brand' ? (
+              <BrandIcon name={s.icon.name} />
+            ) : (
+              <img src={s.icon.src} alt='' />
+            )}
+            <span className='sr-only'>{s.label}</span>
           </a>
         ))}
       </div>

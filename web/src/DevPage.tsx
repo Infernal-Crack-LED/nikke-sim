@@ -17,7 +17,11 @@ export function DevPage() {
       </section>
 
       <section className='dev-callout'>
-        <div className='dev-callout-badge'>🧁</div>
+        <img
+          className='dev-callout-avatar'
+          src='/maiden.gif'
+          alt='Maiden bot avatar'
+        />
         <div className='dev-callout-body'>
           <h2>{dev.maiden.name}</h2>
           <p>{dev.maiden.blurb}</p>
@@ -28,7 +32,7 @@ export function DevPage() {
               target='_blank'
               rel='noreferrer'
             >
-              Join Maiden’s Bakery
+              Join the Discord
             </a>
             <a
               className='dev-link ghost'
