@@ -33,6 +33,7 @@ export interface CharacterData {
   hitsPerShot: number;            // hits per trigger pull (for hit-count skill triggers)
   rl3: number | null;             // burst gen: % of gauge generated per 3 seconds
   burstGaugePerShot: number | null;
+  treasure: boolean;              // has a Treasure (favorite item); DB prydwen_slug ends -treasure
   skills: { skill1: string; skill2: string; burst: string };
 }
 

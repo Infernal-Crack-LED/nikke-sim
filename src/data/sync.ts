@@ -34,7 +34,7 @@ async function main() {
   await client.connect();
 
   const { rows } = await client.query(
-    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers from nikke_characters`
+    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug from nikke_characters`
   );
   const metaRow = await client.query(
     `select value from bot_meta where key = 'nikke_level_multiplier'`
@@ -80,6 +80,12 @@ async function main() {
       skipped.push(`${row.id} (missing weapon/burst)`);
       continue;
     }
+    // No base stats = can't compute damage (ATK/HP absent); these are usually
+    // not-yet-localized DB stubs (non-ASCII placeholder name/slug). Drop them.
+    if (!row.base_stats) {
+      skipped.push(`${row.id} (missing base_stats)`);
+      continue;
+    }
     const char: CharacterData & { baseStats: any } = {
       slug: row.id,
       name: row.name,
@@ -99,6 +105,9 @@ async function main() {
       hitsPerShot: api?.hits_per_shot || 1,
       rl3: a.rl3 ?? null,
       burstGaugePerShot: api?.burst_gauge_per_shot ?? null,
+      // Treasure (favorite-item upgrade) status: the DB's prydwen_slug ends
+      // "-treasure" for units whose Treasure is released.
+      treasure: (row.prydwen_slug ?? '').endsWith('-treasure'),
       skills: {
         skill1: a.skill1En ?? api?.skill_1_en ?? '',
         skill2: a.skill2En ?? api?.skill_2_en ?? '',

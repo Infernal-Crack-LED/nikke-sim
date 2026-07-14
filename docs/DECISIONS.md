@@ -8,6 +8,22 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-14) Supported roster = the enikk top-100 audit list, plus every hand-tuned override
+  we already have** — the units the sim supports are defined by the `/enikk-audit` method (the
+  deduped team compositions of the top 100 rankers across the tracked solo raids; see
+  `scripts/enikk/roster-audit.ts`). The policy: (1) **model** any enikk-proven unit that lacks a
+  hand-tuned override (`src/skills/overrides/*.json`) — writing base data first if it isn't in
+  `characters.json`; (2) **remove** from the sim (drop from `characters.json`) any unit that is
+  NOT enikk-proven AND has no hand-tuned override — i.e. parse-only units that never appear in
+  the top-100 meta; (3) going forward, model new units by this same method. **Keep rule: never
+  remove a unit that has a hand-tuned override, even if it later drops out of the enikk-proven
+  list.** (Refined 2026-07-14 from "always keep modeled units" — "modeled" was ambiguous, since
+  the sim can parse-run any `characters.json` unit without an override; the protected set is
+  specifically the hand-tuned-override units, not the parse-only ones.) "Supported in the sim" =
+  everything in `characters.json` (every calc tab and the web roster pull from it). First
+  application (2026-07-14, 5 raids): 24 enikk-proven units to model (18 with base data, 6 needing
+  data), 16 parse-only non-meta units to remove, 12 hand-tuned overrides kept despite not being
+  enikk-proven.
 - **(2026-07-14) The DPS-chart matrix defines a standardized 72-cell comparison grid** —
   4 control frameworks × 2 elements (neutral / tested-unit-weak) × 3 core-exposure rates
   (0 / 50 / 100%, the engine applies the 0.85 auto floor on top) × 3 investment tiers

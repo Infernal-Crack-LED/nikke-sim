@@ -1,7 +1,62 @@
 [
   {
     "id": 1,
-    "team": "Tove, Rosanna: Chic Ocean, Ark Ranger Black, Privaty: Unkind Maid, Raven - Record",
-    "note": "vs Iron (wind-weak)"
+    "team": "Nayuta, Drake (T), Tove (T), Soda: Twinkling Bunny, Dorothy: Serendipity",
+    "note": "Focus Tove (middle slot = default focus) · full-fight recording for hand-tuning · vs Electric (iron-weak)"
+  },
+  {
+    "id": 2,
+    "team": "Tove (T), Nayuta, Drake (T), Soda: Twinkling Bunny, Dorothy: Serendipity",
+    "note": "Focus Drake (middle slot = default focus) · full-fight recording for hand-tuning · vs Electric (iron-weak)"
+  },
+  {
+    "id": 3,
+    "team": "Nayuta, Ada, Miranda (T), Rouge, Mihara: Bonding Chain",
+    "note": "Focus Miranda (middle slot = default focus) · full-fight recording for hand-tuning · vs Wind (fire-weak)"
+  },
+  {
+    "id": 4,
+    "team": "Rouge, Ade: Agent Bunny, Sakura: Bloom in Summer, Cinderella, Mihara: Bonding Chain",
+    "note": "Focus Sakura: Bloom in Summer (middle slot = default focus, main-burst B3) · full-fight recording for hand-tuning · vs Iron (wind-weak)"
+  },
+  {
+    "id": 5,
+    "team": "Anis: Star, Crown, Ludmilla: Winter Owner, Helm (T), Elegg: Boom and Shock",
+    "note": "Focus Ludmilla: Winter Owner (middle slot = default focus, main-burst B3) · full-fight recording for hand-tuning · vs Fire (water-weak)"
+  },
+  {
+    "id": 6,
+    "team": "Little Mermaid, Crown, Asuka, Helm (T), Privaty (T)",
+    "note": "Focus Asuka (middle slot = default focus, main-burst B3) · full-fight recording for hand-tuning · vs Wind (fire-weak)"
+  },
+  {
+    "id": 7,
+    "team": "Little Mermaid, Crown, Asuka: WILLE, Rapi: Red Hood, Naga",
+    "note": "Focus Asuka: WILLE (middle slot = default focus, main-burst B3) · full-fight recording for hand-tuning · vs Iron (wind-weak)"
+  },
+  {
+    "id": 8,
+    "team": "Takina, Ada, Exia (T), Rouge, Ein",
+    "note": "Focus Exia (middle slot = default focus) · full-fight recording for hand-tuning · vs Water (elec-weak)"
+  },
+  {
+    "id": 9,
+    "team": "Little Mermaid, Naga, 2B, Alice, Helm (T)",
+    "note": "Focus 2B (middle slot = default focus, main-burst B3) · full-fight recording for hand-tuning · vs Wind (fire-weak)"
+  },
+  {
+    "id": 10,
+    "team": "Little Mermaid, Rapi: Red Hood, Rosanna: Chic Ocean, Helm (T), Mihara: Bonding Chain",
+    "note": "Focus Rosanna: Chic Ocean (middle slot = default focus) · full-fight recording for hand-tuning · vs Iron (wind-weak)"
+  },
+  {
+    "id": 11,
+    "team": "Snow White: Heavy Arms, Mint, Zwei (T), Privaty (T), Little Mermaid",
+    "note": "Focus Zwei (middle slot = default focus) · full-fight recording for hand-tuning · vs Fire (water-weak)"
+  },
+  {
+    "id": 12,
+    "team": "Anis: Sparkling Summer, Moran (T), Mari, Maiden: Ice Rose, Privaty (T)",
+    "note": "Focus Mari (middle slot = default focus) · full-fight recording for hand-tuning · vs Water (elec-weak)"
   }
 ]
