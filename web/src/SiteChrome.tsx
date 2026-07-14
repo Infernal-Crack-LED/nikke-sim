@@ -44,6 +44,14 @@ export function SiteNav({
             Patch Notes
           </a>
           <a
+            className={
+              'nav-btn' + (current === 'testing-requests' ? ' on' : '')
+            }
+            href={hrefFor('testing-requests')}
+          >
+            Testing Requested
+          </a>
+          <a
             className={'nav-btn' + (current === 'dev' ? ' on' : '')}
             href={hrefFor('dev')}
           >

@@ -344,6 +344,13 @@ footer { margin-top: 28px; font-size: 12px; }
 .patch-date { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .patch-entry ul { margin: 8px 0 2px; padding-left: 18px; color: var(--muted); line-height: 1.55; }
 
+/* testing-requests page — numbered open requests */
+.test-request-list { margin: 4px 0 2px; padding-left: 26px; line-height: 1.55; }
+.test-request { margin: 6px 0; }
+.test-request::marker { color: var(--accent); font-weight: 700; }
+.test-request-team { color: var(--text); font-weight: 600; }
+.test-request-note { font-size: 13px; }
+
 /* ---- Mechanics page ---- */
 .mech-page header h1 { font-size: 26px; margin: 6px 0 8px; }
 .mech-page header .muted { max-width: 760px; line-height: 1.6; font-size: 14px; }
