@@ -178,3 +178,25 @@ lives. Newest first within each section.
   sync 400, 10/10/10, treasure on, partless boss, full auto, 180s), repeatability 0.5–3.5%/unit —
   deltas under ~5% are noise; the ±3% per-unit goal therefore requires multi-run averages with a
   declared focus unit. — memory; owner methodology discussion.
+
+- **(2026-07-14) Rapi: Red Hood's burst nuke is a flighted, charge-gated missile landing
+  inside her window at the full buffed state** (measured across three focused recordings: the
+  landed values fit the full in-window recipe at +0.02%/−0.4%/+1.1%; it skipped the one banner
+  where she had under 120 shots banked; one instance landed as a crit). Her burst's +421%
+  attachment buff is measured-inert and removed. Landing these corrections EXPOSED her
+  remaining deficit as a consistent ~22–28% of real damage that renders no popups (the
+  "invisible X") — deliberately left open rather than re-tuned away. — rrh probe recordings;
+  experiment log "RAPI SYNTHESIS FINAL" + landing entry.
+
+- **(2026-07-14) Liberalio's 202.5% full-charge proc receives the +50% Full Burst term by its
+  landing timing** — the legacy no-Full-Burst flag was a calibration-era relic contradicting
+  the datamined function-damage rule (skill procs take Full Burst by actual timing; the
+  cast-instant exemption is burst-slot-scoped) and split one physical event's treatment (her
+  charge hit got the +50%, its own proc didn't). Panel-accepted 2-of-2. Her rows moved exactly
+  as predicted (wind-weak team one 0.85→0.95, iron sweep 0.83→0.93, wind-weak team two
+  0.82→0.90); the no-range exemption stays (datamine-confirmed). CONFIRMED AT MEASURED TIER
+  (2026-07-14, her focus recording): four in-Full-Burst proc crit-step pairs read ×1.3333
+  exactly — the with-Full-Burst signature; the without-branch value never appears. Note: this
+  behavior is PER-KIT — Scarlet: Black Shadow's procs measured the OPPOSITE (genuinely
+  exempt), so a unit's function-damage Full-Burst treatment must be verified per kit, never
+  assumed from the class rule alone. — experiment log 2026-07-14; her override note.

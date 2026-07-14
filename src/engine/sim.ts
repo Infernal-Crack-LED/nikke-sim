@@ -387,6 +387,23 @@ export function runSim(
 
   const enemyBuffs: BuffInstance[] = [];
   const dots: Dot[] = [];
+  // flighted skill damage: flatDamage with delaySec lands later and snapshots the buff/FB
+  // state at LANDING (MEASURED 2026-07-14: rapi-red-hood's 2808% burst nuke is a missile
+  // landing ~0.4s post-banner INSIDE her window at the full buffed state — the cast-instant
+  // no-FB rule covers cast-instant damage only, landing-timed damage follows actual timing)
+  const pendingHits: Array<{
+    ownerIdx: number;
+    atkPct: number;
+    resolveFrame: number;
+    crit: boolean;
+    core: boolean;
+    category: 'skill' | 'burst';
+    distributed: boolean;
+    sustained: boolean;
+    sequential: boolean;
+    trueFlavor: boolean;
+    projFlavor?: 'attachment' | 'explosion';
+  }> = [];
   // teamAmmo triggers: fire whenever TOTAL ally ammo consumed crosses each block's count
   // (infinite-ammo shots never consume, matching the in-game rule)
   const teamAmmoBlocks: Array<{ unitIdx: number; block: Block; bi: number; residual: number }> = [];
@@ -852,7 +869,37 @@ export function runSim(
           }
           break;
         }
-        case 'flatDamage':
+        case 'flatDamage': {
+          // pull-count gate (MEASURED 2026-07-14): rapi-red-hood's burst nuke fires only
+          // with >=1 sticky charge banked (>=120 shots at cast — her fire-weak banner 1 at
+          // ~68 shots had NO nuke; all >=120 banners did)
+          if (e.requiresPulls != null && owner.pulls < e.requiresPulls) break;
+          const flavorOpts = {
+            crit: e.crit !== false,
+            core: e.core === true,
+            category: category as 'skill' | 'burst',
+            distributed: e.flavor === 'distributed',
+            sustained: e.flavor === 'sustained',
+            sequential: e.flavor === 'sequential',
+            trueFlavor: e.flavor === 'true',
+            projFlavor:
+              e.flavor === 'projectileAttachment'
+                ? ('attachment' as const)
+                : e.flavor === 'projectileExplosion'
+                  ? ('explosion' as const)
+                  : undefined,
+          };
+          // flighted damage (delaySec): lands later, snapshots buffs/FB at LANDING — the
+          // cast-instant no-FB rule below does NOT apply (FB by actual landing time)
+          if (e.delaySec != null) {
+            pendingHits.push({
+              ownerIdx,
+              atkPct: e.atkPct,
+              resolveFrame: frame + Math.round(e.delaySec * FPS),
+              ...flavorOpts,
+            });
+            break;
+          }
           skillGauge(owner, frame); // skill-damage hits generate weapon-base gauge
           // U10 ANSWERED (Test Battery 2 Test 1, 2026-07-13): burst-skill damage does NOT
           // get the +50% full-burst major. Cinderella's nuke popup (run-B order, cindy
@@ -866,24 +913,13 @@ export function runSim(
           // never gets range; FB applies by actual proc timing. Crit is on by default
           // (set crit:false only for verified non-critting sources).
           dealDamage(owner, e.atkPct, frame, {
-            crit: e.crit !== false,
-            core: e.core === true,
+            ...flavorOpts,
             charge: false,
             noRange: true, // riders never get the +30% range bonus (user rule, 2026-07-13)
             noFb: e.noFb === true || (block.slot === 'burst' && block.trigger.kind === 'burstCast'),
-            category,
-            distributed: e.flavor === 'distributed',
-            sustained: e.flavor === 'sustained',
-            sequential: e.flavor === 'sequential',
-            trueFlavor: e.flavor === 'true',
-            projFlavor:
-              e.flavor === 'projectileAttachment'
-                ? 'attachment'
-                : e.flavor === 'projectileExplosion'
-                  ? 'explosion'
-                  : undefined,
           });
           break;
+        }
         case 'dot': {
           const intervalFrames = Math.round((e.intervalSec ?? 1) * FPS);
           dots.push({
@@ -1075,7 +1111,12 @@ export function runSim(
       // ~3s after full burst ends (chain glow at FB-end +3.0s even with the gauge
       // full at +1.2s and the Burst-1 cooldown ready at +1.5s) — the post-full-burst
       // camera/re-engage window. Generation keeps running during it.
-      chainBlockedUntil = frame + POST_FB_CHAIN_DELAY_FRAMES;
+      // ENV.ROTMODEL='refill': experiment arm removing the fixed post-FB block (chain opens
+      // on gauge-full; SWHA 13-window bar traces). HELD — floor removal breaks the pinned
+      // wind-weak 13s until the T5/T1 refill over-speed is measured (see cycle-rework design
+      // in experiment-harness-ai.md). Default 'floor' = current measured-constant behavior.
+      chainBlockedUntil =
+        ENV.ROTMODEL === 'refill' ? frame : frame + POST_FB_CHAIN_DELAY_FRAMES;
     }
 
     // ---- burst rotation ----
@@ -1380,6 +1421,27 @@ export function runSim(
             entry.releasable = 0;
           }
         }
+      }
+    }
+
+    // ---- flighted skill hits (flatDamage delaySec) — resolve at landing state ----
+    for (let i = pendingHits.length - 1; i >= 0; i--) {
+      const p = pendingHits[i];
+      if (frame >= p.resolveFrame) {
+        skillGauge(units[p.ownerIdx], frame); // gauge at landing (locked in-FB as usual)
+        dealDamage(units[p.ownerIdx], p.atkPct, frame, {
+          crit: p.crit,
+          core: p.core,
+          charge: false,
+          noRange: true,
+          category: p.category,
+          distributed: p.distributed,
+          sustained: p.sustained,
+          sequential: p.sequential,
+          trueFlavor: p.trueFlavor,
+          projFlavor: p.projFlavor,
+        });
+        pendingHits.splice(i, 1);
       }
     }
 

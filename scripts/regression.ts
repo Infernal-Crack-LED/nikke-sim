@@ -99,7 +99,27 @@ const COMPS: Comp[] = [
     slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'],
     boss: 'Iron',
     realFullBursts: 13, // video, rrh probe "windweak t257 13fb" (2026-07-14): 13/13, casters
-    // exact incl. the alternating Burst II (mast odd cycles / crown even)
+    // exact incl. the alternating Burst II (mast odd cycles / crown even). OWNER NOTE
+    // 2026-07-14: that recording had SCARLET in the MIDDLE slot (default focus) — i.e. a
+    // different slot order than this comp definition. Sim predicts 13 with scarlet focus
+    // too (verified), rotation alternation matched either way, so the pin holds; the
+    // popups in that video are scarlet's.
+  },
+  {
+    name: 'PH water B3s',
+    slugs: ['little-mermaid', 'crown', 'quency-escape-queen', 'dorothy-serendipity', 'guillotine-winter-slayer'],
+    boss: 'Fire',
+    realFullBursts: 12, // video, rrh probe "water weak vid" (2026-07-14): 12/12 splash-counted,
+    // first banner exact (2:54); guillotine-winter-slayer never bursts (bench B3) confirmed.
+  },
+  {
+    name: 'PD Eva duo',
+    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'diesel-winter-sweets', 'helm'],
+    boss: 'Wind',
+    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
+    realFullBursts: 9, // video, rrh probe "fire weak vid rerecord" (2026-07-14): 9/9, casters
+    // Diesel-odd/Helm-even all 9, cadence metronomic 20s (7/8 gaps exact; one +2s slip from a
+    // visible boss special attack stalling generation).
   },
   // T4: KNOWN MISMATCH — real = 14 FBs with privaty focus (probe u7, 2026-07-14) vs sim 13.
   // Do NOT pin until the ~1s-fast cycle increment lands (see experiment-harness-ai.md).

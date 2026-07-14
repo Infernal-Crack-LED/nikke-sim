@@ -75,6 +75,15 @@ it. Burst-originated damage that lands *during* the window (dot ticks, stored-hi
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
+**Flighted damage (2026-07-14):** some burst skills are projectiles with real flight time —
+Rapi: Red Hood's 2808% nuke lands ~0.4 seconds AFTER her banner, inside her own window, and
+snapshots everything (attack, buffs, the +50%, even Crown's flicker phase) at the LANDING
+instant (MEASURED: the landed value matches the full in-window recipe at +0.02% in the
+fire-weak read). Engine: `delaySec` on a flat-damage effect queues the hit for landing-time
+resolution; the cast-instant no-Full-Burst rule does not apply to flighted damage. Her nuke is
+also charge-gated (`requiresPulls` 120 — it fired at every banner where she had 120+ shots
+banked and skipped the one banner where she did not).
+
 **Scope clarification (2026-07-13):** the measured rule (and the engine's forced `noFb`) governs
 BURST-slot casts — the burst button's own damage, which is what the Cinderella popups measured.
 A skill-slot block that happens to trigger on a burst cast resolves after the window opens and

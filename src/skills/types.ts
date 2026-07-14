@@ -82,6 +82,11 @@ export type EffectDef =
       crit?: boolean;    // this hit can crit (e.g. Ein's Near Feathers)
       noRange?: boolean; // excluded from the +30% full-range bonus (Prydwen-confirmed for Near Feathers)
       noFb?: boolean;    // excluded from the +50% full-burst bonus (Q1-calibrated proc exemption)
+      delaySec?: number; // flighted damage: lands delaySec later, snapshotting buffs/FB at
+                         // LANDING (MEASURED 2026-07-14: rapi-red-hood's burst nuke missile
+                         // lands ~0.4s post-banner inside her window at the full buff state)
+      requiresPulls?: number; // fires only if the caster has fired >= N shots (MEASURED
+                              // 2026-07-14: her nuke needs >=1 sticky charge = 120 shots)
     }
   | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
