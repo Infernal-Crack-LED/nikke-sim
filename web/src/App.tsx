@@ -14,6 +14,10 @@ import {
   CARD_W,
   type Canvas2DLike,
 } from '../../src/share/teamCard';
+import { DpsChartTab } from './DpsChartTab';
+import { MatrixChart } from './components/MatrixChart';
+import { DpsBarChart } from './components/DpsBarChart';
+import { copyDpsChartImage } from './shareImage';
 import {
   encodeBuild,
   decodeBuild,
@@ -48,13 +52,14 @@ const olTiers = (olTiersJson as any).tiers as Array<Record<string, number>>;
 const olTierValues = (tier: number): Record<string, number> =>
   olTiers.find((t) => t.tier === tier) ?? olTiers.find((t) => t.tier === 11)!;
 
-type CalcTab = 'sim' | 'team' | 'roster' | 'character' | 'dps';
+type CalcTab = 'sim' | 'team' | 'roster' | 'character' | 'dps' | 'dpschart';
 const CALC_TABS: { key: CalcTab; label: string }[] = [
   { key: 'sim', label: 'Sim' },
+  { key: 'dpschart', label: 'DPS Chart' },
+  { key: 'dps', label: 'DPS Test' },
   { key: 'team', label: 'Team Calc' },
   { key: 'roster', label: 'Roster Calc' },
   { key: 'character', label: 'Character Calc' },
-  { key: 'dps', label: 'DPS Test' },
 ];
 
 // scope-lock loadout (per-unit): no cube, no doll, OL0, 3★ / 7 core, 10/10/10.
@@ -544,7 +549,9 @@ export function App({ user }: { user: AuthUser | null }) {
   const [imaged, setImaged] = useState(false);
   const [showOlCalc, setShowOlCalc] = useState(false);
   const [olTier, setOlTier] = useState(11); // best-OL calc tier (default 11)
-  const [tab, setTab] = useState<CalcTab>('sim');
+  const [tab, setTab] = useState<CalcTab>(() =>
+    new URLSearchParams(window.location.search).has('chart') ? 'dpschart' : 'sim',
+  );
   const [blocked, setBlocked] = useState<string[]>([]); // don't-own / excluded
   const [calcChar, setCalcChar] = useState<string | null>(null); // Character Calc
   const [calcBusy, setCalcBusy] = useState(false);
@@ -558,6 +565,8 @@ export function App({ user }: { user: AuthUser | null }) {
   // DPS test: a scope-locked control group (3 or 4) + variable groups that fill
   // the rest (2 or 1). Each complete group forms a variant team we sim.
   const [dpsControl, setDpsControl] = useState<string[]>([]);
+  // custom control-group tool vs the standardized DPS-chart matrix
+  const [dpsMode, setDpsMode] = useState<'custom' | 'matrix'>('custom');
   // each variable group holds full per-character SlotStates (configurable cards)
   const [dpsGroups, setDpsGroups] = useState<SlotState[][]>([]);
   const [dpsResults, setDpsResults] = useState<
@@ -1393,6 +1402,9 @@ export function App({ user }: { user: AuthUser | null }) {
   };
 
   const renderCalcTab = () => {
+    if (tab === 'dpschart') {
+      return <DpsChartTab />;
+    }
     if (tab === 'team') {
       return (
         <section className='calc-tab'>
@@ -1439,6 +1451,24 @@ export function App({ user }: { user: AuthUser | null }) {
       return (
         <section className='calc-tab'>
           <h2>DPS Test</h2>
+          <div className='pills small dps-mode'>
+            <button className={dpsMode === 'custom' ? 'on' : ''} onClick={() => setDpsMode('custom')}>
+              Custom control groups
+            </button>
+            <button className={dpsMode === 'matrix' ? 'on' : ''} onClick={() => setDpsMode('matrix')}>
+              Matrix
+            </button>
+          </div>
+          {dpsMode === 'matrix' ? (
+            <>
+              <p className='muted'>
+                The standardized 72-cell matrix (same grid as the DPS Chart tab) — pick
+                a cell for its ranked top-10 infographic.
+              </p>
+              <MatrixChart />
+            </>
+          ) : (
+          <>
           <p className='muted'>
             A fixed <b>control group</b> (3 or 4 nikkes) — scope-locked (no cube /
             no doll / OL0 / 3★ · 7 core · lvl 400) — plus swap-in variable groups
@@ -1524,43 +1554,66 @@ export function App({ user }: { user: AuthUser | null }) {
 
           {dpsResults && (
             <div className='calc-result'>
-              <table>
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>variable group</th>
-                    <th className='r'>group dmg</th>
-                    <th className='r'>group share</th>
-                    <th className='r'>team dmg</th>
-                    <th className='r'>FB%</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dpsResults.map((res, i) => (
-                    <tr key={i} className={i === 0 ? 'hl' : ''}>
-                      <td className='muted'>{i + 1}</td>
-                      <td>
-                        {res.varUnits.map((u) => u.name).join(' + ')}
-                      </td>
-                      <td className='r'>{fmt(res.varDamage)}</td>
-                      <td className='r share'>
-                        {(res.varShare * 100).toFixed(1)}%
-                      </td>
-                      <td className='r'>
-                        <b>{fmt(res.teamDamage)}</b>
-                      </td>
-                      <td className='r muted'>
-                        {(res.fullBurstUptime * 100).toFixed(0)}%
-                      </td>
+              <DpsBarChart
+                title='Variable groups'
+                subtitle='ranked by group damage · 180s'
+                bars={dpsResults.map((res, i) => ({
+                  slug: String(i),
+                  name: res.varUnits.map((u) => u.name).join(' + '),
+                  element: data.characters[res.varUnits[0]?.slug ?? '']?.element ?? '',
+                  weapon: '',
+                  tier: '',
+                  dps: res.varDamage,
+                  rank: i + 1,
+                }))}
+                onShareImage={() =>
+                  void copyDpsChartImage({
+                    title: 'DPS Test — variable groups',
+                    bars: dpsResults.map((res) => ({
+                      name: res.varUnits.map((u) => u.name).join(' + '),
+                      element: data.characters[res.varUnits[0]?.slug ?? '']?.element ?? '',
+                      dps: res.varDamage,
+                    })),
+                    compare: null,
+                  })
+                }
+              />
+              <details className='dps-details'>
+                <summary className='muted'>details table</summary>
+                <table>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>variable group</th>
+                      <th className='r'>group dmg</th>
+                      <th className='r'>group share</th>
+                      <th className='r'>team dmg</th>
+                      <th className='r'>FB%</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              <p className='muted'>
-                Ranked by team damage. “Group dmg” is the combined damage of the
-                variable nikke{dpsGroupSize > 1 ? 's' : ''} in each variant.
-              </p>
+                  </thead>
+                  <tbody>
+                    {dpsResults.map((res, i) => (
+                      <tr key={i} className={i === 0 ? 'hl' : ''}>
+                        <td className='muted'>{i + 1}</td>
+                        <td>{res.varUnits.map((u) => u.name).join(' + ')}</td>
+                        <td className='r'>{fmt(res.varDamage)}</td>
+                        <td className='r share'>{(res.varShare * 100).toFixed(1)}%</td>
+                        <td className='r'>
+                          <b>{fmt(res.teamDamage)}</b>
+                        </td>
+                        <td className='r muted'>{(res.fullBurstUptime * 100).toFixed(0)}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <p className='muted'>
+                  Ranked by team damage. “Group dmg” is the combined damage of the
+                  variable nikke{dpsGroupSize > 1 ? 's' : ''} in each variant.
+                </p>
+              </details>
             </div>
+          )}
+          </>
           )}
         </section>
       );
@@ -1692,6 +1745,10 @@ export function App({ user }: { user: AuthUser | null }) {
         </nav>
       )}
 
+      {/* Global boss options + Apply-to-all loadout: used by the Sim and DPS Test
+          tabs. The DPS Chart tab is self-contained (its filter is the matrix selector
+          in the Full matrix section), so hide this block there. */}
+      {tab !== 'dpschart' && (<>
       <section className='global'>
         <div className='field'>
           <label title='the element that is strong against the boss'>
@@ -1908,6 +1965,7 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
         </div>
       </section>
+      </>)}
 
       {tab === 'sim' && (
         <>

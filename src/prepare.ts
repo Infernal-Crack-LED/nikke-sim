@@ -21,6 +21,7 @@ export interface PreparedUnit {
   core?: number;   // per-unit Core enhancement 0-7 (falls back to cfg.copies)
   mode?: string;   // selected kit mode (from the override's `modes`; default = first)
   mpPriority?: boolean; // stackedNuke units (Maiden:IR): jump the burst queue at max MP stacks
+  burstGate?: 'syncWithFocus'; // only cast in a chain where the focus (tested) unit also bursts
   chargeFrames?: number; // override charFixes: hand-measured real fire cycle (charge + recovery)
   reloadFrames?: number; // override charFixes: hand-measured real reload (e.g. padded animations)
   burstCooldownSec?: number; // override charFixes: corrected burst cooldown (bad DB data)
@@ -44,6 +45,7 @@ export interface UnitOptions {
   core?: number;  // Core enhancement 0-7
   mode?: string;  // kit mode (must match an entry in the override's `modes`)
   mpPriority?: boolean;
+  burstGate?: 'syncWithFocus'; // only cast in a chain where the focus (tested) unit also bursts
   lines?: LineSelection[];
   skillLevels?: SkillLevels;
 }
@@ -96,6 +98,7 @@ export function prepareUnit(
     : undefined;
   if (mode) loadout.push(`mode: ${mode}`);
   if (opts?.mpPriority) loadout.push('bursts at max MP');
+  if (opts?.burstGate === 'syncWithFocus') loadout.push('bursts in sync with focus');
   if (opts?.stars !== undefined || opts?.core !== undefined)
     loadout.push(`${opts?.stars ?? 0}★ · core ${opts?.core ?? 0}`);
   if (levels !== MAX_SKILL_LEVELS && (levels.skill1 < 10 || levels.skill2 < 10 || levels.burst < 10)) {
@@ -133,6 +136,7 @@ export function prepareUnit(
     core: opts?.core,
     mode,
     mpPriority: opts?.mpPriority,
+    burstGate: opts?.burstGate,
     chargeFrames: deps.overrides[char.slug]?.charFixes?.chargeFrames,
     reloadFrames: deps.overrides[char.slug]?.charFixes?.reloadFrames,
     burstCooldownSec: deps.overrides[char.slug]?.charFixes?.burstCooldownSec,

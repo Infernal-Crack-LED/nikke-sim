@@ -8,12 +8,15 @@
     "sync:skills": "tsx src/data/sync-skill-levels.ts",
     "sim": "tsx src/cli.ts",
     "web": "vite",
+    "dpschart": "tsx scripts/build-dpschart.ts",
+    "prebuild": "tsx scripts/build-dpschart.ts",
+    "preweb:build": "tsx scripts/build-dpschart.ts",
     "web:build": "vite build",
     "web:preview": "vite preview",
     "build": "vite build",
     "start": "node scripts/serve.mjs",
     "typecheck": "tsc -p web/tsconfig.json --noEmit && tsc -p tsconfig.json --noEmit",
-    "test": "vite build && node scripts/web-smoke.mjs"
+    "test": "npm run web:build && node scripts/web-smoke.mjs && node scripts/web-smoke-dpschart.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.0",

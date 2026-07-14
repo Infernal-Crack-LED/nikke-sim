@@ -25,6 +25,7 @@ import {
   type SkillLevelData,
   type UnitOptions,
 } from '../src/prepare.js';
+import { assembleTeam, type Cell } from '../src/dpschart/matrix.js';
 
 const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
 const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
@@ -191,6 +192,26 @@ for (const comp of COMPS) {
   const a = run(COMPS[0], 1234).units.map((u) => Math.round(u.totalDamage)).join(',');
   const b = run(COMPS[0], 1234).units.map((u) => Math.round(u.totalDamage)).join(',');
   (a === b ? ok : fail)(`seed 1234 reproduces (${a === b ? 'identical' : 'DIVERGED'})`);
+}
+
+// 4. Mast burst-gate (syncWithFocus) invariant: in the Hyper Carry frameworks a gated
+// Mast never bursts more often than the focus (tested) unit — she only casts in a chain
+// the focus completes, never a Helm-only chain. (Inert for these high-CDR control comps
+// where the focus already bursts every full burst; the assert locks the contract.)
+{
+  console.log('\nMast burst-gate (syncWithFocus)');
+  const tslug = 'cinderella-crystal-wave';
+  const tested = { slug: tslug, element: data.characters[tslug].element as Element };
+  const cell: Cell = { framework: 'standard-hc', eleadv: 'neutral', core: 'c100', invest: 'scope' };
+  const team = assembleTeam(cell, tested);
+  const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
+  for (const s of team.slugs) overrides[s] = loadOverride(s);
+  const chars = team.slugs.map((s) => data.characters[s]);
+  const prepared = prepareTeam(chars, team.unitOpts, { overrides, skillLevels, cubes, olLines });
+  const r = runSim(chars, mult, team.cfg, prepared);
+  const mast = r.units.find((u) => u.slug === 'mast-romantic-maid')!.burstCasts;
+  const focus = r.units.find((u) => u.slug === tslug)!.burstCasts;
+  (mast <= focus ? ok : fail)(`gated Mast casts (${mast}) ≤ focus casts (${focus})`);
 }
 
 if (update) {

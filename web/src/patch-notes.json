@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-07-14",
+    "title": "New: DPS Chart",
+    "notes": [
+      "A new DPS Chart page ranks the top Burst-3 carries head-to-head under standardized support teams — choose the support framework, elemental advantage, core-hit rate, and investment level to compare.",
+      "Three at-a-glance boards up top (Standard Scope Lock, Hyper Carry 8/12, and Anis Hyper Carry 8/12), each shown at 0 / 50 / 100% core.",
+      "Pick any Burst-3 unit to see exactly where it lands on every chart — including units outside the top 10.",
+      "Copy a link or an image of any chart to share it.",
+      "The DPS Test tab can now output these same infographics and toggle between your own custom control group and the standardized matrix."
+    ]
+  },
+  {
+    "date": "2026-07-14",
     "title": "Launch — the measured-mechanics sim",
     "notes": [
       "Elemental advantage was reworked into its own damage bucket, and the machine-gun range bonus now applies only in the far distance band — both matching frame-counted recordings.",

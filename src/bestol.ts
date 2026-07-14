@@ -30,7 +30,11 @@ export function bestOl(
   prepared: PreparedUnit[],
   unitIdx: number,
   olLines: OlLinesFile,
-  maxLines = 8
+  maxLines = 8,
+  // Pre-consumed line counts (per type, cap 4 each). Pass e.g. { elem: 4, atk: 4 }
+  // when the unit already carries a fixed floor of lines (DPS-chart 12/12 tier),
+  // so the greedy search only fills the *remaining* pieces and never exceeds 4/type.
+  seedCounts: Record<string, number> = {}
 ): BestOlResult {
   const simWith = (extra: Array<{ stat: string; value: number }>) => {
     const p = prepared.map((u, i) =>
@@ -41,7 +45,7 @@ export function bestOl(
   };
 
   const base = simWith([]);
-  const counts: Record<string, number> = {};
+  const counts: Record<string, number> = { ...seedCounts };
   const added: Array<{ stat: string; value: number }> = [];
   const picks: BestOlPick[] = [];
   const rejected: BestOlResult['rejected'] = [];
