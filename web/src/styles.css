@@ -228,3 +228,129 @@ tbody tr:last-child td { border-bottom: 0; }
   padding: 12px 16px; font-size: 12px; max-height: 320px; overflow-y: auto; color: var(--muted);
 }
 footer { margin-top: 28px; font-size: 12px; }
+
+/* ============================================================= *
+ *  Site chrome — shared nav, dev badge, footer, and the extra   *
+ *  pages (Dev + Game mechanics). Reuses the tokens above.       *
+ * ============================================================= */
+
+/* top nav bar */
+.site-nav {
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+.site-nav-inner {
+  max-width: 1180px; margin: 0 auto; padding: 0 20px;
+  display: flex; gap: 6px; align-items: center; height: 46px;
+}
+.site-nav a {
+  color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 600;
+  padding: 6px 12px; border-radius: 8px;
+}
+.site-nav a:hover { color: var(--text); background: var(--panel2); }
+.site-nav a.on { color: var(--text); background: var(--panel2); box-shadow: 0 0 0 1px var(--accent) inset; }
+
+/* floating "meet the dev" badge (ko-fi style) */
+.dev-badge {
+  position: fixed; right: 18px; bottom: 18px; z-index: 40;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent); color: #0b1220; text-decoration: none;
+  font-size: 13px; font-weight: 700; padding: 9px 15px; border-radius: 999px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+}
+.dev-badge:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* shared social footer */
+.site-footer {
+  border-top: 1px solid var(--border); margin-top: 40px; background: var(--panel);
+}
+.social-row {
+  max-width: 1180px; margin: 0 auto; padding: 22px 20px 6px;
+  display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+}
+.social-btn {
+  display: inline-flex; align-items: center; gap: 7px; text-decoration: none;
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+  border-left: 3px solid var(--brand, var(--accent));
+  border-radius: 8px; padding: 7px 14px; font-size: 13px; font-weight: 600;
+}
+.social-btn:hover { border-color: var(--brand, var(--accent)); background: var(--panel); }
+.social-glyph { font-size: 15px; line-height: 1; color: var(--brand, var(--accent)); }
+.site-footer-by {
+  max-width: 1180px; margin: 0 auto; padding: 6px 20px 24px;
+  text-align: center; color: var(--muted); font-size: 12px;
+}
+.site-footer-by a { color: var(--accent); text-decoration: none; }
+.site-footer-by a:hover { text-decoration: underline; }
+
+/* ---- Dev page ---- */
+.dev-hero { margin: 8px 0 22px; }
+.dev-hero h1 { font-size: 28px; margin: 0 0 10px; }
+.dev-hero p { color: var(--muted); font-size: 15px; max-width: 680px; line-height: 1.6; }
+.dev-callout {
+  display: flex; gap: 16px; align-items: flex-start;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 20px; margin-bottom: 26px;
+}
+.dev-callout-badge {
+  flex: 0 0 auto; width: 46px; height: 46px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 26px;
+  background: var(--panel2); border: 1px solid var(--border);
+}
+.dev-callout-body h2 { margin: 2px 0 8px; font-size: 18px; }
+.dev-callout-body p { margin: 0 0 12px; color: var(--muted); line-height: 1.6; max-width: 620px; }
+.dev-callout-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.dev-link {
+  text-decoration: none; font-size: 13px; font-weight: 600;
+  background: var(--accent); color: #0b1220; border-radius: 8px; padding: 7px 15px;
+}
+.dev-link:hover { filter: brightness(1.08); }
+.dev-link.ghost { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+.dev-link.ghost:hover { border-color: var(--accent); filter: none; }
+.dev-foot-note { margin-top: 24px; font-size: 13px; }
+
+/* patch notes (dev page) */
+.patch-notes h2 { font-size: 18px; margin: 0 0 12px; }
+.patch-entry {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 16px; margin-bottom: 12px;
+}
+.patch-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.patch-title { font-weight: 700; font-size: 15px; }
+.patch-date { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.patch-entry ul { margin: 8px 0 2px; padding-left: 18px; color: var(--muted); line-height: 1.55; }
+
+/* ---- Mechanics page ---- */
+.mech-page header h1 { font-size: 26px; margin: 6px 0 8px; }
+.mech-page header .muted { max-width: 760px; line-height: 1.6; font-size: 14px; }
+.tier-legend {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 22px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px; margin: 18px 0 22px;
+}
+.tier-legend-item { display: flex; gap: 10px; align-items: baseline; font-size: 12px; line-height: 1.4; }
+.mech-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.mech-section {
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+}
+.mech-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.mech-section-head h2 { font-size: 15px; margin: 0; }
+.mech-tiers { display: flex; flex-wrap: wrap; gap: 5px; }
+.mech-section ul { margin: 10px 0 2px; padding-left: 18px; color: var(--muted); line-height: 1.55; font-size: 13px; }
+.mech-section li { margin-bottom: 5px; }
+
+/* evidence-tier badges */
+.tier-badge {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 999px;
+  border: 1px solid var(--border); white-space: nowrap;
+}
+.tier-measured { color: #4ecb71; border-color: #2f6b45; background: rgba(78,203,113,0.09); }
+.tier-datamined { color: var(--accent); border-color: #2f4d7a; background: rgba(91,157,255,0.09); }
+.tier-community { color: #c58bff; border-color: #543a75; background: rgba(197,139,255,0.09); }
+.tier-calibrated { color: var(--warn); border-color: #6b5a2f; background: rgba(224,176,75,0.09); }
+
+@media (max-width: 720px) {
+  .tier-legend { grid-template-columns: 1fr; }
+  .mech-grid { grid-template-columns: 1fr; }
+}

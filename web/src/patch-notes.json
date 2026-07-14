@@ -1,0 +1,11 @@
+[
+  {
+    "date": "2026-07-14",
+    "title": "Measured-mechanics wave",
+    "notes": [
+      "Reworked elemental advantage into its own damage bucket and split the machine-gun range bonus to the far band only, matching frame-counted recordings.",
+      "Snow White: Heavy Arms and Rapi: Red Hood re-modeled onto their measured in-window shots; Mint + Prika duet burst order fixed.",
+      "Accuracy board now sits at a ~0.95 median across 86 unit readings, with full-burst counts measured-exact on every graded team."
+    ]
+  }
+]
