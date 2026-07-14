@@ -8,6 +8,13 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-14) The Mint + Prika duet's standard play is: cast the first burst chain MANUALLY
+  (Prika takes the first Burst 2 — the burstFirst rule), then full auto (Mint takes every
+  later Burst 2).** This is both the validation-recording convention and the sim's modeling
+  assumption for the pair; achieving it in-game requires the manual first cast with Mint
+  leftmost. Verified live in the MiKa-fight recording (eleven chains, casters exact). — owner
+  ruling + rrh probe MiKa recording.
+
 - **(2026-07-13) Teams without Burst 1 + Burst 2 + two Burst 3s are rotation outliers.** They never
   exist in real play; the 3-unit test comp (anis-star · trina · cinderella) is excluded from
   rotation-model grading and kept only for its damage-popup evidence. — owner ruling, encoded in
@@ -115,6 +122,14 @@ lives. Newest first within each section.
   Maiden: Ice Rose's aura), all non-carriers byte-identical. — probe u7; experiment log
   2026-07-13/14; sim.ts Element bucket.
 
+- **(2026-07-14) Snow White: Heavy Arms's Fully Active mode ends on USES (her 2nd swapped
+  shot), not on a 6.5-second timer**, and its Charge/Sequential buffs are held per swap round
+  (active only while swapped). MEASURED: seven of her burst windows observed end-to-end — two
+  delivered the second shot at +7.1/+7.2 seconds (beyond the old timer) with the mode visibly
+  active, and the weapon reverted right after shot 2 in every window, at variable times. The
+  engine models this as `maxShots` on the weapon swap plus a `whileSwapped` buff gate.
+  Panel-accepted 2-of-2. This closes the residual open item from the volley entry below.
+  — probe u7 team-two recording; experiment log 2026-07-14.
 - **(2026-07-13) Snow White: Heavy Arms's Fully Active extra volley lands per-shot on her two
   swapped full-charge shots INSIDE the Full Burst window** (a `swapGate` shot-fired proc,
   1055.9% each, critting like her baseline volley), not as a cast-instant lump. Twice-confirmed

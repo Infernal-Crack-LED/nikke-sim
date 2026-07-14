@@ -199,6 +199,12 @@ Function-type instances (DATAMINED rules, table in
   the Full Burst window — COMMUNITY twice-confirmed placement (gamewith JP holds her Fully
   Active buffs per fully-charged shot; Prydwen's 5→15 lock-on structure), replacing an older
   cast-instant lump model that stranded the volley outside the window's buffs.
+- Weapon swaps can end on USES rather than time (`maxShots`, MEASURED 2026-07-14): Snow White:
+  Heavy Arms's Fully Active ends right after her second swapped shot fires — at a variable
+  instant, observed +6.2 to +7.7 seconds — bounded by her burst window; a shot lost to fight
+  end delivers nothing. Buffs "held per swap round" (her +528 Charge Damage and +158.4
+  Sequential) are modeled with the `whileSwapped` buff gate: they count only while the swap is
+  live, so they never leak onto baseline shots in the window tail.
 
 ### 2c. Damage over time
 

@@ -134,6 +134,9 @@ interface BuffInstance {
   stacks: number;
   maxStacks: number;
   expiresFrame: number | null;
+  // buff counts only while this unit's weaponSwap is live (MEASURED 2026-07-14: SWHA's
+  // Fully Active charge/sequential buffs are held per swap round, not for a duration)
+  whileSwappedIdx?: number;
 }
 
 interface Dot {
@@ -159,6 +162,11 @@ interface WeaponSwap {
   chargeMultPct?: number;
   maxAmmo?: number;
   trueNormals?: boolean;
+  // uses-based termination (MEASURED 2026-07-14, SWHA-focus recording: the swap ends right
+  // after the Nth swapped shot fires, at variable time — NOT at a fixed duration; untilFrame
+  // remains the hard bound, e.g. the 10s burst window)
+  maxShots?: number;
+  shotsFired?: number;
 }
 
 interface UnitState {
@@ -529,7 +537,9 @@ export function runSim(
   const sum = (list: BuffInstance[], stat: string, frame: number) =>
     list.reduce(
       (s, b) =>
-        b.stat === stat && (b.expiresFrame === null || b.expiresFrame > frame)
+        b.stat === stat &&
+        (b.expiresFrame === null || b.expiresFrame > frame) &&
+        (b.whileSwappedIdx === undefined || units[b.whileSwappedIdx].swap != null)
           ? s + b.value * b.stacks
           : s,
       0
@@ -739,7 +749,8 @@ export function runSim(
     value: number,
     durationSec: number | undefined,
     maxStacks: number,
-    frame: number
+    frame: number,
+    whileSwappedIdx?: number
   ) {
     const expiresFrame = durationSec != null ? frame + Math.round(durationSec * FPS) : null;
     const existing = list.find((b) => b.key === key);
@@ -748,8 +759,9 @@ export function runSim(
       existing.stacks = Math.min(existing.stacks + 1, maxStacks);
       existing.expiresFrame = expiresFrame;
       existing.value = value;
+      existing.whileSwappedIdx = whileSwappedIdx;
     } else {
-      list.push({ key, stat, value, stacks: 1, maxStacks, expiresFrame });
+      list.push({ key, stat, value, stacks: 1, maxStacks, expiresFrame, whileSwappedIdx });
     }
   }
 
@@ -829,7 +841,8 @@ export function runSim(
             applyBuff(
               t.buffs, `${ownerIdx}:${block.slot}:${statKey}:${e.value}`, statKey, value,
               alwaysOn ? undefined : e.durationSec,
-              e.maxStacks ?? 1, frame
+              e.maxStacks ?? 1, frame,
+              e.whileSwapped ? ownerIdx : undefined
             );
             // Max Ammo ▼ clips the CURRENT belt when it lands (user-confirmed);
             // increases never clip. Stacking stays additive inside maxAmmo().
@@ -903,6 +916,8 @@ export function runSim(
             chargeMultPct: e.chargeMultPct,
             maxAmmo: e.maxAmmo,
             trueNormals: e.trueNormals,
+            maxShots: e.maxShots,
+            shotsFired: 0,
           };
           owner.chargeProgress = 0;
           owner.reloading = false;
@@ -1437,6 +1452,13 @@ export function runSim(
         u.hitCounters.set(key, c);
       }
     });
+
+    // uses-based weapon-swap termination (MEASURED 2026-07-14): the swap ends right after
+    // its Nth shot fires — checked AFTER block dispatch so swapGate effects ride this shot
+    if (u.swap?.maxShots != null) {
+      u.swap.shotsFired = (u.swap.shotsFired ?? 0) + 1;
+      if (u.swap.shotsFired >= u.swap.maxShots) u.swap = null;
+    }
 
     if (!unlimited) {
       const consumed = u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;

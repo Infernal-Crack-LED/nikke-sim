@@ -110,13 +110,15 @@
           "kind": "buff",
           "stat": "chargeDamagePct",
           "value": 528,
-          "durationSec": 6.5
+          "durationSec": 10,
+          "whileSwapped": true
         },
         {
           "kind": "buff",
           "stat": "sequentialDamagePct",
           "value": 158.4,
-          "durationSec": 6.5
+          "durationSec": 10,
+          "whileSwapped": true
         }
       ]
     }
@@ -152,7 +154,8 @@
           "kind": "weaponSwap",
           "damagePct": 69.04,
           "chargeTimeSec": 3.2,
-          "durationSec": 6.5
+          "durationSec": 10,
+          "maxShots": 2
         }
       ]
     }

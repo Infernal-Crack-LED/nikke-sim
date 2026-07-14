@@ -1148,3 +1148,71 @@ of her kit does not match what renders on screen.
   camera-focus gauge arithmetic alone.
 - A new lead for the auto-core-rate question: her bullet core-hit popups switch on and off in
   multi-second phases — core exposure behaves like boss-state windows, not a constant rate.
+
+## RRH PROBE BATCH — RESULTS (2026-07-14, docs/probes/rrh probe)
+
+Six recordings processed (three rapi-focused fights, one Snow White: Heavy Arms focus, the
+MiKa fight, wind-weak team one — see below for the last one's pending grade). Rotation
+scorecard first: **every counted fight matched the sim's full-burst count and caster order
+exactly** — the MiKa fight (11, including the manual-first Mint/Prika convention), fire-weak
+team one (13), iron-weak (13), elec-weak (12), wind-weak team two (13). Two boundary comps ran
+one burst OVER prediction (water-weak 14 vs 13, fire-weak team two with Snow White focused
+14 vs 13) — both explained by the burst-cycle timing finding below. Nine fights are now
+pinned as measured rotation asserts.
+
+### Snow White: Heavy Arms — Fully Active mode measured, and landed
+
+Her seven burst windows settled the open uses-versus-time question: the mode ends when her
+SECOND swapped shot fires (observed at anywhere from +6.2 to +7.7 seconds — twice beyond the
+old 6.5-second timer, still delivering), and her Charge/Sequential buffs are held per swap
+round. The engine now models both (a shots-based swap end and a "while swapped" buff gate).
+Her gauge contribution when camera-focused is large and visible on the bar as +15–44% jumps
+per charge volley — the owner's observation confirmed: her 7-hit full charges each generate,
+all multiplied by the focus bonus.
+
+### The burst-cycle timing finding (the next rotation increment)
+
+The recordings decomposed the between-bursts period frame by frame: the gauge refills to full
+in ~1.5–3 seconds (comp-dependent), the chain then opens and the three stage casts take a
+constant ~1.5 seconds — real banners land ~3.0–3.4 seconds after the previous window ends.
+The sim inserts a fixed 3-second delay BEFORE refill/chain-open, putting its minimum at ~4.5
+seconds — about a second slow per cycle in refill-bound teams, which is exactly why two real
+fights fit one more burst than predicted. In cooldown-bound teams (the MiKa fight) the error
+runs the other way (~half a second slow in reality, with the in-game timer freezing ~0.6s
+during each burst cut-in). Fixing this touches a measured constant, so it gets its own
+increment with the bar traces as the superseding measurement.
+
+### Rapi: Red Hood — the projectile-pipeline reads
+
+The three focused recordings (neutral, native-advantage, and Skill-2-advantage bosses)
+overturned the sim's model of her kit and are being synthesized into a rework:
+- Her big banner popup is constant within a fight (25.1M / 27.9M / 32.0M by comp) but NOT a
+  fixed payload: in the fire-weak fight one instance landed as a crit (×4/3) and the first
+  banner had NO instance (she had fewer than 120 shots fired — under one sticky charge).
+  Current best identification: her 2808% burst nuke, a single crit-able missile landing
+  ~0.4 seconds after the banner at the full in-window buff state, possibly requiring a
+  sticky charge.
+- Her sticky payouts never core, never pop outside her own burst windows, follow the
+  120-shot cadence, and land at projectile-arrival time (payouts continue during reloads).
+- Her burst's +421% attachment buff is measurably inert on every visible class.
+- Her run-to-run totals vary ±5–9% between real runs (core-exposure phases are visibly
+  random) — grading tolerance for her should be wider than the standard band.
+
+### The MiKa fight — the sniper family's cold cluster is SOLVED (a config bug)
+
+~~Prika's reads suggested the sim under-counts her instances ×1.6 (a cadence bug like
+Jill's).~~ SUPERSEDED (2026-07-14, same day) — the follow-up audit showed that comparison was
+an artifact, her charge cycle is modeled correctly (the ~250% charge display is the known
+release latency), and the real culprit was a **mode-string mismatch: Mint had been silently
+running SOLO mode** (the lab passed a mode name her override doesn't define), halving her
+duet buffs for the entire team. With the fix, the MiKa fight's board jumps 25–41%: Anis: Star
+1.00, Red Hood 0.91, Prika 0.89, Mint 1.05, Alice 1.10 — and the full-burst count still
+grades 11 exact. The historical "run A residual" was substantially this bug.
+
+Remaining from the same audit, held for a measurement: Prika's kit text grants her Pierce
+continuously but she carries no Pierce tag in the sim (her own 13% pierce buff and Mint's are
+discarded). Adding it would push her past 1.0 on the fixed baseline while already-tagged
+Alice reads 1.10 hot — so the tag is held pending a popup read from the existing MiKa video
+(her value should step +16–33% during Mint's pierce window if the tag is live in-game).
+Mint's total also swung −10.9% between real runs (high run variance, like Nayuta and Rapi:
+Red Hood).

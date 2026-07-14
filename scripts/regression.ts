@@ -85,8 +85,22 @@ const COMPS: Comp[] = [
     boss: 'Iron',
     realFullBursts: 13, // video, probe u7 "13 fb count wind weak" (2026-07-14): 13/13 splash-counted, caster order exact
   },
-  // ungraded comps — snapshot-only change detectors
-  { name: 'T1', slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'], boss: 'Iron' },
+  {
+    name: 'PA MiKa',
+    slugs: ['anis-star', 'mint', 'prika', 'alice', 'red-hood'],
+    boss: 'Iron',
+    modes: { mint: 'duet (w/ Prika)', prika: 'duet (w/ Mint)' },
+    realFullBursts: 11, // video, rrh probe "mika t255 11fb" (2026-07-14): 11/11 splash-counted,
+    // casters exact incl. the OWNER CONVENTION for the mint/prika duet: first chain cast
+    // MANUALLY (prika takes the first Burst 2 per burstFirst), auto thereafter (mint B2).
+  },
+  {
+    name: 'T1 wind-weak',
+    slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'],
+    boss: 'Iron',
+    realFullBursts: 13, // video, rrh probe "windweak t257 13fb" (2026-07-14): 13/13, casters
+    // exact incl. the alternating Burst II (mast odd cycles / crown even)
+  },
   // T4: KNOWN MISMATCH — real = 14 FBs with privaty focus (probe u7, 2026-07-14) vs sim 13.
   // Do NOT pin until the ~1s-fast cycle increment lands (see experiment-harness-ai.md).
   { name: 'T4', slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'], boss: 'Fire' },

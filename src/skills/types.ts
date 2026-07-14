@@ -70,7 +70,10 @@ export type TargetDef =
   | { kind: 'selfAndAdjacent'; sides: number };
 
 export type EffectDef =
-  | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number }
+  | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number;
+      // buff counts only while the caster's weaponSwap is live — for "held per swap round"
+      // kit lines (MEASURED 2026-07-14, SWHA Fully Active charge/sequential buffs)
+      whileSwapped?: boolean }
   | {
       kind: 'flatDamage'; // instant hit, % of caster final ATK
       atkPct: number;
@@ -96,7 +99,9 @@ export type EffectDef =
       chargeMultPct?: number;   // "Full Charge Damage: N% of damage"
       maxAmmo?: number;
       trueNormals?: boolean;    // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
-      durationSec: number;
+      durationSec: number;      // hard time bound (e.g. the 10s burst window)
+      maxShots?: number;        // uses-based end: swap terminates right after the Nth swapped
+                                // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
     }
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
   | {

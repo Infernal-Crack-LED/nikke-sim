@@ -131,7 +131,10 @@ const COMPS: Comp[] = [
     name: 'PA MiKa (boss Iron)',
     slugs: ['anis-star', 'mint', 'prika', 'alice', 'red-hood'],
     boss: 'Iron',
-    modes: { mint: 'duet (w/ Mint)', prika: 'duet (w/ Mint)' },
+    // mode-string fix 2026-07-14: mint's duet mode is named 'duet (w/ Prika)' in her
+    // override — the old 'duet (w/ Mint)' string didn't match and silently ran her SOLO
+    // (halved duet buffs team-wide)
+    modes: { mint: 'duet (w/ Prika)', prika: 'duet (w/ Mint)' },
     lambda: { 'red-hood': 3 },
     real: { 'anis-star': 794_599_189, mint: 200_098_310, prika: 167_821_197, alice: 403_927_220, 'red-hood': 853_335_540 },
   },
