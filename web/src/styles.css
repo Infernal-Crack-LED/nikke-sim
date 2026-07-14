@@ -188,6 +188,17 @@ input.num {
 }
 .calc-run:disabled { opacity: 0.45; cursor: not-allowed; }
 .calc-pending code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
+.calc-result { margin: 10px 0 18px; }
+.calc-result table { width: 100%; }
+.calc-result td { padding: 6px 10px; }
+.calc-result tr.hl td { background: rgba(91, 157, 255, 0.12); }
+.dps-group-block { margin: 6px 0 14px; }
+.dps-group-head { display: flex; align-items: center; gap: 12px; }
+.dps-group-head .card-group-label { border-top: 0; margin: 0; padding: 0; }
+.dps-cards {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 210px));
+  gap: 12px; margin-top: 6px;
+}
 
 /* best-OL calculator */
 .ol-calc { margin-top: 16px; }
