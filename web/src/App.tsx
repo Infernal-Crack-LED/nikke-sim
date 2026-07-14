@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { runSim, type SimResult } from '../../src/engine/sim';
 import { prepareTeam, type UnitOptions } from '../../src/prepare';
 import type { OverrideFile } from '../../src/skills/index';
@@ -21,17 +21,14 @@ import {
   type Build,
 } from '../../src/share/build-code';
 import {
-  captureTokenFromUrl,
-  clearToken,
   deleteTeam,
-  fetchMe,
   fetchTeams,
-  getToken,
-  loginUrl,
   saveTeam,
   type AuthUser,
   type SavedTeam,
 } from './auth';
+import { makeCalc, type TeamResult } from '../../src/teamcalc';
+import { bestOlAtTier, type BestOlAtTierResult } from '../../src/olcalc';
 import charactersJson from '../../data/characters.json';
 import cubesJson from '../../data/cubes.json';
 import multJson from '../../data/level-multiplier.json';
@@ -51,24 +48,24 @@ const olTiers = (olTiersJson as any).tiers as Array<Record<string, number>>;
 const olTierValues = (tier: number): Record<string, number> =>
   olTiers.find((t) => t.tier === tier) ?? olTiers.find((t) => t.tier === 11)!;
 
-// Feature flag: OL line entry + best-OL calculator are WIP, hidden for now.
-// Flip to true to expose them (or wire to an env/query flag later).
-const OL_UI_ENABLED = false;
-
-// Feature flag: the tab system + team/roster/character calculators are WIP,
-// front-end scaffolds only (search logic is a backend handoff). Hidden for now.
-const CALC_TABS_ENABLED = false;
-
-// Feature flag: Discord login + saved teams. Wired to the bakery-bot API
-// (web/src/auth.ts); backend deployed at appweb-production-a479.up.railway.app.
-const AUTH_ENABLED = true;
-type CalcTab = 'sim' | 'team' | 'roster' | 'character';
+type CalcTab = 'sim' | 'team' | 'roster' | 'character' | 'dps';
 const CALC_TABS: { key: CalcTab; label: string }[] = [
   { key: 'sim', label: 'Sim' },
   { key: 'team', label: 'Team Calc' },
   { key: 'roster', label: 'Roster Calc' },
   { key: 'character', label: 'Character Calc' },
+  { key: 'dps', label: 'DPS Test' },
 ];
+
+// scope-lock loadout (per-unit): no cube, no doll, OL0, 3★ / 7 core, 10/10/10.
+// Applied to every unit in the DPS test so candidates compete on equal footing.
+const SCOPE_LOCK_LOADOUT: UnitOptions = {
+  ol: 0,
+  doll: false,
+  stars: 3,
+  core: 7,
+  skillLevels: { skill1: 10, skill2: 10, burst: 10 },
+};
 
 // ---- best-OL breakpoint math (pure; damage-ranked selection is backend) ----
 const CHARGE_SPEED_BREAKPOINTS = [5, 8, 11, 15, 18, 21]; // %, RL/SR targets
@@ -215,6 +212,29 @@ function buildOlLines(
   push('atk', s.olAtk);
   for (const line of s.olExtra) if (line.type) push(line.type, line.value);
   return out;
+}
+
+// SlotState (the per-character card's state) → engine UnitOptions. Shared by the
+// Sim tab and the DPS test's variable units.
+function slotToUnitOptions(s: SlotState): UnitOptions {
+  return {
+    cube:
+      s.cubeId === 'none'
+        ? undefined
+        : { id: s.cubeId, level: Math.min(15, Math.max(1, s.cubeLevel || 15)) },
+    ol: s.ol,
+    doll: s.doll,
+    stars: Math.min(3, Math.max(0, s.stars)),
+    core: Math.min(7, Math.max(0, s.core)),
+    lambdaStage:
+      s.lambdaStage && s.slug && data.characters[s.slug].burst === 'Λ'
+        ? s.lambdaStage
+        : undefined,
+    mode: s.mode,
+    mpPriority: s.mpPriority,
+    skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
+    lines: buildOlLines(s),
+  };
 }
 
 const defaultSlot = (slug: string | null): SlotState => ({
@@ -490,7 +510,7 @@ function CharSearch({
   );
 }
 
-export function App() {
+export function App({ user }: { user: AuthUser | null }) {
   // a full ?b= build (team + loadout + globals) prefills everything and wins
   // over ?team= / localStorage; computed once on mount
   const boot = useMemo(bootBuild, []);
@@ -527,18 +547,55 @@ export function App() {
   const [tab, setTab] = useState<CalcTab>('sim');
   const [blocked, setBlocked] = useState<string[]>([]); // don't-own / excluded
   const [calcChar, setCalcChar] = useState<string | null>(null); // Character Calc
+  const [calcBusy, setCalcBusy] = useState(false);
+  const [teamResult, setTeamResult] = useState<TeamResult | null>(null);
+  const [rosterResults, setRosterResults] = useState<TeamResult[] | null>(null);
+  const [charResult, setCharResult] = useState<{
+    team: TeamResult;
+    unitSlug: string;
+    ol: BestOlAtTierResult;
+  } | null>(null);
+  // DPS test: a scope-locked control group (3 or 4) + variable groups that fill
+  // the rest (2 or 1). Each complete group forms a variant team we sim.
+  const [dpsControl, setDpsControl] = useState<string[]>([]);
+  // each variable group holds full per-character SlotStates (configurable cards)
+  const [dpsGroups, setDpsGroups] = useState<SlotState[][]>([]);
+  const [dpsResults, setDpsResults] = useState<
+    | {
+        group: string[];
+        teamDamage: number;
+        teamDps: number;
+        fullBurstUptime: number;
+        varDamage: number;
+        varShare: number;
+        varUnits: { slug: string; name: string; totalDamage: number; share: number }[];
+      }[]
+    | null
+  >(null);
 
   const setSlot = (i: number, patch: Partial<SlotState>) =>
     setSlots((s) =>
       s.map((slot, j) => (j === i ? { ...slot, ...patch } : slot)),
     );
 
-  // bulk-apply a loadout choice to every slot at once
-  const setAll = (patch: Partial<SlotState>) =>
-    setSlots((s) => s.map((slot) => ({ ...slot, ...patch })));
+  // bulk-apply a loadout choice at once. On the DPS tab it targets the variable
+  // group nikkes (the control stays scope-locked); elsewhere it targets the slots.
+  const setAll = (patch: Partial<SlotState>) => {
+    if (tab === 'dps') {
+      setDpsGroups((gs) => gs.map((g) => g.map((u) => ({ ...u, ...patch }))));
+    } else {
+      setSlots((s) => s.map((slot) => ({ ...slot, ...patch })));
+    }
+  };
 
-  // whether every slot already matches — drives the "on" look on bulk buttons
-  const allHave = (pred: (s: SlotState) => boolean) => slots.every(pred);
+  // whether every target already matches — drives the "on" look on bulk buttons
+  const allHave = (pred: (s: SlotState) => boolean) => {
+    if (tab === 'dps') {
+      const units = dpsGroups.flat();
+      return units.length > 0 && units.every(pred);
+    }
+    return slots.every(pred);
+  };
 
   // "scope lock" preset: no cubes, no doll, OL0 gear, 3★/7 core, 400 synchro
   const applyScopeLock = () => {
@@ -579,18 +636,20 @@ export function App() {
     setLevel(b.g.level ?? '400');
   };
 
-  // ---- Discord auth + saved teams (behind AUTH_ENABLED) ----
-  const [user, setUser] = useState<AuthUser | null>(null);
+  // ---- saved teams (Discord auth + login/logout live in the shared header;
+  // `user` is passed in as a prop) ----
   const [teams, setTeams] = useState<SavedTeam[]>([]);
   const [showTeams, setShowTeams] = useState(false);
   const [authErr, setAuthErr] = useState<string | null>(null);
   const [savedFlash, setSavedFlash] = useState(false);
 
+  // when the header logs out (user → null), drop any loaded teams + close modal
   useEffect(() => {
-    if (!AUTH_ENABLED) return;
-    captureTokenFromUrl();
-    if (getToken()) fetchMe().then(setUser).catch(() => setUser(null));
-  }, []);
+    if (!user) {
+      setTeams([]);
+      setShowTeams(false);
+    }
+  }, [user]);
 
   const refreshTeams = () =>
     fetchTeams()
@@ -600,12 +659,6 @@ export function App() {
     setShowTeams(true);
     setAuthErr(null);
     refreshTeams();
-  };
-  const onLogout = () => {
-    clearToken();
-    setUser(null);
-    setTeams([]);
-    setShowTeams(false);
   };
   const suggestedName = () => {
     const names = slots
@@ -703,28 +756,7 @@ export function App() {
       rangeBonus: true,
       durationSec: 180,
     };
-    const unitOpts: UnitOptions[] = slots.map((s) => ({
-      // 'none' → omit the cube entirely (backend adds no cube stats when unset)
-      cube:
-        s.cubeId === 'none'
-          ? undefined
-          : {
-              id: s.cubeId,
-              level: Math.min(15, Math.max(1, s.cubeLevel || 15)),
-            },
-      ol: s.ol,
-      doll: s.doll,
-      stars: Math.min(3, Math.max(0, s.stars)),
-      core: Math.min(7, Math.max(0, s.core)),
-      lambdaStage:
-        s.lambdaStage && s.slug && data.characters[s.slug].burst === 'Λ'
-          ? s.lambdaStage
-          : undefined,
-      mode: s.mode,
-      mpPriority: s.mpPriority,
-      skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
-      lines: OL_UI_ENABLED ? buildOlLines(s) : undefined,
-    }));
+    const unitOpts: UnitOptions[] = slots.map(slotToUnitOptions);
     try {
       const prepared = prepareTeam(chars, unitOpts, {
         overrides,
@@ -796,18 +828,9 @@ export function App() {
   const onShareImage = async () => {
     const blob = await buildShareImage();
     if (!blob) return;
-    const file = new File([blob], 'nikke-team.png', { type: 'image/png' });
+    // Copy the PNG straight to the clipboard (Chromium/Safari). Falls back to a
+    // download where the async clipboard image API isn't available (e.g. Firefox).
     const nav = navigator as any;
-    // native share sheet (mobile / supported desktop) — best for real sharing
-    if (nav.canShare?.({ files: [file] })) {
-      try {
-        await nav.share({ files: [file], title: 'NIKKE Solo Raid Sim' });
-        return;
-      } catch {
-        return; // user cancelled
-      }
-    }
-    // else copy the image to the clipboard, falling back to a download
     try {
       if (nav.clipboard?.write && (window as any).ClipboardItem) {
         await nav.clipboard.write([
@@ -818,7 +841,7 @@ export function App() {
         return;
       }
     } catch {
-      /* clipboard blocked — download instead */
+      /* clipboard image write blocked/unsupported — download instead */
     }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -863,17 +886,511 @@ export function App() {
     </div>
   );
 
-  // frontend scaffold for the calc tabs — the actual search/optimization is a
-  // backend handoff (docs/calc-tabs-handoff.md), so results show a pending note
-  const pendingNote = (what: string) => (
-    <div className='notes calc-pending'>
-      <b>{what}</b> is not wired yet — this is the front-end scaffold. The search
-      runs the shared engine on the backend; see{' '}
-      <code>docs/calc-tabs-handoff.md</code>. Assumptions come from the teamwide
-      options above (boss weakness, DEF, core visibility, synchro) and the
-      “Apply to all” loadout row.
+  // ---- calc tabs: shared inputs + async runners (Team/Roster/Character) ----
+  // Boss options + the "Apply to all" loadout (taken from slot 1) become the
+  // uniform assumption the search runs every candidate under.
+  const calcCfg = () => ({
+    bossElement: weakness ? WEAKNESS_TO_BOSS[weakness] : null,
+    bossDef: Number(bossDef) || 0,
+    level: Math.min(1200, Math.max(1, Number(level) || 400)),
+    copies: 0,
+    doll: false,
+    ol: 0 as const,
+    coreHitRate: coreCustom
+      ? Math.min(1, Math.max(0, Number(coreCustomVal) / 100 || 0))
+      : core,
+    rangeBonus: true,
+    durationSec: 180,
+  });
+  const calcLoadout = (): UnitOptions => {
+    const s = slots[0];
+    return {
+      cube:
+        s.cubeId === 'none'
+          ? undefined
+          : { id: s.cubeId, level: Math.min(15, Math.max(1, s.cubeLevel || 15)) },
+      ol: s.ol,
+      doll: s.doll,
+      stars: Math.min(3, Math.max(0, s.stars)),
+      core: Math.min(7, Math.max(0, s.core)),
+      skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
+    };
+  };
+  const newCalc = () =>
+    makeCalc({
+      chars: data.characters as any,
+      mult,
+      deps: {
+        overrides,
+        skillLevels: skillLevelData,
+        cubes,
+        olLines: olLinesData,
+      },
+      cfg: calcCfg(),
+      loadout: calcLoadout(),
+      blocked,
+    });
+
+  // run a (blocking) calc off the paint frame so the "calculating…" state shows
+  const runCalc = async (fn: () => void) => {
+    setCalcBusy(true);
+    await new Promise((r) => setTimeout(r, 30));
+    try {
+      fn();
+    } finally {
+      setCalcBusy(false);
+    }
+  };
+  const runBestTeam = () =>
+    runCalc(() => {
+      setRosterResults(null);
+      setCharResult(null);
+      setTeamResult(newCalc().bestTeam());
+    });
+  const runTopTeams = () =>
+    runCalc(() => {
+      setTeamResult(null);
+      setCharResult(null);
+      setRosterResults(newCalc().topTeams(5));
+    });
+  const runCharacter = () =>
+    runCalc(() => {
+      setTeamResult(null);
+      setRosterResults(null);
+      if (!calcChar) return;
+      const analysis = newCalc().characterAnalysis(calcChar);
+      if (!analysis) {
+        setCharResult(null);
+        return;
+      }
+      // best-OL for the pinned unit inside its generated team
+      const cs = analysis.team.slugs.map((s) => data.characters[s]);
+      const idx = analysis.team.slugs.indexOf(calcChar);
+      const prepared = prepareTeam(
+        cs as any,
+        analysis.team.slugs.map(() => calcLoadout()),
+        {
+          overrides,
+          skillLevels: skillLevelData,
+          cubes,
+          olLines: olLinesData,
+        },
+      );
+      const ol = bestOlAtTier(
+        cs as any,
+        mult,
+        { ...calcCfg(), slugs: analysis.team.slugs } as SimConfig,
+        prepared,
+        idx,
+        olTiers as any,
+        olTier,
+      );
+      setCharResult({ team: analysis.team, unitSlug: calcChar, ol });
+    });
+
+  // ---- DPS test: scope-locked control + variable groups ----
+  const dpsGroupSize = Math.max(1, 5 - dpsControl.length); // 2 if control=3, 1 if 4
+  const dpsControlValid = dpsControl.length === 3 || dpsControl.length === 4;
+  const emptyGroup = (size: number): SlotState[] =>
+    Array.from({ length: size }, () => defaultSlot(null));
+  const setControl = (next: string[]) => {
+    setDpsControl(next);
+    const size = 5 - next.length;
+    // reset variable groups whenever the group size may have changed
+    setDpsGroups(next.length === 3 || next.length === 4 ? [emptyGroup(size)] : []);
+    setDpsResults(null);
+  };
+  const setGroupUnit = (gi: number, ui: number, patch: Partial<SlotState>) =>
+    setDpsGroups((gs) =>
+      gs.map((g, j) =>
+        j === gi ? g.map((u, k) => (k === ui ? { ...u, ...patch } : u)) : g,
+      ),
+    );
+  const groupComplete = (g: SlotState[]) => g.every((u) => u.slug);
+  const runDpsTest = () =>
+    runCalc(() => {
+      const deps = {
+        overrides,
+        skillLevels: skillLevelData,
+        cubes,
+        olLines: olLinesData,
+      };
+      const cfg = { ...calcCfg(), level: 400 }; // scope lock = lvl 400
+      const results = dpsGroups
+        .filter(groupComplete)
+        .map((group) => {
+          const slugs = [...dpsControl, ...group.map((u) => u.slug!)];
+          const cs = slugs.map((s) => data.characters[s]);
+          // control = scope-lock; variable units use their configured card
+          const opts = [
+            ...dpsControl.map(() => SCOPE_LOCK_LOADOUT),
+            ...group.map(slotToUnitOptions),
+          ];
+          const prepared = prepareTeam(cs as any, opts, deps as any);
+          const r = runSim(cs as any, mult, { ...cfg, slugs } as SimConfig, prepared);
+          const varUnits = r.units.slice(dpsControl.length); // the group's units
+          const varDamage = varUnits.reduce((s, u) => s + u.totalDamage, 0);
+          return {
+            group: group.map((u) => u.slug!),
+            teamDamage: r.teamDamage,
+            teamDps: r.teamDps,
+            fullBurstUptime: r.fullBurstUptime,
+            varDamage,
+            varShare: r.teamDamage ? varDamage / r.teamDamage : 0,
+            varUnits: varUnits.map((u) => ({
+              slug: u.slug,
+              name: u.name,
+              totalDamage: u.totalDamage,
+              share: u.share,
+            })),
+          };
+        })
+        .sort((a, b) => b.teamDamage - a.teamDamage);
+      setDpsResults(results);
+    });
+
+  // compact result table for a generated team
+  const teamResultView = (t: TeamResult, highlight?: string) => (
+    <div className='calc-result'>
+      <div className='summary muted'>
+        team <b className='big'>{fmt(t.teamDamage)}</b> · {fmt(t.teamDps)} DPS ·{' '}
+        {(t.fullBurstUptime * 100).toFixed(0)}% FB uptime
+      </div>
+      <table>
+        <tbody>
+          {t.units.map((u) => (
+            <tr key={u.slug} className={u.slug === highlight ? 'hl' : ''}>
+              <td className='muted'>B{u.burst}</td>
+              <td>
+                {u.name}
+                {u.advantaged && <span className='adv' title='advantage'> ▲</span>}
+              </td>
+              <td className='r'>{u.weapon}</td>
+              <td className='r share'>{(u.share * 100).toFixed(1)}%</td>
+              <td className='r'>{fmt(u.totalDamage)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
+
+  // the full per-character card (portrait, picker, gear/dupes/skills/cube/OL) —
+  // reused by the Sim tab and the DPS test's variable units.
+  const renderCard = (
+    slot: SlotState,
+    onChange: (patch: Partial<SlotState>) => void,
+    slotLabel: string,
+  ) => {
+    const c = slot.slug ? data.characters[slot.slug] : null;
+    return (
+      <div className='card'>
+        <div className='slot-head'>
+          <span className='muted'>{slotLabel}</span>
+          {c && (
+            <span className='tag'>
+              B{c.burst} · {c.weapon} · {c.element}
+            </span>
+          )}
+        </div>
+        {c?.imageUrl ? (
+          <img className='portrait' src={c.imageUrl} alt={c.name} />
+        ) : (
+          <div className='portrait empty'>?</div>
+        )}
+        <CharPicker slot={slot} onPick={(slug) => onChange({ slug })} />
+        {c?.burst === 'Λ' && (
+          <div className='pills small'>
+            {([0, 1, 2, 3] as const).map((st) => (
+              <button
+                key={st}
+                title='Λ burst: which stage she operates as'
+                className={slot.lambdaStage === st ? 'on' : ''}
+                onClick={() => onChange({ lambdaStage: st })}
+              >
+                {st === 0 ? 'Auto' : `as B${st}`}
+              </button>
+            ))}
+          </div>
+        )}
+        {(() => {
+          const modes = slot.slug ? overrides[slot.slug]?.modes : undefined;
+          if (!modes?.length) return null;
+          return (
+            <div className='pills small'>
+              {modes.map((m) => (
+                <button
+                  key={m}
+                  title='kit mode (assumed 100% uptime)'
+                  className={(slot.mode ?? modes[0]) === m ? 'on' : ''}
+                  onClick={() => onChange({ mode: m })}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+          );
+        })()}
+        {slot.slug &&
+          JSON.stringify(overrides[slot.slug] ?? {}).includes('"stackedNuke"') && (
+            <div className='pills small'>
+              <button
+                title='override the burst order to cast her burst once MP is fully stacked'
+                className={slot.mpPriority ? 'on' : ''}
+                onClick={() => onChange({ mpPriority: !slot.mpPriority })}
+              >
+                {slot.mpPriority ? '☑' : '☐'} burst at 12 MP
+              </button>
+            </div>
+          )}
+        <div className='card-group-label'>gear</div>
+        <div className='pills small'>
+          <button
+            className={slot.ol === 0 ? 'on' : ''}
+            onClick={() => onChange({ ol: 0 })}
+          >
+            OL 0
+          </button>
+          <button
+            className={slot.ol === 5 ? 'on' : ''}
+            onClick={() => onChange({ ol: 5 })}
+          >
+            OL 5
+          </button>
+          <button
+            className={slot.doll ? 'on' : ''}
+            onClick={() => onChange({ doll: !slot.doll })}
+          >
+            Doll 15
+          </button>
+        </div>
+        <div className='card-group-label'>dupes</div>
+        <div className='pills small'>
+          {DUPE_PRESETS.map((p) => (
+            <button
+              key={p.label}
+              className={
+                !slot.dupeCustom && slot.stars === p.stars && slot.core === p.core
+                  ? 'on'
+                  : ''
+              }
+              onClick={() =>
+                onChange({ stars: p.stars, core: p.core, dupeCustom: false })
+              }
+            >
+              {p.label}
+            </button>
+          ))}
+          <button
+            title='custom stars / core'
+            className={slot.dupeCustom ? 'on' : ''}
+            onClick={() => onChange({ dupeCustom: !slot.dupeCustom })}
+          >
+            …
+          </button>
+        </div>
+        {slot.dupeCustom && (
+          <>
+            <div className='pills small' title='Limit Break stars'>
+              <span className='muted pill-label'>Stars</span>
+              {STAR_LEVELS.map((st) => (
+                <button
+                  key={st}
+                  className={slot.stars === st ? 'on' : ''}
+                  onClick={() => onChange({ stars: st })}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+            <div className='pills small' title='Core enhancement'>
+              <span className='muted pill-label'>Core</span>
+              {CORE_LEVELS.map((cr) => (
+                <button
+                  key={cr}
+                  className={slot.core === cr ? 'on' : ''}
+                  onClick={() => onChange({ core: cr })}
+                >
+                  {cr}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+        <div className='card-group-label'>skills</div>
+        {(
+          [
+            ['S1', 'skill1'],
+            ['S2', 'skill2'],
+            ['Burst', 'burst'],
+          ] as const
+        ).map(([label, key]) => {
+          const hasData = !!(slot.slug && skillLevelData[slot.slug]);
+          return (
+            <div
+              key={key}
+              className='pills small'
+              title={
+                hasData
+                  ? `${label} skill level`
+                  : `${label} skill level — no per-level data for this nikke; values stay at max`
+              }
+            >
+              <span className='muted pill-label'>{label}</span>
+              {SKILL_LEVELS.map((lv) => (
+                <button
+                  key={lv}
+                  className={slot[key] === lv ? 'on' : ''}
+                  onClick={() => onChange({ [key]: lv })}
+                >
+                  {lv}
+                </button>
+              ))}
+            </div>
+          );
+        })}
+        <div className='card-group-label'>cube</div>
+        <div className='cube'>
+          {CUBE_IDS.map((id) => {
+            const cube = cubes.cubes[id];
+            const effect = cube.effectStat
+              ? STAT_LABELS[cube.effectStat] ?? cube.effectStat
+              : 'base stats + elemental damage';
+            return (
+              <button
+                key={id}
+                title={`${cube.name} — ${effect}`}
+                className={slot.cubeId === id ? 'on' : ''}
+                onClick={() => onChange({ cubeId: id })}
+              >
+                {cubes.cubes[id].image ? (
+                  <img
+                    src={'/' + cubes.cubes[id].image.replace('img/', '')}
+                    alt={id}
+                  />
+                ) : (
+                  'Other'
+                )}
+              </button>
+            );
+          })}
+          <button
+            title='No cube — no flat ATK, no elemental damage, no effect'
+            className={slot.cubeId === 'none' ? 'on' : ''}
+            onClick={() => onChange({ cubeId: 'none' })}
+          >
+            None
+          </button>
+        </div>
+        {slot.cubeId !== 'none' && (
+          <div className='pills small'>
+            {CUBE_LEVELS.map((l) => (
+              <button
+                key={l}
+                className={!slot.cubeCustom && slot.cubeLevel === l ? 'on' : ''}
+                onClick={() => onChange({ cubeLevel: l, cubeCustom: false })}
+              >
+                L{l}
+              </button>
+            ))}
+            <button
+              title='custom cube level'
+              className={slot.cubeCustom ? 'on' : ''}
+              onClick={() => onChange({ cubeCustom: !slot.cubeCustom })}
+            >
+              …
+            </button>
+            {slot.cubeCustom && (
+              <input
+                className='num'
+                value={slot.cubeLevel}
+                onChange={(e) =>
+                  onChange({ cubeLevel: Number(e.target.value) || 1 })
+                }
+              />
+            )}
+          </div>
+        )}
+        {(
+          <div className='ol'>
+            <div className='ol-base'>
+              <label>
+                ELE
+                <input
+                  className='num'
+                  value={slot.olElem}
+                  placeholder='%'
+                  onChange={(e) => onChange({ olElem: e.target.value })}
+                />
+              </label>
+              <label>
+                ATK
+                <input
+                  className='num'
+                  value={slot.olAtk}
+                  placeholder='%'
+                  onChange={(e) => onChange({ olAtk: e.target.value })}
+                />
+              </label>
+            </div>
+            {slot.olExtra.map((line, li) => (
+              <div className='ol-line' key={li}>
+                <select
+                  value={line.type}
+                  onChange={(e) =>
+                    onChange({
+                      olExtra: slot.olExtra.map((l, j) =>
+                        j === li ? { ...l, type: e.target.value } : l,
+                      ),
+                    })
+                  }
+                >
+                  {OL_LINE_TYPES.map((t) => (
+                    <option key={t.key} value={t.key}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  className='num'
+                  value={line.value}
+                  placeholder='%'
+                  onChange={(e) =>
+                    onChange({
+                      olExtra: slot.olExtra.map((l, j) =>
+                        j === li ? { ...l, value: e.target.value } : l,
+                      ),
+                    })
+                  }
+                />
+                <button
+                  className='ol-rm'
+                  title='remove line'
+                  onClick={() =>
+                    onChange({
+                      olExtra: slot.olExtra.filter((_, j) => j !== li),
+                    })
+                  }
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <button
+              className='ol-add'
+              onClick={() =>
+                onChange({
+                  olExtra: [...slot.olExtra, { type: 'ammo', value: '' }],
+                })
+              }
+            >
+              + OL line
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderCalcTab = () => {
     if (tab === 'team') {
@@ -883,13 +1400,15 @@ export function App() {
           <p className='muted'>
             Finds the strongest 5-nikke team for the chosen boss weakness
             {weakness ? ` (${weakness})` : ' (no element selected)'} under the
-            teamwide options above.
+            teamwide options + “Apply to all” loadout above.
           </p>
           {blockedPanel}
-          <button className='calc-run' disabled>
-            Calculate best team{weakness ? ` for ${weakness}` : ''}
+          <button className='calc-run' onClick={runBestTeam} disabled={calcBusy}>
+            {calcBusy
+              ? 'Calculating…'
+              : `Calculate best team${weakness ? ` for ${weakness}` : ''}`}
           </button>
-          {pendingNote('Best-team search')}
+          {teamResult && teamResultView(teamResult)}
         </section>
       );
     }
@@ -899,13 +1418,150 @@ export function App() {
           <h2>Roster Calc</h2>
           <p className='muted'>
             Builds the top 5 teams with no character reused across teams (same
-            scoring as Team Calc).
+            scoring as Team Calc). Takes a few seconds — it runs hundreds of
+            fights.
           </p>
           {blockedPanel}
-          <button className='calc-run' disabled>
-            Calculate top 5 teams
+          <button className='calc-run' onClick={runTopTeams} disabled={calcBusy}>
+            {calcBusy ? 'Calculating…' : 'Calculate top 5 teams'}
           </button>
-          {pendingNote('Top-5-teams search')}
+          {rosterResults?.map((t, i) => (
+            <div key={i}>
+              <div className='card-group-label'>team {i + 1}</div>
+              {teamResultView(t)}
+            </div>
+          ))}
+        </section>
+      );
+    }
+    if (tab === 'dps') {
+      const canRun = dpsControlValid && dpsGroups.some(groupComplete) && !calcBusy;
+      return (
+        <section className='calc-tab'>
+          <h2>DPS Test</h2>
+          <p className='muted'>
+            A fixed <b>control group</b> (3 or 4 nikkes) — scope-locked (no cube /
+            no doll / OL0 / 3★ · 7 core · lvl 400) — plus swap-in variable groups
+            you configure with the <b>full per-character cards</b>. Boss options
+            come from the teamwide row above.
+          </p>
+
+          <div className='field'>
+            <label>Control group — pick 3 or 4 ({dpsControl.length}/4)</label>
+            <div className='chips'>
+              {dpsControl.map((slug) => (
+                <button
+                  key={slug}
+                  className='chip'
+                  title='remove'
+                  onClick={() =>
+                    setControl(dpsControl.filter((s) => s !== slug))
+                  }
+                >
+                  {data.characters[slug]?.name ?? slug} ×
+                </button>
+              ))}
+            </div>
+            {dpsControl.length < 4 && (
+              <CharSearch
+                placeholder='add control nikke…'
+                exclude={dpsControl}
+                onPick={(slug) => setControl([...dpsControl, slug])}
+              />
+            )}
+          </div>
+
+          {dpsControlValid ? (
+            <>
+              <div className='card-group-label'>
+                variable groups — {dpsGroupSize} nikke
+                {dpsGroupSize > 1 ? 's' : ''} each
+              </div>
+              {dpsGroups.map((group, gi) => (
+                <div className='dps-group-block' key={gi}>
+                  <div className='dps-group-head'>
+                    <span className='card-group-label'>group {gi + 1}</span>
+                    {dpsGroups.length > 1 && (
+                      <button
+                        className='chip'
+                        title='remove group'
+                        onClick={() =>
+                          setDpsGroups((gs) => gs.filter((_, j) => j !== gi))
+                        }
+                      >
+                        remove group ×
+                      </button>
+                    )}
+                  </div>
+                  <div className='dps-cards'>
+                    {group.map((unit, ui) => (
+                      <Fragment key={ui}>
+                        {renderCard(
+                          unit,
+                          (p) => setGroupUnit(gi, ui, p),
+                          `unit ${ui + 1}`,
+                        )}
+                      </Fragment>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <button
+                className='ol-add'
+                onClick={() =>
+                  setDpsGroups((gs) => [...gs, emptyGroup(dpsGroupSize)])
+                }
+              >
+                + add group
+              </button>
+              <button className='calc-run' onClick={runDpsTest} disabled={!canRun}>
+                {calcBusy ? 'Running…' : 'Run DPS test'}
+              </button>
+            </>
+          ) : (
+            <p className='muted'>Pick 3 or 4 control nikkes to begin.</p>
+          )}
+
+          {dpsResults && (
+            <div className='calc-result'>
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>variable group</th>
+                    <th className='r'>group dmg</th>
+                    <th className='r'>group share</th>
+                    <th className='r'>team dmg</th>
+                    <th className='r'>FB%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dpsResults.map((res, i) => (
+                    <tr key={i} className={i === 0 ? 'hl' : ''}>
+                      <td className='muted'>{i + 1}</td>
+                      <td>
+                        {res.varUnits.map((u) => u.name).join(' + ')}
+                      </td>
+                      <td className='r'>{fmt(res.varDamage)}</td>
+                      <td className='r share'>
+                        {(res.varShare * 100).toFixed(1)}%
+                      </td>
+                      <td className='r'>
+                        <b>{fmt(res.teamDamage)}</b>
+                      </td>
+                      <td className='r muted'>
+                        {(res.fullBurstUptime * 100).toFixed(0)}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className='muted'>
+                Ranked by team damage. “Group dmg” is the combined damage of the
+                variable nikke{dpsGroupSize > 1 ? 's' : ''} in each variant.
+              </p>
+            </div>
+          )}
         </section>
       );
     }
@@ -915,8 +1571,8 @@ export function App() {
       <section className='calc-tab'>
         <h2>Character Calc</h2>
         <p className='muted'>
-          Pick one nikke; a supporting team is generated around them. Main
-          workhorse for best-OL calcs and testing new characters.
+          Pick one nikke; the best supporting team is generated around them, then
+          their best-OL is computed inside it. Workhorse for best-OL + new chars.
         </p>
         <div className='field'>
           <label>Character</label>
@@ -925,7 +1581,10 @@ export function App() {
               <button
                 className='chip'
                 title='change'
-                onClick={() => setCalcChar(null)}
+                onClick={() => {
+                  setCalcChar(null);
+                  setCharResult(null);
+                }}
               >
                 {cc.name} ({cc.weapon} · {cc.element}) ×
               </button>
@@ -938,10 +1597,34 @@ export function App() {
             />
           )}
         </div>
-        <button className='calc-run' disabled={!cc}>
-          Generate team &amp; analyze
+        <button
+          className='calc-run'
+          onClick={runCharacter}
+          disabled={!cc || calcBusy}
+        >
+          {calcBusy ? 'Calculating…' : 'Generate team & analyze'}
         </button>
-        {pendingNote('Character analysis + best-OL')}
+        {charResult && (
+          <>
+            {teamResultView(charResult.team, charResult.unitSlug)}
+            <div className='notes'>
+              <b>{data.characters[charResult.unitSlug].name} — best OL</b> (tier{' '}
+              {charResult.ol.tier}): fixed{' '}
+              {charResult.ol.fixed.map((l) => `${l.count}×${l.label}`).join(' + ')}
+              {' + '}
+              <b>
+                {charResult.ol.free.length
+                  ? charResult.ol.free
+                      .map((l) => `${l.count}×${l.label}`)
+                      .join(' + ')
+                  : '(none)'}
+              </b>{' '}
+              <span className='muted'>
+                (+{charResult.ol.gainPct.toFixed(1)}% over the 8 fixed lines)
+              </span>
+            </div>
+          </>
+        )}
       </section>
     );
   };
@@ -952,40 +1635,25 @@ export function App() {
         <div className='header-row'>
           <h1>NIKKE Solo Raid Sim</h1>
           <div className='share-actions'>
-            {AUTH_ENABLED &&
-              (user ? (
-                <>
-                  <button
-                    className='share-btn'
-                    onClick={onSaveTeam}
-                    disabled={slots.every((s) => !s.slug)}
-                    title='save this team + full loadout to your account'
-                  >
-                    {savedFlash ? '✓ Saved' : '💾 Save team'}
-                  </button>
-                  <button
-                    className='share-btn'
-                    onClick={openTeams}
-                    title='your saved teams'
-                  >
-                    📋 My teams
-                  </button>
-                  <span className='user-chip' title='logged in'>
-                    {user.username}
-                    <button className='logout' onClick={onLogout} title='log out'>
-                      ⏻
-                    </button>
-                  </span>
-                </>
-              ) : (
+            {user && (
+              <>
                 <button
-                  className='share-btn discord'
-                  onClick={() => (window.location.href = loginUrl())}
-                  title='save teams to your Discord account'
+                  className='share-btn'
+                  onClick={onSaveTeam}
+                  disabled={slots.every((s) => !s.slug)}
+                  title='save this team + full loadout to your account'
                 >
-                  Log in with Discord
+                  {savedFlash ? '✓ Saved' : '💾 Save team'}
                 </button>
-              ))}
+                <button
+                  className='share-btn'
+                  onClick={openTeams}
+                  title='your saved teams'
+                >
+                  📋 My teams
+                </button>
+              </>
+            )}
             <button
               className='share-btn'
               onClick={onShare}
@@ -998,9 +1666,9 @@ export function App() {
               className='share-btn'
               onClick={onShareImage}
               disabled={!r}
-              title='share or save a summary image of the results'
+              title='copy a summary image of the results to your clipboard'
             >
-              {imaged ? '✓ Image' : '🖼 Share image'}
+              {imaged ? '✓ Copied' : '🖼 Copy image'}
             </button>
           </div>
         </div>
@@ -1010,7 +1678,7 @@ export function App() {
         </p>
       </header>
 
-      {CALC_TABS_ENABLED && (
+      {(
         <nav className='tabs-bar'>
           {CALC_TABS.map((t) => (
             <button
@@ -1241,332 +1909,17 @@ export function App() {
         </div>
       </section>
 
-      {(!CALC_TABS_ENABLED || tab === 'sim') && (
+      {tab === 'sim' && (
         <>
       <section className='team'>
-        {slots.map((slot, i) => {
-          const c = slot.slug ? data.characters[slot.slug] : null;
-          return (
-            <div className='card' key={i}>
-              <div className='slot-head'>
-                <span className='muted'>slot {i + 1}</span>
-                {c && (
-                  <span className='tag'>
-                    B{c.burst} · {c.weapon} · {c.element}
-                  </span>
-                )}
-              </div>
-              {c?.imageUrl ? (
-                <img className='portrait' src={c.imageUrl} alt={c.name} />
-              ) : (
-                <div className='portrait empty'>?</div>
-              )}
-              <CharPicker slot={slot} onPick={(slug) => setSlot(i, { slug })} />
-              {c?.burst === 'Λ' && (
-                <div className='pills small'>
-                  {([0, 1, 2, 3] as const).map((st) => (
-                    <button
-                      key={st}
-                      title='Λ burst: which stage she operates as'
-                      className={slot.lambdaStage === st ? 'on' : ''}
-                      onClick={() => setSlot(i, { lambdaStage: st })}
-                    >
-                      {st === 0 ? 'Auto' : `as B${st}`}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {(() => {
-                const modes = slot.slug ? overrides[slot.slug]?.modes : undefined;
-                if (!modes?.length) return null;
-                return (
-                  <div className='pills small'>
-                    {modes.map((m) => (
-                      <button
-                        key={m}
-                        title='kit mode (assumed 100% uptime)'
-                        className={(slot.mode ?? modes[0]) === m ? 'on' : ''}
-                        onClick={() => setSlot(i, { mode: m })}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                );
-              })()}
-              {slot.slug &&
-                JSON.stringify(overrides[slot.slug] ?? {}).includes('"stackedNuke"') && (
-                  <div className='pills small'>
-                    <button
-                      title='override the burst order to cast her burst once MP is fully stacked'
-                      className={slot.mpPriority ? 'on' : ''}
-                      onClick={() => setSlot(i, { mpPriority: !slot.mpPriority })}
-                    >
-                      {slot.mpPriority ? '☑' : '☐'} burst at 12 MP
-                    </button>
-                  </div>
-                )}
-              <div className='card-group-label'>gear</div>
-              <div className='pills small'>
-                <button
-                  className={slot.ol === 0 ? 'on' : ''}
-                  onClick={() => setSlot(i, { ol: 0 })}
-                >
-                  OL 0
-                </button>
-                <button
-                  className={slot.ol === 5 ? 'on' : ''}
-                  onClick={() => setSlot(i, { ol: 5 })}
-                >
-                  OL 5
-                </button>
-                <button
-                  className={slot.doll ? 'on' : ''}
-                  onClick={() => setSlot(i, { doll: !slot.doll })}
-                >
-                  Doll 15
-                </button>
-              </div>
-              <div className='card-group-label'>dupes</div>
-              <div className='pills small'>
-                {DUPE_PRESETS.map((p) => (
-                  <button
-                    key={p.label}
-                    className={
-                      !slot.dupeCustom &&
-                      slot.stars === p.stars &&
-                      slot.core === p.core
-                        ? 'on'
-                        : ''
-                    }
-                    onClick={() =>
-                      setSlot(i, {
-                        stars: p.stars,
-                        core: p.core,
-                        dupeCustom: false,
-                      })
-                    }
-                  >
-                    {p.label}
-                  </button>
-                ))}
-                <button
-                  title='custom stars / core'
-                  className={slot.dupeCustom ? 'on' : ''}
-                  onClick={() => setSlot(i, { dupeCustom: !slot.dupeCustom })}
-                >
-                  …
-                </button>
-              </div>
-              {slot.dupeCustom && (
-                <>
-                  <div className='pills small' title='Limit Break stars'>
-                    <span className='muted pill-label'>Stars</span>
-                    {STAR_LEVELS.map((st) => (
-                      <button
-                        key={st}
-                        className={slot.stars === st ? 'on' : ''}
-                        onClick={() => setSlot(i, { stars: st })}
-                      >
-                        {st}
-                      </button>
-                    ))}
-                  </div>
-                  <div className='pills small' title='Core enhancement'>
-                    <span className='muted pill-label'>Core</span>
-                    {CORE_LEVELS.map((cr) => (
-                      <button
-                        key={cr}
-                        className={slot.core === cr ? 'on' : ''}
-                        onClick={() => setSlot(i, { core: cr })}
-                      >
-                        {cr}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-              <div className='card-group-label'>skills</div>
-              {(
-                [
-                  ['S1', 'skill1'],
-                  ['S2', 'skill2'],
-                  ['Burst', 'burst'],
-                ] as const
-              ).map(([label, key]) => {
-                const hasData = !!(slot.slug && skillLevelData[slot.slug]);
-                return (
-                  <div
-                    key={key}
-                    className='pills small'
-                    title={
-                      hasData
-                        ? `${label} skill level`
-                        : `${label} skill level — no per-level data for this nikke; values stay at max`
-                    }
-                  >
-                    <span className='muted pill-label'>{label}</span>
-                    {SKILL_LEVELS.map((lv) => (
-                      <button
-                        key={lv}
-                        className={slot[key] === lv ? 'on' : ''}
-                        onClick={() => setSlot(i, { [key]: lv })}
-                      >
-                        {lv}
-                      </button>
-                    ))}
-                  </div>
-                );
-              })}
-              <div className='card-group-label'>cube</div>
-              <div className='cube'>
-                {CUBE_IDS.map((id) => {
-                  const cube = cubes.cubes[id];
-                  const effect = cube.effectStat
-                    ? STAT_LABELS[cube.effectStat] ?? cube.effectStat
-                    : 'base stats + elemental damage';
-                  return (
-                  <button
-                    key={id}
-                    title={`${cube.name} — ${effect}`}
-                    className={slot.cubeId === id ? 'on' : ''}
-                    onClick={() => setSlot(i, { cubeId: id })}
-                  >
-                    {cubes.cubes[id].image ? (
-                      <img
-                        src={'/' + cubes.cubes[id].image.replace('img/', '')}
-                        alt={id}
-                      />
-                    ) : (
-                      'Other'
-                    )}
-                  </button>
-                  );
-                })}
-                <button
-                  title='No cube — no flat ATK, no elemental damage, no effect'
-                  className={slot.cubeId === 'none' ? 'on' : ''}
-                  onClick={() => setSlot(i, { cubeId: 'none' })}
-                >
-                  None
-                </button>
-              </div>
-              {slot.cubeId !== 'none' && (
-                <div className='pills small'>
-                  {CUBE_LEVELS.map((l) => (
-                    <button
-                      key={l}
-                      className={
-                        !slot.cubeCustom && slot.cubeLevel === l ? 'on' : ''
-                      }
-                      onClick={() =>
-                        setSlot(i, { cubeLevel: l, cubeCustom: false })
-                      }
-                    >
-                      L{l}
-                    </button>
-                  ))}
-                  <button
-                    title='custom cube level'
-                    className={slot.cubeCustom ? 'on' : ''}
-                    onClick={() => setSlot(i, { cubeCustom: !slot.cubeCustom })}
-                  >
-                    …
-                  </button>
-                  {slot.cubeCustom && (
-                    <input
-                      className='num'
-                      value={slot.cubeLevel}
-                      onChange={(e) =>
-                        setSlot(i, { cubeLevel: Number(e.target.value) || 1 })
-                      }
-                    />
-                  )}
-                </div>
-              )}
-              {OL_UI_ENABLED && (
-              <div className='ol'>
-                <div className='ol-base'>
-                  <label>
-                    ELE
-                    <input
-                      className='num'
-                      value={slot.olElem}
-                      placeholder='%'
-                      onChange={(e) => setSlot(i, { olElem: e.target.value })}
-                    />
-                  </label>
-                  <label>
-                    ATK
-                    <input
-                      className='num'
-                      value={slot.olAtk}
-                      placeholder='%'
-                      onChange={(e) => setSlot(i, { olAtk: e.target.value })}
-                    />
-                  </label>
-                </div>
-                {slot.olExtra.map((line, li) => (
-                  <div className='ol-line' key={li}>
-                    <select
-                      value={line.type}
-                      onChange={(e) =>
-                        setSlot(i, {
-                          olExtra: slot.olExtra.map((l, j) =>
-                            j === li ? { ...l, type: e.target.value } : l,
-                          ),
-                        })
-                      }
-                    >
-                      {OL_LINE_TYPES.map((t) => (
-                        <option key={t.key} value={t.key}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      className='num'
-                      value={line.value}
-                      placeholder='%'
-                      onChange={(e) =>
-                        setSlot(i, {
-                          olExtra: slot.olExtra.map((l, j) =>
-                            j === li ? { ...l, value: e.target.value } : l,
-                          ),
-                        })
-                      }
-                    />
-                    <button
-                      className='ol-rm'
-                      title='remove line'
-                      onClick={() =>
-                        setSlot(i, {
-                          olExtra: slot.olExtra.filter((_, j) => j !== li),
-                        })
-                      }
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <button
-                  className='ol-add'
-                  onClick={() =>
-                    setSlot(i, {
-                      olExtra: [...slot.olExtra, { type: 'ammo', value: '' }],
-                    })
-                  }
-                >
-                  + OL line
-                </button>
-              </div>
-              )}
-            </div>
-          );
-        })}
+        {slots.map((slot, i) => (
+          <Fragment key={i}>
+            {renderCard(slot, (p) => setSlot(i, p), `slot ${i + 1}`)}
+          </Fragment>
+        ))}
       </section>
 
-      {OL_UI_ENABLED && (
+      {(
         <section className='ol-calc'>
           <div className='toggles'>
             <button onClick={() => setShowOlCalc(!showOlCalc)}>
@@ -1603,9 +1956,8 @@ export function App() {
                   <p className='muted'>
                     Assumes 8/12 lines are 4× ATK + 4× ELE; the remaining 4 are
                     free. Values shown at tier {olTier} ({tv.ammo}% ammo,{' '}
-                    {tv.chargespd}% charge speed per line). Damage-ranked pick of
-                    the best 4 is computed by the backend (pending — see{' '}
-                    <code>docs/ol-calculator-handoff.md</code>).
+                    {tv.chargespd}% charge speed per line). For the damage-ranked
+                    pick of the best 4 lines, use the <b>Character Calc</b> tab.
                   </p>
                   {filled.map((c) => {
                     const isCharge = c.weapon === 'RL' || c.weapon === 'SR';
@@ -1800,9 +2152,9 @@ export function App() {
         </>
       )}
 
-      {CALC_TABS_ENABLED && tab !== 'sim' && renderCalcTab()}
+      {tab !== 'sim' && renderCalcTab()}
 
-      {AUTH_ENABLED && showTeams && (
+      {showTeams && (
         <div className='modal-backdrop' onClick={() => setShowTeams(false)}>
           <div className='modal' onClick={(e) => e.stopPropagation()}>
             <div className='modal-head'>

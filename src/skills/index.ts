@@ -12,9 +12,14 @@ const SLOTS: SkillSlot[] = ['skill1', 'skill2', 'burst'];
 export interface OverrideFile {
   note?: string;
   modes?: string[]; // user-selectable kit modes (first = default)
+  // this unit's attacks are Pierce-tagged (kit says so), so Pierce Damage ▲
+  // buffs feed its Damage Up bucket (Q10). Set only on kit-confirmed carriers.
+  hasPierce?: boolean; // always pierce (e.g. red-hood)
+  pierceModes?: string[]; // pierce only in these modes (e.g. CCW: ["Snipe"])
   // hand-measured corrections to DB weapon data (e.g. real SR fire cycle =
   // charge + bolt recovery, where the DB only records the charge time)
-  charFixes?: { chargeFrames?: number };
+  charFixes?: { chargeFrames?: number; reloadFrames?: number; burstCooldownSec?: number; noBoltRecovery?: boolean; pullsPerSec?: number };
+  burstSnapshotsPreFb?: boolean;
   skill1?: Block[];
   skill2?: Block[];
   burst?: Block[];
@@ -57,5 +62,13 @@ export function resolveSkills(
     blocks = scaleBlocks(blocks, scaling.arrays, scaling.levels, warnings);
   }
 
-  return { blocks, warnings, source, modes: override?.modes };
+  return {
+    blocks,
+    warnings,
+    source,
+    modes: override?.modes,
+    hasPierce: override?.hasPierce,
+    burstSnapshotsPreFb: override?.burstSnapshotsPreFb,
+    pierceModes: override?.pierceModes,
+  };
 }

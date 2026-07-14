@@ -28,13 +28,17 @@ interface Comp {
   name: string;
   slugs: string[];
   boss: Element | null;
+  modes?: Record<string, string>;
+  lambda?: Record<string, 1 | 2 | 3>;
+  focus?: string; // camera-focused unit in the recorded run (gauge v4 focus bonus)
   real: Record<string, number>;
 }
 
 const COMPS: Comp[] = [
   {
     name: 'T1 wind-weak (boss Iron)',
-    slugs: ['anis-star', 'mast-romantic-maid', 'crown', 'scarlet-black-shadow', 'liberalio'],
+    // slot order corrected 2026-07-13 from docs/probes/"712 probes"/wind weak 2.jpeg
+    slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'],
     boss: 'Iron',
     real: {
       'anis-star': 916_819_928, 'mast-romantic-maid': 149_003_513, crown: 278_575_442,
@@ -43,7 +47,8 @@ const COMPS: Comp[] = [
   },
   {
     name: 'T3 fire-weak (boss Wind)',
-    slugs: ['little-mermaid', 'crown', 'rapi-red-hood', 'mihara-bonding-chain', 'helm'],
+    // slot order corrected 2026-07-13 from docs/probes/"712 probes"/fire weak2.jpeg
+    slugs: ['rapi-red-hood', 'mihara-bonding-chain', 'little-mermaid', 'crown', 'helm'],
     boss: 'Wind',
     real: {
       'little-mermaid': 509_505_044, crown: 215_495_230, 'rapi-red-hood': 985_340_728,
@@ -52,7 +57,8 @@ const COMPS: Comp[] = [
   },
   {
     name: 'T4 water-weak (boss Fire)',
-    slugs: ['anis-star', 'crown', 'snow-white-heavy-arms', 'privaty', 'helm'],
+    // slot order corrected 2026-07-13 from docs/probes/"712 probes"/water weak 2.jpeg
+    slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'],
     boss: 'Fire',
     real: {
       'anis-star': 1_128_483_012, crown: 373_216_848, 'snow-white-heavy-arms': 1_837_128_591,
@@ -60,8 +66,20 @@ const COMPS: Comp[] = [
     },
   },
   {
+    name: 'T4b water-weak REPLICATE (boss Fire)',
+    // docs/probes/"712 probes"/water weak.jpeg — same comp as T4, independent run.
+    // Repeatability baseline: per-unit deltas vs T4 are 0.5-3.5%.
+    slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'],
+    boss: 'Fire',
+    real: {
+      'anis-star': 1_118_637_577, crown: 374_945_975, 'snow-white-heavy-arms': 1_807_804_067,
+      privaty: 1_143_489_599, helm: 366_703_157,
+    },
+  },
+  {
     name: 'T2 elec-weak (boss Water)',
-    slugs: ['anis-star', 'crown', 'neon-vision-eye', 'cinderella', 'maiden-ice-rose'],
+    // slot order corrected 2026-07-13 from docs/probes/"712 probes"/elec weak2.jpeg
+    slugs: ['crown', 'neon-vision-eye', 'anis-star', 'cinderella', 'maiden-ice-rose'],
     boss: 'Water',
     real: {
       'anis-star': 984_995_678, crown: 195_539_778, 'neon-vision-eye': 1_474_983_283,
@@ -78,9 +96,12 @@ const COMPS: Comp[] = [
     },
   },
   {
-    name: 'T6 neutral (no advantage)',
+    name: 'T6 fire-weak (boss Wind)',
+    // 2026-07-13: originally scored as neutral, but the user's screenshot archive names this
+    // run "fire weak" (docs/probes/"712 probes"/fire weak.jpeg) — boss is Wind, rapi-RH has
+    // elemental advantage.
     slugs: ['crown', 'rapi-red-hood', 'little-mermaid', 'snow-white-heavy-arms', 'helm'],
-    boss: null,
+    boss: 'Wind',
     real: {
       crown: 221_080_065, 'rapi-red-hood': 1_024_779_898, 'little-mermaid': 499_756_023,
       'snow-white-heavy-arms': 1_147_472_116, helm: 186_659_650,
@@ -95,12 +116,121 @@ const COMPS: Comp[] = [
       cinderella: 1_278_372_685, 'mast-romantic-maid': 130_547_286,
     },
   },
+  {
+    name: 'T8 iron-weak (boss Electric)',
+    // NEW 2026-07-13 from docs/probes/"712 probes"/iron weak.jpeg — cindy-CW with advantage,
+    // rapi-RH neutral.
+    slugs: ['anis-star', 'crown', 'rapi-red-hood', 'cinderella-crystal-wave', 'helm'],
+    boss: 'Electric',
+    real: {
+      'anis-star': 739_756_176, crown: 278_690_692, 'rapi-red-hood': 1_196_668_085,
+      'cinderella-crystal-wave': 1_353_394_431, helm: 213_434_318,
+    },
+  },
+  {
+    name: 'PA MiKa (boss Iron)',
+    slugs: ['anis-star', 'mint', 'prika', 'alice', 'red-hood'],
+    boss: 'Iron',
+    // mode-string fix 2026-07-14: mint's duet mode is named 'duet (w/ Prika)' in her
+    // override — the old 'duet (w/ Mint)' string didn't match and silently ran her SOLO
+    // (halved duet buffs team-wide)
+    modes: { mint: 'duet (w/ Prika)', prika: 'duet (w/ Mint)' },
+    lambda: { 'red-hood': 3 },
+    real: { 'anis-star': 794_599_189, mint: 200_098_310, prika: 167_821_197, alice: 403_927_220, 'red-hood': 853_335_540 },
+  },
+  {
+    name: 'PB elec battery (boss Water)',
+    slugs: ['moran', 'trina', 'cinderella', 'neon-vision-eye'],
+    boss: 'Water',
+    real: { moran: 222_265_637, trina: 50_865_273, cinderella: 582_734_714, 'neon-vision-eye': 467_167_997 },
+  },
+  {
+    name: 'PB2 elec battery RERUN w/ video (boss Water)',
+    // U8 ground truth 2026-07-13: docs/probes/u8 — slot order changed, full video.
+    // Measured from video: 11 FBs at ~17s rotation (sim was already right); neon = 5 burst
+    // casts, Supers on casts 1 & 4 (sim everyN model exact); FB1 B3 = cinderella.
+    slugs: ['moran', 'cinderella', 'neon-vision-eye', 'trina'],
+    boss: 'Water',
+    focus: 'cinderella', // tb2 test 1 recording (the source of these totals)
+    real: { moran: 220_607_028, cinderella: 593_914_529, 'neon-vision-eye': 510_593_652, trina: 51_538_522 },
+  },
+  {
+    name: 'TB2T2 anis-star projExpl probe (boss Water)',
+    // Test battery 2 test 2 (2026-07-13, docs/probes/tb2): 3-unit team isolating whether
+    // anis-star's Projectile Explosion aura buffs cinderella's plain RL normals. Trina is
+    // the B2 because none of her offensive buffs reach cindy (Electric AR only).
+    // ROTATION OUTLIER (user ruling): a team without at least B1+B2+2xB3 never exists in
+    // real play — its expiry-dominated rotation is excluded from rotation-model grading
+    // (the comp stays for its damage-popup evidence).
+    slugs: ['anis-star', 'trina', 'cinderella'],
+    boss: 'Water',
+    focus: 'cinderella', // tb2 test 2 recording
+    real: { 'anis-star': 243_809_717, trina: 56_966_844, cinderella: 555_079_049 },
+  },
+  {
+    name: 'PE2 elec DPS RERUN w/ video (boss Water)',
+    // U8 ground truth 2026-07-13: docs/probes/u8 e — slot order changed, full video.
+    slugs: ['crown', 'ein', 'ada', 'rouge', 'cinderella'],
+    boss: 'Water',
+    real: { crown: 141_588_867, ein: 538_193_097, ada: 464_034_086, rouge: 114_959_491, cinderella: 397_989_804 },
+  },
+  {
+    name: 'PI2 misc B3s RERUN w/ video (boss Water)',
+    // U8 ground truth 2026-07-13: docs/probes/u8 i — 13 FBs at ~14.1s measured.
+    slugs: ['grave', 'anis-star', 'jill', 'chisato', 'noir'],
+    boss: 'Water',
+    real: { grave: 286_237_418, 'anis-star': 599_378_674, jill: 534_623_166, chisato: 481_741_106, noir: 163_055_320 },
+  },
+  {
+    name: 'PC shields (boss Fire)',
+    slugs: ['tia', 'anis-star', 'naga', 'snow-white-heavy-arms', 'helm'],
+    boss: 'Fire',
+    modes: { naga: 'with shielder' },
+    real: { tia: 159_872_551, 'anis-star': 779_423_317, naga: 174_159_371, 'snow-white-heavy-arms': 1_320_261_601, helm: 651_956_107 },
+  },
+  {
+    name: 'PD Eva duo (boss Wind)',
+    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'diesel-winter-sweets', 'helm'],
+    boss: 'Wind',
+    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
+    real: { 'emma-tactical-upgrade': 138_646_718, 'eunhwa-tactical-upgrade': 303_333_340, 'diesel-winter-sweets': 547_126_157, helm: 272_995_802 },
+  },
+  {
+    name: 'PE elec DPS (boss Water)',
+    slugs: ['rouge', 'crown', 'ein', 'ada', 'cinderella'],
+    boss: 'Water',
+    real: { rouge: 106_697_867, crown: 147_601_675, ein: 560_265_791, ada: 460_220_219, cinderella: 342_564_640 },
+  },
+  {
+    name: 'PF maiden solo (boss Water)',
+    slugs: ['maiden-ice-rose'],
+    boss: 'Water',
+    real: { 'maiden-ice-rose': 76_562_316 },
+  },
+  {
+    name: 'PG iron sweep (boss Electric)',
+    slugs: ['d-killer-wife', 'takina', 'milk-blooming-bunny', 'maxwell', 'liberalio'],
+    boss: 'Electric',
+    real: { 'd-killer-wife': 57_763_039, takina: 427_401_745, 'milk-blooming-bunny': 391_185_987, maxwell: 126_550_353, liberalio: 484_567_921 },
+  },
+  {
+    name: 'PH water B3s (boss Fire)',
+    slugs: ['little-mermaid', 'crown', 'quency-escape-queen', 'dorothy-serendipity', 'guillotine-winter-slayer'],
+    boss: 'Fire',
+    real: { 'little-mermaid': 341_555_086, crown: 161_315_337, 'quency-escape-queen': 594_108_107, 'dorothy-serendipity': 766_349_052, 'guillotine-winter-slayer': 273_898_861 },
+  },
+  {
+    name: 'PI misc B3s (boss Water)',
+    slugs: ['anis-star', 'grave', 'chisato', 'jill', 'noir'],
+    boss: 'Water',
+    real: { 'anis-star': 602_820_156, grave: 288_074_223, chisato: 492_040_764, jill: 518_351_294, noir: 160_557_828 },
+  },
 ];
 
 // deep-clone an override and let the variant mutate it; return undefined = drop unit's override
 type Patch = Record<string, (o: OverrideFile) => OverrideFile>;
 
-function run(comp: Comp, patch: Patch = {}) {
+function run(comp: Comp, patch: Patch = {}, seed?: number) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, OverrideFile | undefined> = {};
   for (const s of comp.slugs) {
@@ -110,18 +240,74 @@ function run(comp: Comp, patch: Patch = {}) {
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
     doll: DOLL,
     ol: 0,
+    mode: comp.modes?.[slug],
+    lambdaStage: comp.lambda?.[slug],
   }));
   const cfg: SimConfig = {
     slugs: comp.slugs, bossElement: comp.boss, bossDef: 0, level: 400, copies: 10,
     doll: false, ol: 0, coreHitRate: 1, rangeBonus: true, durationSec: 180,
+    focusSlug: comp.focus,
+    seed,
   };
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
   return runSim(chars, mult, cfg, prepared);
 }
 
 function report(comp: Comp, label: string, patch: Patch = {}) {
+  // SEEDS=N: Monte Carlo — N seeded runs (common seed set across comps and across
+  // A/B configs, so paired comparisons cancel the variance), reported as mean ± sd.
+  // Crit/core rolls + boss-movement jitter + chain-gap jitter are sampled per seed;
+  // judge a single real run against ±(sd + ~3% real repeatability).
+  const nSeeds = Number(process.env.SEEDS ?? 0);
+  if (nSeeds > 1) {
+    const totals = new Map<string, number[]>();
+    let pulls = new Map<string, number>();
+    const fbCounts: number[] = [];
+    const firstFb: number[] = [];
+    for (let i = 0; i < nSeeds; i++) {
+      const res = run(comp, patch, 1000 + i);
+      fbCounts.push(res.fullBursts);
+      const fb1 = res.rotationLog.find((l) => l.includes('FULL BURST'));
+      if (fb1) firstFb.push(parseFloat(fb1));
+      for (const u of res.units) {
+        if (!totals.has(u.slug)) totals.set(u.slug, []);
+        totals.get(u.slug)!.push(u.totalDamage);
+        pulls.set(u.slug, u.pulls);
+      }
+    }
+    console.log(`\n--- ${comp.name} · ${label} · MC n=${nSeeds} ---`);
+    {
+      // full distribution: knife-edge counts are REAL run-to-run variance (a boss
+      // range transition colliding with a burst chain blocks casts ~1s) — when
+      // comparing vs a real run, condition on the real run's observed FB count
+      // (compare against the seeds in that stratum).
+      const dist = new Map<number, number>();
+      for (const c of fbCounts) dist.set(c, (dist.get(c) ?? 0) + 1);
+      const distStr = [...dist.entries()].sort((a, b) => a[0] - b[0])
+        .map(([c, n]) => `${c}x${Math.round((100 * n) / nSeeds)}%`).join(' ');
+      console.log(
+        `  full bursts: ${distStr}, first FB at ${Math.min(...firstFb).toFixed(1)}-${Math.max(...firstFb).toFixed(1)}s`
+      );
+    }
+    for (const [slug, arr] of totals) {
+      const real = comp.real[slug];
+      const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+      const sd = Math.sqrt(arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length);
+      console.log(
+        `${slug.padEnd(24)} shots ${String(pulls.get(slug)).padStart(5)}  tot ${(mean / 1e6).toFixed(0).padStart(6)}M  ratio ${(mean / real).toFixed(3)} ± ${(sd / real).toFixed(3)}`
+      );
+    }
+    return;
+  }
   const res = run(comp, patch);
   console.log(`\n--- ${comp.name} · ${label} ---`);
+  {
+    const fb1 = res.rotationLog.find((l) => l.includes('FULL BURST'));
+    const expired = res.rotationLog.filter((l) => l.includes('EXPIRED')).length;
+    console.log(`  full bursts: ${res.fullBursts}, first at ${fb1 ? parseFloat(fb1).toFixed(1) : '-'}s${expired ? `, ${expired} chain expiries` : ''}`);
+  }
+  // ROT=1 dumps the burst rotation log (debug workflows)
+  if (process.env.ROT) for (const line of res.rotationLog) console.log('  ' + line);
   for (const u of res.units) {
     const real = comp.real[u.slug];
     const total = u.totalDamage;
@@ -136,121 +322,8 @@ const t1 = COMPS[0], t3 = COMPS[1], t4 = COMPS[2];
 
 let DOLL = false;
 console.log('===== SCOPE LOCK basis: core 7, no cube, no doll, OL0, 10/10/10 =====');
-for (const c of COMPS) report(c, 'scope lock');
-
-
-// ---- SWHA variants (T4 real: 1_807_804_067 replicate; current s=1520M, ratio 1.33) ----
-const swhaVariant = (label, volley, lump) => report(t4, `SWHA ${label}`, {
-  'snow-white-heavy-arms': (o) => {
-    for (const b of o.skill1 ?? []) for (const e of b.effects) {
-      if (e.kind === 'flatDamage' && e.atkPct === 527.95) e.atkPct = volley;
-      if (e.kind === 'flatDamage' && e.atkPct === 7129.44) e.atkPct = lump;
-    }
-    return o;
-  },
-});
-swhaVariant('A: no burst lump', 527.95, 0.0001);
-swhaVariant('B: lump w/o x2.584 (=2112%)', 527.95, 2112);
-swhaVariant('C: volley single dwarf 105.59', 105.59, 7129.44);
-swhaVariant('D: volley 527.95 but no 41.9 AoE + lump w/o mult', 527.95, 2112);
-
-
-// ---- SWHA E: Fully Active as weaponSwap (3.2s charge, 2 shots ~6.5s), 528% charge buff
-// covers both rounds; lump unchanged (it is the volley EXTRA over baseline for 2 shots) ----
-report(t4, 'SWHA E: fully-active weaponSwap', {
-  'snow-white-heavy-arms': (o) => {
-    for (const b of o.skill2 ?? []) for (const e of b.effects) {
-      if (e.kind === 'buff' && e.value === 528) e.durationSec = 6.5;
-    }
-    o.burst = [
-      ...(o.burst ?? []),
-      {
-        slot: 'burst', trigger: { kind: 'burstCast' }, target: { kind: 'self' },
-        effects: [{ kind: 'weaponSwap', damagePct: 69.04, chargeTimeSec: 3.2, durationSec: 6.5 }],
-      },
-    ];
-    return o;
-  },
-});
-
-
-// ---- Mihara honest stack rebuild at scope-lock basis: avg ~10.8 stacks between bursts,
-// full 20-stack mirror during her burst windows (delta = 1001 - baseline) ----
-report(t3, 'Mihara rebuild avg 10.8', {
-  'mihara-bonding-chain': (o) => {
-    for (const b of o.skill1 ?? []) for (const e of b.effects) {
-      if (e.kind === 'dot') e.atkPct = 270.9;
-    }
-    for (const b of o.burst ?? []) for (const e of b.effects) {
-      if (e.kind === 'dot') e.atkPct = 1001 - 270.9;
-    }
-    return o;
-  },
-});
-
-
-// ---- SR fire-cycle variants: real cycle = charge + bolt recovery? ----
-for (const cf of [78, 84, 90]) {
-  report(COMPS.find(c => c.name.startsWith('T6')), `helm chargeFrames ${cf}`, {
-    helm: (o) => ({ ...o, charFixes: { chargeFrames: cf } }),
-  });
-  report(COMPS.find(c => c.name.startsWith('T5')), `velvet chargeFrames ${cf}`, {
-    velvet: (o) => ({ ...o, charFixes: { chargeFrames: cf } }),
-  });
+// ONLY=<substring> runs a single comp (debug workflows pair it with DBG_UNIT/DBG_N).
+for (const c of COMPS) {
+  if (process.env.ONLY && !c.name.toLowerCase().includes(process.env.ONLY.toLowerCase())) continue;
+  report(c, 'scope lock');
 }
-
-
-// ---- helm 90-frame cycle across the other helm fights ----
-report(t3, 'helm cf90 (T3)', { helm: (o) => ({ ...o, charFixes: { chargeFrames: 90 } }) });
-report(t4, 'helm cf90 (T4)', { helm: (o) => ({ ...o, charFixes: { chargeFrames: 90 } }) });
-
-
-// ---- Cinderella class check: DB says Defender (hp 16500 / atk 400, crown-identical row).
-// Variant: Attacker statline (hp 13500 / atk 600) + Attacker gear ----
-{
-  const t7 = COMPS.find(c => c.name.startsWith('T7'));
-  const cindy = data.characters['cinderella'];
-  const saved = { class: cindy.class, hp: cindy.baseStats.hp, atk: cindy.baseStats.atk };
-  cindy.class = 'Attacker';
-  cindy.baseStats.hp = 13500;
-  cindy.baseStats.atk = 600;
-  report(t7, 'cinderella as Attacker');
-  cindy.class = saved.class;
-  cindy.baseStats.hp = saved.hp;
-  cindy.baseStats.atk = saved.atk;
-}
-
-
-// ---- SWHA component split: volley-only vs lump-only, in both her fights ----
-const t6c = COMPS.find(c => c.name.startsWith('T6'));
-const noLump = (o) => {
-  for (const b of o.skill1 ?? []) for (const e of b.effects) {
-    if (e.kind === 'flatDamage' && e.atkPct === 7129.44) e.atkPct = 0.0001;
-  }
-  return o;
-};
-const noVolley = (o) => {
-  for (const b of o.skill1 ?? []) for (const e of b.effects) {
-    if (e.kind === 'flatDamage' && (e.atkPct === 527.95 || e.atkPct === 41.9)) e.atkPct = 0.0001;
-  }
-  return o;
-};
-report(t4, 'SWHA no-lump', { 'snow-white-heavy-arms': noLump });
-report(t4, 'SWHA no-volley', { 'snow-white-heavy-arms': noVolley });
-report(t6c, 'SWHA no-lump', { 'snow-white-heavy-arms': noLump });
-report(t6c, 'SWHA no-volley', { 'snow-white-heavy-arms': noVolley });
-
-
-// ---- Privaty component splits ----
-report(t4, 'privaty no-designated-dot', {
-  privaty: (o) => {
-    for (const b of o.skill2 ?? []) b.effects = b.effects.filter(e => !(e.kind === 'dot'));
-    return o;
-  },
-});
-report(t4, 'privaty no-256-proc', {
-  privaty: (o) => {
-    for (const b of o.skill2 ?? []) b.effects = b.effects.filter(e => !(e.kind === 'flatDamage' && e.atkPct === 256.17));
-    return o;
-  },
-});

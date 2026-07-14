@@ -1,12 +1,22 @@
 {
-  "note": "S2 Relax cycle: 43 normal attacks per stack x 20 stacks -> heal proc -> team Attack Damage 20.99% for 7s. Modeled as an 860-hit trigger. Taunt/invuln/heal portions dropped (defensive).",
+  "note": "S2 Relax cycle: 43 normal attacks per stack x 20 stacks -> heal proc -> team Attack Damage 20.99% for 7s. Modeled as an 860-hit trigger. Taunt/invuln/heal portions dropped (defensive). NAMU CROSS-CHECK (2026-07-13): her S1 'One For All' actually targets DISJOINT groups - burst casters get caster-ATK 64.51% + reload 44.35%, NON-casters get caster-DEF 37.44% + reload 44.35% - so no single unit ever legitimately receives both 44.35% reload lines; the same-caster-same-slot overwrite rule fixes the parser's both-lines-to-everyone artifact and matches the real kit structure.",
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 860 },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 860
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 20.99, "durationSec": 7 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20.99,
+          "durationSec": 7
+        }
       ]
     }
   ]

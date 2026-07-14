@@ -1,5 +1,5 @@
 {
-  "note": "Support coin kit. Skill1: fires every 8 full-charge attacks (SR = 1 hit/pull, so hitCount 8, not the parser's every-shot) -> team burst CDR 7s; its Max-HP grant is skipped (defensive, no restore). Skill2 coin chain: only the Sword Coin Attack Damage 6.65% is offensive -> modeled as a permanent all-ally buff ('self and 2 allies on both sides' in a 5-slot squad = whole team). Shield Coin (Damage Taken down) and Double Sword Coin (Max HP up) are defensive and skipped. Burst slot omitted: the parser already emits the ATK 15.07%-of-caster team buff faithfully; the three coin-gated Max-HP grants are defensive and correctly dropped. TIER AUDIT: her Max-HP grants feed HP-scaling carries (Cinderella's 2.71%-of-MaxHP ATK — the Rouge+Cindy synergy) via the new casterMaxHpPct stat. Burst: team casterAtk 15.07 + Max HP grant time-averaged across coin progression (10.15 Sword / 20.1 Shield@30FC / 30.02 DoubleSword@5casts -> ~22 avg per 10s cast). S2's permanent Double-Sword 15.08% (from ~t=100s -> avg 7.5) added as passive. Inert for teammates without atkOfMaxHpPct.",
+  "note": "Support coin kit. Skill1: fires every 8 full-charge attacks (SR = 1 hit/pull, so hitCount 8, not the parser's every-shot) -> team burst CDR 7s; its Max-HP grant is skipped (defensive, no restore). Skill2 coin chain: only the Sword Coin Attack Damage 6.65% is offensive -> modeled as a permanent all-ally buff ('self and 2 allies on both sides' in a 5-slot squad = whole team). Shield Coin (Damage Taken down) and Double Sword Coin (Max HP up) are defensive and skipped. Burst slot omitted: the parser already emits the ATK 15.07%-of-caster team buff faithfully; the three coin-gated Max-HP grants are defensive and correctly dropped. TIER AUDIT: her Max-HP grants feed HP-scaling carries (Cinderella's 2.71%-of-MaxHP ATK \u2014 the Rouge+Cindy synergy) via the new casterMaxHpPct stat. Burst: team casterAtk 15.07 + Max HP grant time-averaged across coin progression (10.15 Sword / 20.1 Shield@30FC / 30.02 DoubleSword@5casts -> ~22 avg per 10s cast). S2's permanent Double-Sword 15.08% (from ~t=100s -> avg 7.5) added as passive. Inert for teammates without atkOfMaxHpPct. REBUILD 2026-07-13 (run-E videos e/e2): cinderella's +18% between slot-orders proved rouge's kit is positional and her Max-HP grants are OFFENSIVE for HP-scaled-ATK units (cindy's ATK = % of her live Max HP; engine feeds maxHpFlat into atkOfMaxHpPct live). Changes: (1) Sword Coin 6.65 Attack Damage now selfAndAdjacent(2 per side) \u2014 the kit's 'self and 2 allies on both sides'; (2) burst Max-HP grant modeled: all allies casterMaxHpPct 22.5 \u2691 for 10s per cast (fight-average of the coin-tier ladder 10.15 Sword / 20.1 Shield / 30.02 Double, weighted by tier timeline: Shield ~30 full charges ~55s, Double ~5 bursts ~75s); (3) Double Sword Coin permanent 15.08% to coin holders -> positional casterMaxHpPct 8.7 \u2691 (15.08 x ~58% fight uptime); (4) S1's team Max HP 5% per 8 full charges at ~45% uptime -> passive 2.3 \u2691. All \u2691 values are timeline averages of exact kit numbers, not fits.",
   "skill1": [
     {
       "slot": "skill1",
@@ -16,6 +16,22 @@
           "seconds": 7
         }
       ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 2.3
+        }
+      ]
     }
   ],
   "skill2": [
@@ -25,7 +41,8 @@
         "kind": "passive"
       },
       "target": {
-        "kind": "allies"
+        "kind": "selfAndAdjacent",
+        "sides": 2
       },
       "effects": [
         {
@@ -41,7 +58,8 @@
         "kind": "passive"
       },
       "target": {
-        "kind": "allies"
+        "kind": "selfAndAdjacent",
+        "sides": 2
       },
       "effects": [
         {
@@ -73,6 +91,40 @@
           "stat": "casterMaxHpPct",
           "value": 22,
           "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 22.5,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "selfAndAdjacent",
+        "sides": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 8.7
         }
       ]
     }

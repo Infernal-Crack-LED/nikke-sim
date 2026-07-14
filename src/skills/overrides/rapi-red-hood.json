@@ -1,5 +1,5 @@
 {
-  "note": "Whole-kit model; her three skills only make sense together. S1 Combat Assist: with NO Burst 1 ally she fills the B1 slot (stage-1 eligibility) and grants team CDR 7.48s + Attack Damage 8.02% on each full burst; WITH a B1 ally she instead self-buffs ATK 95.04% on full burst. S2: counts as elementally advantaged vs Electric, and every 120 normal attacks launches an attachable projectile (88.11% attach + 88.11% explosion, scaled by her passive attachment/explosion buffs; explosions are storedHits that batch-release at the NEXT full burst entry (after auras like Anis: Star's apply), matching the in-game attach-now-explode-on-FB behavior). Burst at stage 1 (Combat Assist): 20s self CDR -> effective 20s cooldown as a B1, team ATK 18.01% of caster. Burst at stage 3: 2808% nuke + attachment buff. Stage-3 'S2 requirement -60 for 10s' halves the projectile requirement (120->60), doubling proc rate during the window where her +421.2% attachment buff is active: modeled as one extra attach+explosion pair every 2s for 10s on her stage-3 cast.",
+  "note": "Whole-kit model; her three skills only make sense together. S1 Combat Assist: with NO Burst 1 ally she fills the B1 slot (stage-1 eligibility) and grants team CDR 7.48s + Attack Damage 8.02% on each full burst; WITH a B1 ally she instead self-buffs ATK 95.04% on full burst. S2: counts as elementally advantaged vs Electric, and every 120 normal attacks launches an attachable projectile (88.11% attach + 88.11% explosion, scaled by her passive attachment/explosion buffs). 2026-07-14 STRUCTURAL CORRECTIONS (MEASURED, three focus recordings + synthesis — see experiment-harness-ai.md 'RAPI SYNTHESIS FINAL'): (1) the 2808% burst nuke is a FLIGHTED missile landing ~0.4s post-banner INSIDE her window at the full buffed state (delaySec 0.4 — landing-time snapshot naturally grants FB +0.5, entry auras, flicker; recipe fits measured constants 27.9M/25.1M/32.0M at +0.02%/−0.4%/+1.1%) and is CHARGE-GATED (requiresPulls 120 — her fire-weak banner 1 at ~68 shots had no nuke; every >=120 banner did); (2) her burst's +421.2% attachment self-buff is MEASURED-INERT on every visible class (0.13% precision, 3 comps) and is REMOVED from the model (dead datamine entry 101631006 kept on record here; the same-branch S1 +95.04 IS live — the half-alive branch). KNOWN-OPEN (magnitude layer): 44-52% of her real totals render no popups (invisible X — do NOT re-tune the dot/storedHit magnitudes to close totals; they are the X placeholder pending the U1 refinement); popup-exact variant is falsified. Legacy pieces retained as X placeholder: the stage-3 2s dot pair and storedHit batches (their popups are fictional but their magnitude approximates the invisible damage). Stage-3 'S2 requirement -60' modeled via the dot cadence as before.",
   "skill1": [
     {
       "slot": "skill1",
@@ -154,25 +154,9 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 2808
-        }
-      ]
-    },
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast",
-        "stage": 3
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "projectileAttachmentPct",
-          "value": 421.2,
-          "durationSec": 10
+          "atkPct": 2808,
+          "delaySec": 0.4,
+          "requiresPulls": 120
         }
       ]
     },

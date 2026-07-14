@@ -60,4 +60,17 @@ export interface SimConfig {
   coreHitRate: number;      // 0..1, default 0
   rangeBonus: boolean;      // +0.3 major modifier
   durationSec: number;      // 180
+  // --- experimental / A-B knobs (undefined = current default behaviour) ---
+  projExplOnRlNormals?: boolean; // U4: RL normals get projExpl in Damage Up (default ON per user, 2026-07-13)
+  // camera-focused unit (charge weapons on the focused unit generate x2.5 gauge).
+  // Default: formation slot 3 = index min(2, n-1) — user convention 2026-07-13: the
+  // MIDDLE character always holds camera focus unless a run says otherwise. Set for
+  // recorded runs where a different unit held focus.
+  focusSlug?: string;
+  // Monte Carlo mode: when set, crit and core-hit rolls are sampled per instance
+  // (full bonus or nothing) instead of expectation-folded, the boss's range-band
+  // transition times jitter by up to ±2s, and burst-chain cast gaps jitter — matching
+  // the two dominant real-run variance sources (user, 2026-07-13). Same seed = same
+  // fight. undefined = deterministic expected-value sim (web UI default).
+  seed?: number;
 }

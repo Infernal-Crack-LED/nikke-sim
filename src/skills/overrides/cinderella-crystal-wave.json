@@ -1,5 +1,8 @@
 {
-  "note": "User-selectable mode (100% uptime for the chosen mode): MG (default - matches the user's validated real solo-raid sample at core 100%) or Snipe. SNIPE: permanent weapon swap (62.13%/shot, 1s charge, 250% full charge). Magazine modeled as 1 round because Additional Effect 2 expends 40 rounds per full-charge shot vs the listed 15-round mag -> one shot per reload cycle (~3.9s/shot); if the 40-round expend actually draws from a separate pool, maxAmmo should be 15 instead (flagged ambiguity). Snipe also carries Destroy (Damage to Parts +26.21%, inert in v1) and the 1189.66% Full-Burst rider. MG: Pinpoint (core damage +26%, matters when core-rate > 0) and the 833.79% core-strike rider (direct core hit -> receives the core bucket, scaled by core-rate; vs a coreless boss it contributes nothing extra). Mode-independent: Beauty-Full (Attack Damage +24% always), ATK +29% always, and the every-5s 900% crosshair hit. Skipped: Preparation for Change reload bookkeeping (reload uses her normal reload time), the per-200-ally-ammo 12% gauge fill (team ammo not trackable per unit), Decoy (defensive), Pierce (inert). Burst slot left to the parser (Attack Damage 92% + ATK 65% for 10s + 6000% nuke).",
+  "note": "User-selectable mode (100% uptime for the chosen mode): MG (default - matches the user's validated real solo-raid sample at core 100%) or Snipe. SNIPE: permanent weapon swap (62.13%/shot, 1s charge, 250% full charge). Magazine modeled as 1 round because Additional Effect 2 expends 40 rounds per full-charge shot vs the listed 15-round mag -> one shot per reload cycle (~3.9s/shot); if the 40-round expend actually draws from a separate pool, maxAmmo should be 15 instead (flagged ambiguity). Snipe also carries Destroy (Damage to Parts +26.21%, inert in v1) and the 1189.66% Full-Burst rider. MG: Pinpoint (core damage +26%, matters when core-rate > 0) and the 833.79% core-strike rider (direct core hit -> receives the core bucket, scaled by core-rate; vs a coreless boss it contributes nothing extra). Mode-independent: Beauty-Full (Attack Damage +24% always), ATK +29% always, and the every-5s 900% crosshair hit. Skipped: Preparation for Change reload bookkeeping (reload uses her normal reload time), the per-200-ally-ammo 12% gauge fill (team ammo not trackable per unit), Decoy (defensive), Pierce (inert). Burst slot left to the parser (Attack Damage 92% + ATK 65% for 10s + 6000% nuke). U1 RULE FIX 2026-07-13: the 833.79% core-strike rider procs ON core hits but, as function-type additional damage, does NOT receive the core damage bucket (datamined rule: procs crit, never core, never range) \u2014 core flag removed; was contributing to her 1.16-1.30 heat.",
+  "pierceModes": [
+    "Snipe"
+  ],
   "modes": [
     "MG",
     "Snipe"
@@ -138,8 +141,7 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 833.79,
-          "core": true
+          "atkPct": 833.79
         }
       ]
     }

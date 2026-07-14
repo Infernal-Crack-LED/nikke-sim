@@ -113,7 +113,7 @@
         {
           "kind": "weaponSwap",
           "damagePct": 275.18,
-          "chargeTimeSec": 2.3,
+          "chargeTimeSec": 2.13,
           "chargeMultPct": 250,
           "durationSec": 10
         },

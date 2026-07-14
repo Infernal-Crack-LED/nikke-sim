@@ -41,7 +41,8 @@ export type TriggerDef =
   | { kind: 'burstCast'; stage?: 1 | 2 | 3 } // when the owner casts their burst (optionally only at that stage — Λ kits)
   | { kind: 'fullBurstEnter' }              // when full burst begins
   | { kind: 'fullBurstEnd' }
-  | { kind: 'hitCount'; count: number }     // every N normal-attack hits by the owner
+  | { kind: 'hitCount'; count: number }
+  | { kind: 'teamAmmo'; count: number } // fires each time TOTAL ally ammo consumed crosses count (infinite-ammo shots don't consume)     // every N normal-attack hits by the owner
   | { kind: 'shotFired' }                   // every trigger pull by the owner
   | { kind: 'lastBullet' }                  // on the owner's last bullet / reload start
   | { kind: 'stageEnter'; stage: 1 | 2 | 3 } // when a stage-N burst is cast by anyone
@@ -52,7 +53,7 @@ export type TargetDef =
   | { kind: 'self' }
   | { kind: 'allies' }
   | { kind: 'enemy' }
-  | { kind: 'burstCasters' }                // allies who cast a burst this rotation
+  | { kind: 'burstCasters'; stage?: number; element?: string }                // allies who cast a burst this rotation
   | { kind: 'nonBurstCasters' }
   | { kind: 'alliesTopAtk'; count: number }
   | {
@@ -62,10 +63,17 @@ export type TargetDef =
       excludeSelf?: boolean; // e.g. Liberalio is immune to charge-speed buffs
     }
   | { kind: 'alliesOfElement'; element: string }
-  | { kind: 'alliesOfClass'; cls: string };
+  | { kind: 'alliesOfClass'; cls: string }
+  // "the N leftmost <element> ally unit(s) with <weapon>s" (Trina S2's real target)
+  | { kind: 'alliesOfElementWeapon'; element: string; weapon: string; count?: number }
+  // "self and N ally unit(s) on both sides" (Rouge's coin coverage — positional)
+  | { kind: 'selfAndAdjacent'; sides: number };
 
 export type EffectDef =
-  | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number }
+  | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number;
+      // buff counts only while the caster's weaponSwap is live — for "held per swap round"
+      // kit lines (MEASURED 2026-07-14, SWHA Fully Active charge/sequential buffs)
+      whileSwapped?: boolean }
   | {
       kind: 'flatDamage'; // instant hit, % of caster final ATK
       atkPct: number;
@@ -73,12 +81,20 @@ export type EffectDef =
       core?: boolean; // direct core strike: receives the core bucket, scaled by core-rate
       crit?: boolean;    // this hit can crit (e.g. Ein's Near Feathers)
       noRange?: boolean; // excluded from the +30% full-range bonus (Prydwen-confirmed for Near Feathers)
+      noFb?: boolean;    // excluded from the +50% full-burst bonus (Q1-calibrated proc exemption)
+      delaySec?: number; // flighted damage: lands delaySec later, snapshotting buffs/FB at
+                         // LANDING (MEASURED 2026-07-14: rapi-red-hood's burst nuke missile
+                         // lands ~0.4s post-banner inside her window at the full buff state)
+      requiresPulls?: number; // fires only if the caster has fired >= N shots (MEASURED
+                              // 2026-07-14: her nuke needs >=1 sticky charge = 120 shots)
     }
   | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
       atkPct: number;
       durationSec: number;
       intervalSec?: number;
+      noRange?: boolean;
+      noFb?: boolean;
       flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
     }
   | {
@@ -88,7 +104,9 @@ export type EffectDef =
       chargeMultPct?: number;   // "Full Charge Damage: N% of damage"
       maxAmmo?: number;
       trueNormals?: boolean;    // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
-      durationSec: number;
+      durationSec: number;      // hard time bound (e.g. the 10s burst window)
+      maxShots?: number;        // uses-based end: swap terminates right after the Nth swapped
+                                // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
     }
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
   | {
@@ -98,6 +116,8 @@ export type EffectDef =
       flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
     }
   | { kind: 'burstEligibility'; stage: 1 | 2 | 3 }            // unit may also burst at this stage (Rapi:RH Combat Assist)
+  | { kind: 'burstFirst' }                                    // takes the FIRST eligible burst of its stage regardless of slot order (Prika duet opener)
+  | { kind: 'reenterStage'; stage: 1 | 2 | 3 }                // "Re-enters Burst Stage N": the rotation stays at stage N so ANOTHER eligible unit can also cast (Tia, Anis:Star Everyone's Star)
   | { kind: 'advantageVs'; element: string }                  // counts as elementally advantaged vs this boss element
   | { kind: 'burstCdr'; seconds: number; oncePerBattle?: boolean } // reduce targets' burst cooldowns
   | { kind: 'escalating'; steps: EffectDef[] }                // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
@@ -129,6 +149,9 @@ export interface Block {
   // effects apply only on every Nth activation of this block's trigger
   // (e.g. Mast's Hangover: every 3rd full-burst end)
   everyN?: number;
+  // phase for everyN: fire on activations ≡ offset (mod everyN), e.g. offset 1 + everyN 3
+  // fires on the 1st, 4th, 7th… activation (Neon:VE starts at full Firepower Gauge)
+  everyNOffset?: number;
   // core-hit gate: the block's in-game trigger needs a core hit, so it is
   // inert when the fight has no core exposure (e.g. Liberalio's 20.83% rider)
   requiresCore?: boolean;
@@ -136,6 +159,11 @@ export interface Block {
   // activate during full burst, 'outFb' only outside it (e.g. Velvet's S1
   // "when attacking with Full Charge while not in Full Burst")
   fbGate?: 'inFb' | 'outFb';
+  // weapon-swap-state gate, checked when the trigger fires: 'swapped' blocks
+  // only activate while the owner's kit weaponSwap is live (e.g. SWHA's Fully
+  // Active extra volley rides only her two swapped full-charge shots),
+  // 'unswapped' only outside it
+  swapGate?: 'swapped' | 'unswapped';
 }
 
 export interface CharacterSkills {
@@ -143,4 +171,7 @@ export interface CharacterSkills {
   warnings: string[];
   source: 'parser' | 'override' | 'parser+override';
   modes?: string[]; // user-selectable kit modes declared by the override (first = default)
+  hasPierce?: boolean; // kit's attacks are Pierce-tagged → Pierce Damage ▲ feeds Damage Up
+  burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)
+  pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
 }

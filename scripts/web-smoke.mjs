@@ -24,6 +24,12 @@ const checks = {
   'sim produced team damage': /team\s*\d+(\.\d+)?[MB]/.test(text),
   'share % rendered': /%/.test(text),
   'full bursts reported': /full\s*bursts/.test(text),
+  'site nav renders': text.includes('Mechanics') && text.includes('Sim'),
+  'header buttons render':
+    text.includes('Patch Notes') &&
+    text.includes('Meet the dev') &&
+    text.includes('Log in with Discord'),
+  'social footer renders': text.includes('Blablalink') && text.includes('GitHub'),
 };
 let ok = true;
 for (const [name, pass] of Object.entries(checks)) {

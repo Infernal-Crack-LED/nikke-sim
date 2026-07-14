@@ -1,50 +1,100 @@
 {
-  "note": "Tier audit (Bossing A). Structured AS/LT Formation text defeats the parser (like Emma:TU). S2 rebuilt: base AS Formation (always, as long as she is alive): team Charge Damage 41.81% + self ATK 42.24% continuous (squad-only Crit Rate 8.16 skipped — applies to the two Absolute supports only). Mode 'duo (w/ Emma:TU)' adds the LT bonus lines: team Projectile Explosion 5.11% + team True Damage 30.97% continuous. S1's self True Damage 42.24% requires Camouflage status (stealth) — uptime unknown, left skipped with this note. Burst kept from parser: weapon swap 105.6%/shot, 0.3s charge, 300% full-charge, 10s; its Explosive Round 'Damage Taken 27.87% for 10 sec on targets hit' added as a shotFired enemy debuff gated to the swap window (fbGate inFb approximation).",
-  "modes": ["duo (w/ Emma:TU)", "solo"],
+  "note": "Tier audit (Bossing A). Structured AS/LT Formation text defeats the parser (like Emma:TU). S2 rebuilt: base AS Formation (always, as long as she is alive): team Charge Damage 41.81% + self ATK 42.24% continuous (squad-only Crit Rate 8.16 skipped — applies to the two Absolute supports only). Mode 'duo (w/ Emma:TU)' adds the LT bonus lines: team Projectile Explosion 5.11% + team True Damage 30.97% continuous. S1's self True Damage 42.24% requires Camouflage status (stealth) — uptime unknown, left skipped with this note. Burst kept from parser: weapon swap 105.6%/shot, 0.3s charge, 300% full-charge, 10s; its Explosive Round 'Damage Taken 27.87% for 10 sec on targets hit' added as a shotFired enemy debuff gated to the swap window (fbGate inFb approximation). PROBE FIX (run D, 2.13 hot): swap cycle 0.3s charge + 0.37s bolt recovery baked = 0.67s (swap states bypass the engine recovery, so it is baked like nayuta's).",
+  "modes": [
+    "duo (w/ Emma:TU)",
+    "solo"
+  ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "chargeDamagePct", "value": 41.81 }
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 41.81
+        }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 42.24 }
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 42.24
+        }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "mode": "duo (w/ Emma:TU)",
       "effects": [
-        { "kind": "buff", "stat": "projectileExplosionPct", "value": 5.11 },
-        { "kind": "buff", "stat": "trueDamagePct", "value": 30.97 }
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 5.11
+        },
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 30.97
+        }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "weaponSwap", "damagePct": 105.6, "durationSec": 10, "chargeTimeSec": 0.3, "chargeMultPct": 300 }
+        {
+          "kind": "weaponSwap",
+          "damagePct": 105.6,
+          "durationSec": 10,
+          "chargeTimeSec": 0.67,
+          "chargeMultPct": 300
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "fbGate": "inFb",
       "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": 27.87, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 27.87,
+          "durationSec": 10
+        }
       ]
     }
   ]
