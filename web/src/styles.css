@@ -374,3 +374,56 @@ footer { margin-top: 28px; font-size: 12px; }
   .tier-legend { grid-template-columns: 1fr; }
   .mech-grid { grid-template-columns: 1fr; }
 }
+
+/* ---- DPS Chart ---- */
+.dpschart-compare-pick { display: flex; align-items: center; gap: 10px; margin: 10px 0 4px; }
+.dpschart-compare-pick label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.dpschart-compare-pick select {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 10px; font-size: 13px;
+}
+.dpschart-headliner { margin-top: 22px; }
+.dpschart-headliner h3, .dpschart-matrix h3 { font-size: 15px; margin: 0 0 10px; color: var(--text); }
+.dpschart-matrix { margin-top: 26px; border-top: 1px solid var(--border); padding-top: 16px; }
+.dpschart-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.dpschart-grid.one { grid-template-columns: minmax(0, 560px); margin-top: 12px; }
+
+.dpschart-card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.dpschart-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+.dpschart-title { font-weight: 600; font-size: 14px; color: var(--text); }
+.dpschart-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.dpschart-share { display: flex; gap: 4px; flex-shrink: 0; }
+.dpschart-share .chip { padding: 2px 7px; }
+
+.dpschart-bars { display: flex; flex-direction: column; gap: 5px; }
+.dpschart-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) 2.4fr auto; align-items: center; gap: 8px; }
+.dpschart-rank { color: var(--muted); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+.dpschart-name { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dpschart-track { background: var(--panel2); border-radius: 6px; height: 14px; overflow: hidden; }
+.dpschart-fill { display: block; height: 100%; border-radius: 6px; }
+.dpschart-val { font-size: 12px; color: var(--text); font-variant-numeric: tabular-nums; text-align: right; }
+.dpschart-empty { color: var(--muted); font-size: 12px; padding: 8px 0; }
+
+.dpschart-compare { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px;
+  margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); }
+.dpschart-compare .dpschart-name { font-weight: 600; }
+.dpschart-rankinfo { font-size: 12px; color: var(--muted); }
+
+.matrix-filter { display: flex; flex-direction: column; gap: 8px; }
+.matrix-row { display: flex; align-items: center; gap: 10px; }
+.matrix-axis { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); min-width: 84px; }
+
+.dpschart-frameworks { margin: 8px 0 4px; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; background: var(--panel); }
+.dpschart-frameworks summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text); }
+.dpschart-frameworks dl { margin: 10px 0 4px; display: grid; gap: 8px; }
+.dpschart-frameworks dt { font-weight: 600; font-size: 13px; color: var(--accent); }
+.dpschart-frameworks dd { margin: 2px 0 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
+
+.dps-mode { margin: 8px 0 12px; }
+.matrix-chart { margin-top: 10px; }
+.dps-details { margin-top: 12px; }
+.dps-details summary { cursor: pointer; font-size: 12px; }
+
+@media (max-width: 900px) {
+  .dpschart-grid { grid-template-columns: 1fr; }
+}

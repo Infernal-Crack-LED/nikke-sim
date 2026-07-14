@@ -19,6 +19,7 @@ if [ "${1:-}" = "full" ]; then
   say "web build + smoke"
   npm run web:build
   node scripts/web-smoke.mjs
+  node scripts/web-smoke-dpschart.mjs
 fi
 
 say "verify: all checks passed"

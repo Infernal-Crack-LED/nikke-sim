@@ -165,6 +165,13 @@ Details: **[auto-play.md](auto-play.md)**.
   window the chain waits for the leftmost stage-filling unit whose cooldown ends before
   the window closes rather than handing the cast to a lower-priority ready unit
   (owner-ruled + Monte Carlo evidence; a round-robin was tried and rejected).
+- **Focus-sync burst gate** (`burstGate: 'syncWithFocus'`, `PreparedUnit`/`UnitState`): an
+  opt-in per-unit flag — used by the DPS-chart Hyper Carry frameworks for Mast — that lets a
+  unit take its burst stage only while the focus (tested) unit is off cooldown (so it bursts
+  with the carry, never in a Helm-only chain) AND makes it sit out the full burst after every
+  3rd of its own bursts (Mast's Hangover 10s self-stun): the gate skips it on every 4th of the
+  focus unit's bursts, and Crown fills that Burst-2 slot. Not a measured value — a modeling
+  switch (see [DECISIONS](../DECISIONS.md)).
 
 ## 8. Burst rotation rules
 

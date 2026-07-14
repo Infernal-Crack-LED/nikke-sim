@@ -8,6 +8,36 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-14) The DPS-chart matrix defines a standardized 72-cell comparison grid** —
+  4 control frameworks × 2 elements (neutral / tested-unit-weak) × 3 core-exposure rates
+  (0 / 50 / 100%, the engine applies the 0.85 auto floor on top) × 3 investment tiers
+  (scope-lock / 8-of-12 / 12-of-12 overload lines). Frameworks: *Standard* = Little Mermaid
+  (Burst 1) + Crown + Helm + tested carry (four units, no Mast); *Hyper Carry* adds Mast:
+  Romantic Maid (Burst 2) as a fifth unit that bursts in sync with the tested carry; *Anis*
+  variants swap Anis: Star in for Little Mermaid. The tested carry sits leftmost and Helm
+  anchors the second Burst 3; **the two alternate the Burst-3 cast** (Burst-3 cooldown ≈ two
+  full-burst cycles), so the tested carry bursts ~7 of ~13 full bursts and Helm the rest — it
+  does NOT burst every full burst. Cubes (owner-set 2026-07-14): Scope Lock stays **no cube**
+  (its measured validation basis); 8/12 runs the **Other cube L10**, 12/12 the **Other cube
+  L15** (`TIER_CUBE` in `src/dpschart/matrix.ts`). The 12-of-12 tier's last four lines are
+  per-unit optimized via `bestOl` (once per unit, canonical context, memoized). Precomputed by
+  `scripts/build-dpschart.ts` at build time.
+- **(2026-07-14) Mast's "sync with focus" burst is an engine gate with a Hangover skip** — a unit
+  flagged `burstGate: 'syncWithFocus'` (Mast in the Hyper Carry frameworks) may take its burst
+  stage only while the focus (tested) unit is off cooldown, so it bursts with the carry and
+  never in a Helm-completed chain — AND it **sits out the full burst after every 3rd of its own
+  bursts** (Mast's Hangover cycle: her 10s self-stun means she can't participate in every one of
+  the carry's bursts). Modeled by skipping the gated unit on every 4th of the focus unit's bursts
+  (Crown fills that Burst-2 slot instead), so Mast lands ~6 of the carry's ~7 bursts. Locked by a
+  `regression.ts` assertion (gated Mast casts ≤ focus casts).
+- **(2026-07-14) Below-tier kit outliers are surfaced, not hidden, in the DPS chart** — running
+  the full Burst-3 population exposes units the engine mis-models under specific conditions
+  (e.g. Vesti: Tactical Upgrade reads 7–9× the charted median in Hyper Carry + elemental
+  advantage + 12/12, from unparsed skill-1 effects compounding). Such units are Bossing-B or
+  below, so they never appear in the ranked bars (SSS/SS only); they surface only via the
+  compare selector, carrying their sim warnings. Fixing each mis-modeled kit is its own
+  increment (cf. the ein / eunhwa / quency / xguillo outliers).
+
 - **(2026-07-14) The Mint + Prika duet's standard play is: cast the first burst chain MANUALLY
   (Prika takes the first Burst 2 — the burstFirst rule), then full auto (Mint takes every
   later Burst 2).** This is both the validation-recording convention and the sim's modeling

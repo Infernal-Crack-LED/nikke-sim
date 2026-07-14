@@ -10,6 +10,9 @@ node_modules/
 # build output (regenerated from source via vite build)
 dist/
 
+# DPS-chart matrix artifact — regenerated on every build/deploy (npm prebuild)
+img/dpschart.json
+
 docs/probes
 docs/handoffs
 # Claude harness (proprietary — skills, hooks, settings, root handoff)

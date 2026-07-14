@@ -189,6 +189,7 @@ interface UnitState {
   stunnedUntilFrame: number; // self-stun (Mast's Hangover): no firing/charging/reloading
   fbMissedSinceBurst: number; // full bursts this unit sat out since it last burst (Maiden:IR MP)
   mpPriority: boolean;       // jump the burst queue once fbMissedSinceBurst hits mpThreshold
+  burstGate: 'syncWithFocus' | null; // only cast in a chain where the focus (tested) unit also bursts
   burstFirstPending: boolean; // takes the first eligible burst of its stage (Prika duet opener)
   mpThreshold: number;
   extraStages: Set<number>; // extra burst stages this unit may fill (Combat Assist)
@@ -337,6 +338,7 @@ export function runSim(
       stunnedUntilFrame: -1,
       fbMissedSinceBurst: 0,
       mpPriority: prepared?.[idx]?.mpPriority ?? false,
+      burstGate: prepared?.[idx]?.burstGate ?? null,
       burstFirstPending: false,
       mpThreshold: activeBlocks.reduce(
         (t, b) =>
@@ -540,6 +542,9 @@ export function runSim(
   // expires (cindy still on CD) -> refill -> second chain completes at her CD).
   let stage: 0 | 1 | 2 | 3 = 0;
   let stageGapFrames = 0;
+  // full bursts the focus (tested) unit has cast — drives the syncWithFocus skip cadence
+  // (a gated unit sits out the full burst after every 3rd of the focus unit's bursts).
+  let focusBurstCount = 0;
   let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
   const POST_FB_CHAIN_DELAY_FRAMES = 180;
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
@@ -1147,7 +1152,17 @@ export function runSim(
         }
         return u.char.burst === want || u.extraStages.has(stage);
       };
-      const eligible = (u: UnitState) => u.burstCdFrames === 0 && fillsStage(u);
+      // syncWithFocus gate (Mast in the DPS-chart Hyper Carry frameworks): a gated
+      // unit may only take its stage while the focus/tested unit is itself off cooldown
+      // and about to complete the chain — so Mast bursts iff the tested B3 does this
+      // rotation, never coincidentally alongside a Helm-completed chain. AND she sits
+      // out the full burst after every 3rd of her bursts (Mast's Hangover cycle): when
+      // this stage's focus burst would be the 4th/8th/… she skips it (Crown fills in).
+      const gatePasses = (u: UnitState) =>
+        u.burstGate !== 'syncWithFocus' ||
+        (units[focusIdx].burstCdFrames === 0 && (focusBurstCount + 1) % 4 !== 0);
+      const eligible = (u: UnitState) =>
+        u.burstCdFrames === 0 && fillsStage(u) && gatePasses(u);
       // burst-order overrides: a pending burstFirst unit (Prika duet opener) outranks
       // everything; then max-MP priority (Maiden, opt-in for manual-play comps); then
       // slot-order priority WITH waiting: inside a timed stage window the chain WAITS
@@ -1161,7 +1176,7 @@ export function runSim(
       // where real fights never pick them.)
       const inWindow = stage >= 2 && stageExpireFrame !== Infinity;
       const next = inWindow
-        ? units.find((u) => fillsStage(u) && frame + u.burstCdFrames < stageExpireFrame)
+        ? units.find((u) => fillsStage(u) && gatePasses(u) && frame + u.burstCdFrames < stageExpireFrame)
         : units.find(eligible);
       const cand =
         units.find((u) => u.burstFirstPending && eligible(u)) ??
@@ -1195,6 +1210,7 @@ export function runSim(
           pendingFbExtendSec = 0;
           gauge = 0;
           fullBursts++;
+          if (cand.idx === focusIdx) focusBurstCount++;
         }
         units.forEach((u) =>
           u.blocks.forEach((b, bi) => {
