@@ -1216,3 +1216,64 @@ Alice reads 1.10 hot — so the tag is held pending a popup read from the existi
 (her value should step +16–33% during Mint's pierce window if the tag is live in-game).
 Mint's total also swung −10.9% between real runs (high run variance, like Nayuta and Rapi:
 Red Hood).
+
+## RESULTS (2026-07-14, 714 noon probe — nine testing-request teams)
+
+Full team recordings (screenshot + video) for nine testing-request compositions, in
+`docs/probes/"714 noon"` (per-team detail table in that folder's `probe.md`). Scored in
+`scripts/experiment.ts` as comps N1–N10. Standard scope-lock conditions. Camera focus for the
+grade was defaulted to the middle slot; full-burst counts were read from video by the golden
+burst-sequence yellow-splash scan (fps=4, 64×30 downscale, ≥0.11 yellow fraction, ≥10-second
+minimum gap to reject cut-in echoes) and cross-checked for cadence uniformity.
+
+These teams were built to exercise units the owner does not field in the graded board, so most
+of the 45 unit readings are first-ever measurements of untuned kits — the batch median is 1.04
+but the spread is wide (mean absolute error 0.21, 42% within ±10%). The value here is the
+coverage and the tuning targets it surfaces, not the aggregate.
+
+### Full-burst rotation — six of nine measured-exact
+
+Exact (real equals sim, cadence uniform): the Rapi/Quency wind team (13), the Scarlet/Liberalio
+iron team (10), the Mihara/Maiden wind team (11), the Emma/Eunhwa duo fire team (9, metronomic
+20-second cadence like the earlier Emma/Eunhwa duo), the Red Hood/Elegg electric team (12), and
+the Milk/Phantom electric team (6, a slow ~34-second cadence).
+
+Off by one, both directions and both consistent with the open burst-cycle timing increment:
+
+- The Anis:Star/Privaty/Snow White:Heavy Arms fire team measured 12 versus sim 11 — real fits
+  one more burst, the same refill-bound "sim runs ~1 second slow per cycle" effect already seen
+  on the two 14-versus-13 fights.
+- The Dorothy/Nayuta/Neon:Vision Eye electric team measured 10 versus sim 11 — sim one fast; the
+  real cadence is a steady ~17.5 seconds.
+
+The anomaly: the D:Killer Wife/Naga/Modernia/Chisato/Ein wind team measured **≥10 full bursts
+versus sim 8** — a large under-count. Its measured cadence has two ~25-second stretches that may
+hide additional bursts, so real is 10–12; either way the sim is short by at least two on a
+refill-bound Modernia-focused team. This is the biggest rotation miss in the batch and belongs
+to the burst-cycle timing rework rather than a per-unit fix. Whether the middle-slot focus
+assumption (Modernia) matches the recorded camera focus should be confirmed when that increment
+is worked, since focus drives gauge generation and therefore the count.
+
+### Per-unit tuning targets surfaced (sim/real)
+
+Hot, sim over-predicts:
+
+- **Vesti: Tactical Upgrade 3.23** — the standout. Her burst damage bucket is blown out
+  (761M sim total on 544 burst-bucket instances against 235M real). A brand-new unit; her kit
+  is mismodeled and needs an override pass before she is trustworthy anywhere.
+- **Arcana: Fortune Mate 1.88 and Privaty 1.58** — both hot in the same fire team; Arcana's
+  normals bucket (439M) is the driver. Privaty likewise reads far over.
+- **Snow White: Heavy Arms 1.33** here (she has graded near 1.0 elsewhere — team- or
+  focus-dependent, worth a look), Scarlet: Black Shadow 1.31, and in the Milk/Phantom electric
+  team both Little Mermaid (1.27) and Phantom (1.28) read hot.
+
+Cold, sim under-predicts:
+
+- **Dorothy (base) 0.62** — the coldest reading; her plain-Dorothy model is well short.
+- **Maiden: Ice Rose 0.69** — cold here, which sits against the standing conservative
+  lower-bound note for Maiden; the two contexts should be reconciled.
+- Milk: Blooming Bunny 0.73, Soda: Twinkling Bunny 0.77, Quency: Escape Queen 0.77.
+
+None of these were tuned in this pass — they are logged as the candidate list. Media (nine
+screenshots + nine videos) is retained in the probe folder; the per-unit ratio table lives in
+that folder's `probe.md`.

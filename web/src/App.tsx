@@ -1,4 +1,8 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import type {
+  PointerEvent as ReactPointerEvent,
+  MouseEvent as ReactMouseEvent,
+} from 'react';
 import { runSim, type SimResult } from '../../src/engine/sim';
 import { prepareTeam, type UnitOptions } from '../../src/prepare';
 import type { OverrideFile } from '../../src/skills/index';
@@ -410,6 +414,129 @@ function buffLines(blocks: any[]): string[] {
   return lines;
 }
 
+// react to a media query (used to switch the team into compact/portrait mode)
+function useMediaQuery(query: string): boolean {
+  const supported =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function';
+  const [matches, setMatches] = useState(() =>
+    supported ? window.matchMedia(query).matches : false,
+  );
+  useEffect(() => {
+    if (!supported) return;
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, [query, supported]);
+  return matches;
+}
+
+// pointer-based drag-to-reorder that works for both mouse and touch. items
+// register their DOM node by index; the drag element (a handle, or the item
+// itself) gets handleProps. A press that moves past a small threshold becomes a
+// drag (live-reordering via onMove by nearest item centre); a press that never
+// crosses it is treated as a tap (onTap) — lets one chip both expand and drag.
+function useDragReorder(
+  onMove: (from: number, to: number) => void,
+  onTap?: (i: number) => void,
+) {
+  const items = useRef(new Map<number, HTMLElement>());
+  const drag = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    index: number;
+    moved: boolean;
+  } | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  const register = (i: number) => (el: HTMLElement | null) => {
+    if (el) items.current.set(i, el);
+    else items.current.delete(i);
+  };
+
+  // index of the item whose centre is nearest the pointer (2D, so it works for
+  // a horizontal strip, a single row, or a wrapped grid alike)
+  const nearest = (x: number, y: number): number => {
+    let best = -1;
+    let bestDist = Infinity;
+    items.current.forEach((el, idx) => {
+      const r = el.getBoundingClientRect();
+      const dx = r.left + r.width / 2 - x;
+      const dy = r.top + r.height / 2 - y;
+      const d = dx * dx + dy * dy;
+      if (d < bestDist) {
+        bestDist = d;
+        best = idx;
+      }
+    });
+    return best;
+  };
+
+  // onItemTap overrides the shared onTap for this initiator (e.g. a card's image
+  // focuses that card's picker on tap, but reorders on drag)
+  const handleProps = (
+    i: number,
+    onItemTap?: (i: number, e: ReactPointerEvent) => void,
+  ) => ({
+    onPointerDown: (e: ReactPointerEvent) => {
+      if (e.button && e.button !== 0) return;
+      drag.current = {
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        startY: e.clientY,
+        index: i,
+        moved: false,
+      };
+      e.currentTarget.setPointerCapture(e.pointerId);
+    },
+    onPointerMove: (e: ReactPointerEvent) => {
+      const st = drag.current;
+      if (!st || e.pointerId !== st.pointerId) return;
+      if (!st.moved) {
+        const dx = e.clientX - st.startX;
+        const dy = e.clientY - st.startY;
+        if (dx * dx + dy * dy < 36) return; // ~6px threshold before it's a drag
+        st.moved = true;
+        setDragIndex(st.index);
+      }
+      const target = nearest(e.clientX, e.clientY);
+      if (target >= 0 && target !== st.index) {
+        onMove(st.index, target);
+        st.index = target;
+        setDragIndex(target);
+      }
+    },
+    onPointerUp: (e: ReactPointerEvent) => {
+      const st = drag.current;
+      if (!st || e.pointerId !== st.pointerId) return;
+      if (!st.moved) {
+        if (onItemTap) onItemTap(st.index, e);
+        else if (onTap) onTap(st.index);
+      }
+      drag.current = null;
+      setDragIndex(null);
+    },
+    onPointerCancel: () => {
+      drag.current = null;
+      setDragIndex(null);
+    },
+  });
+
+  return { register, handleProps, dragIndex };
+}
+
+// where an expanded-card index lands after a reorder from→to (so the open card
+// in compact mode keeps following the same slot)
+function remapIndex(e: number, from: number, to: number): number {
+  if (e === from) return to;
+  if (from < e && to >= e) return e - 1;
+  if (from > e && to <= e) return e + 1;
+  return e;
+}
+
 function CharPicker({
   slot,
   onPick,
@@ -586,6 +713,28 @@ export function App({ user }: { user: AuthUser | null }) {
     setSlots((s) =>
       s.map((slot, j) => (j === i ? { ...slot, ...patch } : slot)),
     );
+
+  // compact/portrait team UI: a 5-across portrait strip + one expanded card.
+  // Kicks in at the first width where the 5-across card row would otherwise
+  // reflow to a second row; above it all five cards show side by side.
+  const compactTeam = useMediaQuery('(max-width: 900px)');
+  const [expandedSlot, setExpandedSlot] = useState(0);
+
+  // reorder a team slot (drives the sim: position sets camera focus / burst
+  // order), keeping the expanded card pointed at the same slot it followed.
+  const moveSlot = (from: number, to: number) => {
+    if (from === to) return;
+    setSlots((s) => {
+      const a = [...s];
+      const [m] = a.splice(from, 1);
+      a.splice(to, 0, m);
+      return a;
+    });
+    setExpandedSlot((e) => remapIndex(e, from, to));
+  };
+  const teamReorder = useDragReorder(moveSlot, (i) =>
+    setExpandedSlot((e) => (e === i ? -1 : i)),
+  );
 
   // bulk-apply a loadout choice at once. On the DPS tab it targets the variable
   // group nikkes (the control stays scope-locked); elsewhere it targets the slots.
@@ -1090,10 +1239,34 @@ export function App({ user }: { user: AuthUser | null }) {
     slot: SlotState,
     onChange: (patch: Partial<SlotState>) => void,
     slotLabel: string,
+    drag?: {
+      register: (el: HTMLElement | null) => void;
+      imageHandleProps: Record<string, unknown>;
+      dragging: boolean;
+    },
+    // compact mode already shows the portrait in the strip, so the expanded
+    // card omits the big duplicate image
+    hidePortrait?: boolean,
   ) => {
     const c = slot.slug ? data.characters[slot.slug] : null;
+    // clicking the portrait opens+focuses this card's nikke picker (used when the
+    // portrait isn't a drag handle — compact expanded card, DPS tab)
+    const focusPicker = (e: ReactMouseEvent) => {
+      const input = e.currentTarget
+        .closest('.card')
+        ?.querySelector<HTMLInputElement>('.picker input');
+      input?.focus();
+    };
+    // when draggable, tap focuses the picker and press-drag reorders (handled by
+    // imageHandleProps); otherwise a plain click focuses
+    const portraitProps = drag
+      ? { className: 'portrait draggable', draggable: false, ...drag.imageHandleProps }
+      : { className: 'portrait', onClick: focusPicker };
     return (
-      <div className='card'>
+      <div
+        className={'card' + (drag?.dragging ? ' dragging' : '')}
+        ref={drag?.register}
+      >
         <div className='slot-head'>
           <span className='muted'>{slotLabel}</span>
           {c && (
@@ -1102,10 +1275,16 @@ export function App({ user }: { user: AuthUser | null }) {
             </span>
           )}
         </div>
-        {c?.imageUrl ? (
-          <img className='portrait' src={c.imageUrl} alt={c.name} />
+        {hidePortrait ? null : c?.imageUrl ? (
+          <img {...portraitProps} src={c.imageUrl} alt={c.name} />
+        ) : drag ? (
+          <div {...portraitProps} className='portrait empty draggable'>
+            ?
+          </div>
         ) : (
-          <div className='portrait empty'>?</div>
+          <div className='portrait empty' onClick={focusPicker}>
+            ?
+          </div>
         )}
         <CharPicker slot={slot} onPick={(slug) => onChange({ slug })} />
         {c?.burst === 'Λ' && (
@@ -1969,13 +2148,60 @@ export function App({ user }: { user: AuthUser | null }) {
 
       {tab === 'sim' && (
         <>
-      <section className='team'>
-        {slots.map((slot, i) => (
-          <Fragment key={i}>
-            {renderCard(slot, (p) => setSlot(i, p), `slot ${i + 1}`)}
-          </Fragment>
-        ))}
-      </section>
+      {compactTeam ? (
+        <section className='team compact'>
+          <div className='team-strip'>
+            {slots.map((slot, i) => {
+              const c = slot.slug ? data.characters[slot.slug] : null;
+              return (
+                <button
+                  key={i}
+                  ref={teamReorder.register(i)}
+                  className={
+                    'team-chip' +
+                    (teamReorder.dragIndex === i ? ' dragging' : '') +
+                    (expandedSlot === i ? ' active' : '')
+                  }
+                  title={c?.name ?? `slot ${i + 1}`}
+                  {...teamReorder.handleProps(i)}
+                >
+                  {c?.imageUrl ? (
+                    <img src={c.imageUrl} alt={c.name} draggable={false} />
+                  ) : (
+                    <span className='chip-empty'>?</span>
+                  )}
+                  <span className='chip-num'>{i + 1}</span>
+                </button>
+              );
+            })}
+          </div>
+          {expandedSlot >= 0 &&
+            renderCard(
+              slots[expandedSlot],
+              (p) => setSlot(expandedSlot, p),
+              `slot ${expandedSlot + 1}`,
+              undefined,
+              true,
+            )}
+        </section>
+      ) : (
+        <section className='team'>
+          {slots.map((slot, i) => (
+            <Fragment key={i}>
+              {renderCard(slot, (p) => setSlot(i, p), `slot ${i + 1}`, {
+                register: teamReorder.register(i),
+                imageHandleProps: teamReorder.handleProps(i, (_, e) => {
+                  const input = (e.currentTarget as HTMLElement)
+                    .closest('.card')
+                    ?.querySelector<HTMLInputElement>('.picker input');
+                  input?.focus();
+                }),
+                dragging: teamReorder.dragIndex === i,
+              })}
+            </Fragment>
+          ))}
+        </section>
+      )}
 
       {(
         <section className='ol-calc'>

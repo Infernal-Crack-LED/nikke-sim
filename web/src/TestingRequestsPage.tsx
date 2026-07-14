@@ -1,8 +1,8 @@
 import { dev } from './site-data';
 import requests from './testing-requests.json';
 
-// #testing-requests channel in the Maiden Discord — the invite from site-data.
-const DISCORD_INVITE = dev.maiden.discordInvite;
+// Google Form recorders submit their test fights through — from site-data.
+const FORM_URL = dev.testingFormUrl;
 
 interface TestRequest {
   id: number;
@@ -32,10 +32,9 @@ export function TestingRequestsPage() {
         </div>
         <ul>
           <li>
-            <b>Use the scope-lock preset.</b> Every unit at skills 10 / 10 / 10,
-            no cube, no favorite item (doll), Overload gear at 0 lines, 3★ /
-            core 7, Synchro level 400. This is the fixed baseline the sim is
-            validated against — a run under any other setup can’t be compared.
+            <b>Use the scope-lock preset.</b> This is the fixed baseline the sim
+            is validated against — a run under any other setup can’t be
+            compared.
           </li>
           <li>
             <b>Fight in the Union Shooting Range on 3-minute boss mode.</b> Pick
@@ -50,8 +49,18 @@ export function TestingRequestsPage() {
           </li>
           <li>
             <b>Capture the result.</b> A screenshot of the end-of-fight damage
-            breakdown (per-unit totals) plus, ideally, a video of the full
-            fight so full-burst counts and rotation can be checked.
+            breakdown (per-unit totals) plus, ideally, a video of the full fight
+            so full-burst counts and rotation can be checked.
+          </li>
+          <li>
+            <b>
+              For video recordings on the phone client, game must be set to
+              horizontal mode (landscape).
+            </b>{' '}
+            Our reader pulls the numbers off the screen automatically, and it’s
+            calibrated to the mobile UI in landscape orientation — so a
+            recording from the PC client, or the vertical combat UI, can’t be
+            read. Please use the phone app in landscape for the recording.
           </li>
         </ul>
       </article>
@@ -60,29 +69,40 @@ export function TestingRequestsPage() {
         <div className='patch-head'>
           <span className='patch-title'>Where to submit</span>
         </div>
+        <p className='muted' style={{ marginBottom: 10 }}>
+          Everything goes through the submission form below — it uploads your
+          files and captures the fight details in one step. Have these ready
+          before you start:
+        </p>
         <ul>
           <li>
-            Post it in <b>#testing-requests</b> in the Maiden Discord. Every
-            submission needs, at minimum:
+            <b>The end-of-fight damage screenshot</b> — the per-unit damage
+            breakdown from the results screen, captured on the{' '}
+            <b>phone client held horizontal (landscape)</b> so our reader can
+            parse it. Required.
           </li>
           <li>
-            <b>A screenshot of the end-of-fight damage screen</b> — the per-unit
-            damage breakdown from the results screen. This is required.
+            <b>A video of the full fight</b> — landscape, so full-burst counts
+            and rotation can be checked.
           </li>
           <li>
-            <b>Which unit was camera-focused</b>, if it wasn’t the default
+            <b>Your team</b> (in slot order) and the <b>boss element</b> you
+            were advantaged against.
+          </li>
+          <li>
+            <b>Which request number</b> you’re fulfilling and{' '}
+            <b>which unit was camera-focused</b>, if it wasn’t the default
             middle slot.
           </li>
-          <li>Your team, the boss element, and a video of the fight if you have one.</li>
         </ul>
         <div className='dev-callout-links' style={{ marginTop: 12 }}>
           <a
             className='dev-link'
-            href={DISCORD_INVITE}
+            href={FORM_URL}
             target='_blank'
             rel='noreferrer'
           >
-            Join the Maiden Discord
+            Submit a test fight
           </a>
         </div>
       </article>

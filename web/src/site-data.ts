@@ -28,6 +28,12 @@ export const dev = {
     addToServer:
       'https://discord.com/discovery/applications/1523719703950790946',
   },
+  // Google Form the community submits test fights through — collects the fight
+  // metadata plus the damage screenshot + full-fight video as file uploads
+  // (Forms drops the files into a Drive folder automatically). Replace the
+  // placeholder below with the published form's "viewform" responder URL.
+  testingFormUrl:
+    'https://docs.google.com/forms/d/e/1FAIpQLSelnurU40O0vyKsols1lPEJs7_NRZHuTH2ZiamrmlJpj3ZDbQ/viewform',
 } as const;
 
 // Social buttons — rendered as brand tiles in the shared site footer.

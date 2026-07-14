@@ -126,6 +126,50 @@ const COMPS: Comp[] = [
   // Do NOT pin until the ~1s-fast cycle increment lands (see experiment-harness-ai.md).
   { name: 'T4', slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'], boss: 'Fire' },
   { name: 'T7', slugs: ['crown', 'rapi-red-hood', 'anis-star', 'cinderella', 'mast-romantic-maid'], boss: 'Water' },
+
+  // 714 noon probe (2026-07-14) — six of nine teams measured full-burst-exact via the
+  // yellow-splash scan (see docs/probe-runs.md). Focus = middle slot (default), unconfirmed
+  // against the recorded camera but the count holds. The three unpinned teams from that
+  // batch are DELIBERATELY omitted: N2 (real >=10 vs sim 8, big under-count), N4 (real 10 vs
+  // sim 11), N5 (real 12 vs sim 11) — all belong to the open burst-cycle timing increment,
+  // like T4/T7.
+  {
+    name: 'N1 rapi/quency wind',
+    slugs: ['d-killer-wife', 'grave', 'rapi-red-hood', 'quency-escape-queen', 'jill'],
+    boss: 'Wind', focus: 'rapi-red-hood',
+    realFullBursts: 13, // video: 13/13, uniform ~14s cadence
+  },
+  {
+    name: 'N3 scarlet/liberalio iron',
+    slugs: ['rouge', 'trina', 'scarlet-black-shadow', 'liberalio', 'soda-twinkling-bunny'],
+    boss: 'Iron', focus: 'scarlet-black-shadow',
+    realFullBursts: 10, // video: 10/10
+  },
+  {
+    name: 'N6 mihara/maiden wind',
+    slugs: ['little-mermaid', 'ade-agent-bunny', 'mihara-bonding-chain', 'maiden-ice-rose', 'maxwell'],
+    boss: 'Wind', focus: 'mihara-bonding-chain',
+    realFullBursts: 11, // video: 11/11
+  },
+  {
+    name: 'N8 emma/eunhwa duo fire',
+    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'guillotine-winter-slayer', 'eve', 'vesti-tactical-upgrade'],
+    boss: 'Fire', focus: 'guillotine-winter-slayer',
+    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
+    realFullBursts: 9, // video: 9/9, metronomic ~20s cadence
+  },
+  {
+    name: 'N9 redhood/elegg electric',
+    slugs: ['moran', 'crown', 'red-hood', 'elegg-boom-and-shock', 'dorothy-serendipity'],
+    boss: 'Electric', focus: 'red-hood',
+    realFullBursts: 12, // video: 12/12
+  },
+  {
+    name: 'N10 milk/phantom electric',
+    slugs: ['little-mermaid', 'arcana', 'milk-blooming-bunny', 'helm', 'phantom'],
+    boss: 'Electric', focus: 'milk-blooming-bunny',
+    realFullBursts: 6, // video: 6/6, slow ~34s cadence
+  },
 ];
 
 function run(comp: Comp, seed?: number) {

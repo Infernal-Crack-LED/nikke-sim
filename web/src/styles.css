@@ -93,9 +93,8 @@ input.num {
 }
 
 /* team cards */
+/* five cards across; below 900px the compact strip UI takes over (see .team.compact) */
 .team { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-@media (max-width: 900px) { .team { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 560px) { .team { grid-template-columns: 1fr; } }
 .card {
   background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
   padding: 10px; display: flex; flex-direction: column; gap: 6px;
@@ -114,6 +113,32 @@ input.num {
   background: var(--panel2); border: 1px solid var(--border);
 }
 .portrait.empty { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 28px; }
+.portrait { cursor: pointer; }
+
+/* drag-to-reorder: the portrait doubles as the drag handle in landscape */
+.portrait.draggable {
+  cursor: grab; touch-action: pan-y; /* vertical swipe scrolls; sideways drag reorders */
+  user-select: none; -webkit-user-drag: none;
+}
+.portrait.draggable:active { cursor: grabbing; }
+.card.dragging { opacity: 0.55; outline: 2px dashed var(--accent); }
+
+/* compact (portrait) team: horizontal portrait strip + one expanded card */
+.team.compact { display: block; }
+.team-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 12px; }
+.team-chip {
+  position: relative; padding: 0; aspect-ratio: 1; overflow: hidden; cursor: pointer;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--panel2);
+  touch-action: pan-y; /* vertical swipe scrolls the page; sideways drag reorders */
+}
+.team-chip img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.team-chip .chip-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 22px; }
+.team-chip .chip-num {
+  position: absolute; top: 2px; left: 3px; font-size: 10px; color: var(--text);
+  background: rgba(0,0,0,0.55); border-radius: 4px; padding: 0 4px;
+}
+.team-chip.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.team-chip.dragging { opacity: 0.6; transform: scale(1.08); z-index: 5; }
 
 .picker { position: relative; }
 .picker input {

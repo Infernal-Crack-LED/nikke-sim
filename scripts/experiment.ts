@@ -225,6 +225,75 @@ const COMPS: Comp[] = [
     boss: 'Water',
     real: { 'anis-star': 602_820_156, grave: 288_074_223, chisato: 492_040_764, jill: 518_351_294, noir: 160_557_828 },
   },
+
+  // ── 714 noon probe (docs/probes/"714 noon") — 9 testing-request teams, full team
+  // recordings + damage screenshots, 2026-07-14. Focus defaulted to the middle slot
+  // (slot 3) pending video confirmation. Boss element from each team's advantage tag.
+  {
+    name: 'N1 rapi/quency wind (boss Wind)',
+    slugs: ['d-killer-wife', 'grave', 'rapi-red-hood', 'quency-escape-queen', 'jill'],
+    boss: 'Wind',
+    focus: 'rapi-red-hood',
+    real: { 'd-killer-wife': 85_846_395, grave: 232_359_600, 'rapi-red-hood': 566_887_364, 'quency-escape-queen': 376_177_188, jill: 248_360_256 },
+  },
+  {
+    name: 'N2 modernia wind (boss Wind)',
+    slugs: ['d-killer-wife', 'naga', 'modernia', 'chisato', 'ein'],
+    boss: 'Wind',
+    focus: 'modernia',
+    modes: { naga: 'no shielder' },
+    real: { 'd-killer-wife': 59_028_536, naga: 67_268_906, modernia: 285_422_521, chisato: 273_624_248, ein: 121_442_400 },
+  },
+  {
+    name: 'N3 scarlet/liberalio iron (boss Iron)',
+    slugs: ['rouge', 'trina', 'scarlet-black-shadow', 'liberalio', 'soda-twinkling-bunny'],
+    boss: 'Iron',
+    focus: 'scarlet-black-shadow',
+    real: { rouge: 51_261_007, trina: 41_511_140, 'scarlet-black-shadow': 446_499_359, liberalio: 532_559_013, 'soda-twinkling-bunny': 136_670_428 },
+  },
+  {
+    name: 'N4 neon/nayuta electric (boss Electric)',
+    slugs: ['dorothy', 'nayuta', 'snow-white', 'neon-vision-eye', 'laplace'],
+    boss: 'Electric',
+    focus: 'snow-white',
+    real: { dorothy: 211_171_913, nayuta: 377_083_541, 'snow-white': 257_121_800, 'neon-vision-eye': 525_046_420, laplace: 121_033_929 },
+  },
+  {
+    name: 'N5 snowwhite-HA fire (boss Fire)',
+    slugs: ['anis-star', 'arcana-fortune-mate', 'privaty', 'snow-white-heavy-arms', 'diesel-winter-sweets'],
+    boss: 'Fire',
+    focus: 'privaty',
+    real: { 'anis-star': 473_775_508, 'arcana-fortune-mate': 247_712_807, privaty: 527_936_633, 'snow-white-heavy-arms': 992_606_850, 'diesel-winter-sweets': 353_872_740 },
+  },
+  {
+    name: 'N6 mihara/maiden wind (boss Wind)',
+    slugs: ['little-mermaid', 'ade-agent-bunny', 'mihara-bonding-chain', 'maiden-ice-rose', 'maxwell'],
+    boss: 'Wind',
+    focus: 'mihara-bonding-chain',
+    real: { 'little-mermaid': 227_940_860, 'ade-agent-bunny': 97_938_869, 'mihara-bonding-chain': 715_829_334, 'maiden-ice-rose': 423_813_138, maxwell: 94_804_986 },
+  },
+  {
+    name: 'N8 emma/eunhwa duo fire (boss Fire)',
+    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'guillotine-winter-slayer', 'eve', 'vesti-tactical-upgrade'],
+    boss: 'Fire',
+    focus: 'guillotine-winter-slayer',
+    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
+    real: { 'emma-tactical-upgrade': 97_877_243, 'eunhwa-tactical-upgrade': 229_973_727, 'guillotine-winter-slayer': 338_556_321, eve: 283_086_167, 'vesti-tactical-upgrade': 235_472_406 },
+  },
+  {
+    name: 'N9 redhood/elegg electric (boss Electric)',
+    slugs: ['moran', 'crown', 'red-hood', 'elegg-boom-and-shock', 'dorothy-serendipity'],
+    boss: 'Electric',
+    focus: 'red-hood',
+    real: { moran: 233_850_467, crown: 180_136_219, 'red-hood': 484_593_983, 'elegg-boom-and-shock': 398_602_210, 'dorothy-serendipity': 328_194_874 },
+  },
+  {
+    name: 'N10 milk/phantom electric (boss Electric)',
+    slugs: ['little-mermaid', 'arcana', 'milk-blooming-bunny', 'helm', 'phantom'],
+    boss: 'Electric',
+    focus: 'milk-blooming-bunny',
+    real: { 'little-mermaid': 120_695_031, arcana: 45_467_123, 'milk-blooming-bunny': 333_898_954, helm: 99_624_016, phantom: 182_121_526 },
+  },
 ];
 
 // deep-clone an override and let the variant mutate it; return undefined = drop unit's override
