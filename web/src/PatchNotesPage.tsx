@@ -7,7 +7,10 @@ interface PatchNote {
 }
 
 export function PatchNotesPage() {
-  const notes = patchNotes as PatchNote[];
+  // newest first — the file is prepend-only history, but sort defensively
+  const notes = [...(patchNotes as PatchNote[])].sort((a, b) =>
+    b.date.localeCompare(a.date),
+  );
   return (
     <div className='app patch-notes'>
       <header>
