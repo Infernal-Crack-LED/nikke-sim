@@ -2,39 +2,72 @@ import type { Route } from './router';
 import { hrefFor } from './router';
 import { socials } from './site-data';
 import { BrandIcon } from './social-icons';
+import type { AuthUser } from './auth';
 
 const NAV: { route: Route; label: string }[] = [
   { route: 'sim', label: 'Sim' },
   { route: 'mechanics', label: 'Mechanics' },
 ];
 
-// Slim top nav shared by every page. The dev page is reached via the floating
-// badge (below), not from here.
-export function SiteNav({ current }: { current: Route }) {
+// Slim top nav shared by every page. Left: the Sim / Mechanics tabs. Right: the
+// Patch Notes + Meet the dev page buttons and the Discord auth control.
+export function SiteNav({
+  current,
+  user,
+  onLogin,
+  onLogout,
+}: {
+  current: Route;
+  user: AuthUser | null;
+  onLogin: () => void;
+  onLogout: () => void;
+}) {
   return (
     <nav className='site-nav'>
       <div className='site-nav-inner'>
-        {NAV.map((n) => (
+        <div className='site-nav-left'>
+          {NAV.map((n) => (
+            <a
+              key={n.route}
+              href={hrefFor(n.route)}
+              className={current === n.route ? 'on' : ''}
+            >
+              {n.label}
+            </a>
+          ))}
+        </div>
+        <div className='site-nav-right'>
           <a
-            key={n.route}
-            href={hrefFor(n.route)}
-            className={current === n.route ? 'on' : ''}
+            className={'nav-btn' + (current === 'patch-notes' ? ' on' : '')}
+            href={hrefFor('patch-notes')}
           >
-            {n.label}
+            Patch Notes
           </a>
-        ))}
+          <a
+            className={'nav-btn' + (current === 'dev' ? ' on' : '')}
+            href={hrefFor('dev')}
+          >
+            Meet the dev
+          </a>
+          {user ? (
+            <span className='user-chip' title='logged in'>
+              {user.username}
+              <button className='logout' onClick={onLogout} title='log out'>
+                ⏻
+              </button>
+            </span>
+          ) : (
+            <button
+              className='nav-btn discord'
+              onClick={onLogin}
+              title='save teams to your Discord account'
+            >
+              Log in with Discord
+            </button>
+          )}
+        </div>
       </div>
     </nav>
-  );
-}
-
-// Ko-fi-style floating pill that opens the dev page. Hidden while already there.
-export function DevBadge({ current }: { current: Route }) {
-  if (current === 'dev') return null;
-  return (
-    <a className='dev-badge' href={hrefFor('dev')} title='About the developer'>
-      Meet the dev
-    </a>
   );
 }
 

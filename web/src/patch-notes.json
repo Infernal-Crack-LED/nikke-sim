@@ -12,11 +12,13 @@
   },
   {
     "date": "2026-07-14",
-    "title": "Measured-mechanics wave",
+    "title": "Launch — the measured-mechanics sim",
     "notes": [
-      "Reworked elemental advantage into its own damage bucket and split the machine-gun range bonus to the far band only, matching frame-counted recordings.",
-      "Snow White: Heavy Arms and Rapi: Red Hood re-modeled onto their measured in-window shots; Mint + Prika duet burst order fixed.",
-      "Accuracy board now sits at a ~0.95 median across 86 unit readings, with full-burst counts measured-exact on every graded team."
+      "Elemental advantage was reworked into its own damage bucket, and the machine-gun range bonus now applies only in the far distance band — both matching frame-counted recordings.",
+      "Snow White: Heavy Arms and Rapi: Red Hood were re-modeled onto their measured in-fight behavior, the Mint + Prika duet burst order was fixed, and Liberalio's bonus-damage procs now correctly receive the Full Burst bonus when they land inside a Full Burst window.",
+      "Fifteen recorded fights now match the sim's full-burst rotation exactly, frame-graded from video.",
+      "The accuracy board sits at a ~0.95 median across 86 unit readings, with 63% of readings within ±10% of the real fight.",
+      "New site pages: the DPS Test tab (scope-locked control team vs. variable-group comparison), the Mechanics reference page, and this Dev page with patch notes."
     ]
   }
 ]
