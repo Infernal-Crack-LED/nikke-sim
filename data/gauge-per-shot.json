@@ -48,10 +48,10 @@
   "targetPerTrigger": 500.0
  },
  "anis-star": {
-  "basePerTrigger": 420.0,
+  "basePerTrigger": 140.0,
   "fullChargeBonus": 250.0,
-  "source": "battery-synergy-half; KR-corroborated Siren-class battery (dcinside gov/5246802); board-validated under the chain model (anis 0.97-1.03 across 6 comps)",
-  "targetPerTrigger": 840.0
+  "source": "MEASURED (battery 3 A3 solo, 2026-07-13): ~10.7-11.3%/pull = 280x2.5 focused shot + 280 proc skill-gen x her +6% aura. The synergy 16.8 is a folded aggregate (user hypothesis confirmed); the 840 estimate was wrong.",
+  "targetPerTrigger": 280.0
  },
  "arcana": {
   "basePerTrigger": 150.0,
@@ -241,8 +241,9 @@
  },
  "helm": {
   "basePerTrigger": 280.0,
+  "flatPerTrigger": 1431.0,
   "fullChargeBonus": 250.0,
-  "source": "datamined",
+  "source": "datamined; flatPerTrigger 1431 = her S2 per-shot generation (synergy fixed_add 14.31 AND rl3 arithmetic 59.73 = 8.4 + 3x14.31, two independent confirmations)",
   "targetPerTrigger": 560.0
  },
  "helm-aquamarine": {
@@ -288,10 +289,10 @@
   "targetPerTrigger": 400.0
  },
  "liberalio": {
-  "basePerTrigger": 280.0,
+  "basePerTrigger": 1680.0,
   "fullChargeBonus": 250.0,
-  "source": "datamined",
-  "targetPerTrigger": 560.0
+  "source": "datamined; x6 volley hits per trigger (rl3 arithmetic 33.6 = 2 triggers x 6 hits x 2.8, exact)",
+  "targetPerTrigger": 3360.0
  },
  "liter": {
   "basePerTrigger": 10.0,

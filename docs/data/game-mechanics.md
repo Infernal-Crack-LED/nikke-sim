@@ -1,8 +1,11 @@
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
 Every game mechanic the simulator's logic references, with where it's implemented and how we
-know it. Detail docs live alongside this file; per-unit modeling decisions live in
-`src/skills/overrides/*.json` notes; unresolved items live in `docs/open-questions.md`.
+know it. **Companion source of truth: [damage-calculation.md](damage-calculation.md)** — the
+exact math the sim computes, formula by formula, with popup-verified worked examples. Detail
+docs live alongside this file; per-unit modeling decisions live in `src/skills/overrides/*.json`
+notes; unresolved items live in `docs/open-questions.md`; settled tradeoffs in
+`../DECISIONS.md` (do not re-litigate).
 
 **Evidence tiers** used throughout (highest to lowest):
 - **MEASURED** — frame-counted from our own recordings/tests under scope lock. Never refit.
@@ -31,7 +34,8 @@ damage = FinalATK_term × rate% × Major × Element × Charge × DamageUp × Tak
 
 Major bucket = `1 + 0.5·FB + 0.3·range + critRate·(critDmg−1) + coreRate·(coreMult−1)` —
 crit, core (+100% base), Full Burst (+50%), and effective range (+30%) all share ONE
-additive bracket. Full structure, per-bucket membership, and the skill-proc
+additive bracket. The +50% applies by TIMING: burst-cast damage lands before the window
+opens and never gets it (§8). Full structure, per-bucket membership, and the skill-proc
 ("additional damage") rules: **[nikke-damage-formula.md](nikke-damage-formula.md)**.
 Engine: `dealDamage()` in `src/engine/sim.ts`.
 
@@ -103,10 +107,16 @@ Details + decoded examples (Red Wolf's 200rpm fire-rate-gated window):
 +30% damage when the target sits in the weapon's effective band; **RL never gets it**;
 the bonus lives in the Major bucket. Test-boss movement is a fixed script (MEASURED):
 mid 0–33s → near 33–70 → far 70–106 → midfar 106–144 → near 144–176 → midfar 176–180,
-with band eligibility near=SG, mid=SMG+AR, midfar=MG+SR, far=SR. Each transition has a 1s
+with band eligibility near=SG, mid=SMG+AR, midfar=SR, **far=SR+MG**. Each transition has a 1s
 unhittable window; units whose EFFECTIVE reload is ≤1s get a free full reload during it.
-Raw measurements: **[range_data.md](range_data.md)** (user, 2026-07-13). The +30%/RL-never
-rule is community-verified ([nikke.gg damage formula](https://nikke.gg/damage-formula/),
+The machine-gun row is MEASURED (2026-07-14, the crown solo recording): popup class ratios
+read the bonus present in the far band ONLY — mid, near, and mid-far all read the no-bonus
+signatures (~~the old table granted machine guns the mid-far band~~ SUPERSEDED 2026-07-14).
+The same recording showed the bonus flips track the boss's physical walk, leading/lagging the
+scripted boundaries by ~4–6 seconds — the real trigger is instantaneous distance crossing the
+weapon's optimal ring, and the band table approximates it. Raw measurements:
+**[range_data.md](range_data.md)** (user, 2026-07-13) + probe u7 battery 4 (2026-07-14). The
++30%/RL-never rule is community-verified ([nikke.gg damage formula](https://nikke.gg/damage-formula/),
 [ore-game verify-memo](https://ore-game.com/nikke/post/verify-memo/)); the band timeline and
 weapon-band eligibility are OUR boss-specific measurements. Engine: `BOSS_RANGE_SCRIPT`,
 `RANGE_ELIGIBLE`, `UNHITTABLE_FRAMES`.
@@ -118,8 +128,10 @@ gauge gains the unit's DATAMINED `target_burst_energy_pershot` (universally exac
 the non-target base — the "boss ×2" is a table column, not a rule; per-unit values in
 `data/gauge-per-shot.json`, e.g. standard launcher 280, sniper 560, Trina's famous
 battery 720). The CAMERA-FOCUSED unit's charge weapon generates ×(1 + 1.5×charge) = ×2.5
-at full charge (datamined/einkk; measured exactly on two solo recordings — a solo unit
-is always focused; unfocused charge units ⚑ ×2.2 pending a direct measurement). Skill
+at full charge; unfocused charge units generate flat ×1.0 — both sides MEASURED (two solo
+recordings plus a paired two-unit experiment with only the focus changed). Focus defaults
+to the middle slot (owner convention; recordings with a different focus perturb the fight
+they record). Skill
 hits and DoT ticks generate the caster's flat target value (no charge bonus). Opening
 the burst chain CONSUMES the gauge, and hits during the chain or Full Burst generate
 nothing. No auto-play efficiency factor exists (the old 0.7 ⚑ compensated for the chain
@@ -137,11 +149,22 @@ Details: **[auto-play.md](auto-play.md)**.
   interruptions) — auto effectively always full-charges, and full-charge-gated proc counters
   fire on essentially every shot. Maiden:IR's former ×0.68 proc factor is RESOLVED as her
   release-latency cadence, video-measured (open-questions A12; [auto-play.md](auto-play.md) §2a).
-- **Burst-chain delays** (COMMUNITY): gauge-full→B1 0.433s, B1→B2 and B2→B3 0.533s, skill
-  effect +0.1s. Engine approximates with 0.5s per stage (`STAGE_CAST_GAP_FRAMES`).
+- **Burst-chain timing** (MEASURED 2026-07-13): gauge-full → Full Burst start is ~0.9s
+  median (0.4–1.4s) across a recorded fight; the engine uses 0.5s per stage cast
+  (`STAGE_CAST_GAP_FRAMES`). After Full Burst ends, **the next chain cannot open for ~3
+  seconds** (`POST_FB_CHAIN_DELAY_FRAMES`, measured from chain-glow timing) — this
+  post-full-burst window, not gauge refill, is what paces high-generation teams.
+- **Casts are blocked while the boss is off-screen** during a range transition (~1s,
+  owner-confirmed) — the only genuine source of run-to-run full-burst-count variance
+  (a transition colliding with a chain). Everywhere else, **full-burst counts are
+  cooldown/chain arithmetic and deterministic run-to-run** — the graded comps are pinned
+  as exact asserts in `scripts/regression.ts`.
 - **SG pellet falloff**: outside the near band only ~30% of pellets land ⚑
   (`SG_OUT_OF_NEAR_HIT_FRACTION`, calibrated on naga/dorothy-S/noir).
-- Auto burst priority is leftmost-first among ready, stage-eligible units (COMMUNITY+ours).
+- Auto burst priority is **leftmost slot order, with waiting**: inside a timed stage
+  window the chain waits for the leftmost stage-filling unit whose cooldown ends before
+  the window closes rather than handing the cast to a lower-priority ready unit
+  (owner-ruled + Monte Carlo evidence; a round-robin was tried and rejected).
 
 ## 8. Burst rotation rules
 
@@ -152,16 +175,24 @@ expires with no ready caster the chain collapses and the gauge must fully refill
 (measured: the 3-unit battery fight's 40s rotation). Auto-burst picks the LEFTMOST ready
 unit of the wanted stage. Burst cooldowns
 (20s/40s per unit; DB errors exist — Tia's real CD is 20s, fixed via
-`charFixes.burstCooldownSec`). Λ (all-stage) units count as NO burst type for formation
+`charFixes.burstCooldownSec`; Cinderella's 40s was re-verified correct by nuke-storm
+counting after a cut-in-artifact misread). Λ (all-stage) units count as NO burst type for formation
 checks; Tia is a "B1+" (re-entry B1; the Tia+Anis:Star interaction is deliberately
 unmodeled). `reenterStage` (Tia, Anis Everyone's Star) re-opens stage 1 mid-rotation;
 `burstFirst` (Prika duet) claims the first burst of its stage; once-per-battle CD refunds
-exist (Red Hood B1/B2). Burst-cast damage timing (MEASURED 2026-07-13, popup-verified on
-Cinderella's nuke): burst-skill damage dealt at cast does NOT receive the +50% Full Burst
-multiplier — it lands at the window boundary, matching the JP/einkk use-time snapshot
-rule. Buffs live at cast (FB-entry auras, allies' burst-granted buffs) DO apply to it, and
-burst-originated damage landing DURING the window (DoT ticks, stored hits, per-shot procs)
-still gets the +50%. Sources: leftmost priority
+exist (Red Hood B1/B2). Burst-cast damage timing (MEASURED 2026-07-13, popup-verified on Cinderella's nuke
+across two fights): burst-skill damage dealt at cast lands BEFORE Full Burst begins — it
+receives neither the +50% Full Burst multiplier NOR "when entering Full Burst" auras
+(one rule covers both; independently corroborated by the JP DayWrite formula article).
+Buffs granted by earlier casts in the same rotation (a Burst-2's team buff) DO apply.
+Burst-originated damage landing DURING the window (DoT ticks, stored hits, per-shot
+procs) still gets the +50% and the entry auras. Engine ordering: burst-cast blocks
+resolve before full-burst-entry triggers; stored-hit releases after. Scope note
+(2026-07-13): the measured rule governs the burst button's OWN cast damage; a skill-slot
+effect that merely triggers on a burst cast resolves after the window opens and does get
+the +50% (though not same-cast self-buffs or entry auras) — this distinction is why Snow
+White: Heavy Arms's Fully Active volley was re-modeled onto her in-window full-charge
+shots (see damage-calculation.md §2b), where the community sources place it. Sources: leftmost priority
 ([Inven](https://m.inven.co.kr/webzine/wznews.php?site=nikke&p=2&idx=303197),
 [nikke.gg](https://nikke.gg/mastering-burst-chains-the-core-combat-mechanic-every-nikke-player-needs-to-understand/)),
 chain timing ([nikke-synergy](https://nikke-synergy.com/arena-guide_en)), Λ/B1+/CD rulings
@@ -197,7 +228,9 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   [@NIKKE_en](https://x.com/NIKKE_en/status/1678710452862472193)). IMPLEMENTED 2026-07-13:
   the engine dedupes same (caster, skill slot, stat, value) across trigger blocks — found
   live on Crown's two S1 "Reloading Speed ▲ 44.35%" lines, which the old engine stacked to
-  88.7%.
+  88.7%. (Namu confirms her kit actually targets disjoint groups — burst casters vs
+  non-casters — so no unit legitimately receives both lines; the dedupe matches real kit
+  structure.)
 - "ATK ▲ X% of caster's ATK" adds the CASTER's final ATK × X as a flat term (strong from
   high-ATK buffers); plain ATK ▲ dilutes into the (1+ATK%) sum
   ([nikke.gg damage formula](https://nikke.gg/damage-formula/)).

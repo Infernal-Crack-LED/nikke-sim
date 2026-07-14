@@ -65,6 +65,26 @@ skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair 
 
 ## ANSWERED
 
+### A24 (U11b) — The x2.5 charge gauge bonus is CAMERA-FOCUS-ONLY — MEASURED 2026-07-13
+Test battery 3, parts A1/A2 (docs/probes/"burst tests"): a two-unit fight (takina slot 1,
+crown slot 2) recorded twice, identical except who held camera focus. Takina UNFOCUSED
+steps the gauge +5.6-6.5% per shot — her flat 560 target value, which also excludes the
+additive full_charge_burst_energy hypothesis (that would read +8.1%). Takina FOCUSED
+steps +14-15% = 560 x 2.5, matching her solo. Engine: UNFOCUSED_CHARGE_GEN ⚑ deleted
+(now 1.0, measured). Corroborates the JP wiki3 comment ("the one NIKKE the camera is
+focused on") and the 2024-04-25 "operated character" patch note. Consequence: since the
+middle slot holds focus by convention, WHICH unit sits in slot 3 is now a real damage
+variable in team building.
+
+### A25 (A3) — Anis: Star's shot row is a STANDARD launcher; her battery reputation is kit generation — MEASURED 2026-07-13
+Her solo gauge recording steps ~+10.7-11.3% per pull = 280x2.5 (focused shot) + 280 (her
+Skill-1 proc's skill-generation) x1.06 (her own +6% team fill aura) — the standard
+launcher row, NOT the 840 estimated from the synergy column. The user's hypothesis that
+the synergy aggregate folds skill generation into per-shot values is confirmed; that
+column (and the 840) are retired. Her recording also shows a burst-chain collapse live:
+gauge consumed at stage-1 open, her Burst-1 cast, stage-2 window expiry, forced refill —
+the chain-consumption mechanic on camera.
+
 ### A22 (U11) — Burst gauge generation, fully rebuilt from datamined tables + solo recordings — 2026-07-13
 Two solo recordings vs the raid boss (Maiden: Ice Rose, and Takina with a plain sniper
 rifle), the datamined CharacterShotTable, and the einkk reference simulator together

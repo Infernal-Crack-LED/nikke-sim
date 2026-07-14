@@ -17,9 +17,22 @@ import {
 import { resolveSkills } from '../skills/index.js';
 import type { PreparedUnit } from '../prepare.js';
 import gaugeTable from '../../data/gauge-per-shot.json' with { type: 'json' };
+
+// Debug taps read env vars only under Node; in the browser bundle this is an empty object.
+const ENV: Record<string, string | undefined> =
+  (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
 import type { Block, EffectDef, StatKey, TargetDef } from '../skills/types.js';
 
 const FPS = 60;
+// Experiment-only slug-scoped knobs (see experiment-harness-ai.md; all default OFF/empty):
+// XCRIT=<slug,slug> dot ticks + stored-hit releases roll crit for those units;
+// XCORE=<slug,...>  same paths roll core (subject to AUTO_CORE_RATE);
+// XINSTEXPL=<slug>  stored hits release each frame DURING full burst instead of
+//                   waiting for the next full-burst entry.
+const envSlugSet = (v?: string) => new Set((v ?? '').split(',').filter(Boolean));
+const XCRIT = envSlugSet(ENV.XCRIT);
+const XCORE = envSlugSet(ENV.XCORE);
+const XINSTEXPL = envSlugSet(ENV.XINSTEXPL);
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
 const FULL_BURST_FRAMES = 10 * FPS;
 // AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
@@ -47,10 +60,12 @@ const MG_RAMP_INTERVALS = [
   3, 3, 3, 3, 3, 3,
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
 ];
-// Q11 calibration (user estimates, flagged for review): rounds fired before the ladder
+// Q11 calibration (user estimate, flagged for review): rounds fired before the ladder
 // reaches its 2-frame portion (the first 18 rounds of each wind-up) don't land on the
-// core; MG normals never receive the +30% optimal-range bonus (every range is optimal
-// for an MG, so the bonus doesn't exist for them).
+// core. ~~MG normals never receive the +30% optimal-range bonus~~ SUPERSEDED (2026-07-14) —
+// MEASURED: MGs receive the bonus in the FAR band only (battery 4 crown-solo popup ratios;
+// see RANGE_ELIGIBLE below). The wind-up no-core ramp remains calibrated (though the
+// battery-4 read saw body-class bursts after every reload, consistent with it).
 const MG_NO_CORE_RAMP_ROUNDS = 18;
 // MG WIND-DOWN (2026-07-13, replaces the binary >100%-reload skip): while an MG is not
 // firing (reload/stun/unhittable), its spin holds for a ~0.27s grace then decays back down
@@ -87,12 +102,20 @@ const BOSS_RANGE_SCRIPT: Array<{ fromSec: number; band: 'near' | 'mid' | 'midfar
 ];
 // Which weapon classes sit inside their effective range per band (user's mapping).
 // RL has no effective range and NEVER receives the bonus.
+// MG eligibility MEASURED 2026-07-14 (battery 4, crown solo popup ratios): far band ONLY —
+// mid/near/midfar all read the no-bonus class signatures (core/body 2.000, crit/core 1.250);
+// far reads the bonus signatures (1.769, 1.217). The real trigger is the boss's instantaneous
+// distance crossing the MG optimal ring (flips lead/lag scripted boundaries by ~4-6s during
+// walks), so this band table is a ±4-6s-edge APPROXIMATION, not a measured-exact timeline.
 const RANGE_ELIGIBLE: Record<string, Set<string>> = {
   near: new Set(['SG']),
   mid: new Set(['SMG', 'AR']),
-  midfar: new Set(['MG', 'SR']),
-  far: new Set(['SR']),
+  midfar: new Set(['SR']),
+  far: new Set(['SR', 'MG']),
 };
+// ENV.MGRANGE: experiment-only A/B override ('always' | 'never'; unset = the measured table).
+const MG_RANGE_MODE = (globalThis as { process?: { env: Record<string, string | undefined> } })
+  .process?.env?.MGRANGE as 'always' | 'never' | undefined;
 const UNHITTABLE_FRAMES = 60;
 // SG pellet falloff ⚑: outside the near band, pellet spread misses the moving test boss —
 // calibrated on the naga/dorothy-S/noir probe triple (all ~x2 hot at full volleys):
@@ -363,6 +386,31 @@ export function runSim(
   const totalFrames = cfg.durationSec * FPS;
   const rotationLog: string[] = [];
 
+  // Monte Carlo mode (cfg.seed set): mulberry32 PRNG — deterministic per seed.
+  // rng === null → expected-value sim (crit/core folded into the major bucket,
+  // canonical boss timeline, fixed chain gaps). Seeded runs sample the real fight's
+  // two dominant variance sources (user, 2026-07-13): per-instance crit/core rolls
+  // and the boss's movement-timing jitter (the boss always visits the scripted
+  // bands, but transition times drift by a few seconds), plus burst-chain cast-gap
+  // jitter. Averaging N seeds ≈ the mean of N real runs, and the seed sd gives the
+  // error bar a single real run should be judged against.
+  const rng: (() => number) | null =
+    cfg.seed === undefined
+      ? null
+      : (() => {
+          let a = (cfg.seed as number) >>> 0;
+          return () => {
+            a |= 0; a = (a + 0x6d2b79f5) | 0;
+            let t = Math.imul(a ^ (a >>> 15), 1 | a);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+          };
+        })();
+  // Boss transition jitter: each transition shifts by up to ±2s, order preserved.
+  const rangeScript = BOSS_RANGE_SCRIPT.map((r, i) =>
+    rng && i > 0 ? { ...r, fromSec: r.fromSec + (rng() * 4 - 2) } : { ...r }
+  ).sort((a, b) => a.fromSec - b.fromSec);
+
   // burst gauge v4 (2026-07-13, test battery 2 test 3 — two solo gauge recordings vs the
   // RAID boss + the datamined CharacterShotTable + the einkk reference formula):
   //   per trigger pull vs the stage target = target_burst_energy_pershot (datamined,
@@ -379,7 +427,9 @@ export function runSim(
   // semantics vary per unit (sometimes base, sometimes target, sometimes target x2).
   // full_charge_burst_energy column stored but unused ⚑ (both solo fits are exact
   // without it). Gauge = 10,000 energy (we track percent); locked during FB.
-  const AUTO_CORE_RATE = 0.85;
+  // ENV.ACR: experiment-only override for A/B sweeps (see experiment-harness-ai.md);
+  // the shipped value stays 0.85 ⚑ until a sweep + judge accepts a change.
+  const AUTO_CORE_RATE = ENV.ACR !== undefined ? Number(ENV.ACR) : 0.85;
   // Pierce core+body double-hit: community evidence is for MULTI-PART bosses; on the
   // partless test boss the A/B against run A says NO doubling (alice/RH overheat with it
   // once the decoded cadences are in). Kept as a switch for part-ed boss support later.
@@ -392,29 +442,40 @@ export function runSim(
   // weapon-class-wide. Default focus = formation slot 3 (index min(2, n-1));
   // recorded runs pass cfg.focusSlug for the user-selected camera unit.
   const FOCUS_CHARGE_GEN = 2.5;
-  // UNFOCUSED_CHARGE_GEN ⚑: no direct measurement exists for an UNfocused charge
-  // unit's full-charge gen (solos are always focused). Flat x1.0 makes every
-  // SR/RL-heavy 5-unit fight 10-20% cold vs the anchored totals; the old validated
-  // calibration was effectively x1.75 (0.7 auto-efficiency x 2.5 charge scale), so
-  // that factor is retained for unfocused charge units until a recording with a
-  // visible gauge bar and an unfocused SR settles it (candidate: the datamined
-  // full_charge_burst_energy column, ~250, may be the real additive mechanism).
-  const UNFOCUSED_CHARGE_GEN = 2.2;
+  // UNFOCUSED_CHARGE_GEN — MEASURED 1.0 (test battery 3 A1/A2 pair, 2026-07-13):
+  // takina UNfocused in a 2-unit fight steps the gauge +5.6-6.5%/shot (her flat 560
+  // target; even the additive full_charge_burst_energy hypothesis is excluded — that
+  // would read +8.1%), while the paired control with her focused steps +14-15%
+  // (560x2.5, same as her solo). The focus bonus is focus-ONLY. The old x2.2 ⚑ was
+  // compensating for per-unit skill-generation quirks and the (then-wrong) anis-star
+  // shot row, both now modeled from measurements.
+  const UNFOCUSED_CHARGE_GEN = 1.0;
   const focusIdx =
     cfg.focusSlug !== undefined
       ? Math.max(0, chars.findIndex((c) => c.slug === cfg.focusSlug))
       : Math.min(2, chars.length - 1);
-  // per-trigger gen vs the stage target, in gauge-percent units (JSON is energy/100)
+  // per-trigger gen vs the stage target, in gauge-percent units (JSON is energy/100).
+  // flatPerTrigger = per-unit kit generation per shot (helm's S2 +14.31: synergy
+  // fixed_add + rl3 arithmetic, twice-confirmed) — flat, no boss doubling, no focus.
   const gaugePerShot = (u: UnitState) => {
-    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[u.char.slug];
+    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number; flatPerTrigger?: number }>)[
+      u.char.slug
+    ];
     const per = (entry?.targetPerTrigger ?? 40) / 100;
+    const flat = (entry?.flatPerTrigger ?? 0) / 100;
     const isCharge = (u.char.weapon === 'SR' || u.char.weapon === 'RL') && !u.swap;
-    if (!isCharge) return per;
-    return per * (u.idx === focusIdx ? FOCUS_CHARGE_GEN : UNFOCUSED_CHARGE_GEN);
+    if (!isCharge) return per + flat;
+    return per * (u.idx === focusIdx ? FOCUS_CHARGE_GEN : UNFOCUSED_CHARGE_GEN) + flat;
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
-    if (fbEndFrame > frame || stage !== 0) return; // locked during FB and the chain
-    if (process.env.DBG_GAUGE && frame < 30 * FPS) {
+    // Generation is LOCKED during Full Burst (user-confirmed 2026-07-13, correcting an
+    // over-read of the bar anatomy: the fast post-FB refill is charge units releasing
+    // held full charges a split second after FB ends + normal team rates — with the
+    // measured ~3s post-FB chain-open delay, high-generation comps finish refilling
+    // before the chain can open anyway, so rotations stay cooldown/chain-bound).
+    // Also no generation during the chain itself (stages 1-3, einkk).
+    if (fbEndFrame > frame || stage !== 0) return;
+    if (ENV.DBG_GAUGE && frame < 30 * FPS) {
       console.log(`[g] t=${(frame / FPS).toFixed(2)} ${u.char.slug} +${(energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100)).toFixed(2)} gauge=${gauge.toFixed(1)}`);
     }
     gauge = Math.min(
@@ -434,10 +495,10 @@ export function runSim(
     addGauge(u, frame, per / (u.char.weapon === 'SG' ? 10 : u.char.hitsPerShot || 1));
   };
 
-  const transitionFrames = BOSS_RANGE_SCRIPT.slice(1).map((r) => r.fromSec * FPS);
+  const transitionFrames = rangeScript.slice(1).map((r) => Math.round(r.fromSec * FPS));
   const bandAt = (frame: number): 'near' | 'mid' | 'midfar' | 'far' => {
-    let band = BOSS_RANGE_SCRIPT[0].band;
-    for (const r of BOSS_RANGE_SCRIPT) if (frame >= r.fromSec * FPS) band = r.band;
+    let band = rangeScript[0].band;
+    for (const r of rangeScript) if (frame >= r.fromSec * FPS) band = r.band;
     return band;
   };
   const bossUnhittable = (frame: number) =>
@@ -454,6 +515,8 @@ export function runSim(
   // expires (cindy still on CD) -> refill -> second chain completes at her CD).
   let stage: 0 | 1 | 2 | 3 = 0;
   let stageGapFrames = 0;
+  let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
+  const POST_FB_CHAIN_DELAY_FRAMES = 180;
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
   const STAGE_WINDOW_FRAMES = 600; // burst_duration 1000 (=10s) standard
   let fbEndFrame = -1;
@@ -517,23 +580,40 @@ export function runSim(
       cfg.rangeBonus &&
       !opts.noRange &&
       u.char.weapon !== 'RL' &&
-      RANGE_ELIGIBLE[bandAt(frame)].has(u.char.weapon);
+      (u.char.weapon === 'MG' && MG_RANGE_MODE !== undefined
+        ? MG_RANGE_MODE === 'always'
+        : RANGE_ELIGIBLE[bandAt(frame)].has(u.char.weapon));
     let major = 1 + (fb && !opts.noFb ? 0.5 : 0) + (inRange ? 0.3 : 0);
     if (opts.crit) {
       const critRate = Math.min(1, Math.max(0, (u.critRate + stat(u, 'critRatePct', frame)) / 100));
-      major += critRate * ((u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100);
+      const critBonus = (u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100;
+      // seeded: Bernoulli roll, full bonus or nothing (mean is identical; the roll
+      // reproduces real-run variance and any future on-crit trigger coupling)
+      major += rng ? (rng() < critRate ? critBonus : 0) : critRate * critBonus;
     }
     if (opts.core && cfg.coreHitRate > 0) {
       // AUTO_CORE_RATE ⚑ (2026-07-13): auto-aim never converges on the core — measured
       // reticle floor ~12.5px vs ~1px manual (JP frame analysis), ~18-20% effective
       // accuracy loss on auto. Even at "100% core exposure" a fraction of auto shots
       // land off-core. Calibrated against the validated-fight anchors.
-      major +=
-        cfg.coreHitRate * AUTO_CORE_RATE *
-        ((u.char.coreAttackMultiplier - 100) / 100 +
-          (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100);
+      const coreBonus =
+        (u.char.coreAttackMultiplier - 100) / 100 +
+        (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
+      major += rng
+        ? (rng() < cfg.coreHitRate * AUTO_CORE_RATE ? coreBonus : 0)
+        : cfg.coreHitRate * AUTO_CORE_RATE * coreBonus;
     }
-    const elem = advantaged(u) ? 1.1 + stat(u, 'elementDamagePct', frame) / 100 : 1;
+    // elemAdvantageDamagePct lives in the ELEMENT bucket (MEASURED 2026-07-14, battery 5:
+    // privaty popup ratio 2.8244 vs Element-model 2.821 / DamageUp-model 1.995, three band
+    // pairs + proc + nuke classes; matches the einkk reference). ENV.ELEMADV='damageup'
+    // restores the legacy additive placement for A/B comparison only.
+    const elemAdvInElement = ENV.ELEMADV !== 'damageup';
+    const elem = advantaged(u)
+      ? 1.1 +
+        (stat(u, 'elementDamagePct', frame) +
+          (elemAdvInElement ? stat(u, 'elemAdvantageDamagePct', frame) : 0)) /
+          100
+      : 1;
     const chargeMult = u.swap?.chargeMultPct ?? u.char.chargeMultiplier;
     // Collection items and Helm-style burst buffs scale by BASE charge damage
     // (chargeMult × pct); ordinary charge-damage buffs add flat percentage points.
@@ -571,7 +651,7 @@ export function runSim(
         (opts.sustained ? stat(u, 'sustainedDamagePct', frame) : 0) +
         (opts.sequential ? stat(u, 'sequentialDamagePct', frame) : 0) +
         (opts.trueFlavor ? stat(u, 'trueDamagePct', frame) : 0) +
-        (advantaged(u) ? stat(u, 'elemAdvantageDamagePct', frame) : 0) +
+        (advantaged(u) && !elemAdvInElement ? stat(u, 'elemAdvantageDamagePct', frame) : 0) +
         pierce +
         rlNormalProjExpl) /
         100;
@@ -589,9 +669,9 @@ export function runSim(
     // DBG_UNIT=<slug> [DBG_N=<count>]: log per-instance bucket decomposition (video
     // popup reconciliation — popups show single non-crit/crit instances, so compare
     // against major recomputed without the crit expectation)
-    if (process.env.DBG_UNIT === u.char.slug && (u as any).__dbgN !== -1) {
+    if (ENV.DBG_UNIT === u.char.slug && (u as any).__dbgN !== -1) {
       (u as any).__dbgN = ((u as any).__dbgN ?? 0) + 1;
-      const lim = Number(process.env.DBG_N ?? 30);
+      const lim = Number(ENV.DBG_N ?? 30);
       if ((u as any).__dbgN <= lim) {
         console.log(
           `[dbg ${u.char.slug}] t=${(frame / FPS).toFixed(2)} ${opts.category} atkPct=${atkPct.toFixed(1)} ` +
@@ -599,7 +679,7 @@ export function runSim(
           `dmgUp=${dmgUp.toFixed(4)} taken=${taken.toFixed(3)} dmg=${dmg.toFixed(0)}`
         );
         // DBG_BUFFS=1: dump the unit's live buff entries with each logged instance
-        if (process.env.DBG_BUFFS) {
+        if (ENV.DBG_BUFFS) {
           for (const b of u.buffs) {
             if (b.expiresFrame === null || b.expiresFrame > frame) {
               console.log(
@@ -690,6 +770,14 @@ export function runSim(
     if (block.fbGate) {
       const fbActive = fbEndFrame > frame;
       if ((block.fbGate === 'inFb') !== fbActive) return;
+    }
+    // weapon-swap-state gate: block fires only while the owner's kit weaponSwap
+    // is (or is not) active — e.g. SWHA's Fully Active extra volley rides only
+    // her two swapped full-charge shots (gamewith JP: buffs held per full-charge
+    // shot, 1発間維持)
+    if (block.swapGate) {
+      const swapped = owner.swap != null && owner.swap.untilFrame > frame;
+      if ((block.swapGate === 'swapped') !== swapped) return;
     }
     block.effects.forEach((e: EffectDef, ei) =>
       applyEffect(ownerIdx, block, e, `${bKey}:${ei}`, activations, frame)
@@ -968,13 +1056,18 @@ export function runSim(
       });
       rotationCasters = [];
       stage = 0;
+      // MEASURED (run-I bar anatomy, 2026-07-13): the next chain cannot open until
+      // ~3s after full burst ends (chain glow at FB-end +3.0s even with the gauge
+      // full at +1.2s and the Burst-1 cooldown ready at +1.5s) — the post-full-burst
+      // camera/re-engage window. Generation keeps running during it.
+      chainBlockedUntil = frame + POST_FB_CHAIN_DELAY_FRAMES;
     }
 
     // ---- burst rotation ----
     // the gauge only builds OUTSIDE full burst; during FB it is locked
     // gauge accrues via shotGauge() on each pull (see firePull)
     if (stageGapFrames > 0) stageGapFrames--;
-    if (!fbActive && stage === 0 && gauge >= 100) {
+    if (!fbActive && stage === 0 && gauge >= 100 && frame >= chainBlockedUntil) {
       gauge = 0; // the chain consumes the gauge (refill required if it collapses)
       stage = 1;
       stageExpireFrame = Infinity;
@@ -984,28 +1077,42 @@ export function runSim(
       stage = 0;
       stageExpireFrame = Infinity;
     }
-    if (!fbActive && stage >= 1 && stageGapFrames === 0) {
+    // Burst casts are BLOCKED while the boss is off-screen during a range transition
+    // (user, 2026-07-13): if a transition lands mid-chain, the next cast waits out the
+    // ~1s unhittable window. This is the real source of knife-edge full-burst-count
+    // variance between otherwise identical runs — a chain-vs-transition collision
+    // depends on the boss's timing jitter. The stage window keeps ticking while blocked.
+    if (!fbActive && stage >= 1 && stageGapFrames === 0 && !bossUnhittable(frame)) {
       const want = romanStage[stage];
-      const eligible = (u: UnitState) => {
-        if (u.burstCdFrames > 0) return false;
+      const fillsStage = (u: UnitState) => {
         if (u.char.burst === 'Λ') {
           // pinned Λ (e.g. "Red Hood operates as B2") only fills its chosen stage
           return u.lambdaStage === null || u.lambdaStage === stage;
         }
         return u.char.burst === want || u.extraStages.has(stage);
       };
+      const eligible = (u: UnitState) => u.burstCdFrames === 0 && fillsStage(u);
       // burst-order overrides: a pending burstFirst unit (Prika duet opener) outranks
-      // everything; then max-MP priority (Maiden); then the leftmost order.
-      // (A least-recently-burst round-robin was tried 2026-07-13 for run B's cindy/neon
-      // alternation — it broke every comp with a bench B3: helm and maiden started
-      // bursting where the real fights never pick them. The alternation falls out of
-      // leftmost + real cooldowns + rotation length instead; keep leftmost.)
+      // everything; then max-MP priority (Maiden, opt-in for manual-play comps); then
+      // slot-order priority WITH waiting: inside a timed stage window the chain WAITS
+      // for the leftmost stage-filling unit whose cooldown ends before the window
+      // closes, rather than instantly handing the cast to a lower-priority ready unit.
+      // (User ruling 2026-07-13: a 3rd-from-left Burst 3 like Maiden in the elec-weak
+      // fight NEVER bursts on auto — no comp has enough CDR for the leftmost two to
+      // both sit out a whole window. Without the wait, rotation jitter occasionally
+      // let her in, bifurcating her damage across Monte Carlo seeds. A least-recently-
+      // burst round-robin was tried earlier the same day and rejected: bench B3s cast
+      // where real fights never pick them.)
+      const inWindow = stage >= 2 && stageExpireFrame !== Infinity;
+      const next = inWindow
+        ? units.find((u) => fillsStage(u) && frame + u.burstCdFrames < stageExpireFrame)
+        : units.find(eligible);
       const cand =
         units.find((u) => u.burstFirstPending && eligible(u)) ??
         units.find((u) => u.mpPriority && u.fbMissedSinceBurst >= u.mpThreshold && eligible(u)) ??
-        units.find(eligible);
+        (next && next.burstCdFrames === 0 ? next : undefined);
       if (cand) {
-        if (process.env.DBG_CD) {
+        if (ENV.DBG_CD) {
           console.log(`[cd] t=${(frame / FPS).toFixed(2)} stage=${stage} cast=${cand.char.slug} cdWas=${cand.burstCdFrames} cdSec=${cand.char.burstCooldownSec}`);
         }
         cand.burstFirstPending = false;
@@ -1068,8 +1175,8 @@ export function runSim(
               }
               if (entry.releasable > 0) {
                 dealDamage(u, entry.atkPct * entry.releasable, frame, {
-                  crit: false,
-                  core: false,
+                  crit: XCRIT.has(u.char.slug),
+                  core: XCORE.has(u.char.slug),
                   charge: false,
                   category: entry.category,
                   distributed: entry.distributed,
@@ -1095,11 +1202,14 @@ export function runSim(
               (b.trigger.stage ?? castStage) === castStage &&
               b.effects.some((e) => e.kind === 'reenterStage' && e.stage === castStage)
           );
+          const chainGap = rng
+            ? STAGE_CAST_GAP_FRAMES + Math.round((rng() - 0.5) * 18)
+            : STAGE_CAST_GAP_FRAMES;
           if (reenters && units.some((u) => u.idx !== cand.idx && eligible(u))) {
-            stageGapFrames = STAGE_CAST_GAP_FRAMES; // stage stays; next pick is another unit
+            stageGapFrames = chainGap; // stage stays; next pick is another unit
           } else {
             stage = (stage + 1) as 1 | 2 | 3;
-            stageGapFrames = STAGE_CAST_GAP_FRAMES;
+            stageGapFrames = chainGap;
             stageExpireFrame = frame + STAGE_WINDOW_FRAMES;
           }
         }
@@ -1229,12 +1339,43 @@ export function runSim(
       }
     }
 
+    // ---- experiment-only: instant in-FB stored-hit release (ENV.XINSTEXPL) ----
+    if (XINSTEXPL.size && fbEndFrame > frame) {
+      for (const u of units) {
+        if (!XINSTEXPL.has(u.char.slug)) continue;
+        for (const entry of u.storedHits.values()) {
+          if (entry.freshFrame < frame) {
+            entry.releasable += entry.fresh;
+            entry.fresh = 0;
+            entry.freshFrame = frame;
+          }
+          if (entry.releasable > 0) {
+            dealDamage(u, entry.atkPct * entry.releasable, frame, {
+              crit: XCRIT.has(u.char.slug),
+              core: XCORE.has(u.char.slug),
+              charge: false,
+              category: entry.category,
+              distributed: entry.distributed,
+              sustained: entry.sustained,
+              sequential: entry.sequential,
+              trueFlavor: entry.trueFlavor,
+              noRange: true,
+              projFlavor: entry.projFlavor,
+            });
+            entry.releasable = 0;
+          }
+        }
+      }
+    }
+
     // ---- dots ----
     for (const d of dots) {
       if (frame === d.nextTickFrame && frame <= d.endFrame) {
         skillGauge(units[d.ownerIdx], frame); // dot ticks generate (wiki3: Haran 290/tick)
         dealDamage(units[d.ownerIdx], d.atkPct, frame, {
-          crit: false, core: false, charge: false, category: d.category,
+          crit: XCRIT.has(units[d.ownerIdx].char.slug),
+          core: XCORE.has(units[d.ownerIdx].char.slug),
+          charge: false, category: d.category,
           distributed: d.distributed, sustained: d.sustained, sequential: d.sequential,
           trueFlavor: d.trueFlavor, noRange: true, noFb: d.noFb,
           projFlavor: d.projFlavor,

@@ -156,6 +156,9 @@ const COMPS: Comp[] = [
     // Test battery 2 test 2 (2026-07-13, docs/probes/tb2): 3-unit team isolating whether
     // anis-star's Projectile Explosion aura buffs cinderella's plain RL normals. Trina is
     // the B2 because none of her offensive buffs reach cindy (Electric AR only).
+    // ROTATION OUTLIER (user ruling): a team without at least B1+B2+2xB3 never exists in
+    // real play — its expiry-dominated rotation is excluded from rotation-model grading
+    // (the comp stays for its damage-popup evidence).
     slugs: ['anis-star', 'trina', 'cinderella'],
     boss: 'Water',
     focus: 'cinderella', // tb2 test 2 recording
@@ -224,7 +227,7 @@ const COMPS: Comp[] = [
 // deep-clone an override and let the variant mutate it; return undefined = drop unit's override
 type Patch = Record<string, (o: OverrideFile) => OverrideFile>;
 
-function run(comp: Comp, patch: Patch = {}) {
+function run(comp: Comp, patch: Patch = {}, seed?: number) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, OverrideFile | undefined> = {};
   for (const s of comp.slugs) {
@@ -241,14 +244,65 @@ function run(comp: Comp, patch: Patch = {}) {
     slugs: comp.slugs, bossElement: comp.boss, bossDef: 0, level: 400, copies: 10,
     doll: false, ol: 0, coreHitRate: 1, rangeBonus: true, durationSec: 180,
     focusSlug: comp.focus,
+    seed,
   };
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
   return runSim(chars, mult, cfg, prepared);
 }
 
 function report(comp: Comp, label: string, patch: Patch = {}) {
+  // SEEDS=N: Monte Carlo — N seeded runs (common seed set across comps and across
+  // A/B configs, so paired comparisons cancel the variance), reported as mean ± sd.
+  // Crit/core rolls + boss-movement jitter + chain-gap jitter are sampled per seed;
+  // judge a single real run against ±(sd + ~3% real repeatability).
+  const nSeeds = Number(process.env.SEEDS ?? 0);
+  if (nSeeds > 1) {
+    const totals = new Map<string, number[]>();
+    let pulls = new Map<string, number>();
+    const fbCounts: number[] = [];
+    const firstFb: number[] = [];
+    for (let i = 0; i < nSeeds; i++) {
+      const res = run(comp, patch, 1000 + i);
+      fbCounts.push(res.fullBursts);
+      const fb1 = res.rotationLog.find((l) => l.includes('FULL BURST'));
+      if (fb1) firstFb.push(parseFloat(fb1));
+      for (const u of res.units) {
+        if (!totals.has(u.slug)) totals.set(u.slug, []);
+        totals.get(u.slug)!.push(u.totalDamage);
+        pulls.set(u.slug, u.pulls);
+      }
+    }
+    console.log(`\n--- ${comp.name} · ${label} · MC n=${nSeeds} ---`);
+    {
+      // full distribution: knife-edge counts are REAL run-to-run variance (a boss
+      // range transition colliding with a burst chain blocks casts ~1s) — when
+      // comparing vs a real run, condition on the real run's observed FB count
+      // (compare against the seeds in that stratum).
+      const dist = new Map<number, number>();
+      for (const c of fbCounts) dist.set(c, (dist.get(c) ?? 0) + 1);
+      const distStr = [...dist.entries()].sort((a, b) => a[0] - b[0])
+        .map(([c, n]) => `${c}x${Math.round((100 * n) / nSeeds)}%`).join(' ');
+      console.log(
+        `  full bursts: ${distStr}, first FB at ${Math.min(...firstFb).toFixed(1)}-${Math.max(...firstFb).toFixed(1)}s`
+      );
+    }
+    for (const [slug, arr] of totals) {
+      const real = comp.real[slug];
+      const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+      const sd = Math.sqrt(arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length);
+      console.log(
+        `${slug.padEnd(24)} shots ${String(pulls.get(slug)).padStart(5)}  tot ${(mean / 1e6).toFixed(0).padStart(6)}M  ratio ${(mean / real).toFixed(3)} ± ${(sd / real).toFixed(3)}`
+      );
+    }
+    return;
+  }
   const res = run(comp, patch);
   console.log(`\n--- ${comp.name} · ${label} ---`);
+  {
+    const fb1 = res.rotationLog.find((l) => l.includes('FULL BURST'));
+    const expired = res.rotationLog.filter((l) => l.includes('EXPIRED')).length;
+    console.log(`  full bursts: ${res.fullBursts}, first at ${fb1 ? parseFloat(fb1).toFixed(1) : '-'}s${expired ? `, ${expired} chain expiries` : ''}`);
+  }
   // ROT=1 dumps the burst rotation log (debug workflows)
   if (process.env.ROT) for (const line of res.rotationLog) console.log('  ' + line);
   for (const u of res.units) {

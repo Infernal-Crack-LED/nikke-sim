@@ -404,7 +404,10 @@ just the +50% (open-questions A19 addendum — engine ordering fixed); (2) count
 nuke storms directly gives full bursts every 40s → her burst cooldown is 40s as the DB
 says, and the 3-unit fight's rotation exposed the burst-chain WINDOW mechanic
 (open-questions A22); (3) trina's "Burst Skill damage of AoE skills ▲435.6%" rider did
-NOT appear in the measured nuke — skipping it is empirically right.
+NOT appear in the measured nuke — skipping it is empirically right. Reading note for
+future popup work: the small repeated side popups near cinderella (e.g. 324,217 during
+her nuke window) are the BOSS's damage dealt TO her Decoy (her kit summon) — the focus
+unit's popup stream includes damage received by her own summons, not just damage dealt.
 
 ### Test 3 — Boss x2 gauge multiplier + sniper charge-scaled generation — DONE 2026-07-13
 Recorded (docs/probes/tb2, "tb2 3 maiden" + "tb2 3 tak"). **RESULT: the whole gauge model
@@ -450,3 +453,698 @@ gauge generation (the recording itself perturbs the fight).
   only regression from the timing-rule experiments.
 - **Tia focus** (any team with tia, 15 seconds of footage): charge meter reading classifies
   the last unclassified charge unit.
+
+## TEST BATTERY 3 (2026-07-13) — rotation engine + the focus-gauge question
+
+The two highest engine-level unknowns. Part A is two ~45-second recordings; Part B needs
+no video at all — just full-burst counts. All scope lock, full auto, vs the raid boss.
+
+### Part A — DONE 2026-07-13 (docs/probes/"burst tests") — focus-only CONFIRMED
+A1: takina unfocused steps +5.6-6.5%/shot (flat 560; excludes the +8.1% additive
+hypothesis). A2: takina focused steps +14-15%/shot (560x2.5, matches her solo).
+Engine: the ⚑x2.2 unfocused factor is deleted (measured 1.0). See open-questions A24.
+
+### (original Part A spec, for reference)
+
+**Team: takina (slot 1) · crown (slot 2), any boss element, ~45 seconds, team burst gauge
+bar visible.** Takina's sniper shots land as big discrete gauge jumps every ~1.4s;
+crown's machine-gun fill is the smooth trickle between them (~6%/s predicted) — so her
+per-shot step is directly readable off the bar, exactly like the solo recordings.
+
+- **A1 — takina NOT focused** (put camera focus on crown; if the game defaults focus to
+  takina in a 2-unit formation, tap crown before starting and note it). Read takina's
+  per-shot gauge step:
+  - **≈ +5.6%** → unfocused charge weapons generate FLAT. The focus-only claim is
+    confirmed; the engine's ⚑x2.2 gets deleted and the sniper-heavy comps' missing
+    generation gets modeled from the per-unit skill-gauge quirks instead (ein-style).
+  - **≈ +14%** → every charge weapon gets x2.5 on auto regardless of focus (the
+    focus-gating is wrong; ⚑ resolves to a clean x2.5 for all).
+  - **≈ +8-12%** → a partial mechanism (candidate: the datamined
+    full_charge_burst_energy column, 560+250 = +8.1%).
+- **A2 — paired control, same team, camera focus on TAKINA.** Expect **≈ +14%** steps,
+  confirming the x2.5 applies in team fights the way it did in her solo.
+
+This single pair also resolves a live contradiction: with the ⚑x2.2 the sim now predicts
+13 full bursts for the recorded electric-battery fight where the video measured 11 —
+either the unfocused factor is too high (A1 says flat) or something else generates.
+
+### Part A3 — DONE 2026-07-13 — her row is a standard launcher (user hypothesis confirmed)
+Measured ~+10.7-11.3%/pull = 280x2.5 shot + 280 proc gen x1.06 aura. The synergy 16.8
+aggregate folds skill generation; the 840 estimate is retired. Her recording also caught
+a live burst-chain collapse (gauge consumed, Burst-1 cast, window expiry, refill). See
+open-questions A25.
+
+### (original Part A3 spec, for reference)
+
+Her per-shot gauge value is the one engine number still DERIVED from the synergy-API
+column (16.8 ÷ 2 = 840) rather than datamined, and there's a real possibility that
+column already folds her Skill-1 proc's generation into the per-shot total — in which
+case the sim double-counts her (it adds proc generation on every full-charge hit on top
+of the 840). She's in nearly every validation fight, so this feeds the +2 full-burst
+overshoot directly. **Anis: Star solo vs the raid boss, ~30s, read her per-PULL gauge
+step** (solo = focused, so her weapon part gets x2.5; her proc adds flat on top):
+
+- **≈ +29%/pull** (about 3.5 pulls to full) → shot row really is 840 AND the proc
+  generates separately — current model right, no double-count.
+- **≈ +21%/pull** (about 5 pulls) → 840 is the COMBINED total (shot 840x2.5 with no
+  separate proc gen, or shot ~560 + proc) — the synergy column folds skill generation
+  and her entry needs splitting.
+- **≈ +10%/pull** (about 10 pulls) → her row is a standard launcher 280 and the battery
+  reputation is all proc/kit — rewrite her entry entirely.
+
+### Part B — Full-burst counts for every fight (no videos needed)
+
+Rerun each fight on auto and record just two numbers: the TOTAL count of FULL BURST!
+splashes, and the clock reading (the 03:00 countdown) at the FIRST full burst. Keep the
+default camera focus (middle slot). If you ever see the gauge sitting full with no one
+casting, note it — that's a chain stall and is diagnostic on its own. Damage totals are
+a nice-to-have (they double as repeatability data) but not required.
+
+Sim predictions — THIRD REVISION (2026-07-13 late): after the Part A measurements PLUS
+the rotation-anatomy findings from existing footage (~~generation runs DURING full burst~~
+SUPERSEDED (2026-07-13) — generation is LOCKED during full burst; the fast refill is charge
+users releasing held shots right after it ends (owner correction, burst-gauge.md §1);
+the gauge is consumed when the chain opens; the next chain can't open until ~3s after
+full burst ends — all measured from the run-I/run-B/3-unit bar traces), the sim now
+matches ALL FOUR graded comps exactly and most comps are seed-deterministic:
+
+| fight | slots | sim full bursts | first FB (fight time) | notes |
+|---|---|---|---|---|
+| elec battery (recorded) | moran · cindy · neon · trina | 11 | ~5.0s | **video: 11 ✓ exact** |
+| elec DPS (recorded) | crown · ein · ada · rouge · cindy | 10-11 | ~6.1s | video: ~11-12 ✓ |
+| misc B3s (recorded) | grave · anis:star · jill · chisato · noir | 13 | ~3.4s | **video: 13 ✓ exact, seed-stable** |
+| 3-unit projExpl (recorded) | anis:star · trina · cindy | 4-5 | ~10.5s | video: 5 ✓ |
+| iron sweep (run G) | DKW · takina · milk:BB · maxwell · liberalio | 13 | ~3.4s | video: 13-14 ✓ |
+| wind-weak T1 | mast:RM · SBS · anis:star · liberalio · crown | 13 | ~2.8s | |
+| fire-weak T3 | rapi:RH · mihara:BC · little mermaid · crown · helm | 13 | ~3.6s | |
+| water-weak T4 | anis:star · privaty · SWHA · helm · crown | 13 | ~3.4s | |
+| elec-weak T2 | crown · neon:VE · anis:star · cindy · maiden:IR | 12 | ~4.8s | |
+| wind-weak T5 | nayuta · cindy:CW · anis:star · liberalio · velvet | 13 | ~3.0s | |
+| fire-weak T6 | crown · rapi:RH · LM · SWHA · helm | 13 | ~3.4s | |
+| elec-weak T7 | crown · rapi:RH · anis:star · cindy · mast:RM | 11 | ~5.9s | |
+| iron-weak T8 | anis:star · crown · rapi:RH · cindy:CW · helm | 13 | ~3.5s | |
+| MiKa (run A) | anis:star · mint · prika · alice · red-hood | 11 | ~5.0s | |
+| shields (run C) | tia · anis:star · naga · SWHA · helm | 12 | ~3.9s | |
+| Eva duo (run D) | emma:TU · eunhwa:TU · diesel:WS · helm | 9 | ~3.4s | |
+| water B3s (run H) | LM · crown · quency:EQ · dorothy:S · xGuillo | 12 | ~5.5s | |
+
+If real counts come in 1-2 ABOVE these predictions in the comps carrying liberalio,
+Snow White: Heavy Arms, or helm, that's the per-unit skill-generation quirks (U11c)
+showing up — the deficit should be roughly proportional to how many of those units the
+comp fields.
+
+The four video rows are already measured — no rerun needed there. Highest-priority fresh
+counts: T2 (maiden's stable 1.21 heat), T5 (sniper-heavy, coldest comp), T4 (SWHA/privaty
+cold), MiKa, T7 (rapi cold). A sim-vs-real gap of +2 across the board points at the
+unfocused-gauge knob (Part A tells us how to fix it); a gap concentrated in one comp
+points at that comp's cooldown/chain specifics.
+
+## TEST BATTERY 4 (2026-07-13) — the machine-gun optimal-range band table
+
+### What we already measured (from existing footage, no new run needed)
+
+The one machine-gun-focused recording on disk (the crown-focus gauge clip from the burst
+tests, fight time 0-23 seconds = the boss's MID band) settles the mid band: crown's damage
+popups (body 4,477 / core 8,955 / core-crit 11,194) match the NO-range-bonus predictions to
++0.33%, and the buff-immune class ratios are four-digit exact (core ÷ body = 2.0002 where the
+bonus would give 1.769; crit ÷ core = 1.2501 where the bonus would give 1.217). **Machine guns
+do NOT get the +30% bonus in the mid band — measured.** The same read confirmed assault
+rifles DO get it in mid (jill's popups from test battery 2), and confirmed the bonus is
+additive inside the major bracket (so on core hits it shows as ×1.15, not ×1.3 — always use
+the class ratios, not a flat ×1.3, when reading bands).
+
+What is still open: does the machine gun get the bonus in the MID-FAR band (as the engine
+currently assumes), or in no band at all? A totals-level sweep already showed "no band at
+all" makes the machine-gun units read colder, so this one band decides the table.
+
+### The one recording that settles it — crown SOLO, full 180 seconds
+
+- Crown alone vs the raid boss, scope lock, full auto, full 180 seconds. Solo means she is
+  automatically the focused unit, and with only her own Burst II she can never reach Full
+  Burst — no +50% windows to untangle. Prefer a boss that is not Wind-weak so the element
+  multiplier stays 1.0.
+- Her only time-varying self-buff is Skill 2 (every 860 hits: +20.99% attack damage for 7
+  seconds → popup values ×1.21 for those windows; the class RATIOS are immune to it).
+- Read the popup classes in each fight-clock window (the 3:00 timer counts DOWN):
+  - mid 3:00→2:27 — already measured: NO bonus
+  - near 2:27→1:50 — expect no bonus (shotgun band)
+  - far 1:50→1:14 — expect no bonus (sniper band)
+  - **mid-far 1:14→0:36 — THE DECISIVE WINDOW**
+  - near 0:36→0:04 and mid-far 0:04→0:00 — replications
+- Predicted popup classes solo (body / body-crit / core / core-crit), assuming the same
+  +0.3% systematic as the duo read:
+  - no bonus: 4,463 / 6,694 / 8,925 / 11,156
+  - with the +30% bonus: 5,801 / 8,033 / 10,264 / 12,495
+  - inside a Skill-2 window: all values ×1.21
+- Verdict key, per band: core ÷ body ≈ 2.00 and crit ÷ core ≈ 1.25 → no bonus;
+  core ÷ body ≈ 1.77 and crit ÷ core ≈ 1.22 → bonus present.
+- If mid-far shows the bonus: the engine's current table is measured-confirmed and the
+  question closes. If mid-far shows no bonus: machine guns join rocket launchers as
+  "never in range" and the engine table gets corrected. Any OTHER band showing the bonus
+  means the band table needs a new row (and the totals sweep says that would run hot —
+  surprising, so double-read before believing it).
+
+## TEST BATTERY 5 (2026-07-13) — where does "Elemental Advantage Attack Damage" live in the formula?
+
+### Why this matters
+
+A structural audit against the decoded reference simulator (nikke-einkk) found our engine
+routes every "Elemental Advantage Attack Damage" kit line (privaty's 130, maiden's aura,
+guillotine's passives — 11 lines in the roster) additively into the Damage Up bucket, while
+the reference places it inside the Element multiplier (1.1 + value). An A/B run moves the
+coldest buffed carries almost exactly onto their real totals if the reference is right
+(privaty 0.77 → 1.00 in the water-weak fight), and touches nothing else. The two placements
+are directly distinguishable from damage popups — but only in a comp with known additive buff
+company; with no other Damage Up buffs live the two models predict nearly identical popups,
+so a minimal solo run canNOT answer this one. The fully-modeled water-weak team is the
+instrument.
+
+### The one recording that settles it
+
+**Water-weak T4 comp, exact slots `anis: star · privaty · SWHA · helm · crown`, boss water
+weak (Fire), scope lock, full auto, 180 seconds, with PRIVATY holding declared camera focus**
+(keep her in slot 2 — do not reorder; just declare the camera focus on her). Bonus: this same
+video delivers the water-weak T4 full-burst count from the Part B priority list under a
+declared focus.
+
+- Sim predicts 13 full bursts; privaty bursts on the odd ones (~3.4s, 31.4s, 60s, 88.3s,
+  116.3s, 145s, 173s fight time), Snow White: Heavy Arms on the even ones. Identify privaty's
+  windows by HER burst cut-in, not the clock.
+- Read her normal-bullet popup classes mid-window in three matched pairs (her full-burst
+  window vs the adjacent Snow White: Heavy Arms window in the same boss-range band):
+  - near band: hers ~60–70s (clock ~2:00→1:50) vs the other window ~46–56s (2:14→2:04);
+    also read the no-full-burst gap around ~57s
+  - far band: hers ~88–98s (1:32→1:22) vs ~74–84s (1:46→1:36); gap read ~85–87s
+  - mid-far band: hers ~116–126s (1:04→0:54) vs ~130–140s (0:50→0:40)
+
+### Predicted popup values (sim-exact; prior reads land within ×0.997–1.003 of these)
+
+Each cell shows two values because crown's Skill 2 (+20.99% attack damage, 7-second windows)
+flickers on and off — both sub-classes will appear.
+
+| read | Damage Up placement (engine today) | Element placement (reference) |
+|---|---|---|
+| privaty normal bullet, HER full-burst window | 204,453 / 216,777 | 279,570 / 306,455 |
+| normal bullet, Snow White window (control) | 99,121 / 108,653 | identical |
+| normal bullet, no-full-burst gap (control) | 28,067 | identical |
+| her last-bullet proc (the 256.17% class), her window | 2.56M / 2.71M | 3.50M / 3.84M |
+| that proc outside full burst (~86s, control) | 607,956 | identical |
+| her burst nuke at cast (non-crit) | 6.10M | 7.29M |
+
+Crit/core classes sit at ×1.333 / ×1.667 / ×2.0 of the body value inside full burst and
+×1.5 / ×2.0 / ×2.5 outside it (both models — use these to validate reads, not to decide).
+
+### Verdict key (immune to attack-value drift; read several windows)
+
+Her-window body value ÷ same-band Snow-White-window body value:
+- **≈ 1.88–2.19 → Damage Up placement confirmed (engine stays as-is)**
+- **≈ 2.57–3.09 → Element placement confirmed (engine change lands)**
+The ranges span the crown flicker and do not overlap. The proc class gives the same verdict
+independently (2.71M maximum under Damage Up vs 3.50M minimum under Element).
+
+Control reads (the Snow White windows, the gaps, and the class ratios) are predicted
+identical under both models — if a control is off, something else is wrong with the window
+(most likely crown's caster-attack buff schedule differing from sim) and the verdict read
+should not be trusted until the controls match.
+
+## TEST BATTERY 6 (2026-07-13) — Rapi: Red Hood's projectile pipeline (core scope, crit, explosion timing)
+
+### Why this matters
+
+The Rapi: Red Hood kit audit left three questions that totals-fitting cannot answer (all four of
+her comps are screenshot-graded, and the A/B arms bracket her real totals instead of hitting
+them):
+
+1. **Core scope** — do her sticky-projectile ATTACH hits land core hits (the datamine says her
+   sticky collisions ride the full bullet pipeline, core rate 200%)? And separately, do the
+   stored EXPLOSIONS core? The audit's preferred model (attaches core, explosions not) is
+   inexpressible with the shared experiment knob, so the two halves need independent reads.
+2. **Crit** — do her stage-3 window ticks and her stored-explosion releases crit? The sim
+   hardcodes them non-critting; the reference simulator and the documented flat-damage default
+   say they crit.
+3. **Explosion timing** — do projectiles attached DURING a Full Burst window explode
+   immediately (datamine: instant in-burst explosion), or only batch at the NEXT Full Burst
+   entry (the sim's current deferral, which also means the final cycle never pays out)?
+
+One rapi-focused recording answers all three at measured tier, from popup values alone.
+
+### The one recording
+
+**Elec-weak T7 comp, exact slots `crown · rapi: red hood · anis: star · cinderella ·
+mast: romantic maid`, boss Water (electric-weak), scope lock, full auto, full 180 seconds,
+with RAPI: RED HOOD holding declared camera focus** (keep her in slot 2 — do not reorder,
+just tap the camera focus onto her before starting). Damage popups on, the 3:00 countdown
+visible, and the end-of-fight damage screenshot as usual (it doubles as repeatability data).
+
+- Why this comp: on the Water boss none of her hits carry the element multiplier (her Skill 2
+  advantage is against Electric enemies only) and no Damage Taken debuff exists in this team,
+  so her popup classes have the fewest overlapping values of her four comps. Mast never uses
+  her burst here, so the team crit-damage buff never fires — the crit step is exactly ×1.5
+  outside Full Burst and ×1.333 inside it, all fight. The only value-splitter is Crown's
+  Skill 2 flicker (+20.99 points of Attack Damage, 7-second windows) — both sub-values are
+  predicted below where they matter.
+- **This recording doubles as the elec-weak T7 full-burst count from test battery 3 Part B.**
+  Note: the Part B table row (11 full bursts, first ~5.9s) assumed default middle-slot focus
+  (Anis: Star, whose launcher gets the ×2.5 focused-charge gauge). With focus on Rapi (machine
+  gun — the focus bonus goes unused) the sim predicts **10 full bursts, first at ~6.5s (clock
+  ~2:54)**. Record the total FULL BURST count and the clock at the first one.
+- Predicted rotation (identify windows by the burst cut-in, not the clock — real proc timing
+  and chain gaps drift a little): Rapi casts Burst 3 on entries 1/3/5/7/9 at about 6.5s (2:54),
+  40s (2:20), 75s (1:45), 112s (1:08), 147.6s (0:32); Cinderella on entries 2/4/6/8/10 at about
+  22s (2:38), 55.9s (2:04), 92.9s (1:27), 128.9s (0:51), 165.1s (0:15). Each window lasts 10
+  seconds.
+
+### Her popup classes — visual key
+
+- **Normal bullets**: the constant machine-gun stream, five-figure popups. Background only —
+  and do not use them for band checks in the mid-far windows (1:14→0:36, 0:04→0:00), where the
+  machine-gun range-bonus question from test battery 4 is still open. Every class below is a
+  rider and NEVER gets the +30% range bonus, so no band accounting is needed for any verdict.
+- **Attach hits** (sticky projectiles, every 120 shots): a lone six-to-seven-figure popup every
+  ~3.6–4.5 seconds of sustained fire — ~340–620 thousand outside Full Burst, ~1.7–5.9 million
+  inside windows.
+- **Window ticks** (her stage-3 doubled proc rate): a 2-second-cadence stream of ~5.28 million
+  popups during her OWN stage-3 windows; the fifth member of each cadence lands ~1.5–2 seconds
+  after the banner ends, at ~620–720 thousand.
+- **Stored-explosion releases**: a batch of near-identical ~2.0–2.6 million popups at the
+  moment the FULL BURST banner appears.
+- **Her burst nuke**: a single ~5.94 million popup (crit ~8.91 million) at her cast instant,
+  just BEFORE the banner. **Caution**: the nuke body value (5,938,951) nearly collides with the
+  Crown-flicker tick value (5,929,545) — separate them by timing, never by value.
+
+All predicted values below are sim-exact; expect measured popups ≈ ×0.997 of them (the known
+popup systematic — the anchor read reproduces at 0.9972 uniform). Every verdict is a
+ratio/step within a single read, immune both to that systematic and to attack-value drift.
+Crit-class popups appear at her ~35% modeled crit rate (15 base + Mast's aura) — use the
+PRESENCE of a step class as the verdict, not its frequency (the aura model is approximate).
+
+### Question 1a — do attach hits core?
+
+Read attach popups OUTSIDE Full Burst (the lone popups between windows). Predictions by state:
+
+| state (when to read) | sim today (core NO): body / crit | core YES adds: core / core-crit |
+|---|---|---|
+| cold, no buffs — 2:56, 2:54, 2:22, 1:28, 1:09, 0:53, 0:17 | 342,982 / 514,473 | 685,964 / 857,455 |
+| post-window state — 2:42, 2:40, 2:08, 2:06, 0:55 | 622,882 / 934,323 | 1,245,764 / 1,557,204 |
+| in-Full-Burst, Cinderella windows — e.g. 2:32, 2:30, 2:00, 1:58, 1:56 | 1,678,352 / 2,237,803 | 2,797,253 / 3,356,704 |
+
+**Verdict key (drift-immune):** outside Full Burst a core-class attach sits at **×2.000** of the
+body value (crit ×1.5, core-crit ×2.5); inside Full Burst core is **×1.667** (crit ×1.333,
+core-crit ×2.0). Any attach popup at the ×2.0 (outside) / ×1.667 (inside) step → attaches core.
+Six or more out-of-burst attach reads showing only the body/crit pair → attaches do not core
+(at any plausible core rate, six consecutive misses is conclusive). Control: the crit class
+(×1.5) SHOULD appear across reads — the current model already crits attaches; its total absence
+over ~10 reads is itself a finding (attaches never crit) and should be recorded.
+
+### Question 1b — do the stored explosions core? (and Question 2b — do they crit?)
+
+Pause/scrub at each FULL BURST banner and read the batch of near-identical explosion popups
+individually. Per-explosion predictions (the four-value key per batch):
+
+| banner (clock) | batch size (deferred model) | body (sim today) | crit YES ×1.333 | core YES ×1.667 | both ×2.0 |
+|---|---|---|---|---|---|
+| 2:54 (Rapi window 1) | 2 | 2,298,943 | 3,065,258 | 3,831,572 | 4,597,887 |
+| 2:38 (Cinderella 1) | 10 | 2,199,601 | 2,932,802 | 3,666,002 | 4,399,203 |
+| 2:20 (Rapi 2) | 5 | 2,298,421 | 3,064,562 | 3,830,702 | 4,596,843 |
+| 2:04 (Cinderella 2) | 10 | 1,958,166 | 2,610,888 | 3,263,610 | 3,916,332 |
+| 1:45 (Rapi 3) | 4 | 2,298,943 | 3,065,258 | 3,831,572 | 4,597,887 |
+| 1:27 (Cinderella 3) | 11 | 1,958,240 | 2,610,987 | 3,263,734 | 3,916,481 |
+| 1:08 (Rapi 4) | 4 | 2,298,943 | 3,065,258 | 3,831,572 | 4,597,887 |
+| 0:51 (Cinderella 4) | 11 | 1,958,240 | 2,610,987 | 3,263,734 | 3,916,481 |
+| 0:32 (Rapi 5) | 4 | 2,582,396 | 3,443,194 | 4,303,993 | 5,164,791 |
+| 0:15 (Cinderella 5) | 11 | 1,958,240 | 2,610,987 | 3,263,734 | 3,916,481 |
+
+(The 2:38 and 0:32 rows carry Crown's flicker; if a batch value runs ~×1.123 of a neighboring
+row's, that is the flicker, not a step — the within-batch ratios are what decide.)
+
+**Verdict key:** within a batch, popups at **×1.333** of the batch body → releases crit; at
+**×1.667** → releases core; at **×2.0** → both. All popups identical → neither. Three batches
+(~30 popups) give overwhelming coverage at a 35% crit rate and any plausible core rate.
+These reads assume Anis: Star's Full-Burst-entry Projectile Explosion aura (+92.03%) is live
+on the release — the measured rule (stored releases resolve after entry auras) is baked into
+the predicted values; if batch bodies read ~×0.66 of prediction, that rule itself is falsified
+(record it — that would be its first direct measurement).
+
+### Question 2a — do the window ticks crit?
+
+Inside Rapi's own windows the ticks and the in-window attach hits form ONE value class
+(both are 88.11% attachment-flavored hits under the same buffs: body 5,279,000 at the dominant
+state, ×1.333 crit step 7,038,000; Crown-flicker sub-state 5,930,000 / 7,907,000) — so
+in-window values alone cannot separate "ticks crit" from "attach hits crit" (the current model
+already crits the attaches). Two reads that CAN:
+
+- **The boundary tick** — follow the 2-second tick cadence from inside each Rapi window; the
+  fifth member lands ~1.5–2 seconds AFTER the banner ends, isolated from attach procs. Times
+  about 2:44, 2:10, 1:35, 0:58, 0:22. Predicted body 622,750 (at 2:44, 1:35, 0:22) or 718,694
+  (at 2:10, 0:58). Ticks-crit-YES predicts occasional reads at **×1.5**: 934,125 / 1,078,040.
+  Caveat: these bodies assume her 10-second buffs expire before the fifth tick, as the sim's
+  frame arithmetic says; if the real game resolves the tick first, the read appears in the
+  ~5.28-million class instead and the crit step is ×1.333 (~7.04 million) — the step, not the
+  absolute value, is the verdict either way.
+- **In-window frequency corroboration** (secondary): under attach-only crit, roughly one
+  ×1.333-step popup per window among the big attachment stream; under ticks-crit-YES, roughly
+  a third of ALL ~8 attachment popups per window step up. Suggestive only — the boundary ticks
+  and the Question 2b batch read carry the verdict.
+
+### Question 3 — do in-window attaches explode instantly or batch at the next entry?
+
+Pure counting and timing — no value reads needed (in-window explosion popups, if they exist,
+sit at ~2.3 million in her windows / ~2.0 million in Cinderella's, distinct from every other
+class).
+
+| signature | deferred (sim today) | instant (datamine) |
+|---|---|---|
+| explosion-class popups DURING any window | none, ever | yes: ~5 right after Rapi's own banner (her stage-3 batch), then ~3–4 more at ~2-second spacing through the window; ~3 during each Cinderella window |
+| batch size at Cinderella banners (2:38, 2:04, 1:27, 0:51, 0:15) | ~10–11 popups | ~1–2 popups |
+| batch size at Rapi banners | ~2–5 popups | ~1–2 at the banner, then the ~5-batch immediately after |
+| final 15 seconds (inside Cinderella's last window) | the last window's attaches never explode | ~3 explosion popups before 0:00 |
+
+**Verdict key:** the Cinderella-banner batch count separates the models by a factor of ~5 and
+needs no value reading at all; the presence/absence of explosion popups streaming through any
+window is the same verdict from a second angle. Count at least three Cinderella banners and
+watch one full Rapi window end-to-end. (Exact counts drift with real proc timing — the
+categorical gap does not.)
+
+### Cross-checks (read a couple; all drift-immune)
+
+- Explosion body ÷ same-window attachment body: **0.4355** inside Rapi's windows,
+  **1.1667** at Cinderella entries (the attachment buff is only live in her own windows).
+- Crit ÷ body on any class: 1.5 outside Full Burst, 1.333 inside — validates a read's
+  Full-Burst state before trusting it.
+- Her nuke at each of her five casts: 5,938,951 body / 8,908,426 crit (0:32 cast: 6,853,943 /
+  10,280,914) — lands before the banner, confirming the cast-instant boundary rule in passing.
+- If a control is off, the window's buff schedule differs from sim (most likely a chain-timing
+  slip) — re-anchor on the cut-ins and prefer a different window rather than trusting the read.
+
+### How many reads suffice
+
+Question 1a: six-plus attach reads outside Full Burst. Questions 1b/2b: three banner batches
+read popup-by-popup. Question 2a: all five boundary ticks. Question 3: counts at three
+Cinderella banners plus one full Rapi window watched through. All from the same single video.
+
+## Full-burst chain timelines — manual harness verification (2026-07-13)
+
+Owner request: the sim's complete predicted burst-chain event list for each upcoming
+recording, so the rotation engine can be validated by eye against the videos. Every line
+below is a sim event: the Burst I / Burst II / Burst III cast (stage casts run ~0.5 seconds
+apart) and the FULL BURST banner (which lands with the Burst III cast). "clock" is the
+on-screen 3:00 countdown.
+
+How to verify against a video:
+1. **Caster order must match exactly** (which unit takes each Burst III, alternating
+   pattern) — this is the strongest check and is drift-free.
+2. **The first full burst should land within about ±1 second** of the predicted clock time.
+3. **The count must match** the predicted total.
+4. **Later entries accumulate drift** (real proc/chain timing wanders a little), so compare
+   the SPACING between consecutive full bursts (the ~13–18 second cycle gaps) rather than
+   absolute late-fight clock times. A one-off ~1 second extra delay around 0:36 (the 144
+   second boss transition) is the measured off-screen cast block — the water-weak T4
+   timeline below shows the sim predicting exactly that (Privaty's Burst III at 0:35.0
+   instead of ~0:36.2).
+5. If a real chain opens with a DIFFERENT caster or an extra/missing full burst appears,
+   note the clock time — that is a rotation-model bug (or a boss-transition collision) and
+   is exactly what this validation is for.
+
+Deterministic predictions (no seed); the focus setting matters and is stated per comp.
+
+    
+### BATTERY 5 — water-weak T4, PRIVATY focus
+    full bursts: 13
+      t=   2.4s  clock 2:57.6  BI Anis: Star
+      t=   2.9s  clock 2:57.1  BII Crown
+      t=   3.4s  clock 2:56.6  BIII Privaty
+      t=   3.4s  clock 2:56.6  FULL BURST (until 13.4s)
+      t=  16.4s  clock 2:43.6  BI Anis: Star
+      t=  16.9s  clock 2:43.1  BII Crown
+      t=  17.4s  clock 2:42.6  BIII Snow White: Heavy Arms
+      t=  17.4s  clock 2:42.6  FULL BURST (until 27.4s)
+      t=  30.4s  clock 2:29.6  BI Anis: Star
+      t=  30.9s  clock 2:29.1  BII Crown
+      t=  31.4s  clock 2:28.6  BIII Privaty
+      t=  31.4s  clock 2:28.6  FULL BURST (until 41.4s)
+      t=  45.0s  clock 2:15.0  BI Anis: Star
+      t=  45.5s  clock 2:14.5  BII Crown
+      t=  46.0s  clock 2:14.0  BIII Snow White: Heavy Arms
+      t=  46.0s  clock 2:14.0  FULL BURST (until 56.0s)
+      t=  59.0s  clock 2:01.0  BI Anis: Star
+      t=  59.5s  clock 2:00.5  BII Crown
+      t=  60.0s  clock 2:00.0  BIII Privaty
+      t=  60.0s  clock 2:00.0  FULL BURST (until 70.0s)
+      t=  73.3s  clock 1:46.7  BI Anis: Star
+      t=  73.8s  clock 1:46.2  BII Crown
+      t=  74.3s  clock 1:45.7  BIII Snow White: Heavy Arms
+      t=  74.3s  clock 1:45.7  FULL BURST (until 84.3s)
+      t=  87.3s  clock 1:32.7  BI Anis: Star
+      t=  87.8s  clock 1:32.2  BII Crown
+      t=  88.3s  clock 1:31.7  BIII Privaty
+      t=  88.3s  clock 1:31.7  FULL BURST (until 98.3s)
+      t= 101.3s  clock 1:18.7  BI Anis: Star
+      t= 101.8s  clock 1:18.2  BII Crown
+      t= 102.3s  clock 1:17.7  BIII Snow White: Heavy Arms
+      t= 102.3s  clock 1:17.7  FULL BURST (until 112.3s)
+      t= 115.3s  clock 1:04.7  BI Anis: Star
+      t= 115.8s  clock 1:04.2  BII Crown
+      t= 116.3s  clock 1:03.7  BIII Privaty
+      t= 116.3s  clock 1:03.7  FULL BURST (until 126.3s)
+      t= 129.3s  clock 0:50.7  BI Anis: Star
+      t= 129.8s  clock 0:50.2  BII Crown
+      t= 130.3s  clock 0:49.7  BIII Snow White: Heavy Arms
+      t= 130.3s  clock 0:49.7  FULL BURST (until 140.3s)
+      t= 143.3s  clock 0:36.7  BI Anis: Star
+      t= 143.8s  clock 0:36.2  BII Crown
+      t= 145.0s  clock 0:35.0  BIII Privaty
+      t= 145.0s  clock 0:35.0  FULL BURST (until 155.0s)
+      t= 158.0s  clock 0:22.0  BI Anis: Star
+      t= 158.5s  clock 0:21.5  BII Crown
+      t= 159.0s  clock 0:21.0  BIII Snow White: Heavy Arms
+      t= 159.0s  clock 0:21.0  FULL BURST (until 169.0s)
+      t= 172.0s  clock 0:08.0  BI Anis: Star
+      t= 172.5s  clock 0:07.5  BII Crown
+      t= 173.0s  clock 0:07.0  BIII Privaty
+      t= 173.0s  clock 0:07.0  FULL BURST (until 183.0s)
+    
+### BATTERY 6 — elec-weak T7, RAPI: RED HOOD focus
+    full bursts: 10
+      t=   5.5s  clock 2:54.5  BI Anis: Star
+      t=   6.0s  clock 2:54.0  BII Crown
+      t=   6.5s  clock 2:53.5  BIII Rapi: Red Hood
+      t=   6.5s  clock 2:53.5  FULL BURST (until 16.5s)
+      t=  21.0s  clock 2:39.0  BI Anis: Star
+      t=  21.5s  clock 2:38.5  BII Crown
+      t=  22.0s  clock 2:38.0  BIII Cinderella
+      t=  22.0s  clock 2:38.0  FULL BURST (until 32.0s)
+      t=  39.0s  clock 2:21.0  BI Anis: Star
+      t=  39.5s  clock 2:20.5  BII Crown
+      t=  40.0s  clock 2:20.0  BIII Rapi: Red Hood
+      t=  40.0s  clock 2:20.0  FULL BURST (until 50.0s)
+      t=  54.9s  clock 2:05.1  BI Anis: Star
+      t=  55.4s  clock 2:04.6  BII Crown
+      t=  55.9s  clock 2:04.1  BIII Cinderella
+      t=  55.9s  clock 2:04.1  FULL BURST (until 65.9s)
+      t=  74.0s  clock 1:46.0  BI Anis: Star
+      t=  74.5s  clock 1:45.5  BII Crown
+      t=  75.0s  clock 1:45.0  BIII Rapi: Red Hood
+      t=  75.0s  clock 1:45.0  FULL BURST (until 85.0s)
+      t=  91.9s  clock 1:28.1  BI Anis: Star
+      t=  92.4s  clock 1:27.6  BII Crown
+      t=  92.9s  clock 1:27.1  BIII Cinderella
+      t=  92.9s  clock 1:27.1  FULL BURST (until 102.9s)
+      t= 111.0s  clock 1:09.0  BI Anis: Star
+      t= 111.5s  clock 1:08.5  BII Crown
+      t= 112.0s  clock 1:08.0  BIII Rapi: Red Hood
+      t= 112.0s  clock 1:08.0  FULL BURST (until 122.0s)
+      t= 127.9s  clock 0:52.1  BI Anis: Star
+      t= 128.4s  clock 0:51.6  BII Crown
+      t= 128.9s  clock 0:51.1  BIII Cinderella
+      t= 128.9s  clock 0:51.1  FULL BURST (until 138.9s)
+      t= 146.6s  clock 0:33.4  BI Anis: Star
+      t= 147.1s  clock 0:32.9  BII Crown
+      t= 147.6s  clock 0:32.4  BIII Rapi: Red Hood
+      t= 147.6s  clock 0:32.4  FULL BURST (until 157.6s)
+      t= 164.1s  clock 0:15.9  BI Anis: Star
+      t= 164.6s  clock 0:15.4  BII Crown
+      t= 165.1s  clock 0:14.9  BIII Cinderella
+      t= 165.1s  clock 0:14.9  FULL BURST (until 175.1s)
+    
+### Part B — elec-weak T2, default focus (middle = anis-star)
+    full bursts: 12
+      t=   3.9s  clock 2:56.1  BI Anis: Star
+      t=   4.3s  clock 2:55.7  BII Crown
+      t=   4.8s  clock 2:55.2  BIII Neon: Vision Eye
+      t=   4.8s  clock 2:55.2  FULL BURST (until 14.8s)
+      t=  19.0s  clock 2:41.0  BI Anis: Star
+      t=  19.5s  clock 2:40.5  BII Crown
+      t=  20.0s  clock 2:40.0  BIII Cinderella
+      t=  20.0s  clock 2:40.0  FULL BURST (until 30.0s)
+      t=  36.0s  clock 2:24.0  BI Anis: Star
+      t=  36.5s  clock 2:23.5  BII Crown
+      t=  37.0s  clock 2:23.0  BIII Neon: Vision Eye
+      t=  37.0s  clock 2:23.0  FULL BURST (until 47.0s)
+      t=  51.0s  clock 2:09.0  BI Anis: Star
+      t=  51.5s  clock 2:08.5  BII Crown
+      t=  52.0s  clock 2:08.0  BIII Cinderella
+      t=  52.0s  clock 2:08.0  FULL BURST (until 62.0s)
+      t=  66.1s  clock 1:53.9  BI Anis: Star
+      t=  66.6s  clock 1:53.4  BII Crown
+      t=  67.1s  clock 1:52.9  BIII Neon: Vision Eye
+      t=  67.1s  clock 1:52.9  FULL BURST (until 77.1s)
+      t=  81.7s  clock 1:38.3  BI Anis: Star
+      t=  82.2s  clock 1:37.8  BII Crown
+      t=  82.7s  clock 1:37.3  BIII Cinderella
+      t=  82.7s  clock 1:37.3  FULL BURST (until 92.7s)
+      t=  97.2s  clock 1:22.8  BI Anis: Star
+      t=  97.7s  clock 1:22.3  BII Crown
+      t=  98.2s  clock 1:21.8  BIII Neon: Vision Eye
+      t=  98.2s  clock 1:21.8  FULL BURST (until 108.2s)
+      t= 112.1s  clock 1:07.9  BI Anis: Star
+      t= 112.6s  clock 1:07.4  BII Crown
+      t= 113.1s  clock 1:06.9  BIII Cinderella
+      t= 113.1s  clock 1:06.9  FULL BURST (until 123.1s)
+      t= 126.5s  clock 0:53.5  BI Anis: Star
+      t= 127.0s  clock 0:53.0  BII Crown
+      t= 127.5s  clock 0:52.5  BIII Neon: Vision Eye
+      t= 127.5s  clock 0:52.5  FULL BURST (until 137.5s)
+      t= 142.5s  clock 0:37.5  BI Anis: Star
+      t= 143.0s  clock 0:37.0  BII Crown
+      t= 143.5s  clock 0:36.5  BIII Cinderella
+      t= 143.5s  clock 0:36.5  FULL BURST (until 153.5s)
+      t= 157.6s  clock 0:22.4  BI Anis: Star
+      t= 158.1s  clock 0:21.9  BII Crown
+      t= 158.6s  clock 0:21.4  BIII Neon: Vision Eye
+      t= 158.6s  clock 0:21.4  FULL BURST (until 168.6s)
+      t= 173.2s  clock 0:06.8  BI Anis: Star
+      t= 173.7s  clock 0:06.3  BII Crown
+      t= 174.2s  clock 0:05.8  BIII Cinderella
+      t= 174.2s  clock 0:05.8  FULL BURST (until 184.2s)
+    
+### Part B — wind-weak T5, default focus (middle = anis-star)
+    full bursts: 13
+      t=   2.0s  clock 2:58.0  BI Anis: Star
+      t=   2.5s  clock 2:57.5  BII Nayuta
+      t=   3.0s  clock 2:57.0  BIII Cinderella: Crystal Wave
+      t=   3.0s  clock 2:57.0  FULL BURST (until 13.0s)
+      t=  16.0s  clock 2:44.0  BI Anis: Star
+      t=  16.5s  clock 2:43.5  BII Nayuta
+      t=  17.0s  clock 2:43.0  BIII Liberalio
+      t=  17.0s  clock 2:43.0  FULL BURST (until 27.0s)
+      t=  30.0s  clock 2:30.0  BI Anis: Star
+      t=  30.5s  clock 2:29.5  BII Nayuta
+      t=  31.0s  clock 2:29.0  BIII Cinderella: Crystal Wave
+      t=  31.0s  clock 2:29.0  FULL BURST (until 41.0s)
+      t=  44.0s  clock 2:16.0  BI Anis: Star
+      t=  44.5s  clock 2:15.5  BII Nayuta
+      t=  45.0s  clock 2:15.0  BIII Liberalio
+      t=  45.0s  clock 2:15.0  FULL BURST (until 55.0s)
+      t=  59.0s  clock 2:01.0  BI Anis: Star
+      t=  59.5s  clock 2:00.5  BII Nayuta
+      t=  60.0s  clock 2:00.0  BIII Cinderella: Crystal Wave
+      t=  60.0s  clock 2:00.0  FULL BURST (until 70.0s)
+      t=  73.0s  clock 1:47.0  BI Anis: Star
+      t=  73.5s  clock 1:46.5  BII Nayuta
+      t=  74.0s  clock 1:46.0  BIII Liberalio
+      t=  74.0s  clock 1:46.0  FULL BURST (until 84.0s)
+      t=  87.0s  clock 1:33.0  BI Anis: Star
+      t=  87.5s  clock 1:32.5  BII Nayuta
+      t=  88.0s  clock 1:32.0  BIII Cinderella: Crystal Wave
+      t=  88.0s  clock 1:32.0  FULL BURST (until 98.0s)
+      t= 101.0s  clock 1:19.0  BI Anis: Star
+      t= 101.5s  clock 1:18.5  BII Nayuta
+      t= 102.0s  clock 1:18.0  BIII Liberalio
+      t= 102.0s  clock 1:18.0  FULL BURST (until 112.0s)
+      t= 115.0s  clock 1:05.0  BI Anis: Star
+      t= 115.5s  clock 1:04.5  BII Nayuta
+      t= 116.0s  clock 1:04.0  BIII Cinderella: Crystal Wave
+      t= 116.0s  clock 1:04.0  FULL BURST (until 126.0s)
+      t= 130.0s  clock 0:50.0  BI Anis: Star
+      t= 130.5s  clock 0:49.5  BII Nayuta
+      t= 131.0s  clock 0:49.0  BIII Liberalio
+      t= 131.0s  clock 0:49.0  FULL BURST (until 141.0s)
+      t= 145.0s  clock 0:35.0  BI Anis: Star
+      t= 145.5s  clock 0:34.5  BII Nayuta
+      t= 146.0s  clock 0:34.0  BIII Cinderella: Crystal Wave
+      t= 146.0s  clock 0:34.0  FULL BURST (until 156.0s)
+      t= 159.0s  clock 0:21.0  BI Anis: Star
+      t= 159.5s  clock 0:20.5  BII Nayuta
+      t= 160.0s  clock 0:20.0  BIII Liberalio
+      t= 160.0s  clock 0:20.0  FULL BURST (until 170.0s)
+      t= 173.0s  clock 0:07.0  BI Anis: Star
+      t= 173.5s  clock 0:06.5  BII Nayuta
+      t= 174.0s  clock 0:06.0  BIII Cinderella: Crystal Wave
+      t= 174.0s  clock 0:06.0  FULL BURST (until 184.0s)
+
+## TEST BATTERY 5 — RESULT (2026-07-14, probe u7): Element placement CONFIRMED, landed
+
+The privaty-focus recording settled the question at measured tier. Her normal-bullet popup
+ratio between her own full-burst windows (her 130-point "Elemental Advantage Attack Damage"
+line live) and the adjacent Snow White: Heavy Arms windows (line not live) read **2.8244 on
+all three matched boss-range-band pairs** — the Element-placement prediction is 2.821, the
+Damage-Up-placement prediction is 1.995. Two independent corroborations: her last-bullet proc
+implies a base of 3,833,833 (the Element-model class within 0.2%; the Damage-Up model's
+ceiling is 2.71 million) and her burst volley totals 7,267,494 (Element model 7.29 million;
+the Damage-Up model's 6.10 million matches no combination). Controls (Snow White windows,
+out-of-burst proc) matched predictions under both models, validating the windows.
+
+**Landed:** "Elemental Advantage Attack Damage" now multiplies inside the Element bucket
+(1.1 + value) engine-wide. Board effect: privaty 0.77→1.00 in the water-weak fight; the
+electric-weak fight's carries (riding Maiden: Ice Rose's aura) warm 8–19%. Details in
+docs/DECISIONS.md and docs/data/damage-calculation.md §1c.
+
+**New findings from the same recording (own increments, not part of the landing):**
+- **The fight ran 14 full bursts against the sim's predicted 13** — caster order was exact
+  all fight, but real burst cycles run about a second faster than the sim's (13.0s vs
+  14.0–14.7s), and the accumulated difference fits an extra burst. The elec-weak and
+  wind-weak count runs show the same roughly-one-second-fast cycle (their counts survived
+  it). Locating that second is the next rotation increment — it needs a fresh bar-anatomy
+  measurement pass before any measured constant moves.
+- Privaty's burst nuke is a volley of 2–3 missiles (2,422,498 each) landing ~1.5 seconds
+  after the cast, not a single cast-instant hit.
+- Two unexplained popup details, logged for investigation: her no-full-burst-gap normal
+  bullets read uniformly ×1.15 of prediction (all gaps equally; her proc in the same gaps
+  matches exactly), and her proc's crit step inside full burst read ×1.5 where ×1.333 was
+  expected.
+
+## TEST BATTERY 4 — RESULT (2026-07-14, probe u7): machine guns are in range in the FAR band only — landed
+
+The crown solo recording (vs Armstrong, zero full bursts as predicted) read the popup class
+ratios band by band: mid, near (twice), and the decisive mid-far window (seven clean reads)
+all show the no-bonus signatures (core ÷ body = 2.000, crit ÷ core = 1.250), while the far
+band (1:50→1:14) shows the bonus signatures (1.769, 1.217). Neither prior hypothesis
+survived — machine guns are not "never in range" and not "mid-far" as the engine assumed;
+**the +30% bonus applies in the far band only**. The engine table is corrected (board impact
+roughly nil — the already-cold machine-gun rows shift by under half a point).
+
+Two additional observations from the same video:
+- The bonus turns on and off with the boss's physical walk, about 4–6 seconds ahead of or
+  behind the scripted band boundaries — the real trigger is the boss's instantaneous distance
+  crossing the weapon's optimal ring. The band table is an approximation with a few seconds
+  of edge error; modeling the ring crossing directly against the walk timing is a possible
+  future refinement (this video already contains the validation timestamps).
+- Crown's Skill 2 damage flicker (×1.21 for 7 seconds) matched the modeled values exactly in
+  every band, and the machine-gun wind-up's no-core ramp is visible after every reload.
+
+## TEST BATTERY 6 — RESULT (2026-07-14, probe u7): the three questions were overtaken — Rapi: Red Hood's projectile model needs a rework
+
+The recording answered something bigger than the questions asked: the sim's structural model
+of her kit does not match what renders on screen.
+
+- The predicted popup classes largely do not exist: no window-tick stream, no explosion
+  batches at Full Burst banners, and zero lone attach popups outside Full Burst across twelve
+  surveyed seconds of gap time.
+- What exists instead: an in-window rider class (1,680,449 body / 2,240,599 crit — the crit
+  step is exactly ×1.333) at roughly 4.5-second cadence whose value matches the UNBUFFED
+  prediction — her burst's +421% attachment self-buff evidently does not apply to it; and a
+  constant **25,125,105** popup at her own banners only, which factors as exactly ten times
+  2,512,510.5 — reading as a ten-explosion batch aggregated into a single popup, released at
+  HER burst cast rather than at every Full Burst entry as the sim schedules.
+- Working hypothesis for the rework: attachments deal no damage when they stick; the
+  explosions carry the damage and detonate together at her burst; there is no separate tick
+  stream. To be reconciled against the datamine and the reference simulator before an A/B.
+- Confirmations from the same video: the additive Major-bracket structure re-verified exactly
+  (crit/core/core-crit steps 1.5 / 2.0 / 2.5 outside Full Burst, 1.333 / — / 1.20 inside);
+  Crown's Skill 2 flicker measured ×1.1233 as modeled.
+- Rotation: the fight ran **12 full bursts against the sim's 10** (caster order exact all
+  twelve, stage spacing ~0.5 seconds confirmed) — the fourth video confirming the sim's burst
+  cycle runs about a second or more too slow, and this one shows the gap is larger than the
+  camera-focus gauge arithmetic alone.
+- A new lead for the auto-core-rate question: her bullet core-hit popups switch on and off in
+  multi-second phases — core exposure behaves like boss-state windows, not a constant rate.

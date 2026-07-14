@@ -1,0 +1,71 @@
+{
+ "elec battery (run B order)": {
+  "moran": 195529193,
+  "cinderella": 578682245,
+  "neon-vision-eye": 502979593,
+  "trina": 55160639
+ },
+ "misc B3s (run I order)": {
+  "grave": 317295525,
+  "anis-star": 543899739,
+  "jill": 519936599,
+  "chisato": 571080375,
+  "noir": 175453858
+ },
+ "elec DPS (run E order)": {
+  "crown": 137708568,
+  "ein": 373183088,
+  "ada": 435829792,
+  "rouge": 109090970,
+  "cinderella": 363498687
+ },
+ "iron sweep (run G)": {
+  "d-killer-wife": 60332669,
+  "takina": 422611226,
+  "milk-blooming-bunny": 265999826,
+  "maxwell": 104199343,
+  "liberalio": 401764735
+ },
+ "T1": {
+  "mast-romantic-maid": 131241332,
+  "scarlet-black-shadow": 2327468944,
+  "anis-star": 907498438,
+  "liberalio": 971375592,
+  "crown": 248346109
+ },
+ "T2": {
+  "crown": 185575071,
+  "neon-vision-eye": 1320395531,
+  "anis-star": 923953973,
+  "cinderella": 1207914737,
+  "maiden-ice-rose": 301519148
+ },
+ "T4": {
+  "anis-star": 1048067874,
+  "privaty": 1100841326,
+  "snow-white-heavy-arms": 1758130343,
+  "helm": 335809806,
+  "crown": 395275671
+ },
+ "T7": {
+  "crown": 255838890,
+  "rapi-red-hood": 852654136,
+  "anis-star": 814239992,
+  "cinderella": 1087834583,
+  "mast-romantic-maid": 129410787
+ },
+ "T2 elec-weak": {
+  "crown": 185575071,
+  "neon-vision-eye": 1320395531,
+  "anis-star": 923953973,
+  "cinderella": 1207914737,
+  "maiden-ice-rose": 301519148
+ },
+ "T5 wind-weak": {
+  "nayuta": 759181909,
+  "cinderella-crystal-wave": 1039456361,
+  "anis-star": 679739631,
+  "liberalio": 857706411,
+  "velvet": 193196831
+ }
+}

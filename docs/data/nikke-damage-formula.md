@@ -23,7 +23,7 @@ defense-ignore damage (same bucket).
 | FinalATK term | `BaseATK × (1+ΣATK%) + Σ(caster-ATK flat)` − `DEF × (1+ΣDEF%)` (DEF floor 0; test boss DEF = 0) | `effectiveAtk()` |
 | rate% | weapon per-shot % or the skill's "X% of final ATK" | per-hit `atkPct` |
 | **Major** | `1 + 0.5·FB + 0.3·range + critRate·(critDmg−100%+ΣCritDmg%) + coreRate·AUTO_CORE_RATE·(coreMult−100%+ΣCoreDmg%)` — one additive bracket | `major` |
-| Element | `1.1 + ΣElementDmg%`, only with elemental advantage | `elem` |
+| Element | `1.1 + ΣElementDmg% + ΣSuperiorElementDmg%`, only with elemental advantage (superior-element placement MEASURED 2026-07-14, test battery 5 popup ratios) | `elem` |
 | Charge | `chargeMult + chargeMult·Σ(chargeDamageMultPct)/100 + Σ(chargeDamagePct)/100` — only on charged hits | `charge` |
 | **Damage Up** | `1 + ΣAttackDamage + [Sustained] + [Sequential] + [True] + [elemAdvantageDamage, adv only] + [Pierce, tagged units] + [ProjExpl on RL normals]` — flavor terms gate on the hit's flavor | `dmgUp` |
 | Projectile factor | `1 + ProjExpl/ProjAttach %` — ONLY on explosion/attachment-flavored hits; multiplicative with Damage Up, not inside it | `projFactor` |

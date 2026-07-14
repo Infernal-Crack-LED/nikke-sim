@@ -149,6 +149,11 @@ export interface Block {
   // activate during full burst, 'outFb' only outside it (e.g. Velvet's S1
   // "when attacking with Full Charge while not in Full Burst")
   fbGate?: 'inFb' | 'outFb';
+  // weapon-swap-state gate, checked when the trigger fires: 'swapped' blocks
+  // only activate while the owner's kit weaponSwap is live (e.g. SWHA's Fully
+  // Active extra volley rides only her two swapped full-charge shots),
+  // 'unswapped' only outside it
+  swapGate?: 'swapped' | 'unswapped';
 }
 
 export interface CharacterSkills {

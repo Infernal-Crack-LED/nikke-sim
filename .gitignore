@@ -12,3 +12,9 @@ dist/
 
 docs/probes
 docs/handoffs
+# Claude harness (proprietary — skills, hooks, settings, root handoff)
+.claude/
+CLAUDE.md
+
+# private-repo git dir (harness + AI docs tracked separately)
+.git-private/
