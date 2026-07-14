@@ -1,5 +1,5 @@
 {
-  "note": "Tier audit (Bossing A). S2's 94.15% Attack Damage + 50.82% reload targets '1 leftmost Electric Code ally with assault rifles' \u2014 the parser applied it to ALL allies (5x over-buff). No leftmost/weapon-filter target exists; approximated as alliesOfElement Electric (narrower; exact when the comp runs one Electric AR carry, e.g. Trina->Moran). Burst kept in parser (team AD 20.9 + maxAmmo 20; the 'Burst Skill damage of AoE skills' rider unsupported, warned).",
+  "note": "Tier audit (Bossing A). S2's 94.15% Attack Damage + 50.82% reload targets '1 leftmost Electric Code ally with ASSAULT RIFLES' \u2014 now modeled EXACTLY via the alliesOfElementWeapon target (U8 run-B video, 2026-07-13: the old alliesOfElement approximation was feeding +94% Attack Damage to the RL carries cindy/neon AND trina herself, the source of the run-B heat trio). Burst kept in parser (team AD 20.9 + maxAmmo 20; the 'Burst Skill damage of AoE skills' rider unsupported, warned). SCOPE AUDIT 2026-07-13: burst slot now overridden \u2014 the parser's 'Max Ammunition +20 round(s)' line was hitting ALL Electric allies as +20%; the kit targets 'all Electric Code allies with assault rifles' (= moran-class units) and the value is FLAT 20 rounds (= +33.3% on a 60-round AR magazine; engine only supports percent). Hit Rate 45.3 skipped (no misses vs boss). The AoE-burst-damage rider lines remain unsupported (warned).",
   "skill2": [
     {
       "slot": "skill2",
@@ -7,8 +7,10 @@
         "kind": "burstCast"
       },
       "target": {
-        "kind": "alliesOfElement",
-        "element": "Electric"
+        "kind": "alliesOfElementWeapon",
+        "element": "Electric",
+        "weapon": "AR",
+        "count": 1
       },
       "effects": [
         {
@@ -21,6 +23,45 @@
           "kind": "buff",
           "stat": "reloadSpeedPct",
           "value": 50.82,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20.9,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElementWeapon",
+        "element": "Electric",
+        "weapon": "AR",
+        "count": 99
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 33.3,
           "durationSec": 10
         }
       ]

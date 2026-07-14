@@ -62,4 +62,8 @@ export interface SimConfig {
   durationSec: number;      // 180
   // --- experimental / A-B knobs (undefined = current default behaviour) ---
   projExplOnRlNormals?: boolean; // U4: RL normals get projExpl in Damage Up (default ON per user, 2026-07-13)
+  // camera-focused unit (charge weapons on the focused unit generate x2.5 gauge).
+  // Default: formation slot 3 = index min(2, n-1). Set for recorded runs where the
+  // user selected a focus unit.
+  focusSlug?: string;
 }

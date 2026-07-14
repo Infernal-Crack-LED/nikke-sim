@@ -1,5 +1,5 @@
 {
-  "note": "Only skill1 needs an override; the parser's skill2 (Full-Burst ammo +60% / full reload) and burst (ATK +115.12%, Charge Dmg +150.12% for 10s) are already faithful and are left to the parser. S1 procs on a cycling full-charge counter: every 3rd full charge = 250.47% single-target, every 6th = 500% distributed, every 9th = 750.47% distributed (phases don't stack, counter loops). Her burst changes the required counts to 1/2/3 for 10s, tripling the proc rate during the burst window (this is the unparsed burst line, folded in here). Modeled as steady-state throughput: with ~25% burst uptime (10s of a 40s cooldown) and a roughly constant full-charge cadence, one full proc-set (250.47 + 500 + 750.47) lands per 9 shots outside burst and per 3 shots inside, which blends to one set per 6 shots on average -> a single hitCount:6 block firing all three procs (hitsPerShot=1 so hits==shots). The 250.47% hits one enemy as plain damage (no distributed flavor); the 500% and 750.47% are distributed (full value vs the single boss). Uncertainty: blending smears the burst-clustered, ATK/charge-amplified procs evenly across the battle, so procs landing in the amplified burst window are undercounted somewhat; the alternative literal reading (hitCount:9, ignoring the burst threshold cut) would undercount more. U1-class (2026-07-13): her S1 proc set joins the exempt class (noFb; range exemption is now universal for riders) — she was the original x0.59-fit unit; with projExpl-on-RL-normals her normals warmed and the procs needed the class treatment.",
+  "note": "Only skill1 needs an override; the parser's skill2 (Full-Burst ammo +60% / full reload) and burst (ATK +115.12%, Charge Dmg +169.63% for 10s) are already faithful and are left to the parser. S1 procs on a cycling full-charge counter: every 3rd full charge = 283.03% single-target, every 6th = 500% distributed, every 9th = 848.03% distributed (phases don't stack, counter loops). Her burst changes the required counts to 1/2/3 for 10s, tripling the proc rate during the burst window (this is the unparsed burst line, folded in here). Modeled as steady-state throughput: with ~25% burst uptime (10s of a 40s cooldown) and a roughly constant full-charge cadence, one full proc-set (283.03 + 500 + 848.03) lands per 9 shots outside burst and per 3 shots inside, which blends to one set per 6 shots on average -> a single hitCount:6 block firing all three procs (hitsPerShot=1 so hits==shots). The 283.03% hits one enemy as plain damage (no distributed flavor); the 500% and 848.03% are distributed (full value vs the single boss). Uncertainty: blending smears the burst-clustered, ATK/charge-amplified procs evenly across the battle, so procs landing in the amplified burst window are undercounted somewhat; the alternative literal reading (hitCount:9, ignoring the burst threshold cut) would undercount more. U1-class (2026-07-13): her S1 proc set joins the exempt class (noFb; range exemption is now universal for riders) \u2014 she was the original x0.59-fit unit; with projExpl-on-RL-normals her normals warmed and the procs needed the class treatment. PATCH 2026-07-02 (distributed-damage bugfix compensation): S1 values buffed 283.03/565/848.03 (from 250.47/500/750.47), burst Charge Dmg 169.63 (from 150.12) \u2014 blablalink sync still serves pre-patch values (checked 2026-07-13), so these are pinned here; re-check after next sync. AUTOFIRE CONFIRMED (user-tested 2026-07-13): no release latency. Her 150% charge cap (user-observed) matches the DB chargeMultiplier 150 \u2014 the sim was already correct there; her ~1.23 heat remains open (candidates: legacy noFb flags on her proc set under the U1 timing rule, or post-patch value interactions).",
   "skill1": [
     {
       "slot": "skill1",
@@ -13,22 +13,25 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 250.47,
+          "atkPct": 283.03,
           "noFb": true
         },
         {
           "kind": "flatDamage",
-          "atkPct": 500,
+          "atkPct": 565,
           "flavor": "distributed",
           "noFb": true
         },
         {
           "kind": "flatDamage",
-          "atkPct": 750.47,
+          "atkPct": 848.03,
           "flavor": "distributed",
           "noFb": true
         }
       ]
     }
-  ]
+  ],
+  "charFixes": {
+    "noBoltRecovery": true
+  }
 }

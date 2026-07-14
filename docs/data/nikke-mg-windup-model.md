@@ -27,7 +27,7 @@ Reload is **not** part of this model and does vary per unit. Measured gap from l
 | Cinderella: Crystal Wave | 2.85 s |
 | Crown | 2.85 s |
 
-Treat reload as a separate per-unit stat modified by Reload Speed. Reload Speed does **not** shorten wind-up.
+Treat reload as a separate per-unit stat modified by Reload Speed. Reload Speed does **not** shorten the wind-up ladder itself — but it shortens the idle time between magazines, which under the §7 wind-down model determines how much spin carries over.
 
 ---
 
@@ -136,7 +136,7 @@ export function rofAtFrame(f: number): number {
 }
 ```
 
-**Full-cycle scheduling.** A firing cycle is `magDurationFrames(magSize)` + `reloadFrames(unit)`. Wind-up resets to zero on every reload — the gun always restarts from the top of the ladder. There is no partial retention.
+**Full-cycle scheduling.** A firing cycle is `magDurationFrames(magSize)` + `reloadFrames(unit)`. ~~Wind-up resets to zero on every reload — the gun always restarts from the top of the ladder. There is no partial retention.~~ **Superseded 2026-07-13:** full reset is only the long-idle limit of the wind-DOWN model in §7 — it holds whenever the gun idles ≥ ~1.1s (true for every unbuffed reload, which is what these captures measured), but short idles retain partial spin.
 
 ```ts
 function* cycleShotFrames(magSize: number, reloadFrames: number, cycles: number) {
@@ -181,3 +181,66 @@ Similarly, Bastion / Wingman (more shots per reload) beat Resilience (faster rel
 4. **Attack-speed buffs** were not isolated in these captures. If a unit or teammate grants attack speed, the ladder may compress — untested.
 5. **Damage per round is not constant** across a fight (buff stacking observed: 4,614 → 9,228 → 9,993 per round in one capture; crits are a clean ×1.25 on top). Model damage separately from the shot schedule; the schedule itself is buff-independent in these captures.
 6. Reload gaps in §1 include target reacquisition, so they are an **upper bound** on true reload time (likely ~0.3–0.5 s high vs. the raw stat).
+
+---
+
+## 7. Wind-DOWN — spin retention across short idles (added 2026-07-13)
+
+The §4 "hard reset on every reload" rule and the community ">100% reload buff = wind-up
+skip" rule are both limits of one continuous mechanism: **while the gun is not firing
+(reload, stun, boss-unhittable window), the spin holds for a short grace period and then
+decays back down the §2 ladder — faster than it climbed.** On resume, the gun re-enters
+the ladder wherever the decay left it.
+
+### 7.1 The model
+
+```
+idle          = consecutive non-firing frames (reload + stun + unhittable)
+GRACE         = 16 frames  (~0.27 s)   // spin holds, no decay
+DECAY         = 2.78                   // ladder-frames lost per idle frame past GRACE
+pos_retained  = max(0, pos_at_stop − DECAY · max(0, idle − GRACE))
+```
+
+where `pos` is the cumulative-frame position on the §2 ladder (0…142). Full decay from the
+top takes `GRACE + 142/DECAY ≈ 67 frames ≈ 1.1 s` of idle.
+
+### 7.2 The fit — four independent observations, one line
+
+The two quantitative points are ore-game's recovery measurements
+(https://ore-game.com/nikke/post/verify-mg-heatup/), converted from reload-buff % to idle
+time via the subtractive reload formula `actual = displayed × 0.975 × (1 − buff) + 0.21 s`
+(https://ore-game.com/nikke/post/reload-limit/), using a Crown-class 2.85 s displayed
+reload. "Benefit" = rounds of max-rate fire recovered vs a cold restart (max ≈ 107).
+
+| Observation | Idle time | Model retains | Model benefit | Observed |
+|---|---|---|---|---|
+| >100% reload buff (our measured "skip") | ~0.21 s | 142f (in grace) | ~107 rounds | full skip |
+| 90% reload buff (ore-game) | ~0.49 s | 106f → round 16 | ~90 rounds | ~90 rounds |
+| 74% reload buff (ore-game) | ~0.93 s | 31f → round 1 | ~30 rounds | ~30 rounds |
+| ≤70% reload buff (ore-game threshold) | ≥1.04 s | ≤13f → round 0 | ≤13 rounds | ~none |
+
+Both boundary "rules" fall out naturally: above +100% reload speed only the fixed ~0.21 s
+reload tail remains, which sits inside the grace window (→ apparent binary skip, which is
+what our original measurement found); below ~70% the idle exceeds full decay (→ apparent
+hard reset, which is what §4's captures at 0% buff measured).
+
+### 7.3 Consequences
+
+- The middle band (roughly +70–100% reload speed) is where MGs partially keep their spin —
+  rare under scope lock (no cubes, OL0) but reachable with kit reload buffs, which is why
+  neither original measurement sampled it.
+- Because the decay retraces the ladder, retention benefit is nonlinear in idle time: the
+  cheap 2-frame-interval top of the ladder drains first (little loss per idle frame), the
+  expensive 23/14/10-frame bottom drains last.
+- The 1 s boss-unhittable windows (range transitions) cost `2.78 × (60−16) ≈ 122` ladder
+  frames — a near-full re-windup even though no reload happened.
+- Engine: `MG_WINDDOWN_GRACE_FRAMES`, `MG_WINDDOWN_DECAY`, `mgIdleFrames` in
+  `src/engine/sim.ts`; reload duration via `reloadFramesNeeded()` (subtractive).
+
+### 7.4 Confidence
+
+The GRACE/DECAY constants are a two-parameter linear fit through two measured points with
+two boundary constraints — the functional form (linear ladder retrace after a grace) is the
+simplest one consistent with all four, not itself frame-measured. A recording of an MG with
+a +70–100% reload buff would pin the curve directly; deviations would show up as the resume
+round differing from §7.1's prediction.

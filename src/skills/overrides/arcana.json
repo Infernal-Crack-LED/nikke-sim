@@ -1,5 +1,5 @@
 {
-  "note": "Straggler pass, review-reconciled (2026-07-13). Her 180% Attack Damage (S1) and 180% casterAtk (S2 'Strength') fire on FULL BURST END only while Wheel of Fortune is up (= within 10s of HER OWN burst, i.e. every 2nd FB-end at her 40s CD) and target Burst-3 Electric allies who cast \u2014 the parser applied them at EVERY FB end ungated. Modeled: everyN 2 offset 1 on fullBurstEnd, target alliesOfElement Electric (compound target approximation; exact in mono-elec comps). Same gate for 'Death' (team burstCdr 6 + casterAtk 50/5s). Ungated team pieces (casterAtk 5/10s, AD 7.5/10s) every FB end. The Magician's Skill-2-cooldown line is moot in the event model. Burst parser-kept: Wheel AD 10% to Electric allies + 300% nuke + 10% taken.",
+  "note": "Straggler pass, review-reconciled (2026-07-13). Her 180% Attack Damage (S1) and 180% casterAtk (S2 'Strength') fire on FULL BURST END only while Wheel of Fortune is up (= within 10s of HER OWN burst, i.e. every 2nd FB-end at her 40s CD) and target Burst-3 Electric allies who cast \u2014 the parser applied them at EVERY FB end ungated. Modeled: everyN 2 offset 1 on fullBurstEnd, target alliesOfElement Electric (compound target approximation; exact in mono-elec comps). Same gate for 'Death' (team burstCdr 6 + casterAtk 50/5s). Ungated team pieces (casterAtk 5/10s, AD 7.5/10s) every FB end. The Magician's Skill-2-cooldown line is moot in the event model. Burst parser-kept: Wheel AD 10% to Electric allies + 300% nuke + 10% taken. SCOPE AUDIT 2026-07-13: S1/S2's big grants (Attack Damage 180 / caster-ATK 180) target 'all Burst 3 Electric Code allies who previously cast their Burst Skill' \u2014 retargeted from the blanket Electric-allies approximation to stage-3 burst casters filtered by element (the same error class as Ada's S1).",
   "skill1": [
     {
       "slot": "skill1",
@@ -7,7 +7,8 @@
         "kind": "fullBurstEnd"
       },
       "target": {
-        "kind": "alliesOfElement",
+        "kind": "burstCasters",
+        "stage": 3,
         "element": "Electric"
       },
       "everyN": 2,
@@ -46,7 +47,8 @@
         "kind": "fullBurstEnd"
       },
       "target": {
-        "kind": "alliesOfElement",
+        "kind": "burstCasters",
+        "stage": 3,
         "element": "Electric"
       },
       "everyN": 2,

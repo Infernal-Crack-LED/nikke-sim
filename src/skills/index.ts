@@ -18,7 +18,8 @@ export interface OverrideFile {
   pierceModes?: string[]; // pierce only in these modes (e.g. CCW: ["Snipe"])
   // hand-measured corrections to DB weapon data (e.g. real SR fire cycle =
   // charge + bolt recovery, where the DB only records the charge time)
-  charFixes?: { chargeFrames?: number; reloadFrames?: number; burstCooldownSec?: number; noBoltRecovery?: boolean };
+  charFixes?: { chargeFrames?: number; reloadFrames?: number; burstCooldownSec?: number; noBoltRecovery?: boolean; pullsPerSec?: number };
+  burstSnapshotsPreFb?: boolean;
   skill1?: Block[];
   skill2?: Block[];
   burst?: Block[];
@@ -67,6 +68,7 @@ export function resolveSkills(
     source,
     modes: override?.modes,
     hasPierce: override?.hasPierce,
+    burstSnapshotsPreFb: override?.burstSnapshotsPreFb,
     pierceModes: override?.pierceModes,
   };
 }

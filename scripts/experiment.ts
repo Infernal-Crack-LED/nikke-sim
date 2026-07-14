@@ -30,13 +30,15 @@ interface Comp {
   boss: Element | null;
   modes?: Record<string, string>;
   lambda?: Record<string, 1 | 2 | 3>;
+  focus?: string; // camera-focused unit in the recorded run (gauge v4 focus bonus)
   real: Record<string, number>;
 }
 
 const COMPS: Comp[] = [
   {
     name: 'T1 wind-weak (boss Iron)',
-    slugs: ['anis-star', 'mast-romantic-maid', 'crown', 'scarlet-black-shadow', 'liberalio'],
+    // slot order corrected 2026-07-13 from docs/probes/"712 probes"/wind weak 2.jpeg
+    slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'],
     boss: 'Iron',
     real: {
       'anis-star': 916_819_928, 'mast-romantic-maid': 149_003_513, crown: 278_575_442,
@@ -45,7 +47,8 @@ const COMPS: Comp[] = [
   },
   {
     name: 'T3 fire-weak (boss Wind)',
-    slugs: ['little-mermaid', 'crown', 'rapi-red-hood', 'mihara-bonding-chain', 'helm'],
+    // slot order corrected 2026-07-13 from docs/probes/"712 probes"/fire weak2.jpeg
+    slugs: ['rapi-red-hood', 'mihara-bonding-chain', 'little-mermaid', 'crown', 'helm'],
     boss: 'Wind',
     real: {
       'little-mermaid': 509_505_044, crown: 215_495_230, 'rapi-red-hood': 985_340_728,
@@ -54,7 +57,8 @@ const COMPS: Comp[] = [
   },
   {
     name: 'T4 water-weak (boss Fire)',
-    slugs: ['anis-star', 'crown', 'snow-white-heavy-arms', 'privaty', 'helm'],
+    // slot order corrected 2026-07-13 from docs/probes/"712 probes"/water weak 2.jpeg
+    slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'],
     boss: 'Fire',
     real: {
       'anis-star': 1_128_483_012, crown: 373_216_848, 'snow-white-heavy-arms': 1_837_128_591,
@@ -62,8 +66,20 @@ const COMPS: Comp[] = [
     },
   },
   {
+    name: 'T4b water-weak REPLICATE (boss Fire)',
+    // docs/probes/"712 probes"/water weak.jpeg — same comp as T4, independent run.
+    // Repeatability baseline: per-unit deltas vs T4 are 0.5-3.5%.
+    slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'],
+    boss: 'Fire',
+    real: {
+      'anis-star': 1_118_637_577, crown: 374_945_975, 'snow-white-heavy-arms': 1_807_804_067,
+      privaty: 1_143_489_599, helm: 366_703_157,
+    },
+  },
+  {
     name: 'T2 elec-weak (boss Water)',
-    slugs: ['anis-star', 'crown', 'neon-vision-eye', 'cinderella', 'maiden-ice-rose'],
+    // slot order corrected 2026-07-13 from docs/probes/"712 probes"/elec weak2.jpeg
+    slugs: ['crown', 'neon-vision-eye', 'anis-star', 'cinderella', 'maiden-ice-rose'],
     boss: 'Water',
     real: {
       'anis-star': 984_995_678, crown: 195_539_778, 'neon-vision-eye': 1_474_983_283,
@@ -80,9 +96,12 @@ const COMPS: Comp[] = [
     },
   },
   {
-    name: 'T6 neutral (no advantage)',
+    name: 'T6 fire-weak (boss Wind)',
+    // 2026-07-13: originally scored as neutral, but the user's screenshot archive names this
+    // run "fire weak" (docs/probes/"712 probes"/fire weak.jpeg) — boss is Wind, rapi-RH has
+    // elemental advantage.
     slugs: ['crown', 'rapi-red-hood', 'little-mermaid', 'snow-white-heavy-arms', 'helm'],
-    boss: null,
+    boss: 'Wind',
     real: {
       crown: 221_080_065, 'rapi-red-hood': 1_024_779_898, 'little-mermaid': 499_756_023,
       'snow-white-heavy-arms': 1_147_472_116, helm: 186_659_650,
@@ -98,6 +117,17 @@ const COMPS: Comp[] = [
     },
   },
   {
+    name: 'T8 iron-weak (boss Electric)',
+    // NEW 2026-07-13 from docs/probes/"712 probes"/iron weak.jpeg — cindy-CW with advantage,
+    // rapi-RH neutral.
+    slugs: ['anis-star', 'crown', 'rapi-red-hood', 'cinderella-crystal-wave', 'helm'],
+    boss: 'Electric',
+    real: {
+      'anis-star': 739_756_176, crown: 278_690_692, 'rapi-red-hood': 1_196_668_085,
+      'cinderella-crystal-wave': 1_353_394_431, helm: 213_434_318,
+    },
+  },
+  {
     name: 'PA MiKa (boss Iron)',
     slugs: ['anis-star', 'mint', 'prika', 'alice', 'red-hood'],
     boss: 'Iron',
@@ -110,6 +140,40 @@ const COMPS: Comp[] = [
     slugs: ['moran', 'trina', 'cinderella', 'neon-vision-eye'],
     boss: 'Water',
     real: { moran: 222_265_637, trina: 50_865_273, cinderella: 582_734_714, 'neon-vision-eye': 467_167_997 },
+  },
+  {
+    name: 'PB2 elec battery RERUN w/ video (boss Water)',
+    // U8 ground truth 2026-07-13: docs/probes/u8 — slot order changed, full video.
+    // Measured from video: 11 FBs at ~17s rotation (sim was already right); neon = 5 burst
+    // casts, Supers on casts 1 & 4 (sim everyN model exact); FB1 B3 = cinderella.
+    slugs: ['moran', 'cinderella', 'neon-vision-eye', 'trina'],
+    boss: 'Water',
+    focus: 'cinderella', // tb2 test 1 recording (the source of these totals)
+    real: { moran: 220_607_028, cinderella: 593_914_529, 'neon-vision-eye': 510_593_652, trina: 51_538_522 },
+  },
+  {
+    name: 'TB2T2 anis-star projExpl probe (boss Water)',
+    // Test battery 2 test 2 (2026-07-13, docs/probes/tb2): 3-unit team isolating whether
+    // anis-star's Projectile Explosion aura buffs cinderella's plain RL normals. Trina is
+    // the B2 because none of her offensive buffs reach cindy (Electric AR only).
+    slugs: ['anis-star', 'trina', 'cinderella'],
+    boss: 'Water',
+    focus: 'cinderella', // tb2 test 2 recording
+    real: { 'anis-star': 243_809_717, trina: 56_966_844, cinderella: 555_079_049 },
+  },
+  {
+    name: 'PE2 elec DPS RERUN w/ video (boss Water)',
+    // U8 ground truth 2026-07-13: docs/probes/u8 e — slot order changed, full video.
+    slugs: ['crown', 'ein', 'ada', 'rouge', 'cinderella'],
+    boss: 'Water',
+    real: { crown: 141_588_867, ein: 538_193_097, ada: 464_034_086, rouge: 114_959_491, cinderella: 397_989_804 },
+  },
+  {
+    name: 'PI2 misc B3s RERUN w/ video (boss Water)',
+    // U8 ground truth 2026-07-13: docs/probes/u8 i — 13 FBs at ~14.1s measured.
+    slugs: ['grave', 'anis-star', 'jill', 'chisato', 'noir'],
+    boss: 'Water',
+    real: { grave: 286_237_418, 'anis-star': 599_378_674, jill: 534_623_166, chisato: 481_741_106, noir: 163_055_320 },
   },
   {
     name: 'PC shields (boss Fire)',
@@ -176,6 +240,7 @@ function run(comp: Comp, patch: Patch = {}) {
   const cfg: SimConfig = {
     slugs: comp.slugs, bossElement: comp.boss, bossDef: 0, level: 400, copies: 10,
     doll: false, ol: 0, coreHitRate: 1, rangeBonus: true, durationSec: 180,
+    focusSlug: comp.focus,
   };
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
   return runSim(chars, mult, cfg, prepared);
@@ -184,6 +249,8 @@ function run(comp: Comp, patch: Patch = {}) {
 function report(comp: Comp, label: string, patch: Patch = {}) {
   const res = run(comp, patch);
   console.log(`\n--- ${comp.name} · ${label} ---`);
+  // ROT=1 dumps the burst rotation log (debug workflows)
+  if (process.env.ROT) for (const line of res.rotationLog) console.log('  ' + line);
   for (const u of res.units) {
     const real = comp.real[u.slug];
     const total = u.totalDamage;
@@ -198,4 +265,8 @@ const t1 = COMPS[0], t3 = COMPS[1], t4 = COMPS[2];
 
 let DOLL = false;
 console.log('===== SCOPE LOCK basis: core 7, no cube, no doll, OL0, 10/10/10 =====');
-for (const c of COMPS) report(c, 'scope lock');
+// ONLY=<substring> runs a single comp (debug workflows pair it with DBG_UNIT/DBG_N).
+for (const c of COMPS) {
+  if (process.env.ONLY && !c.name.toLowerCase().includes(process.env.ONLY.toLowerCase())) continue;
+  report(c, 'scope lock');
+}

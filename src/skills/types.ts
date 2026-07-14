@@ -53,7 +53,7 @@ export type TargetDef =
   | { kind: 'self' }
   | { kind: 'allies' }
   | { kind: 'enemy' }
-  | { kind: 'burstCasters' }                // allies who cast a burst this rotation
+  | { kind: 'burstCasters'; stage?: number; element?: string }                // allies who cast a burst this rotation
   | { kind: 'nonBurstCasters' }
   | { kind: 'alliesTopAtk'; count: number }
   | {
@@ -63,7 +63,11 @@ export type TargetDef =
       excludeSelf?: boolean; // e.g. Liberalio is immune to charge-speed buffs
     }
   | { kind: 'alliesOfElement'; element: string }
-  | { kind: 'alliesOfClass'; cls: string };
+  | { kind: 'alliesOfClass'; cls: string }
+  // "the N leftmost <element> ally unit(s) with <weapon>s" (Trina S2's real target)
+  | { kind: 'alliesOfElementWeapon'; element: string; weapon: string; count?: number }
+  // "self and N ally unit(s) on both sides" (Rouge's coin coverage — positional)
+  | { kind: 'selfAndAdjacent'; sides: number };
 
 export type EffectDef =
   | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number }
@@ -153,5 +157,6 @@ export interface CharacterSkills {
   source: 'parser' | 'override' | 'parser+override';
   modes?: string[]; // user-selectable kit modes declared by the override (first = default)
   hasPierce?: boolean; // kit's attacks are Pierce-tagged → Pierce Damage ▲ feeds Damage Up
+  burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)
   pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
 }

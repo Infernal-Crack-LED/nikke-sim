@@ -25,7 +25,7 @@ const TRIGGERS = new Set([
 ]);
 const TARGETS = new Set([
   'self', 'allies', 'enemy', 'burstCasters', 'nonBurstCasters',
-  'alliesTopAtk', 'alliesLowestAtk', 'alliesOfElement', 'alliesOfClass',
+  'alliesTopAtk', 'alliesLowestAtk', 'alliesOfElement', 'alliesOfClass', 'alliesOfElementWeapon', 'selfAndAdjacent',
 ]);
 const EFFECTS = new Set([
   'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'burstEligibility', 'burstFirst', 'reenterStage',

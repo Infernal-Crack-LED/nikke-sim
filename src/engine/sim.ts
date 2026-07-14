@@ -16,23 +16,25 @@ import {
 } from '../stats.js';
 import { resolveSkills } from '../skills/index.js';
 import type { PreparedUnit } from '../prepare.js';
+import gaugeTable from '../../data/gauge-per-shot.json' with { type: 'json' };
 import type { Block, EffectDef, StatKey, TargetDef } from '../skills/types.js';
 
 const FPS = 60;
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
 const FULL_BURST_FRAMES = 10 * FPS;
-// Standard SRs pause 22 frames (bolt cycle) between full-charge shots — MEASURED from the
-// user's Helm recording (docs/"helm 2 6 mag rotations.mov": 1.37s shot-to-shot over six
-// intervals; reload starts immediately after the final shot, recovery does not delay it).
-// Weapon-swap states are exempt (Red Hood's own B3 window, SWHA's Fully Active, Nayuta's SR
-// mode), as are units whose DB chargeFrames already include the cycle
-// (charFixes.noBoltRecovery: SWHA, liberalio).
+// AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
+// RELEASE-FIRED charge weapons fire ~22 frames after full charge on auto — measured on
+// Helm SR (22f, docs/"helm 2 6 mag rotations.mov") and Maiden:IR RL (21f avg, her video;
+// modeled per-unit via charFixes.chargeFrames). AUTOFIRING guns (liberalio, anis: star,
+// nayuta-in-burst; newer mechanic) fire at baked cadence with no latency. Engine default:
+// SR = latent, RL = bare cadence (validated RL carries fit autofire); weapon-swap states
+// and charFixes.noBoltRecovery units (SWHA, liberalio) are exempt.
 const SR_BOLT_RECOVERY_FRAMES = 22;
 
 // Canon fire cadence per weapon type (doc values; per trigger pull).
 // MG's "60 rps" counts belt rounds (hits): pulls/s = 60 / hitsPerShot and each
 // pull consumes hitsPerShot ammo. MG wind-up follows the measured frame ladder
-// below (docs/nikke_mg_windup_model.md), not a fitted curve.
+// below (docs/nikke-mg-windup-model.md), not a fitted curve.
 const PULLS_PER_SEC: Record<string, number> = {
   AR: 12, SMG: 20, SG: 1.5, MG: 60, Pistol: 4,
 };
@@ -50,6 +52,26 @@ const MG_RAMP_INTERVALS = [
 // core; MG normals never receive the +30% optimal-range bonus (every range is optimal
 // for an MG, so the bonus doesn't exist for them).
 const MG_NO_CORE_RAMP_ROUNDS = 18;
+// MG WIND-DOWN (2026-07-13, replaces the binary >100%-reload skip): while an MG is not
+// firing (reload/stun/unhittable), its spin holds for a ~0.27s grace then decays back down
+// the wind-up ladder at ~2.8x climb speed — fully gone after ~1.1s idle. Linear fit through
+// ore-game's two measured recovery points (90% reload buff -> ~90 rounds recovered, 74% ->
+// ~30; https://ore-game.com/nikke/post/verify-mg-heatup/) whose endpoints reproduce BOTH
+// prior rules exactly: ore-game's "no recovery below ~70% reload buff" (idle > 1.1s) and
+// our measured ">100% buff = full skip" (subtractive reload leaves only the ~0.21s tail,
+// inside the grace window).
+const MG_WINDDOWN_GRACE_FRAMES = 16;
+const MG_WINDDOWN_DECAY = 2.78; // ladder-frames lost per idle frame past the grace
+const MG_LADDER_CUM: number[] = [0];
+for (const iv of MG_RAMP_INTERVALS) MG_LADDER_CUM.push(MG_LADDER_CUM[MG_LADDER_CUM.length - 1] + iv);
+// RELOAD (2026-07-13): actual reload = displayed x 0.975 x (1 - buff) + 0.21s — SUBTRACTIVE,
+// like charge speed, with a fixed 0.21s tail; buffs past 100% only remove the scaled part
+// (https://ore-game.com/nikke/post/reload-limit/). Replaces the old divisive
+// reloadFrames/(1+buff) — near-identical at mid buffs (which is why the board validated),
+// divergent above ~80%.
+const RELOAD_TAIL_FRAMES = 13; // 0.21s
+const reloadFramesNeeded = (base: number, buffPct: number) =>
+  Math.round(base * 0.975 * Math.max(0, 1 - buffPct / 100)) + RELOAD_TAIL_FRAMES;
 
 // Test-boss range script (user-measured, 2026-07-13; fight timer 3:00 counts down):
 // mid 0-33s, near 33-70, far 70-106, mid-far 106-144, near 144-176, mid-far 176-180.
@@ -72,6 +94,10 @@ const RANGE_ELIGIBLE: Record<string, Set<string>> = {
   far: new Set(['SR']),
 };
 const UNHITTABLE_FRAMES = 60;
+// SG pellet falloff ⚑: outside the near band, pellet spread misses the moving test boss —
+// calibrated on the naga/dorothy-S/noir probe triple (all ~x2 hot at full volleys):
+// near = all 10 pellets land, elsewhere ~30%.
+const SG_OUT_OF_NEAR_HIT_FRACTION = 0.3;
 
 // element → the element it beats
 const BEATS: Record<Element, Element> = {
@@ -124,6 +150,7 @@ interface UnitState {
   warnings: string[];
   skillSource: string;
   hasPierce: boolean;     // kit's attacks are Pierce-tagged (Q10)
+  burstSnapshotsPreFb: boolean; // burst damage resolves pre-FB/pre-stage (per-unit timing)
   ammoRefundPer10: number;  // Bastion cube: bullets refunded per 10 fired
   bulletsSinceRefund: number;
   burstGenMult: number;
@@ -142,9 +169,11 @@ interface UnitState {
   chargeProgress: number;
   boltRecoveryFrames: number; // remaining post-shot bolt-cycle frames (SR)
   noBoltRecovery: boolean;
+  pullsPerSec?: number;
   reloadProgress: number;
   reloading: boolean;
   mgRampRound: number;  // rounds fired since wind-up start (indexes the ramp ladder)
+  mgIdleFrames: number; // consecutive non-firing frames (reload/stun/unhittable) for wind-down
   mgCooldown: number;   // fractional frames until the next round
   // skills runtime
   buffs: BuffInstance[];
@@ -166,6 +195,7 @@ interface UnitState {
   hitCounters: Map<string, number>;
   blockActivations: Map<string, number>;
   burstCdFrames: number;
+  lastBurstCastFrame: number;
   // results
   damage: { normal: number; skill: number; burst: number };
   pulls: number;
@@ -187,6 +217,7 @@ export interface UnitResult {
   breakdown: { normal: number; skill: number; burst: number };
   pulls: number;
   burstCasts: number;
+  maxHp: number;
   skillSource: string;
   warnings: string[];
   loadout: string[];
@@ -217,11 +248,11 @@ export function runSim(
     const reloadFix = prepared?.[idx]?.reloadFrames;
     const cdFix = prepared?.[idx]?.burstCooldownSec;
     const char =
-      charFix || reloadFix || cdFix
+      charFix !== undefined || reloadFix !== undefined || cdFix !== undefined
         ? {
             ...rawChar,
             ...(charFix ? { chargeFrames: charFix } : {}),
-            ...(reloadFix ? { reloadFrames: reloadFix } : {}),
+            ...(reloadFix !== undefined ? { reloadFrames: reloadFix } : {}),
             ...(cdFix ? { burstCooldownSec: cdFix } : {}),
           }
         : rawChar;
@@ -266,6 +297,7 @@ export function runSim(
       hasPierce:
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
+      burstSnapshotsPreFb: skills.burstSnapshotsPreFb === true,
       ammoRefundPer10: extra.filter((e) => e.stat === 'ammoRefundPer10').reduce((s, e) => s + e.value, 0),
       bulletsSinceRefund: 0,
       burstGenMult:
@@ -290,16 +322,19 @@ export function runSim(
       fireAcc: 0,
       boltRecoveryFrames: 0,
       noBoltRecovery: prepared?.[idx]?.noBoltRecovery ?? false,
+      pullsPerSec: prepared?.[idx]?.pullsPerSec,
       chargeProgress: 0,
       reloadProgress: 0,
       reloading: false,
       mgRampRound: 0,
+      mgIdleFrames: 0,
       mgCooldown: 0,
       buffs: [],
       storedHits: new Map(),
       hitCounters: new Map(),
       blockActivations: new Map(),
       burstCdFrames: 0,
+      lastBurstCastFrame: -1,
       damage: { normal: 0, skill: 0, burst: 0 },
       pulls: 0,
       burstCasts: 0,
@@ -328,17 +363,76 @@ export function runSim(
   const totalFrames = cfg.durationSec * FPS;
   const rotationLog: string[] = [];
 
-  // burst gauge: % per second per unit = rl3/3, scaled by static cube bonus and
-  // any live burst-gen buffs (recomputed per frame)
-  const gaugeRate = (frame: number) =>
-    units.reduce(
-      (s, u) =>
-        s +
-        ((u.char.rl3 ?? 5) / 3) *
-          u.burstGenMult *
-          (1 + stat(u, 'burstGenPct', frame) / 100),
-      0
-    ) / FPS;
+  // burst gauge v4 (2026-07-13, test battery 2 test 3 — two solo gauge recordings vs the
+  // RAID boss + the datamined CharacterShotTable + the einkk reference formula):
+  //   per trigger pull vs the stage target = target_burst_energy_pershot (datamined,
+  //   universally = 2x the non-target base — this IS the old "boss x2", it's a column);
+  //   the CAMERA-FOCUSED unit's charge weapon (SR/RL) generates x(1 + 1.5xcharge) = x2.5
+  //   at full charge (einkk positionBurstBonus; the same "focus" concept as the popup
+  //   rule — default focus = formation slot 3, i.e. index min(2, n-1); recordings where
+  //   the user selected a focus unit pass cfg.focusSlug);
+  //   NO auto-efficiency factor and NO extra boss multiplier (both solos matched with
+  //   neither: maiden 364x2.5=910/shot + rider 364 exact; takina 560x2.5=1400/shot).
+  // Data: data/gauge-per-shot.json (85 datamined via coolguydlm123/nikkecsvlibrary
+  // CharacterShotTable, 15 weapon-class modal fallbacks, anis-star battery estimate ⚑).
+  // The synergy-API burstGaugePerShot column was DROPPED as a gauge source — its
+  // semantics vary per unit (sometimes base, sometimes target, sometimes target x2).
+  // full_charge_burst_energy column stored but unused ⚑ (both solo fits are exact
+  // without it). Gauge = 10,000 energy (we track percent); locked during FB.
+  const AUTO_CORE_RATE = 0.85;
+  // Pierce core+body double-hit: community evidence is for MULTI-PART bosses; on the
+  // partless test boss the A/B against run A says NO doubling (alice/RH overheat with it
+  // once the decoded cadences are in). Kept as a switch for part-ed boss support later.
+  const PIERCE_CORE_DOUBLE = false;
+  // charge weapons on the CAMERA-FOCUSED unit generate x(1 + 1.5xcharge) = x2.5 at
+  // full charge (einkk positionBurstBonus, datamined). Both solo gauge recordings
+  // fit this exactly (a solo unit is always focused: maiden 364x2.5=910, takina
+  // 560x2.5=1400); the TB2T2 3-unit rotation (40s real) requires trina (unfocused,
+  // cinderella held camera) to generate FLAT 720 — the bonus is focus-gated, not
+  // weapon-class-wide. Default focus = formation slot 3 (index min(2, n-1));
+  // recorded runs pass cfg.focusSlug for the user-selected camera unit.
+  const FOCUS_CHARGE_GEN = 2.5;
+  // UNFOCUSED_CHARGE_GEN ⚑: no direct measurement exists for an UNfocused charge
+  // unit's full-charge gen (solos are always focused). Flat x1.0 makes every
+  // SR/RL-heavy 5-unit fight 10-20% cold vs the anchored totals; the old validated
+  // calibration was effectively x1.75 (0.7 auto-efficiency x 2.5 charge scale), so
+  // that factor is retained for unfocused charge units until a recording with a
+  // visible gauge bar and an unfocused SR settles it (candidate: the datamined
+  // full_charge_burst_energy column, ~250, may be the real additive mechanism).
+  const UNFOCUSED_CHARGE_GEN = 2.2;
+  const focusIdx =
+    cfg.focusSlug !== undefined
+      ? Math.max(0, chars.findIndex((c) => c.slug === cfg.focusSlug))
+      : Math.min(2, chars.length - 1);
+  // per-trigger gen vs the stage target, in gauge-percent units (JSON is energy/100)
+  const gaugePerShot = (u: UnitState) => {
+    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[u.char.slug];
+    const per = (entry?.targetPerTrigger ?? 40) / 100;
+    const isCharge = (u.char.weapon === 'SR' || u.char.weapon === 'RL') && !u.swap;
+    if (!isCharge) return per;
+    return per * (u.idx === focusIdx ? FOCUS_CHARGE_GEN : UNFOCUSED_CHARGE_GEN);
+  };
+  const addGauge = (u: UnitState, frame: number, energyPct: number) => {
+    if (fbEndFrame > frame || stage !== 0) return; // locked during FB and the chain
+    if (process.env.DBG_GAUGE && frame < 30 * FPS) {
+      console.log(`[g] t=${(frame / FPS).toFixed(2)} ${u.char.slug} +${(energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100)).toFixed(2)} gauge=${gauge.toFixed(1)}`);
+    }
+    gauge = Math.min(
+      100,
+      gauge + energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100)
+    );
+  };
+  const shotGauge = (u: UnitState, frame: number, hitFraction = 1) => {
+    const rounds = u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
+    addGauge(u, frame, gaugePerShot(u) * rounds * hitFraction);
+  };
+  // one skill-damage impact (flatDamage proc, dot tick) = one target-base hit of gen
+  // (maiden's rider measured exactly her target per-shot value, 364, no focus bonus)
+  const skillGauge = (u: UnitState, frame: number) => {
+    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[u.char.slug];
+    const per = (entry?.targetPerTrigger ?? 40) / 100;
+    addGauge(u, frame, per / (u.char.weapon === 'SG' ? 10 : u.char.hitsPerShot || 1));
+  };
 
   const transitionFrames = BOSS_RANGE_SCRIPT.slice(1).map((r) => r.fromSec * FPS);
   const bandAt = (frame: number): 'near' | 'mid' | 'midfar' | 'far' => {
@@ -350,8 +444,18 @@ export function runSim(
     transitionFrames.some((t) => frame >= t && frame < t + UNHITTABLE_FRAMES);
 
   let gauge = 0;
-  let stage: 1 | 2 | 3 = 1;
+  // 0 = filling (gauge builds); 1..3 = burst chain stages. Opening the chain
+  // CONSUMES the gauge (einkk zeroes the meter when stage 1 opens); hits during the
+  // chain and during full burst generate nothing (einkk: gen only at stage 0). B1/B2
+  // casts open the next stage with a 10s window (datamined burst_duration 1000 =
+  // 10.00s); if the window expires without a cast the chain COLLAPSES back to
+  // filling and a full refill is needed — this is what stretches rotations when no
+  // Burst 3 is off cooldown (TB2T2 measured 40s: fill ~8s -> chain -> stage-3 window
+  // expires (cindy still on CD) -> refill -> second chain completes at her CD).
+  let stage: 0 | 1 | 2 | 3 = 0;
   let stageGapFrames = 0;
+  let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
+  const STAGE_WINDOW_FRAMES = 600; // burst_duration 1000 (=10s) standard
   let fbEndFrame = -1;
   let pendingFbExtendSec = 0;
   let rotationCasters: number[] = [];
@@ -376,7 +480,11 @@ export function runSim(
 
   function effectiveAtk(u: UnitState, frame: number): number {
     // casterMaxHpPct buffs arrive as flat Max HP (converted at apply time)
-    const liveMaxHp = u.maxHp + stat(u, 'maxHpFlat' as StatKey, frame);
+    // VIDEO-MEASURED (cindy e3, 2026-07-13): "ATK = % of final Max HP" conversions count
+    // the unit's OWN Max HP (incl. own-kit stacks) but NOT ally-granted Max HP buffs —
+    // FB proc popups match own-HP math within 2% early AND late, and would be ~28% higher
+    // if rouge's grants fed the conversion.
+    const liveMaxHp = u.maxHp;
     return (
       u.staticAtk * (1 + stat(u, 'atkPct', frame) / 100) +
       stat(u, 'casterAtkPct', frame) +
@@ -416,8 +524,12 @@ export function runSim(
       major += critRate * ((u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100);
     }
     if (opts.core && cfg.coreHitRate > 0) {
+      // AUTO_CORE_RATE ⚑ (2026-07-13): auto-aim never converges on the core — measured
+      // reticle floor ~12.5px vs ~1px manual (JP frame analysis), ~18-20% effective
+      // accuracy loss on auto. Even at "100% core exposure" a fraction of auto shots
+      // land off-core. Calibrated against the validated-fight anchors.
       major +=
-        cfg.coreHitRate *
+        cfg.coreHitRate * AUTO_CORE_RATE *
         ((u.char.coreAttackMultiplier - 100) / 100 +
           (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100);
     }
@@ -474,6 +586,31 @@ export function runSim(
     const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
     const dmg =
       baseAtk * (atkPct / 100) * major * elem * charge * dmgUp * projFactor * taken * distributed;
+    // DBG_UNIT=<slug> [DBG_N=<count>]: log per-instance bucket decomposition (video
+    // popup reconciliation — popups show single non-crit/crit instances, so compare
+    // against major recomputed without the crit expectation)
+    if (process.env.DBG_UNIT === u.char.slug && (u as any).__dbgN !== -1) {
+      (u as any).__dbgN = ((u as any).__dbgN ?? 0) + 1;
+      const lim = Number(process.env.DBG_N ?? 30);
+      if ((u as any).__dbgN <= lim) {
+        console.log(
+          `[dbg ${u.char.slug}] t=${(frame / FPS).toFixed(2)} ${opts.category} atkPct=${atkPct.toFixed(1)} ` +
+          `baseAtk=${baseAtk.toFixed(0)} major=${major.toFixed(3)} elem=${elem.toFixed(3)} charge=${charge.toFixed(3)} ` +
+          `dmgUp=${dmgUp.toFixed(4)} taken=${taken.toFixed(3)} dmg=${dmg.toFixed(0)}`
+        );
+        // DBG_BUFFS=1: dump the unit's live buff entries with each logged instance
+        if (process.env.DBG_BUFFS) {
+          for (const b of u.buffs) {
+            if (b.expiresFrame === null || b.expiresFrame > frame) {
+              console.log(
+                `    [buff] ${b.key} stat=${b.stat} val=${b.value} stacks=${b.stacks} ` +
+                `ends=${b.expiresFrame === null ? 'inf' : (b.expiresFrame / FPS).toFixed(2)}`
+              );
+            }
+          }
+        }
+      } else (u as any).__dbgN = -1;
+    }
     u.damage[opts.category] += dmg;
   }
 
@@ -481,7 +618,19 @@ export function runSim(
     switch (t.kind) {
       case 'self': return [units[ownerIdx]];
       case 'allies': return units;
-      case 'burstCasters': return rotationCasters.map((i) => units[i]);
+      case 'burstCasters': {
+        const casters = rotationCasters.map((i) => units[i]);
+        // optional stage filter (Ada S1: "all BURST 3 allies who previously used their
+        // Burst Skill" — B1/B2 casters excluded)
+        const byElement = t.element ? casters.filter((u) => u.char.element === t.element) : casters;
+        if (t.stage === undefined) return byElement;
+        return byElement.filter(
+          (u) =>
+            (t.stage === 3 && (u.char.burst === 'III' || u.lambdaStage === 3)) ||
+            (t.stage === 2 && u.char.burst === 'II') ||
+            (t.stage === 1 && u.char.burst === 'I')
+        );
+      }
       case 'nonBurstCasters': return units.filter((u) => !rotationCasters.includes(u.idx));
       case 'alliesTopAtk':
         return [...units].sort((a, b) => b.staticAtk - a.staticAtk).slice(0, t.count);
@@ -493,6 +642,12 @@ export function runSim(
           .slice(0, t.count);
       case 'alliesOfElement': return units.filter((u) => u.char.element === t.element);
       case 'alliesOfClass': return units.filter((u) => u.char.class === t.cls);
+      case 'alliesOfElementWeapon':
+        return units
+          .filter((u) => u.char.element === t.element && u.char.weapon === t.weapon)
+          .slice(0, t.count ?? 1); // units[] is slot order: leftmost first
+      case 'selfAndAdjacent':
+        return units.filter((u) => Math.abs(u.idx - ownerIdx) <= t.sides);
       case 'enemy': return [];
     }
   }
@@ -559,7 +714,13 @@ export function runSim(
               (e.stat === 'damageTakenPct' || e.stat === 'distributedDamagePct') &&
               e.value > 0
             ) {
-              applyBuff(enemyBuffs, key, e.stat, e.value, e.durationSec, e.maxStacks ?? 1, frame);
+              // KR stacking rule: same buff (stat+value) from the same skill slot of the
+              // same caster OVERWRITES/refreshes across trigger blocks, never co-stacks
+              applyBuff(
+                enemyBuffs,
+                `${ownerIdx}:${block.slot}:${e.stat}:${e.value}`,
+                e.stat, e.value, e.durationSec, e.maxStacks ?? 1, frame
+              );
             }
             // other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0
             break;
@@ -573,8 +734,12 @@ export function runSim(
           const alwaysOn =
             block.trigger.kind === 'passive' || block.trigger.kind === 'bossElement';
           for (const t of resolveTargets(block.target, ownerIdx)) {
+            // KR stacking rule (game-mechanics.md §11): the same buff (stat+value) from
+            // the same skill slot of the same caster overwrites/refreshes across trigger
+            // blocks instead of co-stacking (e.g. Crown's two S1 "Reloading Speed ▲
+            // 44.35%" lines). Different skills / different casters still stack.
             applyBuff(
-              t.buffs, key, statKey, value,
+              t.buffs, `${ownerIdx}:${block.slot}:${statKey}:${e.value}`, statKey, value,
               alwaysOn ? undefined : e.durationSec,
               e.maxStacks ?? 1, frame
             );
@@ -587,12 +752,24 @@ export function runSim(
           break;
         }
         case 'flatDamage':
+          skillGauge(owner, frame); // skill-damage hits generate weapon-base gauge
+          // U10 ANSWERED (Test Battery 2 Test 1, 2026-07-13): burst-skill damage does NOT
+          // get the +50% full-burst major. Cinderella's nuke popup (run-B order, cindy
+          // focus) read non-crit 4,066,936 / crit 6,100,403 (×1.5) — 98.7% of the no-FB
+          // branch (4,120,347 / 6,180,521) and a 34% miss for the FB branch (6,180,521
+          // non-crit). Live buffs at cast DO apply (trina's +20.9% attack damage was in
+          // the measured value). Skill 1/2 procs get FB by actual timing (the per-unit
+          // noFb flags cover the verified exceptions).
+          // U1 ANSWERED (2026-07-13, datamined FunctionTable + Prydwen + JP verification):
+          // function-type "additional damage" CRITS at the caster's rate, never cores,
+          // never gets range; FB applies by actual proc timing. Crit is on by default
+          // (set crit:false only for verified non-critting sources).
           dealDamage(owner, e.atkPct, frame, {
-            crit: e.crit === true,
+            crit: e.crit !== false,
             core: e.core === true,
             charge: false,
             noRange: true, // riders never get the +30% range bonus (user rule, 2026-07-13)
-            noFb: e.noFb === true,
+            noFb: e.noFb === true || (block.slot === 'burst' && block.trigger.kind === 'burstCast'),
             category,
             distributed: e.flavor === 'distributed',
             sustained: e.flavor === 'sustained',
@@ -790,14 +967,24 @@ export function runSim(
         if (!rotationCasters.includes(u.idx)) u.fbMissedSinceBurst++;
       });
       rotationCasters = [];
-      stage = 1;
+      stage = 0;
     }
 
     // ---- burst rotation ----
     // the gauge only builds OUTSIDE full burst; during FB it is locked
-    if (!fbActive) gauge = Math.min(100, gauge + gaugeRate(frame));
+    // gauge accrues via shotGauge() on each pull (see firePull)
     if (stageGapFrames > 0) stageGapFrames--;
-    if (!fbActive && gauge >= 100 && stageGapFrames === 0) {
+    if (!fbActive && stage === 0 && gauge >= 100) {
+      gauge = 0; // the chain consumes the gauge (refill required if it collapses)
+      stage = 1;
+      stageExpireFrame = Infinity;
+    }
+    if (!fbActive && stage >= 2 && frame >= stageExpireFrame) {
+      rotationLog.push(`${(frame / FPS).toFixed(1)}s  CHAIN EXPIRED at stage ${stage} (refill)`);
+      stage = 0;
+      stageExpireFrame = Infinity;
+    }
+    if (!fbActive && stage >= 1 && stageGapFrames === 0) {
       const want = romanStage[stage];
       const eligible = (u: UnitState) => {
         if (u.burstCdFrames > 0) return false;
@@ -808,22 +995,38 @@ export function runSim(
         return u.char.burst === want || u.extraStages.has(stage);
       };
       // burst-order overrides: a pending burstFirst unit (Prika duet opener) outranks
-      // everything; then max-MP priority (Maiden); then the leftmost order
+      // everything; then max-MP priority (Maiden); then the leftmost order.
+      // (A least-recently-burst round-robin was tried 2026-07-13 for run B's cindy/neon
+      // alternation — it broke every comp with a bench B3: helm and maiden started
+      // bursting where the real fights never pick them. The alternation falls out of
+      // leftmost + real cooldowns + rotation length instead; keep leftmost.)
       const cand =
         units.find((u) => u.burstFirstPending && eligible(u)) ??
         units.find((u) => u.mpPriority && u.fbMissedSinceBurst >= u.mpThreshold && eligible(u)) ??
         units.find(eligible);
       if (cand) {
+        if (process.env.DBG_CD) {
+          console.log(`[cd] t=${(frame / FPS).toFixed(2)} stage=${stage} cast=${cand.char.slug} cdWas=${cand.burstCdFrames} cdSec=${cand.char.burstCooldownSec}`);
+        }
         cand.burstFirstPending = false;
         cand.burstCasts++;
+        cand.lastBurstCastFrame = frame;
         cand.burstCdFrames = Math.round(cand.char.burstCooldownSec * FPS);
         rotationCasters.push(cand.idx);
         rotationLog.push(`${(frame / FPS).toFixed(1)}s  B${want} ${cand.char.name}`);
         const castStage = stage;
-        // Stage 3: full burst begins BEFORE the caster's burst effects resolve —
-        // in-game the burst nuke lands with FB active, so it gets the +50% FB
-        // bonus, the fullBurstEnter team auras, and same-cast stageEnter buffs
-        // (e.g. Cinderella's Max-HP→ATK conversion). Stages 1/2 stay pre-FB.
+        // PER-UNIT BURST TIMING (video-measured 2026-07-13, U10): most nukes land with
+        // FB active (frame-0 rule: +50% FB, entry auras, same-cast stage buffs — e.g.
+        // rapi-RH, validated across five fights). Units flagged burstSnapshotsPreFb
+        // (cinderella, via her e3 focus video) resolve their burst damage BEFORE full
+        // burst and same-frame stage buffs register — the JP/einkk use-time snapshot.
+        if (cand.burstSnapshotsPreFb) {
+          cand.blocks.forEach((b, bi) => {
+            if (b.trigger.kind === 'burstCast' && (b.trigger.stage ?? castStage) === castStage) {
+              applyBlock(cand.idx, b, bi, frame);
+            }
+          });
+        }
         if (stage === 3) {
           fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
           pendingFbExtendSec = 0;
@@ -837,6 +1040,20 @@ export function runSim(
             }
           })
         );
+        // Burst-cast blocks resolve BEFORE full-burst-entry triggers (measured, test
+        // battery 2 test 2, 2026-07-13): cinderella's nuke popup carried trina's
+        // cast-granted attack damage but NOT anis-star's full-burst-entry aura (neither
+        // its flat-ATK grant nor its attack damage) — with the aura the prediction is
+        // 34-49% hot, without it the match is 0.99 on two separate casts. One physical
+        // rule covers this and the noFb exemption: at the B3-cast instant Full Burst
+        // has not begun, so the +50% major and every "during Full Burst" buff are
+        // equally absent from cast-instant burst damage. Stored-hit releases stay
+        // AFTER the entry triggers (they detonate inside the window and keep auras).
+        if (!cand.burstSnapshotsPreFb) cand.blocks.forEach((b, bi) => {
+          if (b.trigger.kind === 'burstCast' && (b.trigger.stage ?? castStage) === castStage) {
+            applyBlock(cand.idx, b, bi, frame);
+          }
+        });
         if (castStage === 3) {
           units.forEach((u) => fireTriggered(u, 'fullBurstEnter', frame));
           // release stored hits (e.g. Rapi:RH's attached projectiles exploding)
@@ -868,11 +1085,6 @@ export function runSim(
           }
           rotationLog.push(`${(frame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
         }
-        cand.blocks.forEach((b, bi) => {
-          if (b.trigger.kind === 'burstCast' && (b.trigger.stage ?? castStage) === castStage) {
-            applyBlock(cand.idx, b, bi, frame);
-          }
-        });
         cand.fbMissedSinceBurst = 0; // MP spent (blocks above already read it)
         if (castStage !== 3) {
           // "Re-enters Burst Stage N": hold the stage so a second eligible unit
@@ -888,6 +1100,7 @@ export function runSim(
           } else {
             stage = (stage + 1) as 1 | 2 | 3;
             stageGapFrames = STAGE_CAST_GAP_FRAMES;
+            stageExpireFrame = frame + STAGE_WINDOW_FRAMES;
           }
         }
       } else {
@@ -900,7 +1113,7 @@ export function runSim(
     if (unhittable && transitionFrames.includes(frame)) {
       // window start: fast reloaders (effective reload <= 1s) snap-refill their mag
       for (const u of units) {
-        const effReload = (u.char.reloadFrames ?? 0) / (1 + stat(u, 'reloadSpeedPct', frame) / 100);
+        const effReload = reloadFramesNeeded(u.char.reloadFrames ?? 0, stat(u, 'reloadSpeedPct', frame));
         if (effReload <= FPS && !u.reloading) u.ammo = maxAmmo(u, frame);
       }
     }
@@ -916,21 +1129,14 @@ export function runSim(
       }
 
       if (frame < u.stunnedUntilFrame) {
-        u.mgRampRound = 0; // MG wind-up resets while stunned
-        u.mgCooldown = 0;
+        u.mgIdleFrames++; // MG spin winds down while stunned (decay applied on resume)
         continue;
       }
 
       if (u.reloading) {
-        // MG wind-up bug (user-confirmed): a reload only re-winds the MG when
-        // the unit's total reload-speed buffs are ≤ 100%. Above 100% the ramp
-        // is kept (no re-windup) — why Crown+Privaty MGs fire at full rate.
-        if (stat(u, 'reloadSpeedPct', frame) <= 100) {
-          u.mgRampRound = 0;
-          u.mgCooldown = 0;
-        }
-        u.reloadProgress += 1 + stat(u, 'reloadSpeedPct', frame) / 100;
-        if (u.reloadProgress >= u.char.reloadFrames) {
+        u.mgIdleFrames++; // spin winds down during the reload (decay applied on resume)
+        u.reloadProgress += 1;
+        if (u.reloadProgress >= reloadFramesNeeded(u.char.reloadFrames, stat(u, 'reloadSpeedPct', frame))) {
           u.reloading = false;
           u.reloadProgress = 0;
           u.ammo = maxAmmo(u, frame);
@@ -940,7 +1146,10 @@ export function runSim(
 
       // boss unhittable (range transition): hold fire; in-progress reloads
       // (handled above) still advance through the window
-      if (unhittable) continue;
+      if (unhittable) {
+        u.mgIdleFrames++;
+        continue;
+      }
 
       const unlimited = sum(u.buffs, 'unlimitedAmmo', frame) > 0;
 
@@ -952,16 +1161,45 @@ export function runSim(
         if (u.boltRecoveryFrames > 0) {
           u.boltRecoveryFrames--;
         } else {
-          u.chargeProgress += 1 + stat(u, 'chargeSpeedPct', frame) / 100;
-          if (u.chargeProgress >= chargeFrames) {
+          // Charge Speed is SUBTRACTIVE on charge time (decoded game data + einkk:
+          // effective time = base x (1 - sumCS), floored at 1 frame; StatChargeTime is
+          // a negative % on charge TIME). Excess past 100% does nothing except for kits
+          // with an explicit conversion (Red Hood S1). Evaluated live each frame so CS
+          // buffs mid-charge shorten the remaining charge.
+          u.chargeProgress += 1;
+          // Swap states with an explicit cadence are fire-rate-gated (decoded: Red Wolf
+          // rate_of_fire 200rpm; eunhwa/nayuta/maxwell cycles hand-measured) — charge
+          // speed does not shorten them.
+          const cs =
+            u.swap?.chargeFrames != null
+              ? 0
+              : Math.min(100, Math.max(0, stat(u, 'chargeSpeedPct', frame)));
+          const needed = Math.max(1, Math.round(chargeFrames * (1 - cs / 100)));
+          if (u.chargeProgress >= needed) {
             u.chargeProgress = 0;
             firePull(u, frame, true, unlimited);
-            if (u.char.weapon === 'SR' && !u.swap && !u.noBoltRecovery) {
+            // release latency applies to ALL release-fired charge weapons (SR + RL);
+            // autofire units are exempted via charFixes.noBoltRecovery (user-tested
+            // 2026-07-13: old-style = diesel-WS, mint, prika, ada, velvet; autofire =
+            // neon-VE, anis: star, liberalio; cinderella custom wind-up has no delay)
+            if ((u.char.weapon === 'SR' || u.char.weapon === 'RL') && !u.swap && !u.noBoltRecovery) {
               u.boltRecoveryFrames = SR_BOLT_RECOVERY_FRAMES;
             }
           }
         }
       } else if (u.char.weapon === 'MG') {
+        if (u.mgIdleFrames > 0) {
+          // wind-down: retrace the ladder at MG_WINDDOWN_DECAY x after the grace period
+          const lost = MG_WINDDOWN_DECAY * Math.max(0, u.mgIdleFrames - MG_WINDDOWN_GRACE_FRAMES);
+          if (lost > 0) {
+            const pos = Math.max(0, MG_LADDER_CUM[Math.min(u.mgRampRound, MG_RAMP_INTERVALS.length)] - lost);
+            let round = 0;
+            while (round < MG_RAMP_INTERVALS.length && MG_LADDER_CUM[round + 1] <= pos) round++;
+            u.mgRampRound = round;
+            u.mgCooldown = 0;
+          }
+          u.mgIdleFrames = 0;
+        }
         // Measured wind-up ladder: round n+1 lands MG_RAMP_INTERVALS[n] frames after
         // round n (then 1/frame at steady state). Attack-speed compresses the ladder.
         const speedMult =
@@ -982,7 +1220,7 @@ export function runSim(
       } else {
         const speedMult =
           1 + (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) / 100;
-        const rate = (PULLS_PER_SEC[u.char.weapon] ?? 4) / FPS;
+        const rate = (u.pullsPerSec ?? PULLS_PER_SEC[u.char.weapon] ?? 4) / FPS;
         u.fireAcc += rate * speedMult;
         while (u.fireAcc >= 1 && !u.reloading) {
           u.fireAcc -= 1;
@@ -994,6 +1232,7 @@ export function runSim(
     // ---- dots ----
     for (const d of dots) {
       if (frame === d.nextTickFrame && frame <= d.endFrame) {
+        skillGauge(units[d.ownerIdx], frame); // dot ticks generate (wiki3: Haran 290/tick)
         dealDamage(units[d.ownerIdx], d.atkPct, frame, {
           crit: false, core: false, charge: false, category: d.category,
           distributed: d.distributed, sustained: d.sustained, sequential: d.sequential,
@@ -1010,14 +1249,32 @@ export function runSim(
       1 + ((u.doll.normalAttackPct ?? 0) + stat(u, 'normalAttackPct', frame)) / 100;
     const baseMult = u.swap?.damagePct ?? u.char.normalAttackMultiplier;
     const isMg = u.char.weapon === 'MG' && !u.swap;
-    dealDamage(u, baseMult * normalScale, frame, {
+    const sgFalloff =
+      u.char.weapon === 'SG' && !u.swap && bandAt(frame) !== 'near'
+        ? SG_OUT_OF_NEAR_HIT_FRACTION
+        : 1;
+    dealDamage(u, baseMult * normalScale * sgFalloff, frame, {
       crit: true,
       core: !(isMg && u.mgRampRound < MG_NO_CORE_RAMP_ROUNDS),
       charge: charged,
       category: 'normal',
       trueFlavor: !!u.swap?.trueNormals,
     });
+    // Pierce double-hit (2026-07-13 research): a Pierce-tagged shot passes through the
+    // core and hits the body behind it — two hits per shot on a core-exposed boss
+    // (community-verified; the reason Alice/Red Hood overperform). Second hit: same
+    // shot, no core bonus. Non-SG only (pellets don't line up core+body per pellet).
+    if (PIERCE_CORE_DOUBLE && u.hasPierce && u.char.weapon !== 'SG') {
+      dealDamage(u, baseMult * normalScale, frame, {
+        crit: true,
+        core: false,
+        charge: charged,
+        category: 'normal',
+        trueFlavor: !!u.swap?.trueNormals,
+      });
+    }
     u.pulls++;
+    shotGauge(u, frame, sgFalloff); // out-of-near SG pellets that miss generate nothing
 
     const extraPerHit = stat(u, 'extraHitDamagePct', frame);
     if (extraPerHit > 0) {
@@ -1085,6 +1342,7 @@ export function runSim(
     breakdown: u.damage,
     pulls: u.pulls,
     burstCasts: u.burstCasts,
+      maxHp: u.maxHp,
     skillSource: u.skillSource,
     warnings: [
       ...u.warnings,

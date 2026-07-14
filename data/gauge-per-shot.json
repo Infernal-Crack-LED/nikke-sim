@@ -1,0 +1,608 @@
+{
+ "2b": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "a2": {
+  "basePerTrigger": 130.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 260.0
+ },
+ "ada": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 280.0
+ },
+ "ade-agent-bunny": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "alice": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 350.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "alice-wonderland-bunny": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 20.0
+ },
+ "anchor-innocent-maid": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 280.0
+ },
+ "anis-sparkling-summer": {
+  "basePerTrigger": 250.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 500.0
+ },
+ "anis-star": {
+  "basePerTrigger": 420.0,
+  "fullChargeBonus": 250.0,
+  "source": "battery-synergy-half; KR-corroborated Siren-class battery (dcinside gov/5246802); board-validated under the chain model (anis 0.97-1.03 across 6 comps)",
+  "targetPerTrigger": 840.0
+ },
+ "arcana": {
+  "basePerTrigger": 150.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 300.0
+ },
+ "arcana-fortune-mate": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-SG",
+  "targetPerTrigger": 400.0
+ },
+ "ark-ranger-black": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-AR",
+  "targetPerTrigger": 40.0
+ },
+ "asuka": {
+  "basePerTrigger": 30.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 60.0
+ },
+ "asuka-wille": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "blanc": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "bready": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "brid-silent-track": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-SG",
+  "targetPerTrigger": 400.0
+ },
+ "chime": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 20.0
+ },
+ "chisato": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-SMG",
+  "targetPerTrigger": 20.0
+ },
+ "cinderella": {
+  "basePerTrigger": 22.5,
+  "fullChargeBonus": 200.0,
+  "source": "datamined",
+  "targetPerTrigger": 45.0
+ },
+ "cinderella-crystal-wave": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-MG",
+  "targetPerTrigger": 10.0
+ },
+ "crown": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "crust": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 280.0
+ },
+ "d-killer-wife": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "delta-ninja-thief": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "diesel-winter-sweets": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-RL",
+  "targetPerTrigger": 280.0
+ },
+ "dolla": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "dorothy": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "dorothy-serendipity": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 400.0
+ },
+ "drake": {
+  "basePerTrigger": 450.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 900.0
+ },
+ "e-h": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-SMG",
+  "targetPerTrigger": 20.0
+ },
+ "ein": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "elegg-boom-and-shock": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "emma-tactical-upgrade": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "eunhwa-tactical-upgrade": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "eve": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "exia": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "grave": {
+  "basePerTrigger": 45.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 90.0
+ },
+ "guillotine-winter-slayer": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "guilty": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 400.0
+ },
+ "helm": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "helm-aquamarine": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "isabel": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 400.0
+ },
+ "jill": {
+  "basePerTrigger": 110.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 220.0
+ },
+ "julia": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "label": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-AR",
+  "targetPerTrigger": 40.0
+ },
+ "laplace": {
+  "basePerTrigger": 145.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 290.0
+ },
+ "leona": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 400.0
+ },
+ "liberalio": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "liter": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 20.0
+ },
+ "little-mermaid": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 20.0
+ },
+ "ludmilla-winter-owner": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "maiden-ice-rose": {
+  "basePerTrigger": 182.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 364.0
+ },
+ "mana": {
+  "basePerTrigger": 25.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 50.0
+ },
+ "marciana": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 400.0
+ },
+ "mari": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "mast-romantic-maid": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "maxwell": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "mica-snow-buddy": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 20.0
+ },
+ "mihara-bonding-chain": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "milk-blooming-bunny": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "mint": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-RL",
+  "targetPerTrigger": 280.0
+ },
+ "miranda": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 20.0
+ },
+ "modernia": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "moran": {
+  "basePerTrigger": 25.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 50.0
+ },
+ "naga": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 400.0
+ },
+ "nayuta": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 20.0
+ },
+ "neon-vision-eye": {
+  "basePerTrigger": 300.0,
+  "fullChargeBonus": 250.0,
+  "source": "synergy-arena-corroborated (per-shot 3.0 = base 300; was class-modal 280)",
+  "targetPerTrigger": 600.0
+ },
+ "noir": {
+  "basePerTrigger": 450.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 900.0
+ },
+ "noise": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 280.0
+ },
+ "phantom": {
+  "basePerTrigger": 25.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 50.0
+ },
+ "prika": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-SR",
+  "targetPerTrigger": 560.0
+ },
+ "privaty": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "privaty-unkind-maid": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 400.0
+ },
+ "quency-escape-queen": {
+  "basePerTrigger": 14.8,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 29.6
+ },
+ "rapi-red-hood": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "rapunzel": {
+  "basePerTrigger": 145.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 290.0
+ },
+ "raven": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 280.0
+ },
+ "red-hood": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 560.0
+ },
+ "rei-ayanami": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-MG",
+  "targetPerTrigger": 10.0
+ },
+ "rem": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 10.0
+ },
+ "rosanna-chic-ocean": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "rouge": {
+  "basePerTrigger": 290.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 580.0
+ },
+ "sakura": {
+  "basePerTrigger": 270.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 540.0
+ },
+ "sakura-bloom-in-summer": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "scarlet": {
+  "basePerTrigger": 45.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 90.0
+ },
+ "scarlet-black-shadow": {
+  "basePerTrigger": 125.0,
+  "fullChargeBonus": 150.0,
+  "source": "datamined",
+  "targetPerTrigger": 250.0
+ },
+ "snow-white": {
+  "basePerTrigger": 25.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 50.0
+ },
+ "snow-white-heavy-arms": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-SR",
+  "targetPerTrigger": 560.0
+ },
+ "soda-twinkling-bunny": {
+  "basePerTrigger": 450.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 900.0
+ },
+ "soline-frost-ticket": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 400.0
+ },
+ "takina": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-SR",
+  "targetPerTrigger": 560.0
+ },
+ "tia": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 280.0
+ },
+ "tove": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 40.0
+ },
+ "trina": {
+  "basePerTrigger": 360.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 720.0
+ },
+ "velvet": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-SR",
+  "targetPerTrigger": 560.0
+ },
+ "vesti-tactical-upgrade": {
+  "basePerTrigger": 65.0,
+  "fullChargeBonus": 200.0,
+  "source": "datamined",
+  "targetPerTrigger": 130.0
+ },
+ "viper": {
+  "basePerTrigger": 450.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 900.0
+ },
+ "volume": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 20.0
+ },
+ "yulha": {
+  "basePerTrigger": 275.0,
+  "fullChargeBonus": 250.0,
+  "source": "datamined",
+  "targetPerTrigger": 550.0
+ },
+ "zwei": {
+  "basePerTrigger": 350.0,
+  "fullChargeBonus": 0.0,
+  "source": "datamined",
+  "targetPerTrigger": 700.0
+ }
+}

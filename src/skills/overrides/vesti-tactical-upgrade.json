@@ -1,5 +1,5 @@
 {
-  "note": "B-tier triage (2026-07-13). Burst's '492.3% as Burst Skill true damage' was skipped (stacked 'Burst Skill true' prefixes defeat the parser regex) -> restated with flavor true so her trueDamagePct 60 buff applies. Missile Guide charge cycle + S2 per-shot pieces stay parser-side.",
+  "note": "B-tier triage (2026-07-13). Burst's '492.3% as Burst Skill true damage' was skipped (stacked 'Burst Skill true' prefixes defeat the parser regex) -> restated with flavor true so her trueDamagePct 60 buff applies. Missile Guide charge cycle + S2 per-shot pieces stay parser-side. CADENCE (user, 2026-07-13): custom volley mechanic like cinderella's \u2014 after reaching full charge she fires 4 rockets over ~1s, effectively 1 rocket per 0.5s. Modeled: chargeFrames 60 per pull (hitsPerShot 2 = 2 rockets/pull -> 1 rocket/0.5s) + noBoltRecovery (no per-shot release latency inside the volley).",
   "burst": [
     {
       "slot": "burst",
@@ -34,5 +34,9 @@
         }
       ]
     }
-  ]
+  ],
+  "charFixes": {
+    "chargeFrames": 60,
+    "noBoltRecovery": true
+  }
 }

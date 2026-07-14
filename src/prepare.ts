@@ -25,6 +25,7 @@ export interface PreparedUnit {
   reloadFrames?: number; // override charFixes: hand-measured real reload (e.g. padded animations)
   burstCooldownSec?: number; // override charFixes: corrected burst cooldown (bad DB data)
   noBoltRecovery?: boolean; // charFixes: this SR's DB chargeFrames already includes the bolt recovery
+  pullsPerSec?: number; // charFixes: datamined per-unit rate_of_fire deviating from the weapon-class rate
   loadout: string[]; // human-readable, for the report
 }
 
@@ -136,6 +137,7 @@ export function prepareUnit(
     reloadFrames: deps.overrides[char.slug]?.charFixes?.reloadFrames,
     burstCooldownSec: deps.overrides[char.slug]?.charFixes?.burstCooldownSec,
     noBoltRecovery: deps.overrides[char.slug]?.charFixes?.noBoltRecovery,
+    pullsPerSec: deps.overrides[char.slug]?.charFixes?.pullsPerSec,
     loadout,
   };
 }
