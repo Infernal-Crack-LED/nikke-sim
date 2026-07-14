@@ -25,7 +25,10 @@ const checks = {
   'share % rendered': /%/.test(text),
   'full bursts reported': /full\s*bursts/.test(text),
   'site nav renders': text.includes('Mechanics') && text.includes('Sim'),
-  'dev badge renders': text.includes('Meet the dev'),
+  'header buttons render':
+    text.includes('Patch Notes') &&
+    text.includes('Meet the dev') &&
+    text.includes('Log in with Discord'),
   'social footer renders': text.includes('Blablalink') && text.includes('GitHub'),
 };
 let ok = true;

@@ -21,13 +21,8 @@ import {
   type Build,
 } from '../../src/share/build-code';
 import {
-  captureTokenFromUrl,
-  clearToken,
   deleteTeam,
-  fetchMe,
   fetchTeams,
-  getToken,
-  loginUrl,
   saveTeam,
   type AuthUser,
   type SavedTeam,
@@ -515,7 +510,7 @@ function CharSearch({
   );
 }
 
-export function App() {
+export function App({ user }: { user: AuthUser | null }) {
   // a full ?b= build (team + loadout + globals) prefills everything and wins
   // over ?team= / localStorage; computed once on mount
   const boot = useMemo(bootBuild, []);
@@ -641,17 +636,20 @@ export function App() {
     setLevel(b.g.level ?? '400');
   };
 
-  // ---- Discord auth + saved teams ----
-  const [user, setUser] = useState<AuthUser | null>(null);
+  // ---- saved teams (Discord auth + login/logout live in the shared header;
+  // `user` is passed in as a prop) ----
   const [teams, setTeams] = useState<SavedTeam[]>([]);
   const [showTeams, setShowTeams] = useState(false);
   const [authErr, setAuthErr] = useState<string | null>(null);
   const [savedFlash, setSavedFlash] = useState(false);
 
+  // when the header logs out (user → null), drop any loaded teams + close modal
   useEffect(() => {
-    captureTokenFromUrl();
-    if (getToken()) fetchMe().then(setUser).catch(() => setUser(null));
-  }, []);
+    if (!user) {
+      setTeams([]);
+      setShowTeams(false);
+    }
+  }, [user]);
 
   const refreshTeams = () =>
     fetchTeams()
@@ -661,12 +659,6 @@ export function App() {
     setShowTeams(true);
     setAuthErr(null);
     refreshTeams();
-  };
-  const onLogout = () => {
-    clearToken();
-    setUser(null);
-    setTeams([]);
-    setShowTeams(false);
   };
   const suggestedName = () => {
     const names = slots
@@ -1643,39 +1635,25 @@ export function App() {
         <div className='header-row'>
           <h1>NIKKE Solo Raid Sim</h1>
           <div className='share-actions'>
-            {(user ? (
-                <>
-                  <button
-                    className='share-btn'
-                    onClick={onSaveTeam}
-                    disabled={slots.every((s) => !s.slug)}
-                    title='save this team + full loadout to your account'
-                  >
-                    {savedFlash ? '✓ Saved' : '💾 Save team'}
-                  </button>
-                  <button
-                    className='share-btn'
-                    onClick={openTeams}
-                    title='your saved teams'
-                  >
-                    📋 My teams
-                  </button>
-                  <span className='user-chip' title='logged in'>
-                    {user.username}
-                    <button className='logout' onClick={onLogout} title='log out'>
-                      ⏻
-                    </button>
-                  </span>
-                </>
-              ) : (
+            {user && (
+              <>
                 <button
-                  className='share-btn discord'
-                  onClick={() => (window.location.href = loginUrl())}
-                  title='save teams to your Discord account'
+                  className='share-btn'
+                  onClick={onSaveTeam}
+                  disabled={slots.every((s) => !s.slug)}
+                  title='save this team + full loadout to your account'
                 >
-                  Log in with Discord
+                  {savedFlash ? '✓ Saved' : '💾 Save team'}
                 </button>
-              ))}
+                <button
+                  className='share-btn'
+                  onClick={openTeams}
+                  title='your saved teams'
+                >
+                  📋 My teams
+                </button>
+              </>
+            )}
             <button
               className='share-btn'
               onClick={onShare}

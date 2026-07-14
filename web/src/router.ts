@@ -3,15 +3,16 @@ import { useEffect, useState } from 'react';
 // Tiny hash router — no dependency, works with static hosting. The sim keeps
 // the default (empty / #/ / #/sim) route so the web-smoke test, which loads at
 // `/?team=...` with no hash, still renders the sim.
-export type Route = 'sim' | 'mechanics' | 'dev';
+export type Route = 'sim' | 'mechanics' | 'dev' | 'patch-notes';
 
-export const ROUTES: Route[] = ['sim', 'mechanics', 'dev'];
+export const ROUTES: Route[] = ['sim', 'mechanics', 'dev', 'patch-notes'];
 
 // map the location hash to a Route; anything unrecognized falls back to the sim
 export function routeFromHash(hash: string): Route {
-  const h = hash.replace(/^#\/?/, '').split(/[/?]/)[0].toLowerCase();
+  const h = hash.replace(/^#\/?/, '').split(/[?]/)[0].toLowerCase();
   if (h === 'mechanics') return 'mechanics';
   if (h === 'dev') return 'dev';
+  if (h === 'patch-notes') return 'patch-notes';
   return 'sim';
 }
 

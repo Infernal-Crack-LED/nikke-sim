@@ -25,22 +25,24 @@ export const dev = {
       'A NIKKE: Goddess of Victory info & strategy Discord bot that serves up character data on demand. Built for my union cluster, Maiden’s Bakery, but it works in any Nikke-oriented server.',
     botUrl: 'https://github.com/Infernal-Crack-LED/bakery-bot',
     discordInvite: 'https://discord.gg/3Yx4pHB88R',
+    addToServer:
+      'https://discord.com/discovery/applications/1523719703950790946',
   },
 } as const;
 
 // Social buttons — rendered as brand tiles in the shared site footer.
 export const socials: Social[] = [
   {
+    label: 'Maiden',
+    href: 'https://discord.gg/3Yx4pHB88R',
+    brand: '#0b0e14',
+    icon: { kind: 'img', src: '/maiden.gif' },
+  },
+  {
     label: 'Discord',
     href: 'https://discord.com/users/177179150669316096',
     brand: '#5865f2',
     icon: { kind: 'brand', name: 'discord' },
-  },
-  {
-    label: 'Maiden',
-    href: 'https://discord.gg/3Yx4pHB88R',
-    brand: '#0b0e14',
-    icon: { kind: 'img', src: '/maiden.gif', round: true },
   },
   {
     label: 'X',
@@ -49,15 +51,15 @@ export const socials: Social[] = [
     icon: { kind: 'brand', name: 'x' },
   },
   {
-    label: 'Blablalink',
-    href: 'https://www.blablalink.com/user?openid=MjkwODAtMTczODk5ODEwMzMzMTgwOTYwMDc=',
-    brand: '#00a3d9',
-    icon: { kind: 'img', src: '/blablalink.png' },
-  },
-  {
     label: 'GitHub',
     href: 'https://github.com/Infernal-Crack-LED',
     brand: '#181717',
     icon: { kind: 'brand', name: 'github' },
+  },
+  {
+    label: 'Blablalink',
+    href: 'https://www.blablalink.com/user?openid=MjkwODAtMTczODk5ODEwMzMzMTgwOTYwMDc=',
+    brand: '#000000',
+    icon: { kind: 'img', src: '/blablalink.png' },
   },
 ];
