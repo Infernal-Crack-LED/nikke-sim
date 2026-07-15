@@ -28,5 +28,12 @@
       { "p": 0.55, "reward": "20 SR maintenance kits" }
     ],
     "decision": "The optimizer must weigh (A) level an R doll to phase 15 then upgrade -> SR phase 5, vs (B) trade 4 R dolls for the chance table above and level an SR doll (from phase 0/5) with the won materials. Compare expected total toolbox cost + doll inventory to reach SR phase 15."
+  },
+
+  "kitDropRates": {
+    "_comment": "Kit ('toolbox') box drop rates, owner-provided 2026-07-15. Derived ONLY from the box that yields all three tiers (owner: closest to a year of observed drops); the R-only/SR box is intentionally excluded. Used to DERIVE the scarcity usage-weight of each kit tier = 1 / (expected kits of that tier per box-open). This is the optimizer's COST objective, distinct from toolboxExp (the EXP a kit adds when fed). Supply per open: R 3.5 / SR 0.4 / SSR 0.2 -> weights R 0.2857 / SR 2.5 / SSR 5.0 opens-per-kit (relative 1 : 8.75 : 17.5).",
+    "boxes": [
+      { "weight": 1.0, "outcomes": [ { "p": 0.70, "kits": { "R": 5 } }, { "p": 0.20, "kits": { "SR": 2 } }, { "p": 0.10, "kits": { "SSR": 2 } } ] }
+    ]
   }
 }
