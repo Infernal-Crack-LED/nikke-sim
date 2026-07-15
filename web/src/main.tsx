@@ -17,6 +17,12 @@ import {
   type AuthUser,
 } from './auth';
 import './styles.css';
+import { PORTRAIT_CROP_TOP } from '../../src/share/teamCard';
+
+// Feed the shared portrait-crop constant into CSS as `--portrait-crop-top` (a
+// percentage), so the `object-position` on portrait <img>s stays in lockstep with
+// the canvas crops. Set before React renders any portrait, so no reframe flash.
+document.documentElement.style.setProperty('--portrait-crop-top', `${PORTRAIT_CROP_TOP * 100}%`);
 
 function Root() {
   const route = useRoute();

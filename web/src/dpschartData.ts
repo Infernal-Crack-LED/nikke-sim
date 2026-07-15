@@ -11,6 +11,7 @@ export interface DpsUnitMeta {
   weapon: string;
   tier: string;
   chartPop: boolean; // SSS/SS → shown as ranked bars; else selector-only
+  imageUrl: string | null;
 }
 export interface DpsArtifact {
   generatedAt: string;
@@ -37,6 +38,7 @@ export interface BarEntry {
   tier: string;
   dps: number;
   rank: number; // 1-based over the full population
+  imageUrl?: string | null; // portrait; absent for synthetic (DPS-test) rows
 }
 
 // full ranked population for a cell (already sorted desc in the artifact)
@@ -44,7 +46,7 @@ export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
   const rows = art.cells[cellId(cell)] ?? [];
   return rows.map(([slug, dps], i) => {
     const m = art.units[slug];
-    return { slug, name: m?.name ?? slug, element: m?.element ?? '', weapon: m?.weapon ?? '', tier: m?.tier ?? '?', dps, rank: i + 1 };
+    return { slug, name: m?.name ?? slug, element: m?.element ?? '', weapon: m?.weapon ?? '', tier: m?.tier ?? '?', dps, rank: i + 1, imageUrl: m?.imageUrl ?? null };
   });
 }
 

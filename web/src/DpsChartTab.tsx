@@ -20,7 +20,7 @@ const DEFAULT_CELL: Cell = { framework: 'standard', eleadv: 'neutral', core: 'c1
 function toChartData(title: string, bars: BarEntry[], compare: (BarEntry & { total: number }) | null): DpsChartData {
   return {
     title,
-    bars: bars.map((b) => ({ name: b.name, element: b.element, dps: b.dps })),
+    bars: bars.map((b) => ({ name: b.name, element: b.element, dps: b.dps, imageUrl: b.imageUrl })),
     compare: compare
       ? { name: compare.name, element: compare.element, dps: compare.dps, rank: compare.rank, total: compare.total }
       : null,
@@ -85,8 +85,8 @@ export function DpsChartTab() {
     <section className='calc-tab dpschart-tab'>
       <h2>DPS Chart</h2>
       <p className='muted'>
-        Top-10 B3 carries (SSS/SS bossing tier) under standardized control frameworks, 180s.
-        Pick any B3 below to append its rank to every chart.
+        Top-10 B3 carries by DPS under standardized control frameworks, 180s fight length.
+        Pick any B3 below to append its DPS and rank to every chart.
       </p>
 
       <details className='dpschart-frameworks'>

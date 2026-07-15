@@ -23,15 +23,48 @@ export interface Canvas2DLike {
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void;
   closePath(): void;
   fill(): void;
+  // portrait drawing (optional feature — callers that never pass images can omit
+  // these; both browser Canvas2D and @napi-rs/canvas provide them).
+  save(): void;
+  restore(): void;
+  clip(): void;
+  drawImage(
+    image: unknown,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number,
+  ): void;
+  // source-cropping form (sx,sy,sw,sh → dx,dy,dw,dh): lets us crop a square out of a
+  // tall portrait instead of squishing its aspect ratio into the destination box.
+  drawImage(
+    image: unknown,
+    sx: number,
+    sy: number,
+    sw: number,
+    sh: number,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number,
+  ): void;
 }
 
 export const FONT = `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+
+// Portrait square-crop framing — the single source of truth for how far down a
+// square is anchored when cropped out of a tall portrait (fraction of the vertical
+// overflow; 0 = top, 0.5 = center). Used by BOTH canvas crops (portraitThumb,
+// dpsChart) and, via the `--portrait-crop-top` CSS var that main.tsx sets from it,
+// the `object-position` on the sim-tab / chart <img>s. Change here to move all of
+// them together.
+export const PORTRAIT_CROP_TOP = 0.16;
 export const ELEMENT_COLORS: Record<string, string> = {
-  Fire: '#e0603a',
-  Water: '#3a8fe0',
-  Wind: '#4ecb71',
-  Electric: '#e0c14b',
-  Iron: '#9aa3b2',
+  Fire: '#d92d38',
+  Water: '#0075f8',
+  Wind: '#00e554',
+  Electric: '#bc1eb1',
+  Iron: '#ff8321',
 };
 
 export interface TeamCardUnit {

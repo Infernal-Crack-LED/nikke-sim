@@ -1,8 +1,34 @@
 // Presentational ranked-DPS bar chart (one infographic). Element-colored horizontal
 // bars, sorted desc, with an optional compare-unit annotation row and share buttons.
 // The shareable PNG is rendered separately via src/share/dpsChart.ts.
+import { useEffect, useState } from 'react';
 import { ELEMENT_COLORS } from '../../../src/share/teamCard';
 import type { BarEntry } from '../dpschartData';
+import { portraitThumb } from '../portraitThumb';
+
+const PORTRAIT_CSS = 33; // must match .dpschart-portrait width/height in styles.css
+
+// Resolve each bar's portrait to a crisp, high-quality-downscaled square thumbnail
+// (data URL), keyed by slug. Falls back to the raw imageUrl until ready. Sized to
+// the display's device pixels so the browser does no further (aliasing) downscale.
+function usePortraitThumbs(bars: BarEntry[]): Record<string, string> {
+  const [thumbs, setThumbs] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let alive = true;
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const size = Math.round(PORTRAIT_CSS * dpr);
+    for (const b of bars) {
+      if (!b.imageUrl) continue;
+      void portraitThumb(b.imageUrl, size).then((data) => {
+        if (alive && data) setThumbs((prev) => (prev[b.slug] ? prev : { ...prev, [b.slug]: data }));
+      });
+    }
+    return () => {
+      alive = false;
+    };
+  }, [bars]);
+  return thumbs;
+}
 
 const fmt = (n: number) =>
   n >= 1e9 ? `${(n / 1e9).toFixed(2)}B`
@@ -21,6 +47,7 @@ export interface DpsBarChartProps {
 
 export function DpsBarChart({ title, subtitle, bars, compare, onShareImage, onShareLink }: DpsBarChartProps) {
   const max = Math.max(...bars.map((b) => b.dps), 1);
+  const thumbs = usePortraitThumbs(bars);
   return (
     <div className='dpschart-card'>
       <div className='dpschart-head'>
@@ -47,7 +74,17 @@ export function DpsBarChart({ title, subtitle, bars, compare, onShareImage, onSh
           {bars.map((b, i) => (
             <div className='dpschart-row' key={b.slug}>
               <span className='dpschart-rank'>{i + 1}</span>
-              <span className='dpschart-name' title={`${b.tier} · ${b.weapon} · ${b.element}`}>{b.name}</span>
+              {b.imageUrl ? (
+                <img
+                  className='dpschart-portrait'
+                  src={thumbs[b.slug] ?? b.imageUrl}
+                  alt={b.name}
+                  loading='lazy'
+                  title={`${b.name} · ${b.tier} · ${b.weapon} · ${b.element}`}
+                />
+              ) : (
+                <span className='dpschart-name' title={`${b.name} · ${b.tier} · ${b.weapon} · ${b.element}`}>{b.name}</span>
+              )}
               <span className='dpschart-track'>
                 <span
                   className='dpschart-fill'

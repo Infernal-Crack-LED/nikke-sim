@@ -109,7 +109,7 @@ input.num {
 .slot-head { display: flex; justify-content: space-between; font-size: 11px; }
 .tag { color: var(--muted); }
 .portrait {
-  width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px;
+  width: 100%; aspect-ratio: 1; object-fit: cover; object-position: center var(--portrait-crop-top); border-radius: 8px;
   background: var(--panel2); border: 1px solid var(--border);
 }
 .portrait.empty { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 28px; }
@@ -446,10 +446,11 @@ footer { margin-top: 28px; font-size: 12px; }
 .dpschart-share .chip { padding: 2px 7px; }
 
 .dpschart-bars { display: flex; flex-direction: column; gap: 5px; }
-.dpschart-row { display: grid; grid-template-columns: 18px minmax(0, 1fr) 2.4fr auto; align-items: center; gap: 8px; }
+.dpschart-row { display: grid; grid-template-columns: 18px auto minmax(0, 1fr) auto; align-items: center; gap: 8px; }
 .dpschart-rank { color: var(--muted); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
 .dpschart-name { font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dpschart-track { background: var(--panel2); border-radius: 6px; height: 14px; overflow: hidden; }
+.dpschart-portrait { width: 33px; height: 33px; object-fit: cover; object-position: center var(--portrait-crop-top); border-radius: 6px; background: var(--panel2); border: 1px solid var(--border); justify-self: start; }
+.dpschart-track { background: var(--panel2); border-radius: 6px; height: 18px; overflow: hidden; }
 .dpschart-fill { display: block; height: 100%; border-radius: 6px; }
 .dpschart-val { font-size: 12px; color: var(--text); font-variant-numeric: tabular-nums; text-align: right; }
 .dpschart-empty { color: var(--muted); font-size: 12px; padding: 8px 0; }

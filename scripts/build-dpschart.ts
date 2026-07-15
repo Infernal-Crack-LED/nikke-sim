@@ -38,13 +38,13 @@ const ctx: RunCtx = { characters: data.characters as any, mult, deps };
 // S/A/B are selector-only. Guard against garbled multi-mode burst strings.
 const CHART_TIERS = new Set(['SSS', 'SS']);
 const SELECTOR_TIERS = new Set(['SSS', 'SS', 'S', 'A', 'B']);
-interface UnitMeta { slug: string; name: string; element: Element; weapon: string; tier: string; chartPop: boolean; }
+interface UnitMeta { slug: string; name: string; element: Element; weapon: string; tier: string; chartPop: boolean; imageUrl: string | null; }
 const population: UnitMeta[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
   if (c.burst !== 'III') continue;
   const tier = tiersFile.tiers[slug];
   if (!tier || !SELECTOR_TIERS.has(tier)) continue;
-  population.push({ slug, name: c.name, element: c.element as Element, weapon: c.weapon, tier, chartPop: CHART_TIERS.has(tier) });
+  population.push({ slug, name: c.name, element: c.element as Element, weapon: c.weapon, tier, chartPop: CHART_TIERS.has(tier), imageUrl: c.imageUrl ?? null });
 }
 population.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -77,7 +77,7 @@ const artifact = {
     })),
   },
   units: Object.fromEntries(
-    population.map((u) => [u.slug, { name: u.name, element: u.element, weapon: u.weapon, tier: u.tier, chartPop: u.chartPop }]),
+    population.map((u) => [u.slug, { name: u.name, element: u.element, weapon: u.weapon, tier: u.tier, chartPop: u.chartPop, imageUrl: u.imageUrl }]),
   ),
   cells,
 };
