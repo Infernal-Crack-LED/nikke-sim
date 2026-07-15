@@ -41,7 +41,7 @@ export function DpsChartTab() {
   if (err) {
     return (
       <section className='calc-tab'>
-        <h2>DPS Chart</h2>
+        <h2>DPS Rankings</h2>
         <p className='muted'>Couldn’t load chart data ({err}). Regenerate it with <code>npm run dpschart</code>.</p>
       </section>
     );
@@ -49,7 +49,7 @@ export function DpsChartTab() {
   if (!art) {
     return (
       <section className='calc-tab'>
-        <h2>DPS Chart</h2>
+        <h2>DPS Rankings</h2>
         <p className='muted'>Loading chart data…</p>
       </section>
     );
@@ -83,7 +83,7 @@ export function DpsChartTab() {
 
   return (
     <section className='calc-tab dpschart-tab'>
-      <h2>DPS Chart</h2>
+      <h2>DPS Rankings</h2>
       <p className='muted'>
         Top-10 B3 carries by DPS under standardized control frameworks, 180s fight length.
         Pick any B3 below to append its DPS and rank to every chart.

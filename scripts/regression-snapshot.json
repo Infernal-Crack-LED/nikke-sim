@@ -8,7 +8,7 @@
  "misc B3s (run I order)": {
   "grave": 311708510,
   "anis-star": 544592130,
-  "jill": 510779347,
+  "jill": 572076878,
   "chisato": 561022353,
   "noir": 172363726
  },
@@ -42,7 +42,7 @@
  },
  "T4": {
   "anis-star": 1118751634,
-  "privaty": 1179360409,
+  "privaty": 1230265963,
   "snow-white-heavy-arms": 1960269346,
   "helm": 362664335,
   "crown": 426724536
@@ -59,7 +59,7 @@
   "neon-vision-eye": 1318203778,
   "anis-star": 925717734,
   "cinderella": 1213363343,
-  "maiden-ice-rose": 302081704
+  "maiden-ice-rose": 362478847
  },
  "T5 wind-weak": {
   "nayuta": 745814472,
@@ -76,14 +76,14 @@
   "red-hood": 787118397
  },
  "T1 wind-weak": {
-  "mast-romantic-maid": 132024814,
-  "scarlet-black-shadow": 1974432725,
-  "anis-star": 904912604,
-  "liberalio": 1070629863,
-  "crown": 254288725
+  "mast-romantic-maid": 131057383,
+  "scarlet-black-shadow": 1626476294,
+  "anis-star": 906568310,
+  "liberalio": 1067431651,
+  "crown": 251944104
  },
  "PH water B3s": {
-  "little-mermaid": 361057740,
+  "little-mermaid": 418806270,
   "crown": 162920585,
   "quency-escape-queen": 424110998,
   "dorothy-serendipity": 849677451,
@@ -100,27 +100,27 @@
   "grave": 259996952,
   "rapi-red-hood": 523458719,
   "quency-escape-queen": 283947457,
-  "jill": 300455602
+  "jill": 332210536
  },
  "N3 scarlet/liberalio iron": {
-  "rouge": 52912109,
-  "trina": 48288666,
-  "scarlet-black-shadow": 483798997,
-  "liberalio": 457092120,
-  "soda-twinkling-bunny": 102796089
+  "rouge": 54239062,
+  "trina": 49435825,
+  "scarlet-black-shadow": 505893650,
+  "liberalio": 464793567,
+  "soda-twinkling-bunny": 109450490
  },
  "N6 mihara/maiden wind": {
-  "little-mermaid": 241720719,
+  "little-mermaid": 280749289,
   "ade-agent-bunny": 82102287,
   "mihara-bonding-chain": 747950374,
-  "maiden-ice-rose": 291721294,
+  "maiden-ice-rose": 337715286,
   "maxwell": 113514674
  },
  "N8 emma/eunhwa duo fire": {
   "emma-tactical-upgrade": 100599810,
   "eunhwa-tactical-upgrade": 277218293,
   "guillotine-winter-slayer": 402054535,
-  "eve": 301552787,
+  "eve": 321442368,
   "vesti-tactical-upgrade": 757524445
  },
  "N9 redhood/elegg electric": {
@@ -131,7 +131,7 @@
   "dorothy-serendipity": 291382883
  },
  "N10 milk/phantom electric": {
-  "little-mermaid": 150144883,
+  "little-mermaid": 163935964,
   "arcana": 50420362,
   "milk-blooming-bunny": 245341908,
   "helm": 103168137,

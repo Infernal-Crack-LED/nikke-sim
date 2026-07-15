@@ -39,6 +39,14 @@ const TOP = Number(process.env.TOP ?? 100);
 const RAIDS = (process.env.RAIDS ?? '37,36,35,34,31').split(',').map((s) => Number(s.trim()));
 const CACHE = process.env.ENIKK_CACHE;
 
+// Owner-specified manual additions to the enikk-supported roster (below), unioned
+// into the generated `names` so they SURVIVE every regeneration. Use for units the
+// owner wants supported that the top-ranker data can't justify yet — e.g. too new
+// to have accrued solo-raid top-ranker usage. Exact display name (data/characters.json `name`).
+const MANUAL_ADDITIONS: string[] = [
+  'Cinderella: Crystal Wave', // user-specified 2026-07-15: too new for solo-raid top-ranker usage yet; owner wants her supported.
+];
+
 interface Team { characters?: string[] }
 interface Row { damage?: number; teams?: Team[] }
 
@@ -114,8 +122,74 @@ async function auditRaid(raid: number): Promise<RaidAudit> {
   return { raid, label: meta.label, boss: meta.boss, rankers: top.length, rawTeams: raw.length, uniqueTeams, nikkes };
 }
 
+// ---- offline MD reconstruction ----
+// FROM_MD=<path>: instead of fetching enikk, rebuild the per-raid audits by
+// parsing the MD's `### Unique teams` blocks. Each team line has the form
+// `- (COUNT) Name1, Name2, Name3, Name4, Name5` where COUNT = rankers who ran
+// that comp; a trailing ` *` on a name (sim-not-modeled marker) is stripped.
+// This lets the outlier filter + SUPPORTED writer run with no network.
+function buildOneRaid(raid: number, label: string, boss: string, uniqueTeams: { characters: string[]; count: number }[]): RaidAudit {
+  const seen = new Map<string, number>();
+  for (const t of uniqueTeams) for (const n of t.characters) seen.set(n, (seen.get(n) ?? 0) + 1);
+  const nikkes = [...seen.entries()]
+    .map(([name, teams]) => ({ name, modeled: isModeled(name), teams }))
+    .sort((a, b) => b.teams - a.teams || a.name.localeCompare(b.name));
+  const rawTeams = uniqueTeams.reduce((s, t) => s + t.count, 0);
+  return { raid, label, boss, rankers: 0, rawTeams, uniqueTeams, nikkes };
+}
+
+function auditsFromMd(mdPath: string): RaidAudit[] {
+  const lines = readFileSync(mdPath, 'utf8').split('\n');
+  const raidRe = /^## Raid (\d+) — (.+?) \(boss (.+?)\)/;
+  const teamRe = /^-\s*\((\d+)\)\s*(.+)$/;
+  const out: RaidAudit[] = [];
+  let cur: { raid: number; label: string; boss: string; teams: { characters: string[]; count: number }[] } | null = null;
+  let inTeams = false;
+  const flush = () => { if (cur) out.push(buildOneRaid(cur.raid, cur.label, cur.boss, cur.teams)); };
+  for (const line of lines) {
+    const rm = raidRe.exec(line);
+    if (rm) { flush(); cur = { raid: Number(rm[1]), label: rm[2], boss: rm[3], teams: [] }; inTeams = false; continue; }
+    if (line.startsWith('### Unique teams')) { inTeams = true; continue; }       // enter the team block
+    if (line.startsWith('###') || line.startsWith('## ')) { inTeams = false; continue; } // any other heading ends it
+    if (inTeams && cur) {
+      const tm = teamRe.exec(line);
+      if (tm) {
+        const characters = tm[2].split(', ').map((n) => n.replace(/\s*\*$/, '').trim()); // split 5 names, strip ` *`
+        cur.teams.push({ characters, count: Number(tm[1]) });
+      }
+    }
+  }
+  flush();
+  return out;
+}
+
 const audits: RaidAudit[] = [];
-for (const raid of RAIDS) audits.push(await auditRaid(raid));
+if (process.env.FROM_MD) {
+  audits.push(...auditsFromMd(process.env.FROM_MD));
+} else {
+  for (const raid of RAIDS) audits.push(await auditRaid(raid));
+}
+
+// ---- outlier filter (2026-07-15) ----
+// Drop a unit iff it appears in exactly ONE raid AND its total uses in that raid
+// is 1 (i.e. a single ranker ran a single team containing it). Keep otherwise.
+//   raidGroups     = # of distinct raids the unit appears in (any team).
+//   usesInRaid(r)  = SUM of the ranker counts of raid-r unique teams containing it.
+//   KEEP iff raidGroups >= 2 OR max-over-raids usesInRaid >= 2.
+function unitStats(name: string): { raidGroups: number; maxUses: number } {
+  const raids = new Set<number>();
+  let maxUses = 0;
+  for (const a of audits) {
+    let uses = 0;
+    for (const t of a.uniqueTeams) if (t.characters.includes(name)) uses += t.count;
+    if (uses > 0) { raids.add(a.raid); if (uses > maxUses) maxUses = uses; }
+  }
+  return { raidGroups: raids.size, maxUses };
+}
+const keepUnit = (name: string): boolean => {
+  const s = unitStats(name);
+  return s.raidGroups >= 2 || s.maxUses >= 2;
+};
 
 // ---- report ----
 for (const a of audits) {
@@ -182,16 +256,34 @@ if (process.env.MD) {
 // src/data/sync.ts as the enikk-proven keep-filter (DECISIONS 2026-07-14).
 // Regenerate together with MD so the two never drift.
 if (process.env.SUPPORTED) {
-  const names = unionSorted.map(([n]) => n).sort((a, b) => a.localeCompare(b));
+  // Apply the outlier filter to the enikk-derived union: drop single-use outliers
+  // (1 raid AND 1 use). Report the dropped set for owner review.
+  const enikkNames = unionSorted.map(([n]) => n);
+  const dropped = enikkNames.filter((n) => !keepUnit(n));
+  if (dropped.length) {
+    console.log(`\noutlier filter dropped ${dropped.length} single-use unit(s) (1 raid AND 1 use):`);
+    for (const n of dropped) {
+      const s = unitStats(n);
+      console.log(`  - ${n} (raidGroups=${s.raidGroups}, uses=${s.maxUses})`);
+    }
+  }
+  // union the filtered enikk names with owner-specified manual additions AFTER the
+  // filter (dedup), so hardcoded picks always survive regardless of usage.
+  const names = [...new Set([...enikkNames.filter(keepUnit), ...MANUAL_ADDITIONS])].sort((a, b) =>
+    a.localeCompare(b),
+  );
   const payload = {
     updated: new Date().toISOString().slice(0, 10),
     source:
-      "docs/enikk-top100-audit.md — '## All raids — NIKKE union' (top-100 ranker teams, deduped, across audited raids)",
+      "docs/enikk-top100-audit.md — per-raid '### Unique teams' blocks (top-100 ranker teams, deduped, across audited raids)",
     policy:
       "The enikk-supported roster (DECISIONS 2026-07-14). sync.ts keeps a unit iff its name (with " +
       "' (Treasure)' stripped) is in `names` below OR it has a hand-tuned override in " +
-      'src/skills/overrides/. Regenerate together with the MD via ' +
-      '`MD=docs/enikk-top100-audit.md SUPPORTED=data/enikk-supported.json ENIKK_CACHE=<dir> ' +
+      'src/skills/overrides/. Outlier filter (2026-07-15): a unit is DROPPED from the enikk-derived ' +
+      'set iff it appears in exactly ONE raid AND its total uses in that raid is 1 (single ranker, ' +
+      'single team); kept iff it spans >=2 raids OR has >=2 uses in some raid. MANUAL_ADDITIONS are ' +
+      'unioned in after the filter. Regenerate offline via ' +
+      '`FROM_MD=docs/enikk-top100-audit.md SUPPORTED=data/enikk-supported.json ' +
       'npx tsx scripts/enikk/roster-audit.ts`.',
     names,
   };

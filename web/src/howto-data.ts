@@ -38,7 +38,7 @@ export const sections: HowToSection[] = [
     items: [
       {
         term: 'Sim',
-        def: 'The main calculator. Build a 5-unit team, set the boss and gear, and read per-unit damage. This page itself holds six tools (see the next section).',
+        def: 'The main calculator. Build a 5-unit team, set the boss and gear, and read per-unit damage. This page itself holds seven tools (see the next section).',
       },
       {
         term: 'Mechanics',
@@ -59,7 +59,7 @@ export const sections: HowToSection[] = [
     ],
   },
   {
-    title: 'The six tools on the Sim page',
+    title: 'The seven tools on the Sim page',
     intro:
       'The Sim page has its own row of tabs. All of them read the same boss options and gear controls, described further down.',
     items: [
@@ -68,31 +68,35 @@ export const sections: HowToSection[] = [
         def: 'Hand-build one team. Pick five units, set each one’s gear, and see how much damage every unit deals, their share of the team total, DPS, and how many full bursts the team got. This is the tool to answer “how does THIS exact team perform?”',
       },
       {
-        term: 'DPS Chart',
+        term: 'DPS Rankings',
         def: 'Pre-computed rankings of the strongest Burst-3 carries, each dropped into a standardized support team so they compete on equal footing. Use it to see which carries lead under a given setup — no team-building required.',
       },
       {
-        term: 'DPS Test',
+        term: 'Custom DPS Rankings',
         def: 'A head-to-head lab. Lock in a fixed control group (3 or 4 units), then swap different units into the open slots and rank the variants by damage. Answers “which unit fits best into the rest of my team?”',
       },
       {
-        term: 'Team Calc',
+        term: 'Optimize Overload',
+        def: 'Pick one carry and rank how it should spend its four free Overload lines. The 8/12 floor (4× Elemental DMG + 4× ATK) is held fixed; the tool sims every worthwhile spread of the remaining four and charts the damage plus the % gain over 8/12. Use Matrix mode to auto-build a standard control team, or Custom mode to pit the carry against your own support teams (one chart each).',
+      },
+      {
+        term: 'Charge Speed Breakpoints',
+        def: 'For rocket launchers and snipers: the charge-speed % thresholds at which the charge time drops by one more frame. Pick a carry for its exact charge time, or read the standard 1-second table. Since the game charges in whole frames, charge speed only pays off at these breakpoints.',
+      },
+      {
+        term: 'Optimal Team',
         def: 'Finds the single strongest 5-unit team for the chosen boss weakness out of the units you own.',
       },
       {
-        term: 'Roster Calc',
-        def: 'Builds an optimized solo-raid roster.',
-      },
-      {
-        term: 'Character Calc',
-        def: 'Pick one unit; it builds the best supporting team around them and then works out that unit’s best Overload lines inside that team. The go-to for “what should I build on this unit?”',
+        term: 'Solo-Raid Roster Generator',
+        def: 'Builds an optimized solo-raid roster — the top 5 teams with no unit reused across them.',
       },
     ],
   },
   {
     title: 'Boss options (the top filter row)',
     intro:
-      'These describe the fight and apply to the Sim, DPS Test and the three calculator tabs.',
+      'These describe the fight and apply to the Sim, Custom DPS Rankings and the calculator tabs.',
     items: [
       {
         term: 'Boss weakness',
@@ -115,7 +119,7 @@ export const sections: HowToSection[] = [
   {
     title: 'Gear and loadout',
     intro:
-      'On the Sim and DPS Test tabs, each unit has a full card — portrait, gear, duplicates, skill levels, cube and Overload lines. There is also a bulk row above the team to set an option on every unit at once.',
+      'On the Sim and Custom DPS Rankings tabs, each unit has a full card — portrait, gear, duplicates, skill levels, cube and Overload lines. There is also a bulk row above the team to set an option on every unit at once.',
     items: [
       {
         term: 'Scope Lock (preset)',
@@ -123,7 +127,7 @@ export const sections: HowToSection[] = [
       },
       {
         term: 'Bulk “All …” buttons',
-        def: 'The row of All cubes / gear / dolls / stars / cores / skills buttons applies that one choice to all five units at once. On the DPS Test tab they apply to the swap-in units only, leaving the control group locked.',
+        def: 'The row of All cubes / gear / dolls / stars / cores / skills buttons applies that one choice to all five units at once. On the Custom DPS Rankings tab they apply to the swap-in units only, leaving the control group locked.',
       },
       {
         term: 'Gear (per card)',
@@ -159,9 +163,9 @@ export const sections: HowToSection[] = [
     ],
   },
   {
-    title: 'DPS Chart filters',
+    title: 'DPS Rankings filters',
     intro:
-      'The DPS Chart (and the DPS Test tab’s Matrix mode) is a grid of standardized setups. Four selectors pick which setup you are looking at.',
+      'The DPS Rankings (and the Custom DPS Rankings tab’s Matrix mode) is a grid of standardized setups. Four selectors pick which setup you are looking at.',
     items: [
       {
         term: 'Framework',
@@ -191,7 +195,7 @@ export const sections: HowToSection[] = [
     bullets: [
       'Share team copies a link that reopens the exact five units. Copy image puts a summary graphic on your clipboard.',
       'Log in with Discord to save full teams — units, gear, dupes, skills and boss options — to your account and reload them later.',
-      'The DPS Chart’s per-chart share buttons copy a link to that exact cell (and your compare unit), or an image of the ranking.',
+      'The DPS Rankings’ per-chart share buttons copy a link to that exact cell (and your compare unit), or an image of the ranking.',
     ],
   },
 ];

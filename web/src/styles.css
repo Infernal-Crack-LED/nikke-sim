@@ -217,6 +217,8 @@ input.num {
 .calc-result table { width: 100%; }
 .calc-result td { padding: 6px 10px; }
 .calc-result tr.hl td { background: rgba(91, 157, 255, 0.12); }
+/* groups flow left-to-right and wrap, so adding a group grows the row sideways */
+.dps-groups-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
 .dps-group-block { margin: 6px 0 14px; }
 .dps-group-head { display: flex; align-items: center; gap: 12px; }
 .dps-group-head .card-group-label { border-top: 0; margin: 0; padding: 0; }
@@ -248,6 +250,10 @@ th, td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
 th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); background: var(--panel2); }
 tbody tr:last-child td { border-bottom: 0; }
 .r { text-align: right; }
+/* scrollable wrapper so long breakpoint ladders don't blow out the page */
+.table-scroll { max-height: 360px; overflow-y: auto; border-radius: 10px; }
+.table-scroll table { border-radius: 0; }
+.breakpoint-table th:first-child, .breakpoint-table td:first-child { white-space: nowrap; }
 .share { color: var(--accent); font-weight: 600; }
 .adv { color: #4ecb71; }
 
@@ -459,6 +465,12 @@ footer { margin-top: 28px; font-size: 12px; }
   margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); }
 .dpschart-compare .dpschart-name { font-weight: 600; }
 .dpschart-rankinfo { font-size: 12px; color: var(--muted); }
+
+/* Overload Calc rows: label the OL-line mix (may wrap), stack damage + % gain */
+.ol-row { grid-template-columns: 18px minmax(9em, 14em) minmax(0, 1fr) auto; }
+.ol-lines { white-space: normal; line-height: 1.25; }
+.ol-val { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; }
+.ol-gain { font-size: 11px; color: var(--accent); font-weight: 600; }
 
 .matrix-filter { display: flex; flex-direction: column; gap: 8px; }
 .matrix-row { display: flex; align-items: center; gap: 10px; }

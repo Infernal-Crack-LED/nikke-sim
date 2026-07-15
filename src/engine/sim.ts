@@ -46,21 +46,25 @@ const DOT_CRIT = ENV.DOTCRIT === 'on';
 // rule so `scripts/probe/fb-range-lab.ts` can A/B-grade which rule best fits the measured ground truth
 // (ein feathers = FB-ON, liberalio proc = FB-ON, scarlet procs = FB-OFF, burst-cast nukes = FB-OFF).
 // Burst-cast damage is ALWAYS FB-exempt (U10, measured), regardless of rule.
-// DEFAULT = 'timing' (2026-07-15): FB is a TIMING/snapshot gate — any non-burst-cast skill/rider/DoT
-// landing during the FB window gets the +50% (JP+KR research, empirical both sides; see DECISIONS +
-// open-questions U14). The old per-kit `noFb` flags were calibration RELICS masking cadence over-models
-// on rider-dominant units; they've been retired (the 6 units re-tuned on this mechanism). ENV.FBRULE:
-//   perkit    : restore the old per-kit noFb flags (A/B only)
+// DEFAULT = 'perkit' (2026-07-15, temporary): FB is a TIMING/snapshot gate — any non-burst-cast
+// skill/rider/DoT landing during the FB window SHOULD get the +50% (JP+KR research, empirical both
+// sides; see DECISIONS + open-questions U14). The end-state default is 'timing'. But the old per-kit
+// `noFb` flags were calibration RELICS masking cadence over-models on rider-dominant units; flipping
+// the global default to 'timing' before those 6 units are retuned makes them run hot. So the default
+// stays 'perkit' during the per-unit retune (autonomous-invariant-audit mission); each retuned unit
+// gets its `noFb` flag REMOVED (so perkit==timing for it), and once all 6 are green the default flips
+// to 'timing' with zero further drift. ENV.FBRULE:
+//   timing    : force FB-by-timing for all skills (mission target / A-B)
 //   dotfb / seqoff / noskillfb : experiment arms (see fb-range-lab.ts)
 // Burst-cast (instant) damage is ALWAYS FB-exempt (snapshots at use-time, before FB flips on).
 function skillNoFb(perKitNoFb: boolean, isBurstCast: boolean, flavor: string | undefined): boolean {
   if (isBurstCast) return true; // burst-cast/instant damage lands before FB begins → never +50%
   switch (ENV.FBRULE) {
-    case 'perkit': return perKitNoFb;
+    case 'timing': return false; // FB by landing timing (mission target; flip default here once all 6 noFb relics are retuned)
     case 'dotfb': return flavor === 'dot' || flavor === 'sustained' ? false : perKitNoFb;
     case 'seqoff': return flavor === 'sequential';
     case 'noskillfb': return true;
-    default: return false; // 'timing' — FB by landing timing
+    default: return perKitNoFb; // 'perkit' — calibrated per-kit relics; temporary stable baseline during the per-unit retune
   }
 }
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
@@ -492,8 +496,9 @@ export function runSim(
   // ENV.ACR overrides everything; CORERATE=flat reverts to the old flat 0.85 for A/B; CORERATEHI
   // sweeps the MG/SR/RL value. Still ⚑ — a precise per-shot count or the geometric reticle model refines it.
   const HI = ENV.CORERATEHI !== undefined ? Number(ENV.CORERATEHI) : 0.95;
+  const LO = ENV.CORERATELO !== undefined ? Number(ENV.CORERATELO) : 0.85;
   const coreByWeapon = (weapon: string): number =>
-    (weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : 0.85;
+    (weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : LO;
   const acrFor = (weapon: string): number =>
     ENV.ACR !== undefined ? Number(ENV.ACR)
     : ENV.CORERATE === 'flat' ? 0.85
@@ -1594,8 +1599,11 @@ export function runSim(
         // the lowered thresholds are a 10s SELF-buff from the owner's OWN burst cast
         // (SBS burst: "Changes Full Charge attack count required for Skill 1 to 1/2/3 for 10s"),
         // NOT the team Full Burst window — she doesn't burst every full burst.
-        const inBurst = frame - u.lastBurstCastFrame < 10 * FPS;
-        const thr = inBurst ? (b.trigger.countInFb ?? 1) : b.trigger.count;
+        const inBurst = u.lastBurstCastFrame >= 0 && frame - u.lastBurstCastFrame < 10 * FPS;
+        // per-phase thresholds (datamined "attack count required to N times" is per-phase); a scalar
+        // means the same threshold every phase (back-compat). phase P uses reqs[P].
+        const reqs = inBurst ? (b.trigger.countInFb ?? 1) : b.trigger.count;
+        const thr = Array.isArray(reqs) ? (reqs[phase] ?? reqs[reqs.length - 1]) : reqs;
         if (charges >= thr) {
           charges = 0;
           const bKey = `${u.idx}:${b.slot}:${bi}`;

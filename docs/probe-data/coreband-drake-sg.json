@@ -1,0 +1,91 @@
+{
+  "measurement": "SG range-dependent core-hit rate (per-pellet)",
+  "unit": "drake",
+  "weapon": "SG",
+  "hitsPerShot": 10,
+  "video": "docs/probes/ar-sg-smg/drake sg.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/drake sg.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "date": "2026-07-15",
+  "focusReason": "solo recording — Drake is the only unit, therefore the focus",
+  "clock": {
+    "method": "top-right 03:00 countdown; fight-clock t = 180 - countdown",
+    "anchors": [
+      {"videoSec": 8, "countdown": "02:59", "fightClock": 1},
+      {"videoSec": 107, "countdown": "01:18", "fightClock": 102}
+    ],
+    "offsetSec": 7,
+    "note": "videoSec ~= fightClock + 7 (accurate to ~1s); windows chosen >=3s inside each band"
+  },
+  "colourConvention": "white=normal non-core; red+'CORE HIT'=core; orange+crit-icon=crit; exclude 7-digit ~5.9M red = Drake BURST (1254% final ATK, cores); exclude boss red hip-joint glow, red 'TARGET' warning text, reticle counters (00X), cyan BLOCK, green/red over-character heals.",
+  "bands": [
+    {
+      "band": "mid",
+      "fightClockRange": [0, 33],
+      "windowVideoSec": [25, 33],
+      "bossDistance": "medium (boss on right)",
+      "pelletValueWhite": 25672,
+      "corePellets": 0,
+      "critPellets": 7,
+      "whitePellets": 17,
+      "totalPellets": 24,
+      "coreRate": 0.0,
+      "confidence": "high (numbers pop against grey sky, clearly readable)",
+      "frames": ["mid/m_008.png", "mid/m_016.png", "mid/m_024.png"]
+    },
+    {
+      "band": "near",
+      "fightClockRange": [[33, 70], [144, 176]],
+      "windowVideoSec": [[55, 69], [157, 179]],
+      "bossDistance": "close (near1) to very close/point-blank (near2), boss on right",
+      "pelletValueWhite": 33374,
+      "corePellets": 5,
+      "critPellets": 11,
+      "whitePellets": 41,
+      "totalPellets": 57,
+      "coreRate": 0.088,
+      "coreRateNote": "LOWER BOUND — red 'CORE HIT' numbers pop against the dark/red-glowing boss body at near, hard to see; true rate may be somewhat higher. Cores confirmed on NON-burst shots (v161.2, near1 a_032), so not an artifact of the burst.",
+      "confidence": "medium (visibility bias + popup overlap on large near boss)",
+      "frames": ["near1/a_024.png", "near1/a_032.png", "near1/a_040.png", "near2z/z_164.png", "n2spread/t_161.2.png", "near2/n_(v169).png", "n2spread/t_174.8.png"]
+    },
+    {
+      "band": "far",
+      "fightClockRange": [70, 106],
+      "windowVideoSec": [89, 97],
+      "bossDistance": "distant (boss far/centre, smallest apparent size of the fight)",
+      "pelletValueWhite": 25672,
+      "corePellets": 0,
+      "critPellets": 3,
+      "whitePellets": 24,
+      "totalPellets": 27,
+      "coreRate": 0.0,
+      "confidence": "high (small distant boss, numbers pop against grey sky; any red would be obvious — none seen)",
+      "frames": ["far/f_004.png", "far/f_028.png", "far/f_036.png", "far/f_044.png"]
+    },
+    {
+      "band": "midfar",
+      "fightClockRange": [[106, 144], [176, 180]],
+      "windowVideoSec": [125, 145],
+      "bossDistance": "medium-far (boss on left)",
+      "pelletValueWhite": 25672,
+      "corePellets": 0,
+      "critPellets": 6,
+      "whitePellets": 16,
+      "totalPellets": 22,
+      "coreRate": 0.0,
+      "confidence": "high",
+      "frames": ["midfar/mf_008.png", "midfar/mf_038.png", "midfar/mf_044.png"]
+    }
+  ],
+  "summary": {
+    "coreRateByBand": {"mid": 0.0, "near": 0.088, "far": 0.0, "midfar": 0.0},
+    "headline": "SG per-pellet core rate is ~0% at mid/far/midfar and ~9% (lower bound) at near. There IS a near-range core signal (directionally consistent with core=f(range): near > far), but its MAGNITUDE is an order of magnitude below the hypothesised ~100%-at-optimal-range.",
+    "mechanistic": "This boss (spider mech) has a small central core (red gem at the crosshair). Auto-aim spreads all 10 pellets across the large body; even point-blank only ~1 pellet/shot lands on the core. Boss geometry likely caps achievable SG core rate far below the theoretical optimum.",
+    "confounds": [
+      "Full-Burst overlap: near windows coincide with FB (pellet 33374 + red screen tint) vs mid/far (25672, no FB). Not fully separable in one solo recording. Mitigant: near cores appear on non-burst shots, and a red-tinted midfar frame (mf_038) still showed 0 core — so the signal tracks NEAR RANGE, not merely FB.",
+      "Visibility bias understates near, not far: red numbers vs dark boss body at near are hard to read; red vs grey sky at far is easy. So near is a lower bound; far 0% is reliable."
+    ],
+    "rangeScriptCrossCheck": "PASS — boss genuinely CLOSE during near windows (largest apparent size at v167), and FAR/smallest during 70-106s (v95). Boss also roams left (midfar ~v132) vs right (near/mid).",
+    "simRelevance": "Engine AUTO_CORE_RATE is a flat 0.85 (calibrated, marked). For Drake's SG on this boss the observed core rate is <=~9% at best and ~0 at range — the flat 0.85 is far too high here. Caveat: single boss with a small core; do not over-generalise across bosses/weapons from this alone."
+  }
+}

@@ -36,13 +36,14 @@ const BASE_DESC =
 const TAB_META = {
   sim: { title: 'NIKKE Solo Raid Sim', desc: BASE_DESC },
   dpschart: {
-    title: 'DPS Chart — NIKKE Solo Raid Sim',
+    title: 'DPS Rankings — NIKKE Solo Raid Sim',
     desc: 'Ranked DPS of the top B3 carries under standardized control frameworks, 180s.',
   },
-  dps: { title: 'DPS Test — NIKKE Solo Raid Sim', desc: `Head-to-head per-unit DPS on a scope-lock basis. ${BASE_DESC}` },
-  team: { title: 'Team Calc — NIKKE Solo Raid Sim', desc: `Full per-unit damage breakdown for a 5-Nikke team. ${BASE_DESC}` },
-  roster: { title: 'Roster Calc — NIKKE Solo Raid Sim', desc: `Rank your roster by simulated solo-raid damage. ${BASE_DESC}` },
-  character: { title: 'Character Calc — NIKKE Solo Raid Sim', desc: `Per-character damage tuning and gear analysis. ${BASE_DESC}` },
+  dps: { title: 'Custom DPS Rankings — NIKKE Solo Raid Sim', desc: `Head-to-head per-unit DPS on a scope-lock basis. ${BASE_DESC}` },
+  team: { title: 'Optimal Team — NIKKE Solo Raid Sim', desc: `Full per-unit damage breakdown for a 5-Nikke team. ${BASE_DESC}` },
+  roster: { title: 'Solo-Raid Roster Generator — NIKKE Solo Raid Sim', desc: `Rank your roster by simulated solo-raid damage. ${BASE_DESC}` },
+  overload: { title: 'Optimize Overload — NIKKE Solo Raid Sim', desc: `Rank a carry’s four free Overload lines by simulated damage on an 8/12 basis. ${BASE_DESC}` },
+  charge: { title: 'Charge Speed Breakpoints — NIKKE Solo Raid Sim', desc: `Charge-speed frame breakpoints for any RL/SR carry. ${BASE_DESC}` },
   // top-level pages (path-routed, so independently linkable + embeddable)
   howto: { title: 'How to — NIKKE Solo Raid Sim', desc: 'How to use the NIKKE Solo Raid Sim: build a team, set the boss, and read the results.' },
   mechanics: { title: 'Game Mechanics — NIKKE Solo Raid Sim', desc: 'The damage mechanics the sim models, with sources and evidence tiers.' },

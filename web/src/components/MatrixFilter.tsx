@@ -27,7 +27,9 @@ function Row<T extends string>({ label, ids, labelOf, value, onPick }: {
   );
 }
 
-export function MatrixFilter({ cell, onChange }: { cell: Cell; onChange: (c: Cell) => void }) {
+// `hideInvest` drops the Investment axis — the Overload Calc pins it (8/12) so the
+// only thing that varies is the tested unit's overload lines.
+export function MatrixFilter({ cell, onChange, hideInvest }: { cell: Cell; onChange: (c: Cell) => void; hideInvest?: boolean }) {
   return (
     <div className='matrix-filter'>
       <Row label='Framework' ids={FRAMEWORK_IDS} labelOf={(id) => FRAMEWORKS[id].label}
@@ -36,8 +38,10 @@ export function MatrixFilter({ cell, onChange }: { cell: Cell; onChange: (c: Cel
         value={cell.eleadv} onPick={(eleadv) => onChange({ ...cell, eleadv })} />
       <Row label='Core' ids={CORE_IDS} labelOf={(id) => CORES[id].label}
         value={cell.core} onPick={(core) => onChange({ ...cell, core })} />
-      <Row label='Investment' ids={INVEST_IDS} labelOf={(id) => INVESTS[id].label}
-        value={cell.invest} onPick={(invest) => onChange({ ...cell, invest })} />
+      {!hideInvest && (
+        <Row label='Investment' ids={INVEST_IDS} labelOf={(id) => INVESTS[id].label}
+          value={cell.invest} onPick={(invest) => onChange({ ...cell, invest })} />
+      )}
     </div>
   );
 }

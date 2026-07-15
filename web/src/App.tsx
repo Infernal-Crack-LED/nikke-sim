@@ -21,7 +21,11 @@ import {
 import { DpsChartTab } from './DpsChartTab';
 import { navigate } from './router';
 import { MatrixChart } from './components/MatrixChart';
+import { MatrixFilter } from './components/MatrixFilter';
+import { OlBarChart } from './components/OlBarChart';
 import { DpsBarChart } from './components/DpsBarChart';
+import { assembleTeam, cellLabel, type Cell } from '../../src/dpschart/matrix';
+import { rankFreeLineConfigs, OL_FLOOR, type OlConfigResult } from '../../src/olconfigs';
 import { copyDpsChartImage } from './shareImage';
 import {
   encodeBuild,
@@ -37,7 +41,6 @@ import {
   type SavedTeam,
 } from './auth';
 import { makeCalc, type TeamResult } from '../../src/teamcalc';
-import { bestOlAtTier, type BestOlAtTierResult } from '../../src/olcalc';
 import charactersJson from '../../data/characters.json';
 import cubesJson from '../../data/cubes.json';
 import multJson from '../../data/level-multiplier.json';
@@ -57,14 +60,22 @@ const olTiers = (olTiersJson as any).tiers as Array<Record<string, number>>;
 const olTierValues = (tier: number): Record<string, number> =>
   olTiers.find((t) => t.tier === tier) ?? olTiers.find((t) => t.tier === 11)!;
 
-type CalcTab = 'sim' | 'team' | 'roster' | 'character' | 'dps' | 'dpschart';
+type CalcTab =
+  | 'sim'
+  | 'team'
+  | 'roster'
+  | 'overload'
+  | 'dps'
+  | 'dpschart'
+  | 'charge';
 const CALC_TABS: { key: CalcTab; label: string }[] = [
   { key: 'sim', label: 'Sim' },
-  { key: 'dpschart', label: 'DPS Chart' },
-  { key: 'dps', label: 'DPS Test' },
-  { key: 'team', label: 'Team Calc' },
-  { key: 'roster', label: 'Roster Calc' },
-  { key: 'character', label: 'Character Calc' },
+  { key: 'dpschart', label: 'DPS Rankings' },
+  { key: 'dps', label: 'Custom DPS Rankings' },
+  { key: 'overload', label: 'Optimize Overload' },
+  { key: 'charge', label: 'Charge Speed Breakpoints' },
+  { key: 'team', label: 'Optimal Team' },
+  { key: 'roster', label: 'Solo-Raid Roster Generator' },
 ];
 
 // Which tab the current URL selects. The first path segment is authoritative
@@ -113,6 +124,26 @@ function chargeSpeedRows(perLinePct: number) {
   });
 }
 
+// ---- charge-speed FRAME breakpoints (mirrors the engine's charge math) ----
+// The engine fires a charge shot once chargeProgress reaches
+//   needed = max(1, round(baseFrames * (1 - cs/100)))   [cs clamped 0..100]
+// (src/engine/sim.ts). Because that round() snaps to whole frames, charge speed
+// only pays off in discrete jumps: a breakpoint is the least CS% that shaves one
+// more frame. For a target of N frames, round(...) = N needs
+//   baseFrames*(1 - cs/100) < N + 0.5   →   cs > 100*(1 - (N+0.5)/baseFrames).
+// We ceil that infimum to 0.01% so the displayed value, once met, actually lands
+// on N frames (the raw boundary rounds UP to N+1 — Math.round ties go up).
+const FRAME_MS = 1000 / 60; // engine runs at 60 fps
+function chargeFrameBreakpoints(baseFrames: number) {
+  const rows: { frames: number; csNeeded: number; seconds: number; ms: number }[] = [];
+  for (let n = baseFrames - 1; n >= 1; n--) {
+    const infimum = 100 * (1 - (n + 0.5) / baseFrames);
+    const csNeeded = Math.ceil((infimum + 1e-9) * 100) / 100; // strictly clears the boundary
+    rows.push({ frames: n, csNeeded, seconds: n / 60, ms: n * FRAME_MS });
+  }
+  return rows;
+}
+
 // bundle the hand-verified skill overrides
 const overrideModules = import.meta.glob('../../src/skills/overrides/*.json', {
   eager: true,
@@ -155,6 +186,12 @@ const CORE_PRESETS = [
 
 const allChars = Object.values(data.characters).sort((a, b) =>
   a.name.localeCompare(b.name),
+);
+
+// Charge weapons in the roster, so the Charge Speed picker only offers RL/SR
+// units that actually have a charge phase.
+const CHARGE_CHARS = allChars.filter(
+  (c) => (c.weapon === 'RL' || c.weapon === 'SR') && c.chargeFrames > 0,
 );
 
 // 'none' = no cube equipped at all (no flat ATK, no elemental damage, no effect);
@@ -705,15 +742,34 @@ export function App({ user }: { user: AuthUser | null }) {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
   const [blocked, setBlocked] = useState<string[]>([]); // don't-own / excluded
-  const [calcChar, setCalcChar] = useState<string | null>(null); // Character Calc
+  // Charge Speed tab: chosen unit (null = the generic 1s / 60-frame reference)
+  // and whether to list the deep, hard-to-reach breakpoints.
+  const [chargeChar, setChargeChar] = useState<string | null>(null);
+  const [chargeShowAll, setChargeShowAll] = useState(false);
   const [calcBusy, setCalcBusy] = useState(false);
   const [teamResult, setTeamResult] = useState<TeamResult | null>(null);
   const [rosterResults, setRosterResults] = useState<TeamResult[] | null>(null);
-  const [charResult, setCharResult] = useState<{
-    team: TeamResult;
-    unitSlug: string;
-    ol: BestOlAtTierResult;
+  // Overload Calc: rank one carry's four free OL lines. Matrix mode auto-builds
+  // the 8/12 control team from a matrix cell; custom mode pins one carry and pits
+  // it against several hand-built support teams (one chart each).
+  const [olMode, setOlMode] = useState<'matrix' | 'custom'>('matrix');
+  const [olCell, setOlCell] = useState<Cell>({
+    framework: 'standard',
+    eleadv: 'neutral',
+    core: 'c100',
+    invest: '8of12', // pinned — the investment axis is hidden on this tab
+  });
+  const [olCarry, setOlCarry] = useState<string | null>(null);
+  const [olMatrixResult, setOlMatrixResult] = useState<{
+    carrySlug: string;
+    baseline: number;
+    results: OlConfigResult[];
   } | null>(null);
+  const [olCustomCarry, setOlCustomCarry] = useState<string | null>(null);
+  const [olSupportTeams, setOlSupportTeams] = useState<string[][]>([[]]);
+  const [olCustomResults, setOlCustomResults] = useState<
+    { teamSlugs: string[]; baseline: number; results: OlConfigResult[] }[] | null
+  >(null);
   // DPS test: a scope-locked control group (3 or 4) + variable groups that fill
   // the rest (2 or 1). Each complete group forms a variant team we sim.
   const [dpsControl, setDpsControl] = useState<string[]>([]);
@@ -1127,48 +1183,85 @@ export function App({ user }: { user: AuthUser | null }) {
   const runBestTeam = () =>
     runCalc(() => {
       setRosterResults(null);
-      setCharResult(null);
       setTeamResult(newCalc().bestTeam());
     });
   const runTopTeams = () =>
     runCalc(() => {
       setTeamResult(null);
-      setCharResult(null);
       setRosterResults(newCalc().topTeams(5));
     });
-  const runCharacter = () =>
+
+  // ---- Overload Calc: rank one carry's four free OL lines in an 8/12 team ----
+  const olDeps = {
+    overrides,
+    skillLevels: skillLevelData,
+    cubes,
+    olLines: olLinesData,
+  };
+  // the 8/12 baseline loadout every unit runs under (OL5 gear, doll, "Other" cube
+  // L10, 3★ · core 7); the four floor lines are 4× Elemental DMG + 4× ATK.
+  const ol812Loadout = (): UnitOptions => ({
+    cube: { id: 'other', level: 10 },
+    ol: 5,
+    doll: true,
+    stars: 3,
+    core: 7,
+    lines: [...OL_FLOOR],
+  });
+  // custom mode: one carry vs several hand-built 4-unit support teams
+  const olCustomTeamsValid = olSupportTeams.filter((t) => t.length === 4);
+  const runOlMatrix = () =>
     runCalc(() => {
-      setTeamResult(null);
-      setRosterResults(null);
-      if (!calcChar) return;
-      const analysis = newCalc().characterAnalysis(calcChar);
-      if (!analysis) {
-        setCharResult(null);
+      setOlCustomResults(null);
+      if (!olCarry) {
+        setOlMatrixResult(null);
         return;
       }
-      // best-OL for the pinned unit inside its generated team
-      const cs = analysis.team.slugs.map((s) => data.characters[s]);
-      const idx = analysis.team.slugs.indexOf(calcChar);
-      const prepared = prepareTeam(
-        cs as any,
-        analysis.team.slugs.map(() => calcLoadout()),
-        {
-          overrides,
-          skillLevels: skillLevelData,
-          cubes,
-          olLines: olLinesData,
-        },
-      );
-      const ol = bestOlAtTier(
-        cs as any,
+      const carry = data.characters[olCarry];
+      const cell8: Cell = { ...olCell, invest: '8of12' };
+      const team = assembleTeam(cell8, { slug: olCarry, element: carry.element });
+      const chars = team.slugs.map((s) => data.characters[s]);
+      const carryIdx = team.slugs.indexOf(olCarry);
+      const { baselineDamage, results } = rankFreeLineConfigs({
+        chars: chars as any,
         mult,
-        { ...calcCfg(), slugs: analysis.team.slugs } as SimConfig,
-        prepared,
-        idx,
-        olTiers as any,
-        olTier,
-      );
-      setCharResult({ team: analysis.team, unitSlug: calcChar, ol });
+        cfg: team.cfg,
+        deps: olDeps,
+        baseOpts: team.unitOpts,
+        carryIdx,
+        topN: 10,
+      });
+      setOlMatrixResult({ carrySlug: olCarry, baseline: baselineDamage, results });
+    });
+  const runOlCustom = () =>
+    runCalc(() => {
+      setOlMatrixResult(null);
+      if (!olCustomCarry || !olCustomTeamsValid.length) {
+        setOlCustomResults(null);
+        return;
+      }
+      const out = olCustomTeamsValid.map((support) => {
+        const slugs = [olCustomCarry, ...support];
+        const chars = slugs.map((s) => data.characters[s]);
+        const baseOpts = slugs.map(() => ol812Loadout());
+        const cfg = {
+          ...calcCfg(),
+          level: 400,
+          slugs,
+          focusSlug: olCustomCarry,
+        } as SimConfig;
+        const { baselineDamage, results } = rankFreeLineConfigs({
+          chars: chars as any,
+          mult,
+          cfg,
+          deps: olDeps,
+          baseOpts,
+          carryIdx: 0,
+          topN: 10,
+        });
+        return { teamSlugs: support, baseline: baselineDamage, results };
+      });
+      setOlCustomResults(out);
     });
 
   // ---- DPS test: scope-locked control + variable groups ----
@@ -1626,7 +1719,7 @@ export function App({ user }: { user: AuthUser | null }) {
     if (tab === 'team') {
       return (
         <section className='calc-tab'>
-          <h2>Team Calc</h2>
+          <h2>Optimal Team</h2>
           <p className='muted'>
             Finds the strongest 5-nikke team for the chosen boss weakness
             {weakness ? ` (${weakness})` : ' (no element selected)'} under the
@@ -1645,10 +1738,10 @@ export function App({ user }: { user: AuthUser | null }) {
     if (tab === 'roster') {
       return (
         <section className='calc-tab'>
-          <h2>Roster Calc</h2>
+          <h2>Solo-Raid Roster Generator</h2>
           <p className='muted'>
             Builds the top 5 teams with no character reused across teams (same
-            scoring as Team Calc). Takes a few seconds — it runs hundreds of
+            scoring as Optimal Team). Takes a few seconds — it runs hundreds of
             fights.
           </p>
           {blockedPanel}
@@ -1668,7 +1761,7 @@ export function App({ user }: { user: AuthUser | null }) {
       const canRun = dpsControlValid && dpsGroups.some(groupComplete) && !calcBusy;
       return (
         <section className='calc-tab'>
-          <h2>DPS Test</h2>
+          <h2>Custom DPS Rankings</h2>
           <div className='pills small dps-mode'>
             <button className={dpsMode === 'custom' ? 'on' : ''} onClick={() => setDpsMode('custom')}>
               Custom control groups
@@ -1680,7 +1773,7 @@ export function App({ user }: { user: AuthUser | null }) {
           {dpsMode === 'matrix' ? (
             <>
               <p className='muted'>
-                The standardized 72-cell matrix (same grid as the DPS Chart tab) — pick
+                The standardized 72-cell matrix (same grid as the DPS Rankings tab) — pick
                 a cell for its ranked top-10 infographic.
               </p>
               <MatrixChart />
@@ -1725,35 +1818,37 @@ export function App({ user }: { user: AuthUser | null }) {
                 variable groups — {dpsGroupSize} nikke
                 {dpsGroupSize > 1 ? 's' : ''} each
               </div>
-              {dpsGroups.map((group, gi) => (
-                <div className='dps-group-block' key={gi}>
-                  <div className='dps-group-head'>
-                    <span className='card-group-label'>group {gi + 1}</span>
-                    {dpsGroups.length > 1 && (
-                      <button
-                        className='chip'
-                        title='remove group'
-                        onClick={() =>
-                          setDpsGroups((gs) => gs.filter((_, j) => j !== gi))
-                        }
-                      >
-                        remove group ×
-                      </button>
-                    )}
+              <div className='dps-groups-row'>
+                {dpsGroups.map((group, gi) => (
+                  <div className='dps-group-block' key={gi}>
+                    <div className='dps-group-head'>
+                      <span className='card-group-label'>group {gi + 1}</span>
+                      {dpsGroups.length > 1 && (
+                        <button
+                          className='chip'
+                          title='remove group'
+                          onClick={() =>
+                            setDpsGroups((gs) => gs.filter((_, j) => j !== gi))
+                          }
+                        >
+                          remove group ×
+                        </button>
+                      )}
+                    </div>
+                    <div className='dps-cards'>
+                      {group.map((unit, ui) => (
+                        <Fragment key={ui}>
+                          {renderCard(
+                            unit,
+                            (p) => setGroupUnit(gi, ui, p),
+                            `unit ${ui + 1}`,
+                          )}
+                        </Fragment>
+                      ))}
+                    </div>
                   </div>
-                  <div className='dps-cards'>
-                    {group.map((unit, ui) => (
-                      <Fragment key={ui}>
-                        {renderCard(
-                          unit,
-                          (p) => setGroupUnit(gi, ui, p),
-                          `unit ${ui + 1}`,
-                        )}
-                      </Fragment>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
               <button
                 className='ol-add'
                 onClick={() =>
@@ -1763,7 +1858,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 + add group
               </button>
               <button className='calc-run' onClick={runDpsTest} disabled={!canRun}>
-                {calcBusy ? 'Running…' : 'Run DPS test'}
+                {calcBusy ? 'Running…' : 'Run rankings'}
               </button>
             </>
           ) : (
@@ -1786,7 +1881,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 }))}
                 onShareImage={() =>
                   void copyDpsChartImage({
-                    title: 'DPS Test — variable groups',
+                    title: 'Custom DPS Rankings — variable groups',
                     bars: dpsResults.map((res) => ({
                       name: res.varUnits.map((u) => u.name).join(' + '),
                       element: data.characters[res.varUnits[0]?.slug ?? '']?.element ?? '',
@@ -1836,68 +1931,383 @@ export function App({ user }: { user: AuthUser | null }) {
         </section>
       );
     }
-    // character
-    const cc = calcChar ? data.characters[calcChar] : null;
-    return (
-      <section className='calc-tab'>
-        <h2>Character Calc</h2>
-        <p className='muted'>
-          Pick one nikke; the best supporting team is generated around them, then
-          their best-OL is computed inside it. Workhorse for best-OL + new chars.
-        </p>
-        <div className='field'>
-          <label>Character</label>
-          {cc ? (
-            <div className='chips'>
-              <button
-                className='chip'
-                title='change'
-                onClick={() => {
-                  setCalcChar(null);
-                  setCharResult(null);
-                }}
-              >
-                {cc.name} ({cc.weapon} · {cc.element}) ×
-              </button>
-            </div>
-          ) : (
-            <CharSearch
-              placeholder='pick a nikke…'
-              exclude={[]}
-              onPick={(slug) => setCalcChar(slug)}
-            />
+    if (tab === 'charge') {
+      const chc = chargeChar ? data.characters[chargeChar] : null;
+      const baseFrames = chc ? chc.chargeFrames : 60;
+      const allRows = chargeFrameBreakpoints(baseFrames);
+      // Deep breakpoints need charge speed most teams never reach; hide them
+      // behind a toggle so the default view stays actionable.
+      const REACHABLE_CS = 50;
+      const rows = chargeShowAll
+        ? allRows
+        : allRows.filter((r) => r.csNeeded <= REACHABLE_CS);
+      const hidden = allRows.length - rows.length;
+      // exclude everything that isn't a charge weapon from the picker
+      const nonCharge = allChars
+        .filter((c) => !CHARGE_CHARS.some((cc) => cc.slug === c.slug))
+        .map((c) => c.slug);
+      return (
+        <section className='calc-tab'>
+          <h2>Charge Speed Breakpoints</h2>
+          <p className='muted'>
+            Charge weapons fire in whole frames (the game runs at 60&nbsp;fps), so
+            charge speed only shaves time in discrete steps. A <b>breakpoint</b> is
+            the least charge speed&nbsp;% that drops the charge by one more frame —
+            anything between two breakpoints is wasted. Pick a nikke for her charge
+            time, or read the standard 1-second table below.
+          </p>
+
+          <div className='field'>
+            <label>Charge weapon</label>
+            {chc ? (
+              <div className='chips'>
+                <button
+                  className='chip'
+                  title='change'
+                  onClick={() => setChargeChar(null)}
+                >
+                  {chc.name} ({chc.weapon} · {(chc.chargeFrames / 60).toFixed(2)}s
+                  charge) ×
+                </button>
+              </div>
+            ) : (
+              <CharSearch
+                placeholder='pick a charge nikke (RL / SR)…'
+                exclude={nonCharge}
+                onPick={(slug) => setChargeChar(slug)}
+              />
+            )}
+          </div>
+
+          <p className='muted'>
+            {chc ? (
+              <>
+                <b>{chc.name}</b> charges in <b>{baseFrames} frames</b> (
+                {(baseFrames / 60).toFixed(3)}s) at 0% charge speed.
+              </>
+            ) : (
+              <>
+                Showing the <b>standard 1-second charge</b> — {baseFrames} frames,
+                shared by most rocket launchers and snipers (Cinderella, Maxwell,
+                Red Hood, Alice&apos;s base, …).
+              </>
+            )}
+          </p>
+
+          <div className='table-scroll'>
+            <table className='breakpoint-table'>
+              <thead>
+                <tr>
+                  <th>Charge speed</th>
+                  <th>Charge frames</th>
+                  <th>Charge time</th>
+                  <th>Saved vs base</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.frames}>
+                    <td className='r'>
+                      <b>≥ {row.csNeeded.toFixed(2)}%</b>
+                    </td>
+                    <td className='r'>{row.frames}f</td>
+                    <td className='r'>{Math.round(row.ms)} ms</td>
+                    <td className='r'>
+                      −{baseFrames - row.frames}f (
+                      {Math.round((baseFrames - row.frames) * FRAME_MS)} ms)
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className='pills small' style={{ marginTop: 10 }}>
+            <button
+              className={chargeShowAll ? '' : 'on'}
+              onClick={() => setChargeShowAll(false)}
+            >
+              Reachable (≤ {REACHABLE_CS}%)
+            </button>
+            <button
+              className={chargeShowAll ? 'on' : ''}
+              onClick={() => setChargeShowAll(true)}
+            >
+              All breakpoints
+            </button>
+          </div>
+          {!chargeShowAll && hidden > 0 && (
+            <p className='muted'>
+              {hidden} deeper breakpoint{hidden === 1 ? '' : 's'} hidden (each needs
+              more than {REACHABLE_CS}% charge speed). Charge speed caps at 100%,
+              which floors the charge at a single frame.
+            </p>
           )}
-        </div>
-        <button
-          className='calc-run'
-          onClick={runCharacter}
-          disabled={!cc || calcBusy}
-        >
-          {calcBusy ? 'Calculating…' : 'Generate team & analyze'}
-        </button>
-        {charResult && (
-          <>
-            {teamResultView(charResult.team, charResult.unitSlug)}
-            <div className='notes'>
-              <b>{data.characters[charResult.unitSlug].name} — best OL</b> (tier{' '}
-              {charResult.ol.tier}): fixed{' '}
-              {charResult.ol.fixed.map((l) => `${l.count}×${l.label}`).join(' + ')}
-              {' + '}
-              <b>
-                {charResult.ol.free.length
-                  ? charResult.ol.free
-                      .map((l) => `${l.count}×${l.label}`)
-                      .join(' + ')
-                  : '(none)'}
-              </b>{' '}
-              <span className='muted'>
-                (+{charResult.ol.gainPct.toFixed(1)}% over the 8 fixed lines)
-              </span>
-            </div>
-          </>
-        )}
-      </section>
-    );
+
+          <div className='notes'>
+            <b>How to read this</b>
+            <ul>
+              <li>
+                Charge speed is <b>subtractive on charge time</b>: effective frames
+                = round(base × (1 − charge&nbsp;speed)), floored at 1 frame. Sum
+                every source — OL lines, cube (Resilience), and in-combat buffs —
+                and compare against the “Charge speed” column.
+              </li>
+              <li>
+                This table is the <b>charge phase only</b>. On auto, release-fired
+                RLs and snipers add a fixed ~22-frame release/bolt recovery after
+                each shot that charge speed does <i>not</i> reduce, so real cadence
+                is a little longer than the charge time shown.
+              </li>
+              <li>
+                Charge speed past 100% is wasted (no shot charges faster than one
+                frame) except for the few kits that explicitly convert the excess.
+              </li>
+            </ul>
+          </div>
+        </section>
+      );
+    }
+    if (tab === 'overload') {
+      const carryMx = olCarry ? data.characters[olCarry] : null;
+      const carryCu = olCustomCarry ? data.characters[olCustomCarry] : null;
+      // compact ranked table beneath a chart
+      const olTable = (baseline: number, results: OlConfigResult[]) => (
+        <details className='dps-details'>
+          <summary className='muted'>details table</summary>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>free 4 overload lines</th>
+                <th className='r'>carry dmg</th>
+                <th className='r'>vs 8/12</th>
+              </tr>
+            </thead>
+            <tbody>
+              {results.map((res, i) => (
+                <tr key={res.label} className={i === 0 ? 'hl' : ''}>
+                  <td className='muted'>{i + 1}</td>
+                  <td>{res.label}</td>
+                  <td className='r'>{fmt(res.damage)}</td>
+                  <td className='r share'>+{res.gainPct.toFixed(1)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className='muted'>
+            8/12 baseline (4× Elemental DMG + 4× ATK, four free lines empty):{' '}
+            {fmt(baseline)}. Ranked by the carry’s own damage.
+          </p>
+        </details>
+      );
+      // custom-mode support-team editing (functional updates; clear stale results)
+      const editSupport = (fn: (ts: string[][]) => string[][]) => {
+        setOlSupportTeams(fn);
+        setOlCustomResults(null);
+      };
+      return (
+        <section className='calc-tab'>
+          <h2>Optimize Overload</h2>
+          <p className='muted'>
+            Ranks how one carry should spend its <b>four free overload lines</b>. The
+            8/12 floor — 4× Elemental DMG + 4× ATK — is held fixed on everyone; only
+            the carry’s remaining four lines vary, scored by the carry’s own damage
+            and the % gain over that plain 8/12 baseline.
+          </p>
+          <div className='pills small dps-mode'>
+            <button
+              className={olMode === 'matrix' ? 'on' : ''}
+              onClick={() => setOlMode('matrix')}
+            >
+              Matrix control team
+            </button>
+            <button
+              className={olMode === 'custom' ? 'on' : ''}
+              onClick={() => setOlMode('custom')}
+            >
+              Custom support teams
+            </button>
+          </div>
+
+          {olMode === 'matrix' ? (
+            <>
+              <p className='muted'>
+                Pick a carry and a matrix cell — the Standard/Anis control team
+                auto-fills around it. Investment is pinned to <b>8/12</b>.
+              </p>
+              <MatrixFilter cell={olCell} onChange={setOlCell} hideInvest />
+              <div className='field'>
+                <label>Carry — unit to optimize</label>
+                {carryMx ? (
+                  <div className='chips'>
+                    <button
+                      className='chip'
+                      title='change'
+                      onClick={() => {
+                        setOlCarry(null);
+                        setOlMatrixResult(null);
+                      }}
+                    >
+                      {carryMx.name} ({carryMx.weapon} · {carryMx.element}) ×
+                    </button>
+                  </div>
+                ) : (
+                  <CharSearch
+                    placeholder='pick a carry…'
+                    exclude={[]}
+                    onPick={(slug) => {
+                      setOlCarry(slug);
+                      setOlMatrixResult(null);
+                    }}
+                  />
+                )}
+              </div>
+              <button
+                className='calc-run'
+                onClick={runOlMatrix}
+                disabled={!carryMx || calcBusy}
+              >
+                {calcBusy ? 'Running…' : 'Rank overload lines'}
+              </button>
+              {olMatrixResult && (
+                <div className='calc-result'>
+                  <OlBarChart
+                    title={`${data.characters[olMatrixResult.carrySlug].name} — free OL lines`}
+                    subtitle={`${cellLabel({ ...olCell, invest: '8of12' })} · 180s`}
+                    element={data.characters[olMatrixResult.carrySlug].element}
+                    bars={olMatrixResult.results.map((r) => ({
+                      label: r.label,
+                      damage: r.damage,
+                      gainPct: r.gainPct,
+                    }))}
+                  />
+                  {olTable(olMatrixResult.baseline, olMatrixResult.results)}
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <p className='muted'>
+                Pick one carry, then build one or more <b>4-nikke support teams</b>.
+                Every unit runs the 8/12 loadout; you get one ranked chart per support
+                team so you can see how the best overload spread shifts with support.
+                Boss options come from the teamwide row above.
+              </p>
+              <div className='field'>
+                <label>Carry — unit to optimize</label>
+                {carryCu ? (
+                  <div className='chips'>
+                    <button
+                      className='chip'
+                      title='change'
+                      onClick={() => {
+                        setOlCustomCarry(null);
+                        setOlCustomResults(null);
+                      }}
+                    >
+                      {carryCu.name} ({carryCu.weapon} · {carryCu.element}) ×
+                    </button>
+                  </div>
+                ) : (
+                  <CharSearch
+                    placeholder='pick a carry…'
+                    exclude={[]}
+                    onPick={(slug) => {
+                      setOlCustomCarry(slug);
+                      setOlCustomResults(null);
+                    }}
+                  />
+                )}
+              </div>
+
+              {olSupportTeams.map((team, ti) => (
+                <div className='dps-group-block' key={ti}>
+                  <div className='dps-group-head'>
+                    <span className='card-group-label'>
+                      support team {ti + 1} — {team.length}/4
+                    </span>
+                    {olSupportTeams.length > 1 && (
+                      <button
+                        className='chip'
+                        title='remove team'
+                        onClick={() => editSupport((ts) => ts.filter((_, j) => j !== ti))}
+                      >
+                        remove team ×
+                      </button>
+                    )}
+                  </div>
+                  <div className='chips'>
+                    {team.map((slug) => (
+                      <button
+                        key={slug}
+                        className='chip'
+                        title='remove'
+                        onClick={() =>
+                          editSupport((ts) =>
+                            ts.map((t, j) =>
+                              j === ti ? t.filter((s) => s !== slug) : t,
+                            ),
+                          )
+                        }
+                      >
+                        {data.characters[slug]?.name ?? slug} ×
+                      </button>
+                    ))}
+                  </div>
+                  {team.length < 4 && (
+                    <CharSearch
+                      placeholder='add support nikke…'
+                      exclude={[...(olCustomCarry ? [olCustomCarry] : []), ...team]}
+                      onPick={(slug) =>
+                        editSupport((ts) =>
+                          ts.map((t, j) => (j === ti ? [...t, slug] : t)),
+                        )
+                      }
+                    />
+                  )}
+                </div>
+              ))}
+              <button
+                className='ol-add'
+                onClick={() => editSupport((ts) => [...ts, []])}
+              >
+                + add support team
+              </button>
+              <button
+                className='calc-run'
+                onClick={runOlCustom}
+                disabled={!carryCu || !olCustomTeamsValid.length || calcBusy}
+              >
+                {calcBusy ? 'Running…' : 'Rank overload lines'}
+              </button>
+              {!olCustomTeamsValid.length && carryCu && (
+                <p className='muted'>Fill at least one support team with 4 nikkes.</p>
+              )}
+
+              {olCustomResults?.map((res, i) => (
+                <div className='calc-result' key={i}>
+                  <OlBarChart
+                    title={`${carryCu?.name ?? 'Carry'} — support team ${i + 1}`}
+                    subtitle={res.teamSlugs
+                      .map((s) => data.characters[s]?.name ?? s)
+                      .join(' · ')}
+                    element={carryCu?.element}
+                    bars={res.results.map((r) => ({
+                      label: r.label,
+                      damage: r.damage,
+                      gainPct: r.gainPct,
+                    }))}
+                  />
+                  {olTable(res.baseline, res.results)}
+                </div>
+              ))}
+            </>
+          )}
+        </section>
+      );
+    }
+    return null;
   };
 
   return (
@@ -1962,10 +2372,13 @@ export function App({ user }: { user: AuthUser | null }) {
         </nav>
       )}
 
-      {/* Global boss options + Apply-to-all loadout: used by the Sim and DPS Test
-          tabs. The DPS Chart tab is self-contained (its filter is the matrix selector
-          in the Full matrix section), so hide this block there. */}
-      {tab !== 'dpschart' && (<>
+      {/* Global boss options + Apply-to-all loadout: used by the Sim, DPS Test, and
+          Overload Calc custom mode. The DPS Chart tab and the Overload matrix mode are
+          self-contained (their own matrix selector defines the boss), and the Charge
+          Speed tab is a pure calculator, so hide this block on those. */}
+      {tab !== 'dpschart' &&
+        tab !== 'charge' &&
+        !(tab === 'overload' && olMode === 'matrix') && (<>
       <section className='global'>
         <div className='field'>
           <label title='the element that is strong against the boss'>
@@ -2279,7 +2692,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     Assumes 8/12 lines are 4× ATK + 4× ELE; the remaining 4 are
                     free. Values shown at tier {olTier} ({tv.ammo}% ammo,{' '}
                     {tv.chargespd}% charge speed per line). For the damage-ranked
-                    pick of the best 4 lines, use the <b>Character Calc</b> tab.
+                    pick of the best 4 lines, use the <b>Optimize Overload</b> tab.
                   </p>
                   {filled.map((c) => {
                     const isCharge = c.weapon === 'RL' || c.weapon === 'SR';

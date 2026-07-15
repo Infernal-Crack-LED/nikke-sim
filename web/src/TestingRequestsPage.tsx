@@ -62,6 +62,17 @@ export function TestingRequestsPage() {
             recording from the PC client, or the vertical combat UI, can’t be
             read. Please use the phone app in landscape for the recording.
           </li>
+          <li>
+            <b>Use these in-game settings when recording</b> so the fight
+            matches what the sim models and every value is legible on screen:
+            <ul>
+              <li>Burst skill location: right</li>
+              <li>Min firing rounds: on</li>
+              <li>Skill cutscenes: off</li>
+              <li>Switch Nikkes during auto combat: never</li>
+              <li>Display values in battle: on (all)</li>
+            </ul>
+          </li>
         </ul>
       </article>
 

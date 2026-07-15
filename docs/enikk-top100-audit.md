@@ -339,3 +339,5 @@ Cinderella (5), Crown (5), Helm (5), Liberalio (5), Liter * (5), Little Mermaid 
 
 
 **Not modeled by the sim:** Liter, Anchor: Innocent Maid, Zwei, Isabel, Soline: Frost Ticket, Blanc, Volume, Anis: Sparkling Summer, Bready, Brid: Silent Track, Delta: Ninja Thief, Guillotine, Guilty, Helm: Aquamarine, K, Leona, Mana, Mari, Noir, Rei, Rei (Tentative Name), Scarlet, Snow White: Innocent Days, Sugar
+
+**Manual additions (not from ranker data):** Cinderella: Crystal Wave — user-specified 2026-07-15; too new to have accrued solo-raid top-ranker usage yet, but the owner wants her supported. Kept in the enikk-supported roster via `MANUAL_ADDITIONS` in `scripts/enikk/roster-audit.ts` (survives regeneration). Not counted in the ranker-derived totals above.

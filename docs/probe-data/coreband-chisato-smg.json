@@ -1,0 +1,76 @@
+{
+  "measurement": "range-dependent auto-aim CORE-HIT rate (SMG normal attacks)",
+  "unit": "chisato",
+  "weapon": "SMG",
+  "focusReason": "solo recording — only unit on field, so all normal-attack popups are hers",
+  "date": "2026-07-15",
+  "video": "docs/probes/ar-sg-smg/chisato smg.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/chisato smg.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "representativeFrames": "docs/probes/ar-sg-smg/coreband-frames/ (gitignored)",
+  "videoMeta": {
+    "displayDims": "2622x1206 (portrait 1206x2622 + rotation=90)",
+    "fps": 60,
+    "durationSec": 213.3
+  },
+  "fightClockOffset": {
+    "note": "fight_clock = video_time - offset, derived from the top-right MM:SS countdown (fight t = 180 - remaining). Read the countdown AT each window rather than assuming a constant offset; observed video-minus-fight drifts ~6s early to ~2s late (integer-second rounding + minor clock drift).",
+    "anchors": [
+      {"videoSec": 9, "countdown": "02:57", "fightSec": 3},
+      {"videoSec": 22, "countdown": "02:44", "fightSec": 16},
+      {"videoSec": 58, "countdown": "02:07", "fightSec": 53},
+      {"videoSec": 92, "countdown": "01:32", "fightSec": 88},
+      {"videoSec": 128, "countdown": "00:55", "fightSec": 125},
+      {"videoSec": 164, "countdown": "00:19", "fightSec": 161},
+      {"videoSec": 180, "countdown": "00:02", "fightSec": 178}
+    ]
+  },
+  "colourConvention": {
+    "white": "normal non-core (24229 @near / 12123 @far / 15760 @near2)",
+    "orange+critIcon": "crit, NON-core (= white x1.5, e.g. 12123->18185)",
+    "red 'CORE HIT'": "core hit (counts as core)",
+    "red+orange 'CORE HIT'+critIcon": "core + crit (counts as core)",
+    "coreDef": "CORE = any RED popup; NON-CORE = white or orange-only"
+  },
+  "excluded": [
+    "Chisato's ~472% true-damage periodic proc (big distinct popups >500k, e.g. 566125 / 849187 / 1293108)",
+    "burst-cast damage",
+    "cyan BLOCK! (boss attack blocked, not damage)",
+    "red 'TARGET'/'CANCEL' targeting UI text near crosshair"
+  ],
+  "method": "Per band, sampled ~6 full-res crosshair-region frames spaced ~1.5s (independent stacks; SMG popups live <0.6s) well inside the band, avoiding transitions and reload gaps. Counted distinct legible normal-attack popups and classified core (red) vs non-core (white/orange).",
+  "bands": [
+    {
+      "band": "mid", "fightWindowSec": "12-20 (in 0-33)", "videoWindowSec": "18-26",
+      "bossDistance": "medium (right-of-centre, medium size)",
+      "core": 4, "total": 29, "coreRate": 0.138, "confidence": "low-medium"
+    },
+    {
+      "band": "near", "fightWindowSec": "48-57 & 157-165 (pooled two near windows)", "videoWindowSec": "54-62 & 160-168",
+      "bossDistance": "close (large, centre-right)",
+      "core": 17, "total": 58, "coreRate": 0.293, "confidence": "medium",
+      "subWindows": [
+        {"label": "near1", "fightSec": "48-57", "core": 10, "total": 26, "coreRate": 0.385},
+        {"label": "near2", "fightSec": "157-165", "core": 7, "total": 32, "coreRate": 0.219}
+      ],
+      "note": "The two near windows disagree (38% vs 22%) — pose/animation-dependent core exposure adds variance beyond pure range."
+    },
+    {
+      "band": "midfar", "fightWindowSec": "121-129 (in 106-144)", "videoWindowSec": "124-132",
+      "bossDistance": "mid-far (centre, intermediate size)",
+      "core": 4, "total": 30, "coreRate": 0.133, "confidence": "low-medium"
+    },
+    {
+      "band": "far", "fightWindowSec": "82-90 (in 70-106)", "videoWindowSec": "88-96",
+      "bossDistance": "far (small, receded to background centre)",
+      "core": 2, "total": 29, "coreRate": 0.069, "confidence": "medium"
+    }
+  ],
+  "bossDistanceCrossCheck": "Boss apparent size/distance matches the range-band labels exactly: near bands show a large close boss, mid a medium boss, midfar intermediate, far a small receded boss.",
+  "findings": [
+    "Chisato SMG auto-aim core rate is STRONGLY range-dependent and monotonic: near ~29% > mid ~14% ~= midfar ~13% > far ~7%.",
+    "All bands are FAR below the sim's AUTO_CORE_RATE 0.85 constant for this weapon/target (open-questions A9) — for a SMG vs this raid boss the realized core rate is ~0.07-0.30, not 0.85.",
+    "mid and midfar are statistically indistinguishable at this sample size (~30 normals each); the clear separation is near-vs-far."
+  ],
+  "caveats": "Counts are approximate: dense overlapping popup stacks and pose-dependent core exposure give roughly +/-5-8% per band. Sample sizes ~29-58 classified normals/band. Trend confidence is higher than absolute per-band values."
+}

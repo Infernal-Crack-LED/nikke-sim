@@ -26,7 +26,7 @@ await new Promise((r) => setTimeout(r, 500));
 
 const text = dom.window.document.body.textContent;
 const checks = {
-  'DPS Chart tab active': text.includes('DPS Chart'),
+  'DPS Rankings tab active': text.includes('DPS Rankings'),
   'headliner 1 renders': text.includes('Standard Scope Lock'),
   'headliner 2 renders': text.includes('Hyper Carry 8/12 Elemental Advantage'),
   'headliner 3 renders': text.includes('Anis Hyper Carry 8/12 Elemental Advantage'),

@@ -42,11 +42,14 @@ export type TriggerDef =
   | { kind: 'fullBurstEnter' }              // when full burst begins
   | { kind: 'fullBurstEnd' }
   | { kind: 'hitCount'; count: number }
-  | { kind: 'chargeCounter'; count: number; countInFb?: number } // cycling per-full-charge phase counter:
-  // each full charge advances a phase counter; phase P fires (block.effects[P], in order) once its
-  // threshold accrues — `count` charges per phase outside Full Burst, `countInFb` (default 1) inside.
-  // Models kits like Scarlet: Black Shadow whose proc thresholds drop during FB (3/6/9 → 1/2/3),
-  // clustering procs into the burst window; the +50% FB then applies per-proc by landing timing.
+  | { kind: 'chargeCounter'; count: number | number[]; countInFb?: number | number[] } // cycling per-full-charge phase counter:
+  // each full charge advances a phase counter; phase P fires (block.effects[P], in order) once its OWN
+  // threshold accrues, then the counter resets and advances to P+1. `count`/`countInFb` may be a scalar
+  // (same threshold every phase) OR a per-phase array (PREFERRED — the datamined "attack count required
+  // to N times" is per-phase). Scarlet: Black Shadow: outside FB [3,6,9], her burst drops it to [1,2,3]
+  // for 10s (so one full 3-phase cycle = 6 charges in FB / 18 outside; the 848% phase2 is the RAREST,
+  // matching video — N3 focus read shows the large phases barely materialise). +50% FB applies per-proc
+  // by landing timing.
   | { kind: 'teamAmmo'; count: number } // fires each time TOTAL ally ammo consumed crosses count (infinite-ammo shots don't consume)     // every N normal-attack hits by the owner
   | { kind: 'shotFired' }                   // every trigger pull by the owner
   | { kind: 'lastBullet' }                  // on the owner's last bullet / reload start

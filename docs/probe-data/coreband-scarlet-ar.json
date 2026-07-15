@@ -1,0 +1,111 @@
+{
+  "measurement": "AR range-dependent auto-aim core-hit rate (per normal shot)",
+  "unit": "scarlet-black-shadow",
+  "weapon": "AR",
+  "hitsPerShot": 1,
+  "video": "docs/probes/ar-sg-smg/scarlet ar.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/scarlet ar.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "date": "2026-07-15",
+  "focusReason": "solo recording — Scarlet is the only unit, therefore the focus; her AR normal-attack popups are hers",
+  "clock": {
+    "method": "top-right 03:00 countdown; fight-clock t = 180 - countdown",
+    "anchors": [
+      {"videoSec": 10, "countdown": "02:57", "fightClock": 3},
+      {"videoSec": 20, "countdown": "02:47", "fightClock": 13},
+      {"videoSec": 60, "countdown": "02:06", "fightClock": 54},
+      {"videoSec": 100, "countdown": "01:25", "fightClock": 95},
+      {"videoSec": 140, "countdown": "00:44", "fightClock": 136},
+      {"videoSec": 175, "countdown": "00:09", "fightClock": 171}
+    ],
+    "offsetSec": 7,
+    "note": "NOT a constant offset — the in-game countdown runs ~1.8% FAST relative to the recording clock, so the video->fight-clock offset DRIFTS from ~7s early to ~4s late. Best linear fit: fightClock = 1.018*videoSec - 7.18, i.e. videoSec = (fightClock + 7.18)/1.018. Band windows below were placed with this fit."
+  },
+  "colourConvention": "white number = NORMAL non-core; red + 'CORE HIT' text = core (may also carry an orange crit icon = core+crit, still counted core); orange number + crit icon (no 'CORE HIT') = crit non-core; classified by COLOUR only (per-band white value shifts with buff state, so value-banding across bands is invalid). EXCLUDED: her skill riders (~359k / ~717k / ~1.08M base, 283/565/848% coef) and burst-cast nuke; the persistent red laser TRACER beam; red circular impact rings on the boss body; red full-screen boss-AoE tint; reticle counters (0XX), red 00X boss-timer boxes, cyan BLOCK over character.",
+  "hitValueTableNeutral": {"normalWhiteBase": 109033, "coreRedBase": 218066, "skill283Base": 359106, "skill565Base": 716866, "skill848Base": 1075972, "source": "scripts/probe/hit-values.ts scarlet-black-shadow (solo, neutral boss)"},
+  "bands": [
+    {
+      "band": "mid",
+      "fightClockRange": [0, 33],
+      "windowVideoSec": [19.5, 27.5],
+      "windowFightClock": [12.7, 20.8],
+      "bossDistance": "medium, boss centre-right (matches 'mid')",
+      "normalWhiteValueObserved": 91635,
+      "critOrangeValueObserved": 126879,
+      "coreRedValueObserved": 197368,
+      "coreHits": 6,
+      "critHits": 5,
+      "whiteHits": 9,
+      "totalNormals": 20,
+      "coreRate": 0.30,
+      "confidence": "medium (cores clearly present as red 197368 'CORE HIT'; count softened by reload gaps + popup overlap; ~+/-0.15)"
+    },
+    {
+      "band": "near",
+      "fightClockRange": [[33, 70], [144, 176]],
+      "windowVideoSec": [[60, 68], [166, 174]],
+      "windowFightClock": [[53.9, 61.0], [161.8, 169.0]],
+      "bossDistance": "close / large apparent size, boss right (near1) then central-big/point-blank (near2) (matches 'near')",
+      "normalWhiteValueObserved": 70488,
+      "critOrangeValueObserved": 110392,
+      "coreRedValueObserved": 140977,
+      "coreHits": 16,
+      "critHits": 8,
+      "whiteHits": 12,
+      "totalNormals": 36,
+      "coreRate": 0.44,
+      "coreRateNote": "Cores confirmed by explicit 'CORE HIT' text + red ~140977 (= 2x the white 70488) in both near1 (v61) and near2 (v170) windows. Slight lower bound: red numbers vs the large dark boss body at point-blank are marginally harder to read than vs sky.",
+      "confidence": "medium (visibility bias + overlap on large near boss; ~+/-0.15)"
+    },
+    {
+      "band": "far",
+      "fightClockRange": [70, 106],
+      "windowVideoSec": [[74, 82], [94, 102]],
+      "windowFightClock": [[68.1, 76.3], [88.5, 96.6]],
+      "bossDistance": "distant, boss small/centre (smallest apparent size of the fight) (matches 'far')",
+      "normalWhiteValueObserved": 62922,
+      "critOrangeValueObserved": 110392,
+      "coreRedValueObserved": null,
+      "coreHits": 0,
+      "critHits": 8,
+      "whiteHits": 27,
+      "totalNormals": 35,
+      "coreRate": 0.0,
+      "confidence": "high (numbers pop white/orange against grey sky even under red AoE tint; any red 'CORE HIT' would be obvious — none seen across both far windows + a high-zoom check at v75.5)"
+    },
+    {
+      "band": "midfar",
+      "fightClockRange": [[106, 144], [176, 180]],
+      "windowVideoSec": [[108, 116], [130, 138]],
+      "windowFightClock": [[102.8, 110.9], [125.2, 133.3]],
+      "bossDistance": "medium-far, boss central (between mid and far apparent size) (matches 'midfar')",
+      "normalWhiteValueObserved": 91635,
+      "critOrangeValueObserved": 131538,
+      "coreRedValueObserved": null,
+      "coreHits": 1,
+      "critHits": 12,
+      "whiteHits": 21,
+      "totalNormals": 34,
+      "coreRate": 0.03,
+      "coreRateNote": "One ambiguous warm-toned number (~121123, v133) possibly core; everything else clearly white (91635) or orange crit (131538).",
+      "confidence": "high (essentially zero cores across both midfar windows)"
+    }
+  ],
+  "method": {
+    "countingRule": "Popup-instance ratio: core & non-core NORMAL popups share identical on-screen lifetime, so summing red vs non-red damage NUMBERS across sampled frames gives an unbiased coreRate without deduping. Counted NUMBERS (not pixels) to avoid the red laser/impact-ring/AoE-tint confounds.",
+    "crop": "unified boss/popup crop crop=950:460:1120:120 (covers the impact point across all bands, orig x 1120-2070); read at 2-3.2x zoom; contact sheets at fps 2 plus high-zoom single frames for colour disambiguation.",
+    "sheetsInScratchpad": "scratchpad/scarlet/bands/{mid1,near_a,near_b,far_a,far_b,midfar_a,midfar_b}.png ; calibration frames scratchpad/scarlet/read/{z_20.5,z_20.83,big_25.0,conf_near61,conf_far75}.png (ephemeral — regenerate from windowVideoSec above)."
+  },
+  "summary": {
+    "coreRateByBand": {"mid": 0.30, "near": 0.44, "far": 0.0, "midfar": 0.03},
+    "headline": "Scarlet's AR auto-aim core rate is STRONGLY range-dependent and roughly binary: substantial when the boss is CLOSE (near ~0.44, mid ~0.30) and ~0 when the boss is FAR (midfar ~0.03, far 0.0). The single-bullet AR shows a much cleaner/larger core signal than Drake's 10-pellet SG (which diluted core across the spread to ~9% at best).",
+    "mechanistic": "The boss's core sits at the crosshair; a single AR bullet lands on-core only when the boss is close enough that the reticle is over the (small) core. Beyond ~mid range, auto-aim shots register on the body -> no core. Threshold falls between the 'mid' and 'midfar' bands.",
+    "confounds": [
+      "FB/buff overlap ruled OUT as the driver: core appears in near1 (early) AND near2 (late), and is absent across ~70 far+midfar frames spanning fc 88-134 (any periodic FB there would have shown cores). So the signal tracks NEAR RANGE, not Full Burst.",
+      "Per-band white value shifts with buff state (mid/midfar 91635, near 70488, far 62922) — classification is colour-only, not value-based.",
+      "far_a and midfar_a windows straddle a band boundary (offset drift); the CLEAN windows far_b (fc 88-96) and midfar_b (fc 125-133) give the same 0-core result."
+    ],
+    "rangeScriptCrossCheck": "PASS — apparent boss size tracks the script on solo footage: largest/closest during near (v61, v170), smallest/most distant during far (v75-95), medium at mid (v21), medium-far at midfar (v124). The core-rate pattern independently corroborates the labels (cores appear in exactly the two closest bands).",
+    "simRelevance": "Engine AUTO_CORE_RATE is a flat 0.85 (calibrated, marked). For Scarlet's AR on this boss the observed rate is ~0.3-0.44 close and ~0 at range — a flat 0.85 over-credits far/midfar cores badly and slightly over-credits close-range. Supports a range-gated core model (core enabled only for near+mid). Single boss with a small core — do not over-generalise across bosses. Do NOT edit engine constants without owner review."
+  }
+}
