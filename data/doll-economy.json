@@ -1,0 +1,32 @@
+{
+  "_comment": "Doll (in-game: Collection Item) LEVELING ECONOMY. Owner-provided 2026-07-15 (owner-stated values = authoritative; a couple of semantics flagged TBD below). Super-success PROC CHANCES live in data/doll-super-success.json. Dolls are R or SR rarity, phases 1-15. This is DELIVERABLE 2 (doll leveling optimizer) data — PARKED while OL rolling (deliverable 1) is built. This project currently models only the SR-phase-15 stat endpoint (docs/data/gear-doll.md).",
+
+  "toolboxExp": { "R": 200, "SR": 500, "SSR": 1000 },
+  "_toolboxNote": "Maintenance-kit ('toolbox') EXP by tier. Confirms the previously-INFERRED Blue/Purple/Gold = R/SR/SSR = 200/500/1000 mapping — now owner-CONFIRMED.",
+
+  "xpPerLevel": { "R": 1000, "SR": 3000 },
+  "_xpPerLevelNote": "XP to advance one phase, by DOLL rarity. R doll = 1000 xp/level, SR doll = 3000 xp/level.",
+
+  "checkpoints": [5, 10, 15],
+  "superSuccess": {
+    "effect": "On a super-success proc, jump forward to the next checkpoint (5 / 10 / 15) with accumulated XP reset to 0.",
+    "example": "level 3 holding 200 xp + super-success proc -> level 5 with 0 xp (owner).",
+    "procChanceSource": "data/doll-super-success.json (percent, by collectible-rarity x toolbox-tier x phase step)",
+    "_openQuestion": "Exact jump target per step (a proc from level 4 -> 5 vs overshoot to 10?) and whether the proc rolls per toolbox-feed or per level-up. Pin before modeling."
+  },
+
+  "rarityUpgrade": {
+    "path": "A maxed R doll (phase 15) upgrades to an SR doll at phase 5 (XP carries: R15 -> SR5).",
+    "note": "Community-standard path. Raw-SR leveling from phase 1 is considered a loss vs laundering through a cheap R doll first."
+  },
+
+  "tradeIn": {
+    "cost": "4 R (Rare) dolls",
+    "outcomes": [
+      { "p": 0.15, "reward": "1 random SR doll" },
+      { "p": 0.30, "reward": "10 SSR maintenance kits" },
+      { "p": 0.55, "reward": "20 SR maintenance kits" }
+    ],
+    "decision": "The optimizer must weigh (A) level an R doll to phase 15 then upgrade -> SR phase 5, vs (B) trade 4 R dolls for the chance table above and level an SR doll (from phase 0/5) with the won materials. Compare expected total toolbox cost + doll inventory to reach SR phase 15."
+  }
+}

@@ -1,5 +1,25 @@
 [
   {
+    "date": "2026-07-15",
+    "title": "New: Overload Roll Sim",
+    "notes": [
+      "A new Overload Roll Sim page estimates how many rerolls and Custom Modules it takes to hit a target Overload build — set your target lines and minimum tiers per piece and see the expected cost, per-piece and total, with a full distribution curve.",
+      "\"Roll from Current\" lets you enter the lines you already have and see just the remaining cost to reach your goal.",
+      "It models the real two-step method — reroll for the right stats, then value-reset each line up to tier — using the most efficient locking strategy (for example, it won't waste a lock on a weak Line 1 while you're still chasing a 12/12).",
+      "A new FAQ answers the common questions in plain English: the best way to roll an 8/12 vs a 12/12, whether to lock a T15 black line, the odds of rolling T11 or higher, and the odds of hitting all three lines at once.",
+      "On the Optimize Overload page, a new \"Calculate chance to roll\" button sends the best damage lines straight into the sim so you can see what they'll cost to actually roll."
+    ]
+  },
+  {
+    "date": "2026-07-15",
+    "title": "Overload optimizer, charge-speed breakpoints & UI refresh",
+    "notes": [
+      "Refreshed the site's look and navigation — and the whole app now works in a mobile / portrait layout.",
+      "New Optimize Overload page ranks how a carry should spend its four overload lines by real in-team damage, and it's weapon-aware, so it only suggests lines that actually help that unit.",
+      "New Charge Speed Breakpoints page shows, per unit, exactly how much charge speed you need to shave each frame off a charge weapon — and where extra charge speed is wasted."
+    ]
+  },
+  {
     "date": "2026-07-14",
     "title": "New: DPS Chart",
     "notes": [

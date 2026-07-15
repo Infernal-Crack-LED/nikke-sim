@@ -101,7 +101,8 @@ lives. Newest first within each section.
   landing is a per-unit re-audit increment (remove noFb, fix the compensating over-model, re-grade), like
   the liberalio re-tune. Framework: `scripts/probe/fb-range-lab.ts` + FBRULE knob (open-questions U14).
 - **(2026-07-14) Auto-aim core rate is WEAPON-CLASS-INDEXED, not a flat 0.85 (⚑ refit).** MG/SR/RL =
-  0.95, AR/SMG/SG = 0.85 (sim.ts `acrFor`). A per-weapon focused-footage scan (open-questions A15)
+  0.95, AR/SMG/SG = 0.85 (sim.ts `acrFor`). **[AR/SMG/SG value SUPERSEDED 2026-07-15 — now
+  range-dependent per (weapon, band); see the range-dependent core-rate entry below. MG/SR/RL 0.95 stands.]** A per-weapon focused-footage scan (open-questions A15)
   read MG (crown), SR (liberalio), RL (maiden) coring ~near-100% (red "CORE HIT" ~every normal shot)
   vs AR (snow-white) / SMG (LM) mixed ~0.7-0.9; JP research (note.com reticle study, ore-game,
   arca.live) independently says the reliable auto classes core ~0.95-1.0 while AR/SMG/SG are
@@ -112,6 +113,38 @@ lives. Newest first within each section.
   refines it. DoT/rider crit was investigated alongside (ginmy + maiden footage confirm the mechanic)
   but NOT flipped: net-neutral on board MAE and it double-counts measured-dot units (e.g. guillotine's
   DoT is popup-measured) — held as a default-off `DOTCRIT` knob pending a per-unit de-crit recalibration.
+- **(2026-07-15) Auto-aim core rate is RANGE-DEPENDENT per (weapon, band), applied per-shot — the flat
+  per-weapon 0.85 (AR/SMG/SG) is OVERTURNED (⚑ refit, same-tier footage).** Three scope-lock SOLO
+  recordings (Scarlet AR, Chisato SMG, Drake SG — no Full Burst, so clean out-of-FB reads) binned every
+  normal-attack core popup (red/"CORE HIT" text) by the engine's boss-range band. Core is strongly
+  **range-concentrated** (high when the boss is close → ~0 when far), **FB-independent** (aim geometry,
+  not FB state — solo reads carry no FB, cross-checked LM in/out-of-FB ≈ equal), and **weapon-ordered
+  AR > SMG > SG** (one accurate AR bullet cores most; SG's 10-pellet spray finds the small central core
+  least, ~7% even point-blank). ALL measured bands sit far BELOW the old flat 0.85. Per-band ⚑ (Wilson
+  95% CIs in `docs/probe-data/coreband2-*.json`): AR near 0.40 / mid 0.30 / midfar 0.03 / far 0.00;
+  SMG near 0.28 / mid 0.244 / midfar 0.076 / far 0.059; SG near 0.072 / mid 0.00 / midfar 0.0045 /
+  far 0.00. MG/SR/RL kept flat 0.95 (not measured per-band; research says ~100% once warmed; MG still
+  gated by its wind-up ramp). Engine: `acrFor(weapon, band)` + `CORE_BY_WEAPON_BAND` table (sim.ts;
+  call site already had `bandAt(frame)`); knobs `ENV.ACR` (flat override), `CORERATE=flat` (old flat
+  0.85), `CORERATEBAND=off` (prior flat per-weapon table, for A/B). The **union raid boss is the SAME
+  physical boss across element assignments** (owner) → these per-band values transport across every
+  validation comp. **Falsifiable test (confirmed):** ONLY AR/SMG/SG rows moved (146-row board), ALL
+  downward; MG/SR/RL rows byte-identical (Δ 0.000); LM's SMG residual closed exactly as predicted
+  (1.36→1.00). Per-weapon mean ratio: AR 1.095→0.881, SMG 1.069→0.831, SG 1.106→0.755. Board median
+  0.995→0.950, MAE 0.141→0.144 (≈flat), within-±10% 53→56%. The re-centering to ~0.95 is EXPECTED and
+  diagnostic, not a regression to refit: the flat 0.85 was over-crediting cores in a way that masked
+  pre-existing AR/SG under-models. Do NOT tune the near values up to re-center (that is fitting-to-data).
+  [SG near 0.072 CORROBORATED 2026-07-15 by online research (ore-game verify-memo ~6% front row, auto/base
+  accuracy) — it is NOT a lower bound to raise; the cold-SG residual is a separate under-model, not the
+  core rate. `docs/probe-data/sg-core-research.md`.]
+  Still ⚑: AR near 0.40 now CONFIRMED (2026-07-15) by a Moran solo re-record — direct count 0.40 AND an
+  ammo-verified damage reconciliation 0.40 agree exactly, and the two-method agreement removes the
+  ~10% Scarlet non-core-error concern (two independent AR units converge on near ≈0.40). AR mid/midfar
+  carry boss-distance-in-window noise (Moran's scripted "midfar" sat at medium range) — the near value is
+  the reliable, damage-dominant one. The geometric
+  distance→core-size model + SG 0–25 research refine it. FB/measured-truth asserts unchanged; snapshot
+  regenerated. — 3 solo recordings + coreband2 measurements; open-questions A15; scientific-method
+  harness post-op panel (Fable ACCEPT) + owner ruling IMPLEMENT.
 - **(2026-07-14) The scope-lock boss's DEF is negligible; `bossDef: 0` stands.** Enemy DEF in
   NIKKE is a small FLAT, subtractive value (min-1 damage floor), applied inside the base term
   before the skill coefficient — `dmg = max(0, effectiveATK − bossDEF) × atkPct × …`. ginmy.net's
@@ -197,6 +230,59 @@ lives. Newest first within each section.
   attribution across units is forbidden — it burned us twice. — u8 processing; owner corrections.
 
 ## Engine/data-architecture decisions
+
+- **(2026-07-15) Overload roll-cost sim — the ACQUISITION side of OL, and the `smart` locking
+  policy as default.** New subsystem (`src/overload/model.ts` + `policy.ts`,
+  `data/ol-probabilities.json`) that costs how many rerolls/modules it takes to GET a target OL
+  line set — complementing the existing DPS-value side (`src/olconfigs.ts` / `bestol.ts` /
+  `olcalc.ts`, which rank WHAT to target). DATAMINED probability model, cross-confirmed across
+  nikke.gg / prydwen / gamevika / JP volx+game8 / KR arca.live (3-agent web sweep, 2026-07-15):
+  stat-type weights 10% (ATK/DEF/Elem/CritDmg) vs 12% (the other five), drawn **without
+  replacement** (no duplicate stat per piece); line-count gates 100/50/30% (all three = 15%);
+  value-tier bands 60% L1–5 / 35% L6–10 / 5% L11–15; first overload guarantees tier 11. Value
+  ladder is the existing `data/ol-tiers.json` (confirmed exact). Within-band per-tier split is an
+  assumption (uniform), flagged in-data — NOT measured. Reroll/lock COST model OWNER-CONFIRMED:
+  both lock modes share the per-roll reroll cost (1/2/3 modules by locks held); permanent locks
+  add a one-time 2/3-module establish, temp locks pay 20/30 temp-locks per roll. The engine models
+  the real **two-phase "T11 method"** — phase 1 reroll for the right stats (lock as they land),
+  phase 2 value-reset each line's tier up to target (lock as each meets tier); both share the
+  reroll cost.
+  **RULING — `smart` phase-1 locking is the default, an ENGINE-TESTED optimum.** "Should you lock a
+  line before the others land?" was resolved by making the policy configurable and simulating
+  (`monteCarloBuild` sweep over greedy / lazy / lazyRare / smart): for a from-scratch **12/12**
+  build, holding a lock on a *low* Line 1 through the grind for Lines 2 & 3 wastes modules —
+  lock-everything-greedily ≈ 635 modules, leaving a low Line 1 unlocked ≈ 584, never-lock-Line-1 ≈
+  557. For **8/12** it is a wash (greedy 272 ≈ smart 263). But "never lock Line 1" is wrong when
+  you already HOLD a good Line 1 (e.g. a T15) — it would throw the black line away. `smart` gets
+  both: it locks Line 1 only when it already meets its tier target, and locks the rarer Lines 2/3
+  on stat-match. Locking Line 2 before vs after the rare Line 3 (30% slot) is negligible (~2
+  modules). This confirms and refines the community "don't lock Line 1 for 12/12" wisdom. Optimum
+  headline costs: 8/12 ≈ **263 modules**, 12/12 ≈ **584**. Gated by
+  `scripts/overload-regression.ts` (model invariants + analytic≈MC + seeded determinism +
+  monotonicity), wired into `verify.sh`. Surfaced in the web **Overload Roll Sim** tab (Roll
+  Calculator / Roll from Current / FAQ sub-tabs, bell-curve distribution) + a "Calculate chance to
+  roll" CTA on Optimize Overload that hands the best DPS lines to the sim at T11. Deliverable 2
+  (doll / Collection-Item leveling optimizer) is PARKED with its data captured
+  (`data/doll-super-success.json`, `data/doll-economy.json`). — research + policy sweep 2026-07-15;
+  data/ol-probabilities.json header sources.
+
+- **(2026-07-15) Calc-tab taxonomy rename + two new calculators (shipped `a4374d8`; backfilled
+  here — the last deploy landed these without a DECISIONS/patch note).** Renamed the calc tabs for
+  clarity: *DPS Chart* → **DPS Rankings**, *DPS Test* → **Custom DPS Rankings**, *Team Calc* →
+  **Optimal Team**, *Roster Calc* → **Solo-Raid Roster Generator**. Added the **Optimize Overload**
+  tab (`src/olconfigs.ts` `rankFreeLineConfigs`): for a carry sitting in a fixed 8/12 team (the
+  floor 4× Elemental DMG + 4× ATK held constant), it ranks every way to spend the four FREE
+  overload lines, scoring each candidate loadout by the carry's own sim damage vs the plain-8/12
+  baseline. The hardening that matters: the candidate pool is **weapon-aware** — charge-speed /
+  charge-damage lines are offered only to charge weapons (RL/SR), and Hit Rate / DEF are excluded as
+  dead-for-damage — so the optimizer never proposes a line that cannot help that unit; it is a pure
+  engine helper (`runSim` + `prepareTeam` only) shared by the web tab and node scripts. Added the
+  **Charge Speed Breakpoints** tab: charge weapons fire in whole 60 fps frames, so charge speed only
+  shaves time in discrete steps — the tab lists, per unit, the least charge-speed % that drops the
+  charge by one more frame (and the ms saved), and hides breakpoints past a reachable-charge-speed
+  cutoff (charge speed caps at 100%). This makes the "value between two breakpoints is wasted"
+  caveat that `src/olcalc.ts` already noted actionable for players. — commit a4374d8 (2026-07-15);
+  src/olconfigs.ts, web charge-breakpoint tab.
 
 - **(2026-07-14) Machine guns receive the +30% effective-range bonus in the FAR band only.**
   MEASURED: the crown solo recording read the class-ratio signatures per band — bonus present

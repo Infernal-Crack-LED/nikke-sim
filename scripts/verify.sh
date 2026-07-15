@@ -15,6 +15,9 @@ for f in src/skills/overrides/*.json; do basename "$f" .json; done | xargs npx t
 say "engine regression (measured truths + snapshots + seeded determinism)"
 npx tsx scripts/regression.ts
 
+say "overload roll-cost regression (model invariants + analytic/MC + determinism)"
+npx tsx scripts/overload-regression.ts
+
 if [ "${1:-}" = "full" ]; then
   say "web build + smoke"
   npm run web:build

@@ -1,0 +1,17 @@
+{
+  "_comment": "Doll (in-game: Collection Item; KR 소장품/'인형') super-success proc chance when upgrading one phase, by collectible rarity x toolbox tier. Source of truth: nikke.gg Collection Item guide image table, provided by the owner 2026-07-15 (DATAMINED tier). Values are PERCENT chance of a super success on that phase step (divide by 100 for probability). Rows indexed 0..14 where index i = upgrading phase i -> i+1 (index 0 = '0 to 1', index 14 = '14 to 15'). Toolbox tiers R/SR/SSR are the maintenance-kit tiers (community: Blue/Purple/Gold, ~200/500/1000 EXP — mapping INFERRED, confirm before relying). Collectibles come in R and SR rarity only (both cap at phase 15). NOTE: the exact effect of a super success (checkpoint jump vs bonus progress) and the normal-success EXP economy are NOT captured here — resolve when building the doll leveling optimizer (deliverable 2). This project currently models only the SR-phase-15 endpoint (docs/data/gear-doll.md).",
+  "unit": "percent",
+  "steps": ["0-1","1-2","2-3","3-4","4-5","5-6","6-7","7-8","8-9","9-10","10-11","11-12","12-13","13-14","14-15"],
+  "superSuccessProc": {
+    "R": {
+      "R":   [17.6, 20.8, 24.0, 27.2, 40.0, 16.0, 19.2, 22.4, 27.2, 40.0, 14.4, 17.6, 22.4, 27.2, 40.0],
+      "SR":  [55.0, 65.0, 75.0, 85.0, 100.0, 50.0, 60.0, 70.0, 85.0, 100.0, 45.0, 55.0, 70.0, 85.0, 100.0],
+      "SSR": [100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0, 100.0]
+    },
+    "SR": {
+      "R":   [3.6, 5.9, 7.8, 11.3, 15.0, 2.2, 3.3, 4.9, 7.6, 12.5, 1.2, 2.2, 3.1, 4.7, 10.0],
+      "SR":  [11.0, 19.8, 28.7, 41.3, 55.0, 8.0, 12.0, 18.0, 28.0, 50.0, 5.4, 9.9, 14.4, 21.6, 45.0],
+      "SSR": [25.0, 40.0, 55.0, 75.0, 100.0, 20.0, 30.0, 45.0, 70.0, 100.0, 15.0, 27.5, 40.0, 60.0, 100.0]
+    }
+  }
+}

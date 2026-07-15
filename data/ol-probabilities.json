@@ -1,0 +1,36 @@
+{
+  "_comment": "Overload (OL) gear ROLL PROBABILITY model — the acquisition-cost side of OL, complementing the DPS-value side (src/olcalc.ts, src/olconfigs.ts, src/bestol.ts). DATAMINED tier; cross-confirmed by two independent research passes (nikke.gg, prydwen.gg, gamevika, JP volx.jp/game8, KR arca.live), 2026-07-15. Line VALUES live in data/ol-tiers.json (confirmed exact). Keys match data/ol-lines.json.",
+
+  "typeWeights": {
+    "_comment": "Relative weight of each stat TYPE when a line's stat is drawn. Sums to 100. Draw is WITHOUT replacement — a piece cannot hold the same stat twice.",
+    "atk": 10, "def": 10, "elem": 10, "critdmg": 10,
+    "hitrate": 12, "ammo": 12, "chargedmg": 12, "chargespd": 12, "critrate": 12
+  },
+
+  "lineCountGates": {
+    "_comment": "Probability each of the 3 positional line-slots is present on a roll. Slot 1 always; slot 2 50%; slot 3 30%. All three present = 1*0.5*0.3 = 15%.",
+    "slot1": 1.0, "slot2": 0.5, "slot3": 0.3
+  },
+
+  "tierBands": {
+    "_comment": "When a line rolls, its value TIER (1..15) is drawn from these bands (front-loaded — low tiers common). Within-band per-tier split is NOT datamined; the sim assumes UNIFORM within a band (flagged assumption, not measured).",
+    "bands": [
+      { "lo": 1,  "hi": 5,  "p": 0.60 },
+      { "lo": 6,  "hi": 10, "p": 0.35 },
+      { "lo": 11, "hi": 15, "p": 0.05 }
+    ]
+  },
+
+  "firstOverloadGuaranteedTier": 11,
+  "_firstOverloadNote": "The FIRST time a piece is overloaded, every line it produces is guaranteed tier 11 (bottom of the top band). Applies to initial creation only, NOT rerolls.",
+
+  "cost": {
+    "_comment": "Reroll/lock economics. Owner-confirmed 2026-07-15. Both lock modes share the per-roll reroll module cost; they differ only in how holding a lock is paid. See src/overload/model.ts.",
+    "rerollModulesByLocked": [1, 2, 3],
+    "_rerollNote": "Modules per reroll, indexed by number of lines locked that roll: 0->1, 1->2, 2->3. Same in both modes.",
+    "permanentLockEstablishModules": [0, 2, 3],
+    "_permNote": "ONE-TIME module cost to reach N permanent locks, indexed by lock number: reaching 1 lock costs +2, reaching 2 locks costs +3. Paid once; lock persists.",
+    "tempLockPerRollByLocked": [0, 20, 30],
+    "_tempNote": "Temp-lock currency spent PER ROLL to hold N lines, indexed by locks held: 1 held -> 20/roll, 2 held -> 30/roll. Paid every roll (temp locks expire). Reroll module cost still applies on top."
+  }
+}

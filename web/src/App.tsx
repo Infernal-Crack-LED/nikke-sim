@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import type {
   PointerEvent as ReactPointerEvent,
   MouseEvent as ReactMouseEvent,
+  ReactNode,
 } from 'react';
 import { runSim, type SimResult } from '../../src/engine/sim';
 import { prepareTeam, type UnitOptions } from '../../src/prepare';
@@ -26,6 +27,8 @@ import { OlBarChart } from './components/OlBarChart';
 import { DpsBarChart } from './components/DpsBarChart';
 import { assembleTeam, cellLabel, type Cell } from '../../src/dpschart/matrix';
 import { rankFreeLineConfigs, OL_FLOOR, type OlConfigResult } from '../../src/olconfigs';
+import { monteCarloBuild, type McSummary } from '../../src/overload/policy';
+import type { OlKey, OlProbModel, Target, Piece, Line } from '../../src/overload/model';
 import { copyDpsChartImage } from './shareImage';
 import {
   encodeBuild,
@@ -47,6 +50,7 @@ import multJson from '../../data/level-multiplier.json';
 import skillLevelsJson from '../../data/skill-levels.json';
 import olLinesJson from '../../data/ol-lines.json';
 import olTiersJson from '../../data/ol-tiers.json';
+import olProbJson from '../../data/ol-probabilities.json';
 
 const data = charactersJson as unknown as DataFile;
 const cubes = cubesJson as any;
@@ -60,11 +64,33 @@ const olTiers = (olTiersJson as any).tiers as Array<Record<string, number>>;
 const olTierValues = (tier: number): Record<string, number> =>
   olTiers.find((t) => t.tier === tier) ?? olTiers.find((t) => t.tier === 11)!;
 
+// Overload Roll Sim: the 9 line types + short labels for the card dropdowns.
+const olProbModel = olProbJson as unknown as OlProbModel;
+const OL_SIM_KEYS: OlKey[] = [
+  'elem', 'atk', 'ammo', 'critdmg', 'critrate', 'chargedmg', 'chargespd', 'hitrate', 'def',
+];
+const OL_KEY_LABEL: Record<OlKey, string> = {
+  elem: 'Elem DMG', atk: 'ATK', ammo: 'Max Ammo', critdmg: 'Crit DMG', critrate: 'Crit Rate',
+  chargedmg: 'Charge DMG', chargespd: 'Charge Spd', hitrate: 'Hit Rate', def: 'DEF',
+};
+type OlSimLine = { key: OlKey | ''; tier: number };
+const blankLine = (): OlSimLine => ({ key: '' as OlKey | '', tier: 11 });
+const desiredDefault = (): OlSimLine[] => [
+  { key: 'elem' as OlKey | '', tier: 11 },
+  { key: 'atk' as OlKey | '', tier: 11 },
+  blankLine(),
+];
+const defaultOlSimCards = (): OlSimLine[][] => [0, 1, 2, 3].map(desiredDefault);
+type OlSimCurrentCard = { current: OlSimLine[]; desired: OlSimLine[] };
+const defaultOlSimCurrentCards = (): OlSimCurrentCard[] =>
+  [0, 1, 2, 3].map(() => ({ current: [blankLine(), blankLine(), blankLine()], desired: desiredDefault() }));
+
 type CalcTab =
   | 'sim'
   | 'team'
   | 'roster'
   | 'overload'
+  | 'olsim'
   | 'dps'
   | 'dpschart'
   | 'charge';
@@ -73,6 +99,7 @@ const CALC_TABS: { key: CalcTab; label: string }[] = [
   { key: 'dpschart', label: 'DPS Rankings' },
   { key: 'dps', label: 'Custom DPS Rankings' },
   { key: 'overload', label: 'Optimize Overload' },
+  { key: 'olsim', label: 'Overload Roll Sim' },
   { key: 'charge', label: 'Charge Speed Breakpoints' },
   { key: 'team', label: 'Optimal Team' },
   { key: 'roster', label: 'Solo-Raid Roster Generator' },
@@ -753,6 +780,14 @@ export function App({ user }: { user: AuthUser | null }) {
   // the 8/12 control team from a matrix cell; custom mode pins one carry and pits
   // it against several hand-built support teams (one chart each).
   const [olMode, setOlMode] = useState<'matrix' | 'custom'>('matrix');
+  // Overload Roll Sim: 4 cards (one per OL piece), each up to 3 target lines
+  // (stat + tier). Reports the reroll/value-reset cost to hit them.
+  const [olSimSub, setOlSimSub] = useState<'calc' | 'current' | 'faq'>('calc');
+  const [olSimCards, setOlSimCards] = useState<OlSimLine[][]>(defaultOlSimCards);
+  const [olSimLockMode, setOlSimLockMode] = useState<'permanent' | 'temp'>('permanent');
+  const [olSimResult, setOlSimResult] = useState<{ perPiece: McSummary[]; total: McSummary } | null>(null);
+  const [olSimCurrent, setOlSimCurrent] = useState<OlSimCurrentCard[]>(defaultOlSimCurrentCards);
+  const [olSimCurrentResult, setOlSimCurrentResult] = useState<{ perPiece: McSummary[]; total: McSummary } | null>(null);
   const [olCell, setOlCell] = useState<Cell>({
     framework: 'standard',
     eleadv: 'neutral',
@@ -1210,6 +1245,57 @@ export function App({ user }: { user: AuthUser | null }) {
   });
   // custom mode: one carry vs several hand-built 4-unit support teams
   const olCustomTeamsValid = olSupportTeams.filter((t) => t.length === 4);
+  // Overload Roll Sim: cost the current 4 cards. Empty/duplicate lines are dropped
+  // (a piece can't hold the same stat twice).
+  const runOlSim = () =>
+    runCalc(() => {
+      const targets: Target[] = olSimCards.map((card) => {
+        const seen = new Set<OlKey>();
+        const reqs: Target = [];
+        for (const l of card) {
+          if (!l.key || seen.has(l.key)) continue;
+          seen.add(l.key);
+          reqs.push({ key: l.key, minTier: l.tier });
+        }
+        return reqs;
+      });
+      setOlSimResult(monteCarloBuild(olProbModel, targets, { trials: 10000 }));
+    });
+  // Roll from Current: same as runOlSim but each card starts from the lines you
+  // already hold (fresh=false), so the cost is measured from your current state.
+  const runOlSimCurrent = () =>
+    runCalc(() => {
+      const targets: Target[] = [];
+      const starts: (Piece | undefined)[] = [];
+      for (const card of olSimCurrent) {
+        const seen = new Set<OlKey>();
+        const reqs: Target = [];
+        for (const l of card.desired) {
+          if (!l.key || seen.has(l.key)) continue;
+          seen.add(l.key);
+          reqs.push({ key: l.key, minTier: l.tier });
+        }
+        targets.push(reqs);
+        const slots: (Line | null)[] = [null, null, null];
+        card.current.forEach((l, i) => { if (l.key && i < 3) slots[i] = { key: l.key, tier: l.tier }; });
+        starts.push(slots as Piece);
+      }
+      setOlSimCurrentResult(monteCarloBuild(olProbModel, targets, { trials: 10000, starts, fresh: false }));
+    });
+  // CTA from Optimize Overload: distribute the #1 config's 12 lines (4× Elem + 4×
+  // ATK floor + best free-4) across the 4 cards, all at T11, then jump to the sim.
+  const goToOlSim = (results: OlConfigResult[]) => {
+    const free = results[0].lines.flatMap((l) => Array(l.count).fill(l.type as OlKey)) as OlKey[];
+    const cards: OlSimLine[][] = [0, 1, 2, 3].map((i) => [
+      { key: 'elem' as OlKey | '', tier: 11 },
+      { key: 'atk' as OlKey | '', tier: 11 },
+      { key: (free[i] ?? '') as OlKey | '', tier: 11 },
+    ]);
+    setOlSimCards(cards);
+    setOlSimResult(null);
+    setOlSimSub('calc');
+    selectTab('olsim');
+  };
   const runOlMatrix = () =>
     runCalc(() => {
       setOlCustomResults(null);
@@ -2183,6 +2269,13 @@ export function App({ user }: { user: AuthUser | null }) {
                     }))}
                   />
                   {olTable(olMatrixResult.baseline, olMatrixResult.results)}
+                  <button
+                    className='calc-run'
+                    title='Send these best lines to the Overload Roll Sim at T11 and estimate the roll cost'
+                    onClick={() => goToOlSim(olMatrixResult.results)}
+                  >
+                    Calculate chance to roll →
+                  </button>
                 </div>
               )}
             </>
@@ -2300,10 +2393,270 @@ export function App({ user }: { user: AuthUser | null }) {
                     }))}
                   />
                   {olTable(res.baseline, res.results)}
+                  <button
+                    className='calc-run'
+                    title='Send these best lines to the Overload Roll Sim at T11 and estimate the roll cost'
+                    onClick={() => goToOlSim(res.results)}
+                  >
+                    Calculate chance to roll →
+                  </button>
                 </div>
               ))}
             </>
           )}
+        </section>
+      );
+    }
+    if (tab === 'olsim') {
+      const fmtN = (n: number) => Math.round(n).toLocaleString();
+      const costCol = (s: McSummary) =>
+        olSimLockMode === 'permanent'
+          ? `${fmtN(s.moduleCostPerm.mean)}`
+          : `${fmtN(s.moduleCostTemp.mean)} + ${fmtN(s.tempLocks.mean)}`;
+      const gridStyle = {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+        gap: 12,
+        marginTop: 12,
+      } as const;
+      const lineRow = (line: OlSimLine, onKey: (k: OlKey | '') => void, onTier: (t: number) => void) => (
+        <div className='field' style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <select value={line.key} style={{ flex: 1 }} onChange={(e) => onKey(e.target.value as OlKey | '')}>
+            <option value=''>— none —</option>
+            {OL_SIM_KEYS.map((k) => (
+              <option key={k} value={k}>{OL_KEY_LABEL[k]}</option>
+            ))}
+          </select>
+          <select value={line.tier} disabled={!line.key} onChange={(e) => onTier(+e.target.value)}>
+            {Array.from({ length: 15 }, (_, t) => t + 1).map((t) => (
+              <option key={t} value={t}>T{t}</option>
+            ))}
+          </select>
+        </div>
+      );
+      const lockModePills = (
+        <div className='pills small'>
+          <span className='muted' style={{ marginRight: 8 }}>Lock mode:</span>
+          <button className={olSimLockMode === 'permanent' ? 'on' : ''} onClick={() => setOlSimLockMode('permanent')}>Permanent</button>
+          <button className={olSimLockMode === 'temp' ? 'on' : ''} onClick={() => setOlSimLockMode('temp')}>Temp locks</button>
+        </div>
+      );
+      // Smooth bell-curve of the total-rerolls distribution.
+      const bellCurve = (total: McSummary) => {
+        const d = total.density;
+        const W = 620, H = 150, PAD = 6;
+        let maxC = 1;
+        for (const x of d) if (x.count > maxC) maxC = x.count;
+        const maxX = d.length ? d[d.length - 1].hi : 1;
+        const X = (v: number) => PAD + (v / maxX) * (W - 2 * PAD);
+        const Y = (c: number) => H - PAD - (c / maxC) * (H - 2 * PAD);
+        const pts = d.map((x) => [X(x.mid), Y(x.count)] as const);
+        const line = pts.length ? 'M ' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L ') : '';
+        const area = pts.length
+          ? `M ${X(0).toFixed(1)} ${(H - PAD).toFixed(1)} L ` +
+            pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L ') +
+            ` L ${X(maxX).toFixed(1)} ${(H - PAD).toFixed(1)} Z`
+          : '';
+        const medX = X(Math.min(total.ops.pctiles.p50, maxX));
+        return (
+          <div>
+            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', maxWidth: 660, display: 'block' }}>
+              <path d={area} fill='#5b8def' opacity={0.22} />
+              <path d={line} fill='none' stroke='#5b8def' strokeWidth={2} />
+              <line x1={medX} y1={PAD} x2={medX} y2={H - PAD} stroke='currentColor' strokeDasharray='4 3' opacity={0.5} />
+            </svg>
+            <div className='muted' style={{ display: 'flex', justifyContent: 'space-between', maxWidth: 660, fontVariantNumeric: 'tabular-nums' }}>
+              <span>0 rerolls</span>
+              <span>median {total.ops.pctiles.p50}</span>
+              <span>p95 {total.ops.pctiles.p95}</span>
+            </div>
+          </div>
+        );
+      };
+      const resultsBlock = (result: { perPiece: McSummary[]; total: McSummary }) => {
+        const total = result.total;
+        return (
+          <div className='calc-result'>
+            <table>
+              <thead>
+                <tr>
+                  <th>piece</th>
+                  <th className='r'>exp. ops</th>
+                  <th className='r'>phase 1 / 2</th>
+                  <th className='r'>{olSimLockMode === 'permanent' ? 'modules' : 'modules + temp-locks'}</th>
+                  <th className='r'>p95</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.perPiece.map((s, i) => (
+                  <tr key={i}>
+                    <td className='muted'>piece {i + 1}</td>
+                    <td className='r'>{s.ops.mean.toFixed(1)}</td>
+                    <td className='r muted'>{s.phase1Rerolls.mean.toFixed(0)} / {s.phase2Resets.mean.toFixed(0)}</td>
+                    <td className='r'>{costCol(s)}</td>
+                    <td className='r muted'>{s.ops.pctiles.p95}</td>
+                  </tr>
+                ))}
+                <tr className='hl'>
+                  <td><b>full build</b></td>
+                  <td className='r'><b>{total.ops.mean.toFixed(1)}</b></td>
+                  <td className='r'>{total.phase1Rerolls.mean.toFixed(0)} / {total.phase2Resets.mean.toFixed(0)}</td>
+                  <td className='r'><b>{costCol(total)}</b></td>
+                  <td className='r'>{total.ops.pctiles.p95}</td>
+                </tr>
+              </tbody>
+            </table>
+            <p className='muted' style={{ marginTop: 12 }}>
+              Distribution — total rerolls to finish the whole build (median {total.ops.pctiles.p50}, p95 {total.ops.pctiles.p95}):
+            </p>
+            {bellCurve(total)}
+            {total.censoredFrac > 0 && (
+              <p className='muted'>⚠ {(total.censoredFrac * 100).toFixed(1)}% of trials hit the op cap (mean is a lower bound).</p>
+            )}
+          </div>
+        );
+      };
+
+      const setCalcLine = (ci: number, li: number, patch: Partial<OlSimLine>) =>
+        setOlSimCards((cards) => cards.map((c, i) => (i === ci ? c.map((l, j) => (j === li ? { ...l, ...patch } : l)) : c)));
+      const setCurLine = (ci: number, which: 'current' | 'desired', li: number, patch: Partial<OlSimLine>) =>
+        setOlSimCurrent((cards) =>
+          cards.map((c, i) => (i === ci ? { ...c, [which]: c[which].map((l, j) => (j === li ? { ...l, ...patch } : l)) } : c)));
+
+      const calcPanel = (
+        <>
+          <p className='muted'>
+            Estimate the reroll cost to hit a target build from scratch. Set up to 3 target lines
+            per piece (stat + minimum tier). The sim runs the two-phase T11 method — reroll for the
+            right stats, locking as you go, then value-reset each line up to tier.
+          </p>
+          {lockModePills}
+          <div style={gridStyle}>
+            {olSimCards.map((card, ci) => (
+              <div key={ci} className='dps-group-block'>
+                <div className='card-group-label'>OL piece {ci + 1}</div>
+                {card.map((line, li) => (
+                  <Fragment key={li}>
+                    {lineRow(line, (k) => setCalcLine(ci, li, { key: k }), (t) => setCalcLine(ci, li, { tier: t }))}
+                  </Fragment>
+                ))}
+              </div>
+            ))}
+          </div>
+          <button className='calc-run' onClick={runOlSim} disabled={calcBusy}>
+            {calcBusy ? 'Running…' : 'Run roll sim'}
+          </button>
+          {olSimResult && resultsBlock(olSimResult)}
+        </>
+      );
+
+      const currentPanel = (
+        <>
+          <p className='muted'>
+            Recalc from where you are. For each piece, enter the lines you <b>already have</b> (top,
+            with their real tier) and the lines you <b>want</b> (bottom, as a minimum tier). The sim
+            measures the remaining reroll cost from your current state.
+          </p>
+          {lockModePills}
+          <div style={gridStyle}>
+            {olSimCurrent.map((card, ci) => (
+              <div key={ci} className='dps-group-block'>
+                <div className='card-group-label'>OL piece {ci + 1}</div>
+                <div className='muted' style={{ fontSize: '0.82em', margin: '4px 0 2px' }}>Current lines</div>
+                {card.current.map((line, li) => (
+                  <Fragment key={'c' + li}>
+                    {lineRow(line, (k) => setCurLine(ci, 'current', li, { key: k }), (t) => setCurLine(ci, 'current', li, { tier: t }))}
+                  </Fragment>
+                ))}
+                <div className='muted' style={{ fontSize: '0.82em', margin: '8px 0 2px' }}>Desired (min tier)</div>
+                {card.desired.map((line, li) => (
+                  <Fragment key={'d' + li}>
+                    {lineRow(line, (k) => setCurLine(ci, 'desired', li, { key: k }), (t) => setCurLine(ci, 'desired', li, { tier: t }))}
+                  </Fragment>
+                ))}
+              </div>
+            ))}
+          </div>
+          <button className='calc-run' onClick={runOlSimCurrent} disabled={calcBusy}>
+            {calcBusy ? 'Running…' : 'Run from current'}
+          </button>
+          {olSimCurrentResult && resultsBlock(olSimCurrentResult)}
+        </>
+      );
+
+      const faqItem = (q: string, tldr: ReactNode, why: ReactNode) => (
+        <div style={{ marginBottom: 22 }}>
+          <h4 style={{ margin: '0 0 5px' }}>{q}</h4>
+          <div>{tldr}</div>
+          <div className='muted' style={{ marginTop: 5 }}><b>Why:</b> {why}</div>
+        </div>
+      );
+      const faqPanel = (
+        <div style={{ maxWidth: 780 }}>
+          {faqItem(
+            '1. Best way to roll an 8/12 T11+ set from scratch?',
+            'Put Elemental Damage + ATK on all 4 pieces and stop there. Budget roughly 260 modules for the whole set.',
+            (<>You only need <b>2 good lines per piece</b>, so ignore the third slot. On each piece, keep
+              rerolling until Elem and ATK show up, lock each as it lands, then use value-reset to push
+              both up to T11 or higher. In the sim that&rsquo;s about <b>145 rerolls / ~263 modules</b> for
+              all four pieces. Locking early is totally fine here — there&rsquo;s no hard-to-get third line
+              to wait on. Two good lines per piece is the best bang for your buck.</>),
+          )}
+          {faqItem(
+            '2. Best way to roll a 12/12 T11+ set from scratch?',
+            (<>Same plan, but fill all <b>3 lines</b> per piece (Elem + ATK + one kit line). Budget ~585
+              modules — a bit over double an 8/12. One key tip: don&rsquo;t lock Line 1 early.</>),
+            (<>The third line is what makes this pricey — about <b>2.2× the cost of 8/12</b> (~219 rerolls /
+              ~584 modules). The big money-saver: <b>Line 1 is always there and easy to get back, so
+              don&rsquo;t waste a lock on it</b> while you&rsquo;re still hunting for lines 2 and 3 — every
+              roll you hold that lock quietly costs an extra module for nothing. The sim proves it: lock
+              everything as you go = <b>~635 modules</b>; leave a weak Line 1 unlocked = <b>~584</b>; never
+              lock Line 1 at all = <b>~557</b>. And whether you lock Line 2 before or after Line 3 barely
+              changes anything (about 2 modules either way), so don&rsquo;t sweat that part — the only rule
+              that really matters is: don&rsquo;t lock a junk Line 1.</>),
+          )}
+          {faqItem(
+            '3. I hit a T15 (black line) on Line 1 but nothing else yet — lock it?',
+            'Yes, lock it. A T15 is basically the jackpot — you almost never want to throw it back.',
+            (<>A specific stat hitting T15 happens only about <b>1 in 1,000 rolls</b>, so tossing it and
+              hoping to get it again is a bad bet. Keeping it (lock) vs letting it re-roll away (toss),
+              cost to finish that one piece:
+              <ul style={{ margin: '6px 0' }}>
+                <li><b>8/12:</b> keep ~<b>64 modules</b> vs toss ~69 → keeping is actually <i>cheaper</i>, and you get a max line. Easy call.</li>
+                <li><b>12/12:</b> keep ~<b>165</b> vs toss ~142 → keeping costs about <b>23 extra modules</b> (you pay to hold that lock while grinding the other two lines). Still worth it for a max line unless you&rsquo;re totally out of modules.</li>
+              </ul>
+              Bottom line: keep the jackpot line. The sim does this automatically — it holds Line 1 only
+              when it&rsquo;s already good enough and leaves a weak Line 1 unlocked.</>),
+          )}
+          {faqItem(
+            '4. What are the odds to roll T11 or higher?',
+            'About 1 in 20 (5%) for any single line.',
+            (<>Every line that rolls has a <b>5% chance</b> to land in the top tier band (T11–T15). Because
+              that&rsquo;s so rare, most of your effort isn&rsquo;t getting the right stat — it&rsquo;s
+              value-resetting a line over and over to shove it up into that top band. That&rsquo;s where
+              most of the cost goes.</>),
+          )}
+          {faqItem(
+            '5. What are the odds to roll all 3 lines on one item in a single roll?',
+            'About 1 in 7 (15%).',
+            (<>A piece always shows Line 1, shows Line 2 half the time (<b>50%</b>), and Line 3 only
+              <b>30%</b> of the time. Multiply them: 100% × 50% × 30% = <b>15%</b>. That rare third line is
+              exactly why 12/12 sets cost so much more than 8/12.</>),
+          )}
+        </div>
+      );
+
+      return (
+        <section className='calc-tab'>
+          <h2>Overload Roll Sim</h2>
+          <div className='pills small dps-mode'>
+            <button className={olSimSub === 'calc' ? 'on' : ''} onClick={() => setOlSimSub('calc')}>Roll Calculator</button>
+            <button className={olSimSub === 'current' ? 'on' : ''} onClick={() => setOlSimSub('current')}>Roll from Current</button>
+            <button className={olSimSub === 'faq' ? 'on' : ''} onClick={() => setOlSimSub('faq')}>FAQ</button>
+          </div>
+          {olSimSub === 'calc' && calcPanel}
+          {olSimSub === 'current' && currentPanel}
+          {olSimSub === 'faq' && faqPanel}
         </section>
       );
     }
@@ -2378,6 +2731,7 @@ export function App({ user }: { user: AuthUser | null }) {
           Speed tab is a pure calculator, so hide this block on those. */}
       {tab !== 'dpschart' &&
         tab !== 'charge' &&
+        tab !== 'olsim' &&
         !(tab === 'overload' && olMode === 'matrix') && (<>
       <section className='global'>
         <div className='field'>
