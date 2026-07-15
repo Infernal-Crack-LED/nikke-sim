@@ -29,6 +29,10 @@ import { assembleTeam, cellLabel, type Cell } from '../../src/dpschart/matrix';
 import { rankFreeLineConfigs, OL_FLOOR, type OlConfigResult } from '../../src/olconfigs';
 import { monteCarloBuild, type McSummary } from '../../src/overload/policy';
 import type { OlKey, OlProbModel, Target, Piece, Line } from '../../src/overload/model';
+import { buildModel as buildDollModel } from '../../src/doll/model';
+import type { Rarity as DollRarity, ToolboxTier as DollTier } from '../../src/doll/model';
+import { solveDp as dollSolveDp, monteCarlo as dollMc, calibrateWeights as dollCalibrate, costFrom as dollCostFrom } from '../../src/doll/policy';
+import type { Calibration as DollCalibration, DpTable as DollDp, DollSummary } from '../../src/doll/policy';
 import { copyDpsChartImage } from './shareImage';
 import {
   encodeBuild,
@@ -51,6 +55,8 @@ import skillLevelsJson from '../../data/skill-levels.json';
 import olLinesJson from '../../data/ol-lines.json';
 import olTiersJson from '../../data/ol-tiers.json';
 import olProbJson from '../../data/ol-probabilities.json';
+import dollEconomyJson from '../../data/doll-economy.json';
+import dollProcJson from '../../data/doll-super-success.json';
 
 const data = charactersJson as unknown as DataFile;
 const cubes = cubesJson as any;
@@ -66,6 +72,15 @@ const olTierValues = (tier: number): Record<string, number> =>
 
 // Overload Roll Sim: the 9 line types + short labels for the card dropdowns.
 const olProbModel = olProbJson as unknown as OlProbModel;
+
+// Doll leveling model + a once-computed throughput calibration (shadow prices).
+const dollModel = buildDollModel(dollEconomyJson as any, dollProcJson as any);
+let _dollCal: DollCalibration | null = null;
+function getDollCalibration(): DollCalibration {
+  if (!_dollCal) { _dollCal = dollCalibrate(dollModel, 'SR'); dollModel.kitWeight = _dollCal.weights; }
+  return _dollCal;
+}
+const DOLL_TIER_LABEL: Record<DollTier, string> = { R: 'Blue (R)', SR: 'Purple (SR)', SSR: 'Gold (SSR)' };
 const OL_SIM_KEYS: OlKey[] = [
   'elem', 'atk', 'ammo', 'critdmg', 'critrate', 'chargedmg', 'chargespd', 'hitrate', 'def',
 ];
@@ -91,18 +106,21 @@ type CalcTab =
   | 'roster'
   | 'overload'
   | 'olsim'
+  | 'doll'
   | 'dps'
   | 'dpschart'
   | 'charge';
-const CALC_TABS: { key: CalcTab; label: string }[] = [
-  { key: 'sim', label: 'Sim' },
-  { key: 'dpschart', label: 'DPS Rankings' },
-  { key: 'dps', label: 'Custom DPS Rankings' },
-  { key: 'overload', label: 'Optimize Overload' },
-  { key: 'olsim', label: 'Overload Roll Sim' },
-  { key: 'charge', label: 'Charge Speed Breakpoints' },
-  { key: 'team', label: 'Optimal Team' },
-  { key: 'roster', label: 'Solo-Raid Roster Generator' },
+type TabGroup = 'sim' | 'tools';
+const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
+  { key: 'sim', label: 'Sim', group: 'sim' },
+  { key: 'dpschart', label: 'DPS Rankings', group: 'sim' },
+  { key: 'dps', label: 'Custom DPS Rankings', group: 'sim' },
+  { key: 'overload', label: 'Optimize Overload', group: 'sim' },
+  { key: 'olsim', label: 'Overload Rolling', group: 'tools' },
+  { key: 'doll', label: 'Doll Leveling', group: 'tools' },
+  { key: 'charge', label: 'Charge Speed Breakpoints', group: 'tools' },
+  { key: 'team', label: 'Optimal Team Generator', group: 'tools' },
+  { key: 'roster', label: 'Solo-Raid Roster Generator', group: 'tools' },
 ];
 
 // Which tab the current URL selects. The first path segment is authoritative
@@ -788,6 +806,15 @@ export function App({ user }: { user: AuthUser | null }) {
   const [olSimResult, setOlSimResult] = useState<{ perPiece: McSummary[]; total: McSummary } | null>(null);
   const [olSimCurrent, setOlSimCurrent] = useState<OlSimCurrentCard[]>(defaultOlSimCurrentCards);
   const [olSimCurrentResult, setOlSimCurrentResult] = useState<{ perPiece: McSummary[]; total: McSummary } | null>(null);
+  // Doll leveling tab
+  const [dollSub, setDollSub] = useState<'calc' | 'current' | 'faq'>('calc');
+  const [dollRarity, setDollRarity] = useState<DollRarity>('SR');
+  const [dollFrom, setDollFrom] = useState(0);
+  const [dollResult, setDollResult] = useState<{ cal: DollCalibration; dp: DollDp; mc: DollSummary; rarity: DollRarity; from: number } | null>(null);
+  const [dollCurRarity, setDollCurRarity] = useState<DollRarity>('SR');
+  const [dollCurPhase, setDollCurPhase] = useState(8);
+  const [dollCurResult, setDollCurResult] = useState<{ dp: DollDp; mc: DollSummary; rarity: DollRarity; from: number } | null>(null);
+  const [dollCal, setDollCal] = useState<DollCalibration | null>(null);
   const [olCell, setOlCell] = useState<Cell>({
     framework: 'standard',
     eleadv: 'neutral',
@@ -1296,6 +1323,32 @@ export function App({ user }: { user: AuthUser | null }) {
     setOlSimSub('calc');
     selectTab('olsim');
   };
+  const runDollCalc = () =>
+    runCalc(() => {
+      const cal = getDollCalibration();
+      setDollCal(cal);
+      const dp = dollSolveDp(dollModel, dollRarity);
+      const mc = dollMc(dollModel, dp, dollRarity, dollFrom, 0, { trials: 20000, seed: 20260715 });
+      setDollResult({ cal, dp, mc, rarity: dollRarity, from: dollFrom });
+    });
+  const runDollCurrent = () =>
+    runCalc(() => {
+      getDollCalibration();
+      const dp = dollSolveDp(dollModel, dollCurRarity);
+      const mc = dollMc(dollModel, dp, dollCurRarity, dollCurPhase, 0, { trials: 20000, seed: 20260715 });
+      setDollCurResult({ dp, mc, rarity: dollCurRarity, from: dollCurPhase });
+    });
+  // Show the common case by default: OL 8/12 on the Roll Calculator, and the doll
+  // 0→15 throughput + per-phase guide on the Doll Calculator (calibration computed once).
+  useEffect(() => {
+    if (tab === 'doll' && !dollCal && !calcBusy) runCalc(() => setDollCal(getDollCalibration()));
+  }, [tab, dollCal]);
+  useEffect(() => {
+    if (tab === 'doll' && dollSub === 'calc' && dollCal && !dollResult && !calcBusy) runDollCalc();
+  }, [tab, dollSub, dollCal]);
+  useEffect(() => {
+    if (tab === 'olsim' && olSimSub === 'calc' && !olSimResult && !calcBusy) runOlSim();
+  }, [tab, olSimSub]);
   const runOlMatrix = () =>
     runCalc(() => {
       setOlCustomResults(null);
@@ -2409,10 +2462,14 @@ export function App({ user }: { user: AuthUser | null }) {
     }
     if (tab === 'olsim') {
       const fmtN = (n: number) => Math.round(n).toLocaleString();
+      // Modules shown to 1 decimal so per-piece values stay additive to the full-build
+      // total (whole-number rounding made 66×4 read as 264 but the total shows 265).
+      const fmtMod = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
       const costCol = (s: McSummary) =>
         olSimLockMode === 'permanent'
-          ? `${fmtN(s.moduleCostPerm.mean)}`
-          : `${fmtN(s.moduleCostTemp.mean)} + ${fmtN(s.tempLocks.mean)}`;
+          ? `${fmtMod(s.moduleCostPerm.mean)}`
+          : `${fmtMod(s.moduleCostTemp.mean)} + ${fmtN(s.tempLocks.mean)}`;
+      const modP95 = (s: McSummary) => fmtN(olSimLockMode === 'permanent' ? s.moduleCostPerm.p95 : s.moduleCostTemp.p95);
       const gridStyle = {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
@@ -2481,7 +2538,8 @@ export function App({ user }: { user: AuthUser | null }) {
               <thead>
                 <tr>
                   <th>piece</th>
-                  <th className='r'>exp. ops</th>
+                  <th className='r'>exp rolls</th>
+                  <th className='r'>p95</th>
                   <th className='r'>phase 1 / 2</th>
                   <th className='r'>{olSimLockMode === 'permanent' ? 'modules' : 'modules + temp-locks'}</th>
                   <th className='r'>p95</th>
@@ -2492,17 +2550,19 @@ export function App({ user }: { user: AuthUser | null }) {
                   <tr key={i}>
                     <td className='muted'>piece {i + 1}</td>
                     <td className='r'>{s.ops.mean.toFixed(1)}</td>
-                    <td className='r muted'>{s.phase1Rerolls.mean.toFixed(0)} / {s.phase2Resets.mean.toFixed(0)}</td>
-                    <td className='r'>{costCol(s)}</td>
                     <td className='r muted'>{s.ops.pctiles.p95}</td>
+                    <td className='r muted'>{s.phase1Rerolls.mean.toFixed(1)} / {s.phase2Resets.mean.toFixed(1)}</td>
+                    <td className='r'>{costCol(s)}</td>
+                    <td className='r muted'>{modP95(s)}</td>
                   </tr>
                 ))}
                 <tr className='hl'>
                   <td><b>full build</b></td>
                   <td className='r'><b>{total.ops.mean.toFixed(1)}</b></td>
-                  <td className='r'>{total.phase1Rerolls.mean.toFixed(0)} / {total.phase2Resets.mean.toFixed(0)}</td>
-                  <td className='r'><b>{costCol(total)}</b></td>
                   <td className='r'>{total.ops.pctiles.p95}</td>
+                  <td className='r'>{total.phase1Rerolls.mean.toFixed(1)} / {total.phase2Resets.mean.toFixed(1)}</td>
+                  <td className='r'><b>{costCol(total)}</b></td>
+                  <td className='r'>{modP95(total)}</td>
                 </tr>
               </tbody>
             </table>
@@ -2660,15 +2720,158 @@ export function App({ user }: { user: AuthUser | null }) {
         </section>
       );
     }
+    if (tab === 'doll') {
+      const fmtN = (n: number) => Math.round(n).toLocaleString();
+      const tierChip = (t: DollTier) => (
+        <span style={{ background: t === 'SSR' ? '#c79a2e' : t === 'SR' ? '#7d5fd0' : '#4f7fe0', color: '#fff', padding: '1px 6px', borderRadius: 9, fontSize: '0.78em', whiteSpace: 'nowrap' }}>{DOLL_TIER_LABEL[t]}</span>
+      );
+      const usageGuide = (dp: DollDp, from: number) => {
+        const cells = Array.from({ length: 15 - from }, (_, i) => {
+          const L = from + i; return { L, t: (dp.tier[L]?.[0] ?? 'R') as DollTier };
+        });
+        const rows = Math.ceil(cells.length / 3);
+        // 3 columns, filled top-to-bottom so each column is a checkpoint band (0–5 / 5–10 / 10–15).
+        return (
+          <div
+            style={{
+              display: 'grid',
+              gridAutoFlow: 'column',
+              gridTemplateRows: `repeat(${rows}, auto)`,
+              gridTemplateColumns: 'repeat(3, max-content)',
+              gap: '5px 28px',
+              margin: '8px 0',
+            }}
+          >
+            {cells.map(({ L, t }) => (
+              <div key={L} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.86em' }}>
+                <span className='muted' style={{ fontVariantNumeric: 'tabular-nums', minWidth: 38 }}>{L}→{L + 1}</span>
+                {tierChip(t)}
+              </div>
+            ))}
+          </div>
+        );
+      };
+      const dollBell = (mc: DollSummary) => {
+        const d = mc.hist, W = 620, H = 120, PAD = 6;
+        let maxC = 1; for (const x of d) if (x.count > maxC) maxC = x.count;
+        const maxX = d.length ? d[d.length - 1].hi : 1;
+        const X = (v: number) => PAD + (v / maxX) * (W - 2 * PAD);
+        const Y = (c: number) => H - PAD - (c / maxC) * (H - 2 * PAD);
+        const pts = d.map((x) => [X(x.mid), Y(x.count)] as const);
+        const line = pts.length ? 'M ' + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L ') : '';
+        const area = pts.length ? `M ${X(0).toFixed(1)} ${(H - PAD).toFixed(1)} L ` + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L ') + ` L ${X(maxX).toFixed(1)} ${(H - PAD).toFixed(1)} Z` : '';
+        return (
+          <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', maxWidth: 660, display: 'block' }}>
+            <path d={area} fill='#5b8def' opacity={0.22} />
+            <path d={line} fill='none' stroke='#5b8def' strokeWidth={2} />
+          </svg>
+        );
+      };
+      const resultBlock = (rarity: DollRarity, from: number, dp: DollDp, mc: DollSummary) => (
+        <div className='calc-result'>
+          <p className='muted'>Which kit to feed at each phase ({rarity} doll {from}→15) — the simple one-tier-per-phase guide:</p>
+          {usageGuide(dp, from)}
+          <p style={{ margin: '8px 0 2px' }}>
+            Expected kits to finish: <b>Blue {mc.byTier.R.toFixed(1)}</b> · <b>Purple {mc.byTier.SR.toFixed(1)}</b> · <b>Gold {mc.byTier.SSR.toFixed(1)}</b>{' '}
+            <span className='muted'>({mc.feeds.mean.toFixed(0)} kits total)</span>
+          </p>
+          <p className='muted' style={{ marginTop: 8 }}>Distribution of total cost (median {fmtN(mc.cost.p50)}):</p>
+          {dollBell(mc)}
+        </div>
+      );
+      const rarityPills = (val: DollRarity, set: (r: DollRarity) => void) => (
+        <div className='pills small'>
+          <button className={val === 'R' ? 'on' : ''} onClick={() => set('R')}>R doll</button>
+          <button className={val === 'SR' ? 'on' : ''} onClick={() => set('SR')}>SR doll</button>
+        </div>
+      );
+      const phaseSelect = (val: number, set: (n: number) => void) => (
+        <select value={val} onChange={(e) => set(+e.target.value)}>
+          {Array.from({ length: 15 }, (_, i) => i).map((p) => <option key={p} value={p}>phase {p}</option>)}
+        </select>
+      );
+      const perDoll = (t: DollTier) => (dollCal ? dollModel.kitSupply[t] / (dollCal.dollsPer1000Mixed / 1000) : 0);
+      const throughputHeadline = dollCal ? (
+        <div className='calc-result' style={{ marginBottom: 10 }}>
+          <div style={{ fontSize: '1.05em' }}><b>{dollCal.dollsPer1000Mixed.toFixed(0)} SR dolls per 1000 kit-boxes</b> at best (spend every kit), or <b>{dollCal.dollsPer1000Pure.toFixed(0)}</b> with the simple one-tier-per-phase rule.</div>
+          <div className='muted' style={{ marginTop: 4 }}>Best mix ≈ {perDoll('R').toFixed(0)} Blue · {perDoll('SR').toFixed(0)} Purple · {perDoll('SSR').toFixed(0)} Gold per doll. Use every kit — put Gold on the phase 10→15 push.</div>
+        </div>
+      ) : (<p className='muted'>Computing the optimal plan…</p>);
+
+      const dollCalcPanel = (
+        <>
+          <p className='muted'>The cheapest way to level a doll to the SR phase-15 target, from your kit boxes. Defaults to a fresh SR doll (0→15).</p>
+          {throughputHeadline}
+          <div className='field' style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            {rarityPills(dollRarity, (r) => { setDollRarity(r); setDollResult(null); })}
+            <span className='muted'>from</span>{phaseSelect(dollFrom, (n) => { setDollFrom(n); setDollResult(null); })}
+          </div>
+          <button className='calc-run' onClick={runDollCalc} disabled={calcBusy}>{calcBusy ? 'Running…' : 'Calculate'}</button>
+          {dollResult && resultBlock(dollResult.rarity, dollResult.from, dollResult.dp, dollResult.mc)}
+        </>
+      );
+      const dollCurrentPanel = (
+        <>
+          <p className='muted'>Enter the doll you have now — see the kits remaining to reach phase 15 and what to feed next.</p>
+          <div className='field' style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+            {rarityPills(dollCurRarity, (r) => { setDollCurRarity(r); setDollCurResult(null); })}
+            <span className='muted'>currently at</span>{phaseSelect(dollCurPhase, (n) => { setDollCurPhase(n); setDollCurResult(null); })}
+          </div>
+          <button className='calc-run' onClick={runDollCurrent} disabled={calcBusy}>{calcBusy ? 'Running…' : 'Calculate from here'}</button>
+          {dollCurResult && (
+            <>
+              <div className='calc-result' style={{ marginBottom: 8 }}>
+                <b>Feed next: {DOLL_TIER_LABEL[(dollCurResult.dp.tier[dollCurResult.from]?.[0] ?? 'R') as DollTier]}</b>
+              </div>
+              {resultBlock(dollCurResult.rarity, dollCurResult.from, dollCurResult.dp, dollCurResult.mc)}
+            </>
+          )}
+        </>
+      );
+      const dollFaq = (q: string, tldr: ReactNode, why: ReactNode) => (
+        <div style={{ marginBottom: 22 }}>
+          <h4 style={{ margin: '0 0 5px' }}>{q}</h4>
+          <div>{tldr}</div>
+          <div className='muted' style={{ marginTop: 5 }}><b>Why:</b> {why}</div>
+        </div>
+      );
+      const mixed = dollCal ? dollCal.dollsPer1000Mixed.toFixed(0) : '~77';
+      const pure = dollCal ? dollCal.dollsPer1000Pure.toFixed(0) : '~63';
+      const dollFaqPanel = (
+        <div style={{ maxWidth: 780 }}>
+          {dollFaq('1. What is the overall strategy for leveling dolls?',
+            (<>Use <b>all</b> your kits — don&rsquo;t hoard. Blue kits are the workhorse; spend Purple and Gold to relieve the Blue crunch, and put <b>Gold on the phase 10→15 push</b>. Done right that&rsquo;s about <b>{mixed} SR dolls per 1000 kit-boxes</b>.</>),
+            (<>Kits come mostly Blue with a little Purple and Gold, and the fastest plan spends <i>every</i> kit — leaving Purple/Gold in your bag just wastes them. The simplest version (one tier per phase) still gets ~<b>{pure}</b> dolls per 1000 boxes: mostly Blue, Purple through the mid-phases, Gold for the final 10→15 climb. Splitting some phases between two tiers recovers the last ~20%, but the simple rule is close and much easier to follow.</>))}
+          {dollFaq('2. Better to level rare (R) dolls 0→15 first, or combine them?',
+            (<><b>Combine (trade) them.</b> Four spare R dolls traded are worth far more than leveling one to 15 to launder.</>),
+            (<>Leveling an R doll to 15 to launder it into an SR nets only about <b>0.9 kit-value</b> — it just skips the short SR 0→5 grind and still consumes the SR doll. Trading 4 R dolls is worth roughly <b>10.6 kit-value each</b> (kits plus a 15% shot at an SR doll). So trade your spares — only launder when you specifically need the guaranteed SR-doll head-start.</>))}
+        </div>
+      );
+
+      return (
+        <section className='calc-tab'>
+          <h2>Doll Leveling</h2>
+          <div className='pills small dps-mode'>
+            <button className={dollSub === 'calc' ? 'on' : ''} onClick={() => setDollSub('calc')}>Doll Calculator</button>
+            <button className={dollSub === 'current' ? 'on' : ''} onClick={() => setDollSub('current')}>Level from Current</button>
+            <button className={dollSub === 'faq' ? 'on' : ''} onClick={() => setDollSub('faq')}>FAQ</button>
+          </div>
+          {dollSub === 'calc' && dollCalcPanel}
+          {dollSub === 'current' && dollCurrentPanel}
+          {dollSub === 'faq' && dollFaqPanel}
+        </section>
+      );
+    }
     return null;
   };
 
+  const inTools = (CALC_TABS.find((t) => t.key === tab)?.group ?? 'sim') === 'tools';
   return (
     <div className='app'>
       <header>
         <div className='header-row'>
           <h1>NIKKE Solo Raid Sim</h1>
-          <div className='share-actions'>
+          {!inTools && (<div className='share-actions'>
             {user && (
               <>
                 <button
@@ -2704,16 +2907,18 @@ export function App({ user }: { user: AuthUser | null }) {
             >
               {imaged ? '✓ Copied' : '🖼 Copy image'}
             </button>
-          </div>
+          </div>)}
         </div>
-        <p className='muted'>
-          180s fight · auto-mode
-        </p>
+        {!inTools && (
+          <p className='muted'>
+            180s fight · auto-mode
+          </p>
+        )}
       </header>
 
       {(
         <nav className='tabs-bar'>
-          {CALC_TABS.map((t) => (
+          {CALC_TABS.filter((t) => t.group === (CALC_TABS.find((x) => x.key === tab)?.group ?? 'sim')).map((t) => (
             <button
               key={t.key}
               className={tab === t.key ? 'on' : ''}
@@ -2732,6 +2937,7 @@ export function App({ user }: { user: AuthUser | null }) {
       {tab !== 'dpschart' &&
         tab !== 'charge' &&
         tab !== 'olsim' &&
+        tab !== 'doll' &&
         !(tab === 'overload' && olMode === 'matrix') && (<>
       <section className='global'>
         <div className='field'>

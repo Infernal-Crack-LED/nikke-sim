@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 // path to index.html, and the web-smoke loads at "/?team=…" which resolves to sim.
 export type Route =
   | 'sim'
+  | 'tools'
   | 'howto'
   | 'mechanics'
   | 'dev'
@@ -17,6 +18,7 @@ export type Route =
 
 export const ROUTES: Route[] = [
   'sim',
+  'tools',
   'howto',
   'mechanics',
   'dev',
@@ -25,17 +27,24 @@ export const ROUTES: Route[] = [
 ];
 
 // Top-level PAGE routes. The sim app owns "/" plus its sub-tab paths
-// (/dpschart, /team, …); any segment that isn't a page resolves to the sim.
+// (/dpschart, /overload, …); any segment that isn't a page or a tool resolves to sim.
 const PAGE_ROUTES: Route[] = ['howto', 'mechanics', 'dev', 'patch-notes', 'testing-requests'];
+// The App also hosts the "Tools" section — these sub-tab paths group under /tools in
+// the top nav (but are still served by the App, addressed by their own path).
+const TOOL_PATHS = ['olsim', 'doll', 'charge', 'team', 'roster'];
+const TOOL_LANDING = '/olsim'; // where the "Tools" nav link points (Overload Rolling)
 
-// map the first path segment to a Route; sim-app paths (and "/") fall back to sim
+// map the first path segment to a Route; tool paths → 'tools', other sim-app paths (and "/") → sim
 export function routeFromPath(pathname: string): Route {
   const seg = pathname.replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase();
-  return (PAGE_ROUTES as string[]).includes(seg) ? (seg as Route) : 'sim';
+  if ((PAGE_ROUTES as string[]).includes(seg)) return seg as Route;
+  if (TOOL_PATHS.includes(seg)) return 'tools';
+  return 'sim';
 }
 
 // href for a route — a real path so links are hyperlinkable and crawlable
-export const hrefFor = (route: Route): string => (route === 'sim' ? '/' : `/${route}`);
+export const hrefFor = (route: Route): string =>
+  route === 'sim' ? '/' : route === 'tools' ? TOOL_LANDING : `/${route}`;
 
 // SPA navigation: update the URL via pushState (no full reload), then notify every
 // listener (this router + the sim App's tab sync) with a popstate event. Callers

@@ -18,6 +18,9 @@ npx tsx scripts/regression.ts
 say "overload roll-cost regression (model invariants + analytic/MC + determinism)"
 npx tsx scripts/overload-regression.ts
 
+say "doll leveling regression (model invariants + DP monotonicity + throughput + determinism)"
+npx tsx scripts/doll-regression.ts
+
 if [ "${1:-}" = "full" ]; then
   say "web build + smoke"
   npm run web:build
