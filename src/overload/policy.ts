@@ -116,8 +116,8 @@ export interface McSummary {
   ops: { mean: number; sd: number; se: number; pctiles: Record<string, number> }; // total operations (rerolls + value-resets)
   phase1Rerolls: { mean: number };
   phase2Resets: { mean: number };
-  moduleCostPerm: { mean: number; se: number };
-  moduleCostTemp: { mean: number; se: number };
+  moduleCostPerm: { mean: number; se: number; p95: number };
+  moduleCostTemp: { mean: number; se: number; p95: number };
   tempLocks: { mean: number; se: number };
   histogram: Array<{ lo: number; hi: number; count: number; overflow?: boolean }>;
   density: Array<{ lo: number; hi: number; mid: number; count: number }>; // fine bins to p99, for a bell-curve chart
@@ -185,8 +185,8 @@ function summarize(c: Cols, trials: number, analytic?: AnalyticSingle): McSummar
     },
     phase1Rerolls: { mean: stats(c.p1).mean },
     phase2Resets: { mean: stats(c.p2).mean },
-    moduleCostPerm: { mean: stats(c.perm).mean, se: stats(c.perm).se },
-    moduleCostTemp: { mean: stats(c.temp).mean, se: stats(c.temp).se },
+    moduleCostPerm: { mean: stats(c.perm).mean, se: stats(c.perm).se, p95: percentile([...c.perm].sort((a, b) => a - b), 0.95) },
+    moduleCostTemp: { mean: stats(c.temp).mean, se: stats(c.temp).se, p95: percentile([...c.temp].sort((a, b) => a - b), 0.95) },
     tempLocks: { mean: stats(c.tl).mean, se: stats(c.tl).se },
     histogram: histogram(c.ops, Math.max(1, percentile(sorted, 0.95))),
     density: density(c.ops, Math.max(5, percentile(sorted, 0.99))),

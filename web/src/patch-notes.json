@@ -1,6 +1,24 @@
 [
   {
     "date": "2026-07-15",
+    "title": "New: Doll Leveling tool",
+    "notes": [
+      "A new Doll Leveling tool finds the cheapest way to level your dolls (Collection Items) to SR phase 15 — it shows exactly which kit to feed at each phase, and how many SR dolls you can expect to finish per 1000 kit-boxes.",
+      "The big tip: use all your kits — don't hoard. Blue kits are your workhorse, and Gold kits are best saved for the phase 10-to-15 push. Played right, that's about 77 SR dolls per 1000 boxes.",
+      "\"Level from Current\" tells you what to feed next from your doll's current phase, and a plain-English FAQ covers the overall strategy and whether to trade or launder spare R dolls (short answer: trade them)."
+    ]
+  },
+  {
+    "date": "2026-07-15",
+    "title": "Tools menu + Overload Rolling upgrades",
+    "notes": [
+      "The calculators now live under a new Tools menu: Overload Rolling, Doll Leveling, Charge Speed Breakpoints, Optimal Team Generator, and Solo-Raid Roster Generator.",
+      "Overload Rolling (formerly Overload Roll Sim) now shows the common 8/12 build cost the instant you open it — no setup needed.",
+      "The Overload results table now shows a separate \"95% of the time\" figure for both rerolls and module cost, and the per-piece numbers add up cleanly to the full-build total."
+    ]
+  },
+  {
+    "date": "2026-07-15",
     "title": "New: Overload Roll Sim",
     "notes": [
       "A new Overload Roll Sim page estimates how many rerolls and Custom Modules it takes to hit a target Overload build — set your target lines and minimum tiers per piece and see the expected cost, per-piece and total, with a full distribution curve.",

@@ -231,6 +231,43 @@ lives. Newest first within each section.
 
 ## Engine/data-architecture decisions
 
+- **(2026-07-15) Doll (Collection Item) leveling optimizer — throughput objective + exact DP.**
+  New subsystem (`src/doll/model.ts` + `policy.ts`; data in `data/doll-economy.json` +
+  `data/doll-super-success.json`) that finds the cheapest way to level dolls to the SR-phase-15
+  target. Mechanic (OWNER-confirmed 2026-07-15): feed "toolboxes" (R/SR/SSR kits worth 200/500/1000
+  EXP); each feed rolls a super-success (chance from the datamined table by doll-rarity × toolbox ×
+  phase step) that JUMPS to the next checkpoint (5/10/15) with XP reset and the toolbox spent —
+  otherwise the EXP is added (R doll 1000 EXP/level, SR doll 3000). Dolls are R or SR, phases 0–15;
+  a maxed R15 doll upgrades to SR5 but still CONSUMES an SR doll (so laundering only saves the SR
+  0→5 grind). **OBJECTIVE ruling:** "best method" is a resource-balancing problem — *level the most
+  SR dolls 0→15 per kit-box*, NOT minimize per-doll EXP (which wrongly hoards). Kit usage-weights
+  are the SHADOW PRICES that make the optimal policy consume kits in the box's supply ratio, derived
+  from the owner's drop rates (the all-tiers box only: 70% 5R / 20% 2SR / 10% 2SSR → 3.5 / 0.4 / 0.2
+  kits per box; the R-only box excluded per the owner's observed year of drops). **Method:** since a
+  doll's phase only ever increases, the per-doll optimum is an EXACT backward DP over a DAG; the max
+  throughput is the Lagrangian dual — a concave maximization over the 2-D shadow-price simplex with
+  the weighted DP as the inner oracle (grid + refine) — yielding both the exact mixed-policy
+  throughput and the shadow prices; seeded Monte Carlo for the cost distribution. **Findings:** feed
+  Blue (R) kits as the workhorse, Purple mid-band, Gold on the phase 10→15 push; the mixed-policy
+  optimum ≈ **77 SR dolls per 1000 boxes** (spends every kit) vs ≈ **63** for the best
+  one-tier-per-phase pure strategy; and **trade spare R dolls** (≈10.6 kit-value each) rather than
+  leveling them to launder (≈0.9 net kit-value) — launder only when you specifically want the
+  guaranteed SR-doll head-start. Gated by `scripts/doll-regression.ts` in `verify.sh`; surfaced in
+  the web **Doll Leveling** tab (Calculator / Level from Current / FAQ). — owner mechanic + drop
+  rates 2026-07-15; data/doll-economy.json + data/doll-super-success.json.
+
+- **(2026-07-15) Calc tabs reorganized into a top-level "Tools" section; common case shown by
+  default.** The five calculators that aren't the core sim — **Overload Rolling** (renamed from
+  "Overload Roll Sim"), **Doll Leveling**, **Charge Speed Breakpoints**, **Optimal Team Generator**
+  (was "Optimal Team"), **Solo-Raid Roster Generator** — moved from the sim's tab-bar into a new
+  top-level **Tools** nav entry (alongside Sim / How-to / Mechanics; a `tools` router route resolves
+  to the App, each tool addressed by its own path, team-share chrome hidden on Tools). To serve the
+  majority use case without a click, Overload Rolling auto-shows the **8/12** build cost on open, and
+  Doll Leveling auto-shows the **SR 0→15** throughput + per-phase kit guide (calibration computed
+  once, memoized). The Overload result table splits the two p95s (rolls-p95 beside "exp rolls"; a new
+  module-cost p95 beside "modules") after they were visually conflated, and shows phase/module means
+  to 1 decimal so per-piece values stay additive to the full-build total. — this session's UX pass.
+
 - **(2026-07-15) Overload roll-cost sim — the ACQUISITION side of OL, and the `smart` locking
   policy as default.** New subsystem (`src/overload/model.ts` + `policy.ts`,
   `data/ol-probabilities.json`) that costs how many rerolls/modules it takes to GET a target OL
