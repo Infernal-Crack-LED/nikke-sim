@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import { HowToPage } from './HowToPage';
 import { MechanicsPage } from './MechanicsPage';
 import { DevPage } from './DevPage';
 import { PatchNotesPage } from './PatchNotesPage';
@@ -43,7 +44,9 @@ function Root() {
         onLogin={onLogin}
         onLogout={onLogout}
       />
-      {route === 'mechanics' ? (
+      {route === 'howto' ? (
+        <HowToPage />
+      ) : route === 'mechanics' ? (
         <MechanicsPage />
       ) : route === 'dev' ? (
         <DevPage />

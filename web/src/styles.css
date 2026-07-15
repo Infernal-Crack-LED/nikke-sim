@@ -411,6 +411,20 @@ footer { margin-top: 28px; font-size: 12px; }
   .mech-grid { grid-template-columns: 1fr; }
 }
 
+/* ---- How-to page ---- */
+.howto-page header h1 { font-size: 26px; margin: 6px 0 8px; }
+.howto-page header .muted { max-width: 760px; line-height: 1.6; font-size: 14px; }
+.howto-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 18px; }
+.howto-section h2 { font-size: 16px; margin: 0 0 8px; }
+.howto-section p { font-size: 13px; line-height: 1.6; }
+.howto-intro { margin: 0 0 10px; }
+.howto-outro { margin: 12px 0 0; }
+.howto-dl { margin: 4px 0 0; }
+.howto-dl > div { padding: 8px 0; border-top: 1px solid var(--border); }
+.howto-dl > div:first-child { border-top: 0; padding-top: 2px; }
+.howto-dl dt { font-weight: 600; color: var(--text); font-size: 13px; margin-bottom: 3px; }
+.howto-dl dd { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
 /* ---- DPS Chart ---- */
 .dpschart-compare-pick { display: flex; align-items: center; gap: 10px; margin: 10px 0 4px; }
 .dpschart-compare-pick label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }

@@ -6,6 +6,7 @@ import type { AuthUser } from './auth';
 
 const NAV: { route: Route; label: string }[] = [
   { route: 'sim', label: 'Sim' },
+  { route: 'howto', label: 'How to' },
   { route: 'mechanics', label: 'Mechanics' },
 ];
 

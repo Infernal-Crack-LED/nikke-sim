@@ -1905,8 +1905,7 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
         </div>
         <p className='muted'>
-          180s fight · all skills factored at 10/10/10 · leftmost burst priority
-          · gear + doll from your recorded stats
+          180s fight · auto-mode
         </p>
       </header>
 
@@ -2495,9 +2494,9 @@ export function App({ user }: { user: AuthUser | null }) {
       )}
 
       <footer className='muted'>
-        v1 assumptions: 0 enemy debuffs · full HP · expected-value crits ·
-        always in effective range · damage-taken debuffs from allies modeled ·
-        parts &amp; pierce in a later version
+        v1 assumptions: 0 enemy debuffs · full HP · auto-mode enabled · middle
+        unit is the focused unit · burst order decided left to right · parts
+        &amp; pierce in a later version
       </footer>
     </div>
   );

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 // `/?team=...` with no hash, still renders the sim.
 export type Route =
   | 'sim'
+  | 'howto'
   | 'mechanics'
   | 'dev'
   | 'patch-notes'
@@ -12,6 +13,7 @@ export type Route =
 
 export const ROUTES: Route[] = [
   'sim',
+  'howto',
   'mechanics',
   'dev',
   'patch-notes',
@@ -21,6 +23,7 @@ export const ROUTES: Route[] = [
 // map the location hash to a Route; anything unrecognized falls back to the sim
 export function routeFromHash(hash: string): Route {
   const h = hash.replace(/^#\/?/, '').split(/[?]/)[0].toLowerCase();
+  if (h === 'howto') return 'howto';
   if (h === 'mechanics') return 'mechanics';
   if (h === 'dev') return 'dev';
   if (h === 'patch-notes') return 'patch-notes';
