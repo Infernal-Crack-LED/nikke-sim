@@ -25,6 +25,40 @@ everything here; per-run details in docs/probe-runs.md. STILL OPEN after test ba
 - Cinderella items: all SOLVED (docs/probe-runs.md, runs e3 + battery tests 1-2).
 - Jill: SOLVED (battery test 4 — see the answered items).
 
+UPDATE 2026-07-14 (714 noon probe, nine focused testing-request fights — docs/probe-runs.md).
+Every focused (middle-slot) unit in that batch is in the enikk top-100 supported set, so its
+read is meta-valid. New residuals / confirmations from the FOCUSED units:
+- **Scarlet: Black Shadow — RESOLVED 2026-07-14 (CALIBRATED ⛑).** Her tracked ~1.23 heat,
+  confirmed by a second focused fight (N3 boss Iron, 1.31; T1 1.18) and localized by her N3
+  popup read: her charged-normal popup reads 1.55M vs sim 1.60M (correct), so the excess was
+  entirely in the proc bucket. The blend-to-6 over-credited the burst-window proc tripling; a
+  cadence sweep across BOTH fights lands hitCount 6→10 (near the literal every-9 outside-burst
+  rate — the tripling barely materializes), moving T1 1.18→1.00 and N3 1.31→1.07 with no
+  teammate/FB blast radius (self-damage procs). Still calibrated tier; re-check if a frame-exact
+  proc-cadence read lands.
+- **Guillotine: Winter Slayer — NEW residual, consistently hot 1.21–1.31, LOCALIZED to her
+  normal fire.** First FOCUSED measurement (N8 boss Fire, bursting: 1.21) plus the non-bursting
+  bench read (PH: 1.31). Decomposition localizes it precisely: her burst DoT is level-11-scaled
+  and grades ACCURATE (N8 real DoT ≈114M ≈ sim 115M), so her Hero-Level auras + effective level
+  are CORRECT; the excess is entirely in her normal-fire bucket, uniformly ~26% over in both
+  fights (real normals ≈224M vs sim 294M in N8; PH 1.31 is normals-only). Ruled OUT: the
+  near-infinite-uptime instantReload charfix (removing it moves her only 1.31→1.26 / 1.21→1.16).
+  A flat 0.76× normal haircut would fix both to ~1.0, but the MECHANISM is unidentified — the
+  suspect is a datamined MG weapon parameter (rate_of_fire / per-shot atkPct 13.7). NOT refit:
+  needs a datamined recheck against the reference sim (nikke-einkk), since MG normals are not
+  popup-readable and her level-scaled effects are confirmed right. Do not apply a blind normal
+  scalar. Her auras also buff Water teammates, so any change needs a blast-radius pass.
+- **milk-blooming-bunny 0.73** (focused, N10) — CONFIRMS the accepted DECISION (~0.7, poor
+  auto-play); N10's total also graded exact (782M sim = 782M real). No action.
+- **Vesti: Tactical Upgrade 3.23** (UNFOCUSED, N8) — her custom-volley model (4 rockets over
+  ~1s, charFixes) is badly over. NOT a tuning target from this batch: she is unfocused here and
+  is outside the enikk top-100 set. Needs a vesti-focused recording before any refit.
+- rapi-red-hood (0.92, N1) belongs to her own active rework increment; modernia (0.90, N2) and
+  snow-white (1.11, N4) are confounded by that comp's full-burst-count anomaly; privaty (1.58,
+  N5) is already calibrated (0.97 on T4) — her N5 heat is Arcana: Fortune Mate's team buff
+  inflating the whole side (arcana 1.88 / privaty 1.58 / snow-white:HA 1.33 together), and
+  Arcana is unfocused here.
+
 ### U11b — Unfocused charge-weapon gauge generation (⚑ the one open gauge knob)
 The burst-gauge model is now datamined + solo-measured (see the answered gauge item), but
 no recording yet isolates an UNFOCUSED charge unit's full-charge generation (a solo unit
@@ -61,9 +95,104 @@ iron-weak fight (T8, elemental advantage) and the wind-weak fight (T5, no advant
 gained less from elemental advantage in reality than the sim's x1.1 — do function-damage riders
 skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
 
+### U13 — DoT / function-rider ticks do not crit in the engine (systematic under-credit)
+The engine gates DoT/rider crit/core behind env-only `XCRIT`/`XCORE` sets (empty by default), so
+**those hits never crit in normal runs**. But they DO crit — the MECHANIC is confirmed empirically by **ginmy.net/nikke_dot_test**: DoT
+observed ~47% crit with elem-advantage+crit vs ~10% elem-only; DoT takes ATK/element/Full-Burst/
+**crit**, subtracts DEF, but NOT distance (engine's `noRange:true` already right).
+
+OUR-FOOTAGE confirmation — **RIDER crit CONFIRMED** (maiden solo, 2026-07-14, docs/probe-data/
+maiden-solo.json): fielded alone (no FB, no buffs) her 547.62% damage rider reads a CLEAN
+non-crit/crit pair — 437296 (white) / 655945 (orange + crit icon) = **exactly ×1.5**. So her damage
+rider crits. (First attempts on LM + liberalio were INCONCLUSIVE — value-band entanglement, caught by
+`scripts/probe/hit-values.ts`: LM's 64733 is her SMG NORMAL band 14-68k not her DoT ~156-220k;
+liberalio's proc 1.13-7.73M fully overlaps her normal charge. Maiden solo was the clean subject.)
+Rider ≈ function damage; a true-DoT tick (LM-style) is the same matrix cell (crit yes, core no) and
+ginmy's dot_test confirms the DoT case directly, so the mechanic is settled: **DoT/rider damage
+crits.** Colour convention owner-confirmed (crit = orange + crit-icon; core = red "CORE HIT"; damage
+at crosshair, heals over the character).
+
+ENGINE STATUS (2026-07-14): flatDamage PROCS already crit by default (dealDamage ~920, "U1" note —
+so maiden's/liberalio's riders were already correct; the footage validated existing behavior). Only
+the **dot-tick path (sim.ts ~1479)** and **stored-hit release (~1259)** were XCRIT-gated off (15
+`kind:dot` units: LM, anis-star, privaty, mihara, jill, ada, rapi-RH, milk, guillotine, cinderella-CW,
+elegg, ein, dorothy, sakura-BiS, ark-ranger). Implemented as a `DOTCRIT=on` knob and measured:
+blast radius is small (+0.02-0.08) and MIXED — helps under-credited cold units (rapi/milk/ada/
+cinderella-CW) but pushes hot units hotter (privaty/LM/jill) and **DOUBLE-COUNTS measured-dot units**
+(guillotine's DoT is popup-measured at ~114M ≈ real; adding crit overshoots it). Board MAE is
+NET-NEUTRAL (0.1331→0.1327). **DECISION: HELD default-off** — a blanket flip destabilizes a
+well-calibrated board and refits measured values (constraint 3). The correct landing is a per-unit
+recalibration: for each dot unit, de-crit the calibrated base (÷~1.075, net-zero expected) so the
+mechanism is right AND the graded fit holds — worth it mainly for crit-BUFF interactions + variance,
+which no current recording isolates. Knob stays for that future increment.
+
+### U14 — When do +50% Full Burst / +30% range apply to SKILL damage? (test framework built)
+Range is SETTLED: skill/rider/DoT damage NEVER gets the +30% range bonus (`noRange` universal; ein's
+feathers "get FB but not range"). The open question is FB (+50%). Current model = per-kit `noFb` flags
+(calibrated). A **test framework is built** (`scripts/probe/fb-range-lab.ts` + the `FBRULE` engine knob:
+perkit/timing/dotfb/seqoff/noskillfb) that A/B-grades candidate general rules and holds the measured
+ground truth. FINDINGS (2026-07-14): (a) NO general rule beats the per-kit flags on board MAE (perkit
+0.1298 < dotfb 0.1402 < seqoff 0.1447 < timing 0.1464 < noskillfb 0.1589) — but the board CAN'T reveal
+the rule because each unit's noFb is co-calibrated with its values (offsetting errors); noskillfb far-worst
+confirms most skills DO get FB by timing (the default). (b) MEASURED ground truth is MIXED per delivery
+type — flatDamage procs (liberalio ×1.333, ein feathers) + DoT (ginmy ×1.5) = FB-ON; burst-cast nukes
+(U10) = FB-OFF.
+
+**HEURISTIC SETTLED 2026-07-14 by JP research (well-sourced, one MEASURED) — it's a TIMING/SNAPSHOT
+gate, not a damage-type rule.** FB +50% is a Boost-bucket conditional applied to whatever is evaluated
+while the FB STATE is active; per-type behavior falls out of WHEN each type snapshots its buffs:
+- normal fire → live per-frame → FB in the window;
+- **burst-cast damage → snapshots at USE-time (before FB flips on) → NO FB** (matches U10; our privaty
+  nuke read 2,422,498 = FB-off);
+- **additional/function damage (procs/riders) → snapshots at ACTIVATION (during FB) → FB** (never gets
+  distance or core) — matches liberalio ×1.333, ein feathers;
+- **DoT/sustained → per tick → FB** (MEASURED: ginmy Mana DoT 297,240 in-game = 297,243 predicted WITH ×1.5);
+- distributed → like additional, EXCEPT **Modernia's Paradise Lost (失楽園) → no crit, no FB** (the one
+  genuine type-exemption).
+**KR cross-validation (independent, 2026-07-14) — CONFIRMS the timing rule with a different empirical
+anchor.** dcinside measured Cinderella's BURST: her front/instant hit misses +50% (+ misses FB-entry
+buffs) while her additional damage (28.9%×stacks) GETS +50% — SAME burst, opposite outcome, so it's
+TIMING not type. nikke.gg's formula marks Core-Hit & Range as normal-attack-ONLY (asterisked) but
+Full Burst as having NO type restriction; a Python community calc codifies it as "FB active AND not the
+burst skill's own instant hit." So the burst exemption is precisely the INSTANT/front cast hit (resolves
+before FB is live), not "all burst-slot damage" — burst ADDITIONAL damage that ticks during FB does get
+FB. Sources: JP — ginmy.net/nikke_dot_test, note.com/joyful_flax523/n/nec33793e37d6, daywrite.space/
+archives/2063; KR — dcinside/gov/2134716 (Cinderella), nikke.gg/damage-formula, arca calc 118418095.
+⇒ `FBRULE=timing` (burst INSTANT exempt, everything else FB by landing timing) is the MECHANICALLY-CORRECT rule.
+The 6 per-kit `noFb` flags (LM/privaty/jill/maiden/eve/scarlet) are RELICS (as liberalio's was — removed
+when measured). They grade the board fine only via offsetting errors (value co-calibrated to FB-off).
+LANDING (a dedicated per-unit increment, like the liberalio re-tune): remove each noFb, re-audit the
+compensating over-model (cadence/value — do NOT blind-scale a datamined coefficient), re-grade.
+
+**RETUNE ATTEMPTED 2026-07-15 — BLOCKED on measurement.** All 6 noFb'd coefficients are DATAMINED
+(eve 720% seq nuke; LM 253.44%=63.36%×4 DoT + 850%=85%×10 barrage; jill 192% DoT; scarlet
+283/565/848% post-patch; privaty 256.17% + 1687%; maiden 547.62%) — so they cannot be lowered
+(constraint 3). Removing noFb overshoots by 10-41% (FB uptime ~70%: privaty +0.27/+0.41, maiden +0.24,
+LM +0.12-0.18, jill/scarlet +0.11-0.15, eve +0.07). Restoring each grade would require either
+refitting a datamined coefficient (forbidden) or shrinking a CALIBRATED cadence/count purely to offset
+FB — an evidence-free fudge-move that relocates the error without accuracy gain and obscures the real
+per-unit truth (and LM has NO adjustable knob — her DoT interval/duration are measured). No existing
+recording cleanly isolates any of these skills IN a Full Burst window (LM control tried repeatedly —
+DoT band not isolable; privaty designated-dot not visible; maiden footage is solo/2-unit no-FB;
+jill/eve/scarlet have no focused footage). So the correct retune needs NEW per-unit in-FB recordings:
+read the skill/DoT popup IN-FB vs OUT-FB (ratio = the FB factor, ×1.5 raw) to see whether it's the
+coefficient application, the cadence, or the noFb itself that's off. Until then `perkit` stays the
+shipped default (board stable at MAE 0.1298); `FBRULE=timing` is the documented correct-mechanism knob.
+
 ---
 
 ## ANSWERED
+
+### A26 — Scope-lock boss DEF is negligible — MEASURED/BOUNDED 2026-07-14
+NIKKE enemy DEF is a small FLAT subtractive value (min-1 floor), applied inside the base before the
+skill coefficient. ginmy.net/nikke_def_test measures Union-Training mobs at 100 and boss-type
+enemies at ≈140; at scope-lock effective ATK that moves any unit's total ≤0.12% (`scripts/battery/
+boss-def.ts` sweep). Our own datamined-coefficient popups already matched the sim to ≤0.3% at
+`bossDef:0` (cinderella rocket 121,124; opening popups 99.7% on four classes), independently bounding
+|DEF| < ~240 from actual raid recordings. Both agree: DEF is an order of magnitude under the ±3%
+goal → `bossDef:0` kept as an evidence-backed approximation. Also confirmed the engine's DEF
+placement (baseAtk subtraction, +ATK inside the paren, charge/skill mult outside) matches ginmy's
+atkbuff/atkdamagebuff tests. See DECISIONS (Measured mechanics, 2026-07-14).
 
 ### A24 (U11b) — The x2.5 charge gauge bonus is CAMERA-FOCUS-ONLY — MEASURED 2026-07-13
 Test battery 3, parts A1/A2 (docs/probes/"burst tests"): a two-unit fight (takina slot 1,
@@ -320,6 +449,44 @@ JP frame analysis: auto reticle floor ~12.5px vs ~1px manual (~18-20% effective 
 loss); auto can never guarantee core hits even at 100% core exposure. Engine AUTO_CORE_RATE
 = 0.85 ⚑ multiplying coreHitRate; centered the validated-fight anchors (anis 0.97-1.06 x7
 comps, liberalio, crown, rapi-RH, LM, moran, ada, ein, diesel all ~1.0).
+
+**RESEARCH 2026-07-14 (subagent, multi-source): 0.85 is weakly sourced and really weapon/range-
+dependent — flag for a per-class model.** No JP study concludes "auto = 85% core." The primary
+source (_TricK_, note.com/n6efe08af53e8) measures the ~12.5px auto reticle floor and an **18-20%
+accuracy loss** (→ ~0.80-0.82 effective, slightly BELOW 0.85) but never integrates a core-hit
+probability; the "85" in it is a reticle-formula INTERCEPT, likely a units mix-up. A KR curve
+(arca.live/96243965, Blacksmith/mid-range) gives core-hit vs the ACCURACY STAT: ~40% @75.6% acc,
+~90% @85% acc — a different axis. ore-game.com/verify-memo: shotgun core is ~100% front row /
+~1.6% mid / ~0% back — i.e. **range-band dominated**; うま's MG note: MG cores ~100% once warmed
+(≥3.75s) at any range; SR/RL possibly near-guaranteed. So a single scalar under-credits MG/SR/RL
+carries and over-credits off-range SG/SMG. Options (owner call, ⚑ refit): (a) keep 0.85 blended;
+(b) weapon-class-indexed (MG/SR ~0.95-1.0, RL ~guaranteed, AR/SMG ~0.85, SG = f(range)); (c) the
+geometric per-shot model (reticle radius vs core projected radius — the sim already has range bands).
+We can now ALSO MEASURE it: `scripts/probe/classify.py` counts red "CORE HIT" popups from focused
+footage → an empirical core rate per unit/weapon. Sources in the research; not acted on yet.
+
+**PER-WEAPON SCAN 2026-07-14 (focused footage, docs/probe-data/): a flat 0.85 is wrong — core rate
+splits by weapon class, confirming the research.** Qualitative reads (red "CORE HIT" fraction of the
+unit's NORMAL popups; procs/riders correctly don't core):
+| weapon | unit (footage) | observed core rate |
+|---|---|---|
+| MG | crown (control) | ~near-100% (dense red core stacks, warmed) |
+| SR | liberalio (rrh) | ~near-100% |
+| RL | maiden (solo) | ~near-100% ("CORE HIT" ~every shot) |
+| AR | snow-white (control) | moderate/mixed (~0.7-0.9) |
+| SMG | little-mermaid (control) | lower (many white non-cores, ~0.7-0.85) |
+| SG | (no focused footage) | research: range-dependent (~0 off-band → ~1.0 optimal) |
+So the RELIABLE auto classes (MG/SR/RL) core ~near-100% — a flat 0.85 UNDER-credits every MG/SR/RL
+carry (the boss-DPS backbone); AR/SMG sit around/below 0.85.
+
+**LANDED 2026-07-14 ⚑ refit — AUTO_CORE_RATE is now weapon-class-indexed** (sim.ts `acrFor`): MG/SR/RL
+= **0.95**, AR/SMG/SG = 0.85. Three supporting lines: (a) the footage scan above; (b) JP research
+(reliable classes ~0.95-1.0); (c) an MAE SWEEP on the graded board — MG/SR/RL=0.93-0.95 is the
+optimum, board **MAE 0.1331→0.130, within-10% 56%→60%** (a real fit gain, no per-unit recalibration).
+The sweep optimum (~0.93-0.95, below the qualitative "near-100%") reflects the ~12.5px reticle floor +
+wind-up shots. FB counts unchanged (core rate ≠ rotation); snapshots regenerated. Knobs: `CORERATE=flat`
+reverts to 0.85, `CORERATEHI` sweeps the MG/SR/RL value, `ACR` overrides all. Still ⚑ — a precise
+per-shot count or the geometric reticle model can refine it.
 
 ### A16 — July 2 2026 distributed-damage patch — APPLIED 2026-07-13
 Solo raid Annihilio was suspended over the distributed-damage bug; fixed 2026-07-02 with

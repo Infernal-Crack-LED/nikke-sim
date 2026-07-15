@@ -1,0 +1,896 @@
+{
+  "updated": "2026-07-14",
+  "policy": "Authoritative record of which override kits have been tuned against REAL fights. tuned=true means the kit was MEASURED (focus recording/frame/popup), CALIBRATED (fitted vs real fights), or VALIDATED (graded ~1.0 in a recorded comp). MODEL_ONLY=never confirmed against reality (untuned). control=member of the DPS-chart control roster (src/dpschart/matrix.ts). Reconstructed best-effort from DECISIONS.md, open-questions.md ANSWERED, probe-runs.md, and override notes — this list was not maintained from the start. See docs/hand-tuned.md.",
+  "tiers": {
+    "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
+    "CALIBRATED": "fitted number tuned against real fights (mechanism suspected, value is ours)",
+    "VALIDATED": "total graded ~1.0 in a recorded comp (not focus-recorded)",
+    "MODEL_ONLY": "parser/datamine only, never confirmed against a real fight = UNTUNED"
+  },
+  "counts": {
+    "MEASURED": 14,
+    "CALIBRATED": 11,
+    "VALIDATED": 11,
+    "MODEL_ONLY": 31
+  },
+  "units": [
+    {
+      "slug": "anis-star",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": true,
+      "evidence": "Solo gauge recording — standard-launcher row confirmed (A25/A3); run A 0.94",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 11,
+        "within3pct": 2
+      },
+      "reference": false
+    },
+    {
+      "slug": "cinderella",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Focus session u8-e3 — every per-instance popup verified exact; twin-rocket + own-MaxHP fixes; runs B/E 0.96-1.00",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 5,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "crown",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": true,
+      "evidence": "Crown SOLO recording — MG range-bands read per popup class (battery 4); 0.89-1.14 across ~10 comps",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 10,
+        "within3pct": 2
+      },
+      "reference": false
+    },
+    {
+      "slug": "helm",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": true,
+      "evidence": "Helm SR frame recording — 1.37s cycle + 22f bolt recovery measured; 0.93-1.19",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 7,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "jill",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "tb2 test-4 focus video — popups 99.7% exact; 1.67 heat was cadence (150rpm) -> 1.02 (A21)",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "liberalio",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Focus recording — four in-FB proc crit-step pairs read x1.3333 exactly; T1/T5 ~1.0",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 4,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "maiden-ice-rose",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Solo neutral video — 547.62% rider popups exact, cadence measured (A12); solo 1.01",
+      "date": "2026-07-13",
+      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound",
+      "graded": {
+        "teams": 3,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "moran",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run B video — firepower/CDR economy verified frame-by-frame; 0.91-0.93",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "neon-vision-eye",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run B video — gauge tracked cast-by-cast, every-3rd-Super confirmed; 0.91-1.06",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 3,
+        "within3pct": 2
+      },
+      "reference": false
+    },
+    {
+      "slug": "privaty",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Battery-5 focus — in/out-window popup ratio 2.8244 -> elemAdv in Element bucket; 0.77->1.00 on T4",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "rapi-red-hood",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed",
+      "date": "2026-07-14",
+      "residual": "Invisible-X residual (44-52% of her damage) deliberately left open",
+      "graded": {
+        "teams": 5,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "snow-white-heavy-arms",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "probe u7 team-two — seven burst windows observed end-to-end, Fully-Active ends-on-uses measured; run C 0.95",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 4,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "takina",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Solo sniper gauge recording (A22) + focus/unfocused gauge steps (A24); run G 1.01 after SR-gen fix",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "alice",
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "tb2 test-5 focus — pierce = one popup per shot, no double-hit (A23); run A 1.12",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "scarlet-black-shadow",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "714noon: N3 popup localized heat to proc set, cadence hitCount 6->10 swept on N3+T1 -> T1 1.00, N3 1.07",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "cinderella-crystal-wave",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "U1 core-strike rule fix; T5 1.09 / T8 1.25",
+      "date": "2026-07-13",
+      "residual": "U3 open — elemental-advantage delivery type",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "dorothy-serendipity",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "SG pellet-falloff calibrated on naga/dorothy/noir triple; run H 0.99",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "naga",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "SG falloff + \"with shielder\" mode calibration; run C 1.06",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "red-hood",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Red Wolf decoded from game data, +90% CS->charge-dmg conversion (stack ramp averaged); run A 0.86-0.92",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "rouge",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Positional + Max-HP grant rebuilt from run-E e/e2/e3 videos; coin values timeline-averaged; 1.02",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "mihara-bonding-chain",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Stack-average (10.8->12) fit to real T3 sample; 1.19-1.51 -> 1.03",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "eunhwa-tactical-upgrade",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Swap cadence 0.67s fit from run D",
+      "date": "2026-07-13",
+      "residual": "Still 1.32 hot — residual open",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "maxwell",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Railgun single-shot fix from run G (1.93->0.81)",
+      "date": "2026-07-13",
+      "residual": "Over-corrected; reads 0.80 (G) but 1.17 (N6) — unstable, audit candidate",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "trina",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Target-scope \"leftmost Electric AR ally\" from run-B video -> alliesOfElementWeapon; 2.62 -> 1.14",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 3,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "prika",
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Duet burstFirst confirmed live in MiKa recording",
+      "date": "2026-07-14",
+      "residual": "Total 0.82 cold residual",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "ada",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run E: 0.97-1.08; S1 \"Burst-3 casters\" scope fix from run-E video",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "d-killer-wife",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run G: 0.98-1.11; S2 hitCount parser-bug fix",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 3,
+        "within3pct": 2
+      },
+      "reference": false
+    },
+    {
+      "slug": "diesel-winter-sweets",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run D: 1.01-1.06",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "ein",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run E: 0.89-0.98; orb gauge from datamined arena data",
+      "date": "2026-07-13",
+      "residual": "U8 lists an older 0.71-0.76 read — worth an ein-focus recording",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "emma-tactical-upgrade",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run D: 1.00-1.07",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 2
+      },
+      "reference": false
+    },
+    {
+      "slug": "little-mermaid",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": true,
+      "evidence": "T3/T6 ~1.0, run H 1.03; Q1-family exempt-proc calibration",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 5,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "mast-romantic-maid",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": true,
+      "evidence": "T1 0.95-1.06; Hangover-gate recalibration",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "mint",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run A; release-latency landed 1.21->0.91; duet mode fix",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "nayuta",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "T5 wind-weak 0.86-1.03 (A5)",
+      "date": "2026-07-13",
+      "residual": "High run-to-run variance",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "velvet",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Hand-verified vs a real scope-lock run (T5 wind-weak); 1.50 -> 1.05",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "milk-blooming-bunny",
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run G + N10 focus: 0.56-0.73",
+      "date": "2026-07-14",
+      "residual": "~0.7 is an ACCEPTED DECISION (poor auto-play) — validated-by-decision, not tuned to 1.0",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "guillotine-winter-slayer",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run H slot-5 + N8 focus: 1.21-1.34",
+      "date": "2026-07-14",
+      "residual": "PARTIAL — burst DoT + Hero-Level auras measured accurate, but normal-fire ~26% hot, NOT refit (U8; suspect datamined MG param)",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "vesti-tactical-upgrade",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N8 unfocused: 3.23",
+      "date": "2026-07-14",
+      "residual": "Burst bucket blown out; needs a vesti-focus recording",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "arcana-fortune-mate",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N5 unfocused: 1.88",
+      "date": "2026-07-14",
+      "residual": "Normals bucket drives it; unfocused — a focus recording is batched",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "chisato",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run I stable comp: 1.21-1.26",
+      "date": "2026-07-13",
+      "residual": "Real modeling error, untuned",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "grave",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run I: 1.19-1.23",
+      "date": "2026-07-13",
+      "residual": "Mild B3 heat, untuned",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "phantom",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N10 focus: 1.28",
+      "date": "2026-07-14",
+      "residual": "Untuned (NOT enikk-supported)",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "quency-escape-queen",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run H / N: 0.77-0.86",
+      "date": "2026-07-14",
+      "residual": "Cold; owns a timing-rule regression, untuned",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "dorothy",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N electric: 0.62",
+      "date": "2026-07-14",
+      "residual": "Coldest reading, model short (NOT enikk-supported)",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "soda-twinkling-bunny",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N3: 0.77",
+      "date": "2026-07-14",
+      "residual": "Chip-economy model, untuned",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "tia",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run C: 1.09-1.25",
+      "date": "2026-07-13",
+      "residual": "20s-CD structural fix from owner knowledge, but damage hot; charge-class open (U12)",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "modernia",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N2: 0.90",
+      "date": "2026-07-14",
+      "residual": "Single read, confounded by that comp FB-count anomaly",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "snow-white",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": true,
+      "evidence": "N4 confounded: 1.11",
+      "date": "2026-07-13",
+      "residual": "DPS-chart FILLER control — control-trusted for its minimal team buffs, but own calibration is thin (one confounded read)",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "2b",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded in a recorded fight",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "ade-agent-bunny",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded; a focus A/B is batched",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "arcana",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — audit/review language only, not fight-validated",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "ark-ranger-black",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "asuka-wille",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "asuka",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "chime",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "drake",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "elegg-boom-and-shock",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — untested, serves pre-patch numbers",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "eve",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — audit/review language only, not fight-validated",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "exia",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "laplace",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — bare override, never validated",
+      "graded": {
+        "teams": 1,
+        "within3pct": 1
+      },
+      "reference": false
+    },
+    {
+      "slug": "ludmilla-winter-owner",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "miranda",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "privaty-unkind-maid",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "raven",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "rosanna-chic-ocean",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "sakura-bloom-in-summer",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    },
+    {
+      "slug": "tove",
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — bare override, never validated",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false
+    }
+  ],
+  "reference_grade": {
+    "definition": "tuned=true AND final-total ratio within 0.97-1.03 on >=5 distinct teams (dedup by unit set; focus not required). Recompute with scripts/refgrade.ts when graded comps change.",
+    "count": 0,
+    "units": []
+  }
+}

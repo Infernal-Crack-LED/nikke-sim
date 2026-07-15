@@ -1,5 +1,6 @@
+import type { MouseEvent } from 'react';
 import type { Route } from './router';
-import { hrefFor } from './router';
+import { hrefFor, navigate } from './router';
 import { socials } from './site-data';
 import { BrandIcon } from './social-icons';
 import type { AuthUser } from './auth';
@@ -9,6 +10,15 @@ const NAV: { route: Route; label: string }[] = [
   { route: 'howto', label: 'How to' },
   { route: 'mechanics', label: 'Mechanics' },
 ];
+
+// Intercept left-clicks for in-app (pushState) navigation; let modified clicks
+// (open-in-new-tab, etc.) and the real href behave natively. Page links carry no
+// sim query params, so navigating to a page yields a clean URL.
+function navClick(e: MouseEvent, route: Route) {
+  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  e.preventDefault();
+  navigate(hrefFor(route));
+}
 
 // Slim top nav shared by every page. Left: the Sim / Mechanics tabs. Right: the
 // Patch Notes + Meet the dev page buttons and the Discord auth control.
@@ -31,6 +41,7 @@ export function SiteNav({
             <a
               key={n.route}
               href={hrefFor(n.route)}
+              onClick={(e) => navClick(e, n.route)}
               className={current === n.route ? 'on' : ''}
             >
               {n.label}
@@ -41,6 +52,7 @@ export function SiteNav({
           <a
             className={'nav-btn' + (current === 'patch-notes' ? ' on' : '')}
             href={hrefFor('patch-notes')}
+            onClick={(e) => navClick(e, 'patch-notes')}
           >
             Patch Notes
           </a>
@@ -49,12 +61,14 @@ export function SiteNav({
               'nav-btn' + (current === 'testing-requests' ? ' on' : '')
             }
             href={hrefFor('testing-requests')}
+            onClick={(e) => navClick(e, 'testing-requests')}
           >
             Testing Requested
           </a>
           <a
             className={'nav-btn' + (current === 'dev' ? ' on' : '')}
             href={hrefFor('dev')}
+            onClick={(e) => navClick(e, 'dev')}
           >
             Meet the dev
           </a>
@@ -108,7 +122,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className='site-footer-by'>
-        made by <a href={hrefFor('dev')}>Max</a> · NIKKE Solo Raid Sim
+        made by <a href={hrefFor('dev')} onClick={(e) => navClick(e, 'dev')}>Max</a> · NIKKE Solo Raid Sim
       </div>
     </footer>
   );

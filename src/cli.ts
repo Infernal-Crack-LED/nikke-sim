@@ -30,7 +30,7 @@ function usage(msg?: string): never {
 options:
   --element <Fire|Water|Wind|Electric|Iron>   boss element (default: none — no elemental advantage)
   --doll <yes|no,...>   doll per slot, 1 or 5 comma-separated entries (default: no)
-  --ol <0|5,...>        overload gear level per slot, 1 or 5 entries (default: 0)
+  --ol <base5|0|5,...>  gear level per slot, 1 or 5 entries (default: base5 = scope-lock base gear)
   --level <n>           synchro level (default: 400)
   --copies <0-10>       dupes: 0-3 = limit breaks, 4-10 = core levels (default: 3 = MLB)
   --core-rate <0-1>     fraction of hits that strike a core (default: 0)
@@ -144,8 +144,8 @@ const cfg: SimConfig = {
   bossDef: opts['boss-def'] ? Number(opts['boss-def']) : 0,
   level: opts.level ? Number(opts.level) : 400,
   copies: opts.copies ? Number(opts.copies) : 3,
-  doll: false, // per-unit via --doll (defaults below)
-  ol: 0,       // per-unit via --ol
+  doll: false,     // per-unit via --doll (defaults below)
+  ol: 'base5',     // scope-lock base gear; per-unit via --ol (base5|0|5)
   coreHitRate: opts['core-rate'] ? Number(opts['core-rate']) : 0,
   rangeBonus: !opts.noRange,
   durationSec: opts.duration ? Number(opts.duration) : 180,
@@ -191,8 +191,10 @@ const unitOpts: UnitOptions[] = perSlot(opts.cubes as string, ',').map((cubeSpec
 
 perSlot(opts.ol as string, ',').forEach((spec, i) => {
   if (spec === undefined) return;
-  if (spec !== '0' && spec !== '5') usage(`--ol entries must be 0 or 5 (got "${spec}")`);
-  unitOpts[i].ol = spec === '5' ? 5 : 0;
+  const s = spec.toLowerCase();
+  if (s !== '0' && s !== '5' && s !== 'base' && s !== 'base5')
+    usage(`--ol entries must be base5, 0, or 5 (got "${spec}")`);
+  unitOpts[i].ol = s === '5' ? 5 : s === '0' ? 0 : 'base5';
 });
 
 perSlot(opts.doll as string, ',').forEach((spec, i) => {

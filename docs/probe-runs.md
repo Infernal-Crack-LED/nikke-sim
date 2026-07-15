@@ -1274,6 +1274,56 @@ Cold, sim under-predicts:
   lower-bound note for Maiden; the two contexts should be reconciled.
 - Milk: Blooming Bunny 0.73, Soda: Twinkling Bunny 0.77, Quency: Escape Queen 0.77.
 
-None of these were tuned in this pass — they are logged as the candidate list. Media (nine
-screenshots + nine videos) is retained in the probe folder; the per-unit ratio table lives in
-that folder's `probe.md`.
+### Tuning applied from this batch
+
+Every focused (middle-slot) unit was verified in the enikk top-100 supported set first, so each
+read is meta-valid. Two focused hot units were taken into popup-read tuning increments:
+
+- **Scarlet: Black Shadow — LANDED.** Her N3 popup read showed her charged-normal value is
+  correct (1.55M measured vs 1.60M sim), localizing her long-tracked ~1.23 heat to the proc set.
+  Her proc-cadence blend (all three procs every 6 shots) over-credited the burst-window
+  tripling; a sweep across both her fights lands hitCount 6→10, moving T1 1.18→1.00 and N3
+  1.31→1.07 with zero teammate/full-burst blast radius (her procs are self-damage that generate
+  no gauge). Snapshots regenerated; verify green.
+- **Guillotine: Winter Slayer — LOCALIZED, not refit.** Her burst DoT is level-11-scaled and
+  grades accurate, so her Hero-Level auras and effective level are correct; the ~26% heat is
+  uniform across both her comps and isolated to her normal fire. The near-infinite-uptime
+  instantReload charfix was ruled out (removing it moves her only ~5%). The residual points to a
+  datamined MG weapon parameter, which is not popup-readable and needs a reference-sim recheck —
+  applying a blind normal scalar would violate the evidence discipline, so it is logged as a
+  sharpened open item (open-questions U8) instead.
+
+The cold reads were confirmations, not bugs: **milk-blooming-bunny 0.73** re-confirms the
+accepted "poor auto-play ~0.7" DECISION, and **privaty 1.58** is already calibrated (0.97 on T4)
+— her N5 heat is Arcana: Fortune Mate's team buff inflating the whole side (Arcana is unfocused
+here, so not tunable from this batch). Media (nine screenshots + nine videos) is retained in the
+probe folder; the per-unit ratio table lives in that folder's `probe.md`.
+
+## Frame-comparison validations (2026-07-14) — buckets & crit on real popups
+
+Using the new video toolchain (`scripts/probe/`: hit-values, frames, classify, parsed) on existing
+recordings, to confirm mechanics rather than tune units.
+
+**Multiplicative bucket model — CONFIRMED (maiden solo, docs/probe-data/maiden-solo.json).** Fielded
+alone (no Full Burst, no buffs) maiden's values are fixed, so the bucket math is exact. Her damage
+rider (547.62%) reads non-crit **437,296** and crit **655,945** = **×1.5000 exactly** → the crit
+multiplier is a clean ×1.5, and her rider CRITS (matches ginmy's DoT test; the engine already crits
+flatDamage procs). Cross-hit-type check: (proc real ÷ proc sim) = 437296/463341 = **0.9438**, and
+(normal-core real ÷ normal-core sim) = 244753/(129665×2) = **0.9438** — IDENTICAL across a proc and a
+cored normal. That coincidence only holds if crit (×1.5), core (×2) and the base are INDEPENDENT
+MULTIPLICATIVE buckets (an additive/interacting model would give different factors per hit type). So
+the multiplicative-bucket formula is validated on real data.
+
+**Maiden-ice-rose value check — CORRECTED, no error (methodology note).** A first pass claimed her
+values read 0.944× (6% over); that was WRONG — it compared a mid-fight real popup to the sim's
+crit-EXPECTATION value (463,341 = non-crit 431,015 × 1.075, the expected-value-mode form that folds
+crit rate in), not the non-crit INSTANCE. Against the correct non-crit sim value (Monte-Carlo mode):
+proc non-crit 437296/431015, proc crit 655945/646523, normal-core 244753/(120618×2) — ALL = **1.0146**,
+a uniform ~1.5% UNDER, inside the ±3% noise floor. So her per-hit VALUES are correct; her only real
+deficit is proc CADENCE (~0.68 fire frequency, comp F). Lesson (reinforces probe-processing): compare
+popups to the NON-CRIT single-instance value, never the DBG expected-value line (which pre-folds crit).
+
+**Auto core-hit is weapon-dependent — CONFIRMED (per-weapon scan).** Red "CORE HIT" fraction of NORMAL
+popups across focused recordings: MG (crown), SR (liberalio), RL (maiden) core ~near-100%; AR
+(snow-white), SMG (little-mermaid) mixed ~0.7-0.9. Drove the AUTO_CORE_RATE weapon-indexed refit
+(MG/SR/RL=0.95, AR/SMG/SG=0.85; DECISIONS + open-questions A15).

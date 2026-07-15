@@ -37,9 +37,68 @@ effectiveAtk = staticAtk × (1 + Σ ATK ▲ % / 100)
 ```
 
 - `staticAtk` — the unit's out-of-combat attack: level-table base for its class × grade/core
-  multipliers + gear (`src/stats.ts`). At scope lock (sync 400, 3★ core 7, no doll, OL0) this is
-  **Attackers 120,143 / Supporters 100,130 / Defenders 80,118** — MEASURED to be the value combat
-  actually uses (the battle-records screen shows a different, non-combat number).
+  multipliers + gear (`src/stats.ts`). At scope lock (sync 400, 3★ core 7, no doll, **Base 5
+  gear**) this is **Attackers 118,027 / Supporters 98,367 / Defenders 78,707**. (BASIS CORRECTED
+  2026-07-14: scope lock uses the base manufacture gear set, NOT OL0 — the old OL0 values
+  120,143 / 100,130 / 80,118 were ~1.76% high across the board. The prior popup "exact" matches
+  against the OL0 numbers are flagged for re-check at the Base 5 basis. See DECISIONS.)
+
+### Damage formula — buckets & per-type applicability (sourced 2026-07-14)
+
+Triple-validated across ENG/JP/KR (nikke.gg; JP empirical tests ginmy.net; KR arca.live) — full
+source list in `docs/handoffs/2026-07-14-damage-buckets-and-ginmy.md`. Damage is a **product of
+independent multiplicative buckets**; same-type buffs **add within** a bucket, different buckets
+**multiply**. THE ENGINE (`dealDamage`) ALREADY MATCHES THIS:
+
+```
+finalATK = staticAtk × (1 + Σ ATK%)  +  Σ("% of caster's ATK" flat)  +  Σ(HP→ATK flat)
+dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts INSIDE the base, pre-coef
+    × major   [1 + crit + core + fullBurst(0.5) + range(0.3)]  ← ADDITIVE within (core does NOT ×crit)
+    × element [1 + 0.1 advantage + elem-dmg buffs]
+    × charge  [charged shots only]
+    × dmgUp   [1 + attackDamage + sustained + pierce + parts + …]   "Damage Up"
+    × taken   [1 + damageTaken(enemy) + distributed]
+```
+
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+  the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
+  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
+  (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
+- **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
+  separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
+  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  yet modeled, low priority.
+- **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+  `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
+  `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
+- **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
+
+| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
+|---|---|---|---|---|---|---|---|
+| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
+| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
+| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
+| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
+| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+
+\* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
+does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
+
+**OPEN ENGINE ISSUE:** DoT crit/core are gated by env-only `XCRIT`/`XCORE` (empty default), so DoT
+ticks **never crit** in normal runs — but DoTs DO crit. Now **empirically confirmed** by ginmy.net's
+DoT test (/nikke_dot_test): DoT observed critting ~47% with elem-advantage+crit vs ~10% elem-only,
+and the worked Mana example reconstructs a tick as `(ATK×1.9936 − 100 DEF) × 3.24 DoT × 1.5 FB ×
+crit/elem` — DoT gets ATK/element/FB/**crit** and subtracts DEF, but **NOT** the distance bonus
+(engine's `noRange:true` on DoT ✓). (An OUR-footage read was attempted but proved inconclusive —
+DoT/proc popups entangle with the unit's normals by value; the `scripts/probe/hit-values.ts` table
+exposed the misattribution. A clean isolation is tooled but pending — see open-questions U13.) This
+is a systematic under-credit the DoT roster's values were calibrated to absorb; remaining work is the
+engine flip in `dealDamage`'s DoT/proc paths + a DoT-roster recalibration (offsetting errors — high
+blast radius), as a dedicated owner-greenlit increment. See open-questions U13 + handoff.
+
 - Plain **ATK ▲ %** buffs sum into one multiplier on staticAtk (they dilute against each other).
 - **"ATK ▲ X% of caster's ATK"** buffs convert at application time to a flat add of the caster's
   final ATK × X — they do not dilute (this is why high-ATK buffers are strong).
@@ -63,8 +122,11 @@ Crit  = critRate × critBonus         (expected-value mode)
 Core  = coreExposure × AUTO_CORE_RATE × coreBonus    (expected-value mode)
       | coreBonus or 0, Bernoulli(coreExposure × AUTO_CORE_RATE)   (Monte Carlo mode)
         coreExposure = cfg.coreHitRate (1.0 on the scope-lock boss)
-        AUTO_CORE_RATE = 0.85 ⚑ — auto-aim's reticle floor makes a fraction of shots land
-              off-core even at full exposure (CALIBRATED; a standing refit candidate)
+        AUTO_CORE_RATE ⚑ — WEAPON-CLASS-INDEXED (2026-07-14 refit, was flat 0.85):
+              MG/SR/RL = 0.95, AR/SMG/SG = 0.85. Auto-aim's reticle floor keeps a fraction
+              of shots off-core; the reliable auto classes (MG warmed / SR / RL) core
+              ~near-100%, accuracy-gated classes lower (footage scan + JP research + board
+              MAE sweep; open-questions A15 / DECISIONS). CORERATE=flat reverts. Still ⚑.
         coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100   (base +100%)
 ```
 

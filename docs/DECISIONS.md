@@ -86,6 +86,46 @@ lives. Newest first within each section.
 
 ## Measured mechanics (video/frame evidence — reversing needs new footage)
 
+- **(2026-07-14) The Full Burst +50% is a TIMING/snapshot gate, not a damage-type rule (JP+KR research,
+  empirical both sides).** An instance gets +50% iff it is evaluated while the Full Burst STATE is live;
+  the +50% is additive inside the Major-Modifiers bracket (with crit/core/range). Per type: normal fire
+  → FB (live per-frame); **burst INSTANT/front cast damage → NO FB** (snapshots at use-time, before FB
+  flips on — KR measured Cinderella front-hit; matches U10); **additional/function damage (procs/riders)
+  → FB** by activation timing, but never core/range (KR: Cinderella additional dmg + nikke.gg asterisks;
+  liberalio ×1.333); **DoT/sustained → FB** (JP MEASURED: ginmy Mana DoT 297,240 = predicted-with-×1.5);
+  distributed → like additional EXCEPT **Modernia's Paradise Lost = no crit/FB** (only genuine type-
+  exemption). Range (+30%) stays skills-never. IMPLICATION: `FBRULE=timing` (sim.ts `skillNoFb`) is the
+  correct rule; the 6 per-kit `noFb` flags (little-mermaid, privaty, jill, maiden-ice-rose, eve, scarlet)
+  are calibration RELICS (as liberalio's was, removed when measured), grading the board only via
+  offsetting errors. NOT yet flipped — a blanket `timing` default destabilizes those 6 calibrated units;
+  landing is a per-unit re-audit increment (remove noFb, fix the compensating over-model, re-grade), like
+  the liberalio re-tune. Framework: `scripts/probe/fb-range-lab.ts` + FBRULE knob (open-questions U14).
+- **(2026-07-14) Auto-aim core rate is WEAPON-CLASS-INDEXED, not a flat 0.85 (⚑ refit).** MG/SR/RL =
+  0.95, AR/SMG/SG = 0.85 (sim.ts `acrFor`). A per-weapon focused-footage scan (open-questions A15)
+  read MG (crown), SR (liberalio), RL (maiden) coring ~near-100% (red "CORE HIT" ~every normal shot)
+  vs AR (snow-white) / SMG (LM) mixed ~0.7-0.9; JP research (note.com reticle study, ore-game,
+  arca.live) independently says the reliable auto classes core ~0.95-1.0 while AR/SMG/SG are
+  accuracy/range-gated. An MAE sweep on the graded board sets the MG/SR/RL value at 0.93-0.95 (the
+  ~12.5px auto reticle floor + wind-up shots keep it below 100%), improving board MAE 0.1331→0.130 and
+  within-10% 56%→60% with no per-unit recalibration. FB counts unchanged (core rate ≠ rotation);
+  snapshots regenerated. Still ⚑ (calibrated) — a precise per-shot count or the geometric reticle model
+  refines it. DoT/rider crit was investigated alongside (ginmy + maiden footage confirm the mechanic)
+  but NOT flipped: net-neutral on board MAE and it double-counts measured-dot units (e.g. guillotine's
+  DoT is popup-measured) — held as a default-off `DOTCRIT` knob pending a per-unit de-crit recalibration.
+- **(2026-07-14) The scope-lock boss's DEF is negligible; `bossDef: 0` stands.** Enemy DEF in
+  NIKKE is a small FLAT, subtractive value (min-1 damage floor), applied inside the base term
+  before the skill coefficient — `dmg = max(0, effectiveATK − bossDEF) × atkPct × …`. ginmy.net's
+  def test (empirical, /nikke_def_test) measures Union-Training mobs at DEF 100 and boss-type
+  enemies at ≈140. At scope-lock effective ATK (~78,707–118,027 base5, higher with buffs) a DEF of
+  140 moves any unit's total by ≤0.12% — an order of magnitude under the ~3% single-run
+  repeatability floor. Independently, our clean **datamined-coefficient** popups already matched the
+  sim to ≤0.3% at `bossDef:0` (cinderella rocket 121,124 = 32.11%×…; opening popups 99.7% on four
+  classes), which bounds the DEF from OUR ACTUAL raid recordings to |DEF| < ~240. Both lines agree.
+  `scripts/battery/boss-def.ts` sweeps DEF and confirms the board only shifts materially above
+  ~2000–5000, which is ruled out. Setting `bossDef` to 140 is "more correct" but changes every
+  snapshot by <0.2% (below noise) and is deferred to the owner. — ginmy def test + our popup bounds
+  + boss-def battery; engine DEF placement (baseAtk subtraction) confirmed correct by ginmy
+  atkbuff/atkdamagebuff tests (+ATK inside the paren, charge & skill mult outside).
 - **(2026-07-13) Generation is LOCKED during Full Burst.** An in-FB-generation interpretation was
   briefly adopted from bar-anatomy curves and corrected by the owner the same day: the fast post-FB
   refill is charge units releasing held full charges right after the boundary + normal team rates.
@@ -138,9 +178,20 @@ lives. Newest first within each section.
 - **(2026-07-13) Full-burst counts are cooldown/chain arithmetic and deterministic run-to-run**;
   the graded comps are pinned as regression asserts (run B 11, run I 13, run E 11-12, run G
   13-14) in `scripts/regression.ts`. — battery 3 rotation work.
-- **(2026-07-13) Combat ATK truth is the sim's staticAtk** (Attackers 120,143 / Supporters
-  100,130 / Defenders 80,118 at scope lock), NOT the battle-records displayed ATK. Video-verified
-  twice. — u8 videos; memory.
+- **(2026-07-14) Scope lock uses BASE 5 gear, not OL0 — the validation basis is corrected.**
+  The owner measured the in-game scope-lock gear set (docs/data/gear-doll.md "Base 5"): its ATK is
+  ~1.76% below the OL0 T10 set the sim had been using. Adding `'base5'` as a gear level (src/stats.ts,
+  the `ol` field now `GearLevel = 'base5' | 0 | 5`) and pointing every scope-lock config at it drops
+  every unit's staticAtk uniformly −1.76% (Attackers 120,143→**118,027**, Supporters 100,130→**98,367**,
+  Defenders 80,118→**78,707**) and every damage total −1.76%. A global recalibration, not a per-kit
+  retune (relative accuracy unchanged; the board just reads 1.76% colder). CONFLICT/FOLLOW-UP: the
+  prior "video-verified exact" popup matches against the OL0 staticAtk (e.g. cinderella 80,118) now
+  disagree with Base 5 by 1.76% — those verifications either weren't precise to that margin or need
+  redoing at the corrected basis. — owner in-game measurement 2026-07-14.
+- **(2026-07-13, SUPERSEDED by the Base 5 correction above) Combat ATK truth is the sim's staticAtk**
+  (was Attackers 120,143 / Supporters 100,130 / Defenders 80,118 at scope lock — now the Base 5
+  values), NOT the battle-records displayed ATK. Video-verified twice (against the OL0 numbers).
+  — u8 videos; memory.
 - **(2026-07-13) Damage popups on screen belong ONLY to the camera-focused unit** (including damage
   RECEIVED by that unit's own summons, e.g. boss hits on cinderella's Decoy). Value-coincidence
   attribution across units is forbidden — it burned us twice. — u8 processing; owner corrections.
@@ -220,7 +271,8 @@ lives. Newest first within each section.
   path byte-identical when unset (web UI stays deterministic). Seed contents: crit/core Bernoulli
   rolls, boss transition jitter ±2s, chain-gap jitter — chosen to mirror the owner's two real
   variance sources (crits, boss movement timing). — types.ts; experiment.ts SEEDS mode.
-- **(2026-07-12/13) Validation basis is the scope-lock preset** (no cube, no doll, OL0, 3★ core 7,
+- **(2026-07-12/13; gear corrected 2026-07-14) Validation basis is the scope-lock preset** (no
+  cube, no doll, **Base 5 gear** [not OL0 — see the Base 5 correction], 3★ core 7,
   sync 400, 10/10/10, treasure on, partless boss, full auto, 180s), repeatability 0.5–3.5%/unit —
   deltas under ~5% are noise; the ±3% per-unit goal therefore requires multi-run averages with a
   declared focus unit. — memory; owner methodology discussion.

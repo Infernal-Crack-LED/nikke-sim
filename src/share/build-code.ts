@@ -11,7 +11,7 @@ export interface SlotBuild {
   slug: string | null;
   cubeId: string; // 'resilience' | 'bastion' | 'other' | 'none'
   cubeLevel: number;
-  ol: 0 | 5;
+  ol: 'base5' | 0 | 5; // gear level; 'base5' = scope-lock base gear
   doll: boolean;
   stars: number; // 0-3
   core: number; // 0-7

@@ -111,11 +111,11 @@ export function runOnce(w: World, team: BatteryTeam, boss: Element | null, coreH
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
   for (const s of team.slugs) overrides[s] = loadOverride(s);
   const unitOpts: UnitOptions[] = team.slugs.map((slug) => ({
-    doll: false, ol: 0, mode: team.modes?.[slug], lambdaStage: team.lambda?.[slug],
+    doll: false, ol: 'base5', mode: team.modes?.[slug], lambdaStage: team.lambda?.[slug],
   }));
   const cfg: SimConfig = {
     slugs: team.slugs, bossElement: boss, bossDef: 0, level: 400, copies: 10,
-    doll: false, ol: 0, coreHitRate, rangeBonus: true, durationSec: 180, seed,
+    doll: false, ol: 'base5', coreHitRate, rangeBonus: true, durationSec: 180, seed,
   };
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels: w.skillLevels, cubes: w.cubes, olLines: w.olLines });
   return runSim(chars, w.mult, cfg, prepared);

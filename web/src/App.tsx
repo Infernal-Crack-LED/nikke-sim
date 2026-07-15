@@ -19,6 +19,7 @@ import {
   type Canvas2DLike,
 } from '../../src/share/teamCard';
 import { DpsChartTab } from './DpsChartTab';
+import { navigate } from './router';
 import { MatrixChart } from './components/MatrixChart';
 import { DpsBarChart } from './components/DpsBarChart';
 import { copyDpsChartImage } from './shareImage';
@@ -66,10 +67,19 @@ const CALC_TABS: { key: CalcTab; label: string }[] = [
   { key: 'character', label: 'Character Calc' },
 ];
 
-// scope-lock loadout (per-unit): no cube, no doll, OL0, 3★ / 7 core, 10/10/10.
+// Which tab the current URL selects. The first path segment is authoritative
+// (/dpschart, /team, …; / = Sim); a legacy `?chart=` deep link (a shared
+// DPS-chart cell) still implies the DPS Chart tab; else Sim.
+function tabFromLocation(): CalcTab {
+  const seg = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
+  if (seg && CALC_TABS.some((x) => x.key === seg)) return seg as CalcTab;
+  return new URLSearchParams(window.location.search).has('chart') ? 'dpschart' : 'sim';
+}
+
+// scope-lock loadout (per-unit): no cube, no doll, Base 5 gear, 3★ / 7 core, 10/10/10.
 // Applied to every unit in the DPS test so candidates compete on equal footing.
 const SCOPE_LOCK_LOADOUT: UnitOptions = {
-  ol: 0,
+  ol: 'base5',
   doll: false,
   stars: 3,
   core: 7,
@@ -156,7 +166,7 @@ interface SlotState {
   cubeId: CubeChoice;
   cubeLevel: number;
   cubeCustom: boolean;
-  ol: 0 | 5;
+  ol: 'base5' | 0 | 5; // gear level; 'base5' = scope-lock base gear
   doll: boolean;
   lambdaStage: 0 | 1 | 2 | 3; // Λ units only; 0 = auto (any stage)
   stars: number; // Limit Break stars / grade 0-3
@@ -676,9 +686,24 @@ export function App({ user }: { user: AuthUser | null }) {
   const [imaged, setImaged] = useState(false);
   const [showOlCalc, setShowOlCalc] = useState(false);
   const [olTier, setOlTier] = useState(11); // best-OL calc tier (default 11)
-  const [tab, setTab] = useState<CalcTab>(() =>
-    new URLSearchParams(window.location.search).has('chart') ? 'dpschart' : 'sim',
-  );
+  const [tab, setTab] = useState<CalcTab>(() => tabFromLocation());
+  // Switch tab AND reflect it in the URL path (/dpschart, …) so the view is
+  // hyperlinkable and the server can serve tab-specific embed metadata. Uses the
+  // same path-based navigate() as the top-level pages (one routing strategy app
+  // wide); existing query deep-links (team/chart/cmp/b) are preserved; Sim uses
+  // the bare path "/".
+  const selectTab = (key: CalcTab) => {
+    setTab(key);
+    const u = new URL(window.location.href);
+    u.pathname = key === 'sim' ? '/' : `/${key}`;
+    navigate(u.pathname + u.search + u.hash);
+  };
+  // Keep the tab in sync when the user navigates back/forward.
+  useEffect(() => {
+    const onPop = () => setTab(tabFromLocation());
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
   const [blocked, setBlocked] = useState<string[]>([]); // don't-own / excluded
   const [calcChar, setCalcChar] = useState<string | null>(null); // Character Calc
   const [calcBusy, setCalcBusy] = useState(false);
@@ -755,9 +780,9 @@ export function App({ user }: { user: AuthUser | null }) {
     return slots.every(pred);
   };
 
-  // "scope lock" preset: no cubes, no doll, OL0 gear, 3★/7 core, 400 synchro
+  // "scope lock" preset: no cubes, no doll, Base 5 gear, 3★/7 core, 400 synchro
   const applyScopeLock = () => {
-    setAll({ cubeId: 'none', doll: false, ol: 0, stars: 3, core: 7 });
+    setAll({ cubeId: 'none', doll: false, ol: 'base5', stars: 3, core: 7 });
     setLevel('400');
   };
 
@@ -1331,17 +1356,31 @@ export function App({ user }: { user: AuthUser | null }) {
               </button>
             </div>
           )}
-        <div className='card-group-label'>gear</div>
+        <div
+          className='card-group-label'
+          title='Gear set. Base 5 = scope-lock base gear (the sim’s validation basis); OL 0 / OL 5 = Full T10 overload set at overload level 0 / 5.'
+        >
+          gear
+        </div>
         <div className='pills small'>
+          <button
+            className={slot.ol === 'base5' ? 'on' : ''}
+            onClick={() => onChange({ ol: 'base5' })}
+            title='Scope-lock base gear — the real validation basis (lower ATK than OL 0)'
+          >
+            Base 5
+          </button>
           <button
             className={slot.ol === 0 ? 'on' : ''}
             onClick={() => onChange({ ol: 0 })}
+            title='Full T10 overload set, 0 overload lines'
           >
             OL 0
           </button>
           <button
             className={slot.ol === 5 ? 'on' : ''}
             onClick={() => onChange({ ol: 5 })}
+            title='Full T10 overload set, overload level 5'
           >
             OL 5
           </button>
@@ -1650,7 +1689,7 @@ export function App({ user }: { user: AuthUser | null }) {
           <>
           <p className='muted'>
             A fixed <b>control group</b> (3 or 4 nikkes) — scope-locked (no cube /
-            no doll / OL0 / 3★ · 7 core · lvl 400) — plus swap-in variable groups
+            no doll / Base 5 gear / 3★ · 7 core · lvl 400) — plus swap-in variable groups
             you configure with the <b>full per-character cards</b>. Boss options
             come from the teamwide row above.
           </p>
@@ -1915,7 +1954,7 @@ export function App({ user }: { user: AuthUser | null }) {
             <button
               key={t.key}
               className={tab === t.key ? 'on' : ''}
-              onClick={() => setTab(t.key)}
+              onClick={() => selectTab(t.key)}
             >
               {t.label}
             </button>

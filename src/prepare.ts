@@ -1,7 +1,7 @@
 // Turns per-unit loadout choices (cube, OL lines, skill levels) plus data files
 // into the engine's PreparedUnit inputs. Shared by the CLI and the web app —
 // both pass their own data objects, so this stays filesystem-free.
-import type { CharacterData } from './types.js';
+import type { CharacterData, GearLevel } from './types.js';
 import { MAX_SKILL_LEVELS, resolveSkills, type OverrideFile } from './skills/index.js';
 import type { SkillLevels, SlotLevelArrays } from './skills/scale.js';
 import type { CharacterSkills } from './skills/types.js';
@@ -14,7 +14,7 @@ export interface ExtraStat {
 export interface PreparedUnit {
   skills: CharacterSkills;
   extraStats: ExtraStat[];
-  ol?: 0 | 5;      // per-unit overload gear level (falls back to cfg.ol)
+  ol?: GearLevel;  // per-unit gear level (falls back to cfg.ol)
   doll?: boolean;  // per-unit doll (falls back to cfg.doll)
   lambdaStage?: 1 | 2 | 3; // Λ units only: burst ONLY at this stage (Red Hood "operating as BX")
   stars?: number;  // per-unit Limit Break stars / grade 0-3 (falls back to cfg.copies)
@@ -38,7 +38,7 @@ export interface LineSelection {
 
 export interface UnitOptions {
   cube?: { id: string; level: number }; // level 1-15
-  ol?: 0 | 5;
+  ol?: GearLevel;
   doll?: boolean;
   lambdaStage?: 1 | 2 | 3;
   stars?: number; // Limit Break stars / grade 0-3
@@ -90,7 +90,7 @@ export function prepareUnit(
 
   const extraStats: ExtraStat[] = [];
   const loadout: string[] = [];
-  if (opts?.ol !== undefined) loadout.push(`OL${opts.ol} gear`);
+  if (opts?.ol !== undefined) loadout.push(opts.ol === 'base5' ? 'Base 5 gear' : `OL${opts.ol} gear`);
   if (opts?.doll !== undefined && opts.doll) loadout.push('Doll 15');
   if (opts?.lambdaStage) loadout.push(`bursts as B${opts.lambdaStage}`);
   const mode = skills.modes?.length

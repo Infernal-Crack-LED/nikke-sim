@@ -1,0 +1,32 @@
+{
+  "video": "docs/probes/maiden solo neutral target probe.MP4",
+  "probeDir": "docs/probes",
+  "focus": "maiden-ice-rose",
+  "boss": null,
+  "comp": ["maiden-ice-rose"],
+  "params": {
+    "basis": "scope-lock base5",
+    "sync": 400,
+    "skillLevels": "10/10/10",
+    "gear": "base5",
+    "cube": "none",
+    "coreLevel": 7,
+    "treasure": true,
+    "bossPartless": true,
+    "durationSec": 104,
+    "focusReason": "SOLO field (only maiden) so NO Full Burst and no teammate buffs — the cleanest possible isolation of her 547.62% proc (rider) and RL normals; fixed value bands."
+  },
+  "extractedOn": "2026-07-14",
+  "method": "ffmpeg frames + contact sheets (portrait 1206x2622, no rotation). Values read against scripts/probe/hit-values.ts.",
+  "fightStartSec": 8,
+  "fightClock": false,
+  "notes": "RIDER-CRIT test — CONFIRMED. Solo/no-FB gives fixed value bands (hit-values): normal 129,665 (core 259,330), proc/rider 547.62% = 463,341. CLEAN RESULT: her proc reads 437296 (white, non-crit) and 655945 (orange + crit icon) = EXACTLY x1.5 (solo → no FB inflating the major, so a crit is a clean x1.5). So her DAMAGE RIDER CRITS — the clean on-footage confirmation LM/liberalio couldn't give (their bands entangle). Her RL NORMAL shows 'CORE HIT' (244753 ≈ sim normal-core 259,330) on essentially every shot → RL core rate ~near-100% (feeds the AUTO_CORE_RATE per-weapon scan, open-questions A15). Rider crit + ginmy's DoT test together settle: DoT/rider damage crits; engine's XCRIT gate is wrong (open-questions U13).",
+  "popups": [
+    { "t": 40.0, "value": 437296, "crit": false, "kind": "proc", "note": "white; 547.62% rider non-crit (sim 463,341)" },
+    { "t": 40.5, "value": 655945, "crit": true, "kind": "proc", "note": "ORANGE + crit icon; = 437296 x1.500 EXACTLY → rider CRIT" },
+    { "t": 41.0, "value": 244753, "crit": false, "core": true, "kind": "normal", "note": "red CORE HIT; RL normal core (sim 259,330)" },
+    { "t": 41.5, "value": 305941, "crit": true, "core": true, "kind": "normal", "note": "red CORE HIT + crit icon; normal core+crit" },
+    { "t": 42.0, "value": 437296, "crit": false, "kind": "proc" },
+    { "t": 42.5, "value": 655945, "crit": true, "kind": "proc", "note": "ORANGE crit again — repeatable" }
+  ]
+}

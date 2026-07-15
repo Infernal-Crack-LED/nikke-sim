@@ -21,14 +21,14 @@ const STATS = new Set([
 ]);
 const TRIGGERS = new Set([
   'passive', 'burstCast', 'fullBurstEnter', 'fullBurstEnd', 'hitCount', 'teamAmmo',
-  'shotFired', 'lastBullet', 'stageEnter', 'bossElement',
+  'shotFired', 'lastBullet', 'recovery', 'stageEnter', 'bossElement', 'chargeCounter',
 ]);
 const TARGETS = new Set([
   'self', 'allies', 'enemy', 'burstCasters', 'nonBurstCasters',
   'alliesTopAtk', 'alliesLowestAtk', 'alliesOfElement', 'alliesOfClass', 'alliesOfElementWeapon', 'selfAndAdjacent',
 ]);
 const EFFECTS = new Set([
-  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'burstEligibility', 'burstFirst', 'reenterStage',
+  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
   'instantReload', 'storedHit', 'stun', 'stackedNuke',
 ]);
@@ -107,7 +107,7 @@ function validate(slug: string): boolean {
   const chars = slugs.map((s) => data.characters[s] as any);
   const cfg: SimConfig = {
     slugs, bossElement: null, bossDef: 0, level: 400, copies: 3,
-    doll: false, ol: 0, coreHitRate: 0, rangeBonus: true, durationSec: 180,
+    doll: false, ol: 'base5', coreHitRate: 0, rangeBonus: true, durationSec: 180,
   };
   const prepared = chars.map((ch) => ({
     skills: resolveSkills(ch, loadOverride(ch.slug)),

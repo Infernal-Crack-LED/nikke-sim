@@ -74,3 +74,21 @@ SUP 5
 atk 7518 4783 1367
 hp 81969 266400 61477
 def 1091 1635
+
+Base 5 — the SCOPE-LOCK gear set (base manufacture gear, not overloaded). This is the real
+validation basis (owner-measured 2026-07-14); its ATK is ~1.76% below OL0. src/stats.ts models
+it as the 'base5' gear level. To get the real ATK, add the 3 atk numbers together.
+ATK
+atk 4849 3087 882
+hp 39663 29748 128905
+def 528 791
+
+DEF
+atk 3234 2057 588
+hp 48477 157548 36358
+def 645 967
+
+SUP
+atk 4041 2573 735
+hp 44070 33053 143227
+def 587 879

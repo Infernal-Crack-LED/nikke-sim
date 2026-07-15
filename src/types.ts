@@ -50,6 +50,10 @@ export interface DataFile {
 
 // ---- sim configuration ----
 
+// Gear set level. 'base5' = scope-lock base gear (default validation basis); 0/5 =
+// Full T10 overload set at OL0/OL5. See src/stats.ts GEAR_ATK + docs/data/gear-doll.md.
+export type GearLevel = 'base5' | 0 | 5;
+
 export interface SimConfig {
   slugs: string[];          // 5 slugs, slot order 1..5
   bossElement: Element | null;
@@ -57,7 +61,7 @@ export interface SimConfig {
   level: number;
   copies: number;           // 0-10 → grade = min(3, c), core = clamp(c-3, 0, 7)
   doll: boolean;
-  ol: 0 | 5;
+  ol: GearLevel;
   coreHitRate: number;      // 0..1, default 0
   rangeBonus: boolean;      // +0.3 major modifier
   durationSec: number;      // 180

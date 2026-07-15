@@ -1,0 +1,39 @@
+{
+  "video": "docs/probes/rrh probe/lib focus iron.mov",
+  "screenshot": "docs/probes/rrh probe/lib focus iron.png",
+  "probeDir": "docs/probes/rrh probe",
+  "focus": "liberalio",
+  "boss": "Iron",
+  "comp": ["mast-romantic-maid", "scarlet-black-shadow", "liberalio", "anis-star", "crown"],
+  "params": {
+    "basis": "scope-lock base5",
+    "sync": 400,
+    "skillLevels": "10/10/10",
+    "gear": "base5",
+    "cube": "none",
+    "coreLevel": 7,
+    "treasure": true,
+    "bossPartless": true,
+    "durationSec": 180,
+    "focusReason": "liberalio focused to read her 202.5% proc per-hit (function-damage-rider crit test); boss Iron gives liberalio (Water) no advantage — element x1.0"
+  },
+  "extractedOn": "2026-07-14",
+  "method": "ffmpeg contact sheets (overview 1/6s; FB-window zoom @30-35s fps=2 crop 760x420@960,180 x2). Read from stills.",
+  "fightStartSec": 8,
+  "fightClock": false,
+  "notes": "Function-rider crit test — INCONCLUSIVE (attribution corrected by scripts/probe/hit-values.ts). Colour convention (owner-confirmed 2026-07-14): orange + crit-icon = CRIT; red 'CORE HIT' = core; green = heal; damage pops at the CROSSHAIR, heals over the character. CORRECTION: the full hit-values table shows her 202.5% proc (base 1.13M-7.73M) and her 69% normal charge (base 1.13M-7.68M) OVERLAP almost entirely across the fight — so 1528543 CANNOT be pinned to the proc (it could be a low-buff normal). The orange 2038058 (=1528543 x1.333, a crit on an FB-raised major) is therefore a crit of SOME liberalio hit, but NOT provably her proc vs her (always-critting) normal. So this footage does NOT cleanly demonstrate function-rider crit. Red 'CORE HIT' hits (7405385, 2547572, 3017677) are normal-charge cores. To isolate the proc, need a window where proc and normal separate (they don't by value here) — or a different unit whose rider has a clean band (e.g. LM's DoT ~156-220k). ginmy dot_test remains the empirical basis. crit flags below = observed colour, NOT a hit-type attribution.",
+  "popups": [
+    { "t": 30.0, "value": 1528543, "crit": false, "kind": "proc", "note": "white; = 202.5% proc" },
+    { "t": 30.5, "value": 2038058, "crit": true, "kind": "proc", "note": "orange = 1528543 x1.3333 (crit? or FB bonus? — see notes)" },
+    { "t": 31.0, "value": 868824, "crit": false, "kind": "proc" },
+    { "t": 31.0, "value": 424853, "crit": false, "kind": "proc", "note": "white; possible 40.5% proc sub-hit" },
+    { "t": 31.5, "value": 1528543, "crit": false, "kind": "proc" },
+    { "t": 32.0, "value": 7405385, "crit": true, "core": true, "kind": "charge", "note": "red CORE HIT — normal charge core" },
+    { "t": 32.5, "value": 2547572, "crit": true, "core": true, "kind": "charge", "note": "red CORE HIT" },
+    { "t": 33.0, "value": 1528543, "crit": false, "kind": "proc" },
+    { "t": 33.5, "value": 3017677, "crit": true, "core": true, "kind": "charge", "note": "red CORE HIT" },
+    { "t": 34.0, "value": 763237, "crit": false, "kind": "proc", "note": "white" },
+    { "t": 34.5, "value": 566470, "crit": true, "kind": "proc", "note": "orange = 424853 x1.3333 (crit? or FB bonus?)" },
+    { "t": 34.5, "value": 424853, "crit": false, "kind": "proc" }
+  ]
+}

@@ -16,7 +16,8 @@ notes; unresolved items live in `docs/open-questions.md`; settled tradeoffs in
 - **CALIBRATED ⚑** — value fitted against our validated real fights; mechanism known or
   suspected but the number is ours. Every ⚑ is a standing refit candidate.
 
-Validation basis for all calibrations: scope lock (no cube, no doll, OL0, 3★ core 7,
+Validation basis for all calibrations: scope lock (no cube, no doll, Base 5 gear [not OL0 —
+corrected 2026-07-14], 3★ core 7,
 sync 400, 10/10/10, treasure on, partless boss, 100% core exposure, full auto, 180s).
 Real-run repeatability is 0.5–3.5% per unit (measured by running the same water-weak
 validation fight twice), so simulation-vs-real deltas under ~5% are noise.

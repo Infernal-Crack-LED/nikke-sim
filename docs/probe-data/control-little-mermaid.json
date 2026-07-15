@@ -1,0 +1,32 @@
+{
+  "video": "docs/probes/control/lm.MP4",
+  "screenshot": "docs/probes/control/lm.jpg",
+  "probeDir": "docs/probes/control",
+  "focus": "little-mermaid",
+  "boss": "Water",
+  "comp": ["little-mermaid", "crown", "helm", "snow-white"],
+  "params": {
+    "basis": "scope-lock base5",
+    "sync": 400,
+    "skillLevels": "10/10/10",
+    "gear": "base5",
+    "cube": "none",
+    "coreLevel": 7,
+    "treasure": true,
+    "bossPartless": true,
+    "durationSec": 180,
+    "focusReason": "control-frame calibration; LM focused to read her per-hit damage (neutral Water boss, all 4 units neutral, x1.10 element factored separately)"
+  },
+  "extractedOn": "2026-07-14",
+  "method": "ffmpeg contact sheets (overview 1/6s; FB-window zoom fps=2-3; full frames @44-51s). Read from stills with the owner-confirmed colour convention.",
+  "fightStartSec": 8,
+  "fightClock": false,
+  "notes": "DoT-crit test — INCONCLUSIVE (attribution corrected by scripts/probe/hit-values.ts). Colour convention (owner-confirmed): white=normal, orange+crit-icon=crit, red 'CORE HIT'=core, bright GREEN=HEAL (green here = Helm's B3 life-leech team heal, over the CHARACTER not the crosshair — NOT LM damage, discarded). CORRECTION: LM's value bands per hit-values are SMG normal 14k-68k, DoT (253.4% modelled; in-game 63.36% x4 = ~156k-220k per sub-hit), barrage/big ~2.25M+. So the 64733 popups I first tagged 'dot' are actually her NORMAL band, and 82714 (orange) is a NORMAL crit (normals always crit — not the test). The real DoT sub-hits (~156-220k) sit in a CLEAN band (above ≤68k normals, below ≥2.25M barrage) but were not isolated in this read. 450314 (orange) is too large for a DoT crit (likely a normal core-crit or barrage). Net: LM DoT crit NOT confirmed here; ginmy dot_test remains the empirical basis. Re-read needed targeting the ~156-220k band. Cyan numbers = boss hits on the focus unit's Crown shield (not LM damage).",
+  "popups": [
+    { "t": 45.0, "value": 33736, "crit": false, "kind": "normal", "note": "white; SMG normal band 14k-68k" },
+    { "t": 45.3, "value": 64733, "crit": false, "kind": "normal", "note": "white; NORMAL band (was mis-tagged dot)" },
+    { "t": 46.0, "value": 82714, "crit": true, "kind": "normal", "note": "ORANGE crit — but of a NORMAL (64733 x1.278), not the DoT" },
+    { "t": 46.6, "value": 108564, "crit": false, "kind": "normal", "note": "white; upper normal band / small overlap" },
+    { "t": 47.0, "value": 450314, "crit": true, "kind": "unknown", "note": "ORANGE crit; too large for DoT — normal core-crit or barrage" }
+  ]
+}

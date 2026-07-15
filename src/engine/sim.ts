@@ -33,6 +33,36 @@ const envSlugSet = (v?: string) => new Set((v ?? '').split(',').filter(Boolean))
 const XCRIT = envSlugSet(ENV.XCRIT);
 const XCORE = envSlugSet(ENV.XCORE);
 const XINSTEXPL = envSlugSet(ENV.XINSTEXPL);
+// DOTCRIT (2026-07-14): DoT ticks + stored-hit releases roll crit UNIVERSALLY. Mechanic confirmed —
+// DoT/function-rider damage crits (never cores): ginmy /nikke_dot_test + maiden-solo footage
+// (rider 437296 white / 655945 orange = ×1.5). flatDamage procs already crit by default (dealDamage
+// call ~920, see U1 note); this extends the same rule to the dot-tick (1479) and stored-release
+// (1259) paths, which were wrongly XCRIT-gated off. Default OFF pending the dot-tick roster recal;
+// DOTCRIT=on enables (measure blast radius, recalibrate, then flip the default). Core stays off.
+const DOT_CRIT = ENV.DOTCRIT === 'on';
+// FBRULE (2026-07-14): candidate HEURISTICS for when SKILL/rider/DoT damage gets the +50% Full Burst
+// major. (Range is settled — skills never get the +30% range bonus; noRange is universal.) The
+// default 'perkit' uses the calibrated per-unit noFb flags; other rules replace them with a GENERAL
+// rule so `scripts/probe/fb-range-lab.ts` can A/B-grade which rule best fits the measured ground truth
+// (ein feathers = FB-ON, liberalio proc = FB-ON, scarlet procs = FB-OFF, burst-cast nukes = FB-OFF).
+// Burst-cast damage is ALWAYS FB-exempt (U10, measured), regardless of rule.
+// DEFAULT = 'timing' (2026-07-15): FB is a TIMING/snapshot gate — any non-burst-cast skill/rider/DoT
+// landing during the FB window gets the +50% (JP+KR research, empirical both sides; see DECISIONS +
+// open-questions U14). The old per-kit `noFb` flags were calibration RELICS masking cadence over-models
+// on rider-dominant units; they've been retired (the 6 units re-tuned on this mechanism). ENV.FBRULE:
+//   perkit    : restore the old per-kit noFb flags (A/B only)
+//   dotfb / seqoff / noskillfb : experiment arms (see fb-range-lab.ts)
+// Burst-cast (instant) damage is ALWAYS FB-exempt (snapshots at use-time, before FB flips on).
+function skillNoFb(perKitNoFb: boolean, isBurstCast: boolean, flavor: string | undefined): boolean {
+  if (isBurstCast) return true; // burst-cast/instant damage lands before FB begins → never +50%
+  switch (ENV.FBRULE) {
+    case 'perkit': return perKitNoFb;
+    case 'dotfb': return flavor === 'dot' || flavor === 'sustained' ? false : perKitNoFb;
+    case 'seqoff': return flavor === 'sequential';
+    case 'noskillfb': return true;
+    default: return false; // 'timing' — FB by landing timing
+  }
+}
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
 const FULL_BURST_FRAMES = 10 * FPS;
 // AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
@@ -454,9 +484,20 @@ export function runSim(
   // semantics vary per unit (sometimes base, sometimes target, sometimes target x2).
   // full_charge_burst_energy column stored but unused ⚑ (both solo fits are exact
   // without it). Gauge = 10,000 energy (we track percent); locked during FB.
-  // ENV.ACR: experiment-only override for A/B sweeps (see experiment-harness-ai.md);
-  // the shipped value stays 0.85 ⚑ until a sweep + judge accepts a change.
-  const AUTO_CORE_RATE = ENV.ACR !== undefined ? Number(ENV.ACR) : 0.85;
+  // Auto-aim core rate is WEAPON-CLASS-INDEXED (2026-07-14 ⚑ refit, was flat 0.85). Three lines:
+  // (a) per-weapon focused-footage scan (open-questions A15) — MG/SR/RL core ~near-100%, AR/SMG ~0.85;
+  // (b) JP research (auto reticle floor ~12.5px, weapon/range-dependent, reliable classes ~0.95-1.0);
+  // (c) an MAE sweep on the graded board — MG/SR/RL=0.95 is the optimum (board MAE 0.1331→0.130,
+  // within-10% 56%→60%), beating the old flat 0.85. AR/SMG/SG stay 0.85 (they auto-aim less reliably).
+  // ENV.ACR overrides everything; CORERATE=flat reverts to the old flat 0.85 for A/B; CORERATEHI
+  // sweeps the MG/SR/RL value. Still ⚑ — a precise per-shot count or the geometric reticle model refines it.
+  const HI = ENV.CORERATEHI !== undefined ? Number(ENV.CORERATEHI) : 0.95;
+  const coreByWeapon = (weapon: string): number =>
+    (weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : 0.85;
+  const acrFor = (weapon: string): number =>
+    ENV.ACR !== undefined ? Number(ENV.ACR)
+    : ENV.CORERATE === 'flat' ? 0.85
+    : coreByWeapon(weapon);
   // Pierce core+body double-hit: community evidence is for MULTI-PART bosses; on the
   // partless test boss the A/B against run A says NO doubling (alice/RH overheat with it
   // once the decoded cadences are in). Kept as a switch for part-ed boss support later.
@@ -631,9 +672,10 @@ export function runSim(
       const coreBonus =
         (u.char.coreAttackMultiplier - 100) / 100 +
         (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
+      const acr = acrFor(u.char.weapon);
       major += rng
-        ? (rng() < cfg.coreHitRate * AUTO_CORE_RATE ? coreBonus : 0)
-        : cfg.coreHitRate * AUTO_CORE_RATE * coreBonus;
+        ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
+        : cfg.coreHitRate * acr * coreBonus;
     }
     // elemAdvantageDamagePct lives in the ELEMENT bucket (MEASURED 2026-07-14, battery 5:
     // privaty popup ratio 2.8244 vs Element-model 2.821 / DamageUp-model 1.995, three band
@@ -921,7 +963,7 @@ export function runSim(
             ...flavorOpts,
             charge: false,
             noRange: true, // riders never get the +30% range bonus (user rule, 2026-07-13)
-            noFb: e.noFb === true || (block.slot === 'burst' && block.trigger.kind === 'burstCast'),
+            noFb: skillNoFb(e.noFb === true, block.slot === 'burst' && block.trigger.kind === 'burstCast', e.flavor),
           });
           break;
         }
@@ -939,7 +981,9 @@ export function runSim(
             sequential: e.flavor === 'sequential',
             trueFlavor: e.flavor === 'true',
             noRange: e.noRange === true,
-            noFb: e.noFb === true,
+            // dots preserve original burst-cast handling (FB by e.noFb + timing, no auto-exempt) so
+            // 'perkit' is byte-identical; the heuristic rules still apply via the non-burst branch.
+            noFb: skillNoFb(e.noFb === true, false, e.flavor ?? 'dot'),
             projFlavor:
               e.flavor === 'projectileAttachment'
                 ? 'attachment'
@@ -968,6 +1012,16 @@ export function runSim(
         case 'fillGauge':
           // gauge is locked during full burst — fills landing then are wasted
           if (fbEndFrame <= frame) gauge = Math.min(100, gauge + e.pct);
+          break;
+        case 'heal':
+          // a heal has no modeled HP value; it emits a RECOVERY event to its targets,
+          // firing their 'recovery'-triggered blocks (heal-synergy kits — Helm's
+          // full-charge heal drives Crown's "when recovery takes effect → team ATK ▲").
+          for (const t of resolveTargets(block.target, ownerIdx)) {
+            t.blocks.forEach((rb, ri) => {
+              if (rb.trigger.kind === 'recovery') applyBlock(t.idx, rb, ri, frame);
+            });
+          }
           break;
         case 'storedHit': {
           const entry = owner.storedHits.get(key) ?? {
@@ -1247,7 +1301,7 @@ export function runSim(
               }
               if (entry.releasable > 0) {
                 dealDamage(u, entry.atkPct * entry.releasable, frame, {
-                  crit: XCRIT.has(u.char.slug),
+                  crit: DOT_CRIT || XCRIT.has(u.char.slug),
                   core: XCORE.has(u.char.slug),
                   charge: false,
                   category: entry.category,
@@ -1466,7 +1520,7 @@ export function runSim(
       if (frame === d.nextTickFrame && frame <= d.endFrame) {
         skillGauge(units[d.ownerIdx], frame); // dot ticks generate (wiki3: Haran 290/tick)
         dealDamage(units[d.ownerIdx], d.atkPct, frame, {
-          crit: XCRIT.has(units[d.ownerIdx].char.slug),
+          crit: DOT_CRIT || XCRIT.has(units[d.ownerIdx].char.slug),
           core: XCORE.has(units[d.ownerIdx].char.slug),
           charge: false, category: d.category,
           distributed: d.distributed, sustained: d.sustained, sequential: d.sequential,
@@ -1528,6 +1582,30 @@ export function runSim(
           applyBlock(u.idx, b, bi, frame);
         }
         u.hitCounters.set(key, c);
+      }
+      // chargeCounter: cycling per-full-charge phase counter (only full charges advance it).
+      // Fires ONE phase (block.effects[phase], in order) when its threshold accrues — `count`
+      // charges/phase outside Full Burst, `countInFb` (default 1) inside — so procs cluster into
+      // the FB window (SBS 3/6/9 → 1/2/3). The +50% FB is applied per-proc by dealDamage's timing.
+      else if (b.trigger.kind === 'chargeCounter' && charged) {
+        const pk = `cc${bi}p`, ck = `cc${bi}c`;
+        let phase = u.hitCounters.get(pk) ?? 0;
+        let charges = (u.hitCounters.get(ck) ?? 0) + 1;
+        // the lowered thresholds are a 10s SELF-buff from the owner's OWN burst cast
+        // (SBS burst: "Changes Full Charge attack count required for Skill 1 to 1/2/3 for 10s"),
+        // NOT the team Full Burst window — she doesn't burst every full burst.
+        const inBurst = frame - u.lastBurstCastFrame < 10 * FPS;
+        const thr = inBurst ? (b.trigger.countInFb ?? 1) : b.trigger.count;
+        if (charges >= thr) {
+          charges = 0;
+          const bKey = `${u.idx}:${b.slot}:${bi}`;
+          const activations = (u.blockActivations.get(bKey) ?? 0) + 1;
+          u.blockActivations.set(bKey, activations);
+          applyEffect(u.idx, b, b.effects[phase], `${bKey}:${phase}`, activations, frame);
+          phase = (phase + 1) % b.effects.length;
+        }
+        u.hitCounters.set(pk, phase);
+        u.hitCounters.set(ck, charges);
       }
     });
 

@@ -14,7 +14,7 @@
 // The tested unit sits in slot 0 so it is the leftmost B3 (wins the stage-3 cast
 // every rotation); Mast sits left of Crown so it is the preferred B2 when its
 // syncWithFocus gate opens.
-import type { Element, SimConfig } from '../types.js';
+import type { Element, GearLevel, SimConfig } from '../types.js';
 import type { LineSelection, UnitOptions } from '../prepare.js';
 
 // unit.element beats … (mirror of BEATS in engine/sim.ts). For "ele weak" the boss
@@ -162,7 +162,7 @@ export const FLOOR_SEED_COUNTS: Record<string, number> = { elem: 4, atk: 4 };
 
 interface TierOpts {
   cube?: { id: string; level: number };
-  ol: 0 | 5;
+  ol: GearLevel;
   doll: boolean;
   lines: LineSelection[];
 }
@@ -172,7 +172,7 @@ function tierLoadout(
   optimizedTestedLines?: LineSelection[],
 ): TierOpts {
   const cube = TIER_CUBE[invest];
-  if (invest === 'scope') return { cube, ol: 0, doll: false, lines: [] };
+  if (invest === 'scope') return { cube, ol: 'base5', doll: false, lines: [] };
   if (invest === '8of12') return { cube, ol: 5, doll: true, lines: [...FLOOR_LINES] };
   // 12of12
   const extra =
@@ -231,7 +231,7 @@ export function assembleTeam(
     level: 400,
     copies: 0, // per-unit stars/core win
     doll: false,
-    ol: 0,
+    ol: cell.invest === 'scope' ? 'base5' : 5, // fallback; per-unit opt.ol wins
     coreHitRate: CORES[cell.core].rate,
     rangeBonus: true,
     durationSec: 180,

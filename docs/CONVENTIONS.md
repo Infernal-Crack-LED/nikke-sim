@@ -13,9 +13,16 @@ Highest to lowest. A claim's tier determines what it takes to change it.
 - **CALIBRATED ⚑** — fitted against validated real fights; mechanism suspected but the number is
   ours. Every ⚑ is a standing refit candidate and should be listed in open-questions.
 
+Which UNITS carry which tier (the authoritative per-kit tuned/untuned record) lives in
+[hand-tuned.md](hand-tuned.md) + [`data/hand-tuned.json`](../../data/hand-tuned.json) (`tuned:true`
+= measured/calibrated/validated against a real fight; `MODEL_ONLY` = untuned). Tooling reads the
+JSON — the hand-tune recording batch only draws control-group supports from tuned units. Every
+tuning change updates that record as part of the change.
+
 ## Validation methodology
 
-- All real runs use the **scope-lock preset**: no cube, no doll, OL0, 3★ core 7, sync 400, skills
+- All real runs use the **scope-lock preset**: no cube, no doll, Base 5 gear (not OL0 — corrected
+  2026-07-14, see DECISIONS), 3★ core 7, sync 400, skills
   10/10/10, treasure on, partless boss, 100% core exposure, full auto, 180s.
 - Single-run repeatability is 0.5–3.5% per unit → deltas under ~5% are noise. The ±3% per-unit
   goal is judged against **multi-run averages** with a **declared camera-focus unit** (focus

@@ -42,9 +42,15 @@ export type TriggerDef =
   | { kind: 'fullBurstEnter' }              // when full burst begins
   | { kind: 'fullBurstEnd' }
   | { kind: 'hitCount'; count: number }
+  | { kind: 'chargeCounter'; count: number; countInFb?: number } // cycling per-full-charge phase counter:
+  // each full charge advances a phase counter; phase P fires (block.effects[P], in order) once its
+  // threshold accrues — `count` charges per phase outside Full Burst, `countInFb` (default 1) inside.
+  // Models kits like Scarlet: Black Shadow whose proc thresholds drop during FB (3/6/9 → 1/2/3),
+  // clustering procs into the burst window; the +50% FB then applies per-proc by landing timing.
   | { kind: 'teamAmmo'; count: number } // fires each time TOTAL ally ammo consumed crosses count (infinite-ammo shots don't consume)     // every N normal-attack hits by the owner
   | { kind: 'shotFired' }                   // every trigger pull by the owner
   | { kind: 'lastBullet' }                  // on the owner's last bullet / reload start
+  | { kind: 'recovery' }                    // when the owner RECEIVES a heal (a 'heal' effect targets them) — Crown's "when recovery takes effect"
   | { kind: 'stageEnter'; stage: 1 | 2 | 3 } // when a stage-N burst is cast by anyone
   | { kind: 'bossElement'; element: string } // permanent, but only if the boss has this element
   | { kind: 'unsupported'; raw: string };
@@ -109,6 +115,7 @@ export type EffectDef =
                                 // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
     }
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
+  | { kind: 'heal' }                                          // emits a recovery event to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown)
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
       atkPct: number;    // per charge, % of caster's final ATK at release time

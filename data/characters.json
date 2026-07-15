@@ -1,51 +1,6 @@
 {
  "syncedAt": "2026-07-14T21:03:27.706Z",
  "characters": {
-  "rapunzel": {
-   "slug": "rapunzel",
-   "name": "Rapunzel",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/ll-17/ey-21/7e512770f18ff077a43b3c47f8dd630b.png",
-   "weapon": "RL",
-   "burst": "I",
-   "burstCooldownSec": 60,
-   "class": "Supporter",
-   "element": "Iron",
-   "normalAttackMultiplier": 62.95,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 159,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 17.4,
-   "burstGaugePerShot": 5.8,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when attacking with Full Charge. Affects 3 ally unit(s) with the lowest HP percentage.\nRecovers 4.03% of the caster's final Max HP as HP.",
-    "skill2": "■ Affects 2 ally unit(s) with the highest final ATK.\nMax HP ▲ 8.19% for 15 sec.\nPotency of HP restored ▲ 13.65% for 15 sec.",
-    "burst": "Cooldown: 60 s\n\n■ Affects all allies.\nRecovers 40.83% of the caster's final Max HP as HP.\n■ Affects 1 incapacitated ally unit(s) with the highest final ATK.\nResurrect with 81.67% HP.\n■ Activates when HP falls below 30%. Affects all enemies.\nStun for 1 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 98,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 221
-   }
-  },
   "tia": {
    "slug": "tia",
    "name": "Tia",
@@ -361,51 +316,6 @@
     "resourceId": 192
    }
   },
-  "rem": {
-   "slug": "rem",
-   "name": "Rem",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/zt-92/rm-13/398b6d770136e97256af03b7be1491dd.png",
-   "weapon": "MG",
-   "burst": "II",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Water",
-   "normalAttackMultiplier": 5.57,
-   "coreAttackMultiplier": 200,
-   "ammo": 300,
-   "reloadFrames": 171,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 3.55,
-   "burstGaugePerShot": 0.05,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates after landing 15 normal attack(s) in Demon's Breath status. Affects self.\nATK ▲ 4.22%, stacks up to 30 time(s) and lasts for 10 sec.\n■ Activates when using Burst Skill. Affects all allies.\nEqually shares HP recovery for 10 sec.",
-    "skill2": "■ Activates at the start of battle. Affects self.\nRecovers 42.24% of attack damage as HP continuously.\n■ Activates at the start of battle. Affects self and 2 Rocket Launcher-wielding ally unit(s) with the highest final ATK.\nEqually shares HP recovery continuously.",
-    "burst": "Cooldown: 20 s\n\n■ Affects self.\nDemon's Breath: Critical Rate ▲ 37.8% for 10 sec.\n■ Affects all allies with a Rocket Launcher.\nATK ▲ 50.78% of caster's ATK for 10 sec.\nMax Ammunition Capacity ▲ 5 round(s) for 10 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 84,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 820
-   }
-  },
   "mast-romantic-maid": {
    "slug": "mast-romantic-maid",
    "name": "Mast: Romantic Maid",
@@ -449,51 +359,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 354
-   }
-  },
-  "noise": {
-   "slug": "noise",
-   "name": "Noise",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/jn-24/iy-36/52ec2d882f6e5114d6cfd6f26d8800e9.png",
-   "weapon": "RL",
-   "burst": "I",
-   "burstCooldownSec": 40,
-   "class": "Supporter",
-   "element": "Electric",
-   "normalAttackMultiplier": 61.3,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 141,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 16.8,
-   "burstGaugePerShot": 5.6,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when attacked 20 time(s). Affects all allies.\nDamage Taken ▼ 10.66% for 20 sec.",
-    "skill2": "■ Activates when hitting a target with a Full Charge attack. Affects the target.\nTaunts for 2 sec.\n■ Activates when attacking with Full Charge. Affects self.\nMax HP ▲ 24.86% for 1.8 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects all allies.\nConstantly recovers 2.47% of caster's final Max HP every 1 sec for 10 sec.\nMax HP ▲ 49.5% for 10 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 98,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 430
    }
   },
   "guilty": {
@@ -631,96 +496,6 @@
     "resourceId": 412
    }
   },
-  "viper": {
-   "slug": "viper",
-   "name": "Viper",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/dc-22/za-89/ee6875b41f559d45f11145a9b3749c6d.png",
-   "weapon": "SG",
-   "burst": "II",
-   "burstCooldownSec": 20,
-   "class": "Attacker",
-   "element": "Water",
-   "normalAttackMultiplier": 220.4,
-   "coreAttackMultiplier": 200,
-   "ammo": 9,
-   "reloadFrames": 122,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 10,
-   "rl3": 27,
-   "burstGaugePerShot": 4.5,
-   "treasure": true,
-   "skills": {
-    "skill1": "■ Activates when the target appears. Affects all allies.\nATK ▲ 25.98% for 10 sec.\nHit Rate ▲ 11.13% for 10 sec.",
-    "skill2": "■ Affects self.\nHit Rate ▲ 3.43% continuously.\n■ Activates when entering Full Burst. Affects self.\nVamp: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.\nInvulnerable for 1 sec.",
-    "burst": "Cooldown: 20 s\n\n■ Affects 1 designated enemy unit(s).\nDeals 462.85% of final ATK as damage.\n■ Affects the enemy if the enemy is the stage target.\nDEF ▼ 19.83% for 10 sec."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 86,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 112
-   }
-  },
-  "mica-snow-buddy": {
-   "slug": "mica-snow-buddy",
-   "name": "Mica: Snow Buddy",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/rm-10/hd-75/e98c42ac624cf6c7bc2e03fd791525d3.png",
-   "weapon": "SMG",
-   "burst": "I",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Iron",
-   "normalAttackMultiplier": 11.7,
-   "coreAttackMultiplier": 250,
-   "ammo": 120,
-   "reloadFrames": 141,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 22.8,
-   "burstGaugePerShot": 0.1,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when landing 120 normal attack(s). Affects all allies.\nTidying Up: Damage Taken ▼ 2%, stacks up to 10 time(s) and lasts for 15 sec.\n■ Activates when the caster's Tidying Up is fully stacked. Affects all allies.\nMax Ammunition Capacity ▲ 40% continuously.",
-    "skill2": "■ Activates when landing 150 normal attack(s). Affects all allies.\nStack count of buffs ▲ 1.\n■ Activates at the start of battle. Affects self.\nBurst Gauge filling speed ▲ 300% continuously.",
-    "burst": "Cooldown: 20 s\n\n■ Affects all allies.\nRemoves 1 debuff(s).\nATK ▲ 39.93% of caster's ATK for 5 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 86,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 62
-   }
-  },
   "leona": {
    "slug": "leona",
    "name": "Leona",
@@ -764,51 +539,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 382
-   }
-  },
-  "marciana": {
-   "slug": "marciana",
-   "name": "Marciana",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/mx-36/da-05/bf4e72c5198e332368a96db93aa2bd58.png",
-   "weapon": "SG",
-   "burst": "II",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Iron",
-   "normalAttackMultiplier": 201.5,
-   "coreAttackMultiplier": 200,
-   "ammo": 9,
-   "reloadFrames": 111,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 10,
-   "rl3": 12,
-   "burstGaugePerShot": 2,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when the last bullet hits the target. Affects all allies.\nRecovers 10.95% of attack damage as HP over 3 sec.\n■ Activates when the last bullet hits the target. Affects 2 ally unit(s) with the highest final ATK.\nPotency of HP restored ▲ 26.98% for 3 sec.",
-    "skill2": "■ Activates when using Burst Skill. Affects all allies.\nRecovers 28.11% of caster's final Max HP as HP.",
-    "burst": "Cooldown: 20 s\n\n■ Affects all allies.\nStorage: Stores excess healing received by the caster, up to 27.87% of their Max HP. Lasts for 10 sec.\nDEF ▲ 20.9% of the caster's DEF for 10 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 96,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 321
    }
   },
   "liter": {
@@ -856,96 +586,6 @@
     "resourceId": 82
    }
   },
-  "alice-wonderland-bunny": {
-   "slug": "alice-wonderland-bunny",
-   "name": "Alice: Wonderland Bunny",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/ki-84/ea-05/30cfca3a5594bf53d7ca7b53560f0c7e.png",
-   "weapon": "SMG",
-   "burst": "I",
-   "burstCooldownSec": 40,
-   "class": "Supporter",
-   "element": "Water",
-   "normalAttackMultiplier": 10.12,
-   "coreAttackMultiplier": 250,
-   "ammo": 120,
-   "reloadFrames": 81,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 5.7,
-   "burstGaugePerShot": 0.1,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates after landing 60 normal attack(s). Affects all allies.\nRecovers 7.4% of caster's final Max HP as HP.\nCarrot Party: Damage to Interruption Parts ▲2%, stacks up to 5 time(s) and lasts for 5 sec.\n■ Activates after 90 normal attack(s). Affects all Water Code allies.\nStack count of buffs ▲ 1.",
-    "skill2": "■ Activates after Full Burst ends. Affects all allies.\nBurst Gauge filling speed ▲ 10% for 5 sec.\n■ Activates when entering Full Burst. Affects all allies.\nMax Ammunition Capacity ▲ 40% for 15 sec.\nReload 40%.",
-    "burst": "Cooldown: 40 s\n\n■ Affects all allies.\nRe-enters Burst Stage 1.\nRestores 27% of caster's final Max HP as HP.\n■ Activates when Carrot Party is fully stacked. Affects all allies.\nPotency of HP restored ▲ 150% for 15 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 86,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 195
-   }
-  },
-  "dolla": {
-   "slug": "dolla",
-   "name": "Dolla",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/il-88/hf-68/b826a0e407a1b77a27a00ceaefabceaf.png",
-   "weapon": "SR",
-   "burst": "II",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Wind",
-   "normalAttackMultiplier": 69.04,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 141,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 8.4,
-   "burstGaugePerShot": 2.8,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Affects all allies.\nATK ▲ 16.16% for 5 sec.",
-    "skill2": "■ Activates when entering Full Burst. Affects all allies.\nEffect changes according to the number of activation times. Previous effects trigger repeatedly:\nOnce: Cooldown of Burst Skill ▼ 1.82 sec.\nTwice: Cooldown of Burst Skill ▼ 2.2 sec.\nThree times: Cooldown of Burst Skill ▼ 2.6 sec.\n■ Activates when using Burst Skill. Affects all allies.\nEffect changes according to the number of activation times. Previous effects trigger repeatedly:\nOnce: ATK ▲ 7.72% for 5 sec.\nTwice: Critical Rate ▲ 4.21% for 5 sec.\nThree times: Critical Damage ▲ 13.22% for 5 sec.",
-    "burst": "Cooldown: 20 s\n\n■ Affects 1 enemy unit(s) with the highest final DEF.\nDeals 734.69% of final ATK as Burst Skill damage."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 84,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 202
-   }
-  },
   "asuka": {
    "slug": "asuka",
    "name": "Asuka",
@@ -989,96 +629,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 830
-   }
-  },
-  "sakura": {
-   "slug": "sakura",
-   "name": "Sakura",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/xc-56/ty-44/e86b127025d078abf0573e843d4cbb10.png",
-   "weapon": "SR",
-   "burst": "I",
-   "burstCooldownSec": 40,
-   "class": "Supporter",
-   "element": "Fire",
-   "normalAttackMultiplier": 67,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 121,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 8.1,
-   "burstGaugePerShot": 2.7,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates after 3 normal attack(s). Affects all allies.\nCherry Blossom Tea: 8.15% of DEF, stacks up to 10 time(s) and lasts for 15 sec.",
-    "skill2": "■ Affects all allies.\nWhen attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously.\n■ Activates when entering Full Burst. Affects all allies.\nCooldown of Burst Skill ▼ 4.84 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects all allies.\nDamage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle.\nATK ▲ 23.76% of caster's ATK for 10 sec.\n■ Affects all allies when Cherry Blossom Tea is fully stacked.\nDamage to Interruption Parts ▲ 23.54% for 30 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 84,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 282
-   }
-  },
-  "julia": {
-   "slug": "julia",
-   "name": "Julia",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/uv-85/um-94/a4cdaa6dfb9db79c22f04bd26ee37ad3.png",
-   "weapon": "AR",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Iron",
-   "normalAttackMultiplier": 14.07,
-   "coreAttackMultiplier": 200,
-   "ammo": 60,
-   "reloadFrames": 93,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 7.6,
-   "burstGaugePerShot": 0.2,
-   "treasure": true,
-   "skills": {
-    "skill1": "■ Affects self.\nCritical Rate▲ 26.04% for 10 sec.",
-    "skill2": "■ Activates when the last bullet hits the target. Affects self.\nCrescendo: Critical Damage ▲ 24.79%, stacks up to 5 times and lasts for 15 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects 5 enemy unit(s) with the highest final DEF.\nDeals 544.5% of final ATK as damage.\n■ Activates when Crescendo is fully stacked. Affects the same target(s).\nDeals 544.5% of final ATK as additional damage."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 90,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 150
    }
   },
   "guillotine-winter-slayer": {
@@ -1981,51 +1531,6 @@
     "resourceId": 100
    }
   },
-  "a2": {
-   "slug": "a2",
-   "name": "A2",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/bz-92/jq-65/e832922153fb49770f05289ecabb09d6.png",
-   "weapon": "RL",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Fire",
-   "normalAttackMultiplier": 67.65,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 111,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 2,
-   "rl3": 31.2,
-   "burstGaugePerShot": 15.6,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when using Burst Skill. Affects self.\nCharge Damage ▲ 110.44% for 15 sec.\nExplosion Radius ▲ 100.74% for 15 sec.",
-    "skill2": "■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 30.1% of final ATK as additional damage.\n■ Activates when hitting a target with Full Charge. Affects self.\nDamage to Parts ▲ 40.88% for 3 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects self.\nMode B:\nOwn HP decreases every second while ATK and Charge Speed increase. If own HP dips below 40%, Mode B is deactivated.\nEffect 1: Current HP ▼ 3.99% every 1 sec.\nEffect 2: ATK ▲ 15.19%\nEffect 3: Charge Speed ▲ 35.88%."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 88,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 811
-   }
-  },
   "dorothy": {
    "slug": "dorothy",
    "name": "Dorothy",
@@ -2926,51 +2431,6 @@
     "resourceId": 470
    }
   },
-  "crust": {
-   "slug": "crust",
-   "name": "Crust",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/wi-19/fh-19/6126f84f6a2e77bb6bc60d5e3019df70.png",
-   "weapon": "RL",
-   "burst": "II",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Water",
-   "normalAttackMultiplier": 61.3,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 141,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 16.8,
-   "burstGaugePerShot": 5.6,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when attacking with Full Charge and self is in Maillard status. Affects all allies.\nMaillard Duration ▲ 2.5 sec.\n■ Activates when attacking with Full Charge and self is in Blanching status. Affects all allies.\nBlanching Duration ▲ 2.5 sec.\n■ Activates after landing 3 normal attack(s) without Full Charge. Affects all allies.\nMaillard: ATK ▲ 10% of caster's ATK for 10 sec.\nRemoves Blanching.\n■ Activates after maintaining 3 Full Charge status for more than 1 sec. Affects all allies.\nBlanching: ATK ▲ 10% of caster's ATK for 10 sec.\nRemoves Maillard.",
-    "skill2": "■ Activates after landing 3 normal attack(s) without Full Charge. Affects all allies not in Reliable Cooking status.\nReliable Cooking: DEF ▲ 10% of the caster's DEF for 10 sec.\nRemoves 1 debuff.\n■ Activates after maintaining 3 Full Charge status for more than 1 sec. Affects all allies not in Reliable Cooking status.\nReliable Cooking: DEF ▲ 10% of the caster's DEF for 10 sec.\nRemoves 1 debuff.\n■ Activates when entering Full Burst. Affects all allies in Maillard or Blanching status.\nATK ▲ 20% of caster's ATK for 10 sec.",
-    "burst": "Cooldown: 20 s\n\n■ Affects all allies.\nAttack Damage ▲ 20% for 10 sec.\n■ Affects all allies when in Maillard status.\nDistributed Damage ▲ 60% for 10 sec.\n■ Affects all allies when in Blanching status.\nSustained Damage ▲ 10% for 10 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 98,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 521
-   }
-  },
   "little-mermaid": {
    "slug": "little-mermaid",
    "name": "Little Mermaid",
@@ -3014,51 +2474,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 513
-   }
-  },
-  "yulha": {
-   "slug": "yulha",
-   "name": "Yulha",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/ez-22/nb-07/9947238fd5c639a018a7ae7cbb5973f7.png",
-   "weapon": "SR",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Fire",
-   "normalAttackMultiplier": 68.23,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 133,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 8.25,
-   "burstGaugePerShot": 2.75,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when attacked 30 time(s). Affects self.\nCalm: Critical Rate ▲ 24.53% for 20 sec.",
-    "skill2": "■ Affects all allies.\nATK ▲ 90.75% for 5 sec.\nEqually shares damage taken for 10 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects all enemies.\nDeals 457.87% of final ATK as Burst Skill damage.\n■ Affects the same target(s) when in Calm status.\nDeals 457.87% of final ATK as additional damage."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 76,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 171
    }
   },
   "cinderella-crystal-wave": {
@@ -3826,51 +3241,6 @@
     "resourceId": 73
    }
   },
-  "label": {
-   "slug": "label",
-   "name": "Label",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/rc-34/oe-95/2255e8d28a91010dbd987569c17ea62d.png",
-   "weapon": "AR",
-   "burst": "I",
-   "burstCooldownSec": 20,
-   "class": "Defender",
-   "element": "Iron",
-   "normalAttackMultiplier": 13.65,
-   "coreAttackMultiplier": 200,
-   "ammo": 60,
-   "reloadFrames": 81,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 12.9504,
-   "burstGaugePerShot": 0.2,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates at the start of battle. Affects self.\nDelusion: Creates a Shield equal to 30.15% of caster's final Max HP. This effect is continuous.\n■ Activates when Delusion status ends. Affects self.\nDelusion Shattered: Activates up to 2 time(s). This effect is continuous.\nEffect 1: Imagined Heartbreak: Prevents being targeted by single-target attacks for 1 sec x Delusion Shattered count. This effect is removed upon taking a direct hit.\nEffect 2: Stuns for 1 sec per Delusion Shattered stack.\n■ Activates when performing a normal attack while not in Delusion status. Affects self.\nDelusion: Creates a Shield equal to 30.15% of caster's final Max HP. This effect is continuous.\n■ Activates when using Burst Skill while not in Delusion status. Affects self.\nDelusion: Creates a Shield equal to 30.15% of caster's final Max HP. This effect is continuous.",
-    "skill2": "■ Activates at the start of battle. Affects all allies (except self).\nDamage taken from Electric Code enemies ▼ 70.4% for 5 sec. Activates 1 time(s) per battle.\n■ Activates only while in Delusion status. Affects self.\nBurst Gauge filling speed ▲ 70.4% continuously.\nATK ▲ 93.39% continuously.\nDamage taken from Electric Code enemies ▼ 70.4% continuously.\n■ Activates only while in Shared Delusion status. Affects all allies (except self).\nATK ▲ 80.36% of the caster's ATK continuously.",
-    "burst": "Cooldown: 20 s\n\n■ Affects self.\nMax HP ▲ 20.26% for 10 sec.\nShared Delusion: The Shield created by Label becomes invulnerable for 10 sec."
-   },
-   "baseStats": {
-    "hp": 16500,
-    "atk": 400,
-    "def": 110,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 582
-   }
-  },
   "diesel-winter-sweets": {
    "slug": "diesel-winter-sweets",
    "name": "Diesel: Winter Sweets",
@@ -4186,51 +3556,6 @@
     "resourceId": 570
    }
   },
-  "e-h": {
-   "slug": "e-h",
-   "name": "E.H.",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/fk-33/wl-69/d59935ab0d6b58ec45455c23c81fa2a4.png",
-   "weapon": "SMG",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Wind",
-   "normalAttackMultiplier": 10.12,
-   "coreAttackMultiplier": 250,
-   "ammo": 120,
-   "reloadFrames": 81,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 5.7,
-   "burstGaugePerShot": 0.1,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when obtaining 10 Scrap(s) while having fewer than 4 homemade magazines crafted. Affects self.\nFunction: Crafts magazines out of Scraps and gains a buff.\nEffect 1: Removes Scrap(s).\nEffect 2: Crafts 1 homemade magazine, up to a maximum of 4. This effect is continuous.\nEffect 3: ATK ▲ 7.5% continuously x the number of homemade magazines.",
-    "skill2": "■ Affects self.\nFunction: Gains a buff when obtaining Scraps.\nEffect 1: Activates at the start of battle. Scraps ▲ 10 continuously, up to a maximum of 10.\nEffect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.\nEffect 3: Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.\nEffect 4: Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10.\nEffect 5: Activates when obtaining Scraps. Elemental Advantage Attack Damage ▲ 16.36% for 15 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects self.\nChanges the weapon in use.\nCharge Time: 0.4 sec\nDamage: 61% of final ATK\nFull Charge Damage: 250% of damage\nMax Ammunition Capacity: 1 x the number of homemade magazines\nDuration: 10 sec\nRemoval condition: When the duration ends or when all rounds have been fired.\nAdditional Effect:\nATK ▲ 430.05% for 10 sec."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 78,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 113
-   }
-  },
   "arcana-fortune-mate": {
    "slug": "arcana-fortune-mate",
    "name": "Arcana: Fortune Mate",
@@ -4319,51 +3644,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 17
-   }
-  },
-  "rei-ayanami": {
-   "slug": "rei-ayanami",
-   "name": "Rei Ayanami",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/vo-25/kx-44/5b4a12cde2db59c1084408ca737d21b5.png",
-   "weapon": "MG",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Fire",
-   "normalAttackMultiplier": 5.57,
-   "coreAttackMultiplier": 200,
-   "ammo": 300,
-   "reloadFrames": 171,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 3.55,
-   "burstGaugePerShot": 0.05,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates after 100 normal attack(s). Affects self.\nElemental Advantage Attack Damage ▲ 30.23% for 3 sec.\n■ Activates after landing 100 normal attack(s). Affects the enemy within attack range nearest to the crosshair.\nDeals 112.37% of final ATK as damage.",
-    "skill2": "■ Activates at the start of battle. Affects self.\nDamage dealt to Shield ▲ 700.5% continuously.\n■ Activates when entering Burst stage 3. Affects all Fire Code allies.\nATK ▲ 25.03% of caster's ATK for 10 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects all Fire Code allies.\nCreates a Shield equal to 13.44% of the caster's final Max HP for 10 sec.\nAttack damage ▲ 48.02% for 10 sec.\n■ Affects all enemies.\nDeals 990.2% of final ATK as damage."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 75,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 831
    }
   },
   "elegg-boom-and-shock": {

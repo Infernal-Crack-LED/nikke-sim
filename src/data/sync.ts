@@ -4,7 +4,7 @@
 // the sim runs offline and deterministically.
 import 'dotenv/config';
 import pg from 'pg';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import type { CharacterData, DataFile } from '../types.js';
 
 const SYNERGY_API = 'https://api.nikke-synergy.com/rest/v1/attack_damage_characters';
@@ -26,6 +26,29 @@ const TREASURE_SYNERGY_IDS: Record<string, number> = {
   zwei: 199,
   moran: 200,
 };
+
+// Second-stage roster prune (DECISIONS 2026-07-14): the supported roster is the
+// enikk-proven list — the "All raids — NIKKE union" of the top-100 ranker teams,
+// mirrored machine-readably in data/enikk-supported.json (regenerated with the MD
+// by scripts/enikk/roster-audit.ts) — PLUS every unit we already hand-tuned an
+// override for. Keep a unit iff it satisfies one of those; drop the parse-only
+// rest that never show up in the top-100 meta. Never drop a hand-tuned override,
+// even if it falls out of the enikk list.
+const normalizeName = (n: string) => n.replace(' (Treasure)', '').trim();
+
+function loadSupportPolicy() {
+  const proven = new Set<string>(
+    (JSON.parse(
+      readFileSync(new URL('../../data/enikk-supported.json', import.meta.url), 'utf8')
+    ).names as string[]).map(normalizeName)
+  );
+  const overrideSlugs = new Set(
+    readdirSync(new URL('../skills/overrides/', import.meta.url))
+      .filter((f) => f.endsWith('.json'))
+      .map((f) => f.replace(/\.json$/, ''))
+  );
+  return { proven, overrideSlugs };
+}
 
 async function main() {
   const url = process.env.DATABASE_PUBLIC_URL;
@@ -118,6 +141,15 @@ async function main() {
     characters[row.id] = char;
   }
 
+  // Second stage: keep only enikk-proven units + hand-tuned overrides.
+  const { proven, overrideSlugs } = loadSupportPolicy();
+  const unsupported: string[] = [];
+  for (const [slug, c] of Object.entries(characters)) {
+    if (proven.has(normalizeName(c.name)) || overrideSlugs.has(slug)) continue;
+    unsupported.push(slug);
+    delete characters[slug];
+  }
+
   mkdirSync(new URL('../../data/', import.meta.url), { recursive: true });
   const out: DataFile = { syncedAt: new Date().toISOString(), characters };
   writeFileSync(new URL('../../data/characters.json', import.meta.url), JSON.stringify(out, null, 1));
@@ -142,8 +174,9 @@ async function main() {
   const total = Object.keys(characters).length;
   const noStats = Object.values(characters).filter((c) => !c.baseStats).length;
   const noApi = rows.filter((r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id)).length;
-  console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API, ${tierDropped} dropped as Bossing C-or-below)`);
+  console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API, ${tierDropped} dropped as Bossing C-or-below, ${unsupported.length} dropped as not-enikk-proven + no override)`);
   if (skipped.length) console.log('skipped:', skipped.join(', '));
+  if (unsupported.length) console.log('not-enikk-proven (dropped):', unsupported.sort().join(', '));
 }
 
 main().catch((e) => {

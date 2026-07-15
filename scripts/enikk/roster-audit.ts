@@ -177,3 +177,24 @@ if (process.env.MD) {
   writeFileSync(process.env.MD, L.join('\n') + '\n');
   console.log(`Markdown written to ${process.env.MD}`);
 }
+
+// Machine-readable mirror of the "All raids — NIKKE union" list, consumed by
+// src/data/sync.ts as the enikk-proven keep-filter (DECISIONS 2026-07-14).
+// Regenerate together with MD so the two never drift.
+if (process.env.SUPPORTED) {
+  const names = unionSorted.map(([n]) => n).sort((a, b) => a.localeCompare(b));
+  const payload = {
+    updated: new Date().toISOString().slice(0, 10),
+    source:
+      "docs/enikk-top100-audit.md — '## All raids — NIKKE union' (top-100 ranker teams, deduped, across audited raids)",
+    policy:
+      "The enikk-supported roster (DECISIONS 2026-07-14). sync.ts keeps a unit iff its name (with " +
+      "' (Treasure)' stripped) is in `names` below OR it has a hand-tuned override in " +
+      'src/skills/overrides/. Regenerate together with the MD via ' +
+      '`MD=docs/enikk-top100-audit.md SUPPORTED=data/enikk-supported.json ENIKK_CACHE=<dir> ' +
+      'npx tsx scripts/enikk/roster-audit.ts`.',
+    names,
+  };
+  writeFileSync(process.env.SUPPORTED, JSON.stringify(payload, null, 1) + '\n');
+  console.log(`enikk-supported roster written to ${process.env.SUPPORTED} (${names.length} names)`);
+}

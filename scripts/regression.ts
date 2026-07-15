@@ -175,13 +175,13 @@ const COMPS: Comp[] = [
 function run(comp: Comp, seed?: number) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
-    doll: false, ol: 0, mode: comp.modes?.[slug], lambdaStage: comp.lambda?.[slug],
+    doll: false, ol: 'base5', mode: comp.modes?.[slug], lambdaStage: comp.lambda?.[slug],
   }));
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
   for (const s of comp.slugs) overrides[s] = loadOverride(s);
   const cfg: SimConfig = {
     slugs: comp.slugs, bossElement: comp.boss, bossDef: 0, level: 400, copies: 10,
-    doll: false, ol: 0, coreHitRate: 1, rangeBonus: true, durationSec: 180,
+    doll: false, ol: 'base5', coreHitRate: 1, rangeBonus: true, durationSec: 180,
     focusSlug: comp.focus, seed,
   };
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
