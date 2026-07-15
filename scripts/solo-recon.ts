@@ -1,39 +1,30 @@
 // Solo reconciliation for the AR/SMG/SG core-rate recordings (docs/probes/ar-sg-smg).
 // Each recording is a 1-unit SOLO fight (no Full Burst — a lone unit can't complete all
 // burst stages), so sim-solo vs the damage-screen total isolates the unit with zero
-// team/FB confounds — the cleanest possible core-rate + normal-model check.
+// team/FB confounds — the cleanest core-rate + normal-model check.
 //   CORERATELO=<x> npx tsx scripts/solo-recon.ts
+// Uses the scope-lock SSOT (forced-neutral boss) + a sanity self-check, so it can never
+// drift from the basis (a hand-rolled core-0 config here caused a bogus "ATK confound").
 import { readFileSync } from 'node:fs';
 import { runSim } from '../src/engine/sim.js';
 import { resolveSkills } from '../src/skills/index.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
-import type { DataFile, LevelMultiplier, SimConfig } from '../src/types.js';
+import { scopeLockCfg, sanityCheck, loadData } from './lib/scope-lock.js';
 
-const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
-const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
+const { data, mult } = loadData();
+const ref = JSON.parse(readFileSync(new URL('../data/reference-stats.json', import.meta.url), 'utf8'));
+const REAL: Record<string, number> = ref.recordingSoloTotals;
 
-// real solo totals + Combat ATK from the damage screens (docs/probes/ar-sg-smg/*.jpg)
-const REAL: Record<string, { total: number; atk: number; weapon: string }> = {
-  scarlet: { total: 81_819_203, atk: 94_055, weapon: 'AR' },
-  chisato: { total: 112_428_402, atk: 90_730, weapon: 'SMG' },
-  drake: { total: 53_974_999, atk: 92_657, weapon: 'SG' },
-};
-
-for (const slug of ['scarlet', 'chisato', 'drake']) {
+for (const [slug, w] of [['scarlet', 'AR'], ['chisato', 'SMG'], ['drake', 'SG']] as const) {
   const c: any = data.characters[slug];
-  const cfg: SimConfig = {
-    slugs: [slug], bossElement: null, bossDef: 0, level: 400, copies: 10,
-    doll: false, ol: 'base5', coreHitRate: 1, rangeBonus: true, durationSec: 180,
-  };
+  const cfg = scopeLockCfg([slug], null); // solo, forced neutral (matches the no-FB solo recording)
   const prepared = [{ skills: resolveSkills(c, loadOverride(slug)), extraStats: [] as any[], loadout: [] as any[] }];
   const r: any = runSim([c], mult, cfg, prepared);
-  const u: any = r.units[0];
-  const real = REAL[slug];
-  const ratio = u.totalDamage / real.total;
-  const atk = u.staticAtk ?? u.atk ?? '?';
-  const fb = r.fullBursts ?? r.fullBurstCount ?? '?';
+  const issues = sanityCheck([c], r);
+  if (issues.length) issues.forEach((i) => console.log('  ⚠ SANITY: ' + i));
+  const real = REAL[`${slug}-${w.toLowerCase()}`];
+  const u = r.units[0];
   console.log(
-    `${slug} (${real.weapon}): sim ${(u.totalDamage / 1e6).toFixed(1)}M vs real ${(real.total / 1e6).toFixed(1)}M  ratio ${ratio.toFixed(2)} | ` +
-    `simATK ${atk} vs realATK ${real.atk} | FB ${fb} | bursts ${u.burstCasts} | shots ${u.shots ?? '?'}`,
+    `${slug} (${w}): sim ${(u.totalDamage / 1e6).toFixed(1)}M vs real ${(real / 1e6).toFixed(1)}M  ratio ${(u.totalDamage / real).toFixed(2)} | ATK ${u.staticAtk} | FB ${r.fullBursts ?? 0} | bursts ${u.burstCasts}`,
   );
 }

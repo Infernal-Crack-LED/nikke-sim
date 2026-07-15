@@ -184,4 +184,16 @@ export interface CharacterSkills {
   hasPierce?: boolean; // kit's attacks are Pierce-tagged → Pierce Damage ▲ feeds Damage Up
   burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)
   pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
+  consolidation?: ConsolidationConfig; // pellet-consolidation mode (dorothy-S) — see OverrideFile / A26
+}
+
+// Pellet-consolidation mode: after landing N pellets (near-gated), for K shots the unit fires ONE
+// aligned bullet (pelletFraction of a full shot) at coreRate with attackDamagePct + Pierce — dorothy-S.
+export interface ConsolidationConfig {
+  triggerLandedPellets: number;
+  shots: number;
+  coreRate: number;
+  pelletFraction: number;
+  attackDamagePct: number;
+  pierce?: boolean;
 }

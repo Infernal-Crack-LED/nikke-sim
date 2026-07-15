@@ -1,0 +1,133 @@
+{
+  "measurement": "SG range-dependent core-hit rate — HARDENED per-SHOT re-read (coreband2)",
+  "supersedesNote": "Second, per-SHOT (not per-pellet) read of the same fight as coreband-drake-sg.json; Fable-pre-op-approved test. Unit of analysis = the SHOT (10 pellets share one aim point). Confirms and refines the earlier read.",
+  "unit": "drake",
+  "weapon": "SG",
+  "burst": "III",
+  "hitsPerShot": 10,
+  "normalAttackMultiplierPct": 214.3,
+  "coreAttackMultiplierPct": 200,
+  "video": "docs/probes/ar-sg-smg/drake sg.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/drake sg.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "framesDir": "docs/probes/ar-sg-smg/coreband-frames/coreband2",
+  "date": "2026-07-15",
+  "focusReason": "solo recording — Drake is the only unit, therefore the focus (no team, self-burst FB)",
+  "clock": {
+    "method": "top-right countdown; fightClock = videoSec - 7",
+    "anchors": [
+      {"videoSec": 8, "countdown": "02:59", "fightClock": 1},
+      {"videoSec": 183, "countdown": "00:00", "fightClock": 176}
+    ],
+    "offsetSec": 7
+  },
+  "colourConvention": {
+    "white": "normal non-core pellet (body/armour hit)",
+    "orange+critIcon": "crit non-core (=1.5x white; e.g. mid 25672->38508, near 33374->46210)",
+    "red+CORE_HIT_text": "CORE hit (counted). Values seen: 51345 (=25672x2, mid/far/midfar unbuffed x2 core), 71882 (near, ~33374x2, crit+core pellet), 559046 (near, large core on exposed gem)",
+    "exclude": "7-digit ~2-5.9M BURST (1254% coef); red radial BLOOM VFX on the boss arms (NO number inside — this unit throws red spider-lily hit VFX at ALL ranges, a key confound); persistent red UI (TARGET bars, 00X ammo/target counters, the red core gem at the crosshair); green/red heal splash over the CHARACTER"
+  },
+  "R2_pelletPopupCorrespondence": {
+    "result": "CONFIRMED. Off-boss pellets render NOTHING (frames observed with only 1 of 10 pellets producing a popup when the boss was narrow/receded). On-boss pellets each render one popup at the crosshair; a shot produces ~5-8 popups at NEAR (large boss) and fewer at range. All 10 pellets share one aim point so popups cluster tightly. Consecutive shots' popups DO linger/merge (~0.4-0.5 s persistence vs ~0.35 s shot interval), so per-shot attribution requires 60 fps stepping; pooled sampling was done at <=2 fps so a given popup appears in essentially one sampled frame.",
+    "shotCadenceApproxPerSec": 2.7,
+    "pelletsPerShotOnTargetNear": "5-8"
+  },
+  "R3_coreCritRender": {
+    "result": "CONFIRMED. A core+crit renders as a RED number with 'CORE HIT' text AND an orange crit icon to its left (e.g. near 71882) — the crit does NOT mask the red/CORE-HIT. Core-only is red 'CORE HIT' with no crit icon (e.g. 559046, 51345). Legible at high zoom even against the dark boss body.",
+    "proofFrame": "coreband2/near_R3_corehit_559046_v52.6.png (also near2_critcore_71882_v161.6.png)"
+  },
+  "bossDistanceCrossCheck": {
+    "result": "PASS",
+    "mid": "boss center, MEDIUM (v18-40)",
+    "near": "boss right, CLOSE/LARGE — genuinely close (v40-77 and v151-183), largest apparent size, elevated damage from self-burst FB buff",
+    "far": "boss center, SMALL/RECEDED — smallest apparent size, frequent RELOADING + smoke (v77-113)",
+    "midfar": "boss left, MEDIUM (v113-151)",
+    "distanceOrderClosestToFarthest": "near < mid ~ midfar < far"
+  },
+  "method": "Per band, sampled boss-crop frames at 2 fps across the band's window(s) (~one distinct shot per sample) plus full-res 60 fps zooms to count pellets per shot and to distinguish red CORE-HIT NUMBERS from red VFX blooms. Cores counted ONLY as red 'CORE HIT' damage numbers. Pellet denominators are best-effort counts (heavy overlap + blooms => ~+-30% on pooled pellet totals); CIs are Wilson 95% on the pooled pellet count and are therefore approximate.",
+  "bands": [
+    {
+      "band": "mid",
+      "fightClockRange": [0, 33],
+      "videoWindow": [7, 40],
+      "bossDistance": "medium (center)",
+      "pelletValueWhite": 25672,
+      "critValueOrange": 38508,
+      "shotsSampled": 42,
+      "pooledPelletPopups": 252,
+      "redCorePopups": 0,
+      "shotsWithCore": 0,
+      "perShotCorePelletFraction": 0.0,
+      "wilson95_pooled": [0.0, 0.015],
+      "confidence": "high — red items at mid are VFX blooms + UI, no red CORE-HIT numbers across all sampled shots",
+      "frames": ["coreband2/mid_nocorenum_v20.png", "coreband2/mid_blooms_are_vfx_v25.png"]
+    },
+    {
+      "band": "near",
+      "fightClockRange": [[33, 70], [144, 176]],
+      "videoWindow": [[40, 77], [151, 183]],
+      "bossDistance": "close/large (right); coincides with self-burst Full Burst (values elevated to 33374)",
+      "pelletValueWhite": 33374,
+      "critValueOrange": 46210,
+      "coreValuesRed": [71882, 559046],
+      "shotsSampled": 46,
+      "pooledPelletPopups": 276,
+      "redCorePopups": 20,
+      "shotsWithCore": 18,
+      "perShotCorePelletFraction": 0.072,
+      "shotsWithCoreFraction": 0.39,
+      "wilson95_pooled": [0.047, 0.109],
+      "confidence": "medium-high — cores clearly present; magnitude ~7-10% per pellet with +-3-4pp uncertainty (pellet-count estimation + 559046-vs-skill2 ambiguity). Red-on-dark visibility makes near a mild LOWER bound.",
+      "frames": ["coreband2/near1_v53.35.png", "coreband2/near2_v160.5.png", "coreband2/near2_critcore_71882_v161.6.png", "coreband2/near_R3_corehit_559046_v52.6.png"]
+    },
+    {
+      "band": "far",
+      "fightClockRange": [70, 106],
+      "videoWindow": [77, 113],
+      "bossDistance": "distant/small (center); smoke + frequent reloading",
+      "pelletValueWhite": 25672,
+      "critValueOrange": 38508,
+      "shotsSampled": 28,
+      "pooledPelletPopups": 126,
+      "redCorePopups": 0,
+      "shotsWithCore": 0,
+      "perShotCorePelletFraction": 0.0,
+      "wilson95_pooled": [0.0, 0.030],
+      "confidence": "high that ~0, BUT could not reach 40 clean shots (boss small + smoke-obscured + she reloads often at range) — 28 shot-samples. No red CORE-HIT numbers seen.",
+      "caveat": "shot count < 40 due to sparse readable fire at max range",
+      "frames": ["coreband2/far_nocore_v87.5.png"]
+    },
+    {
+      "band": "midfar",
+      "fightClockRange": [[106, 144], [176, 180]],
+      "videoWindow": [[113, 151], [183, 187]],
+      "bossDistance": "medium (left)",
+      "pelletValueWhite": 25672,
+      "critValueOrange": 38508,
+      "coreValuesRed": [51345],
+      "shotsSampled": 40,
+      "pooledPelletPopups": 220,
+      "redCorePopups": 1,
+      "shotsWithCore": 1,
+      "perShotCorePelletFraction": 0.0045,
+      "shotsWithCoreFraction": 0.025,
+      "wilson95_pooled": [0.001, 0.025],
+      "confidence": "medium — one confirmed red CORE-HIT (51345 = 25672x2) at v117; rate very low. A red-tinted (FB) midfar frame still showed no core, so the signal tracks RANGE not FB.",
+      "frames": ["coreband2/midfar_core_51345_v117.png", "coreband2/midfar_nocore_v131.png"]
+    }
+  ],
+  "summary": {
+    "corePelletFractionByBand": {"mid": 0.0, "near": 0.072, "far": 0.0, "midfar": 0.0045},
+    "wilson95ByBand": {"mid": [0.0, 0.015], "near": [0.047, 0.109], "far": [0.0, 0.030], "midfar": [0.001, 0.025]},
+    "headline": "SG per-SHOT core-pellet fraction is ~0 at mid/far, ~0.5% (one rare core) at midfar, and ~7% (CI 4.7-10.9%) at NEAR. Cores are strongly range-concentrated at close range (near >> mid ~ midfar ~ far ~ 0). This REPLICATES the earlier per-pellet read (coreband-drake-sg.json: near ~0.088, others ~0).",
+    "mechanistic": "Boss is a multi-part spider mech whose weak point is a small central red core gem at the crosshair, flanked by large armoured arms/legs. Auto-aim spreads all 10 pellets; only at CLOSE range does the spread reliably land a pellet on the small gem. Body/armour pellets render white 25672/33374; a pellet on the exposed gem renders red 'CORE HIT' (51345 = x2 of a reduced hit, or 559046 = x2 of the FULL unreduced gem). Boss geometry caps the achievable SG core rate an order of magnitude below the hypothesised ~100%-at-optimal-range.",
+    "confounds": [
+      "RED VFX BLOOMS: this unit throws red radial spider-lily hit-VFX on the boss arms at ALL ranges (no number inside). These are NOT cores and were the main mis-read risk; only red 'CORE HIT' NUMBERS were counted.",
+      "FB/buff overlap: near windows coincide with self-burst Full Burst (skill1 ATK+11.85% -> values 33374 vs 25672 unbuffed elsewhere). Core RATE is a geometry/hit-rate phenomenon, not damage-buff-driven; a red-tinted (FB) midfar frame showed 0 core, so the signal tracks RANGE.",
+      "559046-vs-skill2: the large near red 559046 COULD be skill2 (98.55% of ATK, every 10 shots) rather than an SG gem-core. Argues AGAINST skill2: 559046 is range-CONCENTRATED at near, whereas skill2 is range-INDEPENDENT and no large red appears at mid/far/midfar. The x2-type reds (71882 near / 51345 midfar) are unambiguous SG pellet cores. Even excluding 559046 entirely, near retains a nonzero core signal above the other bands.",
+      "Visibility bias understates near (red-on-dark), not far (red-on-grey-sky would be obvious) -> near is a mild lower bound; far 0 is reliable."
+    ],
+    "simRelevance": "Engine AUTO_CORE_RATE is a flat 0.85 (calibrated, marked). For Drake's SG on THIS boss the observed core rate is <=~10% at NEAR and ~0 at range — the flat 0.85 is far too high here, and it is range-dependent, not flat. Single boss with a small core gem; do NOT over-generalise across bosses/weapons.",
+    "confidence": "Overall medium-high. Qualitative result (cores at near only, order-of-magnitude below 0.85) is robust and replicates the prior read. Absolute near fraction has ~+-3-4pp uncertainty."
+  }
+}

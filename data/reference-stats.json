@@ -1,0 +1,23 @@
+{
+  "_note": "Known-good scope-lock ANCHORS for harness self-checks (scripts/lib/scope-lock.ts `sanityCheck`). If a harness's derived value disagrees with these, it is a config-drift or misread flag, not a new finding. Regenerate `scopeLockAtk` via `computeClassAtk` if the stat curve/gear changes.",
+  "basis": "sync 400 (level 400) · Base-5 gear · 10/10/10 · no cube · core 7 (copies 10) · boss DEF 140 · boss core 100% · 180s",
+  "scopeLockAtk": {
+    "Attacker": 118027,
+    "Supporter": 98367,
+    "Defender": 78707,
+    "_note": "Base stats are CLASS-BASED — same-class units have IDENTICAL ATK. A per-unit-varying number is NOT ATK (e.g. the Battle-Records crossed-swords field is COMBAT POWER, per-unit). NB: the older value 120,143 was the OL0-gear basis (~1.76% high); the scope-lock BASE-5 value is 118,027 — a gear-level difference, NOT treasure. No treasure gap."
+  },
+  "recordingMatchPrecheck": "Before RECONCILING a sim run against a recording, verify the sim unit's VARIANT + treasure state match what was recorded. characters.json `treasure:true` means the sim models the unit WITH its Treasure (favorite item) equipped (boosts stats/skill coeffs) — if the owner recorded the unit WITHOUT treasure (doesn't own it), the totals are NOT comparable (sim over-predicts). 2026-07-15: sim `drake` is treasure=true but the AR/SMG/SG recording is base Drake → the Drake solo reconciliation was confounded (core-RATE popup counts are unaffected — treasure doesn't change aim geometry). Core-rate measurement is treasure-independent; total reconciliation is not.",
+  "battleRecordsFields": {
+    "crossedSwords": "Combat Power (per-unit composite of stats+skills) — NOT Combat ATK",
+    "redBar": "total damage dealt (per unit)",
+    "shield": "damage taken",
+    "asterisk": "healing done"
+  },
+  "recordingSoloTotals": {
+    "_note": "Solo (1-unit, no Full Burst) totals from docs/probes/ar-sg-smg/*.jpg — used by scripts/solo-recon.ts.",
+    "scarlet-ar": 81819203,
+    "chisato-smg": 112428402,
+    "drake-sg": 53974999
+  }
+}

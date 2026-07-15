@@ -1,51 +1,6 @@
 {
  "syncedAt": "2026-07-14T21:03:27.706Z",
  "characters": {
-  "tia": {
-   "slug": "tia",
-   "name": "Tia",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/fk-67/hq-94/5413011c13c76ae2d456fb8ff22173b0.png",
-   "weapon": "RL",
-   "burst": "I",
-   "burstCooldownSec": 40,
-   "class": "Defender",
-   "element": "Iron",
-   "normalAttackMultiplier": 61.3,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 141,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 16.8,
-   "burstGaugePerShot": 5.6,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when recovering Cover's HP. Affects self.\nCooldown of Burst Skill ▼ 13 sec, stacks up to 2 time(s) and lasts for 12 sec.\n■ Activates when recovering Cover's HP. Affects all allies.\nAttack damage ▲ 32.11% for 10 sec.",
-    "skill2": "■ Activates after landing 5 normal attack(s). Affects self.\nMax HP of Cover ▲ 32.75% of the caster's Max HP for 5 sec.\nAttract: Taunts all enemies for 5 sec.\n■ Activates when using Burst Skill. Affects self.\nRestores Cover HP by 21.41% of caster's final Max HP.\nRecovers 21.96% of attack damage as HP over 10 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects self.\nGenerates a Shield with 35.07% of the caster's final Max HP for 10 sec.\n■ Affects all allies (except self).\nGenerates a Shield with 10.21% of the caster's final Max HP for 10 sec.\n■ Affects all allies.\nRe-enters Burst Stage 1."
-   },
-   "baseStats": {
-    "hp": 16500,
-    "atk": 400,
-    "def": 107,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 451
-   }
-  },
   "volume": {
    "slug": "volume",
    "name": "Volume",
@@ -1081,51 +1036,6 @@
     "resourceId": 220
    }
   },
-  "phantom": {
-   "slug": "phantom",
-   "name": "Phantom",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/yf-19/ti-36/3acf749fd25325f44d1d5c088ab44829.png",
-   "weapon": "AR",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Water",
-   "normalAttackMultiplier": 15.78,
-   "coreAttackMultiplier": 200,
-   "ammo": 60,
-   "reloadFrames": 141,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 9.5,
-   "burstGaugePerShot": 0.25,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when hitting a Rapture with a normal attack if the Rapture is not in Calling Card status. Affects the target.\nCalling Card: DEF ▼ 32.19% for 5 sec.\n■ Activates when hitting a Rapture with a normal attack if the Rapture is not in Calling Card status. Affects self.\nThief's Dagger: Hit Rate ▲ 25.75%, stacks up to 3 time(s) and lasts for 5 sec.\n■ Activates when hitting a target with a normal attack if the target is in Calling Card status. Affects self.\nAttack damage ▲ 75.17% for 1 round(s).",
-    "skill2": "■ Activates when Thief's Dagger is fully stacked. Affects the target(s) in Calling Card status after the stacks are removed.\nDeals 84.33% of final ATK as additional damage. Calling Card status is removed after the effect is triggered.\n■ Activates when Thief's Dagger is fully stacked. Affects self after the stacks are removed.\nDistributed Damage ▲ 12.86% continuously, stacks up to 3 time(s). Stacks are removed after Burst Skill is cast.\n■ Activates after landing 10 normal attack(s). Affects self.\nATK ▲ 85.12% for 5 sec.\nDistributed Damage ▲ 31.92% for 10 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects all enemies.\nDeals 1457.28% of final ATK as Distributed Damage."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 90,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 580
-   }
-  },
   "sakura-bloom-in-summer": {
    "slug": "sakura-bloom-in-summer",
    "name": "Sakura: Bloom in Summer",
@@ -1214,51 +1124,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 314
-   }
-  },
-  "2b": {
-   "slug": "2b",
-   "name": "2B",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/lk-88/mf-85/f225c73386bebac12e0ab9d77bf4852b.png",
-   "weapon": "AR",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Defender",
-   "element": "Fire",
-   "normalAttackMultiplier": 5.99,
-   "coreAttackMultiplier": 200,
-   "ammo": 90,
-   "reloadFrames": 81,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 7.6,
-   "burstGaugePerShot": 0.2,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when using Burst Skill. Affects self.\nEffect changes according to the number of activation times. Previous effects trigger repeatedly:\nOnce: Max HP ▲ 10.03% continuously.\nTwice: Max HP ▲ 20.06% continuously.\nThree times: Max HP ▲ 57.76% continuously.",
-    "skill2": "■ Activates after firing 300 time(s). Affects all enemies.\nDeals 167.45% of final ATK as damage.\n■ Activates at the start of battle. Affects self.\nATK ▲ 6.16% of the caster's final Max HP continuously.",
-    "burst": "Cooldown: 40 s\n\n■ Affects all enemies.\nDeals 2439.36% of final ATK as distributed damage.\n■ Affects 1 enemy unit(s) with the highest remaining HP.\nDeals 792% of final ATK as additional damage."
-   },
-   "baseStats": {
-    "hp": 16500,
-    "atk": 400,
-    "def": 110,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 810
    }
   },
   "modernia": {
@@ -1531,96 +1396,6 @@
     "resourceId": 100
    }
   },
-  "dorothy": {
-   "slug": "dorothy",
-   "name": "Dorothy",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/jo-60/pr-85/ac5f22d56088b114417e49030a83e850.png",
-   "weapon": "AR",
-   "burst": "I",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Water",
-   "normalAttackMultiplier": 13.65,
-   "coreAttackMultiplier": 200,
-   "ammo": 60,
-   "reloadFrames": 81,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 7.6,
-   "burstGaugePerShot": 0.2,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when firing the last bullet. Affects all allies.\nCooldown of Burst Skill ▼ 1.56 sec.\n■ Activates when firing the last bullet during Manifestation. Affects all allies.\nDamage to Parts ▲ 50.68% for 5 sec.",
-    "skill2": "■ Affects all enemies.\nScorch to Dust: Deals 216% of final ATK as Distributed Damage.",
-    "burst": "Cooldown: 20 s\n\n■ Affects self.\nManifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec.\nGain Pierce for 10 sec.\n■ Affects a designated enemy.\nBrand: Accumulates total damage dealt to the designated enemy during the duration, and then deals that accumulated damage to all enemies as Distributed Damage once the duration ends. The maximum accumulated damage is 8900.83% of the caster's final ATK. Lasts for 10 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 100,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 233
-   }
-  },
-  "emma-tactical-upgrade": {
-   "slug": "emma-tactical-upgrade",
-   "name": "Emma: Tactical Upgrade",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/sp-81/ez-15/1b03a2ac929d1b0bbeb1e9cbe2c55cda.png",
-   "weapon": "MG",
-   "burst": "I",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Fire",
-   "normalAttackMultiplier": 5.57,
-   "coreAttackMultiplier": 200,
-   "ammo": 300,
-   "reloadFrames": 171,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 3.55,
-   "burstGaugePerShot": 0.05,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates at the start of battle. Affects self.\nEnvironment Setup\nFunction: Sprays a solution into the surroundings to create an advantageous battlefield.\nEffect 1: Damage Taken ▲ 3.9% for 10 sec.\nEffect 1 Target(s): All enemies (including those that appear during Environment Setup)\n\nEffect 2: Environment Setup: Continuously recovers 2.32% of caster's final Max HP every 1 sec for 10 sec.\nEffect 2 Target(s): All allies\n\nRecurring interval: 30 sec\n\n■ Activates when the enemy appears. Affects self.\nExposure (Cannot be removed)\nEffect: Attract: Taunt all enemies continuously.",
-    "skill2": "■ Activates only if self is alive.\nLT Formation\nFunction: Issues a battle-advantageous tactic to target(s).\nEffect 1: Affects all allies from the same squad. Critical Damage ▲ 23.51% continuously.\nEffect 2: Affects all allies. Projectile Explosion Damage ▲ 2.32% continuously.\n\nBonus effects when applying AS Formation to self.\nEffect 1: Affects all allies. True Damage ▲ 30.97% continuously.\nEffect 2: Affects all allies. Projectile Explosion Damage ▲ 3.09% continuously.\nEffect 3: Affects self. Exposure activation disabled continuously.\nEffect 4: Affects self. Recurring interval of Environment Setup ▼ 20 sec continuously.",
-    "burst": "Cooldown: 20 s\n\n■ Affects all allies.\nBattlefield Formation: ATK ▲ 40.07% of caster's ATK for 10 sec.\n■ Affects self while in Environment Setup status.\nEnhanced Environment Setup\nFunction: Enhances Environment Setup.\nDuration: 10 sec\nEffect 1: Damage taken multiplier of Environment Setup is scaled by 100%.\nEffect 1 Target(s): All enemies\n\nEffect 2: Potency of HP restored ▲ 29.04%.\nEffect 2 Target(s): All allies"
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 84,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 93
-   }
-  },
   "zwei": {
    "slug": "zwei",
    "name": "Zwei",
@@ -1754,51 +1529,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 32
-   }
-  },
-  "exia": {
-   "slug": "exia",
-   "name": "Exia",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/uu-02/wd-67/d34467565fa787ae564bda70a54643be.png",
-   "weapon": "SR",
-   "burst": "I",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Electric",
-   "normalAttackMultiplier": 69.04,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 141,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 8.4,
-   "burstGaugePerShot": 2.8,
-   "treasure": true,
-   "skills": {
-    "skill1": "■ When the last round of ammunition hits, affects the target if the caster is in Collect Hacking Code.\nATK ▼ 13.77% for 5 sec.\nDEF ▼ 13.77% for 5 sec.",
-    "skill2": "■ Activates when the last round of ammunition hits. Affects self.\nCollect Hacking Code: ATK ▲ 16.8%, stacks up to 5 time(s) and lasts for 15 sec.",
-    "burst": "Cooldown: 20 s\n\n■ Affects 10 enemy unit(s) with the highest final DEF.\nDeals 122.32% of final ATK as damage.\nDEF ▼ 2.71% for 5 sec.\n■ Activates when Collect Hacking Code is fully stacked. Affects the same target(s).\nDeals 122.32% of final ATK as additional damage."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 84,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 210
    }
   },
   "maiden-ice-rose": {
@@ -2024,51 +1754,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 15
-   }
-  },
-  "privaty-unkind-maid": {
-   "slug": "privaty-unkind-maid",
-   "name": "Privaty: Unkind Maid",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/ov-16/sp-37/885480e6d5c15775d47371bfaca37de8.png",
-   "weapon": "SG",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Electric",
-   "normalAttackMultiplier": 182.1,
-   "coreAttackMultiplier": 200,
-   "ammo": 9,
-   "reloadFrames": 141,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 10,
-   "rl3": 12.8,
-   "burstGaugePerShot": 2,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when hitting the target with 30 pellet(s). Affects 2 enemy unit(s) nearest to the crosshair.\nDeals 202.84% of final ATK as damage.",
-    "skill2": "■ Activates when more than 5 pellet(s) hit with a single normal attack. Affects self.\nReloading Speed ▲ 20.88% for 2 sec.\n■ Activates when hitting 30 time(s) using pellets during Full Burst Time. Affects self.\nReload 1 round(s).\nATK ▲ 11.22%, stacks up to 5 time(s) and lasts for 2 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects self.\nAttack damage ▲ 10.56% for 10 sec.\nCritical Damage ▲ 88.17% for 10 sec.\n■ Affects all enemies.\nDeals 1066.66% of final ATK as Burst Skill damage."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 86,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 313
    }
   },
   "liberalio": {
@@ -2791,51 +2476,6 @@
     "resourceId": 234
    }
   },
-  "vesti-tactical-upgrade": {
-   "slug": "vesti-tactical-upgrade",
-   "name": "Vesti: Tactical Upgrade",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/je-85/in-41/73bfbda69b65fc459b9e787bb110943c.png",
-   "weapon": "RL",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Fire",
-   "normalAttackMultiplier": 22.44,
-   "coreAttackMultiplier": 200,
-   "ammo": 8,
-   "reloadFrames": 142,
-   "chargeFrames": 120,
-   "chargeMultiplier": 200,
-   "hitsPerShot": 2,
-   "rl3": 31.2,
-   "burstGaugePerShot": 7.8,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when performing Full Charge attacks, if self is not in Missile Guide status. Affects self.\nMissile Guide: Charge Speed ▲ 100% for 3 round(s).\nCharge Damage ▲ 58.5% for 3 round(s).\n■ Activates when reloading to max ammunition. Affects self.\nRemoves Missile Guide.",
-    "skill2": "■ Activates when landing Full Charge attacks. Affects target(s).\nDeals 266.6% of final ATK as true damage.\n■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self.\nATK ▲ 20% for 3 sec.\n■ Activates when landing Full Charge attacks if target(s) is in Explosive Round status. Affects self.\nProjectile Explosion Damage ▲ 20% for 3 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Affects self.\nExplosion Radius ▲ 100% for 10 sec.\nTrue Damage ▲ 60% for 10 sec.\n■ Affects all enemies (including parts).\nDeals 492.3% of final ATK as Burst Skill true damage."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 88,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 94
-   }
-  },
   "ade-agent-bunny": {
    "slug": "ade-agent-bunny",
    "name": "Ade: Agent Bunny",
@@ -3016,51 +2656,6 @@
     "resourceId": 841
    }
   },
-  "eunhwa-tactical-upgrade": {
-   "slug": "eunhwa-tactical-upgrade",
-   "name": "Eunhwa: Tactical Upgrade",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/zt-89/fy-21/da31a65c62380b4d1089a5bc0e173040.png",
-   "weapon": "SR",
-   "burst": "II",
-   "burstCooldownSec": 20,
-   "class": "Attacker",
-   "element": "Fire",
-   "normalAttackMultiplier": 69.04,
-   "coreAttackMultiplier": 200,
-   "ammo": 6,
-   "reloadFrames": 141,
-   "chargeFrames": 60,
-   "chargeMultiplier": 250,
-   "hitsPerShot": 1,
-   "rl3": 8.4,
-   "burstGaugePerShot": 2.8,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates when using Burst Skill. Affects self.\nCamouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.\n■ Activates when attacking with Full Charge during Full Burst. Affects self.\nCamouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.\n■ Activates only when in Camouflage status. Affects self.\nNormal attacks deal true damage continuously.\nTrue Damage ▲ 42.24% continuously.",
-    "skill2": "■ Activates only when self survives.\nAS Formation\nFunction: Issues a battle-advantageous tactic to target(s).\nEffect 1: Affects all allies from the same squad. Critical Rate ▲ 8.16% continuously.\nEffect 2: Affects all allies. Charge Damage ▲ 41.81% continuously.\nEffect 3: Affects self. ATK ▲ 42.24% continuously.\n\nBonus effects when applying LT Formation to self.\nEffect 1: Affects all allies. Projectile Explosion Damage ▲ 5.11% continuously.\nEffect 2: Affects all allies. True Damage ▲ 30.97% continuously.",
-    "burst": "Cooldown: 20 s\n\n■ Affects self.\nChanges the weapon in use:\nCharge time: 0.3 sec\nDamage: 105.6% of final ATK as true damage\nFull Charge damage: 300% of damage\nMax Ammunition Capacity: 1 round(s)\nSpecial note: Fires an Exploding Bullet dealing area-of-effect damage.\nAdditional effect:\nTarget: Target(s) hit\nEffect: Explosive Round: Damage Taken ▲ 27.87% for 10 sec."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 76,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 95
-   }
-  },
   "delta-ninja-thief": {
    "slug": "delta-ninja-thief",
    "name": "Delta: Ninja Thief",
@@ -3104,51 +2699,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 23
-   }
-  },
-  "chime": {
-   "slug": "chime",
-   "name": "Chime",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/bg-40/sx-10/ce075b41601b62a18a218b7ee33fbcf7.png",
-   "weapon": "SMG",
-   "burst": "II",
-   "burstCooldownSec": 20,
-   "class": "Supporter",
-   "element": "Iron",
-   "normalAttackMultiplier": 8.1,
-   "coreAttackMultiplier": 200,
-   "ammo": 120,
-   "reloadFrames": 81,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 5.7,
-   "burstGaugePerShot": 0.1,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates at the start of battle. Affects the king.\nWish: ATK ▲ 46.46% of caster's ATK continuously.",
-    "skill2": "■ Activates when entering Full Burst. Affects the king.\nDaily Report: Normal Attack Damage Multiplier ▲ 46.22% for 10 sec.",
-    "burst": "Cooldown: 20 s\n\n■ Affects all allies.\nRe-enters Burst Stage 2.\nMax Ammunition Capacity ▲ 20% for 10 sec.\n■ Affects the king.\nLoyalty: Attack Damage ▲ 92.44% for 10 sec."
-   },
-   "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 86,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 331
    }
   },
   "soline-frost-ticket": {
@@ -3509,51 +3059,6 @@
     "maxLevel": 1200,
     "critDamage": 150,
     "resourceId": 18
-   }
-  },
-  "ark-ranger-black": {
-   "slug": "ark-ranger-black",
-   "name": "Ark Ranger Black",
-   "imageUrl": "https://sg-tools-cdn.blablalink.com/jw-15/dl-31/1eb33a72c9b03dde0808fc4ac83a64b9.png",
-   "weapon": "AR",
-   "burst": "III",
-   "burstCooldownSec": 40,
-   "class": "Attacker",
-   "element": "Wind",
-   "normalAttackMultiplier": 13.65,
-   "coreAttackMultiplier": 200,
-   "ammo": 60,
-   "reloadFrames": 81,
-   "chargeFrames": 0,
-   "chargeMultiplier": 0,
-   "hitsPerShot": 1,
-   "rl3": 7.6,
-   "burstGaugePerShot": 0.2,
-   "treasure": false,
-   "skills": {
-    "skill1": "■ Activates at the start of battle. Affects self.\nDamage to Parts ▲ 20% continuously.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nCharges battery by 50% continuously, up to 100%. This effect cannot be removed.\n■ Activates when battery reaches 100%. Affects self.\nTransformation\nFunction: Transforms into an Ark Ranger and strengthens herself while depleting her battery.\nEffect 1: Battery ▼ 1% every 0.2 sec continuously. This effect cannot be removed.\nEffect 2: ATK ▲ 156.19% continuously. This effect cannot be removed.\nDeactivation condition: When the battery drops to 0%\n■ Activates after performing 30 normal attack(s). Affects self.\nSustained Damage ▲ 59.6% for 5 sec.",
-    "skill2": "■ Activates when Transformation takes effect and when the enemy appears while Transformation is in effect. Affects all enemies.\nArk Black Collider: Deals 45.87% of final ATK as sustained damage every 1 sec until Transformation is canceled.\n■ Activates when entering Full Burst. Affects all Wind Code allies with assault rifles.\nSustained Damage ▲ 77.5% for 10 sec.",
-    "burst": "Cooldown: 40 s\n\n■ Activates while in Transformation status. Affects self.\nBattery ▲ 50%\n■ Activates while not in Transformation status. Affects self.\nEmergency Charge Protocol\nFunction: Quickly charges the battery and transforms into an Ark Ranger.\nEffect 1: Battery ▲ 100%\nEffect 2: Battery ▼ 50% after transforming.\n■ Affects the 1 enemy unit(s) with the highest final max HP.\nDeals 266.69% of final ATK as sustained damage every 1 sec for 10 sec.\n■ Affects self.\nSustained Damage ▲ 135.83% for 10 sec."
-   },
-   "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 90,
-    "core": {
-     "hp": 200,
-     "atk": 200,
-     "def": 200
-    },
-    "grade": {
-     "hp": 3000,
-     "atk": 20,
-     "def": 100,
-     "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 570
    }
   },
   "arcana-fortune-mate": {

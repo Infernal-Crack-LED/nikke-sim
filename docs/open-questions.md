@@ -456,8 +456,10 @@ source (_TricK_, note.com/n6efe08af53e8) measures the ~12.5px auto reticle floor
 accuracy loss** (→ ~0.80-0.82 effective, slightly BELOW 0.85) but never integrates a core-hit
 probability; the "85" in it is a reticle-formula INTERCEPT, likely a units mix-up. A KR curve
 (arca.live/96243965, Blacksmith/mid-range) gives core-hit vs the ACCURACY STAT: ~40% @75.6% acc,
-~90% @85% acc — a different axis. ore-game.com/verify-memo: shotgun core is ~100% front row /
-~1.6% mid / ~0% back — i.e. **range-band dominated**; うま's MG note: MG cores ~100% once warmed
+~90% @85% acc — a different axis. ore-game.com/verify-memo: shotgun core is ~6% front row /
+~1.6% mid / ~0% back (auto, base accuracy) — i.e. **range-band dominated** [front-row figure
+CORRECTED 2026-07-15 from a "~100%" transcription error; ~6% corroborates our measured SG near
+0.072 — see the LANDED block below + `docs/probe-data/sg-core-research.md`]; うま's MG note: MG cores ~100% once warmed
 (≥3.75s) at any range; SR/RL possibly near-guaranteed. So a single scalar under-credits MG/SR/RL
 carries and over-credits off-range SG/SMG. Options (owner call, ⚑ refit): (a) keep 0.85 blended;
 (b) weapon-class-indexed (MG/SR ~0.95-1.0, RL ~guaranteed, AR/SMG ~0.85, SG = f(range)); (c) the
@@ -487,6 +489,152 @@ The sweep optimum (~0.93-0.95, below the qualitative "near-100%") reflects the ~
 wind-up shots. FB counts unchanged (core rate ≠ rotation); snapshots regenerated. Knobs: `CORERATE=flat`
 reverts to 0.85, `CORERATEHI` sweeps the MG/SR/RL value, `ACR` overrides all. Still ⚑ — a precise
 per-shot count or the geometric reticle model can refine it.
+
+**LANDED 2026-07-15 ⚑ refit — AR/SMG/SG core rate is now RANGE-DEPENDENT per (weapon, band)** (sim.ts
+`acrFor(weapon, band)` + `CORE_BY_WEAPON_BAND`; the flat AR/SMG/SG 0.85 is OVERTURNED, MG/SR/RL 0.95 stands).
+Three scope-lock SOLO recordings (Scarlet AR, Chisato SMG, Drake SG — no Full Burst → clean out-of-FB
+reads) binned every normal-attack core popup (red "CORE HIT" text) by the boss-range band. Core is
+strongly range-concentrated (close → far), FB-independent (aim geometry), weapon-ordered AR > SMG > SG;
+ALL bands far below 0.85. Measured per-band ⚑ (Wilson 95% CIs in `docs/probe-data/coreband2-*.json`):
+| weapon | near | mid | midfar | far |
+|---|---|---|---|---|
+| AR | 0.40 | 0.30 | 0.03 | 0.00 |
+| SMG | 0.28 | 0.244 | 0.076 | 0.059 |
+| SG | 0.072 | 0.00 | 0.0045 | 0.00 |
+The union raid boss is the SAME physical boss across element assignments (owner) → these values transport
+across every validation comp. **Falsifiable test confirmed:** only AR/SMG/SG rows moved (146-row board),
+all downward; MG/SR/RL byte-identical; LM's SMG residual closed as predicted (1.36→1.00). Per-weapon mean:
+AR 1.095→0.881, SMG 1.069→0.831, SG 1.106→0.755. Board median 0.995→0.950, MAE 0.141→0.144 (≈flat),
+within-±10% 53→56%. The re-centering to ~0.95 is EXPECTED/diagnostic (the flat 0.85 masked pre-existing
+AR/SG under-models). New knob `CORERATEBAND=off` restores the prior flat per-weapon table for A/B.
+STILL OPEN / RESOLVED:
+(1) **SG extreme-near (0–25) band — RESOLVED 2026-07-15 (s1 online research):** ore-game verify-memo
+measures SG front-row core ~6% (auto, base accuracy), CORROBORATING our measured near 0.072 (two
+independent base-accuracy reads converge at 6–8%). Sharp near-only STEP (6%→1.6%→0%), not a continuous
+curve → the band-table is the right form. SG near 0.072 STANDS — do NOT raise it (10-pellet spread +
+12.5px auto reticle floor structurally caps SG cores; 40–90% figures need 75–88% accuracy, absent under
+scope lock; our small central core if anything reads lower). ⟹ the cold-SG residual (0.755) is NOT the
+core rate — it's a separate under-model (pellet-body-hit crediting / band-time allocation), under s4's
+audit. `docs/probe-data/sg-core-research.md`.
+(2) **AR near 0.40 CONFIRMED 2026-07-15 (s2, Moran re-record):** direct "CORE HIT"-count 0.40 [0.27,0.55]
+AND an ammo-verified damage reconciliation 0.40 agree EXACTLY (two methods, one unit) — and match Scarlet's
+0.40, so two independent AR units converge and the ~10% Scarlet non-core-error worry is removed. AR near
+provisional flag DROPPED. AR mid/midfar carry boss-distance-in-scripted-window noise (Moran's "midfar"
+window sat at medium range; per-band mid/midfar disagree between the two units while pooled-by-actual-
+distance agrees ~0.13–0.16) — a known refinement candidate, but the damage-dominant near value is solid.
+`docs/probe-data/coreband2-moran-ar.json`. ⟹ grave/guillotine coldness is NOT a too-low AR table (near is
+confirmed) — it's a separate exposed under-model, same as noir/naga on the SG side.
+(3) **Geometric distance→core-size model (Option 2) — SHELVED (owner ruling 2026-07-15):** sources describe
+a sharp near-only step, not a continuous distance curve, so the landed per-band table is already the right
+shape; geometric generality is not indicated. Revive only if a future multi-boss dataset shows the table
+failing to transport.
+(4) control-team calibration to promote the ⚑ table toward MEASURED tier.
+
+### A26 — Shotgun pellet-landing ⚑ + Dorothy: Serendipity consolidation — SEQUENCED (2026-07-15, Fable-arbitrated)
+Two coupled SG items surfaced auditing dorothy-serendipity (owner-greenlit class-A fix). Fable ruled
+**Option C: a sequenced two-step increment**, NOT a one-shot dorothy fix. Both steps are Fable-pre-op
+APPROVED-WITH-REVISIONS; neither implemented yet.
+
+**FALSE-PREMISE CORRECTION:** the pellet-landing model is NOT unbuilt. `SG_OUT_OF_NEAR_HIT_FRACTION = 0.3`
+(sim.ts ~157, CALIBRATED ⚑: near band = all 10 pellets land, elsewhere ~30% = 3 pellets; applied in
+`firePull` + mirrored into gauge gen). The dorothy solo footage (`docs/probe-data/dorothy-serendipity-firing.json`)
+shows ~5–8 pellet POPUPS/shot in spray → contradicts the 0.3 ⚑ (measured ~0.5–0.8). This UNDER-credits SG
+spray at mid/far, consistent with noir/naga running cold. (Caveat, Fable: popups under-report real hits —
+the rapi invisible-X finding — so validate landing fractions against DAMAGE ARITHMETIC, not popup counts.)
+
+**STEP 1 — DONE 2026-07-15 (Fable 2-of-2 LAND).** Measured (Drake solo damage-arithmetic, dropout≈1.0 via
+the closed-book 53.97M global total, `docs/probe-data/sg-pellet-landing.json`): SG landing is ~FLAT — near
+**0.60** / mid 0.60 / far 0.45 / midfar 0.55 — NOT the old 1.0-near/0.30-else step (both edges wrong; near
+gaps let ~4 pellets through even point-blank). Landed as `SG_LANDING_BY_BAND` (sim.ts; `ENV.SGLANDING='legacy'`
+reverts). Board flat (MAE 0.144→0.145), rotation pins EXACT (0 FB changes). **FAILED PREDICTION (logged):**
+pre-stated "noir/naga WARM" was WRONG — all SG COOLED (near cut 1.0→0.60 dominates the mid/far rise); the
+corroboration channel failed, landing stands on measurement validity. near 0.60 = LOWER BOUND (≤0.7–0.8 cap);
+⚑ single-boss, ±0.10–0.15; do NOT correct it upward without a new direct measurement (see the SG under-model
+item below). Details: DECISIONS (Engine/data-architecture).
+
+**SHARED SG UNDER-MODEL — now a first-class open item (Fable condition, 2026-07-15).** After the
+range-dependent CORE model (SG near core 0.85→0.072) AND this landing refit (near 1.0→0.60), SG near damage
+is ~35% of the old model and per-weapon SG mean sits at **0.695** (noir/naga/dorothy/soda all cold). Both old
+⚑s (full near-landing + flat 0.85 core) were COMPENSATING for a real SG damage source not modeled — the
+residual is now ~**0.25–0.30 multiplicative** and is the item's TESTABLE prediction. Candidate: real
+pellet-body damage / an SG mechanic that renders few popups (the same "invisible-X" that makes near 0.60 a
+lower bound — so DO NOT re-absorb it into the landing fraction or any per-unit ⚑; that would double-count).
+Needs a focused SG recording that reconciles a unit's full damage TOTAL (not popups) against the modeled
+sum. Until then noir/naga stay honestly cold (accepted). This is the SG analogue of the AR grave/guillotine
+exposed under-model (A26 / exposed-undermodel-audit).
+
+**STEP 2: Dorothy consolidation state (Option A design).** Her S1 "pellet count fixed at 1 for 3 rounds"
+(after landing 80 pellets) + Hit Rate ▲98.18% + Attack damage ▲72% + Pierce = a RANGE-GATED consolidation
+mode (measured: only fires at NEAR range, ~17% of shots, core ≈0.9 [⚑, Wilson LB ~0.65 from 7/7], single
+bullet ≈110k out-of-burst / 1.1–1.55M in-burst; ~neutral out of burst, large gain in burst). Model as a
+dorothy-scoped near-gated state: hitsPerShot→1, core≈0.9, +72% attack, Pierce — and REMOVE the currently-
+PERMANENT +72% (measured-contradicted: it's ~17% of shots, near-only). ACCEPTANCE (Fable revision): gate on
+the footage-level observables FIRST (≈110k / 1.1–1.55M singles, ~17%, near-only via DBG), board ratio is
+SECONDARY with direction pre-stated. Define burst interaction explicitly (the "+5 pellets ≈ normalAttackPct
++50%" burst approx is WRONG on a 1-pellet base); decide consolidated-shot Pierce (PIERCE_CORE_DOUBLE excludes
+SG because pellets don't line up core+body — a single consolidated bullet DOES, so model it / make S2's inert
+pierceDamagePct 55.08 live, or document why not). "Roughly a wash" is retired once the state exists.
+
+**STEP 2 — LANDED 2026-07-15 (Fable 2-of-2).** Config-driven range-gated consolidation state (engine:
+`ConsolidationConfig` + `firePull` near-gated accumulator + `dealDamage` `coreOverride`/`extraDmgUpPct`/
+`pierceActive` opts; dorothy override `consolidation` block). Consolidation bullet VALIDATED on the reliable
+anchor: sim ~122.7k out-of-burst vs measured ~110k (+11%, within ±20%); near-only, ~17% of shots. Removing the
+permanent +72% attack (a measured-contradicted fudge) dominates → **PH 0.69→0.44, N9 0.55→0.35**. Criterion
+(c) "moves up" FAILED — but Fable ruled it SMUGGLED the explicitly-UNRELIABLE in-burst 1.1–1.55M reads into the
+rule as an assumption; the mechanism criteria (anchored to the reliable data) passed, the fudge removal is
+faithful, so the invariant compels landing over keeping a known fudge. Rotation pins EXACT (only dorothy drifted).
+- **BLOCKED-pending-measurement (Fable condition):** dorothy's 0.44/0.35 rows must NOT be chased with tuning —
+  the residual is the shared SG spray under-model + the unresolved burst question below.
+- **NEW OPEN (the (c)-failure diagnosis, Fable condition):** **Are the ~1.1–1.55M in-burst "CORE HIT PIERCE"
+  singles consolidation cores, or Burst-III cast damage / skill riders?** The sim's confirmed consolidation
+  mechanics CANNOT produce 1.1–1.55M from a 1-pellet bullet (burst ATK+FB give only ~3.2×, not the ~10–14×
+  implied) → EITHER they are Burst-III cast damage (1254% coef, huge), OR there is an un-modeled
+  burst-consolidation amplification (a possible Step 3). RESOLVE with a **burst-ISOLATED dorothy recording**
+  that separates burst-window consolidation cores from the Burst-III cast. This single read decides whether
+  dorothy's true level is ~0.44 (no burst gain) or higher. Recording request queued.
+
+**(Superseded implementation plan — kept for provenance.)** STEP 2 — implementation plan (Fable pre-op R1–R4):
+Config-driven consolidation state (mirror the `charFixes` threading: `override.consolidation` → `prepare.ts`
+lifts to char → engine reads it; NO dorothy branch in the engine). Design:
+- **Accumulator+state** (UnitState `landedAcc`,`consolShotsLeft`): in `firePull`, `landed = round(hitsPerShot×sgFalloff)`;
+  if band===near `landedAcc += landed`; at ≥80 → enter consolidation (`consolShotsLeft = 3`, reset acc).
+  `consolidating = consolShotsLeft>0 && band===near`. Literal near-gated accumulator → ~19% ≈ measured 17%
+  (fallback: explicit near-duty-cycle ⚑ tuned ONLY to the 17% shot fraction, never the board ratio).
+- **Consolidation shot**: 1 pellet (`sgFalloff:=0.1`); new generic `coreOverride≈0.9` opts param to dealDamage
+  (⚑, wide CI 0.65–0.9, sensitivity noted); +72% attack applied ONLY while consolidating (REMOVE the current
+  permanent `hitCount:80` block); her Pierce-tag makes S2 `pierceDamagePct 55.08` live (a Damage-Up add).
+- **R1 (REQUIRED): Pierce DOUBLE-HIT stays OFF** — enabling it re-litigates the settled `PIERCE_CORE_DOUBLE=false`
+  (same boss, same single-aligned-bullet geometry) without same-tier evidence; enable ONLY on direct
+  popup-anatomy (two popups per consolidated pull, checkable in the existing footage) or a new A/B — NEVER by
+  residual subtraction. NB the +55.08% pierce-DAMAGE does apply (dmgUp 2.27, not 1.72) — recompute the bullet
+  with it before comparing to 110k.
+- **R2 (REQUIRED): grade the consolidated bullet at ±20% ABSOLUTE (≈110k out-of-burst / 1.1–1.55M in-burst)
+  with NO shared-SG-residual credit** (a single landing bullet can't have missed-pellet body damage). An
+  undershoot of ~25–30% is NEW EVIDENCE that the shared residual is NOT (only) missed-pellet body damage →
+  log, don't absorb. Board ratio SECONDARY; dorothy may stay <1.0 (ACCEPT).
+- **R3 (REQUIRED): explicit gauge decision** — the 1-pellet shot generates 1-landed-pellet gauge (sgFalloff
+  0.1 into `shotGauge`, consistent with "gauge counts hits"); acceptance (d) checks the rotation consequence.
+- **R4 (REQUIRED): out-of-near window = literal (3 consolidation shots fire near-gated; short episodes sit
+  inside the long near windows so the edge case is rare) + NOTE the burst accumulation gap** (in-burst spray
+  lands ~9 not 6 pellets, but +5 is modeled as normalAttackPct so `landedAcc` misses it — first-order,
+  acceptable if frequency passes) + gate the burst `normalAttackPct 50` (=+5 pellets) OFF while consolidating.
+  Label the near-gate MEASURED, the "80-landed-on-core" story INTERPRETIVE in the override note.
+Decision rule pre-committed: LAND iff (a) sim bullet within ±20% of 110k/1.1–1.55M; (b) near-only + ~15–20%
+of shots (DBG); (c) dorothy moves UP not past ~1.05; (d) rotation pins exact. Plan: scratchpad/dorothy-step2-plan.md.
+
+**COUPLING NOTE (owner decision):** Step 2's R2 check (does the consolidated bullet reproduce 110k with NO
+residual credit?) is ITSELF a probe of the shared SG under-model. If it undershoots, that's evidence about
+the residual mechanism. So Step 2 and the "general shotgun investigation" (the ~0.25–0.30× residual hunt) are
+coupled — the SG investigation may reframe what Step 2's undershoot means. Owner ordered Step 2 first; noting
+the option to interleave.
+
+**Open sub-items (Fable revision 7):** (a) the duty-cycle discrepancy — measured 17%÷~38% near-time ≈ 45%
+vs the literal accumulator arithmetic (80 landed pellets @ ~10/shot near ≈ 27% duty, ~36% with burst +5):
+try the literal 80-pellet/3-round accumulator FIRST (override already uses `hitCount:80`, engine counts
+landed pellets), fall back to the measured duty-cycle ⚑ only if it fails to reproduce ~17%; (b) popup-
+undercount vs ballistic landing fraction; (c) preserve the full consolidation measurement set (110k /
+1.1–1.55M / 0.9 core / near-gated / ~17%) — in `dorothy-serendipity-firing.json`. Option B (bounded, no
+state) REJECTED (creates a never-real 10-credited-pellet × 1.72 near state + an unreferenced core ⚑).
 
 ### A16 — July 2 2026 distributed-damage patch — APPLIED 2026-07-13
 Solo raid Annihilio was suspended over the distributed-damage bug; fixed 2026-07-02 with

@@ -1,0 +1,102 @@
+{
+  "measurement": "range-dependent auto-aim CORE-HIT rate (SMG normal attacks) — HARDENED SECOND READ",
+  "unit": "chisato",
+  "weapon": "SMG",
+  "focusReason": "solo recording — only unit on field, so all normal-attack popups are hers; no Full Burst in this run",
+  "date": "2026-07-15",
+  "priorRun": "docs/probe-data/coreband-chisato-smg.json (first read); this file is the Fable-approved hardened re-measurement (60fps frame-stepped, CORE-HIT-text classification, >=40 normals/band, pooled near+midfar windows)",
+  "video": "docs/probes/ar-sg-smg/chisato smg.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/chisato smg.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "representativeFrames": "docs/probes/ar-sg-smg/coreband-frames/cb2_*.png (gitignored)",
+  "videoMeta": {
+    "displayDims": "2622x1206 (portrait 1206x2622 + rotation=90)",
+    "fps": 60,
+    "durationSec": 213.31
+  },
+  "fightClockOffset": {
+    "note": "fight_clock = video_time - offset, from the top-right MM:SS countdown (fight t = 180 - remaining). Countdown re-read at each window; video-minus-fight offset drifts ~6s early to ~3s late (integer-second rounding + minor clock drift).",
+    "anchors": [
+      {"videoSec": 20, "countdown": "02:46", "fightSec": 14, "offset": 6},
+      {"videoSec": 58, "countdown": "02:07", "fightSec": 53, "offset": 5},
+      {"videoSec": 92, "countdown": "01:32", "fightSec": 88, "offset": 4},
+      {"videoSec": 130, "countdown": "00:53", "fightSec": 127, "offset": 3},
+      {"videoSec": 165, "countdown": "00:18", "fightSec": 162, "offset": 3},
+      {"videoSec": 183, "countdown": "gone (fight ended ~180)", "fightSec": 180, "offset": 3}
+    ]
+  },
+  "colourConvention": {
+    "white": "normal NON-core (24229 @near1/mid; 15760 @near2; 12123 @far/midfar)",
+    "orange+critIcon": "crit, NON-core (white x1.5, e.g. 12123->18185; 15760->21099/21822; 24229->33548)",
+    "red 'CORE HIT'": "core hit — counts as CORE (52186/61505 @near1/mid; 33945/40007 @near2; 30308/36370 @far/midfar)",
+    "red+orange 'CORE HIT'+critIcon": "core + crit — counts as CORE (retains the CORE HIT text)",
+    "classificationRule": "CORE iff the popup carries the 'CORE HIT' text OR renders red/red-orange; NON-CORE = white (normal) or orange-with-crit-icon-and-no-CORE-HIT (crit). Structural 'CORE HIT' text used, not hue-vs-dark-boss."
+  },
+  "r3CoreCritRenderCheck": {
+    "result": "CONFIRMED — a core+crit hit still shows the red 'CORE HIT' label; it is NOT masked into a plain orange crit.",
+    "evidence": "In near/mid frames, 'CORE HIT' labelled popups render red (e.g. 61505) AND red-orange when also crit (e.g. 52186/40007 rendered orange-tinted but with 'CORE HIT' text and a crit icon). Plain crits (orange 33548/18185/21099) have a crit icon but NO 'CORE HIT' text and are lower value. No evidence that a core+crit ever loses the CORE HIT label -> counts are NOT biased low.",
+    "frame": "docs/probes/ar-sg-smg/coreband-frames/cb2_R3_corecrit_near_v56.5.png"
+  },
+  "excluded": [
+    "Chisato's ~472% true-damage periodic proc (big distinct popups >500k: 566125 / 849187 / 1293108)",
+    "burst-cast damage (none in this solo no-FB run)",
+    "cyan BLOCK! (boss attack blocked, not damage)",
+    "red single-digit blood-splat numbers over the CHARACTER (damage taken by Chisato, not dealt)",
+    "tiny 2-digit fragments that are occluded pieces of a larger stacked number"
+  ],
+  "method": "Per band: extracted full-res crosshair-region frames (crop=1100:640:780:110, zoom 2x) at 0.7s spacing so each frame is an INDEPENDENT popup stack (SMG popups live <0.6s -> no cross-frame double-count; a RATE is unbiased under independent sampling). Classified each legible body-band normal (~12-62k) as core (CORE HIT text/red) vs non-core (white/orange). Reload/black-screen frames counted as available. Boss distance visually cross-checked against band label from downscaled full frames. Near and Midfar each pool two windows to reach >=40 classified normals.",
+  "bands": [
+    {
+      "band": "mid", "fightWindowSec": "12-18 (in 0-33)", "videoWindowSec": "18-24.3",
+      "bossDistance": "medium (spider mech, moderate size, reticle on central core)",
+      "core": 11, "total": 45, "coreRate": 0.244, "wilson95CI": [0.142, 0.387], "confidence": "low-medium",
+      "note": "Higher than first read (0.138): the hardened CORE-HIT-text detection catches red 52186/61505 cores that blend into the dark mech at medium range where the reticle sits on the core."
+    },
+    {
+      "band": "near", "fightWindowSec": "47-56 & 158-164 (pooled two near windows)", "videoWindowSec": "53-62.3 & 161-167.3",
+      "bossDistance": "close (large mech, centre)",
+      "core": 29, "total": 95, "coreRate": 0.305, "wilson95CI": [0.221, 0.403], "confidence": "medium",
+      "subWindows": [
+        {"label": "near1", "videoSec": "53-62.3", "fightSec": "~47-56", "core": 20, "total": 52, "coreRate": 0.385, "wilson95CI": [0.265, 0.520]},
+        {"label": "near2", "videoSec": "161-167.3", "fightSec": "~158-164", "core": 9, "total": 43, "coreRate": 0.209, "wilson95CI": [0.114, 0.352]}
+      ],
+      "note": "The two near windows disagree (0.385 vs 0.209), reproducing the first read (0.385 vs 0.219) — pose/animation-dependent core exposure adds variance beyond range. near1 shows persistent red 52186/61505 cores; near2 shows mostly white 15760 stacks with occasional cores."
+    },
+    {
+      "band": "far", "fightWindowSec": "84-91 (in 70-106)", "videoWindowSec": "88-95",
+      "bossDistance": "far (small, receded to background centre)",
+      "core": 3, "total": 51, "coreRate": 0.059, "wilson95CI": [0.020, 0.159], "confidence": "medium-high",
+      "note": "Overwhelmingly white 12123 + orange 18185 crits; red 30308 cores are rare. Consistent with first read (0.069)."
+    },
+    {
+      "band": "midfar", "fightWindowSec": "121-131 & 176-180 (pooled two midfar windows)", "videoWindowSec": "125-131.3 & 178.8-182.3",
+      "bossDistance": "intermediate (mf1) to intermediate-far (mf2, end of fight)",
+      "core": 6, "total": 79, "coreRate": 0.076, "wilson95CI": [0.035, 0.156], "confidence": "medium",
+      "subWindows": [
+        {"label": "midfar1", "videoSec": "125-131.3", "fightSec": "~122-128", "core": 6, "total": 41, "coreRate": 0.146, "wilson95CI": [0.069, 0.284], "note": "reticle on central core; red 30308/36370 cores present. Matches first read (0.133)."},
+        {"label": "midfar2", "videoSec": "178.8-182.3", "fightSec": "~176-180", "core": 0, "total": 38, "coreRate": 0.0, "wilson95CI": [0.0, 0.092], "note": "END OF FIGHT: ZERO cores across 38 classified normals — only orange 18185 crits + white 12123. Boss further + final-pose core not exposed."}
+      ],
+      "note": "The two midfar windows disagree STRONGLY (0.146 vs 0.0). The 106-144 window agrees with the first read; the 176-180 end-of-fight window has no cores at all, dragging the pooled rate down to 0.076."
+    }
+  ],
+  "bossDistanceCrossCheck": "Boss apparent size/distance matches the band labels: near windows = large close mech; mid = medium mech (reticle on core); midfar1 = intermediate; midfar2/far = small receded boss. Frames: cb2_bossdist_{near,far,midfar}_*.png.",
+  "perBandSummary": [
+    {"band": "near",   "core": 29, "total": 95, "rate": 0.305, "wilson95CI": [0.221, 0.403]},
+    {"band": "mid",    "core": 11, "total": 45, "rate": 0.244, "wilson95CI": [0.142, 0.387]},
+    {"band": "midfar", "core": 6,  "total": 79, "rate": 0.076, "wilson95CI": [0.035, 0.156]},
+    {"band": "far",    "core": 3,  "total": 51, "rate": 0.059, "wilson95CI": [0.020, 0.159]}
+  ],
+  "monotonicity": {
+    "pooledOrdering": "near (0.305) > mid (0.244) > midfar (0.076) > far (0.059)",
+    "monotoneWithDistance": true,
+    "note": "Pooled band rates ARE monotone with boss distance (closer = higher core rate). Within-band heterogeneity is large though: near1 vs near2 (0.385 vs 0.209) and midfar1 vs midfar2 (0.146 vs 0.0) — driven by pose/animation and exact sub-window distance, NOT a violation of the range trend."
+  },
+  "findings": [
+    "Chisato SMG auto-aim core rate is range-dependent and, pooled, MONOTONIC with distance: near ~0.31 > mid ~0.24 > midfar ~0.08 ~= far ~0.06.",
+    "ALL bands are FAR below the sim's AUTO_CORE_RATE 0.85 constant (open-questions A9): realized SMG core rate vs this raid boss is ~0.06-0.31, not 0.85.",
+    "R3 confirmed: core+crit renders red 'CORE HIT'+crit-icon, never a bare orange crit — so classifying by the CORE HIT text does not undercount cores.",
+    "Strong within-band pose dependence: the end-of-fight midfar window (fight 176-180) produced ZERO cores in 38 normals, and the two near windows differ by ~0.18 — core exposure depends on boss animation/pose, not distance alone.",
+    "vs first read: near (0.31 vs 0.29) and far (0.06 vs 0.07) reproduce closely; mid came in higher (0.24 vs 0.14, hardened core detection) and pooled midfar lower (0.08 vs 0.13, because the new 176-180 sub-window has no cores while the 106-144 sub-window still reads ~0.15)."
+  ],
+  "caveats": "Counts from dense overlapping popup stacks are approximate (~+/-1 core & +/-2 total per frame). Sample sizes 45-95 classified normals/band. Trend confidence (near>mid>midfar~far) and the sub-100% magnitude are robust; absolute per-band values carry the stated Wilson CIs. Crit multiplier read cleanly as x1.5 in the far band (18185=12123x1.5)."
+}

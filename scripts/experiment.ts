@@ -14,6 +14,7 @@ import {
   type SkillLevelData,
   type UnitOptions,
 } from '../src/prepare.js';
+import { scopeLockCfg } from './lib/scope-lock.js';
 
 const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
 const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
@@ -182,20 +183,6 @@ const COMPS: Comp[] = [
     real: { grave: 286_237_418, 'anis-star': 599_378_674, jill: 534_623_166, chisato: 481_741_106, noir: 163_055_320 },
   },
   {
-    name: 'PC shields (boss Fire)',
-    slugs: ['tia', 'anis-star', 'naga', 'snow-white-heavy-arms', 'helm'],
-    boss: 'Fire',
-    modes: { naga: 'with shielder' },
-    real: { tia: 159_872_551, 'anis-star': 779_423_317, naga: 174_159_371, 'snow-white-heavy-arms': 1_320_261_601, helm: 651_956_107 },
-  },
-  {
-    name: 'PD Eva duo (boss Wind)',
-    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'diesel-winter-sweets', 'helm'],
-    boss: 'Wind',
-    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
-    real: { 'emma-tactical-upgrade': 138_646_718, 'eunhwa-tactical-upgrade': 303_333_340, 'diesel-winter-sweets': 547_126_157, helm: 272_995_802 },
-  },
-  {
     name: 'PE elec DPS (boss Water)',
     slugs: ['rouge', 'crown', 'ein', 'ada', 'cinderella'],
     boss: 'Water',
@@ -252,13 +239,6 @@ const COMPS: Comp[] = [
     real: { rouge: 51_261_007, trina: 41_511_140, 'scarlet-black-shadow': 446_499_359, liberalio: 532_559_013, 'soda-twinkling-bunny': 136_670_428 },
   },
   {
-    name: 'N4 neon/nayuta electric (boss Electric)',
-    slugs: ['dorothy', 'nayuta', 'snow-white', 'neon-vision-eye', 'laplace'],
-    boss: 'Electric',
-    focus: 'snow-white',
-    real: { dorothy: 211_171_913, nayuta: 377_083_541, 'snow-white': 257_121_800, 'neon-vision-eye': 525_046_420, laplace: 121_033_929 },
-  },
-  {
     name: 'N5 snowwhite-HA fire (boss Fire)',
     slugs: ['anis-star', 'arcana-fortune-mate', 'privaty', 'snow-white-heavy-arms', 'diesel-winter-sweets'],
     boss: 'Fire',
@@ -273,26 +253,11 @@ const COMPS: Comp[] = [
     real: { 'little-mermaid': 227_940_860, 'ade-agent-bunny': 97_938_869, 'mihara-bonding-chain': 715_829_334, 'maiden-ice-rose': 423_813_138, maxwell: 94_804_986 },
   },
   {
-    name: 'N8 emma/eunhwa duo fire (boss Fire)',
-    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'guillotine-winter-slayer', 'eve', 'vesti-tactical-upgrade'],
-    boss: 'Fire',
-    focus: 'guillotine-winter-slayer',
-    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
-    real: { 'emma-tactical-upgrade': 97_877_243, 'eunhwa-tactical-upgrade': 229_973_727, 'guillotine-winter-slayer': 338_556_321, eve: 283_086_167, 'vesti-tactical-upgrade': 235_472_406 },
-  },
-  {
     name: 'N9 redhood/elegg electric (boss Electric)',
     slugs: ['moran', 'crown', 'red-hood', 'elegg-boom-and-shock', 'dorothy-serendipity'],
     boss: 'Electric',
     focus: 'red-hood',
     real: { moran: 233_850_467, crown: 180_136_219, 'red-hood': 484_593_983, 'elegg-boom-and-shock': 398_602_210, 'dorothy-serendipity': 328_194_874 },
-  },
-  {
-    name: 'N10 milk/phantom electric (boss Electric)',
-    slugs: ['little-mermaid', 'arcana', 'milk-blooming-bunny', 'helm', 'phantom'],
-    boss: 'Electric',
-    focus: 'milk-blooming-bunny',
-    real: { 'little-mermaid': 120_695_031, arcana: 45_467_123, 'milk-blooming-bunny': 333_898_954, helm: 99_624_016, phantom: 182_121_526 },
   },
 ];
 
@@ -312,12 +277,7 @@ function run(comp: Comp, patch: Patch = {}, seed?: number) {
     mode: comp.modes?.[slug],
     lambdaStage: comp.lambda?.[slug],
   }));
-  const cfg: SimConfig = {
-    slugs: comp.slugs, bossElement: comp.boss, bossDef: 0, level: 400, copies: 10,
-    doll: false, ol: 'base5', coreHitRate: 1, rangeBonus: true, durationSec: 180,
-    focusSlug: comp.focus,
-    seed,
-  };
+  const cfg = scopeLockCfg(comp.slugs, comp.boss, { focusSlug: comp.focus, seed });
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
   return runSim(chars, mult, cfg, prepared);
 }

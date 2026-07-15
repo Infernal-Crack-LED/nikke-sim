@@ -21,7 +21,7 @@ import gaugeTable from '../../data/gauge-per-shot.json' with { type: 'json' };
 // Debug taps read env vars only under Node; in the browser bundle this is an empty object.
 const ENV: Record<string, string | undefined> =
   (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
-import type { Block, EffectDef, StatKey, TargetDef } from '../skills/types.js';
+import type { Block, ConsolidationConfig, EffectDef, StatKey, TargetDef } from '../skills/types.js';
 
 const FPS = 60;
 // Experiment-only slug-scoped knobs (see experiment-harness-ai.md; all default OFF/empty):
@@ -151,10 +151,20 @@ const RANGE_ELIGIBLE: Record<string, Set<string>> = {
 const MG_RANGE_MODE = (globalThis as { process?: { env: Record<string, string | undefined> } })
   .process?.env?.MGRANGE as 'always' | 'never' | undefined;
 const UNHITTABLE_FRAMES = 60;
-// SG pellet falloff ⚑: outside the near band, pellet spread misses the moving test boss —
-// calibrated on the naga/dorothy-S/noir probe triple (all ~x2 hot at full volleys):
-// near = all 10 pellets land, elsewhere ~30%.
-const SG_OUT_OF_NEAR_HIT_FRACTION = 0.3;
+// SG pellet-landing fraction per range band ⚑ (2026-07-15 refit, was a flat near=1.0 / else=0.3 step).
+// MEASURED (drake solo, damage-arithmetic + global-total reconciliation, popup-dropout≈1.0 verified:
+// docs/probe-data/sg-pellet-landing.json): landing is nearly FLAT ~0.45-0.60 across ALL bands on this
+// gappy spider-mech boss — NOT a 1.0→0.3 step. Both edges of the old ⚑ were wrong: near is ~0.60 (open
+// gaps in the silhouette let ~4 pellets/shot fly through even up close), NOT 1.0; and mid/far/midfar are
+// ~0.45-0.60, NOT 0.30. The old step was calibrated against the OLD flat-0.85 core model (offsetting
+// errors); with the range-dependent core model landed, the measured landing is the faithful replacement.
+// near 0.60 is a LOWER BOUND (residual invisible-X; the global total caps it ≤0.7-0.8); all values carry
+// ±0.10-0.15 systematic beyond Wilson CIs, single-boss (transferable finding is QUALITATIVE: near<1.0,
+// range>0.3, ~flat). open-questions A26. ENV.SGLANDING='legacy' reverts to the old near1.0/else0.3 for A/B.
+const SG_LANDING_BY_BAND: Record<string, number> =
+  ENV.SGLANDING === 'legacy'
+    ? { near: 1.0, mid: 0.3, far: 0.3, midfar: 0.3 }
+    : { near: 0.6, mid: 0.6, far: 0.45, midfar: 0.55 };
 
 // element → the element it beats
 const BEATS: Record<Element, Element> = {
@@ -215,6 +225,9 @@ interface UnitState {
   warnings: string[];
   skillSource: string;
   hasPierce: boolean;     // kit's attacks are Pierce-tagged (Q10)
+  consolidation?: ConsolidationConfig; // pellet-consolidation mode config (dorothy-S)
+  landedAcc: number;      // landed pellets accrued toward the consolidation trigger (near-gated)
+  consolShotsLeft: number; // remaining single-bullet consolidation shots in the current episode
   burstSnapshotsPreFb: boolean; // burst damage resolves pre-FB/pre-stage (per-unit timing)
   ammoRefundPer10: number;  // Bastion cube: bullets refunded per 10 fired
   bulletsSinceRefund: number;
@@ -363,6 +376,9 @@ export function runSim(
       hasPierce:
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
+      consolidation: skills.consolidation,
+      landedAcc: 0,
+      consolShotsLeft: 0,
       burstSnapshotsPreFb: skills.burstSnapshotsPreFb === true,
       ammoRefundPer10: extra.filter((e) => e.stat === 'ammoRefundPer10').reduce((s, e) => s + e.value, 0),
       bulletsSinceRefund: 0,
@@ -488,21 +504,40 @@ export function runSim(
   // semantics vary per unit (sometimes base, sometimes target, sometimes target x2).
   // full_charge_burst_energy column stored but unused ⚑ (both solo fits are exact
   // without it). Gauge = 10,000 energy (we track percent); locked during FB.
-  // Auto-aim core rate is WEAPON-CLASS-INDEXED (2026-07-14 ⚑ refit, was flat 0.85). Three lines:
-  // (a) per-weapon focused-footage scan (open-questions A15) — MG/SR/RL core ~near-100%, AR/SMG ~0.85;
-  // (b) JP research (auto reticle floor ~12.5px, weapon/range-dependent, reliable classes ~0.95-1.0);
-  // (c) an MAE sweep on the graded board — MG/SR/RL=0.95 is the optimum (board MAE 0.1331→0.130,
-  // within-10% 56%→60%), beating the old flat 0.85. AR/SMG/SG stay 0.85 (they auto-aim less reliably).
-  // ENV.ACR overrides everything; CORERATE=flat reverts to the old flat 0.85 for A/B; CORERATEHI
-  // sweeps the MG/SR/RL value. Still ⚑ — a precise per-shot count or the geometric reticle model refines it.
+  // Auto-aim core rate is RANGE-DEPENDENT per (weapon, band) (2026-07-15 ⚑ refit; overturns the
+  // flat per-weapon ⚑ with same-tier footage — AR/SMG/SG solo scope-lock recordings, core popups
+  // binned by the boss-range band). Findings (docs/probe-data/coreband2-*.json, Wilson 95% CIs):
+  //   • core is STRONGLY range-concentrated: high when the boss is close (near/mid), →~0 far/midfar;
+  //   • FB-INDEPENDENT — solo recordings never enter Full Burst, so these are clean out-of-FB reads
+  //     (core = aim geometry, unaffected by FB state; cross-checked LM in/out-of-FB ~equal);
+  //   • weapon-ordered AR > SMG > SG — one accurate AR bullet cores most; SG's 10-pellet spray finds
+  //     the small core least (~7% even point-blank). ALL bands sit far below the old flat 0.85.
+  //   • boss is the SAME physical union raid boss across element assignments (owner) → these per-band
+  //     values TRANSPORT across every validation comp.
+  // MG/SR/RL: not measured per-band, kept flat HI (research: near-100% once warmed; MG gated by its
+  // wind-up ramp elsewhere). ENV.ACR overrides everything; CORERATE=flat → old flat 0.85 for A/B;
+  // CORERATEBAND=off → the prior flat per-weapon table (HI for MG/SR/RL, LO for AR/SMG/SG) for A/B;
+  // CORERATEHI sweeps the MG/SR/RL value; CORERATELO is the AR/SMG/SG flat-fallback value.
+  // Still ⚑ — the geometric distance→core-size model + SG extreme-near (0-25) research refine it;
+  // AR near is PROVISIONAL pending a cleaner AR re-record (Moran-T/Snow White). See open-questions A9.
   const HI = ENV.CORERATEHI !== undefined ? Number(ENV.CORERATEHI) : 0.95;
   const LO = ENV.CORERATELO !== undefined ? Number(ENV.CORERATELO) : 0.85;
-  const coreByWeapon = (weapon: string): number =>
-    (weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : LO;
-  const acrFor = (weapon: string): number =>
+  const CORE_BY_WEAPON_BAND: Record<string, Record<string, number>> = {
+    // near      mid       midfar    far
+    AR:  { near: 0.40, mid: 0.30,  midfar: 0.03,   far: 0.0 },   // scarlet (near ⚑ 0.34–0.44 reads)
+    SMG: { near: 0.28, mid: 0.244, midfar: 0.076,  far: 0.059 }, // chisato hardened (n≈45–95/band)
+    SG:  { near: 0.072, mid: 0.0,  midfar: 0.0045, far: 0.0 },   // drake per-pellet (near = lower bound)
+  };
+  const coreByWeaponBand = (weapon: string, band: string): number => {
+    const row = CORE_BY_WEAPON_BAND[weapon];
+    return row ? (row[band] ?? LO) : HI; // MG/SR/RL (no row) → flat HI
+  };
+  const acrFor = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far'): number =>
     ENV.ACR !== undefined ? Number(ENV.ACR)
     : ENV.CORERATE === 'flat' ? 0.85
-    : coreByWeapon(weapon);
+    : ENV.CORERATEBAND === 'off'
+      ? ((weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : LO)
+      : coreByWeaponBand(weapon, band);
   // Pierce core+body double-hit: community evidence is for MULTI-PART bosses; on the
   // partless test boss the A/B against run A says NO doubling (alice/RH overheat with it
   // once the decoded cadences are in). Kept as a switch for part-ed boss support later.
@@ -649,6 +684,9 @@ export function runSim(
       noRange?: boolean;
       noFb?: boolean;
       projFlavor?: 'attachment' | 'explosion';
+      coreOverride?: number;   // per-shot core rate override (pellet-consolidation single bullet) — bypasses acrFor
+      extraDmgUpPct?: number;  // per-shot Damage-Up addition (consolidation's window-only Attack Damage ▲%)
+      pierceActive?: boolean;  // per-shot Pierce-tag (consolidation bullet) → pierceDamagePct goes live (dmg only, no double-hit)
     }
   ) {
     const fb = fbEndFrame > frame;
@@ -677,7 +715,7 @@ export function runSim(
       const coreBonus =
         (u.char.coreAttackMultiplier - 100) / 100 +
         (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
-      const acr = acrFor(u.char.weapon);
+      const acr = opts.coreOverride ?? acrFor(u.char.weapon, bandAt(frame));
       major += rng
         ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
         : cfg.coreHitRate * acr * coreBonus;
@@ -716,7 +754,7 @@ export function runSim(
     const projFactor = 1 + (projExplosion + projAttachment) / 100;
     // Q10: Pierce Damage ▲ empowers Pierce-tagged units' attacks — a Damage Up
     // bucket addition, only for units whose kit is Pierce-tagged (hasPierce).
-    const pierce = u.hasPierce ? stat(u, 'pierceDamagePct', frame) : 0;
+    const pierce = u.hasPierce || opts.pierceActive ? stat(u, 'pierceDamagePct', frame) : 0;
     // Q9 A/B: Prydwen says projExpl also hits regular RL normal attacks
     // "as ATK DMG on the base multiplier". Off by default (our validated rule is
     // flavored-hits-only); on → RL normals get projExpl in the Damage Up bucket.
@@ -732,6 +770,7 @@ export function runSim(
         (opts.trueFlavor ? stat(u, 'trueDamagePct', frame) : 0) +
         (advantaged(u) && !elemAdvInElement ? stat(u, 'elemAdvantageDamagePct', frame) : 0) +
         pierce +
+        (opts.extraDmgUpPct ?? 0) +
         rlNormalProjExpl) /
         100;
     // Distributed Damage debuffs share the taken bucket, but only affect
@@ -837,14 +876,11 @@ export function runSim(
   function applyBlock(ownerIdx: number, block: Block, blockIdx: number, frame: number) {
     const owner = units[ownerIdx];
     const bKey = `${ownerIdx}:${block.slot}:${blockIdx}`;
-    const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
-    owner.blockActivations.set(bKey, activations);
-    // everyN gate: effects land only on every Nth trigger activation
-    // (everyNOffset shifts the phase: fire when activations ≡ offset mod N)
-    if (block.everyN) {
-      const off = block.everyNOffset ?? 0;
-      if (activations < Math.max(off, 1) || (activations - off) % block.everyN !== 0) return;
-    }
+    // Abort-gates are evaluated BEFORE the everyN activation counter, so `everyN`
+    // counts only activations that actually pass the gates — e.g. soda's "after casting
+    // 3 normal attacks DURING Full Burst": out-of-FB casts must NOT advance the counter.
+    // (No override combines everyN with these gates today — verified — so this is
+    // behavior-neutral for every existing unit; the regression snapshot is the control.)
     // core-gated blocks never fire in zero-core fights
     if (block.requiresCore && cfg.coreHitRate <= 0) return;
     // full-burst-state gate ('inFb' / 'outFb'), evaluated when the trigger fires
@@ -859,6 +895,14 @@ export function runSim(
     if (block.swapGate) {
       const swapped = owner.swap != null && owner.swap.untilFrame > frame;
       if ((block.swapGate === 'swapped') !== swapped) return;
+    }
+    const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
+    owner.blockActivations.set(bKey, activations);
+    // everyN gate: effects land only on every Nth trigger activation
+    // (everyNOffset shifts the phase: fire when activations ≡ offset mod N)
+    if (block.everyN) {
+      const off = block.everyNOffset ?? 0;
+      if (activations < Math.max(off, 1) || (activations - off) % block.everyN !== 0) return;
     }
     block.effects.forEach((e: EffectDef, ei) =>
       applyEffect(ownerIdx, block, e, `${bKey}:${ei}`, activations, frame)
@@ -1538,21 +1582,44 @@ export function runSim(
   }
 
   function firePull(u: UnitState, frame: number, charged: boolean, unlimited: boolean) {
-    const normalScale =
-      1 + ((u.doll.normalAttackPct ?? 0) + stat(u, 'normalAttackPct', frame)) / 100;
+    const band = bandAt(frame);
+    const bandSgFalloff = u.char.weapon === 'SG' && !u.swap ? SG_LANDING_BY_BAND[band] : 1;
+    // Pellet-consolidation mode (dorothy-S, open-questions A26): accrue LANDED pellets while near
+    // (the small mid/far boss doesn't afford landing on the core → matches the OBSERVED near-only
+    // consolidation); at the trigger, enter a K-shot episode firing ONE aligned bullet (pelletFraction
+    // of a full shot) at coreRate with +attack + Pierce instead of the 10-pellet spray. The episode
+    // freezes if she leaves near mid-window (rare: episodes are short and sit inside the long near
+    // windows). Burst's "+5 pellets" (normalAttackPct) is a spray effect → excluded while consolidating.
+    const consol = u.consolidation;
+    let consolidating = false;
+    if (consol) {
+      if (u.consolShotsLeft > 0 && band === 'near') consolidating = true;
+      else {
+        if (band === 'near') u.landedAcc += Math.round(u.char.hitsPerShot * bandSgFalloff);
+        if (u.landedAcc >= consol.triggerLandedPellets) {
+          u.landedAcc = 0;
+          u.consolShotsLeft = consol.shots;
+          consolidating = true;
+        }
+      }
+    }
+    const normalScale = consolidating
+      ? 1
+      : 1 + ((u.doll.normalAttackPct ?? 0) + stat(u, 'normalAttackPct', frame)) / 100;
     const baseMult = u.swap?.damagePct ?? u.char.normalAttackMultiplier;
     const isMg = u.char.weapon === 'MG' && !u.swap;
-    const sgFalloff =
-      u.char.weapon === 'SG' && !u.swap && bandAt(frame) !== 'near'
-        ? SG_OUT_OF_NEAR_HIT_FRACTION
-        : 1;
+    const sgFalloff = consolidating && consol ? consol.pelletFraction : bandSgFalloff;
     dealDamage(u, baseMult * normalScale * sgFalloff, frame, {
       crit: true,
       core: !(isMg && u.mgRampRound < MG_NO_CORE_RAMP_ROUNDS),
       charge: charged,
       category: 'normal',
       trueFlavor: !!u.swap?.trueNormals,
+      coreOverride: consolidating && consol ? consol.coreRate : undefined,
+      extraDmgUpPct: consolidating && consol ? consol.attackDamagePct : undefined,
+      pierceActive: consolidating && consol ? consol.pierce : undefined,
     });
+    if (consolidating) u.consolShotsLeft--;
     // Pierce double-hit (2026-07-13 research): a Pierce-tagged shot passes through the
     // core and hits the body behind it — two hits per shot on a core-exposed boss
     // (community-verified; the reason Alice/Red Hood overperform). Second hit: same

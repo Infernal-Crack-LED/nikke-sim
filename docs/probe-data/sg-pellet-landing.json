@@ -1,0 +1,82 @@
+{
+  "measurement": "SG per-range-band PELLET-LANDING FRACTION (how many of the 10 pellets land on the boss body per shot), via damage arithmetic (popup value + colour classification), NOT raw popup counts alone",
+  "purpose": "Test the engine's SG_OUT_OF_NEAR_HIT_FRACTION (sim.ts:157, CALIBRATED FLAG): near = all 10 pellets credited (1.0), everywhere else = 0.3 (3 pellets). A new footage read suggested ~5-8 pellet popups/shot, contradicting 1.0 at near; this measures the TRUE per-band landing fraction and separates it from render-dropout.",
+  "unit": "drake",
+  "weapon": "SG",
+  "burst": "III (self-burst, solo)",
+  "hitsPerShot": 10,
+  "video": "docs/probes/ar-sg-smg/drake sg.MP4 (1206x2622 portrait + rotation=90 -> landscape 2622x1206, 60fps)",
+  "date": "2026-07-15",
+  "reuses": ["docs/probe-data/coreband2-drake-sg.json (per-band pooled pellet popups + shotsSampled)", "docs/probe-data/coreband-drake-sg.json (per-window white/crit/core pellet breakdowns)"],
+  "measuredValues": {
+    "pelletValueWhite_nonFB": 25672,
+    "pelletValueWhite_FB_nearWindows": 33374,
+    "critValue_orange_FB": 46210,
+    "coreValues_red": [51345, 71882, 559046],
+    "critMult_observed": "~1.39-1.5x white (orange + crit icon)",
+    "coreMult": "2x white (red 'CORE HIT')",
+    "note": "Near windows coincide with self-burst Full Burst (white 33374 vs 25672 elsewhere). Landing fraction is a geometry/hit-rate quantity and is FB-INDEPENDENT, so the elevated near values do not bias the landing measurement."
+  },
+
+  "part1_damageArithmeticValidation": {
+    "question": "Does one rendered popup = one landed pellet, or do popups under-report landed pellets (invisible-X render dropout / pellet-value-merging)?",
+    "method": "On readable NEAR clusters (num_023 v~46.9, near1_v53.35, near2_v160.5), read every popup's VALUE and COLOUR, then classify: white=1x pellet, orange/crit=1x pellet (value ~1.4-1.5x), red CORE=1x pellet (value 2x). The distinguishing test for MERGE-dropout: does any WHITE popup carry 2x the white base (66748) or 3x, which would mean multiple pellets summed into one number? A 2x-value RED popup is a core (1 pellet); a 2x-value WHITE popup would be 2 merged pellets.",
+    "observations": [
+      "Every readable WHITE popup carries the 1x base value (33374 at near-FB; 25672 elsewhere). No white popup at 66748 (2x) or higher was observed. Overlapping clusters are multiple DISTINCT 33374 numbers stacked, not a single summed 66748.",
+      "Orange crit popups read 46210 (1 pellet). Red 'CORE HIT' popups read 51345/71882/559046 (1 pellet each, weak-point core).",
+      "coreband2 R2 already CONFIRMED: off-boss pellets render NOTHING; on-boss pellets each render exactly one popup at the crosshair."
+    ],
+    "impliedVsCount": "Because every popup carries a single-pellet value (1x white / 1x crit / 1x core) and never a merged 2x-white, IMPLIED landed pellets (sum_damage / white_base, with crit/core weighted to 1 pellet each) equals the popup COUNT to within measurement noise. implied/count ~= 1.0.",
+    "dropoutFactor": 1.0,
+    "dropoutFactor_range": [1.0, 1.3],
+    "interpretation": "Popups do NOT merge pellets, so the per-shot popup COUNT is a faithful count of pellets that LAND ON THE BOSS BODY and render. 6 popups means ~6 landed pellets, NOT ~8-10. The only residual dropout channel (an on-body pellet that renders no popup at all) is bounded small by the global damage cross-check (part2b) and by the fact that the gappy spider-mech silhouette physically explains the ~4 missing pellets/shot as pellets flying through open gaps (visible sky between the mech's limbs in every frame).",
+    "confidence": "medium-high for 'no value-merging' (directly observed); medium for the absolute claim that no invisible on-body dropout exists (bounded, not proven to zero)."
+  },
+
+  "part2_perBandLandingFraction": {
+    "method": "landed pellets/shot = pooled pellet popups / shots sampled (coreband2 windows), x dropout factor (1.0). Fraction = landed/10. Wilson 95% CI computed on shots*10 pellet-trials; a further +/-0.10-0.15 SYSTEMATIC band is added for popup overlap/bloom counting error (coreband2's stated ~+/-30% on pooled pellet totals).",
+    "bands": {
+      "near":   {"popupsPerShot": 6.0, "shotsSampled": 46, "landingFraction": 0.60, "wilson95": [0.555, 0.644], "systematicBand": [0.45, 0.72], "bossDistanceNote": "close/large in readable windows, BUT distance varies widely inside the near band (seen large AND receded within v40-77 / v151-183) -> extra spread; coincides with self-burst FB."},
+      "mid":    {"popupsPerShot": 6.0, "shotsSampled": 42, "landingFraction": 0.60, "wilson95": [0.552, 0.646], "systematicBand": [0.45, 0.72], "bossDistanceNote": "medium (center). Numbers legible against grey sky -> most reliable band."},
+      "far":    {"popupsPerShot": 4.5, "shotsSampled": 28, "landingFraction": 0.45, "wilson95": [0.393, 0.509], "systematicBand": [0.33, 0.58], "bossDistanceNote": "distant/small + smoke + frequent reloading -> fewer readable shots (28<40)."},
+      "midfar": {"popupsPerShot": 5.5, "shotsSampled": 40, "landingFraction": 0.55, "wilson95": [0.501, 0.598], "systematicBand": [0.42, 0.68], "bossDistanceNote": "medium (left)."}
+    },
+    "summaryFractions": {"near": 0.60, "mid": 0.60, "far": 0.45, "midfar": 0.55},
+    "shape": "Landing is FLAT-ish across bands (0.45-0.60), NOT a near=1.0 / else=0.3 step. Near and mid are essentially equal (~0.60); far is the lowest (~0.45); midfar intermediate (~0.55). Distance correlates weakly with landing (far < midfar ~ near ~ mid)."
+  },
+
+  "part2b_globalDamageCrossCheck": {
+    "soloDamageTotal": 53974999,
+    "logic": "The popup COUNT gives the relative per-band SHAPE; the 53.97M total anchors the absolute LEVEL. If the popup-profile landing (dropout=1) reconstructs ~the full total (after subtracting Burst III casts + skill2), there is no shortfall requiring a hidden-pellet population -> dropout ~= 1. A large invisible-X population would show up as SG damage far below (total - burst - skill2).",
+    "roughReconstruction": "Using measured pellet values (25672 non-FB, 33374 FB), the popup-profile landing (~6/6/4.5/5.5 per band) over a plausible ~250-360 SG shots produces SG damage of the same order as (total - burst - skill2). Reconstruction is LOOSE because the self-burst cast count is not pinned (burst 1254%, ~2-5.9M/cast) and shot count is estimated, so it CANNOT precisely fix the dropout factor. It does establish that popup-profile landing already accounts for roughly the whole total -- there is no room for a large (>=1.5x) invisible-pellet inflation, and dropout>=1 is required physically (each popup is a real hit).",
+    "conclusion": "Consistent with dropout ~= 1.0; excludes dropout large enough to push near back to ~1.0. Not precise enough to resolve a modest (<=1.3x) invisible-X component."
+  },
+
+  "engineComparison": {
+    "engineConstant": "SG_OUT_OF_NEAR_HIT_FRACTION = 0.3 (sim.ts:157, CALIBRATED FLAG); near band credited 1.0 (all 10 pellets), all other bands 0.3 (3 pellets).",
+    "measuredVsEngine": {
+      "near":   {"engine": 1.00, "measured": 0.60, "verdict": "engine OVER-credits by ~1.7x -- near is NOT all-10. ~4 pellets/shot miss through the gappy spider-mech silhouette even up close."},
+      "mid":    {"engine": 0.30, "measured": 0.60, "verdict": "engine UNDER-credits by ~2.0x."},
+      "far":    {"engine": 0.30, "measured": 0.45, "verdict": "engine UNDER-credits by ~1.5x."},
+      "midfar": {"engine": 0.30, "measured": 0.55, "verdict": "engine UNDER-credits by ~1.8x."}
+    },
+    "predictedDirection": "The brief predicted landing is HIGHER than the flat 0.3 at mid/far (engine runs SG cold at range). CONFIRMED for mid/far/midfar (0.45-0.60 vs 0.30). ADDITIONALLY, the opposite-direction surprise also holds: near is well BELOW 1.0 (~0.60), so the engine runs SG HOT at near on this boss. Net: true landing is much flatter (~0.45-0.60 across all bands) than the engine's 1.0->0.3 step; BOTH edges of the engine model are wrong on this boss."
+  },
+
+  "keyAnswers": {
+    "isNearReally1.0": "NO. Near landing ~= 0.60 (about 6 of 10 pellets land), not 1.0. The gappy multi-part boss lets ~4 pellets/shot pass through gaps even at close range.",
+    "isMidFarReally0.3": "NO. Mid 0.60, far 0.45, midfar 0.55 -- all well above 0.3.",
+    "dropoutFactor": "~1.0 (6 popups means ~6 pellets, not ~8). White popups carry single-pellet values with no 2x merges; off-boss pellets render nothing; the global total leaves no room for a large hidden-pellet population.",
+    "contradictsEngineInPredictedDirection": "YES for mid/far/midfar (measured > 0.3, engine under-credits SG at range). ALSO contradicts at near in the opposite direction (measured 0.60 < engine 1.0)."
+  },
+
+  "caveats": [
+    "Popup counts carry ~+/-30% (overlap + red spider-lily hit-VFX blooms with no numbers + red-on-dark visibility) per coreband2 -> landing fractions carry ~+/-0.10-0.15 systematic on top of the Wilson CI.",
+    "Near boss DISTANCE varies widely inside the near band (observed large and receded within the same window) -> near landing has extra real spread; the 0.60 is a window-weighted average.",
+    "Red-on-dark visibility understates cores/values at near (mild lower bound); far numbers on grey sky are reliable.",
+    "Residual invisible-X (an on-body pellet rendering no popup) cannot be excluded to zero; if present it is modest (global-total-bounded). Measured fractions are therefore best read as LOWER BOUNDS on true landing, with the total capping how much higher near could be (roughly <=0.7-0.8, not 1.0).",
+    "SINGLE boss (multi-part spider mech with a gappy silhouette and a small central weak-point gem). Do NOT over-generalize the ABSOLUTE fractions across bosses/weapons. The robust, transferable finding is QUALITATIVE: near < 1.0, range > 0.3, landing much flatter than the engine's 1.0/0.3 step.",
+    "Self-burst FB elevates near pellet values (33374 vs 25672) but not landing (geometry); confirmed FB-independent."
+  ],
+  "confidence": "Overall medium. The qualitative result (near ~0.6 not 1.0; mid/far/midfar ~0.45-0.60 not 0.3; landing flat not stepped; popups = landed pellets with no merge dropout) is robust and is supported by two independent reads plus the value-arithmetic and global-total checks. Absolute fractions carry ~+/-0.10-0.15. This is a single boss."
+}

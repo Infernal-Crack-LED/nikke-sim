@@ -122,11 +122,21 @@ Crit  = critRate × critBonus         (expected-value mode)
 Core  = coreExposure × AUTO_CORE_RATE × coreBonus    (expected-value mode)
       | coreBonus or 0, Bernoulli(coreExposure × AUTO_CORE_RATE)   (Monte Carlo mode)
         coreExposure = cfg.coreHitRate (1.0 on the scope-lock boss)
-        AUTO_CORE_RATE ⚑ — WEAPON-CLASS-INDEXED (2026-07-14 refit, was flat 0.85):
-              MG/SR/RL = 0.95, AR/SMG/SG = 0.85. Auto-aim's reticle floor keeps a fraction
-              of shots off-core; the reliable auto classes (MG warmed / SR / RL) core
-              ~near-100%, accuracy-gated classes lower (footage scan + JP research + board
-              MAE sweep; open-questions A15 / DECISIONS). CORERATE=flat reverts. Still ⚑.
+        AUTO_CORE_RATE ⚑ — RANGE-DEPENDENT per (weapon, band) (2026-07-15 refit; the
+              AR/SMG/SG flat 0.85 is OVERTURNED by same-tier footage). Indexed by the boss-
+              range band the engine already computes (bandAt → near|mid|midfar|far); the
+              auto-aim core rate is strongly range-concentrated (high close → ~0 far),
+              FB-independent, weapon-ordered AR > SMG > SG. Measured per-band ⚑ (solo
+              recordings, Wilson CIs in docs/probe-data/coreband2-*.json):
+                        near    mid     midfar   far
+                AR      0.40    0.30    0.03     0.00
+                SMG     0.28    0.244   0.076    0.059
+                SG      0.072   0.00    0.0045   0.00
+              MG/SR/RL keep flat 0.95 (not measured per-band; core ~near-100% once warmed —
+              MG gated by its wind-up ramp). Engine: acrFor(weapon, band) + CORE_BY_WEAPON_BAND.
+              Knobs: ACR=flat override; CORERATE=flat → old flat 0.85; CORERATEBAND=off →
+              prior flat per-weapon table (A/B). SG near 0.072 CORROBORATED (ore-game ~6% front
+              row); AR near 0.40 CONFIRMED (Scarlet + Moran, two methods). open-questions A15 / DECISIONS.
         coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100   (base +100%)
 ```
 
@@ -362,7 +372,8 @@ visible sub-step. Full in ~8 pulls including one reload pause.
 ## 6. Known open items that bound this doc's precision
 
 The board's standing residuals and every CALIBRATED ⚑ value are tracked in
-[../open-questions.md](../open-questions.md) — headline items: AUTO_CORE_RATE 0.85 ⚑, the ~7%
+[../open-questions.md](../open-questions.md) — headline items: the range-dependent AUTO_CORE_RATE ⚑
+table (per weapon/band; A15), the ~7%
 uniform damage-side deficit under the corrected rotation model, per-unit kit-generation quirks
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).

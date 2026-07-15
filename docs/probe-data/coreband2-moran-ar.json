@@ -1,0 +1,139 @@
+{
+  "measurement": "AR range-dependent auto-aim CORE-HIT rate (per normal shot) — HARDENED read (coreband2)",
+  "unit": "moran",
+  "weapon": "AR",
+  "burst": "I",
+  "class": "Defender",
+  "element": "Electric",
+  "hitsPerShot": 1,
+  "normalAttackMultiplierPct": 14.71,
+  "coreAttackMultiplierPct": 200,
+  "ammo": 60,
+  "video": "docs/probes/ar-sg-smg/moran ar.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/moran ar.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "date": "2026-07-15",
+  "focusReason": "solo recording — Moran is the only unit on field (all other Battle-Records slots EMPTY), so ALL normal-attack popups are hers; a lone unit never triggers the team Full Burst state, so these are clean OUT-OF-FB reads. Core rate is FB-independent (aim geometry).",
+  "damageTotal": 25226929,
+  "treasureCheck": "Recording shows the purple favorite-item (Treasure) gem on Moran's portrait -> Treasure IS equipped, which MATCHES sim moran (characters.json treasure:true). Core-RATE is treasure-independent (aim geometry) regardless; noted for any later TOTAL reconciliation.",
+  "videoMeta": {"displayDims": "2622x1206 (portrait 1206x2622 + rotation=90; crops applied AFTER auto-rotate)", "fps": 60, "durationSec": 204.035, "nbFrames": 12223},
+  "overview": "1-frame-per-8s sheet: single continuous run, no aborted first attempt. The two OPERATION CLEAR tiles (v184/v192) are the damage-tally count-up animation reaching the final 25,226,929, not two attempts.",
+  "clock": {
+    "method": "top-right MM:SS countdown; fightClock t = 180 - remaining. Countdown runs ~1.75% FAST vs the recording clock, so the video->fight-clock offset DRIFTS — anchored at 7 reads and fitted linearly.",
+    "anchors": [
+      {"videoSec": 10, "countdown": "02:58", "fightClock": 2},
+      {"videoSec": 30, "countdown": "02:37", "fightClock": 23},
+      {"videoSec": 60, "countdown": "02:07", "fightClock": 53},
+      {"videoSec": 90, "countdown": "01:36", "fightClock": 84},
+      {"videoSec": 120, "countdown": "01:06", "fightClock": 114},
+      {"videoSec": 150, "countdown": "00:35", "fightClock": 145},
+      {"videoSec": 175, "countdown": "00:10", "fightClock": 170}
+    ],
+    "fit": "fightClock = 1.01752*videoSec - 7.8754  (residuals < 0.35s across all 7 anchors); videoSec = (fightClock + 7.8754)/1.01752",
+    "note": "Fight starts ~v7.7 (fc 0). ~1.75% countdown drift confirmed (matches the ~1.8% expectation)."
+  },
+  "colourConvention": {
+    "white": "normal NON-core (base B). Measured B = 11747 at near/far; 15270 in the first ~30s and in the fc106-144 window (a time-cycling ~1.30x self-buff, see confounds). Classification is RATIO-based per band, not absolute value.",
+    "orange+critIcon": "crit NON-core = 1.5x B (near 17620 = 11747x1.5; mid/midfar 21744-22905 = 15270x~1.5). Crit crown icon, NO 'CORE HIT' text.",
+    "red 'CORE HIT'": "CORE hit (counted) = 2.0x B (near 23493 = 11747x2; mid/midfar ~30540-32890 = 15270x2). Red number + red 'CORE HIT' text.",
+    "orange 'CORE HIT'+critIcon": "core+crit (counted CORE) = 2.5x B (near 29368 = 11747x2.5). Orange-toned number that RETAINS the 'CORE HIT' text plus a crit icon.",
+    "classificationRule": "CORE iff the popup carries the 'CORE HIT' text (red OR orange). NON-CORE = white (normal) or orange-with-crit-icon-and-NO-'CORE HIT' (plain crit). Classified by the CORE HIT text label, not number colour hue (R3).",
+    "additiveNote": "Core and crit bonuses are ADDITIVE, not multiplicative: normal 1.0x, crit +50% -> 1.5x, core +100% -> 2.0x, core+crit +150% -> 2.5x (measured 11747/17620/23493/29368). This makes the reconciliation cross-term vanish (see reconciliation.solve)."
+  },
+  "r3CoreCritRenderCheck": {
+    "result": "CONFIRMED. A core+crit renders ORANGE with the 'CORE HIT' text retained (29366 = 11747x2.5), NOT masked into a plain orange crit (17620 = 11747x1.5). A pure core is red 'CORE HIT' (23493). A colour-only 'red=core' scan would misclassify the orange core+crit as a plain crit and undercount; classifying by the CORE HIT TEXT captures both.",
+    "evidenceFrames": "scratchpad/moran/basez/base_sheet.png (v50.5 ammo 038: orange 'CORE HIT' 29366 + red 'CORE HIT' 23493 + white 11747 in one stack); scratchpad/moran/n2z (v160.6/163.4 orange 'CORE HIT' 29366)."
+  },
+  "excluded": [
+    "Red laser TRACER beam (persistent diagonal red line, no number)",
+    "Red radial BLOOM orbs on the boss arms/weapons (boss VFX, no number inside)",
+    "Red full-screen boss-AoE tint",
+    "The reticle AMMO counter box (0N0->000) — turns RED when ammo is low (<=~28); it is a boxed UI counter at the crosshair, NOT a core popup",
+    "Red 'TARGET / LOCK' UI chevrons and target-lock text",
+    "Moran's burst-window skill1 riders (47.18% ATK 'additional damage', only fire during her weapon-changed burst mode; excluded by only reconciling normal-ammo mags)",
+    "cyan BLOCK! and cyan crown-shield boss-hit numbers over the character"
+  ],
+  "method": "Per band, extracted full-res crosshair-region frames at ~0.7s spacing (each an independent popup stack; AR popups live <0.6s at ~12 shots/s so no cross-frame double-count -> a RATE is unbiased under independent sampling). Classified each legible NORMAL popup as core ('CORE HIT' text, red or orange) vs non-core (white/orange-crit). Heavy same-crosshair overlap (~7 popups alive at once) limits legible reads to the top of each stack; the NEAR band is additionally pinned by an ammo-counter + damage-total RECONCILIATION (visibility-independent). Boss apparent size cross-checked vs band label each band.",
+  "bands": [
+    {
+      "band": "mid",
+      "fightClockRange": [0, 33],
+      "windowVideoSec": [[15.4, 20.3], [22.4, 25.2], [30.5, 39.7]],
+      "bossDistance": "medium (boss centre / centre-right); popups physically smaller (harder-to-read) than near",
+      "baseWhite": "15270 (fc<~28, buffed window) then 11747 (fc>~28)",
+      "core": 9, "total": 57, "coreRate": 0.158, "wilson95CI": [0.085, 0.274],
+      "confidence": "medium-low — cores clearly present (red 'CORE HIT' ~30540/32890 and orange 'CORE HIT' 29366) but at moderate frequency; count noisy due to overlap and smaller mid popups (possible mild core undercount).",
+      "frames": ["scratchpad/moran/midz/midz_sheet.png", "scratchpad/moran/midx/midx_sheet.png"]
+    },
+    {
+      "band": "near",
+      "fightClockRange": [[33, 70], [144, 176]],
+      "windowVideoSec": [[42.0, 54.0], [158.9, 167.4]],
+      "bossDistance": "close / large (near1 v48-53 point-blank centre; near2 v159-164 medium-close, boss right) — largest apparent size of the fight (matches 'near')",
+      "baseWhite": 11747,
+      "core": 18, "total": 45, "coreRate": 0.400, "wilson95CI": [0.270, 0.545],
+      "coreValuesRed": [23493, 29368],
+      "confidence": "HIGH — direct count 0.40 AGREES with the visibility-independent reconciliation 0.40 (see reconciliation block); two independent near windows (near1 0.43, near2 0.39).",
+      "frames": ["scratchpad/moran/basez/base_sheet.png (near1)", "scratchpad/moran/n2z/n2z_sheet.png (near2)"]
+    },
+    {
+      "band": "far",
+      "fightClockRange": [70, 106],
+      "windowVideoSec": [[76.8, 90.1], [96.0, 110.1]],
+      "bossDistance": "distant / small (boss centre, smallest apparent size, ~half the midfar apparent width) (matches 'far')",
+      "baseWhite": "11747 (15270 at the fc~104 far->midfar edge)",
+      "core": 2, "total": 40, "coreRate": 0.05, "wilson95CI": [0.014, 0.165],
+      "confidence": "high that it is ~0 — white/orange numbers pop clearly against grey sky, any red 'CORE HIT' would be obvious. Two stray cores (one clear red 23493 at v100 fc~94; one occluded 'CORE HIT' at the near->far edge v78) give ~0.05, effectively near-zero.",
+      "frames": ["scratchpad/moran/far/far_sheet.png", "scratchpad/moran/farx/farx_sheet.png"]
+    },
+    {
+      "band": "midfar",
+      "fightClockRange": [[106, 144], [176, 180]],
+      "windowVideoSec": [118.0, 142.1],
+      "bossDistance": "MEDIUM (boss centre-left, ~2x the far apparent width) — on THIS footage the fc106-144 window has the boss at medium distance, NOT far; the fc176-180 tail is essentially spent (fight ending).",
+      "baseWhite": 15270,
+      "core": 6, "total": 42, "coreRate": 0.143, "wilson95CI": [0.067, 0.278],
+      "coreValuesRed": [30540, 32890],
+      "confidence": "medium — cores clearly present (red 'CORE HIT' ~32890) because the boss sits at medium range in this window; distinct from Scarlet's midfar (0.03), where that window's boss was genuinely farther.",
+      "frames": ["scratchpad/moran/mf/mf_sheet.png"]
+    }
+  ],
+  "bossDistanceCrossCheck": {
+    "result": "PASS with a note",
+    "apparentSizeOrdering": "near1 (largest, point-blank) > near2 ~ mid > midfar (medium) > far (smallest)",
+    "note": "Range script holds for near (closest) and far (smallest). The scripted 'midfar' (fc106-144) window shows the boss at MEDIUM apparent size on this footage (~2x the far boss), so cores occur there (0.14) — the core rate tracks ACTUAL apparent distance, and mid+midfar are both 'medium range'. Pooled medium (mid+midfar): 15/99 = 0.152, which matches Scarlet's pooled medium (mid 0.30 + midfar 0.03 -> ~0.165)."
+  },
+  "reconciliation": {
+    "purpose": "Visibility-independent NEAR core rate, robust to red-on-dark-boss unreadability. Anchored on the AR reticle AMMO counter (Moran's mag = 60 rounds; reticle shows an exact 060->000 count = ground-truth shot count) + the running per-unit DAMAGE total read at mag start/end. Both mags are normal-weapon fire (ammo counts down normally => NOT her unlimited-ammo burst mode => NO skill1 riders).",
+    "perTypeValuesMeasured": {"normalWhite": 11747, "critOrange": 17620, "coreRed": 23493, "coreCritOrange": 29368, "critOverBase": 1.5, "coreOverBase": 2.0, "coreCritOverBase": 2.5},
+    "mags": [
+      {"id": "R1", "band": "near1", "videoSec": [48.6, 53.7], "bossDist": "point-blank centre", "ammo": "060->000 (60 shots)", "totalStart": 6390065, "totalEnd": 7447265, "deltaTotal": 1057200, "skillRiders": 0, "perShot": 17620.0, "avgOverBase": 1.5000},
+      {"id": "R2", "band": "near2", "videoSec": [158.9, 164.0], "bossDist": "medium-close, boss right", "ammo": "060->000 (60 shots)", "totalStart": 21491480, "totalEnd": 22554553, "deltaTotal": 1063073, "skillRiders": 0, "perShot": 17717.9, "avgOverBase": 1.5083}
+    ],
+    "pooled": {"shots": 120, "arNormalDamage": 2120273, "avgPerShot": 17668.9, "base": 11747, "avgOverBase": 1.5041},
+    "solve": "With ADDITIVE core+crit (1.0/1.5/2.0/2.5), avgOverBase = 1 + c + 0.5k (the ck cross-term cancels), where c = core-involved rate, k = crit-involved rate. => c + 0.5k = 0.504.",
+    "coreRateVsCrit": {"k0.00": 0.504, "k0.15": 0.429, "k0.20": 0.404, "k0.25": 0.379, "k0.30": 0.354},
+    "hardCeiling": "c <= 0.504 regardless of crit rate (max at k=0). Any positive crit rate lowers c.",
+    "critRate": "Solo, no crit-rate buffs in kit, no cube (validation basis) -> base crit ~15%; visible orange-crit fraction ~0.15-0.20 -> best k ~0.15-0.20 -> c ~0.40-0.43.",
+    "result": {"pointEstimate": 0.40, "range": "0.38-0.43 for k in [0.15,0.25]", "wilson95_at_48of120": [0.317, 0.489]},
+    "resolution": "NEAR AR core rate ~0.40. The reconciliation (0.40, visibility-independent, two ammo-verified 60-round mags, directly-measured per-type values) and the direct 'CORE HIT'-text count (0.40, n=45) AGREE — high confidence. Unlike Scarlet (whose direct 0.44 sat above its reconciliation 0.34), Moran's two methods coincide.",
+    "confidence": "HIGH",
+    "savedFrames": "scratchpad/moran/recon/ (ammo-boundary strips), scratchpad/moran/tot/ (total strips), scratchpad/moran/basez/ (per-type value stack). Ephemeral — regenerate from videoSec above."
+  },
+  "summary": {
+    "coreRateByBand": {"near": 0.40, "mid": 0.16, "midfar": 0.14, "far": 0.05},
+    "wilson95ByBand": {"near": [0.270, 0.545], "mid": [0.085, 0.274], "midfar": [0.067, 0.278], "far": [0.014, 0.165]},
+    "nearReconciliation": {"coreRate": 0.40, "hardCeiling": 0.504, "method": "ammo(60)+total, 120 shots, visibility-independent"},
+    "headline": "Moran's AR auto-aim core rate is strongly range-dependent: ~0.40 when the boss is CLOSE (near, confirmed by BOTH a 120-shot ammo/total reconciliation AND a 45-popup direct count, both = 0.40) and falls with range (medium mid/midfar ~0.14-0.16, distant far ~0.05). This FIRMS the AR near value at ~0.40 and reproduces Scarlet's AR band shape without Scarlet's ~10% non-core-error concern.",
+    "mechanistic": "The single AR bullet lands on the boss's small central core only when the boss is close enough that the crosshair sits over the core; beyond ~medium range the auto-aim shot registers on the body -> no core. Additive core(+100%)/crit(+50%) rendering confirmed.",
+    "confounds": [
+      "Base white value cycles 11747 <-> 15270 (~1.30x) on a time schedule (buffed first ~30s + fc106-144). Classification is RATIO-based per band and the reconciliation measures base per-mag, so neither is affected; mechanism of the 1.30x buff not resolved (does not match her burst ATK+42.57%).",
+      "Heavy AR popup overlap (~12 shots/s, ~7 popups alive) caps legible direct reads to the top of each stack -> per-band direct counts carry ~+/-0.05-0.08; the NEAR reconciliation is not subject to this.",
+      "Red confounds (laser tracer, boss bloom orbs, AoE tint, low-ammo red counter box, TARGET-LOCK UI) were excluded by counting only 'CORE HIT'-text NUMBERS.",
+      "'midfar' scripted window (fc106-144) has the boss at MEDIUM (not far) apparent distance on this footage -> its 0.14 is a medium-range reading, not a far one (see bossDistanceCrossCheck)."
+    ],
+    "vsScarlet": "Scarlet AR (coreband-scarlet-ar.json): near 0.40 (recon 0.34 / direct 0.44), mid 0.30, midfar 0.03, far 0.00. Moran AR: near 0.40 (recon 0.40 / direct 0.40), mid 0.16, midfar 0.14, far 0.05. NEAR agrees at ~0.40. mid/midfar differ per-band (Moran spreads medium-range cores across both windows; Scarlet concentrated them in mid) but the pooled medium-range rate agrees (~0.15-0.17). Both far ~0. Moran removes Scarlet's non-core-error concern and confirms AR near ~0.40.",
+    "simRelevance": "Engine AUTO_CORE_RATE / CORE_BY_WEAPON_BAND: two clean AR reads now converge on near ~0.40 (Moran) and 0.34-0.44 (Scarlet). A flat 0.85 badly over-credits near and grossly over-credits far/medium. Supports an AR near value of ~0.40 with a steep range falloff (medium ~0.15, far ~0.05). Single boss with a small core — do NOT over-generalise across bosses. Measurement only; do NOT edit engine constants without owner + Fable review.",
+    "recommendedAR": {"near": 0.40, "confidence": "high", "medium": "~0.15 (mid+midfar pooled)", "far": "~0.05 (~0)"}
+  }
+}

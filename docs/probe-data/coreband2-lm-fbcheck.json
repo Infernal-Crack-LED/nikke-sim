@@ -1,0 +1,93 @@
+{
+  "test": "coreband2-lm-fbcheck",
+  "question": "H2 / FB-independence of auto-core-hit rate: does Little Mermaid's SMG NORMAL core-hit fraction depend on Full-Burst state, or is it pure aim geometry? Tested WITHIN ONE UNIT, SAME range band, in one video to avoid a unit confound.",
+  "video": "docs/probes/control/lm.MP4",
+  "screenshot": "docs/probes/control/lm.jpg",
+  "probeDir": "docs/probes/control",
+  "focus": "little-mermaid",
+  "boss": "Water",
+  "comp": ["little-mermaid", "crown", "helm", "snow-white"],
+  "priorParse": "docs/probe-data/control-little-mermaid.json",
+  "params": {
+    "basis": "scope-lock base5",
+    "sync": 400,
+    "skillLevels": "10/10/10",
+    "gear": "base5",
+    "cube": "none",
+    "coreLevel": 7,
+    "treasure": true,
+    "bossPartless": true,
+    "durationSec": 180,
+    "focusReason": "LM-focused control comp (has full bursts, unlike solos) — clean same-unit same-band in-FB vs out-FB discriminator"
+  },
+  "extractedOn": "2026-07-15",
+  "fightStartSec": 8.0,
+  "fightClockField": "top-right 03:00 countdown; at video t=48 clock=02:20 => 40s elapsed => fightStart=8s",
+  "method": "ffmpeg 60fps crosshair-region extraction + zoomed 2x2 montages (crop~540:320@1020,220 scaled 2x). Popups classified STRUCTURALLY by red 'CORE HIT' text and by VALUE ANCHOR (self-consistent across conditions). All popups attributable to LM only (LM-focused footage). Independent frames sampled >=0.7-1.0s apart (popup lifetime ~0.6s) to avoid double-counting. Core counted = red 'CORE HIT' number; non-core = white body + orange crit. DoT sub-hits (337736 white / 450314 orange), skill/ambiguous (453086, 386024), barrage (millions), cyan Crown-shield numbers, and green Helm heals all EXCLUDED.",
+  "R3_corePlusCritRendering": "CONFIRMED. Core+crit renders as RED 'CORE HIT' text + RED number + orange crit arrow (e.g. in-FB 136658 at t=50.6/51.6/65.4; out-FB 71332 at t=40.5). Plain core body-hit also RED 'CORE HIT'. Distinguished from the persistent RED core-RETICLE graphic (a fixed aim-point circle/X, not a popup) and from orange crit numbers (crit non-core).",
+  "valueAnchors": {
+    "outFB_near": { "body_noncore_white": 33119, "crit_noncore_orange": 45856, "core_red": 71332, "altBody": 25485 },
+    "inFB_near": { "body_noncore_white": 64733, "crit_noncore_orange": 82714, "core_red": 136658 },
+    "consistencyChecks": {
+      "core_over_body_ratio": { "outFB": 2.154, "inFB": 2.111, "note": "~2.13 both — validates the core anchor across conditions" },
+      "crit_over_body_ratio": { "outFB": 1.385, "inFB": 1.278, "note": "FB compresses the crit factor (base major already ~1.5 in-FB), per the owner colour convention — validates classification" }
+    }
+  },
+  "fbMap_video_s": {
+    "FB1": [44.55, 54.55],
+    "FB2": [58.39, 68.39],
+    "FB3": [72.18, 82.18],
+    "note": "FB countdown is a 10.00->0 top-centre timer. Cadence ~14s. FB1/FB2 fully NEAR band (fight 33-70s = video 41-78s); FB3 tail crosses into far at fight 70s."
+  },
+  "band": "near (fight 33-70s). BOSS_RANGE_SCRIPT sim.ts:129. Both in-FB and out-FB samples are in the SAME near band. NOTE: SMG is NOT range-eligible in near band (only SG), so the +30% range bonus is OFF in BOTH conditions — range confound is controlled.",
+  "windows": {
+    "inFB_near": ["FB1 video 46.5-53.5", "FB2 video 60.4-66.4"],
+    "outFB_near": ["G0 pre-FB1 video 40.5-42.6 (cleanest, no barrage)", "G1 video 56.9-57.6", "G2 video 70.5-71.2"]
+  },
+  "perFrameCounts": {
+    "inFB": [
+      {"t": 46.5, "core": 1, "noncore": 4, "note": "CORE HIT 136658; 82714 crit + 64733x3"},
+      {"t": 47.4, "core": 0, "noncore": 4, "note": "64733 whites + 82714; 450314 DoT excl"},
+      {"t": 49.5, "core": 0, "noncore": 4, "note": "82714x2 crit + 64733x2"},
+      {"t": 50.6, "core": 1, "noncore": 3, "note": "CORE HIT 136658; 337736 DoT excl"},
+      {"t": 51.6, "core": 1, "noncore": 3, "note": "CORE HIT 136658; 64733x3"},
+      {"t": 52.6, "core": 0, "noncore": 2, "note": "DoT-heavy (337736/450314/453086 excl); 64733x2"},
+      {"t": 60.4, "core": 0, "noncore": 2, "note": "burst-cast moment; 64733x2; cyan 59 excl"},
+      {"t": 62.4, "core": 0, "noncore": 0, "note": "boss obscured by FB effect; no readable normals"},
+      {"t": 64.4, "core": 1, "noncore": 1, "note": "CORE HIT 136658; 337736 DoT excl"},
+      {"t": 65.4, "core": 1, "noncore": 3, "note": "CORE HIT 136658; 64733x3"},
+      {"t": 66.4, "core": 0, "noncore": 5, "note": "82714x2 crit + 64733x3; 450314 DoT excl"},
+      {"t": 61.4, "core": 0, "noncore": 0, "note": "453086 skill x2 excl; no normals readable"}
+    ],
+    "outFB": [
+      {"t": 40.5, "core": 2, "noncore": 4, "note": "CORE HIT 71332 x2; 45856 crit + 33119x3"},
+      {"t": 41.2, "core": 1, "noncore": 5, "note": "faint CORE HIT; 45856x2 + 33119x3"},
+      {"t": 41.9, "core": 1, "noncore": 7, "note": "71332 core; 45856x2 + 33119x5"},
+      {"t": 42.6, "core": 0, "noncore": 5, "note": "45856 + 33119x2 + 25485x2 (boss moving, body value shifting)"},
+      {"t": 56.9, "core": 1, "noncore": 7, "note": "faint CORE HIT; 45856x2 + 33119x5; 84070 ambiguous excl"},
+      {"t": 57.6, "core": 0, "noncore": 4, "note": "45856 + 33119x3; 484070 ambiguous excl"},
+      {"t": 70.5, "core": 1, "noncore": 6, "note": "CORE HIT; 45856x2 + 33119x4; 386024 skill excl"},
+      {"t": 71.2, "core": 0, "noncore": 4, "note": "33119x4; faint red text not confirmed"}
+    ]
+  },
+  "results": {
+    "inFB": { "core": 5, "noncore": 31, "n": 36, "rate": 0.139, "wilson95": [0.061, 0.287] },
+    "outFB": { "core": 6, "noncore": 42, "n": 48, "rate": 0.125, "wilson95": [0.059, 0.247] },
+    "deltaPP": 1.4,
+    "thresholdPP": 10
+  },
+  "verdict": "FB-INDEPENDENT",
+  "decision": "Both pre-committed criteria met: (1) 95% CIs overlap heavily ([6.1,28.7] vs [5.9,24.7]); (2) |Delta| = 1.4pp << 10pp. LM's SMG normal core-hit rate does NOT depend on Full-Burst state -> core is aim geometry; per-band core rates apply regardless of FB. No flag.",
+  "confidence": "MEDIUM-HIGH for the verdict (the two conditions land ~1.4pp apart with massively overlapping CIs; the crowding bias, if anything, is WORSE in-FB — DoT/barrage clutter hides more cores in-FB — so any true effect would push in-FB LOWER, not create a >10pp gap). MEDIUM for the absolute rate.",
+  "sideFinding": "ABSOLUTE core rate for LM's SMG in the near band measured ~12-14% here, FAR below the engine's AUTO_CORE_RATE ~0.85 (sim.ts). This is the near-band, close-boss geometry with SMG spread mostly hitting body (white 33119/64733) not core. Relevant to open-questions A9 (AUTO_CORE_RATE weakly sourced, weapon/range dependent). NOTE: this is an incidental single-band read, NOT a core-rate refit — recorded for A9 follow-up only.",
+  "attributionNotes": "LM-focused footage => every popup is LM's (ground rule). Excluded by value/colour: DoT sub-hits (white 337736 / orange 450314, in-FB only), skill/ambiguous large whites (453086, 386024, 84070/484070 post-FB residue), barrage (millions), cyan Crown-shield boss hits, green Helm-B3 heals (over character). The red core-RETICLE graphic on the boss weakpoint is NOT a popup and was not counted.",
+  "savedFrames": [
+    "scratchpad/M_FB1.png (in-FB FB1 zoomed 2x2: 47.4/49.5/50.6/51.6)",
+    "scratchpad/M_FB2.png (in-FB FB2: 60.4/62.4/64.4/66.4)",
+    "scratchpad/M_FB3.png (in-FB extra: 46.5/52.6/61.4/65.4)",
+    "scratchpad/M_OUT1.png (out-FB G0: 40.5/41.2/41.9/42.6)",
+    "scratchpad/M_OUT2.png (out-FB G1+G2: 56.9/57.6/70.5/71.2)",
+    "scratchpad/z_506.png (R3 evidence: CORE HIT 136658 core+crit rendering)",
+    "scratchpad/cd_44_84.png (FB countdown map)"
+  ]
+}

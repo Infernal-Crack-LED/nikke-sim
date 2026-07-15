@@ -13,6 +13,10 @@ dist/
 # DPS-chart matrix artifact — regenerated on every build/deploy (npm prebuild)
 img/dpschart.json
 
+# ephemeral probe-processing workspace (frame extractions, regenerable from the
+# videoSec anchors in docs/probe-data/*.json; never source of truth)
+scratchpad/
+
 docs/probes
 docs/handoffs
 # Claude harness (proprietary — skills, hooks, settings, root handoff)

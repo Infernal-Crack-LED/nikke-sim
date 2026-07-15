@@ -18,6 +18,7 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import type { DataFile, LevelMultiplier, SimConfig, Element } from '../src/types.js';
 import { runSim } from '../src/engine/sim.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
+import { scopeLockCfg } from './lib/scope-lock.js';
 import {
   prepareTeam,
   type CubesFile,
@@ -113,15 +114,6 @@ const COMPS: Comp[] = [
     realFullBursts: 12, // video, rrh probe "water weak vid" (2026-07-14): 12/12 splash-counted,
     // first banner exact (2:54); guillotine-winter-slayer never bursts (bench B3) confirmed.
   },
-  {
-    name: 'PD Eva duo',
-    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'diesel-winter-sweets', 'helm'],
-    boss: 'Wind',
-    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
-    realFullBursts: 9, // video, rrh probe "fire weak vid rerecord" (2026-07-14): 9/9, casters
-    // Diesel-odd/Helm-even all 9, cadence metronomic 20s (7/8 gaps exact; one +2s slip from a
-    // visible boss special attack stalling generation).
-  },
   // T4: KNOWN MISMATCH — real = 14 FBs with privaty focus (probe u7, 2026-07-14) vs sim 13.
   // Do NOT pin until the ~1s-fast cycle increment lands (see experiment-harness-ai.md).
   { name: 'T4', slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'], boss: 'Fire' },
@@ -152,23 +144,10 @@ const COMPS: Comp[] = [
     realFullBursts: 11, // video: 11/11
   },
   {
-    name: 'N8 emma/eunhwa duo fire',
-    slugs: ['emma-tactical-upgrade', 'eunhwa-tactical-upgrade', 'guillotine-winter-slayer', 'eve', 'vesti-tactical-upgrade'],
-    boss: 'Fire', focus: 'guillotine-winter-slayer',
-    modes: { 'emma-tactical-upgrade': 'duo (w/ Eunhwa:TU)', 'eunhwa-tactical-upgrade': 'duo (w/ Emma:TU)' },
-    realFullBursts: 9, // video: 9/9, metronomic ~20s cadence
-  },
-  {
     name: 'N9 redhood/elegg electric',
     slugs: ['moran', 'crown', 'red-hood', 'elegg-boom-and-shock', 'dorothy-serendipity'],
     boss: 'Electric', focus: 'red-hood',
     realFullBursts: 12, // video: 12/12
-  },
-  {
-    name: 'N10 milk/phantom electric',
-    slugs: ['little-mermaid', 'arcana', 'milk-blooming-bunny', 'helm', 'phantom'],
-    boss: 'Electric', focus: 'milk-blooming-bunny',
-    realFullBursts: 6, // video: 6/6, slow ~34s cadence
   },
 ];
 
@@ -179,11 +158,7 @@ function run(comp: Comp, seed?: number) {
   }));
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
   for (const s of comp.slugs) overrides[s] = loadOverride(s);
-  const cfg: SimConfig = {
-    slugs: comp.slugs, bossElement: comp.boss, bossDef: 0, level: 400, copies: 10,
-    doll: false, ol: 'base5', coreHitRate: 1, rangeBonus: true, durationSec: 180,
-    focusSlug: comp.focus, seed,
-  };
+  const cfg = scopeLockCfg(comp.slugs, comp.boss, { focusSlug: comp.focus, seed });
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
   return runSim(chars, mult, cfg, prepared);
 }

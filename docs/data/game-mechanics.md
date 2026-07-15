@@ -144,8 +144,13 @@ mechanics, now modeled directly). Full model + sources + the two solo measuremen
 All of §7 exists because scope-lock runs are full auto — manual play changes these numbers.
 Details: **[auto-play.md](auto-play.md)**.
 
-- **Core floor**: auto-aim's reticle never converges below ~12.5px (COMMUNITY, JP frame
-  analysis) → AUTO_CORE_RATE = 0.85 ⚑ multiplies the configured core-hit rate.
+- **Core rate is RANGE-DEPENDENT** (MEASURED 2026-07-15, three solo recordings): auto-aim's
+  reticle never converges below ~12.5px (COMMUNITY, JP frame analysis), so AUTO_CORE_RATE ⚑
+  multiplies the configured core-hit rate — but the realized rate is **not flat**, it falls with
+  boss distance and differs by weapon (AR > SMG > SG). Per-band ⚑ (near/mid/midfar/far): AR
+  0.40/0.30/0.03/0.00, SMG 0.28/0.244/0.076/0.059, SG 0.072/0.00/0.0045/0.00; MG/SR/RL flat 0.95
+  (core ~near-100% once warmed). Strongly range-concentrated, FB-independent. This OVERTURNS the
+  flat AR/SMG/SG 0.85 (open-questions A15; DECISIONS).
 - **Early charge releases are rare (~2% of shots**, user-observed ~3/fight from boss
   interruptions) — auto effectively always full-charges, and full-charge-gated proc counters
   fire on essentially every shot. Maiden:IR's former ×0.68 proc factor is RESOLVED as her
@@ -160,8 +165,12 @@ Details: **[auto-play.md](auto-play.md)**.
   (a transition colliding with a chain). Everywhere else, **full-burst counts are
   cooldown/chain arithmetic and deterministic run-to-run** — the graded comps are pinned
   as exact asserts in `scripts/regression.ts`.
-- **SG pellet falloff**: outside the near band only ~30% of pellets land ⚑
-  (`SG_OUT_OF_NEAR_HIT_FRACTION`, calibrated on naga/dorothy-S/noir).
+- **SG pellet landing is per-band ~FLAT** (MEASURED 2026-07-15, Drake solo damage-arithmetic): of the 10
+  pellets, ~0.60 land near / 0.60 mid / 0.45 far / 0.55 midfar — NOT the old 1.0-near/0.30-else step (the
+  gappy spider-mech silhouette lets ~4 pellets through open gaps even point-blank). `SG_LANDING_BY_BAND`
+  scales SG shot damage + gauge. near 0.60 is a ⚑ LOWER BOUND (≤0.7–0.8); single-boss, ±0.10–0.15;
+  transferable claim is qualitative (near<1.0, range>0.30, ~flat). The old step was an offsetting-errors
+  compensator with the retired flat-0.85 core. open-questions A26; DECISIONS.
 - Auto burst priority is **leftmost slot order, with waiting**: inside a timed stage
   window the chain waits for the leftmost stage-filling unit whose cooldown ends before
   the window closes rather than handing the cast to a lower-priority ready unit

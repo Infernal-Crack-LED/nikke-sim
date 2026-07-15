@@ -1,0 +1,127 @@
+{
+  "measurement": "Dorothy: Serendipity firing-mode economy (pellet consolidation mechanic)",
+  "unit": "dorothy-serendipity",
+  "weapon": "SG",
+  "burst": "III (self-burst, Attacker, Water)",
+  "hitsPerShotBase": 10,
+  "video": "docs/probes/ar-sg-smg/doro s.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/doro s.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "date": "2026-07-15",
+  "treasure": "false (per sim config; not verifiable from video)",
+
+  "solo": {
+    "confirmed": true,
+    "evidence": "Battle Records screen: slot 1 = Dorothy: Serendipity LV.400 (CP 93276); slots 2-5 all 'EMPTY SLOT / NO SIGNAL' with 0 damage/kills. All popups are hers; she self-bursts Burst III (no team Full Burst).",
+    "damageTotal": 96800599,
+    "kills": 46,
+    "battleTimeLabel": "03:00"
+  },
+
+  "clock": {
+    "method": "top-right MM:SS countdown; fightClock t = 180 - countdown; anchor at several points (countdown drifts slow)",
+    "anchors": [
+      {"videoSec": 8,   "countdown": "02:57", "fightClock": 3,   "offset": 5},
+      {"videoSec": 30,  "countdown": "02:35", "fightClock": 25,  "offset": 5},
+      {"videoSec": 60,  "countdown": "02:04", "fightClock": 56,  "offset": 4},
+      {"videoSec": 90,  "countdown": "01:34", "fightClock": 86,  "offset": 4},
+      {"videoSec": 120, "countdown": "01:03", "fightClock": 117, "offset": 3},
+      {"videoSec": 150, "countdown": "00:33", "fightClock": 147, "offset": 3},
+      {"videoSec": 170, "countdown": "00:12", "fightClock": 168, "offset": 2},
+      {"videoSec": 178, "countdown": "00:04", "fightClock": 176, "offset": 2}
+    ],
+    "note": "offset (videoSec - fightClock) drifts from ~5s early to ~2s late. Firing starts ~v7 (t3). Fight ends ~v182.",
+    "videoMeta": "portrait 1206x2622 rot=90 -> ffmpeg auto-rotates to landscape 2622x1206, 60fps, 189.9s"
+  },
+
+  "colourConvention": "white = normal non-core pellet; orange + crit-icon = crit (x1.5); red 'CORE HIT' text = core; orange 'CORE HIT' = core+crit. Green horizontal beam = near-range pierce/muzzle VFX (NOT a mode marker - see caveat). Excluded: large 6-7 digit 'CORE HIT PIERCE' single values that are likely burst-cast/skill riders (see consolidationValue caveat), boss red core-glow, 'OMG' kill banner, reticle ammo counter.",
+
+  "firingModes": {
+    "spray": {
+      "pelletsPerShot": 10,
+      "signature": "cluster of ~5-8 simultaneous popups per shot on the boss",
+      "pelletValueWhite": {"base": 24300, "buffedLate": 31590, "note": "31590 = 24300 x1.30, appears from ~t37 on; likely Skill-2 / accumulated attack buffs"},
+      "critValue": {"base": 36450, "note": "36450 = 24300 x1.5; buffed variant ~43739"},
+      "coreValue": {"observed": [48599, 55889], "note": "red 'CORE HIT' in spray ~1.77-2.0x the white pellet (core roughly doubles)"}
+    },
+    "consolidation": {
+      "pelletsPerShot": 1,
+      "trigger": "Skill 1: after landing 80 cumulative pellets -> Pierce + Hit Rate +98.18% + Attack +72% + pellet count FIXED at 1, for '3 rounds'",
+      "signature": "a SINGLE large 'CORE HIT ... PIERCE' popup per shot (no white cluster); green pierce beam through boss",
+      "singleBulletCoreValue": {
+        "nonBurst": 110395,
+        "nonBurstNote": "clean read from the v31-37 episode (t28-34); ~110k = 24300 x ~4.5 (i.e. +72% attack x core-doubling x hit). This is the reliable consolidation-bullet value.",
+        "largeValues": [1103595, 1269134, 1545033],
+        "largeValuesCaveat": "AMBIGUOUS - 6-7 digit ~1.1-1.55M 'CORE HIT PIERCE' single values appear at t41,t52,t131,t139,t151,t175. Either burst-boosted consolidation cores OR her Burst-III cast / skill riders. Could not cleanly separate the two from a solo video. Do NOT treat as the plain single-bullet value."
+      },
+      "coreRateInConsolidation": {
+        "estimate": ">=0.8 (near 1.0)",
+        "basis": "every consolidation shot caught (7/7 frames: t31,t41,t52,t131,t139,t151,t175) rendered a 'CORE HIT'. The single 98.18%-hit + Pierce bullet aimed at boss centre cores essentially every shot -> far above the ~0.072 SG spray baseline and above the AR-class ~0.3-0.4 target.",
+        "confidence": "medium"
+      }
+    },
+    "burst": {
+      "pelletsPerShot": 15,
+      "note": "Burst III: +5 pellets (->15), attack speed +65%, ATK +88.12%, 15s. Could NOT cleanly count 15 pellets due to popup overlap; recorded per kit design. Burst also boosts the consolidation single-bullet enormously (the ~1.1-1.55M cores).",
+      "confidence": "low (pellet count not directly counted)"
+    }
+  },
+
+  "modeTimeline": {
+    "method": "3s-spaced full-frame classification (spray=cluster / consolidation=single big CORE HIT / gap=reload), plus 4fps green-beam scan and a 3fps fine-walk of the t28-34 episode.",
+    "keyStructuralFinding": "Consolidation is RANGE-GATED. Its 80-landed-pellet trigger requires pellets to actually LAND, which only happens at NEAR range. When the boss is far/mid (t~65-120) she stays in 10-pellet spray and essentially never consolidates (verified spray at v75/90/105/118). Consolidation clusters in the near-range windows (t~10-65 and t~120-180, densest at late point-blank).",
+    "firstConsolidationTrigger": "~t10-12 (video v14-16), ~7-9s after firing begins (80 pellets accumulated in ~10-11 near-range spray shots)",
+    "episodeDuration": "~2-3.5s per consolidation episode (fine-walk t28->t34 ran ~3s of single-core pierce shots, then flipped back to spray)",
+    "reTriggerCadence": "roughly every ~10-20s within near windows (observed gaps t31->t52 =21s; t131->t139 =8s; t139->t151 =12s; t151->t175 =24s). Between episodes she sprays to re-accumulate 80 landed pellets.",
+    "roundsInterpretation": "'3 rounds' = ~3 short reload cycles ~ the observed ~3s episode. Could not cleanly count reloads inside the beam-heavy episodes; mapping is consistent but MEDIUM-LOW confidence. Magazine ~9 (SG standard; ammo counter observed max 008).",
+    "fractions": {
+      "consolidation_1pellet": "~15-20% of fight (point estimate ~17%)",
+      "spray_10pellet": "~75-80% of fight",
+      "burst_15pellet": "overlaid on ~15-40s (2-3 self-bursts); not separable as a clean fraction",
+      "byRegion": {
+        "earlyNear_t10to65": "~20% consolidation",
+        "midFar_t65to124": "~0-5% consolidation (spray-only)",
+        "lateNear_t124to180": "~30% consolidation (point-blank, densest)"
+      },
+      "confidence": "medium-low (3s sampling can undercount brief episodes; plausible range up to ~25%)",
+      "correctionToPriorEstimate": "s4's ~35-40% consolidation is likely TOO HIGH: it ignores that the mid/far third of the fight (~t65-120) is spray-only because consolidation is range-gated."
+    }
+  },
+
+  "damageDirection": {
+    "headline": "Consolidation raises damage strongly DURING BURST; roughly neutral-to-slightly-lower OUT of burst on this single-target boss.",
+    "reasoning": "Out of burst: consolidation trades a ~7-landed-pellet spray shot (~7x24300 ~ 170k, few core) for ONE guaranteed +72% core bullet (~110k). On a single-target boss the pierce adds no extra targets, so per-shot it is comparable-to-lower. DURING BURST the buffs multiply the single guaranteed core into ~1.1-1.55M per shot, dwarfing a buffed spray shot -> large net gain. Net over the fight is positive, dominated by burst-window consolidation.",
+    "engineNote": "Model consolidation's value as burst-state-dependent, not a flat multiplier. Confidence medium; exact per-shot spray-vs-consolidation totals not fully pinned.",
+    "confidence": "medium"
+  },
+
+  "sprayCoreRateByBand": {
+    "note": "Not exhaustively re-counted. Spray-mode red cores (48599/55889) appeared occasionally amid ~6-8 whites at near range and were rare at far/mid. This is CONSISTENT with the established SG baseline on this same boss (Drake: ~0.072 near, ~0 far/mid). A dedicated per-band count excluding consolidation cores was NOT performed.",
+    "near": "~0.05-0.12 (consistent with SG baseline ~0.072)",
+    "farMid": "~0-0.03",
+    "confidence": "low (qualitative; defer to existing coreband-drake-sg.json baseline)"
+  },
+
+  "fullBurstWindows": {
+    "note": "She self-charges Burst III. Sustained red vignette seen around t~56 (v57-61) and t~117-127 (v119-131) from the countdown-strip tint; a possible later one ~t158-172. A per-frame red-tint metric conflated FB vignette with red core-hit flashes, so windows are approximate.",
+    "approxFightClock": ["~t53-68", "~t115-130", "~t158-172 (uncertain)"],
+    "confidence": "low"
+  },
+
+  "confounds": [
+    "GREEN PIERCE BEAM is near-range VFX, present in BOTH spray and consolidation (proven: v170 shows a 5-number spray cluster WITH a full green beam). It cannot be used to separate modes; it tracks boss proximity.",
+    "The green beam's white-hot core defeats pure-white-text popup detectors (beam reads as white), so automated color classification of spray-vs-consolidation is unreliable; classification here is visual.",
+    "Popup lingering (~0.5-1s) and overlap bias time-sampling toward spray and prevent exact per-shot pellet counts (esp. the +5 burst -> 15).",
+    "Large ~1.1-1.55M 'CORE HIT PIERCE' single values not cleanly separable from burst-boosted consolidation cores vs burst-cast/skill riders."
+  ],
+
+  "confidence": {
+    "solo_and_total": "high",
+    "modes_exist_and_pelletValues": "high",
+    "consolidation_cores_reliably": "medium-high",
+    "consolidation_is_range_gated": "high",
+    "mode_fractions": "medium-low",
+    "rounds_duration_and_cadence": "medium-low",
+    "burst_windows_and_pelletCount": "low"
+  }
+}

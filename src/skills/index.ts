@@ -5,7 +5,7 @@
 import type { CharacterData } from '../types.js';
 import { parseSkill } from './parser.js';
 import { scaleBlocks, type SkillLevels, type SlotLevelArrays } from './scale.js';
-import type { Block, CharacterSkills, SkillSlot } from './types.js';
+import type { Block, CharacterSkills, ConsolidationConfig, SkillSlot } from './types.js';
 
 const SLOTS: SkillSlot[] = ['skill1', 'skill2', 'burst'];
 
@@ -19,6 +19,10 @@ export interface OverrideFile {
   // hand-measured corrections to DB weapon data (e.g. real SR fire cycle =
   // charge + bolt recovery, where the DB only records the charge time)
   charFixes?: { chargeFrames?: number; reloadFrames?: number; burstCooldownSec?: number; noBoltRecovery?: boolean; pullsPerSec?: number };
+  // Pellet-consolidation mode (dorothy-S: "after landing N pellets, for K rounds → pellet count fixed at 1
+  // + high core + Pierce + attack-dmg"). Range-gated to near (where the boss affords the trigger). MEASURED
+  // gate; the "80 landed on the small core" story is interpretive. See open-questions A26.
+  consolidation?: ConsolidationConfig;
   burstSnapshotsPreFb?: boolean;
   skill1?: Block[];
   skill2?: Block[];
@@ -70,5 +74,6 @@ export function resolveSkills(
     hasPierce: override?.hasPierce,
     burstSnapshotsPreFb: override?.burstSnapshotsPreFb,
     pierceModes: override?.pierceModes,
+    consolidation: override?.consolidation,
   };
 }

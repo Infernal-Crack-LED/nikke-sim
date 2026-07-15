@@ -107,5 +107,40 @@
     ],
     "rangeScriptCrossCheck": "PASS — apparent boss size tracks the script on solo footage: largest/closest during near (v61, v170), smallest/most distant during far (v75-95), medium at mid (v21), medium-far at midfar (v124). The core-rate pattern independently corroborates the labels (cores appear in exactly the two closest bands).",
     "simRelevance": "Engine AUTO_CORE_RATE is a flat 0.85 (calibrated, marked). For Scarlet's AR on this boss the observed rate is ~0.3-0.44 close and ~0 at range — a flat 0.85 over-credits far/midfar cores badly and slightly over-credits close-range. Supports a range-gated core model (core enabled only for near+mid). Single boss with a small core — do not over-generalise across bosses. Do NOT edit engine constants without owner review."
+  },
+  "nearReread": {
+    "date": "2026-07-15",
+    "purpose": "Hardened re-measure of the NEAR-band AR auto-core rate to resolve whether the prior direct count (0.44, flagged as a possible LOWER bound due to red-on-dark-boss unreadability) or an independent total-reconciliation (~0.70) is correct. Fable pre-op approved.",
+    "method": "60fps frame-stepping + a damage-total RECONCILIATION anchored on the reticle AMMO COUNTER (Scarlet's AR mag = 20 rounds; the reticle shows an exact 020->000 count). Reading dim red numbers on the dark boss body is unreliable, so cores are backed out from the running DAMAGE total (robust to the visibility problem). Per-type popup values measured directly and internally consistent: white NORMAL 70488; RED core 140977 (=2.00x); ORANGE crit 110392 (=1.566x); core+crit 220880 (=3.134x).",
+    "R3_coreCritRendering": {
+      "finding": "CONFIRMED and it is the key correction. A pure CORE hit renders RED 'CORE HIT' text + red number (140977). A CORE+CRIT hit renders ORANGE 'CORE HIT' text + ORANGE crit icon + orange-toned number (~220880) — NOT red. So a colour-only scan (red == core) MISCLASSIFIES every core+crit as an orange 'crit non-core' and misses it. The correct core signal is the 'CORE HIT' TEXT LABEL (red OR orange), never number colour. Evidence: docs/probes/ar-sg-smg/coreband-frames/reread_R3_corecrit_orange_v47.97.png (ammo 006: stack shows orange 'CORE HIT' 220880 core+crit, orange 110392 pure-crit, red 'CORE HIT' 140977 pure-core, white 70488 all at once).",
+      "impliesUndercount": "YES in principle for a pure-colour scan (misses ~c*k ~= 0.07-0.09 of shots), but see resolution: the prior 0.44 was NOT strongly suppressed."
+    },
+    "reconciliation": {
+      "mags": [
+        {"id": "mag1", "band": "near1", "videoSec": [46.70, 49.05], "bossDist": "close/centre", "ammo": "020->000 (20 shots)", "totalStart": 18639326, "totalEnd": 20732709, "deltaTotal": 2093383, "skillRiders": 0, "arNormalDamage": 2093383, "perShot": 104669},
+        {"id": "mag2", "band": "near1", "videoSec": [50.85, 52.95], "bossDist": "close/right", "ammo": "020->000 (20 shots)", "totalStart": 20732709, "totalEnd": 23146023, "deltaTotal": 2413314, "skillRiders": "one 283% rider = 359835 subtracted", "arNormalDamage": 2053479, "perShot": 102674},
+        {"id": "magN2", "band": "near2", "videoSecBracket": [165.35, 167.60], "bossDist": "central/point-blank", "ammo": "one full 020->000 mag between two reload(000) reads", "totalStart": 74108024, "totalEnd": 76293164, "deltaTotal": 2185140, "skillRiders": "none seen", "arNormalDamage": 2185140, "perShot": 109257}
+      ],
+      "pooled": {"shots": 60, "arNormalDamage": 6332002, "avgPerShot": 105533, "avgOverBase": 1.497},
+      "solve": "avgOverBase = 1 + c + 0.5661*k + 0.5675*k*c, where c = core-involved rate, k = crit-involved rate. => c + 0.5661k + 0.5675kc = 0.497.",
+      "coreRateVsCrit": {"k0.00": 0.497, "k0.15": 0.380, "k0.20": 0.345, "k0.25": 0.311, "k0.30": 0.280},
+      "hardCeiling": "c <= 0.497 REGARDLESS of crit rate (max at k=0). Any positive crit rate lowers c. This alone refutes ~0.70.",
+      "critRate": "Solo fight (no support crit buffs); engine base crit 15% + modest self-buff. Visible orange fraction ~0.20-0.25. Best k ~= 0.20 -> c ~= 0.345."
+    },
+    "result": {
+      "coreCount": "~20 core-involved of 60 ammo-verified shots (reconciliation-derived at k~=0.20)",
+      "total": 60,
+      "rate": 0.34,
+      "rateRange": "0.28-0.40 for k in [0.15,0.30]; hard ceiling 0.50",
+      "wilson95_at_20of60": [0.227, 0.459],
+      "note": "Wilson CI shown for the point estimate 20/60=0.333; it EXCLUDES 0.70 and its upper edge only just reaches 0.44."
+    },
+    "resolution": "The NEAR core rate is ~0.33-0.40 (NOT ~0.70). The ~0.70 total-reconciliation is REFUTED — the per-mag reconciliation here is tightly anchored (directly-read totals + ammo-verified 20-round mags + directly-measured per-type popup values) and caps the rate at <=0.50 even with zero crits. The prior direct count of 0.44 was NOT a large lower-bound undercount; it sits at/above the true value (mild OVER-count if anything, likely from red AoE tint / red reticle 'CORE HIT'-text glow / red target-lock rings being read as extra cores). Readability was NOT strongly suppressing the rate. The R3 orange-core+crit mechanism is real and WOULD bite a pure-colour scan, but the prior read used CORE HIT text and already captured most cores.",
+    "confidence": "HIGH that it is NOT ~0.70 (robust reconciliation). MEDIUM on the exact point (0.33 vs 0.44), limited by crit-rate uncertainty and 12-round/sec popup overlap that prevents clean per-shot visual counting.",
+    "bossDistanceNote": "Within fc 33-70, the boss is genuinely close only ~fc 34-49 (v39-55); it drifts left/smaller toward the far transition after ~v55. near2 (fc 144-176) is central/point-blank. All three reconciled mags were placed on genuinely-close boss frames (visually confirmed).",
+    "savedFrames": "docs/probes/ar-sg-smg/coreband-frames/reread_*.png (R3 core+crit evidence, mag1 + magN2 total/ammo boundaries, mag1 tail 30fps sheet). Working extractions in scratchpad/scarlet2/ (ephemeral; regenerate from videoSec above).",
+    "measuredValues": {"normalWhite": 70488, "coreRed": 140977, "critOrange": 110392, "coreCritOrange": 220880, "coreOverBase": 2.00, "critOverBase": 1.566, "coreCritOverBase": 3.134},
+    "ammoMechanic": "Scarlet's AR mag holds 20 rounds; the on-screen reticle shows a live 020->000 ammo counter (ground-truth shot count per burst) — a reusable anchor for AR/SMG reconciliations."
   }
 }

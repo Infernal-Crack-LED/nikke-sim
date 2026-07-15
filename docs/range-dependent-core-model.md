@@ -22,8 +22,11 @@ biggest systematic error on the board:
 
 ## What the evidence already says (open-questions, auto-core-rate section)
 
-- **SG core is range-band dominated** (ore-game verify-memo): **~100% front row / ~1.6% mid / ~0% back.**
-  A flat 0.85 is badly wrong for SG in both directions.
+- **SG core is range-band dominated** (ore-game verify-memo): **~6% front row / ~1.6% mid / ~0% back**
+  (auto mode, base accuracy). [CORRECTED 2026-07-15 by s1 research — this line previously read
+  "~100% front row", a transcription error off by >1 order of magnitude; the real front-row value is
+  ~6%, which CORROBORATES our measured SG near 0.072. See `docs/probe-data/sg-core-research.md`.]
+  A flat 0.85 is badly wrong for SG — but the correct near value is ~6–8%, NOT ~100%.
 - **MG cores ~100% once warmed (≥3.75s) at any range** (the wind-up ramp already models the warm-up).
   SR/RL near-guaranteed. → the 0.95 group is genuinely near-flat-high; leave it.
 - **AR ~0.7-0.9, SMG ~0.7-0.85** (per-weapon footage scan) — the 0.85 is the *optimal-range* end;
@@ -101,5 +104,58 @@ testing-params↔video map.
 
 ## Status
 
-Blocked on the three recordings (owner to make them). `CORERATELO` knob already added (behavior-
-neutral default 0.85) for A/B. Do NOT flat-refit in the meantime — it would be fitting-to-data.
+Option 1 (per-band table) **LANDED 2026-07-15** (see DECISIONS + open-questions A15 + the audit
+handoff). This section now tracks **Option 2 (geometric)** as follow-up #3.
+
+## s1 (SG research) RESULT — 2026-07-15: geometric model DISFAVORED, band-table validated
+
+s1's online research (`docs/probe-data/sg-core-research.md`) resolves the gate and REDIRECTS #3:
+- **SG near 0.072 is CORRECT, not a lower bound** — ore-game verify-memo measures SG front-row core
+  ~6% (auto, base accuracy), converging with our 7.2%. Do NOT raise it.
+- **The mechanism is a SHARP near-only STEP** (6%→1.6%→0% across front/mid/back, tied to the 0–25
+  effective-range window), **NOT a continuous distance curve.** Sources explicitly do not describe a
+  gentle falloff. ⟹ the **per-band table (Option 1, landed) is already the right shape**; the geometric
+  continuous-distance model (Option 2 / #3) is **not indicated** on current evidence.
+- The AR>SMG>SG order-of-magnitude gap (0.40 vs 0.072 near) is a real structural property (10-pellet
+  spread + 12.5px auto reticle floor), consistent with community understanding — not a measurement artifact.
+- **Cold-SG (0.755) is NOT the core rate** — a separate under-model (near-range pellet-body-hit crediting
+  / band-time allocation), routed to s4's exposed-under-model audit.
+
+**SHELVED (owner ruling 2026-07-15):** Option 2 / #3 is not built. The landed per-band table is the model.
+Revive a geometric form ONLY if a future multi-boss dataset shows the per-band table failing to transport
+(the one thing geometry would buy). The prep below is retained for that contingency.
+
+## Option 2 execution prep (2026-07-15) — retained if geometric is ever revived
+
+Consolidated measured per-band core points (Option 2 must reproduce these):
+
+| weapon | near | mid | midfar | far | source |
+|---|---|---|---|---|---|
+| AR (Scarlet) | 0.40 | 0.30 | 0.03 | 0.00 | coreband-scarlet-ar (+nearReread 0.34) |
+| AR (Moran) | 0.40 | 0.16 | 0.14 | 0.05 | coreband2-moran-ar (near CONFIRMED, 2 methods) |
+| SMG (Chisato) | 0.28 | 0.244 | 0.076 | 0.059 | coreband2-chisato-smg |
+| SG (Drake) | 0.072* | 0.00 | 0.0045 | 0.00 | coreband2-drake-sg (*near = LOWER BOUND) |
+
+Boss distance is **ORDINAL only** — the recordings establish `near < mid ≈ midfar < far` (apparent
+boss size), with NO metric distances. This is the central obstacle for the geometric form
+`coreRate = clamp(0,1,(coreAngularRadius/(k·scatter))^2)`, `coreAngularRadius ∝ 1/dist`:
+
+- **Distance proxy needed.** Candidate: extract the boss's apparent on-screen SIZE (pixels) per band
+  from the existing recordings (larger ⇒ closer ⇒ dist ∝ 1/√area); gives a *relative* distance scale
+  per band. Alternative: treat band as an ordinal index and fit a monotone saturating curve per weapon
+  (fewer physical claims, but loses cross-boss generality — Option 2's whole point).
+- **Per-weapon scatter is the fit target** — one `scatter(weapon)` param (AR small, SMG mid, SG large,
+  matching AR>SMG>SG) + a shared core-physical-radius. The three weapons' band curves should collapse
+  onto one geometry once scaled by their scatter.
+- **Why gated on s1:** SG's near value is a lower bound; its true point-blank rate sets the SG scatter
+  and anchors the whole geometry's low end. Fitting before s1 would bake in the under-measured SG point.
+  Also fold in s2's Moran AR near (firms the AR anchor).
+
+Fit procedure once s1 (+ ideally s2) land: (1) assign a distance proxy per band; (2) fit
+`scatter(weapon)` + `coreRadius` to all measured (weapon, band, rate) points (weighted by Wilson CI);
+(3) A/B the geometric `acrFor` vs the landed per-band table on the board — geometric must not degrade
+the confirmed movers; (4) Fable post-op panel before landing. Keep the per-band table as the fallback
+(`CORERATEBAND=table`) if geometric doesn't clearly win.
+
+Knobs live: `ACR` (flat override), `CORERATE=flat` (old 0.85), `CORERATEBAND=off` (prior flat
+per-weapon), `CORERATEHI/LO`. Do NOT flat-refit — it would be fitting-to-data.

@@ -8,6 +8,17 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-15) The 11 override-only, non-enikk-proven units are REMOVED from the sim/site (owner "Option 3"),
+  overriding the KEEP rule for them.** Units: tia, phantom, 2b, dorothy (base AR), emma-tactical-upgrade, exia,
+  privaty-unkind-maid, vesti-tactical-upgrade, eunhwa-tactical-upgrade, chime, ark-ranger-black. They were kept
+  only by "never remove an override-backed unit"; the owner chose to stop serving/supporting them (site clutter,
+  no further dev). Mechanism: their overrides moved to `src/skills/overrides-legacy/` (historical record — NOT
+  loaded; the sync prune only protects `src/skills/overrides/`), and they were deleted from `data/characters.json`
+  + the 5 graded comps that used them (PC, PD, N4, N8, N10) in `experiment.ts` + `regression.ts`. **Cost paid:
+  24/146 comp-rows (~16% of the validation board).** Collateral meta units mostly survive via other comps;
+  snow-white also has control-group recordings; laplace/eve/arcana may lose their only main-board anchor (check
+  control recordings if they need grading). Do NOT restore these units without owner say-so. (NB `dorothy-serendipity`,
+  the SG attacker, is a DIFFERENT unit and is KEPT.) — owner ruling; see `src/skills/overrides-legacy/README.md`.
 - **(2026-07-14) Supported roster = the enikk top-100 audit list, plus every hand-tuned override
   we already have** — the units the sim supports are defined by the `/enikk-audit` method (the
   deduped team compositions of the top 100 rankers across the tracked solo raids; see
@@ -230,6 +241,61 @@ lives. Newest first within each section.
   attribution across units is forbidden — it burned us twice. — u8 processing; owner corrections.
 
 ## Engine/data-architecture decisions
+
+- **(2026-07-15) Pellet-consolidation mode — a config-driven range-gated firing state (dorothy-S; STEP 2 of
+  the sequenced SG fix).** New generic engine mechanic: a `ConsolidationConfig` on the override
+  (`triggerLandedPellets`/`shots`/`coreRate`/`pelletFraction`/`attackDamagePct`/`pierce`) → after N
+  near-LANDED pellets accrue, the unit fires K single aligned bullets (`pelletFraction` of a full 10-pellet
+  shot) at `coreRate` with a window-only Attack-Damage add + live Pierce-DAMAGE, instead of the spray. Near-
+  gated (matches the OBSERVED near-only consolidation — the small mid/far boss doesn't afford the trigger);
+  the "80 landed on the small core" story is interpretive, the near-gate is measured. Engine: `firePull`
+  accumulator + `dealDamage` `coreOverride`/`extraDmgUpPct`/`pierceActive` opts (all generic; the values live
+  in dorothy's override, no engine branch). Pierce DOUBLE-hit stays OFF (R1: enabling re-litigates the settled
+  `PIERCE_CORE_DOUBLE=false` without same-tier evidence). The previously PERMANENT +72% attack (a measured-
+  contradicted fudge — really ~17% of shots) is REMOVED, applied only in-window. Bullet validated: sim ~122.7k
+  out-of-burst vs measured ~110k (+11%). Fable 2-of-2 LAND. dorothy PH 0.69→0.44 / N9 0.55→0.35 (removing the
+  fudge dominates); criterion "moves up" FAILED but Fable ruled it a smuggled bet on the UNRELIABLE in-burst
+  reads — landing the faithful pieces beats keeping a known fudge. Rotation pins EXACT. dorothy's rows are
+  BLOCKED-pending a burst-isolated recording (are the 1.1–1.55M in-burst singles consolidation cores or
+  Burst-III cast? open-questions A26); do NOT chase her 0.44/0.35 with tuning. — dorothy solo footage +
+  scientific-method harness (both Fable gates).
+- **(2026-07-15) SG pellet-landing is per-band ~FLAT (~0.45–0.60), not a 1.0-near/0.30-else step (⚑ refit,
+  measurement replaces a contradicted calibration).** The old `SG_OUT_OF_NEAR_HIT_FRACTION` ⚑ (near = all 10
+  pellets land, else 0.30) was calibrated against the OLD flat-0.85 core model — an offsetting-errors pair.
+  Damage-arithmetic measurement (Drake solo, popup-dropout≈1.0 VERIFIED via the closed-book 53.97M global
+  total, `docs/probe-data/sg-pellet-landing.json`): landing is ~flat across bands — near **0.60**, mid 0.60,
+  far 0.45, midfar 0.55. BOTH edges of the old ⚑ were wrong: near is ~0.60 (the gappy spider-mech silhouette
+  lets ~4 pellets/shot through open gaps even point-blank), NOT 1.0; and range is ~0.45–0.60, NOT 0.30.
+  Engine: `SG_LANDING_BY_BAND` (sim.ts) scaling SG shot damage + gauge; `ENV.SGLANDING='legacy'` reverts.
+  Fable 2-of-2 LAND. Board FLAT (MAE 0.144→0.145, ±10% 56→57%, median 0.950); **rotation pins EXACT (0
+  full-burst-count changes)**; non-SG blast radius ±0.01–0.04 (gauge ripples, no pin broken).
+  **FAILED-PREDICTION LOG (Fable condition):** the pre-committed direction was "noir/naga WARM" (mid/far rise
+  from 0.30). WRONG — all SG cooled (noir 0.73→0.66, naga 0.71→0.64, dorothy 0.76→0.69, soda 0.66→0.64;
+  hot arcana 1.32→1.20 improved). Cause: the prediction assumed near=1.0 would survive, but the measurement
+  dropped near too, and the near cut dominates. The corroboration channel thus FAILED; the landing stands on
+  measurement validity alone (dropout≈1.0 + global-total cross-check are strong). Refusing a sound measurement
+  because it cools the board is the mirror of tuning to warm — the invariant compels landing.
+  **TIER:** ⚑ single-boss (gappy spider-mech), ±0.10–0.15 systematic; near 0.60 is a LOWER BOUND (global total
+  caps it ≤0.7–0.8) — a future direct measurement supersedes it; do NOT "correct" it upward without one (that
+  would re-create a mini-compensator for the shared SG under-model). Transferable claim is QUALITATIVE
+  (near<1.0, range>0.30, ~flat). This is STEP 1 of the sequenced dorothy fix (open-questions A26); Step 2
+  (dorothy consolidation) follows. — Drake solo damage-arithmetic; scientific-method harness (both Fable gates).
+- **(2026-07-15) Abort-gates evaluate BEFORE the `everyN` activation counter** (sim.ts `applyBlock`).
+  The block gates that `return` (`requiresCore`, `fbGate`, `swapGate`) are now checked before the
+  activation counter increments, so `everyN` counts only activations that actually pass the gates —
+  required to model "every 3 normal casts DURING Full Burst" (out-of-FB casts must not advance the
+  counter). Verified ZERO blast radius: no existing override combines `everyN` with any of these gates,
+  and the regression snapshot changed only the intended unit. First consumer: **soda-twinkling-bunny's
+  Golden Chip self-buffs** — the two skill-1 lines "after casting 3 normal attacks during Full Burst"
+  (Critical damage ▲1.32%/stack cap 50 = +66% permanent; Attack damage ▲10.51% 2s, self + top-final-ATK
+  ally) were SKIPPED (unsupported trigger); now modeled as the REAL ramping mechanic (`shotFired` +
+  `fbGate inFb` + `everyN 3` → stacking permanent `critDamagePct` + a `attackDamagePct` pulse to self and
+  a twin block to `alliesTopAtk 1`). DATAMINED magnitudes, not tuned. Fable 2-of-2 (pre-op + blind post-op)
+  LAND: N3 soda 0.61→0.66 (pre-committed band 0.64–0.78; ~+7% attack-dmg + ~+0.8% crit-dmg, cadence-
+  consistent). Regression moved only soda + scarlet (the resolved top-ATK ally, +4.49% — faithful; feeds
+  her separately-queued knot). Soda stays cold (0.66) on the shared SG body-damage under-model (ACCEPTED,
+  not fudged). Caveat: N3 exercises only 4 crit stacks (backline B3) → the 50-cap + permanence paths are
+  unvalidated. — soda kit datamine + N3 grade; scientific-method harness (both Fable gates).
 
 - **(2026-07-15) Overload roll-cost sim — the ACQUISITION side of OL, and the `smart` locking
   policy as default.** New subsystem (`src/overload/model.ts` + `policy.ts`,

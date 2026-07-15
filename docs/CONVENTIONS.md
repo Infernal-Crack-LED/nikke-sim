@@ -19,6 +19,20 @@ Which UNITS carry which tier (the authoritative per-kit tuned/untuned record) li
 JSON — the hand-tune recording batch only draws control-group supports from tuned units. Every
 tuning change updates that record as part of the change.
 
+## Accreditation (external sources)
+
+Every EXTERNAL research/data source we rely on (the DATAMINED / COMMUNITY / API tiers above — not our
+own MEASURED work) is registered in [`data/sources.json`](../../data/sources.json), the single
+harvestable sink for the planned web credits page. **Wiring rule: whenever a harness consumes a new
+outside source, APPEND it there** (stable `id`, `name`, `url`, `category`, `usedFor`, `tier`) — the
+harnesses that must do this:
+- **probe-processing** — a recording/tool that pulls an external value or method → add/extend its source.
+- **mechanics-doc-upkeep** — any doc claim that cites an outside URL/author → its source belongs here.
+- **research subagents / scientific-method harness** — a research pass (like the SG-core sweep) that
+  cites JP/KR/EN sources → register each before landing the finding.
+If a DECISIONS/open-questions/probe-data claim cites an outside link, that link must resolve to an entry
+here. Accreditation is CUMULATIVE — never delete an entry when its claim is superseded (we still used it).
+
 ## Validation methodology
 
 - All real runs use the **scope-lock preset**: no cube, no doll, Base 5 gear (not OL0 — corrected

@@ -1,5 +1,28 @@
 {
-  "note": "Tier audit straggler (Bossing A). Golden Chip economy time-averaged: starts at 50 chips, burst consumes 17, regen +1 per 3 FB normal casts (SG ~1.5/s) -> stays >=20 for the first ~2 bursts, >=10 into late fight. Stage effects 'trigger repeatedly' (cumulative): S2 stage-3 entry FB extension +2+3 -> flat +3s average per rotation ⚑ (early +5, late +2). Per-FB-normal-cast proc: Time Ext I+II are cumulative 52.04+85.02=137.06 early, 52.04 late -> averaged 100 per cast, fbGate inFb ⚑. Burst: 628.7% nuke always; the >=30-chip ATK 65.25/15s only realistically on the FIRST burst (everyN 99 offset 1 = once); hit-rate stage inert. REVIEW-RECONCILED: chip economy math confirmed (net-negative, starts 50, -17/burst, ~+15 per 2 rotations); first-burst-only >=30 gate and +3s avg extension stand. ADDED her padded reload animation: +49 frames on every reload (review-measured) -> charFixes.reloadFrames 182 (2.03s stated + 0.82s padding + cover delay).",
+  "note": "Tier audit straggler (Bossing A). Golden Chip economy time-averaged: starts at 50 chips, burst consumes 17, regen +1 per 3 FB normal casts (SG ~1.5/s) -> stays >=20 for the first ~2 bursts, >=10 into late fight. Stage effects 'trigger repeatedly' (cumulative): S2 stage-3 entry FB extension +2+3 -> flat +3s average per rotation ⚑ (early +5, late +2). Per-FB-normal-cast proc: Time Ext I+II are cumulative 52.04+85.02=137.06 early, 52.04 late -> averaged 100 per cast, fbGate inFb ⚑. Burst: 628.7% nuke always; the >=30-chip ATK 65.25/15s only realistically on the FIRST burst (everyN 99 offset 1 = once); hit-rate stage inert. REVIEW-RECONCILED: chip economy math confirmed (net-negative, starts 50, -17/burst, ~+15 per 2 rotations); first-burst-only >=30 gate and +3s avg extension stand. ADDED her padded reload animation: +49 frames on every reload (review-measured) -> charFixes.reloadFrames 182 (2.03s stated + 0.82s padding + cover delay). GOLDEN CHIP self-buffs NOW MODELED (2026-07-15, Fable-approved, invariant class-A): skill1's two 'after 3 normal casts during Full Burst' lines were SKIPPED (unsupported trigger). Modeled as the REAL ramping mechanic via shotFired+fbGate inFb+everyN 3 (the everyN counter now advances only on in-FB casts, engine gate-order fix): (a) Critical damage +1.32%/stack, maxStacks 50 (permanent, 'continuously') -> ramps 0->+66% by late fight; (b) Attack damage +10.51% for 2s, self + 1 highest-final-ATK ally. Datamined kit magnitudes, NOT tuned. Total-only grading (soda unfocused in N3, scarlet is focus). Hit Rate +38.91% burst stage STILL inert (no accuracy->core model; ties to the SG range-core open item). Residual after fix = the shared SG body-damage under-model (noir/naga share it) -> ACCEPTED, not fudged. GRADE: N3 0.61->0.66 (Fable 2-of-2 LAND, in pre-committed band 0.64-0.78; +8% = ~+7% attack-dmg pulse + ~+0.8% crit-dmg). CAVEAT (Fable post-op): in N3 the crit-dmg ramp reaches only 4 stacks (soda is a backline B3 firing few in-FB normals) -> the 50-stack cap and the permanent-'continuously' path are UNEXERCISED by validation; cheap future check if a soda-focus / high-uptime comp is ever recorded. Her +10.51% attack-dmg pulse also lands on the top-final-ATK ally (scarlet in N3, +4.49% -> feeds her separate knot, expected/faithful).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "fbGate": "inFb",
+      "everyN": 3,
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "critDamagePct", "value": 1.32, "maxStacks": 50 },
+        { "kind": "buff", "stat": "attackDamagePct", "value": 10.51, "durationSec": 2 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "fbGate": "inFb",
+      "everyN": 3,
+      "target": { "kind": "alliesTopAtk", "count": 1 },
+      "effects": [
+        { "kind": "buff", "stat": "attackDamagePct", "value": 10.51, "durationSec": 2 }
+      ]
+    }
+  ],
   "skill2": [
     {
       "slot": "skill2",

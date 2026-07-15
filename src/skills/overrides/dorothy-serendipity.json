@@ -1,16 +1,14 @@
 {
-  "note": "SG water attacker; pellets = hits (hitsPerShot 10), so pellet-count triggers map to hitCount. S1: hitting the target with 80 pellets (hitCount:80, re-triggers every ~8 shots -> effectively permanent in sustained fire) grants Attack Damage 72%; Hit Rate 98.18% kept for fidelity (inert). 'Pellet count fixed at 1' + 'Gains Pierce' are NOT modeled: the engine fires a fixed 10 hits/shot and Pierce is inert on a single boss, so the pellet-consolidation mechanic can't be expressed - left as-is and flagged uncertain (net effect on a lone boss is roughly a wash but genuinely unclear). S1 second block (160 pellets -> Expand Pierce range 200%) omitted: pierce is inert on a single boss. S2: passive Pierce Damage 55.08% kept (inert, fidelity); the 'only during Full Burst' ATK 75.24% (which the parser dropped as an unsupported trigger) is modeled on fullBurstEnter for 10s (~full-burst length); Hit Rate 40.68% kept for fidelity (inert). Burst: Attack Speed 65% and ATK 88.12% kept; 'Number of pellets +5 for 15s' can't be expressed directly, so per guidance it is approximated as normalAttackPct +50% (5 extra pellets on a base of 10 = +50% normal-attack output) for 15s - note this ignores any interaction with the S1 pellet-fixed-at-1 state. All numbers verbatim from skill text.",
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 80 },
-      "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 72 },
-        { "kind": "buff", "stat": "hitRatePct", "value": 98.18 }
-      ]
-    }
-  ],
+  "note": "SG water attacker; pellets = hits (hitsPerShot 10), so pellet-count triggers map to hitCount. S1: hitting the target with 80 pellets (hitCount:80, re-triggers every ~8 shots -> effectively permanent in sustained fire) grants Attack Damage 72%; Hit Rate 98.18% kept for fidelity (inert). 'Pellet count fixed at 1' + 'Gains Pierce' are NOT modeled: the engine fires a fixed 10 hits/shot and Pierce is inert on a single boss, so the pellet-consolidation mechanic can't be expressed - left as-is and flagged uncertain (net effect on a lone boss is roughly a wash but genuinely unclear). S1 second block (160 pellets -> Expand Pierce range 200%) omitted: pierce is inert on a single boss. S2: passive Pierce Damage 55.08% kept (inert, fidelity); the 'only during Full Burst' ATK 75.24% (which the parser dropped as an unsupported trigger) is modeled on fullBurstEnter for 10s (~full-burst length); Hit Rate 40.68% kept for fidelity (inert). Burst: Attack Speed 65% and ATK 88.12% kept; 'Number of pellets +5 for 15s' can't be expressed directly, so per guidance it is approximated as normalAttackPct +50% (5 extra pellets on a base of 10 = +50% normal-attack output) for 15s - note this ignores any interaction with the S1 pellet-fixed-at-1 state. All numbers verbatim from skill text. MEASURED-CONTRADICTED (2026-07-15, solo footage docs/probe-data/dorothy-serendipity-firing.json): the +72% attack modeled here as PERMANENT is really RANGE-GATED consolidation-window only (~17% of shots, near range only — the 80-landed-pellet trigger needs near range). The 'pellet fixed at 1' consolidation IS a real, damage-relevant mode (1 pellet, core ~0.9, Pierce; ~neutral out of burst, large gain in burst). DO NOT fix in isolation: Fable ruled a SEQUENCED increment (open-questions A26) — STEP 1 replace the flat SG_OUT_OF_NEAR_HIT_FRACTION=0.3 ⚑ (sim.ts, measured-contradicted) with per-band landing fractions, THEN STEP 2 the consolidation state + remove this permanent +72%. STEP 1 + STEP 2 BOTH LANDED 2026-07-15 (Fable 2-of-2 each). Step 2: config-driven range-gated consolidation state (top-level `consolidation` block): after 80 near-landed pellets, 3 shots of ONE aligned bullet (0.1 of a full shot) at core 0.9 + Pierce-DAMAGE(55.08, live only then) + Attack-damage(72, MOVED from permanent -> consolidation-window only; the permanent +72% was a measured-contradicted fudge). Pierce DOUBLE-hit stays OFF (R1: re-litigates PIERCE_CORE_DOUBLE=false without same-tier evidence). Consolidation bullet validated: sim ~122.7k out-of-burst vs measured ~110k (+11%, within +-20%). RESULT: removing the +72%-always fudge dominates -> PH 0.69->0.44, N9 0.55->0.35 (criterion 'moves up' FAILED, but Fable ruled it a smuggled bet on the UNRELIABLE in-burst 1.1-1.55M reads; the reliable out-of-burst anchor matches). ROWS BLOCKED-pending-measurement: do NOT chase 0.44/0.35 with tuning -- the residual is the shared SG spray under-model (A26) + the UNRESOLVED burst-gain question (are the 1.1-1.55M in-burst singles consolidation cores, or Burst-III cast damage? the sim's confirmed mechanics can't produce them from consolidation -> needs a burst-ISOLATED recording). Near-gate is MEASURED; the '80-landed-on-the-small-core' story is INTERPRETIVE. See open-questions A26.",
+  "skill1": [],
+  "consolidation": {
+    "triggerLandedPellets": 80,
+    "shots": 3,
+    "coreRate": 0.9,
+    "pelletFraction": 0.1,
+    "attackDamagePct": 72,
+    "pierce": true
+  },
   "skill2": [
     {
       "slot": "skill2",
