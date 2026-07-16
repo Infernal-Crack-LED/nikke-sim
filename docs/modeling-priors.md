@@ -29,10 +29,17 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
    (1.67→1.02, real 150 rounds/min), Cinderella (1.67 was cadence), Scarlet: Black Shadow (proc
    blend every 6→10 shots), Maiden (×0.68 was cadence, not value).
 
-2. **Function-damage rider Full-Burst & range treatment is genuinely per-kit.** Default: a rider
-   (proc / function damage) is exempt from the +50% Full Burst major and the +30% range bonus
-   (`noFb` / `noRange`). BUT verify per kit — Scarlet: Black Shadow's procs measured exempt;
-   Liberalio's measured ×1.3333 WITH Full Burst (the opposite). Never assume from the class rule.
+2. **Function-damage riders: Full-Burst is a TIMING gate (default ON); range is universally OFF.**
+   A non-burst-cast rider / proc / DoT that LANDS during the Full-Burst window SHOULD get the +50%
+   — do **NOT** set `noFb` by default. (The old "riders are FB-exempt" default was a calibration
+   RELIC masking cadence over-models; the engine's end-state default is `'timing'` — see
+   `skillNoFb` in sim.ts + DECISIONS/open-questions U14.) Set `noFb:true` ONLY with per-kit
+   MEASURED FB-OFF evidence. Measured ground truth: Ein feathers FB-ON, Liberalio proc FB-ON
+   (×1.3333), Scarlet: Black Shadow procs FB-OFF, all burst-cast nukes FB-OFF. **Burst-cast /
+   instant damage is ALWAYS FB-exempt** — the engine auto-handles it (snapshots pre-FB), so you
+   never set `noFb` for a burst-cast line. The **+30% range bonus is UNIVERSALLY off for every
+   rider** (the engine force-sets `noRange` at the deal site, sim.ts) — writing `noRange:true` is
+   redundant, never required, and never the thing to flag.
 
 3. **The parser drops sustained damage-over-time lines and unsupported triggers → undercounts.**
    Scan a new parse for missing burst/DoT lines and rebuild them as real-interval DoTs. Fixed:
@@ -101,8 +108,8 @@ Apply before the first sim of a fresh override, in order:
 2. Sanity-check the datamined cadence / rate-of-fire against reality (prior 1).
 3. Scan the parse for dropped burst / DoT lines and unsupported triggers → rebuild (prior 3).
 4. Identify stack / currency mechanics → steady-state with a ramp haircut (prior 4).
-5. Identify function-damage riders → apply the `noFb` / `noRange` default, flag for per-kit
-   verification (prior 2).
+5. Identify function-damage riders → FB-by-timing DEFAULT (do NOT set `noFb`); `noRange` is
+   automatic/universal (don't set it); set `noFb` only with measured FB-OFF evidence (prior 2).
 6. Check for multi-projectile weapons → decide split vs merge from video (prior 5).
 7. Check for HP-scaling → own Max HP only (prior 6).
 8. Element advantage → default ×1.10 unless a Superior-Elemental-Code-style buff (prior 7).
