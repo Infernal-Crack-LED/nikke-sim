@@ -1,0 +1,91 @@
+{
+  "measurement": "SG range-band CORE-HIT RATE re-derived from a POPUP-COUNT-FREE denominator. The prior value (CORE_BY_WEAPON_BAND.SG in sim.ts) was a visual popup ratio cores / visually-counted-whites; the white denominator was proven under-counted (dense overlapping identical pellet numbers read ~6 when ~9-10 land). Correct numerator (distinct red cores) but too-small denominator => the rate was INFLATED. Re-derived against the TRUE landed-pellet count from the noir running-counter reconciliation.",
+  "weapon": "SG",
+  "boss": "large multi-part spider-mech (single boss; absolute values are boss-specific)",
+  "date": "2026-07-15",
+  "primaryVideos": {
+    "coreNumerator": "docs/probes/ar-sg-smg/drake sg.MP4 (distinct red CORE-HIT counts per band, counted at 60fps zoom in coreband2)",
+    "trueDenominator": "docs/probes/ar-sg-smg/noir sg.MP4 (running-counter per-mag landed-pellet reconciliation; rider-free, treasure=false, cannot burst solo)",
+    "noirSpotChecks": "docs/probes/ar-sg-smg/noir sg.MP4 v53 (near: red 'CORE HIT' 64317 present), v95 (far: white 27964 + orange crits, NO red CORE-HIT numbers), v24 (mid: inter-shot gap)"
+  },
+
+  "method": {
+    "definition": "core rate per band = cores-per-shot / true-pellets-per-shot.",
+    "coresPerShot": "DISTINCT red 'CORE HIT' popups per shot. Reliable: cores render as distinct legible red numbers OUTSIDE the dense white cluster, are distinguished from red VFX blooms/UI at 60fps zoom. Taken from coreband2-drake-sg.json (redCorePopups / shotsSampled). Independently corroborated in noir (cores present at near, absent at mid/far).",
+    "truePelletsPerShot": "landed pellets/shot = SG_landing x 10, where landing is the popup-count-FREE value from noir-solo-recon.json (running DAMAGE-counter per-mag delta, immune to popup overlap): near 0.89 (window-avg) to 0.97 (peak), mid 1.00, far 0.74, midfar 0.88.",
+    "whyThisFixesTheArtifact": "The old rate used visually-counted whites as the denominator (~6.0/shot near). The counter proves ~8.9-9.7 pellets/shot actually land near. Same numerator, larger true denominator => lower true rate. Inflation factor = true-pellets / visual-pellets = ~8.9-9.7 / 6.0 = 1.48-1.62x."
+  },
+
+  "bands": {
+    "near": {
+      "coresPerShot": 0.435,
+      "coresPerShot_basis": "drake coreband2: 20 distinct red cores / 46 sampled shots",
+      "visualPelletsPerShot_old": 6.0,
+      "truePelletsPerShot": {"windowAvg": 8.9, "peakMag": 9.7, "used": 8.9},
+      "rederivedCoreRate": 0.049,
+      "rederivedCoreRate_range": [0.044, 0.050],
+      "currentEngineValue": 0.072,
+      "verdict": "INFLATED",
+      "inflationFactor": 1.48,
+      "note": "0.435/8.9 = 0.0489 (window-avg landing); 0.435/9.7 = 0.0448 (peak-mag landing). Central ~0.047-0.049. Clearly below the current 0.072. Cores are a mild LOWER bound (red-on-dark), so true could be marginally higher, but to reach 0.072 would require ~47% core under-count (implausible for distinct popups)."
+    },
+    "mid": {
+      "coresPerShot": 0.0,
+      "coresPerShot_basis": "drake coreband2: 0 cores / 42 shots; noir mid frames show no red CORE-HIT numbers",
+      "truePelletsPerShot": 10.0,
+      "rederivedCoreRate": 0.0,
+      "currentEngineValue": 0.0,
+      "verdict": "CORRECT (unchanged)",
+      "note": "Numerator is zero, so the denominator fix does not move it. Cores are range-concentrated at near."
+    },
+    "far": {
+      "coresPerShot": 0.0,
+      "coresPerShot_basis": "drake coreband2: 0 cores / 28 shots; noir far frame v95 shows white 27964 + orange crits only, no red CORE-HIT",
+      "truePelletsPerShot": 7.4,
+      "rederivedCoreRate": 0.0,
+      "currentEngineValue": 0.0,
+      "verdict": "CORRECT (unchanged)"
+    },
+    "midfar": {
+      "coresPerShot": 0.025,
+      "coresPerShot_basis": "drake coreband2: 1 core / 40 shots (single event, noisy)",
+      "visualPelletsPerShot_old": 5.5,
+      "truePelletsPerShot": 8.8,
+      "rederivedCoreRate": 0.0028,
+      "currentEngineValue": 0.0045,
+      "verdict": "SLIGHTLY INFLATED (both negligible)",
+      "inflationFactor": 1.6,
+      "note": "0.025/8.8 = 0.0028. One-event signal; treat as ~0. Change is immaterial to damage."
+    }
+  },
+
+  "damageArithmeticCrossCheck": {
+    "purpose": "Independent popup-count-free estimate of cores-per-shot from the noir running-counter, NOT from counting popups.",
+    "basis": "noir near mag A: running-counter delta over exactly 9 shots = 3,531,837 (t53.8 counter 19,376,206 -> t60.4 counter 22,908,043), so per-shot = 392,426. White near pellet = 36,353 (=27,964 x1.30 near range bonus, verified). crit = 36,353 x1.384 = 50,325 (adds 0.384W). core = 2W (adds 1.0W). crit base rate = 0.15 (sim.ts:372).",
+    "equation": "per-shot / W = L + 0.384*nCrit + nCore  =>  10.795 = L + 0.384*(0.15*L) + nCore",
+    "solvedCoresPerShot": {
+      "atL_8.9": 1.44,
+      "atL_9.7": 0.54,
+      "atL_9.8": 0.44,
+      "atL_10.0": 0.22
+    },
+    "reconciliation": "Highly sensitive to the assumed landing L. At the MEASURED near landing (noir peak-mag L ~= 9.7-9.8) the arithmetic yields cores-per-shot ~= 0.44-0.54, which MATCHES the distinct-count 0.435 and gives core rate ~= 0.045-0.056. Both popup-count-free methods therefore agree: near core rate ~0.045-0.05, well under 0.072. The arithmetic is corroborating (consistent at the measured L) but too L-sensitive to pin the value on its own; the distinct-count is the primary estimate."
+  },
+
+  "summary": {
+    "rederivedCoreRateByBand": {"near": 0.048, "mid": 0.0, "midfar": 0.003, "far": 0.0},
+    "currentEngineByBand": {"near": 0.072, "mid": 0.0, "midfar": 0.0045, "far": 0.0},
+    "headline": "The SG near core rate is INFLATED by the visual-denominator artifact: true ~0.048 vs current 0.072 (factor ~1.5x). mid and far are unchanged at 0 (zero numerator, denominator fix does not apply). midfar drops from 0.0045 to ~0.003 (both negligible). The direction is a uniform DEFLATION of every nonzero SG core value, driven entirely by the corrected (larger, true) pellet denominator.",
+    "recommendedEngineValues_FableGated": {"near": 0.048, "mid": 0.0, "midfar": 0.003, "far": 0.0},
+    "recommendationNote": "Only near meaningfully moves (0.072 -> ~0.048). midfar 0.0045 -> ~0.003 is optional (immaterial). Do NOT change mid/far (already 0). This is a MEASURED correction (popup-count-free denominator), not a board-fit fudge."
+  },
+
+  "cautions": [
+    "SINGLE boss with a small central weak-point gem; ABSOLUTE core rate is boss-specific. Transferable finding: the popup-ratio method inflated the SG core rate because its white denominator was visually under-counted.",
+    "cores-per-shot is a mild LOWER bound at near (red-on-dark), so true near could be marginally above 0.048; it cannot plausibly reach 0.072.",
+    "Do NOT also change SG landing here (handled separately in sg-pellet-landing follow-up / noir-solo-recon) and do NOT change per-pellet value or crit rate (verified correct) -- that would double-count.",
+    "The damage-arithmetic cross-check is consistent but L-sensitive; it confirms direction+magnitude, it does not independently pin the value."
+  ],
+  "confidence": "HIGH that near is inflated (~1.5x; true ~0.045-0.050): both the numerator (distinct cores) and the corrected denominator (counter-measured landing) are firmer than the original visual ratio, and the two popup-count-free methods reconcile. MEDIUM on the exact near value (+/-0.01) due to near-band landing spread (0.89-0.97) and cores being a lower bound. mid/far verdict (unchanged 0) is HIGH.",
+  "doNotResolve": "Whether the tiny midfar signal (1 core / 40 shots) is real or noise is unresolved and immaterial; not worth further footage."
+}

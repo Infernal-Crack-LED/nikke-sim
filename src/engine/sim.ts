@@ -164,7 +164,9 @@ const UNHITTABLE_FRAMES = 60;
 const SG_LANDING_BY_BAND: Record<string, number> =
   ENV.SGLANDING === 'legacy'
     ? { near: 1.0, mid: 0.3, far: 0.3, midfar: 0.3 }
-    : { near: 0.6, mid: 0.6, far: 0.45, midfar: 0.55 };
+    : ENV.SGLANDING === 'popupcount'
+      ? { near: 0.6, mid: 0.6, far: 0.45, midfar: 0.55 }
+      : { near: 0.9, mid: 1.0, far: 0.75, midfar: 0.9 };
 
 // element → the element it beats
 const BEATS: Record<Element, Element> = {
@@ -526,7 +528,7 @@ export function runSim(
     // near      mid       midfar    far
     AR:  { near: 0.40, mid: 0.30,  midfar: 0.03,   far: 0.0 },   // scarlet (near ⚑ 0.34–0.44 reads)
     SMG: { near: 0.28, mid: 0.244, midfar: 0.076,  far: 0.059 }, // chisato hardened (n≈45–95/band)
-    SG:  { near: 0.072, mid: 0.0,  midfar: 0.0045, far: 0.0 },   // drake per-pellet (near = lower bound)
+    SG:  { near: 0.048, mid: 0.0,  midfar: 0.003, far: 0.0 },   // noir counter-rederived (near 0.072 was ~1.5x inflated by the popup-ratio white under-count; true = cores/true-pellets ~0.045-0.05)
   };
   const coreByWeaponBand = (weapon: string, band: string): number => {
     const row = CORE_BY_WEAPON_BAND[weapon];
@@ -1584,18 +1586,20 @@ export function runSim(
   function firePull(u: UnitState, frame: number, charged: boolean, unlimited: boolean) {
     const band = bandAt(frame);
     const bandSgFalloff = u.char.weapon === 'SG' && !u.swap ? SG_LANDING_BY_BAND[band] : 1;
-    // Pellet-consolidation mode (dorothy-S, open-questions A26): accrue LANDED pellets while near
-    // (the small mid/far boss doesn't afford landing on the core → matches the OBSERVED near-only
-    // consolidation); at the trigger, enter a K-shot episode firing ONE aligned bullet (pelletFraction
-    // of a full shot) at coreRate with +attack + Pierce instead of the 10-pellet spray. The episode
-    // freezes if she leaves near mid-window (rare: episodes are short and sit inside the long near
-    // windows). Burst's "+5 pellets" (normalAttackPct) is a spray effect → excluded while consolidating.
+    // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
+    // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED
+    // (exact-counter re-read, dorothy-solo-reanalysis.json + owner): "3 rounds" = 3 SHOTS/episode (the
+    // ammo counter drops by 3), NOT 3 magazines; and it fires the WHOLE fight at ALL bands (the 98% hit
+    // rate lands the single bullet even at range) — NOT near-only. The trigger accrues fired pellets
+    // (10/shot on a large boss "hits the target" with ~all pellets) → 80 = ~8 spray shots/episode →
+    // ~30% of shots consolidate, matching the read. Each consolidation shot carries the FULL shot's
+    // damage in one aligned bullet (pelletFraction 1.0), reliably cores (coreRate), Pierce, no range.
     const consol = u.consolidation;
     let consolidating = false;
     if (consol) {
-      if (u.consolShotsLeft > 0 && band === 'near') consolidating = true;
+      if (u.consolShotsLeft > 0) consolidating = true;
       else {
-        if (band === 'near') u.landedAcc += Math.round(u.char.hitsPerShot * bandSgFalloff);
+        u.landedAcc += u.char.hitsPerShot;
         if (u.landedAcc >= consol.triggerLandedPellets) {
           u.landedAcc = 0;
           u.consolShotsLeft = consol.shots;
@@ -1618,6 +1622,9 @@ export function runSim(
       coreOverride: consolidating && consol ? consol.coreRate : undefined,
       extraDmgUpPct: consolidating && consol ? consol.attackDamagePct : undefined,
       pierceActive: consolidating && consol ? consol.pierce : undefined,
+      // the consolidated single bullet takes NO effective-range bonus (MEASURED: its non-core
+      // value = full-shot base × dmgUp with major ≈ 1.0, not 1.3 — dorothy-solo-reanalysis.json)
+      noRange: consolidating || undefined,
     });
     if (consolidating) u.consolShotsLeft--;
     // Pierce double-hit (2026-07-13 research): a Pierce-tagged shot passes through the

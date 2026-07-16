@@ -1,0 +1,88 @@
+{
+  "measurement": "CLEAN solo-total reconciliation of the shotgun (SG) under-model, using the running in-fight DAMAGE counter as the master instrument. Localizes noir's 1.56x solo shortfall to a specific component and adjudicates the visible-vs-fully-invisible (A/B) question that drake could not settle.",
+  "unit": "noir",
+  "weapon": "SG",
+  "burst": "III",
+  "element": "Wind (boss forced-neutral -> no element advantage)",
+  "date": "2026-07-15",
+  "video": "docs/probes/ar-sg-smg/noir sg.MP4 (1206x2622 portrait + rotation=90 -> 2622x1206 landscape, 60fps, 190.7s)",
+  "screenshot": "docs/probes/ar-sg-smg/noir sg.png",
+  "clock": "fightClock = videoSec - 7 (timer 02:57 @ videoSec 10). Bands (videoSec): mid 7-40, near 40-77, far 77-113, midfar 113-151, near 151-183, midfar 183-187.",
+
+  "whyNoirIsTheCleanAnchor": [
+    "treasure=false -> NO treasure/ATK confound (unlike drake).",
+    "No Pierce, no consolidation mode (unlike dorothy).",
+    "SOLO Burst-III -> she can NEVER enter Full Burst. Verified from kit: skill2 (ammo+5/reload) fires only on FB entry -> never; the 351.64% burst nuke -> never; the burst's Hit Rate +13.93% (an SG LANDING buff) -> never; the ally-present Hit Rate +11.61% -> never (no ally). ONLY skill1 (constant ATK +14.08% self) applies.",
+    "=> the entire 64.87M real total is PURE base-hit-rate SG spray with zero riders/FB/burst/skill damage. The cleanest possible SG spray test.",
+    "CRUCIAL new instrument: because there is no burst/skill2, the running DAMAGE counter's per-mag delta is an UNCONFOUNDED per-shot damage measurement (drake's self-burst total obscured this)."
+  ],
+
+  "theNumber": {
+    "realTotal": 64873527,
+    "simTotal": 41657906,
+    "ratio": 1.557,
+    "simConfig": "scope-lock solo, forced-neutral, 220 pulls, staticAtk 118027, effectiveAtk 134645 (skill1 +14.08% applied), 0 bursts, 0 FB, all normal bucket."
+  },
+
+  "VERDICT": {
+    "outcome": "B (VISIBLE component under-count), NOT A (fully-invisible channel).",
+    "component": "PELLETS-PER-SHOT / landing fraction. The sim credits ~6 landed pellets/shot (SG_LANDING_BY_BAND near=0.60) but noir lands ~9-10 pellets/shot on this large boss.",
+    "magnitude": "1.64x at peak near (gold-standard 9-shot mag); 1.557x fight-overall.",
+    "notShotCount": "Cadence is CORRECT. Near firing interval measured ~0.65 s/shot (~1.5 pulls/s) = the sim's SG PULLS_PER_SEC exactly; reload ~0.6-0.9 s. Real ~13 shots in the 10 s near window matches the sim's rate. The 2.7/s figure in coreband2 was an over-read; noir's ammo-counter decrements are ~0.65 s apart.",
+    "notPerPellet": "Per-pellet white value is CORRECT. Real 27964 at mid & far (no range bonus) vs sim 27520; real 36353 at near = 27964 x 1.30 (the +30% effective-range bonus, which the sim already applies to SG at near). Verified across mid/near/far frames.",
+    "notCore": "Core is a small slice and range-concentrated (drake ~0.072 near); cannot supply 1.56x."
+  },
+
+  "goldStandardMeasurement_nearMag": {
+    "method": "Read the running DAMAGE counter at two consecutive mag-start frames (ammo '009' -> next '009'), giving the delta for EXACTLY one 9-shot mag. Immune to per-shot counting error and to popup overlap.",
+    "counterAt_t53.8_magAstart_009": 19376206,
+    "counterAt_t60.4_magBstart_009": 22908043,
+    "note": "counter identical at t53.0 and t53.8 -> confirmed no firing during the preceding reload; delta is exactly mag A's 9 shots.",
+    "delta_9shots": 3531837,
+    "realPerShot": 392426,
+    "simNearPerShot": 238927,
+    "ratio": 1.642,
+    "impliedPelletsPerShot": "392426 / (36353 near-white x ~1.11 crit+core blend) = ~9.7 pellet-equivalents ~= ALL 10 pellets land. Sim credits 6."
+  },
+
+  "invisibleTest_isolatedShotPopups": {
+    "purpose": "Adjudicate A (fully-invisible: visible popups ~= sim's 6-pellet 239k) vs B (visible: popups ~= counter's 392k).",
+    "window": "t=54.02-54.20 (ammo held 008 = exactly ONE shot fired from the fresh 009 mag; cluster fully isolated, next shot not until ~54.6).",
+    "countedPopups": "~6-8 white 36353 + 1 orange crit 50325 (=36353 x1.38) + 1 red CORE 64375. Whites overlap tightly (identical value) so 6 is a floor, 8 the likely count.",
+    "visibleSum_range": "6 whites: 332818 | 7 whites: 369171 | 8 whites: 405524.",
+    "counterPerShot": 392426,
+    "conclusion": "Visible popup sum (~333-405k) MATCHES the counter's 392k/shot. The damage RENDERS as popups; there is NO large fully-invisible channel. A residual invisible component of <=~15% (392k vs a conservative 333k) cannot be excluded but is NOT the dominant mechanism. => Outcome B."
+  },
+
+  "perBandReconciliation": {
+    "method": "Running-counter deltas at band boundaries (videoSec = fightClock+7), both near windows and both midfar windows combined. Reconstructs to 64.87M (matches screenshot).",
+    "bands": {
+      "mid":    {"real": 12371258, "sim": 7460000,  "ratio": 1.66, "simLanding": 0.60, "impliedRealLanding": 1.00},
+      "near":   {"real": 30011332, "sim": 20310000, "ratio": 1.48, "simLanding": 0.60, "impliedRealLanding": 0.89},
+      "far":    {"real": 9367940,  "sim": 5720000,  "ratio": 1.64, "simLanding": 0.45, "impliedRealLanding": 0.74},
+      "midfar": {"real": 13123057, "sim": 8170000,  "ratio": 1.61, "simLanding": 0.55, "impliedRealLanding": 0.88}
+    },
+    "shape": "Under-model is nearly UNIFORM across all bands (1.48-1.66). near is the LEAST under-modeled only because the sim's near per-shot is already inflated by the +30% range bonus. Implied real landing is ~0.74-1.0 across bands (vs sim 0.45-0.60) -- i.e. SG lands ~most/all pellets on this large boss everywhere, not 45-60%.",
+    "caveat": "impliedRealLanding assumes the sim's per-band shot allocation is ~right (justified: measured near cadence ~1.5/s firing = sim). The mid=1.0 > near=0.89 ordering is physically odd and likely reflects boss-transition-edge firing gaps depressing the near-band average + band-boundary counter timing; the DIRECTLY measured near value (peak 0.97, mag-avg ~0.89) is the trustworthy anchor."
+  },
+
+  "reconciliationWithPriorSGWork": {
+    "contradicts": "docs/probe-data/sg-pellet-landing.json (landing 0.45-0.60 via popup COUNT) and docs/probe-data/sg-dropout-flashcount.json (drake: ~6 sparks ~= ~6 numbers, dropout~1.0).",
+    "why": "Both prior measurements relied on VISUALLY COUNTING a dense cluster of overlapping IDENTICAL pellet numbers/sparks -- which systematically UNDER-counts (8-10 tightly-stacked '36353' read as ~6). drake's part2b global cross-check that would have caught this was explicitly LOOSE (could not pin self-burst cast count / skill2). noir has NEITHER confound, so its running-total counter is the arbiter, and per-mag it says ~9.7 pellets/shot, not 6.",
+    "notRenderDropout": "This is NOT the falsified H1 'pellets damage without rendering'. The pellets DO render (visible popups ~= counter). The sim's landing CONSTANT (0.60) is simply too low; true landing is ~0.9-1.0 at near. The prior flashcount correctly found ~= counts of sparks-and-numbers -- both were just under-counted together relative to the true pellet total that the counter reveals.",
+    "nikkeGgAgreement": "nikke.gg: 'large bosses hit all 10 pellets consistently at near range' + 'SG generates up to 450 energy/shot = 45 x 10 pellets near'. Directly matches the ~10-pellet near landing measured here."
+  },
+
+  "fixImplication": {
+    "direction": "Raise SG_LANDING_BY_BAND toward the measured levels (near ~0.9-1.0, mid ~1.0, far ~0.75, midfar ~0.9), which multiplies the SG normal bucket by ~1.56 and closes noir (and the shared SG cold: naga/soda/dorothy-S).",
+    "isThisTheForbiddenReFudge": "NO -- this is a MEASURED correction (running-counter per-mag reconciliation, immune to popup-overlap), which is exactly the 'derive landing from a popup-count-free basis' resolution the SG investigation called for. It is not a hand-tuned bump to fit the board.",
+    "cautions": [
+      "Single boss (large gappy spider-mech). The ABSOLUTE landing values are boss-specific; the transferable finding is that popup-count landing UNDER-reads true landing, and SG lands ~most pellets on a large boss.",
+      "Do NOT also raise core rate or per-pellet -- those are verified correct here; only landing is under-credited (avoids double-counting).",
+      "A <=15% residual (possible small invisible-X, or my popup under-count) means near ~1.0 is an upper-ish estimate; 0.9-1.0 near is the honest band.",
+      "MEASURED constants (cadence 1.5/s, +30% near range bonus, per-pellet base) are CONFIRMED and must NOT be changed."
+    ]
+  },
+
+  "confidence": "HIGH on the verdict (B, landing/pellets-per-shot, ~1.6x, VISIBLE not invisible): the running-counter per-mag delta is a direct, overlap-immune per-shot measurement; cadence and per-pellet independently verified; visible popups reconcile to the counter. MEDIUM on the exact per-band real-landing values (shot-allocation and band-boundary assumptions)."
+}

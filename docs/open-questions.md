@@ -552,7 +552,49 @@ corroboration channel failed, landing stands on measurement validity. near 0.60 
 ⚑ single-boss, ±0.10–0.15; do NOT correct it upward without a new direct measurement (see the SG under-model
 item below). Details: DECISIONS (Engine/data-architecture).
 
-**SHARED SG UNDER-MODEL — now a first-class open item (Fable condition, 2026-07-15).** After the
+**SHARED SG UNDER-MODEL — landing-dropout hypothesis FALSIFIED (2026-07-15, direct flash-count); landing STANDS.**
+The clean-path re-derivation (correct the popup-counted landing upward by the drake solo-total ×1.47) was TESTED
+and REFUTED. A blind, pre-registered impact-flash count (`docs/probe-data/sg-dropout-flashcount.json`) directly
+counted pellet IMPACT-SPARKS vs damage-NUMBERS per band on the drake footage: **impacts ≈ numbers (~5–6 each) →
+dropout ≈ 1.0 in every band.** The recovered landing is UNCHANGED (near 0.60, NOT the 0.88 a 1.47 dropout would
+give). So the popup-counted landing is CORRECT (a direct count beats the SG-investigation's INFERENCE from the
+confounded total). **Engine landing table UNCHANGED — validated.** Per the pre-committed decision rule (Fable
+pre-op R1–R6), a dropout≈1.0 result = STOP, not a landing change. The drake solo-total ×1.47 shortfall is now
+explained as: (a) TREASURE-CONFOUNDED — sim `drake`=treasure but the recording is base drake (reference-stats.json;
+and note the confound goes the "wrong" way — treasure inflates the sim, yet sim<real, implying any real drake
+under-model is even larger, i.e. NOT explained away by treasure); and/or (b) a FULLY-INVISIBLE damage channel
+(no spark, no number) which the flash count cannot exclude but which is UNOBSERVABLE → NOT modellable without an
+observed mechanic (invariant forbids adding invisible damage to fit). So the SG residual (soda 0.64 clean;
+noir/naga ~0.65) is ACCEPTED as faithful-cold; do NOT fudge the landing/core to close it. The drake solo is a
+BAD SG reconciliation anchor (treasure mismatch); a clean SG solo total needs an owned, treasure-matched SG unit.
+
+**CLEAN ANCHOR ARRIVED (owner, 2026-07-15): noir solo — the SG under-model is CONFIRMED REAL (~1.56×), reopened.**
+noir is pure SG, **treasure=false** (no confound), NO Pierce, NO consolidation, 0 bursts solo. Solo sim 41.66M vs
+real damage-screen **64,873,527 → 1.56× short** on PURE SG spray. So the ~1.5× under-model is REAL (not just
+drake's treasure confound) and NOT Pierce/consolidation-specific. Decomposition: dorothy's 3.09× ≈ this spray
+~1.56× × her extra Pierce/consolidation ~2×. The landing/core/per-pellet are flash-verified, so the 1.56× is
+either (A) a FULLY-INVISIBLE damage channel or (B) a COMPONENT the direct reads under-counted.
+
+**RESOLVED (noir counter-reconciliation, 2026-07-15) = OUTCOME B: the LANDING CONSTANT was too low.** noir's
+in-fight cumulative DAMAGE COUNTER (arithmetic; she can't burst solo → rider-free) gave per-mag 392,426/near-shot
+vs sim 238,927 = 1.64× → **~10 pellets land near, not 6.** The visible damage RENDERS (a single-shot A/B popup-sum
+matches the counter) — NO invisible channel. **Both prior visual reads (Step-1 popup count AND the flash count)
+under-read a dense cluster of ~10 identical overlapping pellet numbers as ~6.** FIX: SG landing raised to near 0.90
+/ mid 1.0 / far 0.75 / midfar 0.90 (per-band counter ratios). BOTH clean solo anchors reconcile: noir 1.01,
+dorothy 1.01. Board MAE 0.120→0.114, median 0.950→0.970, pins exact. **The shared SG under-model is CLOSED** —
+it was the under-counted landing (see DECISIONS, FINAL entry; the flash-count "0.60 validated" is SUPERSEDED).
+This overturns the earlier "landing FALSIFIED, accept faithful-cold" — the counter (arithmetic) beat the flash
+count (visual under-read of a dense cluster).
+**SG CORE RATE was INFLATED ~1.5× — RESOLVED 2026-07-15 (counter re-derivation).** As Fable predicted, the core
+rate (0.072) was a visual popup RATIO whose white denominator was under-read (~6 vs true ~9–10), inflating it.
+Re-derived popup-count-free as cores-per-shot ÷ TRUE-pellets-per-shot → **near 0.072→0.048**, midfar 0.0045→0.003,
+mid/far unchanged 0. Both clean solos STAY reconciled (noir/dorothy 1.01) and the residual SG comp warmth cools
+(noir 1.04→1.03, naga 1.03→1.02). The small remaining ~2–3% comp warmth is a separate buff-interaction, not core.
+`docs/probe-data/sg-corerate-rederive.json`; DECISIONS. **The SG model (landing + core + consolidation) is now
+settled — → Dorothy is the designated SG-spray regression probe (memory `dorothy-sg-spray-regression-probe`).**
+Original framing (superseded by the falsification above):
+
+**SHARED SG UNDER-MODEL — was a first-class open item (Fable condition, 2026-07-15).** After the
 range-dependent CORE model (SG near core 0.85→0.072) AND this landing refit (near 1.0→0.60), SG near damage
 is ~35% of the old model and per-weapon SG mean sits at **0.695** (noir/naga/dorothy/soda all cold). Both old
 ⚑s (full near-landing + flat 0.85 core) were COMPENSATING for a real SG damage source not modeled — the
@@ -585,13 +627,27 @@ rule as an assumption; the mechanism criteria (anchored to the reliable data) pa
 faithful, so the invariant compels landing over keeping a known fudge. Rotation pins EXACT (only dorothy drifted).
 - **BLOCKED-pending-measurement (Fable condition):** dorothy's 0.44/0.35 rows must NOT be chased with tuning —
   the residual is the shared SG spray under-model + the unresolved burst question below.
-- **NEW OPEN (the (c)-failure diagnosis, Fable condition):** **Are the ~1.1–1.55M in-burst "CORE HIT PIERCE"
-  singles consolidation cores, or Burst-III cast damage / skill riders?** The sim's confirmed consolidation
-  mechanics CANNOT produce 1.1–1.55M from a 1-pellet bullet (burst ATK+FB give only ~3.2×, not the ~10–14×
-  implied) → EITHER they are Burst-III cast damage (1254% coef, huge), OR there is an un-modeled
-  burst-consolidation amplification (a possible Step 3). RESOLVE with a **burst-ISOLATED dorothy recording**
-  that separates burst-window consolidation cores from the Burst-III cast. This single read decides whether
-  dorothy's true level is ~0.44 (no burst gain) or higher. Recording request queued.
+- **RESOLVED PREMISE (owner, 2026-07-15): the dorothy solo video IS burst-isolated — she CANNOT burst.** A lone
+  Burst-III unit has no B1→B2→B3 chain, so solo dorothy never casts her burst and never enters Full Burst (the
+  sim already gives her 0 bursts solo — correct). So the ~1.1–1.55M "in-burst" singles are **NOT Burst-III cast
+  and NOT FB consolidation** — a prior read mis-inferred "burst windows" from a red-tint vignette. The
+  "burst-isolated recording" request is MOOT (already in hand). **REFRAMED under-model:** solo dorothy sim 31.34M
+  vs real 96.80M = **3.09× short, ENTIRELY in the normal bucket** (0 bursts), while landing (0.60, flash-verified)
+  / core (0.072) / per-pellet (25k) / shot-count (198) are ALL validated — a spray model reproduces the 31M sim.
+  So ~65M is an UN-MODELED mechanism. Leading suspect: her consolidation bullet GAINS PIERCE → on the multi-part
+  spider boss. **RE-ANALYSIS DONE + FIX LANDED (exact-counter re-read + owner ammo-count confirmation):** the
+  consolidation was UNDER-modeled ~10×. Findings: (a) the single consolidated bullet carries the FULL shot's
+  damage (pelletFraction 1.0, NOT 0.1 — the earlier "110k" anchor was a DROPPED-DIGIT MISREAD of 1,103,595);
+  body-pierce 551,797 / core-pierce 1,103,595 (=2.0× body) decompose as full-shot base × dmgUp(2.27), NO range
+  (both +2%). (b) "3 rounds" = 3 SHOTS/episode (owner: ammo drops by 3), NOT 3 magazines. (c) fires ALL bands
+  the whole fight (98% hit), NOT near-only; trigger = 80 fired pellets ≈ 8 spray shots/episode → ~30% consolidate
+  (~58, measured ~55–64). (d) Pierce K=1 (one number/shot). (e) the 1.27–1.55M "in-burst singles" are the
+  SELF-BUFF RAMP, not burst (she can't burst solo). FIX: pelletFraction 0.1→1.0, shots 3, all-band accrual,
+  noRange on the consolidated shot. RESULT: dorothy solo 0.44→0.87, comps PH 0.44→0.83 / N9 0.35→0.81. Fable
+  post-op REVISE→satisfied (shots=3 not 27, all-band not near-gated, decomposition confirms the residual is
+  spray). **REMAINING ~0.13 = the shared SG SPRAY under-model** (sim spray bucket ~23M vs measured ~32M, ~1.4×,
+  matching noir 1.56×) — the noir reconciliation resolves that. Snapshot regenerated; verify GREEN; UNCOMMITTED
+  (post-push work). NB this CORRECTS the Step-2 that shipped in `5afc815` (the misread) — a re-push will carry it.
 
 **(Superseded implementation plan — kept for provenance.)** STEP 2 — implementation plan (Fable pre-op R1–R4):
 Config-driven consolidation state (mirror the `charFixes` threading: `override.consolidation` → `prepare.ts`

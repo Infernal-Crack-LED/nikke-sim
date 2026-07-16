@@ -1,0 +1,91 @@
+{
+  "measurement": "Dorothy: Serendipity SOLO re-analysis — mechanism behind the 3.09x sim shortfall (CORRECTED no-burst premise)",
+  "unit": "dorothy-serendipity",
+  "weapon": "SG",
+  "burst": "III (self, Attacker, Water)",
+  "video": "docs/probes/ar-sg-smg/doro s.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/doro s.jpg",
+  "date": "2026-07-15",
+  "supersedes": "dorothy-serendipity-firing.json — CORRECTS its 'burst windows' and its 110,395 consolidation value (dropped-digit misread of 1,103,595) and its 'ambiguous burst-boosted 1.1-1.55M' caveat",
+
+  "correctedPremise": {
+    "statement": "Dorothy is ALONE and is Burst III. A lone Burst-III unit has no 1->2->3 chain, so she NEVER bursts. The ENTIRE fight is no-burst. The prior read's red-tint 'burst windows' were a screen vignette, NOT Full Burst.",
+    "confirmedBy": "Cumulative top-center DAMAGE counter shows a STEADY ~5-7M per 10s across the whole fight with NO spikes; a burst would produce a large localized jump. None exists. Final counter = 96,800,599 exactly matches the Battle Records total."
+  },
+
+  "method": {
+    "primaryInstrument": "The on-screen cumulative DAMAGE counter (top-center) is cleanly OCR-readable and is EXACT ground truth. Every damage number was verified by the counter DELTA across the frames it renders: delta == the displayed popup value. 60fps frame extraction; deltas measured in the f31 (v30-38), spray (v74-82), and pb (v168-178) windows; cumulative curve sampled every 2s over the full 190s.",
+    "confidence": "high — counter deltas are arithmetic ground truth, not visual estimation"
+  },
+
+  "solo": {
+    "damageTotal": 96800599,
+    "kills": 46,
+    "simPredicted": 31340000,
+    "ratio": 3.09,
+    "counterFinalMatchesScreen": true
+  },
+
+  "question1_numbersPerConsolidationShot": {
+    "answer": "K = 1. Each consolidation trigger pull renders ONE single large 'CORE HIT ... PIERCE' number. It is NOT a multi-part pierce spread.",
+    "evidence": "In every consolidation shot measured, the cumulative counter jumped by EXACTLY the single displayed value (1,103,595 at v33.13 and v35.00 and v35.67; 551,797 at v76.2; 1,545,033 at frame pb-260; 1,269,134 at frame pb-302). If a pierce bullet rendered N part-numbers, the counter delta would be their sum and N numbers would be visible. Never observed — always exactly one number, even at point-blank late-game when the boss fills the screen.",
+    "bossIsMultiPart": "yes (spider mech: central core gem + arms + legs), but the consolidation pierce still credits a SINGLE core-gem number, not per-part numbers. The pierce's benefit here is the guaranteed CORE HIT + damage bonus, not extra hitbox numbers.",
+    "modelingCaution": "Do NOT model this as a K>1 pierce double/multi-hit — that would overshoot. Model it as ONE big consolidation core-pierce hit."
+  },
+
+  "question2_theLargeSingles": {
+    "answer": "They are ONE number each (a full unreduced CORE HIT on the boss's central gem), NOT a sum of a multi-hit. Their size GROWS over the fight because of accumulating self-buffs (Skill-2 Pierce dmg +55.08%, attack buildup) — NOT burst (there is none).",
+    "measuredValues": {
+      "consolidation_body_pierce_nonCore": 551797,
+      "consolidation_core_pierce_early_t28to36": 1103595,
+      "consolidation_core_pierce_late_t172": [1269134, 1545033]
+    },
+    "coreMultiplier": "core = exactly 2.00x body: 1,103,595 = 2 x 551,797 (matches spray core 48,599 = 2.00x spray white 24,300).",
+    "buffRamp": "core-pierce grows 1,103,595 (early) -> 1,269,134 -> 1,545,033 (late) = +15% to +40%; spray whites likewise ramp 24,300 -> 31,590 (+30%). Steady self-buff accumulation, no burst.",
+    "frequency": "~3 consolidation shots per episode ('3 rounds'), episodes recur every ~10-20s; ~55-64 consolidation shots total over the fight (~one shot per ~2.7s of firing).",
+    "where": "wherever pellets accumulate to the 80-landed trigger — near AND point-blank, and (contrary to the prior read) also at mid/far range because consolidation's +98.18% hit rate keeps the single bullet landing. Occurs the entire fight, not just 'burst windows.'"
+  },
+
+  "question3_perModePerShot": {
+    "sprayShot": {
+      "composition": "cluster of ~6-10 pellet numbers (white 24,300 base / 31,590 buffed; crit 36,450; core 48,599)",
+      "perShotTotal_nearMid": "182,250 - 279,449 (measured deltas: 182250, 230849, 243000(=10x24300), 255150, 267298, 279449)",
+      "perShotTotal_pointBlankLate": "315,900 - 400,944",
+      "note": "these ARE what the sim already reproduces (~31M)"
+    },
+    "consolidationShot": {
+      "perShotTotal": "551,797 (body) or 1,103,595 (core) early; up to 1,269,134-1,545,033 (core) late",
+      "typical": "~1.1M early, ~1.3-1.5M late — nearly always a CORE hit on the gem (single 98%-hit-rate bullet aimed at boss centre)"
+    },
+    "ratio": "a consolidation CORE shot is ~4-6x a spray shot. This DIRECTLY CONTRADICTS the sim, where consolidation = 1 pellet < a spray shot's 6-10 pellets. In reality 1 consolidation shot > any spray shot by a wide margin.",
+    "confirmingWindow": "v30-38 (8s, near): 3 consolidation hits (1,103,595 x3 = 3,310,785) + 7 spray shots (182k-279k, sum 1,737,445) = 5,048,230 == exact counter gain (12,458,610 -> 17,506,840). Consolidation = 65.6% of damage in this window."
+  },
+
+  "question4_reconcile968M": {
+    "split": {
+      "spray_total_estimate": "~31-33M (~32-34% of 96.8M) — matches sim 31.34M",
+      "consolidation_total_estimate": "~64-66M (~66-68% of 96.8M) — sim currently models this as ~0 (as a single small pellet)"
+    },
+    "arithmetic": "spray(~32M, sim-validated) + consolidation(~64M, unmodeled) = ~96.8M = 3.09x. The consolidation core-pierce mechanic is the ENTIRE missing ~65M.",
+    "shotCountCheck": "64M / ~1.15M avg consolidation hit ~= 55-60 consolidation shots; at 3/episode ~= 18-20 episodes over 175s firing = one episode per ~9s. Consistent with observed episode cadence.",
+    "windowConsistency": "measured near-window consolidation share 65.6% and the global spray share (31.34/96.8 = 32%) agree tightly (~66% consolidation both ways).",
+    "confidence": "high"
+  },
+
+  "mechanism": {
+    "headline": "The sim omits Dorothy's Skill-1 CONSOLIDATION pierce CORE-HIT entirely (it models the consolidated shot as one small pellet). In reality consolidation fuses the shot into ONE Pierce bullet that scores a guaranteed CORE HIT on the boss's central gem for ~1.1M early -> ~1.5M late (2x the non-core body value), firing ~3x per episode at ~one shot per 2.7s and contributing ~65% (~64M) of her total damage.",
+    "anchorRatios": {
+      "consolidation_core_over_base_white_pellet": "1,103,595 / 24,300 = 45.4x (early)",
+      "consolidation_body_over_base_white_pellet": "551,797 / 24,300 = 22.7x (early)",
+      "core_over_body": "2.00x"
+    },
+    "fixDirection": "Model consolidation as a single large core-pierce hit at the consolidation cadence (NOT a 1-pellet, and NOT a K>1 pierce multi-hit). Its value ramps with the same self-buff accumulation that lifts her spray whites (24,300 -> 31,590). Do NOT attribute any of these values to burst — she never bursts solo."
+  },
+
+  "flags": [
+    "Exact self-buff ramp curve (what drives 1,103,595 -> 1,545,033 and 24,300 -> 31,590) not fully decomposed here; report gives measured endpoints only.",
+    "Whether consolidation EVER renders 2 numbers when pierce aligns core+limb was not observed in any sampled shot (always 1). Not exhaustively swept every shot, but 3 windows across near/far/point-blank all showed K=1.",
+    "Exact total consolidation-shot count (~55-64) is inferred from total/avg-value, not a full frame-by-frame census.",
+    "Did NOT change any engine/override values (per instructions)."
+  ]
+}

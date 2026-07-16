@@ -1,0 +1,90 @@
+{
+  "measurement": "SG pellet-render-DROPOUT per range band, via BLIND flash-count: count IMPACT hit-sparks ON THE BOSS BODY (numerator) vs rendered damage NUMBERS (denominator), per isolated single shot, in SEPARATE passes. dropout = impacts / numbers.",
+  "purpose": "Independent cross-check of whether damage-number popups UNDER-report real pellet hits (invisible-X / render-dropout). If impacts >> numbers (~1.47x), render-dropout is real and recovers Drake's ~x1.47 solo-total shortfall (36.8M sim vs 53.97M real). If impacts ~= numbers, the mechanism is FALSIFIED and the shortfall lives elsewhere.",
+  "unit": "drake",
+  "weapon": "SG",
+  "burst": "III (self-burst, solo focus)",
+  "hitsPerShot": 10,
+  "video": "docs/probes/ar-sg-smg/drake sg.MP4 (1206x2622 portrait + rotation=90 -> 2622x1206 landscape, 60fps, 200.3s)",
+  "date": "2026-07-15",
+  "clock": "fightClock = videoSec - 7",
+  "reuses": ["docs/probe-data/sg-pellet-landing.json (popup-count landing fractions)", "docs/probe-data/coreband2-drake-sg.json (popups/shot per band, red-VFX confound characterization)"],
+
+  "preRegisteredProtocol": {
+    "impact_numerator": "distinct WHITE/bright round hit-spark burst ON the boss body at a pellet landing point. EXCLUDED: red spider-lily VFX blooms (star/radial red, thrown at all ranges), the persistent pulsing red core gem at crosshair, orange muzzle/impact fire glints and trailing debris, and pellet TRACER lines.",
+    "number_denominator": "rendered white/orange/red damage number at the crosshair region (same popups the landing table counts). Burst (7-digit ~2-5.9M) and the 559046 core excluded from the NORMAL-pellet number count where separable.",
+    "windowRule": "took the FIRST cleanly-isolable single shot per band window (one trigger pull, cluster fully visible, no overlap), in temporal order, at 60fps. Isolation is only clean during slow-cadence recovery windows; during sustained fire consecutive shots' sparks/numbers overlap.",
+    "independentPasses": "impacts and numbers counted in SEPARATE passes over the same frames.",
+    "confirmCriterion": "dropout ~1.4-1.5x (impacts exceed numbers) => mechanism CONFIRMED; dropout ~1.0 (impacts ~= numbers) => FALSIFIED.",
+    "expected_if_confirmed": "near dropout ~1.47 => recovered near landing ~0.88 (=0.60x1.47), NOT 10-of-10; sparks ~9 vs numbers ~6."
+  },
+
+  "feasibilityFlag": "FEASIBLE (with band-dependent confidence). The white round impact sparks ARE reliably distinguishable from the red spider-lily VFX blooms (different colour AND shape: white round burst vs red star/radial), so the KEY question -- do impacts vastly exceed numbers -- is answerable. Absolute spark counts carry +/-1-2 (near/mid), +/-2-3 (far: tiny boss + smoke), and are the least resolvable at midfar (small boss + red core VFX sits exactly on the impact zone). NOT a forced number: the qualitative verdict (impacts do NOT exceed numbers) is robust in every band.",
+
+  "confounds": [
+    "RED SPIDER-LILY VFX: thrown red radial/star blooms on the boss at ALL ranges, no number inside. Distinguishable from white round sparks by colour+shape. Strongest interference at midfar/mid where the small boss + red core bloom occupy the same pixels as the impact cluster.",
+    "Persistent pulsing red core gem at the crosshair (mistakable for an impact if colour-blind to it) -- excluded.",
+    "Orange muzzle/impact fire glints + debris trails animate for several frames and can INFLATE an apparent spark count -- counted only primary white round bursts to avoid spuriously raising dropout above 1.",
+    "Sustained-fire overlap: only slow-cadence recovery windows give a cleanly isolated single shot. Fully-isolated shots per band are therefore fewer than the target 5 (see shotsSampled).",
+    "Burst III casts (1254%) + skill2 (98.55%/10sh) render reliably and are NOT pellet dropout; sampled on NORMAL pellet shots and the large 559046 core is excluded from the normal-pellet number count."
+  ],
+
+  "bands": {
+    "mid": {
+      "fightClockRange": [0, 33], "videoWindow": [7, 40],
+      "bossDistance": "medium (center)", "pelletValueWhite": 25672,
+      "sampleWindows": ["v19-21 (f_004 shot)"], "shotsSampled": 1,
+      "impactsPerShot": "5-6", "numbersPerShot": "~6",
+      "dropout": 1.0, "dropoutRange": [0.9, 1.2],
+      "note": "Sparks resolve as ~5-6 distinct white bursts; number count ~6 matches coreband2 (6.0/shot). Impacts ~= numbers."
+    },
+    "near": {
+      "fightClockRange": [[33, 70], [144, 176]], "videoWindow": [[40, 77], [151, 183]],
+      "bossDistance": "close/large (right); self-burst FB (values 33374)", "pelletValueWhite": 33374,
+      "sampleWindows": ["v52-53 (n_025 isolated shot, cleanest)", "v160-161.5 (n2_018 + n2_025 shots)"], "shotsSampled": 3,
+      "impactsPerShot": "5-6", "numbersPerShot": "~6 (+1 red 559046 core)",
+      "dropout": 1.0, "dropoutRange": [0.9, 1.2],
+      "note": "BEST band. n_025 window is a fully isolated single shot (ammo held 005 for 24 frames, only the red core pulse, then 005->004 with a fresh spark cluster developing n_026-040 and fading n_043). Max simultaneous distinct white sparks ~5-6; distinct white numbers ~5-6. NOT the ~9 sparks that dropout ~1.47 would require."
+    },
+    "far": {
+      "fightClockRange": [70, 106], "videoWindow": [77, 113],
+      "bossDistance": "distant/small (center); smoke + frequent reloading", "pelletValueWhite": 25672,
+      "sampleWindows": ["v84-86 (fr_019 shot, after a reload)"], "shotsSampled": 1,
+      "impactsPerShot": "4-6 (tiny cluster, +/-2-3)", "numbersPerShot": "~5-6",
+      "dropout": 1.0, "dropoutRange": [0.8, 1.2],
+      "note": "Marginal: boss small + smoke. Spark cluster is a tiny white dot group (~4-6) roughly matching the number count. No sign impacts exceed numbers. Low absolute confidence, but the ratio is ~1.0."
+    },
+    "midfar": {
+      "fightClockRange": [[106, 144], [176, 180]], "videoWindow": [[113, 151], [183, 187]],
+      "bossDistance": "medium-small (left/center)", "pelletValueWhite": 25672,
+      "sampleWindows": ["v124-125.5 (sustained fire)"], "shotsSampled": "2-3 (overlapping)",
+      "impactsPerShot": "2-4 resolvable (<= numbers)", "numbersPerShot": "~6",
+      "dropout": 1.0, "dropoutRange": [0.8, 1.2],
+      "note": "Hardest band: small boss + red core VFX sits ON the impact zone, so white sparks are under-resolvable (I can distinctly count ~6 numbers but only ~2-4 sparks). This gives NO support for impacts>numbers; if anything sparks are harder to see than numbers. dropout taken as ~1.0, lowest confidence."
+    }
+  },
+
+  "recoveredLanding_popupLandingTimesDropout": {
+    "formula": "recovered = sg-pellet-landing.json summaryFraction x dropout(=1.0)",
+    "near":   {"popupLanding": 0.60, "dropout": 1.0, "recovered": 0.60},
+    "mid":    {"popupLanding": 0.60, "dropout": 1.0, "recovered": 0.60},
+    "far":    {"popupLanding": 0.45, "dropout": 1.0, "recovered": 0.45},
+    "midfar": {"popupLanding": 0.55, "dropout": 1.0, "recovered": 0.55},
+    "note": "Because dropout ~= 1.0, recovered landing is UNCHANGED from the popup-count landing. No upward correction toward the ~0.88 near / higher-total that a ~1.47 dropout would have produced."
+  },
+
+  "verdict": {
+    "mechanism": "FALSIFIED",
+    "headline": "Impact hit-sparks on the boss body do NOT exceed rendered damage numbers in any band -- impacts ~= numbers (~5-6 each at near/mid) with dropout ~1.0 across all four bands (range ~0.9-1.2). The ~1.47x needed to reconcile Drake's 53.97M solo total via render-dropout is NOT observed (that would require ~9 sparks vs ~6 numbers at near; sparks are ~5-6).",
+    "arithmetic": "For dropout to explain the total, near would need dropout ~1.47 (sparks ~9 vs numbers ~6). Measured near sparks ~5-6 == numbers ~6. No band shows impacts > numbers.",
+    "implication": "The Drake shortfall (sim 36.8M vs real 53.97M, x1.47) is NOT pellet render-dropout / invisible-X. Per the pre-registered falsification branch, the fallback applies: hunt the shortfall in a HIDDEN MULTIPLIER or another bucket (shot count, per-pellet value, burst/skill2 cast counts, boss DEF, or landing-fraction LEVEL) rather than a number-under-report channel. This independently CORROBORATES sg-pellet-landing.json's damage-arithmetic read (dropoutFactor 1.0: white popups never carry merged 2x values, off-body pellets render nothing)."
+  },
+
+  "caveats": [
+    "Clean single-shot isolation is only possible in slow-cadence recovery windows; fully-isolated shots per band are fewer than the target 5 (near 3, mid 1, far 1, midfar ~2-3 overlapping). The result is nonetheless consistent across every band and both near windows.",
+    "This method bounds the 'spark-visible-but-number-invisible' channel to ~1.0. It CANNOT exclude a FULLY-invisible pellet population (a body hit that renders neither spark nor number); that distinct channel is bounded small by sg-pellet-landing.json part2b (global-total cross-check), not by this flashcount.",
+    "Orange fire/debris were deliberately NOT counted as impacts to avoid spuriously inflating dropout above 1; if a stricter reader counted them, dropout would rise, not fall -- so ~1.0 is if anything a slight UPPER-leaning estimate on the impact side.",
+    "SINGLE boss (multi-part spider mech, small central red core gem, gappy silhouette). Absolute values do not generalize; the transferable finding is qualitative: SG pellet numbers are a FAITHFUL count of body hits here, not an under-report."
+  ],
+  "confidence": "Medium-high on the qualitative verdict (impacts ~= numbers, dropout ~1.0, mechanism falsified) -- robust across all bands, two near windows, and independently agreeing with the damage-arithmetic read. Absolute per-band dropout carries ~+/-0.15."
+}

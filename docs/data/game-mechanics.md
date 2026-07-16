@@ -165,12 +165,14 @@ Details: **[auto-play.md](auto-play.md)**.
   (a transition colliding with a chain). Everywhere else, **full-burst counts are
   cooldown/chain arithmetic and deterministic run-to-run** — the graded comps are pinned
   as exact asserts in `scripts/regression.ts`.
-- **SG pellet landing is per-band ~FLAT** (MEASURED 2026-07-15, Drake solo damage-arithmetic): of the 10
-  pellets, ~0.60 land near / 0.60 mid / 0.45 far / 0.55 midfar — NOT the old 1.0-near/0.30-else step (the
-  gappy spider-mech silhouette lets ~4 pellets through open gaps even point-blank). `SG_LANDING_BY_BAND`
-  scales SG shot damage + gauge. near 0.60 is a ⚑ LOWER BOUND (≤0.7–0.8); single-boss, ±0.10–0.15;
-  transferable claim is qualitative (near<1.0, range>0.30, ~flat). The old step was an offsetting-errors
-  compensator with the retired flat-0.85 core. open-questions A26; DECISIONS.
+- **SG pellet landing per band = near 0.90 / mid 1.0 / far 0.75 / midfar 0.90** (MEASURED 2026-07-15 via
+  noir's running-damage-counter reconciliation — the arbiter over two visual reads that both under-counted a
+  dense cluster of ~10 overlapping identical pellet numbers as ~6). ~all 10 pellets land close on the large
+  boss; the fall-off is only at far. `SG_LANDING_BY_BAND` scales SG shot damage + gauge. Both clean SG solos
+  reconcile (noir/dorothy ratio 1.01). Single-boss (large hitbox) — do not generalize to small-hitbox bosses.
+  NB an earlier "0.60 per-band, flash-count-validated" read was SUPERSEDED (visual cluster under-read). The SG
+  CORE rate (0.072) is a popup RATIO over the same clusters and is likely INFLATED (whites under-read, cores
+  spared) → re-derive from the counter. open-questions A26; DECISIONS (FINAL entry).
 - Auto burst priority is **leftmost slot order, with waiting**: inside a timed stage
   window the chain waits for the leftmost stage-filling unit whose cooldown ends before
   the window closes rather than handing the cast to a lower-priority ready unit

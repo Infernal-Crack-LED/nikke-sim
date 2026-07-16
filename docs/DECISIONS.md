@@ -259,7 +259,37 @@ lives. Newest first within each section.
   BLOCKED-pending a burst-isolated recording (are the 1.1–1.55M in-burst singles consolidation cores or
   Burst-III cast? open-questions A26); do NOT chase her 0.44/0.35 with tuning. — dorothy solo footage +
   scientific-method harness (both Fable gates).
-- **(2026-07-15) SG pellet-landing is per-band ~FLAT (~0.45–0.60), not a 1.0-near/0.30-else step (⚑ refit,
+- **(2026-07-15, FINAL) SG pellet-landing = near 0.90 / mid 1.0 / far 0.75 / midfar 0.90 — measured from a
+  running-DAMAGE-COUNTER reconciliation (noir clean solo), which OVERTURNS both the popup-count 0.60 and the
+  flash-count "0.60 validated" below.** Two visual methods (the Step-1 popup count and a later impact-flash
+  count) BOTH under-read a dense cluster of ~10 tightly-overlapping IDENTICAL pellet numbers as ~6 — occlusion
+  of indistinguishable items. The arbiter is noir's in-fight cumulative damage counter (arithmetic, and noir
+  CANNOT burst solo so the total is rider-free): per-mag delta = 392,426/near-shot vs sim 238,927 = 1.64× →
+  ~10 pellets land near, not 6. A single-shot A/B popup-sum (~333–405k) matches the 392k/shot → the damage
+  RENDERS (no invisible channel); the landing CONSTANT was just too low. Per-band ratios (mid 1.66, near 1.48,
+  far 1.64, midfar 1.61) × the old landing → **near 0.90, mid 1.0, far 0.75, midfar 0.90** (near uses the
+  measured 0.9, not an eyeballed 0.95 — Fable). VALIDATION: the SAME values reconcile TWO independent clean SG
+  solos — noir 64.87M→ratio **1.01** and dorothy 96.8M→**1.01** (dorothy's consolidation fixed separately/prior,
+  the out-of-sample anchor). Board (122 rows): MAE 0.120→0.114, median 0.950→0.970, within-±10% 59→63%; all 13
+  full-burst pins exact. Core rate / per-pellet / cadence UNTOUCHED (counter localized the gap to landing only).
+  Knobs: `ENV.SGLANDING` = `legacy` (old 1.0/0.3) / `popupcount` (0.60 flat) / default (this). Fable post-op
+  LAND-after-revise. **OPEN (Fable's catch):** the SG CORE RATE (0.072) was a visual popup RATIO over the same
+  clusters — the under-read hits the whites (denominator) but spares the distinct red cores (numerator), so it
+  is likely INFLATED; with landing now corrected up, that shows as a small residual SG comp warmth (noir
+  1.04–1.05) — do NOT trim landing to cool it; re-derive the core rate from the counter/A-B. Single-boss (large
+  hitbox); do not generalize the band values to small-hitbox bosses. — noir counter-reconciliation; scientific-
+  method harness.
+- **(2026-07-15) SG core rate near 0.072 → 0.048 (counter-rederived; the popup-ratio value was ~1.5× inflated).**
+  Follow-up to the landing fix above (Fable's catch, now resolved). The old SG core rate was `red-core-popups /
+  visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–10), so the ratio's denominator
+  was too small → inflated. Re-derived popup-count-free as **cores-per-shot / TRUE-pellets-per-shot** (true
+  pellets from the noir landing): near 0.435 cores/shot ÷ ~9 = **~0.048** (was 0.072); midfar ~0.003 (was
+  0.0045, immaterial); mid/far stay 0 (zero numerator — the denominator fix can't change zero). Damage-arithmetic
+  cross-check (0.045–0.05) + range-concentration confirm. Both clean SG solos STAY reconciled (noir/dorothy 1.01),
+  and the residual SG comp warmth cools (noir 1.04→1.03, naga 1.03→1.02). Measured, not board-fit; the small
+  remaining comp warmth (~2–3%) is a separate buff-interaction, not the core rate. `docs/probe-data/sg-corerate-rederive.json`.
+  **[The two entries below are SUPERSEDED — kept for the doc-hygiene trail.]**
+- **(2026-07-15, SUPERSEDED) SG pellet-landing is per-band ~FLAT (~0.45–0.60), not a 1.0-near/0.30-else step (⚑ refit,
   measurement replaces a contradicted calibration).** The old `SG_OUT_OF_NEAR_HIT_FRACTION` ⚑ (near = all 10
   pellets land, else 0.30) was calibrated against the OLD flat-0.85 core model — an offsetting-errors pair.
   Damage-arithmetic measurement (Drake solo, popup-dropout≈1.0 VERIFIED via the closed-book 53.97M global
@@ -486,3 +516,22 @@ lives. Newest first within each section.
   behavior is PER-KIT — Scarlet: Black Shadow's procs measured the OPPOSITE (genuinely
   exempt), so a unit's function-damage Full-Burst treatment must be verified per kit, never
   assumed from the class rule alone. — experiment log 2026-07-14; her override note.
+
+- **(2026-07-15) The web team/roster generators rank on damage BLENDED with real-world meta
+  popularity, not damage alone (owner ruling).** `src/teamcalc.ts` now takes an optional
+  `MetaScoring` (resolved for the picked boss weakness) and ranks every candidate by
+  `score = teamDamage × (1 + W·prior)`, W=1.0 ("strong co-equal" — a max-meta team can ~double
+  its score, so popularity can overcome up to a ~2× damage deficit but no more; large damage
+  gaps still win). The prior is `min(1, meanUnitPopularity + comboWeight·exactCompMatch)`,
+  combining BOTH answers from the design: a unit-level prior (nudges the local search + force-
+  keeps popular B3s the solo-damage prune would drop) AND full-team matching (the popular
+  ranker comps are injected as candidates so a real meta team can win outright and surfaces in
+  the roster list). Popularity is scoped to the ONE raid whose boss is weak to the picked
+  element (per-weakness, from `docs/enikk-top100-audit.md` ranker counts, normalized 0..1).
+  Units too new to have solo-raid ranker data (absent from EVERY audited raid — e.g. Cinderella:
+  Crystal Wave) fall back to an element-agnostic score from their prydwen bossing tier
+  (`data/bossing-tiers.json`, SSS→1.0…F→0). No weakness picked → no meta bias (pure damage);
+  CLI/battery callers pass no `meta`, so they are byte-unchanged. Data pipeline:
+  `scripts/build-meta-weights.ts` (npm `meta-weights`) compiles the audit MD + tier file into the
+  committed `web/src/metaWeights.ts`; regenerate whenever the audit doc is refreshed. — teamcalc
+  scoring; App.tsx `metaScoringFor`.
