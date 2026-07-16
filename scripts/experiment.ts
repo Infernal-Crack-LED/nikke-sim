@@ -35,7 +35,7 @@ interface Comp {
   real: Record<string, number>;
 }
 
-const COMPS: Comp[] = [
+export const COMPS: Comp[] = [
   {
     name: 'T1 wind-weak (boss Iron)',
     // slot order corrected 2026-07-13 from docs/probes/"712 probes"/wind weak 2.jpeg
@@ -347,12 +347,15 @@ function report(comp: Comp, label: string, patch: Patch = {}) {
   }
 }
 
-const t1 = COMPS[0], t3 = COMPS[1], t4 = COMPS[2];
-
-let DOLL = false;
-console.log('===== SCOPE LOCK basis: core 7, no cube, no doll, OL0, 10/10/10 =====');
-// ONLY=<substring> runs a single comp (debug workflows pair it with DBG_UNIT/DBG_N).
-for (const c of COMPS) {
-  if (process.env.ONLY && !c.name.toLowerCase().includes(process.env.ONLY.toLowerCase())) continue;
-  report(c, 'scope lock');
+// Only run the full battery when invoked directly (so COMPS can be imported by the
+// kit-parse sweep grader without triggering all 27 sims).
+const isMain = import.meta.url === `file://${process.argv[1]}`;
+const DOLL = false;
+if (isMain) {
+  console.log('===== SCOPE LOCK basis: core 7, no cube, no doll, OL0, 10/10/10 =====');
+  // ONLY=<substring> runs a single comp (debug workflows pair it with DBG_UNIT/DBG_N).
+  for (const c of COMPS) {
+    if (process.env.ONLY && !c.name.toLowerCase().includes(process.env.ONLY.toLowerCase())) continue;
+    report(c, 'scope lock');
+  }
 }
