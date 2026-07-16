@@ -159,7 +159,9 @@ rocket at each meter-full; rockets attached OUTSIDE Full Burst do NOT explode un
 they ACCUMULATE and the FIRST explosion of each FB is a BATCH of everything banked (this stack
 overlap is why explosions can't be visually counted). A rocket attached DURING FB explodes
 INSTANTLY (`storedHit.instantInFb` → the in-FB per-frame release path). The explosion is
-aim/range-independent and cores ~1/3 (`storedHit.core`, above). The rocket ATTACH is a skill-damage
+aim/range-independent, cores ~1/3 (`storedHit.core`, above), and crits at the caster's sheet rate
+(`storedHit.crit` — removes the stored-hit path's default crit-OFF exemption so the release crits like
+every other hit; consistency, DECISIONS 2026-07-16). The rocket ATTACH is a skill-damage
 hit and generates burst gauge like any skill hit — so the in-FB cadence subtly shifts Full Burst
 timing (a second-order coupling, DECISIONS 2026-07-16).
 

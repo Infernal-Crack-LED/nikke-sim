@@ -32,6 +32,17 @@ lives. Newest first within each section.
   hit that generates burst gauge (pre-existing engine rule), so the new in-FB cadence shifts FB timing ~1–2s in
   the back half. Fable pre-op APPROVED-W-6-REVISIONS + blind post-op LAND (all 6 verified executed). — rrh
   explosion-core measurement + Fable pre/post-op; open-questions U1.
+  **CRIT FOLLOW-UP (2026-07-16, same day):** enabled crit on her explosion release (`storedHit.crit:true`),
+  justified by CONSISTENCY not magnitude — every other RRH hit already crits additively at her sheet rate in the
+  validated model; only the stored-hit release was crit-OFF (an artifact exemption). The observed ×1.5 "crit step"
+  is CONFOUNDED (overlapping sub-hit coefficients 1.6–4.5M) so it is NOT load-bearing; what's solid is that
+  explosions crit (orange bodies) and the sim explosion body is UNDER the measured white body (crit moves toward
+  1.0 from below, not over-credit; the FB +50% on explosions is corroborated — stripping it worsens the fit).
+  Impact: T7 0.81→0.83, N1 0.98→0.99, T3/T8 +0.01 — uniform, MG-cold residual PRESERVED (pre-registered guard:
+  T7 must stay <0.90; landed 0.83). Isolated blast radius (crit doesn't touch gauge/timing → zero teammate drift).
+  Fable pre-op ACCEPTED the consistency framing + blind post-op. LEDGERED not-blocking: whether the crit/core
+  bracket is additive (as the sim models) or multiplicative — the ×1.80 core+crit body doesn't compose cleanly
+  under additive constants; foundational, applies to all 86 readings, bounded ~0.3–0.4% (open-questions U15).
 
 - **(2026-07-15) Grave's reload is MEASURED at 3.35s / 201 frames, not the datamined 81f — her dropped "Heat
   Emission: Reload Ratio ▼50%" reload mechanic is re-modeled (reload speed IS damage).** Her override previously

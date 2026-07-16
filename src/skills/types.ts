@@ -125,6 +125,7 @@ export type EffectDef =
       charges?: number;  // charges added per activation (default 1)
       flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
       core?: number;     // per-release core RATE (0..1) via the coreOverride path — aim/range-INDEPENDENT, not the weapon/band acr table (RRH attached-rocket explosions core ~1/3, MEASURED 2026-07-16)
+      crit?: boolean;    // the release rolls crit at the caster's sheet rate (like every other hit) — removes the stored-hit path's default crit-OFF exemption; consistency, not a new mechanic (RRH explosions crit — orange bodies observed; 2026-07-16 DECISIONS)
       instantInFb?: boolean; // charges added DURING Full Burst detonate immediately that same window (RRH: a rocket that attaches in FB explodes instantly), instead of only batch-releasing at the next FB start
     }
   | { kind: 'burstEligibility'; stage: 1 | 2 | 3 }            // unit may also burst at this stage (Rapi:RH Combat Assist)

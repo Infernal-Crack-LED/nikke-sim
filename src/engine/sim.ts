@@ -269,6 +269,7 @@ interface UnitState {
       trueFlavor?: boolean;
       projFlavor?: 'attachment' | 'explosion';
       coreRate?: number;      // per-release core rate (coreOverride path) — RRH explosions ~1/3
+      critRoll?: boolean;     // release rolls crit at the caster's sheet rate (removes the stored-hit crit-OFF exemption)
       instantInFb?: boolean;  // release each FB frame (in-burst attach detonates instantly), not only at FB start
       releasable: number;
       fresh: number;      // charges added this frame — not releasable until next frame
@@ -1091,6 +1092,7 @@ export function runSim(
                   ? ('explosion' as const)
                   : undefined,
             coreRate: e.core,
+            critRoll: e.crit,
             instantInFb: e.instantInFb,
             releasable: 0,
             fresh: 0,
@@ -1356,7 +1358,7 @@ export function runSim(
               }
               if (entry.releasable > 0) {
                 dealDamage(u, entry.atkPct * entry.releasable, frame, {
-                  crit: DOT_CRIT || XCRIT.has(u.char.slug),
+                  crit: entry.critRoll || DOT_CRIT || XCRIT.has(u.char.slug),
                   // per-entry core RATE (RRH explosions ~1/3) via the coreOverride path —
                   // aim/range-independent; falls back to the env XCORE gate when unset
                   core: entry.coreRate != null || XCORE.has(u.char.slug),
@@ -1539,7 +1541,7 @@ export function runSim(
           }
           if (entry.releasable > 0) {
             dealDamage(u, entry.atkPct * entry.releasable, frame, {
-              crit: DOT_CRIT || XCRIT.has(u.char.slug),
+              crit: entry.critRoll || DOT_CRIT || XCRIT.has(u.char.slug),
               core: entry.coreRate != null || XCORE.has(u.char.slug),
               coreOverride: entry.coreRate,
               charge: false,
