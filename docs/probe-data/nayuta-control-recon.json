@@ -1,0 +1,109 @@
+{
+  "video": "docs/probes/control + carry/nayuta control.MP4",
+  "screenshot": "docs/probes/control + carry/nayuta control.jpg",
+  "probeDir": "docs/probes/control + carry",
+  "focus": "nayuta",
+  "boss": "Water",
+  "bossNote": "Same control-frame boss/stage as docs/probe-data/control-little-mermaid.json (Water). Element not explicitly re-labelled on captured HUD frames, but comp/stage match the established Water control frame and NO elemental-advantage indicators were seen on Nayuta's popups. Nayuta is WIND => NEUTRAL vs a Water boss (Wind neither beats nor is beaten by Water). Confidence HIGH.",
+  "comp": ["little-mermaid", "helm", "nayuta", "snow-white"],
+  "compNote": "4-unit team (5th slot EMPTY, confirmed in Battle Records). This is the control frame with Nayuta swapped in for Crown as the Burst II carry. Burst chain B1(LM)->B2(Nayuta)->B3(Helm/Snow White) COMPLETES => Nayuta bursts every cycle.",
+  "slots": {
+    "1": {"unit": "little-mermaid", "burst": "I"},
+    "2": {"unit": "helm", "burst": "III"},
+    "3": {"unit": "nayuta", "burst": "II", "focus": true, "note": "center/middle slot, matches focus-defaults-to-middle"},
+    "4": {"unit": "snow-white", "burst": "III"},
+    "5": {"unit": "EMPTY"}
+  },
+  "params": {
+    "basis": "scope-lock base5",
+    "sync": 400,
+    "skillLevels": "10/10/10",
+    "gear": "base5",
+    "cube": "none",
+    "coreLevel": 7,
+    "treasure": true,
+    "bossPartless": true,
+    "durationSec": 180,
+    "focusReason": "Nayuta focused (SMG B2 supporter carry). Only focus-unit popups render => all floating numbers are Nayuta's."
+  },
+  "extractedOn": "2026-07-15",
+  "method": "ffmpeg + python3/PIL only. Overview 1/8s contact sheet; end-screen Battle Records read full-res; FB banner enumeration via 4fps center-band yellow-fraction peak detection (12 clean peaks at ~15s cadence, each visually verified 'FULL BURST!', gap and pre-fight negative-checked); burst-window anatomy frame-stepped @0.3s (t=119-133); ammo cadence read at 0.5s spacing; DAMAGE counter read at burst boundaries.",
+  "videoDims": "2622x1206 (portrait 1206x2622 + rotation=90 side-data)",
+  "videoDurationSec": 197.58,
+  "fightStartSec": 8,
+  "fightEndSec": 190,
+  "fightClock": true,
+  "fightClockNote": "Top-right countdown 03:00 at combat start (t~8) -> 00:00 at t~190. MISSION CLEAR t~192.",
+  "runningCounterKind": "team-total DAMAGE (top-center), NOT per-unit; cannot isolate Nayuta from it during FB (all 4 units fire).",
+  "totals": {
+    "source": "end-of-fight Battle Records per-unit panel (full-res, t~196.1)",
+    "teamTotal": 1612414983,
+    "perUnit": {
+      "little-mermaid": {"burst": "I", "damage": 283576237, "atkBattleRecords": 90415, "hitStat": 11, "greenStat": 50621},
+      "helm": {"burst": "III", "damage": 435678970, "atkBattleRecords": 90315, "hitStat": 12, "greenStat": 23952},
+      "nayuta": {"burst": "II", "damage": 544176905, "atkBattleRecords": 90415, "hitStat": 30, "greenStat": 2058805},
+      "snow-white": {"burst": "III", "damage": 348982871, "atkBattleRecords": 94055, "hitStat": 22, "greenStat": 50349}
+    },
+    "reconciles": "sum(perUnit)=1,612,414,983 == teamTotal EXACTLY",
+    "atkNote": "ATK shown here is battle-records ATK (~90,415 for Nayuta); use combat ATK ~98,367 for the sim per project note.",
+    "hitStatNote": "The shield-icon '30' for Nayuta == her Charged-Ki stack cap (seen in-fight as orange kanji counter ramping to 三十=30 during burst)."
+  },
+  "burstEligibility": {
+    "verdict": "YES - she bursts every cycle",
+    "reason": "Proper control team: B1 (Little Mermaid) + B2 (Nayuta, sole B2) + B3 (Helm & Snow White) => chain completes. 12 FULL BURST banners visually confirmed."
+  },
+  "fullBursts": {
+    "count": 12,
+    "cadenceSec": 15.0,
+    "timestampsSec": [13.8, 28.8, 44.8, 59.8, 77.2, 91.0, 106.0, 120.5, 135.0, 148.2, 163.0, 178.8],
+    "confidence": "HIGH - all 12 verified as 'FULL BURST!' banner text; t=68 (widest gap) and t=5 (pre-fight) negative-checked (no banner).",
+    "nayutaParticipation": "all 12 (sole Burst II, casts on every Full Burst)"
+  },
+  "burstAnatomy": {
+    "referenceWindow": "t=120.5 (banner) -> ~130.5",
+    "weaponSwitch": {
+      "toMemoryIncineration": true,
+      "evidence": "During FB her weapon enters charge mode: repeating 'CHARGED KI xx%' popups + a duration countdown, distinct from her normal 20/s SMG spray."
+    },
+    "chargeShots": {
+      "perBurst": 5,
+      "confidence": "MEDIUM",
+      "evidence": "Across the ~9s active window the 'CHARGED KI %' cycles ~5 times, each ramping to ~245-250% and resetting on release, period ~1.8s == the fixed 1.8s charge time. So ~5 charged shots per burst.",
+      "chargePercentReadings": "cycles roughly 120% -> 250% per shot (e.g. 142,187,193,218,244 then reset 130s,144,169,220,248 ...). ~250% max is consistent with the datamined ~275%/shot charge multiplier."
+    },
+    "nuke645": {
+      "fires": true,
+      "value": null,
+      "confidence": "value UNREADABLE",
+      "note": "The ~645% burst-skill nuke fires once at cast (large blast at boss, counter steps up), but its discrete popup value is washed out by the cast whiteout in every FB. Could not isolate."
+    },
+    "additionalDamage380": {
+      "firesPerBurst": null,
+      "confidence": "UNRESOLVED from this footage",
+      "note": "This recording was meant to resolve the 380.46% additional-damage fire-count, but during FB the popups overlap far too densely (charge-shot numbers + core hits + the dense buff/effect layer) to count discrete additional-damage instances. Recommend the wishlist read: ISOLATED single burst, slow-mo / frame-step, ideally Nayuta solo-ish so her popup stream is thin. IF additional damage is per-shot it would fire ~5x/burst (charge-shot count); this is an inference, NOT a measurement."
+    }
+  },
+  "normalCadence": {
+    "magSize": 120,
+    "fireRatePerSec": 20,
+    "confidence": "HIGH",
+    "evidence": "120-mag SMG ammo counter read 119/120 at t=35.5 and 109/120 at t=36.0 => 10 rounds in 0.5s = exactly 20/s, matching datamined SMG. (Reload 111 frames / ~1.85s and 6.0s to empty follow from mag=120 @ 20/s; not independently frame-counted.)"
+  },
+  "counterReconciliation": {
+    "window": "t=120.5 Full Burst",
+    "readings": [
+      {"t": 118.0, "damage": 948257276},
+      {"t": 119.5, "damage": 953792880},
+      {"t": 120.5, "damage": 958190000, "approx": true, "note": "partial read ~958.19M"},
+      {"t": 121.1, "damage": 958848991},
+      {"t": 122.0, "damage": 966735993},
+      {"t": 131.0, "damage": 1090502546},
+      {"t": 132.5, "damage": 1095760386},
+      {"t": 134.0, "damage": 1098931548}
+    ],
+    "burstWindowDelta": 136709666,
+    "burstWindowDeltaSpan": "t=119.5 -> t=131.0 (~11.5s)",
+    "nonBurstTeamRatePerSec": "~2.1 to 3.7M/s (e.g. 948.26M->953.79M over 1.5s = 3.69M/s; 1095.76M->1098.93M over 1.5s = 2.11M/s)",
+    "caveat": "DAMAGE counter is TEAM-WIDE, not Nayuta-only. The +136.7M FB-window delta is all 4 units' buffed output, so it does NOT isolate Nayuta's burst damage or arbitrate the additional-damage fire-count. Nayuta's clean per-unit whole-fight total (544,176,905) comes from Battle Records."
+  }
+}

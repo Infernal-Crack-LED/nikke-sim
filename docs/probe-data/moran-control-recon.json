@@ -1,0 +1,114 @@
+{
+  "probe": "moran-control-recon",
+  "source_video": "docs/probes/control + carry/moran control.mov",
+  "processed": "2026-07-15",
+  "purpose": "Diagnose the exposed AR non-core residual for Moran (sim ~0.69 of real). Comp/control recording; camera-focused unit = Moran (only her damage popups render).",
+  "video": {
+    "stored_dims": "1206x2622",
+    "display_dims": "2622x1206",
+    "rotation_side_data_deg": 90,
+    "fps": 60,
+    "duration_s": 198.4,
+    "fight_window_s": "approx 6.5 (AMBUSH splash) to ~186; damage/result screen ~192+"
+  },
+  "damage_screen": {
+    "total_battle_time": "03:00",
+    "team_total_damage": 1382184221,
+    "team_total_check": "sum of 4 unit totals == 1382184221 (exact)",
+    "units": [
+      {"slot": 1, "name": "Helm",       "burst": "III", "atk_shown": 90315, "damage": 482322739, "weapon_guess": "RL (ammo 6)", "element_icon": "Water(blue)"},
+      {"slot": 2, "name": "Crown",      "burst": "II",  "atk_shown": 88898, "damage": 212278134, "weapon_guess": "SMG (ammo 300)"},
+      {"slot": 3, "name": "Moran",      "burst": "I",   "atk_shown": 92177, "damage": 287972631, "weapon": "AR (ammo 60)", "element": "Electric(purple)", "is_focus": true},
+      {"slot": 4, "name": "Snow White", "burst": "III", "atk_shown": 94055, "damage": 399610717, "weapon_guess": "AR-type (ammo 60)"},
+      {"slot": 5, "name": "EMPTY (NO SIGNAL)"}
+    ],
+    "note": "atk_shown is the battle-records ATK on the result screen; formula uses combat ATK (Defender scope-lock ~78707), not this value."
+  },
+  "matchup": {
+    "boss": "mechanical raid boss (large mech / spider-crane silhouette)",
+    "boss_element_displayed": false,
+    "moran_element": "Electric",
+    "elemental_advantage": "none observed (no weakness/advantage marker on Moran's hits; boss element not shown) -> treated NEUTRAL",
+    "control_team": ["Helm(B3)", "Crown(B2)", "Moran(B1,focus)", "Snow White(B3)"]
+  },
+  "full_burst": {
+    "detection_method": "caution-tape splash detector (full-width yellow AND black-stripe co-occurrence) @30fps, validated visually (splash peak t=125.17)",
+    "cycle_s": 15.5,
+    "note": "Each window ~10s (Full Burst duration) with ~5s normal gaps -> Moran is inside Full Burst ~65% of the fight. B3 alternates Helm / Snow White (Snow White's big yellow barrage fires every OTHER FB: ~34,65,96,127,159s).",
+    "windows_s": [
+      {"n": 1,  "start": 13.05, "end": 23.20},
+      {"n": 2,  "start": 28.60, "end": 38.75},
+      {"n": 3,  "start": 44.05, "end": 54.30},
+      {"n": 4,  "start": 59.90, "end": 70.15},
+      {"n": 5,  "start": 75.95, "end": 86.25},
+      {"n": 6,  "start": 91.10, "end": 101.35},
+      {"n": 7,  "start": 107.25, "end": 117.45},
+      {"n": 8,  "start": 121.75, "end": 132.05},
+      {"n": 9,  "start": 137.80, "end": 148.00},
+      {"n": 10, "start": 153.60, "end": 163.90},
+      {"n": 11, "start": 168.65, "end": 175.95},
+      {"n": 12, "start": 187.85, "end": 191.00, "note": "at/after fight end; likely victory transition - low confidence"}
+    ],
+    "count_within_fight": 11,
+    "confidence": "high for cycle/count (11-12), medium for exact boundaries"
+  },
+  "fire_cadence": {
+    "moran_ammo_counter_readable": false,
+    "ammo_occlusion": "Moran is the center/focus slot; her own party-bar ammo + RELOADING indicator are blocked by her foreground character model in essentially every frame (verified across a 40s scan). Teammates readable: Helm 6/6->1/6 (RL), Crown 296/300 + RELOADING (SMG), Snow White 52/60->6/60.",
+    "method": "white muzzle-flash onset counting in a tight muzzle box @60fps (works only while camera/boss framing keeps her muzzle in the fixed box)",
+    "normal_fire_rate_per_s": 5.6,
+    "normal_fire_rate_range": "5.3-6.0 (16 flashes / 3.0s at t=24-27; median inter-shot gap 167ms)",
+    "fb_fire_rate_per_s": 9.7,
+    "fb_fire_rate_note": "~10/s during Full Burst (t=31-34, 100ms gap) - LOWER confidence; may be inflated by lingering electric muzzle bloom re-brightening. Possible real fire-rate/attack-speed boost in FB, unconfirmed.",
+    "reload": "not directly measurable (ammo occluded). Spec = 111 frames (1.85s). Normal windows (~5s) are shorter than a 60-round magazine (~10s at 6/s), so she fires continuously across FB boundaries; reloads occur but could not be timed.",
+    "confidence": "medium for normal ~5.6/s; low for FB rate and reload"
+  },
+  "counter_reconciliation": {
+    "moran_isolated_running_counter": false,
+    "reason": "the on-screen running counter (top-center 'DAMAGE') is TEAM-TOTAL (all 4 units), not Moran-only. In a comp all units fire simultaneously, so per-magazine Moran deltas cannot be isolated from it.",
+    "team_counter_samples": [
+      {"t": 25.5, "team_damage": 123257597},
+      {"t": 40.0, "team_damage": 237655497},
+      {"t": 120.0, "team_damage": 626094338},
+      {"end": true, "team_damage": 1382184221}
+    ],
+    "moran_ground_truth_total": 287972631,
+    "reconciliation_inference": {
+      "measured_normal_rate_per_s": 5.6,
+      "est_effective_shots": "≈850-1100 over the fight (6-7/s x ~173s x ~0.82 firing fraction)",
+      "implied_damage_per_shot": "≈260,000-340,000",
+      "single_popup_values_observed": "30,000-76,000",
+      "conclusion": "implied per-shot (~300k) is ~4-8x a single visible popup -> each shot deposits MULTIPLE damage instances, matching the 4-6 popups seen stacked simultaneously above the boss (core + crit variants + likely additional-damage/DoT procs). This multi-instance stacking is the probable locus of the AR under-model. NEEDS the isolated single-shot recording to count instances-per-shot cleanly.",
+      "confidence": "arithmetic is from measured inputs (rate, total, popup values, observed stack size); the multi-instance mechanism is a strong INFERENCE, not a direct per-shot instance count"
+    }
+  },
+  "popup_values": {
+    "note": "COMP-BUFFED values (control team stacks large buffs), NOT solo scope-lock. Values ramp upward through the fight as buffs accumulate. Additive crit/core model confirmed.",
+    "boss_far_state_early_mid": {
+      "normal_white_noncrit_noncore": 30478,
+      "crit_orange": 45716,
+      "crit_multiplier_check": "45716 / 30478 = 1.50 (x1.5 crit) CONFIRMED",
+      "core_red_CORE_HIT": 60955,
+      "core_multiplier_check": "60955 / 30478 = 2.00 (x2 core) CONFIRMED",
+      "core_plus_crit": 76194,
+      "core_crit_check": "76194 / 30478 = 2.50 -> additive: 1(base)+1(core)+0.5(crit)"
+    },
+    "boss_mid_state_late": {
+      "normal_white": 39621,
+      "crit_orange": 54860,
+      "note": "late-fight base higher (39621 vs 30478) from buff ramp; the 54860/39621=1.385 ratio is off from 1.5 because the two popups are from slightly different buff frames"
+    }
+  },
+  "core_fraction": {
+    "estimate": "HIGH (~40-60%); qualitative",
+    "evidence": "red 'CORE HIT' popups appear in nearly every firing frame, frequently 2+ simultaneously; Moran auto-aims the exposed boss core. Present consistently EARLY (t=42,56) and LATE (t=134,165) - no early/late drift observed.",
+    "confidence": "medium (qualitative; exact fraction not extractable from overlapping popup stacks)",
+    "boss_part_counter_observed": "red '024/027/028/029' box near boss = a boss part/stagger counter (decrements); not a Moran metric"
+  },
+  "limitations": [
+    "Moran's ammo counter + reload indicator are occluded by her own centered character model -> no direct magazine timing or exact shot count.",
+    "Running damage counter is team-total -> no clean per-shot counter-reconciliation for Moran alone in this comp.",
+    "Popup values are comp-buffed (not solo scope-lock) and stack/overlap, so exact per-shot instance count and exact core fraction are not cleanly extractable.",
+    "For clean cadence + instances-per-shot + unbuffed per-shot values, an ISOLATED Moran solo (or single-explosion-batch) recording is required."
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "probe": "quency smg",
+  "source_video": "docs/probes/ar-sg-smg/quency smg.MP4",
+  "processed": "2026-07-15",
+  "focused_unit": "quency-escape-queen",
+  "unit_facts_used": {
+    "weapon": "SMG", "class": "Attacker", "element": "Water",
+    "hitsPerShot": 2, "ammo": 120, "normal_mult": 5.06, "core_mult": 250
+  },
+  "video_meta": {
+    "stored_dims": "1206x2622", "display_dims": "2622x1206", "rotation": 90,
+    "fps": 60, "duration_s": 210.65,
+    "single_continuous_fight": true,
+    "fight_start_s": 7.0,
+    "note_timer": "top-right timer read 02:57 at t=10 -> fight timer (03:00) started ~t=7",
+    "operation_complete_from_s": 184.0
+  },
+
+  "team_and_matchup": {
+    "comp_type": "full 5-unit comp",
+    "evidence": "5 unit skill icons in a row at bottom-center; shared burst gauge with Water-drop icon; 5 star markers under gauge",
+    "quency_slot": "slot 3 (middle) assumed per camera-focus-defaults-to-middle convention; NOT independently confirmed from portraits (bottom icons too small to identify)",
+    "only_focused_unit_renders": true,
+    "boss": {
+      "type": "quadruped spider-mech (damage-race dummy, no HP bar shown)",
+      "mode": "solo-raid damage race: top-center DAMAGE score counter + 3:00 timer + OPERATION COMPLETE, no boss HP bar",
+      "element": "NOT DISPLAYED in this HUD (no element badge anywhere on screen)",
+      "quency_elemental_advantage": "NO advantage indicated - zero elemental-advantage up-chevrons on ANY Quency popup across early/mid/late windows; treated as NEUTRAL matchup",
+      "advantage_confidence": "moderate-high (advantage would mark every damage number; none seen)"
+    }
+  },
+
+  "end_screen": {
+    "total_damage_team": 136918771,
+    "per_unit_breakdown_available": false,
+    "per_unit_note": "recording ends on OPERATION COMPLETE screen (persists t=195-209); the per-unit stats/chart panel (bottom-right chart icon) was NEVER opened, so individual per-unit totals are NOT in this footage. Only the team TOTAL DAMAGE is available.",
+    "quency_individual_estimate": "likely ~= team total (only Quency renders; counter rate during buffed windows ~1.0-1.1M/s is consistent with Quency alone), i.e. probable Quency-carry + 4 supports comp -- but UNVERIFIED without the breakdown screen"
+  },
+
+  "full_burst": {
+    "count_reliable": false,
+    "estimate": "~11-12 Full Bursts, cadence ~14-15s",
+    "confidence": "LOW - not frame-verified",
+    "why_unreadable": "damage-race HUD burst gauge is low-contrast blue-on-blue and reads near-full most of the fight (pixel tracking failed); golden burst-cast ring pulses are ~1 frame (0.25s) and detectors undercount",
+    "detected_burst_cast_pulses_s": [20.5, 33.5, 41.0, 51.5, 63.2, 122.2, 144.5, 150.8, 155.0, 160.5, 164.8],
+    "detected_pulses_note": "union of golden-ring + golden-flash + red-screen-tint detectors; KNOWN to miss events (large gaps e.g. 63->122 are detector misses, not true absence). Needs manual frame-step to finalize.",
+    "confirmed_fb_example_s": 41.0,
+    "confirmed_fb_example_evidence": "golden burst-cast ring around Quency + golden nuke explosion on boss; DAMAGE 28,223,513; ammo 000"
+  },
+
+  "core_hit_fraction_over_time": {
+    "hypothesis": "stacking Hit-Rate buff raises Quency auto-aim CORE-HIT rate as fight progresses (early->late)",
+    "verdict": "NOT SUPPORTED by visual popup evidence; NOT cleanly confirmable OR refutable",
+    "reason": "popup density is extreme (~20 pulls/s x 2 hits = ~40 popups/s, ~30-40 stacked simultaneously => overlapping blob). Observed core-vs-noncore mix is dominated by BURST-ROTATION BUFF PHASE, not elapsed time: buffed (FB-adjacent) snapshots are core-heavy, unbuffed snapshots core-light, and these alternate up-and-down THROUGHOUT the fight.",
+    "fluctuating_stack_counter_near_quency": {"t41": 10, "t90": 5, "t160": 9, "interpretation": "resets/oscillates rather than monotonically climbing - consistent with phase-driven (not time-driven) variation"},
+    "window_snapshots": [
+      {"window": "EARLY", "t_s": 11.0, "ammo": 54, "phase": "opening full-burst dump",
+       "resolvable_core_popups": ["CORE HIT 45306 (red)", "CORE HIT 38930 (red)"],
+       "resolvable_noncore_popups": ["22956 (orange crit)", "16579 (white)"],
+       "rough_core_fraction": "~0.5", "confidence": "low"},
+      {"window": "EARLY-normal", "t_s": 24.0, "ammo": 87, "phase": "normal fire (buffed)",
+       "resolvable_core_popups": ["CORE HIT 45306 (red)", "CORE HIT 37566 (red)"],
+       "resolvable_noncore_popups": ["22956 (orange)", "16579 (white)", "15418 (white)"],
+       "rough_core_fraction": "~0.4", "confidence": "low"},
+      {"window": "MID", "t_s": 89.0, "ammo": 34, "phase": "normal fire (low-buff)",
+       "resolvable_core_popups": ["35104 (red core)"],
+       "resolvable_noncore_popups": ["19130 (orange crit) x2", "12753 (white) x3"],
+       "rough_core_fraction": "~0.2-0.3", "confidence": "low"},
+      {"window": "LATE", "t_s": 157.0, "ammo": 15, "phase": "full-burst window",
+       "resolvable_core_popups": ["CORE HIT 45306 (red) x2", "CORE HIT 38930 (red) x2"],
+       "resolvable_noncore_popups": ["(few visible)"],
+       "rough_core_fraction": "~0.8", "confidence": "low"},
+      {"window": "LATE-normal", "t_s": 146.0, "ammo": 89, "phase": "normal fire (low-buff)",
+       "resolvable_core_popups": ["CORE HIT 26961 (red)"],
+       "resolvable_noncore_popups": ["12131 (white)", "7585", "5585", "5967", "small whites"],
+       "rough_core_fraction": "~0.2", "confidence": "low"}
+    ],
+    "summary": "Same-phase comparison (normal fire early t24 vs late t146) shows core density did NOT rise late; if anything late-normal (t146) was LESS core-dense and lower-damage than early-normal (t24). The big core-heavy snapshots (t11, t157) are both FULL-BURST windows. => variation is phase-driven, not a monotonic time ramp. Cannot confirm the stacking-hit-rate->core hypothesis from this footage."
+  },
+
+  "counter_reconciliation": {
+    "counter_type": "top-center DAMAGE score = TEAM cumulative total (all 5 units); matches end-screen TOTAL DAMAGE",
+    "caveat": "team-total, not Quency-isolated; per-magazine deltas include any teammate damage (though comp appears Quency-carry)",
+    "fire_rate_finding": {
+      "ammo_per_second": 20,
+      "measured_early_window_t9_13": "ammo 089->079->069->059->049->039->029->019->009 = steady 10 ammo per 0.5s = 20 ammo/s",
+      "measured_late": "same 20 ammo/s in late windows",
+      "ramp_over_time": "NONE - fire rate identical early and late",
+      "vs_datamined": "MATCHES datamined SMG 20 pulls/s; NOT exceeded. Hits-per-shot density (~40 popups/s) consistent with 2 hits/pull; no evidence of >2. => the missing SMG factor is probably NOT fire rate or hits/shot.",
+      "magazine_cycle": "120 ammo / 20 per s = 6.0s firing + ~1s reload ≈ 7s/magazine; ~25 magazines over the fight"
+    },
+    "counter_series_team_total": [
+      {"t_s": 8, "dmg": 100566},
+      {"t_s": 12, "dmg": 3725613},
+      {"t_s": 20, "dmg": 11247929},
+      {"t_s": 30, "dmg": 19042642},
+      {"t_s": 40, "dmg": 27746824},
+      {"t_s": 41, "dmg": 28223513},
+      {"t_s": 50, "dmg": 37095237},
+      {"t_s": 60, "dmg": 48997933},
+      {"t_s": 70, "dmg": 57846277},
+      {"t_s": 80, "dmg": 63430245},
+      {"t_s": 90, "dmg": 69572245},
+      {"t_s": 100, "dmg": 74264397},
+      {"t_s": 110, "dmg": 78649722},
+      {"t_s": 120, "dmg": 85403985},
+      {"t_s": 130, "dmg": 91728538},
+      {"t_s": 140, "dmg": 98152668},
+      {"t_s": 150, "dmg": 106974826},
+      {"t_s": 160, "dmg": 116595011},
+      {"t_s": 170, "dmg": 128494239},
+      {"t_s": 178, "dmg": 133253356},
+      {"t_s": 184, "dmg": 136918771}
+    ],
+    "magazine_boundary_reads": [
+      {"t_s": 8.5, "ammo": 104, "dmg": 291847},
+      {"t_s": 14.3, "ammo": 0, "dmg": 5880931, "note": "reloading"},
+      {"t_s": 153.5, "ammo": 85, "dmg": 109525767},
+      {"t_s": 159.5, "ammo": "obscured (burst flash)", "dmg": 116239631}
+    ],
+    "partial_magazine_deltas": [
+      {"span": "t8.5->t14.3 (104 rounds fired, 5.8s, opening incl first FB)", "delta_dmg": 5589084, "rate_per_s": 963635},
+      {"span": "t153.5->t159.5 (6.0s, late FB-region)", "delta_dmg": 6713864, "rate_per_s": 1118977}
+    ],
+    "rate_note": "Team damage rate ~1.0-1.1M/s during buffed/FB windows, dipping to ~0.4-0.6M/s in weak windows; profile driven by FB cadence, not a monotonic climb."
+  },
+
+  "burst_nuke": {
+    "expected": "Quency burst = 1736.31% of final ATK as Distributed Damage",
+    "observed": "burst casts appear as a golden ring around Quency + a golden explosion on the boss (e.g. t=41)",
+    "distributed_damage_value_read": null,
+    "read_note": "NO single large distributed-damage popup was cleanly readable - the value is obscured by the golden burst flash and/or split into many small instances rather than one big number. Could not extract a burst-nuke figure from this footage."
+  },
+
+  "confidence_summary": {
+    "total_damage": "high",
+    "comp_is_5unit": "high",
+    "quency_slot": "low (convention-based)",
+    "boss_element": "not displayed; advantage=none moderate-high",
+    "fire_rate_20_per_s": "high",
+    "full_burst_count": "low (estimate only, not frame-verified)",
+    "core_fraction_over_time": "low; but the phase-driven (not time-driven) conclusion is moderate",
+    "burst_nuke_value": "unreadable"
+  }
+}

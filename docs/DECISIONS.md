@@ -8,6 +8,30 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-15) Grave's reload is MEASURED at 3.35s / 201 frames, not the datamined 81f — her dropped "Heat
+  Emission: Reload Ratio ▼50%" reload mechanic is re-modeled (reload speed IS damage).** Her override previously
+  dropped this S1 line as "defensive weapon-state, no damage"; that was an error — reload time gates shot count
+  gates damage. Evidence (same-tier, overturns the datamined effective reload): `grave solo.MP4` (Shooting Range,
+  owner-confirmed mechanically identical to the scope-lock raid), read by counter frame-diff (each landed shot =
+  one 1-frame spike on the fixed damage counter — the SG-lesson gold standard). Direct count: **20 reloads → ~1230
+  shots** (the sim fired 1620). Reload gap last-shot-landing→first-shot-landing = **median 201f (3.35s), n=19,
+  tight 2.85–3.52s**. CONTROL: nayuta (SMG) measured reload = her 111f spec exactly → no universal reload/re-aim
+  overhead; the 2.5× is grave-specific. Refuted literal readings of "▼50%": reloadSpeedPct−50→131f (too fast);
+  speed-halved→~184f (17f short); reload-AMOUNT-halved (partial mag) refuted by 61.5 shots/gap = full 60-round
+  mags. **Mechanism attribution is inferred, not isolated** — she only ever reloads in Heat Emission (Prediction
+  burst grants unlimited ammo), so "▼50% + overhead" and "datamined reloadFrames simply wrong" are observationally
+  identical; the operative value (201f) is measured, the narrative is best-candidate. Mechanism: `charFixes.reloadFrames=193`
+  → `reloadFramesNeeded(193,0)=201f`, which reproduces the measured gap AND composes with any real reload-speed buff
+  (NOT a fake reloadSpeedPct −138, which would break composition — Fable R1). Impact: grave solo 1.277→**1.005**
+  (shots→1267); her 3 comps 0.85/0.84/0.83→**~0.82** (small, since Prediction's unlimited ammo covers most comp
+  time). This REMOVES a compensating over-fire error and is allowed to worsen the comp headline (faithful>fit); the
+  residual ~0.82 comp under-model is the separate AR-carry burst-window gap (open). DEFERRED follow-up (Fable R2):
+  the same clause's Prediction-END "remove 100% of bullets" forces ~1 extra 201f reload per burst cycle in comps —
+  not yet modeled, no longer classifiable as "defensive." Gate: Fable pre-op APPROVED-WITH-REVISIONS (Option B),
+  R1–R4 satisfied. TRANSFERABLE (2nd time a shot-count channel was mispriced after SG pellets): weapon-state
+  modifiers — reload, ammo, attack-speed — are damage mechanics; "defensive" requires PROVING they don't gate shot
+  count. See [modeling-priors.md](modeling-priors.md) + open-questions A27.
+
 - **(2026-07-15) The 11 override-only, non-enikk-proven units are REMOVED from the sim/site (owner "Option 3"),
   overriding the KEEP rule for them.** Units: tia, phantom, 2b, dorothy (base AR), emma-tactical-upgrade, exia,
   privaty-unkind-maid, vesti-tactical-upgrade, eunhwa-tactical-upgrade, chime, ark-ranger-black. They were kept

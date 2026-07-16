@@ -1,0 +1,150 @@
+{
+  "probe": "nayuta-solo-recon",
+  "source_video": "docs/probes/ar-sg-smg/nayuta solo.MP4",
+  "processed": "2026-07-15",
+  "unit": "nayuta",
+  "focus": "nayuta",
+  "recording_type": "solo",
+  "scope_lock_basis": "sync 400, 10/10/10, no cube, Base5, treasure, partless boss, 180s",
+  "unit_facts": {
+    "weapon": "SMG",
+    "class": "Supporter",
+    "burst": "II",
+    "element": "Wind",
+    "hits_per_shot": 1,
+    "ammo": 120,
+    "reload_frames": 111,
+    "normal_attack_multiplier": 8.73,
+    "core_hit_multiplier": 200,
+    "combat_atk_supporter_scopelock": 98367
+  },
+  "video": {
+    "stored_dims": "1206x2622",
+    "display_dims": "2622x1206",
+    "rotation_side_data": 90,
+    "fps": 60,
+    "duration_s": 214.17
+  },
+  "fight_window": {
+    "combat_start_video_s": 7,
+    "combat_timer_start": "03:00",
+    "results_screen_video_s": 184,
+    "single_attempt": true,
+    "notes": "One continuous fight, monotonic DAMAGE counter 0 -> 62.7M, one AMBUSH splash, one results screen. No aborted attempts."
+  },
+  "total_damage": {
+    "value": 62729336,
+    "source": "end-of-fight TOTAL DAMAGE screen (video ~188s)",
+    "confidence": "high",
+    "solo_note": "Solo recording -> team total == Nayuta total. Only Nayuta on screen; only her popups render."
+  },
+  "boss_element": {
+    "label_displayed": false,
+    "wind_advantage_observed": false,
+    "verdict": "neutral (no elemental-advantage chevrons on any Wind popup; advantage would mark every number). Boss element not shown on the damage-race HUD.",
+    "confidence": "medium-high"
+  },
+  "full_burst": {
+    "count": 0,
+    "reason": "Lone Burst-II unit cannot complete the Burst I->II->III chain. Burst gauge ('BURST' bar) fills but never casts. No weapon transform / no burst nuke observed.",
+    "counter_evidence": "All DAMAGE-counter increments across 3 sampled magazines are smooth small per-shot steps (~100-130k per 0.2s = ~4 normal shots); zero million-scale jumps.",
+    "confidence": "high"
+  },
+  "fire_cadence": {
+    "rounds_per_sec": 20,
+    "measured_by": "ammo counter decrements exactly -4 per 0.2s frame, steady, no ramp (120 -> 0). Verified in two windows (57-64s, 101-107s).",
+    "matches_datamined_smg_20ps": true,
+    "mag_size": 120,
+    "mag_dump_s": 6.0,
+    "reload_gap_s": 1.85,
+    "reload_gap_measured_s": "1.8-1.9 (DAMAGE counter frozen ~9-10 frames at 0.2s sampling); matches datamined 111 frames = 1.85s",
+    "full_cycle_s": 7.85,
+    "effective_rounds_per_sec": 15.3,
+    "steady": true,
+    "confidence": "high"
+  },
+  "counter_reconciliation": {
+    "method": "DAMAGE counter delta between consecutive reload-freezes (one full magazine), divided by rounds fired.",
+    "magazines": [
+      {
+        "label": "window1_near",
+        "video_window_s": "58.0-63.8",
+        "counter_start": 16497949,
+        "counter_end": 19866427,
+        "delta": 3368478,
+        "rounds": 120,
+        "avg_per_shot": 28071,
+        "range_band": "near (boss center, full firing to empty)",
+        "confidence": "high"
+      },
+      {
+        "label": "window2_far",
+        "video_window_s": "101.4-106.6",
+        "counter_start": 29926260,
+        "counter_end": 31960322,
+        "delta": 2034062,
+        "rounds": 110,
+        "rounds_note": "Ammo went 120->10 then HELD at 10 (boss went untargetable/repositioned; she stopped firing). Only 110 rounds landed, so divided by 110 not 120.",
+        "avg_per_shot": 18491,
+        "range_band": "far (boss far-right, reduced SMG damage)",
+        "confidence": "high"
+      },
+      {
+        "label": "window3_near",
+        "video_window_s": "152.4-158.2",
+        "counter_start": 49224755,
+        "counter_end": 52921890,
+        "delta": 3697135,
+        "rounds": 120,
+        "avg_per_shot": 30809,
+        "range_band": "near (boss center, full firing to empty)",
+        "confidence": "high"
+      }
+    ],
+    "summary": "Avg per-shot varies ~18.5k (far) to ~28-31k (near). Driven by SMG range falloff (non-core base 19,944 near vs 15,342 far) plus higher core fraction at near range. NOT a burst/buff artifact."
+  },
+  "popup_values": {
+    "non_core_white": {
+      "near": 19944,
+      "far": 15342,
+      "fight_start_far": 14055,
+      "note": "Base non-core non-crit normal shot. Purely range-dependent: ~14k at fight start (boss far), 19,944 when boss near, 15,342 when boss far mid-fight. Falloff ratio 15342/19944 = 0.77 (~23%).",
+      "confidence": "high"
+    },
+    "crit_orange": {
+      "multiplier_over_non_core": 1.5,
+      "far_measured": 23013,
+      "far_check": "23013 = 15342 x 1.5 exactly",
+      "near_approx": 29916,
+      "note": "Orange = crit. Multiplier 1.5x confirmed clean in far window. Near crit popups (~27-30k) noisier due to overlapping stacks.",
+      "confidence": "high (far), medium (near)"
+    },
+    "core_red_CORE_HIT": {
+      "near_clean_read": 46815,
+      "core_noncrit_approx": 39145,
+      "core_noncrit_expected_2x": 39888,
+      "ratio_to_non_core": "core non-crit ~2.0x normal (39,145 ~= 2 x 19,944); best clean CORE HIT read 46,815 (~2.35x, likely core+crit or core-bonus)",
+      "note": "Red 'CORE HIT' label. Core hit ~= 2x a normal shot as expected; some higher (core+crit) reads present.",
+      "confidence": "medium"
+    },
+    "small_red_ticks": {
+      "values_seen": [45, 145, 455],
+      "note": "A small recurring secondary damage instance (~45-455) overlaps the main popups. Unidentified (possible element residual / chip). Minor magnitude. Flagged, not resolved.",
+      "confidence": "low"
+    }
+  },
+  "core_fraction": {
+    "near_estimate": 0.28,
+    "far_estimate": 0.15,
+    "method": "Reconciliation: near avg 28,071 vs non-core 19,944 with core ~2x -> ~30% core (less crits ~25-28%); far avg 18,491 vs non-core 15,342 -> ~15%.",
+    "visual": "Red core weakpoints on boss; 'CORE HIT' appears in ~40%+ of burst frames near range (persisting popups inflate frame count). Cores are a common minority of shots, fewer at range.",
+    "early_vs_late": "Core fraction and per-shot are range-driven, not time-driven: near windows (early 58s and late 155s) both ~19,944 base / ~28-31k avg; far mid window (100s) lower.",
+    "confidence": "medium"
+  },
+  "unreadable_or_flagged": [
+    "Exact crit value at near range (~27-30k) noisy from overlapping popup stacks.",
+    "Core-hit value has two clusters (~39k core, ~47k core+crit) hard to separate cleanly.",
+    "Small red ~45-455 secondary tick instance unidentified.",
+    "Boss element not labeled on HUD; neutrality inferred from absence of advantage chevrons."
+  ]
+}

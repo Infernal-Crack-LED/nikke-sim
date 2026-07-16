@@ -64,6 +64,17 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
    the `heal` effect (event-only) + `recovery` trigger (2026-07-14). When auditing a healer OR a
    unit with an "on recovery / when healed" clause, wire the heal→buff pair.
 
+9. **Weapon-state modifiers — reload speed, ammo, attack/charge speed — ARE damage mechanics; never
+   drop them as "defensive."** They gate SHOT COUNT, and shot count gates damage. Classifying one
+   "defensive, no damage" requires PROVING it doesn't change shots fired. Root example (2026-07-15):
+   Grave's S1 "Heat Emission: Reload Ratio ▼50%" was dropped as defensive — but her measured reload
+   is 3.35s/201f vs the datamined 81f, over-firing her by ~30% (solo 1.277). Modeled via
+   `charFixes.reloadFrames` (a MEASURED effective-reload override that composes with real reload-speed
+   buffs — NOT a fake `reloadSpeedPct`, which breaks composition). This is the **2nd time a shot-count
+   channel was mispriced** (SG pellet landing was the 1st) — the audit for it: for every reload /
+   ammo / unlimited-ammo / fire-rate / charge-speed line, ask "does this change shots fired?" before
+   ever writing "defensive." See DECISIONS 2026-07-15 (grave) + [[reload-speed-affects-damage]].
+
 ## The offsetting-errors principle (why bare-frame + firing-validation matter)
 
 A unit graded ~1.0 in normal (buffed, advantaged) teams can still be **wrong** — its value calibrated
@@ -95,6 +106,8 @@ Apply before the first sim of a fresh override, in order:
 6. Check for multi-projectile weapons → decide split vs merge from video (prior 5).
 7. Check for HP-scaling → own Max HP only (prior 6).
 8. Element advantage → default ×1.10 unless a Superior-Elemental-Code-style buff (prior 7).
+9. Scan for weapon-state lines (reload/ammo/unlimited-ammo/fire-rate/charge-speed) → they gate shot
+   count = damage; never drop as "defensive" without proving shots are unchanged (prior 9).
 
 ## Exceptions log
 

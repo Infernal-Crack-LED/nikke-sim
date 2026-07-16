@@ -1,0 +1,190 @@
+{
+  "probe": "grave-solo-recon",
+  "source_video": "docs/probes/ar-sg-smg/grave solo.MP4",
+  "date_processed": "2026-07-15",
+  "purpose": "Reconcile Grave base normal-fire AR damage in clean isolation (solo, Burst II, ZERO Full Bursts possible). Cleanest rider-free AR-normal probe.",
+  "unit": {
+    "slug": "grave",
+    "weapon": "AR",
+    "class": "Supporter",
+    "burst": "II",
+    "element": "Fire",
+    "combat_atk_at_scope_lock": 98367,
+    "ammo": 60,
+    "reload_frames": 81
+  },
+  "video_meta": {
+    "stored_dims": "1206x2622",
+    "displayed_dims": "2622x1206",
+    "rotation_sidedata": 90,
+    "fps": 60,
+    "duration_s": 194.72
+  },
+  "fight_window": {
+    "combat_clock": "03:00 (180s)",
+    "first_damage_video_t_s": 8,
+    "last_damage_video_t_s": 188,
+    "notes": "Single continuous fight, no aborted attempts. Combat clock starts ~7s into video (clock read 02:07 at video t=60)."
+  },
+  "total_damage": {
+    "value": 34943846,
+    "source": "end-screen Battle Records (grave solo.jpg)",
+    "solo_confirmed": true,
+    "other_slots": "all NO SIGNAL / EMPTY SLOT, 0 damage",
+    "confidence": "exact"
+  },
+  "burst": {
+    "full_bursts_cast": 0,
+    "evidence": "Green Burst-I hex indicator visible on right edge throughout entire fight, never advances; lone Burst-II unit cannot complete the I->II->III chain. Entire output is normal AR fire.",
+    "confidence": "high"
+  },
+  "boss_element": {
+    "displayed": false,
+    "advantage_chevrons_on_popups": false,
+    "interpretation": "No elemental-advantage up-arrow marks on any damage number; treated as neutral matchup for Grave (Fire).",
+    "confidence": "medium-high"
+  },
+  "fire_cadence": {
+    "rounds_per_second": 12.0,
+    "magazine_dump_s": 5.0,
+    "reload_s": 1.35,
+    "reload_frames": 81,
+    "full_cycle_s": 6.35,
+    "steady_no_ramp": true,
+    "evidence": "Ammo counter (displayed at crosshair) counts down exactly 3 rounds per 0.25s (057->054->051->048...->012->009->006->003->000) with no acceleration across multiple magazines.",
+    "notes": "Fire is frequently interrupted mid-magazine by target-reacquisition pauses (boss walking); ammo holds during the pause, no rounds lost.",
+    "confidence": "high"
+  },
+  "popup_values": {
+    "base_noncore_noncrit": 20787,
+    "crit_noncore": 31180,
+    "core_hit": 41573,
+    "core_hit_crit": 51966,
+    "farther_range_base_variant": 17998,
+    "multiplier_ladder": {
+      "noncore_noncrit": 1.0,
+      "crit": 1.5,
+      "core": 2.0,
+      "core_crit": 2.5,
+      "note": "Ladder factors exactly off base 20787: 20787x1.5=31180 (crit), x2.0=41573 (core), x2.5=51966 (core+crit). Core = exactly 2x normal, matching the given core-hit fact. Base itself varies with boss range (~17998 far to ~20787 near)."
+    },
+    "confidence": "high"
+  },
+  "counter_reconciliation": {
+    "method": "damage-counter delta over a verified full 60-round magazine (ammo 060->000), divided by 60",
+    "magazines": [
+      {
+        "id": "mag1",
+        "video_t_start_s": 59.8,
+        "video_t_end_s": 64.8,
+        "counter_start": 11580188,
+        "counter_end": 13533370,
+        "delta": 1953182,
+        "rounds": 60,
+        "avg_per_shot": 32553,
+        "core_fraction_est": 0.49,
+        "notes": "Clean uninterrupted dump, core-heavy segment."
+      },
+      {
+        "id": "mag2",
+        "video_t_start_s": 103.4,
+        "video_t_end_s": 110.3,
+        "counter_start": 19189166,
+        "counter_end": 20685705,
+        "delta": 1496539,
+        "rounds": 60,
+        "avg_per_shot": 24942,
+        "core_fraction_est": 0.13,
+        "notes": "Fired 48 + reacquire pause + 12 = 60 rounds. Low-core segment."
+      },
+      {
+        "id": "mag3",
+        "video_t_start_s": 142.0,
+        "video_t_end_s": 148.9,
+        "counter_start": 26301176,
+        "counter_end": 27876879,
+        "delta": 1575703,
+        "rounds": 60,
+        "avg_per_shot": 26262,
+        "core_fraction_est": 0.19,
+        "notes": "Fired 16 (060->044) + reacquire pause + 44 (044->000) = 60 rounds."
+      }
+    ],
+    "avg_per_shot_3mag_mean": 27919,
+    "avg_per_shot_range": [24942, 32553],
+    "confidence": "high (per-mag arithmetic); fight-wide extrapolation medium"
+  },
+  "core_fraction": {
+    "per_magazine_estimates": [0.49, 0.13, 0.19],
+    "fight_wide_estimate": "0.25-0.35",
+    "method": "backed out from avg_per_shot vs base 20787 assuming additive core(+1.0)/crit(+0.5) multipliers and ~15% crit rate",
+    "notes": "Core fraction is highly variable and aim/range-dependent. Confounded by range-dependent base (17998-20787). Direct popup sampling shows a substantial but non-dominant mix of red CORE HIT vs white normal popups.",
+    "confidence": "medium (variability is real; absolute level uncertain due to range-varying base)"
+  },
+  "fight_wide": {
+    "total_damage": 34943846,
+    "est_total_shots": 1252,
+    "est_avg_per_shot": 27900,
+    "method": "total / 3-mag-mean per-shot; est_total_shots derived, not directly counted",
+    "confidence": "medium"
+  },
+  "reload_remeasure": {
+    "date": "2026-07-15",
+    "purpose": "Directly resolve the shot-count question: sim fires ~1620 shots; a per-shot damage estimate suggested ~1250. Measure the TRUE total shots, reload count, and real reload-to-resume downtime.",
+    "method": {
+      "primary_signal": "Frame-differenced the FIXED top-center TOTAL DAMAGE counter box (crop 380x40 @ 1110,46) at 60fps over the whole 194.7s video. Each landed shot commits one instantaneous counter update = one isolated 1-frame diff spike; static (~0 diff) between shots. Peak-count = literal per-shot event count (NOT a magnitude back-out).",
+      "validation": "Spike detection cross-checked against the two independently hand-read magazines in this file: mag2 window (t103.4-110.3) = exactly 60 spikes; a late window (t168-176) = exactly 60 spikes at clean 5-frame spacing. No missed shots even in low-damage/far-range segments (relative digit change stays visible). Muzzle-flash brightness (secondary) confirmed firing ceases during the measured reload gaps.",
+      "shot_cadence_confirmed": "Spikes land every 5 frames = 12.0 rounds/s, steady (matches existing fire_cadence).",
+      "tools": "ffmpeg + python3 only; no OCR."
+    },
+    "total_shots": {
+      "value": 1230,
+      "range": [1215, 1250],
+      "direct_spike_count_raw": 1247,
+      "notes": "Raw 60fps spike count 1247 includes ~15-20 non-shot artifacts (pre-fight UI settling t1.4-3.8, pause-menu open/close transitions at t~119, post-fight result-screen at t>190). After removing those and correcting +-1/2 per-mag miscounts: ~1230. Structural cross-check: 20 emptied magazines x60 + ~25-shot final partial = ~1225.",
+      "verdict": "DECISIVELY confirms the ~1250 camp, NOT the sim's ~1620. Real shots ~1230, roughly 76% of sim.",
+      "confidence": "high"
+    },
+    "reload_count": {
+      "value": 20,
+      "notes": "20 unambiguous reload gaps separating 21 magazine bursts (20 full 60-round mags each followed by a reload + 1 final partial mag at fight end, never reloaded). Fight starts on a full 60 mag; each mag confirmed to empty to ~000 (reload progress-bar visible at reticle at t=64.75).",
+      "confidence": "high"
+    },
+    "reload_to_resume_gap": {
+      "headline": "REAL reload-to-resume downtime = 3.35s (201 frames), median across 19 clean events. This is ~2.5x the 81-frame (1.35s) datasheet reload spec.",
+      "median_s": 3.35,
+      "median_frames": 201,
+      "n_clean_events": 19,
+      "range_s": [2.85, 3.52],
+      "one_outlier_s": 4.83,
+      "measured_as": "Frames from the LAST shot's damage-commit (=last bullet, hitscan AR lands instantly) to the FIRST shot's damage-commit after the reload. Captures the FULL downtime: reload animation + re-aim/spin-up before fire resumes.",
+      "sample_events": [
+        {"mag_end_t_s": 48.30, "resume_t_s": 51.65, "gap_s": 3.35, "gap_frames": 201},
+        {"mag_end_t_s": 56.57, "resume_t_s": 59.92, "gap_s": 3.35, "gap_frames": 201},
+        {"mag_end_t_s": 64.83, "resume_t_s": 68.18, "gap_s": 3.35, "gap_frames": 201},
+        {"mag_end_t_s": 100.02, "resume_t_s": 103.37, "gap_s": 3.35, "gap_frames": 201}
+      ],
+      "confidence": "high"
+    },
+    "other_firing_pauses": {
+      "mid_magazine_reacquire_pauses_total_s": 11,
+      "range_s": [10, 13],
+      "player_pause_menu_s": 1.7,
+      "notes": "Outside reloads, ~10-13s of firing lost to mid-magazine target-reacquisition pauses (boss walking; ammo HOLDS, no rounds lost) occurring in ~8 magazines at ~1.3-2.0s each. Separately, the player opened the Shooting-Range pause menu once at t~119-120.9 (~1.7s). Derived as sum over each mag of (segment span - shots/12).",
+      "confidence": "medium"
+    },
+    "time_budget_reconciliation": {
+      "firing_s": 102.5,
+      "reload_downtime_s": 67.0,
+      "reacquire_pause_s": 11.0,
+      "sum_s": 180.5,
+      "fight_length_s": 180,
+      "note": "Firing(1230/12=102.5) + reloads(20x3.35=67) + reacquire(~11) = ~180.5s, closing to the 180s fight clock. Independent confirmation of all three numbers.",
+      "root_cause_of_sim_overfire": "Sim assumes 1.35s reloads (~6.35s cycle -> ~28 mags -> ~1620 shots). Real cycle is ~8.27s (5.0s dump + 3.35s reload gap) -> ~21 mags -> ~1230 shots. The 2.0s-per-reload extra downtime (3.35 real vs 1.35 spec), x20 reloads = ~40s = ~480 fewer shots, is the dominant cause."
+    },
+    "recording_notes": {
+      "is_shooting_range": true,
+      "video_contains_one_player_pause": "t~119-120.9 (Shooting-Range pause menu); does not affect the fight clock alignment materially."
+    }
+  }
+}

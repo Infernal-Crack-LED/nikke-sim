@@ -1,0 +1,137 @@
+{
+  "source": "docs/probes/control + carry/sbs control.MP4",
+  "processed": "2026-07-15",
+  "focused_unit": "scarlet-black-shadow",
+  "focused_unit_note": "SBS is the camera-focus / middle slot; all rendered popups are hers. Charge Rocket Launcher, Burst III, Wind element.",
+  "video": {
+    "stored_dims": "1206x2622",
+    "display_dims": "2622x1206",
+    "rotation": 90,
+    "duration_s": 214.63,
+    "fps_container": "~59.6",
+    "recording_tail": "ends on iOS control-center overlay after OPERATION COMPLETE; per-unit breakdown chart never opened"
+  },
+  "fight_window": {
+    "combat_start_s": 8,
+    "combat_end_s": 189,
+    "countdown_start": "03:00 at t~=8",
+    "note": "first damage tick 507,045 at t=8 (timer 02:59); OPERATION COMPLETE screen appears ~t=190"
+  },
+  "matchup": {
+    "boss_element": "Water",
+    "boss_element_evidence": "enemy HP-bar icons are blue snowflakes; matches documented WATER control target",
+    "sbs_element": "Wind",
+    "advantage": "NEUTRAL (Wind vs Water = no advantage either way) — intended control condition",
+    "boss_hp_bar": "none (damage-race HUD, TOTAL DAMAGE counter). On-screen segmented snowflake meter = boss stagger/part gauge, NOT HP.",
+    "partless": true
+  },
+  "roster": {
+    "note": "5-unit team; per-unit damage screen NOT shown, so only descriptive/burst-name ID.",
+    "units": [
+      {"slot": "left", "id": "little-mermaid", "confidence": "high", "evidence": "dark-teal hair; burst banner 'Siren's Song'; matches control-little-mermaid.json (LM, Burst I)"},
+      {"slot": "left", "id": "crown", "confidence": "high", "evidence": "blonde + laurel crown; burst banner 'Last Kingdom'; MG ammo 299/300; Burst II"},
+      {"slot": "center(focus)", "id": "scarlet-black-shadow", "confidence": "high", "evidence": "pink/silver hair, red bodysuit, charge RL; camera-focus; her popups render"},
+      {"slot": "right", "id": "blue-haired SR carry (unidentified)", "confidence": "low", "evidence": "light-blue hair, white/gold beachwear, ornate sniper rifle (ammo 4/6); alternate Burst III producing mid-cycle spikes"},
+      {"slot": "5th", "id": "helm (assumed control-core member)", "confidence": "low-medium", "evidence": "documented control core is LM+Crown+Helm; a lavender/purple support glimpsed but not cleanly ID'd"}
+    ]
+  },
+  "totals": {
+    "team_total_damage": 1916225090,
+    "per_unit_available": false,
+    "per_unit_note": "OPERATION COMPLETE showed TOTAL DAMAGE only; chart icon (per-unit breakdown) never tapped before recording ended. SBS per-unit total NOT recoverable from this video.",
+    "attribution_caveat": "Running counter is TEAM total. SBS overwhelmingly dominates the 6 red burst windows; the ~28M mid-cycle spikes are the SR carry's burst."
+  },
+  "full_bursts": {
+    "team_fb_count": 12,
+    "team_fb_cadence_s": "~15",
+    "team_fb_evidence": "'FULL BURST!' yellow-hazard banner + 10s countdown confirmed at both red-window starts and mid-cycle spikes",
+    "sbs_own_burstIII_casts": 6,
+    "sbs_burst_windows_start_s": [13, 43, 72, 102, 132, 163],
+    "sbs_burst_cadence_s": "~30",
+    "sbs_burst_evidence": "red screen tint + SBS charged-shot spam (2-8M popups) present ONLY in these 6 windows; total-damage math (6x~175M + baseline + 6 carry spikes ~= 1.916B) rules out 12 SBS bursts",
+    "alternate_carry_fb_start_s": [28, 58, 88, 117, 149, 179],
+    "alternate_carry_note": "FULL BURST triggered by the SR carry (Burst III); single +26-31M team spike, no red tint, SBS just auto-fires"
+  },
+  "sbs_burst_window_deltas_teamcounter": {
+    "note": "team-counter delta across each SBS red window (pre-second -> post-second); SBS-dominated",
+    "FB1_t12_to_t23": 181030000,
+    "FB2_t41_to_t53": 193530000,
+    "FB3_t71_to_t82": 158660000,
+    "FB4_t100_to_t112": 151430000,
+    "FB5_t130_to_t142": 181340000,
+    "FB6_t162_to_t173": 199290000,
+    "mean_s": 177550000
+  },
+  "carry_spike_deltas_teamcounter": {
+    "t28": 29400000,
+    "t58": 31430000,
+    "t88": 28460000,
+    "t117": 28770000,
+    "t149": 26100000,
+    "t179": 25650000,
+    "mean": 28300000
+  },
+  "sbs_charged_shot": {
+    "cores": true,
+    "core_evidence": "red 'CORE HIT' label over charged-shot popups both in-burst (e.g. 2,984,122) and out-of-burst (e.g. ~713,009)",
+    "crits": true,
+    "crit_evidence": "orange popups with crit icon (e.g. in-burst 2,455,317; out-of-burst ~420,729)",
+    "in_burst_popup_values_sample": [455495, 1841487, 2455317, 2984122, 3580947, 8291875, 271543, 191497],
+    "out_of_burst_popup_values_sample": [713009, 420729, 563754],
+    "in_burst_note": "popups heavily overlap (charged-body + core + S1 distributed land together); exact per-popup attribution not cleanly separable. Largest (8.29M) likely core-crit charged shot or 750% S1 distributed proc.",
+    "out_of_burst_cadence_s": "~0.8-1.0 per charged shot (charge ~0.3s + release latency + recovery), consistent with engine charge model",
+    "ammo_note": "SBS RL ammo counter hidden behind her kneeling model (center); could not directly count charged shots. Visible center readouts belong to Crown (299/300 MG) and others (6x/120, 4/6)."
+  },
+  "s1_charge_ladder": {
+    "outside_burst": "periodic large distributed popups observed (250/500/750% class) punctuating normal charged shots; 3rd/6th/9th cadence consistent with kit but not cleanly isolated from overlap",
+    "in_burst": "S1 cadence drops to 1/2/3 -> big distributed procs land on ~every charge; multiple large (2-8M) procs per red window (dense, exact count obscured by overlap)"
+  },
+  "damage_counter_series_per_second": {
+    "note": "t (s from video start) -> cumulative TOTAL DAMAGE; values with ~ were obscured by FULL BURST banner overlay",
+    "7": 0, "8": 507045, "9": 2247917, "10": 4759638, "11": 6931953, "12": 9685196,
+    "13": 15578214, "14": 34734927, "15": 50623442, "16": 76434411, "17": 90590694,
+    "18": 109766007, "19": 123024088, "20": 141697386, "21": 159524763, "22": 181552785,
+    "23": 190714146, "24": 193696294, "25": 197754598, "26": 201176351, "27": 204975705,
+    "29": 234391599, "30": 246424360, "31": 258370057, "32": 264776584, "33": 271049537,
+    "34": 283359834, "35": 299715195, "36": 309104460, "37": 311262817, "38": 312463794,
+    "39": 314197528, "40": 319076378, "41": 326217927, "43": 348264408, "44": 365807609,
+    "45": 388088244, "46": 402861519, "47": 430703393, "48": 441459620, "49": 456134422,
+    "50": 479030787, "51": 492492549, "52": 516548724, "53": 519749118, "54": 523565839,
+    "55": 527874017, "57": 541125820, "58": 572560253, "59": 581376815, "60": 585824216,
+    "61": 596332766, "62": 605754873, "63": 613550324, "64": 617954452, "65": 632522498,
+    "66": 644618979, "67": 648980638, "68": 650789996, "69": 655658583, "70": 661667643,
+    "71": 665627981, "72": 683267600, "73": 696530876, "74": 706728088, "75": 708304188,
+    "76": 721751649, "77": 737625005, "78": 761326037, "79": 775786133, "80": 800543470,
+    "81": 812644926, "82": 824291310, "83": 828744698, "84": 829930073, "85": 832196096,
+    "86": 834690542, "87": 836949414, "88": 865409465, "89": 876699492, "90": 888089305,
+    "91": 896409426, "92": 903345880, "93": 910114002, "94": 914639319, "95": 918242708,
+    "96": 932512919, "97": 943167537, "98": 949312759, "99": 953512427, "100": 959313301,
+    "102": 971335650, "103": 991404046, "104": 1001711487, "105": 1028094975, "106": 1042794080,
+    "107": 1069126638, "108": 1081512080, "109": 1093245483, "110": 1094596427, "111": 1107448005,
+    "112": 1110738935, "113": 1114451085, "114": 1118317440, "115": 1123224425, "117": 1157606313,
+    "118": 1168120798, "119": 1179636944, "120": 1183395517, "121": 1193967326, "122": 1203645113,
+    "123": 1210974826, "124": 1221870492, "125": 1231292812, "126": 1243347378, "127": 1248780522,
+    "128": 1251368870, "129": 1256604478, "130": 1261121631, "132": 1273725270, "133": 1289321366,
+    "134": 1314375876, "135": 1329063616, "136": 1350614191, "137": 1367118192, "138": 1385406246,
+    "139": 1400175020, "140": 1419671301, "141": 1433250008, "142": 1442459012, "143": 1445024588,
+    "144": 1452582999, "145": 1456021656, "146": 1458330252, "147": 1458330252, "148": 1459255987,
+    "149": 1485351800, "150": 1497046845, "151": 1503647587, "152": 1518502472, "153": 1530789055,
+    "154": 1539632981, "155": 1549755062, "156": 1559191497, "157": 1563841790, "158": 1571370526,
+    "159": 1575112199, "160": 1581318625, "161": 1586750915, "162": 1589531702, "163": 1605626639,
+    "164": 1629588755, "165": 1647371459, "166": 1669215870, "167": 1682503155, "168": 1702445058,
+    "169": 1712901991, "170": 1738497734, "171": 1751447866, "172": 1772041755, "173": 1788821892,
+    "174": 1793061282, "175": 1797292815, "176": 1797860957, "177": 1802449383, "179": 1834101509,
+    "180": 1841582735, "181": 1842933679, "182": 1845673559, "183": 1855166828, "184": 1866763346,
+    "185": 1873813045, "186": 1889375319, "187": 1900142719, "188": 1910736907, "189": 1912616973,
+    "final": 1916225090
+  },
+  "confidence_summary": {
+    "team_total": "high (read directly from OPERATION COMPLETE + counter)",
+    "boss_element_neutral": "high",
+    "team_fb_count_12": "high",
+    "sbs_burstIII_casts_6": "high (red-tint + popup-spam + total-damage math)",
+    "sbs_charged_cores_and_crits": "high",
+    "roster_LM_Crown_SBS": "high; carry+5th: low",
+    "per_unit_totals": "unavailable"
+  }
+}

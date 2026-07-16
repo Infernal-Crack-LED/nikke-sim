@@ -1,0 +1,121 @@
+{
+  "probe": "soda-tb-control",
+  "source_video": "docs/probes/control + carry/soda tb control.mov",
+  "processed": "2026-07-15",
+  "focused_unit": "soda-twinkling-bunny",
+  "scope_lock_basis": "sync 400, 10/10/10, no cube, Base5, treasure, partless boss, 180s; Attacker combat ATK ~118027",
+  "video": {
+    "stored_dims": "1206x2622",
+    "display_dims": "2622x1206",
+    "rotation_metadata": 90,
+    "fps": 60,
+    "duration_s": 193.78,
+    "fight_window": "combat starts ~6s (AMBUSH); ends ~186s; OPERATION COMPLETE by ~190s",
+    "counter_is_team_total": true,
+    "notes": "in-combat top DAMAGE counter is TEAM TOTAL (reaches ~1.369B ~= battle-records sum ~1.376B); NOT isolable to Soda. Popups render focus-only (Soda) per scope-lock."
+  },
+  "battle_records": {
+    "total_battle_time": "03:00",
+    "units": [
+      {"slot": 1, "burst": "I", "name": "Little Mermaid", "element_icon": "Wind", "cp": 90415, "damage": 403522768},
+      {"slot": 2, "burst": "II", "name": "Crown", "element_icon": "Iron", "cp": 88898, "damage": 170865948, "shield": 315328},
+      {"slot": 3, "burst": "III", "name": "Soda: Twinkling Bunny", "element_icon": "Iron", "cp": 92657, "damage": 416375537, "focused": true},
+      {"slot": 4, "burst": "III", "name": "Helm", "element_icon": "Water", "cp": 90315, "damage": 385716037, "shield": 31934},
+      {"slot": 5, "name": "EMPTY SLOT", "damage": 0}
+    ],
+    "units_sum": 1376480290,
+    "operation_complete_total_damage": 1265480832,
+    "note": "OPERATION COMPLETE TOTAL DAMAGE (1,265,480,832) is LOWER than the sum of unit damage rows (1,376,480,290) and lower than the in-combat counter's final value (~1,369,132,181); reason for the ~111M discrepancy not determined."
+  },
+  "boss": {
+    "type": "spider/quadruped mech, glowing red core weak-point",
+    "hp_bar": "none (damage-race HUD)",
+    "element_icon_visible": false,
+    "element_inferred": "Electric",
+    "soda_advantage": "YES (Soda is Iron; Iron > Electric on element wheel). Inferred, not visually confirmed on-screen."
+  },
+  "full_bursts": {
+    "count_estimate": 10,
+    "interleave": "team is B1(LM)+B2(Crown)+B3(Soda)+B3(Helm); the two Burst-III units alternate who casts B3, so FBs alternate Soda/Helm",
+    "soda_bursts_confirmed": 5,
+    "soda_burst_evidence": "5 Golden-Chip consume drops (see golden_chip); Soda burst splash + 'Onward, Soda!' banner verified at t=48",
+    "start_times_video_s_approx": [10, 30, 48, 66, 84, 104, 124, 142, 162, 175],
+    "soda_burst_times_video_s_approx": [10, 48, 84, 124, 162],
+    "helm_burst_times_video_s_approx": [30, 66, 104, 142, 175],
+    "fb_countdown_peaks_measured_s": [14.71, 14.46, 14.42, 14.39, 14.25, 13.72, 13.44, 13.39, 12.50],
+    "fb_countdown_decay_rate_per_s": 1.0,
+    "fb_duration_range_s": "12.5 - 14.7",
+    "fb_duration_mean_s_approx": 14.0,
+    "note": "All FBs measurably LONGER than base 10s (consistent with FB-extension). Both Soda AND Helm bursts show ~14s, so the full extension cannot be cleanly attributed to Soda's S2 alone from this footage. Soda burst at t=48 peaked 14.71s."
+  },
+  "golden_chip": {
+    "counter_location": "gold coin icon near Soda (center-lower), number to its right",
+    "start_value": 50,
+    "start_confirmed_at_video_s": [6, 8],
+    "consume_per_soda_burst": 17,
+    "consume_evidence_exact": "t=46 -> 44 chips; t=48 (Soda burst cast) -> 27 chips; 44-17 = 27 EXACT",
+    "drops_video_s": {
+      "~12": "50 -> ~34 (FB1 Soda; 50-17=33)",
+      "~48": "44 -> 27 (Soda; 44-17=27, exact)",
+      "~84": "~40 -> 23 (Soda)",
+      "~126": "~38 -> 21 (Soda)",
+      "~162": "~30 -> 14 (Soda)"
+    },
+    "rebuild_rate_per_s_approx": "0.3-0.5 (gains during Full Burst via normal attacks in FB per S1/S2)",
+    "cap_50_re_reached": false,
+    "cap_note": "Chip starts at 50 but NEVER returns to 50 after the first burst; consume-17 outpaces the ~9-15 rebuilt per ~36s Soda cycle. So the 50-START and CONSUME-17 are validated; the 50-CAP re-hit is NOT testable here (never rebuilds that high).",
+    "trace_video_s": {
+      "6": 50, "8": 50, "12": 34, "14": 35, "16": 36, "18": 37, "20": 38, "22": 39,
+      "36": 42, "40": 42, "44": 44, "46": 44, "48": 27, "50": 29, "54": 30, "58": 31,
+      "60": 33, "66": 33, "70": 34, "74": 36, "78": 37, "82": 39,
+      "84": 23, "88": 24, "94": 27, "98": 28, "104": 29, "110": 32, "116": 35,
+      "120": 35, "126": 21, "132": 22, "140": 27, "148": 27, "154": 29,
+      "160": 30, "162": 14, "168": 15, "174": 18, "180": 19, "184": 21
+    }
+  },
+  "hit_rate_core_test": {
+    "hypothesis": "Soda's burst grants Hit Rate +38.91% (20+ chips, 15s); does Hit Rate raise shotgun core-hit fraction?",
+    "result": "INCONCLUSIVE / not cleanly resolvable from this footage",
+    "reasons": [
+      "in-combat counter is TEAM TOTAL, so per-magazine reconciliation cannot isolate Soda's per-shot damage",
+      "shotgun pellet popups overlap into dense unreadable clusters (the exact failure mode SG discipline warns against; visual counting forbidden)",
+      "Soda's 15s buff windows coincide with Full Burst (+50% team dmg) and her own ATK buffs, confounding any per-pellet before/after comparison",
+      "reload and burst-splash timing rarely align with a clean readable shotgun-on-boss frame in a given buff state"
+    ],
+    "qualitative_observation": "Across sampled normal-fire frames in BOTH buff-active (t=20, inside FB1 post-Soda-burst) and buff-inactive (t=44, post-FB2) windows, popups were orange crits + white normals with NO clearly visible RED 'CORE HIT' numbers. No detectable surge of red core popups when the Hit-Rate buff is up. Confidence: LOW (red core popups could be hidden in dense clusters, so a low measured core rate cannot itself be trusted).",
+    "sample_pellet_values": {
+      "t8_pre_burst_no_fb": {"white_normal": 35264, "orange_crit": 76169},
+      "t20_buff_on_in_fb1": {"white_normal": 182079, "orange_crit": 3023057},
+      "t44_buff_off_post_fb2": {"white_normal": 88001, "white_normal_alt": 164780, "orange_crit": 140840}
+    }
+  },
+  "burst_nuke": {
+    "skill": "628.7% burst-skill damage",
+    "observed_at": "t=48-49 (Soda burst cast)",
+    "largest_popup_white": 21218079,
+    "appears_twice": true,
+    "orange_crit_popup": 3218326,
+    "confidence": "MODERATE-LOW",
+    "note": "21,218,079 (white) is the largest burst-cast popup, appears as two stacked instances; overlapping numbers make exact attribution imperfect. Plausibly the 628.7% burst-skill hit landing with full team buffs + element advantage (possibly 2 instances/parts). Not independently confirmed."
+  },
+  "counter_reconciliation": {
+    "counter_scope": "TEAM TOTAL (all 4 units) - NOT Soda-isolable",
+    "readings_video_s_clock": [
+      {"video_s": 8,  "clock": "02:57", "counter": 3673973},
+      {"video_s": 30, "clock": "02:35", "counter": 163318905},
+      {"video_s": 40, "clock": "02:25", "counter": 261948092},
+      {"video_s": 48, "clock": "02:17", "counter": 302825791, "note": "Soda burst cast"},
+      {"video_s": 49, "clock": "02:16", "counter": 315566122},
+      {"video_s": 55, "clock": "02:10", "counter": 381533946, "note": "inside Soda FB"},
+      {"video_s": 183, "clock": "00:03", "counter": 1347926088},
+      {"video_s": 186, "clock": "00:00", "counter": 1369132181, "note": "final in-combat value (from filmstrip)"}
+    ],
+    "team_total_deltas": {
+      "t8_t30_22s": {"delta": 159644932, "per_s": 7256588},
+      "t30_t40_10s": {"delta": 98629187, "per_s": 9862919, "note": "during Helm FB2"},
+      "t40_t48_8s": {"delta": 40877699, "per_s": 5109712, "note": "between bursts"},
+      "t48_t49_1s": {"delta": 12740331, "note": "Soda burst-cast spike (team)"},
+      "t49_t55_6s": {"delta": 65967824, "per_s": 10994637, "note": "inside Soda FB, all units +50%"}
+    }
+  }
+}
