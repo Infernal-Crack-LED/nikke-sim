@@ -137,6 +137,11 @@ Core  = coreExposure × AUTO_CORE_RATE × coreBonus    (expected-value mode)
               Knobs: ACR=flat override; CORERATE=flat → old flat 0.85; CORERATEBAND=off →
               prior flat per-weapon table (A/B). SG near 0.072 CORROBORATED (ore-game ~6% front
               row); AR near 0.40 CONFIRMED (Scarlet + Moran, two methods). open-questions A15 / DECISIONS.
+              PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
+              OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
+              and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,
+              they detonate on the boss body regardless of aim; 2026-07-16, DECISIONS). These pass
+              `coreOverride` so `acr` is that rate, not `acrFor(weapon, band)`.
         coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100   (base +100%)
 ```
 
@@ -146,6 +151,17 @@ burst skill at its cast lands *before* Full Burst begins — it gets neither the
 it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
+
+**Stored-hit accumulate-then-detonate (Rapi: Red Hood rockets, 2026-07-16):** a `storedHit` effect
+accrues charges that release as one consolidated hit. Rapi: Red Hood's rocket meter (`hitCount`
+every 120 normal attacks, `countInFb` 60 in her Full Burst — fills 2× faster in FB) attaches a
+rocket at each meter-full; rockets attached OUTSIDE Full Burst do NOT explode until FB begins, so
+they ACCUMULATE and the FIRST explosion of each FB is a BATCH of everything banked (this stack
+overlap is why explosions can't be visually counted). A rocket attached DURING FB explodes
+INSTANTLY (`storedHit.instantInFb` → the in-FB per-frame release path). The explosion is
+aim/range-independent and cores ~1/3 (`storedHit.core`, above). The rocket ATTACH is a skill-damage
+hit and generates burst gauge like any skill hit — so the in-FB cadence subtly shifts Full Burst
+timing (a second-order coupling, DECISIONS 2026-07-16).
 
 **Flighted damage (2026-07-14):** some burst skills are projectiles with real flight time —
 Rapi: Red Hood's 2808% nuke lands ~0.4 seconds AFTER her banner, inside her own window, and

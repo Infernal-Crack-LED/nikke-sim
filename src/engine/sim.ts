@@ -268,6 +268,8 @@ interface UnitState {
       sequential?: boolean;
       trueFlavor?: boolean;
       projFlavor?: 'attachment' | 'explosion';
+      coreRate?: number;      // per-release core rate (coreOverride path) — RRH explosions ~1/3
+      instantInFb?: boolean;  // release each FB frame (in-burst attach detonates instantly), not only at FB start
       releasable: number;
       fresh: number;      // charges added this frame — not releasable until next frame
       freshFrame: number;
@@ -1088,6 +1090,8 @@ export function runSim(
                 : e.flavor === 'projectileExplosion'
                   ? ('explosion' as const)
                   : undefined,
+            coreRate: e.core,
+            instantInFb: e.instantInFb,
             releasable: 0,
             fresh: 0,
             freshFrame: frame,
@@ -1353,7 +1357,10 @@ export function runSim(
               if (entry.releasable > 0) {
                 dealDamage(u, entry.atkPct * entry.releasable, frame, {
                   crit: DOT_CRIT || XCRIT.has(u.char.slug),
-                  core: XCORE.has(u.char.slug),
+                  // per-entry core RATE (RRH explosions ~1/3) via the coreOverride path —
+                  // aim/range-independent; falls back to the env XCORE gate when unset
+                  core: entry.coreRate != null || XCORE.has(u.char.slug),
+                  coreOverride: entry.coreRate,
                   charge: false,
                   category: entry.category,
                   distributed: entry.distributed,
@@ -1516,11 +1523,15 @@ export function runSim(
       }
     }
 
-    // ---- experiment-only: instant in-FB stored-hit release (ENV.XINSTEXPL) ----
-    if (XINSTEXPL.size && fbEndFrame > frame) {
+    // ---- in-FB instant stored-hit release: a rocket that ATTACHES during Full Burst
+    // detonates immediately in the same window (RRH), instead of only batch-releasing at the
+    // next FB start. Per-entry `instantInFb` (RRH S2 explosion) drives it permanently;
+    // ENV.XINSTEXPL forces it on for experiments. Same core/flavor treatment as the FB-start batch. ----
+    if (fbEndFrame > frame) {
       for (const u of units) {
-        if (!XINSTEXPL.has(u.char.slug)) continue;
+        const envForce = XINSTEXPL.has(u.char.slug);
         for (const entry of u.storedHits.values()) {
+          if (!envForce && !entry.instantInFb) continue;
           if (entry.freshFrame < frame) {
             entry.releasable += entry.fresh;
             entry.fresh = 0;
@@ -1528,8 +1539,9 @@ export function runSim(
           }
           if (entry.releasable > 0) {
             dealDamage(u, entry.atkPct * entry.releasable, frame, {
-              crit: XCRIT.has(u.char.slug),
-              core: XCORE.has(u.char.slug),
+              crit: DOT_CRIT || XCRIT.has(u.char.slug),
+              core: entry.coreRate != null || XCORE.has(u.char.slug),
+              coreOverride: entry.coreRate,
               charge: false,
               category: entry.category,
               distributed: entry.distributed,
@@ -1655,9 +1667,14 @@ export function runSim(
       if (b.trigger.kind === 'shotFired') applyBlock(u.idx, b, bi, frame);
       else if (b.trigger.kind === 'hitCount') {
         const key = `hc:${bi}`;
+        // RRH rocket meter fills 2× faster in her Full Burst: threshold 120 → countInFb (60)
+        // while in FB. The counter carries over across the boundary (no reset) — the faster
+        // threshold just consumes the accrued fill, so a near-full meter fires on FB entry.
+        const threshold =
+          fbEndFrame > frame && b.trigger.countInFb != null ? b.trigger.countInFb : b.trigger.count;
         let c = (u.hitCounters.get(key) ?? 0) + u.char.hitsPerShot;
-        while (c >= b.trigger.count) {
-          c -= b.trigger.count;
+        while (c >= threshold) {
+          c -= threshold;
           applyBlock(u.idx, b, bi, frame);
         }
         u.hitCounters.set(key, c);

@@ -8,6 +8,23 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U15 — Rapi: Red Hood explosion residual (after the 2026-07-16 reopen)
+The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,
+T8 0.84→0.90, N1 0.92→0.98) but left it EXPOSED as a prediction rather than fitting it away. Still open:
+- **Explosion CRIT (deferred, pre-registered).** Explosions crit (observed clean ×1.5 steps) but crit is
+  NOT modeled — the reopen was scoped to core only. U1/datamine says additional-damage crits at the
+  caster's rate and never cores, so the crit pass likely needs NO new fitted parameter (her sheet crit
+  rate). PREDICTED magnitude ≈ critRate × 0.5 × (explosion share of her total); if adding it OVER-shoots
+  past ~1.0 that's the failure signal. Needs its own Fable-gated pass. Engine asymmetry to fix there:
+  immediate skill hits crit by default but `storedHit` releases are XCRIT-gated off.
+- **Does the rocket ATTACH actually generate burst gauge in-game?** The engine treats every skill-damage
+  hit as gauge-generating (pre-existing blanket rule), so her attach cadence shifts FB timing. Not
+  introduced by the reopen, but now load-bearing — worth a targeted check (meter/gauge co-read).
+- **Meter carryover semantics.** Modeled as a threshold switch (120→60), not +2-fill-per-hit; these differ
+  only at the FB boundary. A meter-carryover measurement (count meter-100% events across an FB entry) would
+  discriminate.
+- Residual remainder is likely generic MG-cold (board ~0.947).
+
 ### U8 — Probe-team residuals: what remains after the recorded re-runs
 Nine probe recordings (2026-07-13, docs/probes/u8 + docs/probes/tb2) have resolved almost
 everything here; per-run details in docs/probe-runs.md. STILL OPEN after test battery 2:

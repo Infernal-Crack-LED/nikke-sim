@@ -8,6 +8,31 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-16) Rapi: Red Hood's projectile-EXPLOSION class cores ~1/3, is DERIVED from the real rocket
+  meter (120→60 in-FB cadence + in-burst instant detonation), and her fictional damage placeholders are
+  removed — partially closing the "invisible X".** Reopens the 2026-07-14 invisible-X entry below with new
+  same-tier evidence (video re-read of `probe u7/rapi focus vid.MP4`, `docs/probe-data/rrh-explosion-core.json`).
+  MEASURED: explosion core fraction **~1/3** (0.30–0.45, N=9; the plain WHITE non-core body dominates every
+  burst, red "CORE HIT" bodies are the clear minority — explicitly NOT near-full coring, correcting an earlier
+  ~3× over-assumption). Model: explosions core via a per-release RATE on the `coreOverride` path
+  (`storedHit.core:0.33`) — aim/range-INDEPENDENT, NOT the weapon/band acr table (they detonate on the boss
+  body regardless of aim). This does NOT contradict the landed "stickies never core" ruling — that was the
+  small out-of-burst ATTACH class (~340–620k, still no core); the in-burst EXPLOSION is a different hit type.
+  Two engine additions: (1) a per-effect `instantInFb` in-FB release path so a rocket that attaches DURING
+  Full Burst detonates immediately (was the ENV.XINSTEXPL experiment path, now permanent); (2) `hitCount.countInFb`
+  so her meter fills 2× faster in FB (120→60), with the rocket count DERIVED from her wind-up-aware shot count,
+  not fit. The old fictional magnitude placeholders (a stage-3 2s dot pair + a storedHit charges:5 batch whose
+  popups were invented) are REMOVED and the explosion damage re-derived from the mechanic. RESIDUAL LEFT
+  EXPOSED as a prediction (Fable R6): atkPct stays kit-datamined 88.11 (NOT re-fit), core is the measured 0.33;
+  the remaining deficit (T7 still 0.81) is left visible — part generic MG-cold (board ~0.947), part the
+  OBSERVED-but-unmodeled explosion CRIT (deferred to its own gated pass; U1 says additional-damage crits at the
+  caster's rate, so it likely needs no new parameter). Impact (sim-vs-real): T3 0.84→0.91, T7 0.72→0.81,
+  T8 0.84→0.90, N1 0.92→0.98 — uniform +0.06–0.09, none overshoot, FB counts invariant. Small teammate drifts
+  (crown −0.82%, cinderella +0.88%) are a legitimate second-order coupling: the rocket ATTACH is a skill-damage
+  hit that generates burst gauge (pre-existing engine rule), so the new in-FB cadence shifts FB timing ~1–2s in
+  the back half. Fable pre-op APPROVED-W-6-REVISIONS + blind post-op LAND (all 6 verified executed). — rrh
+  explosion-core measurement + Fable pre/post-op; open-questions U1.
+
 - **(2026-07-15) Grave's reload is MEASURED at 3.35s / 201 frames, not the datamined 81f — her dropped "Heat
   Emission: Reload Ratio ▼50%" reload mechanic is re-modeled (reload speed IS damage).** Her override previously
   dropped this S1 line as "defensive weapon-state, no damage"; that was an error — reload time gates shot count
@@ -526,7 +551,10 @@ lives. Newest first within each section.
   attachment buff is measured-inert and removed. Landing these corrections EXPOSED her
   remaining deficit as a consistent ~22–28% of real damage that renders no popups (the
   "invisible X") — deliberately left open rather than re-tuned away. — rrh probe recordings;
-  experiment log "RAPI SYNTHESIS FINAL" + landing entry.
+  experiment log "RAPI SYNTHESIS FINAL" + landing entry. **PARTIALLY SUPERSEDED (2026-07-16, see the
+  entry above)** — much of the invisible X is now explained: her explosions core ~1/3 and her rocket
+  cadence/instant-detonation are DERIVED from the real meter mechanic; the residual is narrowed and left
+  exposed (part MG-cold, part unmodeled explosion crit).
 
 - **(2026-07-14) Liberalio's 202.5% full-charge proc receives the +50% Full Burst term by its
   landing timing** — the legacy no-Full-Burst flag was a calibration-era relic contradicting
