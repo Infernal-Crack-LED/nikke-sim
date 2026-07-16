@@ -1,22 +1,773 @@
 {
-  "pilgrim": {
-    "attacker": 0,
-    "defender": 0,
-    "supporter": 0
+  "_note": "Relationship (bond) bonus. manufacturerMaxLevel: bond cap per manufacturer (key 'overspec' applies to any unit whose manufacturer string ends with ' Overspec'). statsByLevel: flat HP/ATK/DEF granted at each bond level, per class. Source: in-game bond table (was relationship-bonus-stats.csv). open-questions U18.",
+  "manufacturerMaxLevel": {
+    "pilgrim": 40,
+    "overspec": 40,
+    "elysion": 30,
+    "missilis": 30,
+    "tetra": 30,
+    "abnormal": 30
   },
-  "pilgrim": {
-    "attacker": 0,
-    "defender": 0,
-    "supporter": 0
-  },
-  "pilgrim": {
-    "attacker": 0,
-    "defender": 0,
-    "supporter": 0
-  },
-  "pilgrim": {
-    "attacker": 0,
-    "defender": 0,
-    "supporter": 0
-  }
+  "statsByLevel": [
+    {
+      "level": 1,
+      "reqPoints": 150,
+      "Attacker": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0
+      },
+      "Defender": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0
+      },
+      "Supporter": {
+        "hp": 0,
+        "atk": 0,
+        "def": 0
+      }
+    },
+    {
+      "level": 2,
+      "reqPoints": 310,
+      "Attacker": {
+        "hp": 649,
+        "atk": 29,
+        "def": 5
+      },
+      "Defender": {
+        "hp": 793,
+        "atk": 19,
+        "def": 6
+      },
+      "Supporter": {
+        "hp": 721,
+        "atk": 24,
+        "def": 5
+      }
+    },
+    {
+      "level": 3,
+      "reqPoints": 320,
+      "Attacker": {
+        "hp": 1490,
+        "atk": 66,
+        "def": 10
+      },
+      "Defender": {
+        "hp": 1822,
+        "atk": 44,
+        "def": 12
+      },
+      "Supporter": {
+        "hp": 1656,
+        "atk": 55,
+        "def": 11
+      }
+    },
+    {
+      "level": 4,
+      "reqPoints": 330,
+      "Attacker": {
+        "hp": 2425,
+        "atk": 108,
+        "def": 16
+      },
+      "Defender": {
+        "hp": 2963,
+        "atk": 72,
+        "def": 20
+      },
+      "Supporter": {
+        "hp": 2694,
+        "atk": 90,
+        "def": 18
+      }
+    },
+    {
+      "level": 5,
+      "reqPoints": 340,
+      "Attacker": {
+        "hp": 3425,
+        "atk": 152,
+        "def": 23
+      },
+      "Defender": {
+        "hp": 4186,
+        "atk": 102,
+        "def": 28
+      },
+      "Supporter": {
+        "hp": 3805,
+        "atk": 127,
+        "def": 25
+      }
+    },
+    {
+      "level": 6,
+      "reqPoints": 350,
+      "Attacker": {
+        "hp": 4476,
+        "atk": 199,
+        "def": 30
+      },
+      "Defender": {
+        "hp": 5470,
+        "atk": 133,
+        "def": 36
+      },
+      "Supporter": {
+        "hp": 4973,
+        "atk": 166,
+        "def": 33
+      }
+    },
+    {
+      "level": 7,
+      "reqPoints": 360,
+      "Attacker": {
+        "hp": 5571,
+        "atk": 247,
+        "def": 37
+      },
+      "Defender": {
+        "hp": 6809,
+        "atk": 165,
+        "def": 45
+      },
+      "Supporter": {
+        "hp": 6190,
+        "atk": 206,
+        "def": 41
+      }
+    },
+    {
+      "level": 8,
+      "reqPoints": 370,
+      "Attacker": {
+        "hp": 6702,
+        "atk": 298,
+        "def": 45
+      },
+      "Defender": {
+        "hp": 8192,
+        "atk": 198,
+        "def": 55
+      },
+      "Supporter": {
+        "hp": 7447,
+        "atk": 248,
+        "def": 50
+      }
+    },
+    {
+      "level": 9,
+      "reqPoints": 380,
+      "Attacker": {
+        "hp": 7868,
+        "atk": 349,
+        "def": 52
+      },
+      "Defender": {
+        "hp": 9616,
+        "atk": 233,
+        "def": 64
+      },
+      "Supporter": {
+        "hp": 8742,
+        "atk": 291,
+        "def": 58
+      }
+    },
+    {
+      "level": 10,
+      "reqPoints": 390,
+      "Attacker": {
+        "hp": 9062,
+        "atk": 403,
+        "def": 60
+      },
+      "Defender": {
+        "hp": 11076,
+        "atk": 269,
+        "def": 74
+      },
+      "Supporter": {
+        "hp": 10069,
+        "atk": 336,
+        "def": 67
+      }
+    },
+    {
+      "level": 11,
+      "reqPoints": 400,
+      "Attacker": {
+        "hp": 10283,
+        "atk": 457,
+        "def": 68
+      },
+      "Defender": {
+        "hp": 12569,
+        "atk": 305,
+        "def": 84
+      },
+      "Supporter": {
+        "hp": 11426,
+        "atk": 381,
+        "def": 76
+      }
+    },
+    {
+      "level": 12,
+      "reqPoints": 420,
+      "Attacker": {
+        "hp": 11529,
+        "atk": 512,
+        "def": 77
+      },
+      "Defender": {
+        "hp": 14091,
+        "atk": 342,
+        "def": 94
+      },
+      "Supporter": {
+        "hp": 12810,
+        "atk": 427,
+        "def": 85
+      }
+    },
+    {
+      "level": 13,
+      "reqPoints": 430,
+      "Attacker": {
+        "hp": 12798,
+        "atk": 569,
+        "def": 86
+      },
+      "Defender": {
+        "hp": 15642,
+        "atk": 379,
+        "def": 105
+      },
+      "Supporter": {
+        "hp": 14220,
+        "atk": 474,
+        "def": 95
+      }
+    },
+    {
+      "level": 14,
+      "reqPoints": 440,
+      "Attacker": {
+        "hp": 14088,
+        "atk": 626,
+        "def": 94
+      },
+      "Defender": {
+        "hp": 17218,
+        "atk": 418,
+        "def": 114
+      },
+      "Supporter": {
+        "hp": 15653,
+        "atk": 522,
+        "def": 104
+      }
+    },
+    {
+      "level": 15,
+      "reqPoints": 450,
+      "Attacker": {
+        "hp": 15398,
+        "atk": 684,
+        "def": 103
+      },
+      "Defender": {
+        "hp": 18820,
+        "atk": 456,
+        "def": 125
+      },
+      "Supporter": {
+        "hp": 17109,
+        "atk": 570,
+        "def": 114
+      }
+    },
+    {
+      "level": 16,
+      "reqPoints": 470,
+      "Attacker": {
+        "hp": 16727,
+        "atk": 744,
+        "def": 112
+      },
+      "Defender": {
+        "hp": 20445,
+        "atk": 496,
+        "def": 136
+      },
+      "Supporter": {
+        "hp": 18586,
+        "atk": 620,
+        "def": 124
+      }
+    },
+    {
+      "level": 17,
+      "reqPoints": 480,
+      "Attacker": {
+        "hp": 18075,
+        "atk": 803,
+        "def": 121
+      },
+      "Defender": {
+        "hp": 22091,
+        "atk": 535,
+        "def": 147
+      },
+      "Supporter": {
+        "hp": 20083,
+        "atk": 669,
+        "def": 134
+      }
+    },
+    {
+      "level": 18,
+      "reqPoints": 500,
+      "Attacker": {
+        "hp": 19438,
+        "atk": 864,
+        "def": 130
+      },
+      "Defender": {
+        "hp": 23758,
+        "atk": 576,
+        "def": 158
+      },
+      "Supporter": {
+        "hp": 21598,
+        "atk": 720,
+        "def": 144
+      }
+    },
+    {
+      "level": 19,
+      "reqPoints": 510,
+      "Attacker": {
+        "hp": 20819,
+        "atk": 925,
+        "def": 139
+      },
+      "Defender": {
+        "hp": 25445,
+        "atk": 617,
+        "def": 169
+      },
+      "Supporter": {
+        "hp": 23132,
+        "atk": 771,
+        "def": 154
+      }
+    },
+    {
+      "level": 20,
+      "reqPoints": 530,
+      "Attacker": {
+        "hp": 22214,
+        "atk": 988,
+        "def": 149
+      },
+      "Defender": {
+        "hp": 27150,
+        "atk": 658,
+        "def": 182
+      },
+      "Supporter": {
+        "hp": 24682,
+        "atk": 823,
+        "def": 165
+      }
+    },
+    {
+      "level": 21,
+      "reqPoints": 540,
+      "Attacker": {
+        "hp": 23624,
+        "atk": 1050,
+        "def": 158
+      },
+      "Defender": {
+        "hp": 28874,
+        "atk": 700,
+        "def": 193
+      },
+      "Supporter": {
+        "hp": 26249,
+        "atk": 875,
+        "def": 175
+      }
+    },
+    {
+      "level": 22,
+      "reqPoints": 560,
+      "Attacker": {
+        "hp": 25049,
+        "atk": 1114,
+        "def": 167
+      },
+      "Defender": {
+        "hp": 30615,
+        "atk": 742,
+        "def": 205
+      },
+      "Supporter": {
+        "hp": 27832,
+        "atk": 928,
+        "def": 186
+      }
+    },
+    {
+      "level": 23,
+      "reqPoints": 580,
+      "Attacker": {
+        "hp": 26487,
+        "atk": 1177,
+        "def": 176
+      },
+      "Defender": {
+        "hp": 32373,
+        "atk": 785,
+        "def": 216
+      },
+      "Supporter": {
+        "hp": 29430,
+        "atk": 981,
+        "def": 196
+      }
+    },
+    {
+      "level": 24,
+      "reqPoints": 590,
+      "Attacker": {
+        "hp": 27938,
+        "atk": 1242,
+        "def": 186
+      },
+      "Defender": {
+        "hp": 34146,
+        "atk": 828,
+        "def": 228
+      },
+      "Supporter": {
+        "hp": 31042,
+        "atk": 1035,
+        "def": 207
+      }
+    },
+    {
+      "level": 25,
+      "reqPoints": 610,
+      "Attacker": {
+        "hp": 29402,
+        "atk": 1307,
+        "def": 196
+      },
+      "Defender": {
+        "hp": 35936,
+        "atk": 871,
+        "def": 240
+      },
+      "Supporter": {
+        "hp": 32669,
+        "atk": 1089,
+        "def": 218
+      }
+    },
+    {
+      "level": 26,
+      "reqPoints": 630,
+      "Attacker": {
+        "hp": 30878,
+        "atk": 1373,
+        "def": 206
+      },
+      "Defender": {
+        "hp": 37740,
+        "atk": 915,
+        "def": 252
+      },
+      "Supporter": {
+        "hp": 34309,
+        "atk": 1144,
+        "def": 229
+      }
+    },
+    {
+      "level": 27,
+      "reqPoints": 650,
+      "Attacker": {
+        "hp": 32366,
+        "atk": 1439,
+        "def": 216
+      },
+      "Defender": {
+        "hp": 39558,
+        "atk": 959,
+        "def": 264
+      },
+      "Supporter": {
+        "hp": 35962,
+        "atk": 1199,
+        "def": 240
+      }
+    },
+    {
+      "level": 28,
+      "reqPoints": 670,
+      "Attacker": {
+        "hp": 33865,
+        "atk": 1505,
+        "def": 226
+      },
+      "Defender": {
+        "hp": 41391,
+        "atk": 1003,
+        "def": 276
+      },
+      "Supporter": {
+        "hp": 37628,
+        "atk": 1254,
+        "def": 251
+      }
+    },
+    {
+      "level": 29,
+      "reqPoints": 690,
+      "Attacker": {
+        "hp": 35376,
+        "atk": 1572,
+        "def": 236
+      },
+      "Defender": {
+        "hp": 43238,
+        "atk": 1048,
+        "def": 288
+      },
+      "Supporter": {
+        "hp": 39307,
+        "atk": 1310,
+        "def": 262
+      }
+    },
+    {
+      "level": 30,
+      "reqPoints": 710,
+      "Attacker": {
+        "hp": 36897,
+        "atk": 1640,
+        "def": 246
+      },
+      "Defender": {
+        "hp": 45097,
+        "atk": 1094,
+        "def": 300
+      },
+      "Supporter": {
+        "hp": 40997,
+        "atk": 1367,
+        "def": 273
+      }
+    },
+    {
+      "level": 31,
+      "reqPoints": 730,
+      "Attacker": {
+        "hp": 38430,
+        "atk": 1708,
+        "def": 257
+      },
+      "Defender": {
+        "hp": 46970,
+        "atk": 1138,
+        "def": 314
+      },
+      "Supporter": {
+        "hp": 42700,
+        "atk": 1423,
+        "def": 285
+      }
+    },
+    {
+      "level": 32,
+      "reqPoints": 750,
+      "Attacker": {
+        "hp": 39972,
+        "atk": 1776,
+        "def": 266
+      },
+      "Defender": {
+        "hp": 48854,
+        "atk": 1184,
+        "def": 326
+      },
+      "Supporter": {
+        "hp": 44413,
+        "atk": 1480,
+        "def": 296
+      }
+    },
+    {
+      "level": 33,
+      "reqPoints": 770,
+      "Attacker": {
+        "hp": 41524,
+        "atk": 1846,
+        "def": 277
+      },
+      "Defender": {
+        "hp": 50752,
+        "atk": 1230,
+        "def": 339
+      },
+      "Supporter": {
+        "hp": 46138,
+        "atk": 1538,
+        "def": 308
+      }
+    },
+    {
+      "level": 34,
+      "reqPoints": 800,
+      "Attacker": {
+        "hp": 43086,
+        "atk": 1915,
+        "def": 287
+      },
+      "Defender": {
+        "hp": 52660,
+        "atk": 1277,
+        "def": 351
+      },
+      "Supporter": {
+        "hp": 47873,
+        "atk": 1596,
+        "def": 319
+      }
+    },
+    {
+      "level": 35,
+      "reqPoints": 820,
+      "Attacker": {
+        "hp": 44658,
+        "atk": 1985,
+        "def": 298
+      },
+      "Defender": {
+        "hp": 54582,
+        "atk": 1323,
+        "def": 364
+      },
+      "Supporter": {
+        "hp": 49620,
+        "atk": 1654,
+        "def": 331
+      }
+    },
+    {
+      "level": 36,
+      "reqPoints": 840,
+      "Attacker": {
+        "hp": 46238,
+        "atk": 2056,
+        "def": 309
+      },
+      "Defender": {
+        "hp": 56514,
+        "atk": 1370,
+        "def": 377
+      },
+      "Supporter": {
+        "hp": 51376,
+        "atk": 1713,
+        "def": 343
+      }
+    },
+    {
+      "level": 37,
+      "reqPoints": 870,
+      "Attacker": {
+        "hp": 47828,
+        "atk": 2125,
+        "def": 319
+      },
+      "Defender": {
+        "hp": 58456,
+        "atk": 1417,
+        "def": 389
+      },
+      "Supporter": {
+        "hp": 53142,
+        "atk": 1771,
+        "def": 354
+      }
+    },
+    {
+      "level": 38,
+      "reqPoints": 900,
+      "Attacker": {
+        "hp": 49427,
+        "atk": 2197,
+        "def": 329
+      },
+      "Defender": {
+        "hp": 60411,
+        "atk": 1465,
+        "def": 403
+      },
+      "Supporter": {
+        "hp": 54919,
+        "atk": 1831,
+        "def": 366
+      }
+    },
+    {
+      "level": 39,
+      "reqPoints": 920,
+      "Attacker": {
+        "hp": 51035,
+        "atk": 2268,
+        "def": 340
+      },
+      "Defender": {
+        "hp": 62376,
+        "atk": 1512,
+        "def": 416
+      },
+      "Supporter": {
+        "hp": 56705,
+        "atk": 1890,
+        "def": 378
+      }
+    },
+    {
+      "level": 40,
+      "reqPoints": 950,
+      "Attacker": {
+        "hp": 52650,
+        "atk": 2340,
+        "def": 351
+      },
+      "Defender": {
+        "hp": 64350,
+        "atk": 1560,
+        "def": 429
+      },
+      "Supporter": {
+        "hp": 58500,
+        "atk": 1950,
+        "def": 390
+      }
+    }
+  ]
 }

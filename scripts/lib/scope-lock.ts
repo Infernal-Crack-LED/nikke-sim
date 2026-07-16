@@ -10,6 +10,7 @@
 // exposure 100% (coreHitRate 1), range bonus on, 180 s.
 import { readFileSync } from 'node:fs';
 import { characterStat, gearAtk, copiesToGradeCore } from '../../src/stats.js';
+import { relationshipBonus } from '../../src/relationship.js';
 import type { DataFile, LevelMultiplier, NikkeClass, SimConfig, Element } from '../../src/types.js';
 
 /** The fixed scope-lock args — everything except the boss element and the units. */
@@ -39,12 +40,13 @@ export function scopeLockCfg(
 // (NB the ~1.8% higher figure Attacker ~120,143 is the OL0-GEAR basis, NOT treasure — the gear
 // delta is exactly gearAtk OL0−base5, see src/stats.ts:36-44. Correction 2026-07-16: an earlier
 // comment here mislabeled it "treasure"; the sim adds no treasure ATK and the units are treasure:false.)
-// OPEN (open-questions U18): five in-fight counter reads (jill/guilty/brid-silent-track/maiden/isabel)
-// measure the effective term ~+1.63% ABOVE these base5 values — matching the OL0 numbers (Attacker
-// 120,143) to ~0.17%, NOT base5. This re-opens the 2026-07-14 base5 switch (DECISIONS), which itself
-// flagged that the 2026-07-13 video-verified OL0 combat-ATK "needs re-checking". Core is NOT the cause
-// (core maxes at 7 and core-7 ×1.14 is validated by the 120,143 video read). It is a GEAR-TIER question:
-// are the recorded units on base5 or OL0-equivalent gear? PENDING owner confirmation before any basis change.
+// These are the base BEFORE the relationship (bond) bonus, which the engine now ADDS INTO staticAtk
+// at the manufacturer MAX by default (2026-07-16, open-questions U18 / DECISIONS: the unmodeled
+// relationship bonus, a flat class×manufacturer stat — src/relationship.ts — was the ~1.6% cold read;
+// NOT gear or core). So a scope-lock unit's staticAtk = REFERENCE_ATK[class] + its max bond ATK
+// (Attacker Tetra +1640 → 119,667; Attacker Pilgrim +2340 → 120,367). sanityCheck adds the expected
+// bond ATK before comparing, and the "same-class ⇒ identical" invariant is now
+// same-CLASS-AND-MANUFACTURER (relationship legitimately differentiates same-class units by manufacturer).
 export const REFERENCE_ATK: Record<NikkeClass, number> = {
   Attacker: 118027,
   Supporter: 98367,
@@ -54,21 +56,25 @@ export const REFERENCE_ATK: Record<NikkeClass, number> = {
 /**
  * Assert a sim result matches the scope-lock reference. Catches config drift (wrong core
  * level / gear) and the "per-unit ATK" misread. Returns a list of issues (empty = OK).
+ * The reference is REFERENCE_ATK[class] + the unit's MAX relationship ATK (default bond level).
  */
 export function sanityCheck(chars: any[], result: any): string[] {
   const issues: string[] = [];
-  const byClass: Record<string, number[]> = {};
+  const byGroup: Record<string, number[]> = {};
   result.units.forEach((u: any, i: number) => {
     const cls = chars[i].class as NikkeClass;
-    const ref = REFERENCE_ATK[cls];
+    const relAtk = relationshipBonus(cls, chars[i].manufacturer ?? null).atk;
+    const ref = REFERENCE_ATK[cls] + relAtk;
     const atk = u.staticAtk;
     if (ref && Math.abs(atk - ref) / ref > 0.02) {
-      issues.push(`${chars[i].slug} (${cls}): staticAtk ${atk} vs scope-lock reference ${ref} (${((atk / ref - 1) * 100).toFixed(1)}%) — CONFIG DRIFT? (check core level / gear)`);
+      issues.push(`${chars[i].slug} (${cls}): staticAtk ${atk} vs scope-lock reference ${ref} (=base ${REFERENCE_ATK[cls]} + bond ${relAtk}) (${((atk / ref - 1) * 100).toFixed(1)}%) — CONFIG DRIFT? (check core level / gear)`);
     }
-    (byClass[cls] ??= []).push(atk);
+    // group by class AND manufacturer: relationship makes same-class units of DIFFERENT
+    // manufacturers legitimately differ, but same-class-same-manufacturer must still be identical.
+    (byGroup[`${cls}|${chars[i].manufacturer ?? '—'}`] ??= []).push(atk);
   });
-  for (const [cls, atks] of Object.entries(byClass)) {
-    if (new Set(atks).size > 1) issues.push(`${cls}: same-class units have DIFFERENT staticAtk ${[...new Set(atks)]} — base stats are class-based, this should be impossible`);
+  for (const [group, atks] of Object.entries(byGroup)) {
+    if (new Set(atks).size > 1) issues.push(`${group}: same class+manufacturer units have DIFFERENT staticAtk ${[...new Set(atks)]} — base stats + bond are class×manufacturer, this should be impossible`);
   }
   return issues;
 }

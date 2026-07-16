@@ -28,6 +28,17 @@ const TREASURE_SYNERGY_IDS: Record<string, number> = {
   moran: 200,
 };
 
+// Overspec units: their relationship (bond) bonus follows a DIFFERENT class-tier than their
+// nominal manufacturer, so the owner's class×manufacturer relationship matrix keys them on a
+// distinct "<Manufacturer> Overspec" bucket. We append " Overspec" to the synced manufacturer
+// for exactly these slugs. (owner, 2026-07-16; open-questions U18.)
+const OVERSPEC_SLUGS = new Set<string>([
+  'mihara-bonding-chain', // Missilis → "Missilis Overspec"
+  'rapi-red-hood',        // Elysion  → "Elysion Overspec"
+  'anis-star',            // Tetra    → "Tetra Overspec"
+  'neon-vision-eye',      // Missilis → "Missilis Overspec"
+]);
+
 // Second-stage roster prune (DECISIONS 2026-07-14): the supported roster is the
 // enikk-proven list — the "All raids — NIKKE union" of the top-100 ranker teams,
 // mirrored machine-readably in data/enikk-supported.json (regenerated with the MD
@@ -58,7 +69,10 @@ async function main() {
   await client.connect();
 
   const { rows } = await client.query(
-    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug, aliases from nikke_characters`
+    // ORDER BY id: the DB returns rows in non-deterministic order otherwise, which churns the
+    // whole characters.json on every sync (a 2000-line reorder that buries the real change).
+    // Deterministic id order → syncs diff cleanly (2026-07-16).
+    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug, aliases from nikke_characters order by id`
   );
   const metaRow = await client.query(
     `select value from bot_meta where key = 'nikke_level_multiplier'`
@@ -127,8 +141,13 @@ async function main() {
       // Manufacturer (Elysion/Missilis/Tetra/Pilgrim/Abnormal) — from the DB attributes blob.
       // Drives the relationship (bond) ATK bonus, which is a class×manufacturer stat the owner
       // maintains as a matrix (Pilgrims cap higher). Was previously unmodeled → the ~1.5-2% "cold"
-      // read across scope-lock units (open-questions U18).
-      manufacturer: a.manufacturer ?? null,
+      // read across scope-lock units (open-questions U18). Overspec units get " Overspec" appended
+      // so the matrix can bucket them separately.
+      manufacturer: a.manufacturer
+        ? OVERSPEC_SLUGS.has(row.id)
+          ? `${a.manufacturer} Overspec`
+          : a.manufacturer
+        : null,
       normalAttackMultiplier: a.normalAttackMultiplier ?? api?.normal_attack_multiplier ?? 0,
       coreAttackMultiplier: a.coreAttackMultiplier ?? api?.core_attack_multiplier ?? 200,
       ammo: a.ammo ?? api?.ammo ?? 60,

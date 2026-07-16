@@ -75,6 +75,10 @@ export interface SimConfig {
   // MIDDLE character always holds camera focus unless a run says otherwise. Set for
   // recorded runs where a different unit held focus.
   focusSlug?: string;
+  // Relationship (bond) level applied to ALL units this run (per-unit PreparedUnit.relationshipLevel
+  // overrides). Undefined → each unit uses its manufacturer's MAX bond level (scope-lock basis, and
+  // the web default). See src/relationship.ts, open-questions U18.
+  relationshipLevel?: number;
   // Monte Carlo mode: when set, crit and core-hit rolls are sampled per instance
   // (full bonus or nothing) instead of expectation-folded, the boss's range-band
   // transition times jitter by up to ±2s, and burst-chain cast gaps jitter — matching

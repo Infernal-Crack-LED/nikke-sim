@@ -686,3 +686,38 @@ lives. Newest first within each section.
   counts (measured); brid-silent-track S2 rider = every 5th PULL, fixed 673,819/1,010,728 (675.00% exact
   at her measured term); isabel S2 rider = time-based ~14.7s (her baseline fixed accordingly); the
   in-fight ATK term reads ~+1.6% above the scope-lock static on all three SG probes (U18, open).
+- **(2026-07-16) Relationship (bond) bonus is now MODELED — a flat class×manufacturer ATK/HP stat, default max.**
+  The sim read ~1.5-2% cold across scope-lock units (open-questions U18); the owner identified the cause
+  as the unmodeled relationship (bond) bonus. It is a flat stat set by two things: the unit's MANUFACTURER
+  fixes the max bond level (Pilgrim/Overspec 40, Elysion/Missilis/Tetra/Abnormal 30) and the CLASS picks the
+  HP/ATK/DEF column at that level (in-game bond table, data/relationship-bonus.json). Verified: the owner's
+  per-unit adds equal the table at the manufacturer max EXACTLY (L40 Attacker ATK 2340 = Pilgrim isabel/
+  scarlet(AR); L40 Supporter 1950 = Pilgrim nayuta; L30 Attacker 1640 = Tetra noir; L30 Defender ATK 1094 +
+  HP 45097 = maiden). This DEFINITIVELY closes the core-8 and OL0-gear hypotheses (both desk-eliminated:
+  core maxes at 7 and is validated by the 2026-07-13 120,143 read; base5 gear stands — U18 does NOT reopen
+  the 2026-07-14 gear ruling). IMPLEMENTATION: `manufacturer` synced into characters.json (sync.ts, from the
+  DB attributes; Overspec units — mihara-bonding-chain/rapi-red-hood/anis-star/neon-vision-eye — get
+  " Overspec" appended → the 40-cap bucket); `src/relationship.ts` computes the bonus; the engine adds it to
+  staticAtk + maxHp in the unit build, driven by `relationshipLevel` (SimConfig + per-unit PreparedUnit),
+  DEFAULT = the manufacturer max (so scope-lock and every harness get max; the web defaults max and exposes a
+  per-unit input). Regression snapshot regenerated (all-green, no FB-count or measured-truth assert changed);
+  board warms ~+1.4-2%. Faithful side-effect logged: the maxwell "2 highest-ATK allies" S1 buff correctly
+  retargets maxwell→liberalio (Pilgrim now genuinely top-ATK, was a degenerate tie) → maxwell −21%/liberalio
+  +31%. FOLLOW-UP: recalibrate the noir-set SG landing table at the corrected term (it over-shoots now — the
+  U17 coupling) — DONE 2026-07-16, see the next entry. DONE 2026-07-16: isabel/brid-silent-track baseline
+  coefficients reverted to kit values (term now correct via relationship); "UC" was an owner typo (dropped).
+- **(2026-07-16) SG landing table BOND-TERM RECALIBRATED — uniform ×0.9863, the coupling to the bond bonus
+  above.** The noir counter-reconciliation that SET `SG_LANDING_BY_BAND` (docs/probe-data/noir-solo-recon.json)
+  reconciled real 64.87M against a sim WITHOUT the relationship (bond) bonus (staticAtk 118027). Adding bond
+  raises noir's ATK **+1.39% (measured two ways — staticAtk 118027→119667 = the total uplift 1.391% to three
+  decimals)**, which scales her pure-SG-spray total linearly, so the base5-calibrated table over-shot by the
+  same amount: **noir solo 1.006→1.020** (verified in-sim). Corrected by a UNIFORM scalar 118027/119667 =
+  0.9863 on every band — this undoes ONLY the term change and preserves the SHAPE (U17 HOLD: the class table
+  stands; the far ~0.66 candidate is orthogonal and NOT folded in). **near 0.90→0.888 / mid 1.0→0.986 /
+  far 0.75→0.74 / midfar 0.90→0.888**; noir solo restored to its pre-bond point (1.006, verified). Board:
+  SG units cool ~0.8–1.6% to cancel the bond warming (noir burst comps 1.053→1.040, dorothy-serendipity
+  1.005→0.997, naga 1.191→1.175) while non-SG units keep the +1.39% — exactly the intended net (SG units
+  were calibrated via the table, so their board positions are ~unchanged; the bond warms the cold non-SG
+  board). Regression regenerated (7 SG-unit total drifts ≤1.23% + second-order gauge-timing shifts on
+  teammates; NO FB-count/measured-truth assert changed), verify.sh green. `ENV.SGLANDING='prebond'` reverts
+  the old table for A/B. Evidence: noir-solo-recon.json; measurement in-sim; open-questions U18.

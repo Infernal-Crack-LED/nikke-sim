@@ -104,7 +104,9 @@ export function DpsChartTab() {
       <h2>DPS Rankings</h2>
       <p className='muted'>
         Top-10 B3 carries by DPS under standardized control frameworks, 180s fight length.
-        Pick any B3 below to append its DPS and rank to every chart.
+        Scores are normalized to the chart’s #1 (rank 1 = 1.00; each row = its DPS ÷ the #1’s
+        DPS, so 0.95 ≈ 95% of the top unit’s damage; hover a score for the raw DPS). Pick any B3
+        below to append its score and rank to every chart.
       </p>
 
       <details className='dpschart-frameworks'>

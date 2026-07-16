@@ -165,11 +165,15 @@ Details: **[auto-play.md](auto-play.md)**.
   (a transition colliding with a chain). Everywhere else, **full-burst counts are
   cooldown/chain arithmetic and deterministic run-to-run** — the graded comps are pinned
   as exact asserts in `scripts/regression.ts`.
-- **SG pellet landing per band = near 0.90 / mid 1.0 / far 0.75 / midfar 0.90** (MEASURED 2026-07-15 via
+- **SG pellet landing per band = near 0.888 / mid 0.986 / far 0.74 / midfar 0.888** (MEASURED 2026-07-15 via
   noir's running-damage-counter reconciliation — the arbiter over two visual reads that both under-counted a
-  dense cluster of ~10 overlapping identical pellet numbers as ~6). ~all 10 pellets land close on the large
-  boss; the fall-off is only at far. `SG_LANDING_BY_BAND` scales SG shot damage + gauge. Both clean SG solos
-  reconcile (noir/dorothy ratio 1.01). Single-boss (large hitbox) — do not generalize to small-hitbox bosses.
+  dense cluster of ~10 overlapping identical pellet numbers as ~6; BOND-TERM RECALIBRATED 2026-07-16). ~all 10
+  pellets land close on the large boss; the fall-off is only at far. `SG_LANDING_BY_BAND` scales SG shot damage
+  + gauge. Both clean SG solos reconcile (noir/dorothy ratio 1.01). Single-boss (large hitbox) — do not
+  generalize to small-hitbox bosses. **2026-07-16 recalibration:** the noir reconciliation that SET this table
+  used a sim WITHOUT the relationship (bond) bonus; adding bond raised noir's ATK +1.39% and the base5-calibrated
+  table over-shot by the same amount (noir solo 1.006→1.020). Corrected by a UNIFORM ×0.9863 (= base5/bond ATK)
+  on every band — the table SHAPE is unchanged (U17 HOLD: the class table stands). Was 0.90/1.0/0.75/0.90.
   NB an earlier "0.60 per-band, flash-count-validated" read was SUPERSEDED (visual cluster under-read). The SG
   CORE rate (0.072) is a popup RATIO over the same clusters and is likely INFLATED (whites under-read, cores
   spared) → re-derive from the counter. open-questions A26; DECISIONS (FINAL entry).

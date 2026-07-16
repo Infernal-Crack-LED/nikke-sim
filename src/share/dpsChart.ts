@@ -6,11 +6,12 @@ import { type Canvas2DLike, roundRect, FONT, ELEMENT_COLORS, PORTRAIT_CROP_TOP }
 
 export type { Canvas2DLike } from './teamCard.js';
 
-const fmt = (n: number) =>
-  n >= 1e9 ? `${(n / 1e9).toFixed(2)}B`
-    : n >= 1e6 ? `${(n / 1e6).toFixed(2)}M`
-      : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K`
-        : n.toFixed(0);
+// Relative-normalized score against the chart's #1 (the top/longest bar): the #1 is
+// 1.000, every other row = its dps ÷ the #1's dps (so 0.95 = 95% of the top unit's
+// damage). 3 decimals to keep tightly-clustered ranks distinguishable. Shared by the
+// on-page chart and the PNG so both show identical labels.
+export const relScore = (dps: number, top: number): string =>
+  (top > 0 ? dps / top : 0).toFixed(3);
 
 export interface DpsBar {
   name: string;
@@ -68,7 +69,7 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   }
   ctx.fillStyle = '#8b93a3';
   ctx.font = `400 13px ${FONT}`;
-  ctx.fillText('DPS · 180s · nikke-sim', padX, 102);
+  ctx.fillText('relative to #1 DPS (1.00 = top) · 180s · nikke-sim', padX, 102);
 
   const maxDps = Math.max(...data.bars.map((b) => b.dps), 1);
   const hasPortraits = data.bars.some((b) => b.img);
@@ -120,11 +121,11 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
     roundRect(ctx, barX, y + 16, Math.max(6, (b.dps / maxDps) * barW), 20, 10);
     ctx.fill();
 
-    // value
+    // value: score relative to the #1 (top) bar
     ctx.textAlign = 'right';
     ctx.fillStyle = '#c9cede';
     ctx.font = `600 16px ${FONT}`;
-    ctx.fillText(fmt(b.dps), W - padX, y + 31);
+    ctx.fillText(relScore(b.dps, maxDps), W - padX, y + 31);
   });
 
   // compare-unit annotation
@@ -145,7 +146,7 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
     ctx.textAlign = 'right';
     ctx.fillStyle = '#c9cede';
     ctx.font = `600 16px ${FONT}`;
-    ctx.fillText(fmt(c.dps), W - padX, y + 32);
+    ctx.fillText(relScore(c.dps, maxDps), W - padX, y + 32);
   }
 
   // footer

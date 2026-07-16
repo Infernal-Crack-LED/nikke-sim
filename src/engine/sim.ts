@@ -17,6 +17,7 @@ import {
 import { resolveSkills } from '../skills/index.js';
 import type { PreparedUnit } from '../prepare.js';
 import gaugeTable from '../../data/gauge-per-shot.json' with { type: 'json' };
+import { relationshipBonus } from '../relationship.js';
 
 // Debug taps read env vars only under Node; in the browser bundle this is an empty object.
 const ENV: Record<string, string | undefined> =
@@ -161,12 +162,22 @@ const UNHITTABLE_FRAMES = 60;
 // near 0.60 is a LOWER BOUND (residual invisible-X; the global total caps it ≤0.7-0.8); all values carry
 // ±0.10-0.15 systematic beyond Wilson CIs, single-boss (transferable finding is QUALITATIVE: near<1.0,
 // range>0.3, ~flat). open-questions A26. ENV.SGLANDING='legacy' reverts to the old near1.0/else0.3 for A/B.
+// BOND-TERM RECALIBRATION (2026-07-16, open-questions U18 / U17 coupling): the noir counter-reconciliation
+// that SET this table (docs/probe-data/noir-solo-recon.json) reconciled real 64.87M against a sim WITHOUT
+// the relationship (bond) bonus (staticAtk 118027). The bond bonus now raises noir's ATK +1.39% (measured,
+// scales her pure-SG total linearly), so the base5-calibrated table over-shot by the same +1.39% (noir solo
+// 1.006→1.020). Fix = a UNIFORM scalar 118027/119667 = 0.9863 on every band (undoes the term change only;
+// the SHAPE stands per U17 HOLD — the class table is not re-litigated). {0.9,1.0,0.75,0.9} × 0.9863 →
+// {0.888,0.986,0.740,0.888}; restores noir to its pre-bond calibration point (~1.006). The far-band SHAPE
+// deficit (staged far~0.66, U17) is orthogonal and NOT folded in here.
 const SG_LANDING_BY_BAND: Record<string, number> =
   ENV.SGLANDING === 'legacy'
     ? { near: 1.0, mid: 0.3, far: 0.3, midfar: 0.3 }
     : ENV.SGLANDING === 'popupcount'
       ? { near: 0.6, mid: 0.6, far: 0.45, midfar: 0.55 }
-      : { near: 0.9, mid: 1.0, far: 0.75, midfar: 0.9 };
+      : ENV.SGLANDING === 'prebond' // the pre-2026-07-16 base5-calibrated table (A/B)
+        ? { near: 0.9, mid: 1.0, far: 0.75, midfar: 0.9 }
+        : { near: 0.888, mid: 0.986, far: 0.74, midfar: 0.888 };
 
 // element → the element it beats
 const BEATS: Record<Element, Element> = {
@@ -369,14 +380,23 @@ export function runSim(
     const extra = prepared?.[idx]?.extraStats ?? [];
     const flatAtk = extra.filter((e) => e.stat === 'flatAtk').reduce((s, e) => s + e.value, 0);
     const useDoll = prepared?.[idx]?.doll ?? cfg.doll;
+    // Relationship (bond) bonus — a flat class×manufacturer stat present in every recording
+    // (open-questions U18). Level: per-unit override → cfg default → the manufacturer's max
+    // (undefined everywhere = max, which is the scope-lock basis + the web default).
+    const rel = relationshipBonus(
+      char.class,
+      char.manufacturer,
+      prepared?.[idx]?.relationshipLevel ?? cfg.relationshipLevel,
+    );
       const state: UnitState = {
       idx,
       char,
-      staticAtk: atk + flatAtk,
+      staticAtk: atk + flatAtk + rel.atk,
       maxHp:
         characterStat(char.baseStats, mult, 'hp', cfg.level, grade, core) +
         gearHp(char.class, unitOl) +
-        (useDoll ? DOLL_HP : 0),
+        (useDoll ? DOLL_HP : 0) +
+        rel.hp,
       critRate: char.baseStats.critRate ?? 15,
       critDamage: char.baseStats.critDamage ?? 150,
       doll: useDoll ? dollBonus(char.weapon) : {},

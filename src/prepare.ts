@@ -19,6 +19,8 @@ export interface PreparedUnit {
   lambdaStage?: 1 | 2 | 3; // Λ units only: burst ONLY at this stage (Red Hood "operating as BX")
   stars?: number;  // per-unit Limit Break stars / grade 0-3 (falls back to cfg.copies)
   core?: number;   // per-unit Core enhancement 0-7 (falls back to cfg.copies)
+  relationshipLevel?: number; // per-unit bond level (falls back to cfg.relationshipLevel, then the
+                              // unit's manufacturer max). See src/relationship.ts, open-questions U18.
   mode?: string;   // selected kit mode (from the override's `modes`; default = first)
   mpPriority?: boolean; // stackedNuke units (Maiden:IR): jump the burst queue at max MP stacks
   burstGate?: 'syncWithFocus' | 'everyOther'; // sync: only cast when the focus unit bursts; everyOther: never take stage 3 twice in a row (Solo framework)
@@ -43,6 +45,7 @@ export interface UnitOptions {
   lambdaStage?: 1 | 2 | 3;
   stars?: number; // Limit Break stars / grade 0-3
   core?: number;  // Core enhancement 0-7
+  relationshipLevel?: number; // bond level (undefined = the manufacturer's max)
   mode?: string;  // kit mode (must match an entry in the override's `modes`)
   mpPriority?: boolean;
   burstGate?: 'syncWithFocus' | 'everyOther'; // sync: only cast when the focus unit bursts; everyOther: never take stage 3 twice in a row (Solo framework)
@@ -145,6 +148,7 @@ export function prepareUnit(
     lambdaStage: opts?.lambdaStage,
     stars: opts?.stars,
     core: opts?.core,
+    relationshipLevel: opts?.relationshipLevel,
     mode,
     mpPriority: opts?.mpPriority,
     burstGate: opts?.burstGate,

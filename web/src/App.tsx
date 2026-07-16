@@ -13,6 +13,7 @@ import type {
 } from 'react';
 import { runSim, type SimResult } from '../../src/engine/sim';
 import { prepareTeam, type UnitOptions } from '../../src/prepare';
+import { maxBondLevel } from '../../src/relationship';
 import type { OverrideFile } from '../../src/skills/index';
 import type {
   DataFile,
@@ -369,6 +370,7 @@ interface SlotState {
   olElem: string; // total Elemental Damage % from OL lines (textbox)
   olAtk: string; // total ATK % from OL lines (textbox)
   olExtra: { type: string; value: string }[]; // additional OL lines
+  relationshipLevel: string; // bond level (textbox); blank = the manufacturer's max
 }
 
 const STAR_LEVELS = [0, 1, 2, 3] as const;
@@ -425,7 +427,16 @@ function buildOlLines(
 // SlotState (the per-character card's state) → engine UnitOptions. Shared by the
 // Sim tab and the DPS test's variable units.
 function slotToUnitOptions(s: SlotState): UnitOptions {
+  // bond level: parse the textbox → clamp to [0, manufacturer max]. Blank / NaN →
+  // undefined so the engine falls back to the manufacturer max (scope-lock basis).
+  const maxBond = maxBondLevel(s.slug ? data.characters[s.slug].manufacturer : null);
+  const bondRaw = s.relationshipLevel.trim();
+  const bondNum = bondRaw === '' ? NaN : Number(bondRaw);
+  const relationshipLevel = Number.isFinite(bondNum)
+    ? Math.max(0, Math.min(Math.round(bondNum), maxBond))
+    : undefined;
   return {
+    relationshipLevel,
     cube:
       s.cubeId === 'none'
         ? undefined
@@ -462,6 +473,10 @@ const defaultSlot = (slug: string | null): SlotState => ({
   olElem: '',
   olAtk: '',
   olExtra: [],
+  // show the unit's manufacturer max by default; blank for an empty slot
+  relationshipLevel: slug
+    ? String(maxBondLevel(data.characters[slug].manufacturer))
+    : '',
 });
 
 // remember the last team + loadout across refreshes
@@ -483,7 +498,9 @@ function loadStoredTeam(): SlotState[] | null {
         s && typeof s.slug === 'string' && data.characters[s.slug]
           ? s.slug
           : null;
-      return { ...defaultSlot(null), ...s, slug };
+      // base on defaultSlot(slug) so teams saved before relationshipLevel existed
+      // pick up the unit's manufacturer max instead of a blank field
+      return { ...defaultSlot(slug), ...s, slug };
     });
   } catch {
     return null;
@@ -1000,7 +1017,8 @@ export function App({ user }: { user: AuthUser | null }) {
 
   // "scope lock" preset: no cubes, no doll, Base 5 gear, 3★/7 core, 400 synchro
   const applyScopeLock = () => {
-    setAll({ cubeId: 'none', doll: false, ol: 'base5', stars: 3, core: 7 });
+    // relationshipLevel '' → engine uses each unit's manufacturer max (scope-lock basis)
+    setAll({ cubeId: 'none', doll: false, ol: 'base5', stars: 3, core: 7, relationshipLevel: '' });
     setLevel('400');
   };
 
@@ -1863,6 +1881,7 @@ export function App({ user }: { user: AuthUser | null }) {
     hidePortrait?: boolean,
   ) => {
     const c = slot.slug ? data.characters[slot.slug] : null;
+    const maxBond = maxBondLevel(c?.manufacturer ?? null); // 0 = no bond table
     // clicking the portrait opens+focuses this card's nikke picker (used when the
     // portrait isn't a drag handle — compact expanded card, DPS tab)
     const focusPicker = (e: ReactMouseEvent) => {
@@ -1900,7 +1919,18 @@ export function App({ user }: { user: AuthUser | null }) {
             ?
           </div>
         )}
-        <CharPicker slot={slot} onPick={(slug) => onChange({ slug })} />
+        <CharPicker
+          slot={slot}
+          onPick={(slug) =>
+            // reset bond to the newly-picked unit's manufacturer max
+            onChange({
+              slug,
+              relationshipLevel: String(
+                maxBondLevel(data.characters[slug].manufacturer),
+              ),
+            })
+          }
+        />
         {c?.burst === 'Λ' && (
           <div className='pills small'>
             {([0, 1, 2, 3] as const).map((st) => (
@@ -2005,6 +2035,26 @@ export function App({ user }: { user: AuthUser | null }) {
             …
           </button>
         </div>
+        {c && maxBond > 0 && (
+          <>
+            <div className='card-group-label'>bond</div>
+            <div className='pills small'>
+              <label>
+                <span className='muted pill-label'>Lvl</span>
+                <input
+                  className='num'
+                  value={slot.relationshipLevel}
+                  placeholder={String(maxBond)}
+                  title={`Relationship (bond) level — blank uses the manufacturer max (${maxBond})`}
+                  onChange={(e) =>
+                    onChange({ relationshipLevel: e.target.value })
+                  }
+                />
+                <span className='muted'> / {maxBond}</span>
+              </label>
+            </div>
+          </>
+        )}
         {slot.dupeCustom && (
           <>
             <div className='pills small' title='Limit Break stars'>

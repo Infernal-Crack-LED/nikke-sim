@@ -19,6 +19,7 @@ scratchpad/
 
 docs/probes
 docs/handoffs
+docs/data/ranks
 # Claude harness (proprietary — skills, hooks, settings, root handoff)
 .claude/
 CLAUDE.md

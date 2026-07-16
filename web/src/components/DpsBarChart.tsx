@@ -3,6 +3,7 @@
 // The shareable PNG is rendered separately via src/share/dpsChart.ts.
 import { useEffect, useState } from 'react';
 import { ELEMENT_COLORS } from '../../../src/share/teamCard';
+import { relScore } from '../../../src/share/dpsChart';
 import type { BarEntry } from '../dpschartData';
 import { portraitThumb } from '../portraitThumb';
 
@@ -91,7 +92,7 @@ export function DpsBarChart({ title, subtitle, bars, compare, onShareImage, onSh
                   style={{ width: `${Math.max(2, (b.dps / max) * 100)}%`, background: ELEMENT_COLORS[b.element] ?? '#9aa3b2' }}
                 />
               </span>
-              <span className='dpschart-val'>{fmt(b.dps)}</span>
+              <span className='dpschart-val' title={`${fmt(b.dps)} DPS`}>{relScore(b.dps, max)}</span>
             </div>
           ))}
         </div>
@@ -101,7 +102,7 @@ export function DpsBarChart({ title, subtitle, bars, compare, onShareImage, onSh
         <div className='dpschart-compare'>
           <span className='dpschart-name'>{compare.name}</span>
           <span className='dpschart-rankinfo'>rank {compare.rank} / {compare.total}</span>
-          <span className='dpschart-val'>{fmt(compare.dps)}</span>
+          <span className='dpschart-val' title={`${fmt(compare.dps)} DPS`}>{relScore(compare.dps, max)}</span>
         </div>
       )}
     </div>

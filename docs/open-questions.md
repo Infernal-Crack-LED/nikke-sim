@@ -8,7 +8,36 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
-### U18 — Sim ATK term is ~+1.63% low GLOBALLY: damage reads match OL0, not base5 — re-opens the 2026-07-14 gear switch (2026-07-16, Fable-checked, owner-pending)
+### U18 — Sim ATK term ~+1.63% low = the unmodeled RELATIONSHIP (bond) bonus — RESOLVED + IMPLEMENTED 2026-07-16 (owner-identified)
+**CAUSE (owner, 2026-07-16): the relationship (bond) ATK bonus was unmodeled.** It is a flat
+class×MANUFACTURER stat present in every recording: the manufacturer sets the max bond level
+(Pilgrim/Overspec cap 40, Elysion/Missilis/Tetra/Abnormal cap 30) and the class picks the stat.
+The owner's per-unit numbers matched the in-game bond table EXACTLY at the manufacturer max level —
+e.g. L40 Attacker ATK 2340 (Pilgrim isabel + scarlet [`scarlet`, AR]), L40 Supporter 1950 (Pilgrim nayuta), L30
+Attacker 1640 (Tetra noir), L30 Defender ATK 1094 + HP 45097 (maiden, both confirmed). This is why
+the elevation looked "uniform" (most units are 30-cap ⇒ +1640/+1.39%) yet isabel/scarlet (Pilgrim
+40-cap ⇒ +2340/+1.98%) read higher — NOT core, NOT gear tier (those hypotheses were desk-eliminated;
+core maxes at 7 and core-7 ×1.14 is validated by the 2026-07-13 120,143 read; base5 gear is confirmed).
+The residual ~0.25% over the flats is measurement-basis slack (bossDef ±0.12% + coefficient noise).
+**IMPLEMENTED:** `src/relationship.ts` (data helper) + `data/relationship-bonus.json` (max levels +
+per-level per-class stats, from the in-game bond table) + engine applies it in the unit build
+(staticAtk + maxHp, sim.ts) driven by `SimConfig.relationshipLevel` / `PreparedUnit.relationshipLevel`,
+defaulting to the manufacturer MAX (= the scope-lock basis + the web default). `manufacturer` is now
+synced into characters.json (sync.ts, from the DB attributes blob; Overspec units get " Overspec"
+appended → the 40-cap bucket). Regression snapshot regenerated (all-green): the board warms ~+1.4-2%;
+notable faithful side-effect — the D:KW/takina/milk/maxwell/liberalio comp's "2 highest-ATK allies"
+buff (maxwell S1) correctly retargets from maxwell to liberalio (Pilgrim, now genuinely top-ATK; was
+a degenerate 118,027 tie) → maxwell −21% / liberalio +31%, an ATK-ordering flip, not a bug.
+FOLLOW-UP: the SG landing table + other ⚑ values were calibrated at the OLD (no-relationship)
+term, so they over-shot (noir solo 1.006→1.020). **RESOLVED 2026-07-16 (DECISIONS): `SG_LANDING_BY_BAND`
+recalibrated by a UNIFORM ×0.9863 (= base5/bond ATK, the measured +1.39% uplift) → near 0.888/mid 0.986/
+far 0.74/midfar 0.888; noir solo restored to its pre-bond point 1.006 (verified in-sim), the SHAPE
+preserved (U17 HOLD). SG board units cool ~0.8–1.6% to cancel the bond warming, non-SG keep the +1.39%.**
+DONE 2026-07-16: isabel/brid-silent-track staging baselines
+reverted to kit coefficients (isabel rider 174.49→170.58; brid stays 675% — term now correct via
+relationship). The four Overspec units are final (mihara-bonding-chain/rapi-red-hood/anis-star/
+neon-vision-eye); "UC" was an owner typo, dropped.
+--- ORIGINAL DIAGNOSIS (superseded by the owner's identification above; kept for the evidence trail) ---
 Diagnosed at the desk from EXISTING reads (no new video). The sim's scope-lock static ATK
 (Attacker 118,027 / Supporter 98,367 / Defender 78,707, base5 gear) reads ~+1.63% below the in-fight
 term measured in FIVE reads spanning THREE weapon classes and ALL THREE unit classes — so it is GLOBAL:
