@@ -1,5 +1,15 @@
 [
   {
+    "date": "2026-07-16",
+    "title": "New: Roster Sim + sharper portraits",
+    "notes": [
+      "New Roster Sim tab (right next to Team Sim): enter up to five teams of five and sim them all at once under one shared loadout + boss profile. You get each team's damage, a damage bar per team, and the roster total — with each nikke usable only once across the whole roster, matching the solo-raid rule.",
+      "The Solo-Raid Roster Generator now has a \"Copy to Roster Sim\" button, so you can take its five teams, tweak them, and re-sim.",
+      "Logged in? You can now save and load whole rosters, not just single teams.",
+      "Sharper unit portraits across the team and roster views (and the pick-a-slot grid), and the roster cards now center neatly when the last row isn't full. The old \"Sim\" tab is now called \"Team Sim\"."
+    ]
+  },
+  {
     "date": "2026-07-15",
     "title": "UI refresh + share images now use unit portraits",
     "notes": [

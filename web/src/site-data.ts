@@ -40,7 +40,7 @@ export const dev = {
 export const socials: Social[] = [
   {
     label: 'Maiden',
-    href: 'https://discord.gg/3Yx4pHB88R',
+    href: 'https://discord.com/discovery/applications/1523719703950790946',
     brand: '#0b0e14',
     icon: { kind: 'img', src: '/maiden.gif' },
   },

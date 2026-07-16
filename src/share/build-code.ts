@@ -40,6 +40,7 @@ export interface Build {
   g: GlobalsBuild;
   s: SlotBuild[]; // exactly 5
   blocked?: string[]; // don't-own / excluded slugs (Team/Roster generator link)
+  roster?: (string | null)[][]; // Roster Sim: 5 teams × 5 slugs (shared loadout in `s`)
 }
 
 export const BUILD_VERSION = 1;

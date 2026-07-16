@@ -54,6 +54,17 @@ await shot('roster-desktop-results', { path: '/roster', width: 1180, actions: ge
 await shot('team-mobile-results', { path: '/team', width: 390, actions: genTeam });
 await shot('team-desktop-results', { path: '/team', width: 1180, actions: genTeam });
 
+// Roster Sim: empty input grid (mobile) + the full copy-from-generator → sim flow
+await shot('rostersim-mobile-empty', { path: '/rostersim', width: 390 });
+await shot('rostersim-desktop', { path: '/roster', width: 1180, actions: async (page) => {
+  await genRoster(page);
+  await page.getByRole('button', { name: /Copy to Roster Sim/ }).click();
+  await page.waitForSelector('.roster-input', { timeout: 5000 });
+  await page.getByRole('button', { name: /Sim roster/ }).click();
+  await page.waitForSelector('.roster-result .roster-cards', { timeout: 30000 });
+  await page.waitForTimeout(400);
+} });
+
 await browser.close();
 console.log('wrote:\n' + shots.join('\n'));
 process.exit(0);

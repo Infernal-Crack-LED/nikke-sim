@@ -138,7 +138,10 @@ input.num {
   border: 1px solid var(--border); border-radius: 8px; background: var(--panel2);
   touch-action: pan-y; /* vertical swipe scrolls the page; sideways drag reorders */
 }
-.team-chip img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+.team-chip img {
+  width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none;
+  object-position: center var(--portrait-crop-top); /* same framing as .portrait/.tp-chip */
+}
 .team-chip .chip-empty { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 22px; }
 .team-chip .chip-num {
   position: absolute; top: 2px; left: 3px; font-size: 10px; color: var(--text);
@@ -262,9 +265,18 @@ input.num {
    stay 5-across (shrinking to fit) until 32px no longer fits, then snap to a 3:2
    split held at 32px. The 5/3 choice is measured in JS (TeamPortraits); the sizes
    live here. (Optimal Team result; reused by the Roster generator.) */
-.team-portraits { display: grid; gap: 4px; justify-content: start; margin-bottom: 10px; }
-.team-portraits.cols-5 { grid-template-columns: repeat(5, minmax(32px, 64px)); }
-.team-portraits.cols-3 { grid-template-columns: repeat(3, 32px); }
+.team-portraits { gap: 4px; margin-bottom: 10px; }
+/* 5-across: a content-aware grid (32–64px, left-aligned) */
+.team-portraits.cols-5 {
+  display: grid; grid-template-columns: repeat(5, minmax(32px, 64px)); justify-content: start;
+}
+/* 3:2: a fixed-width (exactly 3 chips) flex row so the offset last row (the 2)
+   centers under the 3 instead of sitting left-aligned */
+.team-portraits.cols-3 {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  width: calc(32px * 3 + 4px * 2);
+}
+.team-portraits.cols-3 .tp-chip { flex: 0 0 32px; width: 32px; }
 .tp-chip {
   position: relative; aspect-ratio: 1; min-width: 0; overflow: hidden;
   border: 1px solid var(--border); border-radius: 8px; background: var(--panel2);
@@ -289,20 +301,25 @@ input.num {
 .roster-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
 .roster-grid-row { display: flex; align-items: center; gap: 12px; }
 .roster-grid-row .rg-label { flex: 0 0 auto; min-width: 74px; font-size: 12px; }
-.roster-grid-row .team-portraits { flex: 1 1 auto; margin-bottom: 0; }
+.roster-grid-row .team-portraits { flex: 0 0 auto; margin-bottom: 0; }
+.rg-bar {
+  flex: 1 1 auto; min-width: 40px; height: 14px; overflow: hidden;
+  background: var(--panel2); border-radius: 7px;
+}
+.rg-bar span { display: block; height: 100%; background: var(--accent); border-radius: 7px; }
 .roster-grid-row .rg-dmg {
-  flex: 0 0 auto; margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums;
+  flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums;
 }
 .roster-grid-row .rg-dmg.big { font-size: 18px; color: var(--accent); }
 .roster-grid-row.total { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 2px; }
+.roster-grid-row.total .rg-dmg { margin-left: auto; }
 
-/* cards: centered; a 3:2 split (3 per row) whenever all 5 don't fit across */
-.roster-cards {
-  display: grid; justify-content: center; gap: 12px;
-  grid-template-columns: repeat(3, minmax(0, 260px));
-}
+/* cards: explicit rows of ≤3, each centered — so the partial last row (the 2 in
+   3:2) sits centered under the row above instead of left-aligned */
+.roster-cards { display: flex; flex-direction: column; gap: 12px; }
+.roster-cards-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .roster-card {
-  width: 100%; box-sizing: border-box; padding: 8px;
+  flex: 0 1 260px; box-sizing: border-box; padding: 8px;
   border: 1px solid var(--border); border-radius: 10px; background: var(--panel2);
 }
 .roster-card .card-group-label {
@@ -317,9 +334,28 @@ input.num {
 .roster-card-table td.share { width: 36px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
 .roster-card-table tr.adv-row td.nm { color: var(--accent); }
 
-/* roster cards stack (single centered column) once 3-across gets too tight */
-@media (max-width: 700px) {
-  .roster-cards { grid-template-columns: minmax(0, 360px); }
+/* Roster Sim: 5×5 pick-a-slot input grid + shared picker */
+.roster-input { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 12px; }
+.roster-input-row { display: flex; align-items: center; gap: 12px; }
+.roster-input-row .rg-label { flex: 0 0 auto; min-width: 56px; font-size: 12px; }
+.roster-slots {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+  flex: 1 1 auto; max-width: 380px;
+}
+.roster-slot { aspect-ratio: 1; } /* .team-chip supplies the frame/portrait */
+.roster-slot .chip-empty { font-size: 22px; color: var(--muted); }
+.roster-slot .chip-x {
+  position: absolute; top: 1px; right: 2px; z-index: 2;
+  min-width: 16px; height: 16px; line-height: 15px; text-align: center;
+  font-size: 12px; color: #fff; background: rgba(0,0,0,0.6); border-radius: 4px; cursor: pointer;
+}
+.roster-picker { max-width: 380px; margin-top: 2px; }
+.roster-sim-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+.roster-copy-btn { margin: 6px 0 10px; }
+.save-tag {
+  margin-left: 6px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--accent); border: 1px solid var(--accent); border-radius: 999px;
+  padding: 0 6px; font-weight: 600; vertical-align: middle;
 }
 
 /* Portrait / mobile: let content use the full screen width (a few px padding),
@@ -341,12 +377,18 @@ input.num {
      shrink below its content) so the balanced-grid hook measures the real width */
   .global .field { flex: 1 1 100%; min-width: 0; }
 
-  /* at-a-glance rows stack: team label + total on top, portraits below (the
-     portrait strip sizes itself 32–64px / snaps to 3:2 via TeamPortraits). */
+  /* Roster Sim input rows stack: team label on top, the 5 slots full-width below */
+  .roster-input-row { flex-wrap: wrap; }
+  .roster-input-row .roster-slots { flex-basis: 100%; max-width: 100%; }
+  .roster-picker { max-width: 100%; }
+
+  /* at-a-glance rows stack: label + damage bar + total on top, portraits below
+     (the portrait strip sizes itself 32–64px / snaps to 3:2 via TeamPortraits). */
   .roster-grid-row { flex-wrap: wrap; }
   .roster-grid-row .rg-label { order: 1; }
-  .roster-grid-row .rg-dmg { order: 2; margin-left: auto; }
-  .roster-grid-row .team-portraits { order: 3; flex-basis: 100%; }
+  .rg-bar { order: 2; }
+  .roster-grid-row .rg-dmg { order: 3; }
+  .roster-grid-row .team-portraits { order: 4; flex-basis: 100%; }
 }
 /* groups flow left-to-right and wrap, so adding a group grows the row sideways */
 .dps-groups-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }

@@ -37,6 +37,7 @@ import { solveDp as dollSolveDp, monteCarlo as dollMc, calibrateWeights as dollC
 import type { Calibration as DollCalibration, DpTable as DollDp, DollSummary } from '../../src/doll/policy';
 import { copyDpsChartImage } from './shareImage';
 import { TabDropdown, useMediaQuery } from './TabDropdown';
+import { usePortraitThumbs } from './usePortraitThumbs';
 import {
   shareTeamCard,
   shareRosterCard,
@@ -114,6 +115,7 @@ type CalcTab =
   | 'sim'
   | 'team'
   | 'roster'
+  | 'rostersim'
   | 'overload'
   | 'olsim'
   | 'doll'
@@ -122,7 +124,8 @@ type CalcTab =
   | 'charge';
 type TabGroup = 'sim' | 'tools';
 const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
-  { key: 'sim', label: 'Sim', group: 'sim' },
+  { key: 'sim', label: 'Team Sim', group: 'sim' },
+  { key: 'rostersim', label: 'Roster Sim', group: 'sim' },
   { key: 'dpschart', label: 'DPS Rankings', group: 'sim' },
   { key: 'dps', label: 'Custom DPS Rankings', group: 'sim' },
   { key: 'overload', label: 'Optimize Overload', group: 'sim' },
@@ -293,6 +296,8 @@ function TeamPortraits({
     ro.observe(el);
     return () => ro.disconnect();
   }, [slugs.length]);
+  // crisp, pre-downscaled + PORTRAIT_CROP_TOP-cropped thumbnails (max chip = 64px)
+  const thumbs = usePortraitThumbs(slugs.map((s) => data.characters[s]?.imageUrl), 64);
   return (
     <div ref={ref} className={`team-portraits cols-${cols}`}>
       {slugs.map((slug, i) => {
@@ -305,7 +310,7 @@ function TeamPortraits({
             title={c?.name ?? slug}
           >
             {c?.imageUrl ? (
-              <img src={c.imageUrl} alt={c?.name ?? slug} loading='lazy' />
+              <img src={thumbs[c.imageUrl] ?? c.imageUrl} alt={c?.name ?? slug} loading='lazy' />
             ) : (
               <span className='tp-init'>{(c?.name?.[0] ?? '?').toUpperCase()}</span>
             )}
@@ -320,6 +325,13 @@ function TeamPortraits({
 // advantaged-slug set for a generated team (used by the portrait strips/grids)
 const advSet = (t: TeamResult) =>
   new Set(t.units.filter((u) => u.advantaged).map((u) => u.slug));
+
+// split into rows of n (for centering a partial last row)
+function chunk<T>(arr: T[], n: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
+  return out;
+}
 
 // Balanced-wrap column count for a set of `count` inline items in a grid: one row
 // if they fit, otherwise the fewest EVEN rows (4→2:2 not 3:1, 6→3:3, 7→4:3). Width-
@@ -914,6 +926,13 @@ export function App({ user }: { user: AuthUser | null }) {
   const [calcBusy, setCalcBusy] = useState(false);
   const [teamResult, setTeamResult] = useState<TeamResult | null>(null);
   const [rosterResults, setRosterResults] = useState<TeamResult[] | null>(null);
+  // Roster Sim: 5 teams × 5 slugs (shared loadout), the active slot being picked,
+  // and the sim output (reuses rosterView).
+  const [rosterSim, setRosterSim] = useState<(string | null)[][]>(() =>
+    Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => null)),
+  );
+  const [rosterActive, setRosterActive] = useState<[number, number] | null>(null);
+  const [rosterSimResults, setRosterSimResults] = useState<TeamResult[] | null>(null);
   // Overload Calc: rank one carry's four free OL lines. Matrix mode auto-builds
   // the 8/12 control team from a matrix cell; custom mode pins one carry and pits
   // it against several hand-built support teams (one chart each).
@@ -1102,14 +1121,36 @@ export function App({ user }: { user: AuthUser | null }) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     }
   };
+  // Save a Roster Sim roster (25 units + shared loadout + boss options) to the same
+  // saved-teams store, tagged by the `roster` field in the build code.
+  const onSaveRoster = async () => {
+    const first = rosterSim.flat().find(Boolean);
+    const def = first ? `${data.characters[first]?.name ?? first} roster` : 'My roster';
+    const name = window.prompt('Save roster as:', def);
+    if (!name?.trim()) return;
+    try {
+      await saveTeam(name.trim(), encodeBuild({ ...buildFromState(), roster: rosterSim }));
+      setSavedFlash(true);
+      setTimeout(() => setSavedFlash(false), 1500);
+      if (showTeams) refreshTeams();
+    } catch (e) {
+      window.alert(`Save failed: ${(e as Error).message ?? e}`);
+    }
+  };
   const onLoadTeam = (t: SavedTeam) => {
     const b = decodeBuild(t.code);
     if (!b) {
       window.alert('This saved team is in an unrecognized format.');
       return;
     }
-    applyBuild(b);
+    applyBuild(b); // restores globals + the shared loadout (slot 1)
     setShowTeams(false);
+    if (b.roster) {
+      setRosterSim(normalizeRoster(b.roster));
+      setRosterSimResults(null);
+      setRosterActive(null);
+      selectTab('rostersim');
+    }
   };
   const onDeleteTeam = async (t: SavedTeam) => {
     if (!window.confirm(`Delete "${t.name}"?`)) return;
@@ -1416,6 +1457,74 @@ export function App({ user }: { user: AuthUser | null }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ---- Roster Sim: sim up to 5 user-entered teams at once (shared loadout) ----
+  const rosterSlugsPlaced = rosterSim.flat().filter((s): s is string => !!s);
+  const rosterAnyFilled = rosterSlugsPlaced.length > 0;
+  // full-roster grand total drives the shared display; each unit is unique across
+  // the roster (solo-raid rule) so the active slot's own pick is the only re-pick.
+  const assignRosterSlot = (ti: number, ui: number, slug: string | null) => {
+    setRosterSim((r) =>
+      r.map((team, t) => (t === ti ? team.map((s, u) => (u === ui ? slug : s)) : team)),
+    );
+    setRosterSimResults(null);
+    // on a pick, advance to the next empty slot (fast sequential entry); clear on a clear
+    if (!slug) return setRosterActive([ti, ui]);
+    let n: [number, number] | null = null;
+    for (let k = ti * 5 + ui + 1; k < 25; k++) {
+      const [t, u] = [Math.floor(k / 5), k % 5];
+      if (!rosterSim[t][u]) { n = [t, u]; break; }
+    }
+    setRosterActive(n);
+  };
+  const toTeamResult = (r: SimResult): TeamResult => ({
+    slugs: r.units.map((u) => u.slug),
+    teamDamage: r.teamDamage,
+    teamDps: r.teamDps,
+    fullBursts: r.fullBursts,
+    fullBurstUptime: r.fullBurstUptime,
+    units: r.units.map((u) => ({
+      slug: u.slug,
+      name: u.name,
+      burst: u.burst,
+      weapon: u.weapon,
+      element: u.element,
+      advantaged: u.advantaged,
+      share: u.share,
+      totalDamage: u.totalDamage,
+    })),
+  });
+  const runRosterSim = () =>
+    runCalc(() => {
+      const deps = { overrides, skillLevels: skillLevelData, cubes, olLines: olLinesData };
+      const cfg = calcCfg();
+      const loadout = calcLoadout();
+      const results = rosterSim
+        .map((team) => team.filter((s): s is string => !!s))
+        .filter((slugs) => slugs.length > 0)
+        .map((slugs) => {
+          const cs = slugs.map((s) => data.characters[s]);
+          const prepared = prepareTeam(cs as any, slugs.map(() => loadout), deps as any);
+          const r = runSim(cs as any, mult, { ...cfg, slugs } as SimConfig, prepared);
+          return toTeamResult(r);
+        });
+      setRosterSimResults(results);
+    });
+  // normalize any (string|null)[][] into a strict 5×5 grid of known slugs.
+  const normalizeRoster = (raw: (string | null)[][]): (string | null)[][] =>
+    Array.from({ length: 5 }, (_, i) =>
+      Array.from({ length: 5 }, (_, j) => {
+        const s = raw?.[i]?.[j];
+        return s && data.characters[s] ? s : null;
+      }),
+    );
+  // Copy the generated roster into the Roster Sim grid and jump there.
+  const copyToRosterSim = (teams: TeamResult[]) => {
+    setRosterSim(normalizeRoster(teams.map((t) => t.slugs)));
+    setRosterSimResults(null);
+    setRosterActive(null);
+    selectTab('rostersim');
+  };
+
   // ---- Overload Calc: rank one carry's four free OL lines in an 8/12 team ----
   const olDeps = {
     overrides,
@@ -1660,6 +1769,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // its own 5-portrait strip.
   const rosterView = (teams: TeamResult[]) => {
     const rosterTotal = teams.reduce((sum, t) => sum + t.teamDamage, 0);
+    const maxTeam = Math.max(...teams.map((t) => t.teamDamage), 1);
     return (
       <div className='roster-result'>
         <div className='roster-grid'>
@@ -1667,6 +1777,9 @@ export function App({ user }: { user: AuthUser | null }) {
             <div className='roster-grid-row' key={`g${i}`}>
               <span className='rg-label muted'>team {i + 1}</span>
               <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
+              <div className='rg-bar'>
+                <span style={{ width: `${(t.teamDamage / maxTeam) * 100}%` }} />
+              </div>
               <span className='rg-dmg'>{fmt(t.teamDamage)}</span>
             </div>
           ))}
@@ -1675,30 +1788,104 @@ export function App({ user }: { user: AuthUser | null }) {
             <span className='rg-dmg big'>{fmt(rosterTotal)}</span>
           </div>
         </div>
+        {/* explicit rows of 3 so a partial last row (the 2 in 3:2) centers under
+            the row above instead of sitting left-aligned */}
         <div className='roster-cards'>
-          {teams.map((t, i) => (
-            <div className='roster-card' key={`c${i}`}>
-              <div className='card-group-label'>
-                team {i + 1} · {fmt(t.teamDamage)}
-              </div>
-              <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
-              <table className='roster-card-table'>
-                <tbody>
-                  {t.units.map((u) => (
-                    <tr key={u.slug} className={u.advantaged ? 'adv-row' : ''}>
-                      <td className='muted'>B{u.burst}</td>
-                      <td className='nm'>{u.name}</td>
-                      <td className='r share'>{(u.share * 100).toFixed(0)}%</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {chunk(teams, 3).map((row, ri) => (
+            <div className='roster-cards-row' key={`r${ri}`}>
+              {row.map((t, j) => {
+                const i = ri * 3 + j;
+                return (
+                  <div className='roster-card' key={`c${i}`}>
+                    <div className='card-group-label'>
+                      team {i + 1} · {fmt(t.teamDamage)}
+                    </div>
+                    <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
+                    <table className='roster-card-table'>
+                      <tbody>
+                        {t.units.map((u) => (
+                          <tr key={u.slug} className={u.advantaged ? 'adv-row' : ''}>
+                            <td className='muted'>B{u.burst}</td>
+                            <td className='nm'>{u.name}</td>
+                            <td className='r share'>{(u.share * 100).toFixed(0)}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
       </div>
     );
   };
+
+  // Roster Sim input: a 5×5 grid of pick-a-slot chips + one shared picker for the
+  // active slot (units are unique across the whole roster).
+  const rosterInputThumbs = usePortraitThumbs(
+    rosterSim.flat().map((s) => (s ? data.characters[s]?.imageUrl : null)),
+    72,
+  );
+  const rosterInputView = (
+    <div className='roster-input'>
+      {rosterSim.map((team, ti) => (
+        <div className='roster-input-row' key={ti}>
+          <span className='rg-label muted'>team {ti + 1}</span>
+          <div className='roster-slots'>
+            {team.map((slug, ui) => {
+              const c = slug ? data.characters[slug] : null;
+              const active = rosterActive?.[0] === ti && rosterActive?.[1] === ui;
+              return (
+                <button
+                  key={ui}
+                  type='button'
+                  className={`team-chip roster-slot${active ? ' active' : ''}`}
+                  title={c?.name ?? `team ${ti + 1} · slot ${ui + 1}`}
+                  onClick={() => setRosterActive(active ? null : [ti, ui])}
+                >
+                  {c?.imageUrl ? (
+                    <img
+                      src={rosterInputThumbs[c.imageUrl] ?? c.imageUrl}
+                      alt={c.name}
+                      draggable={false}
+                    />
+                  ) : (
+                    <span className='chip-empty'>+</span>
+                  )}
+                  {slug && (
+                    <span
+                      className='chip-x'
+                      role='button'
+                      aria-label='remove'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        assignRosterSlot(ti, ui, null);
+                      }}
+                    >
+                      ×
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      {rosterActive && (
+        <div className='roster-picker'>
+          <CharSearch
+            placeholder={`pick for team ${rosterActive[0] + 1}, slot ${rosterActive[1] + 1}…`}
+            exclude={rosterSlugsPlaced.filter(
+              (s) => s !== rosterSim[rosterActive[0]][rosterActive[1]],
+            )}
+            onPick={(slug) => assignRosterSlot(rosterActive[0], rosterActive[1], slug)}
+          />
+        </div>
+      )}
+    </div>
+  );
 
   // the full per-character card (portrait, picker, gear/dupes/skills/cube/OL) —
   // reused by the Sim tab and the DPS test's variable units.
@@ -2104,7 +2291,64 @@ export function App({ user }: { user: AuthUser | null }) {
           <button className='calc-run' onClick={runTopTeams} disabled={calcBusy}>
             {calcBusy ? 'Calculating…' : 'Calculate top 5 teams'}
           </button>
-          {rosterResults && rosterView(rosterResults)}
+          {rosterResults && (
+            <>
+              <button
+                className='share-btn roster-copy-btn'
+                onClick={() => copyToRosterSim(rosterResults)}
+                title='send these 5 teams to the Roster Sim tab to edit + re-sim'
+              >
+                ✎ Copy to Roster Sim
+              </button>
+              {rosterView(rosterResults)}
+            </>
+          )}
+        </section>
+      );
+    }
+    if (tab === 'rostersim') {
+      return (
+        <section className='calc-tab'>
+          <h2>Roster Sim</h2>
+          <p className='muted'>
+            Enter up to five teams of five and sim them all at once under the boss
+            options + “apply to all” loadout above. Each nikke can be used once
+            across the roster (solo-raid rule). Tap a slot to pick a unit.
+          </p>
+          {rosterInputView}
+          <div className='roster-sim-actions'>
+            <button
+              className='calc-run'
+              onClick={runRosterSim}
+              disabled={!rosterAnyFilled || calcBusy}
+            >
+              {calcBusy ? 'Simming…' : 'Sim roster'}
+            </button>
+            {user && (
+              <button
+                className='share-btn'
+                onClick={onSaveRoster}
+                disabled={!rosterAnyFilled}
+                title='save this roster to your account'
+              >
+                {savedFlash ? '✓ Saved' : '💾 Save roster'}
+              </button>
+            )}
+            {rosterSlugsPlaced.length > 0 && (
+              <button
+                className='share-btn'
+                onClick={() => {
+                  setRosterSim(Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => null)));
+                  setRosterActive(null);
+                  setRosterSimResults(null);
+                }}
+                title='clear all slots'
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {rosterSimResults && rosterView(rosterSimResults)}
         </section>
       );
     }
@@ -3706,7 +3950,7 @@ export function App({ user }: { user: AuthUser | null }) {
         <div className='modal-backdrop' onClick={() => setShowTeams(false)}>
           <div className='modal' onClick={(e) => e.stopPropagation()}>
             <div className='modal-head'>
-              <h2>My teams</h2>
+              <h2>My teams &amp; rosters</h2>
               <button className='modal-x' onClick={() => setShowTeams(false)}>
                 ×
               </button>
@@ -3726,10 +3970,21 @@ export function App({ user }: { user: AuthUser | null }) {
               {teams.map((t) => (
                 <li key={t.id}>
                   <div className='team-meta'>
-                    <b>{t.name}</b>
+                    <b>
+                      {t.name}
+                      {decodeBuild(t.code)?.roster && (
+                        <span className='save-tag'>roster</span>
+                      )}
+                    </b>
                     <span className='muted'>
                       {(() => {
                         const b = decodeBuild(t.code);
+                        if (b?.roster) {
+                          const n = b.roster
+                            .flat()
+                            .filter((s) => s && data.characters[s]).length;
+                          return `${n} unit${n === 1 ? '' : 's'} across 5 teams`;
+                        }
                         const names = (b?.s ?? [])
                           .map((s) =>
                             s.slug ? (data.characters[s.slug]?.name ?? s.slug) : null,

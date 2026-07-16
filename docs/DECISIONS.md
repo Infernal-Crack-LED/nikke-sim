@@ -559,3 +559,21 @@ lives. Newest first within each section.
   `scripts/build-meta-weights.ts` (npm `meta-weights`) compiles the audit MD + tier file into the
   committed `web/src/metaWeights.ts`; regenerate whenever the audit doc is refreshed. — teamcalc
   scoring; App.tsx `metaScoringFor`.
+- **(2026-07-16) Roster Sim = a Sim-group tab that sims 5 user-entered teams at once (shared loadout,
+  one pass).** Reuses the roster generator's display (`rosterView`) + boss/apply-to-all controls; input is a
+  5×5 pick-a-slot grid with units unique across the roster (solo-raid rule). NOT a search — it sims the exact
+  entered teams via `prepareTeam`+`runSim` under `calcCfg()`/`calcLoadout()`. Wiring: new `rostersim` CalcTab
+  in the **'sim' group** (placed right of "Team Sim"; the old 'Sim' sub-tab was renamed **Team Sim**);
+  `serve.mjs` TAB_META entry; deliberately NOT added to router `TOOL_PATHS` (sim-group → 'sim' route, so the
+  top nav shows "Sim"). A "Copy to Roster Sim" button on the generator seeds the grid from the generated 5
+  teams. Save/load reuses the saved-teams store via a new optional `Build.roster` (5×5 slugs; the shared
+  loadout lives in `s`), tagged "roster" in the modal. — App.tsx; src/share/build-code.ts.
+- **(2026-07-16) On-page team/roster portraits render crisp via `portraitThumb` (steppedDownscale), never a
+  raw `<img>` at the CDN's full 256×512 res.** New `usePortraitThumbs` hook (extracted from DpsBarChart)
+  resolves device-pixel-sized, PORTRAIT_CROP_TOP-cropped thumbnails for `TeamPortraits` + the Roster Sim
+  input slots; `.team-chip img` also gains the `--portrait-crop-top` framing so pickers/compact strips match
+  `.portrait`/`.tp-chip`. Reaffirms the image-downscale-helper rule (ANY non-full-size image → the shared
+  downscaler, never browser `<img>` downscale). Same pass: roster results gained per-team damage bars; the
+  roster cards + the 3:2 portrait state center their partial last row (explicit rows / fixed-width flex);
+  portraits are 32–64px content-aware, snapping to 3:2 only at the 32px floor. — web/src/usePortraitThumbs.ts;
+  App.tsx; styles.css.

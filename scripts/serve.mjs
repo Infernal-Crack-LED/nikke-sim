@@ -51,6 +51,10 @@ const TAB_META = {
     title: 'Solo-Raid Roster Generator — NIKKE Solo Raid Sim',
     desc: `Generate a solo-raid roster against a custom boss profile.`,
   },
+  rostersim: {
+    title: 'Roster Sim — NIKKE Solo Raid Sim',
+    desc: `Sim your own five solo-raid teams at once and compare their damage.`,
+  },
   overload: {
     title: 'Optimize Overload — NIKKE Solo Raid Sim',
     desc: `Use a controlled framework to determine the optimal 3rd line for B3s.`,
