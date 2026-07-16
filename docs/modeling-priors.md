@@ -57,6 +57,27 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
    average stack level over the fight is the calibration knob. Fixed: Mihara (stacks 10.8→12),
    Cinderella (the Beautiful ramp), Soda: Twinkling Bunny (Golden Chip economy). Guillotine: Winter
    Slayer (Hero Level) is the current open case in this family.
+   **DERIVABLE-CURRENCY refinement (2026-07-16, Soda SG zero-shot, Fable-approved):** when a currency
+   has a kit-STATED start + consume + rebuild, its trajectory is DERIVABLE — compute it; never default
+   to cap-tier, a bare steady-state guess, or worst-case. Three sub-rules:
+   - **Continuous level-scaling effects** ("X% per stack, up to N"): model at the derived TIME-AVERAGE
+     level, RESPECTING the stated START. A currency that starts at cap means the effect starts near cap.
+     **NEVER model it as a ramp-from-0 keyed to the rebuild trigger** — the rebuild trigger is how the
+     currency is GAINED, not the effect's stack count. (Root bug: a currency that STARTS at its cap had
+     its per-stack crit-damage mis-modeled as a slow ramp built via the in-FB rebuild trigger → reached
+     a handful of stacks when the pool actually starts full and stays high; the popup on the very first
+     shot, before any rebuild casts, already carried the near-cap crit multiplier — arithmetic proof
+     that the effect tracks the pool level, not a from-0 ramp.)
+   - **Threshold-gated effects** ("activates when ≥ X"): evaluate EACH activation against the derived
+     currency value AT THAT MOMENT, honoring the stated CONSUME ORDERING. Text "stacks ▼K after the
+     effect applied" means the gate checks the PRE-consume count — so a burst that consumes on cast
+     clears its own threshold at the higher pre-consume value. Ship the derived activation count
+     (all-bursts, or an `everyN` pattern), NOT the cap-tier and NOT a naive post-consume trace.
+     (Root bug: a burst ATK buff gated "@≥high-threshold" fires on EVERY burst when the pre-consume
+     pool clears the gate each time — mis-read as first-burst-only by tracing the POST-consume pool,
+     the classic isolated-shard error.)
+   - Keep both the average level and the activation count as ⚑ (the rebuild rate is cadence-dependent),
+     but the ESTIMATE is the DERIVED trajectory, not the cap.
 
 5. **Multi-projectile weapons either split into N damage instances or merge into one — per-unit,
    video-verify.** Cinderella's twin rockets are two separate instances; Maiden's twins merge into

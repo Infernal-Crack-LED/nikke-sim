@@ -27,6 +27,13 @@ const CASES: Case[] = [
     boss: null, realFb: 11,
     real: { 'little-mermaid': 407_969_363, crown: 215_628_547, jill: 573_110_084, helm: 447_479_339 },
   },
+  { // soda tb control.mov (contains soda-twinkling-bunny, SG/stack archetype) — 2026-07-16.
+    // NEUTRAL per the owner's control-video rule (recon's "inferred Electric" is unconfirmed and
+    // contradicts the standing rule); boss=null. real totals = end-screen unit rows.
+    team: { name: 'soda-control', slugs: ['little-mermaid', 'crown', 'soda-twinkling-bunny', 'helm'] },
+    boss: null, realFb: 10,
+    real: { 'little-mermaid': 403_522_768, crown: 170_865_948, 'soda-twinkling-bunny': 416_375_537, helm: 385_716_037 },
+  },
 ];
 const OV = (slug: string) => `src/skills/overrides/${slug}.json`;
 
