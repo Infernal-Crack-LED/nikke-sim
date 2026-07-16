@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-16",
+    "title": "Accuracy: Rapi: Red Hood, Soda, Cinderella: Crystal Wave",
+    "notes": [
+      "Rapi: Red Hood — her attached-rocket explosions now land the way the game places them: a core hit about a third of the time, detonating on contact during Full Burst, and critting like her other shots. Her damage reads much closer to real fights.",
+      "Soda: Twinkling Bunny — fixed how her Golden Chips drive her crit damage (the stack starts full, not from zero) and confirmed her burst ATK buff fires every burst, not just the first.",
+      "Cinderella: Crystal Wave — her Full Burst core-strike hit now correctly registers as a core hit inside Full Burst, closing a ~13% under-count."
+    ]
+  },
+  {
+    "date": "2026-07-16",
     "title": "New: Roster Sim + sharper portraits",
     "notes": [
       "New Roster Sim tab (right next to Team Sim): enter up to five teams of five and sim them all at once under one shared loadout + boss profile. You get each team's damage, a damage bar per team, and the roster total — with each nikke usable only once across the whole roster, matching the solo-raid rule.",
