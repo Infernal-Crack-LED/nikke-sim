@@ -53,6 +53,13 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
    never set `noFb` for a burst-cast line. The **+30% range bonus is UNIVERSALLY off for every
    rider** (the engine force-sets `noRange` at the deal site, sim.ts) — writing `noRange:true` is
    redundant, never required, and never the thing to flag.
+   **CORE on riders — text-fidelity rule (2026-07-16, CCW batch, U1):** function-type additional-damage
+   riders CRIT (at the caster's rate) but get NO core by default — EXCEPT when the kit text EXPLICITLY
+   labels the damage as core (e.g. "Deals X% … as **core strike damage**"), in which case FOLLOW THE TEXT
+   (`core:true` / the coreOverride path) and ⚑ it. (Root: Cinderella: Crystal Wave's FB-enter "833.79% …
+   core strike damage" proc — the hand-tune wrongly stripped core AND set a pre-FB `burstCast` trigger,
+   reading ~13% cold; the text-faithful rider [core + FB-by-timing] reconciles it to ~1.0 vs real. Never
+   guess core presence — read the text.)
 
 3. **The parser drops sustained damage-over-time lines and unsupported triggers → undercounts.**
    Scan a new parse for missing burst/DoT lines and rebuild them as real-interval DoTs. Fixed:
