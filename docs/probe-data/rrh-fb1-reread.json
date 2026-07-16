@@ -1,0 +1,115 @@
+{
+  "source": "docs/probes/control + carry/rrh control.MP4",
+  "processed": "2026-07-16",
+  "purpose": "CORRECTED re-read of FB1 for Rapi: Red Hood, applying the corrected understanding that the red box RIGHT of the crosshair is a ROCKET METER (0-100%, fills & resets) and NOT boss HP. Supersedes the FB1/meter portions of docs/probe-data/rrh-control-recon.json (2026-07-15), which mis-read both.",
+  "video": {
+    "stored_dims": "1206x2622 portrait, rotation=90 -> displayed 2622x1206 landscape",
+    "fps": 60,
+    "duration_s": 198.523,
+    "focus_unit": "Rapi: Red Hood (slug rapi-red-hood); per owner all rendered popups are hers",
+    "team": ["Little Mermaid", "Crown", "Rapi: Red Hood", "Helm"],
+    "boss": "neutral, no boss HP bar in this mode",
+    "note_timebase": "All times below are VIDEO seconds. Fight timer at video 14.0s reads 02:54 (=6s elapsed). FB1 yellow FULL-BURST splash and batch are at ~14.2-14.4s video."
+  },
+
+  "headline_corrections_vs_prior_recon": [
+    "Right red '%' box is the ROCKET METER (0-100%), confirmed by CLIMBING + RESETTING readings (6->10->15->30 ... ->70, then reset 65->34). Prior recon called it boss HP 'DRL ROY' reading 097->094 decreasing; that is wrong for the combat window read here.",
+    "FB1 dominant popup = 25,319,690 (EIGHT digits, ~25.3M), NOT 2,319,690 (~2.3M) as prior recon read. Re-verified digit-by-digit across frames 874-886: '2 5 3 1 9 6 9 0'. This is a ~10x correction.",
+    "FB1 is the LARGEST batch of the fight, NOT the smallest. It follows the longest pre-burst rocket-accumulation window (~14s from battle start). Later FBs are equal or smaller (FB3 batch ~17-27M, FB2 much smaller)."
+  ],
+
+  "requirement_1_fb1_explosion_read": {
+    "fb1_batch_popup": {
+      "value": 25319690,
+      "digits_verified": "8 digits: 2-5-3-1-9-6-9-0, re-read on frames 874/878/882/886 (video 14.57-14.77s)",
+      "color": "PLAIN WHITE with black outline (NOT red)",
+      "core_label": "NONE - no red 'CORE HIT' label above or on it",
+      "position": "dead-center in the reticle/crosshair on the boss body, inside a red radial explosion effect",
+      "lifetime": "single lingering popup visible ~frames 864-892 (14.4-14.87s); value constant frame-to-frame = one popup, not a changing counter",
+      "confidence_value": "high (clean 8-digit read, multiple frames)",
+      "confidence_noncore": "high for THIS consolidated popup (plainly white, no label)"
+    },
+    "explosion_core_fraction": {
+      "resolved": "0 of 1 (the consolidated FB1-start batch popup is plain/non-core)",
+      "caveat": "This is the CONSOLIDATED batch popup. Whether the underlying individual rockets each core cannot be determined, because the batch renders as ONE number, not N separable instances. So this neither confirms nor cleanly refutes 'explosions core' - it shows the consolidated FB-start popup rendering non-core."
+    },
+    "resolvable_instances_in_fb1_batch": {
+      "cleanly_resolved": 1,
+      "explanation": "The accumulated-rocket batch renders as a SINGLE consolidated popup (25,319,690), not as N separate per-rocket popups. During the ~0.15s FULL-BURST yellow swipe (frames 850-864) there is a tightly stacked vertical column of pink numbers, but those are the ramping NORMAL-FIRE cores (~23k-30k mid-ramp), not the explosions - they overlap inseparably. The explosion itself resolves to the one 25.3M popup.",
+      "per_rocket_value_direct": "NOT directly measurable (consolidated).",
+      "per_rocket_value_inferred": "IF per-rocket explosion is ~2-4.5M (owner's prior-context expectation), the 25.3M batch implies ~6-12 rockets accumulated pre-FB1. Cross-checks: 25.3M / normal-core(83.7k) ~= 302x total; per-rocket 2.8-4.2M would be ~33-50x a normal core, matching the ~30-50x ratio owner expected. Confidence: low-medium (derived, not measured)."
+    }
+  },
+
+  "requirement_2_rocket_meter": {
+    "identity": "Right-of-crosshair red '%' box = rocket meter, 0-100%, fills with normal attacks and RESETS at 100 (rocket fires). Confirmed by resets observed.",
+    "readings_time_s_to_pct": {
+      "10.0": 6, "10.3": 10, "10.6": 15, "11.2": 30,
+      "13.0": 18, "14.0": 30, "14.4": 40, "14.6": 57, "14.67": 64, "14.73": 70,
+      "15.7": 65, "16.4": 34, "28.3": 84
+    },
+    "resets_observed": [
+      "between 11.2s(30%) and 13.0s(18%): filled to 100 & reset once (outside burst)",
+      "between 14.73s(70%) and 15.7s(65%): one reset (inside FB1)",
+      "between 15.7s(65%) and 16.4s(34%): one reset (inside FB1)"
+    ],
+    "fill_rate_estimate": {
+      "outside_burst_early": "~20%/s (t=10-11.2s) -> ~5s per rocket; rate rises as fire rate/buffs ramp",
+      "inside_her_full_burst": "~95-99%/s (t=15.7-16.4s) -> ~1s per rocket",
+      "burst_vs_outside_ratio": "meter fills roughly 2x+ faster inside her FB, qualitatively consistent with the owner's 120-shots-outside / 60-shots-inside assumption (also compounded by higher in-FB fire rate)"
+    },
+    "shots_per_fill_direct_count": "NOT measurable - individual shots fire far too fast to count against the overlap; only the % box and its resets are readable.",
+    "rockets_between_fb1_and_fb2": "NOT directly countable. Estimated from the FB2 batch magnitude instead (see requirement_4); FB2's batch is much smaller than FB1's, implying FEWER rockets accumulated in the short inter-burst gap than in the ~14s pre-FB1 window.",
+    "left_crosshair_box": "Separate white/red box LEFT of crosshair = her AMMO (e.g. 293->265 firing, reload jumps up, 121->080 during FB = ~58 rounds/s in-FB fire rate). At a rocket launch it flashes red '100' with 'PREP FOR LAUNCH!' / 'SVD-DD READY' / 'DRL RDY' banners. Not the rocket %-meter.",
+    "confidence": "meter identity high; precise shots-per-fill cadence low (sparse sampling, uncountable shots)"
+  },
+
+  "requirement_3_normal_core_reference": {
+    "normal_shot_cores_during_fb1": "RED 'CORE HIT' popups, stable value ~83,708 (repeated), plus a higher variant ~100,449 (crit-core / buffed). These match the owner's expected ~84-94k normal-shot core.",
+    "normal_hits_pre_burst_ramp": "white plain ~7,056 and ~8,537 (early, before buffs ramp), orange crit ~12,806. These ramp up to the ~83.7k cores by mid-FB as Crown/LM/Helm buffs stack.",
+    "distinguishing_rule": "An EXPLOSION popup (25.3M consolidated) is ~300x a single normal core (83.7k) and appears at the reticle/body center as plain white; a normal-shot core is red 'CORE HIT' ~84k up on the boss core. They are unmistakable by size.",
+    "confidence": "high"
+  },
+
+  "requirement_4_other_fb_batches": {
+    "damage_counter_curve_team_total_time_s": {
+      "9": 99999, "10": 1163494, "11": 2158019, "12": 5033290, "13": 8535770,
+      "14": 12418017, "14.4": 39950893, "14.6": 42210891, "14.8": 44464712, "15": 46755736,
+      "20": 110812512, "27": 185394994, "27.6": 185947835, "28.2": 190150049, "29": 191570973,
+      "43": 335453951, "44": 362461422
+    },
+    "counter_caveat": "Top DAMAGE counter is TEAM TOTAL (per prior recon: sum of all 4 units = 2,061,678,629 at end), so batch deltas include allies' FB-start damage, not Rapi alone.",
+    "fb1_batch": {
+      "window": "14.2s(~12.4M) -> 14.4s(39.95M)",
+      "team_delta": 27532876,
+      "sustained_baseline_over_0.2s": "~2.25M (from steady ~11.3M/s post-batch fire)",
+      "batch_attributable": "~25.3M, matching the single 25,319,690 popup nearly exactly",
+      "note": "Under 'only Rapi renders', the 25.3M popup is Rapi's; the near-equal team delta is consistent with her batch dominating that instant, though the team-total counter cannot itself prove attribution vs an ally nuke (e.g. Little Mermaid)."
+    },
+    "fb2_batch": {
+      "window": "~27.6s(185.95M) -> 28.2s(190.15M)",
+      "observation": "much smaller / smeared; 'RELOADING...' visible at 28.3s and the launch banner ('PREP FOR LAUNCH!', meter 84%) implies the FB2 rocket fires slightly later. A ~1,195,658 popup (candidate single in-FB rocket explosion, plain/white) was visible at 28.3s.",
+      "batch_magnitude": "~3-4M net over the swipe (well below FB1); low confidence due to reload timing"
+    },
+    "fb3_batch": {
+      "window": "43s(335.45M) -> 44s(362.46M)",
+      "team_delta": 27007471,
+      "batch_attributable": "~17M after removing ~10M/s sustained baseline; large, same order as FB1"
+    },
+    "conclusion": "Batches recur at every FB-start. FB1 (~25.3M) is the LARGEST (longest ~14s accumulation window). This DIRECTLY contradicts the task premise that FB1 is the smallest batch."
+  },
+
+  "candidate_single_explosion_values": {
+    "note": "Isolated (non-consolidated) explosion-class plain/white popups seen mid-FB, low confidence they are single rockets vs partial reads:",
+    "values": [1195658, 1195638],
+    "if_representative": "25.3M / ~1.2M ~= 21 instances (upper bound); 25.3M / 4.5M ~= 6 (lower bound). True per-rocket value remains UNMEASURED - needs the isolated slow-mo recording (wishlist #1)."
+  },
+
+  "open_ambiguities": [
+    "The 25.3M FB-start popup could be Rapi's accumulated-rocket BATCH or her burst-skill nuke (both land at FB start); this footage cannot separate them. Either way it is Rapi's dominant FB-start damage event and renders plain/non-core.",
+    "Explosion CORE fraction is not truly settled: the consolidated batch renders non-core, but individual rockets could still core - unresolvable while consolidated.",
+    "Per-rocket explosion value and exact rockets/FB remain UNMEASURED (consolidation + overlap). The isolated single-explosion-batch slow-mo recording (recording-wishlist #1) is still required."
+  ],
+
+  "measurement_discipline": "Measurement only. No engine/sim/override edits. Values are OCR-by-eye from frame-stepped native-resolution crops; damage-counter deltas used as cross-checks (team-total, so not Rapi-isolating)."
+}

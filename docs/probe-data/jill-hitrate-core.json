@@ -1,0 +1,82 @@
+{
+  "unit": "jill",
+  "slug": "jill",
+  "video": "docs/probes/control + carry/jill control.MP4",
+  "question": "Does Jill's burst Hit Rate (+80.78% for 10s) RAISE her CORE-HIT fraction? Compare core fraction IN-burst (Hit Rate on) vs OUT-of-burst (Hit Rate off) at the SAME boss range band.",
+  "method": "ffmpeg native-res crops (60fps source, 2622x1206). Classified each Jill popup by NIKKE colour convention: red 'CORE HIT' text = core; orange = crit non-core; white = normal non-core. Shots counted via the on-screen AMMO counter (center '00X' box, decrements once per shot) and the in-frame Full Burst countdown timer to locate bursts precisely. Boss band from the engine BOSS_RANGE_SCRIPT (video_s = fight_s + 7): mid 7-40s, near 40-77s, far 77-113s, midfar 113-151s, near 151-183s.",
+  "popup_value_decode_control_comp": {
+    "note": "Persistent LM/Crown/Helm team buffs inflate Jill's non-burst values above solo, but the multiplier structure is exact.",
+    "non_burst_near": {"white_normal_noncore": 182869, "orange_crit_noncore": 274303, "red_CORE_HIT": 365738, "check": "274303 = 182869 x1.5 (crit); 365738 = 182869 x2.0 (core) -> classification confirmed"},
+    "dot_tick": {"note": "bottom-center recurring popup (~379905 / 404381 near-band, 340764 mid-band, 1011368 in Helm-FB, 1822868 in Jill-burst) = Acid S2 DoT tick, NOT a bullet. Excluded from bullet counts.", "position": "bottom-center, ~1/s cadence"},
+    "jill_own_burst_near": {"red_CORE_HIT": [1649753, 1979704], "note": "her burst converts normals to True Damage + adds +75% AD, so burst bullet values ~9x the non-burst white; both red values carry a crit arrow (crit-core). No white/orange BULLET popups seen in her burst window."}
+  },
+  "burst_ownership": {
+    "note": "Two Burst-III units (Jill + Helm) alternate the Full Burst cast. Jill's OWN burst is identifiable by (a) force-reload (000 ammo + RELOADING at cast) and (b) popup magnitude ~1.6-2.0M cores. Helm-burst FBs show Jill firing at ~0.5-1.0M (only team +FB, no Jill +75%AD/True-Dmg/Hit-Rate).",
+    "FB3_video_45_55s": "JILL burst (force-reload seen, cores 1.65-1.98M) -> Hit Rate ON",
+    "FB4_video_58.6_68.4s": "HELM burst (Jill fires white 486826 / cores 811-973k, ~1.7x smaller than FB3) -> Full Burst ON but Jill Hit Rate OFF"
+  },
+  "matched_pairs": [
+    {
+      "band": "near",
+      "in_burst": {
+        "label": "FB3 (Jill's own burst, Hit Rate ON)",
+        "window_video_s": [48.0, 54.0],
+        "shots_sampled": 15,
+        "shot_count_basis": "ammo ticks: 002->001->[reload]009..001->[reload]009..006",
+        "core_red_CORE_HIT": "~14-15 of 15 (red CORE HIT present in essentially every frame; NO white/orange BULLET popups observed)",
+        "core_fraction_estimate": 0.90,
+        "core_fraction_range": [0.85, 1.0]
+      },
+      "out_burst": {
+        "label": "non-burst gap after FB4 (Hit Rate OFF)",
+        "window_video_s": [68.8, 73.4],
+        "boss_position": "centered, near band, popups readable; ends exactly as FB5 banner appears",
+        "shots_sampled": 10,
+        "core_red_CORE_HIT": "~2 of ~10 (365738 clearly at 70.4s; one possible ~389301 near 72s). Dominant popup = white 182869; crits = orange 274303.",
+        "core_fraction_estimate": 0.20,
+        "core_fraction_range": [0.15, 0.25]
+      },
+      "delta_fraction": "+0.70 (approx 0.20 -> 0.90; ~4-5x)",
+      "verdict": "CORE FRACTION RISES SHARPLY IN-BURST"
+    },
+    {
+      "band": "near",
+      "control_full_burst_no_jill_burst": {
+        "label": "FB4 (Full Burst ACTIVE but HELM cast it -> Jill Hit Rate OFF)",
+        "window_video_s": [62.0, 67.0],
+        "shots_sampled": 11,
+        "core_red_CORE_HIT": "mixed: red cores (811377 / 973653) AND white non-core 486826 both frequent -> ~4-5 of ~11",
+        "core_fraction_estimate": 0.42,
+        "core_fraction_range": [0.35, 0.50],
+        "significance": "Full Burst is ON here just like FB3, but Jill's own burst (incl. Hit Rate) is OFF. Core fraction is only ~0.4 -- FAR below Jill's own-burst ~0.9. This ISOLATES the lift to Jill's burst, NOT generic Full Burst. (Its being a bit above the plain non-burst ~0.20 may be residual range difference within 'near' or Helm-buff/FB, not cleanly resolved.)"
+      }
+    },
+    {
+      "band": "mid",
+      "in_burst": {
+        "label": "FB2 (Jill burst, Hit Rate ON, mid band)",
+        "window_video_s": [31.0, 37.0],
+        "readability": "POOR - boss sits far-right at mid distance; few isolable bullet popups. Saw white 449364 (non-core) present even in-burst.",
+        "note": "Consistent with core being RANGE-dependent: even with Hit Rate on, mid range does not core-saturate the way near range does. Not cleanly countable."
+      },
+      "out_burst": {
+        "label": "non-burst mid (26-27.6s + 38.6-39.4s)",
+        "readability": "POOR - dominated by DoT tick 340764; sparse side-positioned boss popups."
+      },
+      "verdict": "INCONCLUSIVE for a clean fraction (distant boss). Qualitatively supports range-dependence."
+    }
+  ],
+  "whole_picture_check": {
+    "confound_full_burst": "RULED OUT by the FB4 control -- generic Full Burst (Jill Hit Rate off) gives ~0.4 core, not ~0.9.",
+    "confound_damage_buffs": "Jill's burst also grants +75% ATK Damage, True Damage conversion, and +ATK. NONE of these change WHERE a bullet lands (core geometry) -- they only change per-hit VALUE. Among all her burst buffs, HIT RATE (accuracy) is the ONLY one that can raise the core FRACTION. Core fraction jumps massively during her burst => attributable to Hit Rate.",
+    "confound_boss_core_exposure": "RULED OUT -- no break/expose state; FB4 (also Full Burst) did not core-saturate.",
+    "dot_excluded": "DoT ticks (bottom-center) excluded from bullet fraction."
+  },
+  "verdict": "YES - Hit Rate RAISES the core-hit fraction. In the near band, Jill's core fraction goes from ~0.20 (Hit Rate OFF) to ~0.90 (Hit Rate ON, her own burst), Delta ~ +0.70 (roughly 4-5x). Consistent across FB3's ~15 shots / two reloads and the ~10-shot baseline (not a single noisy window). The FB4 control (Full Burst on, Jill burst off -> ~0.40) shows the lift comes from Jill's burst specifically, and since accuracy/Hit Rate is the only spread-affecting buff in her kit, Hit Rate is the mechanism.",
+  "confidence": "MEDIUM-HIGH on the direction and near-band magnitude (clean colour+ammo reads, boss centered). LOWER on exact fractions (popup lingering/overlap; FB4 control range not perfectly matched). Mid/far bands not cleanly countable (distant boss).",
+  "caveats": [
+    "Core fraction is RANGE-dependent; comparison held to the near band where the boss is centered and popups are dense/readable. Mid/far windows had the boss side-positioned and sparse popups (not countable).",
+    "Shot counts are per-window samples (~10-15 shots), not full-fight; fractions are estimates from colour presence + ammo-tick counting, not exhaustive per-shot deconvolution.",
+    "FB4 control assumes Helm (not Jill) cast that Full Burst, inferred from the ~1.7x smaller popup magnitude; its ~0.40 core sits between plain non-burst and Jill-burst and is not fully range-controlled."
+  ]
+}

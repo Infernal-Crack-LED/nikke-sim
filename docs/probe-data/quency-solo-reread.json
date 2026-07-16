@@ -1,0 +1,124 @@
+{
+  "measurement": "Quency: Escape Queen SOLO re-read - per-shot decomposition to resolve the 2.58x per-hit under-model (base-ATK vs core-rate)",
+  "unit": "quency-escape-queen",
+  "weapon": "SMG",
+  "burst": "III (Attacker, Water). SOLO => cannot chain to Full Burst; ZERO Full Bursts cast. Entire output is normal SMG fire.",
+  "video": "docs/probes/ar-sg-smg/quency smg.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/quency smg.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "date": "2026-07-16",
+  "method": "COUNTER-RECONCILIATION as arbiter (top-center running DAMAGE counter + reticle ammo counter), not visual popup counting. ffmpeg frame extraction + PIL montage; per-magazine counter deltas over ammo-confirmed 120-round mags.",
+  "kitFacts": "ammo 120, reload 81f, hitsPerShot 2, normalMult 5.06, coreMult 250 (core ~2.5x normal). Fire rate CONFIRMED 20 rounds/s (ammo decrements exactly 1 per 3 frames @60fps). Kit stacks ATK and 'Hit Rate' over the fight.",
+
+  "videoMeta": "portrait metadata 1206x2622 rot -> ffmpeg auto-rotates to landscape 2622x1206, 60fps, 210.6s container. Combat ~v7 to ~v183.",
+
+  "solo": {
+    "confirmed": true,
+    "evidence": "Battle Records screen: slot 1 = 'Quency: Escap[e]' LV.400 (element Water), slots 2-5 all 'EMPTY SLOT / NO SIGNAL' with 0 damage. All damage is hers.",
+    "damageTotal": 136918771,
+    "killsField": 74,
+    "battleTimeLabel": "03:00"
+  },
+
+  "clock": {
+    "method": "top-right MM:SS countdown from 03:00; fightClock = 180 - countdown. Firing/counter begins ~v7-8 (counter 100,566 at v8). Fight ends ~v183 (counter ~136M by v182).",
+    "anchors": [
+      {"videoSec": 8, "countdown": "02:59", "note": "counter 100,566 - fight just started"},
+      {"videoSec": 90, "countdown": "01:35"},
+      {"videoSec": 93.5, "countdown": "01:32"}
+    ],
+    "noBossHpBar": true
+  },
+
+  "colourConvention": "white = normal non-core hit; orange + chevron icon = crit (~x1.5); red 'CORE HIT' text = core (~2.3-2.5x non-core); orange+red 'CORE HIT' = core+crit. Red circular bursts around boss = impact/muzzle VFX (NOT popups). Rapid fire makes popups OVERLAP and ACCUMULATE - individual reads are unreliable, hence counter-reconciliation.",
+
+  "cumulativeCounter_3s": {
+    "note": "top-center DAMAGE counter (running total), read every 3s. Clean, high confidence.",
+    "series": [[8,100566],[11,2558112],[14,5880931],[17,7544196],[20,11247929],[23,12773514],[26,15998434],[29,18907180],[32,20813044],[35,21498316],[38,24824259],[41,28223513],[44,30885220],[47,35374442],[50,37095237],[53,41543425],[56,44424511],[59,47565378],[62,51885397],[65,53512857],[68,57846277],[71,58143236],[74,60037613],[77,61782357],[80,63430245],[83,65860703],[86,66703439],[89,68857873],[92,70015450],[95,71750084],[98,73998576],[101,74856493],[104,77165598],[107,78277793],[110,78649722],[113,80968382],[116,82531428],[119,84437379],[122,87040264],[125,87980571],[128,90455792],[131,91814985],[134,94400944],[137,96933752],[140,98152668],[143,100427127],[146,101284197],[149,105478372],[152,107811285],[155,111877265],[158,115974039],[161,117910725],[164,122492574],[167,124535233],[170,128494239],[173,132060018],[176,133037072],[179,133675795],[182,136006464]],
+    "final": 136918771
+  },
+
+  "perShot_nonCore_white": {
+    "headline": "The white (non-core, non-crit) per-hit value = the BASE per-shot. It ramps only modestly over the fight; this is the ATK/base signal (deliverable 3).",
+    "early_v15_bossClose": {"value": "~9800", "reads": [9812, 10199, 10585, 10972], "note": "single hits ~9.8k; two hits accumulate to ~19,585", "confidence": "medium-high"},
+    "mid_v93_bossFar": {"value": "~12000", "reads": [11445, 12753], "confidence": "medium"},
+    "late_v160_bossClose": {"value": "~12400", "reads": [12131, 12518, 12904], "confidence": "medium"},
+    "baseRamp_earlyToLate": "~1.26x (9,800 -> 12,400). Saturates by ~mid-fight; NOT a continuous climb to the end.",
+    "keyPoint": "This ~9.8k->12.4k non-core base is what a naive/current sim per-hit computes. Base ATK is essentially well-modeled (modest 1.26x ramp). The base is NOT the source of the 2.58x gap."
+  },
+
+  "perShot_core_red": {
+    "headline": "Red 'CORE HIT' value ~= 2.3-2.5x the same-time non-core (deliverable 4 confirmed).",
+    "early_v15": {"value": "~27052", "ratioToNonCore": "27052/9812 = 2.76 (but early cores are delayed within the mag - see coreFraction)", "confidence": "medium"},
+    "late_v160": {"value": "~27852", "ratioToNonCore": "27852/12400 = 2.25", "confidence": "medium-high"},
+    "note": "Core value is nearly FLAT early->late (27,052 -> 27,852, +3%) while non-core ramps 26%; so core/non-core ratio drifts 2.76 -> 2.25. Consistent with coreMult giving ~2.3-2.5x."
+  },
+
+  "perShot_crit_orange": {
+    "reads": {"early_v15": 14122, "mid_v93": 19130, "late_v160": 15727},
+    "ratioToNonCore": "~1.3-1.6x (nominal x1.5). Scatter due to popup overlap and ATK varying between the sampled crit vs sampled white.",
+    "confidence": "medium"
+  },
+
+  "perMagazine_counterDeltas": {
+    "note": "Magazine boundaries found from reload PLATEAUS in the fine counter (81f = 1.35s flat) + ammo counter. 120 rounds/mag confirmed (ammo 120->~0 in 6.0s = 20 rounds/s). Delta / 120 = per-round; /240 = per-hit (hitsPerShot 2).",
+    "mags": [
+      {"label": "early_A", "window": "v15.0-21.0 (boss CLOSE)", "startTotal": 5880931, "endTotal": 12386704, "delta": 6505773, "perRound": 54215, "perHit2": 27107},
+      {"label": "early_B", "window": "v22.5-28.5 (boss CLOSE)", "startTotal": 12386704, "endTotal": 18907180, "delta": 6520476, "perRound": 54337, "perHit2": 27169},
+      {"label": "mid", "window": "v92.5-98.5 (boss FAR)", "startTotal": 70015450, "endTotal": 74030459, "delta": 4015009, "perRound": 33458, "perHit2": 16729},
+      {"label": "late_A", "window": "v152-158 (boss CLOSE)", "startTotal": 107656369, "endTotal": 115974039, "delta": 8317670, "perRound": 69314, "perHit2": 34657},
+      {"label": "late_B", "window": "v159.5-165.5 (boss CLOSE)", "startTotal": 115974039, "endTotal": 124173406, "delta": 8199367, "perRound": 68328, "perHit2": 34164}
+    ],
+    "perRoundRamp_earlyToLate_close": "54,270 -> 68,800 = ~1.27x (matches the 1.26x non-core base ramp EXACTLY -> the growth over the fight is pure ATK/base scaling, at fixed close range).",
+    "rangeEffect": "MID-fight (boss FAR) per-round collapses to ~33,458 (vs ~54k early close, ~68k late close) EVEN THOUGH the non-core popup is HIGHER mid (~12k) than early (~9.8k). SMG range falloff / hit-rate at distance suppresses damage far more than ATK ramp raises it. Her per-round is strongly RANGE/hit-rate modulated.",
+    "confidence": "high (counter + ammo both unambiguous)"
+  },
+
+  "coreFraction_theKeyOutput": {
+    "method": "counter-reconciliation: ratio of per-round damage to the visible non-core (base) popup value. A round of 2 pure non-core hits would be ~2x the popup; heavy coring pushes it far higher.",
+    "ratio_perRound_over_nonCorePopup": {
+      "early_close_v15-21": "54,215 / 9,812 = 5.53x",
+      "mid_far_v92-98": "33,458 / 12,000 = 2.79x",
+      "late_close_v159-165": "68,328 / 12,400 = 5.51x"
+    },
+    "interpretation": "At CLOSE range (early AND late) each round delivers ~5.5x a single non-core base hit = HEAVY coring (per 2-hit round ~2.76x the non-core value; i.e. essentially every hit lands as a CORE HIT, plus crits). At FAR range (mid) the uplift drops to ~2.79x/round (~1.4x/hit) = mostly non-core. So her effective core rate is HIGH at close range and LOW at range - RANGE/HIT-RATE gated, not a simple monotonic time-climb.",
+    "withinMagSettle": {
+      "finding": "Right after each reload the rate is LOW then JUMPS ~2.5x once the spray settles onto the core. Early mag A per-0.5s rate: 502 k/s (v15.0-15.5) -> 622 -> 1036 -> 1167 -> 1187 -> 1346 k/s by v18, then steady ~1140 k/s.",
+      "consequence": "The first ~1s after a reload is mostly WHITE non-core popups (caught in the v15.0-15.5 tight montage), THEN heavy red CORE HIT for the rest of the mag. The visual impression 'early=white, late=red' is a within-mag reload-SETTLE transient / dense-popup artifact, NOT a fight-long core-rate climb. COUNTER > visual: the full early mag averages the same 5.5x/round coring as the late mag.",
+      "confidence": "high"
+    },
+    "climbEarlyToLate": "NO material fight-long climb. Close-range coring uplift is ~constant (5.53x early vs 5.51x late). The only large swing is RANGE (mid-fight far = low coring). ATK base ramps 1.26x separately.",
+    "confidence": "medium-high"
+  },
+
+  "answerToTheQuestion": {
+    "question": "Is Quency's 2.58x per-hit under-model from (a) base ATK/per-shot higher than modeled, or (b) coring at a much higher RATE than modeled?",
+    "verdict": "(b) CORE-RATE / hit-composition, NOT base ATK.",
+    "reasoning": [
+      "The non-core (white) base per-hit is ~9,800 (early) to ~12,400 (late) - a modest 1.26x ATK ramp - and matches what the sim's per-hit computes. Base is well-modeled.",
+      "But the ammo-confirmed per-round damage at close range is ~5.5x that non-core base (~2.76x per 2-hit round). This uplift = heavy CORE HITs (red, ~2.3-2.5x non-core) landing at a near-universal rate at close range, plus crits.",
+      "2.76x per-hit ~= the reported 2.58x under-model. The gap is composition (coring), not base scaling. The 'Hit Rate -> core rate' hypothesis is SUPPORTED: she cores at a very high effective rate the sim under-credits.",
+      "Range/hit-rate modulates it: at far range her coring collapses (per-round drops to ~2.79x base), which likely also contributes to her being a cold outlier and to run-to-run variance."
+    ],
+    "confidence": "medium-high"
+  },
+
+  "flags_and_caveats": [
+    "INSTANCE-COUNT AMBIGUITY: the 5.5x/round uplift slightly EXCEEDS pure-100%-core (2.5x) on exactly 2 hits (which caps at ~5x). Reaching 5.5x requires either core+crit stacking (~100% core + ~20-40% crit) OR >2 effective damage instances per round (multi-hitbox spray on the multi-legged boss, or an additional-damage passive). Popups cannot fully disambiguate instance-count from core-rate. Either way it is NON-BASE (composition), which is what the question needed.",
+    "This boss is visually multi-legged (spider mech); SMG spray may hit multiple hitboxes, inflating instances beyond hitsPerShot=2 - relevant to the S2 parser approximation flagged in her override note.",
+    "Popup values (non-core/core/crit) carry ~10-15% read error from overlap/accumulation; per-round/per-mag counter deltas are the reliable arbiter.",
+    "Boss RANGE moves substantially (close early, far mid, close late). Range falloff dominates the mid-fight damage dip; the sim should capture range/hit-rate modulation of her coring, not a flat core rate.",
+    "ZERO Full Bursts (solo Burst III) - confirmed; any prior read reporting ~11-12 FBs was a false positive. Her entire output is normal SMG fire."
+  ],
+
+  "confidence": {
+    "solo_and_total": "high",
+    "fireRate_20rps_and_120_ammo": "high",
+    "perMag_counter_deltas": "high",
+    "nonCore_base_and_1.26x_ramp": "medium-high",
+    "core_value_2.3-2.5x": "medium-high",
+    "coreRate_high_at_close_range": "medium-high",
+    "answer_is_coreRate_not_baseATK": "medium-high",
+    "instance_count_2_vs_more": "low (unresolved)"
+  }
+}

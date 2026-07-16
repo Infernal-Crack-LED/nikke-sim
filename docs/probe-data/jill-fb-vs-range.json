@@ -1,0 +1,71 @@
+{
+  "unit": "jill",
+  "slug": "jill",
+  "video": "docs/probes/control + carry/jill control.MP4",
+  "question": "Resolve the earlier 0.20-vs-0.40 confound: with Jill's OWN Hit Rate OFF, is her core-hit fraction moved by FULL-BURST STATE itself, or was the gap just a boss-RANGE mismatch between the two windows? Measure (1) out-of-Full-Burst and (2) in-a-teammate's-Full-Burst at the SAME boss distance; (3) re-confirm Jill's own-burst (Hit Rate ON).",
+  "method": "ffmpeg native-res frame extraction (60fps, 2622x1206 rotated) + montage color reads. Jill popups classified by NIKKE convention: red 'CORE HIT' = core, orange = crit non-core, white = normal non-core. Shots counted via on-screen ammo counter; DoT ticks (bottom-center, 1011368/1822868/379905) excluded from bullet counts. CRITICAL CONTROL: range matched on ACTUAL on-screen boss geometry, NOT on the engine band label. All three windows chosen where the boss is CENTERED-CLOSE (boss body framing Jill's head, arms/claws spread wide) so range is held constant by construction. Boss walks WITHIN a band, so the band label is not a reliable distance proxy here.",
+  "fb_ownership_map_near_band": {
+    "note": "Two Burst-III units (Jill + Helm) alternate the Full Burst cast. Jill's OWN burst => force-reload + True-Damage bullets (NO white/orange bullet popups; every bullet reads red CORE, ~1.65M/1.98M). Teammate (Helm) burst => Jill keeps normal bullets, dominant WHITE non-core popup present.",
+    "FB3_video_47_55.5": "JILL (cores 1649753/1979704, no whites)",
+    "FB4_video_60.5_69": "HELM (white 486826 dominant) -- boss on the RIGHT this FB",
+    "FB5_video_75.5_84": "JILL (core 1649753)",
+    "FB10_video_146.5_154.5": "HELM (white 584192 dominant, NO force-reload cores) -- boss CENTERED-CLOSE this FB",
+    "FB11_video_162.5_171": "JILL (core 1649753)"
+  },
+  "windows": {
+    "1_out_of_full_burst_near": {
+      "label": "Out-of-Full-Burst gap (after FB4 ends, before FB5 banner). Jill Hit Rate OFF, no Full Burst.",
+      "window_video_s": [69.0, 73.2],
+      "boss_geometry": "CENTERED-CLOSE (boss body directly above Jill, two red claw-cores spread symmetric left/right)",
+      "shots_N": 10,
+      "shot_basis": "ammo ticks 001 -> reload -> 008..003 (~one mag)",
+      "core_red_CORE_HIT_events": 2,
+      "core_events_detail": "365738 at 70.2s; ~389301 (388965) at 73.0s. Everything else white 182869 (non-core) + orange crits 274303 (non-core, = 182869 x1.5).",
+      "core_fraction": 0.20,
+      "core_fraction_range": [0.15, 0.25]
+    },
+    "2_teammate_full_burst_near": {
+      "label": "FB10 = HELM's Full Burst (Jill firing, Hit Rate OFF, Full Burst ON).",
+      "window_video_s": [147.2, 153.6],
+      "boss_geometry": "CENTERED-CLOSE (same pose/framing as window 1 -- boss body above Jill's head, claws spread). Matched range to window 1.",
+      "shots_N": 13,
+      "shot_basis": "ammo ticks 008..001 -> reload -> 008..002 (~two partial mags)",
+      "core_red_CORE_HIT_events": 3,
+      "core_events_detail": "red 'CORE HIT 908743' at ~150.0s, ~151.8s, ~152.8s. Dominant popup = WHITE 584192 (non-core); orange crit 708512 late. (White value higher than window 1's 182869 only because Helm-FB team buff + later-fight stacks inflate the base -- a VALUE change, not a range change.)",
+      "core_fraction": 0.23,
+      "core_fraction_range": [0.15, 0.30]
+    },
+    "3_jill_own_burst_near": {
+      "label": "FB3 = JILL's own Full Burst. Hit Rate ON (+80.78%), Full Burst ON.",
+      "window_video_s": [48.0, 53.6],
+      "boss_geometry": "CENTERED-CLOSE (same pose/framing as windows 1 and 2).",
+      "shots_N": 14,
+      "shot_basis": "ammo ticks 002..001 -> reload -> 008..001 -> reload -> 008..006",
+      "core_red_CORE_HIT_events": 14,
+      "core_events_detail": "EVERY sampled bullet reads red 'CORE HIT' (1649753 or crit-core 1979704). ZERO white/orange bullet popups in the entire window.",
+      "core_fraction": 0.95,
+      "core_fraction_range": [0.90, 1.0]
+    }
+  },
+  "matched_range_comparison": {
+    "geometry_held_constant": "boss CENTERED-CLOSE in all three windows (verified visually, not via band label)",
+    "out_burst_HRoff": 0.20,
+    "teammate_FB_HRoff": 0.23,
+    "delta_teammateFB_minus_outburst": 0.03,
+    "own_burst_HRon": 0.95
+  },
+  "verdict": {
+    "is_full_burst_an_independent_core_rate_factor": "NO",
+    "reasoning": "At MATCHED boss geometry (centered-close), out-of-Full-Burst (0.20) and in-a-teammate's-Full-Burst (0.23) are statistically indistinguishable -- Delta ~ +0.03, inside noise. Full-Burst STATE by itself does NOT move Jill's core-hit fraction.",
+    "delta_at_matched_range": "+0.03 (negligible; not a real effect)",
+    "earlier_0.20_vs_0.40_gap_explained": "RANGE/POSITION artifact, not Full Burst. The prior 0.40 came from FB4, where the boss was OFF TO THE RIGHT (different geometry). When a teammate-FB is measured with the boss CENTERED-CLOSE (FB10), its core fraction drops to ~0.23 = the plain out-of-burst value. The 0.20->0.40 gap was two windows at different actual boss distances, exactly the shard-error this read existed to fix.",
+    "correct_HR_off_baseline": 0.20,
+    "hit_rate_coefficient_implication": "The Hit-Rate lift is the FULL 0.20 -> 0.95 jump (~+0.75). The HR-OFF baseline is ~0.20 regardless of Full-Burst state; do NOT use 0.40 as the baseline (it was range-contaminated). Core fraction is driven by (a) boss range/geometry and (b) Jill's own Hit Rate -- NOT by generic Full Burst."
+  },
+  "confidence": "MEDIUM-HIGH. Direction is clean and robust: teammate-FB == out-burst at matched geometry, both ~0.20; own-burst core-saturates ~0.95. All three windows read at the identical boss-centered-close pose. Exact fractions carry +/-0.05 (popup lingering across frames, ~10-14 shot samples). Ownership of FB10 as a teammate (Helm) burst is HIGH (many white non-core bullet popups + no force-reload cores = definitionally not Jill's True-Damage burst).",
+  "caveats": [
+    "N per window is a per-window sample (~10-14 shots), not full-fight; fractions estimated from red-CORE-HIT label presence + ammo-tick shot counts.",
+    "Range matched on VISUAL boss geometry (centered-close) rather than the engine band label, because the boss strafes/roams within a band; FB10's early frames are nominally the midfar->near boundary by script but the boss is visually centered-close, matching windows 1 and 3.",
+    "Not separately re-measured: an out-of-burst window with the boss OFF TO THE RIGHT (would confirm the FB4-style 0.40 reproduces without Full Burst); inferred from the matched-range equality that boss position, not FB state, drives it."
+  ]
+}

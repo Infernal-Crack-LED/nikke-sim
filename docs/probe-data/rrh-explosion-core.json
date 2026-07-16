@@ -1,0 +1,68 @@
+{
+  "purpose": "Measure the CORE FRACTION of Rapi: Red Hood's projectile-EXPLOSION instances (the ~1.6-4.5M popup class), i.e. what fraction render with the red 'CORE HIT' label vs plain white / orange (crit). Answers recording-wishlist #1 as far as EXISTING footage allows.",
+  "source_video": "docs/probes/probe u7/rapi focus vid.MP4",
+  "cross_ref": "docs/probes/control + carry/rrh control.MP4 (prior FB1 read, rrh-fb1-reread.json)",
+  "processed": "2026-07-16",
+  "method": "ffmpeg native-res frame extraction (60fps in FB windows) + upscaled tight crops of the popup column; OCR-by-eye of individual 7-digit popups and their colour/label. Colour convention (owner-confirmed): red 'CORE HIT' text = core; orange number (+ crit star) = crit; white plain = neither. A hit can be core AND crit (orange number carrying a red CORE HIT label).",
+  "video": {
+    "stored_dims": "1206x2622 portrait, rotation=90 -> displayed 2622x1206 landscape",
+    "fps": 60,
+    "duration_s": 199.13,
+    "focus_unit": "Rapi: Red Hood (rapi-red-hood); per owner ALL rendered popups are hers",
+    "comp_from_screenshot": ["Crown", "Rapi: Red Hood", "Anis: Star", "Cinderella", "Mast: Romantic Maid"],
+    "rapi_total_damage": 1106734790,
+    "fb_windows_video_s": {"FB1": "~15.0-25", "FB2": "~33-43", "FB3": "~51-60", "note": "FULL BURST splashes at ~t=14.5, 33.0, 51.0; period ~18s; focus unit -> heavy gauge, near back-to-back bursts"}
+  },
+
+  "headline_finding": {
+    "explosions_core": "CONFIRMED. Her projectile-explosion instances DO land as core: multiple clean red 'CORE HIT' labels on 7-digit explosion bodies (5,728,232 in FB1 AND FB3; ~7,948,092 in FB2). This is NOT the small out-of-burst ATTACH class (which never cores) - these are the in-burst detonation bodies.",
+    "explosions_also_miss_core": "CONFIRMED. The SAME explosion class also lands non-core: plain WHITE bodies (1,600,449 / 4,414,404) and ORANGE crit-but-non-core bodies (3,350,040 / 6,621,606). So the core rate is neither 0 nor 100%.",
+    "core_fraction_estimate": "~1/3 (point est 0.30-0.45). The plain WHITE (non-core) body is the most persistent/dominant popup in every burst; red 'CORE HIT' bodies are clearly present but the minority. Explicitly NOT near-100% (would be the isolated-shard error).",
+    "N_confident_reads": 9,
+    "confidence": "LOW-MEDIUM on the exact fraction; HIGH on the qualitative (explosions core partially, not fully).",
+    "why_not_precise": "Explosion popups overlap heavily with the dense normal-core column AND with each other; crit (orange), core (red) and MULTIPLE projectile sub-hit coefficients all coexist and confound a clean value-based instance count. This is exactly the overlap the wishlist flagged - a truly clean count still needs the ISOLATED single-explosion-batch slow-mo recording."
+  },
+
+  "explosion_instance_reads": [
+    {"fb": 1, "t_s": 15.0, "value": 1600449, "colour": "white", "core_label": false, "class": "non-core", "confidence": "high", "note": "plain body at FB1-start detonation"},
+    {"fb": 1, "t_s": 15.0, "value": 3350040, "colour": "orange", "core_label": false, "class": "crit non-core", "confidence": "medium", "note": "orange = crit, no CORE HIT label"},
+    {"fb": 1, "t_s": 16.3, "value": 5728232, "colour": "red", "core_label": true, "class": "CORE", "confidence": "high", "note": "clear red 'CORE HIT' text directly above 5728232; mid-burst rocket detonation"},
+    {"fb": 2, "t_s": 33.5, "value": 4414404, "colour": "white", "core_label": false, "class": "non-core", "confidence": "high", "note": "the persistent/dominant FB2 body; often TWO stacked simultaneously; == prior finder's ~4.5M 'clean explosion body'"},
+    {"fb": 2, "t_s": 33.55, "value": 6621606, "colour": "orange", "core_label": false, "class": "crit non-core", "confidence": "high", "note": "= 4,414,404 x1.500 exactly -> confirms crit step x1.5 and that this is the SAME base rolling crit"},
+    {"fb": 2, "t_s": 33.5, "value": 7948092, "colour": "orange-with-red-CORE-HIT", "core_label": true, "class": "CORE (likely core+crit)", "confidence": "high-on-label", "note": "= 4,414,404 x1.80; carries its own red 'CORE HIT' label. Orange tint suggests core+crit; either way CORED."},
+    {"fb": 2, "t_s": 33.55, "value": 849076, "colour": "red", "core_label": true, "class": "CORE", "confidence": "medium", "note": "smaller red CORE-HIT body (lower-coefficient sub-hit or partial read); labelled CORE"},
+    {"fb": 3, "t_s": 51.87, "value": 1600445, "colour": "white", "core_label": false, "class": "non-core", "confidence": "high", "note": "plain body, coexists with the 5,728,232 core body"},
+    {"fb": 3, "t_s": 51.87, "value": 5728232, "colour": "red", "core_label": true, "class": "CORE", "confidence": "high", "note": "red 'CORE HIT'; SAME value as FB1 t=16.3 (buff plateau matched)"}
+  ],
+
+  "tally": {
+    "core_labelled": ["5728232 (FB1)", "7948092 (FB2)", "849076 (FB2, med)", "5728232 (FB3)"],
+    "non_core": ["1600449 (FB1)", "3350040 (FB1, orange/crit)", "4414404 (FB2, dominant)", "6621606 (FB2, orange/crit)", "1600445 (FB3)"],
+    "distinct_value_ratio": "4 core-labelled / 9 total distinct reads = 0.44, BUT weighting by on-screen persistence/frequency the WHITE non-core body dominates -> weighted core fraction pulls DOWN to ~0.30-0.35.",
+    "reported_core_fraction": "~1/3 (0.30-0.45)"
+  },
+
+  "multiplier_notes": {
+    "crit_step": "x1.5 clean (6,621,606 = 4,414,404 x1.500).",
+    "core_step_observed": "~x1.8 (7,948,092 / 4,414,404 = 1.80) in FB2; FB3 normals showed core = x2.0 (99,677 / 49,839 = 2.000). Core multiplier is BUFFED above the base ~1.5 (Crown/comp core-damage buffs).",
+    "prior_x1.667_claim": "NOT reproduced. The prior u7 read reported a clean x1.667 core / x2.0 core+crit off a 4,562,076 body. I found the fully-ramped body at 4,414,404 (~3% off 4,562,076) but the core step here is ~1.8-2.0, not 1.667. Attribute to buffed core damage / different ramp instant; does not change the qualitative 'explosions core' finding."
+  },
+
+  "per_explosion_base_value": {
+    "value_M": "~1.6M to ~4.5M (multiple sub-hit coefficients + buff plateau)",
+    "detail": "FB1/FB3 resolved a ~1.60M plain body; FB2 resolved a ~4.41M plain body. Non-monotonic across FBs -> these are DIFFERENT explosion sub-hit coefficients (RRH's projectile majors span ~{1.0..1.675}), not a single ramping body. The ~4.4M matches the prior finder's ~4.5M largest body.",
+    "confidence": "medium"
+  },
+
+  "range_independence_check": {
+    "observed": "The core/non-core MIX looked roughly consistent across FB1, FB2 and FB3 (each burst showed both white bodies and CORE-HIT bodies in similar proportion). No wild swing.",
+    "interpretation": "Consistent with the task's prediction that attached explosions detonate ON the boss body and are range-INDEPENDENT - the explosion core rate did not obviously track boss distance. Confidence low (proportions eyeballed, not exhaustively counted)."
+  },
+
+  "structure_ambiguity": {
+    "note": "Could not cleanly separate two hypotheses: (a) ONE explosion hit per rocket that independently rolls core/crit at a ~1/3 rate, vs (b) a MULTI-hit explosion with a fixed set of sub-hits where SOME sub-hits always core and others never (making ~1/3 a structural constant). Evidence leans (b): a white body and a CORE-HIT body persistently COEXIST within the same detonation window (FB2 4,414,404 white + 7,948,092 CORE HIT together; FB3 1,600,445 white + 5,728,232 CORE HIT together). Either way the actionable modelling input is the same: ~1/3 of explosion instance-damage cores.",
+    "modelling_implication": "For the engine reopen (add core to her ~coreable projectile damage): apply core to roughly ONE-THIRD of the explosion instances/damage, NOT all of it. Full-core would over-credit."
+  },
+
+  "discipline": "Measurement only. No engine/sim/override edits. Values are OCR-by-eye from frame-stepped native-resolution upscaled crops. Scratch frames were discarded after reading."
+}
