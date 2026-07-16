@@ -8,6 +8,20 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U16 — Soda burst over-generation + dynamic chip-state (2026-07-16, from the re-tune)
+Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
+- **Rotation over-generation:** the sim gives Soda **6 bursts vs the recorded 5** in the soda-control comp
+  (LM/Crown/Soda/Helm). Reality's 6th burst would sit at ~20 pre-consume chips (<30) and wouldn't clear her
+  own ATK gate anyway — so the sim over-credits a nuke + a 65.25% ATK window. Suspect the Soda/Helm B3-
+  alternation cooldown collision or FB-extension-shifted timing (her +4s FB-extend). This FLATTERS her
+  vs-real 0.887 (true ~0.82). Recipe: trace the burst-cast frames of both B3s over 180s vs the recording's
+  5 Soda-burst timestamps (t≈10/48/84/124/162).
+- **Dynamic chip-state (DEFERRED, engine work):** her `critDamagePct` is modeled as a FLAT passive 42 (the
+  control-comp chip time-average). But a NO-burst comp (N3 — she never casts, chips never drain) reads
+  effective ~50 and grades 0.96 with flat-42 under-crediting ~3%. The faithful model is dynamic Golden-Chip
+  tracking (crit-damage = 1.32 × live chip count), which needs an engine currency-state feature. Until then
+  the flat passive is comp-dependent-approximate (right-ish for burst-cycling comps, low for no-burst).
+
 ### U15 — Rapi: Red Hood explosion residual (after the 2026-07-16 reopen)
 The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,
 T8 0.84→0.90, N1 0.92→0.98) but left it EXPOSED as a prediction rather than fitting it away. Still open:

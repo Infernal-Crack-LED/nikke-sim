@@ -1,6 +1,14 @@
 {
-  "note": "Tier audit straggler (Bossing A). Golden Chip economy time-averaged: starts at 50 chips, burst consumes 17, regen +1 per 3 FB normal casts (SG ~1.5/s) -> stays >=20 for the first ~2 bursts, >=10 into late fight. Stage effects 'trigger repeatedly' (cumulative): S2 stage-3 entry FB extension +2+3 -> flat +3s average per rotation ⚑ (early +5, late +2). Per-FB-normal-cast proc: Time Ext I+II are cumulative 52.04+85.02=137.06 early, 52.04 late -> averaged 100 per cast, fbGate inFb ⚑. Burst: 628.7% nuke always; the >=30-chip ATK 65.25/15s only realistically on the FIRST burst (everyN 99 offset 1 = once); hit-rate stage inert. REVIEW-RECONCILED: chip economy math confirmed (net-negative, starts 50, -17/burst, ~+15 per 2 rotations); first-burst-only >=30 gate and +3s avg extension stand. ADDED her padded reload animation: +49 frames on every reload (review-measured) -> charFixes.reloadFrames 182 (2.03s stated + 0.82s padding + cover delay). GOLDEN CHIP self-buffs NOW MODELED (2026-07-15, Fable-approved, invariant class-A): skill1's two 'after 3 normal casts during Full Burst' lines were SKIPPED (unsupported trigger). Modeled as the REAL ramping mechanic via shotFired+fbGate inFb+everyN 3 (the everyN counter now advances only on in-FB casts, engine gate-order fix): (a) Critical damage +1.32%/stack, maxStacks 50 (permanent, 'continuously') -> ramps 0->+66% by late fight; (b) Attack damage +10.51% for 2s, self + 1 highest-final-ATK ally. Datamined kit magnitudes, NOT tuned. Total-only grading (soda unfocused in N3, scarlet is focus). Hit Rate +38.91% burst stage STILL inert (no accuracy->core model; ties to the SG range-core open item). Residual after fix = the shared SG body-damage under-model (noir/naga share it) -> ACCEPTED, not fudged. GRADE: N3 0.61->0.66 (Fable 2-of-2 LAND, in pre-committed band 0.64-0.78; +8% = ~+7% attack-dmg pulse + ~+0.8% crit-dmg). CAVEAT (Fable post-op): in N3 the crit-dmg ramp reaches only 4 stacks (soda is a backline B3 firing few in-FB normals) -> the 50-stack cap and the permanent-'continuously' path are UNEXERCISED by validation; cheap future check if a soda-focus / high-uptime comp is ever recorded. Her +10.51% attack-dmg pulse also lands on the top-final-ATK ally (scarlet in N3, +4.49% -> feeds her separate knot, expected/faithful).",
+  "note": "RE-TUNED 2026-07-16 against the soda tb control.mov recording (Fable-approved; overturns the 2026-07-15 'GOLDEN CHIP self-buffs MODELED' entry with higher-tier evidence — a focused recording + exact popup arithmetic). The kit-parse blind parser out-predicted the prior hand-tune (0.667 vs real) by reading three mechanics correctly; this re-tune adopts them. THREE MEASURED BUG FIXES: (1) CRIT-DAMAGE is chip-tied, NOT a ramp-from-0. The prior model built critDamagePct via shotFired+everyN 3 in-FB casts, reaching only ~4 stacks (+5%) because Soda fires few in-FB normals. PROOF it's wrong: a t=8 pre-burst popup (chips=50, ZERO in-FB casts) showed crit ×2.160 = (150+50×1.32)/100 EXACTLY — crit-damage tracks the Golden-Chip POOL (starts 50), not a from-0 ramp. Modeled as a passive critDamagePct 42 (measured trace time-average ~31.6 chips × 1.32; ⚑ chip time-average). (2) The burst ATK ▲65.25% (@≥30 chips) fires on EVERY burst, not first-burst-only. Chips are consumed AFTER the effect ('▼17 after applied') so the gate checks PRE-consume counts (50/44/40/38/31) — all 5 bursts clear ≥30. The prior everyN 99 offset 1 (first-burst-only) traced the POST-consume pool, the classic isolated-shard error. (3) The per-FB-normal rider is Time-Ext-II-dominant (~130%, was averaged to 100) and FB-extension is measured ~+4s (was +3). Golden Chip economy: start 50, −17/burst, +~6 rebuild/FB → drains 50→27→...→14 (post-consume); pre-consume stays ≥30 all 5 bursts. Reload: charFixes.reloadFrames 182 (measured padded animation, KEPT). Hit Rate +38.91% burst stage STILL inert (SG core-band / HR→core open item). Residual: SG spray magnitude (the shared SG under-model was RESOLVED 2026-07-15 per commit 85ef60e, so this is now a cleaner read). Grade (soda tb control, Fable-verified): prior 0.667 → re-tuned **0.887** vs real — a MISS vs the pre-registered [0.90,1.05], recorded honestly, NOT fit to 1.0. Residual attribution: SG spray magnitude + the sim over-generating Soda's bursts (6 sim vs 5 real → the 0.887 is FLATTERED; true ~0.82). Rejected the datamine-max fit (crit 50 / rider 137 / FB-ext 5 → ~0.955) as trace-CONTRADICTED (the chip pool demonstrably drains; inflating FB-ext to fit distorts the whole team's rotation — faithful>fit). ⚑ crit 42 = the CONTROL-comp chip time-average; a NO-burst comp (N3, chips never drain) reads effective ~50 and grades 0.96 — so the flat passive is comp-dependent-approximate; the correct fix is dynamic chip-state tracking (engine work, DEFERRED). SEPARATE ROTATION BUG FLAGGED (open-questions): the sim gives Soda 6 bursts vs the recorded 5 — reality's 6th burst would sit at ~20 pre-consume chips (<30, gated out); suspect Soda/Helm B3-alternation cooldown collision or FB-extension-shifted timing. ⚑ rider (130) + FB-ext (4) recording-derived, refine on a soda-focus recording.",
   "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "critDamagePct", "value": 42 }
+      ]
+    },
     {
       "slot": "skill1",
       "trigger": { "kind": "shotFired" },
@@ -8,7 +16,6 @@
       "everyN": 3,
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 1.32, "maxStacks": 50 },
         { "kind": "buff", "stat": "attackDamagePct", "value": 10.51, "durationSec": 2 }
       ]
     },
@@ -36,7 +43,7 @@
       "effects": [
         {
           "kind": "fullBurstExtend",
-          "seconds": 3
+          "seconds": 4
         }
       ]
     },
@@ -52,7 +59,7 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 100
+          "atkPct": 130
         }
       ]
     }
@@ -81,8 +88,6 @@
       "target": {
         "kind": "self"
       },
-      "everyN": 99,
-      "everyNOffset": 1,
       "effects": [
         {
           "kind": "buff",

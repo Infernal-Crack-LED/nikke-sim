@@ -8,6 +8,30 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-16) Soda & Cinderella: Crystal Wave re-tuned against recordings — the kit-parse blind parser
+  out-predicted both trusted hand-tunes (Use-B discrepancy detector working), and the fixes are adopted.**
+  Both surfaced during the kit-parse regression sweep; both Fable pre/post-op LAND.
+  - **Soda: Twinkling Bunny — 3 measured bugs, 0.667 → 0.887 vs real** (soda tb control.mov). (1) Crit-damage
+    is CHIP-POOL-tied, NOT a ramp-from-0: the prior model built `critDamagePct` via `everyN 3` in-FB casts
+    (~4 stacks, +5%), but a t=8 pre-burst popup (chips=50, zero in-FB casts) showed crit ×2.160 =
+    (150+50×1.32)/100 EXACTLY — crit tracks the Golden-Chip pool (starts 50). Now `passive critDamagePct 42`
+    (measured trace time-average ~31.6 chips). (2) Burst ATK ▲65.25% (@≥30 chips) fires on EVERY burst, not
+    first-burst-only: chips consume AFTER the effect ("▼17 after applied") so the gate reads PRE-consume
+    (50/44/40/38/31, all ≥30); the prior `everyN 99 offset 1` traced the POST-consume pool (isolated-shard
+    error). (3) rider 100→130 (Time-Ext-II dominant), FB-extend 3→4 (measured). **This OVERTURNS the
+    2026-07-15 "GOLDEN CHIP self-buffs MODELED" entry** — licensed: the old entry rested on a post-consume
+    trace inference; the new evidence is exact popup arithmetic on a focused recording (strictly higher tier).
+    0.887 is an honest MISS vs the pre-registered [0.90,1.05], NOT fit to 1.0 — the datamine-max fit
+    (crit 50 → ~0.955) was rejected as trace-contradicted (the pool demonstrably drains); residual = SG spray
+    + a separate rotation over-generation bug (6 sim bursts vs 5 real, open-questions).
+  - **Cinderella: Crystal Wave — core-strike rider restored, ~0.87 → 0.99/1.02 vs real** (T5/T8). Her FB-enter
+    proc text = "Deals X% … as CORE STRIKE damage" and "activates when entering Full Burst"; the prior HT set
+    `trigger:burstCast` (fires PRE-FB → loses the +50%) AND dropped `core:true`. Restored to text-faithful
+    (`fullBurstEnter` + `core:true`, both MG/Snipe modes). **NARROWS (not reverses) the 2026-07-13 U1
+    no-core ruling**: function-type additional damage stays no-core BY DEFAULT — the carve-out is riders whose
+    text EXPLICITLY says "core strike," confirmed by single-variable measured tests on two comps. Drove the
+    kit-parse rider-core text-fidelity rule.
+
 - **(2026-07-16) Rapi: Red Hood's projectile-EXPLOSION class cores ~1/3, is DERIVED from the real rocket
   meter (120→60 in-FB cadence + in-burst instant detonation), and her fictional damage placeholders are
   removed — partially closing the "invisible X".** Reopens the 2026-07-14 invisible-X entry below with new
