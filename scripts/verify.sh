@@ -12,6 +12,9 @@ npm run typecheck
 say "override validation (all)"
 for f in src/skills/overrides/*.json; do basename "$f" .json; done | xargs npx tsx scripts/validate-overrides.ts | tail -2
 
+say "approved-nickname validation (characters.json nicknames unambiguous)"
+npx tsx scripts/validate-nicknames.ts
+
 say "engine regression (measured truths + snapshots + seeded determinism)"
 npx tsx scripts/regression.ts
 

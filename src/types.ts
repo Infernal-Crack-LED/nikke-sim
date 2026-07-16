@@ -24,6 +24,8 @@ export interface CharacterData {
   burstCooldownSec: number;
   class: NikkeClass;
   element: Element;
+  manufacturer: string | null;    // Elysion/Missilis/Tetra/Pilgrim/Abnormal — drives the relationship
+                                   // (bond) ATK bonus, which is a class×manufacturer stat (Pilgrims cap higher)
   normalAttackMultiplier: number; // % of ATK per trigger pull (all pellets/hits included)
   coreAttackMultiplier: number;   // % — 200 = core hits deal 2x
   ammo: number;
@@ -34,6 +36,7 @@ export interface CharacterData {
   rl3: number | null;             // burst gen: % of gauge generated per 3 seconds
   burstGaugePerShot: number | null;
   treasure: boolean;              // has a Treasure (favorite item); DB prydwen_slug ends -treasure
+  nicknames?: string[];           // APPROVED community nicknames (src/data/nicknames.ts derivation)
   skills: { skill1: string; skill2: string; burst: string };
 }
 

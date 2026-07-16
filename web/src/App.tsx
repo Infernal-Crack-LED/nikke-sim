@@ -1,5 +1,4 @@
 import {
-  Children,
   Fragment,
   useEffect,
   useLayoutEffect,
@@ -24,6 +23,7 @@ import type {
 import { DpsChartTab } from './DpsChartTab';
 import { navigate } from './router';
 import { MatrixChart } from './components/MatrixChart';
+import { PillGrid } from './components/PillGrid';
 import { MatrixFilter } from './components/MatrixFilter';
 import { OlBarChart } from './components/OlBarChart';
 import { DpsBarChart } from './components/DpsBarChart';
@@ -268,6 +268,13 @@ const allChars = Object.values(data.characters).sort((a, b) =>
   a.name.localeCompare(b.name),
 );
 
+// search predicate for the char pickers: slug, name, or an APPROVED community
+// nickname (characters.json `nicknames`, sync-derived from bakery-bot aliases)
+const charMatchesQuery = (c: (typeof allChars)[number], q: string) =>
+  c.slug.includes(q) ||
+  c.name.toLowerCase().includes(q) ||
+  (c.nicknames ?? []).some((n) => n.includes(q));
+
 // At-a-glance 64×64 portrait strip for a generated team (tight grouping). Shared
 // by the Optimal Team result and, later, the Roster generator — keep it prop-only
 // (no App state) so both can reuse it. `adv` flags the elementally-advantaged
@@ -331,53 +338,6 @@ function chunk<T>(arr: T[], n: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
   return out;
-}
-
-// Balanced-wrap column count for a set of `count` inline items in a grid: one row
-// if they fit, otherwise the fewest EVEN rows (4→2:2 not 3:1, 6→3:3, 7→4:3). Width-
-// aware via ResizeObserver; measures each item's natural (content) width.
-function useBalancedCols(count: number) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [cols, setCols] = useState(count);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const compute = () => {
-      const items = Array.from(el.children) as HTMLElement[];
-      if (items.length < 2) return setCols(Math.max(1, items.length));
-      const cs = getComputedStyle(el);
-      const gap = parseFloat(cs.columnGap || '0') || 0;
-      const W = el.clientWidth;
-      const widths = items.map((c) => c.scrollWidth); // content widths (justify-items: start)
-      const total = widths.reduce((s, w) => s + w, 0) + gap * (count - 1);
-      if (total <= W) return setCols(count); // they all fit on one row — keep it
-      // else split into the fewest rows that fit (by the widest item), evened out
-      const perRow = Math.max(1, Math.floor((W + gap) / (Math.max(...widths) + gap)));
-      const rows = Math.ceil(count / perRow);
-      setCols(Math.max(1, Math.ceil(count / rows)));
-    };
-    compute();
-    if (typeof ResizeObserver === 'undefined') return; // jsdom / SSR: no reflow
-    const ro = new ResizeObserver(compute);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [count]);
-  return { ref, cols };
-}
-
-// A `.pills` group that lays its buttons out in a content-aware grid, wrapping
-// into evenly-sized rows instead of a greedy last-row remainder.
-function PillGrid({ className, children }: { className?: string; children: ReactNode }) {
-  const { ref, cols } = useBalancedCols(Children.count(children));
-  return (
-    <div
-      ref={ref}
-      className={`pills pill-grid${className ? ` ${className}` : ''}`}
-      style={{ ['--pcols' as string]: cols }}
-    >
-      {children}
-    </div>
-  );
 }
 
 // Charge weapons in the roster, so the Charge Speed picker only offers RL/SR
@@ -772,7 +732,7 @@ function CharPicker({
   const q = query.toLowerCase();
   const matches = q
     ? allChars
-        .filter((c) => c.slug.includes(q) || c.name.toLowerCase().includes(q))
+        .filter((c) => charMatchesQuery(c, q))
         .slice(0, 12)
     : allChars.slice(0, 12);
   return (
@@ -828,7 +788,7 @@ function CharSearch({
   const matches = allChars
     .filter((c) => !exclude.includes(c.slug))
     .filter(
-      (c) => !q || c.slug.includes(q) || c.name.toLowerCase().includes(q),
+      (c) => !q || charMatchesQuery(c, q),
     )
     .slice(0, 12);
   return (

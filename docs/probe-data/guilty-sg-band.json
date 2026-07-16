@@ -1,0 +1,486 @@
+{
+ "measurement": "HR=0 shotgun per-band magnitude M(B) = landing(B) x bracket(B), measured via damage-counter reconciliation on an HR-clean solo SG unit (guilty), replicating the isabel counter-reconciliation method",
+ "unit": "guilty",
+ "unitFullName": "Guilty",
+ "weapon": "SG",
+ "hitsPerShot": 10,
+ "hrClean": true,
+ "video": "docs/probes/ar-sg-smg/guilty solo sg.MP4",
+ "screenshot": "docs/probes/ar-sg-smg/guilty solo sg.jpg",
+ "date": "2026-07-16",
+ "focusReason": "solo recording - Guilty only unit (all other slots EMPTY on Battle Records); lone Burst II => ZERO full bursts (no FULL BURST splash anywhere in the 1f/8s segment map); S1/S2 are the only kit effects and both are normal-attack-triggered",
+ "endScreenTotal": 71581952,
+ "params": {
+  "basis": "scope-lock Base-5",
+  "staticAtk": 118027,
+  "atkTermAssumed": 117887,
+  "normalMultPct": 231.4,
+  "perShotUnit": 272791,
+  "unitFormula": "117887 * 2.314 = 272791 (10-pellet shot total, plain, non-crit non-core, no range)",
+  "perPelletQuantum_nominal": 2727.91,
+  "perPelletQuantum_measured": 2772.8,
+  "quantumElevationPct": 1.65,
+  "quantumNote": "measured q from 185-shot integer-lattice fit (3-pass LSQ, residuals <=0.2% on 184/185, the 1 exception exact at S2-expiry edge); INDEPENDENTLY popup-verified exact: white 53414=13q*1.4818, 51925=13q*1.4405, 41088=10q*1.4818, 39942=10q*1.4405, orange 73958=18q*1.4818, 71896=18q*1.4405, 61632=15q*1.4818, 59913=15q*1.4405, red CORE HIT 91866=23q*1.4405. Same-direction basis elevation as isabel (+2.3%) and brid aux (+1.6%): scope-lock ATK term reads slightly low across SG probes.",
+  "bossDef": 140,
+  "bossPartless": true,
+  "bossElement": "neutral (Armstrong, no advantage)",
+  "coreLevel": 7,
+  "sync": 400,
+  "durationSec": 180,
+  "cube": "none"
+ },
+ "clock": {
+  "method": "first-DAMAGE fight clock (isabel convention): fightClock = videoSec - 7.717 (first damage event, counter 0 -> 221,767, at video frame 463 = 7.717s). Band windows on this clock.",
+  "firstDamageVideoSec": 7.717,
+  "timerAnchors": [
+   {
+    "videoSec": 12.0,
+    "countdown": "02:55",
+    "impliedOffsetRange": [
+     6.0,
+     7.0
+    ]
+   },
+   {
+    "videoSec": 40.0,
+    "countdown": "02:26",
+    "impliedOffsetRange": [
+     5.0,
+     6.0
+    ]
+   },
+   {
+    "videoSec": 59.83,
+    "countdown": "02:06",
+    "impliedOffsetRange": [
+     4.83,
+     5.83
+    ]
+   },
+   {
+    "videoSec": 103.15,
+    "countdown": "01:22",
+    "impliedOffsetRange": [
+     4.15,
+     5.15
+    ]
+   }
+  ],
+  "timerDriftNote": "the top-right countdown runs ~1.5-2s FAST vs video time across the fight (no constant offset satisfies all four anchors). Cause unresolved (VFR recording vs game-clock skips at transitions). Band placement therefore keys to the first-damage clock per the pre-registration; empirical lattice boundaries reported separately.",
+  "empiricalBandBoundaries": {
+   "method": "the NEAR range bonus (+0.3/pellet) changes the delta lattice from multiples-of-5 U to non-mult-5 integers -> near windows are directly visible in the data",
+   "nearRun1": "fightClock 30.17 .. ~64 (definite non-mult-5 fits 30.17-63.57; the 3 shots at 65.87-67.20 are mult-5, P(chance if near)=0.8%)",
+   "nearRun2": "fightClock 140.22 .. ~170 (definite 140.22-169.27; the 5 tail-magazine shots 173.20-175.87 are all mult-5, P(chance if near)=0.03%)",
+   "vsNominal": "range script transitions run ~2-4s EARLY vs the nominal first-damage-clock boundaries (33/70->near observed ~30.2; 144->near observed ~140.2; 176->out observed ~170-173); fire-hold gaps (0.9-2.4s, no events, off the 40f pull grid) observed at each transition"
+  }
+ },
+ "method": {
+  "primary": "counter-reconciliation at 60fps: per-frame diff of the top-centre DAMAGE counter ROI (crop 1140,25 352x62 landscape) -> 494 stable states; digit OCR via connected-component clustering (77 clusters) + visual labeling + seed validation (17 hand-read states) -> 455 numeric reads, 0 monotonicity violations, final read = end-screen total EXACT. Distinct-value chain -> 185 damage events.",
+  "shotCount": "185 events; inter-event gap histogram: 146x exactly 40f (0.667s cadence), reloads exactly 181f (matches reloadFrames 181 frame-exact), 7 close pairs (7-26f) are landing-time jitter with complementary 54-73f gaps (sum ~2x40f), 3 extended transition fire-holds. Merges: none (every event fits a single-shot lattice value). Whiffs: no skipped-pull (80f) gaps anywhere -> zero whiffed pulls outside transition holds.",
+  "kitFit": "R3 (pre-M, per plan): every delta = q x U x f with f = 1 + 0.0881*a + 0.0413*b on the DETERMINISTIC schedule a: attacks 1-6 ->0, 7-12 ->1, 13-18 ->3, 19-24 ->4, 25+ ->5 (S1 every 6 attacks +1, S2 every 12 attacks ALSO +1 'increases stack count of buffs'), b: 1 within 10s of the last 12k-th attack. 184/185 integer-exact; the single exception (fc 144.88) exact at b=0 = damage landed ~0.05s before S2 expiry.",
+  "bandVerification": "boss apparent size/position at spot frames: far (fc 88-95) boss smallest/distant-right; near (fc 50-60, 156) boss large/centred filling frame; mid medium; matches labels."
+ },
+ "qG1_S1SoloSelfApplication": {
+  "question": "does guilty's S1 (Duplicate 8.81% ATK of ally with highest ATK, stacks x5, 10s) self-apply solo?",
+  "answer": "YES - self-applies",
+  "signature": "REFRESH-ALL staircase (per plan R3 taxonomy): step trace rises 1.000 -> 1.0881 (shot 7) -> 1.3056 (shot 13; +2 stacks: S1 six-attack trigger + S2 twelve-attack '+1 stack count' bump, +S2 ATK 4.13%) -> 1.3937 (shot 19) -> plateau 1.4818 (shot 25 onward = 5-stack cap + S2), with b flickering to 0 (1.4405) EXACTLY in the predicted S2 expiry windows (12 attacks span ~12.03s > 10s duration). NO decay across reloads and NO sawtooth anywhere in 160 plateau shots -> refresh-all, not independent-expiry; not flat.",
+  "evidence": "184/185 shots integer-exact on this schedule (residuals <=0.2%); popup values in BOTH b-states exact (e.g. near plain 53414 vs 51925); on-screen buff icon shows stack count '5' at plateau spot frames (green heart icon, fc 51.9/95.3).",
+  "s2StackBumpFinding": "S2's 'Increases stack count of buffs by 1' demonstrably bumps S1's stack count (jump from 1 to 3 at attack 12, cap reached by attack 24+12-bump: plateau from shot 25, one trigger earlier than S1-alone would reach 5)."
+ },
+ "bands": [
+  {
+   "band": "mid",
+   "fightClockRange": [
+    0,
+    33
+   ],
+   "shots": 36,
+   "windowDamageRaw": 12545197,
+   "windowDamageBuffCorrected": 9706808,
+   "M_buffCorrected_basis272791": 0.9884,
+   "M_raw_uncorrected": 1.2775,
+   "M_measuredStepBasis_meanU/100": 0.9725,
+   "M_ratio_toPooledNominalNear": 0.8682,
+   "boundaryShiftMinus1.5s": {
+    "shots": 34,
+    "M_buffCorrected": 0.9712
+   },
+   "boundaryShiftPlus1.5s": {
+    "shots": 33,
+    "M_buffCorrected": 0.9936
+   },
+   "qFit": 2772.62,
+   "confidenceNote": "medium-high: exact fits throughout, but window contains the S1 ramp (buff-corrected by the schedule-exact f) and the mid->near transition occurs ~30.2 (2.8s early) so the last 4 nominal-mid shots are lattice-NEAR"
+  },
+  {
+   "band": "near1",
+   "fightClockRange": [
+    33,
+    70
+   ],
+   "shots": 36,
+   "windowDamageRaw": 16646229,
+   "windowDamageBuffCorrected": 11296465,
+   "M_buffCorrected_basis272791": 1.1503,
+   "M_raw_uncorrected": 1.6951,
+   "M_measuredStepBasis_meanU/100": 1.1317,
+   "M_ratio_toPooledNominalNear": 1.0104,
+   "boundaryShiftMinus1.5s": {
+    "shots": 38,
+    "M_buffCorrected": 1.1572
+   },
+   "boundaryShiftPlus1.5s": {
+    "shots": 38,
+    "M_buffCorrected": 1.1259
+   },
+   "qFit": 2772.82,
+   "confidenceNote": "high as a MEASUREMENT (all exact fits, popup-verified); but sits -10% below the 1.281 pre-reg control - see nearControlDeviation"
+  },
+  {
+   "band": "far",
+   "fightClockRange": [
+    70,
+    106
+   ],
+   "shots": 39,
+   "windowDamageRaw": 11810340,
+   "windowDamageBuffCorrected": 7999633,
+   "M_buffCorrected_basis272791": 0.7519,
+   "M_raw_uncorrected": 1.1101,
+   "M_measuredStepBasis_meanU/100": 0.7397,
+   "M_ratio_toPooledNominalNear": 0.6605,
+   "boundaryShiftMinus1.5s": {
+    "shots": 36,
+    "M_buffCorrected": 0.7412
+   },
+   "boundaryShiftPlus1.5s": {
+    "shots": 39,
+    "M_buffCorrected": 0.7597
+   },
+   "qFit": 2772.84,
+   "confidenceNote": "high: 39 exact fits, popup spot-checks L-exact on 3 shots, no cores seen in samples; boundary-stable (0.741-0.760)"
+  },
+  {
+   "band": "midfar",
+   "fightClockRange": [
+    106,
+    144
+   ],
+   "shots": 40,
+   "windowDamageRaw": 15186037,
+   "windowDamageBuffCorrected": 10278898,
+   "M_buffCorrected_basis272791": 0.942,
+   "M_raw_uncorrected": 1.3917,
+   "M_measuredStepBasis_meanU/100": 0.9267,
+   "M_ratio_toPooledNominalNear": 0.8274,
+   "boundaryShiftMinus1.5s": {
+    "shots": 41,
+    "M_buffCorrected": 0.925
+   },
+   "boundaryShiftPlus1.5s": {
+    "shots": 40,
+    "M_buffCorrected": 0.9743
+   },
+   "qFit": 2772.83,
+   "confidenceNote": "medium: nominal window's last shots (140.2-143.55) are lattice-NEAR (boss arrived early) inflating M; boundary-sensitive 0.925-0.974; empirically-clean midfar (106-140) M = see empiricalNote"
+  },
+  {
+   "band": "near2",
+   "fightClockRange": [
+    144,
+    176
+   ],
+   "shots": 34,
+   "windowDamageRaw": 15394149,
+   "windowDamageBuffCorrected": 10442451,
+   "M_buffCorrected_basis272791": 1.1259,
+   "M_raw_uncorrected": 1.6598,
+   "M_measuredStepBasis_meanU/100": 1.1076,
+   "M_ratio_toPooledNominalNear": 0.989,
+   "boundaryShiftMinus1.5s": {
+    "shots": 33,
+    "M_buffCorrected": 1.1788
+   },
+   "boundaryShiftPlus1.5s": {
+    "shots": 32,
+    "M_buffCorrected": 1.1035
+   },
+   "qFit": 2772.82,
+   "confidenceNote": "high as a MEASUREMENT; nominal window includes 5 post-departure mult-5 shots (173.2-175.87) depressing M; empirical window cleaner"
+  }
+ ],
+ "pooledNear": {
+  "nominalWindows": {
+   "shots": 70,
+   "M_buffCorrected": 1.1384
+  },
+  "empiricalWindows": {
+   "shots": 72,
+   "M_buffCorrected": 1.1863
+  }
+ },
+ "empiricalNearWindows": {
+  "empNear1": {
+   "fightClockRange": [
+    30.0,
+    64.0
+   ],
+   "shots": 37,
+   "windowDamageRaw": 17648787,
+   "windowDamageBuffCorrected": 11992444,
+   "M_buffCorrected_basis272791": 1.1882,
+   "M_raw_uncorrected": 1.7486,
+   "M_measuredStepBasis_meanU/100": 1.1689,
+   "L_decomposition": {
+    "uniqueSolutionShots": 34,
+    "meanL_unique": 8.088,
+    "meanL_lowerBound_allShots": 7.838,
+    "meanL_upperBound_allShots": 8.243,
+    "L_hist_unique": {
+     "2": 1,
+     "6": 1,
+     "7": 10,
+     "8": 4,
+     "9": 15,
+     "10": 3
+    },
+    "note": "L = landed pellets/10-pellet shot from U mod 5 near-lattice (13L+5J+10C); mult-5 U ambiguous -> bounds"
+   }
+  },
+  "empNear2": {
+   "fightClockRange": [
+    140.0,
+    170.0
+   ],
+   "shots": 35,
+   "windowDamageRaw": 16676077,
+   "windowDamageBuffCorrected": 11307566,
+   "M_buffCorrected_basis272791": 1.1843,
+   "M_raw_uncorrected": 1.7466,
+   "M_measuredStepBasis_meanU/100": 1.1651,
+   "L_decomposition": {
+    "uniqueSolutionShots": 33,
+    "meanL_unique": 8.061,
+    "meanL_lowerBound_allShots": 7.886,
+    "meanL_upperBound_allShots": 8.171,
+    "L_hist_unique": {
+     "4": 1,
+     "5": 1,
+     "6": 2,
+     "7": 4,
+     "8": 12,
+     "9": 9,
+     "10": 4
+    },
+    "note": "L = landed pellets/10-pellet shot from U mod 5 near-lattice (13L+5J+10C); mult-5 U ambiguous -> bounds"
+   }
+  }
+ },
+ "ratios": {
+  "note": "guilty PRIMARY form per pre-reg (unless R2 fires - it does not: per-band q spread 0.008%). Buff-corrected M ratios.",
+  "nominalWindows": {
+   "far/near": 0.6605,
+   "midfar/near": 0.8274,
+   "mid/near": 0.8682,
+   "preRegDiscriminators": {
+    "far/near": {
+     "H0": 0.629,
+     "H1": 0.554,
+     "midpoint": 0.592
+    },
+    "midfar/near": {
+     "H0": 0.757,
+     "H1": 0.722
+    }
+   }
+  },
+  "empiricalNearWindows": {
+   "far/nearEmp": 0.6338,
+   "midfarClean/nearEmp": 0.7775,
+   "mid/nearEmp": 0.8332
+  }
+ },
+ "wholePictureChecks": {
+  "totalClosure": {
+   "pass": true,
+   "sumOfDeltas": 71581952,
+   "endScreen": 71581952,
+   "note": "EXACT to the digit; final counter state (video 183.6s) = Battle Records total; NB the post-fight results screen shows a different 'TOTAL DAMAGE' tile (contact-sheet read ~71.6M) not used - Battle Records per-unit number is the closure target"
+  },
+  "nearAgreement": {
+   "pass": true,
+   "near1M": 1.1503,
+   "near2M": 1.1259,
+   "spreadPct": 2.2,
+   "empNear1M": 1.1882,
+   "empNear2M": 1.1843,
+   "empSpreadPct": 0.3,
+   "vsControl1.281": "FAILS the 4% control gate: -10.2%/-12.1% (nominal), -7.2%/-7.6% (empirical) - see nearControlDeviation"
+  },
+  "shotCountClosure": {
+   "pass": true,
+   "totalShots": 185,
+   "note": "185 = 20 complete magazines x9 + 5 (last partial); gap grid: 40f pulls + 181f reloads exact; predicted 165-180 (plan) / 190 (pure cadence ceiling); zero whiffed pulls detected - deficits vs ceiling are transition fire-holds (~0.9-2.4s each), not whiffs"
+  },
+  "stepStability": {
+   "pass": true,
+   "qByBand": {
+    "mid": 2772.62,
+    "near1": 2772.82,
+    "far": 2772.84,
+    "midfar": 2772.83,
+    "near2": 2772.82
+   },
+   "spreadPct": 0.008,
+   "note": "gate <3%: passed by 2.5 orders of magnitude; no ATK drift; S1 duplicate is static (base-ATK snapshot, no compounding)"
+  }
+ },
+ "r1_perBandShotClosure": {
+  "cadencePredictedPureSchedule": {
+   "mid": 36,
+   "near1": 41,
+   "far": 40,
+   "midfar": 40,
+   "near2": 33,
+   "total": 190
+  },
+  "observed": {
+   "mid": 36,
+   "near1": 36,
+   "far": 39,
+   "midfar": 40,
+   "near2": 34,
+   "tail": 0,
+   "total": 185
+  },
+  "note": "prediction = idealized 40f/181f chain from fc 0 (no transition holds). All shortfalls are localized at band transitions as fire-hold gaps (mid->near1 2.45s hold; far->midfar reload+0.93s; midfar->near2 reload+2.27s; near2->end transition consumed the last 4 pulls of the final magazine). NO whiff story in ANY band: every non-reload gap is 40f or jitter-paired; far band shows NO shot-count deficit beyond its transition hold."
+ },
+ "r2_stepAtkPerBand": {
+  "trigger": "fires if any steady band's step differs >2% from near's",
+  "result": "NOT fired: per-band q identical to 0.008% (mid 2772.62 lowest - contains the six pre-buff shots with slightly different rounding mix; steady bands 2772.82-2772.84)",
+  "consequence": "ratio form remains guilty's PRIMARY read per the pre-registration"
+ },
+ "r5_boundarySensitivity": "per-band minus1.5/plus1.5 M values included in bands[]",
+ "r6_popupSpotChecks": [
+  {
+   "shot": "far fc 78.57 (b=0, U=75)",
+   "popups": "6x white 39942 + 1x orange 59913",
+   "impliedComposition": "L=7: 6 plain + 1 crit",
+   "sum": 299565,
+   "delta": 299565,
+   "agree": true
+  },
+  {
+   "shot": "far fc 86.92 (b=1, U=65)",
+   "popups": "~4-5x white 41088 + 1x orange 61632 (overlaps)",
+   "impliedComposition": "L=6: 5 plain + 1 crit",
+   "sum": 267072,
+   "delta": 267072,
+   "agree": true
+  },
+  {
+   "shot": "far fc 95.27 (b=1, U=30)",
+   "popups": "white 41088 x3 (two overlapping)",
+   "impliedComposition": "L=3 plain",
+   "sum": 123264,
+   "delta": 123264,
+   "agree": true
+  },
+  {
+   "shot": "near fc 35.18 (b=1, U=122)",
+   "popups": "~8x white 53414 + 1x orange 73958",
+   "impliedComposition": "L=9: 8 plain + 1 crit",
+   "sum": 501270,
+   "delta": 501270,
+   "agree": true
+  },
+  {
+   "shot": "near fc 43.53 (b=0, U=160)",
+   "popups": "white 51925s + 2x orange 71896 + red CORE HIT 91866 (x2 overlapped)",
+   "impliedComposition": "L=10: 6 plain + 2 crit + 2 core",
+   "sum": 639074,
+   "delta": 639074,
+   "agree": true
+  },
+  {
+   "shot": "near fc 51.88 (b=1, U=26)",
+   "popups": "white 53414 (2 expected, 1 visible at +10f, value exact)",
+   "impliedComposition": "L=2 plain - a genuine 2-pellet near shot",
+   "sum": 106828,
+   "delta": 106828,
+   "agree": true
+  },
+  {
+   "shot": "near fc 60.23 (b=1, U=78)",
+   "popups": "white 53414 x~6 (overlapping)",
+   "impliedComposition": "L=6 plain",
+   "sum": 320484,
+   "delta": 320484,
+   "agree": true
+  },
+  {
+   "shot": "near fc 156.25 (b=1, U=114)",
+   "popups": "2x orange 73958 + white 53414s",
+   "impliedComposition": "L=8: 6 plain + 2 crit",
+   "sum": 468400,
+   "delta": 468400,
+   "agree": true
+  }
+ ],
+ "preRegComparison": {
+  "note": "DATA ONLY - no H0/H1 classification (judge decides per pre-registration).",
+  "preRegPredictedM": {
+   "H0": {
+    "mid": 1.075,
+    "near": 1.281,
+    "far": 0.806,
+    "midfar": 0.97
+   },
+   "H1": {
+    "mid": 1.011,
+    "near": 1.281,
+    "far": 0.71,
+    "midfar": 0.925
+   }
+  },
+  "isabelMeasuredM": {
+   "mid": 1.008,
+   "near1": 1.286,
+   "far": 0.705,
+   "midfar": 0.922,
+   "near2": 1.311
+  },
+  "guiltyMeasuredM_buffCorrected_nominal": {
+   "mid": 0.9884,
+   "near1": 1.1503,
+   "far": 0.7519,
+   "midfar": 0.942,
+   "near2": 1.1259,
+   "pooledNear": 1.1384,
+   "empiricalWindows": {
+    "near1": 1.1882,
+    "near2": 1.1843,
+    "pooledNear": 1.1863,
+    "midfarClean_106_140": 0.9223
+   }
+  },
+  "nearControlDeviation": "guilty near reads ~1.13-1.19 vs the 1.281 control: -7% (empirical windows) to -12% (nominal windows) => the pre-registered >4% NEAR-control trigger FIRES. However the deviation is mechanically decomposed: q (ATK basis) is popup-verified EXACT (+1.65% vs nominal, same direction as isabel), kit factor f is schedule-exact, and the near-lattice L decomposition shows a real landed-pellet deficit (mean L ~7.9-8.2 of 10, mode 9, with direct popup-counted examples L=2,6,8,9,10) rather than any ATK/kit confound. Whether this voids guilty's range bands per H-alt-B or re-frames near landing as unit-specific is for the judge."
+ },
+ "tailExcluded": {
+  "fightClockRange": [
+   176,
+   180
+  ],
+  "windowDamage": 0,
+  "note": "last damage event at fightClock 175.87; the final magazine's remaining pulls fall in the near2->midfar transition hold and the fight ends during the final reload; counter fades (unread near-empty ROI states) - no damage after 175.87. Total closure unaffected."
+ },
+ "note": "MEASUREMENT ONLY - no engine/override edits, no verdicts. Per-event log: events.json (same directory).",
+ "empiricalMidfar_106_140": {
+  "shots": 34,
+  "windowDamageRaw": 12630381,
+  "windowDamageBuffCorrected": 8554201,
+  "M_buffCorrected_basis272791": 0.9223,
+  "M_raw_uncorrected": 1.3618,
+  "M_measuredStepBasis_meanU/100": 0.9074
+ }
+}

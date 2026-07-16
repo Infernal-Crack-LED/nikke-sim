@@ -326,6 +326,18 @@ lives. Newest first within each section.
 
 ## Engine/data-architecture decisions
 
+- **(2026-07-16) DPS Rankings element filter — an element-filtered chart ranks ALL B3s of that element,
+  not just the SSS/SS chart population.** The rankings page grew an element filter (All / Fire / Water /
+  Wind / Electric / Iron, same pill UI as the boss-weakness picker; "All" = the prior behavior). Ruling:
+  the unfiltered charts keep the SSS/SS-only population (the artifact's chart-population flag), but a
+  single element has only a couple of units at those tiers (Electric: 2), which defeats the point of the
+  view — so the element filter bypasses the tier gate and ranks every B3 of that element in the artifact
+  (Electric: 9). Compare-a-unit is element-scoped while filtered: its rank/total are within that
+  element's population, and a compare unit of a DIFFERENT element shows no annotation (it has no place
+  in that ranking). Share links carry the filter (`ele` URL param) and share-image titles get an
+  "· <Element> only" suffix so the exported chart is self-describing. Implementation note: the
+  balanced-wrap pill grid moved out of the sim app into a shared component (`web/src/components/
+  PillGrid.tsx`) so other pages can use it without a circular import.
 - **(2026-07-15) Pellet-consolidation mode — a config-driven range-gated firing state (dorothy-S; STEP 2 of
   the sequenced SG fix).** New generic engine mechanic: a `ConsolidationConfig` on the override
   (`triggerLandedPellets`/`shots`/`coreRate`/`pelletFraction`/`attackDamagePct`/`pierce`) → after N
@@ -640,3 +652,37 @@ lives. Newest first within each section.
   roster cards + the 3:2 portrait state center their partial last row (explicit rows / fixed-width flex);
   portraits are 32–64px content-aware, snapping to 3:2 only at the 32px floor. — web/src/usePortraitThumbs.ts;
   App.tsx; styles.css.
+- **(2026-07-16) Solo control framework (DPS chart, owner spec): the tested B3 in TOTAL isolation —
+  three synthetic no-op units instead of named supports.** Team order: no-op B1 (AR), no-op B2 (SR),
+  tested (slot 3 = camera focus), no-op B3 (RL). The no-ops (`src/dpschart/noop.ts`) deal zero damage
+  (`normalAttackMultiplier 0`), carry zero skills (empty kit text → the parser yields no blocks), and
+  generate weapon-class-modal burst gauge (new `class-modal-*` entries `noop-b1-ar`/`noop-b2-sr`/
+  `noop-b3-rl` in `data/gauge-per-shot.json`); their weapon data are the weapon-class MODAL values
+  from characters.json. Every unit gets a flat **7s burst CDR** (new `UnitOptions.burstCdrSec`,
+  applied to the charFixes-corrected cooldown, floor 1s): no-ops 20/20/40 → 13/13/33s, tested (all
+  40 tested-population B3s have 40s base) → 33s. Contract: **the tested unit bursts every OTHER Full
+  Burst**, alternating with the no-op B3 — enforced by a new engine gate `burstGate: 'everyOther'`
+  (never take stage 3 twice in a row), because cooldown arithmetic alone breaks on FB-extending kits
+  (Modernia's 15s Full Burst put her cooldown inside the next stage window, where the measured
+  leftmost-with-waiting rule stalled the chain ~8s and handed her consecutive casts). The gate is a
+  framework modeling switch, opt-in per unit; no real/validation comp sets it, and the regression
+  snapshots are byte-identical. Matrix grows 72 → 90 cells (5 frameworks). Contract pinned in
+  `scripts/regression.ts` check 5 (zero no-op damage + strict alternation, scarlet + modernia).
+  — src/dpschart/noop.ts, matrix.ts, run.ts; src/prepare.ts; src/engine/sim.ts gatePasses.
+- **(2026-07-16) SG landing table: class-wide range refit REJECTED on a pre-registered split; landing
+  is per-unit (LOG, no engine change).** The isabel solo read's hypothesis (far 0.75→~0.66, mid/midfar
+  also high) was tested against two new pre-registered solo counter reads. Outcome: brid-silent-track
+  corroborates isabel's far value almost exactly (M 0.709 vs predicted 0.710; both clean anchors imply
+  far landing ~0.65–0.66), but guilty reads as the CURRENT table shape × a flat ~0.91 per-unit landing
+  factor (near landing 0.81 measured by direct pellet-lattice counting), and near landing varies
+  per-position within one fight (brid-silent-track 8.52 vs 9.41 pellets/10 by boss proximity). Per the
+  pre-committed decision rule (split branch) + a 2-of-2 driver/blind-Fable judgment: **`SG_LANDING_BY_BAND`
+  stays near 0.9 / mid 1.0 / far 0.75 / midfar 0.9**; the two-anchor far ~0.66 candidate is STAGED ⚑
+  (calibrated-with-measured-support), gated on a third clean anchor or a per-unit landing mechanism;
+  per-unit facts recorded in the unit baselines + probe records. Re-litigating the class table needs a
+  new same-tier (counter-reconciliation video) read. Evidence: docs/probe-data/{guilty,brid-silent-track,
+  isabel}-sg-band.json; plan archive docs/handoffs/2026-07-16-sg-landing-prereg.md; open-questions
+  U17/U18. Side findings landed: guilty S1 self-applies solo (refresh-all ×5) + her S2 bumps buff stack
+  counts (measured); brid-silent-track S2 rider = every 5th PULL, fixed 673,819/1,010,728 (675.00% exact
+  at her measured term); isabel S2 rider = time-based ~14.7s (her baseline fixed accordingly); the
+  in-fight ATK term reads ~+1.6% above the scope-lock static on all three SG probes (U18, open).

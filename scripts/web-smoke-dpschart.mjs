@@ -27,9 +27,10 @@ await new Promise((r) => setTimeout(r, 500));
 const text = dom.window.document.body.textContent;
 const checks = {
   'DPS Rankings tab active': text.includes('DPS Rankings'),
-  'headliner 1 renders': text.includes('Standard Scope Lock'),
-  'headliner 2 renders': text.includes('Hyper Carry 8/12 Elemental Advantage'),
-  'headliner 3 renders': text.includes('Anis Hyper Carry 8/12 Elemental Advantage'),
+  'framework toggle renders': text.includes('Solo Framework') && text.includes('Team Framework'),
+  'solo headliner 1 renders (default mode)': text.includes('Scope Lock Neutral'),
+  'solo headliner 2 renders': text.includes('8/12 Elemental Advantage'),
+  'solo headliner 3 renders': text.includes('12/12 Elemental Advantage'),
   'charted bars render': text.includes('Snow White: Heavy Arms'),
   'full matrix renders': text.includes('Full matrix'),
   'compare annotation renders': /rank\s*\d+\s*\/\s*\d+/.test(text),

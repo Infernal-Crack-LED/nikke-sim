@@ -50,14 +50,22 @@ export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
   });
 }
 
-// the charted (SSS/SS) top-N for the bars
-export function chartBars(art: DpsArtifact, cell: Cell, topN = 10): BarEntry[] {
-  return rankedFor(art, cell).filter((e) => art.units[e.slug]?.chartPop).slice(0, topN);
+// the charted top-N for the bars. Unfiltered = the SSS/SS chart population; an
+// element filter instead ranks ALL B3s of that element (a single element has only
+// a couple of charted units, so the element view digs into the lower tiers).
+export function chartBars(art: DpsArtifact, cell: Cell, element?: string | null, topN = 10): BarEntry[] {
+  const pop = element
+    ? rankedFor(art, cell).filter((e) => e.element === element)
+    : rankedFor(art, cell).filter((e) => art.units[e.slug]?.chartPop);
+  return pop.slice(0, topN);
 }
 
-// a single unit's standing in a cell (for the compare selector); null if absent
-export function compareIn(art: DpsArtifact, cell: Cell, slug: string): (BarEntry & { total: number }) | null {
-  const ranked = rankedFor(art, cell);
+// a single unit's standing in a cell (for the compare selector); null if absent.
+// With an element filter, rank/total are within that element's population (and a
+// unit of another element is absent — it has no place on a filtered chart).
+export function compareIn(art: DpsArtifact, cell: Cell, slug: string, element?: string | null): (BarEntry & { total: number }) | null {
+  let ranked = rankedFor(art, cell);
+  if (element) ranked = ranked.filter((x) => x.element === element).map((x, i) => ({ ...x, rank: i + 1 }));
   const e = ranked.find((x) => x.slug === slug);
   return e ? { ...e, total: ranked.length } : null;
 }

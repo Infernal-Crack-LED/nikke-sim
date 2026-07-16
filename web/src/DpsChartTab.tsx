@@ -4,18 +4,29 @@
 import { useEffect, useState } from 'react';
 import { DpsBarChart } from './components/DpsBarChart';
 import { MatrixFilter } from './components/MatrixFilter';
+import { PillGrid } from './components/PillGrid';
 import {
   loadDpsChart, chartBars, compareIn, allUnits,
   type DpsArtifact, type BarEntry,
 } from './dpschartData';
 import {
-  HEADLINERS, CORES, FRAMEWORKS, ELEADVS, INVESTS, FRAMEWORK_IDS,
+  HEADLINERS, SOLO_HEADLINERS, CORES, FRAMEWORKS, ELEADVS, INVESTS, FRAMEWORK_IDS,
   cellId, cellLabel, parseCellId, type Cell,
 } from '../../src/dpschart/matrix';
 import { copyDpsChartImage } from './shareImage';
 import type { DpsChartData } from '../../src/share/dpsChart';
 
-const DEFAULT_CELL: Cell = { framework: 'standard', eleadv: 'neutral', core: 'c100', invest: 'scope' };
+const DEFAULT_CELL: Cell = { framework: 'solo', eleadv: 'neutral', core: 'c100', invest: 'scope' };
+
+// top-level headliner set: the Solo isolation control (default) or the named-support Team comps
+type FwMode = 'solo' | 'team';
+const HEADLINERS_BY_MODE: Record<FwMode, typeof HEADLINERS> = { solo: SOLO_HEADLINERS, team: HEADLINERS };
+
+// element filter for every bar chart on the page (null = All, the full population)
+const ELEMENT_FILTERS = ['Fire', 'Water', 'Wind', 'Electric', 'Iron'] as const;
+type EleFilter = (typeof ELEMENT_FILTERS)[number] | null;
+const coerceEleFilter = (v: string | null): EleFilter =>
+  (ELEMENT_FILTERS as readonly string[]).includes(v ?? '') ? (v as EleFilter) : null;
 
 function toChartData(title: string, bars: BarEntry[], compare: (BarEntry & { total: number }) | null): DpsChartData {
   return {
@@ -33,6 +44,8 @@ export function DpsChartTab() {
   const params = new URLSearchParams(window.location.search);
   const [compareSlug, setCompareSlug] = useState<string>(params.get('cmp') ?? '');
   const [cell, setCell] = useState<Cell>(parseCellId(params.get('chart') ?? '') ?? DEFAULT_CELL);
+  const [eleFilter, setEleFilter] = useState<EleFilter>(coerceEleFilter(params.get('ele')));
+  const [fwMode, setFwMode] = useState<FwMode>(params.get('fw') === 'team' ? 'team' : 'solo');
 
   useEffect(() => {
     loadDpsChart().then(setArt).catch((e) => setErr(String(e?.message ?? e)));
@@ -62,12 +75,17 @@ export function DpsChartTab() {
     u.searchParams.set('chart', cellId(c));
     if (compareSlug) u.searchParams.set('cmp', compareSlug);
     else u.searchParams.delete('cmp');
+    if (eleFilter) u.searchParams.set('ele', eleFilter);
+    else u.searchParams.delete('ele');
+    if (fwMode === 'team') u.searchParams.set('fw', 'team');
+    else u.searchParams.delete('fw');
     void navigator.clipboard?.writeText(u.toString());
   };
 
   const renderChart = (c: Cell, pageTitle: string, pageSubtitle?: string) => {
-    const bars = chartBars(art, c);
-    const cmp = compareSlug ? compareIn(art, c, compareSlug) : null;
+    const bars = chartBars(art, c, eleFilter);
+    const cmp = compareSlug ? compareIn(art, c, compareSlug, eleFilter) : null;
+    const shareTitle = eleFilter ? `${cellLabel(c)} · ${eleFilter} only` : cellLabel(c);
     return (
       <DpsBarChart
         key={cellId(c)}
@@ -76,7 +94,7 @@ export function DpsChartTab() {
         bars={bars}
         compare={cmp}
         onShareLink={() => shareLink(c)}
-        onShareImage={() => void copyDpsChartImage(toChartData(cellLabel(c), bars, cmp))}
+        onShareImage={() => void copyDpsChartImage(toChartData(shareTitle, bars, cmp))}
       />
     );
   };
@@ -117,7 +135,34 @@ export function DpsChartTab() {
         </select>
       </div>
 
-      {HEADLINERS.map((h) => (
+      <div className='field'>
+        <label title='which control framework the headliner infographics use'>Framework</label>
+        <PillGrid>
+          <button className={fwMode === 'solo' ? 'on' : ''} onClick={() => setFwMode('solo')}>
+            Solo Framework
+          </button>
+          <button className={fwMode === 'team' ? 'on' : ''} onClick={() => setFwMode('team')}>
+            Team Framework
+          </button>
+        </PillGrid>
+      </div>
+
+      <div className='field'>
+        <label title='restrict every chart to B3s of one element'>Element</label>
+        <PillGrid>
+          {([null, ...ELEMENT_FILTERS] as EleFilter[]).map((e) => (
+            <button
+              key={e ?? 'all'}
+              className={eleFilter === e ? 'on' : ''}
+              onClick={() => setEleFilter(e)}
+            >
+              {e ?? 'All'}
+            </button>
+          ))}
+        </PillGrid>
+      </div>
+
+      {HEADLINERS_BY_MODE[fwMode].map((h) => (
         <div className='dpschart-headliner' key={h.slug}>
           <h3>{h.name}</h3>
           <div className='dpschart-grid'>

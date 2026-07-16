@@ -1,7 +1,7 @@
 // Precompute the DPS-chart matrix into img/dpschart.json (vite's publicDir → served
 // at /dpschart.json and copied into dist).
 //
-// Runs all 72 cells over the full B3 population (SSS–B bossing tier) and writes a
+// Runs all matrix cells over the full B3 population (SSS–B bossing tier) and writes a
 // lean artifact the web tab fetches at runtime and the bakery-bot reads. This is a
 // BUILD OUTPUT — regenerated on every build/deploy (npm `prebuild`), gitignored, and
 // NOT part of verify.sh. See docs/handoffs/dps-chart-handoff.md.
@@ -13,7 +13,7 @@ import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import type { OverrideFile } from '../src/skills/index.js';
 import type { CubesFile, OlLinesFile, PrepareDeps, SkillLevelData } from '../src/prepare.js';
-import { CELLS, HEADLINERS, cellId, FRAMEWORKS, ELEADVS, CORES, INVESTS, FRAMEWORK_IDS, ELEADV_IDS, CORE_IDS, INVEST_IDS, type Cell } from '../src/dpschart/matrix.js';
+import { CELLS, ALL_HEADLINERS, cellId, FRAMEWORKS, ELEADVS, CORES, INVESTS, FRAMEWORK_IDS, ELEADV_IDS, CORE_IDS, INVEST_IDS, type Cell } from '../src/dpschart/matrix.js';
 import { runCell, type RunCtx, type OptMemo } from '../src/dpschart/run.js';
 
 const load = <T,>(rel: string): T =>
@@ -50,7 +50,7 @@ population.sort((a, b) => a.name.localeCompare(b.name));
 
 const tested = population.map((u) => ({ slug: u.slug, element: u.element }));
 
-// run all 72 cells, sharing one optimizer memo (keyed by tested×framework×eleadv)
+// run all cells, sharing one optimizer memo (keyed by tested×framework×eleadv)
 const memo: OptMemo = new Map();
 const cells: Record<string, [string, number][]> = {};
 let done = 0;
@@ -71,7 +71,7 @@ const artifact = {
     eleadvs: axis(ELEADV_IDS, ELEADVS),
     cores: CORE_IDS.map((id) => ({ id, label: CORES[id].label, rate: CORES[id].rate })),
     invests: axis(INVEST_IDS, INVESTS),
-    headliners: HEADLINERS.map((h) => ({
+    headliners: ALL_HEADLINERS.map((h) => ({
       slug: h.slug, name: h.name, framework: h.framework, eleadv: h.eleadv, invest: h.invest,
       cellIds: h.cells.map((c) => cellId(c)),
     })),

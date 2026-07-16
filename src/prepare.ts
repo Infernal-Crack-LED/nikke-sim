@@ -21,7 +21,7 @@ export interface PreparedUnit {
   core?: number;   // per-unit Core enhancement 0-7 (falls back to cfg.copies)
   mode?: string;   // selected kit mode (from the override's `modes`; default = first)
   mpPriority?: boolean; // stackedNuke units (Maiden:IR): jump the burst queue at max MP stacks
-  burstGate?: 'syncWithFocus'; // only cast in a chain where the focus (tested) unit also bursts
+  burstGate?: 'syncWithFocus' | 'everyOther'; // sync: only cast when the focus unit bursts; everyOther: never take stage 3 twice in a row (Solo framework)
   chargeFrames?: number; // override charFixes: hand-measured real fire cycle (charge + recovery)
   reloadFrames?: number; // override charFixes: hand-measured real reload (e.g. padded animations)
   burstCooldownSec?: number; // override charFixes: corrected burst cooldown (bad DB data)
@@ -45,7 +45,10 @@ export interface UnitOptions {
   core?: number;  // Core enhancement 0-7
   mode?: string;  // kit mode (must match an entry in the override's `modes`)
   mpPriority?: boolean;
-  burstGate?: 'syncWithFocus'; // only cast in a chain where the focus (tested) unit also bursts
+  burstGate?: 'syncWithFocus' | 'everyOther'; // sync: only cast when the focus unit bursts; everyOther: never take stage 3 twice in a row (Solo framework)
+  // flat burst-cooldown reduction in seconds (e.g. the Solo control framework's 7s CDR);
+  // applied on top of any charFixes-corrected cooldown, floor 1s
+  burstCdrSec?: number;
   lines?: LineSelection[];
   skillLevels?: SkillLevels;
 }
@@ -99,6 +102,7 @@ export function prepareUnit(
   if (mode) loadout.push(`mode: ${mode}`);
   if (opts?.mpPriority) loadout.push('bursts at max MP');
   if (opts?.burstGate === 'syncWithFocus') loadout.push('bursts in sync with focus');
+  if (opts?.burstGate === 'everyOther') loadout.push('bursts every other full burst');
   if (opts?.stars !== undefined || opts?.core !== undefined)
     loadout.push(`${opts?.stars ?? 0}★ · core ${opts?.core ?? 0}`);
   if (levels !== MAX_SKILL_LEVELS && (levels.skill1 < 10 || levels.skill2 < 10 || levels.burst < 10)) {
@@ -126,6 +130,13 @@ export function prepareUnit(
     loadout.push(`${line.name} ×${sel.count} @ ${value}%`);
   }
 
+  // burst CDR: subtract from the charFixes-corrected (or DB) cooldown, floor 1s
+  const cdBase = deps.overrides[char.slug]?.charFixes?.burstCooldownSec ?? char.burstCooldownSec;
+  const burstCooldownSec = opts?.burstCdrSec
+    ? Math.max(1, cdBase - opts.burstCdrSec)
+    : deps.overrides[char.slug]?.charFixes?.burstCooldownSec;
+  if (opts?.burstCdrSec) loadout.push(`burst CDR ${opts.burstCdrSec}s (→${burstCooldownSec}s)`);
+
   return {
     skills,
     extraStats,
@@ -139,7 +150,7 @@ export function prepareUnit(
     burstGate: opts?.burstGate,
     chargeFrames: deps.overrides[char.slug]?.charFixes?.chargeFrames,
     reloadFrames: deps.overrides[char.slug]?.charFixes?.reloadFrames,
-    burstCooldownSec: deps.overrides[char.slug]?.charFixes?.burstCooldownSec,
+    burstCooldownSec,
     noBoltRecovery: deps.overrides[char.slug]?.charFixes?.noBoltRecovery,
     pullsPerSec: deps.overrides[char.slug]?.charFixes?.pullsPerSec,
     loadout,

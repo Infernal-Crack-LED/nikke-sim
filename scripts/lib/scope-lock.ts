@@ -36,8 +36,15 @@ export function scopeLockCfg(
 // ---- reference anchors (config-drift detection) ----
 // Computed scope-lock base ATK per class (core 7, base5, level 400). Same-class units
 // are IDENTICAL — base stats are class-based, so a per-unit-varying "ATK" is NOT ATK.
-// (The documented treasure-inclusive scope-lock ATK is ~1.8% higher — Attacker ~120,143;
-// the sim does not add treasure ATK. That gap is a separate model question, NOT config drift.)
+// (NB the ~1.8% higher figure Attacker ~120,143 is the OL0-GEAR basis, NOT treasure — the gear
+// delta is exactly gearAtk OL0−base5, see src/stats.ts:36-44. Correction 2026-07-16: an earlier
+// comment here mislabeled it "treasure"; the sim adds no treasure ATK and the units are treasure:false.)
+// OPEN (open-questions U18): five in-fight counter reads (jill/guilty/brid-silent-track/maiden/isabel)
+// measure the effective term ~+1.63% ABOVE these base5 values — matching the OL0 numbers (Attacker
+// 120,143) to ~0.17%, NOT base5. This re-opens the 2026-07-14 base5 switch (DECISIONS), which itself
+// flagged that the 2026-07-13 video-verified OL0 combat-ATK "needs re-checking". Core is NOT the cause
+// (core maxes at 7 and core-7 ×1.14 is validated by the 120,143 video read). It is a GEAR-TIER question:
+// are the recorded units on base5 or OL0-equivalent gear? PENDING owner confirmation before any basis change.
 export const REFERENCE_ATK: Record<NikkeClass, number> = {
   Attacker: 118027,
   Supporter: 98367,

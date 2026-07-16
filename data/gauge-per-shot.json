@@ -420,6 +420,24 @@
   "source": "datamined",
   "targetPerTrigger": 280.0
  },
+ "noop-b1-ar": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-AR (synthetic Solo-framework no-op control)",
+  "targetPerTrigger": 40.0
+ },
+ "noop-b2-sr": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-SR (synthetic Solo-framework no-op control)",
+  "targetPerTrigger": 560.0
+ },
+ "noop-b3-rl": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-RL (synthetic Solo-framework no-op control)",
+  "targetPerTrigger": 280.0
+ },
  "phantom": {
   "basePerTrigger": 25.0,
   "fullChargeBonus": 0.0,

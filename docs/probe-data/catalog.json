@@ -1,60 +1,172 @@
 [
-  {
-    "video": "docs/probes/control/lm.MP4",
-    "focus": "little-mermaid",
-    "comp": ["little-mermaid", "crown", "helm", "snow-white"],
-    "boss": "Water",
-    "params": { "basis": "scope-lock base5", "sync": 400, "skillLevels": "10/10/10", "gear": "base5", "cube": "none", "coreLevel": 7, "treasure": true, "bossPartless": true, "durationSec": 180 },
-    "parsedSlug": "control-little-mermaid",
-    "description": "Control-frame calibration, LM focused, neutral Water boss (all 4 units neutral). DoT-crit test."
+ {
+  "video": "docs/probes/control/lm.MP4",
+  "focus": "little-mermaid",
+  "comp": [
+   "little-mermaid",
+   "crown",
+   "helm",
+   "snow-white"
+  ],
+  "boss": "Water",
+  "params": {
+   "basis": "scope-lock base5",
+   "sync": 400,
+   "skillLevels": "10/10/10",
+   "gear": "base5",
+   "cube": "none",
+   "coreLevel": 7,
+   "treasure": true,
+   "bossPartless": true,
+   "durationSec": 180
   },
-  {
-    "video": "docs/probes/control/crown.MP4",
-    "focus": "crown",
-    "comp": ["little-mermaid", "crown", "helm", "snow-white"],
-    "boss": "Water",
-    "params": { "basis": "scope-lock base5", "sync": 400, "skillLevels": "10/10/10", "gear": "base5", "cube": "none", "coreLevel": 7, "treasure": true, "bossPartless": true, "durationSec": 180 },
-    "description": "Control-frame calibration, Crown focused, neutral Water boss."
+  "parsedSlug": "control-little-mermaid",
+  "description": "Control-frame calibration, LM focused, neutral Water boss (all 4 units neutral). DoT-crit test."
+ },
+ {
+  "video": "docs/probes/control/crown.MP4",
+  "focus": "crown",
+  "comp": [
+   "little-mermaid",
+   "crown",
+   "helm",
+   "snow-white"
+  ],
+  "boss": "Water",
+  "params": {
+   "basis": "scope-lock base5",
+   "sync": 400,
+   "skillLevels": "10/10/10",
+   "gear": "base5",
+   "cube": "none",
+   "coreLevel": 7,
+   "treasure": true,
+   "bossPartless": true,
+   "durationSec": 180
   },
-  {
-    "video": "docs/probes/control/helm.mov",
-    "focus": "helm",
-    "comp": ["little-mermaid", "crown", "helm", "snow-white"],
-    "boss": "Water",
-    "params": { "basis": "scope-lock base5", "sync": 400, "skillLevels": "10/10/10", "gear": "base5", "cube": "none", "coreLevel": 7, "treasure": true, "bossPartless": true, "durationSec": 180 },
-    "description": "Control-frame calibration, Helm focused, neutral Water boss."
+  "description": "Control-frame calibration, Crown focused, neutral Water boss."
+ },
+ {
+  "video": "docs/probes/control/helm.mov",
+  "focus": "helm",
+  "comp": [
+   "little-mermaid",
+   "crown",
+   "helm",
+   "snow-white"
+  ],
+  "boss": "Water",
+  "params": {
+   "basis": "scope-lock base5",
+   "sync": 400,
+   "skillLevels": "10/10/10",
+   "gear": "base5",
+   "cube": "none",
+   "coreLevel": 7,
+   "treasure": true,
+   "bossPartless": true,
+   "durationSec": 180
   },
-  {
-    "video": "docs/probes/control/sw.MP4",
-    "focus": "snow-white",
-    "comp": ["little-mermaid", "crown", "helm", "snow-white"],
-    "boss": "Water",
-    "params": { "basis": "scope-lock base5", "sync": 400, "skillLevels": "10/10/10", "gear": "base5", "cube": "none", "coreLevel": 7, "treasure": true, "bossPartless": true, "durationSec": 180 },
-    "description": "Control-frame calibration, Snow White focused, neutral Water boss."
+  "description": "Control-frame calibration, Helm focused, neutral Water boss."
+ },
+ {
+  "video": "docs/probes/control/sw.MP4",
+  "focus": "snow-white",
+  "comp": [
+   "little-mermaid",
+   "crown",
+   "helm",
+   "snow-white"
+  ],
+  "boss": "Water",
+  "params": {
+   "basis": "scope-lock base5",
+   "sync": 400,
+   "skillLevels": "10/10/10",
+   "gear": "base5",
+   "cube": "none",
+   "coreLevel": 7,
+   "treasure": true,
+   "bossPartless": true,
+   "durationSec": 180
   },
-  {
-    "video": "docs/probes/rrh probe/lib focus iron.mov",
-    "focus": "liberalio",
-    "comp": ["mast-romantic-maid", "scarlet-black-shadow", "liberalio", "anis-star", "crown"],
-    "boss": "Iron",
-    "params": { "basis": "scope-lock base5", "sync": 400, "skillLevels": "10/10/10", "gear": "base5", "cube": "none", "coreLevel": 7, "treasure": true, "bossPartless": true, "durationSec": 180 },
-    "parsedSlug": "rrh-liberalio",
-    "description": "Liberalio focused, boss Iron (liberalio Water = no advantage). Function-rider crit test."
+  "description": "Control-frame calibration, Snow White focused, neutral Water boss."
+ },
+ {
+  "video": "docs/probes/rrh probe/lib focus iron.mov",
+  "focus": "liberalio",
+  "comp": [
+   "mast-romantic-maid",
+   "scarlet-black-shadow",
+   "liberalio",
+   "anis-star",
+   "crown"
+  ],
+  "boss": "Iron",
+  "params": {
+   "basis": "scope-lock base5",
+   "sync": 400,
+   "skillLevels": "10/10/10",
+   "gear": "base5",
+   "cube": "none",
+   "coreLevel": 7,
+   "treasure": true,
+   "bossPartless": true,
+   "durationSec": 180
   },
-  {
-    "video": "docs/probes/maiden solo neutral target probe.MP4",
-    "focus": "maiden-ice-rose",
-    "comp": ["maiden-ice-rose"],
-    "boss": null,
-    "params": { "basis": "scope-lock base5", "sync": 400, "skillLevels": "10/10/10", "gear": "base5", "cube": "none", "coreLevel": 7, "treasure": true, "bossPartless": true, "durationSec": 104, "focusReason": "solo field (no B1/B2) so Full Burst never happens — isolates her normals + 547.62% rider" },
-    "parsedSlug": "maiden-solo",
-    "description": "Maiden solo, neutral target — clean rider-crit + RL core-rate read (no FB). Confirms rider crits (437296/655945 = x1.5)."
+  "parsedSlug": "rrh-liberalio",
+  "description": "Liberalio focused, boss Iron (liberalio Water = no advantage). Function-rider crit test."
+ },
+ {
+  "video": "docs/probes/maiden solo neutral target probe.MP4",
+  "focus": "maiden-ice-rose",
+  "comp": [
+   "maiden-ice-rose"
+  ],
+  "boss": null,
+  "params": {
+   "basis": "scope-lock base5",
+   "sync": 400,
+   "skillLevels": "10/10/10",
+   "gear": "base5",
+   "cube": "none",
+   "coreLevel": 7,
+   "treasure": true,
+   "bossPartless": true,
+   "durationSec": 104,
+   "focusReason": "solo field (no B1/B2) so Full Burst never happens \u2014 isolates her normals + 547.62% rider"
   },
-  {
-    "video": "docs/probes/def test/def.mov",
-    "focus": "unknown",
-    "boss": null,
-    "params": { "basis": "scope-lock base5", "focusReason": "boss-DEF measurement recording (ginmy def_test methodology)" },
-    "description": "DEF-measurement recording. See scripts/battery/boss-def.ts + DECISIONS (boss DEF ~140, negligible)."
-  }
+  "parsedSlug": "maiden-solo",
+  "description": "Maiden solo, neutral target \u2014 clean rider-crit + RL core-rate read (no FB). Confirms rider crits (437296/655945 = x1.5)."
+ },
+ {
+  "video": "docs/probes/def test/def.mov",
+  "focus": "unknown",
+  "boss": null,
+  "params": {
+   "basis": "scope-lock base5",
+   "focusReason": "boss-DEF measurement recording (ginmy def_test methodology)"
+  },
+  "description": "DEF-measurement recording. See scripts/battery/boss-def.ts + DECISIONS (boss DEF ~140, negligible)."
+ },
+ {
+  "video": "docs/probes/ar-sg-smg/guilty solo sg.MP4",
+  "focus": "guilty",
+  "boss": "neutral (Armstrong, partless)",
+  "params": {
+   "basis": "scope-lock base5",
+   "focusReason": "solo SG band read (pre-registered SG landing corroboration); lone Burst II, zero full bursts"
+  },
+  "description": "Guilty solo shotgun counter-reconciliation: 185 shots, closure exact 71,581,952. S1 self-applies solo (refresh-all x5); near landing 0.81 by pellet lattice. See docs/probe-data/guilty-sg-band.json (+ -events)."
+ },
+ {
+  "video": "docs/probes/ar-sg-smg/brid solo sg.MP4",
+  "focus": "brid-silent-track",
+  "boss": "neutral (Armstrong, partless)",
+  "params": {
+   "basis": "scope-lock base5",
+   "focusReason": "solo SG band read (pre-registered SG landing corroboration); lone Burst II, zero full bursts; ATK-clean anchor"
+  },
+  "description": "Brid: Silent Track solo shotgun counter-reconciliation: 215 shots + 43 S2 riders (every 5th pull, 673,819/1,010,728), closure exact 74,592,500; far M 0.709. See docs/probe-data/brid-silent-track-sg-band.json (+ -events)."
+ }
 ]

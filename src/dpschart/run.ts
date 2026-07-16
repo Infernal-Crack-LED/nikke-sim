@@ -12,12 +12,17 @@ import {
   type Cell,
   type TestedUnit,
 } from './matrix.js';
+import { NOOP_CHARACTERS } from './noop.js';
 
 export interface RunCtx {
   characters: Record<string, CharacterData & { baseStats: any }>;
   mult: LevelMultiplier;
   deps: PrepareDeps; // includes olLines, cubes, overrides, skillLevels
 }
+
+// slug → character, falling back to the Solo framework's synthetic no-op controls
+// (they live outside characters.json — no data sync should ever touch them)
+const charFor = (ctx: RunCtx, slug: string) => ctx.characters[slug] ?? NOOP_CHARACTERS[slug];
 
 // memo of the tested unit's optimal 12/12 remainder lines, keyed by slug only. The
 // user's spec is a PER-UNIT optimizer: a unit's best remaining lines (crit / ammo /
@@ -37,9 +42,9 @@ function optimizedLines(tested: TestedUnit, ctx: RunCtx, memo: OptMemo): LineSel
 
   // provisional team: tested carries only the 8-line floor.
   const team = assembleTeam(PROBE_CELL, tested); // no optimizedTestedLines → floor only
-  const chars = team.slugs.map((s) => ctx.characters[s]);
+  const chars = team.slugs.map((s) => charFor(ctx, s));
   const prepared = prepareTeam(chars, team.unitOpts, ctx.deps);
-  const res = bestOl(chars, ctx.mult, team.cfg, prepared, 0, ctx.deps.olLines, 4, FLOOR_SEED_COUNTS);
+  const res = bestOl(chars, ctx.mult, team.cfg, prepared, team.testedIndex, ctx.deps.olLines, 4, FLOOR_SEED_COUNTS);
 
   const counts = new Map<string, number>();
   for (const p of res.picks) counts.set(p.type, (counts.get(p.type) ?? 0) + 1);
@@ -48,14 +53,14 @@ function optimizedLines(tested: TestedUnit, ctx: RunCtx, memo: OptMemo): LineSel
   return lines;
 }
 
-// The tested unit's DPS in one cell (it sits in slot 0 of the assembled team).
+// The tested unit's DPS in one cell (slot 0 in named-control frameworks, slot 2 in Solo).
 export function dpsFor(cell: Cell, tested: TestedUnit, ctx: RunCtx, memo: OptMemo): number {
   const extra = cell.invest === '12of12' ? optimizedLines(tested, ctx, memo) : undefined;
   const team = assembleTeam(cell, tested, extra);
-  const chars = team.slugs.map((s) => ctx.characters[s]);
+  const chars = team.slugs.map((s) => charFor(ctx, s));
   const prepared = prepareTeam(chars, team.unitOpts, ctx.deps);
   const r = runSim(chars, ctx.mult, team.cfg, prepared);
-  return r.units[0].dps;
+  return r.units[team.testedIndex].dps;
 }
 
 export interface RankedEntry {

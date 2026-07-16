@@ -6,6 +6,7 @@ import 'dotenv/config';
 import pg from 'pg';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import type { CharacterData, DataFile } from '../types.js';
+import { deriveNicknames } from './nicknames.js';
 
 const SYNERGY_API = 'https://api.nikke-synergy.com/rest/v1/attack_damage_characters';
 const SYNERGY_HEADERS = { apikey: 'dummy-key', Authorization: 'Bearer dummy-key' };
@@ -57,7 +58,7 @@ async function main() {
   await client.connect();
 
   const { rows } = await client.query(
-    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug from nikke_characters`
+    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug, aliases from nikke_characters`
   );
   const metaRow = await client.query(
     `select value from bot_meta where key = 'nikke_level_multiplier'`
@@ -70,6 +71,10 @@ async function main() {
   if (!apiRes.ok) throw new Error(`synergy API ${apiRes.status}`);
   const apiRows: any[] = await apiRes.json();
   const bySynergyId = new Map(apiRows.map((r) => [r.id, r]));
+
+  // Approved nicknames from the DB alias lists — derived over the FULL row set
+  // (ambiguity is judged against every unit, not just the kept roster).
+  const nick = deriveNicknames(rows);
 
   const characters: DataFile['characters'] = {};
   const skipped: string[] = [];
@@ -119,6 +124,11 @@ async function main() {
         a.burstCooldown ?? (api?.burst_cooltime ? api.burst_cooltime / 60 : 40),
       class: a.class ?? 'Attacker',
       element: a.element ?? 'Fire',
+      // Manufacturer (Elysion/Missilis/Tetra/Pilgrim/Abnormal) — from the DB attributes blob.
+      // Drives the relationship (bond) ATK bonus, which is a class×manufacturer stat the owner
+      // maintains as a matrix (Pilgrims cap higher). Was previously unmodeled → the ~1.5-2% "cold"
+      // read across scope-lock units (open-questions U18).
+      manufacturer: a.manufacturer ?? null,
       normalAttackMultiplier: a.normalAttackMultiplier ?? api?.normal_attack_multiplier ?? 0,
       coreAttackMultiplier: a.coreAttackMultiplier ?? api?.core_attack_multiplier ?? 200,
       ammo: a.ammo ?? api?.ammo ?? 60,
@@ -131,6 +141,7 @@ async function main() {
       // Treasure (favorite-item upgrade) status: the DB's prydwen_slug ends
       // "-treasure" for units whose Treasure is released.
       treasure: (row.prydwen_slug ?? '').endsWith('-treasure'),
+      ...(nick.byId[row.id] ? { nicknames: nick.byId[row.id] } : {}),
       skills: {
         skill1: a.skill1En ?? api?.skill_1_en ?? '',
         skill2: a.skill2En ?? api?.skill_2_en ?? '',
@@ -175,6 +186,9 @@ async function main() {
   const noStats = Object.values(characters).filter((c) => !c.baseStats).length;
   const noApi = rows.filter((r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id)).length;
   console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API, ${tierDropped} dropped as Bossing C-or-below, ${unsupported.length} dropped as not-enikk-proven + no override)`);
+  const nickKept = Object.values(characters).filter((c) => c.nicknames?.length).length;
+  console.log(`nicknames: ${nickKept} units with approved nicknames; ${nick.dropped.length} aliases dropped as unsafe:`);
+  for (const d of nick.dropped) console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);
   if (skipped.length) console.log('skipped:', skipped.join(', '));
   if (unsupported.length) console.log('not-enikk-proven (dropped):', unsupported.sort().join(', '));
 }

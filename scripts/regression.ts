@@ -27,6 +27,7 @@ import {
   type UnitOptions,
 } from '../src/prepare.js';
 import { assembleTeam, type Cell } from '../src/dpschart/matrix.js';
+import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 
 const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
 const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
@@ -231,6 +232,35 @@ for (const comp of COMPS) {
   const mast = r.units.find((u) => u.slug === 'mast-romantic-maid')!.burstCasts;
   const focus = r.units.find((u) => u.slug === tslug)!.burstCasts;
   (mast <= focus ? ok : fail)(`gated Mast casts (${mast}) ≤ focus casts (${focus})`);
+}
+
+// 5. Solo framework contract: the synthetic no-op controls deal ZERO damage, and the
+// tested unit alternates the stage-3 cast with the no-op B3 — every OTHER full burst
+// (everyOther gate + 7s CDR). Modernia is the adversarial case: her FB-extending burst
+// (15s) would otherwise let the leftmost-wait rule hand her consecutive casts.
+{
+  console.log('\nSolo framework (no-op controls + every-other bursts)');
+  for (const tslug of ['scarlet', 'modernia']) {
+    const tested = { slug: tslug, element: data.characters[tslug].element as Element };
+    const cell: Cell = { framework: 'solo', eleadv: 'neutral', core: 'c100', invest: 'scope' };
+    const team = assembleTeam(cell, tested);
+    const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
+    for (const s of team.slugs) overrides[s] = loadOverride(s);
+    const chars = team.slugs.map((s) => data.characters[s] ?? NOOP_CHARACTERS[s]);
+    const prepared = prepareTeam(chars, team.unitOpts, { overrides, skillLevels, cubes, olLines });
+    const r = runSim(chars, mult, team.cfg, prepared);
+    const t = r.units[team.testedIndex];
+    const noopDmg = r.units.reduce((s, u, i) => (i === team.testedIndex ? s : s + u.totalDamage), 0);
+    const noopB3 = r.units.find((u) => u.slug === 'noop-b3-rl')!;
+    (noopDmg === 0 ? ok : fail)(`${tslug}: no-op controls deal 0 damage (got ${noopDmg})`);
+    const alternates =
+      r.fullBursts > 0 &&
+      t.burstCasts + noopB3.burstCasts === r.fullBursts &&
+      Math.abs(t.burstCasts - noopB3.burstCasts) <= 1;
+    (alternates ? ok : fail)(
+      `${tslug}: every-other bursts (tested ${t.burstCasts} + no-op B3 ${noopB3.burstCasts} = FB ${r.fullBursts})`,
+    );
+  }
 }
 
 if (update) {

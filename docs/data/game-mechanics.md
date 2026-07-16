@@ -184,6 +184,13 @@ Details: **[auto-play.md](auto-play.md)**.
   3rd of its own bursts (Mast's Hangover 10s self-stun): the gate skips it on every 4th of the
   focus unit's bursts, and Crown fills that Burst-2 slot. Not a measured value — a modeling
   switch (see [DECISIONS](../DECISIONS.md)).
+- **Every-other burst gate** (`burstGate: 'everyOther'`): an opt-in per-unit flag — used by
+  the DPS-chart Solo framework on the tested unit — that forbids a unit from taking the
+  stage-3 cast in two consecutive Full Bursts, so it strictly alternates with the other
+  Burst-3 unit. Needed because a Full-Burst-extending kit (e.g. Modernia's 15-second Full
+  Burst) can bring the unit's cooldown inside the next stage window, where the
+  leftmost-with-waiting rule would stall the chain and hand it consecutive casts. Not a
+  measured value — a framework modeling switch; no real comp sets it.
 
 ## 8. Burst rotation rules
 

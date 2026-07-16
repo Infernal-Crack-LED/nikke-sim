@@ -110,6 +110,9 @@
    "rl3": 9.5,
    "burstGaugePerShot": 0.25,
    "treasure": true,
+   "nicknames": [
+    "tmoran"
+   ],
    "skills": {
     "skill1": "【Phase 1】\n\n■ Activates at the start of battle. Affects self.\r\nDEF ▲ 3.51% continuously for every 1% of HP lost.\r\n■ Activates when landing 5 normal attack(s) while weapon is changed. Affects the target.\r\nDeals 47.18% of final ATK as additional damage.\r\n■ Activates when Raptures appear. Affects self.\r\nFervor: Cooldown of Burst Skill ▼ 20 sec continuously.",
     "skill2": "【Phase 2】Items ×50\n\n■ Activates when firing the final bullet. Affects the 3 enemy unit(s) with the highest final ATK.\r\nTaunts for 4 sec.\r\n■ Activates when HP falls below 20%. Affects self.\r\nEffect changes according to the number of activation times. Perseverance: Effect of each phase does not stack.\r\nOnce: Max HP ▲ 91% for 3 sec. Activates once per battle.\r\nTwice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.\r\nThree Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle.\r\n■ Activates when entering Full Burst while in Fervor status. Affects all allies.\r\nCooldown of Burst Skill ▼ 7.48 sec.",
@@ -245,6 +248,9 @@
    "rl3": 7.6,
    "burstGaugePerShot": 0.2,
    "treasure": true,
+   "nicknames": [
+    "ttove"
+   ],
    "skills": {
     "skill1": "【Phase 1】\n\n■ Activates after 10 normal attack(s). Affects self.\nEmergency-Crafted Bullets: Reload 5.31% of the magazine.\n■ Activates during Emergency-Crafted Bullets. Affects all allies.\nTemporary Modification: Max Ammunition Capacity ▲ 2, stacks up to 3 time(s) and lasts for 5 sec.\nCritical Damage ▲ 5.24% for 5 sec.",
     "skill2": "【Phase 3】Items ×110\n\n■ Only activates when Temporary Modification is fully stacked. Affects all allies.\nCritical Rate ▲ 10.08% continuously.\n■ Only activates when Temporary Modification is fully stacked. Affects all shotgun-wielding allies.\nAttack Speed ▲ 42.24% continuously.",
@@ -290,6 +296,11 @@
    "rl3": 3.55,
    "burstGaugePerShot": 0.05,
    "treasure": false,
+   "nicknames": [
+    "mrm",
+    "mmast",
+    "maids (with anchor)"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Burst stage 1. Affects self.\nDrunken: Hit Rate ▼ 20%, stacks up to 3 times continuously.\n■ Activates only when in Drunken status. Affects all allies.\nCritical Rate ▲ 20.05% continuously.\nATK ▲ 35.02% of caster's ATK continuously.",
     "skill2": "■ Activates when entering Burst stage 3 in Drunken status. Affects all allies.\nDistributed Damage ▲ 15.03% * Number of Drunken stacks for 10 sec.\nReloading Speed ▲ 15.04% * Number of Drunken stacks for 10 sec.\n■ Activates when the caster reaches max stacks of Drunken at the end of Full Burst. Affects self after the stacks are removed.\nHangover: Stun for 10 sec.",
@@ -605,6 +616,9 @@
    "rl3": 7.6,
    "burstGaugePerShot": 0.2,
    "treasure": false,
+   "nicknames": [
+    "gws"
+   ],
    "skills": {
     "skill1": "■ Activates every time EXP stacks 10. Affects self.\nHero Level Up: Reaches a maximum of Level 11.\nHero Level Up Reward: Reloads 10.26%.\nHero Level Up Reward: Recovers 2.44% of caster's final Max HP.\n■ Activates when Hero levels up. Affects all Water Code allies.\nElemental Advantage Attack Damage ▲ 1.16% * Hero Level continuously.\nATK ▲ 0.91% of caster's ATK * Hero Level continuously.",
     "skill2": "■ Activates after landing 6 normal attack(s) without hitting the core. Affects self.\nEXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously.\n■ Activates when hitting the Core for 3 time(s). Affects self.\nEXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously.\n■ Activates when Hero Level is 2 or above. Affects self.\nElemental Advantage Attack Damage ▲ 7.46% continuously.",
@@ -695,6 +709,10 @@
    "rl3": 7.8,
    "burstGaugePerShot": 0.2,
    "treasure": false,
+   "nicknames": [
+    "ha",
+    "shelm"
+   ],
    "skills": {
     "skill1": "■ Activates after landing 30 normal attack(s). Affects the target(s).\nDeals 131.34% of final ATK as additional damage.\n■ Activates when entering Full Burst. Affects all allies.\nEffect changes according to the number of activation times. Previous effects trigger repeatedly:\nOnce: Cooldown of Burst Skill ▼ 1.82 sec.\nTwice: Cooldown of Burst Skill ▼ 2.2 sec.\nThree times: Cooldown of Burst Skill ▼ 2.6 sec.",
     "skill2": "■ Affects 1 enemy unit(s) randomly.\nDeals 105.58% of final ATK as damage.\n■ Activates when attacking an Electric Code target. Affects the target.\nDamage Taken ▲ 5.64%, stacks up to 5 time(s) and lasts for 5 sec.",
@@ -740,6 +758,10 @@
    "rl3": 7.6,
    "burstGaugePerShot": 0.2,
    "treasure": false,
+   "nicknames": [
+    "rco",
+    "srosanna"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle. Affects all allies.\nDamage to Parts ▲ 24.26% for 15 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects all allies.\nATK ▲ 3% of caster's ATK, stacks up to 5 time(s) and lasts for 30 sec.",
     "skill2": "■ Affects all allies.\nDamage to Parts ▲ 24.26% for 15 sec.\n■ Affects the enemy nearest to the crosshair.\nDeals 70.4% of final ATK as sustained damage every 1 sec for 15 sec.",
@@ -875,6 +897,10 @@
    "rl3": 7.6,
    "burstGaugePerShot": 0.2,
    "treasure": true,
+   "nicknames": [
+    "tpriv",
+    "priv"
+   ],
    "skills": {
     "skill1": "【Phase 3】Items ×110\n\n■ Activates when entering Full Burst. Affects all allies.\r\nATK ▲ 23.61% for 10 sec.\r\nReloading Speed ▲ 51.16% for 10 sec.\r\nMax Ammunition Capacity ▼ 50.66% for 10 sec.\r\nAttack Damage ▲ 20.16% for 10 sec.",
     "skill2": "【Phase 2】Items ×50\n\n■ Activates when the last bullet hits the target. Affects the target.\r\nDamage Taken ▲ 10.01% for 10 sec.\r\nDeals 256.17% of final ATK as additional damage.\r\n■ Activates when the last bullet hits a target in Designated Target status. Affects the target.\r\nDeals 1687% of final ATK as additional damage.",
@@ -965,6 +991,11 @@
    "rl3": 16.8,
    "burstGaugePerShot": 5.6,
    "treasure": false,
+   "nicknames": [
+    "aim",
+    "manchor",
+    "maids (with mast)"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Full Burst. Affects all allies.\nEffect changes according to the number of activation times. Previous effects trigger repeatedly.\nOnce: Potency of HP ▲ 30.96% for 5 sec.\nTwice: Distributed Damage ▲ 30.4% for 10 sec.\nThree times: Stack count of debuffs ▼ 1.\n■ Activates when entering Full Burst while an ally from the same squad is on the battlefield. Affects all allies.\nRecovers 3.04% of caster's Max HP every 1 sec for 8 sec.",
     "skill2": "■ Activates when Full Burst ends. Affects all allies.\nEffect changes according to the number of activation times. Previous effects trigger repeatedly.\nOnce: Hit Rate ▲ 10.13% for 10 sec.\nTwice: ATK ▲ 35.02% of caster's ATK for 10 sec.\nThree times: Reloading Speed ▲ 40.04% for 15 sec.",
@@ -1010,6 +1041,9 @@
    "rl3": 9.75,
    "burstGaugePerShot": 0.25,
    "treasure": false,
+   "nicknames": [
+    "sw"
+   ],
    "skills": {
     "skill1": "■ Activates when normal attack hits 30 time(s). Affects the target(s).\nDeals 82.8% of final ATK as additional damage.\n■ Activates when normal attack hits 30 time(s). Affects self.\nATK ▲ 8.28% for 5 sec.",
     "skill2": "■ Affects enemies within the attack range.\nDeals 144.73% of final ATK as damage.\n■ Activates when attacking during Full Burst Time. Affects self.\nCritical Rate ▲ 26.1% for 10 sec.",
@@ -1055,6 +1089,9 @@
    "rl3": 8.4,
    "burstGaugePerShot": 0.2,
    "treasure": false,
+   "nicknames": [
+    "sbis"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle. Affects self.\nForcefully uses Skill 2.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nSustained Damage ▲ 5.1% for 30 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.\nDancing Flower Duration ▲ 10.02 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.\nSakura Petals Duration ▲ 10.02 sec.",
     "skill2": "■ Affects self.\nDancing Flower: Attack Damage ▲ 15.64% for 15 sec.\n■ Affects the enemy with the highest final ATK.\nSakura Petals: Deals 256% of final ATK as sustained damage every 1 sec for 15 sec.",
@@ -1100,6 +1137,10 @@
    "rl3": 27,
    "burstGaugePerShot": 4.5,
    "treasure": false,
+   "nicknames": [
+    "stb",
+    "bsoda"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle. Affects self.\nNumber of Golden Chip stacks ▲ 50.\n■ Activates after casting 3 normal attack(s) during Full Burst Time. Affects self.\nGolden Chip: Critical damage ▲ 1.32% continuously, stacks up to 50 time(s).\n■ Activates after casting 3 normal attack(s) during Full Burst Time. Affects self and 1 ally unit(s) with the highest final ATK (except caster).\nAttack damage ▲ 10.51% for 2 sec.",
     "skill2": "■ Activates when entering Burst stage 3. Affects all allies.\nAdditional effects triggered according to the number of Golden Chip stacks. Previous effects trigger repeatedly:\nStage 1: Golden Chip 10 stack(s) and above.\nTime Extension I: Full Burst Time Duration▲ 2 sec. Active during Full Burst Time.\nStage 2: Golden Chip 20 stack(s) and above.\nTime Extension II: Full Burst Time Duration▲ 3 sec. Active during Full Burst Time.\n■ Activates when casting a normal attack during Full Burst Time. Affects 1 enemy unit(s) nearest to the crosshair.\nAdditional effects triggered according to Time Extension state. Previous effects trigger repeatedly:\nStage 1: When in Time Extension I state.\nDeals 52.04% of final ATK as damage.\nStage 2: When in Time Extension II state.\nDeals 85.02% of final ATK as damage.",
@@ -1190,6 +1231,11 @@
    "rl3": 3.6,
    "burstGaugePerShot": 0.05,
    "treasure": false,
+   "nicknames": [
+    "lwo",
+    "xlud",
+    "lewd"
+   ],
    "skills": {
     "skill1": "■ Activates when landing 60 normal attack(s). Affects the target.\nDamage Taken ▲ 12.56% for 3 sec.\nDeals 158.43% of final ATK as additional damage.\n■ Activates when landing 60 normal attack(s). Affects self.\nReloads 20 round(s) of ammunition.",
     "skill2": "■ Activates when hitting the Core for 60 time(s). Affects the target.\nDeals 109.64% of final ATK as additional damage.\n■ Activates at the beginning of Full Burst. Affects self.\nCritical Rate ▲ 14.6% for 10 sec.",
@@ -1280,6 +1326,10 @@
    "rl3": 3.55,
    "burstGaugePerShot": 0.05,
    "treasure": false,
+   "nicknames": [
+    "rrh",
+    "rapipi"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle and when Full Burst ends.\nEffect differs according to squad formation. Only the corresponding effect is applied.\nAffects self if there are no Burst 1 allies..\nCombat Assist: Changes to Burst Stage 1. This effect is continuous.\nAffects self if there are Burst 1 allies.\nCancels Combat Assist.\n■ Activates when entering Full Burst while in Combat Assist status. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.\nAttack Damage ▲ 8.02% for 10 sec.\n■ Activates when entering Full Burst while not in Combat Assist status. Affects self.\nATK ▲ 95.04% for 10 sec.\nDamage to Interruption Parts ▲ 48% for 10 sec.",
     "skill2": "■ Activates at the start of battle. Affects self.\nApplies Elemental Advantage damage to Electric Code enemies continuously.\nProjectile Attachment Damage ▲ 150.72% continuously.\nProjectile Explosion Damage ▲ 100.6% continuously.\n■ Activates after 120 normal attack(s). Affects self.\nAttachable Projectiles\nEffect: Launches attachable projectiles that attach to hit locations. When entering Full Burst, the projectiles explode.\nProjectile Attachment Damage: Deals 88.11% of final ATK as damage.\nProjectile Explosion Damage: Deals 88.11% of final ATK as damage.\nMax Ammunition Capacity: 1 round(s).",
@@ -1325,6 +1375,10 @@
    "rl3": 3.6,
    "burstGaugePerShot": 0.05,
    "treasure": false,
+   "nicknames": [
+    "aw",
+    "wasuka"
+   ],
    "skills": {
     "skill1": "■ Activates after landing 50 normal attack(s). Affects the target(s).\nDeals 471.86% of final ATK as additional damage.\n■ Activates only when in Annihilation State status. Affects self.\nAnnihilation State's additional effect:\nTarget: Affects 2 enemy unit(s) within the attack range nearest to the crosshair every 10 shot(s).\nDamage: Deals 15.62% of final ATK as damage.\nAdditional Effect: Anti A.T. Field: Damage Taken ▲ 0.83% for 30 sec, stacks up to 30 time(s).",
     "skill2": "■ Activates when entering Full Burst while in Annihilation State status. Affects self.\nAttack Damage ▲ 30.97% for 10 sec.\n■ Activates when using Annihilation. Affects self.\nEmergency Repair\nFunction: Reduces MG heating up speed and clears ammo. Fixes reloading speed and continuously restores HP based on Max HP.\nEffect 1: MG heating up speed ▼ 100% for 3 sec.\nEffect 2: Clears 100% of ammo.\nEffect 3: Constantly recovers 3.77% of caster's final Max HP every 1 sec over 3 sec.\nEffect 4: Reloading Speed is fixed at a 60% increase for 1 round(s).",
@@ -1370,6 +1424,9 @@
    "rl3": 34.8,
    "burstGaugePerShot": 11.6,
    "treasure": true,
+   "nicknames": [
+    "tlaplace"
+   ],
    "skills": {
     "skill1": "【Phase 3】Items ×110\n\n■ Activates when attacking with Full Charge. Affects self.\nHero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 15 sec.",
     "skill2": "【Phase 1】\n\n■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 132.45% of final ATK as additional damage.\n■ Activates when hitting the target's Parts. Affects the target's body.\nDeals 14.78% of final ATK as additional damage.",
@@ -1415,6 +1472,9 @@
    "rl3": 21,
    "burstGaugePerShot": 3.5,
    "treasure": true,
+   "nicknames": [
+    "tzwei"
+   ],
    "skills": {
     "skill1": "【Phase 3】Items ×110\n\n■ Activates when entering Full Burst. Affects all allies.\r\nPierce Damage ▲ 20.13% for 1 round(s).\r\nPierce Damage ▲ 10.06% for 10 sec.\r\n■ Activates when performing a normal attack during Full Burst. Affects all allies.\r\nPierce Damage ▲ 24.99%, stacks up to 3 time(s), for 1 round(s).",
     "skill2": "【Phase 2】Items ×50\n\n■ Activates after 5 normal attack(s). Affects all allies.\r\nRecovers Cover's HP by 7.52%.\r\n■ Activates when entering Full Burst. Affects all allies.\r\nCritical Rate ▲ 18.63% for 10 sec.\r\n■ Activates when performing a normal attack while in Pierce Attacks 101 status. Affects all allies.\r\nCritical Rate ▲ 15% for 5 sec, stacks up to 3 time(s).",
@@ -1460,6 +1520,9 @@
    "rl3": 13.75,
    "burstGaugePerShot": 2.5,
    "treasure": false,
+   "nicknames": [
+    "sbs"
+   ],
    "skills": {
     "skill1": "■ Activates when attacking with Full Charge.\nEffect changes according to the number of attack(s). Effect of each phase does not stack.\nThree times: Affects 1 enemy unit(s) with the lowest final DEF.\nDeals 250.47% of final ATK as damage.\nSix times: Affects enemies within attack range.\nDeals 500% of final ATK as Distributed Damage.\nNine times: Affects all enemies.\nDeals 750.47% of final ATK as Distributed Damage.",
     "skill2": "■ Activates when entering Full Burst. Affects self.\nMax Ammunition Capacity ▲ 60% for 10 sec.\nReload 100% of the magazine(s).",
@@ -1505,6 +1568,9 @@
    "rl3": 5.7,
    "burstGaugePerShot": 0.1,
    "treasure": true,
+   "nicknames": [
+    "tmiranda"
+   ],
    "skills": {
     "skill1": "■ Activates after landing 30 normal attack(s). Affects all allies.\nHit Rate ▲ 5.44% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects all allies with a Submachine Gun.\nHit Rate ▲ 3.79% for 5 sec.",
     "skill2": "■ Activates at the beginning of Full Burst. Affects all allies. Critical Damage ▲ 32.99% for 10 sec.",
@@ -1550,6 +1616,10 @@
    "rl3": 27.3,
    "burstGaugePerShot": 9.1,
    "treasure": false,
+   "nicknames": [
+    "mir",
+    "xmaiden"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Burst Stage 1. Affects self when MP is 0.\nMP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\n■ Activates when entering Full Burst. Affects self when MP is above 1.\nMP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\n■ Activates when attacking with Full Charge for 6 time(s). Affects self.\nMax HP ▲ 6.34% without restoring HP for 15 sec, stacks up to 10 time(s).",
     "skill2": "■ Activates when MP is replenished. Affects all Electric Code allies except for self.\nElemental Advantage Attack Damage ▲ 40.9% for 10 sec.\nATK ▲ 20.9% of caster's ATK for 10 sec.\n■ Activates when MP is used. Affects self.\nElemental Advantage Attack Damage ▲ 31.68% for 10 sec.\nATK ▲ 3.2% of caster's final Max HP for 10 sec.\n■ Activates when attacking with Full Charge for 1 time(s). Affects 1 enemy unit(s) nearest to the crosshair.\nDeals 547.62% of final ATK as damage.",
@@ -1595,6 +1665,9 @@
    "rl3": 3.6,
    "burstGaugePerShot": 0.45,
    "treasure": false,
+   "nicknames": [
+    "cindy"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Burst Stage 3. Affects self.\nATK ▲ 2.71% of caster's final Max HP for 10 sec.\n■ Activates when attacking with Full Charge. Affects self.\nCharge Speed ▲ 100%. Removed upon reloading to max ammunition.\n■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 136.6% of final ATK as additional damage.",
     "skill2": "■ Activates at the start of battle. Affects self.\nDecoy: Creates an avatar with 96% of caster's final Max HP continuously.\n■ Activates when entering Burst Skill Stage 3. Affects self.\nDecoy: Creates an avatar with 96% of caster's final Max HP continuously.\n■ Activates when decoy exists. Affects self every 3 sec.\nBeautiful: Max HP ▲ 1.6% continuously, stacks up to 12 time(s).",
@@ -1640,6 +1713,9 @@
    "rl3": 8.4,
    "burstGaugePerShot": 2.8,
    "treasure": false,
+   "nicknames": [
+    "dkw"
+   ],
    "skills": {
     "skill1": "■ Activates when attacking with Full Charge for 3 time(s). Affects self.\nGain Pierce for 1 shot.\n■ Activates when entering Full Burst. Affects all allies with a Sniper Rifle.\nPierce Damage ▲13.55% for 10 sec.",
     "skill2": "■ Activates when attacking with Full Charge for 8 time(s). Affects all allies.\nCooldown of Burst Skill ▼ 7 sec.\n■ Activates when attacking with Full Charge for 5 time(s). Affects all allies.\nAttack damage ▲ 5.06% for 10 sec.",
@@ -1730,6 +1806,10 @@
    "rl3": 13,
    "burstGaugePerShot": 2.5,
    "treasure": false,
+   "nicknames": [
+    "ass",
+    "sanis"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Full Burst. Affects all Electric Code allies.\nATK ▲ 55.31% of caster's ATK for 10 sec.\nReloading Speed ▲ 49.28% for 10 sec.",
     "skill2": "■ Activates when firing the last bullet. Affects the 2 enemy unit(s) with the highest final ATK.\nDeals 382.42% of final ATK as damage.\n■ Activates when firing the last bullet. Affects self.\nDamage to Interruption Parts ▲ 6.91% for 10 sec.",
@@ -1775,6 +1855,10 @@
    "rl3": 33.6,
    "burstGaugePerShot": 2.8,
    "treasure": false,
+   "nicknames": [
+    "lib",
+    "libby"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Full Burst. Affects self.\nATK ▲ 160% for 3 sec.\n■ Activates when landing Full Charge attacks on a target's core. Affects self.\nAttack damage ▲ 20.83% for 60 sec.\n■ Activates when landing a Full Charge attack. Affects the target.\nDeals 40.5% of final ATK as additional damage. Activates 5 times.\n■ Activates when entering Full Burst. Affects the 1 Burst 3 ally unit(s) with the lowest final ATK.\nCharge Speed ▲ 12.74% of caster's Charge Speed for 10 sec.",
     "skill2": "■ Activates when landing a Full Charge attack against the stage target. Affects self.\nRaging Current: Attack Damage ▲ 231% continuously.\nRemoves Gentle Current.\n■ Activates when landing a Full Charge attack against a Rapture that is not the stage target. Affects self.\nGentle Current: Fixes charge time at 1 sec continuously.\nRemoves Raging Current.\n■ Activates at the start of battle. Affects self.\nGains immunity to Increase Charge Speed effects. This effect is continuous and cannot be removed.\nGains immunity to Decrease Charge Speed effects. This effect is continuous and cannot be removed.",
@@ -1865,6 +1949,9 @@
    "rl3": 8.436,
    "burstGaugePerShot": 0.148,
    "treasure": false,
+   "nicknames": [
+    "qeq"
+   ],
    "skills": {
     "skill1": "■ Activates only when Explore Route Stage 1 is fully stacked. Affects self.\nDistributed Damage ▲ 49.58% continuously.\n■ Activates only when Explore Route Stage 2 is fully stacked. Affects self.\nDamage dealt when attacking core ▲ 25.25% continuously.\n■ Activates only when Explore Route Stage 3 is fully stacked. Affects self.\nCritical Rate ▲ 16.73% continuously.",
     "skill2": "■ Activates after landing 2 normal attack(s). Affects self.\nEffects in each phase vary.Previous effects trigger repeatedly.\nStage 1: Affects self.\nHit Rate ▲ 1.36%, stacks up to 10 time(s) and lasts for 2 sec.\nATK ▲ 2.45%, stacks up to 10 time(s) and lasts for 2 sec.\nStage 2: Activates when Explore Route Stage 1 is fully stacked. Affects self.\nHit Rate ▲ 2.71%, stacks up to 10 time(s) and lasts for 1 sec.\nATK ▲ 4.9%, stacks up to 10 time(s) and lasts for 1 sec.\nStage 3: Activates when Explore Route Stage 2 is fully stacked. Affects self.\nHit Rate ▲ 4.08%, stacks up to 5 time(s) and lasts for 0.5 sec.\nATK ▲ 7.36%, stacks up to 5 time(s) and lasts for 0.5 sec.",
@@ -1910,6 +1997,9 @@
    "rl3": 8.4,
    "burstGaugePerShot": 2.8,
    "treasure": false,
+   "nicknames": [
+    "mw"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Full Burst. Affects 2 allies with the highest final ATK.\nCharge Speed ▲ 4.48% for 10 sec.\nATK ▲ 43.1% for 10 sec.",
     "skill2": "■ Activates when there are above 5 enemy unit(s), excluding Nikkes. Affects self.\nCritical Rate ▲ 4.83%.\nCritical Damage ▲ 13.91%.",
@@ -1955,6 +2045,9 @@
    "rl3": 59.73,
    "burstGaugePerShot": 5.6,
    "treasure": true,
+   "nicknames": [
+    "thelm"
+   ],
    "skills": {
     "skill1": "【Phase 1】\n\n■ Activates when the last bullet hits the target. Affects all allies.\nCritical Rate of normal attacks ▲ 14.64% for 5 sec.\n■ Activates when attacking with Full Charge. Affects all allies.\nRecovers 0.59% of caster's final Max HP.\nFills Burst Gauge by 14.31%.",
     "skill2": "【Phase 2】Items ×50\n\n■ Affects all allies.\nDamage to Interruption Parts ▲ 3.08% continuously.\n■ Activates when entering Full Burst. Affects all allies.\nAttack Damage ▲ 27.87% for 10 sec.\n■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 178.98% of final ATK as additional damage.",
@@ -2090,6 +2183,9 @@
    "rl3": 8.4,
    "burstGaugePerShot": 2.8,
    "treasure": false,
+   "nicknames": [
+    "rh"
+   ],
    "skills": {
     "skill1": "■ Activates when performing a normal attack. Affects self.\nCharge Speed ▲ 3.81%, stacks up to 10 time(s) and lasts for 5 sec.\n■ Activates at the start of battle. Affects self.\nConvert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously.",
     "skill2": "■ Activates at the start of battle. Affects self.\nGain Pierce continuously.\n■ Activates during Beast Cage. Affects all allies.\nDEF ▲ 50.68% of caster's DEF for 10 sec.\n■ Activates during The Last Howl. Affects self.\nRecovers 23.04% of attack damage as HP over 10 sec.\n■ Activates when casting Red Wolf. Affects self.\nATK ▲ 71.42% for 10 sec.",
@@ -2135,6 +2231,10 @@
    "rl3": 6.2,
    "burstGaugePerShot": 0.1,
    "treasure": false,
+   "nicknames": [
+    "lm",
+    "siren"
+   ],
    "skills": {
     "skill1": "■ Activates only when in Focusing status. Affects all allies.\nFocuses fire continuously.\n■ Activates when Full Burst ends. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.\n■ Activates when entering Full Burst. Affects all allies.\nAttack Damage ▲ 4% for 10 sec.\n■ Activates each time the total ammo expended by allies reaches 400. Affects all allies.\nFills Burst Gauge by 37%.",
     "skill2": "■ Activates when the enemy appears. Affects the target.\nBubble: Damage Taken ▲ 5.05% continuously.\n■ Activates after landing 50 normal attack(s). Affects the target if the target is in Bubble status.\nExplosive Bubble: Damage Taken ▲ 5.05% continuously.\nStuns for 3 sec.\nRemoves Bubble.\n■ Activates every 1 sec only during Full Burst. Affects random enemy unit(s).\nDeals 63.36% of final ATK as damage. Attacks sequentially for 4 time(s).\n■ Activates each time the total ammo expended by allies reaches 500. Affects random enemy unit(s).\nBubble Barrage: Deals 85% of final ATK as damage. Attacks sequentially for 10 time(s).",
@@ -2180,6 +2280,10 @@
    "rl3": 3.55,
    "burstGaugePerShot": 0.05,
    "treasure": false,
+   "nicknames": [
+    "ccw",
+    "scindy"
+   ],
    "skills": {
     "skill1": "■ Activates upon reloading to max ammunition while in the Preparation for Change state. Affects self.\nChanges the weapon in use: Snipe Mode\nCharge Time: 1 sec\nDamage: 62.13% of final ATK\nFull Charge Damage: 250% of damage\nMax Ammunition Capacity: 15 rounds (max ammunition effect refreshes after reloading)\nAdditional Effect 1: Gains Pierce.\nAdditional Effect 2: Activates when performing a Full Charge attack. Expends ammo. Amount: 40 round(s).\nAdditional Effect 3: Charge time is fixed at 1 sec.\nRemoval Condition: Reloading to max ammunition while in the Preparation for Change state.\n■ Activates at the start of battle. Affects self.\nBeauty-Full: Attack Damage ▲ 24% continuously.\n■ Activates upon reloading to max ammunition. Affects self.\nPreparation for Change: Reload time is fixed at 3 sec for 6 sec. Removed upon firing the last bullet.\n■ Activates every 5 sec. Affects the enemy unit nearest to the crosshair.\nDeals 900% of final ATK as damage.\n■ Activates each time total ammo consumed by allies reaches 200. Affects all allies.\nFills Burst Gauge by 12%.",
     "skill2": "■ Activates at the start of battle and when using Burst Skill. Affects self.\nDecoy: Creates an avatar with 70.34% of the skill user's final Max HP. This effect is continuous.\n■ Activates at the start of battle. Affects self.\nATK ▲ 29% continuously.\n■ Activates when Snipe Mode takes effect. Affects self.\nDestroy: Damage to Parts ▲ 26.21% continuously.\nRemoves Pinpoint.\n■ Activates at the start of battle and when Snipe Mode is removed. Affects self.\nPinpoint: Damage dealt when attacking core ▲ 26% continuously.\nRemoves Destroy.\n■ Activates when entering Full Burst after this unit uses her Burst Skill.\nEffect varies according to this unit's current mode. Only one effect is applied.\nActivates while in Snipe Mode. Affects all enemies (including parts).\nEffect 1: Deals 1189.66% of final ATK as damage.\nActivates while not in Snipe Mode. Affects all enemies with activated cores.\nEffect 1: Deals 833.79% of final ATK as core strike damage.",
@@ -2270,6 +2374,11 @@
    "rl3": 4.95,
    "burstGaugePerShot": 0.05,
    "treasure": false,
+   "nicknames": [
+    "mbc",
+    "miharabc",
+    "mihara os"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle. Affects self.\nCharges Restraint Chains by 10, up to 10.\n■ Activates when Full Burst ends if this unit has just used her Burst Skill. Affects self.\nCharges Restraint Chains by 10, up to 10.\n■ Affects random enemy units at a specific timing.\nDeals 50.06% of final ATK as damage. Attacks once for every Restraint Chain. Restraint Chain ▼ 1 for each attack.\n■ Affects the same enemy units.\nEnsnaring Chains: Deals 25.08% final ATK as sustained damage every 1 sec continuously, stacks up to 20 time(s). This effect cannot be removed.",
     "skill2": "■ Activates after landing 40 normal attack(s) during Full Burst. Affects the target if the target is in Ensnaring Chains status.\nStack count of Ensnaring Chains ▲ 1.\n■ Activates when self is incapacitated. Affects the target(s) in Ensnaring Chains status.\nStack count of Ensnaring Chains ▲ 20.\n■ Activates when the enemy is neutralized. Affects self if the target is in Ensnaring Chains status.\nRestraint Chain ▲ 1, up to 10.\n■ Activates when entering Burst Stage 3. Affects self.\nSustained damage ▲ 59.98% for 10 sec.",
@@ -2450,6 +2559,10 @@
    "rl3": 12,
    "burstGaugePerShot": 2,
    "treasure": false,
+   "nicknames": [
+    "ds",
+    "sdoro"
+   ],
    "skills": {
     "skill1": "■ Activates when hitting the target with 80 pellets. Affects self.\nGains Pierce for 3 round(s).\nHit Rate ▲ 98.18% for 3 round(s).\nAttack damage ▲ 72% for 3 round(s).\nPellet count is fixed at 1 for 3 round(s).\n■ Activates when hitting the target with 160 pellets. Affects self.\nExpands Pierce range by 200% for 3 round(s).",
     "skill2": "■ Activates at the start of battle. Affects self.\nPierce damage ▲ 55.08% continuously.\n■ Activates only during Full Burst. Affects self.\nATK ▲ 75.24% continuously.\nHit Rate ▲ 40.68% continuously.",
@@ -2495,6 +2608,10 @@
    "rl3": 8.4,
    "burstGaugePerShot": 2.8,
    "treasure": false,
+   "nicknames": [
+    "aab",
+    "bade"
+   ],
    "skills": {
     "skill1": "■ Activates when landing Full Charge attacks on targets within the effective range. Affects all allies.\nATK ▲ 15.2% of caster's ATK for 5 sec.\n■ Activates when attacking with Full Charge. Affects self.\nSpy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec.",
     "skill2": "■ Activates when landing Full Charge attacks on targets within the effective range. Affects all allies.\nPierce Damage ▲ 18.36% for 5 sec.\n■ Activates only if Spy Lens is fully stacked. Affects self.\nGain Pierce continuously.\nATK ▲ 16% continuously.",
@@ -2540,6 +2657,10 @@
    "rl3": 8.4,
    "burstGaugePerShot": 2.8,
    "treasure": false,
+   "nicknames": [
+    "mbb",
+    "bmilk"
+   ],
    "skills": {
     "skill1": "■ Activates when performing Full Charge attacks. Affects self.\nGain Pierce for 6 sec.\n■ Activates when not in the Embarrassment state and when Full Charge lasts for 0.5 sec or more. Affects self.\nEmbarrassment\nFunction: Forcefully reloads at reduced reloading speed, but increases attack capabilities and deals Distributed Damage.\nEffect 1: Affects all enemies. Deals 290% of final ATK as Distributed Damage.\nEffect 2: Affects self. Removes 100% of ammo.\nEffect 3: Affects self. Reloading Speed is fixed at a 50% reduction for 1 reload(s).\nEffect 4: Affects self. Forced Reload.\nEffect 5: Affects self. ATK ▲ 118.7% for 40 sec.",
     "skill2": "■ Activates only when in Embarrassment status. Affects self.\nPierce Damage ▲ 64.7% continuously.\n■ Activates only when in Overconfident, Huh?! status. Affects all enemies every 2 sec.\nDeals 447.7% of final ATK as Distributed Damage.",
@@ -2675,6 +2796,9 @@
    "rl3": 3.55,
    "burstGaugePerShot": 0.05,
    "treasure": false,
+   "nicknames": [
+    "dnt"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Full Burst. Affects all enemies.\nNinjutsu Acid Bomb: Damage Taken ▲ 12% for 15 sec.\n■ Activates when using Burst Skill. Affects self.\nATK ▲ 15.04% for 10 sec.\n■ Activates when using Burst Skill. Affects enemies within attack range nearest to the crosshair.\nNinjutsu Hyper Acid Bomb: Damage Taken ▲ 8% for 10 sec.",
     "skill2": "■ Activates at the start of battle.\nEffect differs according to squad formation. Only the corresponding effect is applied.\nAffects self if there are no other Defender allies in the squad.\nEffect 1: Creates a Shield equal to 12.25% of the caster's final Max HP for 10 sec.\nEffect 2: Attract: Taunt all enemies continuously.\nAffects self if there is another Defender ally in the squad.\nEffect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.\nEffect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.\n■ Activates when performing 200 normal attack(s). Affects self while in Attract status.\nCreates a Shield equal to 12.25% of the caster's final Max HP for 10 sec.\n■ Affects self every 4 sec while in Ninjutsu Injection status.\nNinjutsu IFAK lasts for 4 sec.\nFunction: Stores up HP recovery for a time, after which all allies are healed for the stored amount.\nEffect 1: The maximum amount stored is equal to 165.28% of the caster's final ATK.\nEffect 2: Once the duration ends, all allies are healed for the stored recovery amount.",
@@ -2720,6 +2844,10 @@
    "rl3": 12,
    "burstGaugePerShot": 2,
    "treasure": false,
+   "nicknames": [
+    "sft",
+    "solineft"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle and when using Burst Skill. Affects all allies.\nIssues 1 ticket, up to a maximum of 2. This effect is continuous.\nTicket effect: Max HP ▲ number of tickets * 10% of the caster's Max HP.\n■ Activates when entering Full Burst. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.\n■ Activates when entering Full Burst. Affects all allies.\nRemoves First Train Discount.",
     "skill2": "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.\nRecovers 12.27% of caster's final Max HP as HP.\nTicket count ▼ 1.\n■ Activates at the start of battle. Affects all allies.\nFirst Train Discount for 6 sec.\nFunction: The effects of I'll Help You Board the Train! will not consume tickets.",
@@ -2765,6 +2893,11 @@
    "rl3": 12.2,
    "burstGaugePerShot": 2,
    "treasure": false,
+   "nicknames": [
+    "bst",
+    "xbrid",
+    "bridsl"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Full Burst. Affects all Wind Code enemies.\nDamage Taken ▲ 15.12% for 10 sec.\n■ Activates when entering Full Burst. Affects all enemies.\nDeals 636% of final ATK as damage.",
     "skill2": "■ Activates after 10 normal attack(s). Affects 1 Wind Code enemy unit(s) with the lowest remaining HP.\nDamage Taken ▲ 12.12% for 10 sec.\n■ Activates after 5 normal attack(s). Affects 1 enemy unit(s) with the lowest remaining HP.\nDeals 675% of final ATK as damage.",
@@ -2810,6 +2943,11 @@
    "rl3": 16.8,
    "burstGaugePerShot": 5.6,
    "treasure": false,
+   "nicknames": [
+    "dws",
+    "xdiesel",
+    "dieselws"
+   ],
    "skills": {
     "skill1": "■ Activates when entering Full Burst for the first time after using own Burst Skill. Affects self.\nIntro: Critical damage ▲ 20.28% continuously. This effect cannot be dispelled. Effect persists after revival.\n■ Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.\nHighlight: Critical damage ▲ 20.28% continuously. This effect cannot be dispelled. Effect persists after revival.\n■ Activates when entering Full Burst. Affects self if in Intro status.\nSustained damage ▲ 60.19% for 10 sec.\n■ Activates when entering Full Burst. Affects self if in Highlight status.\nSustained damage ▲ 235.03% for 10 sec.",
     "skill2": "■ Activates when an ally or self destroys an enemy's part. Affects all allies (except self).\nMute: Gains immunity to Noise Pollution continuously, stacks up to 3 time(s).\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nSustained damage ▲ 68.04% for 15 sec.\n■ Activates when attacking with Full Charge. Affects self.\nSustained damage ▲ 318.14% for 3 sec, stacks up to 2 time(s).\n■ Activates when entering Full Burst. Affects the stage target.\nDeals 63.33% of final ATK as sustained damage every 1 sec for 9 sec.",
@@ -2855,6 +2993,9 @@
    "rl3": 8.4,
    "burstGaugePerShot": 2.8,
    "treasure": false,
+   "nicknames": [
+    "vel"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle and when entering Burst Stage 2.\nBullet Snatch\nFunction: Steals the enemy's bullets and keeps them in her ammo pouch.\nEffect 1: Affects all enemies. Removes 5% of bullets.\nEffect 2: Affects self. Fills the ammo pouch with 6000 round(s), up to a maximum of 6000. This effect is continuous and cannot be removed.\n■ Activates when attacking with Full Charge while not in Full Burst. Affects self.\nFunction: Strengthens self by expending ammo from the ammo pouch.\nEffect 1: Expends ammo from the ammo pouch. Amount: 100 round(s).\nEffect 2: ATK ▲ 30.5% for 3 sec.\nEffect 3: Attack Damage ▲ 30.5% for 3 sec.",
     "skill2": "■ Activates when attacking with Full Charge during Full Burst.\nFunction: Strengthens allies by expending ammo from the ammo pouch.\nEffect 1: Affects self. Expends ammo from the ammo pouch. Amount: 300 round(s).\nEffect 2: Affects all allies. ATK ▲ 25.2% of the caster's ATK for 3 sec continuously.\nEffect 3: Affects all allies. Charge Damage ▲ 100.8% for 3 sec.\n■ Activates after landing 50 normal attack(s) during Full Burst.\nFunction: Expends ammo from the ammo pouch to deal additional damage to the enemy.\nEffect 1: Affects self. Expends ammo from the ammo pouch. Amount: 300 round(s).\nEffect 2: Affects self. Attack Damage ▲ 15.03% for 5 sec.\nEffect 3: Affects the target. Deals 400.92% of final ATK as additional damage.",
@@ -2990,6 +3131,9 @@
    "rl3": 67.2,
    "burstGaugePerShot": 5.6,
    "treasure": false,
+   "nicknames": [
+    "swha"
+   ],
    "skills": {
     "skill1": "■ Activates every 0.2 sec while charging. Affects the enemy unit nearest to the crosshair that is not in Lock-On status.\nLock-On\nFunction: Designates the enemy as a target of Seven Dwarves.\nMax Lock-On targets: 5\nRemoval condition: Performing a normal attack or taking cover.\n■ Activates every 0.2 sec while charging. Affects self.\nAuto Fire Ready\nFunction: Loads Seven Dwarves with ammo.\nEffect: DEF ▲ 42.24% continuously.\nMax ammo loaded by Auto Fire Ready: 5\nRemoval condition: Performing a normal attack.\n■ Activates every 0.2 sec while charging. Affects all enemies in Lock-On status.\nDamage Taken ▲ 4.2% for 4 sec.\n■ Activates when attacking with Full Charge.\nAuto Fire\nFunction: Attacks Lock-On targets with Seven Dwarves.\nEffect 1: Deals 41.9% of final ATK as damage. Affects all enemies.\nEffect 2: Deals 105.59% of final ATK as damage. Affects Lock-On targets. Attacks sequentially based on the amount of ammo loaded by Auto Fire Ready.\n■ Activates when attacking with Full Charge while in Seven Dwarves Fully Active status. Affects self.\nNumber of uses of Seven Dwarves Fully Active ▼ 1.\n■ Activates when performing a normal attack while not in Full Burst. Affects self.\nRemoves Seven Dwarves Fully Active.",
     "skill2": "■ Activates at the start of battle. Affects self.\nFixes charge time at 1.2 sec continuously.\n■ Activates during Full Charge. Affects self.\nGains Pierce for 5 sec.\nATK ▲ 46.84% for 5 sec.\nDamage to Parts ▲ 62.64% for 5 sec.\n■ Activates when entering Burst Stage 3. Affects self.\nATK ▲ 73.92% for 10 sec.\n■ Activates when at Full Charge only while in Seven Dwarves Fully Active status. Affects self.\nCharge Damage ▲ 528% for 1 round(s).\nSequential attack damage ▲ 158.4% for 1 round(s).",
@@ -3035,6 +3179,12 @@
    "rl3": 9,
    "burstGaugePerShot": 3,
    "treasure": false,
+   "nicknames": [
+    "nve",
+    "neo neon",
+    "veon",
+    "nneon"
+   ],
    "skills": {
     "skill1": "■ Activates when attacked while not in Healthy Body status. Affects self.\nInvulnerable for 3 sec. Activates 5 time(s) per battle.\nGains debuff immunity to ∞ debuffs for 3 sec. Activates 5 time(s) per battle.\nHealthy Body: Potency of HP restored ▲ 10.26% for 20 sec.\n■ Activates when landing a Full Charge attack. Affects the enemy if the enemy is the stage target.\nFirepower Explosion:\nEffect: Deals 437.98% of final ATK as additional damage.\nAdditional effect of Super Firepower status: Deals 262.79% of final ATK as additional damage.",
     "skill2": "■ Activates at the start of battle. Affects self.\nIncreases the Firepower Gauge's charge by 100.\n■ Activates when performing a normal attack while in Firepower Charge status. Affects self.\nIncreases the Firepower Gauge's charge by 2.\n■ Activates when Firepower Charge ends. Affects self.\nIncreases the Firepower Gauge's charge by 45.\n■ Activates when Full Burst ends while Firepower Gauge is active. Affects self.\nBurst Gauge filling speed ▲ 5% x Firepower Gauge charge amount for 5 sec.\n■ Activates when entering Full Burst. Affects self.\nMaximum Firepower:\nEffect: ATK ▲ 80.04% for 10 sec.\nAdditional effect for Super Firepower: ATK ▲ 35.05% for 10 sec.",
@@ -3080,6 +3230,11 @@
    "rl3": 12,
    "burstGaugePerShot": 2,
    "treasure": false,
+   "nicknames": [
+    "afm",
+    "jkana",
+    "arcanafm"
+   ],
    "skills": {
     "skill1": "■ Activates when Full Burst ends. Affects all shotgun-wielding allies.\nATK ▲ 13% of the caster's ATK x stack count of Precious Moments for 15 sec.\n■ Activates when Happy Memories takes effect. Affects self.\nSnapshots of Youth: Normal Attack Damage Multiplier ▲ 10% continuously, stacks up to 3 time(s).\n■ Activates when Full Burst ends. Affects self.\nRemoves Making Memories.\nRemoves Snapshots of Youth.",
     "skill2": "■ Activates when performing normal attacks while in Making Memories status. Affects self.\nEffect changes according to the number of attacks. The effect of each phase does not stack. Resets when Making Memories is removed.\nTwo times: Reloads 6 round(s).\nFour times: Happy Memories: Number of pellets ▲ 1 continuously, stacks up to 3 time(s).\nSix times: Precious Moments: ATK ▲ 2.49% continuously, stacks up to 3 time(s).\n■ Activates when using Burst Skill. Affects all shotgun-wielding allies (except self).\nAttack Damage ▲ 55% for 10 sec.",
@@ -3125,6 +3280,12 @@
    "rl3": 53.424,
    "burstGaugePerShot": 16.8,
    "treasure": false,
+   "nicknames": [
+    "as",
+    "aniss",
+    "star",
+    "ttanis"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle only if self is alive. Affects all allies.\nBurst Gauge filling speed ▲ 6% continuously.\n■ Activates at the start of battle and when Full Burst ends.\nEffect differs according to squad formation. Only the corresponding effect is applied.\nIf there are no other Burst 1 allies:\nEffect 1: Affects self. Cancels Everyone's Star.\nEffect 2: Affects self. My Own Star: ATK ▲ 40.01%. This effect is continuous and cannot be removed.\nEffect 3: Affects all allies. Cooldown of Burst Skill ▼ 7.48 sec.\nIf there are any other Burst 1 allies:\nEffect 1: Affects self. Cancels My Own Star.\nEffect 2: Affects self. Everyone's Star: Re-enters Burst and changes to Stage 1. This effect is continuous and cannot be removed.\n■ Activates when landing a Full Charge attack. Affects the target.\nDeals 120.13% of final ATK as additional damage.",
     "skill2": "■ Activates when entering Full Burst while in My Own Star status. Affects all allies.\nATK ▲ 35.01% of caster's ATK for 10 sec.\n■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.\nRestores 1.26% of the caster's final Max HP as HP.\n■ Activates when entering Full Burst. Affects self and all allies with lower final DEF than self.\nProjectile Explosion Damage ▲ 92.03% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies.\nAttack Damage ▲ 34% for 10 sec.",
@@ -3170,6 +3331,11 @@
    "rl3": 3.55,
    "burstGaugePerShot": 0.05,
    "treasure": false,
+   "nicknames": [
+    "ebas",
+    "selegg",
+    "segg"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle. Affects 1 random enemy.\nPossession lasts for 6 sec.\nAbility: Find and capture ghosts possessing the enemy.\nRequired hit count: 100 time(s) in total, cumulative across all allies.\nEffect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.\nRecurring interval: 6 sec\n■ Affects all Water Code allies.\nEffects differ based on the number of ghosts. Previous effects trigger repeatedly.\nOnly activates when there is at least 1 ghost.\nATK ▲ 16.2% of the caster's ATK continuously.\nOnly activates when there are more than 4 ghost(s).\nElemental Advantage Attack Damage ▲ 35% continuously.",
     "skill2": "■ Activates when using Burst Skill. Affects self.\nATK ▲ 40% for 10 sec.\n■ Activates when a ghost is captured while at maximum ghost capacity. Affects all enemies.\nDeals 1100% of final ATK as damage.",
@@ -3215,6 +3381,9 @@
    "rl3": 5.7,
    "burstGaugePerShot": 0.1,
    "treasure": false,
+   "nicknames": [
+    "nayu"
+   ],
    "skills": {
     "skill1": "■ Activates at the start of battle. Affects self.\nUnchanging Heart: Gain Indomitability for 9 sec. Activates 1 time(s) during battle.\n■ Activates when Memory Absorption takes effect. Affects all allies.\nDamage dealt when attacking core ▲ 25.15% for 5 sec.\nATK ▲ 30.16% of caster's ATK for 5 sec.\nEqually shares HP recovery for 5 sec.\n■ Activates when Memory Absorption takes effect. Affects self.\nRecovers 25% of caster's final Max HP as HP.\n■ Activates when attacking with Full Charge while in Memory Incineration status. Affects all enemies.\nDeals 150% of final ATK as damage.\n■ Affects the enemy if the enemy is the stage target.\nDeals 380.46% of final ATK as additional damage.",
     "skill2": "■ Activates every 3 sec. Affects self.\nMemory Absorption: Hit Rate ▲ 1.4%, stacks up to 30 time(s) and immune to stack count increase or decrease effects continuously. This effect cannot be dispelled.\n■ Activates when Memory Absorption takes effect. Affects self.\nAdditional effects triggered according to the stack count of Memory Absorption. Previous effects trigger repeatedly.\nStage 1: If Memory Absorption exceeds 2 stack(s).\nATK ▲ 15.2% continuously.\nStage 2: If Memory Absorption exceeds 10 stack(s).\nAttack Damage ▲ 20.27% continuously.\nStage 3: If Memory Absorption exceeds 30 stack(s).\nDamage dealt when attacking core ▲ 21.05% continuously.",
@@ -3260,6 +3429,9 @@
    "rl3": 16.8,
    "burstGaugePerShot": 5.6,
    "treasure": false,
+   "nicknames": [
+    "idols (with prika)"
+   ],
    "skills": {
     "skill1": "■ Activates when attacking with Full Charge while in Assigned Part: Singing status. Affects all allies.\nSinging Effect: ATK ▲ 45.02% of the caster's ATK for 3 sec.\n\n■ Activates when attacking with Full Charge while in Assigned Part: Dancing status. Affects all allies.\nDancing Effect: Constantly recovers 1.8% of the caster's final Max HP every 1 sec for 3 sec.",
     "skill2": "■ Activates when entering Burst Stage 3 while not in Sing Along status. Affects self.\nCancels Assigned Part: Singing.\nCancels Assigned Part: Dancing.\n■ Activates when entering Burst Stage 3 while in Assigned Part: Singing status. Affects all allies.\nCritical Rate ▲ 19.94% for 10 sec.\nProjectile Explosion Damage ▲ 50% for 10 sec.\nPierce Damage ▲ 32.72% for 10 sec.",
@@ -3305,6 +3477,9 @@
    "rl3": 8.4,
    "burstGaugePerShot": 2.8,
    "treasure": false,
+   "nicknames": [
+    "idols (with mint)"
+   ],
    "skills": {
     "skill1": "■ Activates when attacking with Full Charge. Affects all allies.\nProjectile Explosion Damage ▲ 20% for 3 sec.\nPierce Damage ▲ 13.09% for 3 sec.\nATK ▲ 20% of the caster's ATK for 3 sec.\n■ Activates only while in Performance status. Affects self.\nPotency of HP restored ▲ 49.92% continuously.\nGains Pierce continuously.",
     "skill2": "■ Activates when entering Full Burst. Affects self.\nMax HP ▲ 19.98% for 10 sec.\n■ Activates when Sing Along takes effect while Prika is in Performance status.\nEncore\nFunction: Extends the duration of Performance for Prika and strengthens allies.\nEffect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.\nEffect 2: Affects all allies. Performance duration ▲ 21 sec.\nEffect 3: Affects all allies. Attack Damage ▲ 25.01% for 10 sec.\nEffect 4: Affects self. Cooldown of Burst Skill ▲ 21 sec.",

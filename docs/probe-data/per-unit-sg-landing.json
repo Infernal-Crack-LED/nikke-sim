@@ -1,0 +1,90 @@
+{
+  "analysis": "U17 per-unit SG pellet-landing consolidation (ANALYSIS ONLY, no engine change)",
+  "date": "2026-07-16",
+  "classTable_SG_LANDING_BY_BAND": { "near": 0.9, "mid": 1.0, "far": 0.75, "midfar": 0.9 },
+  "engineTablePreRegM_H0": { "near": 1.281, "mid": 1.075, "far": 0.806, "midfar": 0.970 },
+  "basisNote": "All units placed on the LOW/scope-lock ATK term (the term the engine uses) via each unit's PRIMARY M. ratio-to-table = measuredM/preRegM_H0 and is term-independent in its per-unit SPREAD. Absolute landing = ratio x classTable and is LOW-term; drop ~1.6% if the U18 term fix lands. isabel/guilty/brid pinned their own in-fight term (term-clean); noir/dorothy reconciled vs sim staticAtk term.",
+  "units": {
+    "noir": {
+      "measuredBasis": "sim-reconciled, running-counter per-mag delta (overlap-immune), LOW term",
+      "evidenceType": "running-counter reconciliation (set the current table)",
+      "ratioToTable": { "near": 0.99, "mid": 1.00, "far": 0.99, "midfar": 0.98 },
+      "landing_lowTerm": { "near": 0.89, "mid": 1.00, "far": 0.74, "midfar": 0.88 },
+      "confidence": { "near": "high", "mid": "high", "far": "high", "midfar": "high" },
+      "realTotal": 64873527, "simSoloTotal": 65300000, "realOverSim": 0.993
+    },
+    "isabel": {
+      "measuredBasis": "own term 117887 near-validated; PRIMARY M on LOW term (true term +2.3% higher, U18)",
+      "evidenceType": "counter-reconciliation, M-implied landing",
+      "ratioToTable": { "near": 1.01, "mid": 0.94, "far": 0.87, "midfar": 0.95 },
+      "landing_lowTerm": { "near": 0.91, "mid": 0.94, "far": 0.66, "midfar": 0.86 },
+      "confidence": { "near": "high", "mid": "medium", "far": "high", "midfar": "medium" },
+      "realTotal": 55280027, "simSoloTotal": 50900000, "realOverSim": 1.086,
+      "landingSprayMult_ifApplied": 0.967,
+      "primaryDeficitCause": "rider under-model (~+2.4M, +4.7%) + term +2.3%; landing is <1 so applying it WORSENS"
+    },
+    "guilty": {
+      "measuredBasis": "popup-verified term (+1.65%); PRIMARY M buff-corrected nominal, LOW term",
+      "evidenceType": "counter-recon + direct pellet-lattice landed-pellet (L) count",
+      "ratioToTable": { "near": 0.89, "mid": 0.92, "far": 0.93, "midfar": 0.97 },
+      "ratioToTable_empirical": { "near": 0.93, "midfar": 0.95 },
+      "landing_lowTerm": { "near": 0.80, "mid": 0.92, "far": 0.70, "midfar": 0.87 },
+      "confidence": { "near": "high", "mid": "medium-high", "far": "high", "midfar": "medium" },
+      "shape": "flat ~0.91 factor across the table; far is her LEAST-deficient band (refutes class-wide far deficit)",
+      "realTotal": 71581952, "simSoloTotal": 53200000, "realOverSim": 1.346,
+      "landingSprayMult_ifApplied": 0.928,
+      "primaryDeficitCause": "unmodeled Skill-1 duplicate + Skill-2 stack self-buffs (raw M 1.70 vs buff-corr 1.15, up to +48%) + term +1.65%; landing <1 WORSENS"
+    },
+    "brid-silent-track": {
+      "measuredBasis": "measured term (+1.63%); PRIMARY M on pre-reg LOW term",
+      "evidenceType": "counter-recon + direct pellet-lattice L count",
+      "ratioToTable": { "near": 1.01, "mid": 0.92, "far": 0.88, "midfar": 0.89 },
+      "landing_lowTerm": { "near": 0.91, "mid": 0.92, "far": 0.66, "midfar": 0.80 },
+      "confidence": { "near": "high", "mid": "high", "far": "high", "midfar": "medium-high" },
+      "nearIntraFightVariance": "near1 8.52 vs near2 9.41 landed/10 (tracks boss proximity; near is not a unit constant)",
+      "realTotal": 74592500, "simSoloTotal": 363800000, "realOverSim": 0.205,
+      "landingSprayMult_ifApplied": 0.953,
+      "primaryDeficitCause": "sim over-models by 4.9x (unrelated kit bug); landing is negligible against that"
+    },
+    "dorothy-serendipity": {
+      "measuredBasis": "sim-reconciled",
+      "evidenceType": "spray reconciles to sim ~32M; per-band landing NOT separable (consolidation core-pierce confound ~65M of 96.8M)",
+      "ratioToTable": "spray approx table (near/mid/far/midfar not individually resolvable)",
+      "realTotal": 96800599, "simSoloTotal": 97600000, "realOverSim": 0.992,
+      "note": "NOT a landing anchor; her gap was the consolidation core-pierce, now modeled (ratio 0.99)"
+    },
+    "soda-twinkling-bunny": {
+      "measuredBasis": "NONE",
+      "evidenceType": "footage counter is TEAM TOTAL, not isolable to Soda; excluded",
+      "ratioToTable": null,
+      "simSoloTotal": 57900000
+    }
+  },
+  "spreadAcrossUnits_ratioToTable": {
+    "note": "over noir, isabel, guilty, brid-silent-track; term-independent",
+    "near": { "min": 0.89, "max": 1.01, "mean": 0.98, "spreadPct": 12.9 },
+    "mid": { "min": 0.92, "max": 1.00, "mean": 0.94, "spreadPct": 9.0 },
+    "far": { "min": 0.87, "max": 0.99, "mean": 0.92, "spreadPct": 12.2 },
+    "midfar": { "min": 0.89, "max": 0.98, "mean": 0.95, "spreadPct": 9.0 }
+  },
+  "structureSearch": {
+    "correlatesChecked": ["normalAttackMultiplier", "reloadFrames", "element", "class", "burst", "ammo(=9 all)", "hitsPerShot(=10 all)"],
+    "result": "NO datamined-stat structure. far/near ratios non-monotonic vs normAtkMult and reloadFrames; element/class give no split. near variance is boss-proximity/positional (brid within-fight 8.52 vs 9.41), not a unit constant.",
+    "onlyCrossUnitSignal": "far extra-low for isabel (r0.87) + brid (r0.88), agreeing to 0.1% (far M 0.705 / 0.709); guilty (r0.93) + noir (r0.99) read far near table -> a 2-vs-2 per-unit split, not a class constant"
+  },
+  "designSketch": {
+    "optionA": { "shape": "charFixes.sgLandingScale (single scalar/unit, x whole table)", "pros": "1 param, captures guilty flat ~0.91, easy term-rescale", "cons": "cannot express band SHAPE (isabel/brid near~table but far -12%)" },
+    "optionB": { "shape": "charFixes.sgLandingByBand {near,mid,far,midfar}", "pros": "exact, captures far deficit", "cons": "4 noisy params/unit, overfits mid/midfar (clock-soft)" },
+    "recommendedShape": "per-unit flat sgLandingScale (guilty ~0.91) + optional per-unit sgFarScale (~0.88 for isabel/brid). 1-2 params, only measured-significant effects. Far stays per-unit (2-2 split), NOT a lowered class far. Default: unlisted units use class table unchanged."
+  },
+  "recommendation": {
+    "verdict": "HOLD - do not encode per-unit landing this pass",
+    "reasons": [
+      "Helps zero measured units today and REGRESSES isabel (1.086->~1.12) and guilty (1.346->~1.45): all measured landing factors are <=1, but noir/dorothy already sit at 0.99 and isabel/guilty are sim-LOW from rider/self-buff/term, so a <1 landing pushes them further off.",
+      "Bigger per-unit errors dominate and go first: isabel rider periodic-fire (+2.4M), guilty S1-duplicate+S2-stack self-buffs (up to +48%), brid 4.9x over-model, U18 term (~+1.6%).",
+      "U18 coupling: noir/dorothy calibrated at LOW term; isabel/guilty/brid confirm true term ~+1.6% higher. If term is raised, class table (and any per-unit scalar) must drop ~1.6%. Record landing as ratio-to-table (term-independent); express the one durable candidate (far ~0.66 for isabel/brid) as sgFarScale ~0.88."
+    ],
+    "sequence": "(1) fix isabel rider + guilty self-buffs + brid over-model; (2) resolve U18 term, rescale class table ~-1.6% to keep noir at 0.99 (near0.886/mid0.984/far0.738/midfar0.886); (3) then per-unit landing trim on the corrected term (at most guilty flat scalar + isabel/brid far scalar).",
+    "durableCandidate_parked": { "band": "far", "classFrom": 0.75, "perUnitTo_lowTerm": 0.66, "sgFarScale": 0.88, "unitsShowing": ["isabel", "brid-silent-track"], "unitsRefuting": ["guilty", "noir"] }
+  }
+}

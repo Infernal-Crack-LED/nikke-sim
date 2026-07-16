@@ -1327,3 +1327,41 @@ popups to the NON-CRIT single-instance value, never the DBG expected-value line 
 popups across focused recordings: MG (crown), SR (liberalio), RL (maiden) core ~near-100%; AR
 (snow-white), SMG (little-mermaid) mixed ~0.7-0.9. Drove the AUTO_CORE_RATE weapon-indexed refit
 (MG/SR/RL=0.95, AR/SMG/SG=0.85; DECISIONS + open-questions A15).
+
+## Shotgun range-landing corroboration — Guilty + Brid: Silent Track solo reads (2026-07-16)
+
+Pre-registered corroboration campaign for the Isabel finding (her solo read implied the shotgun
+landing table is too high at range). Both new videos are owner solo recordings on the standard
+scope-lock basis, processed with the same damage-counter reconciliation method (every damage
+instance detected by per-frame counter differencing at 60 fps; every counter value read; the sum of
+per-event deltas closes to the end-screen total exactly, to the digit, on both videos). The plan,
+its hypotheses, per-band predictions, and the pre-committed decision rule were approved by the
+pre-operation judge before processing (six required revisions, all executed); the results were
+assessed by an independent blind post-operation judge. Archived plan:
+`docs/handoffs/2026-07-16-sg-landing-prereg.md`.
+
+**Guilty** (`guilty`, Wind shotgun Attacker) — end screen 71,581,952; 185 landing shots; zero full
+bursts (lone Burst II). Every delta sits on an integer pellet lattice, which resolved her kit live:
+her Skill 1 ("Duplicate 8.81% ATK of the ally with the highest ATK") DOES self-apply solo,
+refresh-all stacking to the ×1.4818 five-stack plateau, and her Skill 2's "increases stack count of
+buffs by 1" demonstrably bumps Skill 1's stack count. Per-band magnitude (buff-corrected): mid 0.99,
+near 1.15/1.13, far 0.75, mid-far 0.94. Direct pellet counting at near reads ~8.1 of 10 pellets
+landing (0.81, not the table's 0.90). Record: `docs/probe-data/guilty-sg-band.json` (+ the
+per-event companion file).
+
+**Brid: Silent Track** (`brid-silent-track`, Fire shotgun Supporter) — end screen 74,592,500; 215
+landing shots + 43 Skill 2 riders (exactly one rider per five trigger pulls, measured fixed values
+673,819 non-critical / 1,010,728 critical — exactly 675.00% at her measured attack term). Per-band
+magnitude: mid 0.98, near 1.22/1.37 (landed pellets 8.5 vs 9.4 of 10 tracking visible boss
+proximity), far 0.71, mid-far 0.87. Record: `docs/probe-data/brid-silent-track-sg-band.json`
+(+ the per-event companion file).
+
+**Outcome (two-of-two judgment: LOG — no engine change).** The pre-registered split branch fired:
+Brid: Silent Track corroborates Isabel's far-band value almost exactly (0.709 measured vs 0.710
+predicted — two clean anchors agree far landing is ~0.66 for them), but Guilty reads as the CURRENT
+table shape times a flat ~0.91 unit factor, and near-band landing proved variable per unit and per
+position (0.81–0.94). Conclusion: shotgun pellet landing is per-unit, and a single class table
+cannot serve every shotgun unit to ±3%. The engine table stands; a far 0.75 → ~0.66 candidate is
+staged pending a third clean anchor. Live continuations: open-questions U17 (per-unit landing) and
+U18 (all three reads measured the in-fight attack term ~+1.6% above the scope-lock static value —
+same direction, two unit classes, confirmed two independent ways on Brid: Silent Track).

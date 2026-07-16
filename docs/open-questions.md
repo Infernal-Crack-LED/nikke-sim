@@ -8,6 +8,88 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U18 — Sim ATK term is ~+1.63% low GLOBALLY: damage reads match OL0, not base5 — re-opens the 2026-07-14 gear switch (2026-07-16, Fable-checked, owner-pending)
+Diagnosed at the desk from EXISTING reads (no new video). The sim's scope-lock static ATK
+(Attacker 118,027 / Supporter 98,367 / Defender 78,707, base5 gear) reads ~+1.63% below the in-fight
+term measured in FIVE reads spanning THREE weapon classes and ALL THREE unit classes — so it is GLOBAL:
+- jill (AR Attacker) → term 119,800, double-derived (normal + DoT, agree to 0.02%); +1.62% (HIGH).
+- guilty (SG Attacker) → 119,827 via popup-verified pellet step; +1.65%.
+- brid-silent-track (SG Supporter) → 99,826 via pellet grid AND rider (rider = EXACTLY 675.00% at
+  that term); +1.63%.
+- maiden-ice-rose (RL Defender) → 79,853, double-confirmed (rider 547.62% AND normal-core), +1.64%;
+  its own probe-runs note recorded "uniform 1.0146" at the time and dismissed it as noise.
+- isabel (SG Attacker) → ~+2.3% (roughest read; consistent in sign).
+The four clean reads agree to ~0.03% at ~+1.63%. **The measured term matches the OL0 numbers
+(Attacker 120,143 / Supporter 100,130 / Defender 80,118) to ~0.17% — NOT base5.**
+**IT IS A GEAR-TIER QUESTION, NOT CORE.** (A first pass entertained a "core 8" fit — base5+core8
+= 119,943 matches to 0.002% — but core MAXES at 7 (owner-confirmed; the base-stats-handoff.md:69
+"core can exceed 7" line was WRONG, now corrected), so that was a coincidence. Core-7 ×1.14 is itself
+VALIDATED — the 2026-07-13 video-verified combat ATK 120,143 = core-7 ×1.14 + OL0 gear. So the
+elevation is gear, not core.) This DIRECTLY re-opens **DECISIONS 2026-07-14 (base5 switch)**, which
+itself flagged the contradiction: the 2026-07-13 combat ATK was "video-verified twice" at the OL0
+numbers, yet the sim was switched to base5 (118,027) after an in-game gear-set measurement, with the
+note that the video verifications "either weren't precise to that margin or need re-checking." The
+five new in-fight DAMAGE reads are the re-check — they side with the OL0 video, not base5.
+Board impact (measured, +1.63% ATK injection): warms every unit ~+1.6% toward 1.0 (board runs cold);
+but noir/dorothy-serendipity — which CALIBRATED the SG landing table at the low base5 term — then
+over-read, so a basis bump must drop the SG landing table ~1.6% in the SAME change (the U17 coupling).
+Orthogonal to the far-band SHAPE deficit (a uniform scalar can't make far -12%).
+DISPOSITION: **LOG — owner-gated** (reverses the owner's own 2026-07-14 base5 ruling; reprices the
+whole board + recalibrates landing; only the owner knows their recorded units' actual gear). OWNER
+ARBITRATION: are the recorded scope-lock units on plain base5 gear or OL0-equivalent (overloaded)?
+The damage + the 2026-07-13 video both say OL0. If OL0 → revert the scope-lock gear basis base5→OL0
+(120,143) + drop SG landing ~1.6% + re-run board/regression. If genuinely base5 → the +1.63% is an
+omitted stat source (bond/affinity/collection) to hunt. WHY the 2026-07-14 base5 measurement and the
+damage disagree is the piece to reconcile (did the recorded units carry better gear than the base5
+set that was measured?). Full memo: session archive 2026-07-16-u18-atk-term-diagnosis.md; Fable check
+SOUND-WITH-CAVEATS/HIGH. Fixed en route: the stale "treasure-inclusive" comment in scope-lock.ts (the
+120,143 figure is OL0 GEAR, not treasure) and the base-stats-handoff.md:69 "core >7" error.
+Isabel/brid-silent-track baseline notes encode the measured term per-unit; revert to kit coefficients
+IF the basis is corrected globally.
+
+### U17 — SG landing is per-unit (and per-position within the near band) — the class table is a compromise (2026-07-16)
+Outcome of the pre-registered SG range-landing corroboration campaign (guilty + Brid: Silent Track
+solo reads vs the isabel hypothesis; scientific-method 2-of-2 decision = **LOG, no engine change** —
+the pre-registered SPLIT branch fired):
+- **Far band, two clean anchors agree:** Isabel implied landing ~0.656, Brid: Silent Track ~0.649
+  (her far M 0.709 vs the isabel-hypothesis prediction 0.710 — a 0.1% hit). The staged candidate
+  **far 0.75 → ~0.66** (⚑ calibrated-with-measured-support) is parked pending either a third clean
+  anchor or a resolution of Guilty's contrary shape. Note noir's 2026-07-15 counter reconciliation
+  (which SET the current table) reconciled at far 0.75 for noir — a third data point FOR per-unit.
+- **Guilty reads as the CURRENT table shape × a flat ~0.91 unit factor** (near landing measured
+  directly at ~0.81 by pellet-lattice decomposition, popup-confirmed; her far/near ratio 0.634 ≈ the
+  engine's 0.629). She refutes the class-wide reading of the far deficit.
+- **Near landing is not a constant even within one fight:** Brid: Silent Track's two near windows
+  measured 8.52 vs 9.41 landed pellets/10 tracking visible boss proximity; across units near spans
+  ~0.81 (Guilty) → ~0.90 (Isabel) → 0.85–0.94 (Brid). A single global near value cannot deliver ±3%
+  per SG unit.
+- All nine range-band reads across the three units sit BELOW the current table's predictions
+  (sign-unanimous, magnitude-inconsistent) — the table is, if anything, generous at range, but by a
+  per-unit amount.
+**CONSOLIDATION 2026-07-16 (all measured SG units) → decision = HOLD, no per-unit landing overrides
+this pass.** Per-unit landing ratios-to-table (term-independent), from every SG read in the repo:
+noir near/mid/far/midfar r0.99/1.00/0.99/0.98 (it SET the table); isabel r1.01/0.94/0.87/0.95;
+guilty r0.89/0.92/0.93/0.97 (flat ~0.91, far her LEAST-deficient band); brid-silent-track
+r1.01/0.92/0.88/0.89; dorothy-serendipity landing not separable (consolidation confound);
+soda-twinkling-bunny no isolable data (its footage counter is a TEAM total). Cross-unit spread:
+near 12.9% / far 12.2% / mid 9.0% / midfar 9.0% — every cell ≤ the class table, but by a PER-UNIT
+amount, with NO datamined-stat correlate (far/near ratios non-monotonic vs normalMult & reloadFrames;
+class/element give no split). **Why HOLD:** encoding per-unit landing now improves ZERO measured units
+and REGRESSES two — the sim-LOW units (isabel real/sim 1.086; guilty 1.35) are low for OTHER reasons
+(isabel rider + the U18 term; guilty's unmodeled S1-duplicate/S2-stack self-buffs + term), and every
+landing factor is ≤1 so applying it drags them further down. noir/dorothy already sit on the table.
+FIX ORDER: (a) promote the SG baselines to engine-loaded overrides (guilty/isabel/brid-silent-track
+live only in overrides-baselines/ → any loadOverride harness falls back to the bare parser, which
+over-fires brid's riders to ~4.9× — a harness artifact, NOT a model bug; her baseline reconciles at
+0.94); (b) resolve U18 (the ~+1.6% term); (c) THEN revisit landing. The one durable staged candidate
+is a per-unit `sgFarScale≈0.88` for isabel+brid ONLY (far ~0.66), NOT a class-wide far cut; cleanest
+engine shape if ever built = per-unit `sgLandingScale` (guilty) + optional `sgFarScale` (isabel/brid),
+unlisted units keep the class table. Consolidation memo + machine table: session archive u17-work/.
+STILL OPEN: (1) a third ATK-clean solo SG read (or a datamined per-unit accuracy/spread stat);
+(2) re-derive isabel's mid/midfar with clock-drift correction (her single-anchor read predates that
+discovery). Full record: docs/probe-data/{guilty,brid-silent-track}-sg-band.json (+ -events), the
+pre-registration in the session archive, DECISIONS 2026-07-16.
+
 ### U16 — Soda burst over-generation + dynamic chip-state (2026-07-16, from the re-tune)
 Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
 - **Rotation over-generation:** the sim gives Soda **6 bursts vs the recorded 5** in the soda-control comp
@@ -628,6 +710,12 @@ mid/far unchanged 0. Both clean solos STAY reconciled (noir/dorothy 1.01) and th
 (noir 1.04→1.03, naga 1.03→1.02). The small remaining ~2–3% comp warmth is a separate buff-interaction, not core.
 `docs/probe-data/sg-corerate-rederive.json`; DECISIONS. **The SG model (landing + core + consolidation) is now
 settled — → Dorothy is the designated SG-spray regression probe (memory `dorothy-sg-spray-regression-probe`).**
+**2026-07-16 UPDATE — the landing table survives a three-unit corroboration campaign UNCHANGED, but the
+"settled" reading is now qualified: landing is measurably PER-UNIT (and per-position at near).** Isabel +
+Brid: Silent Track agree the far band lands ~0.65–0.66 for THEM (staged ⚑ candidate far 0.66, not landed);
+Guilty reads the current table shape × a flat ~0.91 unit factor; noir's reconciliation (which set this table)
+remains exact for noir. No engine change (2-of-2 LOG, pre-registered split branch) — the live continuation
+is **U17** (per-unit landing profiles) and **U18** (the ATK-term elevation these reads exposed).
 Original framing (superseded by the falsification above):
 
 **SHARED SG UNDER-MODEL — was a first-class open item (Fable condition, 2026-07-15).** After the

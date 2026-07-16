@@ -238,7 +238,12 @@ interface UnitState {
   stunnedUntilFrame: number; // self-stun (Mast's Hangover): no firing/charging/reloading
   fbMissedSinceBurst: number; // full bursts this unit sat out since it last burst (Maiden:IR MP)
   mpPriority: boolean;       // jump the burst queue once fbMissedSinceBurst hits mpThreshold
-  burstGate: 'syncWithFocus' | null; // only cast in a chain where the focus (tested) unit also bursts
+  // syncWithFocus: only cast in a chain where the focus (tested) unit also bursts.
+  // everyOther: never cast the stage-3 slot in two consecutive full bursts (the Solo
+  // control framework's contract — the tested unit alternates with the no-op B3, even
+  // when an FB-extending burst would otherwise let the leftmost-wait rule pick it
+  // twice in a row).
+  burstGate: 'syncWithFocus' | 'everyOther' | null;
   burstFirstPending: boolean; // takes the first eligible burst of its stage (Prika duet opener)
   mpThreshold: number;
   extraStages: Set<number>; // extra burst stages this unit may fill (Combat Assist)
@@ -631,6 +636,8 @@ export function runSim(
   // full bursts the focus (tested) unit has cast — drives the syncWithFocus skip cadence
   // (a gated unit sits out the full burst after every 3rd of the focus unit's bursts).
   let focusBurstCount = 0;
+  // stage-3 caster of the most recent full burst — drives the everyOther gate
+  let lastStage3Caster = -1;
   let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
   const POST_FB_CHAIN_DELAY_FRAMES = 180;
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
@@ -1269,9 +1276,16 @@ export function runSim(
       // rotation, never coincidentally alongside a Helm-completed chain. AND she sits
       // out the full burst after every 3rd of her bursts (Mast's Hangover cycle): when
       // this stage's focus burst would be the 4th/8th/… she skips it (Crown fills in).
-      const gatePasses = (u: UnitState) =>
-        u.burstGate !== 'syncWithFocus' ||
-        (units[focusIdx].burstCdFrames === 0 && (focusBurstCount + 1) % 4 !== 0);
+      const gatePasses = (u: UnitState) => {
+        if (u.burstGate === 'syncWithFocus') {
+          return units[focusIdx].burstCdFrames === 0 && (focusBurstCount + 1) % 4 !== 0;
+        }
+        // everyOther (Solo framework): a gated unit never takes stage 3 twice in a
+        // row — it sits out the full burst right after one it cast, letting the
+        // next stage-filling unit (the no-op B3) alternate in.
+        if (u.burstGate === 'everyOther' && stage === 3) return lastStage3Caster !== u.idx;
+        return true;
+      };
       const eligible = (u: UnitState) =>
         u.burstCdFrames === 0 && fillsStage(u) && gatePasses(u);
       // burst-order overrides: a pending burstFirst unit (Prika duet opener) outranks
@@ -1321,6 +1335,7 @@ export function runSim(
           pendingFbExtendSec = 0;
           gauge = 0;
           fullBursts++;
+          lastStage3Caster = cand.idx;
           if (cand.idx === focusIdx) focusBurstCount++;
         }
         units.forEach((u) =>

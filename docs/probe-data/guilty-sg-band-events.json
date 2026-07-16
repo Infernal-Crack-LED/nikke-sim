@@ -1,0 +1,2955 @@
+[
+ {
+  "videoSec": 7.717,
+  "fightClock": 0.0,
+  "counterValue": 221767,
+  "delta": 221767,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 0,
+   "s2Active": 0,
+   "atkFactor": 1.0,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 8.383,
+  "fightClock": 0.667,
+  "counterValue": 526697,
+  "delta": 304930,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 0,
+   "s2Active": 0,
+   "atkFactor": 1.0,
+   "U_pelletUnits": 110,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 9.05,
+  "fightClock": 1.333,
+  "counterValue": 762325,
+  "delta": 235628,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 0,
+   "s2Active": 0,
+   "atkFactor": 1.0,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 9.717,
+  "fightClock": 2.0,
+  "counterValue": 1025674,
+  "delta": 263349,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 0,
+   "s2Active": 0,
+   "atkFactor": 1.0,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 10.383,
+  "fightClock": 2.667,
+  "counterValue": 1275162,
+  "delta": 249488,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 0,
+   "s2Active": 0,
+   "atkFactor": 1.0,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 11.05,
+  "fightClock": 3.333,
+  "counterValue": 1483069,
+  "delta": 207907,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 0,
+   "s2Active": 0,
+   "atkFactor": 1.0,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 11.717,
+  "fightClock": 4.0,
+  "counterValue": 1754555,
+  "delta": 271486,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 1,
+   "s2Active": 0,
+   "atkFactor": 1.0881,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 12.383,
+  "fightClock": 4.667,
+  "counterValue": 2056206,
+  "delta": 301651,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 1,
+   "s2Active": 0,
+   "atkFactor": 1.0881,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 13.05,
+  "fightClock": 5.333,
+  "counterValue": 2297526,
+  "delta": 241320,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 1,
+   "s2Active": 0,
+   "atkFactor": 1.0881,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 16.067,
+  "fightClock": 8.35,
+  "counterValue": 2629342,
+  "delta": 331816,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 1,
+   "s2Active": 0,
+   "atkFactor": 1.0881,
+   "U_pelletUnits": 110,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 16.733,
+  "fightClock": 9.017,
+  "counterValue": 2946076,
+  "delta": 316734,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 1,
+   "s2Active": 0,
+   "atkFactor": 1.0881,
+   "U_pelletUnits": 105,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 17.4,
+  "fightClock": 9.683,
+  "counterValue": 3187396,
+  "delta": 241320,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 1,
+   "s2Active": 0,
+   "atkFactor": 1.0881,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 18.067,
+  "fightClock": 10.35,
+  "counterValue": 3567494,
+  "delta": 380098,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 3,
+   "s2Active": 1,
+   "atkFactor": 1.3056,
+   "U_pelletUnits": 105,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 18.733,
+  "fightClock": 11.017,
+  "counterValue": 3911391,
+  "delta": 343897,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 3,
+   "s2Active": 1,
+   "atkFactor": 1.3056,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 19.4,
+  "fightClock": 11.683,
+  "counterValue": 4363888,
+  "delta": 452497,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 3,
+   "s2Active": 1,
+   "atkFactor": 1.3056,
+   "U_pelletUnits": 125,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 20.067,
+  "fightClock": 12.35,
+  "counterValue": 4725885,
+  "delta": 361997,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 3,
+   "s2Active": 1,
+   "atkFactor": 1.3056,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 21.033,
+  "fightClock": 13.317,
+  "counterValue": 4979285,
+  "delta": 253400,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 3,
+   "s2Active": 1,
+   "atkFactor": 1.3056,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 21.4,
+  "fightClock": 13.683,
+  "counterValue": 5323184,
+  "delta": 343899,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 3,
+   "s2Active": 1,
+   "atkFactor": 1.3056,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 24.417,
+  "fightClock": 16.7,
+  "counterValue": 5748265,
+  "delta": 425081,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 4,
+   "s2Active": 1,
+   "atkFactor": 1.3937,
+   "U_pelletUnits": 110,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 25.083,
+  "fightClock": 17.367,
+  "counterValue": 6076738,
+  "delta": 328473,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 4,
+   "s2Active": 1,
+   "atkFactor": 1.3937,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 25.75,
+  "fightClock": 18.033,
+  "counterValue": 6501821,
+  "delta": 425083,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 4,
+   "s2Active": 1,
+   "atkFactor": 1.3937,
+   "U_pelletUnits": 110,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 26.417,
+  "fightClock": 18.7,
+  "counterValue": 6810973,
+  "delta": 309152,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 4,
+   "s2Active": 1,
+   "atkFactor": 1.3937,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 27.083,
+  "fightClock": 19.367,
+  "counterValue": 7216732,
+  "delta": 405759,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 4,
+   "s2Active": 1,
+   "atkFactor": 1.3937,
+   "U_pelletUnits": 105,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 27.75,
+  "fightClock": 20.033,
+  "counterValue": 7647958,
+  "delta": 431226,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 4,
+   "s2Active": 0,
+   "atkFactor": 1.3524,
+   "U_pelletUnits": 115,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 28.417,
+  "fightClock": 20.7,
+  "counterValue": 7976662,
+  "delta": 328704,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 29.083,
+  "fightClock": 21.367,
+  "counterValue": 8428630,
+  "delta": 451968,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 110,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 29.75,
+  "fightClock": 22.033,
+  "counterValue": 8757334,
+  "delta": 328704,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 32.767,
+  "fightClock": 25.05,
+  "counterValue": 9106582,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 33.667,
+  "fightClock": 25.95,
+  "counterValue": 9558550,
+  "delta": 451968,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 110,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 34.1,
+  "fightClock": 26.383,
+  "counterValue": 10010518,
+  "delta": 451968,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 110,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 34.767,
+  "fightClock": 27.05,
+  "counterValue": 10277590,
+  "delta": 267072,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 65,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 35.433,
+  "fightClock": 27.717,
+  "counterValue": 10524118,
+  "delta": 246528,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 60,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 37.883,
+  "fightClock": 30.167,
+  "counterValue": 11031385,
+  "delta": 507267,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 127,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 38.55,
+  "fightClock": 30.833,
+  "counterValue": 11538651,
+  "delta": 507266,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 127,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 39.217,
+  "fightClock": 31.5,
+  "counterValue": 12057901,
+  "delta": 519250,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 130,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 39.883,
+  "fightClock": 32.167,
+  "counterValue": 12545197,
+  "delta": 487296,
+  "classification": "shot",
+  "band": "mid",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 122,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 42.9,
+  "fightClock": 35.183,
+  "counterValue": 13046467,
+  "delta": 501270,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 122,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 43.567,
+  "fightClock": 35.85,
+  "counterValue": 13568281,
+  "delta": 521814,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 127,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 44.233,
+  "fightClock": 36.517,
+  "counterValue": 14069551,
+  "delta": 501270,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 122,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 44.9,
+  "fightClock": 37.183,
+  "counterValue": 14558495,
+  "delta": 488944,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 119,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 45.567,
+  "fightClock": 37.85,
+  "counterValue": 14985807,
+  "delta": 427312,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 104,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 46.233,
+  "fightClock": 38.517,
+  "counterValue": 15561035,
+  "delta": 575228,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 140,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 46.9,
+  "fightClock": 39.183,
+  "counterValue": 15955477,
+  "delta": 394442,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 96,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 47.567,
+  "fightClock": 39.85,
+  "counterValue": 16370463,
+  "delta": 414986,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 101,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 48.233,
+  "fightClock": 40.517,
+  "counterValue": 16805993,
+  "delta": 435530,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 106,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 51.25,
+  "fightClock": 43.533,
+  "counterValue": 17445067,
+  "delta": 639074,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 160,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 51.917,
+  "fightClock": 44.2,
+  "counterValue": 18012245,
+  "delta": 567178,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 142,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 52.583,
+  "fightClock": 44.867,
+  "counterValue": 18539483,
+  "delta": 527238,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 132,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 53.25,
+  "fightClock": 45.533,
+  "counterValue": 19143473,
+  "delta": 603990,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 147,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 53.917,
+  "fightClock": 46.2,
+  "counterValue": 19718701,
+  "delta": 575228,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 140,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 54.583,
+  "fightClock": 46.867,
+  "counterValue": 20113143,
+  "delta": 394442,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 96,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 55.733,
+  "fightClock": 48.017,
+  "counterValue": 20581543,
+  "delta": 468400,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 114,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 55.917,
+  "fightClock": 48.2,
+  "counterValue": 20996529,
+  "delta": 414986,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 101,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 56.583,
+  "fightClock": 48.867,
+  "counterValue": 21518343,
+  "delta": 521814,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 127,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 59.6,
+  "fightClock": 51.883,
+  "counterValue": 21625171,
+  "delta": 106828,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 26,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    2
+   ]
+  }
+ },
+ {
+  "videoSec": 60.267,
+  "fightClock": 52.55,
+  "counterValue": 22073027,
+  "delta": 447856,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 109,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 60.933,
+  "fightClock": 53.217,
+  "counterValue": 22467469,
+  "delta": 394442,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 96,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 61.6,
+  "fightClock": 53.883,
+  "counterValue": 22944087,
+  "delta": 476618,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 116,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 62.267,
+  "fightClock": 54.55,
+  "counterValue": 23445357,
+  "delta": 501270,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 122,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 62.933,
+  "fightClock": 55.217,
+  "counterValue": 23932653,
+  "delta": 487296,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 122,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 63.6,
+  "fightClock": 55.883,
+  "counterValue": 24327095,
+  "delta": 394442,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 96,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 64.267,
+  "fightClock": 56.55,
+  "counterValue": 24922867,
+  "delta": 595772,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 145,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 64.933,
+  "fightClock": 57.217,
+  "counterValue": 25403593,
+  "delta": 480726,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 117,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 67.95,
+  "fightClock": 60.233,
+  "counterValue": 25724077,
+  "delta": 320484,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 78,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    6
+   ]
+  }
+ },
+ {
+  "videoSec": 68.617,
+  "fightClock": 60.9,
+  "counterValue": 26340393,
+  "delta": 616316,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 150,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 69.283,
+  "fightClock": 61.567,
+  "counterValue": 26734835,
+  "delta": 394442,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 96,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 69.95,
+  "fightClock": 62.233,
+  "counterValue": 27277193,
+  "delta": 542358,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 132,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 70.617,
+  "fightClock": 62.9,
+  "counterValue": 27671635,
+  "delta": 394442,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 96,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 71.283,
+  "fightClock": 63.567,
+  "counterValue": 28172905,
+  "delta": 501270,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 122,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 73.583,
+  "fightClock": 65.867,
+  "counterValue": 28452499,
+  "delta": 279594,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 74.25,
+  "fightClock": 66.533,
+  "counterValue": 28831948,
+  "delta": 379449,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 74.917,
+  "fightClock": 67.2,
+  "counterValue": 29191426,
+  "delta": 359478,
+  "classification": "shot",
+  "band": "near1",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 77.933,
+  "fightClock": 70.217,
+  "counterValue": 29437954,
+  "delta": 246528,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 60,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 78.6,
+  "fightClock": 70.883,
+  "counterValue": 29746114,
+  "delta": 308160,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 79.267,
+  "fightClock": 71.55,
+  "counterValue": 30115906,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 79.933,
+  "fightClock": 72.217,
+  "counterValue": 30382978,
+  "delta": 267072,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 65,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 80.6,
+  "fightClock": 72.883,
+  "counterValue": 30547330,
+  "delta": 164352,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 40,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 81.267,
+  "fightClock": 73.55,
+  "counterValue": 30834946,
+  "delta": 287616,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 81.933,
+  "fightClock": 74.217,
+  "counterValue": 31081474,
+  "delta": 246528,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 60,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 82.6,
+  "fightClock": 74.883,
+  "counterValue": 31492354,
+  "delta": 410880,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 83.583,
+  "fightClock": 75.867,
+  "counterValue": 31759426,
+  "delta": 267072,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 65,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 86.283,
+  "fightClock": 78.567,
+  "counterValue": 32058991,
+  "delta": 299565,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 86.95,
+  "fightClock": 79.233,
+  "counterValue": 32338585,
+  "delta": 279594,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 87.617,
+  "fightClock": 79.9,
+  "counterValue": 32618179,
+  "delta": 279594,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 88.283,
+  "fightClock": 80.567,
+  "counterValue": 33008515,
+  "delta": 390336,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 88.95,
+  "fightClock": 81.233,
+  "counterValue": 33234499,
+  "delta": 225984,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 55,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 89.617,
+  "fightClock": 81.9,
+  "counterValue": 33481027,
+  "delta": 246528,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 60,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 90.567,
+  "fightClock": 82.85,
+  "counterValue": 33789187,
+  "delta": 308160,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 90.95,
+  "fightClock": 83.233,
+  "counterValue": 34158979,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 91.617,
+  "fightClock": 83.9,
+  "counterValue": 34487683,
+  "delta": 328704,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 94.633,
+  "fightClock": 86.917,
+  "counterValue": 34754755,
+  "delta": 267072,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 65,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 95.6,
+  "fightClock": 87.883,
+  "counterValue": 35001283,
+  "delta": 246528,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 60,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 95.967,
+  "fightClock": 88.25,
+  "counterValue": 35391619,
+  "delta": 390336,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 96.633,
+  "fightClock": 88.917,
+  "counterValue": 35597059,
+  "delta": 205440,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 50,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 97.3,
+  "fightClock": 89.583,
+  "counterValue": 35946307,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 97.967,
+  "fightClock": 90.25,
+  "counterValue": 36305785,
+  "delta": 359478,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 98.633,
+  "fightClock": 90.917,
+  "counterValue": 36655033,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 99.3,
+  "fightClock": 91.583,
+  "counterValue": 36881017,
+  "delta": 225984,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 55,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 99.967,
+  "fightClock": 92.25,
+  "counterValue": 37168633,
+  "delta": 287616,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 102.983,
+  "fightClock": 95.267,
+  "counterValue": 37291897,
+  "delta": 123264,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 30,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 103.65,
+  "fightClock": 95.933,
+  "counterValue": 37764409,
+  "delta": 472512,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 115,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 104.317,
+  "fightClock": 96.6,
+  "counterValue": 38113657,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 104.983,
+  "fightClock": 97.267,
+  "counterValue": 38442361,
+  "delta": 328704,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 105.65,
+  "fightClock": 97.933,
+  "counterValue": 38750521,
+  "delta": 308160,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 106.317,
+  "fightClock": 98.6,
+  "counterValue": 39017593,
+  "delta": 267072,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 65,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 106.983,
+  "fightClock": 99.267,
+  "counterValue": 39284665,
+  "delta": 267072,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 65,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 107.65,
+  "fightClock": 99.933,
+  "counterValue": 39633913,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 108.317,
+  "fightClock": 100.6,
+  "counterValue": 39933478,
+  "delta": 299565,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 112.267,
+  "fightClock": 104.55,
+  "counterValue": 40364902,
+  "delta": 431424,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 105,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 112.933,
+  "fightClock": 105.217,
+  "counterValue": 40755238,
+  "delta": 390336,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 113.6,
+  "fightClock": 105.883,
+  "counterValue": 41001766,
+  "delta": 246528,
+  "classification": "shot",
+  "band": "far",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 60,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 114.267,
+  "fightClock": 106.55,
+  "counterValue": 41351014,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 114.933,
+  "fightClock": 107.217,
+  "counterValue": 41679718,
+  "delta": 328704,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 115.6,
+  "fightClock": 107.883,
+  "counterValue": 42049510,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 116.267,
+  "fightClock": 108.55,
+  "counterValue": 42337126,
+  "delta": 287616,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 116.933,
+  "fightClock": 109.217,
+  "counterValue": 42727462,
+  "delta": 390336,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 117.6,
+  "fightClock": 109.883,
+  "counterValue": 43097254,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 120.617,
+  "fightClock": 112.9,
+  "counterValue": 43376848,
+  "delta": 279594,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 121.283,
+  "fightClock": 113.567,
+  "counterValue": 43696384,
+  "delta": 319536,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 80,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 121.95,
+  "fightClock": 114.233,
+  "counterValue": 44035891,
+  "delta": 339507,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 122.617,
+  "fightClock": 114.9,
+  "counterValue": 44549491,
+  "delta": 513600,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 125,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 123.283,
+  "fightClock": 115.567,
+  "counterValue": 44898739,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 123.95,
+  "fightClock": 116.233,
+  "counterValue": 45309619,
+  "delta": 410880,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 124.617,
+  "fightClock": 116.9,
+  "counterValue": 45679411,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 125.283,
+  "fightClock": 117.567,
+  "counterValue": 46090291,
+  "delta": 410880,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 126.233,
+  "fightClock": 118.517,
+  "counterValue": 46501171,
+  "delta": 410880,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 128.967,
+  "fightClock": 121.25,
+  "counterValue": 46870963,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 129.633,
+  "fightClock": 121.917,
+  "counterValue": 47261299,
+  "delta": 390336,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 130.3,
+  "fightClock": 122.583,
+  "counterValue": 47774899,
+  "delta": 513600,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 125,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 130.967,
+  "fightClock": 123.25,
+  "counterValue": 48165235,
+  "delta": 390336,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 131.633,
+  "fightClock": 123.917,
+  "counterValue": 48555571,
+  "delta": 390336,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 132.3,
+  "fightClock": 124.583,
+  "counterValue": 48855136,
+  "delta": 299565,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 132.967,
+  "fightClock": 125.25,
+  "counterValue": 49224928,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 133.633,
+  "fightClock": 125.917,
+  "counterValue": 49635808,
+  "delta": 410880,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 134.3,
+  "fightClock": 126.583,
+  "counterValue": 50005600,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 137.8,
+  "fightClock": 130.083,
+  "counterValue": 50313760,
+  "delta": 308160,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 137.983,
+  "fightClock": 130.267,
+  "counterValue": 50704096,
+  "delta": 390336,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 95,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 138.65,
+  "fightClock": 130.933,
+  "counterValue": 50991712,
+  "delta": 287616,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 70,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 139.317,
+  "fightClock": 131.6,
+  "counterValue": 51402592,
+  "delta": 410880,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 139.983,
+  "fightClock": 132.267,
+  "counterValue": 51772384,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 140.65,
+  "fightClock": 132.933,
+  "counterValue": 52183264,
+  "delta": 410880,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 141.317,
+  "fightClock": 133.6,
+  "counterValue": 52532512,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 141.983,
+  "fightClock": 134.267,
+  "counterValue": 52881760,
+  "delta": 349248,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 142.65,
+  "fightClock": 134.933,
+  "counterValue": 53221267,
+  "delta": 339507,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 85,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 145.667,
+  "fightClock": 137.95,
+  "counterValue": 53632147,
+  "delta": 410880,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 100,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 147.933,
+  "fightClock": 140.217,
+  "counterValue": 53866347,
+  "delta": 234200,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 57,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    4
+   ]
+  }
+ },
+ {
+  "videoSec": 148.6,
+  "fightClock": 140.883,
+  "counterValue": 54207375,
+  "delta": 341028,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 83,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    6
+   ]
+  }
+ },
+ {
+  "videoSec": 149.267,
+  "fightClock": 141.55,
+  "counterValue": 54749733,
+  "delta": 542358,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 132,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 149.933,
+  "fightClock": 142.217,
+  "counterValue": 55218133,
+  "delta": 468400,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 114,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 150.6,
+  "fightClock": 142.883,
+  "counterValue": 55686533,
+  "delta": 468400,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 114,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 151.267,
+  "fightClock": 143.55,
+  "counterValue": 56187803,
+  "delta": 501270,
+  "classification": "shot",
+  "band": "midfar",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 122,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 151.933,
+  "fightClock": 144.217,
+  "counterValue": 56824663,
+  "delta": 636860,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 155,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 152.6,
+  "fightClock": 144.883,
+  "counterValue": 57371871,
+  "delta": 547208,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 137,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  },
+  "note": "S2 expiry edge: damage landed ~0.05s before S2 lapse per event clock; exact lattice fit at b=0"
+ },
+ {
+  "videoSec": 155.617,
+  "fightClock": 147.9,
+  "counterValue": 57951034,
+  "delta": 579163,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 145,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 156.283,
+  "fightClock": 148.567,
+  "counterValue": 58282555,
+  "delta": 331521,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 83,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    6
+   ]
+  }
+ },
+ {
+  "videoSec": 156.95,
+  "fightClock": 149.233,
+  "counterValue": 58582122,
+  "delta": 299567,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 157.617,
+  "fightClock": 149.9,
+  "counterValue": 59124480,
+  "delta": 542358,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 132,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 158.283,
+  "fightClock": 150.567,
+  "counterValue": 59592880,
+  "delta": 468400,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 114,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 158.95,
+  "fightClock": 151.233,
+  "counterValue": 60127020,
+  "delta": 534140,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 130,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 159.617,
+  "fightClock": 151.9,
+  "counterValue": 60521462,
+  "delta": 394442,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 96,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 160.283,
+  "fightClock": 152.567,
+  "counterValue": 61022732,
+  "delta": 501270,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 122,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 160.95,
+  "fightClock": 153.233,
+  "counterValue": 61597960,
+  "delta": 575228,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 140,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 163.967,
+  "fightClock": 156.25,
+  "counterValue": 62066360,
+  "delta": 468400,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 114,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 164.633,
+  "fightClock": 156.917,
+  "counterValue": 62440258,
+  "delta": 373898,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 91,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 165.3,
+  "fightClock": 157.583,
+  "counterValue": 62949746,
+  "delta": 509488,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 124,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 165.967,
+  "fightClock": 158.25,
+  "counterValue": 63471560,
+  "delta": 521814,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 127,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 166.633,
+  "fightClock": 158.917,
+  "counterValue": 63866002,
+  "delta": 394442,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 96,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 167.3,
+  "fightClock": 159.583,
+  "counterValue": 64301373,
+  "delta": 435371,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 109,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 167.967,
+  "fightClock": 160.25,
+  "counterValue": 64769773,
+  "delta": 468400,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 114,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 168.633,
+  "fightClock": 160.917,
+  "counterValue": 65143671,
+  "delta": 373898,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 91,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    7
+   ]
+  }
+ },
+ {
+  "videoSec": 169.3,
+  "fightClock": 161.583,
+  "counterValue": 65801075,
+  "delta": 657404,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 160,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 172.317,
+  "fightClock": 164.6,
+  "counterValue": 66248931,
+  "delta": 447856,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 109,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 172.983,
+  "fightClock": 165.267,
+  "counterValue": 66811833,
+  "delta": 562902,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 137,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 173.65,
+  "fightClock": 165.933,
+  "counterValue": 67395279,
+  "delta": 583446,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 142,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 174.867,
+  "fightClock": 167.15,
+  "counterValue": 67843135,
+  "delta": 447856,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 109,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 174.983,
+  "fightClock": 167.267,
+  "counterValue": 68311535,
+  "delta": 468400,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 114,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 175.65,
+  "fightClock": 167.933,
+  "counterValue": 68800479,
+  "delta": 488944,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 119,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 176.317,
+  "fightClock": 168.6,
+  "counterValue": 69281205,
+  "delta": 480726,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 117,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    9
+   ]
+  }
+ },
+ {
+  "videoSec": 176.983,
+  "fightClock": 169.267,
+  "counterValue": 69729061,
+  "delta": 447856,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 109,
+   "lattice": "NEAR",
+   "landedPelletCandidates": [
+    8
+   ]
+  }
+ },
+ {
+  "videoSec": 177.65,
+  "fightClock": 169.933,
+  "counterValue": 70308224,
+  "delta": 579163,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 0,
+   "atkFactor": 1.4405,
+   "U_pelletUnits": 145,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 180.917,
+  "fightClock": 173.2,
+  "counterValue": 70493120,
+  "delta": 184896,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 45,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 181.583,
+  "fightClock": 173.867,
+  "counterValue": 70862912,
+  "delta": 369792,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 90,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 182.25,
+  "fightClock": 174.533,
+  "counterValue": 71171072,
+  "delta": 308160,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 75,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 182.917,
+  "fightClock": 175.2,
+  "counterValue": 71417600,
+  "delta": 246528,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 60,
+   "lattice": "amb"
+  }
+ },
+ {
+  "videoSec": 183.583,
+  "fightClock": 175.867,
+  "counterValue": 71581952,
+  "delta": 164352,
+  "classification": "shot",
+  "band": "near2",
+  "fit": {
+   "s1Stacks": 5,
+   "s2Active": 1,
+   "atkFactor": 1.4818,
+   "U_pelletUnits": 40,
+   "lattice": "amb"
+  }
+ }
+]

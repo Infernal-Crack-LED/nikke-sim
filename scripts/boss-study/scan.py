@@ -37,12 +37,22 @@ import argparse, json, os, subprocess, sys
 import numpy as np
 from PIL import Image
 
+try:
+    import cv2  # optional: enables the v1 face/cover detector (opencv-python-headless<5)
+except ImportError:
+    cv2 = None
+
 SRC_W, SRC_H = 2622, 1206
 AIM = dict(x=900, y=380, w=1000, h=520)     # ammo-box search region (full-res crop)
 DX0, DY0, DX1, DY1 = 8, 20, 70, 52          # digit window within box
 BAR = (2, 4, 70, 13)                        # mag bar strip within box (x0,y0,x1,y1)
 UI_W = 656
 DMG_BOX_SMALL = (283, 2, 373, 15)           # top-centre damage box on small frame
+BURST_METER_SMALL = (636, 121, 655, 126)    # right-edge burst meter (orig x2540-2620, y485-502):
+                                            # grey/white = charging, red/flashing = INSIDE Full
+                                            # Burst (owner-identified; validated on crown.MP4 —
+                                            # 12 FBs, all ~10s). Flashes ~1Hz, so merge gaps <=1s.
+BURST_RED_THRESH = 0.25
 YELLOW_THRESH = 0.11                        # probe-processing whole-frame splash threshold
 SPLASH_MIN_GAP = 10.0
 DCORR_STATIC = 0.90                         # >= means digit region unchanged (holding fire)
@@ -153,8 +163,41 @@ def yellow_frac(c):
     r, g, b = c[..., 0], c[..., 1], c[..., 2]
     return float(((r > 150) & (g > 120) & (b < 120) & (r + g > 2 * b + 100)).mean())
 
+def burst_red_frac(c):
+    x0, y0, x1, y1 = BURST_METER_SMALL
+    strip = c[y0:y1, x0:x1]
+    r, g = strip[..., 0], strip[..., 1]
+    return float(((r > 170) & (r - g > 80)).mean())
+
+class FaceDetectorV1:
+    """CALIBRATED cover/boss-walk detector (2026-07-16): nagadomi's lbpcascade_animeface
+    (vendored XML, MIT) on 1311-wide frames. The squad turns FRONTAL (faces to camera) during
+    every boss-unhittable walk and during forced-cover phases — measured on 714-noon/1.mp4
+    (all five transitions + the fight-end cover phase) with ZERO false positives across
+    crown.MP4. Faces in the squad-strip portrait box are excluded; count threshold is
+    comp-aware (unitCount-1); pre/post-fight lineups are frontal too, so gate on the fight
+    clock downstream."""
+    STRIP = (450, 830, 510)   # exclude portraits: x0..x1 when center-y below this
+
+    def __init__(self, xml_path):
+        self.casc = cv2.CascadeClassifier(xml_path)
+        if self.casc.empty():
+            raise RuntimeError(f'cascade failed to load: {xml_path}')
+
+    def count(self, bgr_1311):
+        gray = cv2.equalizeHist(cv2.cvtColor(bgr_1311, cv2.COLOR_BGR2GRAY))
+        faces = self.casc.detectMultiScale(gray, scaleFactor=1.08, minNeighbors=4,
+                                           minSize=(45, 45))
+        x0, x1, ymin = self.STRIP
+        keep = [(x, y, w) for x, y, w, h in faces
+                if not (y + h / 2 > ymin and x0 < x + w / 2 < x1)]
+        if not keep:
+            return 0, 0.0
+        xs = [x + w / 2 for x, y, w in keep]
+        return len(keep), round((max(xs) - min(xs)) / 1311, 3)
+
 def face_metric(c):
-    """UNCALIBRATED forced-cover metric v0 (no positive examples yet; spec flag).
+    """UNCALIBRATED forced-cover metric v0 (superseded by FaceDetectorV1; kept as a log column).
     Counts head-sized skin blobs in the head band. Baseline on normal control
     footage already reaches 5-8 -> treat as DEAD unless a later calibration
     recording separates the distributions. Recorded for the log regardless."""
@@ -190,6 +233,9 @@ def main():
     ap.add_argument('--fps-ui', type=float, default=2)
     ap.add_argument('--template', default=os.path.join(HERE, 'ammo-box-template.png'))
     ap.add_argument('--glyphs', default=os.path.join(HERE, 'glyphs.npz'))
+    ap.add_argument('--cascade', default=os.path.join(HERE, 'lbpcascade_animeface.xml'))
+    ap.add_argument('--team-size', type=int, default=5,
+                    help='units in the recorded comp; face threshold = team_size - 1')
     args = ap.parse_args()
     os.makedirs(args.out, exist_ok=True)
     aim_dir, ui_dir = os.path.join(args.out, 'frames-aim'), os.path.join(args.out, 'frames-ui')
@@ -198,18 +244,30 @@ def main():
 
     print('extracting frames…', flush=True)
     sh(f"ffmpeg -y -loglevel error -i '{args.video}' -vf 'fps={args.fps_aim},crop={AIM['w']}:{AIM['h']}:{AIM['x']}:{AIM['y']}' {aim_dir}/a_%05d.png")
-    sh(f"ffmpeg -y -loglevel error -i '{args.video}' -vf 'fps={args.fps_ui},scale={UI_W}:-1' {ui_dir}/u_%05d.png")
+    sh(f"ffmpeg -y -loglevel error -i '{args.video}' -vf 'fps={args.fps_ui},scale=1311:-1' {ui_dir}/u_%05d.png")
 
     tracker, reader = BoxTracker(args.template), GlyphReader(args.glyphs)
+    facer = None
+    if cv2 is not None and os.path.exists(args.cascade):
+        facer = FaceDetectorV1(args.cascade)
+    else:
+        print('NOTE: cv2/cascade unavailable — v1 face/cover detector skipped', flush=True)
 
     ui_samples = []
     ui_files = sorted(os.listdir(ui_dir))
     for i, f in enumerate(ui_files):
         t = i / args.fps_ui
-        c = np.asarray(Image.open(os.path.join(ui_dir, f)).convert('RGB'), dtype=np.float64)
+        path = os.path.join(ui_dir, f)
+        big = Image.open(path).convert('RGB')
+        c = np.asarray(big.resize((UI_W, int(big.height * UI_W / big.width))), dtype=np.float64)
         heads, skin = face_metric(c)
-        ui_samples.append(dict(t=round(t, 2), ui=ui_present(c.mean(axis=2)),
-                               yellow=round(yellow_frac(c), 4), faces=heads, skin=skin))
+        rec = dict(t=round(t, 2), ui=ui_present(c.mean(axis=2)),
+                   yellow=round(yellow_frac(c), 4), faces=heads, skin=skin,
+                   burst=round(burst_red_frac(c), 3))
+        if facer:
+            n, span = facer.count(cv2.imread(path))
+            rec['facesV1'], rec['facesV1Span'] = n, span
+        ui_samples.append(rec)
         if i % 100 == 0: print(f'  ui {i}/{len(ui_files)}', flush=True)
 
     aim_samples, prev_digits = [], None
@@ -247,11 +305,23 @@ def main():
     fight_start = None if fs_i is None else ui_samples[fs_i]['t']
     fight_end = None if fe_i is None else ui_samples[fe_i]['t']
 
-    # splashes
+    # splashes (secondary FB signal; known-weak on bright boss backgrounds)
     splashes, last = [], -1e9
     for s in ui_samples:
         if s['yellow'] >= YELLOW_THRESH and s['t'] - last >= SPLASH_MIN_GAP:
             splashes.append(s['t']); last = s['t']
+
+    # Full-Burst windows from the right-edge burst meter (PRIMARY FB signal): red/flashing =
+    # inside FB; merge sub-1s flicker gaps.
+    fb_windows, w_start, w_last = [], None, None
+    for s in ui_samples:
+        if s['burst'] >= BURST_RED_THRESH:
+            if w_start is None: w_start = s['t']
+            w_last = s['t']
+        elif w_start is not None and s['t'] - w_last > 1.0:
+            fb_windows.append([w_start, round(w_last + 1.0 / args.fps_ui, 2)]); w_start = None
+    if w_start is not None:
+        fb_windows.append([w_start, round(w_last + 1.0 / args.fps_ui, 2)])
 
     # per-sample firing classification (mechanical; low confidence is NEVER 'firing')
     def firing(rec):
@@ -297,11 +367,34 @@ def main():
             p = os.path.join(ev_dir, f'window_{wi:02d}.png')
             sheet.save(p); w['evidenceSheet'] = os.path.abspath(p)
 
+    # cover/boss-walk windows from the v1 face detector: >= (team_size-1) frontal faces with
+    # >=0.5 width span, >=2 consecutive samples. Fires at boss-walk transitions AND forced-cover
+    # phases; pre/post-fight lineups are frontal too — bounded by the fight clock here.
+    face_windows = []
+    if facer:
+        need = max(3, args.team_size - 1)
+        f_start, f_last = None, None
+        for s in ui_samples:
+            hot = s.get('facesV1', 0) >= need and s.get('facesV1Span', 0) >= 0.5 \
+                and (fight_start is None or s['t'] >= fight_start) \
+                and (fight_end is None or s['t'] <= fight_end)
+            if hot:
+                if f_start is None: f_start = s['t']
+                f_last = s['t']
+            elif f_start is not None and s['t'] - f_last > 1.5:
+                if f_last > f_start:
+                    face_windows.append([f_start, round(f_last + 1.0 / args.fps_ui, 2)])
+                f_start = None
+        if f_start is not None and f_last > f_start:
+            face_windows.append([f_start, round(f_last + 1.0 / args.fps_ui, 2)])
+
     out = dict(
         video=os.path.abspath(args.video), fpsAim=args.fps_aim, fpsUi=args.fps_ui,
         fightStartVideoSec=fight_start, fightEndVideoSec=fight_end,
         durationSec=None if None in (fight_start, fight_end) else round(fight_end - fight_start, 2),
         splashesVideoSec=splashes,
+        fullBurstWindowsVideoSec=fb_windows,
+        coverFaceWindowsVideoSec=face_windows,
         candidateWindows=windows,
         uiSamples=ui_samples, aimSamples=aim_samples,
         calibrationFramesVideoSec=[40, 41, 42, 43, 44, 60, 55.0, 75.0, 66.3, 67.7, 69.5, 72.0],

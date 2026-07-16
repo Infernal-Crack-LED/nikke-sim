@@ -148,5 +148,10 @@
     "measuredM": {"mid": 1.008, "near1": 1.286, "far": 0.705, "midfar": 0.922, "near2": 1.311},
     "preRegM": {"mid": 1.075, "near": 1.281, "far": 0.806, "midfar": 0.970}
   },
-  "note": "MEASUREMENT ONLY - no engine/override edits. M(B) is the primary MEASURED deliverable; residual core(B) is secondary (flagged convention, landing held at engine values)."
+  "note": "MEASUREMENT ONLY - no engine/override edits. M(B) is the primary MEASURED deliverable; residual core(B) is secondary (flagged convention, landing held at engine values).",
+  "postScriptNotes2026_07_16": {
+    "corroborationOutcome": "guilty + brid-silent-track solo reads processed same-day (docs/probe-data/guilty-sg-band.json, brid-silent-track-sg-band.json). 2-of-2 judge decision = LOG, pre-registered SPLIT branch: brid-silent-track's far M 0.709 matches this read's far 0.705 almost exactly (two clean anchors agree far landing ~0.65-0.66), but guilty reads as the CURRENT engine table shape x a flat ~0.91 per-unit landing factor, and near-band landing proved per-unit/per-position variable (0.81-0.94 across units/windows) -> no engine SG_LANDING change; per-unit facts recorded.",
+    "riderCoefResolved": "the +2.3% rider-coef anomaly flagged above is TERM-side, not coefficient-side: brid-silent-track's rider is EXACTLY 675.00% at her measured ATK term (+1.63% vs nominal) and guilty's quantization step is popup-verified +1.65% - the scope-lock ATK term reads low across all three SG probes (open question).",
+    "clockCaveat": "both new reads found game-clock-vs-video drift (brid-silent-track: uniform 2.07% fast; guilty: no constant offset fits, empirical band boundaries 2-4s early vs nominal). This read used a single timer anchor + nominal first-damage windows and was never drift-checked -> the MID/MIDFAR magnitudes here carry an extra ~2% window-placement uncertainty (FAR is boundary-stable on all three reads; NEAR bounded by its two-window agreement)."
+  }
 }
