@@ -70,6 +70,17 @@ export interface TeamResult {
 
 const NEED = { I: 1, II: 1, III: 2 } as const;
 
+// Λ units the generators pin to a fixed burst slot instead of treating as a free
+// wildcard. Red Hood is unsupported as a solo B1/B2 over a 180s fight (her 40s
+// burst cooldown binds the whole rotation), so the team/roster generators only
+// ever field her as a B3 — matching the sim-battery harness. Selection uses
+// `effBurst` below; the sim rotation is pinned via lambdaStage in simTeam.
+const FORCED_BURST: Record<string, 'I' | 'II' | 'III'> = { 'red-hood': 'III' };
+const LAMBDA_STAGE: Record<'I' | 'II' | 'III', 1 | 2 | 3> = { I: 1, II: 2, III: 3 };
+/** Effective burst class for selection — a forced slot for pinned Λ units, else the char's own. */
+const effBurst = (slug: string, chars: Record<string, Char>): string =>
+  FORCED_BURST[slug] ?? chars[slug].burst;
+
 function deficits(counts: Record<string, number>): number {
   return (
     Math.max(0, NEED.I - (counts.I ?? 0)) +
@@ -82,7 +93,7 @@ function deficits(counts: Record<string, number>): number {
 function isLegal(slugs: string[], chars: Record<string, Char>): boolean {
   if (slugs.length !== 5 || new Set(slugs).size !== 5) return false;
   const c: Record<string, number> = { I: 0, II: 0, III: 0, 'Λ': 0 };
-  for (const s of slugs) c[chars[s].burst]++;
+  for (const s of slugs) c[effBurst(s, chars)]++;
   return (c['Λ'] ?? 0) >= deficits(c);
 }
 
@@ -110,6 +121,15 @@ export function makeCalc(input: TeamCalcInput) {
   const scoreOf = (r: { teamDamage: number; units: { slug: string }[] }): number =>
     r.teamDamage * (1 + META_W * metaPrior(r.units.map((u) => u.slug)));
 
+  // effective burst class for selection (pins Red Hood → B3; see FORCED_BURST)
+  const eb = (s: string) => effBurst(s, chars);
+  // per-unit loadout: pin the rotation stage for forced-burst Λ units so the sim
+  // rotates Red Hood as a B3, consistent with how selection places her.
+  const unitLoadout = (slug: string) => {
+    const forced = FORCED_BURST[slug];
+    return forced ? { ...loadout, lambdaStage: LAMBDA_STAGE[forced] } : loadout;
+  };
+
   // memoize full-team sims (keyed by ordered slugs) and solo scores so repeated
   // bestTeam calls (topTeams) and refine rounds don't re-sim the same teams.
   const teamCache = new Map<string, ReturnType<typeof runSim>>();
@@ -118,7 +138,7 @@ export function makeCalc(input: TeamCalcInput) {
     const hit = teamCache.get(key);
     if (hit) return hit;
     const cs = slugs.map((s) => chars[s]);
-    const prepared = prepareTeam(cs, slugs.map(() => loadout), deps);
+    const prepared = prepareTeam(cs, slugs.map(unitLoadout), deps);
     const r = runSim(cs, mult, { ...input.cfg, slugs } as SimConfig, prepared);
     teamCache.set(key, r);
     return r;
@@ -144,7 +164,7 @@ export function makeCalc(input: TeamCalcInput) {
     const avail = Object.keys(chars).filter(
       (s) => !blocked.has(s) && !extraExclude.has(s),
     );
-    const byBurst = (b: string) => avail.filter((s) => chars[s].burst === b);
+    const byBurst = (b: string) => avail.filter((s) => eb(s) === b);
     const topB3 = byBurst('III')
       .map((s) => [s, soloScore(s)] as const)
       .sort((a, b) => b[1] - a[1])
@@ -175,7 +195,7 @@ export function makeCalc(input: TeamCalcInput) {
     };
     if (mustInclude && chars[mustInclude]) team.push(mustInclude);
     const isB = (b: string) => (s: string) =>
-      chars[s].burst === b || chars[s].burst === 'Λ';
+      eb(s) === b || eb(s) === 'Λ';
     take(isB('III'));
     take(isB('III'));
     take(isB('I'));
@@ -197,12 +217,12 @@ export function makeCalc(input: TeamCalcInput) {
       let improved = false;
       for (let i = 0; i < 5; i++) {
         if (locked.has(team[i])) continue;
-        const slotBurst = chars[team[i]].burst;
+        const slotBurst = eb(team[i]);
         for (const alt of pool) {
           if (team.includes(alt)) continue;
           // role-restrict: only swap for the same burst class (or Λ either way)
           // — keeps the search cheap without losing meaningful moves
-          const altBurst = chars[alt].burst;
+          const altBurst = eb(alt);
           if (altBurst !== slotBurst && altBurst !== 'Λ' && slotBurst !== 'Λ')
             continue;
           const cand = team.slice();
