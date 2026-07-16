@@ -1,0 +1,152 @@
+{
+  "measurement": "HR=0 shotgun per-band magnitude M(B) = landing(B) x bracket(B), measured via damage-counter reconciliation on an HR-clean SG unit",
+  "unit": "isabel",
+  "weapon": "SG",
+  "hitsPerShot": 10,
+  "hrClean": true,
+  "video": "docs/probes/ar-sg-smg/isabel solo sg.MP4",
+  "screenshot": "docs/probes/ar-sg-smg/isabel solo sg.jpg",
+  "probeDir": "docs/probes/ar-sg-smg",
+  "date": "2026-07-16",
+  "focusReason": "solo recording - Isabel is the only unit (all other slots EMPTY), therefore the focus; lone Burst III => ZERO full bursts, no teammate buffs, S1 (burst-gated) never fires, burst never cast",
+  "endScreenTotal": 55280027,
+  "params": {
+    "basis": "scope-lock Base-5",
+    "staticAtk": 117887,
+    "atkTermUsed": 117887,
+    "atkNote": "effective ATK term = staticAtk - bossDEF = 118027 - 140 = 117887. VALIDATED: NEAR bands land on the pre-registered M within 2% using 117887 (a 126879 term would put NEAR ~7.6% high). NB scripts/probe/hit-values.ts prints an effective term of ~126879 for isabel -> that helper is NOT on the scope-lock basis; disregard it for this measurement.",
+    "normalMultPct": 210.7,
+    "perShotUnit": 248378,
+    "unitFormula": "117887 * 2.107 = 248378 (already the 10-pellet shot total; one dealDamage per trigger-pull)",
+    "bossDef": 140,
+    "bossPartless": true,
+    "bossElement": "neutral (Armstrong, no advantage)",
+    "coreLevel": 7,
+    "sync": 400,
+    "durationSec": 180,
+    "cube": "none",
+    "treasure": false
+  },
+  "clock": {
+    "method": "top-right 03:00 countdown; timer fightClock = 180 - countdown. First-DAMAGE t0 (counter 0 -> 292205) at ~video 7.5s. Task band-timeline uses the first-damage clock (fightClock ~= videoSec - 7, same convention as coreband-drake-sg.json). Band boundaries below are on that first-damage fightClock.",
+    "timerAnchor": {"videoSec": 40, "countdown": "02:26", "elapsed": 34},
+    "firstDamageVideoSec": 7.5,
+    "offsetNote": "my event clock = videoSec - 6 (timer); task fightClock = videoSec - 7; +1s alignment applied to band boundaries. NEAR M stable across a +/-1.5s boundary shift; MID/MIDFAR shift-sensitive at ~+/-2%."
+  },
+  "method": {
+    "primary": "counter-reconciliation (SG gold standard). Ran a per-frame diff on the top-centre DAMAGE counter ROI at 60fps -> detected every damage instance (shot/rider). Read the counter VALUE at every detected event (~215 reads across the fight) -> exact per-instance delta. Summed deltas per band = window damage (cross-checks to the boundary reads and the end-screen total EXACTLY).",
+    "shotCount": "counted damage-dealing instances per window; merges (delta > 430k, i.e. two shots caught in one frame) counted as 2; reload flats (delta ~0) skipped. Cadence a rock-steady 0.667s (1.5 pulls/s); ~2.23s (133f) reloads. WHIFFS deal 0 damage => no counter event => not counted; so M = mean damage per LANDING shot (whiffs do not depress M).",
+    "rider": "Isabel S2 (170.58% of ATK, skill: no core, no range, crits normally) identified as a DETERMINISTIC fixed value 205,709 (non-crit) / 308,564 (crit) that sits OFF the pellet-quantized shot grid (shots step ~12,704) in every band. Subtracted from each window before the M solve.",
+    "bandVerification": "boss apparent size/position confirmed visually at mid-window of each band: NEAR1/NEAR2 boss large/close, FAR boss smallest/most distant, MID boss medium & off to the right, MIDFAR intermediate -> ordering matches the labels and the landing story (far = most pellet spread)."
+  },
+  "riderFinding": {
+    "skill": "S2 - Affects 5 enemies with highest DEF, deals 170.58% of final ATK as damage (solo: hits 1 target = boss)",
+    "fires": true,
+    "trigger": "TIME-BASED, period ~14.7s (NOT per-magazine; fires mid-magazine or mid-reload independent of ammo state)",
+    "nonCritValue": 205709,
+    "critValue": 308564,
+    "impliedCoef": "205709 / 117887 = 174.5% (measured ~+2.3% vs the stated 170.58%; minor, flagged)",
+    "critRate": "~15-25% (3 crits observed among ~12 riders; consistent with base 15%)",
+    "countObserved": "8 non-crit + 3 crit clearly resolved (ft 16.9,31.6c,46.3,61.1,75.8,90.5,105.1,119.9c,134.6,149.4,164.1c) + ~1 in the excluded tail => ~12 total",
+    "riderDamageTotal": 2571364,
+    "riderDamagePctOfTotal": 4.65,
+    "simGap": "sim (hit-values) fires this rider ONCE (n=1); reality fires it ~12x -> ~2.4M under-model, a large part of the sim's ~10% under-read (sim total 50.1M vs real 55.28M)"
+  },
+  "bands": [
+    {
+      "band": "mid",
+      "fightClockRange": [0, 33],
+      "M": 1.008,
+      "landingHeld": 1.0,
+      "coreResidual": -0.067,
+      "shots": 40,
+      "riders": {"nonCrit": 1, "crit": 1},
+      "windowDamage": 10533074,
+      "preRegM": 1.075,
+      "devPct": -6.2,
+      "bossDistance": "medium, boss on the RIGHT (off-centre) - plausibly extra pellet miss from horizontal offset",
+      "confidence": "medium",
+      "confidenceNote": "boss off-centre; window includes the boss-intro start region; boundary-shift sensitive (0.99-1.01). NEGATIVE core residual -> mid landing 1.0 is too high (implied landing ~0.94 at core 0)."
+    },
+    {
+      "band": "near1",
+      "fightClockRange": [33, 70],
+      "M": 1.286,
+      "landingHeld": 0.9,
+      "rangeBonusHeld": 0.3,
+      "coreResidual": 0.054,
+      "shots": 41,
+      "riders": {"nonCrit": 2, "crit": 0},
+      "windowDamage": 13512375,
+      "preRegM": 1.281,
+      "devPct": 0.4,
+      "bossDistance": "close (boss large, centred)",
+      "confidence": "high",
+      "confidenceNote": "riders cleanly below near-shot range; stable across boundary shifts; MATCHES pre-reg. Positive core residual ~0.05 valid (entangled with the +0.3 range-bonus assumption)."
+    },
+    {
+      "band": "far",
+      "fightClockRange": [70, 106],
+      "M": 0.705,
+      "landingHeld": 0.75,
+      "coreResidual": -0.135,
+      "shots": 41,
+      "riders": {"nonCrit": 3, "crit": 0},
+      "windowDamage": 7795186,
+      "preRegM": 0.806,
+      "devPct": -12.6,
+      "bossDistance": "distant (smallest apparent boss of the fight)",
+      "confidence": "high on the deficit, medium on the exact value",
+      "confidenceNote": "many few-pellet shots (deltas down to ~89k) drag the mean well below a 0.75-landing shot; stable across shifts (0.698-0.705). Strong NEGATIVE core residual -> far landing 0.75 is too high (implied landing ~0.66 at core 0)."
+    },
+    {
+      "band": "midfar",
+      "fightClockRange": [106, 144],
+      "M": 0.922,
+      "landingHeld": 0.9,
+      "coreResidual": -0.050,
+      "shots": 44,
+      "riders": {"nonCrit": 1, "crit": 1},
+      "windowDamage": 10594057,
+      "preRegM": 0.970,
+      "devPct": -4.9,
+      "bossDistance": "intermediate",
+      "confidence": "medium",
+      "confidenceNote": "rider overlap; boundary-shift sensitive (0.91-0.93). Mild NEGATIVE core residual -> midfar landing 0.9 slightly too high (implied ~0.86 at core 0)."
+    },
+    {
+      "band": "near2",
+      "fightClockRange": [144, 176],
+      "M": 1.311,
+      "landingHeld": 0.9,
+      "rangeBonusHeld": 0.3,
+      "coreResidual": 0.082,
+      "shots": 36,
+      "riders": {"nonCrit": 1, "crit": 1},
+      "windowDamage": 12235517,
+      "preRegM": 1.281,
+      "devPct": 2.3,
+      "bossDistance": "very close (boss large, heavy effects)",
+      "confidence": "high",
+      "confidenceNote": "second independent NEAR window; agrees with near1 to 1.9%; stable across shifts; ~matches pre-reg. Positive core residual ~0.08 valid."
+    }
+  ],
+  "tailExcluded": {
+    "fightClockRange": [176, 180],
+    "windowDamage": 609818,
+    "note": "too few shots + end-screen counter animation contaminates the diff; used only in total-closure, excluded from the fit"
+  },
+  "wholePictureChecks": {
+    "totalClosure": {"pass": true, "sumOfWindows": 55280027, "endScreen": 55280027, "note": "EXACT (counter digits are exact)"},
+    "nearAgreement": {"pass": true, "near1M": 1.286, "near2M": 1.311, "spreadPct": 1.9, "note": "two independent buff-free NEAR windows agree within 1.9% (< 4% gate) and both ~match pre-reg 1.281"},
+    "shotCountClosure": {"pass": true, "totalShots": 204, "plusTail": "~2", "predicted": "195-200", "note": "~206 vs ~200 predicted (+3%); consistent with steady 1.5/s minus reloads/downtime; no deficit to absorb into core"},
+    "riderClosure": {"pass": true, "riderDamage": 2571364, "pctOfTotal": 4.65, "note": "rider = fixed 205,709 / crit 308,564 on a ~14.7s period; residual fully explained"}
+  },
+  "preRegComparison": {
+    "verdict": "SPLIT: NEAR bands match the pre-registered M within 2% (near1 +0.4%, near2 +2.3%) - this VALIDATES the method, the 117887 basis, and the near landing 0.9 + range 0.3. But MID/MIDFAR/FAR fall BELOW pre-reg (mid -6.2%, midfar -4.9%, far -12.6%), monotonically worse as the boss recedes.",
+    "interpretation": "A real per-band landing DEFICIT for the non-near bands on this HR-clean unit: the current landing table (mid 1.0 / far 0.75 / midfar 0.9) over-states how many pellets land at those ranges. Implied core-0 landings: mid ~0.94, midfar ~0.86, far ~0.66. NEGATIVE core residuals in mid/far/midfar -> flag a JOINT landing+core refit for those bands (do NOT clamp core to 0 or tweak landing to make core pretty). NEAR gives valid positive core ~0.05-0.08 (HR=0).",
+    "measuredM": {"mid": 1.008, "near1": 1.286, "far": 0.705, "midfar": 0.922, "near2": 1.311},
+    "preRegM": {"mid": 1.075, "near": 1.281, "far": 0.806, "midfar": 0.970}
+  },
+  "note": "MEASUREMENT ONLY - no engine/override edits. M(B) is the primary MEASURED deliverable; residual core(B) is secondary (flagged convention, landing held at engine values)."
+}
