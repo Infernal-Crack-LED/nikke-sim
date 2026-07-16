@@ -1,0 +1,64 @@
+{
+  "unit": "jill",
+  "slug": "jill",
+  "video": "docs/probes/control + carry/jill control.MP4",
+  "damage_screen": "docs/probes/control + carry/jill control.jpg",
+  "method": "ffmpeg frame extraction + PIL warm-ratio (R-B) FB detector + vision reads of roster screen, DAMAGE-counter and popup crops.",
+  "meta": {
+    "video_dims": "2622x1206 (rotation=90 applied), 60fps, 200.98s",
+    "battle_time": "03:00 (180s); timer counts DOWN, elapsed = 180 - timer",
+    "fight_start_video_s": 7,
+    "focus_unit": "jill (only focused unit's popups render)",
+    "boss_element_advantage": "NEUTRAL (control default)"
+  },
+  "roster": [
+    {"slot": 1, "unit": "Little Mermaid", "burst": "I",   "element": "Wind",     "total": 407969363},
+    {"slot": 2, "unit": "Crown",          "burst": "II",  "element": "Iron",     "total": 215628547},
+    {"slot": 3, "unit": "Jill",           "burst": "III", "element": "Electric", "total": 573110084, "focus": true, "grading_anchor": true},
+    {"slot": 4, "unit": "Helm",           "burst": "III", "element": "Water",    "total": 447479339},
+    {"slot": 5, "unit": null, "note": "empty slot"}
+  ],
+  "team_total": 1644187333,
+  "jill_anchor_total": 573110084,
+  "roster_confidence": "HIGH (read directly from Battle Records screen)",
+  "chains_to_III": true,
+  "chain_note": "LM(I) -> Crown(II) -> III. Two Burst-III units present (Jill + Helm).",
+  "full_bursts": {
+    "count": 11,
+    "detector": "warm-ratio (frame R-mean minus B-mean) > 18 for >=1.5s; FB windows show warm ~24-30 vs ~5-12 between",
+    "windows_video_s": [
+      {"fb": 1,  "start": 16.0,  "end": 24.5},
+      {"fb": 2,  "start": 31.0,  "end": 39.0},
+      {"fb": 3,  "start": 47.0,  "end": 55.5},
+      {"fb": 4,  "start": 60.5,  "end": 69.0},
+      {"fb": 5,  "start": 75.5,  "end": 84.0},
+      {"fb": 6,  "start": 89.0,  "end": 97.0},
+      {"fb": 7,  "start": 102.5, "end": 111.0},
+      {"fb": 8,  "start": 116.5, "end": 125.0},
+      {"fb": 9,  "start": 131.5, "end": 140.0},
+      {"fb": 10, "start": 146.5, "end": 154.5},
+      {"fb": 11, "start": 162.5, "end": 171.0}
+    ],
+    "spacing_s": "~14-15s between FB starts; each ~10s FB (warm-visible portion ~8-8.5s)",
+    "note": "An earlier 7.5-8.5s warm blip is fight-start, not a FB. FB1 (first real) at video ~16s = fight ~9s.",
+    "confidence": "HIGH on count/timing"
+  },
+  "burst_window": {
+    "forced_reload": "CONFIRMED - Jill shows 000 ammo + RELOADING at FB ends (burst removes 100% bullets then fixed +99.96% reload speed)",
+    "jill_bursts_during_FB": "shows burst-magnitude core hits during FB (FB1/FB2/FB3/FB8 sampled, all >=1.3M cores)",
+    "jill_burst_every_FB_ambiguous": "with two Burst-III units (Jill+Helm) it is unclear whether Jill bursts all 11 FBs or alternates with Helm; not resolved from sampling - FLAG",
+    "per_shot_burst_core_hits": [
+      {"video_s": 51, "value": 1649753, "label": "CORE HIT"},
+      {"video_s": 120, "value": 1348491, "label": "orange/crit"},
+      {"video_s": 19, "value": 1347240, "label": "CORE HIT (partial read)"},
+      {"video_s": 35, "value": 908743, "label": "CORE HIT (partial read)"}
+    ],
+    "burst_jump": "burst-window core hits ~1.3-1.65M vs solo core 221,431 => ~6-7x, reflecting Jill burst (+75% AD + normal-attacks-True-Damage + Hit Rate +80.78%) stacked on LM/Crown/Helm persistent buffs",
+    "confidence": "MEDIUM (per-shot values partly glare/cut; jump direction + forced reload HIGH)"
+  },
+  "raw_damage_counter_samples": {
+    "note": "top-center TEAM total (all 4 units). video_s -> total",
+    "15": 23248558,
+    "25": 142402592
+  }
+}

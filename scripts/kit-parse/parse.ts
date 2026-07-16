@@ -7,11 +7,15 @@
 //                      DBG_UNIT/DBG_BUFFS env). NO real values — confirm blocks FIRE, don't fit a number.
 import { loadWorld, runOnce, type BatteryTeam } from '../battery/lib.js';
 
-// the reference team composition (control team + the RRH carry). Composition only — NOT a real value.
-const REF_TEAM: BatteryTeam = {
-  name: 'rrh-control reference',
-  slugs: ['little-mermaid', 'crown', 'helm', 'rapi-red-hood'],
-};
+// reference team COMPOSITIONS (control frames). Compositions only — NOT real values.
+const TEAMS: BatteryTeam[] = [
+  { name: 'rrh-control', slugs: ['little-mermaid', 'crown', 'helm', 'rapi-red-hood'] },
+  { name: 'moran-control', slugs: ['helm', 'crown', 'moran', 'snow-white'] },
+  { name: 'jill-control', slugs: ['little-mermaid', 'crown', 'jill', 'helm'] },
+];
+function teamFor(slug: string): BatteryTeam {
+  return TEAMS.find((t) => t.slugs.includes(slug)) ?? TEAMS[0];
+}
 
 function extract(slug: string) {
   const w = loadWorld();
@@ -33,9 +37,10 @@ function extract(slug: string) {
 
 function selfcheck(slug: string) {
   const w = loadWorld();
-  const r = runOnce(w, REF_TEAM, null, 1); // no seed → deterministic; DBG env flows through
+  const team = teamFor(slug);
+  const r = runOnce(w, team, null, 1); // no seed → deterministic; DBG env flows through
   const u = r.units.find((x) => x.slug === slug);
-  console.log(`selfcheck ${slug} in ${REF_TEAM.name} (neutral)  teamFB=${r.fullBursts}`);
+  console.log(`selfcheck ${slug} in ${team.name} (neutral)  teamFB=${r.fullBursts}`);
   if (!u) { console.log(`  (${slug} not in reference team — inspect via DBG only)`); return; }
   const d = u.breakdown;
   console.log(`  ${slug}: total=${(u.totalDamage / 1e6).toFixed(1)}M  n=${(d.normal / 1e6).toFixed(1)}M s=${(d.skill / 1e6).toFixed(1)}M b=${(d.burst / 1e6).toFixed(1)}M  pulls=${u.pulls} burstCasts=${u.burstCasts}`);

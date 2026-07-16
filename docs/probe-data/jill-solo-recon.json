@@ -1,0 +1,82 @@
+{
+  "unit": "jill",
+  "slug": "jill",
+  "video": "docs/probes/ar-sg-smg/jill solo.mov",
+  "damage_screen": "docs/probes/ar-sg-smg/jill solo.jpg",
+  "method": "ffmpeg frame extraction + PIL brightness analysis + vision reads of DAMAGE-counter/popup crops. No OCR/tesseract available.",
+  "meta": {
+    "video_dims": "2622x1206 (rotation=90 applied), 60fps, 211.69s",
+    "battle_time": "03:00 (180s); top-right timer counts DOWN from 03:00, elapsed = 180 - timer",
+    "fight_start_video_s": 7,
+    "focus_unit": "jill (only focused unit's popups render)",
+    "full_bursts": 0,
+    "full_burst_note": "Jill is Burst III; solo cannot chain I->II->III, so ZERO Full Bursts. Confirmed: no sustained warm/FB-banner windows across entire video."
+  },
+  "totals": {
+    "jill_total": 96032768,
+    "team_total_equals_jill": true,
+    "confidence": "HIGH (read directly from Battle Records screen)"
+  },
+  "boss": {
+    "element_advantage": "NEUTRAL",
+    "evidence": "base non-core popup = 110,715 = 0.7109 x 1.30(Magnum) x ATK with NO element multiplier; no advantage up-arrow on popups",
+    "confidence": "HIGH"
+  },
+  "atk_derivation": {
+    "final_atk_effective": 119800,
+    "note": "back-derived: 110715/(0.7109*1.30)=119824; 230008/1.92=119796. ~1.5% above provided combat ATK 118027. Damage-screen ATK stat shown = 93436 (base/pre-buff stat).",
+    "confidence": "HIGH"
+  },
+  "cadence": {
+    "ammo_per_mag": 9,
+    "reload_gap_s": 1.70,
+    "reload_gap_note": "measured muzzle-spark-off to muzzle-spark-on (51 frames @30fps); LONGER than kit 81f/1.35s because it includes gun lower/raise animation. Bullets keep landing into the gap (projectile travel + counter tween).",
+    "mag_fire_duration_s": [2.47, 2.87, 2.90, 3.40],
+    "shots_per_sec": 2.7,
+    "shots_per_sec_range": [2.5, 3.1],
+    "shots_per_sec_note": "ammo counter (center 00X box) ~1 round/0.4s = 2.5/s; fire-run/9 rounds = ~3.1/s",
+    "mag_cycle_s": 4.6,
+    "confidence": "MEDIUM"
+  },
+  "dot": {
+    "source": "S2 Acid Ammo sustained DoT (192% final ATK / 1s, 30s, re-applied each reload -> effectively permanent)",
+    "tick_value": 230008,
+    "tick_cadence_s": 1.0,
+    "tick_crit_value": 345012,
+    "tick_crit_note": "345012 = 230008 x 1.5; the acid DoT can crit (orange popup)",
+    "derivation": "230008 = 1.92 x 119796 (final ATK); isolated cleanly during reload-idle (counter stepped +230008 exactly once per 1.0s with no shots in flight)",
+    "estimated_fight_share": "~45-48% of total (~43-46M); DoT active ~whole 180s, ~1 tick/s",
+    "confidence": "tick value + cadence HIGH; fight-share MEDIUM (tick count estimated, some ticks crit)"
+  },
+  "per_shot": {
+    "non_core_normal_white": 110715,
+    "crit_non_core_orange": 166073,
+    "core_red_CORE_HIT": 221431,
+    "crit_core_expected": 332145,
+    "crit_core_note": "expected 110715*2*1.5; not cleanly isolated in sampled frames",
+    "relations": "crit = base x1.5; core = base x2.0; base = 0.7109(normalMult) x 1.30(S1 Magnum +30%) x ATK",
+    "confidence": "HIGH (multiple frames, exact multiplier matches)"
+  },
+  "core_fraction": {
+    "value_estimate_range": [0.10, 0.40],
+    "range_dependent": true,
+    "note": "RANGE-DEPENDENT. Boss-far mag (34.2-37.5s) reconciled to ~123k avg/shot -> ~5-15% core. Boss-close mag (44-46s) showed frequent red CORE HIT -> ~30-50% core. Fight-average effective per-shot ~123-127k (~1.12x base) => modest average core+crit uplift ~12%.",
+    "confidence": "LOW-MEDIUM"
+  },
+  "raw_damage_counter_series": {
+    "note": "top-center running DAMAGE total (team=Jill). video seconds -> total",
+    "0.5s_samples_33to52s": {
+      "33.0": 15370676, "33.5": 15370676, "34.0": 15600684, "34.5": 15600684,
+      "35.0": 15830692, "35.5": 15941407, "36.0": 16397134, "36.5": 16729280,
+      "37.0": 17295723, "37.5": 17517154, "38.0": 17968593, "38.5": 18190024,
+      "39.0": 18535036, "39.5": 18645751, "40.0": 19152548, "40.5": 19263263,
+      "41.0": 19714702, "41.5": 20157564, "42.0": 20498287, "42.5": 20609002,
+      "43.0": 21064729, "43.5": 21064729, "44.0": 21294737, "44.5": 21516167,
+      "45.0": 22027252, "45.5": 22248683, "46.0": 22589406, "46.5": 23151560,
+      "47.0": 23428349, "47.5": 23884076, "48.0": 23884076, "48.5": 24229088,
+      "49.0": 24450519, "49.5": 25127677, "50.0": 25238392, "50.5": 25689831,
+      "51.0": 25800546, "51.5": 26251985
+    },
+    "idle_dot_isolation_33to35s": "counter steps +230008 exactly per 1.0s during reload idle (no shots) -> pure DoT tick"
+  }
+}

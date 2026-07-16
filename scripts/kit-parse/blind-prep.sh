@@ -14,7 +14,7 @@ rm -rf "$BK"; mkdir -p "$BK"
 
 # scrub surface: all override JSONs (their notes cross-reference units), the WHY/mechanic docs, CLAUDE.md
 # (portable for bash 3.2 — none of these paths contain spaces)
-FILES=( $(ls src/skills/overrides/*.json docs/DECISIONS.md docs/open-questions.md docs/modeling-priors.md docs/handoffs/*.md CLAUDE.md 2>/dev/null) )
+FILES=( $(ls src/skills/overrides/*.json docs/DECISIONS.md docs/open-questions.md docs/modeling-priors.md docs/handoffs/*.md CLAUDE.md .claude/skills/kit-parse/SKILL.md 2>/dev/null) )
 
 for f in "${FILES[@]}"; do
   mkdir -p "$BK/$(dirname "$f")"

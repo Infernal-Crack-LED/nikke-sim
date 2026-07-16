@@ -28,6 +28,13 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
    values — the value is usually right and the frequency is wrong. Fixed this way: Jill
    (1.67→1.02, real 150 rounds/min), Cinderella (1.67 was cadence), Scarlet: Black Shadow (proc
    blend every 6→10 shots), Maiden (×0.68 was cadence, not value).
+   **Blind-safe fallback (2026-07-15, held-out zero-shot):** the "uniform hot/cold" tell is a
+   POST-grade diagnostic — you don't have it when authoring a baseline blind. So ALWAYS emit a
+   needs-measurement ⚑ for the cadence + reload tuple (`pullsPerSec`, `reloadFrames`, rolling-reload)
+   with the datamine as the estimate. TEXT-VISIBLE ESCALATION (catchable without video): a low-ammo
+   weapon whose magazine would empty in <1s at the class-default rate, or "Magnum"/revolver/"per-N-
+   round" flavor, is almost certainly NOT firing at the class default — escalate to probably-wrong.
+   (Jill's datamined rate over-fired a blind parse 2.2×; her real 2.5 pulls/s is video-only.)
 
 2. **Function-damage riders: Full-Burst is a TIMING gate (default ON); range is universally OFF.**
    A non-burst-cast rider / proc / DoT that LANDS during the Full-Burst window SHOULD get the +50%
@@ -105,7 +112,8 @@ it "never fired." Count over the WHOLE fight with no cap, and confirm the effect
 Apply before the first sim of a fresh override, in order:
 
 1. Gear basis = Base 5 (scope lock); release latency on unless autofire-confirmed.
-2. Sanity-check the datamined cadence / rate-of-fire against reality (prior 1).
+2. Sanity-check the datamined cadence / rate-of-fire against reality (prior 1); if reality is
+   unavailable (blind baseline), ALWAYS emit the cadence + reload ⚑, and escalate on the text tells.
 3. Scan the parse for dropped burst / DoT lines and unsupported triggers → rebuild (prior 3).
 4. Identify stack / currency mechanics → steady-state with a ramp haircut (prior 4).
 5. Identify function-damage riders → FB-by-timing DEFAULT (do NOT set `noFb`); `noRange` is
