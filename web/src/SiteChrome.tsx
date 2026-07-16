@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import type { MouseEvent } from 'react';
 import type { Route } from './router';
 import { hrefFor, navigate } from './router';
@@ -21,8 +22,9 @@ function navClick(e: MouseEvent, route: Route) {
   navigate(hrefFor(route));
 }
 
-// Slim top nav shared by every page. Left: the Sim / Mechanics tabs. Right: the
-// Patch Notes + Meet the dev page buttons and the Discord auth control.
+// Slim top nav shared by every page. Left: the Sim / Mechanics tabs. Right:
+// Testing Requested stays visible for reach; everything else (Discord auth,
+// Patch Notes, Meet the dev, Credits) collapses into a hamburger menu.
 export function SiteNav({
   current,
   user,
@@ -34,6 +36,34 @@ export function SiteNav({
   onLogin: () => void;
   onLogout: () => void;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close the menu on an outside click or Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDocDown = (e: globalThis.MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpen(false);
+    };
+    document.addEventListener('mousedown', onDocDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpen]);
+
+  // A menu link both navigates and closes the menu.
+  const menuNav = (e: MouseEvent, route: Route) => {
+    navClick(e, route);
+    setMenuOpen(false);
+  };
+
   return (
     <nav className='site-nav'>
       <div className='site-nav-inner'>
@@ -51,13 +81,6 @@ export function SiteNav({
         </div>
         <div className='site-nav-right'>
           <a
-            className={'nav-btn' + (current === 'patch-notes' ? ' on' : '')}
-            href={hrefFor('patch-notes')}
-            onClick={(e) => navClick(e, 'patch-notes')}
-          >
-            Patch Notes
-          </a>
-          <a
             className={
               'nav-btn' + (current === 'testing-requests' ? ' on' : '')
             }
@@ -66,29 +89,81 @@ export function SiteNav({
           >
             Testing Requested
           </a>
-          <a
-            className={'nav-btn' + (current === 'dev' ? ' on' : '')}
-            href={hrefFor('dev')}
-            onClick={(e) => navClick(e, 'dev')}
-          >
-            Meet the dev
-          </a>
-          {user ? (
-            <span className='user-chip' title='logged in'>
-              {user.username}
-              <button className='logout' onClick={onLogout} title='log out'>
-                ⏻
-              </button>
-            </span>
-          ) : (
+          <div className='nav-menu' ref={menuRef}>
             <button
-              className='nav-btn discord'
-              onClick={onLogin}
-              title='save teams to your Discord account'
+              className={'nav-btn nav-menu-btn' + (menuOpen ? ' on' : '')}
+              aria-label='More'
+              aria-haspopup='true'
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((o) => !o)}
             >
-              Log in with Discord
+              <span aria-hidden='true'>☰</span>
             </button>
-          )}
+            {menuOpen && (
+              <div className='nav-menu-panel' role='menu'>
+                {user ? (
+                  <div className='nav-menu-user'>
+                    <span className='nav-menu-user-name' title='logged in'>
+                      {user.username}
+                    </span>
+                    <button
+                      className='nav-menu-item'
+                      role='menuitem'
+                      onClick={() => {
+                        onLogout();
+                        setMenuOpen(false);
+                      }}
+                    >
+                      Log out
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    className='nav-menu-item discord'
+                    role='menuitem'
+                    onClick={() => {
+                      onLogin();
+                      setMenuOpen(false);
+                    }}
+                    title='save teams to your Discord account'
+                  >
+                    <span className='discord-icon' aria-hidden='true'>
+                      <BrandIcon name='discord' />
+                    </span>
+                    <span>Log in with Discord</span>
+                  </button>
+                )}
+                <a
+                  className={
+                    'nav-menu-item' + (current === 'patch-notes' ? ' on' : '')
+                  }
+                  role='menuitem'
+                  href={hrefFor('patch-notes')}
+                  onClick={(e) => menuNav(e, 'patch-notes')}
+                >
+                  Patch Notes
+                </a>
+                <a
+                  className={'nav-menu-item' + (current === 'dev' ? ' on' : '')}
+                  role='menuitem'
+                  href={hrefFor('dev')}
+                  onClick={(e) => menuNav(e, 'dev')}
+                >
+                  Meet the dev
+                </a>
+                <a
+                  className={
+                    'nav-menu-item' + (current === 'credits' ? ' on' : '')
+                  }
+                  role='menuitem'
+                  href={hrefFor('credits')}
+                  onClick={(e) => menuNav(e, 'credits')}
+                >
+                  Credits
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </nav>
@@ -123,7 +198,10 @@ export function SiteFooter() {
         ))}
       </div>
       <div className='site-footer-by'>
-        made by <a href={hrefFor('dev')} onClick={(e) => navClick(e, 'dev')}>Max</a> · NIKKE Solo Raid Sim
+        made by <a href={hrefFor('dev')} onClick={(e) => navClick(e, 'dev')}>Max</a>
+        {' · '}
+        <a href={hrefFor('credits')} onClick={(e) => navClick(e, 'credits')}>Credits</a>
+        {' · '}NIKKE Solo Raid Sim
       </div>
     </footer>
   );

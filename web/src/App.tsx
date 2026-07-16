@@ -47,7 +47,8 @@ import {
   type AuthUser,
   type SavedTeam,
 } from './auth';
-import { makeCalc, type TeamResult } from '../../src/teamcalc';
+import { makeCalc, type TeamResult, type MetaScoring } from '../../src/teamcalc';
+import { META_WEIGHTS } from './metaWeights';
 import charactersJson from '../../data/characters.json';
 import cubesJson from '../../data/cubes.json';
 import multJson from '../../data/level-multiplier.json';
@@ -219,6 +220,28 @@ const WEAKNESS_TO_BOSS: Record<Element, Element> = {
   Fire: 'Wind',
   Water: 'Fire',
 };
+
+// Resolve the enikk meta-popularity table (web/src/metaWeights.ts) for the
+// chosen boss weakness into the scoring the team/roster generators consume, so
+// they bias toward what top-100 rankers actually field for THIS element. Units
+// too new for ranker data fall back to their prydwen bossing-tier score. Null
+// weakness (no element picked) → no meta bias (pure damage).
+function metaScoringFor(weakness: Element | null): MetaScoring | undefined {
+  if (!weakness) return undefined;
+  const entry = META_WEIGHTS.byWeakness[weakness];
+  if (!entry) return undefined;
+  const fallback = new Set(META_WEIGHTS.fallbackSlugs);
+  const compPop: Record<string, number> = {};
+  for (const c of entry.comps) compPop[[...c.slugs].sort().join('|')] = c.pop;
+  return {
+    unitScore: (slug: string) =>
+      fallback.has(slug) ? (META_WEIGHTS.tierPop[slug] ?? 0) : (entry.unitPop[slug] ?? 0),
+    compPop,
+    seedComps: entry.comps.map((c) => c.slugs),
+    weight: META_WEIGHTS.weightDefault,
+    comboWeight: META_WEIGHTS.comboWeight,
+  };
+}
 const CUBE_IDS = ['resilience', 'bastion', 'other'] as const;
 const CUBE_LEVELS = [7, 10, 15] as const;
 const CORE_PRESETS = [
@@ -1230,6 +1253,7 @@ export function App({ user }: { user: AuthUser | null }) {
       cfg: calcCfg(),
       loadout: calcLoadout(),
       blocked,
+      meta: metaScoringFor(weakness),
     });
 
   // run a (blocking) calc off the paint frame so the "calculating…" state shows

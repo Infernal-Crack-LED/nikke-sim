@@ -14,7 +14,8 @@ export type Route =
   | 'mechanics'
   | 'dev'
   | 'patch-notes'
-  | 'testing-requests';
+  | 'testing-requests'
+  | 'credits';
 
 export const ROUTES: Route[] = [
   'sim',
@@ -24,11 +25,12 @@ export const ROUTES: Route[] = [
   'dev',
   'patch-notes',
   'testing-requests',
+  'credits',
 ];
 
 // Top-level PAGE routes. The sim app owns "/" plus its sub-tab paths
 // (/dpschart, /overload, …); any segment that isn't a page or a tool resolves to sim.
-const PAGE_ROUTES: Route[] = ['howto', 'mechanics', 'dev', 'patch-notes', 'testing-requests'];
+const PAGE_ROUTES: Route[] = ['howto', 'mechanics', 'dev', 'patch-notes', 'testing-requests', 'credits'];
 // The App also hosts the "Tools" section — these sub-tab paths group under /tools in
 // the top nav (but are still served by the App, addressed by their own path).
 const TOOL_PATHS = ['olsim', 'doll', 'charge', 'team', 'roster'];

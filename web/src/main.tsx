@@ -6,6 +6,7 @@ import { MechanicsPage } from './MechanicsPage';
 import { DevPage } from './DevPage';
 import { PatchNotesPage } from './PatchNotesPage';
 import { TestingRequestsPage } from './TestingRequestsPage';
+import { CreditsPage } from './CreditsPage';
 import { SiteFooter, SiteNav } from './SiteChrome';
 import { useRoute } from './router';
 import {
@@ -60,6 +61,8 @@ function Root() {
         <PatchNotesPage />
       ) : route === 'testing-requests' ? (
         <TestingRequestsPage />
+      ) : route === 'credits' ? (
+        <CreditsPage />
       ) : (
         <App user={user} />
       )}

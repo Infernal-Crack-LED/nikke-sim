@@ -88,6 +88,10 @@ const TAB_META = {
     title: 'Testing Requested — NIKKE Solo Raid Sim',
     desc: 'Units and matchups the sim needs real recordings for - help improve accuracy.',
   },
+  credits: {
+    title: 'Credits — NIKKE Solo Raid Sim',
+    desc: 'The community research, datamines, and tools the NIKKE Solo Raid Sim is built on.',
+  },
 };
 
 const escapeAttr = (s) =>

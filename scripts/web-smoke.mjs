@@ -18,6 +18,14 @@ await import('file://' + process.cwd() + '/dist/assets/' + bundle);
 await new Promise((r) => setTimeout(r, 300));
 
 const text = dom.window.document.body.textContent;
+
+// The right-side actions collapse into a hamburger menu; open it so its items
+// (Patch Notes / Meet the dev / Credits / Log in) render into the DOM to assert on.
+const menuBtn = dom.window.document.querySelector('.nav-menu-btn');
+menuBtn?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true, button: 0 }));
+await new Promise((r) => setTimeout(r, 50));
+const menuText = dom.window.document.querySelector('.nav-menu-panel')?.textContent ?? '';
+
 const checks = {
   'renders title': text.includes('NIKKE Solo Raid Sim'),
   'default team loaded': text.includes('Modernia') && text.includes('Liter'),
@@ -25,10 +33,12 @@ const checks = {
   'share % rendered': /%/.test(text),
   'full bursts reported': /full\s*bursts/.test(text),
   'site nav renders': text.includes('Mechanics') && text.includes('Sim'),
-  'header buttons render':
-    text.includes('Patch Notes') &&
-    text.includes('Meet the dev') &&
-    text.includes('Log in with Discord'),
+  'testing requested stays visible': text.includes('Testing Requested'),
+  'hamburger menu renders':
+    menuText.includes('Patch Notes') &&
+    menuText.includes('Meet the dev') &&
+    menuText.includes('Credits') &&
+    menuText.includes('Log in with Discord'),
   'social footer renders': text.includes('Blablalink') && text.includes('GitHub'),
 };
 let ok = true;
