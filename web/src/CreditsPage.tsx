@@ -52,7 +52,9 @@ export function CreditsPage() {
           have been able to come as far with this project, so I want to thank
           all of you for your contributions. I've long consumed data in my
           obsessive min-maxing career over my long gaming history, I am happy to
-          finally contribute my own tool to a gaming community that I love.
+          finally contribute my own tool to a gaming community that I love. And
+          lastly, a special thank you to Tsareena from Maiden's Bakery for
+          cursing me with the idea for this insane project.
         </p>
       </header>
 
