@@ -15,6 +15,25 @@ import type { CharacterData, LevelMultiplier, SimConfig } from './types.js';
 
 type Char = CharacterData & { baseStats: any };
 
+/**
+ * Real-world meta popularity, resolved for ONE boss weakness (element the boss
+ * is weak to). Lets the search bias toward what top players actually field
+ * (enikk top-100 audit; prydwen bossing-tier fallback for units too new to have
+ * ranker data). Built from web/src/metaWeights.ts. Omit → pure-damage ranking.
+ */
+export interface MetaScoring {
+  /** unit meta prior in [0,1] for the active weakness (enikk or tier fallback) */
+  unitScore(slug: string): number;
+  /** exact-comp popularity in [0,1], keyed by sorted-slug join('|') */
+  compPop: Record<string, number>;
+  /** modeled-complete popular comps (slug arrays) to inject as candidates */
+  seedComps: string[][];
+  /** blend weight W: score = teamDamage × (1 + W·prior) */
+  weight: number;
+  /** how much an exact-comp match adds to the prior (on top of the unit mean) */
+  comboWeight: number;
+}
+
 export interface TeamCalcInput {
   chars: Record<string, Char>; // all characters, keyed by slug
   mult: LevelMultiplier;
@@ -26,6 +45,8 @@ export interface TeamCalcInput {
   poolB3?: number;
   /** Max local-search rounds. */
   rounds?: number;
+  /** Meta-popularity bias for the active boss weakness (omit = pure damage). */
+  meta?: MetaScoring;
 }
 
 export interface TeamUnit {
@@ -70,6 +91,23 @@ export function makeCalc(input: TeamCalcInput) {
   const blocked = new Set(input.blocked ?? []);
   const poolB3 = input.poolB3 ?? 24;
   const rounds = input.rounds ?? 3;
+  const meta = input.meta;
+  const META_W = meta?.weight ?? 0;
+
+  // Meta prior for a team in [0,1]: mean unit popularity, plus an exact-comp
+  // bonus when the 5-unit set matches a popular ranker comp. 0 when no meta.
+  const metaPrior = (slugs: string[]): number => {
+    if (!meta) return 0;
+    let sum = 0;
+    for (const s of slugs) sum += meta.unitScore(s);
+    const unitComp = slugs.length ? sum / slugs.length : 0;
+    const combo = meta.compPop[[...slugs].sort().join('|')] ?? 0;
+    return Math.min(1, unitComp + meta.comboWeight * combo);
+  };
+  // Ranking score: strong co-equal blend of simulated damage and meta prior.
+  // Reduces to raw teamDamage when no meta is supplied (backwards-compatible).
+  const scoreOf = (r: { teamDamage: number; units: { slug: string }[] }): number =>
+    r.teamDamage * (1 + META_W * metaPrior(r.units.map((u) => u.slug)));
 
   // memoize full-team sims (keyed by ordered slugs) and solo scores so repeated
   // bestTeam calls (topTeams) and refine rounds don't re-sim the same teams.
@@ -111,6 +149,14 @@ export function makeCalc(input: TeamCalcInput) {
       .sort((a, b) => b[1] - a[1])
       .slice(0, poolB3)
       .map(([s]) => s);
+    // meta-relevant B3s the solo-damage prune drops but top players field anyway
+    // (a popular support-DPS can score low solo yet belong in the pool)
+    if (meta) {
+      const inPool = new Set(topB3);
+      for (const s of byBurst('III')) {
+        if (!inPool.has(s) && meta.unitScore(s) >= 0.15) topB3.push(s);
+      }
+    }
     // keep all supports + all Λ (few, often enablers or flex DPS)
     return [...topB3, ...byBurst('I'), ...byBurst('II'), ...byBurst('Λ')];
   };
@@ -145,6 +191,7 @@ export function makeCalc(input: TeamCalcInput) {
   ): TeamResult => {
     let team = start;
     let best = simTeam(team);
+    let bestScore = scoreOf(best);
     for (let round = 0; round < rounds; round++) {
       let improved = false;
       for (let i = 0; i < 5; i++) {
@@ -161,8 +208,10 @@ export function makeCalc(input: TeamCalcInput) {
           cand[i] = alt;
           if (!isLegal(cand, chars)) continue;
           const r = simTeam(cand);
-          if (r.teamDamage > best.teamDamage) {
+          const sc = scoreOf(r);
+          if (sc > bestScore) {
             best = r;
+            bestScore = sc;
             team = cand;
             improved = true;
           }
@@ -201,7 +250,24 @@ export function makeCalc(input: TeamCalcInput) {
     const locked = opts?.mustInclude
       ? new Set([opts.mustInclude])
       : new Set<string>();
-    return refine(seed, pool, locked);
+    let best = refine(seed, pool, locked);
+    let bestScore = scoreOf(best);
+    // full-team match: evaluate the popular ranker comps directly so a real meta
+    // team can win on score even if the local search never assembled it.
+    if (meta) {
+      for (const comp of meta.seedComps) {
+        if (
+          comp.length !== 5 ||
+          comp.some((s) => !chars[s] || blocked.has(s) || exclude.has(s)) ||
+          (opts?.mustInclude && !comp.includes(opts.mustInclude)) ||
+          !isLegal(comp, chars)
+        ) continue;
+        const r = toResult(simTeam(comp));
+        const sc = scoreOf(r);
+        if (sc > bestScore) { best = r; bestScore = sc; }
+      }
+    }
+    return best;
   };
 
   return {

@@ -1887,6 +1887,13 @@ export function App({ user }: { user: AuthUser | null }) {
             Finds the strongest 5-nikke team for the chosen boss weakness
             {weakness ? ` (${weakness})` : ' (no element selected)'} under the
             teamwide options + “Apply to all” loadout above.
+            {weakness && (
+              <>
+                {' '}Ranking blends simulated damage with real-world popularity —
+                how often top-100 solo-raid rankers field each unit and comp
+                against a {weakness}-weak boss (new units use their bossing tier).
+              </>
+            )}
           </p>
           {blockedPanel}
           <button className='calc-run' onClick={runBestTeam} disabled={calcBusy}>

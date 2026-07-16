@@ -9,6 +9,7 @@
     "sim": "tsx src/cli.ts",
     "web": "vite",
     "dpschart": "tsx scripts/build-dpschart.ts",
+  "meta-weights": "tsx scripts/build-meta-weights.ts",
     "prebuild": "tsx scripts/build-dpschart.ts",
     "preweb:build": "tsx scripts/build-dpschart.ts",
     "web:build": "vite build",
