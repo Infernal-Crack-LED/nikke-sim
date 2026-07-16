@@ -1,0 +1,62 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- Volume: Wind SMG, BURST I, Attacker (NOTE: the task hint said 'B2 Supporter likely' but the datamine header + characters.json both say Burst I / Attacker — modeled per the data). She is a rotation+crit SUPPORT-flavored Attacker: her own SMG spray is her personal damage, and she feeds the team burst-CDR (rotation acceleration) + team crit. FULL-KIT AUDIT (4 kit lines): (S1) 'ATK ▲12.6% 5s when killing an enemy' → IGNORED: kill-gated, and the scope-lock boss is partless single-target with no adds, so the kill trigger NEVER fires (hard-rule skippable class: 'when an enemy is neutralized/destroyed — the boss never dies'). This is the ONLY skipped line and it is a genuine no-op vs the boss, not a weapon-state/heal/DEF/HP/gauge line. (S2 block A) 'entering Full Burst, all allies: escalating Burst-Skill CD ▼ Once 2.34 / Twice 2.70 / Three-times 3.17s, previous repeat' → IMPLEMENTED as escalating burstCdr on fullBurstEnter/allies (Liter-style: Nth FB-enter applies steps 1..N, so from the 3rd FB on it reduces every ally's burst CD by 2.34+2.70+3.17=8.21s each FB — real rotation accelerator, changes full-burst COUNTS). (S2 block B) 'using Burst Skill, all allies: escalating Crit DMG ▲ Once 10.77 / Twice 12.46 / Three-times 14.42% 5s, previous repeat' → IMPLEMENTED as escalating buff critDamagePct on burstCast/allies, dur 5 (steady-state from her 3rd burst = 10.77+12.46+14.42 = 37.65% team crit DMG for 5s per cast). (BURST) 'all allies: Crit Rate ▲31.9% 5s' → IMPLEMENTED as buff critRatePct 31.9 dur 5. HARD-RULE classes present: none beyond the ignored kill-buff — no weapon-state/reload/ammo/unlimited-ammo/fire-rate/charge-speed/swap line, no heal/shield/DEF/HP/lifesteal/gauge line, no Hit-Rate line, no recurring conditional-damage/DoT/last-bullet rider, no HP-scaling, no multi-projectile (hitsPerShot 1). So nothing is parked in ignored that a hard rule protects. ⚑ (ONE, MANDATORY): cadence tuple — datamine estimate pullsPerSec 20 (SMG class default) + reloadFrames 111 (shipped as-is, no override field written) + no rolling-reload; UNVERIFIED (datamine-unreliable). No escalation tell (120 ammo ÷ 20 pps ≈ 6s/mag, no <1s empty; no Magnum/charge flavor). NO noFb decision needed (she has zero function-damage riders — her buffs are buffs, her personal damage is plain SMG fire). BLAST-RADIUS: her crit-rate/crit-damage buffs touch ALL allies' crit buckets and her escalating burstCdr accelerates the WHOLE team's rotation — a /sim-battery diff is the real board check before any team-level claim. Buff-uptime note: burst crit-rate (5s) and S2 crit-DMG (5s) both ride her 20s burst CD → ~25% team uptime per cast; escalating ramp reaches full value only after her 3rd burst/FB. All faithful to the kit, not haircut ⚑s.",
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "burstCdr", "seconds": 2.34 },
+            { "kind": "burstCdr", "seconds": 2.7 },
+            { "kind": "burstCdr", "seconds": 3.17 }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "buff", "stat": "critDamagePct", "value": 10.77, "durationSec": 5 },
+            { "kind": "buff", "stat": "critDamagePct", "value": 12.46, "durationSec": 5 },
+            { "kind": "buff", "stat": "critDamagePct", "value": 14.42, "durationSec": 5 }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 31.9,
+          "durationSec": 5
+        }
+      ]
+    }
+  ]
+}

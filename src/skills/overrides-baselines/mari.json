@@ -1,0 +1,50 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || Mari — SR / Burst II / Supporter / Electric, ammo 6, chargeFrames 60, reloadFrames 141, chargeMult 250 (datamine). Primarily an ally-ATK/Pierce support; her own charged-SR damage is minor. FULL-KIT AUDIT (every line accounted for): S1 line1 'Damage dealt to Shield ▲100.09%/3s (all allies, on full charge)' = IGNORED — the boss is partless with no Shield, so shield-damage is inert (parts-class skip). S1 line2 'Pierce Damage ▲40.99%/10s (all allies, on core hit)' = IMPLEMENTED as a pierceDamagePct team buff gated requiresCore (fires on her core-landing shots; inert-in-v1 for non-pierce allies but feeds pierce carriers' Damage Up — hard-rule-3, never dropped). S2 self 'Gain Pierce 5s' = IGNORED-with-note (no timed-pierce engine primitive; hasPierce is static/permanent and would over-credit — this only feeds Mari's OWN minor SR pierce-damage-up, negligible). S2 self 'ATK ▲30.78%/5s' = IMPLEMENTED atkPct self. S2 allies 'ATK ▲30.78% of caster's ATK/5s' = IMPLEMENTED casterAtkPct allies (flat add off Mari's ATK). Burst line1 '639.36% as Burst Skill damage (all enemies)' = IMPLEMENTED burstCast flatDamage vs enemy (burst-cast nuke → engine auto FB-exempt, snapshots pre-FB; noFb NOT set per prior 2). Burst line2 'Attack damage ▲40.99%/10s (all allies)' = IMPLEMENTED burstCast attackDamagePct allies. || ⚑ FLAGS (all unmeasured): (1) CADENCE TUPLE — shipped datamine pullsPerSec/chargeFrames 60 + reloadFrames 141 + ammo 6; recipe: read rounds/charge-time + reload gap from a Mari-focus video. (2) SR AUTOFIRE vs 22f BOLT GAP — shipped engine DEFAULT (bolt gap ON, NO charFixes.noBoltRecovery); ~15–20% shot-count swing; recipe: slow-mo one magazine, does she autofire? if yes set charFixes.noBoltRecovery:true. (3) S2 TRIGGER is KIT-SILENT — the raw text gives no activation for the S2 buffs, only 'for 5 sec'. Estimated as shotFired (mirrors S1's full-charge/core activation → ~near-permanent uptime since a 5s buff refreshes each ~1.4s charged shot); recipe: watch when the ally ATK buff icon appears/refreshes (on-attack vs on-full-burst-enter vs on-burst-cast). If real trigger = fullBurstEnter/burstCast, current model OVER-credits out-of-FB uptime. || GUARDRAILS: her burst-cast nuke gets no FB bonus (auto); every implemented block must be DBG-confirmed to fire (pierce buff needs core exposure — inert at coreHitRate 0). NO recording yet — HYPOTHESIS only.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 40.99, "durationSec": 10 }
+      ],
+      "requiresCore": true
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 30.78, "durationSec": 5 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 30.78, "durationSec": 5 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 639.36 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "attackDamagePct", "value": 40.99, "durationSec": 10 }
+      ]
+    }
+  ]
+}

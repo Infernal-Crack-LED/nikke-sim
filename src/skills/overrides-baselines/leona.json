@@ -1,0 +1,97 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. SG MAGNITUDE-CAPPED — engine SG core bands HR-contaminated; treat totals as low-confidence until the HR=0 band re-derive lands; exclude from meta-weighting. — Leona (SG Burst-II Supporter, Water). PURE TEAM BUFFER: her own SG damage is minor (Supporter combat ATK 98,367) and comes from base weapon stats; ALL her kit value is ally crit/pellet/accuracy buffs, so a /sim-battery board diff is the real check, not a self-sim. hitCount counts PELLET increments (engine adds hitsPerShot=10 per shot, sim.ts:1677), so 'N normal attacks' for this SG = N shots = N*10 threshold. S1 line A (Roar, 'after 5 normal attacks', all allies): critRatePct 2.62%, maxStacks 5, 5s → hitCount:50 (5 shots). At SG ~1.5 shots/s * 10 pellets ≈ 15 hits/s the 50-pellet gate clears every ~3.3s, so Roar sits at MAX (5*2.62 = +13.1% crit rate to team) essentially permanently (re-triggers well inside the 5s window) — steady-state = cap, faithful. S1 line B ('after 15 normal attacks', SG allies, Maximum Effective Range ▲20%/10s): IGNORED — no engine effective-range stat and the +30% range/band bonus is universally force-OFF (noRange) in the engine, so genuinely inexpressible; NOT dropped as defensive (see ⚑4 — it could raise SG core-band uptime at range). S2 line A ('enter Full Burst', all allies, Hit Rate ▲20.28%/10s): HARD RULE 4 — Hit Rate PROVENLY raises the core-hit rate; kept as `hitRatePct` buff (currently inert in engine) + ⚑2 for magnitude. S2 line B ('enter Full Burst', 2 highest-ATK SG allies, Number of pellets ▲5/10s): modeled as normalAttackPct +50% (dorothy precedent: 5 extra pellets on base 10 = +50% normal-attack output) to alliesTopAtk:2 — the SG-weapon filter on the target is NOT expressible (no top-ATK-with-weapon TargetDef), approximated to top-2 (⚑3). Burst line A (all allies, Critical Damage ▲34.64%/10s): critDamagePct, real buff. Burst line B ('when Roar is fully stacked', SG allies, Critical Rate ▲21.32%/10s): Roar hits 5 stacks after ~25 normal attacks (~17s of fire) — met before Leona's first Burst-II cast in a standard control team, so modeled as an always-on burstCast buff (SG filter dropped, targets allies) with the fully-stacked gate treated as satisfied (⚑5). NO line silently dropped. No weapon-swap / reload / ammo / HP-scaling / DoT / heal lines in this kit → none of hard rules 1-3 apply; no self riders → no noFb decision. ⚑1 cadence tuple (SG pullsPerSec + reloadFrames 111 datamine, unverified). ⚑2 Hit-Rate 20.28% → core-rate magnitude (inert now; measured-only). ⚑3 pellets+5 → +50% normalAttack approximation + SG-target filter. ⚑4 effective-range+20% inexpressible modeling gap. ⚑5 Roar-fully-stacked burst gate assumed met. BLAST RADIUS: every effect is team-facing (crit rate+dmg to all, hit rate to all, +pellets to top-2 SG, range to SG) → correctness is a board diff, not a self-sim.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 2.62,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 20.28,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 50,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 34.64,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 21.32,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

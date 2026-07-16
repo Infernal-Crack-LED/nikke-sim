@@ -1,0 +1,59 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || SG MAGNITUDE-CAPPED — engine SG core bands HR-contaminated; low-confidence totals; exclude from meta-weighting. || SLUG noir — SG / B3 / Attacker / Wind, ammo 9, reloadFrames 62, hitsPerShot 10 (pellets). STAGING baseline authored by /kit-parse (read-freely production pass). MODEL: S1 = team ATK buff casterAtkPct 14.08 (of Noir's ATK) to ALL allies, passive — kit gates it on '>70% HP', assumed satisfied at scope lock (whole-fight high HP), like chisato's gauge-gate assumption; this is a real BLAST-RADIUS buff (every ally gains 14.08% of Noir's ATK). S2 (fullBurstEnter): (a) Max Ammo +5 rounds/10s = weapon-state SHOT-COUNT mechanic (prior 9, NOT skippable) — engine maxAmmoPct is a %-of-base, and +5 flat differs per ally's base ammo, so modeled as maxAmmoPct 55.56 (5/9) on SELF ONLY to avoid grossly over-crediting high-ammo allies (a flat +5 on a 100-round MG ≠ +55%); TRUE scope is all allies flat +5 → ⚑ (engine can't express flat per-unit ammo); (b) Reload 39.88% magazine = instantReload fraction 0.3988 to ALL allies — a fraction refills each ally's own mag correctly, so per-unit-faithful; also a prior-9 shot-count mechanic. BURST (burstCast): (1) 351.64% flatDamage to enemy — burst-cast, so ENGINE auto-snapshots pre-FB / FB-exempt; do NOT set noFb (prior 2). (2) 'allies with a Shotgun' Hit Rate 13.93% + Interruption-Parts 23.23% (10s): engine has NO weapon-only target, and Noir IS SG, so the Hit-Rate (the SG-landing lever) is modeled on SELF; true scope = all SG allies → ⚑. (3) 'ally-present' (always true on a 5-unit team) Hit Rate 11.61% + Parts 19.36% (30s) to ALL allies. Hit Rate modeled as hitRatePct per HARD RULE 4 (raises core-hit rate — PROVEN, magnitude ⚑; currently inert in engine). Interruption-Parts kept as partsDamagePct buffs for fidelity (inert — partless boss). SKIPS: none silently dropped — every line is IMPLEMENTED or noted inert-for-fidelity. NOTE ON TOTALS: this unit is SG — the engine SG normal bucket is a known ~1.5–1.6× UNDER-model (SG landing bands too low; noir-solo-recon.json measures ~all-pellet landing on a large boss) AND the SG core bands are Hit-Rate-contaminated, so her simmed TOTAL is low-confidence and CAPPED — do not meta-weight. ⚑⚑⚑ see needs-measurement list in the audit doc / below. ⚑1 CADENCE TUPLE (mandatory): pullsPerSec / reloadFrames 62 / rolling-reload — datamine estimate shipped; recon (noir-solo-recon.json) INDEPENDENTLY CONFIRMS ~1.5 pulls/s + reload matches sim SG default, so this flag is recon-satisfied/low-priority but kept per protocol. ⚑2 SG LANDING / PELLETS-PER-SHOT: engine SG_LANDING_BY_BAND (~0.45–0.60) under-credits true landing (~0.74–1.0, measured); ~1.56× total shortfall; ENGINE-level, not override-expressible → G4 magnitude-cap. Recipe: running-DAMAGE-counter per-mag delta (already done, noir-solo-recon). ⚑3 HIT-RATE → CORE-RATE magnitude: hitRatePct inert; model the core-lift when the HR→core model lands (open accuracy-backlog fix #2, k~0.046). Estimate: +13.93%+11.61% HR → small core-rate lift (bands are HR-contaminated, so its effect is partly already baked in). Recipe: HR-on vs HR-off core fraction on an HR-clean SG anchor. ⚑4 MAX-AMMO SCOPE: flat +5 rounds is all-allies but modeled self-only-as-% (55.56); if a per-unit flat-ammo path exists, apply +5 to each ally. Recipe: focused teammate mag-length delta during Noir's FB window. ⚑5 MULTI-PROJECTILE (SG 10 pellets): split-vs-merge is handled by the engine landing bands (not an override lever); recon confirms ~all-pellet landing on the large boss → folded into ⚑2/G4.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 14.08 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "maxAmmoPct", "value": 55.56, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "instantReload", "fraction": 0.3988 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 351.64 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "hitRatePct", "value": 13.93, "durationSec": 10 },
+        { "kind": "buff", "stat": "partsDamagePct", "value": 23.23, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "hitRatePct", "value": 11.61, "durationSec": 30 },
+        { "kind": "buff", "stat": "partsDamagePct", "value": 19.36, "durationSec": 30 }
+      ]
+    }
+  ]
+}

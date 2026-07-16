@@ -1,0 +1,63 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- SG MAGNITUDE-CAPPED — engine SG core bands HR-contaminated; treat totals as low-confidence until the HR=0 band re-derive lands; exclude from meta-weighting. --- Guilty (SG / B2 / Attacker / Wind; ammo 9, reloadFrames 181, hitsPerShot 10 pellets, normalMult 231.4, coreMult 200). MODEL: S1 'Mind If I Borrow This?' = every 6 normal attacks gain a stack of ATK ▲8.81% up to 5/10s → hitCount:60 (6 shots × 10 pellets/shot, per the engine's +hitsPerShot-per-shot counter — same convention as dorothy's 80-pellet counter), self, casterAtkPct 8.81 dur 10 maxStacks 5. Kit says 'Duplicate 8.81% ATK of ally with the HIGHEST ATK' — no schema stat sources off the highest ally, so modeled as casterAtkPct (%-of-CASTER's-ATK, engine line 947), a proxy that is exact when Guilty (an Attacker, highest base combat ATK class) is herself the top-ATK ally and slightly cold when a more-buffed ally outranks her (⚑4). Steady-state stack level EMERGES from cadence+reload (ramps to 5 over the first ~30 shots, then holds since a 6-shot refresh < the 10s stack life within one 9-round mag) — NOT pinned, moves with ⚑1. S2 = every 12 normal attacks (hitCount:120), all Wind Code allies (alliesOfElement Wind, includes self): (a) ATK ▲4.13%/10s → buff atkPct 4.13 dur 10 (near-permanent at this cadence); (b) 'Increases stack count of buffs by 1' → IGNORED-with-flag: the schema has no cross-buff stack-count amplifier, so it can't be expressed (⚑5) — a real but small team effect (bumps whatever stackable buffs allies carry, possibly her own S1 5→6), not droppable-as-defensive, flagged for measurement. BURST (B2, cooldown 20s; casts each rotation in a standard control team, so these fire): (a) 284.32% Burst Skill damage → enemy on burstCast (auto FB-exempt — engine snapshots burst-cast pre-FB, no noFb per prior 2); (b) CONDITIONAL 'when Mind If I Borrow This? is fully stacked' → DEF ▼20.25%/5s on boss (buff defPct −20.25, target enemy — recognized-INERT: engine uses boss DEF≈0/140 so the reduction is negligible at scope-lock, kept visible per stat-line fidelity, engine line 943) + 277.71% additional damage (flatDamage on burstCast, auto FB-exempt). Both gated on 5 S1 stacks; the engine has no full-stack gate, so modeled ALWAYS-ON assuming full stacks — true for every burst after the ~20-30s ramp, so the very first burst's additional-damage is slightly over-credited (⚑2). AUDIT: every line IMPLEMENTED except the DEF▼ (inert-visible) and the stack-count-boost (unexpressible, flagged); NO weapon-swap, NO charge weapon (chargeFrames 0), NO Hit-Rate line, NO DoT, NO HP-scaling. Multi-projectile: SG 10 pellets handled by the engine's SG landing/core-by-band model (the HR-contaminated bands = the magnitude cap above, ⚑3). Element advantage = clean ×1.10 default (no Superior-Elemental-Code buff in kit, prior 7). ⚑1 CADENCE TUPLE (MANDATORY, datamine-unreliable): pullsPerSec est=SG-default 1.5, reloadFrames est=datamined 181 (~3.0s), rolling-reload unknown. Recipe: read rounds/min + reload gap from any focus video. Directly drives ⚑2 (stack ramp/hold). ⚑2 S1 STACK STEADY-STATE (prior 4): estimate = engine-derived from maxStacks:5/dur:10 at the ⚑1 cadence (≈5 held after ramp); first-burst additional-damage assumes full stacks. Recipe: read the ATK-buff-popup / stack-icon count and the HP of the first burst's 277.71% popup from a focus video. ⚑3 SG PELLET LANDING + CORE-BAND MAGNITUDE (prior 5 + G4): the engine's SG_LANDING_BY_BAND + CORE_BY_WEAPON_BAND are HR-contaminated → per-shot magnitude low-confidence. Recipe: HR=0 clean-SG band re-derive (open backlog) then re-grade. ⚑4 'HIGHEST-ATK ally' basis: casterAtkPct proxies off Guilty's own ATK; exact iff she is the top-ATK ally, else cold. Recipe: compare her S1 ATK-buff popup magnitude vs the actual highest-ATK teammate's ATK in a focus video. ⚑5 S2 'stack count of buffs +1': unexpressible in schema, shipped as 0-effect. Recipe: A/B a Wind team's stackable-buff popups with vs without Guilty to size it.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 8.81,
+          "durationSec": 10,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 284.32
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -20.25,
+          "durationSec": 5
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 277.71
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- Base Scarlet (AR / B3 / Attacker / Electric). MODEL: S1 = self ATK ▲23.15% up to 5 stacks/5s on hitCount:10 (her signature self-buff; steady-state stack level EMERGES from cadence+reload — NOT pinned to 5, see ⚑1/⚑2 below). The S1 'Current HP ▼4.01%' is a self HP COST (no direct damage) but is her design ENABLER: it self-drains her below the 60%/50% HP thresholds that gate her crit buffs — so those buffs are modeled ACTIVE (see ⚑3). S2a = 30%-on-hit counter (138.24% additional dmg) SKIPPED as 'when this unit is hit' (boss-attack-cadence-dependent, out of scope for the partless sim — see audit). S2b = crit dmg ▲6.61% 'continuously' when HP<60%, modeled as a PASSIVE self buff (HP gate assumed satisfied, ⚑3). BURST: (a) crit rate ▲19.57%/10s when HP<50%, modeled on burstCast+self+10s (HP gate assumed, ⚑3) — ~25% uptime aligned to her FB window where crit matters most; (b) 849.15% burst-skill nuke → enemy on burstCast (auto FB-exempt per engine snapshot, no noFb set per prior 2). No weapon-swap, no charge weapon (chargeFrames 0), no Hit-Rate, no DoT, hitsPerShot 1 (no split/merge). Element advantage = clean ×1.10 default (no Superior-Elemental-Code buff in kit). ⚑1 CADENCE TUPLE (MANDATORY, datamine-unreliable): pullsPerSec est=AR-default 12, reloadFrames est=datamined 159 (~2.65s — LONG for an AR; verify), rolling-reload unknown. Recipe: read rounds/min + reload gap from any focus video. ⚑2 S1 STACK STEADY-STATE (prior 4): at the datamined 12rps/159f-reload she gains ~2 stacks/mag then reloads 2.65s, so steady-state ≈2-3 of 5 stacks (NOT max) — but this is ENTIRELY cadence/reload-driven, so it moves with ⚑1. Estimate ships faithful (maxStacks:5, dur:5) and lets the engine derive the level; recipe: focused ATK-buff popup / stack-icon count mid-fight. ⚑3 HP-THRESHOLD GATES (kit-silent — engine has NO HP trigger): all three crit buffs (S2b passive crit-dmg, burst crit-rate) are gated on HP<60%/50%; modeled ASSUMED-ACTIVE because she self-drains (S1 ▼4.01%/proc) + takes boss damage → low HP nearly the whole fight. Brief ramp-to-threshold at fight start is unmodeled (buffs slightly over-credited early). Recipe: read HP bar + first crit-dmg/crit-rate popup timing from a focus video to confirm below-threshold uptime.",
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 6.61
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 19.57,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 849.15
+        }
+      ]
+    }
+  ]
+}

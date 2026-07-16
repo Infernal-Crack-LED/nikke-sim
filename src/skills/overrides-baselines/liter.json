@@ -1,0 +1,78 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — Liter (SMG B1 Supporter Iron): the canonical B1 CDR/enabler. Her own SMG damage is minor; her value is TEAM-WIDE via burst-CDR + escalating buffs, so a /sim-battery board diff is the real check, not a self-sim. S1 line A ('when entering Full Burst', all allies) = escalating team burst-CDR steps [2.34, 2.7, 3.17]s; the engine's escalating case (sim.ts:1130) applies steps 1..N on the Nth FB-enter with previous effects repeating, so it ramps to the full 2.34+2.7+3.17=8.21s per FB-enter by the 3rd full burst and stays there (matches 'Previous effects trigger repeatedly'). S1 line B ('when using Burst Skill', all allies) = escalating buffs steps [maxAmmoPct 45.17% / critDamagePct 12.46% / atkPct 14.42%], each 5s; ramps to all three by her 3rd burst cast. maxAmmoPct is a WEAPON-STATE modifier (hard rule 1 / prior 9 — ammo ▲ = more shots before reload = damage on every teammate), NOT dropped as defensive. Burst = team ATK ▲ 66% for 5s. NOTE the 5s durations on a ~20s B1 cycle → low buff UPTIME (faithful to the text, this is Liter's known short-buff character); do NOT extend without measurement. S2 (restore 52.5% Cover HP to 2 lowest-cover-HP allies) modeled as a `heal` event per hard rule 2 (never `ignored` a heal/shield line) so any recovery-consumer teammate can fire — but see ⚑2: the provided text gives NO trigger (real Liter S2 triggers on FB-enter; used that), the 'lowest cover HP' target has no schema kind (approximated to `allies`), and cover-HP restore may NOT actually emit an HP-recovery event in game — if a recovery-consumer (e.g. Crown) is on the board this could spuriously over-buff, so the /sim-battery diff MUST be checked and the line may drop to `ignored` once its recovery-emission is confirmed. NO lines silently dropped — nothing defensive-only to skip (the cover heal is modeled, not ignored). ⚑1 cadence tuple (SMG datamine pullsPerSec/reloadFrames 111 unverified). ⚑2 S2 heal trigger/target/recovery-emission. ⚑3 escalating-buff uptime & blast-radius (burstCdr accelerates the WHOLE team's rotation → may add full bursts across the board).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "burstCdr", "seconds": 2.34 },
+            { "kind": "burstCdr", "seconds": 2.7 },
+            { "kind": "burstCdr", "seconds": 3.17 }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "buff", "stat": "maxAmmoPct", "value": 45.17, "durationSec": 5 },
+            { "kind": "buff", "stat": "critDamagePct", "value": 12.46, "durationSec": 5 },
+            { "kind": "buff", "stat": "atkPct", "value": 14.42, "durationSec": 5 }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 66,
+          "durationSec": 5
+        }
+      ]
+    }
+  ]
+}

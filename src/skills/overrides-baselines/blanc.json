@@ -1,0 +1,68 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- Blanc: Wind AR Defender, Burst II. A DEFENSIVE/HEALER support whose ONLY clean offensive contribution vs a partless boss is her burst's Damage Taken ▲39.26% boss debuff (10s) — modeled as a damageTakenPct enemy buff on burstCast. HP-SCALING DETERMINATION: NOT an HP-scaling kit. Every 'Max HP' reference is a defensive/heal BASIS, never an ATK/damage conversion — S1 shield = 11.8% of caster Max HP, S2 heal = 3.68%/s Max HP, burst heal = 3.84%/s Max HP, burst Max HP ▲31.68% is a survival buff on one ally. So NO atkOfMaxHpPct/casterMaxHpPct-conversion is modeled and there is no HP-basis ⚑ (per the guardrail: keep the Max-HP lines as their heal/shield/survival roles, do not fabricate a scaler). AUDIT: S1 (hitCount 120 → shared shield 11.8% Max HP, 5s): the engine has NO shield tracking (cf. naga.json), so the shield produces nothing directly AND cannot wire its real cross-unit consumer (shield-gated kits like Naga's 'when a Shield is set in front of this unit' buffs depend on exactly this shield) → emitted as `ignored` with the block preserved so the audit sees it; this is a real modeling GAP (guardrail flag, below), not defensive-noise. S2 line1 (fullBurstEnd → all allies recover 3.68% Max HP/s 5s): wired as a `heal` event (event-only, no HP value) so any teammate's 'on recovery' damage buff (Crown-type) can proc — NOT dropped (hard rule 2 / prior 8). S2 line2 (fullBurstEnd w/ ally alive → self Burst CD ▼40.76s): modeled as `burstCdr` 40.76 on self; the 'ally still on battlefield' condition is always true on the partless boss (nobody dies) → unconditional; this shortens her own re-burst cadence = more Damage-Taken-debuff + heal uptime, so it IS damage-relevant. BURST line1 (all allies recover 3.84% Max HP/s 8s): `heal` event, same rationale as S2 line1. BURST line2 (1 lowest-remaining-HP ally except caster → Indomitability 10s + Max HP ▲31.68% 10s): `ignored` — Indomitability is survival (partless boss, irrelevant), and the Max HP ▲ is the TARGET's OWN-% Max HP for which there is NO stat key (casterMaxHpPct has a DIFFERENT basis: % of the CASTER's Max HP, not a self-% buff); it targets the lowest-HP ally non-deterministically, not a chosen carry → left as a flagged gap (would raise an atkOfMaxHpPct carry's ATK if it landed on them, but no representable field + wrong-basis risk). BURST line3 (all enemies Damage Taken ▲39.26% 10s): the offensive line → `buff` damageTakenPct 39.26 durationSec 10 on the boss. ⚑ LIST: (1) CADENCE TUPLE (MANDATORY, datamine-unreliable) — pullsPerSec / reloadFrames 81 / rolling-reload shipped at the AR datamine default; NOT escalated (60-ammo AR at class rate does not empty <1s; no revolver/'per-N-round'/charge fire-mode flavor) → standard flag. Recipe: read rounds/min + the reload gap from any Blanc focus video. (2) HEAL RECOVERY CADENCE (kit-silent for the consumer) — her real heals tick recovery EVERY 1s for 5s (S2) / 8s (burst), but the engine `heal` emits ONE recovery event per trigger activation → UNDERCOUNTS recovery uptime for an on-recovery consumer (the Helm→Crown near-permanent scenario). Estimate: 1 event/rotation (inert in a control team with no recovery-consumer). Recipe: in a consumer team, measure the consumer buff's uptime; if it needs per-tick refresh, split each heal into multiple timed `heal` events. GUARDRAIL FLAGS: [shield] S1 shield unrepresentable + a cross-unit shield-gate enabler the engine can't wire; [own-% Max HP] burst Max HP ▲31.68% has no stat key (own-% vs caster-% basis mismatch — the exact base-vs-buffed / own-vs-team silent-error class the guardrail warns of, moot here only because she does not convert HP→ATK). SELF-VALIDATION: staged in overrides-baselines/ (parallel authoring) — validated against types.ts by INSPECTION only; NOT written to overrides/ and NOT run through validate-overrides/self-sim per the task's staging rule.",
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 40.76
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 39.26,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ]
+}

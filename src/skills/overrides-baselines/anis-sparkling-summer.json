@@ -1,0 +1,44 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || SG MAGNITUDE-CAPPED — engine SG core bands HR-contaminated; low-confidence totals; exclude from meta-weighting. || Anis: Sparkling Summer — SG / Burst III / Supporter / Electric; ammo 5, hitsPerShot 10 (pellets), reloadFrames 141 (datamine), normalMult 259.2, coreMult 200. She is the 'last bullet' archetype reference case. AUDIT (7 kit lines): S1 fullBurstEnter, affects all Electric-Code allies -> [casterAtkPct 55.31 /10s] IMPLEMENTED (team ATK buff, blast-radius: every Electric ally incl. self) + [reloadSpeedPct 49.28 /10s] IMPLEMENTED (HARD RULE 1 / prior 9 — reload speed = shots fired = damage; ALSO accelerates every Electric last-bullet-proc unit's reload cadence — NOT droppable). S2 lastBullet, affects 2 highest-ATK enemies -> [flatDamage 382.42%] IMPLEMENTED as a per-magazine `lastBullet` proc (prior 3 recurring trigger; the named reference proc — fires EVERY reload cycle, engine derives cadence from ammo+fire-rate+reload; single partless boss => target enemy). S2 lastBullet, affects self -> [partsDamagePct 6.91 /10s] kept as an INERT buff for fidelity (Interruption-Parts = no parts on the partless boss => contributes 0; audited-seen, not silently dropped). BURST (self only, 40s CD): [maxAmmoPct -73.92 /10s] IMPLEMENTED (HARD RULE 1 — ammo DOWN = fewer rounds/mag; 5 -> round(1.30) -> engine floor 1 round/mag, so during her 10s burst window she fires 1 shot then reloads, firing the 382.42% last-bullet proc EVERY shot — this is the whole point of the low-ammo/last-bullet kit) + [reloadSpeedPct 27.72 /10s] IMPLEMENTED (weapon-state; stacks with her S1 reload buff to shorten the burst-window reload gap) + [elemAdvantageDamagePct 42.24 /10s] IMPLEMENTED (prior 7 — Elemental Advantage Attack Damage lives in the element/Damage-Up bucket, exceeds the clean x1.10; engine gates it on real elemental advantage vs the boss). NO lines dropped as defensive; NO heal/shield/DEF/HP/gauge/hit-rate lines present. noFb: the 382.42% rider is a normal-attack last-bullet rider -> FB by TIMING (prior 2, default ON, noFb NOT set); no core (text says 'as damage', not 'core strike damage' — no core label). noRange: engine force-sets it at the deal site (universal), not written. ⚑ LIST (all UNMEASURED estimates): (1) CADENCE TUPLE ⚑ TOP — pullsPerSec + reloadFrames(141) + rolling-reload: SG fire rate is NOT in the kit text and datamine-unreliable; the last-bullet proc frequency (out of burst) AND the burst-window shot count both hinge on it. Estimate = engine SG defaults + datamined reloadFrames 141 (shipped: no cadence override). Recipe = focused solo video, read rounds/min + reload gap + per-magazine last-bullet-proc counter deltas. (2) BURST-WINDOW LAST-BULLET PROC COUNT ⚑ — with ammo floored to 1 during burst, the number of 382.42% procs in the 10s window = f(fire rate, stacked reload speed +49.28%/S1 +27.72%/burst). Estimate = whatever the engine derives from the cadence tuple above (~5-9 procs/window is the ballpark). Recipe = count 382.42% popups in one focused burst window. (3) SG PELLET SPLIT-VS-MERGE / core-band ⚑ (prior 5 + G4) — her 10-pellet spray damage runs through the HR-contaminated SG core bands (see G4 tag); spray totals are low-confidence and this unit is excluded from meta-weighting. Recipe = focused SG spray popups vs an HR-clean SG anchor. (4) elemAdvantageDamagePct is live ONLY under real elemental advantage — inert if the scope-lock boss is not Electric-disadvantaged; verify the boss element when grading. REVIEW GATE: genuinely-unmodeled unit => NO automated grade case; validate-overrides + self-sim + DBG-fires only. Human/Fable mechanism-capture required before use.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "alliesOfElement", "element": "Electric" },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 55.31, "durationSec": 10 },
+        { "kind": "buff", "stat": "reloadSpeedPct", "value": 49.28, "durationSec": 10 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 382.42 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "partsDamagePct", "value": 6.91, "durationSec": 10 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "maxAmmoPct", "value": -73.92, "durationSec": 10 },
+        { "kind": "buff", "stat": "reloadSpeedPct", "value": 27.72, "durationSec": 10 },
+        { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 42.24, "durationSec": 10 }
+      ]
+    }
+  ]
+}

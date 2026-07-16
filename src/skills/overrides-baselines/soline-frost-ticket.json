@@ -1,0 +1,31 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. SG MAGNITUDE-CAPPED — engine SG core bands HR-contaminated; low-confidence totals; exclude from meta-weighting. MODEL SUMMARY: Soline is a Burst-I Water Supporter SG with NO offensive lines in her kit — her only damage is her base SG normal fire; every skill line is HP-buff / rotation / heal / ticket-bookkeeping. HP-SCALING DETERMINATION = NO: S1 blk1 grants ALLIES Max HP = tickets×10% of the CASTER's Max HP (`casterMaxHpPct`) — a DEFENSIVE ally-Max-HP grant, NOT a Max-HP→ATK/damage conversion (Soline has no `atkOfMaxHpPct` line), so per prior 6 it does not scale her own damage; kept as a stat buff so it feeds any teammate `atkOfMaxHpPct` consumer (hard rule 3). Modeled at the cap value (2 tickets → 20%, passive/continuous per 'This effect is continuous'); ticket count starts at 1 (10%) and reaches cap 2 after her first burst — the 10→20% first-rotation ramp is negligible and not separately flagged. S1 blk2: Full-Burst-enter team burst-CDR 7.48s → `burstCdr` (kit-stated value, rotation-relevant). BURST: 'Recovers 32.26% of caster's final Max HP as HP' to all allies → wired as a `heal` event on `burstCast` (hard rule 2 / prior 8): the reliable per-burst recovery source that drives any teammate 'when recovery takes effect' consumer — HP amount is event-only, not modeled. SKIPPED lines (omitted from JSON per override convention, documented here — no silent drops): S1 blk3 'Removes First Train Discount' + S2 blk2 'First Train Discount 6s / effects will not consume tickets' = pure ticket-economy bookkeeping, no damage. S2 blk1 emergency heal 'when HP < 15% … Recovers 12.27% Max HP, Ticket ▼1' — a heal, but gated on an ally dropping below 15% HP, which (a) has NO representable trigger in the schema (no HP-threshold TriggerDef) and (b) never fires under scope-lock (partless boss, no HP threat modeled); firing it on any real trigger would FABRICATE recovery events (prime-directive violation), so it is left unmodeled — the recovery synergy it belongs to is already served by the reliable BURST heal, so the hard-rule-2 intent (synergy works when a consumer is present) is NOT broken by parking this conditional duplicate. ⚑ FLAGS (all UNMEASURED): (1) CADENCE TUPLE (mandatory) — pullsPerSec + reloadFrames (SG, ammo 9, datamined reloadFrames 111); shipped datamine as-is (no fire-mode-flavor tell, no <1s mag-empty escalation), recipe: read rounds/min + reload gap from a focus video. (2) SG PELLET-LANDING / CORE FRACTION (engine-level, G4) — her totals ride the HR-contaminated SG core bands + pellet consolidation; magnitude-capped, low confidence, exclude from meta-weighting. (3) casterMaxHpPct steady-state = cap 20% (derived, minor ramp). GUARDRAILS: G4 SG magnitude-cap tag set; HP-scaling = defensive-only (no G6 promotion gate needed).",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "casterMaxHpPct", "value": 20 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "burstCdr", "seconds": 7.48 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "heal" }
+      ]
+    }
+  ]
+}

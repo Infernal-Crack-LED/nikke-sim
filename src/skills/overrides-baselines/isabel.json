@@ -1,0 +1,63 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. [SG MAGNITUDE-CAPPED — engine SG core bands HR-contaminated; low-confidence totals; exclude from meta-weighting.] Isabel — Electric SG Attacker, Burst III, ammo 9 / reloadFrames 133 / hitsPerShot 10 pellets, burst CD 40s. A Marked-Target escalating kit (Liter-style 'Once/Twice/Three times, previous effects trigger repeatedly'). AUDIT (8 lines, 6 implemented / 2 accounted): S1 — burstCast escalating self-buff (Once: critRate 6.26 / Twice: critDmg 18.03 / Three: atk 17.28, each 45s > 40s CD so all three hold at steady state once phase 3 is reached ~3rd burst); modeled with the `escalating` effect on burstCast so activation N applies steps 1..N. S2 — 'Affects 5 enemies with highest DEF, deals 170.58% as damage': ONE 170.58% hit lands on the lone boss; the kit gives NO TRIGGER (kit-silent, taxonomy #2) — invented a per-magazine `lastBullet` recurring proc as a moderate cadence (crit-on function rider, FB-by-timing, no core per text-fidelity — text says plain 'damage'). ⚑ TOP: trigger+cadence fully invented. BURST — base 149.85% Burst-Skill-damage nuke (burstCast, FB-exempt auto, no crit) fires every burst regardless of phase; the Marked-Target escalating riders (MT1 Damage Taken ▲39.96%/5s boss debuff / MT2 299.7% additional / MT3 349.65% additional, previous repeat) modeled as a second burstCast `escalating` block targeting enemy (step1 damageTakenPct buff, steps 2-3 flatDamage). 'Full Burst Time ▼ 5 sec' (all allies) modeled as fullBurstExtend:-5 on burstCast — a rotation mechanic (shortens the FB window; in-game intent is faster re-cycle) ⚑ BLAST-RADIUS: net sign in the engine's rotation model is UNVERIFIED (per-cycle FB shortening vs faster next-burst) — needs a /sim-battery diff; pull if it spuriously net-harms the board. No Hit Rate anywhere in Isabel's kit (she is HR-CLEAN) — but totals stay magnitude-capped because the engine's shared SG core bands are HR-contaminated from other units (G4). SKIPPED/ACCOUNTED: none genuinely skippable — every line is modeled. ⚑ LIST: (1) cadence tuple — pullsPerSec (SG class default 1.5) + reloadFrames 133 (datamine) + rolling-reload, all datamine-unreliable, ALWAYS-⚑; (2) S2 kit-silent trigger+cadence (lastBullet≈per-magazine estimate; real could be per-N-attacks like Drake, per-interval, or per-burst → up to ~4-5x fewer procs); (3) fullBurstExtend:-5 rotation blast-radius sign/net-effect. Priors applied: P1 cadence ⚑ (blind), P2 riders FB-by-timing default ON + no `noRange` + burst-cast auto-FB-exempt + core only if text says 'core strike' (it doesn't), P3 no DoT lines present. This is a HYPOTHESIS for hand-tuning against a recording, not an accurate model.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "buff", "stat": "critRatePct", "value": 6.26, "durationSec": 45 },
+            { "kind": "buff", "stat": "critDamagePct", "value": 18.03, "durationSec": 45 },
+            { "kind": "buff", "stat": "atkPct", "value": 17.28, "durationSec": 45 }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 170.58, "crit": true }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 149.85 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "buff", "stat": "damageTakenPct", "value": 39.96, "durationSec": 5 },
+            { "kind": "flatDamage", "atkPct": 299.7 },
+            { "kind": "flatDamage", "atkPct": 349.65 }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "fullBurstExtend", "seconds": -5 }
+      ]
+    }
+  ]
+}

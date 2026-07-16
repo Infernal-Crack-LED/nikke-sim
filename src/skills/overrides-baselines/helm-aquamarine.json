@@ -1,0 +1,56 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || Helm: Aquamarine — Iron AR, Burst II, ATTACKER (self-DPS + team burst-CDR support, NOT a healer despite the family name). All three slots authored (override replaces the parser per-slot). SCOPE-LOCK MODEL (neutral/Water partless boss, DEF 140, 100% core, 180s, 10/10/10, standard control team): she is Iron → NOT advantaged vs Water/neutral, so BOTH of her 'Electric Code target' lines are INERT under scope-lock and contribute zero (modeled faithfully so they fire only vs an Electric boss). AUDIT (6 kit lines): (S1a) '30 normal attacks → 131.34% additional damage' = recurring conditional rider → hitCount 30 → flatDamage 131.34% (crits by engine default like all function riders; NO core — text does not say 'core strike'; FB by TIMING, no noFb; noRange automatic). (S1b) 'on Full Burst enter, escalating burst-CDR Once 1.82 / Twice 2.2 / Three times 2.6, previous effects repeat' = Liter-style escalating → fullBurstEnter → escalating[burstCdr 1.82, 2.2, 2.6] to allies; this SPEEDS TEAM ROTATION → BLAST RADIUS (touches every teammate's burst cadence; a /sim-battery diff is the real check). (S2a) 'Affects 1 enemy randomly. Deals 105.58% as damage' = NO TRIGGER IN THE DATAMINE (confirmed vs characters.json — genuine kit-silent line) → INVENTED trigger+cadence ⚑ TOP: modeled as hitCount 30 → flatDamage 105.58% (anchored to S1's 30-normal cadence as the sibling pattern; could be burst-driven or a different N — pure guess). (S2b) 'on attacking Electric-Code target: Damage Taken ▲5.64%, stacks 5, 5s' = enemy debuff → bossElement Electric → buff damageTakenPct 28.2 (=5.64×5 steady-state, ~full uptime under continuous AR fire; INERT under scope-lock/non-Electric). (Ba) burst 'all enemies: 164.83% Burst Skill damage' = burst-cast nuke → burstCast → flatDamage 164.83% (burst-cast is auto FB-exempt; engine snapshots pre-FB). (Bb) burst 'on Electric-Code target: 164.83% additional damage' = burst-cast rider gated on boss element; the engine has NO combined burstCast+element gate (and the validator rejects `ignored` effect blocks), and under scope-lock (Water) it is INERT → OMITTED from the burst array and documented here (a real +164.83%/burst rider that fires ONLY vs an Electric boss). NO lines dropped: none parked in ignored that are heal/shield/DEF/HP/lifesteal/gauge/reload/ammo (she has none of those). ⚑ LIST: [1] cadence tuple (pullsPerSec/reloadFrames/rolling-reload) datamine-unreliable, estimate = datamine AR default + reloadFrames 81; recipe = read rounds/min + reload gap from a focus video. [2] S2a trigger+cadence fully INVENTED (kit-silent), estimate hitCount 30; recipe = focused solo, find what fires the 105.58% random-enemy proc + its interval. [3] S2b/Bb Electric-gate lines untestable under scope-lock (need an Electric boss). [4] burstCdr escalating blast-radius — verify team rotation delta via /sim-battery, not sim-vs-sim self-grade. Faithful>fit; measured>fudge; every number here is an UNMEASURED hypothesis.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 30 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 131.34 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "burstCdr", "seconds": 1.82 },
+            { "kind": "burstCdr", "seconds": 2.2 },
+            { "kind": "burstCdr", "seconds": 2.6 }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 30 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 105.58 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "bossElement", "element": "Electric" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": 28.2 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 164.83 }
+      ]
+    }
+  ]
+}

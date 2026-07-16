@@ -1,0 +1,69 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || SG MAGNITUDE-CAPPED — engine SG core bands HR-contaminated; low-confidence totals; exclude from meta-weighting. || Zwei — Electric SG Supporter, Burst I. Her VALUE is team buffs, not her own damage; own SG output is guardrailed low-confidence (SG core bands). AUDIT: S1 = two FB-enter team Pierce Damage buffs (20.13% '1 round' + 10.06%/10s) + a per-normal-attack-in-FB stacking Pierce Damage 24.99% (x3). All pierceDamagePct — INERT in the engine for non-Pierce-tagged allies (types.ts: parsed-but-inert unless a teammate has hasPierce), KEPT verbatim for fidelity + future consumer (hard rule 3, buff lines never dropped). '1 round' modeled as durationSec 10 (~FB window) ⚑. Same-stat pair (20.13+10.06) verified to COEXIST in the buff list (no same-slot overwrite swallow, DBG-confirmed) → additive 30.19 during FB; moot anyway while pierce is inert. S2 = (a) 'after 5 normal attacks' team heal 7.52% Cover HP → wired as a `heal` event (shotFired everyN 5, target allies) so any teammate's on-recovery trigger fires (hard rule 2 — never drop a heal); (b) FB-enter team Crit Rate 18.63%/10s (ACTIVE — critRatePct works in engine); (c) per-normal-attack team Crit Rate 15%/5s x3 GATED on 'Pierce Attacks 101 status' — that status is her BURST buff (10s from burst cast), so modeled as shotFired + fbGate inFb as a proxy for the status window (status ~overlaps FB for a B1) ⚑ status-window-gating. BURST = self weaponSwap to a charge SG (charge 1.2s, per-shot 50.69% of final ATK, Full-Charge 300% → 152.07%/full shot, max ammo 1, Pierce) + team Pierce Attacks 101 (Pierce Damage 25.03%/10s). weaponSwap durationSec UNSTATED in text → est 10s ⚑ swap-economy (duration + landed-shot count both unknown; charge 1.2s + 1-ammo reload each shot, no unlimited-ammo/charge-speed grant so NOT the RRH instant-charge class — likely charge+reload gated, est few shots). noFb left DEFAULT (FB by timing, prior 2) — swap shots in FB get +50%; no measured FB-OFF evidence. Cadence: NO 'Hit Rate' line in kit (hard rule 4 N/A). MANDATORY cadence ⚑ (pullsPerSec + reloadFrames 111 datamine). SKIPPED: none as ignored — every line is a buff/heal/weapon-state/damage line. NO recording yet — HYPOTHESIS.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 20.13, "durationSec": 10 },
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 10.06, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "fbGate": "inFb",
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 24.99, "durationSec": 10, "maxStacks": 3 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "everyN": 5,
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "heal" }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "critRatePct", "value": 18.63, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "fbGate": "inFb",
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "critRatePct", "value": 15, "durationSec": 5, "maxStacks": 3 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "weaponSwap", "damagePct": 50.69, "chargeTimeSec": 1.2, "chargeMultPct": 300, "maxAmmo": 1, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 25.03, "durationSec": 10 }
+      ]
+    }
+  ]
+}

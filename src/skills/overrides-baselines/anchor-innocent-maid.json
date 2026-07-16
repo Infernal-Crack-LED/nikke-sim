@@ -1,0 +1,113 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || Anchor: Innocent Maid — RL / Burst II / Supporter / Water. A HEALER-SUPPORTER: her value is team ATK buffs + heals, not personal damage. NO HP-SCALING damage conversion in this kit — every Max HP reference (Potency of HP, the 3.04%/40.18%/60.19% recoveries, the healing-storage pool) is DEFENSIVE/heal-magnitude; her two ATK buffs scale off caster's ATK, not Max HP. So no atkOfMaxHpPct and no G6 promotion gate. Guardrail (hard rules 2-3): Max HP / heal lines are NOT dropped — the recoveries are wired as `heal` events (event-only, no modeled HP amount) so cross-unit 'on recovery' consumers (Crown-style team ATK ▲) fire; the non-damage support riders are `ignored{note}` (SEEN, chosen skip). Element: Water — clean engine ×1.10 advantage (no Superior-Elemental-Code buff in kit → no elemAdvantageDamagePct). || S1 (fullBurstEnter, all allies): escalating (Once/Twice/Three — 'previous effects trigger repeatedly'): [1] Potency of HP ▲30.96%/5s = heal-potency, no StatKey, no modeled HP → ignored PLACEHOLDER (kept to preserve tier ordering so Distributed lands on the 2nd FB, not the 1st); [2] Distributed Damage ▲30.4%/10s → distributedDamagePct buff (real Damage-Up rider); [3] debuff stack ▼1 = cleanse (defensive, no consumer) → ignored. Second S1 block (fullBurstEnter + same-squad ally present — always true in a 5-unit team, modeled as plain fullBurstEnter): 'Recovers 3.04% Max HP every 1s for 8s' → `heal` to allies (one event/FB; the 8-tick sub-cadence is a ⚑ for recovery-consumer uptime). || S2 (fullBurstEnd, all allies): escalating: [1] Hit Rate ▲10.13%/10s → hitRatePct buff (PROVEN core-rate lift, engine-inert; magnitude ⚑ — hard rule 4, never dropped); [2] ATK ▲35.02% of caster's ATK/10s → casterAtkPct buff (main team damage buff, tier-2 → starts on 2nd FB-end); [3] Reloading Speed ▲40.04%/15s → reloadSpeedPct buff (weapon-state = damage, hard rule 1; team reload buff). || BURST (burstCast, all allies, 40s CD): 'Storage: stores excess healing up to 60.19% Max HP, 25s' = defensive heal-buffer, no consumer → ignored; 'Recovers 40.18% Max HP as HP' → `heal` to allies; 'ATK ▲30.09% of caster's ATK/10s' → casterAtkPct buff. || Escalating tiers are FB-count-gated: a control team completes many B1→B2→B3 chains in 180s, so both escalations reach tier 3 early — the higher-tier ATK/reload/distributed buffs DO fire (verify in DBG). || ⚑ FLAGS (all UNMEASURED estimates): (1) CADENCE TUPLE — pullsPerSec / reloadFrames(141) / rolling-reload; datamine estimates shipped (ammo 6, charge 60f, reload 141f); NOT text-derivable, recipe = read rounds/min + reload gap off a focus video. Mag-empty time ~8s at class rate, no revolver/magnum flavor → NOT escalated to probably-wrong. (2) AUTOFIRE vs 22f BOLT GAP — RL charge weapon; engine default (bolt gap ON) shipped, noBoltRecovery NOT set (unmeasured = fudge); ~15-20% shot-count swing on HER OWN damage/burst-gen (small team impact — she's a support); recipe = focus video, is the charge instant/does she autofire. (3) HIT-RATE → CORE-RATE MAGNITUDE — hitRatePct engine-inert; est. core lift ≈ k·10.13% (k~0.046) ≈ +0.47% core, negligible on a support; recipe = HR-on vs HR-off core fraction on a focused DPS carrier. (4) PERIODIC-HEAL recovery cadence — S1 8-tick heal modeled as 1 heal event/FB; if a cross-unit 'on recovery' consumer is present, the true 8 events/FB matter → estimate 1/FB, recipe = count recovery procs on a healed consumer and, if load-bearing, split into 8 timed blocks. (5) SAME-SQUAD gate on the S1 heal — modeled as always-satisfied (5-unit team); no engine gate. || SELF-VALIDATE: validated vs types.ts by inspection + injected-override sim (resolveSkills, NOT placed in overrides/) — all blocks fire; see the returned summary.",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "attackDamagePct",
+              "value": 0,
+              "durationSec": 1,
+              "_skipped": "Once: Potency of HP ▲30.96% for 5s — heal-potency modifier, no StatKey, no modeled HP amount. Placeholder retained so the escalating tier order is faithful (Distributed = the Twice tier)."
+            },
+            {
+              "kind": "buff",
+              "stat": "distributedDamagePct",
+              "value": 30.4,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "attackDamagePct",
+              "value": 0,
+              "durationSec": 1,
+              "_skipped": "Three times: Stack count of debuffs ▼1 — cleanse, defensive, no damage consumer."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "hitRatePct",
+              "value": 10.13,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "casterAtkPct",
+              "value": 35.02,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "reloadSpeedPct",
+              "value": 40.04,
+              "durationSec": 15
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 30.09,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

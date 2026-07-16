@@ -1,0 +1,60 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- Delta: Ninja Thief — B2 Water Defender MG, a debuff/buff support (her own MG normals + a burst distributed nuke are her only damage). HP-SCALING DETERMINATION: NONE. Every 'Max HP' reference is a SHIELD SIZE (12.25% of final Max HP), i.e. purely DEFENSIVE — she has NO atkOfMaxHpPct / casterMaxHpPct conversion, so prior 6 does not apply and there is NO HP-basis ⚑. Shields have no engine representation (naga precedent: engine has no shield tracking); her shields have no in-kit damage consumer, so they are documented-and-dropped, NOT wired. MODES (Defender-count formation gate — the top-level `formation` field only supports B1-count, so modeled as user-selectable modes like naga/anis): 'solo defender' (DEFAULT — no other Defender ally, the common control-team case: she gains Attract/Taunt + self-shields, all defensive) and 'with defender ally' (Camouflage + Ninjutsu Injection lifesteal → the IFAK all-ally heal). skill1 (formation-INDEPENDENT, all 3 lines modeled): (a) FB-enter → boss Damage Taken ▲12%/15s (team-wide damage amp, damageTakenPct); (b) burst-cast → self ATK ▲15.04%/10s; (c) burst-cast → boss Damage Taken ▲8%/10s (nearest-crosshair = the single boss). The two damageTaken debuffs co-stack in-engine (distinct value keys 12 vs 8 → +20% during overlap), faithful to the two distinct named Acid Bombs. skill2: battle-start formation effects — SOLO: shield (defensive, dropped) + Attract/Taunt (dropped, boss unaffected); WITH-DEFENDER: Camouflage (defensive, dropped) + Ninjutsu Injection lifesteal 11.22% of attack dmg as HP (a SELF-recovery with no in-kit consumer + no cross-unit path, so not emitted — documented as the IFAK enabler per hard-rule-2 spirit). The 'every 200 normals while Attract → shield' is defensive (dropped, solo mode). The 'every 4s while Injection → Ninjutsu IFAK → all allies healed for stored 165.28% ATK' IS modeled (hard rule 2: heals emit recovery events that drive teammate 'on recovery' buffs, e.g. Crown) as a `heal` to allies on hitCount 200 ≈ the '200 normals ≈ 4s' cadence, WITH-DEFENDER mode only. HP heal AMOUNT is event-only (unmodeled), so the burst 'Max Accumulation IFAK ▲20.13%' has no modeled effect (dropped, documented). burst: (a) all allies Distributed Damage ▲20%/10s + ATK ▲15% of caster's ATK/10s (casterAtkPct — the team buffs); (b) 170% final-ATK DISTRIBUTED nuke on the boss (burst-cast → engine auto-FB-exempt, no noFb; distributed flavor → picks up her own +20% distributedDamagePct); (c) 'Next shield HP ▲20.13%' (solo, defensive, dropped); (d) 'Max IFAK ▲20.13%' (heal-amount, unmodeled, dropped). Element: clean ×1.10 Water advantage, engine-handled (no elemental-advantage buff in kit — prior 7). ⚑ NEEDS-MEASUREMENT: (1) CADENCE TUPLE [MANDATORY] — MG rate-of-fire (datamine, no rate_of_fire stored → engine MG wind-up ladder + class default) + reloadFrames 171 (datamine) + rolling-reload behavior; estimate = datamine as-is; recipe = read rounds/min + reload gap from a focused Delta video; ammo 300 at ~MG rate empties in ~5s (normal MG profile, no odd-fire-mode text tell → NOT escalated). (2) IFAK heal cadence — the hitCount 200 proxy for 'every 4s' recovery-event emission; estimate hitCount 200; recipe = time the IFAK heal ticks in a with-defender-ally recording; matters ONLY as a teammate recovery-consumer trigger. (3) with-defender-ally IFAK/Injection block firing — confirm Ninjutsu Injection status actually holds (lifesteal continuous) so the every-4s IFAK fires; recipe = 2-Defender team recording. Blast-radius note: her team-facing buffs (Damage Taken ▲12/8% on boss, casterAtkPct 15%, distributedDamagePct 20%, IFAK heal→recovery) touch the WHOLE team — a /sim-battery diff is the real check before any board claim.",
+  "modes": ["solo defender", "with defender ally"],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": 12, "durationSec": 15 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 15.04, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "buff", "stat": "damageTakenPct", "value": 8, "durationSec": 10 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 200 },
+      "target": { "kind": "allies" },
+      "mode": "with defender ally",
+      "effects": [
+        { "kind": "heal" }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "distributedDamagePct", "value": 20, "durationSec": 10 },
+        { "kind": "buff", "stat": "casterAtkPct", "value": 15, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 170, "flavor": "distributed" }
+      ]
+    }
+  ]
+}
