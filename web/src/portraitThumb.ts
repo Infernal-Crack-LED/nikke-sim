@@ -2,15 +2,15 @@
 // `${url}@${size}`.
 //
 // Why this exists: the character-art CDN ignores resize params and only ever
-// serves the full 256×512 art. The browser's default <img> downscaling samples
-// too few source texels at the ~5–8× reduction we need, which aliases thin
-// character outlines into jagged edges (visibly better the more you zoom in —
-// i.e. the less it's shrunk). We instead downscale ourselves with STEPPED
-// halving + `imageSmoothingQuality: 'high'`, so each step averages a 2× region
-// and edges stay smooth. The CDN sends `access-control-allow-origin: *` and we
-// request with `crossOrigin='anonymous'`, so the canvas is untainted and
-// toDataURL is allowed.
+// serves the full 256×512 art. The browser's default <img> downscaling aliases
+// thin character outlines at the ~5–8× reduction we need, so we downscale it
+// ourselves via the shared stepped-halving helper (see imageDownscale.ts for the
+// lesson). This module adds the portrait-specific parts: the square-crop framing,
+// crossOrigin loading, and a data-URL cache. The CDN sends
+// `access-control-allow-origin: *` and we request with `crossOrigin='anonymous'`,
+// so the canvas is untainted and toDataURL is allowed.
 import { PORTRAIT_CROP_TOP } from '../../src/share/teamCard';
+import { steppedDownscale } from './imageDownscale';
 
 const cache = new Map<string, string>();
 const inflight = new Map<string, Promise<string | null>>();
@@ -23,17 +23,6 @@ function loadImage(url: string): Promise<HTMLImageElement | null> {
     img.onerror = () => resolve(null);
     img.src = url;
   });
-}
-
-function makeCanvas(size: number): { cv: HTMLCanvasElement; cx: CanvasRenderingContext2D } | null {
-  const cv = document.createElement('canvas');
-  cv.width = size;
-  cv.height = size;
-  const cx = cv.getContext('2d');
-  if (!cx) return null;
-  cx.imageSmoothingEnabled = true;
-  cx.imageSmoothingQuality = 'high';
-  return { cv, cx };
 }
 
 // Center-cropped square thumbnail of `url` at `size`×`size` device px. Mirrors
@@ -65,28 +54,11 @@ export async function portraitThumb(url: string, size: number): Promise<string |
     const sx = (iw - side) / 2;
     const sy = (ih - side) * PORTRAIT_CROP_TOP;
 
-    let stage = makeCanvas(side);
-    if (!stage) return null;
-    stage.cx.drawImage(img, sx, sy, side, side, 0, 0, side, side);
-    let cur = side;
+    // high-quality square downscale via the shared stepped-halving helper
+    const cv = steppedDownscale(img, sx, sy, side, side, size, size);
+    if (!cv) return null;
 
-    // halve until within 2× of the target, then one final draw to exact size
-    while (cur > size * 2) {
-      const next = Math.max(size, Math.round(cur / 2));
-      const step = makeCanvas(next);
-      if (!step) return null;
-      step.cx.drawImage(stage.cv, 0, 0, cur, cur, 0, 0, next, next);
-      stage = step;
-      cur = next;
-    }
-    if (cur !== size) {
-      const out = makeCanvas(size);
-      if (!out) return null;
-      out.cx.drawImage(stage.cv, 0, 0, cur, cur, 0, 0, size, size);
-      stage = out;
-    }
-
-    const data = stage.cv.toDataURL('image/png');
+    const data = cv.toDataURL('image/png');
     cache.set(key, data);
     return data;
   })();

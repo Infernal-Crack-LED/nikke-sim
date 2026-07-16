@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-15",
+    "title": "UI refresh + share images now use unit portraits",
+    "notes": [
+      "Mobile refresh: the page now uses the full screen width, the boss and \"apply to all\" filters wrap into even rows instead of lopsided ones, and the navigation collapses into a compact \"current tab + dropdown\" so long tab names no longer run off the edge.",
+      "The Optimal Team and Solo-Raid Roster generators now show an at-a-glance row of unit portraits; the roster lays its five teams out as a centered grid plus compact per-team cards.",
+      "Copy-image share cards now render real unit portraits instead of placeholder boxes — including a new roster share card that shows all five teams with total-damage bars."
+    ]
+  },
+  {
+    "date": "2026-07-15",
     "title": "Damage model: range-aware core hits + shotgun overhaul",
     "notes": [
       "Auto-aim core-hit rate is now range-dependent. The sim used to assume one flat core-hit chance per weapon; it now models that auto-aim finds the boss core far more often up close and rarely at range — measured from recorded fights. Assault Rifles / SMGs / Shotguns lose core damage when the boss is far; Machine Guns, Snipers and Rocket Launchers are largely unchanged.",

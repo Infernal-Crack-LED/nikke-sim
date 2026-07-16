@@ -9,7 +9,8 @@
     "sim": "tsx src/cli.ts",
     "web": "vite",
     "dpschart": "tsx scripts/build-dpschart.ts",
-  "meta-weights": "tsx scripts/build-meta-weights.ts",
+    "meta-weights": "tsx scripts/build-meta-weights.ts",
+    "ui-shot": "node scripts/ui-shot.mjs",
     "prebuild": "tsx scripts/build-dpschart.ts",
     "preweb:build": "tsx scripts/build-dpschart.ts",
     "web:build": "vite build",
@@ -33,6 +34,7 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "jsdom": "^29.1.1",
+    "playwright": "^1.61.1",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }

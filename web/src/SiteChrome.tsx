@@ -4,6 +4,7 @@ import type { Route } from './router';
 import { hrefFor, navigate } from './router';
 import { socials } from './site-data';
 import { BrandIcon } from './social-icons';
+import { TabDropdown, useMediaQuery } from './TabDropdown';
 import type { AuthUser } from './auth';
 
 const NAV: { route: Route; label: string }[] = [
@@ -38,6 +39,7 @@ export function SiteNav({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const mobile = useMediaQuery('(max-width: 640px)'); // page nav → focused dropdown
 
   // Close the menu on an outside click or Escape.
   useEffect(() => {
@@ -68,16 +70,29 @@ export function SiteNav({
     <nav className='site-nav'>
       <div className='site-nav-inner'>
         <div className='site-nav-left'>
-          {NAV.map((n) => (
-            <a
-              key={n.route}
-              href={hrefFor(n.route)}
-              onClick={(e) => navClick(e, n.route)}
-              className={current === n.route ? 'on' : ''}
-            >
-              {n.label}
-            </a>
-          ))}
+          {mobile ? (
+            <TabDropdown
+              label='Page'
+              items={NAV.map((n) => ({
+                key: n.route,
+                label: n.label,
+                active: current === n.route,
+                href: hrefFor(n.route),
+                onSelect: (e) => navClick(e, n.route),
+              }))}
+            />
+          ) : (
+            NAV.map((n) => (
+              <a
+                key={n.route}
+                href={hrefFor(n.route)}
+                onClick={(e) => navClick(e, n.route)}
+                className={current === n.route ? 'on' : ''}
+              >
+                {n.label}
+              </a>
+            ))
+          )}
         </div>
         <div className='site-nav-right'>
           <a

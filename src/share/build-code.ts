@@ -39,6 +39,7 @@ export interface Build {
   v: number; // format version
   g: GlobalsBuild;
   s: SlotBuild[]; // exactly 5
+  blocked?: string[]; // don't-own / excluded slugs (Team/Roster generator link)
 }
 
 export const BUILD_VERSION = 1;

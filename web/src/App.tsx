@@ -1,4 +1,12 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Children,
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type {
   PointerEvent as ReactPointerEvent,
   MouseEvent as ReactMouseEvent,
@@ -13,12 +21,6 @@ import type {
   LevelMultiplier,
   SimConfig,
 } from '../../src/types';
-import {
-  drawTeamCard,
-  cardHeight,
-  CARD_W,
-  type Canvas2DLike,
-} from '../../src/share/teamCard';
 import { DpsChartTab } from './DpsChartTab';
 import { navigate } from './router';
 import { MatrixChart } from './components/MatrixChart';
@@ -34,6 +36,13 @@ import type { Rarity as DollRarity, ToolboxTier as DollTier } from '../../src/do
 import { solveDp as dollSolveDp, monteCarlo as dollMc, calibrateWeights as dollCalibrate, costFrom as dollCostFrom } from '../../src/doll/policy';
 import type { Calibration as DollCalibration, DpTable as DollDp, DollSummary } from '../../src/doll/policy';
 import { copyDpsChartImage } from './shareImage';
+import { TabDropdown, useMediaQuery } from './TabDropdown';
+import {
+  shareTeamCard,
+  shareRosterCard,
+  type ShareTeamData,
+  type ShareRosterData,
+} from './teamShare';
 import {
   encodeBuild,
   decodeBuild,
@@ -255,6 +264,109 @@ const CORE_PRESETS = [
 const allChars = Object.values(data.characters).sort((a, b) =>
   a.name.localeCompare(b.name),
 );
+
+// At-a-glance 64×64 portrait strip for a generated team (tight grouping). Shared
+// by the Optimal Team result and, later, the Roster generator — keep it prop-only
+// (no App state) so both can reuse it. `adv` flags the elementally-advantaged
+// slots with a small corner marker.
+// A row of the team's 5 portraits. Each portrait is content-aware between 32 and
+// 64px (grid minmax); they stay 5-across and shrink to fit until 32px no longer
+// fits the container, at which point they snap to a 3:2 split held at 32px (CSS
+// `.cols-5` / `.cols-3`). The break is measured off the real container width.
+function TeamPortraits({
+  slugs,
+  advantaged,
+}: {
+  slugs: string[];
+  advantaged?: Set<string>;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [cols, setCols] = useState(5);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const GAP = 4, MIN = 32, N = slugs.length; // fits N-across at the 32px floor?
+    const compute = () => setCols(el.clientWidth >= N * MIN + (N - 1) * GAP ? 5 : 3);
+    compute();
+    if (typeof ResizeObserver === 'undefined') return; // jsdom / SSR
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [slugs.length]);
+  return (
+    <div ref={ref} className={`team-portraits cols-${cols}`}>
+      {slugs.map((slug, i) => {
+        const c = data.characters[slug];
+        const adv = advantaged?.has(slug);
+        return (
+          <div
+            key={`${slug}-${i}`}
+            className={`tp-chip${adv ? ' adv' : ''}`}
+            title={c?.name ?? slug}
+          >
+            {c?.imageUrl ? (
+              <img src={c.imageUrl} alt={c?.name ?? slug} loading='lazy' />
+            ) : (
+              <span className='tp-init'>{(c?.name?.[0] ?? '?').toUpperCase()}</span>
+            )}
+            {adv && <span className='tp-adv' title='elemental advantage'>▲</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// advantaged-slug set for a generated team (used by the portrait strips/grids)
+const advSet = (t: TeamResult) =>
+  new Set(t.units.filter((u) => u.advantaged).map((u) => u.slug));
+
+// Balanced-wrap column count for a set of `count` inline items in a grid: one row
+// if they fit, otherwise the fewest EVEN rows (4→2:2 not 3:1, 6→3:3, 7→4:3). Width-
+// aware via ResizeObserver; measures each item's natural (content) width.
+function useBalancedCols(count: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [cols, setCols] = useState(count);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const compute = () => {
+      const items = Array.from(el.children) as HTMLElement[];
+      if (items.length < 2) return setCols(Math.max(1, items.length));
+      const cs = getComputedStyle(el);
+      const gap = parseFloat(cs.columnGap || '0') || 0;
+      const W = el.clientWidth;
+      const widths = items.map((c) => c.scrollWidth); // content widths (justify-items: start)
+      const total = widths.reduce((s, w) => s + w, 0) + gap * (count - 1);
+      if (total <= W) return setCols(count); // they all fit on one row — keep it
+      // else split into the fewest rows that fit (by the widest item), evened out
+      const perRow = Math.max(1, Math.floor((W + gap) / (Math.max(...widths) + gap)));
+      const rows = Math.ceil(count / perRow);
+      setCols(Math.max(1, Math.ceil(count / rows)));
+    };
+    compute();
+    if (typeof ResizeObserver === 'undefined') return; // jsdom / SSR: no reflow
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [count]);
+  return { ref, cols };
+}
+
+// A `.pills` group that lays its buttons out in a content-aware grid, wrapping
+// into evenly-sized rows instead of a greedy last-row remainder.
+function PillGrid({ className, children }: { className?: string; children: ReactNode }) {
+  const { ref, cols } = useBalancedCols(Children.count(children));
+  return (
+    <div
+      ref={ref}
+      className={`pills pill-grid${className ? ` ${className}` : ''}`}
+      style={{ ['--pcols' as string]: cols }}
+    >
+      {children}
+    </div>
+  );
+}
 
 // Charge weapons in the roster, so the Charge Speed picker only offers RL/SR
 // units that actually have a charge phase.
@@ -530,23 +642,6 @@ function buffLines(blocks: any[]): string[] {
 }
 
 // react to a media query (used to switch the team into compact/portrait mode)
-function useMediaQuery(query: string): boolean {
-  const supported =
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function';
-  const [matches, setMatches] = useState(() =>
-    supported ? window.matchMedia(query).matches : false,
-  );
-  useEffect(() => {
-    if (!supported) return;
-    const mq = window.matchMedia(query);
-    const onChange = () => setMatches(mq.matches);
-    onChange();
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, [query, supported]);
-  return matches;
-}
 
 // pointer-based drag-to-reorder that works for both mouse and touch. items
 // register their DOM node by index; the drag element (a handle, or the item
@@ -809,7 +904,9 @@ export function App({ user }: { user: AuthUser | null }) {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
-  const [blocked, setBlocked] = useState<string[]>([]); // don't-own / excluded
+  const [blocked, setBlocked] = useState<string[]>(
+    boot?.blocked?.filter((s) => data.characters[s]) ?? [],
+  ); // don't-own / excluded
   // Charge Speed tab: chosen unit (null = the generic 1s / 60-frame reference)
   // and whether to list the deep, hard-to-reach breakpoints.
   const [chargeChar, setChargeChar] = useState<string | null>(null);
@@ -884,6 +981,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // Kicks in at the first width where the 5-across card row would otherwise
   // reflow to a second row; above it all five cards show side by side.
   const compactTeam = useMediaQuery('(max-width: 900px)');
+  const mobileNav = useMediaQuery('(max-width: 640px)'); // tabs → focused dropdown
   const [expandedSlot, setExpandedSlot] = useState(0);
 
   // reorder a team slot (drives the sim: position sets camera focus / burst
@@ -931,6 +1029,7 @@ export function App({ user }: { user: AuthUser | null }) {
   const buildFromState = (): Build => ({
     v: BUILD_VERSION,
     g: { weakness, bossDef, core, coreCustom, coreCustomVal, level },
+    blocked: blocked.length ? blocked : undefined,
     s: slots.map((s) => ({
       slug: s.slug,
       cubeId: s.cubeId,
@@ -958,6 +1057,7 @@ export function App({ user }: { user: AuthUser | null }) {
     setCoreCustom(!!b.g.coreCustom);
     setCoreCustomVal(b.g.coreCustomVal ?? '10');
     setLevel(b.g.level ?? '400');
+    setBlocked(Array.isArray(b.blocked) ? b.blocked.filter((s) => data.characters[s]) : []);
   };
 
   // ---- saved teams (Discord auth + login/logout live in the shared header;
@@ -1111,69 +1211,96 @@ export function App({ user }: { user: AuthUser | null }) {
   const coreLabel = () =>
     coreCustom ? `${coreCustomVal}% core` : `${Math.round(core * 100)}% core`;
 
-  // Render the summary card to a PNG via the shared, isomorphic drawTeamCard
-  // (same code the bot uses). This wrapper is the browser-specific part: create
-  // + size the canvas, scale for DPR, and export a blob.
-  const buildShareImage = async (): Promise<Blob | null> => {
-    if (!r) return null;
-    const dpr = 2;
-    const cv = document.createElement('canvas');
-    cv.width = CARD_W * dpr;
-    cv.height = cardHeight(r.units.length) * dpr;
-    const ctx = cv.getContext('2d');
-    if (!ctx) return null; // jsdom / no canvas support
-    ctx.scale(dpr, dpr);
-    drawTeamCard(
-      ctx as unknown as Canvas2DLike,
-      {
-        teamDamage: r.teamDamage,
-        teamDps: r.teamDps,
-        fullBursts: r.fullBursts,
-        fullBurstUptime: r.fullBurstUptime,
-        units: r.units.map((u) => ({
-          name: u.name,
-          burst: u.burst,
-          weapon: u.weapon,
-          element: u.element,
-          advantaged: u.advantaged,
-          share: u.share,
-          totalDamage: u.totalDamage,
-        })),
-      },
-      {
-        weakness,
-        level: Math.min(1200, Math.max(1, Number(level) || 400)),
-        coreLabel: coreLabel(),
-      },
-    );
-    return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'));
-  };
+  // Meta (boss weakness / synchro / core) shared by every share card on the page.
+  const shareMeta = () => ({
+    weakness,
+    level: Math.min(1200, Math.max(1, Number(level) || 400)),
+    coreLabel: coreLabel(),
+  });
+  const imageUrlFor = (slug: string) => data.characters[slug]?.imageUrl ?? undefined;
 
-  const onShareImage = async () => {
-    const blob = await buildShareImage();
-    if (!blob) return;
-    // Copy the PNG straight to the clipboard (Chromium/Safari). Falls back to a
-    // download where the async clipboard image API isn't available (e.g. Firefox).
-    const nav = navigator as any;
-    try {
-      if (nav.clipboard?.write && (window as any).ClipboardItem) {
-        await nav.clipboard.write([
-          new (window as any).ClipboardItem({ 'image/png': blob }),
-        ]);
-        setImaged(true);
-        setTimeout(() => setImaged(false), 1500);
-        return;
-      }
-    } catch {
-      /* clipboard image write blocked/unsupported — download instead */
-    }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'nikke-team.png';
-    a.click();
-    URL.revokeObjectURL(a.href);
+  const flashImaged = () => {
     setImaged(true);
     setTimeout(() => setImaged(false), 1500);
+  };
+
+  // Share the Optimal Team result card (real portraits) via the shared pipeline.
+  const shareTeam = async (t: TeamResult) => {
+    const share: ShareTeamData = {
+      teamDamage: t.teamDamage,
+      teamDps: t.teamDps,
+      fullBursts: t.fullBursts,
+      fullBurstUptime: t.fullBurstUptime,
+      units: t.units.map((u) => ({
+        slug: u.slug,
+        name: u.name,
+        burst: u.burst,
+        weapon: u.weapon,
+        element: u.element,
+        advantaged: u.advantaged,
+        share: u.share,
+        totalDamage: u.totalDamage,
+      })),
+    };
+    const res = await shareTeamCard(share, shareMeta(), imageUrlFor, 'nikke-team.png');
+    if (res !== 'unsupported') flashImaged();
+  };
+
+  // Share the roster summary card (5 teams: portraits + total-damage bars).
+  const shareRoster = async (teams: TeamResult[]) => {
+    const share: ShareRosterData = {
+      totalDamage: teams.reduce((sum, t) => sum + t.teamDamage, 0),
+      teams: teams.map((t) => ({
+        teamDamage: t.teamDamage,
+        units: t.units.map((u) => ({ slug: u.slug, name: u.name, element: u.element })),
+      })),
+    };
+    const res = await shareRosterCard(share, shareMeta(), imageUrlFor, 'nikke-roster.png');
+    if (res !== 'unsupported') flashImaged();
+  };
+
+  // Deterministic "Generate link": encode the full build (loadout + globals +
+  // blocked) into a ?b= link on the generator's tab path with run=1, so opening
+  // it restores the inputs and auto-runs — reproducing the identical result.
+  const onGenLink = async (tabKey: 'team' | 'roster') => {
+    const u = new URL(window.location.href);
+    u.pathname = `/${tabKey}`;
+    u.search = '';
+    u.searchParams.set('b', encodeBuild(buildFromState()));
+    u.searchParams.set('run', '1');
+    const url = u.toString();
+    try {
+      await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 1500);
+    } catch {
+      window.prompt('Copy this link:', url);
+    }
+  };
+
+  // Copy the Sim-tab result card (real portraits) to the clipboard via the shared
+  // teamShare pipeline (same isomorphic drawTeamCard the bot uses). Falls back to
+  // a download where the async clipboard image API isn't available (Firefox).
+  const onShareImage = async () => {
+    if (!r) return;
+    const share: ShareTeamData = {
+      teamDamage: r.teamDamage,
+      teamDps: r.teamDps,
+      fullBursts: r.fullBursts,
+      fullBurstUptime: r.fullBurstUptime,
+      units: r.units.map((u) => ({
+        slug: u.slug,
+        name: u.name,
+        burst: u.burst,
+        weapon: u.weapon,
+        element: u.element,
+        advantaged: u.advantaged,
+        share: u.share,
+        totalDamage: u.totalDamage,
+      })),
+    };
+    const res = await shareTeamCard(share, shareMeta(), imageUrlFor, 'nikke-team.png');
+    if (res !== 'unsupported') flashImaged();
   };
 
   // shared blocked-character panel (Team Calc + Roster Calc) — exclude nikkes
@@ -1276,6 +1403,18 @@ export function App({ user }: { user: AuthUser | null }) {
       setTeamResult(null);
       setRosterResults(newCalc().topTeams(5));
     });
+
+  // Deterministic "Generate link" (run=1): auto-run the generator once on mount so
+  // an opened link reproduces the result from the encoded inputs.
+  const didAutoRun = useRef(false);
+  useEffect(() => {
+    if (didAutoRun.current) return;
+    didAutoRun.current = true;
+    if (new URLSearchParams(window.location.search).get('run') !== '1') return;
+    if (tab === 'team') runBestTeam();
+    else if (tab === 'roster') runTopTeams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ---- Overload Calc: rank one carry's four free OL lines in an 8/12 team ----
   const olDeps = {
@@ -1488,9 +1627,11 @@ export function App({ user }: { user: AuthUser | null }) {
       setDpsResults(results);
     });
 
-  // compact result table for a generated team
-  const teamResultView = (t: TeamResult, highlight?: string) => (
+  // full result view for the single-team (Optimal Team) generator: portrait
+  // strip + summary + per-unit table. (Share/link buttons live in the header.)
+  const teamResultView = (t: TeamResult, opts?: { highlight?: string }) => (
     <div className='calc-result'>
+      <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
       <div className='summary muted'>
         team <b className='big'>{fmt(t.teamDamage)}</b> · {fmt(t.teamDps)} DPS ·{' '}
         {(t.fullBurstUptime * 100).toFixed(0)}% FB uptime
@@ -1498,7 +1639,7 @@ export function App({ user }: { user: AuthUser | null }) {
       <table>
         <tbody>
           {t.units.map((u) => (
-            <tr key={u.slug} className={u.slug === highlight ? 'hl' : ''}>
+            <tr key={u.slug} className={u.slug === opts?.highlight ? 'hl' : ''}>
               <td className='muted'>B{u.burst}</td>
               <td>
                 {u.name}
@@ -1513,6 +1654,51 @@ export function App({ user }: { user: AuthUser | null }) {
       </table>
     </div>
   );
+
+  // Roster generator: a 5×5 at-a-glance portrait grid, then 5 compact cards laid
+  // out horizontally — each card's compact table is constrained to the width of
+  // its own 5-portrait strip.
+  const rosterView = (teams: TeamResult[]) => {
+    const rosterTotal = teams.reduce((sum, t) => sum + t.teamDamage, 0);
+    return (
+      <div className='roster-result'>
+        <div className='roster-grid'>
+          {teams.map((t, i) => (
+            <div className='roster-grid-row' key={`g${i}`}>
+              <span className='rg-label muted'>team {i + 1}</span>
+              <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
+              <span className='rg-dmg'>{fmt(t.teamDamage)}</span>
+            </div>
+          ))}
+          <div className='roster-grid-row total'>
+            <span className='rg-label muted'>roster total</span>
+            <span className='rg-dmg big'>{fmt(rosterTotal)}</span>
+          </div>
+        </div>
+        <div className='roster-cards'>
+          {teams.map((t, i) => (
+            <div className='roster-card' key={`c${i}`}>
+              <div className='card-group-label'>
+                team {i + 1} · {fmt(t.teamDamage)}
+              </div>
+              <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
+              <table className='roster-card-table'>
+                <tbody>
+                  {t.units.map((u) => (
+                    <tr key={u.slug} className={u.advantaged ? 'adv-row' : ''}>
+                      <td className='muted'>B{u.burst}</td>
+                      <td className='nm'>{u.name}</td>
+                      <td className='r share'>{(u.share * 100).toFixed(0)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   // the full per-character card (portrait, picker, gear/dupes/skills/cube/OL) —
   // reused by the Sim tab and the DPS test's variable units.
@@ -1918,12 +2104,7 @@ export function App({ user }: { user: AuthUser | null }) {
           <button className='calc-run' onClick={runTopTeams} disabled={calcBusy}>
             {calcBusy ? 'Calculating…' : 'Calculate top 5 teams'}
           </button>
-          {rosterResults?.map((t, i) => (
-            <div key={i}>
-              <div className='card-group-label'>team {i + 1}</div>
-              {teamResultView(t)}
-            </div>
-          ))}
+          {rosterResults && rosterView(rosterResults)}
         </section>
       );
     }
@@ -2939,6 +3120,29 @@ export function App({ user }: { user: AuthUser | null }) {
               {imaged ? '✓ Copied' : '🖼 Copy image'}
             </button>
           </div>)}
+          {(tab === 'team' || tab === 'roster') && (
+            <div className='share-actions'>
+              <button
+                className='share-btn'
+                onClick={() => void onGenLink(tab)}
+                title='copy a link that regenerates this result (boss + loadout + blocked list)'
+              >
+                {shared ? '✓ Link copied' : '🔗 Generate link'}
+              </button>
+              <button
+                className='share-btn'
+                onClick={() =>
+                  tab === 'team'
+                    ? teamResult && void shareTeam(teamResult)
+                    : rosterResults && void shareRoster(rosterResults)
+                }
+                disabled={tab === 'team' ? !teamResult : !rosterResults}
+                title='copy a summary image of the result to your clipboard'
+              >
+                {imaged ? '✓ Copied' : '🖼 Copy image'}
+              </button>
+            </div>
+          )}
         </div>
         {!inTools && (
           <p className='muted'>
@@ -2947,19 +3151,36 @@ export function App({ user }: { user: AuthUser | null }) {
         )}
       </header>
 
-      {(
-        <nav className='tabs-bar'>
-          {CALC_TABS.filter((t) => t.group === (CALC_TABS.find((x) => x.key === tab)?.group ?? 'sim')).map((t) => (
-            <button
-              key={t.key}
-              className={tab === t.key ? 'on' : ''}
-              onClick={() => selectTab(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </nav>
-      )}
+      {(() => {
+        const groupTabs = CALC_TABS.filter(
+          (t) => t.group === (CALC_TABS.find((x) => x.key === tab)?.group ?? 'sim'),
+        );
+        return mobileNav ? (
+          <div className='tabs-dd-wrap'>
+            <TabDropdown
+              label='Tool'
+              items={groupTabs.map((t) => ({
+                key: t.key,
+                label: t.label,
+                active: tab === t.key,
+                onSelect: () => selectTab(t.key),
+              }))}
+            />
+          </div>
+        ) : (
+          <nav className='tabs-bar'>
+            {groupTabs.map((t) => (
+              <button
+                key={t.key}
+                className={tab === t.key ? 'on' : ''}
+                onClick={() => selectTab(t.key)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </nav>
+        );
+      })()}
 
       {/* Global boss options + Apply-to-all loadout: used by the Sim, DPS Test, and
           Overload Calc custom mode. The DPS Chart tab and the Overload matrix mode are
@@ -2975,7 +3196,7 @@ export function App({ user }: { user: AuthUser | null }) {
           <label title='the element that is strong against the boss'>
             Boss weakness
           </label>
-          <div className='pills'>
+          <PillGrid>
             {ELEMENTS.map((e) => (
               <button
                 key={e ?? 'none'}
@@ -2985,7 +3206,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 {e ?? 'None'}
               </button>
             ))}
-          </div>
+          </PillGrid>
         </div>
         <div className='field'>
           <label>Boss DEF</label>
@@ -2997,7 +3218,7 @@ export function App({ user }: { user: AuthUser | null }) {
         </div>
         <div className='field'>
           <label>Core visibility</label>
-          <div className='pills'>
+          <PillGrid>
             {CORE_PRESETS.map((p) => (
               <button
                 key={p.label}
@@ -3016,15 +3237,16 @@ export function App({ user }: { user: AuthUser | null }) {
             >
               Custom
             </button>
-            {coreCustom && (
-              <input
-                className='num'
-                value={coreCustomVal}
-                onChange={(e) => setCoreCustomVal(e.target.value)}
-                placeholder='%'
-              />
-            )}
-          </div>
+          </PillGrid>
+          {coreCustom && (
+            <input
+              className='num'
+              style={{ marginTop: 6 }}
+              value={coreCustomVal}
+              onChange={(e) => setCoreCustomVal(e.target.value)}
+              placeholder='%'
+            />
+          )}
         </div>
         <div className='field'>
           <label>Synchro level</label>
@@ -3066,7 +3288,7 @@ export function App({ user }: { user: AuthUser | null }) {
         </div>
         <div className='field'>
           <label>All cubes</label>
-          <div className='pills small'>
+          <PillGrid className='small'>
             {CUBE_IDS.map((id) => (
               <button
                 key={id}
@@ -3082,11 +3304,11 @@ export function App({ user }: { user: AuthUser | null }) {
             >
               None
             </button>
-          </div>
+          </PillGrid>
         </div>
         <div className='field'>
           <label>All cube levels</label>
-          <div className='pills small'>
+          <PillGrid className='small'>
             {CUBE_LEVELS.map((l) => (
               <button
                 key={l}
@@ -3098,11 +3320,11 @@ export function App({ user }: { user: AuthUser | null }) {
                 L{l}
               </button>
             ))}
-          </div>
+          </PillGrid>
         </div>
         <div className='field'>
           <label>All gear</label>
-          <div className='pills small'>
+          <PillGrid className='small'>
             <button
               className={allHave((s) => s.ol === 0) ? 'on' : ''}
               onClick={() => setAll({ ol: 0 })}
@@ -3115,11 +3337,11 @@ export function App({ user }: { user: AuthUser | null }) {
             >
               OL 5
             </button>
-          </div>
+          </PillGrid>
         </div>
         <div className='field'>
           <label>All dolls</label>
-          <div className='pills small'>
+          <PillGrid className='small'>
             <button
               className={allHave((s) => s.doll) ? 'on' : ''}
               onClick={() => setAll({ doll: true })}
@@ -3132,11 +3354,11 @@ export function App({ user }: { user: AuthUser | null }) {
             >
               none
             </button>
-          </div>
+          </PillGrid>
         </div>
         <div className='field'>
           <label>All stars</label>
-          <div className='pills small'>
+          <PillGrid className='small'>
             {STAR_LEVELS.map((st) => (
               <button
                 key={st}
@@ -3146,11 +3368,11 @@ export function App({ user }: { user: AuthUser | null }) {
                 {st}
               </button>
             ))}
-          </div>
+          </PillGrid>
         </div>
         <div className='field'>
           <label>All cores</label>
-          <div className='pills small'>
+          <PillGrid className='small'>
             {CORE_LEVELS.map((cr) => (
               <button
                 key={cr}
@@ -3160,13 +3382,13 @@ export function App({ user }: { user: AuthUser | null }) {
                 {cr}
               </button>
             ))}
-          </div>
+          </PillGrid>
         </div>
         <div className='field'>
           <label title='sets S1, S2 and Burst for every nikke'>
             All skills
           </label>
-          <div className='pills small'>
+          <PillGrid className='small'>
             {SKILL_LEVELS.map((lv) => (
               <button
                 key={lv}
@@ -3183,7 +3405,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 {lv}/{lv}/{lv}
               </button>
             ))}
-          </div>
+          </PillGrid>
         </div>
       </section>
       </>)}

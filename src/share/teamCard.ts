@@ -3,9 +3,10 @@
 // (@napi-rs/canvas / node-canvas) produce a pixel-identical card. This module
 // is DOM-free — the caller creates and sizes the canvas and hands us the ctx.
 //
-// Portraits are placeholders (element-tinted box + initial). Real art can be
-// drawn by the caller into the 60x60 slot once available; the bot has no CORS
-// constraint, the browser does.
+// Portraits: the caller may pass a pre-loaded, square-cropped portrait image per
+// unit (`TeamCardUnit.img`) which is drawn (rounded-clipped) into the 60x60 slot;
+// units without an image degrade to an element-tinted box + name initial. The bot
+// has no CORS constraint, the browser loads CDN art with crossOrigin='anonymous'.
 
 // Structural subset of CanvasRenderingContext2D we use — keeps this compilable
 // without the DOM lib (root tsconfig) and works with node canvas contexts.
@@ -75,6 +76,9 @@ export interface TeamCardUnit {
   advantaged: boolean;
   share: number; // 0..1
   totalDamage: number;
+  // optional pre-loaded portrait (ideally an already square-cropped thumbnail);
+  // a Canvas2D-drawable image. Omitted → placeholder box + initial.
+  img?: unknown;
 }
 export interface TeamCardData {
   teamDamage: number;
@@ -172,21 +176,33 @@ export function drawTeamCard(
   const barW = W - barX - 250;
   data.units.forEach((u, i) => {
     const y = HEAD_H + i * ROW_H;
-    // placeholder portrait: element-tinted rounded square with initial
     const col = ELEMENT_COLORS[u.element] ?? '#9aa3b2';
-    ctx.fillStyle = '#1f232d';
-    roundRect(ctx, padX, y + 10, 60, 60, 10);
-    ctx.fill();
-    ctx.fillStyle = col;
-    roundRect(ctx, padX, y + 10, 60, 60, 10);
-    ctx.globalAlpha = 0.22;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = col;
-    ctx.font = `700 26px ${FONT}`;
-    ctx.textAlign = 'center';
-    ctx.fillText((u.name[0] ?? '?').toUpperCase(), padX + 30, y + 49);
-    ctx.textAlign = 'left';
+    if (u.img) {
+      // real portrait: draw the (square) art clipped into a rounded square. A
+      // thin element-tinted ring keeps the element legible at a glance.
+      ctx.save();
+      roundRect(ctx, padX, y + 10, 60, 60, 10);
+      ctx.clip();
+      ctx.fillStyle = '#1f232d';
+      ctx.fillRect(padX, y + 10, 60, 60); // backdrop for any transparency
+      ctx.drawImage(u.img, padX, y + 10, 60, 60);
+      ctx.restore();
+    } else {
+      // placeholder portrait: element-tinted rounded square with initial
+      ctx.fillStyle = '#1f232d';
+      roundRect(ctx, padX, y + 10, 60, 60, 10);
+      ctx.fill();
+      ctx.fillStyle = col;
+      roundRect(ctx, padX, y + 10, 60, 60, 10);
+      ctx.globalAlpha = 0.22;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = col;
+      ctx.font = `700 26px ${FONT}`;
+      ctx.textAlign = 'center';
+      ctx.fillText((u.name[0] ?? '?').toUpperCase(), padX + 30, y + 49);
+      ctx.textAlign = 'left';
+    }
 
     // name + tag
     ctx.fillStyle = '#e7eaf0';
@@ -212,6 +228,137 @@ export function drawTeamCard(
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 14px ${FONT}`;
     ctx.fillText(fmt(u.totalDamage), W - padX, y + 56);
+    ctx.textAlign = 'left';
+  });
+
+  // footer
+  ctx.fillStyle = '#8b93a3';
+  ctx.font = `400 13px ${FONT}`;
+  ctx.fillText(
+    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
+    padX,
+    H - 22,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Roster card — a simplified 5-team summary (Solo-Raid Roster Generator). Per
+// team: the 5 portraits + a total-team-damage bar. No per-unit rows, no DPS/FB.
+// ---------------------------------------------------------------------------
+export interface RosterCardUnit {
+  name: string;
+  element: string;
+  img?: unknown; // optional pre-loaded portrait (see TeamCardUnit.img)
+}
+export interface RosterCardTeam {
+  teamDamage: number;
+  units: RosterCardUnit[];
+}
+export interface RosterCardData {
+  totalDamage: number; // sum across all teams
+  teams: RosterCardTeam[];
+}
+
+const R_HEAD_H = 156;
+const R_ROW_H = 96;
+const R_FOOT_H = 58;
+const R_PS = 58; // portrait square
+const R_GAP = 7;
+
+export const rosterCardHeight = (teamCount: number) =>
+  R_HEAD_H + teamCount * R_ROW_H + R_FOOT_H;
+
+// Draw the roster summary card at logical (unscaled) coordinates. The caller must
+// have created a canvas of CARD_W x rosterCardHeight(teams.length) (times dpr) and
+// pre-scaled ctx (mirrors drawTeamCard's contract).
+export function drawRosterCard(
+  ctx: Canvas2DLike,
+  data: RosterCardData,
+  meta: TeamCardMeta,
+) {
+  const W = CARD_W;
+  const padX = PAD_X;
+  const H = rosterCardHeight(data.teams.length);
+
+  // background + accent bar
+  ctx.fillStyle = '#101216';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#5b9dff';
+  ctx.fillRect(0, 0, W, 5);
+
+  // title + summary (total only — no DPS/FB, per the roster card spec)
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#e7eaf0';
+  ctx.font = `700 30px ${FONT}`;
+  ctx.fillText('NIKKE Solo Raid Sim · Roster Generator', padX, 56);
+  ctx.font = `700 40px ${FONT}`;
+  ctx.fillText(fmt(data.totalDamage), padX, 108);
+  const bigW = ctx.measureText(fmt(data.totalDamage)).width;
+  ctx.font = `400 18px ${FONT}`;
+  ctx.fillStyle = '#8b93a3';
+  ctx.fillText('total damage across all 5 teams', padX + bigW + 24, 102);
+  ctx.fillText(
+    `${meta.weakness ? `${meta.weakness}-weak boss` : 'no element'}  ·  lvl ${
+      meta.level
+    }  ·  ${meta.coreLabel}  ·  180s`,
+    padX,
+    136,
+  );
+
+  // one row per team: portraits then a total-damage bar scaled to the top team.
+  const stripW = data.teams[0] ? data.teams[0].units.length * R_PS + (data.teams[0].units.length - 1) * R_GAP : 0;
+  const barX = padX + stripW + 28;
+  const barW = W - barX - 200;
+  const maxDmg = Math.max(...data.teams.map((t) => t.teamDamage), 1);
+  data.teams.forEach((t, i) => {
+    const y = R_HEAD_H + i * R_ROW_H;
+    const py = y + (R_ROW_H - R_PS) / 2;
+    // portraits
+    t.units.forEach((u, j) => {
+      const px = padX + j * (R_PS + R_GAP);
+      const col = ELEMENT_COLORS[u.element] ?? '#9aa3b2';
+      if (u.img) {
+        ctx.save();
+        roundRect(ctx, px, py, R_PS, R_PS, 9);
+        ctx.clip();
+        ctx.fillStyle = '#1f232d';
+        ctx.fillRect(px, py, R_PS, R_PS);
+        ctx.drawImage(u.img, px, py, R_PS, R_PS);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = '#1f232d';
+        roundRect(ctx, px, py, R_PS, R_PS, 9);
+        ctx.fill();
+        ctx.fillStyle = col;
+        roundRect(ctx, px, py, R_PS, R_PS, 9);
+        ctx.globalAlpha = 0.22;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = col;
+        ctx.font = `700 24px ${FONT}`;
+        ctx.textAlign = 'center';
+        ctx.fillText((u.name[0] ?? '?').toUpperCase(), px + R_PS / 2, py + R_PS / 2 + 8);
+        ctx.textAlign = 'left';
+      }
+    });
+    // team label
+    ctx.fillStyle = '#8b93a3';
+    ctx.font = `600 13px ${FONT}`;
+    ctx.fillText(`team ${i + 1}`, padX, py - 6);
+    // damage bar (scaled to the strongest team)
+    const barY = y + R_ROW_H / 2 - 11;
+    ctx.fillStyle = '#2a2f3b';
+    roundRect(ctx, barX, barY, barW, 22, 11);
+    ctx.fill();
+    ctx.fillStyle = '#5b9dff';
+    roundRect(ctx, barX, barY, Math.max(2, (t.teamDamage / maxDmg) * barW), 22, 11);
+    ctx.fill();
+    // value (right aligned)
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#e7eaf0';
+    ctx.font = `700 20px ${FONT}`;
+    ctx.fillText(fmt(t.teamDamage), W - padX, y + R_ROW_H / 2 + 6);
     ctx.textAlign = 'left';
   });
 

@@ -63,6 +63,7 @@ export interface TeamResult {
   slugs: string[];
   teamDamage: number;
   teamDps: number;
+  fullBursts: number;
   fullBurstUptime: number;
   units: TeamUnit[];
 }
@@ -226,6 +227,7 @@ export function makeCalc(input: TeamCalcInput) {
     slugs: r.units.map((u) => u.slug),
     teamDamage: r.teamDamage,
     teamDps: r.teamDps,
+    fullBursts: r.fullBursts,
     fullBurstUptime: r.fullBurstUptime,
     units: r.units.map((u) => ({
       slug: u.slug,

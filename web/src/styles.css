@@ -86,6 +86,13 @@ header h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: 0.2px; }
 .pills button:hover { border-color: var(--accent); }
 .pills button.on { background: var(--accent); border-color: var(--accent); color: #0b1220; font-weight: 600; }
 .pills.small button { padding: 2px 9px; font-size: 12px; }
+/* content-aware balanced-wrap variant (boss filter + apply-to-all): --pcols is
+   the balanced column count set by the PillGrid hook (justify-items: start keeps
+   buttons natural-width so the hook can measure them). */
+.pill-grid {
+  display: grid; grid-template-columns: repeat(var(--pcols, 1), max-content);
+  justify-items: start; gap: 6px; align-items: start;
+}
 .pill-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; min-width: 30px; }
 input.num {
   width: 76px; background: var(--panel2); border: 1px solid var(--border); color: var(--text);
@@ -190,13 +197,47 @@ input.num {
 .ol-add:hover { color: var(--accent); border-color: var(--accent); }
 
 /* calc tabs */
-.tabs-bar { display: flex; gap: 4px; margin: 14px 0 4px; border-bottom: 1px solid var(--border); }
+.tabs-bar {
+  display: flex; gap: 4px; margin: 14px 0 4px; border-bottom: 1px solid var(--border);
+  /* long labels (e.g. "Solo-Raid Roster Generator") stay one line each and scroll
+     horizontally instead of shrink-wrapping into tall uneven boxes on mobile */
+  overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+}
+.tabs-bar::-webkit-scrollbar { display: none; }
 .tabs-bar button {
   background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted);
   padding: 8px 14px; cursor: pointer; font-size: 14px; margin-bottom: -1px;
+  white-space: nowrap; flex: 0 0 auto;
 }
 .tabs-bar button:hover { color: var(--text); }
 .tabs-bar button.on { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* focused-tab + expandable menu (mobile nav replacement — shared by the Tools
+   sub-tabs and the top page nav). Renders only under the mobile breakpoint. */
+.tabs-dd-wrap { margin: 14px 0 8px; }
+.tab-dd { position: relative; width: 100%; }
+.tab-dd-current {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 14px; font-weight: 600; padding: 8px 12px; cursor: pointer;
+}
+.tab-dd.open .tab-dd-current { border-color: var(--accent); }
+.tab-dd-caret { color: var(--muted); transition: transform 0.15s ease; }
+.tab-dd.open .tab-dd-caret { transform: rotate(180deg); }
+.tab-dd-panel {
+  position: absolute; z-index: 20; top: calc(100% + 4px); left: 0; right: 0;
+  display: flex; flex-direction: column; overflow: hidden;
+  background: var(--panel2); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.tab-dd-item {
+  display: block; width: 100%; text-align: left; text-decoration: none;
+  background: none; border: 0; color: var(--text); padding: 9px 12px;
+  font-size: 14px; cursor: pointer;
+}
+.tab-dd-item:hover { background: var(--panel); }
+.tab-dd-item.on { color: var(--accent); font-weight: 600; }
+
 .calc-tab { margin-top: 18px; }
 .calc-tab h2 { font-size: 18px; margin: 0 0 4px; }
 .calc-tab .field { max-width: 480px; }
@@ -217,6 +258,96 @@ input.num {
 .calc-result table { width: 100%; }
 .calc-result td { padding: 6px 10px; }
 .calc-result tr.hl td { background: rgba(91, 157, 255, 0.12); }
+/* at-a-glance team: the 5 portraits are content-aware between 32 and 64px and
+   stay 5-across (shrinking to fit) until 32px no longer fits, then snap to a 3:2
+   split held at 32px. The 5/3 choice is measured in JS (TeamPortraits); the sizes
+   live here. (Optimal Team result; reused by the Roster generator.) */
+.team-portraits { display: grid; gap: 4px; justify-content: start; margin-bottom: 10px; }
+.team-portraits.cols-5 { grid-template-columns: repeat(5, minmax(32px, 64px)); }
+.team-portraits.cols-3 { grid-template-columns: repeat(3, 32px); }
+.tp-chip {
+  position: relative; aspect-ratio: 1; min-width: 0; overflow: hidden;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--panel2);
+}
+.tp-chip.adv { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.tp-chip img {
+  width: 100%; height: 100%; object-fit: cover;
+  object-position: center var(--portrait-crop-top); display: block;
+}
+.tp-chip .tp-init {
+  display: flex; align-items: center; justify-content: center; height: 100%;
+  color: var(--muted); font-size: 20px; font-weight: 700;
+}
+.tp-chip .tp-adv {
+  position: absolute; top: 1px; right: 3px; font-size: 10px; color: var(--accent);
+  text-shadow: 0 0 3px rgba(0,0,0,0.9);
+}
+
+/* Roster generator: a 5-row at-a-glance portrait grid (one team per row) + a set
+   of centered compact cards (each card's table constrained to its portrait width). */
+.roster-result { margin: 12px 0 18px; }
+.roster-grid { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.roster-grid-row { display: flex; align-items: center; gap: 12px; }
+.roster-grid-row .rg-label { flex: 0 0 auto; min-width: 74px; font-size: 12px; }
+.roster-grid-row .team-portraits { flex: 1 1 auto; margin-bottom: 0; }
+.roster-grid-row .rg-dmg {
+  flex: 0 0 auto; margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.roster-grid-row .rg-dmg.big { font-size: 18px; color: var(--accent); }
+.roster-grid-row.total { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 2px; }
+
+/* cards: centered; a 3:2 split (3 per row) whenever all 5 don't fit across */
+.roster-cards {
+  display: grid; justify-content: center; gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 260px));
+}
+.roster-card {
+  width: 100%; box-sizing: border-box; padding: 8px;
+  border: 1px solid var(--border); border-radius: 10px; background: var(--panel2);
+}
+.roster-card .card-group-label {
+  margin: 0 0 6px; padding: 0; border: 0; font-size: 12px; color: var(--muted);
+}
+.roster-card .team-portraits { margin-bottom: 8px; }
+.roster-card-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+.roster-card-table td {
+  padding: 2px 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.roster-card-table td.muted { width: 26px; }
+.roster-card-table td.share { width: 36px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.roster-card-table tr.adv-row td.nm { color: var(--accent); }
+
+/* roster cards stack (single centered column) once 3-across gets too tight */
+@media (max-width: 700px) {
+  .roster-cards { grid-template-columns: minmax(0, 360px); }
+}
+
+/* Portrait / mobile: let content use the full screen width (a few px padding),
+   fix the crushed header, and switch the 5 portraits to a 3:2 split that fills. */
+@media (max-width: 640px) {
+  .app { padding: 14px 8px 48px; }
+  .header-row { flex-wrap: wrap; }
+  header h1 { flex: 1 1 100%; font-size: 20px; }
+  .share-actions { flex: 1 1 100%; justify-content: flex-start; }
+
+  /* Testing Requested + hamburger snap to their own top row, right-aligned (the
+     hamburger stays pinned top-right); the Sim/Tools/How-to/Mechanics bar drops
+     below it. */
+  .site-nav-right { order: -1; flex: 1 1 100%; justify-content: flex-end; flex-wrap: nowrap; }
+  .site-nav-left { flex: 1 1 100%; }
+
+  /* filter fields go full-width so each pill group has room to distribute evenly;
+     min-width:0 lets the field shrink to the panel (a flex item won't otherwise
+     shrink below its content) so the balanced-grid hook measures the real width */
+  .global .field { flex: 1 1 100%; min-width: 0; }
+
+  /* at-a-glance rows stack: team label + total on top, portraits below (the
+     portrait strip sizes itself 32–64px / snaps to 3:2 via TeamPortraits). */
+  .roster-grid-row { flex-wrap: wrap; }
+  .roster-grid-row .rg-label { order: 1; }
+  .roster-grid-row .rg-dmg { order: 2; margin-left: auto; }
+  .roster-grid-row .team-portraits { order: 3; flex-basis: 100%; }
+}
 /* groups flow left-to-right and wrap, so adding a group grows the row sideways */
 .dps-groups-row { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
 .dps-group-block { margin: 6px 0 14px; }
