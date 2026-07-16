@@ -32,28 +32,70 @@ const MIME = {
 // independently linkable with its own title/description.
 const SITE = 'https://nikkesim.app';
 const BASE_DESC =
-  'Solo-raid Simulator for NIKKE: Goddess of Victory — frame-tick damage prediction, per unit, for any 5-Nikke team.';
+  'Solo-raid Simulator for NIKKE: Goddess of Victory — frame-tick damage prediction, per unit, for any team.';
 const TAB_META = {
   sim: { title: 'NIKKE Solo Raid Sim', desc: BASE_DESC },
   dpschart: {
     title: 'DPS Rankings — NIKKE Solo Raid Sim',
-    desc: 'Ranked DPS of the top B3 carries under standardized control frameworks, 180s.',
+    desc: 'Ranked DPS of the top B3 carries under standardized control frameworks.',
   },
-  dps: { title: 'Custom DPS Rankings — NIKKE Solo Raid Sim', desc: `Head-to-head per-unit DPS on a scope-lock basis. ${BASE_DESC}` },
-  team: { title: 'Optimal Team — NIKKE Solo Raid Sim', desc: `Full per-unit damage breakdown for a 5-Nikke team. ${BASE_DESC}` },
-  roster: { title: 'Solo-Raid Roster Generator — NIKKE Solo Raid Sim', desc: `Rank your roster by simulated solo-raid damage. ${BASE_DESC}` },
-  overload: { title: 'Optimize Overload — NIKKE Solo Raid Sim', desc: `Rank a carry’s four free Overload lines by simulated damage on an 8/12 basis. ${BASE_DESC}` },
-  charge: { title: 'Charge Speed Breakpoints — NIKKE Solo Raid Sim', desc: `Charge-speed frame breakpoints for any RL/SR carry. ${BASE_DESC}` },
+  dps: {
+    title: 'Custom DPS Rankings — NIKKE Solo Raid Sim',
+    desc: `Head-to-head per-unit DPS with a user selected control framework.`,
+  },
+  team: {
+    title: 'Optimal Team Generator — NIKKE Solo Raid Sim',
+    desc: `Generate an optimal team against a custom boss profile.`,
+  },
+  roster: {
+    title: 'Solo-Raid Roster Generator — NIKKE Solo Raid Sim',
+    desc: `Generate a solo-raid roster against a custom boss profile.`,
+  },
+  overload: {
+    title: 'Optimize Overload — NIKKE Solo Raid Sim',
+    desc: `Use a controlled framework to determine the optimal 3rd line for B3s.`,
+  },
+  olsim: {
+    title: 'Overload Rolling — NIKKE Solo Raid Sim',
+    desc: `Estimate the rerolls and Custom Modules to hit a target Overload build.`,
+  },
+  doll: {
+    title: 'Doll Leveling — NIKKE Solo Raid Sim',
+    desc: `Calculate the most efficient path to level dolls to SR phase 15.`,
+  },
+  charge: {
+    title: 'Charge Speed Breakpoints — NIKKE Solo Raid Sim',
+    desc: `Charge-speed frame breakpoints for any RL/SR.`,
+  },
   // top-level pages (path-routed, so independently linkable + embeddable)
-  howto: { title: 'How to — NIKKE Solo Raid Sim', desc: 'How to use the NIKKE Solo Raid Sim: build a team, set the boss, and read the results.' },
-  mechanics: { title: 'Game Mechanics — NIKKE Solo Raid Sim', desc: 'The damage mechanics the sim models, with sources and evidence tiers.' },
-  dev: { title: 'Meet the Dev — NIKKE Solo Raid Sim', desc: `About the NIKKE Solo Raid Sim and its developer. ${BASE_DESC}` },
-  'patch-notes': { title: 'Patch Notes — NIKKE Solo Raid Sim', desc: 'Changelog for the NIKKE Solo Raid Sim — engine, override, and mechanics updates.' },
-  'testing-requests': { title: 'Testing Requested — NIKKE Solo Raid Sim', desc: 'Units and matchups the sim needs real recordings for — help improve accuracy.' },
+  howto: {
+    title: 'How to — NIKKE Solo Raid Sim',
+    desc: 'How to use the NIKKE Solo Raid Sim: build a team, set the boss, and read the results.',
+  },
+  mechanics: {
+    title: 'Game Mechanics — NIKKE Solo Raid Sim',
+    desc: 'The damage mechanics the sim models, with sources and evidence tiers.',
+  },
+  dev: {
+    title: 'Meet the Dev — NIKKE Solo Raid Sim',
+    desc: `About the NIKKE Solo Raid Sim and its developer. ${BASE_DESC}`,
+  },
+  'patch-notes': {
+    title: 'Patch Notes — NIKKE Solo Raid Sim',
+    desc: 'Changelog for the NIKKE Solo Raid Sim — engine, override, and mechanics updates.',
+  },
+  'testing-requests': {
+    title: 'Testing Requested — NIKKE Solo Raid Sim',
+    desc: 'Units and matchups the sim needs real recordings for - help improve accuracy.',
+  },
 };
 
 const escapeAttr = (s) =>
-  s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
 function tabFromReqUrl(u) {
   const seg = u.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
@@ -71,15 +113,27 @@ function injectMeta(html, reqUrl) {
     .replace(/(<title>)[^<]*(<\/title>)/, `$1${title}$2`)
     .replace(/(<meta name="description" content=")[^"]*(")/, `$1${desc}$2`)
     .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${desc}$2`)
+    .replace(
+      /(<meta property="og:description" content=")[^"]*(")/,
+      `$1${desc}$2`,
+    )
     .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canonical}$2`)
     .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(/(<meta name="twitter:description" content=")[^"]*(")/, `$1${desc}$2`);
+    .replace(
+      /(<meta name="twitter:description" content=")[^"]*(")/,
+      `$1${desc}$2`,
+    );
 }
 
 async function sendIndex(res, reqUrl) {
-  const html = injectMeta(await readFile(join(DIST, 'index.html'), 'utf8'), reqUrl);
-  res.writeHead(200, { 'content-type': MIME['.html'], 'cache-control': 'no-cache' });
+  const html = injectMeta(
+    await readFile(join(DIST, 'index.html'), 'utf8'),
+    reqUrl,
+  );
+  res.writeHead(200, {
+    'content-type': MIME['.html'],
+    'cache-control': 'no-cache',
+  });
   res.end(html);
 }
 
