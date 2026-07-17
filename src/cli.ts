@@ -48,7 +48,7 @@ loadout (per-slot lists are comma- or semicolon-separated in slot order; a singl
   --best-ol <1-5>               after the sim, greedy-search the best OL lines for that slot
 
   --list [filter]       list available slugs and exit
-  --coverage            parser health across the roster`
+  --coverage            modeling coverage across the roster (caveats/unmodeled per override)`
   );
   process.exit(1);
 }
@@ -62,19 +62,30 @@ const mult: LevelMultiplier = JSON.parse(
 );
 
 if (argv[0] === '--coverage') {
-  const { resolveSkills } = await import('./skills/index.js');
-  let clean = 0, warned = 0, overridden = 0;
-  const rows: Array<[string, number, string]> = [];
+  // modeling coverage per unit: caveats (display warnings) + unmodeled kit-text
+  // lines recorded by its override; flags roster units missing an override file
+  let clean = 0, flagged = 0;
+  const missing: string[] = [];
+  const rows: Array<[string, number, number, string]> = [];
   for (const c of Object.values(data.characters)) {
-    const s = resolveSkills(c, loadOverride(c.slug));
-    if (s.source !== 'parser') overridden++;
-    if (s.warnings.length) { warned++; rows.push([c.slug, s.warnings.length, s.warnings[0]]); }
-    else clean++;
+    const o = loadOverride(c.slug);
+    if (!o) { missing.push(c.slug); continue; }
+    const caveats = o.caveats ?? [];
+    const unmodeled = o.unmodeled
+      ? o.unmodeled.skill1.length + o.unmodeled.skill2.length + o.unmodeled.burst.length
+      : 0;
+    if (caveats.length || unmodeled) {
+      flagged++;
+      rows.push([c.slug, caveats.length, unmodeled, caveats[0] ?? '']);
+    } else clean++;
   }
-  rows.sort((a, b) => b[1] - a[1]);
-  for (const [slug, n, first] of rows) console.log(`${slug.padEnd(30)} ${String(n).padStart(2)}  ${first}`);
-  console.log(`\n${clean} clean, ${warned} with warnings, ${overridden} hand-verified (of ${Object.keys(data.characters).length})`);
-  process.exit(0);
+  rows.sort((a, b) => b[1] + b[2] - (a[1] + a[2]));
+  for (const [slug, nc, nu, first] of rows)
+    console.log(`${slug.padEnd(30)} ${String(nc).padStart(2)} caveat(s)  ${String(nu).padStart(2)} unmodeled  ${first}`);
+  if (missing.length)
+    console.log(`\nMISSING OVERRIDE (run scripts/materialize-overrides.ts --write): ${missing.join(', ')}`);
+  console.log(`\n${clean} fully modeled, ${flagged} with caveats/unmodeled text, ${missing.length} missing override (of ${Object.keys(data.characters).length})`);
+  process.exit(missing.length ? 1 : 0);
 }
 
 if (argv[0] === '--list') {

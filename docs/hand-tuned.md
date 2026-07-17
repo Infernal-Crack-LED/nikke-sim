@@ -1,13 +1,21 @@
 # Hand-tuned kits — authoritative record
 
+> **SUPERSEDED (2026-07-16) — the machine-readable record moved.** `data/hand-tuned.json` was
+> absorbed into [`data/kit-status.json`](../data/kit-status.json), the per-unit single source of
+> truth (tuning provenance + kit-parse rollout status + unmodeled kit text + board pass records).
+> Maintain it with `scripts/kit-status.ts` (`--refresh` regenerates derived fields, `--set`
+> updates workflow fields; `scripts/refgrade.ts` writes the reference layer). The **tier
+> definitions below remain the authoritative vocabulary** — the JSON's `tier` field uses them.
+
 This is the record of which unit kits have been **tuned against real fights**, versus units that
 are still pure model (a datamine/parser translation never checked against reality). It exists so
 "is this unit trustworthy?" stops being a judgement call every time.
 
-- **Machine-readable source of truth**: [`data/hand-tuned.json`](../data/hand-tuned.json)
-  (`slug → tier, tuned, control, evidence, date, residual`). Tooling reads it — e.g. the hand-tune
-  recording batch (`scripts/battery/hand-tune-714noon.ts`) draws its control-group support units
-  only from `tuned: true` entries.
+- **Machine-readable source of truth**: [`data/kit-status.json`](../data/kit-status.json)
+  (`units.<slug> → tier, tuned, control, evidence, date, residual` plus kit-parse status and board
+  records). Tooling reads it — e.g. the hand-tune recording batch
+  (`scripts/battery/hand-tune-714noon.ts`) draws its control-group support units only from
+  `tuned: true` entries.
 - The per-kit *mechanics* live in each `src/skills/overrides/<slug>.json` `note`; this doc records
   only the tuning provenance (what real fight set or confirmed the numbers).
 

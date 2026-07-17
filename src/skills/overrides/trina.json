@@ -1,5 +1,15 @@
 {
-  "note": "Tier audit (Bossing A). S2's 94.15% Attack Damage + 50.82% reload targets '1 leftmost Electric Code ally with ASSAULT RIFLES' \u2014 now modeled EXACTLY via the alliesOfElementWeapon target (U8 run-B video, 2026-07-13: the old alliesOfElement approximation was feeding +94% Attack Damage to the RL carries cindy/neon AND trina herself, the source of the run-B heat trio). Burst kept in parser (team AD 20.9 + maxAmmo 20; the 'Burst Skill damage of AoE skills' rider unsupported, warned). SCOPE AUDIT 2026-07-13: burst slot now overridden \u2014 the parser's 'Max Ammunition +20 round(s)' line was hitting ALL Electric allies as +20%; the kit targets 'all Electric Code allies with assault rifles' (= moran-class units) and the value is FLAT 20 rounds (= +33.3% on a 60-round AR magazine; engine only supports percent). Hit Rate 45.3 skipped (no misses vs boss). The AoE-burst-damage rider lines remain unsupported (warned).",
+  "note": "Tier audit (Bossing A). S2's 94.15% Attack Damage + 50.82% reload targets '1 leftmost Electric Code ally with ASSAULT RIFLES' — now modeled EXACTLY via the alliesOfElementWeapon target (U8 run-B video, 2026-07-13: the old alliesOfElement approximation was feeding +94% Attack Damage to the RL carries cindy/neon AND trina herself, the source of the run-B heat trio). Burst kept in parser (team AD 20.9 + maxAmmo 20; the 'Burst Skill damage of AoE skills' rider unsupported, warned). SCOPE AUDIT 2026-07-13: burst slot now overridden — the parser's 'Max Ammunition +20 round(s)' line was hitting ALL Electric allies as +20%; the kit targets 'all Electric Code allies with assault rifles' (= moran-class units) and the value is FLAT 20 rounds (= +33.3% on a 60-round AR magazine; engine only supports percent). Hit Rate 45.3 skipped (no misses vs boss). The AoE-burst-damage rider lines remain unsupported (warned). [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [
+      "Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.",
+      "Recovers 2.03% of the skill user's final Max HP as HP.",
+      "Recovers 1.57% of the skill user's final Max HP as HP."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [],
   "skill2": [
     {
       "slot": "skill2",

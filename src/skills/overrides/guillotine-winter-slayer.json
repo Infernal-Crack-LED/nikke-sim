@@ -1,5 +1,19 @@
 {
-  "note": "Tier audit straggler (Bossing A). Hero Level system: EXP ramps fast (MG, +stack per 6 non-core hits AND per 3 core hits; parser keeps the stack block) -> max Level 11 within ~20s, modeled as permanent level-11 auras with a slight ramp haircut: Water allies Elemental Advantage 1.16x11=12.76 and casterAtk 0.91x11=10.01; self elemAdv 7.46 (Level>=2). Burst: parser keeps the Water-ally AD 10.14 + elemAdv 18.75; the unparsed 'continuous damage 20.87% x Hero Level every sec for 10 sec' -> dot 229.57%/s x10s (level 11). REVIEW-RECONCILED: she is an AR (12/s, ~25s to max level — steady-state modeling holds); level-up rewards KEEP TRIGGERING at max level -> reload 10.26% per 10 EXP = per ~30 hits at 100% core (near-infinite uptime, review-confirmed) added as hitCount 30 instantReload.",
+  "note": "Tier audit straggler (Bossing A). Hero Level system: EXP ramps fast (MG, +stack per 6 non-core hits AND per 3 core hits; parser keeps the stack block) -> max Level 11 within ~20s, modeled as permanent level-11 auras with a slight ramp haircut: Water allies Elemental Advantage 1.16x11=12.76 and casterAtk 0.91x11=10.01; self elemAdv 7.46 (Level>=2). Burst: parser keeps the Water-ally AD 10.14 + elemAdv 18.75; the unparsed 'continuous damage 20.87% x Hero Level every sec for 10 sec' -> dot 229.57%/s x10s (level 11). REVIEW-RECONCILED: she is an AR (12/s, ~25s to max level — steady-state modeling holds); level-up rewards KEEP TRIGGERING at max level -> reload 10.26% per 10 EXP = per ~30 hits at 100% core (near-infinite uptime, review-confirmed) added as hitCount 30 instantReload. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates when hitting the Core for 3 time(s). Affects self.",
+      "EXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously.",
+      "Activates when Hero Level is 2 or above. Affects self.",
+      "Elemental Advantage Attack Damage ▲ 7.46% continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill2: unsupported trigger \"Activates when hitting the Core for 3 time(s). Affects self.\" — its effects are skipped",
+    "skill2: unsupported trigger \"Activates when Hero Level is 2 or above. Affects self.\" — its effects are skipped"
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -36,6 +50,26 @@
         {
           "kind": "instantReload",
           "fraction": 0.1026
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 6
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 1.81,
+          "maxStacks": 100
         }
       ]
     }

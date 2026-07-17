@@ -1,5 +1,36 @@
 {
-  "note": "B-tier triage (2026-07-13). Burst 'Laplace Bazooka' swap parsed with damagePct 0 \u2014 rebuilt: First Damage 1455.72% on cast, then a 10s beam at 22.2%/pull whose normal damage is TRUE damage (trueNormals; her S1 true-damage buffs apply), plus the parsed 11.9% true rider per hit. Beam cadence approximated at the engine's default 4 pulls/s (no beam weapon class). S2 parts-hit body transfer inert (partless boss).",
+  "note": "B-tier triage (2026-07-13). Burst 'Laplace Bazooka' swap parsed with damagePct 0 — rebuilt: First Damage 1455.72% on cast, then a 10s beam at 22.2%/pull whose normal damage is TRUE damage (trueNormals; her S1 true-damage buffs apply), plus the parsed 11.9% true rider per hit. Beam cadence approximated at the engine's default 4 pulls/s (no beam weapon class). S2 parts-hit body transfer inert (partless boss). [materialized 2026-07-16: skill1/skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [
+      "Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 5 sec."
+    ],
+    "skill2": [
+      "Activates when hitting the target's Parts. Affects the target.",
+      "Deals 14.78% of final ATK as additional damage."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill2: unsupported trigger \"Activates when hitting the target's Parts. Affects the target.\" — its effects are skipped"
+  ],
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 81.66
+        }
+      ]
+    }
+  ],
   "burst": [
     {
       "slot": "burst",

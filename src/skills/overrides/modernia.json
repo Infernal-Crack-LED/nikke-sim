@@ -1,19 +1,111 @@
 {
-  "note": "Burst Destroy Mode: each hit deals +2.24% final ATK for 15s (the parser reads it as a 1/s DoT, massively undercounting at 60 hits/s) + unlimited ammo 15s + Full Burst Time +5s for the team.",
+  "note": "Burst Destroy Mode: each hit deals +2.24% final ATK for 15s (the parser reads it as a 1/s DoT, massively undercounting at 60 hits/s) + unlimited ammo 15s + Full Burst Time +5s for the team. [materialized 2026-07-16: skill1/skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Hit Rate ▲ 8.56% for 15 sec."
+    ],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 3.05
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 200
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 14.25,
+          "durationSec": 10,
+          "maxStacks": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -5.04,
+          "durationSec": 10,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 200
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 29.38,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
-      "effects": [{ "kind": "fullBurstExtend", "seconds": 5 }]
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": 5
+        }
+      ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "unlimitedAmmo", "durationSec": 15 },
-        { "kind": "buff", "stat": "extraHitDamagePct", "value": 2.24, "durationSec": 15 }
+        {
+          "kind": "unlimitedAmmo",
+          "durationSec": 15
+        },
+        {
+          "kind": "buff",
+          "stat": "extraHitDamagePct",
+          "value": 2.24,
+          "durationSec": 15
+        }
       ]
     }
   ]

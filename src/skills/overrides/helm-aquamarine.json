@@ -1,0 +1,125 @@
+{
+  "note": "MATERIALIZED PARSER OUTPUT (2026-07-16) — auto-generated from the offline kit parser on the official (blablalink) prose; behavior-identical to the previous runtime parse; NOT hand-verified. The reviewed kit-parse hypothesis lives in src/skills/overrides-baselines/helm-aquamarine.json; promote via its MANIFEST.md guardrails (it replaces this file).",
+  "unmodeled": {
+    "skill1": [
+      "Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it:"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 131.34
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "burstCdr",
+              "seconds": 1.82
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.2
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.6
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 105.58
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "bossElement",
+        "element": "Electric"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 5.64,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 164.83
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "bossElement",
+        "element": "Electric"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 164.83
+        }
+      ]
+    }
+  ]
+}

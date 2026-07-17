@@ -54,6 +54,7 @@ export type TriggerDef =
   | { kind: 'shotFired' }                   // every trigger pull by the owner
   | { kind: 'lastBullet' }                  // on the owner's last bullet / reload start
   | { kind: 'recovery' }                    // when the owner RECEIVES a heal (a 'heal' effect targets them) — Crown's "when recovery takes effect"
+  | { kind: 'shielded' }                    // when the owner RECEIVES a shield (a 'shield' effect targets them) — shield-synergy kits (e.g. naga's shield-gate)
   | { kind: 'stageEnter'; stage: 1 | 2 | 3 } // when a stage-N burst is cast by anyone
   | { kind: 'bossElement'; element: string } // permanent, but only if the boss has this element
   | { kind: 'unsupported'; raw: string };
@@ -73,6 +74,9 @@ export type TargetDef =
     }
   | { kind: 'alliesOfElement'; element: string }
   | { kind: 'alliesOfClass'; cls: string }
+  // "all shotgun-wielding allies [(except self)]" — weapon-typed, class-blind
+  // (arcana-fortune-mate S1/S2, tove S2/burst). Weapon codes: AR/SMG/SG/SR/RL/MG.
+  | { kind: 'alliesOfWeapon'; weapon: string; excludeSelf?: boolean }
   // "the N leftmost <element> ally unit(s) with <weapon>s" (Trina S2's real target)
   | { kind: 'alliesOfElementWeapon'; element: string; weapon: string; count?: number }
   // "self and N ally unit(s) on both sides" (Rouge's coin coverage — positional)
@@ -119,6 +123,7 @@ export type EffectDef =
     }
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
   | { kind: 'heal' }                                          // emits a recovery event to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown)
+  | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
       atkPct: number;    // per charge, % of caster's final ATK at release time
@@ -144,8 +149,12 @@ export type EffectDef =
       hpPct?: number;      // per stack, % of final Max HP added on top
       maxStacks?: number;  // default 12
     }
+  // OFFLINE-PARSER-ONLY kinds: emitted by scripts/lib/kit-parser.ts while
+  // authoring/materializing, but NEVER valid in an override JSON (the validator
+  // rejects them) — such kit text belongs verbatim in the override's `unmodeled`
+  // field instead. The engine has no branch for either kind.
   | { kind: 'ignored'; note: string }                         // recognized, deliberately unmodeled (defensive etc.)
-  | { kind: 'unsupported'; raw: string };                     // unparseable — surfaces as a warning
+  | { kind: 'unsupported'; raw: string };                     // unparseable
 
 export interface Block {
   slot: SkillSlot;
@@ -179,10 +188,15 @@ export interface Block {
   swapGate?: 'swapped' | 'unswapped';
 }
 
+// Verbatim kit-text lines an override does NOT represent as blocks — the
+// auditable "no silent drops" record, written per slot by the materializer /
+// /kit-parse authors.
+export type UnmodeledText = Record<SkillSlot, string[]>;
+
 export interface CharacterSkills {
   blocks: Block[];
   warnings: string[];
-  source: 'parser' | 'override' | 'parser+override';
+  unmodeled?: UnmodeledText; // kit text deliberately not modeled (display/audit only)
   modes?: string[]; // user-selectable kit modes declared by the override (first = default)
   hasPierce?: boolean; // kit's attacks are Pierce-tagged → Pierce Damage ▲ feeds Damage Up
   burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)

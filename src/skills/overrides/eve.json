@@ -1,5 +1,10 @@
 {
   "note": "Tier audit straggler (Bossing A; queue miss — story-tier proxy). Exospine system rebuilt from kit text (review pending fetch). Impact Exospine: crit rate +60 passive (parser ok, restated). Unstable Energy: per 44 CRIT normal hits -> 240% x3 sequential = 720%; at ~75% crit (60+15 base) that's ~1 proc per 59 hits -> hitCount 59, flavor sequential (joins the sequential exempt class: noFb ⚑; range exemption universal). Its Damage Taken 10%/10s applies only vs Electric-code enemies -> bossElement Electric gate. Eagle Eye: casterAtk 50 + maxAmmo 25 passives. Burst: 457.14 x6 sequential nuke (parser 2742.84 kept, burst-class = full FB); Mk2 doubles Unstable and Eagle Eye for 10s -> sequentialDamagePct +100 (gates on the sequential flavor) + casterAtkPct +50, both 10s. S2's reload-3-per-10-hits-on-Electric skipped (minor, element-gated). REVIEW-RECONCILED: AR 12RPS -> S1 proc every ~4.9s matches hitCount 59 exactly; Mk2 'doubles S1+S2' -> casterAtk +50 correct, the S1 doubling via sequentialDamagePct+100 undercounts ~20% vs a true x2 (dilution) — accepted ⚑; ADDED the missed 3-rounds-per-10th-hit refund (instantReload 0.05, Electric-target condition holds in her Iron-weak-only usage; review: 60-mag lasts 12.5s not 5s). noFb RELIC status (2026-07-15, autonomous-invariant-audit): her 720% Unstable-Energy proc (sequential) had its noFb ALREADY removed in a prior session -> FB applies by timing (DECISIONS-mandated; sequential is not type-exempt). She grades ~1.14 (over). Her cadence (hitCount 59) is kit-math (44 crit hits at ~75% crit) and her values are datamined, so the residual is the known ⚑ 'Mk2 doubling via sequentialDamagePct+100 undercounts ~20% vs a true x2' interacting with the now-applied FB. NO focused eve video exists in the catalog, so this cannot be settled empirically tonight -- documented OPEN, do NOT fudge to close it. Revisit if eve focus footage is captured.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
   "skill1": [
     {
       "slot": "skill1",

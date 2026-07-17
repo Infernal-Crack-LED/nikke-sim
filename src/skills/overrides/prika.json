@@ -1,5 +1,48 @@
 {
-  "note": "Only the S2 'Encore' block needs overriding. S1 is left to the parser (its full-charge block -> team Projectile Explosion 20% / Pierce 13.09% / ATK 20% of caster for 3s is faithful; the Performance-status sub-block is only heal-potency + Gains Pierce, both skipped as defensive/inert). Burst is left to the parser (Charge Damage +25%/25s to allies is faithful; the HP-regen effect skipped as a heal). S2: the 'entering Full Burst -> Max HP +19.98%' block is skipped (defensive HP buff). The Encore itself fires 'when Sing Along takes effect while in Performance' -- Sing Along/Performance is an untracked mechanic, so I approximate it as firing once per rotation on Full Burst entry (Prika is in Performance then). Encore grants allies Attack Damage +25.01% for 10s and INCREASES her own Burst cooldown by 21s (the ▲ is an increase — the price of the Performance extension), applied once per her own burst cast. UNCERTAIN: the once-per-full-burst cadence for the team Attack Damage buff is an approximation of the Sing Along trigger. The 'Performance duration +21 sec' and 'Singing part assignment' Encore effects are not modeled (Performance is an untracked status; part assignment is inert). MODES ADDED (tier audit, Prydwen): duet 'Ad Infinitum' — Mint's Sing Along re-extends Performance forever and 'she only needs to Burst once' -> duet mode: burst once (self CD +9999 after cast), Performance charge-damage 25% and Encore Attack Damage 25.01% permanent. Solo mode: 25s Performance per burst, Encore per-FB as before. DUET SLOT ORDER: place Prika LEFT of Mint so she takes rotation 1 and Mint all later rotations. DUET ORDER RULE (user, 2026-07-13): when Mint+Prika are the only B2s, Prika ALWAYS takes the first B2 and Mint every one after — now slot-order-independent via the burstFirst effect (duet mode); the old 'place Prika left of Mint' requirement is gone.",
+  "note": "Only the S2 'Encore' block needs overriding. S1 is left to the parser (its full-charge block -> team Projectile Explosion 20% / Pierce 13.09% / ATK 20% of caster for 3s is faithful; the Performance-status sub-block is only heal-potency + Gains Pierce, both skipped as defensive/inert). Burst is left to the parser (Charge Damage +25%/25s to allies is faithful; the HP-regen effect skipped as a heal). S2: the 'entering Full Burst -> Max HP +19.98%' block is skipped (defensive HP buff). The Encore itself fires 'when Sing Along takes effect while in Performance' -- Sing Along/Performance is an untracked mechanic, so I approximate it as firing once per rotation on Full Burst entry (Prika is in Performance then). Encore grants allies Attack Damage +25.01% for 10s and INCREASES her own Burst cooldown by 21s (the ▲ is an increase — the price of the Performance extension), applied once per her own burst cast. UNCERTAIN: the once-per-full-burst cadence for the team Attack Damage buff is an approximation of the Sing Along trigger. The 'Performance duration +21 sec' and 'Singing part assignment' Encore effects are not modeled (Performance is an untracked status; part assignment is inert). MODES ADDED (tier audit, Prydwen): duet 'Ad Infinitum' — Mint's Sing Along re-extends Performance forever and 'she only needs to Burst once' -> duet mode: burst once (self CD +9999 after cast), Performance charge-damage 25% and Encore Attack Damage 25.01% permanent. Solo mode: 25s Performance per burst, Encore per-FB as before. DUET SLOT ORDER: place Prika LEFT of Mint so she takes rotation 1 and Mint all later rotations. DUET ORDER RULE (user, 2026-07-13): when Mint+Prika are the only B2s, Prika ALWAYS takes the first B2 and Mint every one after — now slot-order-independent via the burstFirst effect (duet mode); the old 'place Prika left of Mint' requirement is gone. [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] [re-materialized 2026-07-16: skill1 re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "modes": [
+    "solo",
+    "duet (w/ Mint)"
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Outgoing healing ▲ 49.92% continuously.",
+      "Gains Pierce. This effect is continuous."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 20,
+          "durationSec": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 13.09,
+          "durationSec": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20,
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
   "skill2": [
     {
       "slot": "skill2",
@@ -84,10 +127,6 @@
         }
       ]
     }
-  ],
-  "modes": [
-    "solo",
-    "duet (w/ Mint)"
   ],
   "burst": [
     {

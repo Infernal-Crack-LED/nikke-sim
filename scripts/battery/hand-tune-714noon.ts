@@ -2,7 +2,7 @@
 // ENIKK-SUPPORTED units surfaced by the 714 noon probe.
 //
 // CONTROL-GROUP DESIGN (owner rulings 2026-07-14):
-//  - Every NON-target slot is a HAND-TUNED unit (data/hand-tuned.json, tuned=true)
+//  - Every NON-target slot is a HAND-TUNED unit (data/kit-status.json, tuned=true)
 //    so the tested unit is the sole variable. base snow-white is EXCLUDED (she is
 //    MODEL_ONLY — the DPS-chart buff-neutral filler, not actually tuned).
 //  - B3 targets: 4-unit control [little-mermaid(B1), Crown(B2), TARGET(B3), Helm(B3)]
@@ -14,7 +14,7 @@
 //    reference control B2 (Crown). The carry's total (end screen, no focus needed) gives
 //    Δcarry(A−B) = the support's buff error (Crown is tuned, its contribution cancels).
 //
-// Gates: (1) every non-target unit is tuned in hand-tuned.json; (2) every unit is
+// Gates: (1) every non-target unit is tuned in kit-status.json; (2) every unit is
 // enikk-supported (treasure-normalized); (3) focus at position 3.
 //
 //   npx tsx scripts/battery/hand-tune-714noon.ts
@@ -28,8 +28,10 @@ import type { SimConfig, Element } from '../../src/types.js';
 const w = loadWorld();
 
 // authoritative hand-tuned roster → trusted-support set
-const HT = JSON.parse(readFileSync(new URL('../../data/hand-tuned.json', import.meta.url), 'utf8'));
-const TUNED = new Set<string>(HT.units.filter((u: any) => u.tuned).map((u: any) => u.slug));
+const HT = JSON.parse(readFileSync(new URL('../../data/kit-status.json', import.meta.url), 'utf8'));
+const TUNED = new Set<string>(
+  Object.entries<any>(HT.units).filter(([, u]) => u.tuned).map(([slug]) => slug)
+);
 
 const supportedNames: string[] = JSON.parse(
   readFileSync(new URL('../../data/enikk-supported.json', import.meta.url), 'utf8'),

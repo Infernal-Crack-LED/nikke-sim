@@ -9,8 +9,18 @@ say() { printf '\n== %s ==\n' "$*"; }
 say "typecheck"
 npm run typecheck
 
-say "override validation (all)"
-for f in src/skills/overrides/*.json; do basename "$f" .json; done | xargs npx tsx scripts/validate-overrides.ts | tail -2
+say "override validation (all roster units — a synced unit without an override fails here)"
+node -e "const d=JSON.parse(require('fs').readFileSync('data/characters.json','utf8')); console.log(Object.keys(d.characters).join('\n'))" \
+  | xargs npx tsx scripts/validate-overrides.ts | tail -2
+
+say "runtime is prose-free (kit parser lives only in scripts/, never in src/ or web/src/)"
+test ! -f src/skills/parser.ts
+if grep -rnE "from ['\"].*(kit-parser|skills/parser)|parseSkill\(" src web/src --include='*.ts' --include='*.tsx'; then
+  echo "FAIL: runtime code imports or calls the kit parser"; exit 1
+fi
+
+say "kit-status SSOT structural check (roster coverage + unmodeled/provenance mirrors fresh)"
+npx tsx scripts/kit-status.ts --check
 
 say "approved-nickname validation (characters.json nicknames unambiguous)"
 npx tsx scripts/validate-nicknames.ts

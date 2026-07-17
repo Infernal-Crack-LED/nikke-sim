@@ -1,0 +1,3253 @@
+{
+  "generatedAt": "2026-07-17",
+  "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
+  "tiers": {
+    "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
+    "CALIBRATED": "fitted number tuned against real fights (mechanism suspected, value is ours)",
+    "VALIDATED": "total graded ~1.0 in a recorded comp (not focus-recorded)",
+    "MODEL_ONLY": "parser/datamine only, never confirmed against a real fight = UNTUNED"
+  },
+  "reference_grade": {
+    "definition": "tuned=true AND final-total ratio within 0.97-1.03 on >=5 distinct teams (dedup by unit set; focus not required). Recompute with scripts/refgrade.ts when graded comps change.",
+    "count": 1,
+    "units": [
+      "anis-star"
+    ]
+  },
+  "counts": {
+    "status": {
+      "pending": 68,
+      "authored": 6
+    },
+    "tier": {
+      "VALIDATED": 10,
+      "MODEL_ONLY": 40,
+      "MEASURED": 14,
+      "CALIBRATED": 10
+    },
+    "band": {
+      "±5%": 4,
+      ">15%": 17,
+      "±15%": 9,
+      "±8%": 11,
+      "±3% ✓": 3
+    }
+  },
+  "units": {
+    "ada": {
+      "name": "Ada",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run E: 0.97-1.08; S1 \"Burst-3 casters\" scope fix from run-E video",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+            "ratio": 0.963
+          },
+          {
+            "comp": "PE elec DPS (boss Water)",
+            "ratio": 0.9378
+          }
+        ],
+        "n": 2,
+        "mean": 0.9504,
+        "mad": 0.0496,
+        "band": "±5%",
+        "temp": "COLD ▼"
+      }
+    },
+    "ade-agent-bunny": {
+      "name": "Ade: Agent Bunny",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "re-materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded; a focus A/B is batched",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec."
+        ],
+        "skill2": [],
+        "burst": [
+          "Minimum Effective Range ▲ 55.56% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"Minimum Effective Range ▲ 55.56% for 10 sec.\"",
+        "skill1: unparsed effect \"Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "N6 mihara/maiden wind (boss Wind)",
+            "ratio": 0.85
+          }
+        ],
+        "n": 1,
+        "mean": 0.85,
+        "mad": 0.15,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "alice": {
+      "name": "Alice",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "tb2 test-5 focus — pierce = one popup per shot, no double-hit (A23); run A 1.12",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Gain continuous Pierce.",
+          "Continuously recover HP by 8.12% of attack damage."
+        ],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PA MiKa (boss Iron)",
+            "ratio": 0.9097
+          }
+        ],
+        "n": 1,
+        "mean": 0.9097,
+        "mad": 0.0903,
+        "band": "±15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "anchor-innocent-maid": {
+      "name": "Anchor: Innocent Maid",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:",
+          "Once: Potency of HP ▲ 30.96% for 5 sec.",
+          "Recovers 3.04% of the skill user's Max HP every 1 sec for 8 sec.",
+          "Stack count of debuffs ▼ 1."
+        ],
+        "skill2": [
+          "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:",
+          "Once: Hit Rate ▲ 10.13% for 10 sec."
+        ],
+        "burst": [
+          "Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec.",
+          "Recovers 40.18% of the skill user's Max HP as HP."
+        ]
+      },
+      "board": null
+    },
+    "anis-sparkling-summer": {
+      "name": "Anis: Sparkling Summer",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "parser-baseline",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "anis-star": {
+      "name": "Anis: Star",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": true,
+      "evidence": "Solo gauge recording — standard-launcher row confirmed (A25/A3); run A 0.94",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 10,
+        "within3pct": 6
+      },
+      "reference": true,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T1 wind-weak (boss Iron)",
+            "ratio": 1.0088
+          },
+          {
+            "comp": "T4 water-weak (boss Fire)",
+            "ratio": 0.9505
+          },
+          {
+            "comp": "T4b water-weak REPLICATE (boss Fire)",
+            "ratio": 0.9589
+          },
+          {
+            "comp": "T2 elec-weak (boss Water)",
+            "ratio": 0.9727
+          },
+          {
+            "comp": "T5 wind-weak probe (boss Iron)",
+            "ratio": 0.9677
+          },
+          {
+            "comp": "T7 elec-weak probe (boss Water)",
+            "ratio": 0.9687
+          },
+          {
+            "comp": "T8 iron-weak (boss Electric)",
+            "ratio": 0.986
+          },
+          {
+            "comp": "PA MiKa (boss Iron)",
+            "ratio": 0.8082
+          },
+          {
+            "comp": "TB2T2 anis-star projExpl probe (boss Water)",
+            "ratio": 0.8758
+          },
+          {
+            "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+            "ratio": 0.926
+          },
+          {
+            "comp": "PI misc B3s (boss Water)",
+            "ratio": 0.9207
+          },
+          {
+            "comp": "N5 snowwhite-HA fire (boss Fire)",
+            "ratio": 0.9277
+          }
+        ],
+        "n": 12,
+        "mean": 0.9393,
+        "mad": 0.0622,
+        "band": "±8%",
+        "temp": "COLD ▼"
+      }
+    },
+    "arcana": {
+      "name": "Arcana",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — audit/review language only, not fight-validated",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "arcana-fortune-mate": {
+      "name": "Arcana: Fortune Mate",
+      "burst": "II",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N5 unfocused: 1.88",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "Normals bucket drives it; unfocused — a focus recording is batched",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "N5 snowwhite-HA fire (boss Fire)",
+            "ratio": 1.4201
+          }
+        ],
+        "n": 1,
+        "mean": 1.4201,
+        "mad": 0.4201,
+        "band": ">15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "asuka": {
+      "name": "Asuka",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Gain Pierce for 25 sec.",
+          "Recovers 3.16% of attack damage as HP over 10 sec.",
+          "Hit Rate ▲ 101.37% for 10 sec."
+        ]
+      },
+      "board": null
+    },
+    "asuka-wille": {
+      "name": "Asuka: WILLE",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Activates when using Annihilation. Affects self.",
+          "Emergency Repair",
+          "Function: Reduces MG heating up speed and removes ammo. Fixes reload speed and continuously restores HP based on Max HP.",
+          "Effect 1: MG heating up speed ▼ 100% for 3 sec.",
+          "Effect 2: Removes 100% of ammo.",
+          "Effect 3: Constantly recovers 3.77% of the skill user's final Max HP every 1 sec over 3 sec.",
+          "Effect 4: Reload speed is fixed at a 60% increase for 1 rounds."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: unparsed effect \"Emergency Repair\"",
+        "skill2: unparsed effect \"MG heating up speed ▼ 100% for 3 sec.\"",
+        "skill2: unparsed effect \"Effect 2: Removes 100% of ammo.\"",
+        "skill2: unparsed effect \"Effect 4: Reload speed is fixed at a 60% increase for 1 rounds.\"",
+        "skill2: unsupported trigger \"Activates when using Annihilation. Affects self.\" — its effects are skipped"
+      ],
+      "board": null
+    },
+    "blanc": {
+      "name": "Blanc",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Gain Indomitability for 10 sec.",
+          "Max HP ▲ 31.68% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill2/burst: heals are modeled as ONE recovery event per activation; the real per-second ticks (every 1s for 5s / 8s) are not carried — on-recovery consumers (Crown-type) will show undercounted uptime (⚑)",
+        "burst: Max HP ▲31.68% on the lowest-remaining-HP ally is unmodeled (no own-%-basis Max HP stat key; no lowest-HP targeting) — only matters if it lands on an HP-scaling teammate",
+        "skill1: shield cadence (every 120 normal attacks) scales with the unverified datamine cadence tuple (⚑)"
+      ],
+      "board": null
+    },
+    "bready": {
+      "name": "Bready",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when gaining a buff that increases sustained damage. Affects self.",
+          "Lingering Taste: Charge Speed ▼ 20% for 50 sec. This effect cannot be removed.",
+          "Cancels Recommended Taste.",
+          "Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.",
+          "Recommended Taste: Charge Speed ▼ 20% for 50 sec. This effect cannot be removed.",
+          "Cancels Lingering Taste."
+        ],
+        "skill2": [],
+        "burst": [
+          "Activates when in Lingering Taste status. Affects self.",
+          "Aftertaste Effect ▲ 349.8% for 10 sec.",
+          "Activates when in Recommended Taste status. Affects self.",
+          "ATK ▲ 70.09% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill1: unparsed effect \"Cancels Recommended Taste.\"",
+        "skill1: unsupported trigger \"Activates when gaining a buff that increases sustained damage. Affects self.\" — its effects are skipped",
+        "skill1: unparsed effect \"Cancels Lingering Taste.\"",
+        "skill1: unsupported trigger \"Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.\" — its effects are skipped",
+        "burst: unparsed effect \"Aftertaste Effect ▲ 349.8% for 10 sec.\"",
+        "burst: unsupported trigger \"Activates when in Lingering Taste status. Affects self.\" — its effects are skipped",
+        "burst: unsupported trigger \"Activates when in Recommended Taste status. Affects self.\" — its effects are skipped"
+      ],
+      "board": null
+    },
+    "brid-silent-track": {
+      "name": "Brid: Silent Track",
+      "burst": "II",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "chisato": {
+      "name": "Chisato",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run I stable comp: 1.21-1.26",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "Real modeling error, untuned",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Normal attacks deal true damage for 10 sec."
+        ],
+        "burst": [
+          "Charges Extrasensory to 100%."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"Charges Extrasensory to 100%.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+            "ratio": 0.9238
+          },
+          {
+            "comp": "PI misc B3s (boss Water)",
+            "ratio": 0.9216
+          },
+          {
+            "comp": "N2 modernia wind (boss Wind)",
+            "ratio": 1.0051
+          }
+        ],
+        "n": 3,
+        "mean": 0.9502,
+        "mad": 0.0532,
+        "band": "±8%",
+        "temp": "COLD ▼"
+      }
+    },
+    "cinderella": {
+      "name": "Cinderella",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Focus session u8-e3 — every per-instance popup verified exact; twin-rocket + own-MaxHP fixes; runs B/E 0.96-1.00",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 5,
+        "within3pct": 2
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T2 elec-weak (boss Water)",
+            "ratio": 0.9426
+          },
+          {
+            "comp": "T7 elec-weak probe (boss Water)",
+            "ratio": 0.9469
+          },
+          {
+            "comp": "PB elec battery (boss Water)",
+            "ratio": 1.0078
+          },
+          {
+            "comp": "PB2 elec battery RERUN w/ video (boss Water)",
+            "ratio": 1.0012
+          },
+          {
+            "comp": "TB2T2 anis-star projExpl probe (boss Water)",
+            "ratio": 0.7119
+          },
+          {
+            "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+            "ratio": 0.9476
+          },
+          {
+            "comp": "PE elec DPS (boss Water)",
+            "ratio": 1.0408
+          }
+        ],
+        "n": 7,
+        "mean": 0.9427,
+        "mad": 0.0715,
+        "band": "±8%",
+        "temp": "COLD ▼"
+      }
+    },
+    "cinderella-crystal-wave": {
+      "name": "Cinderella: Crystal Wave",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "U1 core-strike rule fix; T5 1.09 / T8 1.25",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 2
+      },
+      "reference": false,
+      "residual": "U3 open — elemental-advantage delivery type",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T5 wind-weak probe (boss Iron)",
+            "ratio": 1.0072
+          },
+          {
+            "comp": "T8 iron-weak (boss Electric)",
+            "ratio": 1.0306
+          }
+        ],
+        "n": 2,
+        "mean": 1.0189,
+        "mad": 0.0189,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
+      }
+    },
+    "crown": {
+      "name": "Crown",
+      "burst": "II",
+      "weapon": "MG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": true,
+      "evidence": "Crown SOLO recording — MG range-bands read per popup class (battery 4); 0.89-1.14 across ~10 comps",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 10,
+        "within3pct": 3
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T1 wind-weak (boss Iron)",
+            "ratio": 0.9822
+          },
+          {
+            "comp": "T3 fire-weak (boss Wind)",
+            "ratio": 0.9196
+          },
+          {
+            "comp": "T4 water-weak (boss Fire)",
+            "ratio": 1.0839
+          },
+          {
+            "comp": "T4b water-weak REPLICATE (boss Fire)",
+            "ratio": 1.0789
+          },
+          {
+            "comp": "T2 elec-weak (boss Water)",
+            "ratio": 1.0045
+          },
+          {
+            "comp": "T6 fire-weak (boss Wind)",
+            "ratio": 0.9212
+          },
+          {
+            "comp": "T7 elec-weak probe (boss Water)",
+            "ratio": 0.9099
+          },
+          {
+            "comp": "T8 iron-weak (boss Electric)",
+            "ratio": 0.9273
+          },
+          {
+            "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+            "ratio": 1.0149
+          },
+          {
+            "comp": "PE elec DPS (boss Water)",
+            "ratio": 1.0512
+          },
+          {
+            "comp": "PH water B3s (boss Fire)",
+            "ratio": 1.0481
+          },
+          {
+            "comp": "N9 redhood/elegg electric (boss Electric)",
+            "ratio": 1.048
+          }
+        ],
+        "n": 12,
+        "mean": 0.9991,
+        "mad": 0.0558,
+        "band": "±8%",
+        "temp": "OK  ·"
+      }
+    },
+    "d-killer-wife": {
+      "name": "D: Killer Wife",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "re-materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run G: 0.98-1.11; S2 hitCount parser-bug fix",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 3,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Gain Pierce for 1 shot."
+        ],
+        "skill2": [],
+        "burst": [
+          "Inflicts Wipe Out on the target for 10 sec.",
+          "Buff takes effect depending on the area hit."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"Inflicts Wipe Out on the target for 10 sec.\"",
+        "burst: unparsed effect \"Buff takes effect depending on the area hit.\"",
+        "burst: unrecognized target \"allies\" — applied to all allies"
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PG iron sweep (boss Electric)",
+            "ratio": 1.0865
+          },
+          {
+            "comp": "N1 rapi/quency wind (boss Wind)",
+            "ratio": 0.96
+          },
+          {
+            "comp": "N2 modernia wind (boss Wind)",
+            "ratio": 1.4336
+          }
+        ],
+        "n": 3,
+        "mean": 1.16,
+        "mad": 0.1867,
+        "band": ">15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "delta-ninja-thief": {
+      "name": "Delta: Ninja Thief",
+      "burst": "II",
+      "weapon": "MG",
+      "class": "Defender",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Effects vary according to squad formation. Only one set of effects is applied.",
+          "Affects self if there are no other Defender allies in the squad.",
+          "Effect 2: Attract: Taunt all enemies continuously.",
+          "Affects self if there is another Defender ally in the squad.",
+          "Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+          "Effect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.",
+          "Activates when performing 200 normal attack(s). Affects self while in Attract status.",
+          "Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.",
+          "Ninjutsu IFAK lasts for 4 sec.",
+          "Function: Stores up HP recovery for a time, after which all allies are healed for the stored amount.",
+          "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.",
+          "Effect 2: Once the duration ends, all allies are healed for the stored recovery amount."
+        ],
+        "burst": [
+          "Next shield's HP ▲ 20.13% for 10 sec.",
+          "Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill2: unparsed effect \"Effects vary according to squad formation. Only one set of effects is applied.\"",
+        "skill2: unparsed effect \"Affects self if there are no other Defender allies in the squad.\"",
+        "skill2: unparsed effect \"Affects self if there is another Defender ally in the squad.\"",
+        "skill2: unsupported trigger \"Activates when performing 200 normal attack(s). Affects self while in Attract status.\" — its effects are skipped",
+        "skill2: unparsed effect \"Ninjutsu IFAK lasts for 4 sec.\"",
+        "skill2: unparsed effect \"Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.\"",
+        "burst: unparsed effect \"Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec.\""
+      ],
+      "board": null
+    },
+    "diesel-winter-sweets": {
+      "name": "Diesel: Winter Sweets",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run D: 1.01-1.06",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
+          "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
+          "Activates when an ally or self destroys an enemy's part. Affects self.",
+          "Sustained Damage ▲ 68.04% for 15 sec."
+        ],
+        "burst": [
+          "Noise Pollution: Hit Rate ▼ 100% for 1 sec.",
+          "Mute stacks ▼ 1."
+        ]
+      },
+      "caveats": [
+        "skill2: unparsed effect \"Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.\"",
+        "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all allies (except self).\" — its effects are skipped",
+        "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
+        "burst: unparsed effect \"Mute stacks ▼ 1.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "N5 snowwhite-HA fire (boss Fire)",
+            "ratio": 0.831
+          }
+        ],
+        "n": 1,
+        "mean": 0.831,
+        "mad": 0.169,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "dorothy-serendipity": {
+      "name": "Dorothy: Serendipity",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "SG pellet-falloff calibrated on naga/dorothy/noir triple; run H 0.99",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PH water B3s (boss Fire)",
+            "ratio": 1.0507
+          },
+          {
+            "comp": "N9 redhood/elegg electric (boss Electric)",
+            "ratio": 0.995
+          }
+        ],
+        "n": 2,
+        "mean": 1.0228,
+        "mad": 0.0279,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
+      }
+    },
+    "drake": {
+      "name": "Drake",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "ein": {
+      "name": "Ein",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run E: 0.89-0.98; orb gauge from datamined arena data",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false,
+      "residual": "U8 lists an older 0.71-0.76 read — worth an ein-focus recording",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+            "ratio": 0.7225
+          },
+          {
+            "comp": "PE elec DPS (boss Water)",
+            "ratio": 0.7395
+          },
+          {
+            "comp": "N2 modernia wind (boss Wind)",
+            "ratio": 1.2696
+          }
+        ],
+        "n": 3,
+        "mean": 0.9105,
+        "mad": 0.2692,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "elegg-boom-and-shock": {
+      "name": "Elegg: Boom and Shock",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "re-materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — untested, serves pre-patch numbers",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Possession lasts for 6 sec.",
+          "Ability: Find and capture ghosts possessing the enemy.",
+          "Required hit count: 100 time(s) in total, cumulative across all allies.",
+          "Effect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.",
+          "Recurring interval: 6 sec",
+          "Effects vary according to the number of ghosts. Each subsequent effect triggers all effects before it:",
+          "1 or more ghosts:",
+          "4 or more ghosts:"
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: unparsed effect \"Possession lasts for 6 sec.\"",
+        "skill1: unparsed effect \"Ability: Find and capture ghosts possessing the enemy.\"",
+        "skill1: unparsed effect \"Required hit count: 100 time(s) in total, cumulative across all allies.\"",
+        "skill1: unparsed effect \"Effect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.\"",
+        "skill1: unparsed effect \"Recurring interval: 6 sec\"",
+        "skill1: unparsed effect \"Effects vary according to the number of ghosts. Each subsequent effect triggers all effects before it:\"",
+        "skill1: unparsed effect \"1 or more ghosts:\"",
+        "skill1: unparsed effect \"4 or more ghosts:\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "N9 redhood/elegg electric (boss Electric)",
+            "ratio": 1.1495
+          }
+        ],
+        "n": 1,
+        "mean": 1.1495,
+        "mad": 0.1495,
+        "band": "±15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "eve": {
+      "name": "EVE",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — audit/review language only, not fight-validated",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "grave": {
+      "name": "Grave",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run I: 1.19-1.23",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "Mild B3 heat, untuned",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Prediction:",
+          "Current HP ▼ 1% every 1 sec, lasts for 10 sec.",
+          "Gain Pierce for 10 sec."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"Prediction:\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+            "ratio": 0.8402
+          },
+          {
+            "comp": "PI misc B3s (boss Water)",
+            "ratio": 0.8348
+          },
+          {
+            "comp": "N1 rapi/quency wind (boss Wind)",
+            "ratio": 0.8313
+          }
+        ],
+        "n": 3,
+        "mean": 0.8354,
+        "mad": 0.1646,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "guillotine-winter-slayer": {
+      "name": "Guillotine: Winter Slayer",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run H slot-5 + N8 focus: 1.21-1.34",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "PARTIAL — burst DoT + Hero-Level auras measured accurate, but normal-fire ~26% hot, NOT refit (U8; suspect datamined MG param)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Activates when hitting the Core for 3 time(s). Affects self.",
+          "EXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously.",
+          "Activates when Hero Level is 2 or above. Affects self.",
+          "Elemental Advantage Attack Damage ▲ 7.46% continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: unsupported trigger \"Activates when hitting the Core for 3 time(s). Affects self.\" — its effects are skipped",
+        "skill2: unsupported trigger \"Activates when Hero Level is 2 or above. Affects self.\" — its effects are skipped"
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PH water B3s (boss Fire)",
+            "ratio": 0.9391
+          }
+        ],
+        "n": 1,
+        "mean": 0.9391,
+        "mad": 0.0609,
+        "band": "±8%",
+        "temp": "COLD ▼"
+      }
+    },
+    "guilty": {
+      "name": "Guilty",
+      "burst": "II",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "helm": {
+      "name": "Helm (Treasure)",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": true,
+      "evidence": "Helm SR frame recording — 1.37s cycle + 22f bolt recovery measured; 0.93-1.19",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 4,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T3 fire-weak (boss Wind)",
+            "ratio": 0.6104
+          },
+          {
+            "comp": "T4 water-weak (boss Fire)",
+            "ratio": 0.5709
+          },
+          {
+            "comp": "T4b water-weak REPLICATE (boss Fire)",
+            "ratio": 0.5834
+          },
+          {
+            "comp": "T6 fire-weak (boss Wind)",
+            "ratio": 0.5966
+          },
+          {
+            "comp": "T8 iron-weak (boss Electric)",
+            "ratio": 0.5943
+          }
+        ],
+        "n": 5,
+        "mean": 0.5911,
+        "mad": 0.4089,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "helm-aquamarine": {
+      "name": "Helm: Aquamarine",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it:"
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "isabel": {
+      "name": "Isabel",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "jill": {
+      "name": "Jill",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "tb2 test-4 focus video — popups 99.7% exact; 1.67 heat was cadence (150rpm) -> 1.02 (A21)",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Reload speed is fixed at a 99.96% increase for 10 sec.",
+          "Removes 100% of ammo.",
+          "Forced Reload",
+          "Hit Rate ▲ 80.78% for 10 sec.",
+          "Normal attacks deal True Damage for 10 sec."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"Reload speed is fixed at a 99.96% increase for 10 sec.\"",
+        "burst: unparsed effect \"Removes 100% of ammo.\"",
+        "burst: unparsed effect \"Forced Reload\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+            "ratio": 0.9174
+          },
+          {
+            "comp": "PI misc B3s (boss Water)",
+            "ratio": 0.9254
+          },
+          {
+            "comp": "N1 rapi/quency wind (boss Wind)",
+            "ratio": 1.0856
+          }
+        ],
+        "n": 3,
+        "mean": 0.9761,
+        "mad": 0.0809,
+        "band": "±15%",
+        "temp": "OK  ·"
+      }
+    },
+    "laplace": {
+      "name": "Laplace (Treasure)",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — bare override, never validated",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 5 sec."
+        ],
+        "skill2": [
+          "Activates when hitting the target's Parts. Affects the target.",
+          "Deals 14.78% of final ATK as additional damage."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: unsupported trigger \"Activates when hitting the target's Parts. Affects the target.\" — its effects are skipped"
+      ],
+      "board": null
+    },
+    "leona": {
+      "name": "Leona",
+      "burst": "II",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "parser-baseline",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "liberalio": {
+      "name": "Liberalio",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Focus recording — four in-FB proc crit-step pairs read x1.3333 exactly; T1/T5 ~1.0",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 4,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T1 wind-weak (boss Iron)",
+            "ratio": 0.9532
+          },
+          {
+            "comp": "T5 wind-weak probe (boss Iron)",
+            "ratio": 0.9276
+          },
+          {
+            "comp": "PG iron sweep (boss Electric)",
+            "ratio": 1.2232
+          },
+          {
+            "comp": "N3 scarlet/liberalio iron (boss Iron)",
+            "ratio": 0.9029
+          }
+        ],
+        "n": 4,
+        "mean": 1.0017,
+        "mad": 0.1099,
+        "band": "±15%",
+        "temp": "OK  ·"
+      }
+    },
+    "liter": {
+      "name": "Liter",
+      "burst": "I",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: cadence tuple (SMG datamined rate of fire, reloadFrames 111) is the unverified datamine — read rounds/min + reload gap from any focus video (⚑1)",
+        "skill2: cover-HP restore is modeled as a recovery event to ALL allies on Full Burst enter — the trigger is not in the kit text (invented), the real target is only the 2 allies with lowest remaining cover HP, and whether cover repair fires 'when recovery takes effect' consumers (e.g. Crown) is unmeasured (⚑2)",
+        "burst: team buffs are short (5 sec) by kit text — low uptime on a ~20 sec cycle is faithful, not a modeling gap"
+      ],
+      "board": null
+    },
+    "little-mermaid": {
+      "name": "Little Mermaid",
+      "burst": "I",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "re-materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": true,
+      "evidence": "T3/T6 ~1.0, run H 1.03; Q1-family exempt-proc calibration",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 4,
+        "within3pct": 2
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T3 fire-weak (boss Wind)",
+            "ratio": 0.9337
+          },
+          {
+            "comp": "T6 fire-weak (boss Wind)",
+            "ratio": 0.9092
+          },
+          {
+            "comp": "PH water B3s (boss Fire)",
+            "ratio": 1.0268
+          },
+          {
+            "comp": "N6 mihara/maiden wind (boss Wind)",
+            "ratio": 1.0083
+          }
+        ],
+        "n": 4,
+        "mean": 0.9695,
+        "mad": 0.048,
+        "band": "±5%",
+        "temp": "COLD ▼"
+      }
+    },
+    "ludmilla-winter-owner": {
+      "name": "Ludmilla: Winter Owner",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "re-materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "maiden-ice-rose": {
+      "name": "Maiden: Ice Rose",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Solo neutral video — 547.62% rider popups exact, cadence measured (A12); solo 1.01",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 3,
+        "within3pct": 1
+      },
+      "reference": false,
+      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound",
+      "unmodeled": {
+        "skill1": [
+          "MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
+          "MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
+          "Max HP ▲ 6.34% without restoring HP for 15 sec, stacks up to 10 time(s)."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: unparsed effect \"MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "T2 elec-weak (boss Water)",
+            "ratio": 1.5702
+          },
+          {
+            "comp": "PF maiden solo (boss Water)",
+            "ratio": 1.0205
+          },
+          {
+            "comp": "N6 mihara/maiden wind (boss Wind)",
+            "ratio": 0.8079
+          }
+        ],
+        "n": 3,
+        "mean": 1.1329,
+        "mad": 0.2609,
+        "band": ">15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "mana": {
+      "name": "Mana",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates if the skill user is in Metal γ status when an ally is out of action. Affects 1 incapacitated ally unit(s) with the highest final ATK (except the skill user).",
+          "Resurrect with 96% HP.",
+          "Activates when an ally is out of action. Affects self.",
+          "Removes Metal γ."
+        ],
+        "skill2": [
+          "Removes Metal σ.",
+          "Activates if the skill user has cast Burst Skill before Full Burst ends. Affects self.",
+          "Metal σ: Burst Gauge filling speed ▲ 70.4% continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: FB self buffs (Attack Damage +21.12% / ATK +63.36%) keyed to her OWN burst cast — the Metal σ economy approximation. Exact when she is the sole Burst III; a multi-B3 team's true σ state machine (battle-start grant, remove-on-FB, re-grant-on-her-cast) is phase-shifted vs this encoding.",
+        "skill2: Metal σ burst-gauge +70.4% modeled permanent — overstated in multi-B3 rotations where she skips bursts (σ drops until her next burst).",
+        "skill2: Charge Time ▼0.18 sec ally support approximated as chargeSpeedPct 18 to all allies — magnitude is an unmeasured ⚑ (0.18s ÷ the target's basic charge time) and the 'longest basic Charge Time' single-target selection is not engine-expressible (inert on non-charge allies).",
+        "skill1: hitCount-10 team heal is an event-only synergy hook (Crown-style recovery consumers); it adds no damage alone.",
+        "cadence: pullsPerSec / reloadFrames 121 are unverified datamine (mandatory ⚑)."
+      ],
+      "board": null
+    },
+    "mari": {
+      "name": "Mari",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when landing a Full Charge attack. Affects all allies.",
+          "Damage dealt to Shield ▲ 100.09% for 3 sec."
+        ],
+        "skill2": [
+          "Gain Pierce for 5 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: trigger is KIT-SILENT — modeled as refresh-on-shot (near-permanent while firing); an unmeasured ⚑ estimate — if the real trigger is burst-gated this over-credits out-of-Full-Burst uptime",
+        "skill2: 'Gain Pierce for 5 sec' modeled as static hasPierce (no timed-pierce primitive); tied to the same ⚑ trigger estimate",
+        "skill1: 'Damage dealt to Shield ▲ 100.09%' unmodeled — the raid boss is partless and never shields",
+        "cadence: datamined charge/reload tuple + the SR 22-frame bolt-gap default are unmeasured ⚑ estimates (autofire would add ~15–20% shots)"
+      ],
+      "board": null
+    },
+    "mast-romantic-maid": {
+      "name": "Mast: Romantic Maid",
+      "burst": "II",
+      "weapon": "MG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": true,
+      "evidence": "T1 0.95-1.06; Hangover-gate recalibration",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 2
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T1 wind-weak (boss Iron)",
+            "ratio": 1.0159
+          },
+          {
+            "comp": "T7 elec-weak probe (boss Water)",
+            "ratio": 1.017
+          }
+        ],
+        "n": 2,
+        "mean": 1.0164,
+        "mad": 0.0164,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
+      }
+    },
+    "maxwell": {
+      "name": "Maxwell",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Railgun single-shot fix from run G (1.93->0.81)",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "Over-corrected; reads 0.80 (G) but 1.17 (N6) — unstable, audit candidate",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PG iron sweep (boss Electric)",
+            "ratio": 0.6625
+          },
+          {
+            "comp": "N6 mihara/maiden wind (boss Wind)",
+            "ratio": 1.214
+          }
+        ],
+        "n": 2,
+        "mean": 0.9383,
+        "mad": 0.2757,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "mihara-bonding-chain": {
+      "name": "Mihara: Bonding Chain",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Stack-average (10.8->12) fit to real T3 sample; 1.19-1.51 -> 1.03",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Ensnaring Chains stacks ▲ 1.",
+          "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.",
+          "Ensnaring Chains stacks ▲ 20.",
+          "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
+          "Restraint Chain ▲ 1, up to 10."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: unparsed effect \"Ensnaring Chains stacks ▲ 1.\"",
+        "skill2: unparsed effect \"Ensnaring Chains stacks ▲ 20.\"",
+        "skill2: unsupported trigger \"Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\" — its effects are skipped",
+        "skill2: unparsed effect \"Restraint Chain ▲ 1, up to 10.\"",
+        "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — its effects are skipped"
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "T3 fire-weak (boss Wind)",
+            "ratio": 0.8925
+          },
+          {
+            "comp": "N6 mihara/maiden wind (boss Wind)",
+            "ratio": 1.0651
+          }
+        ],
+        "n": 2,
+        "mean": 0.9788,
+        "mad": 0.0863,
+        "band": "±15%",
+        "temp": "OK  ·"
+      }
+    },
+    "milk-blooming-bunny": {
+      "name": "Milk: Blooming Bunny",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run G + N10 focus: 0.56-0.73",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "~0.7 is an ACCEPTED DECISION (poor auto-play) — validated-by-decision, not tuned to 1.0",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Overconfident, Huh?!:",
+          "Gains Immunity to Embarrassment for 10 sec."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"Overconfident, Huh?!:\"",
+        "burst: unparsed effect \"Gains Immunity to Embarrassment for 10 sec.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PG iron sweep (boss Electric)",
+            "ratio": 0.7007
+          }
+        ],
+        "n": 1,
+        "mean": 0.7007,
+        "mad": 0.2993,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "mint": {
+      "name": "Mint",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run A; release-latency landed 1.21->0.91; duet mode fix",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Only one Assigned Part is applied according to Mint's current status.",
+          "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.",
+          "Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"Only one Assigned Part is applied according to Mint's current status.\"",
+        "burst: unparsed effect \"Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.\"",
+        "burst: unparsed effect \"Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PA MiKa (boss Iron)",
+            "ratio": 0.7675
+          }
+        ],
+        "n": 1,
+        "mean": 0.7675,
+        "mad": 0.2325,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "miranda": {
+      "name": "Miranda",
+      "burst": "I",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "modernia": {
+      "name": "Modernia",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N2: 0.90",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "Single read, confounded by that comp FB-count anomaly",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Hit Rate ▲ 8.56% for 15 sec."
+        ],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "N2 modernia wind (boss Wind)",
+            "ratio": 1.0694
+          }
+        ],
+        "n": 1,
+        "mean": 1.0694,
+        "mad": 0.0694,
+        "band": "±8%",
+        "temp": "HOT ▲"
+      }
+    },
+    "moran": {
+      "name": "Moran",
+      "burst": "I",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run B video — firepower/CDR economy verified frame-by-frame; 0.91-0.93",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Taunts for 4 sec.",
+          "Once: Max HP ▲ 91% for 3 sec. Activates once per battle.",
+          "Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.",
+          "Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle."
+        ],
+        "burst": [
+          "Additional Effect:",
+          "Recovers 36.14% of attack damage as HP for 10 sec.",
+          "Attract: Taunts all enemies for 10 sec.",
+          "DEF ▲ 14.85% of caster's DEF for 10 sec."
+        ]
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PB elec battery (boss Water)",
+            "ratio": 0.7006
+          },
+          {
+            "comp": "PB2 elec battery RERUN w/ video (boss Water)",
+            "ratio": 0.7507
+          },
+          {
+            "comp": "N9 redhood/elegg electric (boss Electric)",
+            "ratio": 0.6879
+          }
+        ],
+        "n": 3,
+        "mean": 0.7131,
+        "mad": 0.2869,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "naga": {
+      "name": "Naga",
+      "burst": "II",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "SG falloff + \"with shielder\" mode calibration; run C 1.06",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 1
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Recovers 9.58% of the skill user's final Max HP as HP."
+        ],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "N2 modernia wind (boss Wind)",
+            "ratio": 1.1746
+          }
+        ],
+        "n": 1,
+        "mean": 1.1746,
+        "mad": 0.1746,
+        "band": ">15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "nayuta": {
+      "name": "Nayuta",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "T5 wind-weak 0.86-1.03 (A5)",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "High run-to-run variance",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T5 wind-weak probe (boss Iron)",
+            "ratio": 0.6368
+          }
+        ],
+        "n": 1,
+        "mean": 0.6368,
+        "mad": 0.3632,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "neon-vision-eye": {
+      "name": "Neon: Vision Eye",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Run B video — gauge tracked cast-by-cast, every-3rd-Super confirmed; 0.91-1.06",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T2 elec-weak (boss Water)",
+            "ratio": 0.9583
+          },
+          {
+            "comp": "PB elec battery (boss Water)",
+            "ratio": 1.0928
+          },
+          {
+            "comp": "PB2 elec battery RERUN w/ video (boss Water)",
+            "ratio": 1.0685
+          }
+        ],
+        "n": 3,
+        "mean": 1.0399,
+        "mad": 0.0677,
+        "band": "±8%",
+        "temp": "HOT ▲"
+      }
+    },
+    "noir": {
+      "name": "Noir",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "wave-1: comp reading warmed 1.040→1.092 HOT after kit-faithful S2 fix (+5 rounds self, instantReload allies) — solo anchor bit-identical; residual comp-side over-model to hand-tune (SG landing is solo-calibrated)"
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: Max Ammo +5 rounds is ALL-allies in-kit; modeled self-only as maxAmmoPct 55.56 (engine has no flat per-unit ammo) — teammates' +5 rounds unmodeled (⚑)",
+        "burst: Hit Rate ▲ (13.93% SG-allies /10s, 11.61% allies /30s) modeled as hitRatePct — currently inert in the engine; magnitude unmeasured (⚑)",
+        "burst: the 11.61%/19.36% block requires a same-squad ally (Blanc) on the battlefield — engine has no squad gate, modeled un-gated (effects inert vs the partless boss) (⚑)"
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+            "ratio": 1.0831
+          },
+          {
+            "comp": "PI misc B3s (boss Water)",
+            "ratio": 1.1
+          }
+        ],
+        "n": 2,
+        "mean": 1.0915,
+        "mad": 0.0915,
+        "band": "±15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "prika": {
+      "name": "Prika",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "re-materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Duet burstFirst confirmed live in MiKa recording",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "Total 0.82 cold residual",
+      "unmodeled": {
+        "skill1": [
+          "Outgoing healing ▲ 49.92% continuously.",
+          "Gains Pierce. This effect is continuous."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PA MiKa (boss Iron)",
+            "ratio": 0.6847
+          }
+        ],
+        "n": 1,
+        "mean": 0.6847,
+        "mad": 0.3153,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "privaty": {
+      "name": "Privaty",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Battery-5 focus — in/out-window popup ratio 2.8244 -> elemAdv in Element bucket; 0.77->1.00 on T4",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Stuns for 3 sec."
+        ]
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T4 water-weak (boss Fire)",
+            "ratio": 0.9638
+          },
+          {
+            "comp": "T4b water-weak REPLICATE (boss Fire)",
+            "ratio": 0.9307
+          },
+          {
+            "comp": "N5 snowwhite-HA fire (boss Fire)",
+            "ratio": 0.9124
+          }
+        ],
+        "n": 3,
+        "mean": 0.9356,
+        "mad": 0.0644,
+        "band": "±8%",
+        "temp": "COLD ▼"
+      }
+    },
+    "quency-escape-queen": {
+      "name": "Quency: Escape Queen",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "re-materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "run H / N: 0.77-0.86",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "Cold; owns a timing-rule regression, untuned",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Effects vary for each stage. Each subsequent effect triggers all effects before it:",
+          "Stage 1: Affects self.",
+          "Hit Rate ▲ 1.36%. Stacks up to 10 times and lasts for 2 sec.",
+          "Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.",
+          "Hit Rate ▲ 2.71%. Stacks up to 10 times and lasts for 1 sec.",
+          "Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.",
+          "Hit Rate ▲ 4.08%. Stacks up to 5 times and lasts for 0.5 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill2: unparsed effect \"Effects vary for each stage. Each subsequent effect triggers all effects before it:\"",
+        "skill2: unparsed effect \"Stage 1: Affects self.\"",
+        "skill2: unparsed effect \"Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.\"",
+        "skill2: unparsed effect \"Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PH water B3s (boss Fire)",
+            "ratio": 0.5387
+          },
+          {
+            "comp": "N1 rapi/quency wind (boss Wind)",
+            "ratio": 0.5564
+          }
+        ],
+        "n": 2,
+        "mean": 0.5476,
+        "mad": 0.4524,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "rapi-red-hood": {
+      "name": "Rapi: Red Hood",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 5,
+        "within3pct": 1
+      },
+      "reference": false,
+      "residual": "Invisible-X residual (44-52% of her damage) deliberately left open",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T3 fire-weak (boss Wind)",
+            "ratio": 0.9447
+          },
+          {
+            "comp": "T6 fire-weak (boss Wind)",
+            "ratio": 0.9232
+          },
+          {
+            "comp": "T7 elec-weak probe (boss Water)",
+            "ratio": 0.8677
+          },
+          {
+            "comp": "T8 iron-weak (boss Electric)",
+            "ratio": 0.9519
+          },
+          {
+            "comp": "N1 rapi/quency wind (boss Wind)",
+            "ratio": 1.0107
+          }
+        ],
+        "n": 5,
+        "mean": 0.9396,
+        "mad": 0.0646,
+        "band": "±8%",
+        "temp": "COLD ▼"
+      }
+    },
+    "raven": {
+      "name": "Raven",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "re-materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "A.N. Mode:",
+          "Effect 1: Removes Single Point Attack."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"A.N. Mode:\"",
+        "burst: unparsed effect \"Effect 1: Removes Single Point Attack.\""
+      ],
+      "board": null
+    },
+    "red-hood": {
+      "name": "Red Hood",
+      "burst": "Λ",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Red Wolf decoded from game data, +90% CS->charge-dmg conversion (stack ramp averaged); run A 0.86-0.92",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 1
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: unparsed effect \"Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "PA MiKa (boss Iron)",
+            "ratio": 0.7209
+          },
+          {
+            "comp": "N9 redhood/elegg electric (boss Electric)",
+            "ratio": 1.0116
+          }
+        ],
+        "n": 2,
+        "mean": 0.8662,
+        "mad": 0.1454,
+        "band": "±15%",
+        "temp": "COLD ▼"
+      }
+    },
+    "rosanna-chic-ocean": {
+      "name": "Rosanna: Chic Ocean",
+      "burst": "II",
+      "weapon": "AR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "rouge": {
+      "name": "Rouge",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Positional + Max-HP grant rebuilt from run-E e/e2/e3 videos; coin values timeline-averaged; 1.02",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+            "ratio": 0.986
+          },
+          {
+            "comp": "PE elec DPS (boss Water)",
+            "ratio": 1.1098
+          },
+          {
+            "comp": "N3 scarlet/liberalio iron (boss Iron)",
+            "ratio": 1.085
+          }
+        ],
+        "n": 3,
+        "mean": 1.0602,
+        "mad": 0.0696,
+        "band": "±8%",
+        "temp": "HOT ▲"
+      }
+    },
+    "sakura-bloom-in-summer": {
+      "name": "Sakura: Bloom in Summer",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — never fielded (not owned)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Forcefully uses Skill 2.",
+          "Activates when an ally or self destroys an enemy's part. Affects self.",
+          "Sustained Damage ▲ 5.1% for 30 sec.",
+          "Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.",
+          "Dancing Flower Duration ▲ 10.02 sec.",
+          "Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.",
+          "Sakura Petals Duration ▲ 10.02 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: unparsed effect \"Forcefully uses Skill 2.\"",
+        "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
+        "skill1: unparsed effect \"Dancing Flower Duration ▲ 10.02 sec.\"",
+        "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.\" — its effects are skipped",
+        "skill1: unparsed effect \"Sakura Petals Duration ▲ 10.02 sec.\"",
+        "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.\" — its effects are skipped"
+      ],
+      "board": null
+    },
+    "scarlet": {
+      "name": "Scarlet",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Current HP ▼ 4.01%."
+        ],
+        "skill2": [
+          "Activates when HP falls below 60%. Affects self.",
+          "Critical Damage ▲ 6.61% continuously."
+        ],
+        "burst": [
+          "Affects self. Activates when HP falls below 50%.",
+          "Critical Rate ▲ 19.57% for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill2: unsupported trigger \"Activates when HP falls below 60%. Affects self.\" — its effects are skipped",
+        "burst: unsupported trigger \"Affects self. Activates when HP falls below 50%.\" — its effects are skipped"
+      ],
+      "board": null
+    },
+    "scarlet-black-shadow": {
+      "name": "Scarlet: Black Shadow",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "714noon: N3 popup localized heat to proc set, cadence hitCount 6->10 swept on N3+T1 -> T1 1.00, N3 1.07",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 2,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec."
+        ]
+      },
+      "caveats": [
+        "burst: unparsed effect \"Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\""
+      ],
+      "board": {
+        "records": [
+          {
+            "comp": "T1 wind-weak (boss Iron)",
+            "ratio": 0.8918
+          },
+          {
+            "comp": "N3 scarlet/liberalio iron (boss Iron)",
+            "ratio": 1.2053
+          }
+        ],
+        "n": 2,
+        "mean": 1.0486,
+        "mad": 0.1567,
+        "band": ">15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "snow-white": {
+      "name": "Snow White",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": true,
+      "evidence": "N4 confounded: 1.11",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "residual": "DPS-chart FILLER control — control-trusted for its minimal team buffs, but own calibration is thin (one confounded read)",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Additional Effect: Pierce"
+        ]
+      },
+      "board": null
+    },
+    "snow-white-heavy-arms": {
+      "name": "Snow White: Heavy Arms",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "probe u7 team-two — seven burst windows observed end-to-end, Fully-Active ends-on-uses measured; run C 0.95",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 3,
+        "within3pct": 1
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T4 water-weak (boss Fire)",
+            "ratio": 1.0746
+          },
+          {
+            "comp": "T4b water-weak REPLICATE (boss Fire)",
+            "ratio": 1.092
+          },
+          {
+            "comp": "T6 fire-weak (boss Wind)",
+            "ratio": 1.1449
+          },
+          {
+            "comp": "N5 snowwhite-HA fire (boss Fire)",
+            "ratio": 0.9811
+          }
+        ],
+        "n": 4,
+        "mean": 1.0731,
+        "mad": 0.0826,
+        "band": "±15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "soda-twinkling-bunny": {
+      "name": "Soda: Twinkling Bunny",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "N3: 0.77",
+      "date": "2026-07-14",
+      "graded": {
+        "teams": 1,
+        "within3pct": 1
+      },
+      "reference": false,
+      "residual": "Chip-economy model, untuned",
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "N3 scarlet/liberalio iron (boss Iron)",
+            "ratio": 0.9676
+          }
+        ],
+        "n": 1,
+        "mean": 0.9676,
+        "mad": 0.0324,
+        "band": "±5%",
+        "temp": "COLD ▼"
+      }
+    },
+    "soline-frost-ticket": {
+      "name": "Soline: Frost Ticket",
+      "burst": "I",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "parser-baseline",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "takina": {
+      "name": "Takina",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MEASURED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Solo sniper gauge recording (A22) + focus/unfocused gauge steps (A24); run G 1.01 after SR-gen fix",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PG iron sweep (boss Electric)",
+            "ratio": 1.0436
+          }
+        ],
+        "n": 1,
+        "mean": 1.0436,
+        "mad": 0.0436,
+        "band": "±5%",
+        "temp": "HOT ▲"
+      }
+    },
+    "tove": {
+      "name": "Tove",
+      "burst": "I",
+      "weapon": "AR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "evidence": "Pure model — bare override, never validated",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null
+    },
+    "trina": {
+      "name": "Trina",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "CALIBRATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Target-scope \"leftmost Electric AR ally\" from run-B video -> alliesOfElementWeapon; 2.62 -> 1.14",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 3,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.",
+          "Recovers 2.03% of the skill user's final Max HP as HP.",
+          "Recovers 1.57% of the skill user's final Max HP as HP."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "PB elec battery (boss Water)",
+            "ratio": 1.1277
+          },
+          {
+            "comp": "PB2 elec battery RERUN w/ video (boss Water)",
+            "ratio": 1.1609
+          },
+          {
+            "comp": "TB2T2 anis-star projExpl probe (boss Water)",
+            "ratio": 1.0579
+          },
+          {
+            "comp": "N3 scarlet/liberalio iron (boss Iron)",
+            "ratio": 1.2138
+          }
+        ],
+        "n": 4,
+        "mean": 1.1401,
+        "mad": 0.1401,
+        "band": "±15%",
+        "temp": "HOT ▲"
+      }
+    },
+    "velvet": {
+      "name": "Velvet",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "partial-hand",
+        "date": null,
+        "findings": []
+      },
+      "tier": "VALIDATED",
+      "tuned": true,
+      "control": false,
+      "evidence": "Hand-verified vs a real scope-lock run (T5 wind-weak); 1.50 -> 1.05",
+      "date": "2026-07-13",
+      "graded": {
+        "teams": 1,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Additional Effect"
+        ]
+      },
+      "board": {
+        "records": [
+          {
+            "comp": "T5 wind-weak probe (boss Iron)",
+            "ratio": 1.0679
+          }
+        ],
+        "n": 1,
+        "mean": 1.0679,
+        "mad": 0.0679,
+        "band": "±8%",
+        "temp": "HOT ▲"
+      }
+    },
+    "volume": {
+      "name": "Volume",
+      "burst": "I",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [
+          "Affects self when killing an enemy.",
+          "ATK ▲ 12.6% for 5 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the kill-gated ATK ▲ 12.6% is unmodeled — it can never trigger against the raid boss (the boss does not die mid-fight)",
+        "cadence: fire rate / reload are unmeasured estimates (engine SMG default 20 pulls/s shipped; the raw datamine says 24 pulls/s, and reload_start_ammo 119 hints at rolling reload) — verify on a focus video",
+        "skill2/burst: escalating tiers reach full value only from her 3rd Full Burst / 3rd burst cast, and every modeled effect is burst-gated — the whole kit is inert in a team that cannot chain Full Bursts"
+      ],
+      "board": null
+    },
+    "zwei": {
+      "name": "Zwei",
+      "burst": "I",
+      "weapon": "SG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "materialized",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "reference": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Recovers Cover's HP by 7.52%."
+        ],
+        "burst": [
+          "Additional Effect: Pierce"
+        ]
+      },
+      "board": null
+    }
+  }
+}

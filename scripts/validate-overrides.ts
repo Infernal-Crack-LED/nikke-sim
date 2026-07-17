@@ -21,14 +21,14 @@ const STATS = new Set([
 ]);
 const TRIGGERS = new Set([
   'passive', 'burstCast', 'fullBurstEnter', 'fullBurstEnd', 'hitCount', 'teamAmmo',
-  'shotFired', 'lastBullet', 'recovery', 'stageEnter', 'bossElement', 'chargeCounter',
+  'shotFired', 'lastBullet', 'recovery', 'shielded', 'stageEnter', 'bossElement', 'chargeCounter',
 ]);
 const TARGETS = new Set([
   'self', 'allies', 'enemy', 'burstCasters', 'nonBurstCasters',
-  'alliesTopAtk', 'alliesLowestAtk', 'alliesOfElement', 'alliesOfClass', 'alliesOfElementWeapon', 'selfAndAdjacent',
+  'alliesTopAtk', 'alliesLowestAtk', 'alliesOfElement', 'alliesOfClass', 'alliesOfWeapon', 'alliesOfElementWeapon', 'selfAndAdjacent',
 ]);
 const EFFECTS = new Set([
-  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'burstEligibility', 'burstFirst', 'reenterStage',
+  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
   'instantReload', 'storedHit', 'stun', 'stackedNuke',
 ]);
@@ -38,6 +38,11 @@ const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json'
 const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
 
 function checkEffect(e: any, path: string, errors: string[]) {
+  if (e.kind === 'ignored' || e.kind === 'unsupported') {
+    // offline-parser-only kinds — the engine has no branch for them; the kit
+    // text belongs verbatim in the override's `unmodeled` field instead
+    return errors.push(`${path}: "${e.kind}" is not valid in an override — move the line to the "unmodeled" field`);
+  }
   if (!EFFECTS.has(e.kind)) return errors.push(`${path}: unknown effect kind "${e.kind}"`);
   if (e.kind === 'buff') {
     if (!STATS.has(e.stat)) errors.push(`${path}: unknown stat "${e.stat}"`);
@@ -72,7 +77,12 @@ function validate(slug: string): boolean {
   const errors: string[] = [];
   for (const slot of ['skill1', 'skill2', 'burst'] as const) {
     const blocks = (override as any)[slot];
-    if (blocks === undefined) continue;
+    if (blocks === undefined) {
+      // overrides are the COMPLETE skill description — the engine never parses
+      // prose, so a missing slot means missing kit, not "parser fills it in"
+      errors.push(`${slot}: missing — overrides must define all three slots (empty array OK; run scripts/materialize-overrides.ts)`);
+      continue;
+    }
     if (!Array.isArray(blocks)) { errors.push(`${slot}: must be an array of blocks`); continue; }
     blocks.forEach((b: any, bi: number) => {
       const p = `${slot}[${bi}]`;
@@ -88,6 +98,26 @@ function validate(slug: string): boolean {
     });
   }
   if (!(override as any).note) errors.push('missing top-level "note" documenting modeling decisions');
+
+  // `unmodeled` is the auditable record of kit text NOT represented in blocks
+  const un = (override as any).unmodeled;
+  if (!un || typeof un !== 'object' || Array.isArray(un)) {
+    errors.push('missing "unmodeled" — { skill1: [], skill2: [], burst: [] } with verbatim un-modeled kit-text lines (empty arrays OK)');
+  } else {
+    for (const slot of ['skill1', 'skill2', 'burst'] as const) {
+      const arr = un[slot];
+      if (!Array.isArray(arr) || arr.some((l: any) => typeof l !== 'string' || !l.trim())) {
+        errors.push(`unmodeled.${slot}: must be an array of non-empty strings`);
+      }
+    }
+    for (const k of Object.keys(un)) {
+      if (!['skill1', 'skill2', 'burst'].includes(k)) errors.push(`unmodeled.${k}: unknown key`);
+    }
+  }
+  const caveats = (override as any).caveats;
+  if (caveats !== undefined && (!Array.isArray(caveats) || caveats.some((l: any) => typeof l !== 'string' || !l.trim()))) {
+    errors.push('caveats: must be an array of non-empty strings');
+  }
 
   if (errors.length) {
     console.log(`✗ ${slug}: structural errors`);

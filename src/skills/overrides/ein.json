@@ -1,5 +1,10 @@
 {
   "note": "Tier audit (Bossing A). Parser skipped her three core mechanics; rebuilt from kit text + Prydwen's exact counts. S1: ATK 70.12%/10s on every Burst Stage 3 entry (parser missed the trigger phrasing; Prydwen confirms it lands BEFORE the burst cast and buffs burst damage — matches engine ordering). S2 Near Feathers: 90.81% true damage per instance; Prydwen: 34 instances per her burst ('1-4 after FB ends' — folded in) and ~6 instances between her bursts; feathers CAN CRIT, get the FB multiplier, but NOT the +30% range bonus (crit:true, noRange:true — this mechanic motivated the engine flags) -> burstCast flatDamage 34x90.81=3087.54 + fullBurstEnd flatDamage 6x90.81=544.86 (fires each rotation incl. hers; slight smear). S2 'Charge Damage 80% for 1 shot' primes every next shot ~= permanent +80 (parser read kept as passive). Burst restated: True Damage 55.3%/10s + Charge Damage 140.68%/10s self buffs + 300.02% true nuke. Feather burst-gen (4 at battle start) skipped as minor. ORB GAUGE (2026-07-13, nikke-synergy arena data special_burst_gauge: add_interval_from_start value 5.6 interval 170f): her orb generates 560 energy every ~2.83s for the team - modeled as a zero-damage permanent dot whose ticks drive skillGauge (= her flat target 560 per tick, exactly the documented amount).",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
   "skill1": [
     {
       "slot": "skill1",

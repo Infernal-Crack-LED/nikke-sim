@@ -1,5 +1,13 @@
 {
   "note": "Charge-SR with a 'Seven Dwarves' auto-fire that piggybacks every full-charge shot, plus a burst 'Seven Dwarves Fully Active' mode (2 uses). Baseline auto-fire per shot = 41.9% (AoE, boss) + 105.59% x 5 loaded ammo = 527.95% (sequential), modeled as a shotFired flat hit. Fully Active mode (2 post-burst shots at 3.2s charge): Auto Fire Ready loads 15 ammo -> volley 105.59x15 per shot; the EXTRA over baseline (1583.85-527.95 = 1055.9% per swap shot) is a swapGate:'swapped' shotFired flat hit riding ONLY her two swapped full-charge shots INSIDE the FB window (2026-07-13 volley-placement fix, panel-ACCEPTED: COMMUNITY twice-confirmed — gamewith JP holds the Fully Active buffs per fully-charged shot 1発間維持, prydwen 7->15-hit structure — replacing the old burstCast 2111.8% lump at cast-instant, which missed seq +158.4 / own burst +84.48 / FB-era ATK / entry auras and stranded her at 0.78-0.83 after the measured cast-boundary revert; she graded 0.95-1.06 in run C under the pre-revert era, and lands ~0.96-1.00 again with this fix; per-shot expression crits like her baseline procs, uses-based delivery follows the shots so a swap shot lost to the 6.5s window also loses its volley — the residual uses-vs-time question is logged as H2 in experiment-harness-ai.md). PRYDWEN-CONFIRMED (review, quoted): 'Sequential attack damage \\u25b2158.4%' is an ATK DMG (damage-up bucket) buff, 'diluted by ... other support buffs' -> modeled as stat sequentialDamagePct 158.4 for 6.5s applying ONLY to sequential-flavored hits (the 527.95 baseline volley + the lump), diluted at deal time against live Attack Damage buffs; and '528% Charge Damage (making it 778%)' confirms additive charge points. Fully Active is modeled as a weaponSwap on burstCast (same 69.04% shot, charge time fixed at 3.2s, ~6.5s = exactly 2 rounds) which kills the phantom 1.2s-cadence shots the old lump model left in that window; Charge Damage +528% ('for 1 round' x2 uses) runs 6.5s to cover both swap rounds with crit/core intact. Validated vs two real scope-lock T4 runs: 1.31 -> 0.99. SKIPPED: DEF +42.24% (defensive); Lock-On targeting and Max-Lock-On/ammo caps beyond the ammo counts used above (single boss); charge-time fixes at 1.2s/3.2s (sim uses fixed cadence — this is the main approximation, may overcount ~3 phantom baseline auto-fires during the slower Fully Active window); Pierce and Parts-damage buckets (inert); Fully-Active use-count bookkeeping and normal-attack removal (sim always full-charges); burst's 41.9% to destructible projectiles (none vs single boss). Parts-damage +62.64% kept for fidelity though inert. RECALIBRATED post burst-ordering fix: the old x2.584-baked lump read 1.42-1.43 vs two real scope-lock runs. Q8: charFixes.noBoltRecovery — her chargeFrames already reflect the full validated cycle (kit-fixed 1.2s / DB 90f).",
+  "charFixes": {
+    "noBoltRecovery": true
+  },
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
   "skill1": [
     {
       "slot": "skill1",
@@ -159,8 +167,5 @@
         }
       ]
     }
-  ],
-  "charFixes": {
-    "noBoltRecovery": true
-  }
+  ]
 }

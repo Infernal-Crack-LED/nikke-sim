@@ -62,7 +62,10 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
    guess core presence — read the text.)
 
 3. **The parser drops sustained damage-over-time lines and unsupported triggers → undercounts.**
-   Scan a new parse for missing burst/DoT lines and rebuild them as real-interval DoTs. Fixed:
+   (The parser is now offline-only — 2026-07-16 prose-free runtime — so this applies when reviewing a
+   materialized baseline or an offline parse draft; the dropped lines appear verbatim in the override's
+   `unmodeled` field.) Scan a new parse for missing burst/DoT lines and rebuild them as real-interval
+   DoTs. Fixed:
    Modernia (a per-hit stack read as 1/s), Milk: Blooming Bunny (S2 burst DoT dropped), and many
    "parser skipped …" notes.
    **DoT-OVERLAP encoding (2026-07-16, Mihara batch, Fable-confirmed in-engine):** the engine APPENDS
@@ -141,6 +144,19 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
    ammo / unlimited-ammo / fire-rate / charge-speed line, ask "does this change shots fired?" before
    ever writing "defensive." See DECISIONS 2026-07-15 (grave) + [[reload-speed-affects-damage]].
 
+10. **`burstCast` vs `fullBurstEnter` — trigger fidelity (a boolean-inversion trap).** They coincide
+    ONLY when the unit is the sole burster of its tier and diverge in any team with another same-tier
+    unit. Read the activation text literally: **"when using Burst Skill" / a self mode granted in the
+    unit's OWN Burst block / "entering Full Burst AFTER this unit uses her Burst Skill"** → `burstCast`
+    (fires only on the rotations THIS unit bursts). **"when entering Full Burst" / "during Full Burst"**
+    → `fullBurstEnter` (fires for the unit on team-FB entry regardless of who bursted — correct even for
+    a self buff worded this way). **"when Full Burst ends"** → `fullBurstEnd`. Keying a burst-cast-gated
+    effect to `fullBurstEnter` OVER-CREDITS: it then fires on FBs a DIFFERENT same-tier unit produced.
+    A burst-gained self MODE removed at FB end (arcana-fortune-mate Making Memories) is `burstCast` +
+    `durationSec` spanning burst→FB-exit. `fbGate` only checks FB-state at trigger time — it does not
+    window a duration'd buff. (Root 2026-07-16: arcana MM keyed to `fullBurstEnter` over-credited every
+    multi-B2 team; audit also flagged cinderella-crystal-wave's burst nuke, same class.)
+
 ## The offsetting-errors principle (why bare-frame + firing-validation matter)
 
 A unit graded ~1.0 in normal (buffed, advantaged) teams can still be **wrong** — its value calibrated
@@ -166,7 +182,8 @@ Apply before the first sim of a fresh override, in order:
 1. Gear basis = Base 5 (scope lock); release latency on unless autofire-confirmed.
 2. Sanity-check the datamined cadence / rate-of-fire against reality (prior 1); if reality is
    unavailable (blind baseline), ALWAYS emit the cadence + reload ⚑, and escalate on the text tells.
-3. Scan the parse for dropped burst / DoT lines and unsupported triggers → rebuild (prior 3).
+3. Scan the parse for dropped burst / DoT lines and unsupported triggers → rebuild (prior 3); the
+   override's `unmodeled` field lists exactly what the offline parse dropped — start there.
 4. Identify stack / currency mechanics → steady-state with a ramp haircut (prior 4).
 5. Identify function-damage riders → FB-by-timing DEFAULT (do NOT set `noFb`); `noRange` is
    automatic/universal (don't set it); set `noFb` only with measured FB-OFF evidence (prior 2).

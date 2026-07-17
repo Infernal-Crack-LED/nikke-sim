@@ -1,0 +1,127 @@
+{
+  "note": "MATERIALIZED PARSER OUTPUT (2026-07-16) — auto-generated from the offline kit parser on the official (blablalink) prose; behavior-identical to the previous runtime parse; NOT hand-verified. The reviewed kit-parse hypothesis lives in src/skills/overrides-baselines/bready.json; promote via its MANIFEST.md guardrails (it replaces this file).",
+  "unmodeled": {
+    "skill1": [
+      "Activates when gaining a buff that increases sustained damage. Affects self.",
+      "Lingering Taste: Charge Speed ▼ 20% for 50 sec. This effect cannot be removed.",
+      "Cancels Recommended Taste.",
+      "Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.",
+      "Recommended Taste: Charge Speed ▼ 20% for 50 sec. This effect cannot be removed.",
+      "Cancels Lingering Taste."
+    ],
+    "skill2": [],
+    "burst": [
+      "Activates when in Lingering Taste status. Affects self.",
+      "Aftertaste Effect ▲ 349.8% for 10 sec.",
+      "Activates when in Recommended Taste status. Affects self.",
+      "ATK ▲ 70.09% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "skill1: unparsed effect \"Cancels Recommended Taste.\"",
+    "skill1: unsupported trigger \"Activates when gaining a buff that increases sustained damage. Affects self.\" — its effects are skipped",
+    "skill1: unparsed effect \"Cancels Lingering Taste.\"",
+    "skill1: unsupported trigger \"Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.\" — its effects are skipped",
+    "burst: unparsed effect \"Aftertaste Effect ▲ 349.8% for 10 sec.\"",
+    "burst: unsupported trigger \"Activates when in Lingering Taste status. Affects self.\" — its effects are skipped",
+    "burst: unsupported trigger \"Activates when in Recommended Taste status. Affects self.\" — its effects are skipped"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 70.01,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 10.2,
+          "durationSec": 5
+        },
+        {
+          "kind": "dot",
+          "atkPct": 150.04,
+          "durationSec": 5,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 60.01,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 265.07,
+          "flavor": "distributed"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 60.19,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

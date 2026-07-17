@@ -1,0 +1,99 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- Blanc (slug `blanc`): Wind AR DEFENDER (extract-confirmed; the wave prompt said Supporter — extract wins), Burst II, 60s burst CD. A defensive enabler whose ONLY direct offensive line vs a partless boss is her burst's boss debuff Damage Taken ▲39.26% (10s) → `damageTakenPct` on `burstCast`. Her S2 burst-CDR is the kit's engine: FB-end w/ a squad ally alive → self Burst CD ▼40.76s, collapsing the 60s CD to ~19.2s residual = much higher debuff/heal uptime; the 'ally still on the battlefield' condition is ALWAYS true on the partless boss (nobody dies) → modeled unconditional (`burstCdr` 40.76 on fullBurstEnd). HP-SCALING DETERMINATION: NOT an HP-scaling kit — every Max-HP reference is a defensive/heal BASIS (S1 shield = 11.8% caster Max HP; S2/burst heals = 3.68%/3.84% caster Max HP per sec; burst Max HP ▲31.68% is a survival buff on one ally), never an HP→ATK conversion, so no atkOfMaxHpPct/casterMaxHpPct scaler is modeled (confirms the 2026-07-16 baseline determination). MERGE from overrides-baselines/blanc.json: kept its S2/burst heal-event blocks (hard rule 2 — they fire teammates' `recovery` triggers, Crown-type) + burstCdr + damageTakenPct verbatim in substance; UPGRADED its S1 from `ignored`-gap to a REAL block — the engine now has the `shield` effect (event-only, fires `shielded` triggers): hitCount 120 → allies → shield{maxHpPct:11.8, durationSec:5}, so shield-gated consumers (naga-type 'when a Shield is set') now wire correctly; dropped its `ignored` blocks per the current contract (validator-rejected) — skips live in `unmodeled`. SKIPS (burst line 2, target = 1 lowest-remaining-HP ally except self): 'Gain Indomitability for 10 sec.' — genuinely-skippable survival (revive/death-immunity class; boss lethality unmodeled); 'Max HP ▲ 31.68% for 10 sec.' — UNREPRESENTABLE, not defensive-noise: the buff is the TARGET's own-% Max HP (no such StatKey; `casterMaxHpPct` has the WRONG basis = % of CASTER Max HP) on a target the engine cannot resolve (no remaining-HP tracking, no lowest-HP TargetDef) — encoding it wrong-basis on a nondeterministic target would be fudge>measured; it matters only if it lands on an HP-scaling teammate (atkOfMaxHpPct consumer) → guardrail caveat, revisit if such a comp is graded. ⚑ LIST: (1) CADENCE TUPLE (MANDATORY, datamine-unreliable) — pullsPerSec at the AR class default / reloadFrames 81 / rolling-reload; NOT escalated (60-ammo AR at class rate doesn't empty <1s; no revolver/per-N-round/charge flavor). Recipe: rounds/min + reload gap from any Blanc focus video. NOTE: the S1 shield cadence (every 120 hits) and thus `shielded`-consumer proc rate scales directly with this tuple. (2) HEAL TICK CADENCE (dominant ⚑ per the baseline MANIFEST; kit-silent consumer semantics) — the real heals tick EVERY 1s for 5s (S2) / 8s (burst), but the engine `heal` emits ONE recovery event per activation → on-recovery consumers (Crown) see 1 proc per FB cycle instead of 5–8 tick-refreshes, undercounting their buff uptime by up to ~4s (S2) / ~7s (burst) per cycle. Estimate shipped: 1 event/activation (inert in a team with no recovery-consumer). Recipe: in a consumer team (e.g. Crown), measure the consumer buff's real uptime across an FB cycle; if tick-refreshed, split each heal into per-second timed events (engine support needed) or approximate with extra heal blocks. Self-validated by INSPECTION against types.ts only (production staging rule — no writes to overrides/, no validate-overrides, no sim; the driver runs Step 5).",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Gain Indomitability for 10 sec.",
+      "Max HP ▲ 31.68% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "skill2/burst: heals are modeled as ONE recovery event per activation; the real per-second ticks (every 1s for 5s / 8s) are not carried — on-recovery consumers (Crown-type) will show undercounted uptime (⚑)",
+    "burst: Max HP ▲31.68% on the lowest-remaining-HP ally is unmodeled (no own-%-basis Max HP stat key; no lowest-HP targeting) — only matters if it lands on an HP-scaling teammate",
+    "skill1: shield cadence (every 120 normal attacks) scales with the unverified datamine cadence tuple (⚑)"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 11.8,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 40.76
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 39.26,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

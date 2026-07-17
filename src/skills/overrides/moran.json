@@ -1,5 +1,20 @@
 {
-  "note": "Treasure kit (synced via TREASURE_SYNERGY_IDS moran:200). Hand-verified vs Prydwen review (Bossing SSS): 'she now becomes a CDR, with her Burst Skill CD reduced to 20 seconds'. Fervor ('Activates when Raptures appear: Cooldown of Burst Skill ▼ 20 sec continuously') is ALWAYS active in solo raids -> modeled as burstCdr 20 on her own burstCast, turning her 40s CD into an effective 20s so she bursts every rotation. S1's 47.18% per-5-hits proc is text-gated 'while weapon is changed' (= during her burst weapon swap; blablalink wording) -> fbGate inFb approximates the 10s swap window since she bursts every rotation and the swap spans the FB window. S2's team burst-CDR 7.48s on FB enter requires Fervor, which is always on -> parser's unconditional read is correct, kept here verbatim. Burst kept: weapon swap 14.7%/shot AR w/ unlimited ammo 10s + team ATK 42.57% of caster (casterAtkPct). Damage Taken ▼35.14% on allies is a defensive reduction (ally-side damageTakenPct is inert in the engine, kept for fidelity). Skipped as defensive: DEF-per-HP-lost, taunts, Perseverance max-HP phases, lifesteal. S2's team burst CDR 7.48s on full-burst entry (parser-native) is REAL - required by both the run-B rotation (16.4s with moran effective CD 40-20-7.48=12.5s) and the TB2T2 40s rotation (cinderella 40-7.48=32.5s effective).",
+  "note": "Treasure kit (synced via TREASURE_SYNERGY_IDS moran:200). Hand-verified vs Prydwen review (Bossing SSS): 'she now becomes a CDR, with her Burst Skill CD reduced to 20 seconds'. Fervor ('Activates when Raptures appear: Cooldown of Burst Skill ▼ 20 sec continuously') is ALWAYS active in solo raids -> modeled as burstCdr 20 on her own burstCast, turning her 40s CD into an effective 20s so she bursts every rotation. S1's 47.18% per-5-hits proc is text-gated 'while weapon is changed' (= during her burst weapon swap; blablalink wording) -> fbGate inFb approximates the 10s swap window since she bursts every rotation and the swap spans the FB window. S2's team burst-CDR 7.48s on FB enter requires Fervor, which is always on -> parser's unconditional read is correct, kept here verbatim. Burst kept: weapon swap 14.7%/shot AR w/ unlimited ammo 10s + team ATK 42.57% of caster (casterAtkPct). Damage Taken ▼35.14% on allies is a defensive reduction (ally-side damageTakenPct is inert in the engine, kept for fidelity). Skipped as defensive: DEF-per-HP-lost, taunts, Perseverance max-HP phases, lifesteal. S2's team burst CDR 7.48s on full-burst entry (parser-native) is REAL - required by both the run-B rotation (16.4s with moran effective CD 40-20-7.48=12.5s) and the TB2T2 40s rotation (cinderella 40-7.48=32.5s effective). [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Taunts for 4 sec.",
+      "Once: Max HP ▲ 91% for 3 sec. Activates once per battle.",
+      "Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.",
+      "Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle."
+    ],
+    "burst": [
+      "Additional Effect:",
+      "Recovers 36.14% of attack damage as HP for 10 sec.",
+      "Attract: Taunts all enemies for 10 sec.",
+      "DEF ▲ 14.85% of caster's DEF for 10 sec."
+    ]
+  },
   "skill1": [
     {
       "slot": "skill1",
@@ -30,6 +45,68 @@
         {
           "kind": "burstCdr",
           "seconds": 20
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 14.7,
+          "durationSec": 10
+        },
+        {
+          "kind": "unlimitedAmmo",
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": -35.14,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 42.57,
+          "durationSec": 10
         }
       ]
     }

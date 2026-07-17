@@ -1,0 +1,75 @@
+{
+  "note": "MATERIALIZED PARSER OUTPUT (2026-07-16) — auto-generated from the offline kit parser on the official (blablalink) prose; behavior-identical to the previous runtime parse; NOT hand-verified. The reviewed kit-parse hypothesis lives in src/skills/overrides-baselines/scarlet.json; promote via its MANIFEST.md guardrails (it replaces this file).",
+  "unmodeled": {
+    "skill1": [
+      "Current HP ▼ 4.01%."
+    ],
+    "skill2": [
+      "Activates when HP falls below 60%. Affects self.",
+      "Critical Damage ▲ 6.61% continuously."
+    ],
+    "burst": [
+      "Affects self. Activates when HP falls below 50%.",
+      "Critical Rate ▲ 19.57% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "skill2: unsupported trigger \"Activates when HP falls below 60%. Affects self.\" — its effects are skipped",
+    "burst: unsupported trigger \"Affects self. Activates when HP falls below 50%.\" — its effects are skipped"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 23.15,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 138.24
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 849.15
+        }
+      ]
+    }
+  ]
+}

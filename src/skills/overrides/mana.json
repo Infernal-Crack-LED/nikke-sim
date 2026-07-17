@@ -1,0 +1,87 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- Mana (slug `mana`): AR / Burst III / Attacker / Wind, ammo 60, reloadFrames 121, normalMult 15.07, burst CD 40s. WHOLE-KIT model, merged from the 2026-07-16 reviewed baseline (overrides-baselines/mana.json) + re-derived from kit text under the current contract. S1 Metal γ: continuous self ATK +58.08% as a permanent passive — γ is granted once at battle start and only removed 'when an ally is out of action', which never happens under scope-lock (no ally deaths), so it stays up all fight. S1 heal: 'Recovers 2.04% of caster's final Max HP (all allies) after landing 10 normal attacks in γ' is a HEAL, not HP→damage (no prior-6 conversion line in her kit) — wired per hard-rule-2 as a `heal` EVENT on hitCount-10 → allies so any 'on recovery' consumer (Crown-style) procs; inert alone vs the boss; at AR cadence it fires roughly every ~1s of fire, near-permanent consumer uptime. SKIPPED S1 (unmodeled, never fire under scope-lock): the γ-gated resurrect of an incapacitated ally, and 'ally out of action → Removes Metal γ' (exactly why the +58.08% is permanent). S2 Metal σ: continuous self Burst-Gauge fill +70.4% as passive burstGenPct — σ is removed only at an FB-entry consumed in σ and re-granted whenever she casts Burst before that FB ends, so as the bursting B3 (or a never-bursting lone B3) σ is effectively permanent. S2 FB self buffs: 'entering Full Burst in Metal σ status → Attack Damage +21.12% + ATK +63.36% (10s), Removes Metal σ' — TRIGGER RE-KEYED burstCast (CHANGE vs the raw parse AND the prior baseline, both fullBurstEnter; prior 10 / HARD RULE 6 postdates the baseline): σ is maintained ONLY by her own burst casts, so post-first-FB the buff is gated on HER bursting; `fullBurstEnter` would over-credit every multi-B3 FB (the arcana-fortune-mate Making-Memories class bug, prior 10), while `burstCast` matches the σ-economy firing COUNT in every comp and is IDENTICAL when she is the sole B3 (the standard context). Known residual: σ starts granted, so in a multi-B3 team the true first-FB proc (and a one-FB phase offset) is not captured — engine has no σ state machine; 'Removes Metal σ' + the re-grant block are unmodeled verbatim, subsumed into this approximation + the permanent burstGen passive. S2 charge support: 'entering Full Burst → Charge Time ▼0.18 sec (10s) to the 1 ally with longest basic Charge Time' — weapon-state = shot count = damage for a charge ally (hard rule 1); modeled fullBurstEnter → allies chargeSpeedPct 18 (⚑: 0.18s absolute converted at an assumed ~1.0s basic charge; 'longest-charge ally' not expressible in TargetDef → `allies`, harmless since chargeSpeedPct is inert on non-charge weapons and control teams carry ≤1 charge unit). BURST: self Sustained Damage +52.8% (10s) + 396% final-ATK sustained DoT every 1s for 10s on the boss (10 ticks/cast; MANIFEST: ~59% of her damage) — burstCast dur-10 on a ≥40s burst CD, so NO DoT-overlap multiplication (prior 3 satisfied: duration ≤ re-trigger interval; not a maintained DoT, a per-cast one). Ticks landing inside FB get +50% by timing (prior 2 — no noFb anywhere); the S2 ATK/AttackDamage + burst Sustained buffs all amplify this bucket. Wind = clean ×1.10 (no elemental-advantage buff, prior 7). No weapon-state lines on herself → no charFixes; no modes. ⚑: (1) cadence tuple pullsPerSec/reloadFrames-121/rolling-reload (mandatory, datamine-unreliable; 60-ammo AR at class rate empties in ~5s — no escalation tell); (2) chargeSpeedPct 18 magnitude+target approximation; (3) σ-economy trigger phase (burstCast approximation — verify buff presence on FBs she didn't burst in a multi-B3 recording); (4) heal/hitCount-10 consumer cadence (synergy-only). NOT HP-SCALING.",
+  "unmodeled": {
+    "skill1": [
+      "Activates if the skill user is in Metal γ status when an ally is out of action. Affects 1 incapacitated ally unit(s) with the highest final ATK (except the skill user).",
+      "Resurrect with 96% HP.",
+      "Activates when an ally is out of action. Affects self.",
+      "Removes Metal γ."
+    ],
+    "skill2": [
+      "Removes Metal σ.",
+      "Activates if the skill user has cast Burst Skill before Full Burst ends. Affects self.",
+      "Metal σ: Burst Gauge filling speed ▲ 70.4% continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill2: FB self buffs (Attack Damage +21.12% / ATK +63.36%) keyed to her OWN burst cast — the Metal σ economy approximation. Exact when she is the sole Burst III; a multi-B3 team's true σ state machine (battle-start grant, remove-on-FB, re-grant-on-her-cast) is phase-shifted vs this encoding.",
+    "skill2: Metal σ burst-gauge +70.4% modeled permanent — overstated in multi-B3 rotations where she skips bursts (σ drops until her next burst).",
+    "skill2: Charge Time ▼0.18 sec ally support approximated as chargeSpeedPct 18 to all allies — magnitude is an unmeasured ⚑ (0.18s ÷ the target's basic charge time) and the 'longest basic Charge Time' single-target selection is not engine-expressible (inert on non-charge allies).",
+    "skill1: hitCount-10 team heal is an event-only synergy hook (Crown-style recovery consumers); it adds no damage alone.",
+    "cadence: pullsPerSec / reloadFrames 121 are unverified datamine (mandatory ⚑)."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 58.08 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 10 },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "heal" }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "burstGenPct", "value": 70.4 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "attackDamagePct", "value": 21.12, "durationSec": 10 },
+        { "kind": "buff", "stat": "atkPct", "value": 63.36, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "chargeSpeedPct", "value": 18, "durationSec": 10 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "sustainedDamagePct", "value": 52.8, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "dot", "atkPct": 396, "durationSec": 10, "intervalSec": 1, "flavor": "sustained" }
+      ]
+    }
+  ]
+}

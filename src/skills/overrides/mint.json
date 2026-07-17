@@ -1,5 +1,23 @@
 {
-  "note": "Mode system: each burst toggles Mint's Assigned Part between Singing and Dancing (start -> Dancing on burst 1, then Singing, Dancing, Singing...), so at steady-state she is in Singing ~50% of the time. Dancing's only effect is a heal (Dancing Effect), which is defensive and skipped, so the Dancing half contributes nothing. Her Singing-gated buffs are therefore modeled at ~50% uptime by halving their values (a steady-state reduction, not the ignored full-uptime the raw parser assumes): S1 Singing Effect 45.02% of caster's ATK -> 22.51%; S2 (enter Burst Stage 3 while Singing) Crit Rate 19.94 -> 9.97, Projectile Explosion 50 -> 25, Pierce 32.72 -> 16.36. The burst's Sing Along buffs (Attack Damage 30.02%, Max Ammo 40%, Crit Damage 45.05%) are UNCONDITIONAL (not Singing-gated) so they keep full value — burst slot omitted, parser is faithful. The S2 'Cancels Assigned Part' and burst 'gains Assigned Part' lines are mode bookkeeping with no damage/buff and are dropped. APPROXIMATION: uptime-averaging a buff assumes teammates' damage is spread evenly across Mint's Singing/Dancing cycles; if their damage clusters in windows that align (or misalign) with Singing, the true value differs. Pierce is inert in v1 regardless. MODES ADDED (tier audit, Prydwen-confirmed): 'Prika's skill 2 now enforces Mint into a permanent Singing State' -> mode 'duet (w/ Prika)' uses FULL Singing values (45.02 casterAtk per full charge, crit 19.94 / projExpl 50 / pierce 32.72 on stage-3); mode 'solo' keeps the 50%-uptime halved values (she alternates Singing/Dancing every burst without Prika).",
+  "note": "Mode system: each burst toggles Mint's Assigned Part between Singing and Dancing (start -> Dancing on burst 1, then Singing, Dancing, Singing...), so at steady-state she is in Singing ~50% of the time. Dancing's only effect is a heal (Dancing Effect), which is defensive and skipped, so the Dancing half contributes nothing. Her Singing-gated buffs are therefore modeled at ~50% uptime by halving their values (a steady-state reduction, not the ignored full-uptime the raw parser assumes): S1 Singing Effect 45.02% of caster's ATK -> 22.51%; S2 (enter Burst Stage 3 while Singing) Crit Rate 19.94 -> 9.97, Projectile Explosion 50 -> 25, Pierce 32.72 -> 16.36. The burst's Sing Along buffs (Attack Damage 30.02%, Max Ammo 40%, Crit Damage 45.05%) are UNCONDITIONAL (not Singing-gated) so they keep full value — burst slot omitted, parser is faithful. The S2 'Cancels Assigned Part' and burst 'gains Assigned Part' lines are mode bookkeeping with no damage/buff and are dropped. APPROXIMATION: uptime-averaging a buff assumes teammates' damage is spread evenly across Mint's Singing/Dancing cycles; if their damage clusters in windows that align (or misalign) with Singing, the true value differs. Pierce is inert in v1 regardless. MODES ADDED (tier audit, Prydwen-confirmed): 'Prika's skill 2 now enforces Mint into a permanent Singing State' -> mode 'duet (w/ Prika)' uses FULL Singing values (45.02 casterAtk per full charge, crit 19.94 / projExpl 50 / pierce 32.72 on stage-3); mode 'solo' keeps the 50%-uptime halved values (she alternates Singing/Dancing every burst without Prika). [materialized 2026-07-16: burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "modes": [
+    "solo",
+    "duet (w/ Prika)"
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Only one Assigned Part is applied according to Mint's current status.",
+      "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.",
+      "Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed."
+    ]
+  },
+  "caveats": [
+    "burst: unparsed effect \"Only one Assigned Part is applied according to Mint's current status.\"",
+    "burst: unparsed effect \"Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.\"",
+    "burst: unparsed effect \"Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed.\""
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -102,8 +120,35 @@
       ]
     }
   ],
-  "modes": [
-    "solo",
-    "duet (w/ Prika)"
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 30.02,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 40,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 45.05,
+          "durationSec": 10
+        }
+      ]
+    }
   ]
 }

@@ -38,6 +38,24 @@ export interface CharacterData {
   treasure: boolean;              // has a Treasure (favorite item); DB prydwen_slug ends -treasure
   nicknames?: string[];           // APPROVED community nicknames (src/data/nicknames.ts derivation)
   skills: { skill1: string; skill2: string; burst: string };
+  // Raw, UNPRUNED blablalink roledata snapshot (game source-of-truth), passed through verbatim
+  // from the DB `role_*` jsonb columns. Field names inside are blablalink snake_case. Nothing in
+  // the engine reads this yet — it is staged in characters.json so we can later migrate weapon
+  // timing/profile fields off the live Synergy API onto it and prune the redundant end. See
+  // docs/handoffs/skill-data-sim-side-handoff.md ("role_* snapshot columns").
+  role?: RoleSnapshot;
+}
+
+// One key per DB `role_*` column, prefix stripped. Deliberately loose (`unknown`) — this is an
+// unpruned passthrough; do not model it until a field is promoted to a real engine input.
+export interface RoleSnapshot {
+  weapon?: unknown;       // role_weapon: shot_id, bonusrange_min/max, shot_detail (firing model)
+  burstMeta?: unknown;    // role_burst_meta: use_burst_skill, change_burst_step, burst_apply_delay, burst_duration
+  skillDetails?: unknown; // role_skill_details: ulti/skill1/skill2 ids + tables + full skill-detail blocks
+  statScaling?: unknown;  // role_stat_scaling: grade_core_id, grow_grade, stat_enhance_detail
+  element?: unknown;      // role_element: element_id, element_details
+  piece?: unknown;        // role_piece: piece_id, piece_detail (Limit-Break item)
+  meta?: unknown;         // role_meta: original_rare, class, corporation, critical_*, categories
 }
 
 export interface LevelMultiplier {

@@ -1,4 +1,4 @@
-// Reference-grade layer for data/hand-tuned.json.
+// Reference-grade layer for data/kit-status.json (the per-unit SSOT; absorbed data/hand-tuned.json 2026-07-16).
 //
 // A unit is REFERENCE-GRADE when it is tuned=true AND its final damage total lands
 // within +/-3% of reality (ratio 0.97-1.03) on at least 5 DIFFERENT teams (dedup by
@@ -6,7 +6,7 @@
 // This is the top trust tier: proven reliable across many real fights, not just
 // tuned once. Recompute whenever the graded comps in scripts/experiment.ts change.
 //
-//   npx tsx scripts/refgrade.ts            # print + write the layer into hand-tuned.json
+//   npx tsx scripts/refgrade.ts            # print + write the layer into kit-status.json
 //   npx tsx scripts/refgrade.ts --dry      # print only
 import { readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
@@ -51,15 +51,16 @@ for (const t of teams)
     if (WITHIN(r)) within[u] = (within[u] ?? 0) + 1;
   }
 
-const path = new URL('../data/hand-tuned.json', import.meta.url);
+const path = new URL('../data/kit-status.json', import.meta.url);
 const ht = JSON.parse(readFileSync(path, 'utf8'));
 const refs: string[] = [];
-for (const unit of ht.units) {
-  const g = graded[unit.slug] ?? 0;
-  const w = within[unit.slug] ?? 0;
+const htUnits = Object.entries(ht.units).map(([slug, u]: [string, any]) => ({ slug, ...u }));
+for (const [slug, unit] of Object.entries<any>(ht.units)) {
+  const g = graded[slug] ?? 0;
+  const w = within[slug] ?? 0;
   unit.graded = { teams: g, within3pct: w };
   unit.reference = unit.tuned && w >= MIN_TEAMS;
-  if (unit.reference) refs.push(unit.slug);
+  if (unit.reference) refs.push(slug);
 }
 ht.reference_grade = {
   definition: `tuned=true AND final-total ratio within 0.97-1.03 on >=${MIN_TEAMS} distinct teams (dedup by unit set; focus not required). Recompute with scripts/refgrade.ts when graded comps change.`,
@@ -70,10 +71,10 @@ ht.reference_grade = {
 console.log(`distinct graded teams: ${teams.length}`);
 console.log(`REFERENCE-GRADE (>=${MIN_TEAMS} teams within +/-3%): ${refs.length ? refs.join(', ') : '(none yet)'}`);
 console.log('\nclosest tuned units (teams / within +/-3%):');
-for (const u of ht.units.filter((x: any) => x.tuned).sort((a: any, b: any) => (b.graded.within3pct - a.graded.within3pct) || (b.graded.teams - a.graded.teams)).slice(0, 12))
+for (const u of htUnits.filter((x: any) => x.tuned).sort((a: any, b: any) => (b.graded.within3pct - a.graded.within3pct) || (b.graded.teams - a.graded.teams)).slice(0, 12))
   console.log(`  ${u.slug.padEnd(24)} teams=${String(u.graded.teams).padStart(2)}  within=${String(u.graded.within3pct).padStart(2)}${u.reference ? '  ◀REFERENCE' : ''}`);
 
 if (!process.argv.includes('--dry')) {
   writeFileSync(path, JSON.stringify(ht, null, 2) + '\n');
-  console.log('\nwrote data/hand-tuned.json (reference layer)');
+  console.log('\nwrote data/kit-status.json (reference layer)');
 }

@@ -1,32 +1,67 @@
 {
   "note": "RE-TUNED 2026-07-16 against the soda tb control.mov recording (Fable-approved; overturns the 2026-07-15 'GOLDEN CHIP self-buffs MODELED' entry with higher-tier evidence — a focused recording + exact popup arithmetic). The kit-parse blind parser out-predicted the prior hand-tune (0.667 vs real) by reading three mechanics correctly; this re-tune adopts them. THREE MEASURED BUG FIXES: (1) CRIT-DAMAGE is chip-tied, NOT a ramp-from-0. The prior model built critDamagePct via shotFired+everyN 3 in-FB casts, reaching only ~4 stacks (+5%) because Soda fires few in-FB normals. PROOF it's wrong: a t=8 pre-burst popup (chips=50, ZERO in-FB casts) showed crit ×2.160 = (150+50×1.32)/100 EXACTLY — crit-damage tracks the Golden-Chip POOL (starts 50), not a from-0 ramp. Modeled as a passive critDamagePct 42 (measured trace time-average ~31.6 chips × 1.32; ⚑ chip time-average). (2) The burst ATK ▲65.25% (@≥30 chips) fires on EVERY burst, not first-burst-only. Chips are consumed AFTER the effect ('▼17 after applied') so the gate checks PRE-consume counts (50/44/40/38/31) — all 5 bursts clear ≥30. The prior everyN 99 offset 1 (first-burst-only) traced the POST-consume pool, the classic isolated-shard error. (3) The per-FB-normal rider is Time-Ext-II-dominant (~130%, was averaged to 100) and FB-extension is measured ~+4s (was +3). Golden Chip economy: start 50, −17/burst, +~6 rebuild/FB → drains 50→27→...→14 (post-consume); pre-consume stays ≥30 all 5 bursts. Reload: charFixes.reloadFrames 182 (measured padded animation, KEPT). Hit Rate +38.91% burst stage STILL inert (SG core-band / HR→core open item). Residual: SG spray magnitude (the shared SG under-model was RESOLVED 2026-07-15 per commit 85ef60e, so this is now a cleaner read). Grade (soda tb control, Fable-verified): prior 0.667 → re-tuned **0.887** vs real — a MISS vs the pre-registered [0.90,1.05], recorded honestly, NOT fit to 1.0. Residual attribution: SG spray magnitude + the sim over-generating Soda's bursts (6 sim vs 5 real → the 0.887 is FLATTERED; true ~0.82). Rejected the datamine-max fit (crit 50 / rider 137 / FB-ext 5 → ~0.955) as trace-CONTRADICTED (the chip pool demonstrably drains; inflating FB-ext to fit distorts the whole team's rotation — faithful>fit). ⚑ crit 42 = the CONTROL-comp chip time-average; a NO-burst comp (N3, chips never drain) reads effective ~50 and grades 0.96 — so the flat passive is comp-dependent-approximate; the correct fix is dynamic chip-state tracking (engine work, DEFERRED). SEPARATE ROTATION BUG FLAGGED (open-questions): the sim gives Soda 6 bursts vs the recorded 5 — reality's 6th burst would sit at ~20 pre-consume chips (<30, gated out); suspect Soda/Helm B3-alternation cooldown collision or FB-extension-shifted timing. ⚑ rider (130) + FB-ext (4) recording-derived, refine on a soda-focus recording.",
+  "charFixes": {
+    "reloadFrames": 182
+  },
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 42 }
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 42
+        }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "shotFired" },
+      "trigger": {
+        "kind": "shotFired"
+      },
       "fbGate": "inFb",
       "everyN": 3,
-      "target": { "kind": "self" },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 10.51, "durationSec": 2 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10.51,
+          "durationSec": 2
+        }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "shotFired" },
+      "trigger": {
+        "kind": "shotFired"
+      },
       "fbGate": "inFb",
       "everyN": 3,
-      "target": { "kind": "alliesTopAtk", "count": 1 },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1
+      },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 10.51, "durationSec": 2 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10.51,
+          "durationSec": 2
+        }
       ]
     }
   ],
@@ -97,8 +132,5 @@
         }
       ]
     }
-  ],
-  "charFixes": {
-    "reloadFrames": 182
-  }
+  ]
 }

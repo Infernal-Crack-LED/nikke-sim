@@ -1,0 +1,76 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- volume (Volume): Wind SMG, Burst I (CD 20s), Tetra. characters.json class = Attacker (the invoking prompt said Supporter — the data wins; class lives in characters.json, not in this file). Rotation-accelerator + crit-support kit: her personal damage is plain SMG fire (hitsPerShot 1, no riders/DoT/swap/charge). AUTHOR-mode merge of src/skills/overrides-baselines/volume.json (agreed on all three modeled blocks; this file additionally fixes the raw materialized parse's S1 bug and moves the escalating descriptor lines out of unmodeled). FULL-KIT AUDIT: (S1) 'Affects self when killing an enemy. ATK ▲ 12.6% for 5 sec' → SKIPPED (unmodeled.skill1): kill-gated — the scope-lock raid boss never dies mid-fight, so the trigger can NEVER fire (sanctioned skip class: 'when an enemy is neutralized / destroyed'). The previous materialized override modeled this as a PASSIVE self atkPct 12.6 — a permanent +12.6% ATK the kit never grants vs a partless boss; removed. Not a weapon-state/heal/shield/DEF/HP/gauge line, so no hard rule protects it. (S2 block A) 'Activates when entering Full Burst. Affects all allies. Once: Cooldown of Burst Skill ▼2.34 / Twice: 2.7 / Three times: 3.17 sec' → IMPLEMENTED: fullBurstEnter → allies, escalating burstCdr [2.34, 2.7, 3.17]. Trigger fidelity (prior 10): text says 'entering Full Burst' → fullBurstEnter (counts TEAM FB entries regardless of who bursted), NOT burstCast. The 'Effects vary according to the number of times entered / Each subsequent effect triggers all effects before it' descriptor lines are EXACTLY the engine's escalating semantics (Nth activation applies steps 1..N, capped at steps.length) — so they are MODELED, not unmodeled; from the 3rd FB on, every FB refunds 2.34+2.7+3.17 = 8.21s of every ally's burst cooldown (a real rotation accelerator — changes team FB counts). (S2 block B) 'Activates when using Burst Skill. Affects all allies. Crit DMG ▲ Once 10.77 / Twice 12.46 / Three times 14.42% for 5 sec' → IMPLEMENTED: burstCast → allies, escalating buff critDamagePct steps dur 5. Text 'when using Burst Skill' → burstCast: fires ONLY on rotations SHE bursts (prior 10 — never fullBurstEnter). Engine gives each escalating step a DISTINCT buff key (`key:sN`, sim.ts applyEffect at the escalating case), so from her 3rd burst all three steps coexist and SUM = +37.65% team crit damage for 5s per cast — the encoding is faithful, no overwrite loss. (BURST) 'Affects all allies. Critical Rate ▲ 31.9% for 5 sec' → IMPLEMENTED: burstCast → allies, critRatePct 31.9 dur 5. HARD-RULE SCAN (all six classes): no weapon-state lines (reload/ammo/unlimited-ammo/fire-rate/charge-speed/swap), no heal/shield/DEF/HP/lifesteal/gauge, no Hit Rate ▲, no recurring conditional-damage/DoT/lastBullet rider, no HP-scaling, no multi-projectile (hitsPerShot 1); the only currency is the kit-STATED escalating tier ladder, fully derivable — no steady-state haircut needed. noFb: N/A (zero function-damage riders; all her output lines are buffs). ⚑ NEEDS-MEASUREMENT (1 — the mandatory cadence tuple): pullsPerSec / reloadFrames / rolling-reload. SHIPPED = engine SMG class default 20 pulls/s + synced reloadFrames 111 (NO charFixes written). TENSION to resolve on video: raw datamine rate_of_fire = 1440 rpm = 24 pulls/s vs the engine class default 20/s (~20% personal-shot-count swing); datamine reload_time 150 (~90f) vs synced reloadFrames 111; datamine reload_start_ammo = 119 (possible rolling/partial-reload tell). Recipe: focused solo scope-lock video — count rounds fired per 10s window + the mag-empty→first-shot gap; watch whether the ammo counter refills partially while firing. No cadence-escalation text tell (120 ammo ÷ 20/s = 6s/mag empties nowhere near <1s; no Magnum/revolver/charge flavor). BURST-ELIGIBILITY: ALL THREE modeled blocks are burst/FB-gated — in a team that cannot chain B1→B2→B3 her ENTIRE kit is inert and she contributes plain SMG fire only. Buff-uptime shape: burst crit-rate (5s) and S2 crit-DMG (5s) ride her ~20s (CDR-shortened) burst cycle → ~25%+ team uptime per cast, full escalated value only from her 3rd cast. BLAST-RADIUS: team-wide crit-rate/crit-DMG buffs + team burst CDR (changes FULL-BURST COUNTS for the whole team) — a /sim-battery diff is the real board check before any team-level claim.",
+  "unmodeled": {
+    "skill1": [
+      "Affects self when killing an enemy.",
+      "ATK ▲ 12.6% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "burstCdr", "seconds": 2.34 },
+            { "kind": "burstCdr", "seconds": 2.7 },
+            { "kind": "burstCdr", "seconds": 3.17 }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "buff", "stat": "critDamagePct", "value": 10.77, "durationSec": 5 },
+            { "kind": "buff", "stat": "critDamagePct", "value": 12.46, "durationSec": 5 },
+            { "kind": "buff", "stat": "critDamagePct", "value": 14.42, "durationSec": 5 }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 31.9,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill1: the kill-gated ATK ▲ 12.6% is unmodeled — it can never trigger against the raid boss (the boss does not die mid-fight)",
+    "cadence: fire rate / reload are unmeasured estimates (engine SMG default 20 pulls/s shipped; the raw datamine says 24 pulls/s, and reload_start_ammo 119 hints at rolling reload) — verify on a focus video",
+    "skill2/burst: escalating tiers reach full value only from her 3rd Full Burst / 3rd burst cast, and every modeled effect is burst-gated — the whole kit is inert in a team that cannot chain Full Bursts"
+  ]
+}

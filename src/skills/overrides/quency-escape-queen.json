@@ -1,5 +1,24 @@
 {
-  "note": "Tier audit (Bossing A). S1's Explore-Route-gated permanents (Distributed Damage 49.58 caster-bucket + Core Damage 25.25 + Crit Rate 16.73) were skipped \u2014 the route fills early and stays, modeled as passives. S2 staged ATK stacking left to the parser approximation. Burst parses (AD 57.08 + 1736.31% distributed nuke).",
+  "note": "Tier audit (Bossing A). S1's Explore-Route-gated permanents (Distributed Damage 49.58 caster-bucket + Core Damage 25.25 + Crit Rate 16.73) were skipped — the route fills early and stays, modeled as passives. S2 staged ATK stacking left to the parser approximation. Burst parses (AD 57.08 + 1736.31% distributed nuke). [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] [re-materialized 2026-07-16: burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Effects vary for each stage. Each subsequent effect triggers all effects before it:",
+      "Stage 1: Affects self.",
+      "Hit Rate ▲ 1.36%. Stacks up to 10 times and lasts for 2 sec.",
+      "Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.",
+      "Hit Rate ▲ 2.71%. Stacks up to 10 times and lasts for 1 sec.",
+      "Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.",
+      "Hit Rate ▲ 4.08%. Stacks up to 5 times and lasts for 0.5 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill2: unparsed effect \"Effects vary for each stage. Each subsequent effect triggers all effects before it:\"",
+    "skill2: unparsed effect \"Stage 1: Affects self.\"",
+    "skill2: unparsed effect \"Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.\"",
+    "skill2: unparsed effect \"Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.\""
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -24,6 +43,82 @@
           "kind": "buff",
           "stat": "critRatePct",
           "value": 16.73
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 2.45,
+          "durationSec": 2,
+          "maxStacks": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 4.9,
+          "durationSec": 1,
+          "maxStacks": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 7.36,
+          "durationSec": 0.5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 57.08,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 25.87,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1736.31,
+          "flavor": "distributed"
         }
       ]
     }

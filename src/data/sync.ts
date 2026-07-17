@@ -72,7 +72,15 @@ async function main() {
     // ORDER BY id: the DB returns rows in non-deterministic order otherwise, which churns the
     // whole characters.json on every sync (a 2000-line reorder that buries the real change).
     // Deterministic id order → syncs diff cleanly (2026-07-16).
-    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug, aliases from nikke_characters order by id`
+    // role_* = raw blablalink roledata snapshot (game source-of-truth), pulled through UNPRUNED into
+    // characters.json for now (prune/migrate later). skill_descriptions = blablalink prose, now the
+    // skills source (accurate to the game). The engine never parses this prose at runtime (2026-07-16
+    // prose-free migration) — after syncing a NEW unit, run scripts/materialize-overrides.ts --write
+    // to seed its override, or the verify gate / runtime will fail loudly on the missing file.
+    `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug, aliases,
+            skill_descriptions,
+            role_weapon, role_burst_meta, role_skill_details, role_stat_scaling, role_element, role_piece, role_meta
+       from nikke_characters order by id`
   );
   const metaRow = await client.query(
     `select value from bot_meta where key = 'nikke_level_multiplier'`
@@ -161,10 +169,27 @@ async function main() {
       // "-treasure" for units whose Treasure is released.
       treasure: (row.prydwen_slug ?? '').endsWith('-treasure'),
       ...(nick.byId[row.id] ? { nicknames: nick.byId[row.id] } : {}),
+      // Prose now comes from blablalink (DB skill_descriptions) — accurate to the game source.
+      // bakery removed attributes.skill*En, so the old `a.skill*En` reads are dead; Synergy stays
+      // only as a last-ditch fallback for a unit whose roledata hasn't been fetched. Treasure units
+      // (privaty/tove/zwei/moran) get their Treasure kit via skill_descriptions (bakery-side).
+      // This prose is AUTHORING INPUT ONLY (offline kit parser / kit.ts / materialize-overrides) —
+      // the sim runs purely on src/skills/overrides/*.json (2026-07-16 prose-free migration).
       skills: {
-        skill1: a.skill1En ?? api?.skill_1_en ?? '',
-        skill2: a.skill2En ?? api?.skill_2_en ?? '',
-        burst: a.burstSkillEn ?? api?.burst_skill_en ?? '',
+        skill1: row.skill_descriptions?.skill1 || api?.skill_1_en || '',
+        skill2: row.skill_descriptions?.skill2 || api?.skill_2_en || '',
+        burst: row.skill_descriptions?.burst || api?.burst_skill_en || '',
+      },
+      // Raw blablalink roledata snapshot, UNPRUNED (prefix stripped: role_weapon -> role.weapon, …).
+      // Nothing reads it yet; staged for a later api.* -> role.* migration. Omit empty keys.
+      role: {
+        ...(row.role_weapon != null ? { weapon: row.role_weapon } : {}),
+        ...(row.role_burst_meta != null ? { burstMeta: row.role_burst_meta } : {}),
+        ...(row.role_skill_details != null ? { skillDetails: row.role_skill_details } : {}),
+        ...(row.role_stat_scaling != null ? { statScaling: row.role_stat_scaling } : {}),
+        ...(row.role_element != null ? { element: row.role_element } : {}),
+        ...(row.role_piece != null ? { piece: row.role_piece } : {}),
+        ...(row.role_meta != null ? { meta: row.role_meta } : {}),
       },
       baseStats: row.base_stats,
     };

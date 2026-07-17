@@ -1,5 +1,10 @@
 {
   "note": "Memory Absorption (S2) is a stack gauge: +1 stack every 3s up to 30, gating three continuous self buffs (>2: ATK 15.2%; >10: Attack Damage 20.27%; >30: core-damage 21.05%). Modeled at steady-state with all stacks maintained (all three permanent, self); the ~90s ramp to 30 stacks is ignored. The stack's own Hit Rate 1.4% is inert. S1 'when Memory Absorption takes effect' fires every 3s, so its ally buffs (core-damage 25.15%, ATK 30.16% of caster) are treated as permanent passives; the shared HP recovery, the self 25% heal, and the start-of-battle Indomitability are skipped (defensive). Burst grants the team Attack Damage 35.45%/15s, a 645.33% nuke, and Memory Incineration: a 10s weapon swap (275.18% dmg, fixed 1.8s charge, 250% full-charge, unlimited ammo). S1's 150%-per-full-charge Memory-Incineration hit only exists during that 10s swap, so it is modeled as an extraHitDamagePct 150 buff for 10s on burst (each swapped-weapon full charge = one hit). The 380.46% 'additional damage vs stage target' block has no explicit trigger; it is modeled conservatively as one flatDamage per burst on the boss. UNCERTAIN: that 380.46% block's scope is genuinely ambiguous (one-time vs per-full-charge vs a broader per-attack rider); folding it into every full charge pushed her share above the team's main DPS, so the one-hit-per-burst reading was chosen as the conservative option, but this may under-count it. TIER-AUDIT FIXES: (1) the 380.46% stage-target hit lands on EVERY full charge during her 10s SR mode (Prydwen: 'Upon releasing a Full Charge ... deals 150% full-screen + 380.46% extra to stage targets'), was a single per-burst flatDamage -> folded into the per-shot rider (extraHitDamagePct 150+380.46=530.46 for 10s). (2) Memory Absorption stack gates ramp (>2 @9s, >10 @30s, >30 @90s of a 180s fight) -> time-averaged values 14.4 / 16.8 / 10.5 instead of full-from-t0. Swap charge 1.8s -> cycle 2.3s (+0.5s SR bolt recovery, same correction validated on helm/velvet).",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
   "skill1": [
     {
       "slot": "skill1",

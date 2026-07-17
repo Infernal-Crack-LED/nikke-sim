@@ -1,5 +1,27 @@
 {
-  "note": "B-tier triage (2026-07-13). S2's 256%/s sustained field is a cooldown skill force-cast by S1 (parser fired it once at t0) -> modeled as a permanent dot at 15s-per-~20s uptime average = 192%/s \u2691. AD 15.64 companion buff likewise permanent-averaged at 11.7. Burst nuke 4571.4% + 35.16%/s dot parse fine and stay parser-side.",
+  "note": "B-tier triage (2026-07-13). S2's 256%/s sustained field is a cooldown skill force-cast by S1 (parser fired it once at t0) -> modeled as a permanent dot at 15s-per-~20s uptime average = 192%/s ⚑. AD 15.64 companion buff likewise permanent-averaged at 11.7. Burst nuke 4571.4% + 35.16%/s dot parse fine and stay parser-side. [materialized 2026-07-16: skill1/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [
+      "Forcefully uses Skill 2.",
+      "Activates when an ally or self destroys an enemy's part. Affects self.",
+      "Sustained Damage ▲ 5.1% for 30 sec.",
+      "Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.",
+      "Dancing Flower Duration ▲ 10.02 sec.",
+      "Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.",
+      "Sakura Petals Duration ▲ 10.02 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: unparsed effect \"Forcefully uses Skill 2.\"",
+    "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
+    "skill1: unparsed effect \"Dancing Flower Duration ▲ 10.02 sec.\"",
+    "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.\" — its effects are skipped",
+    "skill1: unparsed effect \"Sakura Petals Duration ▲ 10.02 sec.\"",
+    "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.\" — its effects are skipped"
+  ],
+  "skill1": [],
   "skill2": [
     {
       "slot": "skill2",
@@ -32,6 +54,41 @@
           "kind": "buff",
           "stat": "attackDamagePct",
           "value": 11.7
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 35.16,
+          "durationSec": 10,
+          "intervalSec": 1,
+          "flavor": "sustained"
         }
       ]
     }

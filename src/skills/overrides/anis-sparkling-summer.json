@@ -1,0 +1,83 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || UNIT: anis-sparkling-summer (Anis: Sparkling Summer) — SG / Supporter / Electric / Burst III, ammo 5 (LOW mag), reloadFrames 141, hitsPerShot 10. MODEL: S1 (fullBurstEnter → all Electric Code allies, 10s): casterAtkPct 55.31 (team ATK buff = Supporter blast radius, touches every Electric teammate) + reloadSpeedPct 49.28 (weapon-state HARD RULE 1 — speeds every Electric ally's reload = more shots/procs). S2 (lastBullet → 2 highest-final-ATK enemies = the boss): flatDamage 382.42% — a PER-MAGAZINE last-bullet proc (HARD RULE 5) that fires EVERY reload cycle; with ammo 5 it recurs often, and the burst's ammo-down makes it fire near-every-shot for 10s → big cumulative damage. Rider gets FB by TIMING (prior 2, no noFb); NO core (text does not say 'core strike'); crit:true per modeling-prior 2 (function riders crit at caster rate) — FLAGGED, small (~+7.5% at baseCrit 15 / +50% critDmg). S2 line2 'Damage to Interruption Parts ▲6.91% self' = SKIPPED (partless boss, no Interruption Parts — genuinely inert in v1; not modeled per NO-ignored-blocks rule). BURST (burstCast → self, 10s): maxAmmoPct -73.92 (weapon-state HARD RULE 1 — ammo 5×0.2608 ≈ 1.3 → ~1-round mags for 10s → drastically more reloads AND more last-bullet procs; WHOLE-PICTURE: fewer rounds/mag = last bullet reached sooner/more often, compounding the 382.42% proc) + reloadSpeedPct 27.72 (stacks with S1's 49.28 on herself, shortening the reload gap the tiny mags create) + elemAdvantageDamagePct 42.24 (Damage-Up bucket, engine gates on real elemental advantage — inert if the boss is not Electric-disadvantaged). Burst-gated lines fire only when she casts B3 (needs a B1→B2→B3 chain; assume standard control team). ⚑⚑⚑: (1) CADENCE TUPLE — pullsPerSec / reloadFrames 141 / rolling-reload are datamine-unreliable, ship datamine as-is, verify from a focus video (rounds/min + reload gap). (2) LAST-BULLET PER-MAG CADENCE — how many 382.42% procs land per fight = (mags fired). Estimate base ≈ shots ÷ mag_size; a full 180s SG run ≈ many mags; the count is dominated by the burst window. Recipe: focused solo, count 382.42% popups over 180s, split burst-window vs outside. (3) AMMO-DOWN × LAST-BULLET × RELOAD interaction (HEAVIEST lever) — during the 10s burst, mag ≈ 1 round so last-bullet fires ~every shot; combined reload-speed (49.28+27.72) sets how many shots/procs land in the window. Estimate: burst window last-bullet procs ≈ shots_fired_in_window (near 1:1). Recipe: slow-mo one burst window, count shots + reloads + 382.42% popups. (4) crit on the 382.42% rider (crit:true assumed per prior 2) — verify popup color (orange = crit). (5) elemAdvantageDamagePct only pays out under Electric advantage — confirm the scope-lock boss element.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Electric"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 55.31,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 49.28,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 382.42,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -73.92,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 27.72,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 42.24,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

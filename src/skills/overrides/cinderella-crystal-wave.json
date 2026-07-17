@@ -1,12 +1,17 @@
 {
-  "note": "RE-TUNED 2026-07-16 (Fable-approved, kit-parse blind parser out-predicted the prior HT ~13% cold): her FB-enter proc text says \"as CORE STRIKE damage\" and activates ON entering Full Burst — the prior model wrongly set trigger=burstCast (fires PRE-FB, loses the +50%) AND dropped core:true. Restored to text-faithful (fullBurstEnter trigger + core:true, both modes). Single-variable test: T5 0.877->0.99, T8 0.868->1.02 vs real. Overturns the 2026-07-13 U1 over-broad no-core ruling for THIS rider (text explicitly labels core strike). --- User-selectable mode (100% uptime for the chosen mode): MG (default - matches the user's validated real solo-raid sample at core 100%) or Snipe. SNIPE: permanent weapon swap (62.13%/shot, 1s charge, 250% full charge). Magazine modeled as 1 round because Additional Effect 2 expends 40 rounds per full-charge shot vs the listed 15-round mag -> one shot per reload cycle (~3.9s/shot); if the 40-round expend actually draws from a separate pool, maxAmmo should be 15 instead (flagged ambiguity). Snipe also carries Destroy (Damage to Parts +26.21%, inert in v1) and the 1189.66% Full-Burst rider. MG: Pinpoint (core damage +26%, matters when core-rate > 0) and the 833.79% core-strike rider (direct core hit -> receives the core bucket, scaled by core-rate; vs a coreless boss it contributes nothing extra). Mode-independent: Beauty-Full (Attack Damage +24% always), ATK +29% always, and the every-5s 900% crosshair hit. Preparation for Change: the per-200-ally-ammo 12% burst-gauge fill is NOW MODELED (2026-07-15) via a teamAmmo trigger (count 200 -> fillGauge 12%, target allies) -- the exact same team-ammo mechanism Little Mermaid uses (count 400 -> 37%); it was wrongly skipped before as 'team ammo not trackable', but teamAmmo IS trackable. This feeds team burst cadence in her comps. Skipped: Preparation for Change reload bookkeeping (reload uses her normal reload time), Decoy (defensive), Pierce (inert). Burst slot left to the parser (Attack Damage 92% + ATK 65% for 10s + 6000% nuke). U1 RULE FIX 2026-07-13: the 833.79% core-strike rider procs ON core hits but, as function-type additional damage, does NOT receive the core damage bucket (datamined rule: procs crit, never core, never range) — core flag removed; was contributing to her 1.16-1.30 heat.",
-  "pierceModes": [
-    "Snipe"
-  ],
+  "note": "RE-TUNED 2026-07-16 (Fable-approved, kit-parse blind parser out-predicted the prior HT ~13% cold): her FB-enter proc text says \"as CORE STRIKE damage\" and activates ON entering Full Burst — the prior model wrongly set trigger=burstCast (fires PRE-FB, loses the +50%) AND dropped core:true. Restored to text-faithful (fullBurstEnter trigger + core:true, both modes). Single-variable test: T5 0.877->0.99, T8 0.868->1.02 vs real. Overturns the 2026-07-13 U1 over-broad no-core ruling for THIS rider (text explicitly labels core strike). --- User-selectable mode (100% uptime for the chosen mode): MG (default - matches the user's validated real solo-raid sample at core 100%) or Snipe. SNIPE: permanent weapon swap (62.13%/shot, 1s charge, 250% full charge). Magazine modeled as 1 round because Additional Effect 2 expends 40 rounds per full-charge shot vs the listed 15-round mag -> one shot per reload cycle (~3.9s/shot); if the 40-round expend actually draws from a separate pool, maxAmmo should be 15 instead (flagged ambiguity). Snipe also carries Destroy (Damage to Parts +26.21%, inert in v1) and the 1189.66% Full-Burst rider. MG: Pinpoint (core damage +26%, matters when core-rate > 0) and the 833.79% core-strike rider (direct core hit -> receives the core bucket, scaled by core-rate; vs a coreless boss it contributes nothing extra). Mode-independent: Beauty-Full (Attack Damage +24% always), ATK +29% always, and the every-5s 900% crosshair hit. Preparation for Change: the per-200-ally-ammo 12% burst-gauge fill is NOW MODELED (2026-07-15) via a teamAmmo trigger (count 200 -> fillGauge 12%, target allies) -- the exact same team-ammo mechanism Little Mermaid uses (count 400 -> 37%); it was wrongly skipped before as 'team ammo not trackable', but teamAmmo IS trackable. This feeds team burst cadence in her comps. Skipped: Preparation for Change reload bookkeeping (reload uses her normal reload time), Decoy (defensive), Pierce (inert). Burst slot left to the parser (Attack Damage 92% + ATK 65% for 10s + 6000% nuke). U1 RULE FIX 2026-07-13: the 833.79% core-strike rider procs ON core hits but, as function-type additional damage, does NOT receive the core damage bucket (datamined rule: procs crit, never core, never range) — core flag removed; was contributing to her 1.16-1.30 heat. [materialized 2026-07-16: burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
   "modes": [
     "MG",
     "Snipe"
   ],
+  "pierceModes": [
+    "Snipe"
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
   "skill1": [
     {
       "slot": "skill1",
@@ -160,6 +165,46 @@
           "kind": "flatDamage",
           "atkPct": 833.79,
           "core": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 92,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 65,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 6000
         }
       ]
     }

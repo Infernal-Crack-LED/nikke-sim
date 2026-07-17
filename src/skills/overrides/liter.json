@@ -1,0 +1,65 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — Liter (`liter`, SMG B1 Supporter Iron, ammo 120 / reloadFrames 111): the canonical B1 CDR/enabler; her own SMG damage is minor, her value is TEAM-WIDE (burst-CDR + escalating buffs + 66% burst ATK), so blast radius is the real check (/sim-battery diff), not a self-sim. S1 block A ('Activates when entering Full Burst', all allies) = escalating team burstCdr steps [2.34, 2.7, 3.17]s — trigger is fullBurstEnter per the literal text (hard rule 6; fires on EVERY team FB regardless of who bursted), and the engine's escalating case (sim.ts:1172) applies steps 1..N on the Nth activation, so from the 3rd FB on every FB-enter grants the full 2.34+2.7+3.17=8.21s CDR, exactly matching 'Each subsequent effect triggers all effects before it'. S1 block B ('Activates when using Burst Skill', all allies) = burstCast (literal text — fires ONLY on rotations LITER bursts, never on another B1's) with escalating buff steps [maxAmmoPct 45.17% / critDamagePct 12.46% / atkPct 14.42%], each 5s; ramps to all three by her 3rd burst cast. maxAmmoPct is a WEAPON-STATE modifier (hard rule 1 / prior 9 — team ammo ▲ = more shots before reload on every teammate), NOT skippable as defensive. The two 'Effects vary according to the number of times…' header lines are IMPLEMENTED by the `escalating` kind (not unmodeled — the materialized parse wrongly parked them there). Burst = team ATK ▲ 66% for 5s on burstCast. The 5s durations on a ~20s B1 cycle → low buff uptime is KIT-FAITHFUL (Liter's known short-buff character); do not extend without measurement. S2 ('Affects 2 ally unit(s) with the lowest remaining cover HP. Restores 52.5% of Cover HP.') modeled as a `heal` event per hard rule 2 / prior 8 (a heal line is NEVER unmodeled — a recovery-consumer teammate, e.g. Crown 'when recovery takes effect', may key off it), with THREE approximations, all ⚑2: (a) the extracted kit text gives NO trigger for S2 — fullBurstEnter is an INVENTED trigger (always-⚑ taxonomy 2; matches Liter's known in-game S2 timing per the staged baseline); (b) the schema has no lowest-cover-HP target kind — approximated to `allies` (real effect hits 2 units per proc, so recovery-consumer procs may over-fire ~2.5×; the event has no magnitude so non-consumer teams are unaffected); (c) whether a COVER-HP restore emits an HP-recovery event in game at all is UNMEASURED — if a Liter+consumer recording shows no proc, demote this block to unmodeled. The 52.5% magnitude is event-only by design (`heal` carries no amount; v1 models no HP pools). NO kit line silently dropped; unmodeled arrays are empty because every line is represented by a block. ⚑1 cadence tuple: SMG datamined rate + reloadFrames 111 unverified (mandatory blind ⚑; no escalation — 120 ammo at SMG class rate is a plausible multi-second magazine, no special fire-mode flavor in the text). ⚑2 S2 trigger/target/recovery-emission (above). ⚑3 blast radius: team burstCdr accelerates the WHOLE team's rotation and can add full bursts board-wide — reviewer must run the /sim-battery diff before any board-level claim.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: cadence tuple (SMG datamined rate of fire, reloadFrames 111) is the unverified datamine — read rounds/min + reload gap from any focus video (⚑1)",
+    "skill2: cover-HP restore is modeled as a recovery event to ALL allies on Full Burst enter — the trigger is not in the kit text (invented), the real target is only the 2 allies with lowest remaining cover HP, and whether cover repair fires 'when recovery takes effect' consumers (e.g. Crown) is unmeasured (⚑2)",
+    "burst: team buffs are short (5 sec) by kit text — low uptime on a ~20 sec cycle is faithful, not a modeling gap"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "burstCdr", "seconds": 2.34 },
+            { "kind": "burstCdr", "seconds": 2.7 },
+            { "kind": "burstCdr", "seconds": 3.17 }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "buff", "stat": "maxAmmoPct", "value": 45.17, "durationSec": 5 },
+            { "kind": "buff", "stat": "critDamagePct", "value": 12.46, "durationSec": 5 },
+            { "kind": "buff", "stat": "atkPct", "value": 14.42, "durationSec": 5 }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "heal" }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 66, "durationSec": 5 }
+      ]
+    }
+  ]
+}

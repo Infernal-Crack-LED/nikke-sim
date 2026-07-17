@@ -1,33 +1,91 @@
 {
-  "note": "Tier audit (Bossing A). Naga's headline buffs are SHIELD-GATED ('when a Shield is set in front of this unit') and the engine has no shield tracking, so the parser skipped them entirely — killing her core identity (she is always run with a shielder: Tia duo, Blanc, or Crown, whose burst creates a team shield every rotation). Modes: 'with shielder' (default; shield refreshed every rotation -> S1 team core-damage 85.17% modeled as fullBurstEnter/10s = full uptime, burst gets BOTH casterAtk lines 16.18+31.02) and 'no shielder' (shield-gated blocks inert; only the 16.18 casterAtk remains). S2 core-damage 40.07%/5s per 5 of her hits (SG ~1.5 pulls/s * 10 pellets... hitCount counts hits; kept parser-faithful) to 2 top-ATK allies. Heals/cover restore skipped. Her SG pellets: hitsPerShot from DB governs hitCount cadence.",
-  "modes": ["with shielder", "no shielder"],
+  "note": "Tier audit (Bossing A). Naga's headline buffs are SHIELD-GATED ('when a Shield is set in front of this unit') and the engine has no shield tracking, so the parser skipped them entirely — killing her core identity (she is always run with a shielder: Tia duo, Blanc, or Crown, whose burst creates a team shield every rotation). Modes: 'with shielder' (default; shield refreshed every rotation -> S1 team core-damage 85.17% modeled as fullBurstEnter/10s = full uptime, burst gets BOTH casterAtk lines 16.18+31.02) and 'no shielder' (shield-gated blocks inert; only the 16.18 casterAtk remains). S2 core-damage 40.07%/5s per 5 of her hits (SG ~1.5 pulls/s * 10 pellets... hitCount counts hits; kept parser-faithful) to 2 top-ATK allies. Heals/cover restore skipped. Her SG pellets: hitsPerShot from DB governs hitCount cadence. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "modes": [
+    "with shielder",
+    "no shielder"
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Recovers 9.58% of the skill user's final Max HP as HP."
+    ],
+    "burst": []
+  },
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "mode": "with shielder",
       "effects": [
-        { "kind": "buff", "stat": "coreDamagePct", "value": 85.17, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 85.17,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 40.07,
+          "durationSec": 5
+        }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "casterAtkPct", "value": 16.18, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 16.18,
+          "durationSec": 10
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "mode": "with shielder",
       "effects": [
-        { "kind": "buff", "stat": "casterAtkPct", "value": 31.02, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 31.02,
+          "durationSec": 10
+        }
       ]
     }
   ]

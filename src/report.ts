@@ -40,14 +40,11 @@ export function printReport(r: SimResult, showRotation: boolean) {
     }
   }
 
-  const flagged = r.units.filter((u) => u.warnings.length || u.skillSource !== 'override');
+  const flagged = r.units.filter((u) => u.warnings.length);
   if (flagged.length) {
     console.log('\nmodeling notes:');
-    for (const u of r.units) {
-      const notes = [...u.warnings];
-      if (u.skillSource === 'parser') notes.unshift('skills auto-parsed (not hand-verified)');
-      else if (u.skillSource === 'parser+override') notes.unshift('skills partially hand-verified');
-      if (notes.length) console.log(`  ${u.name}: ${notes.join(' | ')}`);
+    for (const u of flagged) {
+      console.log(`  ${u.name}: ${u.warnings.join(' | ')}`);
     }
   }
 

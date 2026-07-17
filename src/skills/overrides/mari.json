@@ -1,0 +1,67 @@
+{
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || Mari (`mari`, Mari Makinami Illustrious) — SR / Burst II (20s) / Supporter / Electric; ammo 6, chargeFrames 60, reloadFrames 141, hitsPerShot 1, normalMult 69.04, coreMult 200. Ally-ATK/Pierce support; her own SR damage is minor. FULL-KIT AUDIT (every line accounted for): S1 bullet1 'on Full Charge landing → Damage dealt to Shield ▲100.09%/3s (all allies)' = UNMODELED — an offensive buff vs an ENEMY Shield; the v1 raid boss is partless and never shields, and no StatKey exists for shield-damage. This is NOT a shield GRANT, so no `shield` event / `shielded`-trigger synergy is being orphaned (hard-rule-2 checked); resurface if a shielded boss ever enters scope. S1 bullet2 'on core-hit landing → Pierce Damage ▲40.99%/10s (all allies)' = IMPLEMENTED shotFired + requiresCore → allies pierceDamagePct 40.99 dur 10 (at scope-lock 100% core exposure it refreshes every shot → near-permanent; inert for non-pierce allies but feeds Pierce carriers — alice/red-hood — and Mari HERSELF via her S2 pierce; hard-rule-3, never dropped). S2 (trigger is KIT-SILENT — TOP ⚑3): bullet1 self 'Gain Pierce for 5 sec' = IMPLEMENTED as static hasPierce:true (no timed-pierce primitive exists; under the ⚑3 shotFired estimate the 5s grant refreshes every ~1.4s pull → uptime ≈100% while firing, so static ≈ faithful; alice precedent — flag set AND verbatim line kept in unmodeled since a flag is not a block; if ⚑3 resolves burst-gated, REMOVE this flag) + 'ATK ▲30.78%/5s' self atkPct; bullet2 allies 'ATK ▲30.78% of the skill user's ATK/5s' = casterAtkPct (flat add off Mari's ATK). Both S2 blocks ride the ⚑3 estimated shotFired trigger (the materialized parse used passive, which the engine treats as ALWAYS-ON ignoring the 5s; shotFired honors the stated duration and degrades correctly in downtime — in-sim nearly identical while she fires). Burst bullet1 '639.36% of final ATK as Burst Skill damage (all enemies)' = IMPLEMENTED burstCast flatDamage vs enemy (burst-cast nuke → engine auto FB-exempt, snapshots pre-FB; noFb NOT set per prior 2; single boss takes full value). Burst bullet2 'Attack damage ▲40.99%/10s (all allies)' = IMPLEMENTED burstCast attackDamagePct — burstCast NOT fullBurstEnter (hard-rule-6: the buff is granted in her OWN Burst block, so it fires only on rotations SHE bursts; a second B2 in the team must not proc it). || ⚑ FLAGS (all unmeasured): (1) CADENCE TUPLE — shipped datamine: chargeFrames 60 (1s full charge) + default 22f bolt gap → ~1.37s/shot, reloadFrames 141 (2.35s), ammo 6, no rolling-reload assumed; mag-empty ~8.2s (no implausibility tell). Recipe: read shot cadence + reload gap from any Mari-focus video. (2) SR AUTOFIRE vs 22f BOLT GAP — shipped engine DEFAULT (bolt gap ON; NO charFixes.noBoltRecovery); ~15–20% shot-count swing. Recipe: slow-mo one magazine — if she autofires, set charFixes.noBoltRecovery:true. (3) S2 TRIGGER IS KIT-SILENT (TOP per-unit uncertainty) — the text gives durations but NO activation clause. ESTIMATE: shotFired (refresh on every pull; mirrors S1's on-landing activations → near-permanent self atkPct + ally casterAtkPct uptime while she fires). Plausible alternatives: full-charge-landing (in-sim ≈ identical for an SR that always full-charges), fullBurstEnter, or burstCast (either burst-gated reading cuts ally-ATK uptime to ~5s/rotation → the current model would then OVER-credit out-of-FB uptime substantially). Recipe: in any Mari footage, watch WHEN the ally ATK ▲ buff icon appears/refreshes — per shot outside Full Burst vs only at burst/FB entry. hasPierce is COUPLED to this flag. || GUARDRAILS: the burst nuke gets no FB bonus (auto); the S1 pierce block is inert at coreHitRate 0; every implemented block must be DBG-confirmed to fire over the whole fight (driver Step 5). NO recording yet — HYPOTHESIS only.",
+  "hasPierce": true,
+  "unmodeled": {
+    "skill1": [
+      "Activates when landing a Full Charge attack. Affects all allies.",
+      "Damage dealt to Shield ▲ 100.09% for 3 sec."
+    ],
+    "skill2": [
+      "Gain Pierce for 5 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill2: trigger is KIT-SILENT — modeled as refresh-on-shot (near-permanent while firing); an unmeasured ⚑ estimate — if the real trigger is burst-gated this over-credits out-of-Full-Burst uptime",
+    "skill2: 'Gain Pierce for 5 sec' modeled as static hasPierce (no timed-pierce primitive); tied to the same ⚑ trigger estimate",
+    "skill1: 'Damage dealt to Shield ▲ 100.09%' unmodeled — the raid boss is partless and never shields",
+    "cadence: datamined charge/reload tuple + the SR 22-frame bolt-gap default are unmeasured ⚑ estimates (autofire would add ~15–20% shots)"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "pierceDamagePct", "value": 40.99, "durationSec": 10 }
+      ],
+      "requiresCore": true
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 30.78, "durationSec": 5 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "casterAtkPct", "value": 30.78, "durationSec": 5 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 639.36 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "attackDamagePct", "value": 40.99, "durationSec": 10 }
+      ]
+    }
+  ]
+}

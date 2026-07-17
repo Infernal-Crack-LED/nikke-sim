@@ -1,5 +1,10 @@
 {
   "note": "Drunken cycle modeled dynamically: +1 stack per Burst-1 stage entry (max 3); at every 3rd full-burst end the stacks reset and Hangover STUNS HER for 10s (everyN:3 gate + stun effect) -- she can't fire/charge/reload while stunned. x-stacks values use the cycle average of 2 stacks (stacks run 1,2,3 then reset): S2 stage-3 buffs 15.03/15.04 x2 = 30.06% Distributed Damage + 30.08% Reload Speed for 10s; burst's ATK-of-caster 20.06 x2 = 40.12%. The S1 'while Drunken' team buffs (Crit Rate 20.05%, 35.02% caster ATK) are modeled permanent -- slight overcount during the ~1 rotation after each Hangover before she re-stacks. Hit Rate down is inert. Distributed Damage buff on allies boosts THEIR distributed-flavor hits (e.g. SBS's 500/750% procs). Drunken's Hit Rate -20%/stack is NOT inert for her own MG spray: at avg 2 stacks ~40% of her rounds miss, modeled as normalAttackPct -40 on self (validated vs the user's real sample: 149M real vs 140M modeled). Q5 RECALIBRATED (flag for manual review): Hangover stun re-gated from every-3rd-FULL-BURST-end to every 3rd of HER OWN burst casts — per user ('her own Drunken') and the data: never-bursting Mast (T7) was being stunned 5x for 0.84 cold; bursting Mast (T1) validated. Drunken-gated team buffs kept permanent even when she never bursts (approximation, flagged).",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
   "skill1": [
     {
       "slot": "skill1",

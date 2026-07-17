@@ -1,4 +1,64 @@
 {
-  "note": "Deep-dive 2026-07-13 (run A alice 0.66 cold). S2 'Gain continuous Pierce' -> hasPierce: enables the pierce double-hit (core + body per shot on a core-exposed boss, community-verified) and makes Mint's Pierce Damage 32% buff land (run A duet). Kit skills themselves parse cleanly and are left to the parser.",
-  "hasPierce": true
+  "note": "Deep-dive 2026-07-13 (run A alice 0.66 cold). S2 'Gain continuous Pierce' -> hasPierce: enables the pierce double-hit (core + body per shot on a core-exposed boss, community-verified) and makes Mint's Pierce Damage 32% buff land (run A duet). Kit skills themselves parse cleanly and are left to the parser. [materialized 2026-07-16: skill1/skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "hasPierce": true,
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Gain continuous Pierce.",
+      "Continuously recover HP by 8.12% of attack damage."
+    ],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 11.67,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 7,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 80.15,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 55.12,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
 }

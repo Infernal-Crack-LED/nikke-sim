@@ -1,5 +1,36 @@
 {
-  "note": "Reviewed whole kit; parser output is faithful for all three slots, so no slot is overridden. Skill1 (entering Full Burst -> top-2 ATK allies get Charge Speed 4.48% + ATK 43.1% for 10s) is parsed correctly as fullBurstEnter. Skill2 (Crit Rate 4.83% + Crit Damage 13.91%) is gated on 'above 5 enemy units, excluding Nikkes'; in a single-boss solo raid that condition is never met, so the parser correctly drops it (deliberately left inactive). Burst is the signature weapon swap and the parser already models it as weaponSwap (813.42%/shot, 300% full-charge, 2s charge time, 1 ammo, 10s); charge cadence is specified directly so no attackSpeedPct rider is needed. Nothing to add. PROBE FIX (run G, 1.93 hot): her burst is ONE railgun shot — the old weaponSwap model fired ~4 shots over 10s at 2s charge. Now a single 813.42% flatDamage per cast.",
+  "note": "Reviewed whole kit; parser output is faithful for all three slots, so no slot is overridden. Skill1 (entering Full Burst -> top-2 ATK allies get Charge Speed 4.48% + ATK 43.1% for 10s) is parsed correctly as fullBurstEnter. Skill2 (Crit Rate 4.83% + Crit Damage 13.91%) is gated on 'above 5 enemy units, excluding Nikkes'; in a single-boss solo raid that condition is never met, so the parser correctly drops it (deliberately left inactive). Burst is the signature weapon swap and the parser already models it as weaponSwap (813.42%/shot, 300% full-charge, 2s charge time, 1 ammo, 10s); charge cadence is specified directly so no attackSpeedPct rider is needed. Nothing to add. PROBE FIX (run G, 1.93 hot): her burst is ONE railgun shot — the old weaponSwap model fired ~4 shots over 10s at 2s charge. Now a single 813.42% flatDamage per cast. [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 4.48,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 43.1,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
   "skill2": [],
   "burst": [
     {

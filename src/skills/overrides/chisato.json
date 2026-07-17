@@ -1,5 +1,17 @@
 {
-  "note": "Tier audit (Bossing A). Extrasensory gauge: starts 100%, decays, burst recharges to 100% \u2014 thresholds >70% gate ATK 53.69 and >55% gate True Damage 48.62 (parser skipped; steady state with regular bursts keeps her above the gates most of the fight) -> modeled as permanent self passives. S2's 472.18% true proc per 48 hits parses. Burst ATK 73.16 parses. Slight optimism during deep gauge dips.",
+  "note": "Tier audit (Bossing A). Extrasensory gauge: starts 100%, decays, burst recharges to 100% — thresholds >70% gate ATK 53.69 and >55% gate True Damage 48.62 (parser skipped; steady state with regular bursts keeps her above the gates most of the fight) -> modeled as permanent self passives. S2's 472.18% true proc per 48 hits parses. Burst ATK 73.16 parses. Slight optimism during deep gauge dips. [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Normal attacks deal true damage for 10 sec."
+    ],
+    "burst": [
+      "Charges Extrasensory to 100%."
+    ]
+  },
+  "caveats": [
+    "burst: unparsed effect \"Charges Extrasensory to 100%.\""
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -19,6 +31,44 @@
           "kind": "buff",
           "stat": "trueDamagePct",
           "value": 48.62
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 48
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 472.18,
+          "flavor": "true"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 73.16,
+          "durationSec": 10
         }
       ]
     }

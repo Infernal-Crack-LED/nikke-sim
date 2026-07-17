@@ -1,5 +1,49 @@
 {
-  "note": "Treasure kit (synced from synergy entry 198 via the treasure remap). S1 (parser-kept): FB team buffs incl. Max Ammo -50.66% which accelerates everyone's last-bullet procs. S2 override: 256.17% + Damage Taken 10.01% on every own last bullet (parser-faithful, kept); the 1687% nuke only hits targets in Designated Target status (applied by her burst for 10s, every other rotation) -> modeled as a burst-cast dot ticking every ~3s x3 (her last-bullet cadence during FB with halved mag: ~30 rounds / 12 rps + ~1s reload). Burst (parser-kept + stat fix): Superior Elemental Code Attack Damage 130% = elemAdvantageDamagePct (damage-up only with elemental advantage), 1407.64% nuke; the 3s boss stun and ATK-down are irrelevant in v1 (boss never acts). Q1 CALIBRATED (flag for manual review): the 256.17% last-bullet proc and the 1687% Designated hits are exempt from the +30% range and +50% full-burst majors — calibrated vs real T4 runs (1.29->0.97); mechanism unconfirmed (user researching). noFb AUDIT (2026-07-15, autonomous-invariant-audit): SPLIT applied. The 256.17% last-bullet rider is a normal-attack rider landing during FB -> noFb REMOVED (FB applies by timing, DECISIONS-mandated). The 1687% (2026-07-15, priv focus video re-read): kit text = a last-bullet rider gated on 'Designated Target status' (NOT a front-cast; the front nuke is the parser's separate 1407.64% Burst Skill). Video (u7 focus comp): the 1687 is ABSENT in a confirmed Privaty-burst Designated window (whole-screen check, no ~25-38M popup) -> in THAT comp it contributes ~0 (grades ~0.95 without it). BUT making it universally `ignored` DROPS her T4/T4b calibration comps to 0.64 (real 1140M there NEEDS ~40% more than the sim can produce without it) -> the 1687 is COMP/CONDITION-DEPENDENT (Designated-Target gate satisfied in T4 but not the u7 comp?), not universally inert. So REVERTED to the DoT-noFb baseline (T4 right / u7 comp over by the 1687) pending reconciliation of the Designated-Target gate across comps. CONFIRMED half: the 256% rider gets FB (video 5,750,750 = 367,714 × ~15.64 FB-inclusive; non-FB 3.83M) -> its noFb removal is right. OPEN: what makes the 1687 fire in T4 but not the u7 comp (both partless Fire boss)?",
+  "note": "Treasure kit (synced from synergy entry 198 via the treasure remap). S1 (parser-kept): FB team buffs incl. Max Ammo -50.66% which accelerates everyone's last-bullet procs. S2 override: 256.17% + Damage Taken 10.01% on every own last bullet (parser-faithful, kept); the 1687% nuke only hits targets in Designated Target status (applied by her burst for 10s, every other rotation) -> modeled as a burst-cast dot ticking every ~3s x3 (her last-bullet cadence during FB with halved mag: ~30 rounds / 12 rps + ~1s reload). Burst (parser-kept + stat fix): Superior Elemental Code Attack Damage 130% = elemAdvantageDamagePct (damage-up only with elemental advantage), 1407.64% nuke; the 3s boss stun and ATK-down are irrelevant in v1 (boss never acts). Q1 CALIBRATED (flag for manual review): the 256.17% last-bullet proc and the 1687% Designated hits are exempt from the +30% range and +50% full-burst majors — calibrated vs real T4 runs (1.29->0.97); mechanism unconfirmed (user researching). noFb AUDIT (2026-07-15, autonomous-invariant-audit): SPLIT applied. The 256.17% last-bullet rider is a normal-attack rider landing during FB -> noFb REMOVED (FB applies by timing, DECISIONS-mandated). The 1687% (2026-07-15, priv focus video re-read): kit text = a last-bullet rider gated on 'Designated Target status' (NOT a front-cast; the front nuke is the parser's separate 1407.64% Burst Skill). Video (u7 focus comp): the 1687 is ABSENT in a confirmed Privaty-burst Designated window (whole-screen check, no ~25-38M popup) -> in THAT comp it contributes ~0 (grades ~0.95 without it). BUT making it universally `ignored` DROPS her T4/T4b calibration comps to 0.64 (real 1140M there NEEDS ~40% more than the sim can produce without it) -> the 1687 is COMP/CONDITION-DEPENDENT (Designated-Target gate satisfied in T4 but not the u7 comp?), not universally inert. So REVERTED to the DoT-noFb baseline (T4 right / u7 comp over by the 1687) pending reconciliation of the Designated-Target gate across comps. CONFIRMED half: the 256% rider gets FB (video 5,750,750 = 367,714 × ~15.64 FB-inclusive; non-FB 3.83M) -> its noFb removal is right. OPEN: what makes the 1687 fire in T4 but not the u7 comp (both partless Fire boss)? [materialized 2026-07-16: skill1/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Stuns for 3 sec."
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 23.61,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 51.16,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -50.66,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20.16,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
   "skill2": [
     {
       "slot": "skill2",
@@ -39,6 +83,46 @@
           "intervalSec": 3,
           "noRange": true,
           "noFb": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 130,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1407.64
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": -5.02,
+          "durationSec": 10
         }
       ]
     }

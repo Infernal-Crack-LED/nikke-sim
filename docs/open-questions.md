@@ -114,10 +114,33 @@ over-fires brid's riders to ~4.9× — a harness artifact, NOT a model bug; her 
 is a per-unit `sgFarScale≈0.88` for isabel+brid ONLY (far ~0.66), NOT a class-wide far cut; cleanest
 engine shape if ever built = per-unit `sgLandingScale` (guilty) + optional `sgFarScale` (isabel/brid),
 unlisted units keep the class table. Consolidation memo + machine table: session archive u17-work/.
-STILL OPEN: (1) a third ATK-clean solo SG read (or a datamined per-unit accuracy/spread stat);
-(2) re-derive isabel's mid/midfar with clock-drift correction (her single-anchor read predates that
-discovery). Full record: docs/probe-data/{guilty,brid-silent-track}-sg-band.json (+ -events), the
-pre-registration in the session archive, DECISIONS 2026-07-16.
+**2026-07-16 FAR-BAND RESOLVED (per-unit; class-wide 0.66 REJECTED).** Two developments closed
+open item (1) "a third ATK-clean solo SG read":
+- The "datamined per-unit accuracy/spread stat" alternative is a DEAD END — the synergy-API
+  characters.json carries NO per-unit accuracy/spread/reticle field (full per-unit field set is
+  enumerable: ammo, baseStats, burst, burstCooldownSec, burstGaugePerShot, chargeFrames,
+  chargeMultiplier, class, coreAttackMultiplier, element, hitsPerShot, manufacturer, name,
+  normalAttackMultiplier, reloadFrames, rl3, skills, slug, treasure, weapon — no spread correlate).
+  The structureSearch above already tested every field we hold; there is no stat to correlate the
+  far split against.
+- **noir is the third clean anchor** (owner-confirmed 2026-07-16). She is the CLEANEST possible SG
+  read: treasure=false (no ATK confound), SOLO Burst-III so she can NEVER enter Full Burst (zero
+  riders/FB/burst-skill damage — the entire 64.87M real total is pure base-hit-rate spray), and the
+  running DAMAGE-counter per-mag delta is an overlap-immune per-shot instrument
+  (docs/probe-data/noir-solo-recon.json). noir far impliedRealLanding ~0.74 (ratio-to-table 0.99),
+  i.e. AT the table. So the four clean solo far reads split 2-vs-2: isabel (r0.87, ~0.66) + brid
+  (r0.88, ~0.66) LOW vs guilty (r0.93, ~0.70) + noir (r0.99, ~0.74) at/near table. **This falsifies a
+  class-wide far = 0.66.** Far is per-unit; the class table far STANDS (correct for noir/guilty).
+  CIRCULARITY CAVEAT: noir SET the table's far=0.74, so she cannot independently re-confirm that
+  absolute value — but she independently establishes noir-far >> isabel/brid-far, and THAT spread
+  (term-independent) is the valid falsifier of class-wide-0.66.
+**Consequence:** the staged far ~0.66 (`sgFarScale≈0.88`) survives ONLY as an isabel/brid-specific
+per-unit candidate, NOT a class-wide value; it stays DOCUMENTED-but-UNENCODED (HOLD rationale
+unchanged: isabel/brid are sim-LOW for rider/term reasons, so a <1 landing factor drags them
+further down). No new footage needed. STILL OPEN: (2) re-derive isabel's mid/midfar with clock-drift
+correction (her single-anchor read predates that discovery). Full record:
+docs/probe-data/guilty-sg-band.json + brid-silent-track-sg-band.json (+ -events) + noir-solo-recon.json,
+the pre-registration in the session archive, DECISIONS 2026-07-16.
 
 ### U16 — Soda burst over-generation + dynamic chip-state (2026-07-16, from the re-tune)
 Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):

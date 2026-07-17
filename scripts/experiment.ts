@@ -323,7 +323,7 @@ function report(comp: Comp, label: string, patch: Patch = {}) {
       const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
       const sd = Math.sqrt(arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length);
       console.log(
-        `${slug.padEnd(24)} shots ${String(pulls.get(slug)).padStart(5)}  tot ${(mean / 1e6).toFixed(0).padStart(6)}M  ratio ${(mean / real).toFixed(3)} ± ${(sd / real).toFixed(3)}`
+        `${slug.padEnd(24)} shots ${String(pulls.get(slug)).padStart(5)}  tot ${(mean / 1e6).toFixed(0).padStart(6)}M  ratio ${(mean / real).toFixed(3)} ± ${(sd / real).toFixed(3)}  ${mean / real > 1.03 ? 'HOT▲' : mean / real < 0.97 ? 'COLD▼' : 'OK·'}`
       );
     }
     return;
@@ -342,7 +342,7 @@ function report(comp: Comp, label: string, patch: Patch = {}) {
     const total = u.totalDamage;
     const m = (n: number) => (n / 1e6).toFixed(0).padStart(6);
     console.log(
-      `${u.slug.padEnd(24)} shots ${String(u.pulls).padStart(5)}  n ${m(u.breakdown.normal)}  s ${m(u.breakdown.skill)}  b ${m(u.breakdown.burst)}  tot ${m(total)}M  ratio ${(total / real).toFixed(2)}`
+      `${u.slug.padEnd(24)} shots ${String(u.pulls).padStart(5)}  n ${m(u.breakdown.normal)}  s ${m(u.breakdown.skill)}  b ${m(u.breakdown.burst)}  tot ${m(total)}M  ratio ${(total / real).toFixed(2)}  ${total / real > 1.03 ? 'HOT▲' : total / real < 0.97 ? 'COLD▼' : 'OK·'}  [ratio=sim/real: >1 HOT/over]`
     );
   }
 }

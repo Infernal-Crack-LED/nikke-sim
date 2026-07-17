@@ -1,5 +1,23 @@
 {
-  "note": "Two stack currencies modeled as steady-state throughput. Restraint Chains: charged to 10 at battle start and refilled to 10 at each full-burst end after her own burst, then the S1 'specific timing' attack dumps all of them (one 50.06% hit per chain). Modeled as a 500.6% (10 x 50.06%) flatDamage dump at start (passive) and once per rotation (fullBurstEnd; she is the team's Burst III so full-burst end == her burst end). Ensnaring Chains: sustained-damage DoT that caps at 20 stacks (fed by the Restraint hits and by S2's +1-per-40-normals during full burst); modeled at the rebuild-aware average of ~10.8 stacks = 270.9%/s permanent DoT (her burst CANCELS Ensnaring to 0; it rebuilds +10 from the Restraint dump at the following FB end and +1 per 40 normals during FB windows, reaching the 20 cap just before her next burst -> time-weighted average ~10.8 between her bursts). Burst Dragging Chain mirrors the 20 Ensnaring stacks for 10s (1001%/s = 20 x 50.05%) and then CANCELS Ensnaring. Because the burst replaces Ensnaring rather than stacking with it, I decompose: the permanent 270.9%/s DoT is the always-on baseline, and the burst adds the DELTA 730.1%/s (1001 - 270.9) for 10s (she reliably re-reaches ~20 stacks by the time she bursts) -- so the DoT output during a burst window equals the correct 1001%/s, with no double-count (the naive '1001 on top of 501.6' would over-count ~195M). The parser missed the x20 stack mirror entirely (read only 50.05%/s). Validated vs the real scope-lock T3 sample: the old permanent-20-stack baseline read 1.19-1.51 hot; the rebuild-aware average lands 1.03. DoTs correctly inherit S2's stageEnter-3 sustainedDamagePct +59.98%/10s via the Damage-Up bucket. skill2 is left to the parser: its stageEnter-3 sustained-damage buff is parsed correctly, its 40-normals-in-FB Ensnaring generation is folded into the steady-state 20-stack cap, and its 'when incapacitated' (+20 Ensnaring) and 'when enemy neutralized' (+1 Restraint) blocks are inert (defensive / boss never dies). REFIT (2026-07-13): riders lost the universal range bonus -> rebuild average re-fit from 10.8 to 12 stacks (301.0%/s baseline, 700.0 burst delta), still within the kit-derived 10-12 window.",
+  "note": "Two stack currencies modeled as steady-state throughput. Restraint Chains: charged to 10 at battle start and refilled to 10 at each full-burst end after her own burst, then the S1 'specific timing' attack dumps all of them (one 50.06% hit per chain). Modeled as a 500.6% (10 x 50.06%) flatDamage dump at start (passive) and once per rotation (fullBurstEnd; she is the team's Burst III so full-burst end == her burst end). Ensnaring Chains: sustained-damage DoT that caps at 20 stacks (fed by the Restraint hits and by S2's +1-per-40-normals during full burst); modeled at the rebuild-aware average of ~10.8 stacks = 270.9%/s permanent DoT (her burst CANCELS Ensnaring to 0; it rebuilds +10 from the Restraint dump at the following FB end and +1 per 40 normals during FB windows, reaching the 20 cap just before her next burst -> time-weighted average ~10.8 between her bursts). Burst Dragging Chain mirrors the 20 Ensnaring stacks for 10s (1001%/s = 20 x 50.05%) and then CANCELS Ensnaring. Because the burst replaces Ensnaring rather than stacking with it, I decompose: the permanent 270.9%/s DoT is the always-on baseline, and the burst adds the DELTA 730.1%/s (1001 - 270.9) for 10s (she reliably re-reaches ~20 stacks by the time she bursts) -- so the DoT output during a burst window equals the correct 1001%/s, with no double-count (the naive '1001 on top of 501.6' would over-count ~195M). The parser missed the x20 stack mirror entirely (read only 50.05%/s). Validated vs the real scope-lock T3 sample: the old permanent-20-stack baseline read 1.19-1.51 hot; the rebuild-aware average lands 1.03. DoTs correctly inherit S2's stageEnter-3 sustainedDamagePct +59.98%/10s via the Damage-Up bucket. skill2 is left to the parser: its stageEnter-3 sustained-damage buff is parsed correctly, its 40-normals-in-FB Ensnaring generation is folded into the steady-state 20-stack cap, and its 'when incapacitated' (+20 Ensnaring) and 'when enemy neutralized' (+1 Restraint) blocks are inert (defensive / boss never dies). REFIT (2026-07-13): riders lost the universal range bonus -> rebuild average re-fit from 10.8 to 12 stacks (301.0%/s baseline, 700.0 burst delta), still within the kit-derived 10-12 window. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Ensnaring Chains stacks ▲ 1.",
+      "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.",
+      "Ensnaring Chains stacks ▲ 20.",
+      "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
+      "Restraint Chain ▲ 1, up to 10."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill2: unparsed effect \"Ensnaring Chains stacks ▲ 1.\"",
+    "skill2: unparsed effect \"Ensnaring Chains stacks ▲ 20.\"",
+    "skill2: unsupported trigger \"Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\" — its effects are skipped",
+    "skill2: unparsed effect \"Restraint Chain ▲ 1, up to 10.\"",
+    "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — its effects are skipped"
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -42,10 +60,30 @@
       "effects": [
         {
           "kind": "dot",
-          "atkPct": 301.0,
+          "atkPct": 301,
           "durationSec": 999,
           "intervalSec": 1,
           "flavor": "sustained"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 59.98,
+          "durationSec": 10
         }
       ]
     }
@@ -62,7 +100,7 @@
       "effects": [
         {
           "kind": "dot",
-          "atkPct": 700.0,
+          "atkPct": 700,
           "durationSec": 10,
           "intervalSec": 1,
           "flavor": "sustained"

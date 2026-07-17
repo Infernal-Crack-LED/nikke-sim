@@ -1,13 +1,127 @@
 {
-  "note": "Only skill1 needs an override; the parser's skill2 (Full-Charge sustained 318.14% x2 for 3s, and the Full-Burst 63.33%/s-for-9s DoT on the stage target) and burst (Damage Taken +25.09% for 10s, 18.43%/s and 181.2%/s DoTs for 9s) are already faithful for v1 and left to the parser. S1 has two mutually exclusive states: Intro (she used her own Burst this cycle) or Highlight (she did not). The parser wrongly stacks both, double-counting Crit Damage (20.28 + 20.28) and applying both sustained buffs (60.19% + 235.03%). She is a Burst III with a team-amp burst (Damage Taken +25.09%), so the sim casts her burst and she is in Intro every rotation: modeled as Intro only -> Crit Damage +20.28% (permanent, undispellable) and Sustained Damage +60.19% for 10s, both on entering Full Burst. Skipped: the Highlight branch (Crit Dmg 20.28% and the larger Sustained 235.03%), which is mutually exclusive with Intro and only applies if she is run as a non-bursting sub-DPS -- flagged as the key uncertainty, since a Highlight build would deal materially more sustained damage. Also skipped in skill2/burst (already handled by the parser omitting them): the part-destruction Sustained 68.04% (no parts on a single boss in v1, so it never triggers), Mute/Noise-Pollution and Mute-stack mechanics (defensive, hit-rate inert).",
+  "note": "Only skill1 needs an override; the parser's skill2 (Full-Charge sustained 318.14% x2 for 3s, and the Full-Burst 63.33%/s-for-9s DoT on the stage target) and burst (Damage Taken +25.09% for 10s, 18.43%/s and 181.2%/s DoTs for 9s) are already faithful for v1 and left to the parser. S1 has two mutually exclusive states: Intro (she used her own Burst this cycle) or Highlight (she did not). The parser wrongly stacks both, double-counting Crit Damage (20.28 + 20.28) and applying both sustained buffs (60.19% + 235.03%). She is a Burst III with a team-amp burst (Damage Taken +25.09%), so the sim casts her burst and she is in Intro every rotation: modeled as Intro only -> Crit Damage +20.28% (permanent, undispellable) and Sustained Damage +60.19% for 10s, both on entering Full Burst. Skipped: the Highlight branch (Crit Dmg 20.28% and the larger Sustained 235.03%), which is mutually exclusive with Intro and only applies if she is run as a non-bursting sub-DPS -- flagged as the key uncertainty, since a Highlight build would deal materially more sustained damage. Also skipped in skill2/burst (already handled by the parser omitting them): the part-destruction Sustained 68.04% (no parts on a single boss in v1, so it never triggers), Mute/Noise-Pollution and Mute-stack mechanics (defensive, hit-rate inert). [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
+      "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
+      "Activates when an ally or self destroys an enemy's part. Affects self.",
+      "Sustained Damage ▲ 68.04% for 15 sec."
+    ],
+    "burst": [
+      "Noise Pollution: Hit Rate ▼ 100% for 1 sec.",
+      "Mute stacks ▼ 1."
+    ]
+  },
+  "caveats": [
+    "skill2: unparsed effect \"Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.\"",
+    "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all allies (except self).\" — its effects are skipped",
+    "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
+    "burst: unparsed effect \"Mute stacks ▼ 1.\""
+  ],
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "critDamagePct", "value": 20.28 },
-        { "kind": "buff", "stat": "sustainedDamagePct", "value": 60.19, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 20.28
+        },
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 60.19,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 318.14,
+          "durationSec": 3,
+          "maxStacks": 2
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 63.33,
+          "durationSec": 9,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 25.09,
+          "durationSec": 10
+        },
+        {
+          "kind": "dot",
+          "atkPct": 18.43,
+          "durationSec": 9,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 181.2,
+          "durationSec": 9,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
       ]
     }
   ]

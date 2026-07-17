@@ -1,20 +1,113 @@
 {
-  "note": "Tier audit (Bossing A). PARSER BUG FIXED: S2's 'Activates when attacking with Full Charge for 8 time(s)' (and 5 times) parsed as shotFired -> the team burst-CDR 7s fired on EVERY shot, flooding cooldowns (an SR fires ~120 shots/fight; real cadence is ~once per rotation per Prydwen: '8 Full Charges ... roughly once per rotation'). Now hitCount 8 -> team burstCdr 7, hitCount 5 -> team Attack Damage 5.06%/10s (~permanent, matching the review). S1 (FB-enter Pierce Damage 13.55%/10s team) parser-faithful, kept in parser. Burst kept in parser: 269.28% nuke; the Wipe-Out part-hit Core-Damage/casterAtk riders parse approximately (hitCount-gated) — partless test bosses make them inert anyway.",
+  "note": "Tier audit (Bossing A). PARSER BUG FIXED: S2's 'Activates when attacking with Full Charge for 8 time(s)' (and 5 times) parsed as shotFired -> the team burst-CDR 7s fired on EVERY shot, flooding cooldowns (an SR fires ~120 shots/fight; real cadence is ~once per rotation per Prydwen: '8 Full Charges ... roughly once per rotation'). Now hitCount 8 -> team burstCdr 7, hitCount 5 -> team Attack Damage 5.06%/10s (~permanent, matching the review). S1 (FB-enter Pierce Damage 13.55%/10s team) parser-faithful, kept in parser. Burst kept in parser: 269.28% nuke; the Wipe-Out part-hit Core-Damage/casterAtk riders parse approximately (hitCount-gated) — partless test bosses make them inert anyway. [materialized 2026-07-16: skill1/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] [re-materialized 2026-07-16: burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [
+      "Gain Pierce for 1 shot."
+    ],
+    "skill2": [],
+    "burst": [
+      "Inflicts Wipe Out on the target for 10 sec.",
+      "Buff takes effect depending on the area hit."
+    ]
+  },
+  "caveats": [
+    "burst: unparsed effect \"Inflicts Wipe Out on the target for 10 sec.\"",
+    "burst: unparsed effect \"Buff takes effect depending on the area hit.\"",
+    "burst: unrecognized target \"allies\" — applied to all allies"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 13.55,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 8 },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 8
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "burstCdr", "seconds": 7 }
+        {
+          "kind": "burstCdr",
+          "seconds": 7
+        }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 5 },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 5.06, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 5.06,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 269.28
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 16.26,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 12.19,
+          "durationSec": 10
+        }
       ]
     }
   ]

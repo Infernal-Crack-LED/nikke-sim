@@ -4,7 +4,7 @@
 //   <Stat> ▲ 14.25%, stacks up to 5 time(s) and lasts for 10 sec.
 // Anything we can't parse becomes an 'unsupported' effect so the report can
 // surface exactly what wasn't modeled.
-import type { Block, EffectDef, SkillSlot, StatKey, TargetDef, TriggerDef } from './types.js';
+import type { Block, EffectDef, SkillSlot, StatKey, TargetDef, TriggerDef } from '../../src/skills/types.js';
 
 const STAT_MAP: Array<[RegExp, StatKey]> = [
   [/^damage dealt when attacking (the )?core$/i, 'coreDamagePct'],
@@ -28,8 +28,9 @@ const STAT_MAP: Array<[RegExp, StatKey]> = [
   [/^(elemental|code) damage$/i, 'elementDamagePct'],
   [/^damage taken$/i, 'damageTakenPct'],
   [/^max ammunition capacity$/i, 'maxAmmoPct'],
-  [/^reloading speed$/i, 'reloadSpeedPct'],
+  [/^reload(?:ing)? speed$/i, 'reloadSpeedPct'],
   [/^attack speed$/i, 'attackSpeedPct'],
+  [/^def$/i, 'defPct'], // damage-inert in the sim; recorded for kit completeness
   [/^fire rate$/i, 'fireRatePct'],
   [/^sustained damage$/i, 'sustainedDamagePct'],
   [/^damage (dealt )?to parts$|^parts damage$/i, 'partsDamagePct'],
@@ -83,12 +84,23 @@ function parseTrigger(header: string, slot: SkillSlot): TriggerDef {
   return { kind: 'unsupported', raw: header.trim() };
 }
 
+// kit prose weapon words → characters.json weapon codes
+const WEAPON_WORDS: Record<string, string> = {
+  'assault rifle': 'AR',
+  'submachine gun': 'SMG',
+  shotgun: 'SG',
+  'sniper rifle': 'SR',
+  'rocket launcher': 'RL',
+  'machine gun': 'MG',
+  minigun: 'MG',
+};
+
 function parseTarget(header: string): { target: TargetDef; warn?: string } {
   const m = header.match(/affects\s+([^.\n]*)/i);
   if (!m) return { target: { kind: 'self' } };
   const t = m[1].toLowerCase();
   if (/^self/.test(t)) return { target: { kind: 'self' } };
-  if (/allies who (previously )?cast/.test(t)) return { target: { kind: 'burstCasters' } };
+  if (/allies who (previously )?(cast|used their burst)/.test(t)) return { target: { kind: 'burstCasters' } };
   if (/allies who did not/.test(t)) return { target: { kind: 'nonBurstCasters' } };
   const topAtk = t.match(/(\d+) (?:ally unit\(?s?\)?|allies) with the highest (?:final )?atk/);
   if (topAtk) return { target: { kind: 'alliesTopAtk', count: Number(topAtk[1]) } };
@@ -108,6 +120,15 @@ function parseTarget(header: string): { target: TargetDef; warn?: string } {
   if (classAllies) {
     const cls = classAllies[1][0].toUpperCase() + classAllies[1].slice(1);
     return { target: { kind: 'alliesOfClass', cls } };
+  }
+  // "all shotgun-wielding allies [(except self)]" — weapon-typed, class-blind
+  const weaponAllies = t.match(
+    /all (assault rifle|submachine gun|shotgun|sniper rifle|rocket launcher|machine gun|minigun)[- ]wielding allies/
+  );
+  if (weaponAllies) {
+    const weapon = WEAPON_WORDS[weaponAllies[1]];
+    const excludeSelf = /except self/.test(t);
+    return { target: { kind: 'alliesOfWeapon', weapon, ...(excludeSelf ? { excludeSelf: true } : {}) } };
   }
   if (/^all allies/.test(t)) return { target: { kind: 'allies' } };
   if (/target|enem/.test(t)) return { target: { kind: 'enemy' } };
@@ -182,11 +203,11 @@ function parseEffectLine(line: string): EffectDef | null {
 
   // <Stat> ▲/▼ x% [of caster's ATK] [, stacks up to N time(s)] [... for t sec]
   const buff = l.match(
-    /^(.*?)\s*([▲▼])\s*([\d.]+)\s*%?(?: of (?:the )?caster'?s? atk)?(.*)$/i
+    /^(.*?)\s*([▲▼])\s*([\d.]+)\s*%?(?: of (?:the )?(?:caster'?s?|skill user'?s?) atk)?(.*)$/i
   );
   if (buff) {
     const [, statName, dir, valueStr, rest] = buff;
-    const ofCaster = / of (the )?caster'?s? atk/i.test(l);
+    const ofCaster = / of (the )?(caster'?s?|skill user'?s?) atk/i.test(l);
     let stat = mapStat(statName);
     if (stat === 'atkPct' && ofCaster) stat = 'casterAtkPct';
     if (!stat) {
@@ -207,27 +228,62 @@ function parseEffectLine(line: string): EffectDef | null {
     };
   }
 
+  // "Creates a Shield equal to X% of the skill user's final Max HP for N sec"
+  const shield = l.match(
+    /creates? a shield equal to ([\d.]+)% of (?:the )?(?:skill user'?s?|caster'?s?) (?:final )?max hp(?:.*?for ([\d.]+) sec)?/i
+  );
+  if (shield) {
+    return {
+      kind: 'shield',
+      maxHpPct: Number(shield[1]),
+      ...(shield[2] ? { durationSec: Number(shield[2]) } : {}),
+    };
+  }
+
   if (IGNORABLE.test(l)) return { kind: 'ignored', note: l };
   return { kind: 'unsupported', raw: l };
 }
 
 // Liter-style escalating block: "Once: ... Twice: ... Three times: ..." — the
 // Nth activation applies steps 1..N ("previous effects trigger repeatedly").
-function parseEscalating(lines: string[]): EffectDef | null {
+// On success, lines it could not turn into steps are appended to `unmodeled`.
+function parseEscalating(lines: string[], unmodeled: string[]): EffectDef | null {
   const steps: EffectDef[] = [];
+  const skipped: string[] = [];
   for (const line of lines) {
+    if (BOILERPLATE.test(line)) continue;
     const m = line.match(/^(once|twice|three times|four times|five times):\s*(.*)$/i);
-    if (!m) continue;
+    if (!m) {
+      skipped.push(line);
+      continue;
+    }
     const e = parseEffectLine(m[2]);
     if (e && e.kind !== 'ignored') steps.push(e);
+    else skipped.push(line);
   }
-  return steps.length >= 2 ? { kind: 'escalating', steps } : null;
+  if (steps.length >= 2) {
+    unmodeled.push(...skipped);
+    return { kind: 'escalating', steps };
+  }
+  return null;
 }
 
-export function parseSkill(text: string, slot: SkillSlot): { blocks: Block[]; warnings: string[] } {
+// Meta text, not a skill effect — never surfaces as unmodeled.
+const BOILERPLATE = /^effect changes according|^previous effects/i;
+
+export function parseSkill(
+  text: string,
+  slot: SkillSlot
+): { blocks: Block[]; warnings: string[]; unmodeled: string[] } {
   const blocks: Block[] = [];
   const warnings: string[] = [];
-  if (!text) return { blocks, warnings };
+  // Verbatim kit-text lines that produce NO runtime effect: IGNORABLE drops,
+  // unparseable lines, swap-spec lines we consume without modeling, escalating
+  // skips, and every line of a block whose trigger is unsupported (the engine
+  // never fires those). This is what the materializer writes into the override's
+  // `unmodeled` field — the auditable "no silent drops" record.
+  const unmodeled: string[] = [];
+  if (!text) return { blocks, warnings, unmodeled };
   const cleaned = text.replace(/^cooldown:.*$/im, '').replace(/\r/g, '');
 
   for (const rawBlock of cleaned.split('■').map((b) => b.trim()).filter(Boolean)) {
@@ -242,15 +298,16 @@ export function parseSkill(text: string, slot: SkillSlot): { blocks: Block[]; wa
     const trigger = parseTrigger(header, slot);
     const { target, warn } = parseTarget(header);
 
+    const blockUnmodeled: string[] = [];
     const effects: EffectDef[] = [];
-    const escalating = parseEscalating(effectLines);
+    const escalating = parseEscalating(effectLines, blockUnmodeled);
     if (escalating) {
       effects.push(escalating);
     } else {
       let swap: { kind: 'weaponSwap' } & Record<string, any> | null = null;
       const swapRiders: Array<Record<string, any>> = []; // buffs whose duration = swap duration
       for (const line of effectLines) {
-        if (/^effect changes according|^previous effects/i.test(line)) continue;
+        if (BOILERPLATE.test(line)) continue;
         // "Changes the weapon in use:" opens a key/value spec consumed here
         if (/^changes? the weapon in use/i.test(line)) {
           swap = { kind: 'weaponSwap', damagePct: 0, durationSec: 10 };
@@ -279,12 +336,18 @@ export function parseSkill(text: string, slot: SkillSlot): { blocks: Block[]; wa
             effects.push(rider as EffectDef);
             continue;
           }
-          if (/^(snipe mode|additional effects?|reload|(number of )?pellet ?count|number of pellets)/i.test(line)) continue;
+          if (/^(snipe mode|additional effects?|reload|(number of )?pellet ?count|number of pellets)/i.test(line)) {
+            blockUnmodeled.push(line);
+            continue;
+          }
           // anything else ends the spec and parses normally
           swap = null;
         }
         const e = parseEffectLine(line);
-        if (e) effects.push(e);
+        if (e) {
+          effects.push(e);
+          if (e.kind === 'ignored' || e.kind === 'unsupported') blockUnmodeled.push(line);
+        }
       }
       // riders inherit the swap's (possibly later-parsed) duration
       const swapEffect = effects.find((e) => e.kind === 'weaponSwap') as any;
@@ -297,11 +360,15 @@ export function parseSkill(text: string, slot: SkillSlot): { blocks: Block[]; wa
     }
     if (trigger.kind === 'unsupported' && real.length) {
       warnings.push(`${slot}: unsupported trigger "${trigger.raw}" — its effects are skipped`);
+      // the whole block is inert at runtime — every line of it is unmodeled
+      unmodeled.push(header, ...effectLines.filter((l) => !BOILERPLATE.test(l)));
+    } else {
+      unmodeled.push(...blockUnmodeled);
     }
     if (real.length) {
       if (warn) warnings.push(`${slot}: ${warn}`);
       blocks.push({ slot, trigger, target, effects: real });
     }
   }
-  return { blocks, warnings };
+  return { blocks, warnings, unmodeled };
 }

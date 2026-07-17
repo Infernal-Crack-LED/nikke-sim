@@ -586,6 +586,7 @@ function targetLabel(t: any): string {
     case 'alliesTopAtk': return `top ${t.count} ATK allies`;
     case 'alliesOfElement': return `${t.element} allies`;
     case 'alliesOfClass': return `${t.cls} allies`;
+    case 'alliesOfWeapon': return `${t.weapon} allies${t.excludeSelf ? ' (not self)' : ''}`;
     default: return 'allies';
   }
 }
@@ -3931,6 +3932,13 @@ export function App({ user }: { user: AuthUser | null }) {
                 const notes = [...u.warnings];
                 if (u.loadout.length)
                   notes.unshift(`loadout: ${u.loadout.join(' | ')}`);
+                // kit text the override deliberately does not model (audit record)
+                const un = overrides[u.slug]?.unmodeled;
+                const unmodeled = un
+                  ? (['skill1', 'skill2', 'burst'] as const).flatMap((slot) =>
+                      un[slot].map((l) => `${slot}: ${l}`)
+                    )
+                  : [];
                 return (
                   <div key={u.position}>
                     <b>{u.name}</b>
@@ -3939,6 +3947,16 @@ export function App({ user }: { user: AuthUser | null }) {
                         notes.map((n, i) => <li key={i}>{n}</li>)
                       ) : (
                         <li>no notes</li>
+                      )}
+                      {unmodeled.length > 0 && (
+                        <li>
+                          not modeled (kit text):
+                          <ul>
+                            {unmodeled.map((n, i) => (
+                              <li key={i}>{n}</li>
+                            ))}
+                          </ul>
+                        </li>
                       )}
                     </ul>
                   </div>

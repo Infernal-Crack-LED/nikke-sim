@@ -14,7 +14,6 @@ import {
   gearHp,
   type DollBonus,
 } from '../stats.js';
-import { resolveSkills } from '../skills/index.js';
 import type { PreparedUnit } from '../prepare.js';
 import gaugeTable from '../../data/gauge-per-shot.json' with { type: 'json' };
 import { relationshipBonus } from '../relationship.js';
@@ -236,7 +235,6 @@ interface UnitState {
   doll: DollBonus;
   blocks: Block[];
   warnings: string[];
-  skillSource: string;
   hasPierce: boolean;     // kit's attacks are Pierce-tagged (Q10)
   consolidation?: ConsolidationConfig; // pellet-consolidation mode config (dorothy-S)
   landedAcc: number;      // landed pellets accrued toward the consolidation trigger (near-gated)
@@ -318,7 +316,6 @@ export interface UnitResult {
   pulls: number;
   burstCasts: number;
   maxHp: number;
-  skillSource: string;
   warnings: string[];
   loadout: string[];
 }
@@ -357,7 +354,12 @@ export function runSim(
           }
         : rawChar;
     if (!char.baseStats) throw new Error(`${char.slug} has no base stats in the DB`);
-    const skills = prepared?.[idx]?.skills ?? resolveSkills(char);
+    const skills = prepared?.[idx]?.skills;
+    if (!skills) {
+      // the engine never parses skill prose — callers must prepareTeam/prepareUnit
+      // (which resolves the unit's override) before running the sim
+      throw new Error(`runSim: "${char.slug}" has no prepared skills — call prepareTeam/prepareUnit first`);
+    }
     // "no OTHER Burst 1 allies" — the unit itself never counts, and Λ units count
     // as NO burst type for formation calculations (user-confirmed: Red Hood as B3
     // does not flip Anis: Star's My Own Star off)
@@ -402,7 +404,6 @@ export function runSim(
       doll: useDoll ? dollBonus(char.weapon) : {},
       blocks: activeBlocks,
       warnings: [...skills.warnings],
-      skillSource: skills.source,
       hasPierce:
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
@@ -872,6 +873,10 @@ export function runSim(
           .slice(0, t.count);
       case 'alliesOfElement': return units.filter((u) => u.char.element === t.element);
       case 'alliesOfClass': return units.filter((u) => u.char.class === t.cls);
+      case 'alliesOfWeapon': // weapon-typed, class-blind ("all shotgun-wielding allies")
+        return units.filter(
+          (u) => u.char.weapon === t.weapon && (!t.excludeSelf || u.idx !== ownerIdx)
+        );
       case 'alliesOfElementWeapon':
         return units
           .filter((u) => u.char.element === t.element && u.char.weapon === t.weapon)
@@ -1101,6 +1106,16 @@ export function runSim(
           for (const t of resolveTargets(block.target, ownerIdx)) {
             t.blocks.forEach((rb, ri) => {
               if (rb.trigger.kind === 'recovery') applyBlock(t.idx, rb, ri, frame);
+            });
+          }
+          break;
+        case 'shield':
+          // no shield HP pool is modeled (v1 boss deals no damage); like 'heal', it
+          // emits a SHIELDED event to its targets, firing their 'shielded'-triggered
+          // blocks (shield-synergy kits — e.g. naga's shield-gated lines).
+          for (const t of resolveTargets(block.target, ownerIdx)) {
+            t.blocks.forEach((rb, ri) => {
+              if (rb.trigger.kind === 'shielded') applyBlock(t.idx, rb, ri, frame);
             });
           }
           break;
@@ -1798,7 +1813,6 @@ export function runSim(
     pulls: u.pulls,
     burstCasts: u.burstCasts,
       maxHp: u.maxHp,
-    skillSource: u.skillSource,
     warnings: [
       ...u.warnings,
       ...(u.char.rl3 == null ? ['no rl3 burst-gen stat — team gauge estimate uses a default'] : []),

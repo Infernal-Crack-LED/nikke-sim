@@ -1,0 +1,92 @@
+{
+  "note": "MATERIALIZED PARSER OUTPUT (2026-07-16) — auto-generated from the offline kit parser on the official (blablalink) prose; behavior-identical to the previous runtime parse; NOT hand-verified. The reviewed kit-parse hypothesis lives in src/skills/overrides-baselines/anchor-innocent-maid.json; promote via its MANIFEST.md guardrails (it replaces this file). [re-materialized 2026-07-16: skill2/burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [
+      "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:",
+      "Once: Potency of HP ▲ 30.96% for 5 sec.",
+      "Recovers 3.04% of the skill user's Max HP every 1 sec for 8 sec.",
+      "Stack count of debuffs ▼ 1."
+    ],
+    "skill2": [
+      "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:",
+      "Once: Hit Rate ▲ 10.13% for 10 sec."
+    ],
+    "burst": [
+      "Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec.",
+      "Recovers 40.18% of the skill user's Max HP as HP."
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "distributedDamagePct",
+              "value": 30.4,
+              "durationSec": 10
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "casterAtkPct",
+              "value": 35.02,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "reloadSpeedPct",
+              "value": 40.04,
+              "durationSec": 15
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 30.09,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

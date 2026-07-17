@@ -7,6 +7,13 @@ docs live alongside this file; per-unit modeling decisions live in `src/skills/o
 notes; unresolved items live in `docs/open-questions.md`; settled tradeoffs in
 `../DECISIONS.md` (do not re-litigate).
 
+**Skill resolution (2026-07-16):** the engine never parses skill description text at runtime.
+Each unit's override JSON is the complete description of its kit — all three skill slots as
+structured blocks, plus an `unmodeled` field listing (verbatim) every kit-text line the model
+deliberately does not represent, and optional `caveats` shown as modeling warnings. The offline
+kit parser (`scripts/lib/kit-parser.ts`, run by `scripts/materialize-overrides.ts` and the
+kit-parse authoring skill) is an authoring aid only.
+
 **Evidence tiers** used throughout (highest to lowest):
 - **MEASURED** — frame-counted from our own recordings/tests under scope lock. Never refit.
 - **DATAMINED** — decoded game tables (github.com/rcasdzxc/SD, coolguydlm123/nikkecsvlibrary)

@@ -721,3 +721,92 @@ lives. Newest first within each section.
   board). Regression regenerated (7 SG-unit total drifts ≤1.23% + second-order gauge-timing shifts on
   teammates; NO FB-count/measured-truth assert changed), verify.sh green. `ENV.SGLANDING='prebond'` reverts
   the old table for A/B. Evidence: noir-solo-recon.json; measurement in-sim; open-questions U18.
+- **(2026-07-16) PROSE-FREE RUNTIME — the engine never parses skill description text; overrides are the
+  complete per-unit skill source of truth.** Previously the engine parsed each unit's skill prose at
+  sim-build (`resolveSkills` ran the kit parser on all three slots, then per-slot override replacement),
+  so re-sourcing the prose silently shifted sim behavior for any parser-dependent unit — exactly what the
+  blablalink re-source did (the regression was knowingly left red pending this change). NOW: every roster
+  unit's `src/skills/overrides/<slug>.json` defines ALL THREE slots as structured blocks plus (a) a
+  required `unmodeled` field — verbatim kit-text lines the model deliberately does not represent, the
+  auditable "no silent drops" record — and (b) an optional `caveats` field (display-only warnings; replaces
+  the runtime parser-warning channel verbatim). The kit parser moved to `scripts/lib/kit-parser.ts` as an
+  OFFLINE authoring tool; `scripts/materialize-overrides.ts` (kept — run after any sync that adds a unit)
+  seeded the migration by freezing the parser's current output into every partial/missing slot, with a
+  structural old-path≡new-path verify that passed 74/74 (regression failure-set and board-read byte-identical
+  before the snapshot regen). A unit with no override now throws at prepare time (empty-kit carve-out for the
+  dpschart no-op synthetics); the validator and verify.sh enforce all-slots + `unmodeled` for every roster
+  slug and grep-guard that no runtime code imports the parser. Skill prose remains in characters.json as
+  authoring input/display data (official blablalink text — the objective source of truth; drift vs anything
+  derived from the old fan-recorded text is accepted, per-unit discrepancies get fixed individually). The 12
+  previously-parser-only units (anchor-innocent-maid, blanc, bready, delta-ninja-thief, helm-aquamarine,
+  liter, mana, mari, noir, scarlet, volume, zwei) carry note-marked MATERIALIZED PARSER OUTPUT files —
+  behavior-identical, NOT hand-verified; their reviewed kit-parse hypotheses stay staged in
+  `src/skills/overrides-baselines/` (promotion per MANIFEST guardrails replaces the materialized file).
+  Snapshot regen executed here per the sync.ts plan (51 pre-existing prose-drift snapshot failures refit;
+  ZERO measured-truth/full-burst asserts changed — all 13 were green before and after). `skillSource`/
+  `source` ('parser'|'parser+override'|'override') removed — the distinction no longer exists. Hand-authored
+  slots keep `unmodeled: []` until a backfill pass (skips remain documented in their notes; see CLAUDE.md
+  NEXT INCREMENT).
+- **(2026-07-16) Weapon-typed buff target `alliesOfWeapon` added; arcana-fortune-mate retargeted to
+  shotgun-wielding allies (kit-faithful).** Her kit says "Affects all shotgun-wielding allies" (S1 39%
+  caster-ATK on Full Burst end; S2 55% Attack Damage on her burst, "except self"), but the model
+  approximated both as `alliesOfClass Attacker` because no weapon-typed target existed — and
+  `alliesOfClass` silently ignored `excludeSelf`, so she was also self-buffing the 55% against the kit
+  text. NOW: new target kind `{ kind: 'alliesOfWeapon', weapon, excludeSelf? }` (engine, offline parser
+  — "all <weapon>-wielding allies [(except self)]" with the prose→code word map AR/SMG/SG/SR/RL/MG —
+  validator, web buff-summary label); her S1/S2 now hit SG wielders regardless of class, excludeSelf
+  enforced (DBG-verified: noir receives both, modernia/self correctly excluded). Board: her solo reading
+  cools 1.806→1.420 (still HOT — the known self-buff-magnitude residual stands, hand-tune pending);
+  comp-mates lose the spurious class-wide buffs and read their true state (privaty 1.166→0.968,
+  snow-white-heavy-arms 1.169→1.072, diesel-winter-sweets 1.156→0.831 — the latter consistent with her
+  already-flagged Intro/Highlight REVIEW). No regression snapshot drift (no pinned comp contains her);
+  measured-truth asserts untouched. FOLLOW-UP: tove's kit also targets "all shotgun-wielding allies"
+  (S2 attack-speed line, burst ATK split) but her override is stale against the official prose beyond
+  targeting (values differ, one line unmodeled) — full per-unit reconciliation queued, not patched here.
+- **(2026-07-16) crown One For All rebuilt kit-exact (per-chain caster/non-caster groups + reload speed +
+  burst shield) — and the blablalink-wording misparse class it exposed fixed roster-wide.** The materialize
+  freeze had inherited three offline-parser misses against the new official wording: "allies who previously
+  USED their Burst Skills" (old text "cast") fell through to ALL allies; "ATK ▲ X% of the SKILL USER'S ATK"
+  (old "caster's") parsed as plain `atkPct` — each target buffed by % of its OWN ATK instead of a flat % of
+  crown's supporter ATK, a large spurious over-buff; and "Reload Speed" (old "Reloading Speed") failed the
+  stat map, dropping a damage-relevant 44.35% reload buff (the engine consumes reloadSpeedPct in reload
+  frames). Crown's S1 now models the kit's DISJOINT per-chain groups directly: at Full Burst start, THIS
+  chain's burst casters get casterAtkPct 64.51 + reloadSpeedPct 44.35 (15s); non-casters get defPct 37.44
+  (damage-inert, recorded) + reloadSpeedPct 44.35 (engine burstCasters/nonBurstCasters reset at FB end, so
+  membership is per-chain — DBG-verified: an alternating B3 gets the caster buff only in chains it bursts).
+  Her burst adds the NEW `shield` effect (event-only, like `heal`: no HP pool in v1; fires targets' new
+  `shielded` triggers so shield-synergy kits — e.g. naga's shield-gate — can later key off it faithfully;
+  maxHpPct recorded). Offline parser upgraded for all four wordings (+ DEF ▲ now parses to the inert defPct
+  instead of an IGNORABLE drop). ROSTER AUDIT: all 74 units scanned for the four patterns; 13 MATERIALIZED
+  slots carried the misses and were RE-FROZEN with the upgraded parser (ade-agent-bunny, anchor-innocent-maid
+  ×2, d-killer-wife, delta-ninja-thief ×2 incl. her self-shield, elegg-boom-and-shock, little-mermaid,
+  ludmilla-winter-owner — her 67.2% burst reload now real, mari, noir, prika, quency-escape-queen, raven);
+  16 hand-authored slots also match the wordings but were authored with the correct reading — left to the
+  per-unit reconciliation follow-up. COUPLING CHECK: noir (SG-landing anchor) solo total is BIT-IDENTICAL
+  after her S1 atkPct→casterAtkPct (self-targeted, same arithmetic solo) — the landing table basis is
+  untouched. VALIDATION: crown board reading 0.788→0.997/0.999 at N=12 (her cold mystery was the missing
+  self-reload + the fake team buff's removal); board totals ±3% 0→3, ±5% 5→8, ±8% 13→20, worse 31→24 across
+  the two fixes; ALL measured-truth full-burst asserts green throughout (reload buffs did not shift chain
+  timing); snapshots regenerated with the change. Owner correction that triggered this: crown "had solved
+  problems that regressed" — root cause was NOT the materialize pass (hand-tuned skill2 was preserved
+  verbatim; S1/burst were always parser-driven) but the prose re-source degrading the parse, which the
+  freeze then made visible and fixable.
+- **(2026-07-16) KIT-PARSE ROLLOUT + kit-status.json SSOT — the offline parser is a starting point, not
+  an endpoint.** With the prose-free runtime, most override content was still frozen regex-parser output
+  (the crown misparse class). RULING: every roster unit goes through the full kit-parse subagent flow —
+  AUTHOR mode for parser-origin slots (staged overrides-baselines merged; hand-authored slots preserved
+  verbatim), AUDIT-only mode for hand-authored/validated slots (unmodeled backfill + structured findings;
+  NO block edits — reconciliation is owner-approved). Agents run open-book but VALUES-WITHHELD (never
+  grade.ts/sweep-grade.ts/experiment COMPS/board output/other units' probe-data totals — they must not be
+  able to fit to the board); candidates go to a per-wave staging dir, the driver promotes serially
+  (kit-parse non-negotiable 3). TRACKING: `data/kit-status.json` is the per-unit single source of truth —
+  kitParse status/provenance/findings, tuning tier (ABSORBED `data/hand-tuned.json`, now deleted; the tier
+  vocabulary stays in docs/hand-tuned.md; scripts/refgrade.ts + scripts/battery/hand-tune-714noon.ts
+  repointed), unmodeled kit text mirrored from each override, and board pass records (per-comp sim/real
+  ratios via the new shared collector scripts/lib/board-readings.ts, which board-read.ts also consumes —
+  output byte-identical). `scripts/kit-status.ts` maintains it (--refresh regenerates derived fields,
+  --set/--finding update workflow fields, --check is a verify.sh gate: roster coverage + fresh
+  unmodeled/provenance mirrors). Wave protocol, wave order (materialized class first; noir carries an
+  SG-landing-anchor guard: solo total moves >0.5% → owner sign-off), and the wave log live in
+  docs/handoffs/2026-07-16-kit-parse-rollout.md. Done-when: all 74 units authored/audited/reconciled with
+  findings triaged; board improvement expected but NOT a gate (faithful > fit).

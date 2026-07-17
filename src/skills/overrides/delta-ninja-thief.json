@@ -1,0 +1,145 @@
+{
+  "note": "MATERIALIZED PARSER OUTPUT (2026-07-16) — auto-generated from the offline kit parser on the official (blablalink) prose; behavior-identical to the previous runtime parse; NOT hand-verified. The reviewed kit-parse hypothesis lives in src/skills/overrides-baselines/delta-ninja-thief.json; promote via its MANIFEST.md guardrails (it replaces this file). [re-materialized 2026-07-16: skill2/burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Effects vary according to squad formation. Only one set of effects is applied.",
+      "Affects self if there are no other Defender allies in the squad.",
+      "Effect 2: Attract: Taunt all enemies continuously.",
+      "Affects self if there is another Defender ally in the squad.",
+      "Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+      "Effect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.",
+      "Activates when performing 200 normal attack(s). Affects self while in Attract status.",
+      "Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.",
+      "Ninjutsu IFAK lasts for 4 sec.",
+      "Function: Stores up HP recovery for a time, after which all allies are healed for the stored amount.",
+      "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.",
+      "Effect 2: Once the duration ends, all allies are healed for the stored recovery amount."
+    ],
+    "burst": [
+      "Next shield's HP ▲ 20.13% for 10 sec.",
+      "Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "skill2: unparsed effect \"Effects vary according to squad formation. Only one set of effects is applied.\"",
+    "skill2: unparsed effect \"Affects self if there are no other Defender allies in the squad.\"",
+    "skill2: unparsed effect \"Affects self if there is another Defender ally in the squad.\"",
+    "skill2: unsupported trigger \"Activates when performing 200 normal attack(s). Affects self while in Attract status.\" — its effects are skipped",
+    "skill2: unparsed effect \"Ninjutsu IFAK lasts for 4 sec.\"",
+    "skill2: unparsed effect \"Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.\"",
+    "burst: unparsed effect \"Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec.\""
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 12,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.04,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 8,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 12.25,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 20,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 15,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 170,
+          "flavor": "distributed"
+        }
+      ]
+    }
+  ]
+}

@@ -1,39 +1,114 @@
 {
-  "note": "Tier audit (Bossing A, Prydwen). S1 parser-faithful, kept (ATK 80.04%/5s at battle start + FB end; True Damage 35.05%/15s on FB enter). S2 is a 15s-COOLDOWN pulse (cooldown line missing from DB text; Prydwen confirms 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert), allies True Damage 140.49%/10s. The parser made both permanent -> modeled as uptime-averaged permanents: damageTakenPct 10.09 x 5/15 = 3.36, team trueDamagePct 140.49 x 10/15 = 93.66. Burst: weapon swap 200.64%/shot for 10s whose normal attacks DEAL TRUE DAMAGE (trueNormals: true, engine-flavored) so her own 35.05 + the team 93.66 True Damage buffs apply to swap shots exactly (trueDamagePct is flavor-gated); the 6.04% Damage Taken per target hit during the swap is a shotFired enemy debuff gated fbGate:inFb (swap window ~= FB window for a bursting B2). Stun and heals skipped.",
+  "note": "Tier audit (Bossing A, Prydwen). S1 parser-faithful, kept (ATK 80.04%/5s at battle start + FB end; True Damage 35.05%/15s on FB enter). S2 is a 15s-COOLDOWN pulse (cooldown line missing from DB text; Prydwen confirms 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert), allies True Damage 140.49%/10s. The parser made both permanent -> modeled as uptime-averaged permanents: damageTakenPct 10.09 x 5/15 = 3.36, team trueDamagePct 140.49 x 10/15 = 93.66. Burst: weapon swap 200.64%/shot for 10s whose normal attacks DEAL TRUE DAMAGE (trueNormals: true, engine-flavored) so her own 35.05 + the team 93.66 True Damage buffs apply to swap shots exactly (trueDamagePct is flavor-gated); the 6.04% Damage Taken per target hit during the swap is a shotFired enemy debuff gated fbGate:inFb (swap window ~= FB window for a bursting B2). Stun and heals skipped. [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 80.04,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 35.05,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": 3.36 }
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 3.36
+        }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "trueDamagePct", "value": 93.66 }
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 93.66
+        }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "weaponSwap", "damagePct": 200.64, "durationSec": 10, "trueNormals": true }
+        {
+          "kind": "weaponSwap",
+          "damagePct": 200.64,
+          "durationSec": 10,
+          "trueNormals": true
+        }
       ]
     },
     {
       "slot": "burst",
-      "trigger": { "kind": "shotFired" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "fbGate": "inFb",
       "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": 6.04, "durationSec": 5 }
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 6.04,
+          "durationSec": 5
+        }
       ]
     }
   ]

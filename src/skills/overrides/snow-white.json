@@ -1,20 +1,100 @@
 {
-  "note": "S1 (30-hit extra damage + self ATK) and the burst weapon-swap parse correctly and are omitted. S2 overridden only to recover the dropped 'Critical Rate 26.1% during Full Burst' self-buff, modeled as a fullBurstEnter buff that re-applies (effectively on for the whole full-burst window). The S2 144.73% 'enemies within attack range' hit has no explicit trigger in the text; kept as the parser's single instant passive hit — UNCERTAIN whether it is actually a per-attack/per-charged-shot proc (would undercount if so). Pierce on the burst weapon is inert vs a single boss.",
+  "note": "S1 (30-hit extra damage + self ATK) and the burst weapon-swap parse correctly and are omitted. S2 overridden only to recover the dropped 'Critical Rate 26.1% during Full Burst' self-buff, modeled as a fullBurstEnter buff that re-applies (effectively on for the whole full-burst window). The S2 144.73% 'enemies within attack range' hit has no explicit trigger in the text; kept as the parser's single instant passive hit — UNCERTAIN whether it is actually a per-attack/per-charged-shot proc (would undercount if so). Pierce on the burst weapon is inert vs a single boss. [materialized 2026-07-16: skill1/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Additional Effect: Pierce"
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 82.8
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 8.28,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "enemy" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
       "effects": [
-        { "kind": "flatDamage", "atkPct": 144.73 }
+        {
+          "kind": "flatDamage",
+          "atkPct": 144.73
+        }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "self" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
       "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 26.1, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 26.1,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 499.5,
+          "durationSec": 10,
+          "chargeTimeSec": 5,
+          "chargeMultPct": 1000,
+          "maxAmmo": 1
+        }
       ]
     }
   ]
