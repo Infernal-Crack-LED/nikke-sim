@@ -79,12 +79,21 @@ export function rankFreeLineConfigs(args: {
   baseOpts: UnitOptions[];
   carryIdx: number;
   topN?: number;
+  // per-line stat value the OL lines are measured at, keyed by line type (matches
+  // data/ol-tiers.json — e.g. { atk: 11.81, elem: 23.56, ... } for T11). When
+  // omitted every line defaults to its max roll (T15) via prepareUnit.
+  tierValues?: Record<string, number>;
 }): { baselineDamage: number; results: OlConfigResult[] } {
-  const { chars, mult, cfg, deps, baseOpts, carryIdx, topN = 10 } = args;
+  const { chars, mult, cfg, deps, baseOpts, carryIdx, topN = 10, tierValues } = args;
   const pool = freeLineCandidates(chars[carryIdx].weapon);
 
+  // stamp each line with the chosen tier's per-line value (no-op when tierValues
+  // is undefined, leaving prepareUnit to use the line's max roll).
+  const atTier = (lines: LineSelection[]): LineSelection[] =>
+    tierValues ? lines.map((l) => ({ ...l, value: tierValues[l.type] })) : lines;
+
   const carryDamage = (carryLines: LineSelection[]): number => {
-    const opts = baseOpts.map((o, i) => (i === carryIdx ? { ...o, lines: carryLines } : o));
+    const opts = baseOpts.map((o, i) => (i === carryIdx ? { ...o, lines: atTier(carryLines) } : o));
     const prepared = prepareTeam(chars, opts, deps);
     return runSim(chars, mult, cfg, prepared).units[carryIdx].totalDamage;
   };

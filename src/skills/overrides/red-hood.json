@@ -5,8 +5,15 @@
     "skill1": [
       "Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously."
     ],
-    "skill2": [],
-    "burst": []
+    "skill2": [
+      "■ Activates during Beast Cage. Affects all allies. DEF ▲ 50.68% of the skill user's DEF for 10 sec.",
+      "■ Activates during The Last Howl. Affects self. Recovers 23.04% of attack damage as HP over 10 sec."
+    ],
+    "burst": [
+      "Step 2 (The Last Howl): Attract: Taunts all enemies for 10 sec.",
+      "Step 2 (The Last Howl): Incoming healing ▲ 74.88% for 10 sec.",
+      "Step 3 (Red Wolf): Expand Pierce range by 100% for 10 sec."
+    ]
   },
   "caveats": [
     "skill1: unparsed effect \"Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously.\""

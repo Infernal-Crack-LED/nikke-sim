@@ -2,18 +2,24 @@
   "note": "Tier audit (Bossing A). PARSER BUG FIXED: S2's 'Activates when attacking with Full Charge for 8 time(s)' (and 5 times) parsed as shotFired -> the team burst-CDR 7s fired on EVERY shot, flooding cooldowns (an SR fires ~120 shots/fight; real cadence is ~once per rotation per Prydwen: '8 Full Charges ... roughly once per rotation'). Now hitCount 8 -> team burstCdr 7, hitCount 5 -> team Attack Damage 5.06%/10s (~permanent, matching the review). S1 (FB-enter Pierce Damage 13.55%/10s team) parser-faithful, kept in parser. Burst kept in parser: 269.28% nuke; the Wipe-Out part-hit Core-Damage/casterAtk riders parse approximately (hitCount-gated) — partless test bosses make them inert anyway. [materialized 2026-07-16: skill1/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] [re-materialized 2026-07-16: burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
   "unmodeled": {
     "skill1": [
+      "■ Activates when attacking with Full Charge for 3 time(s). Affects self.",
       "Gain Pierce for 1 shot."
     ],
     "skill2": [],
     "burst": [
       "Inflicts Wipe Out on the target for 10 sec.",
+      "■ Activates when allies' normal attack hits a certain area of the target afflicted with Wipe Out. Affects allies.",
       "Buff takes effect depending on the area hit."
     ]
   },
   "caveats": [
     "burst: unparsed effect \"Inflicts Wipe Out on the target for 10 sec.\"",
     "burst: unparsed effect \"Buff takes effect depending on the area hit.\"",
-    "burst: unrecognized target \"allies\" — applied to all allies"
+    "burst: unrecognized target \"allies\" — applied to all allies",
+    "skill1: Full Burst Pierce Damage ▲13.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
+    "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
+    "burst: the Wipe Out area-hit riders are modeled ungated (they fire on this unit's own hits via hitCount 1, not on allies hitting a Wipe Out-afflicted target) — buff uptime is over-credited whenever she is firing outside her 10s post-burst Wipe Out windows",
+    "burst: the parts branch (Damage dealt when attacking core ▲16.26%) is granted to all allies alongside the body branch; on a partless boss no ally can hit parts, so this branch should be inert — yet coreDamagePct is live in-sim (core hits exist on a partless boss), over-crediting every ally's core bucket near-permanently"
   ],
   "skill1": [
     {

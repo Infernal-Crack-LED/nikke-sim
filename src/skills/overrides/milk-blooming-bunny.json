@@ -5,8 +5,14 @@
     "manual (Embarrassment cycle)"
   ],
   "unmodeled": {
-    "skill1": [],
-    "skill2": [],
+    "skill1": [
+      "■ Activates when performing a Full Charge attack. Affects self.",
+      "Gain Pierce for 6 sec."
+    ],
+    "skill2": [
+      "■ Activates only when in Embarrassment status. Affects self.",
+      "Pierce Damage ▲ 64.7% continuously."
+    ],
     "burst": [
       "Overconfident, Huh?!:",
       "Gains Immunity to Embarrassment for 10 sec."

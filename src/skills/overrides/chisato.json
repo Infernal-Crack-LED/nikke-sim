@@ -1,16 +1,19 @@
 {
-  "note": "Tier audit (Bossing A). Extrasensory gauge: starts 100%, decays, burst recharges to 100% — thresholds >70% gate ATK 53.69 and >55% gate True Damage 48.62 (parser skipped; steady state with regular bursts keeps her above the gates most of the fight) -> modeled as permanent self passives. S2's 472.18% true proc per 48 hits parses. Burst ATK 73.16 parses. Slight optimism during deep gauge dips. [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. [Banner scope: skill1's two original blocks are the PRESERVED hand slot (Tier audit, board ~0.95) — kept byte-verbatim; the banner covers the newly authored skill2 swap window + the appended hitRatePct block.] EXTRASENSORY currency (prior 4, derivable): starts 100%, drains 1%/2s (0.5%/s), her OWN burst recharges to 100%. Derived trajectory at a ~40s burst cadence: floor ≈ 100 − 0.5×42 ≈ 79% → the >70% ATK 53.69, >55% True Damage 48.62, and >25% Hit Rate 22.37 gates are ALL permanently cleared → modeled as permanent self passives (this is the DERIVED trajectory, not a cap-tier guess; no haircut needed while she bursts each rotation). ⚑ over-credit in never-bursts comps: without her burst the gauge decays below 70% at t≈60s / 55% at t≈90s / 25% at t≈150s — the permanent encoding is then hot (see caveat). 100%-only 'Dodging Bullets: Invulnerable 2 sec' = genuinely skippable (invulnerability) → unmodeled. Battle-start charge + the 1%/2s drain lines = currency bookkeeping folded into the derivation → unmodeled. Hit Rate ▲ 22.37 modeled as hitRatePct (inert in v1; hard rule 4 — raises core-hit rate, magnitude ⚑). S2 line 1 'Normal attacks deal true damage for 10 sec' on burstCast = same-weapon weaponSwap damagePct 10.12 (her own normal mult, unchanged) + trueNormals:true for 10s — the takina-precedent encoding; the flavor gate makes her permanent S1 trueDamagePct 48.62 apply to normals ONLY inside the window (≈+48.62% dmgUp on ~10s/40s of normals). Engine artifact: swap start+end each instant-refill the mag (~2 free reloads/cycle, mild optimism — caveat). Core/crit KEPT on true normals per the takina precedent; real-game core interaction of true damage unverified ⚑ (SMG coreMult 250 = big lever if true damage actually forfeits core). S2 line 2: hitCount-48 → 472.18% true flatDamage (hard rule 5), FB-by-timing default (no noFb), permanently boosted by the flavor-gated 48.62. Burst ATK 73.16/10s on burstCast (her own cast — hard rule 6); 'Charges Extrasensory to 100%' folded into the trajectory derivation → unmodeled. ⚑ cadence tuple (mandatory): SMG class pullsPerSec + reloadFrames 81 + rolling-reload unverified (datamine); 120-round mag at class rate ≈ 9–10s, plausible, no escalation tells.",
   "unmodeled": {
-    "skill1": [],
-    "skill2": [
-      "Normal attacks deal true damage for 10 sec."
+    "skill1": [
+      "Activates at the start of battle. Affects self. Charges Extrasensory to 100%, up to 100%. Continuous, cannot be removed.",
+      "Only at 100%: Dodging Bullets: Invulnerable 2 sec.",
+      "Affects self every 2 sec. Extrasensory ▼ 1%."
     ],
+    "skill2": [],
     "burst": [
       "Charges Extrasensory to 100%."
     ]
   },
   "caveats": [
-    "burst: unparsed effect \"Charges Extrasensory to 100%.\""
+    "skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled permanent — derived floor ~79% while she bursts each ~40s rotation; OVER-CREDITS in comps where chisato never bursts (the gauge decays below the 70%/55%/25% gates at ~60s/~90s/~150s).",
+    "skill2: 'Normal attacks deal true damage for 10 sec' is encoded as a same-weapon swap (trueNormals) so the S1 True Damage ▲ 48.62% applies to normals only inside the window — the swap grants an instant mag refill at cast and at window end (engine artifact, mild shot-count optimism), and core/crit are retained on true normals (takina precedent, unverified in-game)."
   ],
   "skill1": [
     {
@@ -33,9 +36,42 @@
           "value": 48.62
         }
       ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 22.37
+        }
+      ]
     }
   ],
   "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 10.12,
+          "durationSec": 10,
+          "trueNormals": true
+        }
+      ]
+    },
     {
       "slot": "skill2",
       "trigger": {

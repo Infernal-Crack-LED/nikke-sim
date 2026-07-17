@@ -1,10 +1,14 @@
 {
-  "note": "S1 kept faithful and extended: every 60 normal hits applies Damage Taken +12.56% (3s) and 158.43% additional damage to the boss, plus a 20-round self reload modeled as instantReload fraction 20/300 = 0.0667 (the parser dropped this as unsupported). S2's '60 core hits' additional-damage proc (109.64%) cannot see the runtime core-hit rate from a hitCount trigger, so it is approximated as one proc per 120 normal hits (assuming ~50% core-hit rate); this is the main approximation and will over/under-count at other core rates. S2's 'beginning of Full Burst -> Crit Rate +14.6% (10s)' was skipped by the parser (unsupported trigger); modeled here as a fullBurstEnter self buff. Burst slot left to parser (self ATK 62.54% 10s + Reloading Speed 67.2% 20s) as faithful. [materialized 2026-07-16: burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] [re-materialized 2026-07-16: burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — ludmilla-winter-owner (Ludmilla: Winter Owner, MG/Water/Attacker/B3), kit-parse AUTHOR wave 4. S1: every 60 normal hits → boss Damage Taken +12.56% (3s) + 158.43% flatDamage rider (FB-by-timing default, crits by engine default, no core — kit text says plain 'additional damage'), PLUS self 'Reloads 20 rounds' = instantReload fraction 0.0667 (20/300; engine adds ammo without interrupting fire — matches the in-game passive top-up; net mag ≈450 shots/cycle = 300/(1-1/3), fewer wind-up restarts). S2 proc: kit trigger is 'hitting the Core for 60 time(s)' — no core-hit-count trigger exists in types.ts, so PROXIED as hitCount 63 (⚑) = 60 ÷ 0.95, the engine's own flat MG core rate (acrFor HI; whole-picture-consistent with how the sim cores her normal hits — the prior materialized file's count 120 assumed 50% core, inconsistent with the engine's MG model), with requiresCore:true so the block is inert when core exposure is zero. S2 FB: 'beginning of Full Burst' → fullBurstEnter self Crit Rate +14.6% 10s (hard rule 6: fires on team FB entry regardless of burster — correct for this wording). Burst (burstCast, self): ATK +62.54% 10s + Reload Speed +67.2% 20s (kit-verified 67.2; reloadSpeedPct composes with reloadFrames 201 at sim.ts reloadFramesNeeded — hard rule 1, shot-count channel). No lines skipped — unmodeled empty. ⚑ LIST: (1) cadence tuple — MG pullsPerSec/wind-up + reloadFrames 201 datamined, unverified; (2) S2 hitCount 63 core-proxy — tied to the engine's flat HI 0.95 MG core rate (itself ⚑, not measured per-band): recompute if MG acr is ever refit per-band, and pin from footage (red CORE HIT popup fraction → count = round(60/coreRate)); (3) S1 20-round top-up economy — verify per-mag shot count ≈450 (=300/(1-1/3)) and that the in-game refill doesn't interrupt fire.",
   "unmodeled": {
     "skill1": [],
     "skill2": [],
     "burst": []
   },
+  "caveats": [
+    "skill2: the '60 core hits' proc is proxied as every 63 normal hits (engine MG core rate 0.95) — unmeasured estimate",
+    "skill1: MG cadence tuple (fire rate / wind-up / reloadFrames 201) is datamined, unverified"
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -50,11 +54,12 @@
       "slot": "skill2",
       "trigger": {
         "kind": "hitCount",
-        "count": 120
+        "count": 63
       },
       "target": {
         "kind": "enemy"
       },
+      "requiresCore": true,
       "effects": [
         {
           "kind": "flatDamage",

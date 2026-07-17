@@ -127,6 +127,32 @@ export function DpsChartTab() {
         </p>
       </details>
 
+      <details className='dpschart-frameworks'>
+        <summary>Custom profiles</summary>
+        <dl>
+          <div>
+            <dt>Bready</dt>
+            <dd>Modeled in her <b>Distributed</b> taste (Recommended Taste — the distributed-damage-buff branch).</dd>
+          </div>
+          <div>
+            <dt>Diesel: Winter Sweets</dt>
+            <dd>
+              Assumed to burst <b>second</b> (her Highlight state, which deals more sustained damage than bursting
+              first). Not yet reflected in her chart score — proper burst-order/Highlight modeling is a pending
+              backend task, so her ranking still uses the Intro (bursts-first) numbers for now.
+            </dd>
+          </div>
+          <div>
+            <dt>Red Hood &amp; Rapi: Red Hood</dt>
+            <dd>Operate as <b>Burst III</b> (B3).</dd>
+          </div>
+          <div>
+            <dt>Favorite items</dt>
+            <dd>Every favorite-item unit is assumed to have its favorite item <b>fully unlocked</b>.</dd>
+          </div>
+        </dl>
+      </details>
+
       <div className='dpschart-compare-pick'>
         <label>Compare a unit</label>
         <select value={compareSlug} onChange={(e) => setCompareSlug(e.target.value)}>

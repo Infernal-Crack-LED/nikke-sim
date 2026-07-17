@@ -7,7 +7,10 @@
   "burstSnapshotsPreFb": false,
   "unmodeled": {
     "skill1": [],
-    "skill2": [],
+    "skill2": [
+      "■ Activates at the start of battle. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.",
+      "■ Activates when entering Burst Skill Stage 3. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous."
+    ],
     "burst": []
   },
   "skill1": [
@@ -94,5 +97,9 @@
         }
       ]
     }
+  ],
+  "caveats": [
+    "skill2: Beautiful (Max HP ▲ 1.6% continuously, stacks up to 12) has no block of its own — it is baked at steady state into skill1's 3.23 (= 2.71 × 1.192) and the burst's 14006 (+28.9 × 12 mirror); bursts before the ~36s ramp completes are slightly over-credited.",
+    "skill2: the Decoy avatar itself is not modeled (defensive/aggro summon; v1 boss deals no damage so full decoy uptime — and thus full Beautiful uptime — is assumed)."
   ]
 }

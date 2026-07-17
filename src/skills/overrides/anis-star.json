@@ -4,9 +4,18 @@
     "noBoltRecovery": true
   },
   "unmodeled": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
+    "skill1": [
+      "If there are no other Burst 1 allies: Effect 1: Affects self. Cancels Everyone's Star.",
+      "If there are any other Burst 1 allies: Effect 1: Affects self. Cancels My Own Star."
+    ],
+    "skill2": [
+      "■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.\nRestores 1.26% of the skill user's final Max HP as HP."
+    ],
+    "burst": [
+      "Explosion Radius ▲ 100% for 10 sec.",
+      "DEF ▲ 55.01% for 10 sec.",
+      "■ Activates while in Everyone's Star status. Affects all allies.\nMax HP ▲ 15.02% of the skill user's max HP for 10 sec."
+    ]
   },
   "skill1": [
     {

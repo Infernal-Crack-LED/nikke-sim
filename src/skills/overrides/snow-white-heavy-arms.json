@@ -4,9 +4,20 @@
     "noBoltRecovery": true
   },
   "unmodeled": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
+    "skill1": [
+      "Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.",
+      "Auto Fire Ready — Effect: DEF ▲ 42.24% continuously.",
+      "Auto Fire Ready — Function: Loads Seven Dwarves with ammo. Max ammo loaded by Auto Fire Ready: 5. Deactivation condition: Performing a normal attack.",
+      "■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active."
+    ],
+    "skill2": [
+      "Gains Pierce for 5 sec."
+    ],
+    "burst": [
+      "Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.",
+      "Effect 2: Max Lock-On targets ▲ 10 continuously.",
+      "■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage."
+    ]
   },
   "skill1": [
     {

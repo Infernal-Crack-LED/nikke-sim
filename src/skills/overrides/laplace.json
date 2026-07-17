@@ -1,85 +1,59 @@
 {
-  "note": "B-tier triage (2026-07-13). Burst 'Laplace Bazooka' swap parsed with damagePct 0 — rebuilt: First Damage 1455.72% on cast, then a 10s beam at 22.2%/pull whose normal damage is TRUE damage (trueNormals; her S1 true-damage buffs apply), plus the parsed 11.9% true rider per hit. Beam cadence approximated at the engine's default 4 pulls/s (no beam weapon class). S2 parts-hit body transfer inert (partless boss). [materialized 2026-07-16: skill1/skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. | TREASURE (favorite-item) RECONCILE 2026-07-17: the DB sync gained laplace's favorite-item prose. IMPORTANT — this REVERTS the wave-6 (2026-07-16) downgrade: wave 6 read the UNTREASURED blablalink base kit (First 897.6 / Normal 14.52 / 5s, no trueNormals) and dismissed the higher First 1455.72 / Normal 22.2 / 10s + true-beam values as 'old fan text.' The favorite-item prose is authoritative and CONFIRMS those higher values were the treasure kit all along, so they are restored. MODEL: charge RL (chargeFrames 60, chargeMult 250 — every shot is a full charge). S2a 'Activates when hitting a target with Full Charge -> deals 132.45% of final ATK as additional damage' = shotFired (every full-charge rocket) -> flatDamage 132.45, crit (prior-2 rider default) — this REPLACES the wave-6 lastBullet 81.66 per-mag proc: the treasure trigger is per-full-charge (fires every shot, much more often) at a higher value. BURST 'Laplace Bazooka' = burstCast flatDamage 1455.72 (First Damage; auto FB-exempt pre-FB; crit per prior 2, no core — text silent) + weaponSwap damagePct 22.2 / durationSec 10 / chargeTimeSec 0.25 (beam tick rate KIT-SILENT — TOP flag; 4 ticks/s) / maxAmmo 999 (in-burst swap windows run reload-free per the RRH swap-economy bias correction) / trueNormals:true (Additional Effect 2: 'Normal damage is applied as true damage when Hero Vision is at max stacks' — ASSUMES Hero Vision maxed throughout the 10s window ⚑). Separate burst true rider 11.9%: shotFired + swapGate swapped -> flatDamage flavor true, crit — rides each beam tick, ALSO gated on Hero Vision max (assumed). SKIPS: S1 Hero Vision 'Explosion Radius ▲ 3.57% ×5, 15s' -> unmodeled (AoE radius inert vs the partless single boss; the STACK STATE only gates the burst true damage, assumed max). S2b parts-hit 14.78% -> unmodeled (partless boss; 'target's body' wording). Burst 'Gains Pierce' -> unmodeled (no swap-gated pierce mechanism; hasPierce is unconditional and would mis-tag her ~97% non-swap uptime; PIERCE_CORE_DOUBLE is hard-off, kit has no pierce buff -> inert at scope lock). 'Unable to take cover' -> defensive. ⚑ LIST: (1) cadence tuple — chargeFrames 60 + default 22f bolt gap (verify autofire -> charFixes.noBoltRecovery, ~15-20% shots) + reloadFrames 161; (2) beam tick 0.25s TOP; (3) swap reload-free maxAmmo 999; (4) Hero-Vision-max uptime for BOTH the trueNormals beam and the 11.9% rider; (5) S2a full-charge trigger read as shotFired (every RL pull = full charge) — verify the 132.45% popup lands once per rocket; (6) hitsPerShot 2 twin-projectile split vs merge (read popups); (7) rider/first-hit crit flags = prior-2 default, unmeasured.",
   "unmodeled": {
     "skill1": [
-      "Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 5 sec."
+      "Activates when attacking with Full Charge. Affects self. Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5, 15s."
     ],
     "skill2": [
-      "Activates when hitting the target's Parts. Affects the target.",
-      "Deals 14.78% of final ATK as additional damage."
+      "Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage."
     ],
-    "burst": []
+    "burst": [
+      "Additional Effect 1: Gains Pierce.",
+      "(Note: Unable to take cover.)"
+    ]
   },
   "caveats": [
-    "skill2: unsupported trigger \"Activates when hitting the target's Parts. Affects the target.\" — its effects are skipped"
+    "burst: bazooka beam economy is UNMEASURED — 0.25s/tick + reload-free are ⚑ estimates over the 10s window; count beam popups in any focus video",
+    "burst: the swap beam (22.2%, true at max Hero Vision) and the 11.9% true rider both assume Hero Vision is at max stacks for the whole window (⚑ uptime haircut candidate)",
+    "burst: 'Gains Pierce' not modeled — no swap-gated pierce mechanism; inert at scope lock (no pierce-damage buffs in kit, pierce core-double disabled)",
+    "skill2: the 132.45% full-charge additional hit is modeled on shotFired (every RL pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
+    "skill1: Explosion Radius ▲ is inert vs the partless boss; its stacks only gate the burst true damage (assumed maxed)"
   ],
   "skill1": [],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "lastBullet"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 81.66
-        }
+        { "kind": "flatDamage", "atkPct": 132.45, "crit": true }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 1455.72,
-          "flavor": "true"
-        }
+        { "kind": "flatDamage", "atkPct": 1455.72, "crit": true }
       ]
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "weaponSwap",
-          "damagePct": 22.2,
-          "durationSec": 10,
-          "trueNormals": true
-        }
+        { "kind": "weaponSwap", "damagePct": 22.2, "durationSec": 10, "chargeTimeSec": 0.25, "maxAmmo": 999, "trueNormals": true }
       ]
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "shotFired"
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "fbGate": "inFb",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "enemy" },
+      "swapGate": "swapped",
       "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 11.9,
-          "flavor": "true"
-        }
+        { "kind": "flatDamage", "atkPct": 11.9, "flavor": "true", "crit": true }
       ]
     }
   ]

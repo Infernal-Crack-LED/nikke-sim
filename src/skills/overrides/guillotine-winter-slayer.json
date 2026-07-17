@@ -1,18 +1,14 @@
 {
-  "note": "Tier audit straggler (Bossing A). Hero Level system: EXP ramps fast (MG, +stack per 6 non-core hits AND per 3 core hits; parser keeps the stack block) -> max Level 11 within ~20s, modeled as permanent level-11 auras with a slight ramp haircut: Water allies Elemental Advantage 1.16x11=12.76 and casterAtk 0.91x11=10.01; self elemAdv 7.46 (Level>=2). Burst: parser keeps the Water-ally AD 10.14 + elemAdv 18.75; the unparsed 'continuous damage 20.87% x Hero Level every sec for 10 sec' -> dot 229.57%/s x10s (level 11). REVIEW-RECONCILED: she is an AR (12/s, ~25s to max level — steady-state modeling holds); level-up rewards KEEP TRIGGERING at max level -> reload 10.26% per 10 EXP = per ~30 hits at 100% core (near-infinite uptime, review-confirmed) added as hitCount 30 instantReload. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || BANNER SCOPE (kit-parse AUTHOR wave 6): the banner applies to the AUTHORED skill2 slot + the ADDITIVE skill1 heal-event block ONLY. skill1 aura/reload blocks + the entire burst slot are PRESERVED VERBATIM from the partial-hand model — kit-status residual: 'burst DoT + Hero-Level auras MEASURED accurate' — do NOT regenerate them. || MODEL: Hero Level currency (prior 4, DERIVABLE): EXP +1 per 3 core hits (scope-lock 100% core exposure; the 6-non-core-hit branch never fires there — blended-rate ⚑2), 10 EXP = +1 Hero Level, cap 11 (~30 hits/level → level 11 in ~25s firing / ~32s wall at 12/s, 60 ammo, 81f reload). skill1 (PRESERVED): Water-ally passive auras at level-11 steady-state — elemAdvantageDamagePct 1.16x11=12.76, casterAtkPct 0.91x11=10.01; level-up rewards KEEP TRIGGERING at max level (review-confirmed) → hitCount 30 instantReload 0.1026. skill1 (NEW, additive, HARD RULE 2): the level-up reward 'Recovers 2.44% of the skill user's final Max HP' was previously a SILENT DROP — now a `heal` event block on the same hitCount-30 cadence, self-target, event-only (zero self-damage impact; exists so recovery-consumer teammates, e.g. crown, see the proc). Driver may strip if strict-verbatim wins — flagged in findings. skill2 (AUTHORED): EXP ATK stack → hitCount 3 (core branch; was materialized hitCount 6 = the non-core branch, inconsistent with the preserved skill1 hitCount-30 level cadence which assumes 3 hits/EXP) x atkPct 1.81, maxStacks 100 (+181% at cap; engine ramps the stack natively — cap at ~32s wall, no haircut needed); 'Hero Level 2 or above' elemAdvantageDamagePct 7.46 → passive (level 2 at ~3s in; first-3s over-credit negligible). burst (PRESERVED): burstCast Water-ally attackDamagePct 10.14 + elemAdvantageDamagePct 18.75 (10s); burstCast dot 229.57%/s x10s on the boss (=20.87x11; level 11 guaranteed by the first burst at 40s CD — whole-picture consistent). || ⚑ NEEDS-MEASUREMENT: (⚑1 TOP, cadence tuple — MANDATORY + ESCALATED) pullsPerSec 12 (datamined rate_of_fire 720) + reloadFrames 81: the measured residual already reads normal-fire ~26% HOT with these values (kit-status U8; 12/1.26≈9.5/s is the arithmetic suspect) — owner ruling: do NOT refit by fudge; pin via focus video rounds/min + reload gap, then fix via charFixes. (⚑2) EXP build blend: shipped 3 hits/stack (100% core); if the real core-hit fraction c<1, effective = 1/(c/3+(1-c)/6) ∈ [3,6] — recipe: focus video, count hits between level-up procs (30 hits/level = pure core branch). (⚑3, low) level-11 steady-state auras are passive full-value from t=0 (no ~25s ramp haircut) — measured-accurate per residual, keep unless a future solo read disagrees. || SKIPS: none — every kit line is represented (the non-core EXP line jointly via the blended hitCount-3 block, see ⚑2).",
   "unmodeled": {
     "skill1": [],
-    "skill2": [
-      "Activates when hitting the Core for 3 time(s). Affects self.",
-      "EXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously.",
-      "Activates when Hero Level is 2 or above. Affects self.",
-      "Elemental Advantage Attack Damage ▲ 7.46% continuously."
-    ],
+    "skill2": [],
     "burst": []
   },
   "caveats": [
-    "skill2: unsupported trigger \"Activates when hitting the Core for 3 time(s). Affects self.\" — its effects are skipped",
-    "skill2: unsupported trigger \"Activates when Hero Level is 2 or above. Affects self.\" — its effects are skipped"
+    "skill1/skill2: normal-fire cadence (12/s, reload 81f) is datamined and measured ~26% hot — flagged for video measurement, deliberately NOT refit",
+    "skill2: EXP build rate modeled at 3 hits/stack (core branch at scope-lock 100% core exposure); the blend with the 6-hit non-core branch is an unmeasured estimate",
+    "skill2: Elemental Advantage Attack Damage 7.46% modeled as passive (Hero Level 2 is reached ~3s into the fight)"
   ],
   "skill1": [
     {
@@ -52,6 +48,21 @@
           "fraction": 0.1026
         }
       ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
     }
   ],
   "skill2": [
@@ -59,7 +70,7 @@
       "slot": "skill2",
       "trigger": {
         "kind": "hitCount",
-        "count": 6
+        "count": 3
       },
       "target": {
         "kind": "self"
@@ -70,6 +81,22 @@
           "stat": "atkPct",
           "value": 1.81,
           "maxStacks": 100
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 7.46
         }
       ]
     }

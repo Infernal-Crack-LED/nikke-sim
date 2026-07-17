@@ -1,5 +1,6 @@
 {
-  "note": "Ghost-gauge kit modeled at steady state. skill1 is left to the parser: its two Water-ally buffs (ATK 16.2% of caster's ATK at >=1 ghost, Elemental Advantage Attack Damage 35% at >4 ghosts) parse correctly as permanent buffs, which matches the steady state where a fast MG team keeps the ghost count high; the capture bookkeeping (100 team hits / 6s recurring interval, max 13) has no direct effect of its own. skill2 overridden: block1 (self ATK 40% for 10s on burst) re-included verbatim; block2 (at max ghost capacity, a further capture deals 1100% to all enemies) modeled as a periodic proc using the skill1 'Recurring interval: 6 sec' as the steady-state capture cadence -> passive dot of 1100% every 6s. This is OPTIMISTIC on uptime: it ignores the ~78s ramp to 13 ghosts and the burst-driven ghost drain (below), so real proc uptime is lower -- flagged as the main uncertainty. burst overridden because the parser emitted BOTH mutually-exclusive branches (double count) and did not multiply by the sequential hit count. Modeled the non-max branch conservatively: 800% x 6 sequential = 4800% (single boss -> all sequential hits land). The 13-ghost branch (800% x 13 = 10400%) is not modeled since burst drains 6-9 ghosts and the ~40s cooldown rarely allows a refill back to max; ghost-count decrements are steady-state abstractions with no direct effect. Stun/possession/defensive text skipped. PATCH 2026-07-02 ⚠: her S1/burst multipliers were buffed (91.03->158.65, 79.2->316.66) as distributed-bug compensation, but this override models a bespoke ghost economy whose numbers came from the pre-patch kit text — UNTESTED unit, re-derive from post-patch text before trusting. [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] [re-materialized 2026-07-16: skill1 re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — GHOST CURRENCY (prior 4, derivable): capture cadence = 1 ghost / 6s (possession recurs every 6s; the 100-cumulative-team-hit gate clears well inside 6s for a 5-unit team — her own ramped MG alone lands ~60-100 hits/6s; ⚑ hit-gate may bind in slow/charge-weapon teams). Two MODES (first = default): 'rotation' = standard control-team context, sole B3 bursting on her 40s CD (~4 bursts/180s at ~t15,57,99,141). Derived trajectory: burst ▼6 floors her at 1 ghost, +1/6s rebuild → pre-burst peak = 1+floor(42/6)=7, sawtooth 1→7 avg ~4 — the ghost count NEVER reaches 13 while bursting on CD (needs 72 burst-free seconds from the floor). Consequences: burst always takes the 6-hit branch (800%×6=4800% flatDamage, flavor sequential — one merged hit, expectation-equivalent to 6×800%); the 13-hit branch is UNREACHABLE (verbatim in unmodeled.burst); S2's 1100% capture-at-max-capacity nuke fires ZERO times (never at 13). S1 tiers: ≥1 ghost (first capture t≈6, burst 'maintains at least 1') ≈ permanent → casterAtkPct 16.2 passive full value to Water allies; ≥4 ghost tier on only from ~18s after each burst until the next → derived windows [33,57],[75,99],[117,141],[159,180] ≈ 93s/180 ≈ 0.52 uptime → elemAdvantageDamagePct shipped 17.5 = 35 × 0.5 ⚑. 'no-burst' mode = solo probe / never-bursting context (a lone B3 makes zero FBs): ghosts ramp 0→13 by t≈78, ≥4 tier ≈ 87% uptime → full 35 shipped, and the S2 nuke fires on every capture at max ≈ every 6s from t≈84 → 17 procs; encoded as ONE passive dot 1100%/6s dur 102 (= exactly 17 ticks, count-equivalent, phase shifted early — damage-equivalent solo since no FB and her buffs are static; prior 3 anti-overlap encoding). WARNING: do not select no-burst mode for a team where she actually bursts (the nuke dot + burst would double-count her economy). SKIPPED (unmodeled, verbatim): possession/capture bookkeeping lines (no direct effect of their own — folded into the derived trajectory above); tier-header lines (ghost-count gate is approximated by uptime haircut + modes, not tracked); burst ghost-decrement lines (bookkeeping); the 13-hit burst branch (unreachable in both modeled contexts). ⚑ LIST: (1) MG cadence tuple pullsPerSec/reloadFrames 171/wind-up — datamine-unverified; (2) capture cadence 6s vs hit-gated; (3) ≥4-tier uptime 0.5 in rotation (FB-cadence-dependent); (4) no-burst nuke count 17 + ramp-to-13 time 78s; (5) at-burst ghost count never 13 (verify vs UI counter); (6) whether S2's +40% self ATK (same burstCast) snapshots into her own 4800% burst nuke — engine same-frame ordering unverified. Kit is Water/MG/Attacker/B3, slug elegg-boom-and-shock (NOT base elegg).",
+  "modes": ["auto", "rotation", "no-burst"],
   "unmodeled": {
     "skill1": [
       "Possession lasts for 6 sec.",
@@ -12,92 +13,72 @@
       "4 or more ghosts:"
     ],
     "skill2": [],
-    "burst": []
+    "burst": [
+      "Number of ghosts ▼ 6. Maintains at least 1 ghost.",
+      "Deals 800% of final ATK as damage. Attacks sequentially for 13 time(s).",
+      "Number of ghosts ▼ 9."
+    ]
   },
   "caveats": [
-    "skill1: unparsed effect \"Possession lasts for 6 sec.\"",
-    "skill1: unparsed effect \"Ability: Find and capture ghosts possessing the enemy.\"",
-    "skill1: unparsed effect \"Required hit count: 100 time(s) in total, cumulative across all allies.\"",
-    "skill1: unparsed effect \"Effect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.\"",
-    "skill1: unparsed effect \"Recurring interval: 6 sec\"",
-    "skill1: unparsed effect \"Effects vary according to the number of ghosts. Each subsequent effect triggers all effects before it:\"",
-    "skill1: unparsed effect \"1 or more ghosts:\"",
-    "skill1: unparsed effect \"4 or more ghosts:\""
+    "skill1: Elemental Advantage Damage ▲35% (4+ ghosts) shipped at 17.5% = derived ~50% uptime in rotation mode — unmeasured ghost-economy estimate",
+    "skill2: the 1100% capture-at-max-capacity nuke fires ONLY in no-burst mode (bursting every ~40s the ghost count never reaches 13); its ~17 procs/180s are a derived estimate",
+    "burst: modeled as the 6-hit branch (800% x 6 = 4800%); the 13-ghost 13-hit branch is unreachable when bursting on cooldown",
+    "cadence: datamined MG fire rate + reloadFrames 171 are unverified (mandatory cadence flag)"
   ],
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "alliesOfElement",
-        "element": "Water"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "alliesOfElement", "element": "Water" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterAtkPct",
-          "value": 16.2
-        },
-        {
-          "kind": "buff",
-          "stat": "elemAdvantageDamagePct",
-          "value": 35
-        }
+        { "kind": "buff", "stat": "casterAtkPct", "value": 16.2 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "mode": "rotation",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "alliesOfElement", "element": "Water" },
+      "effects": [
+        { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 17.5 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "mode": "no-burst",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "alliesOfElement", "element": "Water" },
+      "effects": [
+        { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 35 }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 40,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "atkPct", "value": 40, "durationSec": 10 }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "mode": "no-burst",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "dot",
-          "atkPct": 1100,
-          "durationSec": 180,
-          "intervalSec": 6
-        }
+        { "kind": "dot", "atkPct": 1100, "durationSec": 102, "intervalSec": 6 }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 4800
-        }
+        { "kind": "flatDamage", "atkPct": 4800, "flavor": "sequential" }
       ]
     }
   ]

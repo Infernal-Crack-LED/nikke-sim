@@ -3,7 +3,6 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [
-      "Ensnaring Chains stacks ▲ 1.",
       "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.",
       "Ensnaring Chains stacks ▲ 20.",
       "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
@@ -16,7 +15,11 @@
     "skill2: unparsed effect \"Ensnaring Chains stacks ▲ 20.\"",
     "skill2: unsupported trigger \"Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\" — its effects are skipped",
     "skill2: unparsed effect \"Restraint Chain ▲ 1, up to 10.\"",
-    "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — its effects are skipped"
+    "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — its effects are skipped",
+    "skill2: 40-normals-in-Full-Burst Ensnaring generation is folded into skill1's steady-state DoT average (⚑ calibrated 12-stack rebuild average), not a discrete hitCount block",
+    "skill2: unsupported trigger \"Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\" — defensive, skipped (boss deals no damage in v1)",
+    "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — boss never dies, skipped",
+    "skill1: Restraint-dump timing (\"at a specific timing\") is kit-silent — modeled at battle start / Full Burst end (⚑)"
   ],
   "skill1": [
     {

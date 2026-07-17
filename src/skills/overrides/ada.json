@@ -1,7 +1,9 @@
 {
   "note": "RL charge-attacker. S1: on full-burst enter, buffs the BURST 3 allies who already burst this rotation (kit text: 'all Burst 3 allies who previously used their Burst Skill' — target burstCasters stage 3; U8 run-E finding 2026-07-13: the unfiltered burstCasters target was feeding her +60%-of-caster ATK grant to crown/rouge every rotation, the source of their ~1.44 heat) with ATK 60% of caster's ATK and True Damage 50% for 10s; the 10% lifesteal is defensive, skipped. S2 Flash Grenade Toss REWORKED (tier audit): exact model replaces the old hitCount:3 blend (which assumed ~25% FB uptime; validated fights run ~75%, a ~2x undercount). Baseline: 420% True-Damage dot every 2s for 10s on EVERY full-burst enter; her burst rider (interval ▼1s for 10s) is a SECOND identical every-2s stream on her own burstCast, so during her burst windows the combined rate is exactly 1/s. True-flavored, so her S1/burst True Damage ▲ buffs apply only to the grenades (engine gates trueDamagePct by flavor). ",
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Recovers 10% of the damage dealt as HP for 10 sec. (skipped: lifesteal — no HP pool consumer modeled; see findings F1/F2: targets bursted Burst-3 allies, would fire their 'recovery' triggers if a B3 recovery-consumer comp appears)"
+    ],
     "skill2": [],
     "burst": []
   },

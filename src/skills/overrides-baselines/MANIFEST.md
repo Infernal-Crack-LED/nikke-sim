@@ -29,6 +29,19 @@ reviewed hypotheses were merged into fresh AUTHOR-mode kit-parse candidates and 
 `src/skills/overrides/` (per-line audits + ⚑ lists in the wave staging records; tracked in
 data/kit-status.json `kitParse.status=authored`). These six baseline files are now historical.
 
+**CONSUMED (kit-parse rollout Wave 2, 2026-07-16):** anchor-innocent-maid, bready, delta-ninja-thief,
+helm-aquamarine, scarlet, zwei — merged into fresh AUTHOR candidates + promoted (per-line audits + ⚑
+lists in `<scratchpad>/kit-parse-wave-2/`; kit-status `kitParse.status=authored`). Historical now.
+
+**CONSUMED (kit-parse rollout Wave 3, 2026-07-16):** anis-sparkling-summer, leona, soline-frost-ticket
+(AUTHOR — promoted); guilty, isabel, brid-silent-track (AUDIT — findings/unmodeled backfill only, blocks
+untouched; kit-status `kitParse.status=audited`). Staging in `<scratchpad>/kit-parse-wave-3/`. Historical.
+
+**✅ ROLLOUT COMPLETE (74/74, 2026-07-16):** all 18 staged baselines consumed (Waves 1–3 above) + the
+remaining roster processed direct-from-materialized/hand-authored (Waves 4–10; those units had no staged
+baseline). 32 AUTHOR + 42 AUDIT. This whole `overrides-baselines/` dir is now HISTORICAL — see
+`docs/handoffs/2026-07-16-kit-parse-rollout.md` for the wave log + the owner-reconciliation findings backlog.
+
 ## The 18 baselines
 
 | unit | weapon/burst | archetype / key mechanic | dominant ⚑ | flags |

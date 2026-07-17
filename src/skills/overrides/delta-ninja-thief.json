@@ -1,144 +1,104 @@
 {
-  "note": "MATERIALIZED PARSER OUTPUT (2026-07-16) — auto-generated from the offline kit parser on the official (blablalink) prose; behavior-identical to the previous runtime parse; NOT hand-verified. The reviewed kit-parse hypothesis lives in src/skills/overrides-baselines/delta-ninja-thief.json; promote via its MANIFEST.md guardrails (it replaces this file). [re-materialized 2026-07-16: skill2/burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- delta-ninja-thief (Delta: Ninja Thief) — MG/Water/Defender/B2 debuff+buff support; her own damage = MG normals + one burst distributed nuke. Kit-parse AUTHOR pass 2026-07-16 (wave 2), merging the staged baseline (overrides-baselines) + the re-materialized parse. HP-SCALING: NONE — every 'Max HP' reference is SHIELD SIZE (12.25% of final Max HP), no atkOfMaxHpPct/casterMaxHpPct conversion (prior 6 n/a). MODES (Defender-count formation branch; engine `formation` only supports B1-count, so user-selectable modes like naga/anis): 'solo defender' (DEFAULT ⚑3 — no other Defender ally, the assumed control-team case: Attract/Taunt + self-shields) vs 'with defender ally' (Camouflage + Ninjutsu Injection lifesteal → the IFAK all-ally heal). skill1 (formation-independent, all 3 lines modeled): (a) 'when entering Full Burst' → fullBurstEnter (fires on every team FB per hard rule 6) → boss damageTakenPct 12/15s; (b) 'when using Burst Skill' → burstCast (only rotations SHE bursts) → self atkPct 15.04/10s; (c) burstCast → boss damageTakenPct 8/10s (nearest-crosshair = the single boss). The two Acid Bomb debuffs are distinct named effects with distinct values (12 vs 8) → they co-stack during overlap, faithful to the kit. skill2: SOLO mode — battle-start shield event (maxHpPct 12.25, 10s; event-only, no HP pool — fires `shielded` triggers on self; no in-kit consumer but kept per hard rules 2-3) + hitCount-200 shield ('when performing 200 normal attack(s) while in Attract' — Attract ≡ the solo branch); Attract/Taunt itself unmodeled (taunt, partless boss unaffected). WITH-DEFENDER mode — Ninjutsu Injection 'recovers 11.22% of attack damage as HP continuously' modeled as an event-only heal to SELF on shotFired (per-pull ≈ continuous; amount unmodeled — heal is event-only; kept per hard rules 2-3 so any recovery consumer works); Camouflage unmodeled (single-target-immunity, defensive vs partless boss); Ninjutsu IFAK ('every 4 sec while in Injection … all allies healed for the stored amount') modeled as heal → allies on hitCount 200 (⚑2 proxy for the 4s timer — no timed-interval trigger exists), which fires teammate `recovery` triggers (Crown-style consumers, hard rule 2); the 4s storage DELAY + the 165.28%-of-ATK stored-amount cap are unmodeled (heal has no magnitude). burst: burstCast → all allies distributedDamagePct 20/10s + casterAtkPct 15/10s ('15% of the skill user's ATK' = flat add of caster ATK); burstCast → boss flatDamage 170% distributed (auto-FB-exempt as burst-cast instant damage — no noFb; picks up her own +20% distributed buff, landing same cast). 'Next shield's HP ▲20.13%' + 'Maximum Accumulation of Ninjutsu IFAK ▲20.13%' unmodeled — they scale shield-size/heal-amount, neither of which has an engine pool (shield/heal are event-only); the underlying shield/heal EVENTS are modeled, only their magnitudes are not. Element: clean ×1.10 Water advantage, engine-handled (no elemental-advantage buff — prior 7). No reload/ammo/fire-rate kit lines → no charFixes (prior 9 audit: nothing gates shot count). ⚑ NEEDS-MEASUREMENT: (1) CADENCE TUPLE [MANDATORY] — MG rate of fire (engine MG wind-up ladder + class default; not text-derivable) + reloadFrames 171 (datamine) + rolling-reload behavior; estimate = datamine as-is; recipe = rounds/min + reload gap from any focused delta-ninja-thief video; ammo 300 empties in ~5-7s at MG rates — normal MG profile, no odd-fire-mode text tell → NOT escalated. (2) IFAK heal cadence — hitCount 200 as the 'every 4 sec' proxy (≈4-5s at MG cadence incl. wind-up + reloads); recipe = time the IFAK heal ticks in a 2-Defender recording; matters only as a teammate recovery-consumer trigger. (3) FORMATION-MODE DEFAULT — 'solo defender' assumed for the standard control team; verify per-comp (a second Defender flips the branch: shields/taunt OFF, Injection+IFAK ON); recipe = check the actual squad, select the mode per comp. (4) Injection self-heal cadence — shotFired (per trigger pull) as the 'continuously' proxy; inert unless a self-recovery consumer appears; recipe = only if ever load-bearing, read heal-tick cadence from a with-defender recording. Blast radius: team-facing levers (boss damageTakenPct 12+8, allies casterAtkPct 15 + distributedDamagePct 20, IFAK heal→recovery events) touch the WHOLE team — /sim-battery diff before any board-level claim.",
+  "modes": ["auto", "solo defender", "with defender ally"],
+  "caveats": [
+    "skill2: Defender-count formation branch is user-selected via modes ('solo defender' default) — not auto-detected from the squad; pick 'with defender ally' when another Defender is present",
+    "skill2: IFAK all-ally heal cadence is a hitCount-200 proxy for 'every 4 sec' (unmeasured estimate)",
+    "skill2/burst: shields and heals are event-only (no HP pools) — the shield-size and IFAK-accumulation ▲20.13% riders therefore have no modeled effect"
+  ],
   "unmodeled": {
     "skill1": [],
     "skill2": [
-      "Effects vary according to squad formation. Only one set of effects is applied.",
-      "Affects self if there are no other Defender allies in the squad.",
       "Effect 2: Attract: Taunt all enemies continuously.",
-      "Affects self if there is another Defender ally in the squad.",
       "Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
-      "Effect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.",
-      "Activates when performing 200 normal attack(s). Affects self while in Attract status.",
-      "Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.",
       "Ninjutsu IFAK lasts for 4 sec.",
-      "Function: Stores up HP recovery for a time, after which all allies are healed for the stored amount.",
-      "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.",
-      "Effect 2: Once the duration ends, all allies are healed for the stored recovery amount."
+      "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK."
     ],
     "burst": [
       "Next shield's HP ▲ 20.13% for 10 sec.",
       "Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
     ]
   },
-  "caveats": [
-    "skill2: unparsed effect \"Effects vary according to squad formation. Only one set of effects is applied.\"",
-    "skill2: unparsed effect \"Affects self if there are no other Defender allies in the squad.\"",
-    "skill2: unparsed effect \"Affects self if there is another Defender ally in the squad.\"",
-    "skill2: unsupported trigger \"Activates when performing 200 normal attack(s). Affects self while in Attract status.\" — its effects are skipped",
-    "skill2: unparsed effect \"Ninjutsu IFAK lasts for 4 sec.\"",
-    "skill2: unparsed effect \"Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.\"",
-    "burst: unparsed effect \"Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec.\""
-  ],
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "damageTakenPct",
-          "value": 12,
-          "durationSec": 15
-        }
+        { "kind": "buff", "stat": "damageTakenPct", "value": 12, "durationSec": 15 }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 15.04,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "atkPct", "value": 15.04, "durationSec": 10 }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "damageTakenPct",
-          "value": 8,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "damageTakenPct", "value": 8, "durationSec": 10 }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "mode": "solo defender",
       "effects": [
-        {
-          "kind": "shield",
-          "maxHpPct": 12.25,
-          "durationSec": 10
-        }
+        { "kind": "shield", "maxHpPct": 12.25, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 200 },
+      "target": { "kind": "self" },
+      "mode": "solo defender",
+      "effects": [
+        { "kind": "shield", "maxHpPct": 12.25, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "self" },
+      "mode": "with defender ally",
+      "effects": [
+        { "kind": "heal" }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 200 },
+      "target": { "kind": "allies" },
+      "mode": "with defender ally",
+      "effects": [
+        { "kind": "heal" }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "allies"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "distributedDamagePct",
-          "value": 20,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "casterAtkPct",
-          "value": 15,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "distributedDamagePct", "value": 20, "durationSec": 10 },
+        { "kind": "buff", "stat": "casterAtkPct", "value": 15, "durationSec": 10 }
       ]
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 170,
-          "flavor": "distributed"
-        }
+        { "kind": "flatDamage", "atkPct": 170, "flavor": "distributed" }
       ]
     }
   ]

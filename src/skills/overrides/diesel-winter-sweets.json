@@ -1,7 +1,12 @@
 {
   "note": "Only skill1 needs an override; the parser's skill2 (Full-Charge sustained 318.14% x2 for 3s, and the Full-Burst 63.33%/s-for-9s DoT on the stage target) and burst (Damage Taken +25.09% for 10s, 18.43%/s and 181.2%/s DoTs for 9s) are already faithful for v1 and left to the parser. S1 has two mutually exclusive states: Intro (she used her own Burst this cycle) or Highlight (she did not). The parser wrongly stacks both, double-counting Crit Damage (20.28 + 20.28) and applying both sustained buffs (60.19% + 235.03%). She is a Burst III with a team-amp burst (Damage Taken +25.09%), so the sim casts her burst and she is in Intro every rotation: modeled as Intro only -> Crit Damage +20.28% (permanent, undispellable) and Sustained Damage +60.19% for 10s, both on entering Full Burst. Skipped: the Highlight branch (Crit Dmg 20.28% and the larger Sustained 235.03%), which is mutually exclusive with Intro and only applies if she is run as a non-bursting sub-DPS -- flagged as the key uncertainty, since a Highlight build would deal materially more sustained damage. Also skipped in skill2/burst (already handled by the parser omitting them): the part-destruction Sustained 68.04% (no parts on a single boss in v1, so it never triggers), Mute/Noise-Pollution and Mute-stack mechanics (defensive, hit-rate inert). [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.",
+      "Highlight: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.",
+      "Activates when entering Full Burst. Affects self if in Highlight status.",
+      "Sustained damage ▲ 235.03% for 10 sec."
+    ],
     "skill2": [
       "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
       "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
@@ -9,7 +14,9 @@
       "Sustained Damage ▲ 68.04% for 15 sec."
     ],
     "burst": [
+      "Activates while the skill user is in Highlight status. Affects all allies (except self).",
       "Noise Pollution: Hit Rate ▼ 100% for 1 sec.",
+      "Affects all allies if the skill user is in Highlight status.",
       "Mute stacks ▼ 1."
     ]
   },

@@ -1,8 +1,12 @@
 {
   "note": "Tier audit (Bossing A, Prydwen). S1 parser-faithful, kept (ATK 80.04%/5s at battle start + FB end; True Damage 35.05%/15s on FB enter). S2 is a 15s-COOLDOWN pulse (cooldown line missing from DB text; Prydwen confirms 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert), allies True Damage 140.49%/10s. The parser made both permanent -> modeled as uptime-averaged permanents: damageTakenPct 10.09 x 5/15 = 3.36, team trueDamagePct 140.49 x 10/15 = 93.66. Burst: weapon swap 200.64%/shot for 10s whose normal attacks DEAL TRUE DAMAGE (trueNormals: true, engine-flavored) so her own 35.05 + the team 93.66 True Damage buffs apply to swap shots exactly (trueDamagePct is flavor-gated); the 6.04% Damage Taken per target hit during the swap is a shotFired enemy debuff gated fbGate:inFb (swap window ~= FB window for a bursting B2). Stun and heals skipped. [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
   "unmodeled": {
-    "skill1": [],
-    "skill2": [],
+    "skill1": [
+      "Activates at the start of battle: ATK ▲ 80.04% for 5 sec (the battle-start activation only; the Full-Burst-end activation of the same line IS modeled as the fullBurstEnd block — engine has no battleStart trigger and passive-trigger buffs ignore durationSec, sim.ts:983-993, so this instance is not override-expressible today)"
+    ],
+    "skill2": [
+      "Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)"
+    ],
     "burst": []
   },
   "skill1": [

@@ -1,5 +1,5 @@
 {
-  "note": "S1 (30-hit extra damage + self ATK) and the burst weapon-swap parse correctly and are omitted. S2 overridden only to recover the dropped 'Critical Rate 26.1% during Full Burst' self-buff, modeled as a fullBurstEnter buff that re-applies (effectively on for the whole full-burst window). The S2 144.73% 'enemies within attack range' hit has no explicit trigger in the text; kept as the parser's single instant passive hit — UNCERTAIN whether it is actually a per-attack/per-charged-shot proc (would undercount if so). Pierce on the burst weapon is inert vs a single boss. [materialized 2026-07-16: skill1/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. [kit-parse AUTHOR 2026-07-16, wave 6 — snow-white (BASE unit, AR/Iron/Attacker/B3; NOT snow-white-heavy-arms).] S1: every 30 normal-attack hits → 82.8% rider (crit-on default, no core, FB by timing) + self ATK 8.28% 5s — both kit-literal (hitCount 30; at AR 12 pulls/s ≈ every 2.5s while firing, so the ATK buff is near-permanent during sustained fire). S2a 144.73% 'enemies within range': the kit text gives NO trigger (datamine dropped the 'Activates when…' clause) — ⚑ TOP INVENTED TRIGGER: modeled as firing on each FULL-CHARGE shot of the burst weapon swap (shotFired + swapGate:swapped; all swapped shots are full charges). Rationale: S2b says 'when USING THIS SKILL during Full Burst', so S2 has a discrete activation; her only activation-shaped event is the swapped full-charge shot (AR chargeFrames 0 — she cannot full-charge outside the swap), which makes the whole kit cohere (burst→swap→full-charge shot procs S2a damage + S2b crit). Replaces the materialized single-passive-hit encoding (fired ONCE per fight ≈ inert). S2b: crit +26.1% 10s on the same trigger, fbGate:inFb (kit: 'when using this skill during Full Burst') — the triggering shot itself resolves before the buff lands (buff covers subsequent hits/procs), matching in-game apply-after-hit. BURST: weaponSwap charge cannon — damagePct 499.5, chargeTimeSec 5, chargeMultPct 1000 ('Full Charge Damage 1000% of damage' = 1000% OF the 499.5% base → 4995% per full-charge shot; engine composes chargeMult/100 × damagePct exactly so), maxAmmo 1, durationSec 10 (kit states no duration; standard FB window assumed). Engine economy: 5s charge → shot at ~t+5s, then maxAmmo 1 forces a 111-frame reload, next shot would land ~t+11.85s > window → exactly 1 full-charge shot per burst — ⚑ TOP swap economy (1 vs 2 shots is the unit's single biggest lever; the RRH optimistic bound gives 2 only reload-free AND at the exact 10.0s boundary, and the engine zeroes charge-speed buffs for swap cadences [sim.ts cs=0 for swap chargeFrames], so charge-speed-support comps that realistically enable the 2nd shot cannot be expressed — engine-gap finding). SKIPPED → unmodeled.burst: 'Additional Effect: Pierce' — the pierce is SWAP-SCOPED and the schema has no swap-scoped pierce (top-level hasPierce would wrongly grant her AR normals the PIERCE_CORE_DOUBLE body hit + pierceDamagePct feeds all fight); vs a core-exposed boss the real nuke may double-hit core+body (≈ up to 2× nuke) — ⚑ finding, needs engine vocab or measurement. ⚑ LIST: (1) TOP S2a invented trigger (per swapped full-charge shot; recipe: solo/focus video — match the extra ~144.73%-class popup 1:1 against full-charge shots; any proc outside the burst window falsifies the swap gating); (2) TOP swap shot economy 1/burst (recipe: focus video — count cannon shots per burst window, with and without charge-speed support); (3) MANDATORY cadence tuple — pullsPerSec 12 (AR class default), reloadFrames 111, no rolling-reload assumed (recipe: rounds/min + reload gap from any focus video; 60-ammo mag ≈ 5s at 12/s, no <1s-empty tell, not escalated); (4) swap Pierce unmodeled (recipe: nuke popup count vs core-exposed boss — one popup or two); (5) 'Full Charge Damage 1000% of damage' interpretation = ×10 on 499.5 → 4995% (recipe: read the nuke popup ÷ final ATK). FB on the nuke: swapped shots are category 'normal' → +50% by landing timing (in-FB), NOT the burst-cast pre-FB exemption — the cast only starts the swap; the shot lands ~5s later inside FB.",
   "unmodeled": {
     "skill1": [],
     "skill2": [],
@@ -7,6 +7,11 @@
       "Additional Effect: Pierce"
     ]
   },
+  "caveats": [
+    "skill2: the 144.73% line's trigger is INVENTED (kit text has no 'Activates when…' clause) — modeled as one proc per full-charge shot of the burst weapon swap; unmeasured ⚑",
+    "burst: swap shot economy is an unmeasured estimate — engine yields exactly 1 full-charge shot (4995%) per burst window; a 2nd shot (charge-speed comps) is not expressible (engine zeroes charge speed for swap cadences) ⚑",
+    "burst: 'Additional Effect: Pierce' unmodeled — pierce is swap-scoped and the schema only has always-on hasPierce; potential core+body double-hit on the nuke is missing ⚑"
+  ],
   "skill1": [
     {
       "slot": "skill1",
@@ -47,8 +52,9 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "passive"
+        "kind": "shotFired"
       },
+      "swapGate": "swapped",
       "target": {
         "kind": "enemy"
       },
@@ -62,8 +68,10 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "fullBurstEnter"
+        "kind": "shotFired"
       },
+      "swapGate": "swapped",
+      "fbGate": "inFb",
       "target": {
         "kind": "self"
       },

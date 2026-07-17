@@ -1,115 +1,60 @@
 {
-  "note": "Parts-support kit. Skill1 override adds the part-destruction ATK stacks the parser drops (unsupported trigger): modeled as steady-state max stacks -> permanent all-ally ATK 15% of caster (3% x 5). The battle-start Parts Damage 24.26% buff is kept for fidelity (partsDamagePct is inert in v1). Skill2 omitted: parser is faithful (inert Parts Damage buff + the 70.4%/s-for-15s sustained-damage dot, which the engine already routes through the sustainedDamagePct bucket). Burst omitted: parser faithfully emits ally Sustained Damage 20.32% and enemy Damage Taken 32.23%. UNCERTAIN/OPTIMISTIC: v1 assumes a single boss with no destructible parts, so the part-destroy trigger would never actually fire; modeling it at full 5-stack uptime assumes solo-raid part-breaking keeps it maxed, which the engine does not simulate. This may over-count her contribution. [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. rosanna-chic-ocean (Rosanna: Chic Ocean, AR/Wind/Supporter/B2) — parts-support BUFFER; most of her kit value (both Damage-to-Parts buffs + the part-destroy ATK stacks) is INERT vs the partless scope-lock boss, so she is EXPECTED to look weak here (faithful, not a bug). MODELED: S1a battle-start allies partsDamagePct 24.26 ×15s (inert v1, kept for fidelity/future parts consumer). S2a allies partsDamagePct 24.26 ×15s (inert; kit text gives NO activation clause for skill2 — see ⚑2). S2b maintained sustained DoT on the boss: 70.4% caster ATK/s — encoded per the DoT-overlap hard rule as ONE passive instance dur 999 (continuous steady-state; the printed 15s duration + an unprinted re-activation cadence ⇒ maintained, NOT a stacking per-trigger DoT which would multiply ~overlap-fold). FB on DoT ticks = by timing (default, no noFb). Burst (burstCast): allies sustainedDamagePct 20.32 ×10s (feeds DoT teammates + her own S2 DoT) + boss damageTakenPct 32.23 ×10s (big team lever — blast radius is TEAM-WIDE, sim-battery diff before board claims). SKIPPED→unmodeled: S1b part-destroy ATK stacks (trigger 'destroys an enemy's part' NEVER fires vs the partless boss — genuinely-skippable class; ⚑3 BIG lever vs parts bosses: casterAtkPct 3×5=15 to ALL allies; NOTE this REMOVES the previous override's optimistic permanent 15% casterAtkPct encoding, which its own note flagged as an over-count). ⚑1 cadence tuple: AR pulls/s + reloadFrames 81 + rolling-reload unverified (datamine estimate; no text tell of a special fire mode — 60 ammo empties in ~5s at class rate, plausible). ⚑2 S2 activation/uptime: skill2 has NO 'Activates…' clause in the kit text — the passive-continuous (100% uptime) encoding is an INVENTED trigger; if real activation has gaps (e.g. gated on attacking/charge), the DoT and the S2 parts buff over-count proportionally. ⚑3 part-destroy stacks (above). Prior-2: no noFb anywhere; burst buffs are buffs (no snapshot issue).",
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "■ Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5, 30s."
+    ],
     "skill2": [],
     "burst": []
   },
+  "caveats": [
+    "skill1: part-destroy ATK stacks (3% caster ATK ×5 to all allies) are inert vs a partless boss and NOT modeled — big hidden lever on parts bosses",
+    "skill2: sustained DoT modeled as 100%-uptime maintained (one passive instance) — the kit text prints no activation clause; real uptime is unmeasured",
+    "skill1/skill2: Damage to Parts ▲ 24.26% buffs are inert vs the partless boss (kept for fidelity)"
+  ],
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "allies"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "partsDamagePct",
-          "value": 24.26,
-          "durationSec": 15
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterAtkPct",
-          "value": 15
-        }
+        { "kind": "buff", "stat": "partsDamagePct", "value": 24.26, "durationSec": 15 }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "allies"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "partsDamagePct",
-          "value": 24.26,
-          "durationSec": 15
-        }
+        { "kind": "buff", "stat": "partsDamagePct", "value": 24.26, "durationSec": 15 }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "dot",
-          "atkPct": 70.4,
-          "durationSec": 15,
-          "intervalSec": 1,
-          "flavor": "sustained"
-        }
+        { "kind": "dot", "atkPct": 70.4, "durationSec": 999, "intervalSec": 1, "flavor": "sustained" }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "allies"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "sustainedDamagePct",
-          "value": 20.32,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "sustainedDamagePct", "value": 20.32, "durationSec": 10 }
       ]
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "damageTakenPct",
-          "value": 32.23,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "damageTakenPct", "value": 32.23, "durationSec": 10 }
       ]
     }
   ]

@@ -10,10 +10,10 @@ import { bandLabel, boardStats, collectBoardReadings, COMPS, tempLabel } from '.
 
 const perUnit = collectBoardReadings();
 
-type Row = { slug: string; n: number; mean: number; min: number; max: number; mad: number; ratios: number[] };
+type Row = { slug: string; n: number; mean: number; min: number; max: number; mad: number; cv: number; ratios: number[] };
 const rows: Row[] = Object.entries(perUnit).map(([slug, records]) => {
   const s = boardStats(records);
-  return { slug, n: s.n, mean: s.mean, min: s.min, max: s.max, mad: s.mad, ratios: records.map((r) => r.ratio) };
+  return { slug, n: s.n, mean: s.mean, min: s.min, max: s.max, mad: s.mad, cv: s.meanCv, ratios: records.map((r) => r.ratio) };
 });
 
 // most stable first: lowest mean-abs-deviation-from-1.0, then more datapoints
@@ -25,14 +25,16 @@ rows.sort((a, b) => a.mad - b.mad || b.n - a.n);
 console.log(`\n=== BOARD-WIDE ACCURACY READ (${rows.length} units with real data, ${COMPS.length} comps) ===`);
 console.log(`RATIO = sim / real.  >1 = HOT ▲ (sim OVER-models, fix = REMOVE damage).  <1 = COLD ▼ (sim UNDER-models, fix = ADD damage).`);
 console.log(`(NB: solo probe-data recons use the OPPOSITE field 'realOverSim' — >1 = COLD there. Do not conflate.)`);
-console.log(`ranked most-stable → least (stability = mean |ratio−1|, lower is better)\n`);
-console.log('  #  unit                        N   mean   temp    range          MAD    band    ratios');
-console.log('  ─  ──────────────────────────  ──  ─────  ──────  ─────────────  ─────  ──────  ──────────────────────────');
+console.log(`ranked most-stable → least (stability = mean |ratio−1|, lower is better)`);
+console.log(`seedSD = mean per-comp Monte-Carlo spread (sd/mean across seeds) — the single-run band a real fight sits in; ⚠ = ≥2% (FB-bimodal / boss-timing-sensitive comp, judge against multi-run avg)\n`);
+console.log('  #  unit                        N   mean   temp    range          MAD    band    seedSD   ratios');
+console.log('  ─  ──────────────────────────  ──  ─────  ──────  ─────────────  ─────  ──────  ───────  ──────────────────────────');
 rows.forEach((r, i) => {
   const rng = `${r.min.toFixed(2)}–${r.max.toFixed(2)}`;
   const rlist = r.ratios.map((x) => x.toFixed(2)).sort().join(' ');
+  const cv = `±${(r.cv * 100).toFixed(1)}%${r.cv >= 0.02 ? ' ⚠' : '  '}`;
   console.log(
-    `  ${String(i + 1).padStart(2)}  ${r.slug.padEnd(26)}  ${String(r.n).padStart(2)}  ${r.mean.toFixed(3)}  ${tempLabel(r.mean).padEnd(6)}  ${rng.padEnd(13)}  ${r.mad.toFixed(3)}  ${bandLabel(r.mad).padEnd(6)}  ${rlist}`
+    `  ${String(i + 1).padStart(2)}  ${r.slug.padEnd(26)}  ${String(r.n).padStart(2)}  ${r.mean.toFixed(3)}  ${tempLabel(r.mean).padEnd(6)}  ${rng.padEnd(13)}  ${r.mad.toFixed(3)}  ${bandLabel(r.mad).padEnd(6)}  ${cv.padEnd(7)}  ${rlist}`
   );
 });
 

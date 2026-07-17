@@ -427,6 +427,13 @@ tbody tr:last-child td { border-bottom: 0; }
 .table-scroll { max-height: 360px; overflow-y: auto; border-radius: 10px; }
 .table-scroll table { border-radius: 0; }
 .breakpoint-table th:first-child, .breakpoint-table td:first-child { white-space: nowrap; }
+/* content-aware sizing, left-aligned in the page, roomy columns for readability */
+.breakpoint-table { width: auto; }
+.breakpoint-table th, .breakpoint-table td { padding: 8px 22px; white-space: nowrap; }
+.breakpoint-table th:first-child, .breakpoint-table td:first-child { padding-left: 16px; }
+.breakpoint-table th:last-child, .breakpoint-table td:last-child { padding-right: 16px; }
+/* the breakpoint tables don't need to fill the row — let them shrink to content */
+.bp-panel .table-scroll { display: inline-block; max-width: 100%; }
 .share { color: var(--accent); font-weight: 600; }
 .adv { color: #4ecb71; }
 

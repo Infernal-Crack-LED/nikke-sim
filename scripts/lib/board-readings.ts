@@ -9,11 +9,14 @@
 // Consumers: scripts/board-read.ts (the human dashboard) and scripts/kit-status.ts
 // (the per-unit SSOT tracker's board records).
 import { loadWorld, runOnce } from '../battery/lib.js';
+import { DEFAULT_MC_SEEDS, MC_SEED_BASE, meanSimResults } from '../../src/engine/sim.js';
 import { COMPS } from '../experiment.js';
 
 export interface BoardReading {
   comp: string; // COMPS entry name the reading came from
-  ratio: number; // sim/real (>1 HOT)
+  ratio: number; // sim/real (>1 HOT) — mean over DEFAULT_MC_SEEDS seeded runs
+  seedCv: number; // seed coefficient of variation (sd/mean of the unit's per-seed totalDamage) —
+  // the single-run spread this comp exhibits; high = FB-bimodal / boss-timing-sensitive
 }
 
 export interface BoardStats {
@@ -23,6 +26,7 @@ export interface BoardStats {
   min: number;
   max: number;
   mad: number; // mean |ratio − 1| — the stability score
+  meanCv: number; // mean seed CV across the unit's comps — the typical ± a single real run sits within
   band: string; // MAD bucket label
   temp: 'HOT ▲' | 'COLD ▼' | 'OK  ·';
 }
@@ -37,11 +41,23 @@ export function collectBoardReadings(): Record<string, BoardReading[]> {
   const w = loadWorld();
   const perUnit: Record<string, BoardReading[]> = {};
   for (const c of COMPS) {
-    const r = runOnce(w, { name: c.name, slugs: c.slugs }, c.boss, 1);
+    // Monte-Carlo mean (2026-07-17): board ratios are the mean of DEFAULT_MC_SEEDS seeded
+    // runs, matching the real-fight variance sources. runOnce sets cfg.seed → the SG pellet jitter +
+    // crit/core/boss-timing jitter all sample. meanSimResults averages them. (dpschart + regression
+    // stay EV — they call runSim directly.)
+    const runs = Array.from({ length: DEFAULT_MC_SEEDS }, (_, i) =>
+      runOnce(w, { name: c.name, slugs: c.slugs }, c.boss, 1, MC_SEED_BASE + i)
+    );
+    const r = meanSimResults(runs);
     for (const u of r.units) {
       const real = c.real[u.slug];
       if (real === undefined || real <= 0) continue;
-      (perUnit[u.slug] ??= []).push({ comp: c.name, ratio: u.totalDamage / real });
+      // seed spread for THIS unit in THIS comp: sd/mean of its per-seed totalDamage (population sd,
+      // matching experiment.ts). u.totalDamage is already that mean, so ratio = mean/real is consistent.
+      const dmgs = runs.map((run) => run.units.find((x) => x.slug === u.slug)!.totalDamage);
+      const m = dmgs.reduce((a, b) => a + b, 0) / dmgs.length;
+      const sd = Math.sqrt(dmgs.reduce((a, b) => a + (b - m) ** 2, 0) / dmgs.length);
+      (perUnit[u.slug] ??= []).push({ comp: c.name, ratio: u.totalDamage / real, seedCv: m > 0 ? sd / m : 0 });
     }
   }
   return perUnit;
@@ -51,6 +67,7 @@ export function boardStats(records: BoardReading[]): BoardStats {
   const rs = records.map((r) => r.ratio);
   const mean = rs.reduce((a, b) => a + b, 0) / rs.length;
   const mad = rs.reduce((a, b) => a + Math.abs(b - 1), 0) / rs.length;
+  const meanCv = records.reduce((a, r) => a + (r.seedCv ?? 0), 0) / records.length;
   return {
     records,
     n: rs.length,
@@ -58,6 +75,7 @@ export function boardStats(records: BoardReading[]): BoardStats {
     min: Math.min(...rs),
     max: Math.max(...rs),
     mad,
+    meanCv,
     band: bandLabel(mad),
     temp: tempLabel(mean),
   };

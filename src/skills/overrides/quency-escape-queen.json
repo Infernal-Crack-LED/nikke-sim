@@ -1,125 +1,73 @@
 {
-  "note": "Tier audit (Bossing A). S1's Explore-Route-gated permanents (Distributed Damage 49.58 caster-bucket + Core Damage 25.25 + Crit Rate 16.73) were skipped — the route fills early and stays, modeled as passives. S2 staged ATK stacking left to the parser approximation. Burst parses (AD 57.08 + 1736.31% distributed nuke). [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] [re-materialized 2026-07-16: burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — kit-parse AUTHOR pass 2026-07-16 (wave 4), replaces the materialized parse. KIT MACHINE: S2 (hitCount 2 = every pull at hitsPerShot 2) builds the Explore Route: stage-1 stacks (ATK 2.45 ×10, 2s + Hit Rate 1.36 ×10, 2s), stage-2 (ATK 4.9 ×10, 1s + HR 2.71 ×10, 1s; kit-gated on stage-1 max), stage-3 (ATK 7.36 ×5, 0.5s + HR 4.08 ×5, 0.5s; gated on stage-2 max). ENCODING: all six stacks on ONE hitCount-2 self block — the 'each subsequent effect triggers all effects before it' cascade means at stage 3 every activation applies all stages; the stage-unlock ORDERING is NOT encoded (⚑4: parallel build over-credits stage-2/3 by ~0.4–0.8s per ramp/post-reload rebuild — small at 24 pulls/s). Stack uptime is SELF-SIMULATED: stage-1 (2s) survives the 1.35s reload; stage-2 (1s) and stage-3 (0.5s) lapse each reload and rebuild on resume (engine buff refresh = re-apply per pull, distinct values = distinct co-stacking keys). Peak while firing: ATK +110.3%, Hit Rate +61.1% (hitRatePct inert v1, HARD RULE 4 — kept, ⚑5 core-rate lift). S1 = three Explore-Route-max-GATED self permanents, encoded as firing-tracking proxies rather than blind passives: S1a Distributed Damage 49.58 @stage-1 max → passive (2s stack window outlasts reload → effectively permanent; only boosts her distributed hits = the burst nuke); S1b core-dmg 25.25 @stage-2 max → hitCount 20 (=10 pulls = the 10-stack rebuild) dur 1s (mirrors the real gate: continuous while firing, lapses ~1s into reload, ~0.42s rebuild — ⚑3 proxy, hit-counter carries over reloads so rebuild is slightly optimistic); S1c crit 16.73 @stage-3 max → hitCount 10 (=5 pulls) dur 0.5s (same construction). BURST: burstCast self attackDamagePct 57.08 + reloadSpeedPct 25.87 (10s, prior 9 — reload speed = shot count) + 1736.31% distributed nuke on the boss (burstCast → auto-FB-exempt; S1a's +49.58 distributed bucket applies to it at cast — ⚑6 verify vs popup). ⚑1 MANDATORY cadence tuple: pullsPerSec 24 (datamined rate_of_fire 1440), reloadFrames 81, reload_start_ammo 119 (near-full rolling start — verify). ⚑2 'after 2 normal attacks' hits-vs-pulls ambiguity (count 2 hits = per pull; if it means 2 SHOTS use count 4 — steady-state insensitive, ramp-only). No noFb anywhere (prior 2 default); noRange automatic. Nothing skipped — unmodeled arrays empty by audit.",
   "unmodeled": {
     "skill1": [],
-    "skill2": [
-      "Effects vary for each stage. Each subsequent effect triggers all effects before it:",
-      "Stage 1: Affects self.",
-      "Hit Rate ▲ 1.36%. Stacks up to 10 times and lasts for 2 sec.",
-      "Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.",
-      "Hit Rate ▲ 2.71%. Stacks up to 10 times and lasts for 1 sec.",
-      "Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.",
-      "Hit Rate ▲ 4.08%. Stacks up to 5 times and lasts for 0.5 sec."
-    ],
+    "skill2": [],
     "burst": []
   },
   "caveats": [
-    "skill2: unparsed effect \"Effects vary for each stage. Each subsequent effect triggers all effects before it:\"",
-    "skill2: unparsed effect \"Stage 1: Affects self.\"",
-    "skill2: unparsed effect \"Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.\"",
-    "skill2: unparsed effect \"Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.\""
+    "skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate — rebuild timing after reloads is approximate (⚑)",
+    "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
+    "skill2: Hit Rate stacks modeled as hitRatePct (inert in v1) — magnitude of the core-rate lift unmeasured (⚑)",
+    "all: cadence tuple is the raw datamine (24 pulls/s, reloadFrames 81) — unverified (⚑)"
   ],
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "distributedDamagePct",
-          "value": 49.58
-        },
-        {
-          "kind": "buff",
-          "stat": "coreDamagePct",
-          "value": 25.25
-        },
-        {
-          "kind": "buff",
-          "stat": "critRatePct",
-          "value": 16.73
-        }
+        { "kind": "buff", "stat": "distributedDamagePct", "value": 49.58 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 20 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "coreDamagePct", "value": 25.25, "durationSec": 1, "maxStacks": 1 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 10 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "critRatePct", "value": 16.73, "durationSec": 0.5, "maxStacks": 1 }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 2
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "hitCount", "count": 2 },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 2.45,
-          "durationSec": 2,
-          "maxStacks": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 4.9,
-          "durationSec": 1,
-          "maxStacks": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 7.36,
-          "durationSec": 0.5,
-          "maxStacks": 5
-        }
+        { "kind": "buff", "stat": "atkPct", "value": 2.45, "durationSec": 2, "maxStacks": 10 },
+        { "kind": "buff", "stat": "hitRatePct", "value": 1.36, "durationSec": 2, "maxStacks": 10 },
+        { "kind": "buff", "stat": "atkPct", "value": 4.9, "durationSec": 1, "maxStacks": 10 },
+        { "kind": "buff", "stat": "hitRatePct", "value": 2.71, "durationSec": 1, "maxStacks": 10 },
+        { "kind": "buff", "stat": "atkPct", "value": 7.36, "durationSec": 0.5, "maxStacks": 5 },
+        { "kind": "buff", "stat": "hitRatePct", "value": 4.08, "durationSec": 0.5, "maxStacks": 5 }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 57.08,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "reloadSpeedPct",
-          "value": 25.87,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "attackDamagePct", "value": 57.08, "durationSec": 10 },
+        { "kind": "buff", "stat": "reloadSpeedPct", "value": 25.87, "durationSec": 10 }
       ]
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 1736.31,
-          "flavor": "distributed"
-        }
+        { "kind": "flatDamage", "atkPct": 1736.31, "flavor": "distributed" }
       ]
     }
   ]

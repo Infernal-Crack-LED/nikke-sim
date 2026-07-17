@@ -5,8 +5,12 @@
     "duet (w/ Prika)"
   ],
   "unmodeled": {
-    "skill1": [],
-    "skill2": [],
+    "skill1": [
+      "Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec."
+    ],
+    "skill2": [
+      "Activates when entering Burst Stage 3 while not in Sing Along status: Cancels Singing and Dancing."
+    ],
     "burst": [
       "Only one Assigned Part is applied according to Mint's current status.",
       "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.",

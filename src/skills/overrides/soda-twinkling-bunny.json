@@ -4,9 +4,14 @@
     "reloadFrames": 182
   },
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Activates at the start of battle. Affects self. Golden Chip stacks ▲ 50."
+    ],
     "skill2": [],
-    "burst": []
+    "burst": [
+      "Golden Chip stacks ▼ 17 after the effect is applied.",
+      "Stage 2: Activates when Golden Chip is at 20 or more stacks. Affects self. Hit Rate ▲ 38.91% for 15 sec."
+    ]
   },
   "skill1": [
     {
@@ -132,5 +137,10 @@
         }
       ]
     }
+  ],
+  "caveats": [
+    "skill1/burst: the Golden Chip pool is not dynamically tracked — crit damage (42) and the every-burst ATK ▲65.25 gate are steady-state derivations valid for standard double-B3 comps (pre-consume trajectory 50/44/40/38/31, all ≥30); comps that drain below 30 pre-consume over-credit",
+    "skill2: Full Burst extension modeled as a flat +4s average; the kit is chip-gated CUMULATIVE (+5s at ≥20 chips = TE-I+TE-II, +2s at 10–19) — late-fight Full Bursts run shorter than modeled (measured last-FB countdown 12.50s at 18–19 chips)",
+    "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)"
   ]
 }

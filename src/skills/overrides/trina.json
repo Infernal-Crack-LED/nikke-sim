@@ -6,8 +6,17 @@
       "Recovers 2.03% of the skill user's final Max HP as HP.",
       "Recovers 1.57% of the skill user's final Max HP as HP."
     ],
-    "skill2": [],
-    "burst": []
+    "skill2": [
+      "Max HP ▲ 44.98% of the skill user's Max HP without restoring HP constantly.",
+      "Invulnerable for 2 sec."
+    ],
+    "burst": [
+      "Max HP ▲ 20.14% of the skill user's Max HP without restoring HP for 10 sec.",
+      " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
+      "Changes Spread Roots to Wilted Roots.",
+      "Wilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec.",
+      "Hit Rate ▲ 45.3% for 10 sec."
+    ]
   },
   "skill1": [],
   "skill2": [
@@ -76,5 +85,10 @@
         }
       ]
     }
+  ],
+  "caveats": [
+    "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).",
+    "burst: Max Ammunition +20 rounds is encoded as maxAmmoPct 33.3 (assumes a 60-round AR base magazine).",
+    "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina."
   ]
 }

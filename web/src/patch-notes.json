@@ -1,5 +1,20 @@
 [
   {
+    "date": "2026-07-17",
+    "title": "New: Max Ammo breakpoints + clearer Overload tools + DPS profiles",
+    "notes": [
+      "The Charge Speed Breakpoints tool is now Overload Breakpoints, holding two calculators in one place — Charge Speed and a new Max Ammo one.",
+      "New Max Ammo calculator: pick any nikke and see every extra round she can reach and how many overload lines each one costs (defaults to Maiden: Ice Rose).",
+      "Both breakpoint tables now lead with an OL Lines column, and you can choose which overload tier (T1–T15, default T11) to measure against — the picker shows that tier's actual roll value.",
+      "On the Overload Rolling tool, the per-line tier dropdowns now show the real roll value for the stat you picked (e.g. T11 ATK = 68.93%) instead of a bare \"T11.\"",
+      "Optimize Overload now lets you choose which overload tier (T1–T15, default T11) the line ranking is measured at — the whole 8/12 set and the four free lines all scale to that tier.",
+      "Optimize Overload's control team now defaults to Solo instead of Standard, so you see a nikke's own overload gains without a support team's buffs baked in.",
+      "The \"Calculate chance to roll\" hand-off from Optimize Overload now carries your chosen tier into the Overload Rolling tool instead of always sending T11.",
+      "Bready now has a Sustained / Distributed taste picker on her card — matching how her kit switches taste based on the buff type her team feeds her (defaults to Sustained).",
+      "The DPS Rankings page has a new \"Custom profiles\" section that spells out the modeling choices behind the chart: Bready is run in her Distributed taste, Diesel: Winter Sweets is assumed to burst second (her higher-damage Highlight state, not yet reflected in her score), Red Hood and Rapi: Red Hood operate as B3, and every favorite-item unit is assumed to have its favorite item fully unlocked."
+    ]
+  },
+  {
     "date": "2026-07-16",
     "title": "DPS Rankings: filter by element",
     "notes": [

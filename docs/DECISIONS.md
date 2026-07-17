@@ -8,6 +8,90 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-17) SG pellet-landing modeled as a seeded per-band pellet-count JITTER + boss-size profiles;
+  the pellet investigation (open-questions A26 → U17) is CLOSED as an owner override.** Rather than pursue
+  per-unit landing profiles or a third far anchor (the U17 HOLD), the owner rules landing modeled two ways:
+  (1) under a seeded run each SG spray shot draws a WHOLE landed-pellet COUNT (not a fraction), bell-curve
+  weighted toward the band mean via a Box-Muller normal mapped by σ-band — |z|<1σ → the middle count, ≥1σ →
+  one pellet outward, ≥2σ clamps to the end. On the 3-wide bands (near/mid {8,9,10}, midfar {7,8,9}, far
+  {6,7,8}) this is ~68% middle / ~16% each outer (owner-derived, empirically confirmed 68.29/15.86/15.85).
+  It is MEAN-PRESERVING vs the fixed `SG_LANDING_BY_BAND` table (symmetric), so central board estimates are
+  unchanged; only per-run spread reflects real shot-to-shot pellet scatter (brid measured 8.52 vs 9.41
+  landed/10 within one fight). (2) A backend `SimConfig.bossPelletProfile` scales by boss silhouette:
+  `small` (default, ranges as-is) / `medium` (drawn +1, clamped at full — near/mid → 84% full / 16% one
+  under) / `large` (every band lands full pellets). NOT exposed on the front end yet; `BOSSPELLET=` env in
+  experiment.ts drives it. Engine: `sgLandedPellets` + `SG_LANDING_JITTER` + `gaussian` in `src/engine/sim.ts`.
+  - **SCOPE CAVEATS (honest):** the jitter + profiles are SEEDED-ONLY. As of the seeded-by-default flip
+    (same day, below) the accuracy/damage surfaces DO run seeded, so they are live there; the dpschart build
+    and the regression gate stay EV, so the mechanisms are inert in those two (they keep the fixed
+    `SG_LANDING_BY_BAND` table). The medium/large magnitudes are ⚑ UNVERIFIED owner choices, not measurements —
+    flagged as a low-prio action item to verify boss profiles (CLAUDE.md). Dorothy: Serendipity across her two
+    comps already disagrees on the best profile (PH-water 766M best at small 1.03; N9-redhood 328M best at
+    medium 1.01), consistent with profiles being per-boss. Verified: dorothy seeded means match the fixed table
+    under `small` (2-comp mean 1.00), and the distributions reproduce the owner's predicted 68/16/16 and 84/16.
+
+- **(2026-07-17) SEEDED-BY-DEFAULT for the accuracy/damage surfaces (owner ruling; realigns the sim with its
+  original Monte-Carlo intent).** The seeded MC path existed but was dormant — the whole product ran deterministic
+  expected-value. Now the surfaces that produce sim-vs-real damage numbers average `DEFAULT_MC_SEEDS = 25` seeded
+  runs (fixed seed base `MC_SEED_BASE = 1000` → reproducible + paired-variance-cancelling), via two new engine
+  primitives: `meanSimResults(runs)` (element-wise mean of same-team SimResults; timeline/name fields from run 0)
+  and `runSimMean(chars,mult,cfg,prepared,n)`. Flipped: **board-readings** (board-read + kit-status, ~14s/26-comps
+  ×25), **experiment.ts** (`SEEDS` default 0→`DEFAULT_MC_SEEDS`; SEEDS=0/1 still forces one EV run), **web damage
+  sim** (3 App.tsx `runSim`→`runSimMean`, ~25× slower/calc, owner-accepted latency). **EXCLUDED (stay
+  deterministic EV):**
+  - **dpschart build** — EV build is 2:32 (90 cells × 40 B3); 10 seeds ≈ 25min, 25 seeds ≈ 63min → prohibitive
+    for a `prebuild`/`web:build` step. Chart is computed once on build, so its stability/speed win over EV.
+  - **regression gate (`scripts/regression.ts`)** — seeded mode jitters boss-transition/chain-gap timing, which
+    shifts full-burst counts; those FB counts are MEASURED-TRUTH asserts (hard rule 5). Seeding the gate would
+    break or force-regenerate measured-truth asserts, so the gate stays EV. Its existing seed-1234 determinism
+    test is unaffected.
+  - **AGGREGATION = MEAN (owner-discussed 2026-07-17), not median / random-sample.** We compare against real
+    MULTI-RUN AVERAGES → estimate E[sim] = the mean. The one non-normality is FB-count bimodality near boss
+    transitions (N vs N+1 full bursts); the mean probability-weights the extra-FB outcome that a real average
+    also carries, whereas the median snaps to the majority rotation and DISCARDS the minority. Variance sources
+    are bounded/light-tailed (Bernoulli crit/core, ±2s uniform timing, symmetric bell-curve pellet draw), so
+    median's outlier-robustness buys nothing. Random-sample aggregation rejected: it forfeits reproducibility +
+    the common-random-numbers paired-A/B property the fixed seed set gives. N raised 10→25 (owner): SE ~1/√N so
+    ~1.58× tighter (~37% less MC noise), ~14s board — helps most on the FB-bimodal comps. DONE: board-read
+    prints a `seedSD` column (mean per-comp sd/mean; ⚠ ≥2%) via `BoardReading.seedCv` + `BoardStats.meanCv`,
+    flagging high-variance comps (soda-twinkling-bunny ±3.1%, mast-romantic-maid ±2.3%) that need multi-run reals.
+  Effect on the board (25-seed vs old EV): small shifts from crit/core Bernoulli + boss-timing + SG-jitter
+  sampling (dorothy 1.023→0.997, naga 1.026→0.975, chisato 0.992→0.977). verify.sh green (EV path byte-identical).
+  NOT committed.
+  - This is a MODELING RULING, not a fit to close a residual — per-unit far/near deficits (U17) are accepted,
+    not fudged. open-questions U17 header carries the CLOSED — OWNER OVERRIDE note.
+
+- **(2026-07-17) FAVORITE-ITEM (treasure) prose sourced + reconciled — the ROSTER-WIDE TREASURE SSOT
+  GAP is CLOSED.** The owner located the real favorite-item skill values and loaded them into the DB
+  (bakery-side `skill_descriptions`); a resync (`npm run sync`) pulled treasure prose for the units
+  whose favorite item was previously untreasured in the source text (helm, drake, laplace, miranda).
+  The other four treasure=true roster units (moran, privaty, tove, zwei) were ALREADY on their treasure
+  kits via `sync.ts` `TREASURE_SYNERGY_IDS`, so their prose changed only cosmetically (phase-header
+  removal) — no model change. Enacted overrides:
+  - **helm 0.591 COLD → 1.014 (±3% ✓), 5 comps 0.98–1.05** — the headline board fix. Restored the two
+    dropped treasure lines the Wave-7 audit had flagged: S2 Full-Burst team **attack damage 11.85 → 27.87**
+    and the S2 **178.98% full-charge additional hit** (modeled on `shotFired`, every SR full charge —
+    liberalio precedent), plus the burst 54.45% recovery as a `heal` event. Her untreasured-era 0.99
+    validation used the OLD runtime parser (which included treasure), so this RE-ALIGNS the model with
+    that validated state — not a new tune. Blast radius is faithful: her restored 27.87% team buff +
+    heal→Crown synergy warm her comp-mates (crown 1.029, privaty 0.977, anis-star 0.952 — all toward
+    1.0; snow-white-heavy-arms 1.11 / cinderella-crystal-wave 1.041 tip HOT, but both carry pre-existing over-model /
+    low-N — faithful > fit). Every FB measured-truth assert stayed green; noir anchor +0.0000%.
+  - **laplace — REVERTED the Wave-6 downgrade.** Wave 6 (2026-07-16) read the untreasured base kit
+    (burst First 897.6 / Normal 14.52 / 5s, no true-normals) and dismissed the higher 1455.72 / 22.2 /
+    10s + true-beam values as "old fan text." The favorite-item prose is authoritative and CONFIRMS
+    those were the treasure kit — restored: burst First **1455.72** + `weaponSwap` Normal **22.2 / 10s /
+    trueNormals** + the 11.9% true rider; S2a `lastBullet` 81.66 → **`shotFired` full-charge 132.45**
+    (charge RL, every rocket is a full charge). Model-only (no board comp).
+  - **drake — treasure additions** (model-only): S1 hitRate 11.85 → 20.09 + NEW all-Shotgun-ally block
+    (`alliesOfWeapon` SG) ATK 63.88 / maxAmmo 50.14; S2 NEW 2nd nuke 201.6 (`hitCount` 50); burst
+    1254 → 3009.6 + self AD 31.68. All blocks DBG-confirmed firing.
+  - **miranda — CONFIRMED already correct**: her override (built from the 2026-07-13 owner screenshot)
+    matches the newly-synced treasure prose line-for-line; documentation-only note. Unowned/model-only.
+  Basis: the owner's ruling that blablalink/DB prose is the objective SSOT still holds — the SSOT source
+  itself was corrected with the treasure data, so restoring the higher values is not re-litigating the
+  Wave-6 entry, it is the SSOT being made complete. Nothing committed/pushed (standing rule).
+
 - **(2026-07-16) Soda & Cinderella: Crystal Wave re-tuned against recordings — the kit-parse blind parser
   out-predicted both trusted hand-tunes (Use-B discrepancy detector working), and the fixes are adopted.**
   Both surfaced during the kit-parse regression sweep; both Fable pre/post-op LAND.

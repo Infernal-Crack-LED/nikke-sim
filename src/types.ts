@@ -103,4 +103,11 @@ export interface SimConfig {
   // the two dominant real-run variance sources (user, 2026-07-13). Same seed = same
   // fight. undefined = deterministic expected-value sim (web UI default).
   seed?: number;
+  // Boss silhouette size → SG pellet-landing profile (seeded runs only; backend, not exposed on
+  // the front end yet — 2026-07-17). Governs how many of a shotgun's pellets the boss body catches:
+  //   'small'  (default) = the measured jitter ranges as-is (near/mid {8,9,10}, midfar {7,8,9}, far {6,7,8})
+  //   'medium' = each drawn landed-pellet count +1, clamped at full pellet count (near/mid → 84% 10 / 16% 9)
+  //   'large'  = every band lands the full pellet count (a big boss the whole spray hits)
+  // Inert in expected-value (unseeded) runs — those use the fixed SG_LANDING_BY_BAND table. ⚑ UNVERIFIED.
+  bossPelletProfile?: 'small' | 'medium' | 'large';
 }

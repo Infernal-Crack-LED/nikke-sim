@@ -4,7 +4,7 @@
 //   npx tsx scripts/experiment.ts
 import { readFileSync } from 'node:fs';
 import type { DataFile, LevelMultiplier, SimConfig, Element } from '../src/types.js';
-import { runSim } from '../src/engine/sim.js';
+import { runSim, DEFAULT_MC_SEEDS } from '../src/engine/sim.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import type { OverrideFile } from '../src/skills/index.js';
 import {
@@ -278,6 +278,9 @@ function run(comp: Comp, patch: Patch = {}, seed?: number) {
     lambdaStage: comp.lambda?.[slug],
   }));
   const cfg = scopeLockCfg(comp.slugs, comp.boss, { focusSlug: comp.focus, seed });
+  // BOSSPELLET=small|medium|large — SG pellet-landing boss-size profile (seeded runs only).
+  const bp = process.env.BOSSPELLET as 'small' | 'medium' | 'large' | undefined;
+  if (bp) cfg.bossPelletProfile = bp;
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
   return runSim(chars, mult, cfg, prepared);
 }
@@ -287,7 +290,9 @@ function report(comp: Comp, label: string, patch: Patch = {}) {
   // A/B configs, so paired comparisons cancel the variance), reported as mean ± sd.
   // Crit/core rolls + boss-movement jitter + chain-gap jitter are sampled per seed;
   // judge a single real run against ±(sd + ~3% real repeatability).
-  const nSeeds = Number(process.env.SEEDS ?? 0);
+  // DEFAULT = DEFAULT_MC_SEEDS (2026-07-17, seeded-by-default lab surface); SEEDS=0 or 1 forces the
+  // single deterministic expected-value run (old default; still available for EV debugging).
+  const nSeeds = Number(process.env.SEEDS ?? DEFAULT_MC_SEEDS);
   if (nSeeds > 1) {
     const totals = new Map<string, number[]>();
     let pulls = new Map<string, number>();

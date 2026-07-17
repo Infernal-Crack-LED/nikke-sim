@@ -1,5 +1,5 @@
 {
- "syncedAt": "2026-07-16T23:11:39.113Z",
+ "syncedAt": "2026-07-17T09:48:58.168Z",
  "characters": {
   "ada": {
    "slug": "ada",
@@ -11890,9 +11890,9 @@
    "burstGaugePerShot": 4.5,
    "treasure": true,
    "skills": {
-    "skill1": "■ Activates at the beginning of Full Burst. Affects all allies. \nHit Rate ▲ 11.85% for 10 sec. \nATK ▲ 11.85% for 10 sec.",
-    "skill2": "■ Activates after 10 attacks. Affects the 3 enemy unit(s) with the lowest remaining HP. \nDeals 98.55% of final ATK as damage.",
-    "burst": "■ Affects enemies within attack range.\nDeals 1254% of final ATK as damage. \n■ Affects self.\nMax Ammunition Capacity ▲ 72.18% for 10 sec."
+    "skill1": "■ Activates when entering Full Burst. Affects all allies.\nHit Rate ▲ 20.09% for 10 sec.\nATK ▲ 11.85% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies with a Shotgun.\nATK ▲ 63.88% for 10 sec.\nMax Ammunition Capacity ▲ 50.14% for 10 sec.",
+    "skill2": "■ Activates after 10 normal attack(s). Affects 3 enemy unit(s) with the lowest remaining HP.\nDeals 98.55% of final ATK as damage.\n■ Activates after 5 normal attack(s). Affects 1 enemy unit(s) with the lowest remaining HP.\nDeals 201.6% of final ATK as damage.",
+    "burst": "■ Affects enemies within attack range.\nDeals 3009.6% of final ATK as damage. \n■ Affects self.\nMax Ammunition Capacity ▲ 72.18% for 10 sec.\nAttack Damage ▲ 31.68% for 10 sec."
    },
    "role": {
     "weapon": {
@@ -15560,9 +15560,9 @@
     "thelm"
    ],
    "skills": {
-    "skill1": "■ Activates when the last bullet hits the target. Affects all allies. \nCritical Rate of normal attack ▲ 14.64% for 5 sec.",
-    "skill2": "■ Affects all allies.\nDamage to Interruption Parts ▲3.08% permanently.\n■ Activates when entering Full Burst. Affects all allies.\nAttack damage ▲11.85% for 10 sec.",
-    "burst": "■ Affects the enemy with the highest final ATK. \nDeals 1237.5% of final ATK as Burst Skill damage. \n■ Affects all allies. \nRecovers 54.45% of attack damage as HP over 10 sec."
+    "skill1": "■ Activates when the last bullet hits the target. Affects all allies.\nCritical Rate of normal attacks ▲ 14.64% for 5 sec.\n■ Activates when attacking with Full Charge. Affects all allies.\nRecovers 0.59% of the skill user's final Max HP.\nFills Burst Gauge by 14.31%.",
+    "skill2": "■ Affects all allies.\nDamage to Interruption Parts ▲ 3.08% continuously.\n■ Activates when entering Full Burst. Affects all allies.\nAttack Damage ▲ 27.87% for 10 sec.\n■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 178.98% of final ATK as additional damage.",
+    "burst": "■ Affects the enemy with the highest final ATK.\nDeals 8236.8% of final ATK as Burst Skill damage.\n■ Affects all allies.\nRecovers 54.45% of attack damage as HP for 10 sec.\n■ Affects self.\nCharge Damage Multiplier ▲ 158.4% for 10 round(s)."
    },
    "role": {
     "weapon": {
@@ -17574,9 +17574,9 @@
     "tlaplace"
    ],
    "skills": {
-    "skill1": "■ Activates when attacking with Full Charge. Affects self.\nHero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 5 sec.",
-    "skill2": "■ Activates when the last bullet hits the target. Affects the target.\nDeals 81.66% of final ATK as additional damage. \n■ Activates when hitting the target's Parts. Affects the target.\nDeals 14.78% of final ATK as additional damage.",
-    "burst": "■ Affects self. \nChanges the weapon in use: \nFirst Damage: 897.6% of final ATK\nNormal Damage: 14.52% of final ATK\nDuration: 5 sec\nAdditional Effect: Gains Pierce.\nNote: Unable to take cover while using Burst Skill.\n■ Activates when Hero Vision is at max stacks. Affects the same enemy unit(s).\nDeals 11.9% of final ATK as true damage."
+    "skill1": "■ Activates when attacking with Full Charge. Affects self.\nHero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 15 sec.",
+    "skill2": "■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 132.45% of final ATK as additional damage. \n■ Activates when hitting the target's Parts. Affects the target's body.\nDeals 14.78% of final ATK as additional damage.",
+    "burst": "■ Affects self. \nChanges the weapon in use: \nFirst Damage: 1455.72% of final ATK\nNormal Damage: 22.2% of final ATK\nDuration: 10 sec\nAdditional Effect 1: Gains Pierce.\nAdditional Effect 2: Normal damage is applied as true damage when Hero Vision is at max stacks.\nNote: Unable to take cover while using Burst Skill.\n■ Affects the same enemy unit(s) when Hero Vision is at max stacks.\nDeals 11.9% of final ATK as true damage."
    },
    "role": {
     "weapon": {
@@ -24902,9 +24902,9 @@
     "tmiranda"
    ],
    "skills": {
-    "skill1": "■ Activates after landing 30 normal attack(s). Affects all allies.\nHit Rate ▲ 5.44% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects all allies with a Submachine Gun.\nHit Rate ▲ 3.79% for 5 sec.",
-    "skill2": "■ Activates at the beginning of Full Burst. Affects all allies. Critical Damage ▲ 32.99% for 10 sec.",
-    "burst": "■ Affects 1 ally unit(s) with the highest final ATK (includes the skill user if there are not enough allies). \nATK ▲ 40.4% for 10 sec. \nCritical Damage ▲ 56.23% for 10 sec."
+    "skill1": "■ Activates after landing 30 normal attack(s). Affects all allies.\nHit Rate ▲ 5.44% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects all allies with a Submachine Gun.\nHit Rate ▲ 3.79% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects self.\nATK ▲ 50.06% for 5 sec.",
+    "skill2": "■ Activates when entering Full Burst. Affects all allies.\nCritical Damage ▲ 32.99% for 10 sec.\n■ Activates when entering Full Burst. Affects self.\nCritical Rate ▲ 30.1% for 10 sec.\nAttack Damage ▲ 23.7% for 10 sec.\n■ Activates when entering Full Burst. Affects 1 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nCritical Rate ▲ 85.42% for 1 round(s).",
+    "burst": "■ Affects 2 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nATK ▲ 40.4% for 10 sec. \nCritical Damage ▲ 56.23% for 10 sec."
    },
    "role": {
     "weapon": {
@@ -25938,9 +25938,9 @@
     "tmoran"
    ],
    "skills": {
-    "skill1": "【Phase 1】\n\n■ Activates at the start of battle. Affects self.\nDEF ▲ 3.51% continuously for every 1% of HP lost.\n■ Activates when landing 5 normal attack(s) while weapon is changed. Affects the target.\nDeals 47.18% of final ATK as additional damage.\n■ Activates when Raptures appear. Affects self.\nFervor: Cooldown of Burst Skill ▼ 20 sec continuously.",
-    "skill2": "【Phase 2】Items ×50\n\n■ Activates when firing the final bullet. Affects the 3 enemy unit(s) with the highest final ATK.\nTaunts for 4 sec.\n■ Activates when HP falls below 20%. Affects self.\nEffect changes according to the number of activation times. Perseverance: Effect of each phase does not stack.\nOnce: Max HP ▲ 91% for 3 sec. Activates once per battle.\nTwice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.\nThree Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle.\n■ Activates when entering Full Burst while in Fervor status. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.",
-    "burst": "【Phase 3】Items ×110\nCooldown: 40 s\n\n■ Affects self.\nChanges the weapon in use:\nDamage: 14.7% of final ATK\nDuration: 10 sec\nAdditional Effect:\nRecovers 36.14% of attack damage as HP for 10 sec.\nAttract: Taunts all enemies for 10 sec.\nUnlimited ammunition for 10 sec.\n■ Affects all allies.\nDamage Taken ▼ 35.14% for 10 sec.\nDEF ▲ 14.85% of caster's DEF for 10 sec.\nATK ▲ 42.57% of caster's ATK for 10 sec."
+    "skill1": "■ Activates at the start of battle. Affects self.\nDEF ▲ 3.51% continuously for every 1% of HP lost.\n■ Activates when landing 5 normal attack(s) while weapon is changed. Affects the target.\nDeals 47.18% of final ATK as additional damage.\n■ Activates when Raptures appear. Affects self.\nFervor: Cooldown of Burst Skill ▼ 20 sec continuously.",
+    "skill2": "■ Activates when firing the final bullet. Affects the 3 enemy unit(s) with the highest final ATK.\nTaunts for 4 sec.\n■ Activates when HP falls below 20%. Affects self.\nEffect varies according to the number of uses. Perseverance: Only one effect is triggered at a time.\nOnce: Max HP ▲ 91% for 3 sec. Activates once per battle.\nTwice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.\nThree Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle.\n■ Activates when entering Full Burst while in Fervor status. Affects all allies. \nCooldown of Burst Skill ▼ 7.48 sec.",
+    "burst": "■ Affects self.\nChanges the weapon in use:\nDamage: 14.7% of final ATK \nDuration: 10 sec\nAdditional Effect:\nRecovers 36.14% of attack damage as HP for 10 sec.\nAttract: Taunts all enemies for 10 sec.\nUnlimited ammunition for 10 sec.\n■ Affects all allies.\nDamage Taken ▼ 35.14% for 10 sec.\nDEF ▲ 14.85% of the skill user's DEF for 10 sec.\nATK ▲ 42.57% of the skill user's ATK for 10 sec."
    },
    "role": {
     "weapon": {
@@ -29562,9 +29562,9 @@
     "priv"
    ],
    "skills": {
-    "skill1": "【Phase 3】Items ×110\n\n■ Activates when entering Full Burst. Affects all allies.\nATK ▲ 23.61% for 10 sec.\nReloading Speed ▲ 51.16% for 10 sec.\nMax Ammunition Capacity ▼ 50.66% for 10 sec.\nAttack Damage ▲ 20.16% for 10 sec.",
-    "skill2": "【Phase 2】Items ×50\n\n■ Activates when the last bullet hits the target. Affects the target.\nDamage Taken ▲ 10.01% for 10 sec.\nDeals 256.17% of final ATK as additional damage.\n■ Activates when the last bullet hits a target in Designated Target status. Affects the target.\nDeals 1687% of final ATK as additional damage.",
-    "burst": "【Phase 1】\nCooldown: 40 s\n\n■ Affects self.\nSuperior Elemental Code Attack Damage ▲ 130% for 10 sec.\n■ Affects all enemies.\nDeals 1407.64% of final ATK as Burst Skill damage.\nStuns for 3 sec.\nDesignated Target: ATK ▼ 5.02% for 10 sec."
+    "skill1": "■ Activates when entering Full Burst. Affects all allies.\nATK ▲ 23.61% for 10 sec.\nReload Speed ▲ 51.16% for 10 sec.\nMax Ammunition Capacity ▼ 50.66% for 10 sec.\nAttack Damage ▲ 20.16% for 10 sec.",
+    "skill2": "■ Activates when the last bullet hits the target. Affects the target.\nDamage Taken ▲ 10.01% for 10 sec.\nDeals 256.17% of final ATK as additional damage. \n■ Activates when the last bullet hits a target in Designated Target status. Affects the target.\nDeals 1687% of final ATK as additional damage.",
+    "burst": "■ Affects self.\nElemental Advantage Attack Damage ▲ 130% for 10 sec.\n■ Affects all enemies.\nDeals 1407.64% of final ATK as Burst Skill damage.\nStuns for 3 sec.\nDesignated Target: ATK ▼ 5.02% for 10 sec."
    },
    "role": {
     "weapon": {
@@ -37637,9 +37637,9 @@
     "ttove"
    ],
    "skills": {
-    "skill1": "【Phase 1】\n\n■ Activates after 10 normal attack(s). Affects self.\nEmergency-Crafted Bullets: Reload 5.31% of the magazine.\n■ Activates during Emergency-Crafted Bullets. Affects all allies.\nTemporary Modification: Max Ammunition Capacity ▲ 2, stacks up to 3 time(s) and lasts for 5 sec.\nCritical Damage ▲ 5.24% for 5 sec.",
-    "skill2": "【Phase 3】Items ×110\n\n■ Only activates when Temporary Modification is fully stacked. Affects all allies.\nCritical Rate ▲ 10.08% continuously.\n■ Only activates when Temporary Modification is fully stacked. Affects all shotgun-wielding allies.\nAttack Speed ▲ 42.24% continuously.",
-    "burst": "【Phase 2】Items ×50\nCooldown: 20 s\n\n■ Affects all allies.\nMiracle of Makeshifts: ATK ▲ 2.32% of caster's ATK. Mirrors the stack count of Temporary Modification for 15 sec.\n■ Affects all shotgun-wielding allies.\nMiracle of Makeshifts: ATK ▲ 24.21% of caster's ATK. Mirrors the stack count of Temporary Modification for 15 sec."
+    "skill1": "■ Activates after 10 normal attack(s). Affects self.\nEmergency-Crafted Bullets: Reload 5.31% of the magazine.\n■ Activates during Emergency-Crafted Bullets. Affects all allies.\nTemporary Modification: Max Ammunition Capacity ▲ 2, stacks up to 3 time(s) and lasts for 5 sec.\nCritical Damage ▲ 5.24% for 5 sec.",
+    "skill2": "■ Only activates when Temporary Modification is at max stacks. Affects all allies.\nCritical Rate ▲ 10.08% continuously.\n■ Only activates when Temporary Modification is at max stacks. Affects all shotgun-wielding allies.\nAttack Speed ▲ 42.24% continuously.",
+    "burst": "■ Affects all allies.\nMiracle of Makeshifts: ATK ▲ 2.32% of the skill user's ATK. Mirrors the stack count of Temporary Modification for 15 sec.\n■ Affects all shotgun-wielding allies.\nMiracle of Makeshifts: ATK ▲ 24.21% of the skill user's ATK. Mirrors the stack count of Temporary Modification for 15 sec."
    },
    "role": {
     "weapon": {
@@ -39935,9 +39935,9 @@
     "tzwei"
    ],
    "skills": {
-    "skill1": "【Phase 3】Items ×110\n\n■ Activates when entering Full Burst. Affects all allies.\nPierce Damage ▲ 20.13% for 1 round(s).\nPierce Damage ▲ 10.06% for 10 sec.\n■ Activates when performing a normal attack during Full Burst. Affects all allies.\nPierce Damage ▲ 24.99%, stacks up to 3 time(s), for 1 round(s).",
-    "skill2": "【Phase 2】Items ×50\n\n■ Activates after 5 normal attack(s). Affects all allies.\nRecovers Cover's HP by 7.52%.\n■ Activates when entering Full Burst. Affects all allies.\nCritical Rate ▲ 18.63% for 10 sec.\n■ Activates when performing a normal attack while in Pierce Attacks 101 status. Affects all allies.\nCritical Rate ▲ 15% for 5 sec, stacks up to 3 time(s).",
-    "burst": "【Phase 1】\nCooldown: 20 s\n\n■ Affects self.\nChanges the weapon in use:\nCharge Time: 1.2 sec\nDamage: 50.69% of final ATK\nFull Charge Damage: 300% of damage\nMax Ammunition Capacity: 1\nAdditional Effect: Pierce\n■ Affects all allies.\nPierce Attacks 101: Pierce Damage ▲ 25.03% for 10 sec."
+    "skill1": "■ Activates when entering Full Burst. Affects all allies.\nPierce Damage ▲ 20.13% for 1 round(s).\nPierce Damage ▲ 10.06% for 10 sec.\n■ Activates when performing a normal attack during Full Burst. Affects all allies.\nPierce Damage ▲ 24.99%, stacks up to 3 time(s), for 1 round(s).",
+    "skill2": "■ Activates after 5 normal attack(s). Affects all allies.\nRestores 7.52% of Cover HP.\n■ Activates when entering Full Burst. Affects all allies.\nCritical Rate ▲ 18.63% for 10 sec.\n■ Activates when performing a normal attack while in Pierce Attacks 101 status. Affects all allies.\nCritical Rate ▲ 15% for 5 sec, stacks up to 3 time(s).",
+    "burst": "■ Affects self.\nChanges the weapon in use:\nCharge Time: 1.2 sec\nDamage: 50.69% of final ATK\nFull Charge Damage: 300% of damage\nMax Ammunition Capacity: 1\nAdditional Effect: Pierce\n■ Affects all allies.\nPierce Attacks 101: Pierce Damage ▲ 25.03% for 10 sec."
    },
    "role": {
     "weapon": {

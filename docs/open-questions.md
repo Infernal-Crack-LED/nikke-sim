@@ -77,6 +77,21 @@ Isabel/brid-silent-track baseline notes encode the measured term per-unit; rever
 IF the basis is corrected globally.
 
 ### U17 — SG landing is per-unit (and per-position within the near band) — the class table is a compromise (2026-07-16)
+> **CLOSED — OWNER OVERRIDE (2026-07-17).** The owner rules the shotgun pellet-landing investigation
+> (A26 → this U17 per-unit continuation) closed WITHOUT pursuing per-unit landing profiles or a third
+> far anchor. Resolution: model landing as (a) a per-band seeded pellet-count JITTER — each SG spray
+> shot draws a whole landed-pellet count, bell-curve weighted toward the band mean (near/mid {8,9,10}
+> ≈ 68% mid / 16% each outer, midfar {7,8,9}, far {6,7,8}; mean-preserving vs the class table), and
+> (b) a backend `SimConfig.bossPelletProfile` = small (default = the ranges as-is) / medium (drawn +1,
+> clamped, near/mid → 84% full) / large (every band lands full pellets), scaling by boss silhouette
+> size. This is an owner MODELING RULING, not a new measurement — the per-unit far/near residuals are
+> accepted, not fudged away. Scope caveat: BOTH mechanisms are SEEDED-ONLY (inert in the default
+> expected-value product, which still uses the fixed `SG_LANDING_BY_BAND` table — see the seeded-by-
+> default question), and the medium/large profile magnitudes are ⚑ UNVERIFIED (new low-prio action
+> item to verify boss profiles; dorothy PH vs N9 already disagree on which profile fits). Engine:
+> `sgLandedPellets` + `SG_LANDING_JITTER` in `src/engine/sim.ts`; see DECISIONS 2026-07-17. The
+> analysis below stands as the record of why per-unit landing was NOT encoded.
+
 Outcome of the pre-registered SG range-landing corroboration campaign (guilty + Brid: Silent Track
 solo reads vs the isabel hypothesis; scientific-method 2-of-2 decision = **LOG, no engine change** —
 the pre-registered SPLIT branch fired):

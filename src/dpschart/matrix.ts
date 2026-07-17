@@ -229,6 +229,17 @@ export interface TestedUnit {
   element: Element;
 }
 
+// Per-unit chart profiles: extra UnitOptions applied to a slug WHEN it is the tested
+// carry, encoding a modeling choice the plain defaults don't capture. Documented for
+// players in the "Custom Profiles" disclosure on the DPS Rankings tab. Keep the two in sync.
+//   bready          — run in her Distributed taste (Recommended Taste; the distributed-buff branch)
+// NOTE (backend TODO): diesel-winter-sweets "bursts second / Highlight" is NOT encoded here
+// yet — it needs real burst-order/Highlight modeling; see NEXT INCREMENT. It is documented in
+// the Custom Profiles note only, so the chart keeps her faithful Intro numbers for now.
+export const CHART_PROFILES: Record<string, Partial<UnitOptions>> = {
+  bready: { mode: 'distributed' },
+};
+
 // Build the 4- or 5-unit control team for one cell + tested unit. Pass
 // `optimizedTestedLines` (from run.ts's bestOl pass) for the 12/12 tier's tested unit;
 // omit it for 8/12, scope, or the provisional optimizer run (tested gets the 8-line floor).
@@ -272,6 +283,7 @@ export function assembleTeam(
       opt.burstGate = 'everyOther';
     }
     if (slug === MAST) opt.burstGate = 'syncWithFocus';
+    if (isTested) Object.assign(opt, CHART_PROFILES[tested.slug] ?? {});
     return opt;
   });
 

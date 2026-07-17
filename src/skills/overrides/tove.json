@@ -1,9 +1,16 @@
 {
   "note": "Whole-kit built on Temporary Modification stacks (max 3), modeled at steady-state fully-stacked since her 5%-on-attack proc keeps the buff maxed across a 180s raid with a full team firing. S1: at 3 stacks the team gets Crit Damage 5.24% (modeled passive). The self 5% reload proc is a QoL ammo refill (skipped), and Temp Mod's flat +2-rounds/stack is skipped — maxAmmoPct is percent-of-base not flat rounds, and the ammo is negligible for damage. S2: at full stacks, team Crit Rate 3.32% (passive). Burst: 'Mirrors the stack count' means value x3 at max stacks, so all-ally ATK is 2.32%*3 = 6.96% of caster ATK for 10s. FLAG: every Shotgun-gated line is skipped because there is no weapon-based target and the generic sim team has no SG — this understates Tove badly on a real shotgun team (skipped: S2 Attack Speed 42.24%, and the burst's ATK 24.21%*3 = 72.63% of caster ATK for SG allies).",
   "unmodeled": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
+    "skill1": [
+      "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine.",
+      "■ Activates during Emergency-Crafted Bullets. Affects all allies. Temporary Modification: Max Ammunition Capacity ▲ 2, stacks up to 3 time(s) and lasts for 5 sec."
+    ],
+    "skill2": [
+      "■ Only activates when Temporary Modification is fully stacked. Affects all shotgun-wielding allies. Attack Speed ▲ 42.24% continuously."
+    ],
+    "burst": [
+      "■ Affects all shotgun-wielding allies. Miracle of Makeshifts: ATK ▲ 24.21% of caster's ATK. Mirrors the stack count of Temporary Modification for 15 sec."
+    ]
   },
   "skill1": [
     {

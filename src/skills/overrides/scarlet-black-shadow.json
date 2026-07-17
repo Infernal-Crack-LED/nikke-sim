@@ -3,12 +3,12 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec."
-    ]
+    "burst": []
   },
   "caveats": [
-    "burst: unparsed effect \"Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\""
+    "burst: unparsed effect \"Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\"",
+    "skill1: phase-threshold semantics are a scalar 3 (outside) / 1 (in-burst) model = the CUMULATIVE '3rd/6th/9th charge' reading of the kit; the per-phase reading ([3,6,9]/[1,2,3], cycle 18/6 charges) tested ~22% cold and own-probe evidence is split (sbs-control: procs ~every charge in burst; N3 re-read: the 848% absent in one window) — isolated-burst recording queued to pin the in-burst 848% count",
+    "burst: the count-requirement line ('Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.') IS modeled — chargeCounter.countInFb gated on HER OWN burst cast for 10s (sim.ts:1745); the previous 'unparsed' caveat and unmodeled.burst entry were stale"
   ],
   "skill1": [
     {

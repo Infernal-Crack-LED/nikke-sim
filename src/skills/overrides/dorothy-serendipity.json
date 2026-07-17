@@ -9,7 +9,10 @@
     "pierce": true
   },
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Hit 160 pellets: Expands Pierce range 200% 3 rounds",
+      "Hit Rate ▲ 98.18% 3 rounds"
+    ],
     "skill2": [],
     "burst": []
   },

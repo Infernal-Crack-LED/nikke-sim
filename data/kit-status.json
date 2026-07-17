@@ -16,8 +16,9 @@
   },
   "counts": {
     "status": {
-      "pending": 68,
-      "authored": 6
+      "audited": 40,
+      "authored": 30,
+      "reconciled": 4
     },
     "tier": {
       "VALIDATED": 10,
@@ -26,11 +27,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±5%": 4,
-      ">15%": 17,
-      "±15%": 9,
-      "±8%": 11,
-      "±3% ✓": 3
+      "±5%": 7,
+      "±3% ✓": 7,
+      "±15%": 8,
+      "±8%": 8,
+      ">15%": 14
     }
   },
   "units": {
@@ -40,10 +41,12 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "Flash Grenade cadence + true-dmg buffs modeled kit-faithful. F3 headline: Special Modification over-fires 2 specials/window vs kit '1 round' (no maxShots) = 45% of her total; kit-literal ~-20% -> board 0.950 may lean on the 2nd shot (measure popups before touching)"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -56,7 +59,9 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "Recovers 10% of the damage dealt as HP for 10 sec. (skipped: lifesteal — no HP pool consumer modeled; see findings F1/F2: targets bursted Burst-3 allies, would fire their 'recovery' triggers if a B3 recovery-consumer comp appears)"
+        ],
         "skill2": [],
         "burst": []
       },
@@ -84,10 +89,12 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
-        "provenance": "re-materialized",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "hasPierce added (was note-dropped) → her own pierce buffs feed her Damage Up; board 0.85→0.996 (into +/-3%)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -108,21 +115,23 @@
         ]
       },
       "caveats": [
-        "burst: unparsed effect \"Minimum Effective Range ▲ 55.56% for 10 sec.\"",
-        "skill1: unparsed effect \"Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec.\""
+        "skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)",
+        "skill2: 'Spy Lens at max stacks' gate modeled as always-satisfied steady state (passive ATK +16% + Pierce) — real onset is a ~15s stack ramp (⚑ unmeasured)",
+        "skill2: team Pierce Damage +18.36% rides the same shotFired full-charge proxy (⚑ unmeasured)",
+        "cadence: SR bolt-gap (22f) + chargeFrames 60 + reloadFrames 141 are datamine defaults — verify autofire/rounds-per-minute/reload from video (⚑ unmeasured)"
       ],
       "board": {
         "records": [
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.85
+            "ratio": 0.9956
           }
         ],
         "n": 1,
-        "mean": 0.85,
-        "mad": 0.15,
-        "band": ">15%",
-        "temp": "COLD ▼"
+        "mean": 0.9956,
+        "mad": 0.0044,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "alice": {
@@ -131,10 +140,12 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "materialization clean; hasPierce correctly retained (note STALE re pierce double-hit — PIERCE_CORE_DOUBLE=false); 0.91 residual is basis/comp-side (read 1.10-1.12 HOT w/ same model 07-13/14)"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -149,11 +160,15 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [
-          "Gain continuous Pierce.",
-          "Continuously recover HP by 8.12% of attack damage."
+          "■ Affects self. Activates when above 80% HP. Gain continuous Pierce.",
+          "■ Affects self. Activates when HP falls below 80%. Continuously recover HP by 8.12% of attack damage."
         ],
         "burst": []
       },
+      "caveats": [
+        "skill1: Charge Speed 11.67% is modeled as a flat target-own buff; the kit says '11.67% of the skill user's Charge Speed' (caster-relative) — qualifier unreconciled (no caster-relative charge-speed StatKey exists). Low impact at scope lock.",
+        "skill2: Pierce is modeled UNGATED (hasPierce); the kit gates it '>80% HP' — always satisfied in v1 (boss deals no damage to units). Re-encode the gate if incoming damage is ever modeled."
+      ],
       "board": {
         "records": [
           {
@@ -174,9 +189,9 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
-        "provenance": "materialized",
-        "date": null,
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -188,20 +203,23 @@
       "reference": false,
       "unmodeled": {
         "skill1": [
-          "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:",
           "Once: Potency of HP ▲ 30.96% for 5 sec.",
-          "Recovers 3.04% of the skill user's Max HP every 1 sec for 8 sec.",
-          "Stack count of debuffs ▼ 1."
+          "Three times: Stack count of debuffs ▼ 1.",
+          "■ Activates when entering Full Burst while an ally from the same squad is on the battlefield. Affects all allies."
         ],
-        "skill2": [
-          "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:",
-          "Once: Hit Rate ▲ 10.13% for 10 sec."
-        ],
+        "skill2": [],
         "burst": [
-          "Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec.",
-          "Recovers 40.18% of the skill user's Max HP as HP."
+          "Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec."
         ]
       },
+      "caveats": [
+        "skill1: 'same squad' heal gate modeled as always-satisfied — if it requires a lore-squad teammate (squad membership not in our data, unverified), recovery events over-fire in other teams (affects on-recovery consumers only)",
+        "skill1: the 8-tick regen (every 1s for 8s) is collapsed to one recovery event per Full Burst — on-recovery consumer uptime is underestimated",
+        "skill1: tier-1 'Potency of HP' is a value-0 placeholder kept only for escalating tier order (heal potency has no engine stat)",
+        "skill2: Hit Rate ▲ 10.13% modeled as hitRatePct (engine-inert); its core-hit-rate lift is unmeasured",
+        "burst: healing Storage (60.19% Max HP overheal buffer) is unmodeled — defensive, no engine vocabulary; deliberately not encoded as a shield event",
+        "cadence: pullsPerSec / reloadFrames 141 / bolt-gap-vs-autofire are unverified datamine values (parser baseline)"
+      ],
       "board": null
     },
     "anis-sparkling-summer": {
@@ -210,9 +228,9 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "authored",
         "provenance": "parser-baseline",
-        "date": null,
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -227,6 +245,12 @@
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill2: the 382.42% last-bullet proc count (especially inside her 10s burst window with ~1-round magazines) is an unmeasured cadence-derived estimate",
+        "burst: Max Ammo ▼73.92% is modeled as ~1-round magazines for 10s — the shot/reload/proc economy of that window is unverified against footage",
+        "burst: Elemental Advantage Attack Damage ▲42.24% only applies when the boss is Electric-disadvantaged",
+        "cadence: SG fire rate + reloadFrames 141 are datamined, unverified (⚑ cadence tuple)"
+      ],
       "board": null
     },
     "anis-star": {
@@ -235,10 +259,12 @@
       "weapon": "RL",
       "class": "Defender",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "REFERENCE-GRADE holds: zero drift on My-Own-Star side (all values exact, triggers correct). Findings all hasB1-gated (cannot move sole-B1 comps): dropped Everyone's-Star heal (F1 crown consumer) + DEF (F2) + Max-HP grant (F3 HP-scaler consumer). Backfilled empty unmodeled"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -251,9 +277,18 @@
       },
       "reference": true,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
-        "burst": []
+        "skill1": [
+          "If there are no other Burst 1 allies: Effect 1: Affects self. Cancels Everyone's Star.",
+          "If there are any other Burst 1 allies: Effect 1: Affects self. Cancels My Own Star."
+        ],
+        "skill2": [
+          "■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.\nRestores 1.26% of the skill user's final Max HP as HP."
+        ],
+        "burst": [
+          "Explosion Radius ▲ 100% for 10 sec.",
+          "DEF ▲ 55.01% for 10 sec.",
+          "■ Activates while in Everyone's Star status. Affects all allies.\nMax HP ▲ 15.02% of the skill user's max HP for 10 sec."
+        ]
       },
       "board": {
         "records": [
@@ -263,11 +298,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9505
+            "ratio": 0.9994
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9589
+            "ratio": 1.0082
           },
           {
             "comp": "T2 elec-weak (boss Water)",
@@ -283,7 +318,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.986
+            "ratio": 1.0416
           },
           {
             "comp": "PA MiKa (boss Iron)",
@@ -307,8 +342,8 @@
           }
         ],
         "n": 12,
-        "mean": 0.9393,
-        "mad": 0.0622,
+        "mean": 0.9521,
+        "mad": 0.0577,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -319,10 +354,12 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "team buffs (180% AD / 180% casterATK) are DEAD without a B3 Electric caster present + her Wheel-of-Fortune status; grade only in mono-Electric comp"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -334,10 +371,18 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."
+        ],
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill1: the 180% Attack Damage grant targets Burst 3 Electric allies who cast their Burst Skill this rotation — inert in teams without one (⚑ unmeasured team-conditional)",
+        "skill2: the 180% caster-ATK 'Strength' grant has the same Burst-3-Electric-caster condition — inert in teams without one (⚑)",
+        "skill1/skill2: Wheel of Fortune gate approximated as every-2nd-Full-Burst-end (assumes she bursts every other rotation at her 40s cooldown) — unverified against a recording (⚑)",
+        "cadence: RL fire cadence / reloadFrames 171 / 60-frame charge are unmeasured datamine values; bolt-recovery gap shipped ON, autofire unverified (⚑)"
+      ],
       "board": null
     },
     "arcana-fortune-mate": {
@@ -346,10 +391,12 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "1.42 HOT: F4 REFUTES the 'pellet/Snapshots double-count' premise (distinct buffs; additive model UNDER-counts ~5% vs true multiplicative). Real cause F1: stack ramp baked to max not time-averaged (~+8-10%) + F2 S1 stacks baked (~+5-6%); F5 skipped kit reloads (hard rule 1) offset cold. Budget F1+F2 -> 1.42->~1.24, remainder = SG per-unit landing"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -363,10 +410,21 @@
       "reference": false,
       "residual": "Normals bucket drives it; unfocused — a focus recording is batched",
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
-        "burst": []
+        "skill1": [
+          "Full Burst ends: self removes Making Memories + Snapshots of Youth."
+        ],
+        "skill2": [
+          "Normal attacks in Making Memories (one at a time, resets on MM removal): 2 time(s): Reload 6 rounds."
+        ],
+        "burst": [
+          "Making Memories: Reload 2 rounds."
+        ]
       },
+      "caveats": [
+        "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories pellets as +30 normal, Precious Moments +7.47 ATK) are BAKED to max from burst cast — the real 2/4/6-shot phase counter ramps them over ~18 shots, more than fit in the ~11s window at 1.5 pulls/s; time-average is roughly half of max (HOT direction).",
+        "skill1: the 39% (=13% x 3 Precious Moments stacks) at Full Burst end assumes 3 stacks; the ramp arithmetic reaches ~2 by FB end (HOT direction), and the block fires on EVERY team FB end even on rotations she did not burst (0 stacks in reality — multi-B2 comps over-credit).",
+        "skill2/burst: the kit's in-window reloads (Reload 6 rounds at the 2-hit phase; Reload 2 rounds at burst) are unmodeled — they add ~3-5 window shots (COLD direction, partially masks the ramp over-credit)."
+      ],
       "board": {
         "records": [
           {
@@ -387,10 +445,12 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "skill1 ATK+96.98 re-encoded passive-proxy → kit-faithful recovery trigger (fires only w/ a healer); revert path in findings if preserve-verbatim preferred (untested unit)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -402,14 +462,18 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "Damage dealt to Shield ▲ 601.01% continuously."
+        ],
         "skill2": [],
-        "burst": [
-          "Gain Pierce for 25 sec.",
-          "Recovers 3.16% of attack damage as HP over 10 sec.",
-          "Hit Rate ▲ 101.37% for 10 sec."
-        ]
+        "burst": []
       },
+      "caveats": [
+        "skill1: ATK ▲96.98% is recovery-triggered — needs a heal landing on her (teammate healer, or her own burst lifesteal); a healer-less team that never Full-Bursts gains it never",
+        "skill2: Elemental Advantage buff requires Shield status in-game — no shield-state gate in the engine, modeled as unconditional at Full-Burst entry (over-credits without a shielder; only matters with elemental advantage)",
+        "burst: 'Gain Pierce for 25 sec' modeled as permanent hasPierce (pierce currently inert vs the v1 boss); lifesteal modeled as one recovery event at cast, real effect ticks over 10s",
+        "burst: fire cadence is an unmeasured datamine estimate — 20-ammo AR with an 18.76% normal multiplier is unlikely to fire at the AR class default"
+      ],
       "board": null
     },
     "asuka-wille": {
@@ -418,10 +482,12 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "skill2 FB->burstCast (Annihilation-State gate, cinderella-crystal-wave class); Emergency Repair reload+heal modeled (was wrongly skipped as defensive)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -435,22 +501,18 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [
-          "Activates when using Annihilation. Affects self.",
-          "Emergency Repair",
-          "Function: Reduces MG heating up speed and removes ammo. Fixes reload speed and continuously restores HP based on Max HP.",
           "Effect 1: MG heating up speed ▼ 100% for 3 sec.",
-          "Effect 2: Removes 100% of ammo.",
-          "Effect 3: Constantly recovers 3.77% of the skill user's final Max HP every 1 sec over 3 sec.",
-          "Effect 4: Reload speed is fixed at a 60% increase for 1 rounds."
+          "Effect 2: Removes 100% of ammo."
         ],
         "burst": []
       },
       "caveats": [
-        "skill2: unparsed effect \"Emergency Repair\"",
-        "skill2: unparsed effect \"MG heating up speed ▼ 100% for 3 sec.\"",
-        "skill2: unparsed effect \"Effect 2: Removes 100% of ammo.\"",
-        "skill2: unparsed effect \"Effect 4: Reload speed is fixed at a 60% increase for 1 rounds.\"",
-        "skill2: unsupported trigger \"Activates when using Annihilation. Affects self.\" — its effects are skipped"
+        "skill1: cadence tuple (MG wind-up ladder / 300 ammo / reloadFrames 161) is the unverified datamine — read rounds/min + the reload gap from any focus video (⚑1)",
+        "skill1: the in-Annihilation-State every-10-shots proc + Anti A.T. Field stacks are steady-state proxies (every 44 hits, debuff at its 30-stack cap) — count 15.62% popups per burst window and read the Annihilation popup ÷ 6.62 for the real stack count (⚑4/⚑5)",
+        "skill2: the Full-Burst-entry Attack Damage buff is encoded as burstCast because it requires Annihilation State (granted only by HER OWN burst) — identical to FB-enter when she is the only Burst III unit, and it correctly does NOT fire on another Burst III unit's rotations",
+        "skill2: Emergency Repair really activates ~9s AFTER burst cast (at Annihilation State end); the schema has no delayed trigger, so the heal event + reload-speed window start at cast — the 10.5s reload-speed window is an unmeasured encoding of 'one fast reload per burst cycle' (⚑3)",
+        "skill2: 'MG heating up speed ▼ 100% for 3 sec' and 'Removes 100% of ammo' are UNMODELED — the heating line is ambiguous (frozen wind-up vs instant full spin) and the engine has no ammo-dump/wind-up vocabulary; measure her post-Emergency-Repair fire cadence before modeling (⚑2)",
+        "burst: the Annihilation finisher (6.62% × stacks) is modeled as one 198.6% hit at cast; the real hit lands ~9s later INSIDE the Full Burst window, so it may be FB-boosted in-game (hand-slot finding F2 — verify before re-encoding)"
       ],
       "board": null
     },
@@ -493,9 +555,9 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "materialized",
-        "date": null,
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -508,28 +570,19 @@
       "unmodeled": {
         "skill1": [
           "Activates when gaining a buff that increases sustained damage. Affects self.",
-          "Lingering Taste: Charge Speed ▼ 20% for 50 sec. This effect cannot be removed.",
           "Cancels Recommended Taste.",
           "Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.",
-          "Recommended Taste: Charge Speed ▼ 20% for 50 sec. This effect cannot be removed.",
           "Cancels Lingering Taste."
         ],
         "skill2": [],
-        "burst": [
-          "Activates when in Lingering Taste status. Affects self.",
-          "Aftertaste Effect ▲ 349.8% for 10 sec.",
-          "Activates when in Recommended Taste status. Affects self.",
-          "ATK ▲ 70.09% for 10 sec."
-        ]
+        "burst": []
       },
       "caveats": [
-        "skill1: unparsed effect \"Cancels Recommended Taste.\"",
-        "skill1: unsupported trigger \"Activates when gaining a buff that increases sustained damage. Affects self.\" — its effects are skipped",
-        "skill1: unparsed effect \"Cancels Lingering Taste.\"",
-        "skill1: unsupported trigger \"Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.\" — its effects are skipped",
-        "burst: unparsed effect \"Aftertaste Effect ▲ 349.8% for 10 sec.\"",
-        "burst: unsupported trigger \"Activates when in Lingering Taste status. Affects self.\" — its effects are skipped",
-        "burst: unsupported trigger \"Activates when in Recommended Taste status. Affects self.\" — its effects are skipped"
+        "skill1: which Taste is active is a user-selected mode (default: sustained = Lingering Taste; distributed = Recommended Taste) — the buff-gain entry triggers are not simulated; a team providing neither a sustained- nor a distributed-damage buff would leave her tasteless (all taste-gated lines inert), which the sim cannot represent",
+        "skill1: the Taste Charge Speed ▼20% debuff is modeled as a permanent charge-time increase (60→72 frames; assumes she is always in a taste); 72 follows the engine's subtractive charge-speed convention — unmeasured (divisive would be 75)",
+        "skill2: the Aftertaste DoT is encoded as repeating per-3-full-charge instances that stack when procs land <5s apart — stack-vs-refresh and overlap depend on the unmeasured charge cadence",
+        "burst: 'Aftertaste Effect ▲349.8%' is modeled as an additive sustained-damage Damage-Up buff; a multiplicative DoT-magnitude reading would be ~41% hotter during her burst window — unmeasured",
+        "skill1/skill2: full cadence tuple (charge time, reload 141f, 22-frame bolt gap vs autofire) is an unmeasured datamine estimate — ~15-20% shot-count swing"
       ],
       "board": null
     },
@@ -539,10 +592,13 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "Wind-Code Damage-Taken debuffs (S1 15.12%, S2 12.12%) unmodeled — bossElement can't compose with fullBurstEnter/hitCount; inert vs non-Wind boss (engine extension: bossElementGate)",
+          "burst ATK+66.52% caster modeled on allies incl. self (kit: except self; no excludeSelf on plain allies) — minor self-inflation in bursting comps"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -552,10 +608,21 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Activates when entering Full Burst. Affects all Wind Code enemies.",
+          "Damage Taken ▲ 15.12% for 10 sec."
+        ],
+        "skill2": [
+          "Activates after 10 normal attack(s). Affects 1 Wind Code enemy unit(s) with the lowest remaining HP.",
+          "Damage Taken ▲ 12.12% for 10 sec."
+        ],
         "burst": []
       },
+      "caveats": [
+        "skill1: Wind Code Damage Taken ▲ 15.12% (Full Burst entry, 10s) not modeled — inert vs a non-Wind boss; a big team-wide lever if the boss is Wind.",
+        "skill2: Wind Code Damage Taken ▲ 12.12% (every 10 normal attacks, 10s) not modeled — inert vs a non-Wind boss; enable alongside the skill1 debuff vs a Wind boss.",
+        "burst: ATK ▲ 66.52% of caster's ATK modeled on all allies INCLUDING self (kit says except self; plain `allies` has no excludeSelf) — minor self-inflation of her own SG-capped damage in bursting teams only."
+      ],
       "board": null
     },
     "chisato": {
@@ -564,10 +631,12 @@
       "weapon": "SMG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "S2 'normal attacks deal true damage' modeled via weaponSwap trueNormals (takina precedent) → board 0.95→1.025 (into +/-5%)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -581,37 +650,40 @@
       "reference": false,
       "residual": "Real modeling error, untuned",
       "unmodeled": {
-        "skill1": [],
-        "skill2": [
-          "Normal attacks deal true damage for 10 sec."
+        "skill1": [
+          "Activates at the start of battle. Affects self. Charges Extrasensory to 100%, up to 100%. Continuous, cannot be removed.",
+          "Only at 100%: Dodging Bullets: Invulnerable 2 sec.",
+          "Affects self every 2 sec. Extrasensory ▼ 1%."
         ],
+        "skill2": [],
         "burst": [
           "Charges Extrasensory to 100%."
         ]
       },
       "caveats": [
-        "burst: unparsed effect \"Charges Extrasensory to 100%.\""
+        "skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled permanent — derived floor ~79% while she bursts each ~40s rotation; OVER-CREDITS in comps where chisato never bursts (the gauge decays below the 70%/55%/25% gates at ~60s/~90s/~150s).",
+        "skill2: 'Normal attacks deal true damage for 10 sec' is encoded as a same-weapon swap (trueNormals) so the S1 True Damage ▲ 48.62% applies to normals only inside the window — the swap grants an instant mag refill at cast and at window end (engine artifact, mild shot-count optimism), and core/crit are retained on true normals (takina precedent, unverified in-game)."
       ],
       "board": {
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9238
+            "ratio": 0.9933
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9216
+            "ratio": 0.9975
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0051
+            "ratio": 0.9848
           }
         ],
         "n": 3,
-        "mean": 0.9502,
-        "mad": 0.0532,
-        "band": "±8%",
-        "temp": "COLD ▼"
+        "mean": 0.9919,
+        "mad": 0.0081,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "cinderella": {
@@ -620,10 +692,12 @@
       "weapon": "RL",
       "class": "Defender",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "HP-scaling + x10 nuke modeled (popup-validated 0.99). F1 (P1): burstSnapshotsPreFb:false contradicts note+engine-comment (either stale or a regression; large term) — decidable from existing footage at both flag values"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -637,9 +711,16 @@
       "reference": false,
       "unmodeled": {
         "skill1": [],
-        "skill2": [],
+        "skill2": [
+          "■ Activates at the start of battle. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.",
+          "■ Activates when entering Burst Skill Stage 3. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous."
+        ],
         "burst": []
       },
+      "caveats": [
+        "skill2: Beautiful (Max HP ▲ 1.6% continuously, stacks up to 12) has no block of its own — it is baked at steady state into skill1's 3.23 (= 2.71 × 1.192) and the burst's 14006 (+28.9 × 12 mirror); bursts before the ~36s ramp completes are slightly over-credited.",
+        "skill2: the Decoy avatar itself is not modeled (defensive/aggro summon; v1 boss deals no damage so full decoy uptime — and thus full Beautiful uptime — is assumed)."
+      ],
       "board": {
         "records": [
           {
@@ -684,10 +765,12 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "FB-nuke trigger: should be OWN-BURST-GATED fullBurstEnter (NOT plain burstCast — that loses the +50% FB major, measured wrong T5 0.877). Schema gap; needs engine {kind:fullBurstEnter, ownBurstOnly:true}. Graded-comp movement=ZERO (sole-B3, gate always satisfied). Snipe-branch core:true unvalidated (F2)"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -701,8 +784,12 @@
       "reference": false,
       "residual": "U3 open — elemental-advantage delivery type",
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Activates when reloading to max ammunition capacity. Affects self. Preparation for Change: Reloading Time changes to fixed 3 sec for 6 sec. (Removed when the last bullet is fired.)"
+        ],
+        "skill2": [
+          "Activates at the start of battle and when using Burst Skill. Affects self. Creates a Decoy avatar with 70.34% of the caster's Max HP, continuously."
+        ],
         "burst": []
       },
       "board": {
@@ -713,14 +800,14 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0306
+            "ratio": 1.0746
           }
         ],
         "n": 2,
-        "mean": 1.0189,
-        "mad": 0.0189,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 1.0409,
+        "mad": 0.0409,
+        "band": "±5%",
+        "temp": "HOT ▲"
       }
     },
     "crown": {
@@ -729,10 +816,12 @@
       "weapon": "MG",
       "class": "Defender",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "One For All rebuild AUDIT: prose-faithful, ZERO discrepancies (caster-split disjoint+per-chain, Relax->recovery->AD chain, burst shield all engine-verified)"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -746,7 +835,11 @@
       "reference": false,
       "unmodeled": {
         "skill1": [],
-        "skill2": [],
+        "skill2": [
+          "Relax: Incoming healing ▲ 4.06% continuously. Stacks up to 20 times.",
+          "Invulnerable for 5 sec.",
+          "Attract: Taunts all enemies for 5 sec."
+        ],
         "burst": []
       },
       "board": {
@@ -757,15 +850,15 @@
           },
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9196
+            "ratio": 0.993
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.0839
+            "ratio": 1.1557
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.0789
+            "ratio": 1.1503
           },
           {
             "comp": "T2 elec-weak (boss Water)",
@@ -773,7 +866,7 @@
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9212
+            "ratio": 0.9907
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
@@ -781,7 +874,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9273
+            "ratio": 1.0008
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -801,9 +894,9 @@
           }
         ],
         "n": 12,
-        "mean": 0.9991,
-        "mad": 0.0558,
-        "band": "±8%",
+        "mean": 1.0291,
+        "mad": 0.0498,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -813,10 +906,12 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "re-materialized",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "F2 Wipe-Out riders fire ~permanently vs ~20s real uptime; F3 parts-branch coreDamagePct 16.26 to all allies is inert in reality (partless) but LIVE in-sim — over-credits comp-mates (owner-triage)"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -830,18 +925,24 @@
       "reference": false,
       "unmodeled": {
         "skill1": [
+          "■ Activates when attacking with Full Charge for 3 time(s). Affects self.",
           "Gain Pierce for 1 shot."
         ],
         "skill2": [],
         "burst": [
           "Inflicts Wipe Out on the target for 10 sec.",
+          "■ Activates when allies' normal attack hits a certain area of the target afflicted with Wipe Out. Affects allies.",
           "Buff takes effect depending on the area hit."
         ]
       },
       "caveats": [
         "burst: unparsed effect \"Inflicts Wipe Out on the target for 10 sec.\"",
         "burst: unparsed effect \"Buff takes effect depending on the area hit.\"",
-        "burst: unrecognized target \"allies\" — applied to all allies"
+        "burst: unrecognized target \"allies\" — applied to all allies",
+        "skill1: Full Burst Pierce Damage ▲13.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
+        "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
+        "burst: the Wipe Out area-hit riders are modeled ungated (they fire on this unit's own hits via hitCount 1, not on allies hitting a Wipe Out-afflicted target) — buff uptime is over-credited whenever she is firing outside her 10s post-burst Wipe Out windows",
+        "burst: the parts branch (Damage dealt when attacking core ▲16.26%) is granted to all allies alongside the body branch; on a partless boss no ally can hit parts, so this branch should be inert — yet coreDamagePct is live in-sim (core hits exist on a partless boss), over-crediting every ally's core bucket near-permanently"
       ],
       "board": {
         "records": [
@@ -855,13 +956,13 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.4336
+            "ratio": 1.1054
           }
         ],
         "n": 3,
-        "mean": 1.16,
-        "mad": 0.1867,
-        "band": ">15%",
+        "mean": 1.0506,
+        "mad": 0.0773,
+        "band": "±8%",
         "temp": "HOT ▲"
       }
     },
@@ -871,9 +972,9 @@
       "weapon": "MG",
       "class": "Defender",
       "kitParse": {
-        "status": "pending",
-        "provenance": "materialized",
-        "date": null,
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -886,18 +987,10 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [
-          "Effects vary according to squad formation. Only one set of effects is applied.",
-          "Affects self if there are no other Defender allies in the squad.",
           "Effect 2: Attract: Taunt all enemies continuously.",
-          "Affects self if there is another Defender ally in the squad.",
           "Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
-          "Effect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.",
-          "Activates when performing 200 normal attack(s). Affects self while in Attract status.",
-          "Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.",
           "Ninjutsu IFAK lasts for 4 sec.",
-          "Function: Stores up HP recovery for a time, after which all allies are healed for the stored amount.",
-          "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.",
-          "Effect 2: Once the duration ends, all allies are healed for the stored recovery amount."
+          "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK."
         ],
         "burst": [
           "Next shield's HP ▲ 20.13% for 10 sec.",
@@ -905,13 +998,9 @@
         ]
       },
       "caveats": [
-        "skill2: unparsed effect \"Effects vary according to squad formation. Only one set of effects is applied.\"",
-        "skill2: unparsed effect \"Affects self if there are no other Defender allies in the squad.\"",
-        "skill2: unparsed effect \"Affects self if there is another Defender ally in the squad.\"",
-        "skill2: unsupported trigger \"Activates when performing 200 normal attack(s). Affects self while in Attract status.\" — its effects are skipped",
-        "skill2: unparsed effect \"Ninjutsu IFAK lasts for 4 sec.\"",
-        "skill2: unparsed effect \"Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.\"",
-        "burst: unparsed effect \"Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec.\""
+        "skill2: Defender-count formation branch is user-selected via modes ('solo defender' default) — not auto-detected from the squad; pick 'with defender ally' when another Defender is present",
+        "skill2: IFAK all-ally heal cadence is a hitCount-200 proxy for 'every 4 sec' (unmeasured estimate)",
+        "skill2/burst: shields and heals are event-only (no HP pools) — the shield-size and IFAK-accumulation ▲20.13% riders therefore have no modeled effect"
       ],
       "board": null
     },
@@ -921,10 +1010,12 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "0.831 COLD ROOT CAUSE CONFIRMED: she makes 0 bursts in graded comp N5 (Privaty/SWHA alternate, never reach slot 5) -> stays in HIGHLIGHT -> sustained should be 235.03% not hard-coded Intro 60.19% -> fixing = 0.831->~0.92 (+real FB ~0.96). COMP-DEPENDENT (Run D leftmost-B3 -> Intro was right there). Fix: chainGate selfCast/selfNotCast on fullBurstEnter+target self"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -937,7 +1028,12 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.",
+          "Highlight: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.",
+          "Activates when entering Full Burst. Affects self if in Highlight status.",
+          "Sustained damage ▲ 235.03% for 10 sec."
+        ],
         "skill2": [
           "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
           "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
@@ -945,7 +1041,9 @@
           "Sustained Damage ▲ 68.04% for 15 sec."
         ],
         "burst": [
+          "Activates while the skill user is in Highlight status. Affects all allies (except self).",
           "Noise Pollution: Hit Rate ▼ 100% for 1 sec.",
+          "Affects all allies if the skill user is in Highlight status.",
           "Mute stacks ▼ 1."
         ]
       },
@@ -975,10 +1073,12 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "signature pellet-fix-1 consolidation modeled + engine-verified (regression anchor intact); all values verbatim. F3 note first-half STALE (contradicts model). F7 consolidated-shot gauge-gen per-shot-vs-per-pellet ⚑ (rotation-relevant)"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -991,7 +1091,10 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "Hit 160 pellets: Expands Pierce range 200% 3 rounds",
+          "Hit Rate ▲ 98.18% 3 rounds"
+        ],
         "skill2": [],
         "burst": []
       },
@@ -1019,10 +1122,13 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "reconciled",
+        "provenance": "parser-baseline",
+        "date": "2026-07-17",
+        "findings": [
+          "S2 '10 attacks' = pulls-vs-pellets 10x lever (shipped count 100 = 10 pulls, brid-anchored); maxAmmo burst window economy unverified",
+          "✅ RESOLVED 2026-07-17 (favorite-item sync): enacted S1 hitRate 11.85→20.09 + NEW alliesOfWeapon-SG ATK 63.88/maxAmmo 50.14; S2 NEW 2nd nuke 201.6 (hitCount 50); burst 1254→3009.6 + self AD 31.68. All blocks DBG-confirmed firing. Model-only (no board comp)."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1038,6 +1144,12 @@
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill1: Hit Rate ▲ 20.09% (TREASURE) is modeled as hitRatePct, which is inert in the engine — the real effect (a core-hit-rate lift) is proven but unmeasured",
+        "skill1: the TREASURE 'all Shotgun-wielding allies' ATK 63.88 + Max Ammo 50.14 buff hits every SG ally incl. self on FB enter — run /sim-battery before any board claim on SG teams",
+        "skill2: both nukes read '10/5 attacks' as trigger PULLS (hitCount 100/50 in pellet-counter semantics), anchored by a same-chassis brid-silent-track measurement but unmeasured for drake — pull-vs-pellet is a 10x cadence lever on each",
+        "burst: Max Ammunition Capacity ▲ 72.18%/10s only pays out when a reload lands inside the window (cap raise fills on the next reload; no instant ammo grant assumed)"
+      ],
       "board": null
     },
     "ein": {
@@ -1046,10 +1158,12 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "0.72-1.27 spread: F1 (top ~35% cold) 34-feather burst lump resolves at cast-instant BEFORE her own True-Damage +55.3% buff -> x1.553 under-credit (fix delaySec on lump); F2 between-burst trickle keyed to FB-count but really time-cadenced -> spread. 34/burst+6/rotation are Prydwen-tier (not kit-derivable, ein-focus recording needed)"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -1063,10 +1177,17 @@
       "reference": false,
       "residual": "U8 lists an older 0.71-0.76 read — worth an ein-focus recording",
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "Activates at the start of battle. Affects self. Summons 4 Near Feathers."
+        ],
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill2: Near Feather cadence (34 instances per her burst, 6 per rotation between bursts) is a community-sourced (Prydwen) estimate, not kit-derivable — kit only states 4 feathers at battle start + 6 summoned at burst; needs an ein-focused recording (U8)",
+        "skill2: the between-burst feather trickle is keyed to full-burst COUNT (6 per FB end), not to time — comps with long rotations under-count it, fast rotations over-count it",
+        "burst: the 34-feather burst lump resolves at cast-instant, BEFORE her own True Damage ▲ 55.3% burst buff and teammates' full-burst-entry auras register (block order) — real feathers land inside the 10s window with those buffs up"
+      ],
       "board": {
         "records": [
           {
@@ -1079,12 +1200,12 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.2696
+            "ratio": 0.9964
           }
         ],
         "n": 3,
-        "mean": 0.9105,
-        "mad": 0.2692,
+        "mean": 0.8195,
+        "mad": 0.1805,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1095,10 +1216,12 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "re-materialized",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "phantom 1100% max-capacity nuke removed (never fires bursting on 40s CD; ghosts cap ~7<13) — board 1.15 HOT was fudge-propped → now 0.819 COLD, needs real hand-tune (crown/helm-style unmask)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1121,30 +1244,30 @@
           "4 or more ghosts:"
         ],
         "skill2": [],
-        "burst": []
+        "burst": [
+          "Number of ghosts ▼ 6. Maintains at least 1 ghost.",
+          "Deals 800% of final ATK as damage. Attacks sequentially for 13 time(s).",
+          "Number of ghosts ▼ 9."
+        ]
       },
       "caveats": [
-        "skill1: unparsed effect \"Possession lasts for 6 sec.\"",
-        "skill1: unparsed effect \"Ability: Find and capture ghosts possessing the enemy.\"",
-        "skill1: unparsed effect \"Required hit count: 100 time(s) in total, cumulative across all allies.\"",
-        "skill1: unparsed effect \"Effect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.\"",
-        "skill1: unparsed effect \"Recurring interval: 6 sec\"",
-        "skill1: unparsed effect \"Effects vary according to the number of ghosts. Each subsequent effect triggers all effects before it:\"",
-        "skill1: unparsed effect \"1 or more ghosts:\"",
-        "skill1: unparsed effect \"4 or more ghosts:\""
+        "skill1: Elemental Advantage Damage ▲35% (4+ ghosts) shipped at 17.5% = derived ~50% uptime in rotation mode — unmeasured ghost-economy estimate",
+        "skill2: the 1100% capture-at-max-capacity nuke fires ONLY in no-burst mode (bursting every ~40s the ghost count never reaches 13); its ~17 procs/180s are a derived estimate",
+        "burst: modeled as the 6-hit branch (800% x 6 = 4800%); the 13-ghost 13-hit branch is unreachable when bursting on cooldown",
+        "cadence: datamined MG fire rate + reloadFrames 171 are unverified (mandatory cadence flag)"
       ],
       "board": {
         "records": [
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.1495
+            "ratio": 0.8193
           }
         ],
         "n": 1,
-        "mean": 1.1495,
-        "mad": 0.1495,
-        "band": "±15%",
-        "temp": "HOT ▲"
+        "mean": 0.8193,
+        "mad": 0.1807,
+        "band": ">15%",
+        "temp": "COLD ▼"
       }
     },
     "eve": {
@@ -1153,10 +1276,12 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "8/8 modeled; crit-count nuke + Mk2 doubling confirmed. F3 reload refund grants 4 rounds not 3 + drops Electric-target gate. Crit-count proxy hitCount 59 (stale under external crit)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1172,6 +1297,12 @@
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill1: Unstable Energy cadence (hitCount 59) assumes 75% crit at scope lock (44 crit hits / 0.75 = 58.67); external crit-rate buffs on eve would shorten the real cadence — the static threshold cannot respond.",
+        "skill1: Damage Taken ▲10% is modeled as permanent while the boss is Electric (kit: 10s per Unstable Energy hit on an Electric target; ~full uptime after the first proc at ~4.9s, so the approximation over-credits only the opening seconds).",
+        "skill2: the 3-round reload refund is modeled unconditionally (kit gates it on hitting an ELECTRIC target — it should be inert vs non-Electric bosses) and as 5% of BUFFED max ammo (engine rounds 75×0.05 to 4 rounds vs the kit's flat 3).",
+        "burst: Mk2's Unstable Energy doubling uses sequentialDamagePct +100 in the shared Damage-Up bucket — a TRUE ×2 solo, but dilutes below ×2 whenever other Damage-Up-bucket buffs are live (accepted ⚑). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say."
+      ],
       "board": null
     },
     "grave": {
@@ -1180,10 +1311,12 @@
       "weapon": "AR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "authored",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "burst 10s-Pierce grant engine-inexpressible (hasPierce static; shipped inert to protect solo anchor 1.005) + Prediction-end forced reload unmodeled = her ~0.835 comp-cold cause; NOTE grave is actually MEASURED (solo-recon n=19) despite tuned=false flag"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1197,8 +1330,14 @@
       "reference": false,
       "residual": "Mild B3 heat, untuned",
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Activates when Prediction status ends. Affects self. Removes 100% of ammo.",
+          "Removes Heat Emission under certain conditions.",
+          "Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously."
+        ],
+        "skill2": [
+          "Removed upon reloading to max ammunition."
+        ],
         "burst": [
           "Prediction:",
           "Current HP ▼ 1% every 1 sec, lasts for 10 sec.",
@@ -1206,7 +1345,11 @@
         ]
       },
       "caveats": [
-        "burst: unparsed effect \"Prediction:\""
+        "skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst",
+        "skill1: Prediction-end 'Removes 100% of ammo' (one forced ~3.35s reload per burst cycle in comps) is not modeled — no engine effect can empty a magazine",
+        "skill2: Overheat II/III 30/60-hit build-up approximated as full 10s burst-window uptime (real ramp-in ~2.5s/~5s at the measured 12 rounds/s)",
+        "burst: 'Gain Pierce' (10s) is not modelable — hasPierce is static, so her own Pierce Damage buffs stay inert; undercounts her burst windows in comps (solo unaffected: a lone Burst II never bursts)",
+        "burst: team 'Max Ammunition Capacity ▲ 3 round(s)' encoded as maxAmmoPct 3 — the schema is percent-only, flat rounds are inexpressible per-target"
       ],
       "board": {
         "records": [
@@ -1236,10 +1379,12 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "EXP trigger hitCount 6->3: materialized used the non-core branch (never fires on 100%-core boss); core branch is faithful -> board 0.94->1.062; her cadence flag (normal-fire ~26% hot, suspect datamine) is now the DOMINANT issue (measurement item). NOTE residual mis-labels her MG (she is AR)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1254,30 +1399,26 @@
       "residual": "PARTIAL — burst DoT + Hero-Level auras measured accurate, but normal-fire ~26% hot, NOT refit (U8; suspect datamined MG param)",
       "unmodeled": {
         "skill1": [],
-        "skill2": [
-          "Activates when hitting the Core for 3 time(s). Affects self.",
-          "EXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously.",
-          "Activates when Hero Level is 2 or above. Affects self.",
-          "Elemental Advantage Attack Damage ▲ 7.46% continuously."
-        ],
+        "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill2: unsupported trigger \"Activates when hitting the Core for 3 time(s). Affects self.\" — its effects are skipped",
-        "skill2: unsupported trigger \"Activates when Hero Level is 2 or above. Affects self.\" — its effects are skipped"
+        "skill1/skill2: normal-fire cadence (12/s, reload 81f) is datamined and measured ~26% hot — flagged for video measurement, deliberately NOT refit",
+        "skill2: EXP build rate modeled at 3 hits/stack (core branch at scope-lock 100% core exposure); the blend with the 6-hit non-core branch is an unmeasured estimate",
+        "skill2: Elemental Advantage Attack Damage 7.46% modeled as passive (Hero Level 2 is reached ~3s into the fight)"
       ],
       "board": {
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 0.9391
+            "ratio": 1.0617
           }
         ],
         "n": 1,
-        "mean": 0.9391,
-        "mad": 0.0609,
+        "mean": 1.0617,
+        "mad": 0.0617,
         "band": "±8%",
-        "temp": "COLD ▼"
+        "temp": "HOT ▲"
       }
     },
     "guilty": {
@@ -1286,10 +1427,13 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "S2 '+1 stack count of stackable buffs' UNMODELED (no schema); measured real, modeling it runs ~0.6% hotter solo + amplifies allies' stacks — owner-triage",
+          "burst 'at max stacks' gate on DEF-20.25%/277.71% riders modeled always-on (over-credits a pre-ramp first burst)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1300,9 +1444,16 @@
       "reference": false,
       "unmodeled": {
         "skill1": [],
-        "skill2": [],
+        "skill2": [
+          "Increases stack count of stackable buffs by 1."
+        ],
         "burst": []
       },
+      "caveats": [
+        "skill1: 'Duplicates 8.81% of the ATK of the ally with the highest ATK' is modeled as % of Guilty's OWN ATK (casterAtkPct) — exact solo / when she is the top-ATK ally, cold when a buffed teammate outranks her.",
+        "skill2: 'Increases stack count of stackable buffs by 1' is unmodeled (no schema support). Measured REAL solo (guilty-sg-band probe): it bumps her own S1 stack ramp to cap one trigger early; allies' stackable buffs are also not amplified in teams.",
+        "burst: the 'at max stacks' gate on the DEF ▼ 20.25% + 277.71% additional-damage riders is not modeled (always-on) — a burst cast before the S1 ramp completes is slightly over-credited."
+      ],
       "board": null
     },
     "helm": {
@@ -1311,10 +1462,13 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "reconciled",
+        "provenance": "hand-authored",
+        "date": "2026-07-17",
+        "findings": [
+          "*** ROSTER-WIDE SSOT GAP *** 0.591 COLD root cause: blablalink sync carries NO treasure-phase prose; materialize froze the UNTREASURED base kit. Dropped: S2 '178.98% full-charge bonus hit' (~doubles sustained fire) + S2 FB attack-damage 11.85->27.87. The 2026-07-14 validated 0.99 state INCLUDED both via the old runtime parser (model never drifted, source text did). Affects ALL (Treasure) units (helm, laplace...). HIGH PRIORITY owner reconciliation",
+          "✅ RESOLVED 2026-07-17 (favorite-item sync + reconcile): DB now carries treasure prose. Enacted S2 FB attack-damage 11.85→27.87 (all allies) + S2 178.98% full-charge hit (shotFired, every charged shot) + burst 54.45% recovery as heal event. Board 0.591 COLD → 1.014 ±3%✓ (5 comps 0.98-1.05); teammates warmed by the restored 27.87 team buff (crown 1.029/privaty 0.977/anis-star 0.952/SWHA 1.11). noir anchor +0.0000%; FB asserts all green."
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -1331,34 +1485,38 @@
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill2: the 178.98% full-charge additional hit is modeled on shotFired (every SR pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
+        "burst: the 158.4% Charge Damage 'for 10 round(s)' is approximated as durationSec 13 (~8 rounds incl. the mid-window reload; 10 rounds ~= 16-17s)"
+      ],
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.6104
+            "ratio": 1.0519
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.5709
+            "ratio": 0.979
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.5834
+            "ratio": 1.0004
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.5966
+            "ratio": 1.0267
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.5943
+            "ratio": 1.0138
           }
         ],
         "n": 5,
-        "mean": 0.5911,
-        "mad": 0.4089,
-        "band": ">15%",
-        "temp": "COLD ▼"
+        "mean": 1.0144,
+        "mad": 0.0228,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "helm-aquamarine": {
@@ -1367,9 +1525,9 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "materialized",
-        "date": null,
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -1380,12 +1538,18 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [
-          "Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it:"
-        ],
+        "skill1": [],
         "skill2": [],
-        "burst": []
+        "burst": [
+          "Activates when attacking an Electric Code target. Affects the target. Deals 164.83% of final ATK as additional damage."
+        ]
       },
+      "caveats": [
+        "skill2: the 105.58% random-enemy hit has NO kit-stated trigger — modeled on Skill 1's 30-normal-attack cadence as an unmeasured guess",
+        "burst: the extra 164.83% vs Electric Code targets is not modeled (no Electric-gated burst path; inert vs the non-Electric scope-lock boss)",
+        "skill2: the Damage Taken debuff only applies against Electric Code bosses (inert in the scope-lock context)",
+        "cadence: assault-rifle fire rate and reload timing are datamined defaults, not yet measured from video"
+      ],
       "board": null
     },
     "isabel": {
@@ -1394,10 +1558,13 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "S2 rider matches measured (coef 170.58 correct post-bond); crits in-game ~15-25% but engine DoT-crit off → reads ~4% cold (engine-global)",
+          "Marked-Target stage modeled as monotonic burst-count; possible in-game 45s stage reset unmodeled (over-credits MT2/3 on >45s burst spacing)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1411,6 +1578,13 @@
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill2: kit targets 5 enemies with the highest final DEF — modeled as the lone boss (the multi-target selection has no effect vs a partless single boss)",
+        "skill2: the kit gives no activation trigger for this damage — the ~14.7-sec period is a solo measurement (2026-07-16); whether the period holds in team fights is unverified",
+        "skill2: this periodic hit crits in-game (~15-25% of fires observed) but the engine's periodic damage does not crit by default — the rider reads ~4% cold",
+        "burst: Full Burst Duration ▼ 5 sec is modeled as shortening the team's Full Burst window — its net rotation effect (shorter window vs faster re-cycle) is an unverified estimate",
+        "skill1/burst: Marked Target stage is modeled as a permanent count of Isabel's burst uses — a possible in-game stage reset when the 45-sec mark expires (burst spacing over 45 sec) is not modeled"
+      ],
       "board": null
     },
     "jill": {
@@ -1419,10 +1593,12 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "compensating errors: F1 burst true-dmg conversion unmodeled -> makes trueDamagePct 34.99 engine-inert (needs weaponSwap trueNormals); F2 Hit-Rate 80.78 unmodeled, measured core 0.20->0.90 (x1.45 window); F4 cadence conflict (sim 2.5/s +18% hot vs probe). Per-hit/DoT measured-exact"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -1478,10 +1654,13 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "reconciled",
+        "provenance": "parser-baseline",
+        "date": "2026-07-17",
+        "findings": [
+          "burst re-authored to official prose (897.6/14.52/5s weaponSwap, only rider is true dmg) — current file traced to OLD fan text (1455.72/22.2/trueNormals); fbGate over-fire fixed",
+          "✅ RESOLVED 2026-07-17 (favorite-item sync): REVERTED the wave-6 downgrade — the 'old fan text' values were the TREASURE kit. Restored burst First 1455.72/Normal 22.2/10s + weaponSwap trueNormals + the 11.9 rider; S2a lastBullet 81.66 → shotFired full-charge 132.45. DBG-confirmed. Model-only."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1494,16 +1673,22 @@
       "reference": false,
       "unmodeled": {
         "skill1": [
-          "Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 5 sec."
+          "Activates when attacking with Full Charge. Affects self. Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5, 15s."
         ],
         "skill2": [
-          "Activates when hitting the target's Parts. Affects the target.",
-          "Deals 14.78% of final ATK as additional damage."
+          "Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage."
         ],
-        "burst": []
+        "burst": [
+          "Additional Effect 1: Gains Pierce.",
+          "(Note: Unable to take cover.)"
+        ]
       },
       "caveats": [
-        "skill2: unsupported trigger \"Activates when hitting the target's Parts. Affects the target.\" — its effects are skipped"
+        "burst: bazooka beam economy is UNMEASURED — 0.25s/tick + reload-free are ⚑ estimates over the 10s window; count beam popups in any focus video",
+        "burst: the swap beam (22.2%, true at max Hero Vision) and the 11.9% true rider both assume Hero Vision is at max stacks for the whole window (⚑ uptime haircut candidate)",
+        "burst: 'Gains Pierce' not modeled — no swap-gated pierce mechanism; inert at scope lock (no pierce-damage buffs in kit, pierce core-double disabled)",
+        "skill2: the 132.45% full-charge additional hit is modeled on shotFired (every RL pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
+        "skill1: Explosion Radius ▲ is inert vs the partless boss; its stacks only gate the burst true damage (assumed maxed)"
       ],
       "board": null
     },
@@ -1513,9 +1698,9 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "authored",
         "provenance": "parser-baseline",
-        "date": null,
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -1526,10 +1711,19 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "■ Activates after 15 normal attack(s). Affects all allies with a Shotgun.",
+          "Maximum Effective Range ▲ 20% for 10 sec."
+        ],
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill1: 'Maximum Effective Range ▲ 20%' to shotgun allies is not modeled — the engine has no range stat and shotgun pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model",
+        "skill2: Hit Rate ▲ 20.28% is recorded but inert in the engine (100% accuracy assumed); in reality it raises the core-hit rate by an unmeasured amount",
+        "skill2: '+5 pellets' is modeled as Normal Attack +50% to ALL shotgun allies (kit: only the 2 highest-ATK shotgun allies) — over-applies in teams running 3 or more shotguns, including Leona herself",
+        "burst: the 21.32% crit-rate line assumes Roar is fully stacked at her burst cast (the stack-count gate is not modeled and may not always hold)"
+      ],
       "board": null
     },
     "liberalio": {
@@ -1538,10 +1732,12 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "matches measured; F2 charge-speed immunity NOT enforced vs external buffs (sim.ts:1522 sums all; only own S1 excludeSelf'd) - dormant engine gap; F7 probe rrh-liberalio element mislabel (prose-only)"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -1555,9 +1751,16 @@
       "reference": false,
       "unmodeled": {
         "skill1": [],
-        "skill2": [],
+        "skill2": [
+          "Activates when landing a Full Charge attack against a Rapture that is not the stage target. Affects self. Gentle Current: Fixes charge time at 1 sec continuously. Removes Raging Current.",
+          "Activates at battle start. Affects self. Immunity to Increase/Decrease Charge Speed effects, continuous."
+        ],
         "burst": []
       },
+      "caveats": [
+        "skill2: Gentle Current (charge time fixed at 1 sec vs non-stage-target Raptures) is not modeled — the solo-raid boss is always the stage target, so Raging Current is permanently active and Gentle Current can never fire.",
+        "skill2: her charge-speed immunity is only enforced against her OWN Skill 1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (e.g. Maxwell, Alice) would wrongly speed her up in the sim."
+      ],
       "board": {
         "records": [
           {
@@ -1620,10 +1823,12 @@
       "weapon": "SMG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "re-materialized",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "F1 Explosive Bubble may coexist with Bubble = 10.1% team damage-taken (vs modeled 5.05) — measure before touch"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -1636,19 +1841,29 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "■ Activates only when in Focusing status. Affects all allies.",
+          "Focuses fire continuously."
+        ],
+        "skill2": [
+          "■ Activates after landing 50 normal attacks. Affects the target if the target is in Bubble status.",
+          "Explosive Bubble: Damage Taken ▲ 5.05% continuously. Stuns for 3 sec. Removes Bubble."
+        ],
         "burst": []
       },
+      "caveats": [
+        "Explosive Bubble (skill 2) is not modeled: the override carries a single permanent Damage Taken ▲ 5.05% (Bubble). If Bubble re-applies after the explosion and Explosive Bubble's debuff persists, the boss would carry BOTH stacks (10.1%) in steady state — unverified, needs an in-game debuff-icon / popup-delta measurement before any change.",
+        "The 'every 1 sec only during Full Burst' nuke is encoded as a 10-second damage-over-time started at Full Burst entry — tick count assumes the nominal 10s Full Burst window and does not track shortened or extended Full Bursts."
+      ],
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9337
+            "ratio": 1.0154
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9092
+            "ratio": 0.9881
           },
           {
             "comp": "PH water B3s (boss Fire)",
@@ -1660,10 +1875,10 @@
           }
         ],
         "n": 4,
-        "mean": 0.9695,
-        "mad": 0.048,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 1.0096,
+        "mad": 0.0156,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "ludmilla-winter-owner": {
@@ -1672,9 +1887,9 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "re-materialized",
-        "date": null,
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -1691,6 +1906,10 @@
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill2: the '60 core hits' proc is proxied as every 63 normal hits (engine MG core rate 0.95) — unmeasured estimate",
+        "skill1: MG cadence tuple (fire rate / wind-up / reloadFrames 201) is datamined, unverified"
+      ],
       "board": null
     },
     "maiden-ice-rose": {
@@ -1699,10 +1918,12 @@
       "weapon": "RL",
       "class": "Defender",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "1.13 HOT: F1 kit team buff is 'except self' but model uses alliesOfElement Electric w/o self-exclusion -> she self-buffs +40.9/+20.9 every FB (arcana-fortune-mate bug family; fix=excludeSelf on alliesOfElement); F2 burst stackedNuke undercounts a stack when she bursts every rotation (offsets cold). Reconcile F1+F2 together"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -1717,9 +1938,9 @@
       "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound",
       "unmodeled": {
         "skill1": [
-          "MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
-          "MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
-          "Max HP ▲ 6.34% without restoring HP for 15 sec, stacks up to 10 time(s)."
+          "Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
+          "Activates when entering Full Burst with MP above 1. MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
+          "Activates when attacking with Full Charge for 6 time(s). Affects self. Max HP ▲ 6.34% without restoring HP for 15 sec, stacks up to 10 time(s)."
         ],
         "skill2": [],
         "burst": []
@@ -1832,10 +2053,12 @@
       "weapon": "MG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "all 7 values byte-exact; Drunken-stack scaling modeled statically (cycle-avg 2, exact sole-B2). F1 Hangover trigger her-cast vs prose FB-end (Q5 measured, keep); F4 miss-model gauge over-credit (normalAttackPct-40 is damage-only)"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -1876,10 +2099,12 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "0.938 COLD: F1 burst hit modeled 813.42% (uncharged) vs kit-literal full-charge 2440% (x3 lever); F2 flatDamage strips crit+core the Pierce railgun rolls. Recipe: popup-read burst hit in run-G footage"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -1894,8 +2119,15 @@
       "residual": "Over-corrected; reads 0.80 (G) but 1.17 (N6) — unstable, audit candidate",
       "unmodeled": {
         "skill1": [],
-        "skill2": [],
-        "burst": []
+        "skill2": [
+          "Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%."
+        ],
+        "burst": [
+          "Change the weapon in use: Charge Time 2 sec",
+          "Full Charge Damage 300% of damage",
+          "Max Ammunition Capacity 1 round",
+          "Additional Effect: Pierce"
+        ]
       },
       "board": {
         "records": [
@@ -1921,10 +2153,12 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "DoT encoding CORRECT (one passive instance); zero value drift; F1 skill1 chain-dump modeled unconditional fullBurstEnd but kit gates 'if she just bursted' (over-fires multi-B3, benign sole-B3)"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -1939,7 +2173,6 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [
-          "Ensnaring Chains stacks ▲ 1.",
           "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.",
           "Ensnaring Chains stacks ▲ 20.",
           "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
@@ -1952,13 +2185,17 @@
         "skill2: unparsed effect \"Ensnaring Chains stacks ▲ 20.\"",
         "skill2: unsupported trigger \"Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\" — its effects are skipped",
         "skill2: unparsed effect \"Restraint Chain ▲ 1, up to 10.\"",
-        "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — its effects are skipped"
+        "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — its effects are skipped",
+        "skill2: 40-normals-in-Full-Burst Ensnaring generation is folded into skill1's steady-state DoT average (⚑ calibrated 12-stack rebuild average), not a discrete hitCount block",
+        "skill2: unsupported trigger \"Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\" — defensive, skipped (boss deals no damage in v1)",
+        "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — boss never dies, skipped",
+        "skill1: Restraint-dump timing (\"at a specific timing\") is kit-silent — modeled at battle start / Full Burst end (⚑)"
       ],
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.8925
+            "ratio": 0.9479
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -1966,9 +2203,9 @@
           }
         ],
         "n": 2,
-        "mean": 0.9788,
-        "mad": 0.0863,
-        "band": "±15%",
+        "mean": 1.0065,
+        "mad": 0.0586,
+        "band": "±8%",
         "temp": "OK  ·"
       }
     },
@@ -1978,10 +2215,12 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "0.70 COLD: F3 dead block — burst pierceDamagePct 117.64 never fires (no hasPierce; modeled!=working) + auto-mode too pessimistic (real procs Embarrassment partially). Fix hasPierce. F5: the old 'poor auto-play' 0.70 DECISION rationale is DIRECTION-SUSPECT (predates ratio-direction fix — poor auto = HOT sim, but she's COLD)"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -1995,8 +2234,14 @@
       "reference": false,
       "residual": "~0.7 is an ACCEPTED DECISION (poor auto-play) — validated-by-decision, not tuned to 1.0",
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "■ Activates when performing a Full Charge attack. Affects self.",
+          "Gain Pierce for 6 sec."
+        ],
+        "skill2": [
+          "■ Activates only when in Embarrassment status. Affects self.",
+          "Pierce Damage ▲ 64.7% continuously."
+        ],
         "burst": [
           "Overconfident, Huh?!:",
           "Gains Immunity to Embarrassment for 10 sec."
@@ -2026,10 +2271,12 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "0.768 likely a CONFIG BUG not model bug: mode defaults 'solo' (halved values) unless comp fields prika / sets modes.mint; synthetic A/B own-dmg = 0.777 = board. Values exact, cadence measured. F1: Dancing heal (1.8% MaxHP/s) dropped -> crown recovery consumer never procs (hard rule 2)"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -2042,8 +2289,12 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec."
+        ],
+        "skill2": [
+          "Activates when entering Burst Stage 3 while not in Sing Along status: Cancels Singing and Dancing."
+        ],
         "burst": [
           "Only one Assigned Part is applied according to Mint's current status.",
           "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.",
@@ -2075,10 +2326,13 @@
       "weapon": "SMG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "reconciled",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-17",
+        "findings": [
+          "F0 BASIS MISMATCH: override models the TREASURE kit (owner screenshot); base kit differs (treasure SSOT gap family — helm/moran/laplace/miranda). F1 burst target count 2 vs base 1. F2 both S1 Hit-Rate lines dropped (hard rule 4). MODEL_ONLY/unowned",
+          "✅ CONFIRMED 2026-07-17: DB favorite-item prose now matches the existing screenshot-derived treasure override line-for-line; no change needed. Residual: alliesTopAtk can't exclude-self (unowned/model-only)."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2090,7 +2344,10 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "Activates after landing 30 normal attack(s). Affects all allies: Hit Rate ▲ 5.44% for 5 sec.",
+          "Activates after landing 30 normal attack(s). Affects all SMG-wielding allies: Hit Rate ▲ 3.79% for 5 sec."
+        ],
         "skill2": [],
         "burst": []
       },
@@ -2102,10 +2359,12 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "S2a hitRatePct restored from unmodeled (hard rule 4) + S2b ATK+29.38 gated inFb (was ungated over-credit) -> board 1.069->1.044 (into +/-5%); F1 Destroy Mode 2.24%/hit rides crit-OFF path but U1 says function-dmg crits (would warm; not pulled)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2120,23 +2379,29 @@
       "residual": "Single read, confounded by that comp FB-count anomaly",
       "unmodeled": {
         "skill1": [],
-        "skill2": [
-          "Hit Rate ▲ 8.56% for 15 sec."
-        ],
-        "burst": []
+        "skill2": [],
+        "burst": [
+          "Destroy Mode: Extends her line of sight and auto-aims at all enemies within range. The stage target is treated as a single enemy regardless of whether it has parts (including interruption parts)."
+        ]
       },
+      "caveats": [
+        "skill1: reload tuple is unverified datamine — reloadFrames 159 + rolling-reload (reload_start_ammo 299); read the reload gap from any focus video (⚑1)",
+        "skill2: Hit Rate ▲ 8.56% is modeled but INERT in the engine — it raises the core-hit rate by an unmeasured magnitude (⚑2)",
+        "skill2: the ATK ▲ 29.38% 'during increasing Hit Rate status' gate is approximated as in-Full-Burst — exact when Modernia bursts (extended FB ≡ the 15s status), undercounts the 5s status tail on rotations another Burst III unit bursts (⚑3)",
+        "burst: Destroy Mode per-hit 2.24% is modeled crit-OFF (hand-authored extraHitDamagePct path); U1 says function additional damage crits — unreconciled finding, and the datamined ChangeWeapon (shot 1026002) fire profile is assumed identical to the base MG (⚑4)"
+      ],
       "board": {
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0694
+            "ratio": 0.8807
           }
         ],
         "n": 1,
-        "mean": 1.0694,
-        "mad": 0.0694,
-        "band": "±8%",
-        "temp": "HOT ▲"
+        "mean": 0.8807,
+        "mad": 0.1193,
+        "band": "±15%",
+        "temp": "COLD ▼"
       }
     },
     "moran": {
@@ -2145,10 +2410,12 @@
       "weapon": "AR",
       "class": "Defender",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "0.713 COLD top cause F1: burst weapon-swap uses a DIFFERENT weapon spec (shot_id 1028102, rate_of_fire 1440=24 pulls/s = 2x base) the sim never loads -> she fires base 12/s during swap window, ~covers the whole 29% gap (moran/jill AR-burst-window cluster). Checkable from moran control.mov. NOTE moran is a TREASURE unit (helm SSOT-gap family)"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -2161,18 +2428,22 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "Activates at the start of battle. Affects self. DEF ▲ 3.51% continuously for every 1% of HP lost."
+        ],
         "skill2": [
-          "Taunts for 4 sec.",
+          "Activates when firing the final bullet. Affects the 3 enemy unit(s) with the highest final ATK. Taunts for 4 sec.",
+          "Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.",
           "Once: Max HP ▲ 91% for 3 sec. Activates once per battle.",
           "Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.",
           "Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle."
         ],
         "burst": [
-          "Additional Effect:",
-          "Recovers 36.14% of attack damage as HP for 10 sec.",
+          "Additional Effect(s):",
+          "Recovers 36.14% of attack damage as HP over 10 sec.",
           "Attract: Taunts all enemies for 10 sec.",
-          "DEF ▲ 14.85% of caster's DEF for 10 sec."
+          "Note: Unable to take cover while using Burst Skill.",
+          "DEF ▲ 14.85% of the skill user's DEF for 10 sec."
         ]
       },
       "board": {
@@ -2203,10 +2474,12 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "1.175 HOT cause: shield-gated buffs (S1 core-dmg 85.17, burst casterAtk 31.02) gated by a MODE defaulting to 'with shielder' -> fire UNCONDITIONALLY unless comp set no-shielder (opposite of kit). Fix: {kind:shielded} event gate (primitive exists). F4 S2 heal in unmodeled violates hard rule 2 (crown consumer). Backfilled dropped Pierce line"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -2219,24 +2492,28 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [
-          "Recovers 9.58% of the skill user's final Max HP as HP."
+        "skill1": [
+          "Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP."
         ],
-        "burst": []
+        "skill2": [
+          "Activates after landing 5 normal attack(s). Affects 2 ally unit(s) with the lowest HP percentage. Recovers 9.58% of the skill user's final Max HP as HP."
+        ],
+        "burst": [
+          "Affects self. Gains Pierce for 10 sec."
+        ]
       },
       "board": {
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.1746
+            "ratio": 1.0259
           }
         ],
         "n": 1,
-        "mean": 1.1746,
-        "mad": 0.1746,
-        "band": ">15%",
-        "temp": "HOT ▲"
+        "mean": 1.0259,
+        "mad": 0.0259,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "nayuta": {
@@ -2245,10 +2522,12 @@
       "weapon": "SMG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "0.637 COLD (leading, ENGINE): Memory Incineration swap shots core-rated + range-gated as base SMG instead of the swap weapon's SR-class treatment -> ~2x loss on swap-shot damage in far/midfar (half her FBs); whole-picture reproduces 0.62-0.68. F2 swap chargeTimeSec 2.13 vs measured 1.8. F3 Hit Rate 42%@cap dropped"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -2262,8 +2541,14 @@
       "reference": false,
       "residual": "High run-to-run variance",
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Unchanging Heart: Gain Indomitability for 9 sec. Activates 1 time(s) during battle.",
+          "Equally shares HP recovery for 5 sec.",
+          "Recovers 25% of the skill user's final Max HP as HP."
+        ],
+        "skill2": [
+          "Memory Absorption: Hit Rate ▲ 1.4%, stacks up to 30 time(s) and immune to stack count increase or decrease effects continuously. This effect cannot be removed."
+        ],
         "burst": []
       },
       "board": {
@@ -2286,10 +2571,12 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "Firepower-Gauge/Super alternation modeled + video-verified (every-3rd-Super). Values verbatim. F1: Super +262.79 rider crit-OFF (extraHitDamagePct) vs base crit-ON (~7% cold, offsets 1.040 HOT). Backfilled"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -2302,9 +2589,18 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
-        "burst": []
+        "skill1": [
+          "When attacked while not in Healthy Body: Invulnerability for 3 sec (5 times per battle) and debuff immunity; Healthy Body: incoming healing ▲10.26% for 20 sec (defensive — invuln/immunity/received-heal amp; emits no heal event, no cross-unit consumer wiring needed)"
+        ],
+        "skill2": [
+          "Firepower Gauge bookkeeping: gains 100 Firepower Gauge at battle start; +2 per normal attack during Firepower Charge; +45 when Firepower Charge ends (NOT a block — the steady-state consequence is ABSORBED into the skill1 Super block's everyN 3 / everyNOffset 1: start at 100 → Super on her burst casts 1, 4, 7…; video-confirmed cast-by-cast, Run B)",
+          "When Full Burst ends: charges own burst gauge in proportion to the current Firepower Gauge (gauge→burst-gauge conversion; burst-generation only, unmodeled; empirically does not consume the Firepower cycle — every-3rd-Super held on video)"
+        ],
+        "burst": [
+          "Firepower Gauge below 100: activates Firepower Charge, charging the gauge for 10 sec (bookkeeping — ABSORBED into the everyN 3 alternation)",
+          "Firepower Gauge at 100: consumes 100 Firepower Gauge on activating Super Firepower (bookkeeping — ABSORBED into the everyN 3 alternation)",
+          "Explosion Radius ▲200% for 10 sec (inert — single partless boss, no AoE surface)"
+        ]
       },
       "board": {
         "records": [
@@ -2382,10 +2678,12 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "re-materialized",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "~0.68 COLD hypotheses: F1 missing hasPierce (strongest, alice precedent +16-33%), F3 solo-Encore CD over-penalty, F5 Performance-duration under-credit"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -2403,9 +2701,21 @@
           "Outgoing healing ▲ 49.92% continuously.",
           "Gains Pierce. This effect is continuous."
         ],
-        "skill2": [],
-        "burst": []
+        "skill2": [
+          "Max HP ▲ 19.98% for 10 sec.",
+          "Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.",
+          "Effect 2: Affects all allies. Performance duration ▲ 21 sec."
+        ],
+        "burst": [
+          "Effect 1: Restores 3.04% of the skill user's final max HP as HP every 1 sec for 25 sec. This effect cannot be removed."
+        ]
       },
+      "caveats": [
+        "Encore is a proxy: the real trigger is 'Sing Along takes effect while Prika is in Performance' (a partner mechanic, e.g. Mint) — solo mode fires it on EVERY Full Burst entry even in teams with no Sing Along caster (over-credits the ally Attack Damage ▲ 25.01% AND over-applies the self Burst-cooldown ▲ 21s).",
+        "Prika's kit grants her continuous Pierce while in Performance, but the override carries no Pierce tag (hasPierce) — her own Pierce Damage ▲ 13.09% and any partner Pierce buffs do not land on her (held pending a popup measurement, probe-runs 2026-07-14).",
+        "The burst Performance heal (3.04% of caster max HP per sec, 25s) is not emitted as recovery events — 'when recovery takes effect' consumer kits (Crown-type) will not proc off Prika.",
+        "Encore's 'Performance duration ▲ 21 sec' is unmodeled — in solo mode the burst's Charge Damage ▲ 25% (and heal) run 25s instead of an extended ~46s when Encore fires."
+      ],
       "board": {
         "records": [
           {
@@ -2426,10 +2736,12 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "clean: 9/10 exact zero drift; 1687% Designated-Target chain modeled (burstCast proxy, arithmetic-consistent); Max-Ammo-down interaction mechanically emergent; 1687 comp-dependence is the standing open item"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -2452,11 +2764,11 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9638
+            "ratio": 1.0272
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9307
+            "ratio": 0.9919
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -2464,10 +2776,10 @@
           }
         ],
         "n": 3,
-        "mean": 0.9356,
-        "mad": 0.0644,
-        "band": "±8%",
-        "temp": "COLD ▼"
+        "mean": 0.9771,
+        "mad": 0.041,
+        "band": "±5%",
+        "temp": "OK  ·"
       }
     },
     "quency-escape-queen": {
@@ -2476,10 +2788,12 @@
       "weapon": "SMG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "re-materialized",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "hitRatePct lines restored from unmodeled (hard rule 4) + S1 stage-gates no longer 100% uptime; still 0.546 COLD (separate under-model, hand-tune)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2494,37 +2808,29 @@
       "residual": "Cold; owns a timing-rule regression, untuned",
       "unmodeled": {
         "skill1": [],
-        "skill2": [
-          "Effects vary for each stage. Each subsequent effect triggers all effects before it:",
-          "Stage 1: Affects self.",
-          "Hit Rate ▲ 1.36%. Stacks up to 10 times and lasts for 2 sec.",
-          "Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.",
-          "Hit Rate ▲ 2.71%. Stacks up to 10 times and lasts for 1 sec.",
-          "Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.",
-          "Hit Rate ▲ 4.08%. Stacks up to 5 times and lasts for 0.5 sec."
-        ],
+        "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill2: unparsed effect \"Effects vary for each stage. Each subsequent effect triggers all effects before it:\"",
-        "skill2: unparsed effect \"Stage 1: Affects self.\"",
-        "skill2: unparsed effect \"Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.\"",
-        "skill2: unparsed effect \"Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.\""
+        "skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate — rebuild timing after reloads is approximate (⚑)",
+        "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
+        "skill2: Hit Rate stacks modeled as hitRatePct (inert in v1) — magnitude of the core-rate lift unmeasured (⚑)",
+        "all: cadence tuple is the raw datamine (24 pulls/s, reloadFrames 81) — unverified (⚑)"
       ],
       "board": {
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 0.5387
+            "ratio": 0.5382
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.5564
+            "ratio": 0.5538
           }
         ],
         "n": 2,
-        "mean": 0.5476,
-        "mad": 0.4524,
+        "mean": 0.546,
+        "mad": 0.454,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2535,10 +2841,12 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "projectile attach/explode modeled faithful; 150.72/100.6 damage-type buffs correctly routed to attachment/explosion flavors (engine-verified); values exact. F1/F3 skippable partless lines backfilled"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -2552,19 +2860,25 @@
       "reference": false,
       "residual": "Invisible-X residual (44-52% of her damage) deliberately left open",
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
-        "burst": []
+        "skill1": [
+          "Damage to Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
+        ],
+        "skill2": [
+          "Attachable Projectile — Max Ammo: 1"
+        ],
+        "burst": [
+          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)"
+        ]
       },
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9447
+            "ratio": 1.0178
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9232
+            "ratio": 0.9827
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
@@ -2572,7 +2886,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9519
+            "ratio": 1.0243
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -2580,10 +2894,10 @@
           }
         ],
         "n": 5,
-        "mean": 0.9396,
-        "mad": 0.0646,
-        "band": "±8%",
-        "temp": "COLD ▼"
+        "mean": 0.9806,
+        "mad": 0.0405,
+        "band": "±5%",
+        "temp": "OK  ·"
       }
     },
     "raven": {
@@ -2592,9 +2906,9 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "re-materialized",
-        "date": null,
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -2608,15 +2922,20 @@
       "reference": false,
       "unmodeled": {
         "skill1": [],
-        "skill2": [],
+        "skill2": [
+          "Activates when an ally or self destroys an enemy's part. Affects self if self is not in A.N. Mode status.",
+          "Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.",
+          "Removes Vital Attack."
+        ],
         "burst": [
           "A.N. Mode:",
           "Effect 1: Removes Single Point Attack."
         ]
       },
       "caveats": [
-        "burst: unparsed effect \"A.N. Mode:\"",
-        "burst: unparsed effect \"Effect 1: Removes Single Point Attack.\""
+        "skill1: full-charge DoT cadence (60f charge + 22f bolt gap + 141f reload, autofire unverified) is an unmeasured ⚑ estimate — the DoT is her dominant damage bucket and scales linearly with shot rate",
+        "skill2: Single Point Attack (Sustained damage ▲ 47.32%) keys on destroying an enemy part — it can never fire against the partless scope-lock boss and is not modeled (previously approximated as an always-on passive)",
+        "skill2: Vital Attack (Damage to Parts ▲ 21.12%) is modeled but inert in v1 (no parts on the boss)"
       ],
       "board": null
     },
@@ -2626,10 +2945,12 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "Red Wolf swap economy OPTIMISTIC (engine-verified, not cold source); CS->charge-dmg conversion partial (F2a static 90 should be 93.36 small warm; F2b team-CS invisible cold in buffer comps). Top cold F8: base-SR autofire-vs-bolt UNTESTED (~+35% out-of-window if autofire). Backfilled 5 silent drops"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -2645,8 +2966,15 @@
         "skill1": [
           "Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously."
         ],
-        "skill2": [],
-        "burst": []
+        "skill2": [
+          "■ Activates during Beast Cage. Affects all allies. DEF ▲ 50.68% of the skill user's DEF for 10 sec.",
+          "■ Activates during The Last Howl. Affects self. Recovers 23.04% of attack damage as HP over 10 sec."
+        ],
+        "burst": [
+          "Step 2 (The Last Howl): Attract: Taunts all enemies for 10 sec.",
+          "Step 2 (The Last Howl): Incoming healing ▲ 74.88% for 10 sec.",
+          "Step 3 (Red Wolf): Expand Pierce range by 100% for 10 sec."
+        ]
       },
       "caveats": [
         "skill1: unparsed effect \"Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously.\""
@@ -2675,10 +3003,12 @@
       "weapon": "AR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "removed fabricated permanent all-ally casterAtkPct 15 (part-destroy stacks can't fire on partless boss); S2 DoT re-encoded dur-15->maintained; S2 has NO activation clause (invented 100%-uptime trigger, TOP flag)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2690,10 +3020,17 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "■ Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5, 30s."
+        ],
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "skill1: part-destroy ATK stacks (3% caster ATK ×5 to all allies) are inert vs a partless boss and NOT modeled — big hidden lever on parts bosses",
+        "skill2: sustained DoT modeled as 100%-uptime maintained (one passive instance) — the kit text prints no activation clause; real uptime is unmeasured",
+        "skill1/skill2: Damage to Parts ▲ 24.26% buffs are inert vs the partless boss (kept for fidelity)"
+      ],
       "board": null
     },
     "rouge": {
@@ -2702,10 +3039,12 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "F1/F2 (P1) burst Max-HP grants DOUBLE-COUNTED (casterMaxHpPct 22 + 22.5 = 44.5% vs kit max 30.02; Double Sword Coin in both skill2+burst) — blast radius = atkOfMaxHpPct consumers (cinderella/maiden), consistent with ~1.060. Backfilled empty unmodeled"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -2718,8 +3057,13 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Activates after landing 8 Full Charge attack(s): the Max HP granted (5% of caster's Max HP, 5 sec) cannot be restored — the no-restore qualifier is inert (no HP pool / healing modeled); the grant itself IS modeled (as a passive time-averaged 2.3 ⚑)"
+        ],
+        "skill2": [
+          "Activates after landing 30 Full Charge attack(s) while in Sword Coin state: grants self and 2 ally unit(s) on both sides the Shield Coin — Damage Taken ▼ 15.2% continuously (defensive; boss deals no damage in v1)",
+          "Coin state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 Burst uses in Shield Coin) is not tracked as engine state; it is absorbed into ⚑ timeline-averaged values"
+        ],
         "burst": []
       },
       "board": {
@@ -2750,10 +3094,12 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "materialized dropped 'Attacks sequentially 10 times' (burst nuke was x1) — restored x10; S2 shipped kit-literal single 15s window (rejected unsupported 'permanent DoT' premise; no S2 cooldown in datamine)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2766,7 +3112,6 @@
       "reference": false,
       "unmodeled": {
         "skill1": [
-          "Forcefully uses Skill 2.",
           "Activates when an ally or self destroys an enemy's part. Affects self.",
           "Sustained Damage ▲ 5.1% for 30 sec.",
           "Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.",
@@ -2778,12 +3123,10 @@
         "burst": []
       },
       "caveats": [
-        "skill1: unparsed effect \"Forcefully uses Skill 2.\"",
-        "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
-        "skill1: unparsed effect \"Dancing Flower Duration ▲ 10.02 sec.\"",
-        "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.\" — its effects are skipped",
-        "skill1: unparsed effect \"Sakura Petals Duration ▲ 10.02 sec.\"",
-        "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.\" — its effects are skipped"
+        "skill2: force-cast ONCE at battle start (S1) — Sakura Petals 256%/s + Dancing Flower modeled as a single 15s window (t=0–15); the part-destroy duration extensions never fire vs the partless boss, so she is a plain AR after ~t=15 until her bursts ⚑",
+        "skill2: Dancing Flower Attack Damage ▲ 15.64%/15s is time-averaged to a permanent 1.30% (engine passive buffs cannot carry a duration) ⚑",
+        "burst: 457.14% ×10 sequential attacks modeled as 10 same-frame hits vs the single boss; the stacking DoT assumes all 10 stacks apply per cast (351.6%/s ×10s) ⚑",
+        "cadence: datamined 12 pulls/s + 81-frame reload are unverified estimates ⚑"
       ],
       "board": null
     },
@@ -2793,9 +3136,9 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "materialized",
-        "date": null,
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -2810,17 +3153,17 @@
           "Current HP ▼ 4.01%."
         ],
         "skill2": [
-          "Activates when HP falls below 60%. Affects self.",
-          "Critical Damage ▲ 6.61% continuously."
+          "There is a 30% chance of activating when attacked.",
+          "Deals 138.24% of final ATK as additional damage."
         ],
-        "burst": [
-          "Affects self. Activates when HP falls below 50%.",
-          "Critical Rate ▲ 19.57% for 10 sec."
-        ]
+        "burst": []
       },
       "caveats": [
-        "skill2: unsupported trigger \"Activates when HP falls below 60%. Affects self.\" — its effects are skipped",
-        "burst: unsupported trigger \"Affects self. Activates when HP falls below 50%.\" — its effects are skipped"
+        "skill1: the 'Current HP ▼ 4.01%' self-drain is not simulated as HP; it justifies treating her HP-gated crit buffs as active (unmeasured assumption)",
+        "skill2: the 30%-when-attacked 138.24% proc is unmodeled — the sim has no incoming boss attacks; real-fight contribution is an open ⚑",
+        "skill2: the HP<60% gate on the 6.61% crit-damage buff is assumed permanently active (S1 self-drain); over-credits roughly the first 30s",
+        "burst: the HP<50% gate on the 19.57% crit-rate buff is assumed active at cast; her first burst may really occur above the threshold",
+        "cadence: 20-ammo AR with a 27.08% per-shot multiplier is a non-standard fire-mode tell — the datamined rate of fire and 159-frame reload are unverified estimates"
       ],
       "board": null
     },
@@ -2830,10 +3173,12 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "1.049 HOT F2: charge cycle modeled 40f vs measured ~42f -> sim ~4.8% fast ~= the +4.9% HOT (per-unit +2f charFix, re-pinnable from N3/sbs-control footage). F3 in-burst 848% rate cumulative-vs-per-phase SPLIT (queued isolated-burst recording). F5 P0-ADJACENT: coreband-scarlet-ar.json tagged scarlet-black-shadow but records a 20-round AR (likely base scarlet footage misattributed — owner identity re-verify)"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -2848,12 +3193,12 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [],
-        "burst": [
-          "Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec."
-        ]
+        "burst": []
       },
       "caveats": [
-        "burst: unparsed effect \"Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\""
+        "burst: unparsed effect \"Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\"",
+        "skill1: phase-threshold semantics are a scalar 3 (outside) / 1 (in-burst) model = the CUMULATIVE '3rd/6th/9th charge' reading of the kit; the per-phase reading ([3,6,9]/[1,2,3], cycle 18/6 charges) tested ~22% cold and own-probe evidence is split (sbs-control: procs ~every charge in burst; N3 re-read: the 848% absent in one window) — isolated-burst recording queued to pin the in-burst 848% count",
+        "burst: the count-requirement line ('Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.') IS modeled — chargeCounter.countInFb gated on HER OWN burst cast for 10s (sim.ts:1745); the previous 'unparsed' caveat and unmodeled.burst entry were stale"
       ],
       "board": {
         "records": [
@@ -2879,10 +3224,12 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
+        "findings": [
+          "S2a 144.73% was materialized as passive firing ~1x/fight (inert) -> now shotFired+swapGate (~5x/fight); S2b crit fbGate; burst charge-cannon 4995%/full-charge (1000% of 499.5% base). Pierce swap-scoped (unmodeled, no swap-pierce vocab)"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2902,6 +3249,11 @@
           "Additional Effect: Pierce"
         ]
       },
+      "caveats": [
+        "skill2: the 144.73% line's trigger is INVENTED (kit text has no 'Activates when…' clause) — modeled as one proc per full-charge shot of the burst weapon swap; unmeasured ⚑",
+        "burst: swap shot economy is an unmeasured estimate — engine yields exactly 1 full-charge shot (4995%) per burst window; a 2nd shot (charge-speed comps) is not expressible (engine zeroes charge speed for swap cadences) ⚑",
+        "burst: 'Additional Effect: Pierce' unmodeled — pierce is swap-scoped and the schema only has always-on hasPierce; potential core+body double-hit on the nuke is missing ⚑"
+      ],
       "board": null
     },
     "snow-white-heavy-arms": {
@@ -2910,10 +3262,12 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "Auto-Fire hit count KIT-EXACT (over-count ruled out — burst boosts loaded ammo 5->15). 1.073 HOT = bond warming + cadence ⚑ (sim assumes optimum). F1 DEF 42.24 dropped (hard rule 3); F2 Pierce 5s missing (hasPierce unset). Backfilled"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -2926,23 +3280,34 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
-        "burst": []
+        "skill1": [
+          "Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.",
+          "Auto Fire Ready — Effect: DEF ▲ 42.24% continuously.",
+          "Auto Fire Ready — Function: Loads Seven Dwarves with ammo. Max ammo loaded by Auto Fire Ready: 5. Deactivation condition: Performing a normal attack.",
+          "■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active."
+        ],
+        "skill2": [
+          "Gains Pierce for 5 sec."
+        ],
+        "burst": [
+          "Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.",
+          "Effect 2: Max Lock-On targets ▲ 10 continuously.",
+          "■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage."
+        ]
       },
       "board": {
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.0746
+            "ratio": 1.1282
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.092
+            "ratio": 1.1465
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.1449
+            "ratio": 1.1884
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -2950,8 +3315,8 @@
           }
         ],
         "n": 4,
-        "mean": 1.0731,
-        "mad": 0.0826,
+        "mean": 1.1111,
+        "mad": 0.1205,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2962,10 +3327,12 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "Golden-Chip gating arithmetically CORRECT (pre-consume ordering honored). F2 engine target bug: top-ATK ally 'except self' but alliesTopAtk includes owner (no excludeSelf) -> if Soda ranks #1 the buff collides to self = ally gets nothing. F3 FB-extension shape wrong (cumulative +2/+5 not flat 4; measured 14.71s impossible under +4). F1 Hit Rate 38.91 dropped"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2979,10 +3346,20 @@
       "reference": false,
       "residual": "Chip-economy model, untuned",
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "Activates at the start of battle. Affects self. Golden Chip stacks ▲ 50."
+        ],
         "skill2": [],
-        "burst": []
+        "burst": [
+          "Golden Chip stacks ▼ 17 after the effect is applied.",
+          "Stage 2: Activates when Golden Chip is at 20 or more stacks. Affects self. Hit Rate ▲ 38.91% for 15 sec."
+        ]
       },
+      "caveats": [
+        "skill1/burst: the Golden Chip pool is not dynamically tracked — crit damage (42) and the every-burst ATK ▲65.25 gate are steady-state derivations valid for standard double-B3 comps (pre-consume trajectory 50/44/40/38/31, all ≥30); comps that drain below 30 pre-consume over-credit",
+        "skill2: Full Burst extension modeled as a flat +4s average; the kit is chip-gated CUMULATIVE (+5s at ≥20 chips = TE-I+TE-II, +2s at 10–19) — late-fight Full Bursts run shorter than modeled (measured last-FB countdown 12.50s at 18–19 chips)",
+        "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)"
+      ],
       "board": {
         "records": [
           {
@@ -3003,9 +3380,9 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "authored",
         "provenance": "parser-baseline",
-        "date": null,
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -3016,10 +3393,25 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Removes First Train Discount."
+        ],
+        "skill2": [
+          "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.",
+          "Recovers 12.27% of the skill user's final Max HP as HP.",
+          "Ticket count ▼ 1.",
+          "■ Activates at the start of battle. Affects all allies.",
+          "First Train Discount for 6 sec.",
+          "Function: The effects of I'll Help You Board the Train! will not consume tickets."
+        ],
         "burst": []
       },
+      "caveats": [
+        "skill1: ticket Max-HP grant modeled at steady-state cap (2 tickets = 20% of caster Max HP, all allies); she starts at 1 ticket (10%) and reaches 2 only after her first Burst — in a team that never Full Bursts it stays 10% (⚑)",
+        "skill1: cadence tuple (SG rate of fire, reloadFrames 111) is the unverified datamine — read rounds/min + the reload gap from a focus video (⚑)",
+        "skill1: her only damage is base SG spray — per-unit SG pellet landing is unmeasured; the class SG landing table is the shipped default (⚑)",
+        "skill2: the emergency heal (squad HP < 15%, consumes a ticket) is unmodeled — the sim models no incoming boss damage and the schema has no HP-threshold trigger; on-recovery consumers are still driven every rotation by her Burst heal"
+      ],
       "board": null
     },
     "takina": {
@@ -3028,10 +3420,12 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "true-damage buffs verified firing (trueNormals stamps trueFlavor on swap shots); values exact. F5 burst fbGate->swapGate; F6 swap-window shot economy unmeasured (~1.044 HOT)"
+        ]
       },
       "tier": "MEASURED",
       "tuned": true,
@@ -3044,8 +3438,12 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Activates at the start of battle: ATK ▲ 80.04% for 5 sec (the battle-start activation only; the Full-Burst-end activation of the same line IS modeled as the fullBurstEnd block — engine has no battleStart trigger and passive-trigger buffs ignore durationSec, sim.ts:983-993, so this instance is not override-expressible today)"
+        ],
+        "skill2": [
+          "Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)"
+        ],
         "burst": []
       },
       "board": {
@@ -3068,10 +3466,12 @@
       "weapon": "AR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "FULL RECONCILIATION (owner-queued): 6 of 7 lines discrepant. S2 crit-rate STALE 3.32->10.08 (3x under); S2 SG attack-speed 42.24% MISSING (alliesOfWeapon SG); burst SG 24.21% MISSING (SG allies should get 2.32+24.21 = 79.59% caster ATK); burst duration STALE 10->15s; S1 reload 5.31% + Max-Ammo+2 skipped (hard rule 1). Backfilled"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -3083,9 +3483,16 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
-        "burst": []
+        "skill1": [
+          "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine.",
+          "■ Activates during Emergency-Crafted Bullets. Affects all allies. Temporary Modification: Max Ammunition Capacity ▲ 2, stacks up to 3 time(s) and lasts for 5 sec."
+        ],
+        "skill2": [
+          "■ Only activates when Temporary Modification is fully stacked. Affects all shotgun-wielding allies. Attack Speed ▲ 42.24% continuously."
+        ],
+        "burst": [
+          "■ Affects all shotgun-wielding allies. Miracle of Makeshifts: ATK ▲ 24.21% of caster's ATK. Mirrors the stack count of Temporary Modification for 15 sec."
+        ]
       },
       "board": null
     },
@@ -3095,10 +3502,12 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "1.140 HOT NOT the kit (Spread Roots 435.6% is UNMODELED, engine has no burst-skill-dmg-amp — it's a teammate-COLD lever for 20+ B3 nukes, feature request). HOT is the weapon-fire model (cadence tuple / RL core crediting). Hard-rule violations F1/F3/F5/F8 (dropped heals/HP-grants/hit-rate)"
+        ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
@@ -3116,9 +3525,23 @@
           "Recovers 2.03% of the skill user's final Max HP as HP.",
           "Recovers 1.57% of the skill user's final Max HP as HP."
         ],
-        "skill2": [],
-        "burst": []
+        "skill2": [
+          "Max HP ▲ 44.98% of the skill user's Max HP without restoring HP constantly.",
+          "Invulnerable for 2 sec."
+        ],
+        "burst": [
+          "Max HP ▲ 20.14% of the skill user's Max HP without restoring HP for 10 sec.",
+          " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
+          "Changes Spread Roots to Wilted Roots.",
+          "Wilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec.",
+          "Hit Rate ▲ 45.3% for 10 sec."
+        ]
       },
+      "caveats": [
+        "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).",
+        "burst: Max Ammunition +20 rounds is encoded as maxAmmoPct 33.3 (assumes a 60-round AR base magazine).",
+        "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina."
+      ],
       "board": {
         "records": [
           {
@@ -3151,10 +3574,12 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
+        "status": "audited",
         "provenance": "partial-hand",
-        "date": null,
-        "findings": []
+        "date": "2026-07-16",
+        "findings": [
+          "ammo-pouch gate correct (effectively unlimited); values exact. F2 team buff (25.2 casterAtk + 100.8 chargeDmg) stays up on swap shots (plausible 1.068 HOT contributor if swap doesn't full-charge; swapGate:unswapped fix-if-confirmed)"
+        ]
       },
       "tier": "VALIDATED",
       "tuned": true,
@@ -3167,12 +3592,22 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
-        "skill2": [],
+        "skill1": [
+          "Bullet Snatch (battle start + Burst Stage 2): removes 5% ammo from all enemies; fills own ammo pouch to 6,000 rounds.",
+          "Full Charge attack while not in Full Burst: expends 100 ammo from the ammo pouch."
+        ],
+        "skill2": [
+          "Full Charge attack during Full Burst: expends 300 ammo from the ammo pouch.",
+          "Landing 50 normal attacks during Full Burst: expends 300 ammo from the ammo pouch."
+        ],
         "burst": [
-          "Additional Effect"
+          "Additional Effect (weapon-change spec — VERBATIM TEXT NOT AVAILABLE to this audit; fetch from blablalink: likely carries the swap weapon's charge time / ammo / Full Charge Damage spec that pins the swap shot economy)"
         ]
       },
+      "caveats": [
+        "skill2: team buff (ATK 25.2% of caster + Charge Damage 100.8%) is kept alive by SWAPPED shots during her own 10s burst weapon-swap — kit requires a Full Charge attack; unverified whether the swap weapon full-charges (needs footage).",
+        "burst: swap shot economy is a materialized parser estimate, not hand-verified — engine fires ~10 swapped shots/10s (60f cycle, no bolt gap) each carrying her SR charge-damage bucket on top of the 7% multiplier."
+      ],
       "board": {
         "records": [
           {
@@ -3226,9 +3661,9 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "pending",
-        "provenance": "materialized",
-        "date": null,
+        "status": "authored",
+        "provenance": "parser-baseline",
+        "date": "2026-07-16",
         "findings": []
       },
       "tier": "MODEL_ONLY",
@@ -3239,14 +3674,25 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [],
+        "skill1": [
+          "【Phase 3】Items ×110"
+        ],
         "skill2": [
-          "Recovers Cover's HP by 7.52%."
+          "【Phase 2】Items ×50"
         ],
         "burst": [
+          "【Phase 1】",
+          "Cooldown: 20 s",
           "Additional Effect: Pierce"
         ]
       },
+      "caveats": [
+        "burst: weapon-swap window economy is an unmeasured estimate — duration 10s (unstated in kit) and ~3 shots/window (charge 1.2s + 1-ammo reload); if footage shows reload-free cadence it is ~8 shots",
+        "skill1: 'for 1 round(s)' round-scoped buff durations approximated as 5s (no round primitive in the schema)",
+        "skill2: the Crit Rate stack's 'Pierce Attacks 101 status' gate is proxied by an in-Full-Burst gate — exact only when Zwei is the team's sole Burst I",
+        "skill2: the every-5-attacks heal recovers COVER HP in-kit; whether that fires teammates' on-recovery triggers is an unverified hypothesis",
+        "unit: pierce applies only to the swapped burst cannon in-kit; modeled as unit-wide hasPierce (her pierce buffs are burst-window-scoped, so spillover onto normal shotgun fire is minimal)"
+      ],
       "board": null
     }
   }

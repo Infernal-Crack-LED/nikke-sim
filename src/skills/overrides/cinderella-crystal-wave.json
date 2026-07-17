@@ -8,8 +8,12 @@
     "Snipe"
   ],
   "unmodeled": {
-    "skill1": [],
-    "skill2": [],
+    "skill1": [
+      "Activates when reloading to max ammunition capacity. Affects self. Preparation for Change: Reloading Time changes to fixed 3 sec for 6 sec. (Removed when the last bullet is fired.)"
+    ],
+    "skill2": [
+      "Activates at the start of battle and when using Burst Skill. Affects self. Creates a Decoy avatar with 70.34% of the caster's Max HP, continuously."
+    ],
     "burst": []
   },
   "skill1": [

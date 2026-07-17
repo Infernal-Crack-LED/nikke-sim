@@ -5,7 +5,10 @@
   },
   "unmodeled": {
     "skill1": [],
-    "skill2": [],
+    "skill2": [
+      "Activates when landing a Full Charge attack against a Rapture that is not the stage target. Affects self. Gentle Current: Fixes charge time at 1 sec continuously. Removes Raging Current.",
+      "Activates at battle start. Affects self. Immunity to Increase/Decrease Charge Speed effects, continuous."
+    ],
     "burst": []
   },
   "skill1": [
@@ -132,5 +135,9 @@
         }
       ]
     }
+  ],
+  "caveats": [
+    "skill2: Gentle Current (charge time fixed at 1 sec vs non-stage-target Raptures) is not modeled — the solo-raid boss is always the stage target, so Raging Current is permanently active and Gentle Current can never fire.",
+    "skill2: her charge-speed immunity is only enforced against her OWN Skill 1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (e.g. Maxwell, Alice) would wrongly speed her up in the sim."
   ]
 }

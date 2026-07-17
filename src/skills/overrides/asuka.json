@@ -1,19 +1,24 @@
 {
-  "note": "Tier audit (Bossing A). S1 ATK 96.98%/25s triggers 'when recovery takes effect' — skipped by parser, but her meta comps always include recurring heals (Rei aura, Crown S2, Mast), so uptime is ~permanent -> modeled as a passive self ATK 96.98. If run with zero healers this over-buffs (rare). Rest of kit parses (S2 FB elemAdvantage 30.02 + coreDamage 60.07, burst AD 150.04/10s). [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — asuka (BASE Asuka, AR/Fire/Attacker/B3 — NOT asuka-wille MG/Wind). Kit-parse AUTHOR 2026-07-16 (wave 5). S1: shield-damage 601.01% → unmodeled (no shield-damage StatKey in types.ts; scope-lock partless boss never shields — inert). S1 ATK 96.98%/25s RE-ENCODED passive→`recovery`-triggered self buff (driver-directed; the prior hand slot's passive encoding was a healer-team uptime PROXY predating the recovery trigger — that team assumption now lives with the healer, not the unit). ⚑ BIG LEVER: with a recurring healer (Rei aura/Crown S2/Mast) uptime is ~permanent; healer-less it fires ONLY via her own burst lifesteal (modeled — see burst). S2: FB-enter self elemAdvantageDamagePct 30.02/10s — kit gates it on SHIELD STATUS, engine has no shield-state gate → modeled UNCONDITIONAL (⚑ over-credits shielder-less teams; inert anyway without elemental advantage); FB-enter alliesOfElement Fire coreDamagePct 60.07/10s (includes self — she is Fire). Burst (burstCast self): attackDamagePct 150.04/10s; 'Gain Pierce 25s' → top-level hasPierce (approx: permanent vs real 25s window; pierce inert in v1 — PIERCE_CORE_DOUBLE off, pierceDamagePct unbuffed); lifesteal 3.16%/10s → `heal` event at cast (hard rule 2: fires her OWN S1 recovery trigger → self-sustaining ATK 96.98/25s per burst — ⚑ verify self-lifesteal procs 'when recovery takes effect'; single event at cast vs real 10s HoT ticks); hitRatePct 101.37/10s modeled (hard rule 4 — inert in engine, ⚑ core-rate lift). ⚑ MANDATORY cadence tuple ESCALATED: 20-ammo AR with 18.76 normalMult = non-class fire-mode tell (collab positron rifle); pullsPerSec/reloadFrames 84/rolling-reload all unverified datamine.",
+  "hasPierce": true,
   "unmodeled": {
-    "skill1": [],
+    "skill1": [
+      "Damage dealt to Shield ▲ 601.01% continuously."
+    ],
     "skill2": [],
-    "burst": [
-      "Gain Pierce for 25 sec.",
-      "Recovers 3.16% of attack damage as HP over 10 sec.",
-      "Hit Rate ▲ 101.37% for 10 sec."
-    ]
+    "burst": []
   },
+  "caveats": [
+    "skill1: ATK ▲96.98% is recovery-triggered — needs a heal landing on her (teammate healer, or her own burst lifesteal); a healer-less team that never Full-Bursts gains it never",
+    "skill2: Elemental Advantage buff requires Shield status in-game — no shield-state gate in the engine, modeled as unconditional at Full-Burst entry (over-credits without a shielder; only matters with elemental advantage)",
+    "burst: 'Gain Pierce for 25 sec' modeled as permanent hasPierce (pierce currently inert vs the v1 boss); lifesteal modeled as one recovery event at cast, real effect ticks over 10s",
+    "burst: fire cadence is an unmeasured datamine estimate — 20-ammo AR with an 18.76% normal multiplier is unlikely to fire at the AR class default"
+  ],
   "skill1": [
     {
       "slot": "skill1",
       "trigger": {
-        "kind": "passive"
+        "kind": "recovery"
       },
       "target": {
         "kind": "self"
@@ -22,7 +27,8 @@
         {
           "kind": "buff",
           "stat": "atkPct",
-          "value": 96.98
+          "value": 96.98,
+          "durationSec": 25
         }
       ]
     }
@@ -78,6 +84,15 @@
           "kind": "buff",
           "stat": "attackDamagePct",
           "value": 150.04,
+          "durationSec": 10
+        },
+        {
+          "kind": "heal"
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 101.37,
           "durationSec": 10
         }
       ]

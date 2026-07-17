@@ -1,8 +1,7 @@
 {
-  "note": "B-tier triage (2026-07-13). S2's 256%/s sustained field is a cooldown skill force-cast by S1 (parser fired it once at t0) -> modeled as a permanent dot at 15s-per-~20s uptime average = 192%/s ⚑. AD 15.64 companion buff likewise permanent-averaged at 11.7. Burst nuke 4571.4% + 35.16%/s dot parse fine and stay parser-side. [materialized 2026-07-16: skill1/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — kit-parse AUTHOR wave 6 (2026-07-16), sakura-bloom-in-summer (Sakura: Bloom in Summer, AR/Wind/Attacker/B3 — NOT base sakura). MODEL: S1a force-casts S2 ONCE at battle start → S2's two effects encoded as passive-at-t0 blocks in the skill2 slot: (1) Sakura Petals = ONE passive dot 256%/s sustained, durationSec 15 (engine fires passives once at frame 0; kit-literal single 15s window — the ONLY re-cast/extension channel in the kit is part destruction, inert vs the partless boss; datamine has NO S2 cooldown — role.skillDetails.ulti_skill_detail.skill_cooltime 4000 is the BURST 40s, so the old triage's '~20s CD re-cast → 192%/s permanent' assumption is NOT text- or datamine-supported ⚑2); (2) Dancing Flower attackDamagePct 15.64 for 15s → passive buffs ignore durationSec (sim.ts alwaysOn), so shipped TIME-AVERAGED 15.64×15/180 = 1.30 ⚑3 (rises to ~15.64 permanent iff ⚑2 re-cast is real or vs part bosses). BURST: 457.14%×10 sequential attacks vs the single boss = TEN flatDamage 457.14 effects flavor sequential in one burstCast block (auto pre-FB/no-FB; kept as 10 instances, not one 4571.4 consolidation, so skillGauge fires per hit like the real 10 hits and popups match; same-frame landing vs the real ~1-2s spread is a negligible simplification; fixes the materialized freeze's ×10 loss — it shipped 457.14 ONCE, same misparse class as crown); stacking DoT 35.16%/s ×10 stacks (all 10 sequential hits land on the one boss → full stacks per cast) = one dot 351.6%/s ×10s per burst cast (dur 10 < burst interval → no overlap; genuine-stacking carve-out satisfied per-cast) ⚑4 stack-application reading. SKIPPED (unmodeled.skill1): the three part-destroy trigger pairs — Sustained Damage ▲5.1%/30s self, Dancing Flower Duration ▲10.02s, Sakura Petals Duration ▲10.02s — 'destroys an enemy's part' can never fire on the partless scope-lock boss (genuinely-skippable class). S1a 'Forcefully uses Skill 2' is IMPLEMENTED (it is the t0 activation of both skill2 blocks), so not listed in unmodeled. ⚑ LIST: ⚑1 cadence tuple (MANDATORY) — pullsPerSec 12 (datamine rate_of_fire 720 rpm), reloadFrames 81, reload_start_ammo 59; mag-empty 60/12=5s is class-plausible, no special-fire-mode text tells; recipe: rounds/min + reload gap from any focus video. ⚑2 S2 uptime (TOP ⚑) — shipped kit-literal ONE 15s window at t=0; falsifier: any solo/focus video showing Sakura Petals sustained ticks (or the Dancing Flower icon) past t≈15s without part destruction ⇒ periodic re-cast is real ⇒ re-encode dot as passive dur≥180 at measured uptime and raise the AD average. ⚑3 Dancing Flower 1.30 time-average (engine passive-buff limitation; coupled to ⚑2). ⚑4 burst DoT stacks — shipped hit-applied full 10 stacks/cast (351.6%/s from tick 1); alternative per-second self-ramp would be ×0.55 of this; recipe: read sustained tick popups right after her burst — flat ~351.6%-scale ticks from the first second = hit-applied, growing ticks = ramp. ⚑5 (low) sequential flavor tag on the nuke means teammates' Sequential Damage ▲ buffs scale it — text-derived. NOT SIMMED (parallel-batch staging rule): validate-overrides + DBG firing check owed by the driver at promotion.",
   "unmodeled": {
     "skill1": [
-      "Forcefully uses Skill 2.",
       "Activates when an ally or self destroys an enemy's part. Affects self.",
       "Sustained Damage ▲ 5.1% for 30 sec.",
       "Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.",
@@ -14,82 +13,54 @@
     "burst": []
   },
   "caveats": [
-    "skill1: unparsed effect \"Forcefully uses Skill 2.\"",
-    "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
-    "skill1: unparsed effect \"Dancing Flower Duration ▲ 10.02 sec.\"",
-    "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.\" — its effects are skipped",
-    "skill1: unparsed effect \"Sakura Petals Duration ▲ 10.02 sec.\"",
-    "skill1: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.\" — its effects are skipped"
+    "skill2: force-cast ONCE at battle start (S1) — Sakura Petals 256%/s + Dancing Flower modeled as a single 15s window (t=0–15); the part-destroy duration extensions never fire vs the partless boss, so she is a plain AR after ~t=15 until her bursts ⚑",
+    "skill2: Dancing Flower Attack Damage ▲ 15.64%/15s is time-averaged to a permanent 1.30% (engine passive buffs cannot carry a duration) ⚑",
+    "burst: 457.14% ×10 sequential attacks modeled as 10 same-frame hits vs the single boss; the stacking DoT assumes all 10 stacks apply per cast (351.6%/s ×10s) ⚑",
+    "cadence: datamined 12 pulls/s + 81-frame reload are unverified estimates ⚑"
   ],
   "skill1": [],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "dot",
-          "atkPct": 192,
-          "durationSec": 99999,
-          "intervalSec": 1,
-          "flavor": "sustained"
-        }
+        { "kind": "buff", "stat": "attackDamagePct", "value": 1.3 }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 11.7
-        }
+        { "kind": "dot", "atkPct": 256, "durationSec": 15, "intervalSec": 1, "flavor": "sustained" }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 457.14
-        }
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" },
+        { "kind": "flatDamage", "atkPct": 457.14, "flavor": "sequential" }
       ]
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
       "effects": [
-        {
-          "kind": "dot",
-          "atkPct": 35.16,
-          "durationSec": 10,
-          "intervalSec": 1,
-          "flavor": "sustained"
-        }
+        { "kind": "dot", "atkPct": 351.6, "durationSec": 10, "intervalSec": 1, "flavor": "sustained" }
       ]
     }
   ]

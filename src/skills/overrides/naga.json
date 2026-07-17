@@ -1,15 +1,20 @@
 {
   "note": "Tier audit (Bossing A). Naga's headline buffs are SHIELD-GATED ('when a Shield is set in front of this unit') and the engine has no shield tracking, so the parser skipped them entirely — killing her core identity (she is always run with a shielder: Tia duo, Blanc, or Crown, whose burst creates a team shield every rotation). Modes: 'with shielder' (default; shield refreshed every rotation -> S1 team core-damage 85.17% modeled as fullBurstEnter/10s = full uptime, burst gets BOTH casterAtk lines 16.18+31.02) and 'no shielder' (shield-gated blocks inert; only the 16.18 casterAtk remains). S2 core-damage 40.07%/5s per 5 of her hits (SG ~1.5 pulls/s * 10 pellets... hitCount counts hits; kept parser-faithful) to 2 top-ATK allies. Heals/cover restore skipped. Her SG pellets: hitsPerShot from DB governs hitCount cadence. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
   "modes": [
+    "auto",
     "with shielder",
     "no shielder"
   ],
   "unmodeled": {
-    "skill1": [],
-    "skill2": [
-      "Recovers 9.58% of the skill user's final Max HP as HP."
+    "skill1": [
+      "Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP."
     ],
-    "burst": []
+    "skill2": [
+      "Activates after landing 5 normal attack(s). Affects 2 ally unit(s) with the lowest HP percentage. Recovers 9.58% of the skill user's final Max HP as HP."
+    ],
+    "burst": [
+      "Affects self. Gains Pierce for 10 sec."
+    ]
   },
   "skill1": [
     {

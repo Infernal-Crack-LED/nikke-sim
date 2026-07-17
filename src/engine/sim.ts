@@ -178,6 +178,49 @@ const SG_LANDING_BY_BAND: Record<string, number> =
         ? { near: 0.9, mid: 1.0, far: 0.75, midfar: 0.9 }
         : { near: 0.888, mid: 0.986, far: 0.74, midfar: 0.888 };
 
+// Per-band SG pellet-landing JITTER (2026-07-17, seeded Monte Carlo only). The fixed
+// SG_LANDING_BY_BAND table is the expected-value landing; a real fight's per-shot landed-pellet
+// count scatters shot-to-shot with boss proximity within a band (brid measured near1 8.52 vs
+// near2 9.41 landed/10 in one fight — near is NOT a shot constant). Under a seeded run each SG
+// spray shot draws an INTEGER landed-pellet COUNT uniformly from [round(min×pellets),
+// round(max×pellets)] and the falloff fraction is count/pellets — a real shot lands a whole
+// number of its (hitsPerShot) pellets, not a fraction. Averaging N seeds recovers the band mean
+// and the seed sd gives the landing-variance error bar. Expected-value (unseeded) runs keep the
+// fixed table unchanged. Ranges as fractions of full pellet count (owner, 2026-07-17):
+const SG_LANDING_JITTER: Record<string, { min: number; max: number }> = {
+  near:   { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
+  mid:    { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
+  midfar: { min: 0.7, max: 0.9 }, // 10 pellets → {7,8,9},  mean 0.80
+  far:    { min: 0.6, max: 0.8 }, // 10 pellets → {6,7,8},  mean 0.70
+};
+// Standard-normal sample (Box-Muller) from the uniform PRNG; the second normal is discarded.
+function gaussian(rng: () => number): number {
+  const u1 = rng() || 1e-9; // guard log(0)
+  const u2 = rng();
+  return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+}
+// Draw a whole landed-pellet count with a BELL-CURVE weighting centered on the band mean, rather
+// than flat-uniform: map a standard normal onto pellet counts by σ-band — |z|<1σ → the middle
+// count, each further whole σ → one pellet outward, clamped to [lo,hi] (so the ≥2σ tail folds
+// into the end value). For the 3-wide bands this is exactly ~68% middle / ~16% each outer. The
+// MEAN is unchanged from uniform (symmetric); only the spread tightens toward the center count.
+function sgLandedPellets(
+  band: string,
+  pellets: number,
+  rng: () => number,
+  profile: 'small' | 'medium' | 'large' = 'small',
+): number {
+  if (profile === 'large') return pellets; // big boss — the whole spray lands, every band
+  const j = SG_LANDING_JITTER[band] ?? { min: 1, max: 1 };
+  const lo = Math.round(j.min * pellets);
+  const hi = Math.round(j.max * pellets);
+  const mid = Math.round((lo + hi) / 2);
+  const z = gaussian(rng);
+  const step = Math.floor(Math.abs(z)); // 0 within ±1σ, 1 in [1,2)σ, … (≥2σ clamps to the end)
+  const drawn = z >= 0 ? Math.min(mid + step, hi) : Math.max(mid - step, lo);
+  return profile === 'medium' ? Math.min(drawn + 1, pellets) : drawn;
+}
+
 // element → the element it beats
 const BEATS: Record<Element, Element> = {
   Electric: 'Water', Iron: 'Electric', Wind: 'Iron', Fire: 'Wind', Water: 'Fire',
@@ -329,6 +372,65 @@ export interface SimResult {
   fullBurstUptime: number;  // 0..1
   rotationStallSec: number; // time spent gauge-full waiting on cooldowns
   rotationLog: string[];
+}
+
+// Default seeded-Monte-Carlo sample count for the accuracy/damage surfaces (board-read + kit-status,
+// experiment.ts, web damage sim). The dpschart build and the regression gate deliberately DO NOT use
+// this — they call runSim directly and stay deterministic expected-value (chart = stable/fast build;
+// gate = the FB counts are measured-truth asserts that seeding would jitter). See CLAUDE.md / DECISIONS.
+export const DEFAULT_MC_SEEDS = 25;
+// Fixed seed base so a given surface's 10-run mean is reproducible AND paired across A/B configs
+// (same seed set ⇒ shared variance cancels in comparisons). Matches experiment.ts's 1000+i convention.
+export const MC_SEED_BASE = 1000;
+
+// Average an array of same-team SimResults element-wise: every numeric field becomes the per-run mean;
+// non-numeric/timeline fields (names, warnings, loadout, rotationLog) are taken from the first run as a
+// representative sample. Units are matched by index (same team across runs). Empty array is invalid.
+export function meanSimResults(runs: SimResult[]): SimResult {
+  if (runs.length === 1) return runs[0];
+  const n = runs.length;
+  const base = runs[0];
+  const mean = (pick: (r: SimResult) => number) => runs.reduce((a, r) => a + pick(r), 0) / n;
+  const units: UnitResult[] = base.units.map((u0, idx) => ({
+    ...u0,
+    totalDamage: mean((r) => r.units[idx].totalDamage),
+    dps: mean((r) => r.units[idx].dps),
+    share: mean((r) => r.units[idx].share),
+    breakdown: {
+      normal: mean((r) => r.units[idx].breakdown.normal),
+      skill: mean((r) => r.units[idx].breakdown.skill),
+      burst: mean((r) => r.units[idx].breakdown.burst),
+    },
+    pulls: mean((r) => r.units[idx].pulls),
+    burstCasts: mean((r) => r.units[idx].burstCasts),
+  }));
+  return {
+    config: base.config,
+    units,
+    teamDamage: mean((r) => r.teamDamage),
+    teamDps: mean((r) => r.teamDps),
+    fullBursts: mean((r) => r.fullBursts),
+    fullBurstUptime: mean((r) => r.fullBurstUptime),
+    rotationStallSec: mean((r) => r.rotationStallSec),
+    rotationLog: base.rotationLog,
+  };
+}
+
+// Seeded-MC convenience wrapper: run nSeeds fixed-seed sims and return their mean (via meanSimResults).
+// If cfg.seed is already pinned (a caller wants one specific fight) or nSeeds<=1, it's a single run.
+export function runSimMean(
+  chars: (CharacterData & { baseStats: any })[],
+  mult: LevelMultiplier,
+  cfg: SimConfig,
+  prepared?: PreparedUnit[],
+  nSeeds: number = DEFAULT_MC_SEEDS,
+): SimResult {
+  if (cfg.seed !== undefined || nSeeds <= 1) return runSim(chars, mult, cfg, prepared);
+  const runs: SimResult[] = [];
+  for (let i = 0; i < nSeeds; i++) {
+    runs.push(runSim(chars, mult, { ...cfg, seed: MC_SEED_BASE + i }, prepared));
+  }
+  return meanSimResults(runs);
 }
 
 export function runSim(
@@ -1649,7 +1751,13 @@ export function runSim(
 
   function firePull(u: UnitState, frame: number, charged: boolean, unlimited: boolean) {
     const band = bandAt(frame);
-    const bandSgFalloff = u.char.weapon === 'SG' && !u.swap ? SG_LANDING_BY_BAND[band] : 1;
+    const bandSgFalloff =
+      u.char.weapon === 'SG' && !u.swap
+        ? rng
+          ? sgLandedPellets(band, u.char.hitsPerShot, rng, cfg.bossPelletProfile) /
+            u.char.hitsPerShot
+          : SG_LANDING_BY_BAND[band]
+        : 1;
     // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
     // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED
     // (exact-counter re-read, dorothy-solo-reanalysis.json + owner): "3 rounds" = 3 SHOTS/episode (the

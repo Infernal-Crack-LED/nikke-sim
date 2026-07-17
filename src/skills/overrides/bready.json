@@ -1,126 +1,91 @@
 {
-  "note": "MATERIALIZED PARSER OUTPUT (2026-07-16) — auto-generated from the offline kit parser on the official (blablalink) prose; behavior-identical to the previous runtime parse; NOT hand-verified. The reviewed kit-parse hypothesis lives in src/skills/overrides-baselines/bready.json; promote via its MANIFEST.md guardrails (it replaces this file).",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. | Bready — Water SR, B3 Attacker, ammo 6 / reloadFrames 141 / chargeFrames 60 (datamine). TASTE MODE MACHINE (mutually exclusive): S1 enters Lingering Taste on GAINING a sustained-damage buff, Recommended Taste on gaining a distributed-damage buff while not sustained; each cancels the other; both apply an unremovable self Charge Speed ▼20% (50s, effectively permanent in her intended team). Which taste is live depends on what buff TYPE teammates feed her — NOT self-derivable → modeled as user-selectable `modes` [sustained, distributed] (identifiers name the buff TYPE that triggers each taste: sustained=Lingering Taste, distributed=Recommended Taste), DEFAULT sustained (her signature Aftertaste sustained-DoT identity + the burst's biggest line 349.8% is Lingering-gated). ⚑ BACKEND TODO: the taste is currently a manual user-selected mode — properly implementing it means auto-deriving the live taste from the team's actual buff types (+ the tasteless state + measured taste-line magnitudes), which is unmodeled (see NEXT INCREMENT). ⚑ MODE: a team providing NEITHER buff type leaves her tasteless — all taste-gated lines (S2 all 3, burst lines 2/3) inert AND no charge-speed debuff; the sim cannot represent that state (charFixes is unconditional) — pick the mode matching real teammates; taste-entry timing (first qualifying buff gain, not t=0) also unmodeled. CHARGE-SPEED DEBUFF: engine clamps chargeSpeedPct to >=0 (sim.ts:1522), so a −20% buff would silently drop ('modeled ≠ working') → modeled as charFixes.chargeFrames 72 = 60 × (1+0.20), matching the engine's SUBTRACTIVE-time CS convention (sim.ts:1523 needed = chargeFrames × (1 − cs/100)); ally +CS buffs still shorten from the 72 base. ⚑ 72 (subtractive) vs 75 (divisive 60/0.8) — measure in-taste charge time. LINGERING path: S2 after 3 full-charge hits (hitCount:3, hitsPerShot 1) → boss Damage Taken ▲10.2%/5s (TEAM-WIDE amp — blast radius: buffs every teammate's damage) + Aftertaste sustained DoT 150.04%/tick ×5 (1s interval), encoded as a REPEATING-trigger dot per kit-parse directive (stacks per proc if 3 charges land <5s; at est. ~1.57s/shot cycle the proc period ~4.7s ≈ dur 5 → mild overlap) — ⚑ stack-vs-refresh + overlap depends on real cadence. Burst 'Aftertaste Effect ▲349.8%/10s' → sustainedDamagePct 349.8 (additive Damage-Up bucket on sustained-flavor hits, sim.ts:801) — ⚑ semantics: additive with her 60.19 attackDamagePct gives ticks ×5.10 in her window; a multiplicative DoT-magnitude reading would give ×7.20 (~41% hotter). RECOMMENDED path: per full-charge hit (shotFired) → self Attack Damage ▲60.01%/5s (refreshes ≈ permanent while firing) + 265.07% distributed rider to all enemies (full value vs single boss — engine default, prior on distributed) + burst ATK ▲70.09%/10s. UNCONDITIONAL: S1 FB-enter self ATK ▲70.01%/10s (worded 'when entering Full Burst' → fullBurstEnter, fires on every team FB per hard rule 6); burst self Attack Damage ▲60.19%/10s (own-burst block → burstCast). RIDERS: FB by TIMING default (no noFb set); +30% range engine-universal-off (never set). SKIPPED (all in unmodeled.skill1): the two taste-ENTRY trigger lines (buff-gain events not simulated; folded into the mode system) + the two 'Cancels …' lines (mutual exclusivity enforced structurally by the mode gate). No heal/shield/DEF/parts lines in this kit; the weapon-state payload (charge speed) IS modeled. ⚑ CADENCE TUPLE (mandatory, datamine-unreliable): chargeFrames 60/reloadFrames 141/bolt gap 22f ON — NEVER set noBoltRecovery unmeasured (autofire vs bolt-gap = ~15–20% shot swing); recipe = bready-focus video: shot period, reload gap, autofire check. ⚑ DISTRIBUTED-RIDER FB: verify the 265.07% proc takes +50% by landing timing (in-FB vs out-FB popup).",
+  "modes": ["auto", "sustained", "distributed"],
+  "charFixes": {
+    "chargeFrames": 72
+  },
   "unmodeled": {
     "skill1": [
       "Activates when gaining a buff that increases sustained damage. Affects self.",
-      "Lingering Taste: Charge Speed ▼ 20% for 50 sec. This effect cannot be removed.",
       "Cancels Recommended Taste.",
       "Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.",
-      "Recommended Taste: Charge Speed ▼ 20% for 50 sec. This effect cannot be removed.",
       "Cancels Lingering Taste."
     ],
     "skill2": [],
-    "burst": [
-      "Activates when in Lingering Taste status. Affects self.",
-      "Aftertaste Effect ▲ 349.8% for 10 sec.",
-      "Activates when in Recommended Taste status. Affects self.",
-      "ATK ▲ 70.09% for 10 sec."
-    ]
+    "burst": []
   },
   "caveats": [
-    "skill1: unparsed effect \"Cancels Recommended Taste.\"",
-    "skill1: unsupported trigger \"Activates when gaining a buff that increases sustained damage. Affects self.\" — its effects are skipped",
-    "skill1: unparsed effect \"Cancels Lingering Taste.\"",
-    "skill1: unsupported trigger \"Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.\" — its effects are skipped",
-    "burst: unparsed effect \"Aftertaste Effect ▲ 349.8% for 10 sec.\"",
-    "burst: unsupported trigger \"Activates when in Lingering Taste status. Affects self.\" — its effects are skipped",
-    "burst: unsupported trigger \"Activates when in Recommended Taste status. Affects self.\" — its effects are skipped"
+    "skill1: which Taste is active is a user-selected mode (default: sustained = Lingering Taste; distributed = Recommended Taste) — the buff-gain entry triggers are not simulated; a team providing neither a sustained- nor a distributed-damage buff would leave her tasteless (all taste-gated lines inert), which the sim cannot represent",
+    "skill1: the Taste Charge Speed ▼20% debuff is modeled as a permanent charge-time increase (60→72 frames; assumes she is always in a taste); 72 follows the engine's subtractive charge-speed convention — unmeasured (divisive would be 75)",
+    "skill2: the Aftertaste DoT is encoded as repeating per-3-full-charge instances that stack when procs land <5s apart — stack-vs-refresh and overlap depend on the unmeasured charge cadence",
+    "burst: 'Aftertaste Effect ▲349.8%' is modeled as an additive sustained-damage Damage-Up buff; a multiplicative DoT-magnitude reading would be ~41% hotter during her burst window — unmeasured",
+    "skill1/skill2: full cadence tuple (charge time, reload 141f, 22-frame bolt gap vs autofire) is an unmeasured datamine estimate — ~15-20% shot-count swing"
   ],
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 70.01,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "atkPct", "value": 70.01, "durationSec": 10 }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 3
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "hitCount", "count": 3 },
+      "target": { "kind": "enemy" },
+      "mode": "sustained",
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "damageTakenPct",
-          "value": 10.2,
-          "durationSec": 5
-        },
-        {
-          "kind": "dot",
-          "atkPct": 150.04,
-          "durationSec": 5,
-          "intervalSec": 1,
-          "flavor": "sustained"
-        }
+        { "kind": "buff", "stat": "damageTakenPct", "value": 10.2, "durationSec": 5 },
+        { "kind": "dot", "atkPct": 150.04, "durationSec": 5, "intervalSec": 1, "flavor": "sustained" }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "shotFired"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "self" },
+      "mode": "distributed",
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 60.01,
-          "durationSec": 5
-        }
+        { "kind": "buff", "stat": "attackDamagePct", "value": 60.01, "durationSec": 5 }
       ]
     },
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "shotFired"
-      },
-      "target": {
-        "kind": "enemy"
-      },
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "enemy" },
+      "mode": "distributed",
       "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 265.07,
-          "flavor": "distributed"
-        }
+        { "kind": "flatDamage", "atkPct": 265.07, "flavor": "distributed" }
       ]
     }
   ],
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 60.19,
-          "durationSec": 10
-        }
+        { "kind": "buff", "stat": "attackDamagePct", "value": 60.19, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "mode": "sustained",
+      "effects": [
+        { "kind": "buff", "stat": "sustainedDamagePct", "value": 349.8, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "mode": "distributed",
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 70.09, "durationSec": 10 }
       ]
     }
   ]

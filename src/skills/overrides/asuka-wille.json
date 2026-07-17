@@ -1,24 +1,20 @@
 {
-  "note": "S1 blk1 kept verbatim (471.86% every 50 hits). S1 blk2 is Annihilation-State-only: every 10 shots deals 15.62% to nearest 2 enemies (single boss -> 1 target) and applies Anti A.T. Field (Damage Taken +0.83%, stacks to 30). Annihilation State is up ~9s of the 40s burst cycle, so as steady-state throughput the '10 shots in-mode' proc becomes ~every 44 overall shots (9/40 time fraction, ignoring the in-mode fire-rate boost from Emergency Repair, so conservative). The Damage Taken debuff is modeled at its 30-stack cap (24.9%) as a near-permanent boss debuff; this is slightly generous since it only rebuilds each cycle and reaching 30 stacks assumes ~300 shots inside the 9s window (may be optimistic) - flagged as uncertain. Burst: Annihilation State self-buffs kept (normal-atk -40%, 21% reload, ATK +46.8% of caster ATK, Attack Damage +36%, all 9s). Annihilation finisher fires after the state ends for 6.62% x stack count; modeled as one 198.6% hit (6.62 x 30 cap) at burst cast (9s timing shift ignored). skill2 omitted: blk1 (Attack Damage +30.97% on Full Burst entry) is already parsed faithfully and Emergency Repair (blk2) is defensive/utility (heating, ammo clear, HP recovery, fixed reload) - skipped. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — Asuka: WILLE (`asuka-wille`, MG B3 Attacker Wind Abnormal, ammo 300 / reloadFrames 161; NOT base `asuka` AR/Fire). HAND-AUTHORED SLOTS (skill1, burst) PRESERVED VERBATIM from the prior override; their original analysis: S1 blk1 kept verbatim (471.86% every 50 hits). S1 blk2 is Annihilation-State-only: every 10 shots deals 15.62% to nearest 2 enemies (single boss -> 1 target) and applies Anti A.T. Field (Damage Taken +0.83%, stacks to 30). Annihilation State is up ~9s of the 40s burst cycle, so as steady-state throughput the '10 shots in-mode' proc becomes ~every 44 overall shots (9/40 time fraction, ignoring the in-mode fire-rate boost from Emergency Repair, so conservative). The Damage Taken debuff is modeled at its 30-stack cap (24.9%) as a near-permanent boss debuff; this is slightly generous since it only rebuilds each cycle and reaching 30 stacks assumes ~300 shots inside the 9s window (may be optimistic) - flagged as uncertain (⚑4/⚑5). Burst: Annihilation State self-buffs kept (normal-atk -40%, 21% reload, ATK +46.8% of caster ATK, Attack Damage +36%, all 9s). Annihilation finisher fires after the state ends for 6.62% x stack count; modeled as one 198.6% hit (6.62 x 30 cap) at burst cast (9s timing shift ignored — see finding F2: real landing is ~t+9s INSIDE the FB window, a delaySec 9 encoding would FB-boost it). — AUTHORED SLOT (skill2, 2026-07-16 kit-parse, replaces the materialized parse): blk1 'Activates when entering Full Burst while in Annihilation State' = trigger `burstCast` NOT `fullBurstEnter` (hard rule 6 / prior 10): Annihilation State exists ONLY via HER OWN burst cast, so the FB-enter condition is satisfied exactly on rotations SHE bursts — the old bare fullBurstEnter over-credited her in multi-B3 teams (same class as the cinderella-crystal-wave audit finding). Buff starts at cast instead of FB-entry (sub-second shift, negligible). blk2 Emergency Repair ('Activates when using Annihilation' = the burst finisher at ~t+9s, Annihilation State end; the schema has no delayed trigger so it is encoded at burstCast with the timing shift caveated): Effect 4 'Reload speed fixed at a 60% increase for 1 rounds' modeled as reloadSpeedPct 60 for 10.5s ⚑3 — the window is sized so the buff covers ~ONE reload per burst cycle (mag cycle ≈ 9.6s: 300 rounds ≈ 6.8s fire incl. wind-up + 2.83s reload; buffed reload = 76f ≈ 1.27s), the net kit effect of dump-then-fast-reload, WITHOUT granting free ammo. 'Fixed at' may mean non-composing — no other reload buff in her kit, so equivalent solo. Effect 3 (3.77% Max HP/1s over 3s) modeled as a `heal` EVENT (hard rule 2 / prior 8 — a recovery-consumer teammate e.g. Crown may key off it); 3 ticks collapsed to 1 event at cast, 9s early. UNMODELED (verbatim in `unmodeled.skill2`): Effect 2 'Removes 100% of ammo' — the engine has no ammo-dump vocabulary; its damage content (forced early reload) is what the reloadSpeedPct window approximates, the dump itself is ~timing-neutral (she refills to 300 either way); Effect 1 'MG heating up speed ▼ 100% for 3 sec' — ambiguous localization ⚑2: reading A = wind-up ramp frozen (self-nerf, implausible design), reading B = heat-up time reduced 100% = instant full fire rate for 3s post-reload (~+107 rounds per skipped 142f ramp, plausible design intent); no override vocabulary can touch the wind-up ladder either way — measure first (old note's 'Emergency Repair is defensive/utility - skipped' violated hard rule 1/prior 9: reload speed + ammo gate shot count). ⚑1 cadence tuple: MG class profile (measured wind-up ladder, 60/s at full spin) + datamined ammo 300 / reloadFrames 161 are unverified for this unit — read rounds/min + reload gap from any focus video.",
   "unmodeled": {
     "skill1": [],
     "skill2": [
-      "Activates when using Annihilation. Affects self.",
-      "Emergency Repair",
-      "Function: Reduces MG heating up speed and removes ammo. Fixes reload speed and continuously restores HP based on Max HP.",
       "Effect 1: MG heating up speed ▼ 100% for 3 sec.",
-      "Effect 2: Removes 100% of ammo.",
-      "Effect 3: Constantly recovers 3.77% of the skill user's final Max HP every 1 sec over 3 sec.",
-      "Effect 4: Reload speed is fixed at a 60% increase for 1 rounds."
+      "Effect 2: Removes 100% of ammo."
     ],
     "burst": []
   },
   "caveats": [
-    "skill2: unparsed effect \"Emergency Repair\"",
-    "skill2: unparsed effect \"MG heating up speed ▼ 100% for 3 sec.\"",
-    "skill2: unparsed effect \"Effect 2: Removes 100% of ammo.\"",
-    "skill2: unparsed effect \"Effect 4: Reload speed is fixed at a 60% increase for 1 rounds.\"",
-    "skill2: unsupported trigger \"Activates when using Annihilation. Affects self.\" — its effects are skipped"
+    "skill1: cadence tuple (MG wind-up ladder / 300 ammo / reloadFrames 161) is the unverified datamine — read rounds/min + the reload gap from any focus video (⚑1)",
+    "skill1: the in-Annihilation-State every-10-shots proc + Anti A.T. Field stacks are steady-state proxies (every 44 hits, debuff at its 30-stack cap) — count 15.62% popups per burst window and read the Annihilation popup ÷ 6.62 for the real stack count (⚑4/⚑5)",
+    "skill2: the Full-Burst-entry Attack Damage buff is encoded as burstCast because it requires Annihilation State (granted only by HER OWN burst) — identical to FB-enter when she is the only Burst III unit, and it correctly does NOT fire on another Burst III unit's rotations",
+    "skill2: Emergency Repair really activates ~9s AFTER burst cast (at Annihilation State end); the schema has no delayed trigger, so the heal event + reload-speed window start at cast — the 10.5s reload-speed window is an unmeasured encoding of 'one fast reload per burst cycle' (⚑3)",
+    "skill2: 'MG heating up speed ▼ 100% for 3 sec' and 'Removes 100% of ammo' are UNMODELED — the heating line is ambiguous (frozen wind-up vs instant full spin) and the engine has no ammo-dump/wind-up vocabulary; measure her post-Emergency-Repair fire cadence before modeling (⚑2)",
+    "burst: the Annihilation finisher (6.62% × stacks) is modeled as one 198.6% hit at cast; the real hit lands ~9s later INSIDE the Full Burst window, so it may be FB-boosted in-game (hand-slot finding F2 — verify before re-encoding)"
   ],
   "skill1": [
     {
@@ -65,7 +61,7 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "fullBurstEnter"
+        "kind": "burstCast"
       },
       "target": {
         "kind": "self"
@@ -76,6 +72,26 @@
           "stat": "attackDamagePct",
           "value": 30.97,
           "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 60,
+          "durationSec": 10.5
+        },
+        {
+          "kind": "heal"
         }
       ]
     }

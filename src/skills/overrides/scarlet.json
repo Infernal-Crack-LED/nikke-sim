@@ -1,21 +1,21 @@
 {
-  "note": "MATERIALIZED PARSER OUTPUT (2026-07-16) — auto-generated from the offline kit parser on the official (blablalink) prose; behavior-identical to the previous runtime parse; NOT hand-verified. The reviewed kit-parse hypothesis lives in src/skills/overrides-baselines/scarlet.json; promote via its MANIFEST.md guardrails (it replaces this file).",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- BASE Scarlet (slug `scarlet`, AR/Electric/Attacker/B3) — NOT scarlet-black-shadow. MODEL: S1 = self ATK ▲23.15% on hitCount:10, maxStacks 5, dur 5s — faithful encoding; the engine derives the stack level natively from cadence (no haircut knob; see ⚑2). S1 'Current HP ▼ 4.01%' = self HP COST per proc, UNMODELED as a block (engine has no HP-drain mechanic; not a heal/HP-buff hard-rule class) but it is her design ENABLER: geometric self-drain (×0.9599/proc) puts her <60% HP after ~13 procs (~28s at datamined cadence) and <50% after ~17 (~37s), boss damage only accelerates — so the HP-gated crit buffs below are modeled ASSUMED-ACTIVE (⚑3). S2a '30% chance when attacked → 138.24% additional damage' SKIPPED to unmodeled: 'when this unit is hit' is the sanctioned skip class — the v1 sim models no incoming boss attacks, so the trigger NEVER fires in-sim; real-fight contribution is nonzero and ⚑4-flagged (NOTE: the old materialized file misparsed this as a passive flatDamage with an invented trigger — removed). S2b crit dmg ▲6.61% 'continuously' when HP<60% → passive self buff, gate assumed satisfied (⚑3; over-credits the first ~28s slightly). BURST: (a) crit rate ▲19.57%/10s when HP<50% → burstCast self 10s, gate assumed (⚑3; her FIRST burst ~15-25s may really precede the gate — flagged); (b) 849.15% Burst Skill damage → burstCast flatDamage vs enemy (auto FB-exempt as burst-cast per prior 2, no noFb set; 'all enemies' = the single boss). No weapon swap, no charge (chargeFrames 0), no DoT, no Hit-Rate, hitsPerShot 1 (no split/merge), element = clean ×1.10 default (no Superior-Elemental-Code buff). ⚑1 CADENCE TUPLE (MANDATORY — ESCALATED to likely-wrong): 20-ammo AR with normalMult 27.08 (~3× the usual AR per-shot value) + melee-slash flavor = classic non-class fire-mode tell; ship datamined pullsPerSec + reloadFrames 159 (~2.65s — long for an AR), rolling-reload unknown. Recipe: rounds/min + reload gap from any focus video. ⚑2 S1 STACK STEADY-STATE (prior 4): at datamined cadence (~1 proc/0.83s firing, 5s dur spans the 2.65s reload) stacks sit near-permanent ~5/5; if the real fire rate is slower (⚑1) the level drops — entirely cadence-driven, moves with ⚑1. Recipe: stack icon count / ATK popup mid-fight. ⚑3 HP-THRESHOLD GATES (kit-silent vs engine — no HP trigger exists): S2b passive + burst crit-rate modeled assumed-active per the drain arithmetic above; unmodeled early ramp over-credits S2b ~first 28s and the burst crit-rate may miss her first cast. Recipe: HP bar + first crit-popup timing from a focus video → below-threshold uptime. ⚑4 S2a ATTACKED-PROC (unmodeled): est contribution 0 in-sim / ~0-3% of real solo total (a handful of boss hits × 30% × 138.24%). Recipe: focus video — count her additional-damage popups coinciding with boss attacks on her; if material, model as a dot at the measured proc cadence.",
   "unmodeled": {
     "skill1": [
       "Current HP ▼ 4.01%."
     ],
     "skill2": [
-      "Activates when HP falls below 60%. Affects self.",
-      "Critical Damage ▲ 6.61% continuously."
+      "There is a 30% chance of activating when attacked.",
+      "Deals 138.24% of final ATK as additional damage."
     ],
-    "burst": [
-      "Affects self. Activates when HP falls below 50%.",
-      "Critical Rate ▲ 19.57% for 10 sec."
-    ]
+    "burst": []
   },
   "caveats": [
-    "skill2: unsupported trigger \"Activates when HP falls below 60%. Affects self.\" — its effects are skipped",
-    "burst: unsupported trigger \"Affects self. Activates when HP falls below 50%.\" — its effects are skipped"
+    "skill1: the 'Current HP ▼ 4.01%' self-drain is not simulated as HP; it justifies treating her HP-gated crit buffs as active (unmeasured assumption)",
+    "skill2: the 30%-when-attacked 138.24% proc is unmodeled — the sim has no incoming boss attacks; real-fight contribution is an open ⚑",
+    "skill2: the HP<60% gate on the 6.61% crit-damage buff is assumed permanently active (S1 self-drain); over-credits roughly the first 30s",
+    "burst: the HP<50% gate on the 19.57% crit-rate buff is assumed active at cast; her first burst may really occur above the threshold",
+    "cadence: 20-ammo AR with a 27.08% per-shot multiplier is a non-standard fire-mode tell — the datamined rate of fire and 159-frame reload are unverified estimates"
   ],
   "skill1": [
     {
@@ -49,13 +49,31 @@
       },
       "effects": [
         {
-          "kind": "flatDamage",
-          "atkPct": 138.24
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 6.61
         }
       ]
     }
   ],
   "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 19.57,
+          "durationSec": 10
+        }
+      ]
+    },
     {
       "slot": "burst",
       "trigger": {
