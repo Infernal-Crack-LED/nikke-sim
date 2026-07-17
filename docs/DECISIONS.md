@@ -8,6 +8,24 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-17) SMG class fire cadence adopted 20→24 pulls/s = the datamined `rate_of_fire` 1440 rpm
+  (game source authoritative); role-audit D.2, owner decision a.** The engine's SMG class default
+  (`PULLS_PER_SEC.SMG`) was 20/s while the datamined weapon-table ROF is 1440 rpm = 24/s — the ONLY class
+  default disagreeing with the datamine (AR 12=720, SG 1.5=90 match). Owner ruling: the game source wins.
+  Warms all 7 SMG units +10-19% normal-fire damage (chisato +19.4%, quency-escape-queen +12.0%,
+  little-mermaid +10.1%; no SMG override had ever set `pullsPerSec`). **One measured-truth FB count was
+  UNPINNED as a consequence:** the PH-water comp (two SMGs + little-mermaid's `teamAmmo`-400 → 37%
+  `fillGauge`) reads 13 FBs at 24/s vs the video-measured 12 — reclassified into the known ±1
+  burst-cycle-boundary set (T4/T7/N2/N4/N5), an UNDERSTOOD over-prediction (the +20% SMG ammo rate trips
+  LM's big fill ~one cycle early), NOT a silenced drift. Every OTHER SMG measured-FB comp
+  (chisato/nayuta/quency-escape-queen/little-mermaid) still holds at 24. Two cheaper reconciliations were
+  tested and REFUTED first: (a) recalc the gauge-per-shot table ×20/24 to hold gauge/sec constant → still
+  13 (the FB is ammo-rate-driven, not normal-fire-gauge-driven); (b) count quency's 2 muzzles as 2 ammo
+  → 0 FB change (crown's MG dominates the teamAmmo counter). RE-PIN TRIGGER: restore PH-water=12 when the
+  burst-cycle increment fix lands or after a fresh FB re-measure. Engine `PULLS_PER_SEC` + regression.ts
+  (PH-water unpinned) + snapshot regenerated; verify.sh green. Full trail:
+  `docs/handoffs/2026-07-17-role-object-audit.md` D.2.
+
 - **(2026-07-17) SG pellet-landing modeled as a seeded per-band pellet-count JITTER + boss-size profiles;
   the pellet investigation (open-questions A26 → U17) is CLOSED as an owner override.** Rather than pursue
   per-unit landing profiles or a third far anchor (the U17 HOLD), the owner rules landing modeled two ways:

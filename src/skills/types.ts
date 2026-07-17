@@ -61,19 +61,22 @@ export type TriggerDef =
 
 export type TargetDef =
   | { kind: 'self' }
-  | { kind: 'allies' }
+  // excludeSelf: "all allies (except self)" — e.g. brid-silent-track burst
+  | { kind: 'allies'; excludeSelf?: boolean }
   | { kind: 'enemy' }
   | { kind: 'burstCasters'; stage?: number; element?: string }                // allies who cast a burst this rotation
   | { kind: 'nonBurstCasters' }
-  | { kind: 'alliesTopAtk'; count: number }
+  // excludeSelf: "N highest-ATK ally (except the skill user)" — miranda, soda-twinkling-bunny.
+  // Applied to the candidate pool BEFORE the count-slice (exclude-then-take-N).
+  | { kind: 'alliesTopAtk'; count: number; excludeSelf?: boolean }
   | {
       kind: 'alliesLowestAtk'; // "N [Burst X] ally unit(s) with the lowest final ATK"
       count: number;
       burst?: 'I' | 'II' | 'III';
       excludeSelf?: boolean; // e.g. Liberalio is immune to charge-speed buffs
     }
-  | { kind: 'alliesOfElement'; element: string }
-  | { kind: 'alliesOfClass'; cls: string }
+  | { kind: 'alliesOfElement'; element: string; excludeSelf?: boolean }
+  | { kind: 'alliesOfClass'; cls: string; excludeSelf?: boolean }
   // "all shotgun-wielding allies [(except self)]" — weapon-typed, class-blind
   // (arcana-fortune-mate S1/S2, tove S2/burst). Weapon codes: AR/SMG/SG/SR/RL/MG.
   | { kind: 'alliesOfWeapon'; weapon: string; excludeSelf?: boolean }

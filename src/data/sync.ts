@@ -7,6 +7,7 @@ import pg from 'pg';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import type { CharacterData, DataFile } from '../types.js';
 import { deriveNicknames } from './nicknames.js';
+import { deriveWeaponFields, type WeaponShotDetail } from './weapon-fields.js';
 
 const SYNERGY_API = 'https://api.nikke-synergy.com/rest/v1/attack_damage_characters';
 const SYNERGY_HEADERS = { apikey: 'dummy-key', Authorization: 'Bearer dummy-key' };
@@ -118,12 +119,12 @@ async function main() {
           ? bySynergyId.get(row.synergy_id)
           : undefined;
     if (treasureId != null && api) {
-      // the DB attributes carry the plain kit — the treasure entry wins
+      // the DB attributes carry the plain kit — the treasure entry wins for the prose/cooldown.
+      // (normalAttackMultiplier/ammo now derive from role.weapon below, which already reflects the
+      // datamined weapon table — verified equal to the treasure synergy values for all treasure units.)
       a.skill1En = api.skill_1_en;
       a.skill2En = api.skill_2_en;
       a.burstSkillEn = api.burst_skill_en;
-      a.normalAttackMultiplier = api.normal_attack_multiplier ?? a.normalAttackMultiplier;
-      a.ammo = api.ammo ?? a.ammo;
       if (api.burst_cooltime) a.burstCooldown = api.burst_cooltime / 60;
     }
     if (!a.weapon || !a.burst) {
@@ -136,6 +137,11 @@ async function main() {
       skipped.push(`${row.id} (missing base_stats)`);
       continue;
     }
+    // Weapon-timing fields now derive from the raw datamined WeaponTable (role.weapon.shot_detail),
+    // the source-of-truth UPSTREAM of the lossy synergy weapon columns (audit A+B, 2026-07-17).
+    // Synergy stays only as a fallback for a unit whose roledata hasn't been fetched.
+    const shot = (row.role_weapon as { shot_detail?: WeaponShotDetail } | null)?.shot_detail;
+    const wf = shot ? deriveWeaponFields(row.id, shot, api) : null;
     const char: CharacterData & { baseStats: any } = {
       slug: row.id,
       name: row.name,
@@ -156,15 +162,20 @@ async function main() {
           ? `${a.manufacturer} Overspec`
           : a.manufacturer
         : null,
-      normalAttackMultiplier: a.normalAttackMultiplier ?? api?.normal_attack_multiplier ?? 0,
-      coreAttackMultiplier: a.coreAttackMultiplier ?? api?.core_attack_multiplier ?? 200,
-      ammo: a.ammo ?? api?.ammo ?? 60,
-      reloadFrames: api?.reload_time ?? Math.round((a.reloadSeconds ?? 2) * 60 + 21),
-      chargeFrames: api?.charge_time ?? 0,
-      chargeMultiplier: api?.charge_multiplier ?? 0,
-      hitsPerShot: api?.hits_per_shot || 1,
+      normalAttackMultiplier: wf?.normalAttackMultiplier ?? a.normalAttackMultiplier ?? api?.normal_attack_multiplier ?? 0,
+      coreAttackMultiplier: wf?.coreAttackMultiplier ?? a.coreAttackMultiplier ?? api?.core_attack_multiplier ?? 200,
+      ammo: wf?.ammo ?? a.ammo ?? api?.ammo ?? 60,
+      reloadFrames: wf?.reloadFrames ?? api?.reload_time ?? Math.round((a.reloadSeconds ?? 2) * 60 + 21),
+      chargeFrames: wf?.chargeFrames ?? api?.charge_time ?? 0,
+      chargeMultiplier: wf?.chargeMultiplier ?? api?.charge_multiplier ?? 0,
+      // hitsPerShot = datamined shot_count × muzzle_count, with modernia/anis-star carve-outs
+      // (C.1 review, 2026-07-17 — role-object-audit). Synergy is fallback only. Byte-identical to
+      // the prior synergy value on every unit except the 4 corrected (helm/cinderella/laplace/
+      // maiden-ice-rose 2→1, stale synergy value with no muzzle/shot backing).
+      hitsPerShot: wf?.hitsPerShot ?? api?.hits_per_shot ?? 1,
       rl3: a.rl3 ?? null,
-      burstGaugePerShot: api?.burst_gauge_per_shot ?? null,
+      // Clean datamined burst gauge — reference only; the engine reads data/gauge-per-shot.json.
+      burstGaugePerShot: wf ? wf.burstGaugePerShot : (api?.burst_gauge_per_shot ?? null),
       // Treasure (favorite-item upgrade) status: the DB's prydwen_slug ends
       // "-treasure" for units whose Treasure is released.
       treasure: (row.prydwen_slug ?? '').endsWith('-treasure'),

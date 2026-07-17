@@ -70,7 +70,7 @@ The damage + the 2026-07-13 video both say OL0. If OL0 → revert the scope-lock
 (120,143) + drop SG landing ~1.6% + re-run board/regression. If genuinely base5 → the +1.63% is an
 omitted stat source (bond/affinity/collection) to hunt. WHY the 2026-07-14 base5 measurement and the
 damage disagree is the piece to reconcile (did the recorded units carry better gear than the base5
-set that was measured?). Full memo: session archive 2026-07-16-u18-atk-term-diagnosis.md; Fable check
+set that was measured?). Full memo: session archive docs/handoffs/closed/2026-07-16-u18-atk-term-diagnosis.md; Fable check
 SOUND-WITH-CAVEATS/HIGH. Fixed en route: the stale "treasure-inclusive" comment in scope-lock.ts (the
 120,143 figure is OL0 GEAR, not treasure) and the base-stats-handoff.md:69 "core >7" error.
 Isabel/brid-silent-track baseline notes encode the measured term per-unit; revert to kit coefficients
@@ -714,6 +714,15 @@ a sharp near-only step, not a continuous distance curve, so the landed per-band 
 shape; geometric generality is not indicated. Revive only if a future multi-boss dataset shows the table
 failing to transport.
 (4) control-team calibration to promote the ⚑ table toward MEASURED tier.
+(5) **SMG core table is Hit-Rate-CONTAMINATED — known bug, deferred fix (2026-07-17, premise-pass finding).**
+The `CORE_BY_WEAPON_BAND.SMG` row (near 0.28 / mid 0.244 / midfar 0.076 / far 0.059) was measured on
+`chisato`, whose S1 grants `hitRatePct 22.37` (Extrasensory>25%, self, NOT Full-Burst-gated) — live from
+battle start to ~t150s of the ~180s read. So those figures are SMG core at `x_base+22.37% Hit Rate`, NOT
+base accuracy, yet the engine applies them to EVERY SMG unit including Hit-Rate-less ones → those units are
+OVER-credited on SMG core. Cannot be cleanly corrected without a Hit-Rate→core model (the deferred
+SG+AR-first plan, `docs/handoffs/2026-07-17-hitrate-core-landing-plan.md`): once that model's slope is
+validated on AR (jill) + SG (noir), chisato's known +22.37% becomes an SMG VALIDATION point and lets us
+back out the true SMG base and refactor this row. Until then: left as-is, flagged. Owner ruling 2026-07-17.
 
 ### A26 — Shotgun pellet-landing ⚑ + Dorothy: Serendipity consolidation — SEQUENCED (2026-07-15, Fable-arbitrated)
 Two coupled SG items surfaced auditing dorothy-serendipity (owner-greenlit class-A fix). Fable ruled
@@ -939,6 +948,80 @@ Residual heat → U3.
 ### A9 (Q11) — MG class heat after the measured ladder — CALIBRATED 2026-07-13 ⚑
 User estimates implemented (confirmation ask in U5): wind-up rounds before the 2-frame ladder
 portion don't core; MG normals get no range bonus. MG class centered (crown 1.18 → 1.04 avg).
+
+**ACCURACY-CIRCLE CORROBORATION 2026-07-17 (datamined `role.weapon.shot_detail`; independent method,
+NO engine change).** The `role` object (raw datamined WeaponTable, upstream of synergy — see
+`docs/handoffs/2026-07-17-role-object-audit.md`) carries the weapon bloom radius as
+`start/end_accuracy_circle_scale`. Roster scan (74 units): the circle is a **per-weapon-type CONSTANT**,
+and the `auto_*` variants are **byte-identical to the manual ones for every unit** — so this field IS
+the auto-aim bloom our auto-core model (`sim.ts` `CORE_BY_WEAPON_BAND`, this thread + A15/A26) targets.
+`spot_radius` is 0 for all guns except RL (splash), so it is NOT a core-size field.
+
+| weapon | circle (start→end) | measured near-band core | how we model it |
+|---|---|---|---|
+| SR / RL | 10 → 10 (pinpoint) | ~100% | flat HI 0.95 |
+| MG | **250 → 10** (+7/shot, speed 150) | ~100% warmed | flat HI, **wind-up gated** |
+| AR | 75 → 75 | 0.40 | range table |
+| SMG | 110 → 110 | 0.28 | range table |
+| SG | 250 → 250 | 0.048 | range table + separate landing table |
+
+Three independent corroborations of things we measured from footage the hard way:
+- **(a) The weapon ORDERING AR > SMG > SG is exactly `1/circle_scale`.** 75 < 110 < 250 inverts to
+  0.40 > 0.28 > 0.048. Anchoring on AR-near (0.40), a *linear* `core ∝ 1/circle` predicts
+  **SMG-near = 0.40·(75/110) = 0.273 vs measured 0.28** (2.5% off — near-exact). First-principles
+  datamined basis for the ordering the engine comment asserts from footage alone.
+- **(b) MG/SR/RL = flat-HI is the pinpoint (circle 10) cluster**, and MG's **250→10 ramp @ +7/shot
+  mirrors the wind-up story of THIS question** — a cold MG sprays at the SG-wide 250 (low core), a
+  warmed MG collapses to the SR-pinpoint 10 (~100% core). Same field, two values, matching
+  `MG_RAMP_INTERVALS`: the accuracy circle is the geometric mechanism behind MG heat.
+- **(c) The circle sets the weapon SCALE, distance sets the FALLOFF.** Circle is constant across shots
+  (except MG), so it does NOT by itself produce the near→far core collapse — that comes from a fixed
+  angular bloom cone vs a physical core whose angular size shrinks with distance. Model shape:
+  `core(weapon, band) ≈ falloff(band) / circle_scale`. The measured band tables already encode both.
+
+**Where the clean `1/circle` fit breaks — the SG landing confound** (the role-audit's original caveat,
+now precise): `1/circle` over-predicts SG-near 2.5× (0.12 vs 0.048). SG is the one weapon with TWO
+geometric filters against the SAME 250 cone but DIFFERENT target sizes — **landing** (does a pellet hit
+the boss BODY at all? `SG_LANDING_BY_BAND`, boss-silhouette dependent) and **core** (of landed pellets,
+hit the core?). AR/SMG are single aimed shots → landing ≈ 1, so only the core filter applies, which is
+*why* only SG needs a landing table. No static field captures the boss silhouette, so the circle
+predicts SPREAD but not the landing fraction — the SG row stays measured, not derived.
+
+**⇒ Status: corroboration, NOT a refit source.** The measured `CORE_BY_WEAPON_BAND` / `SG_LANDING_BY_BAND`
+values stay SSOT (same-tier footage; measured > datamined-proxy). Concrete future uses:
+(a) drop it in as an independent-method cross-check when a future core re-record lands (prove-it-differently);
+(b) it is the geometry backbone if the distance→core model (Option 2, SHELVED under A15 item (3)) is ever
+revived — `falloff(band)/circle_scale` with per-weapon circle now known;
+(c) **new per-unit flag** — any unit whose datamined `weapon`/circle disagrees with its slot class (a custom
+swap weapon) must NOT inherit its nominal class's core row (snow-white-heavy-arms already datamines as `SR`
+circle=10, correctly pinpoint — not an AR). NOT ENACTED.
+
+**BONUSRANGE RING — the DISTANCE half of the geometry backbone (datamined `role.weapon.bonusrange_min/max`;
+role-audit D.1, 2026-07-17).** The accuracy circle above gives the per-weapon SCALE; `bonusrange` gives the
+numeric optimal-range RING in game distance units, a **per-weapon-type CONSTANT** across all 74 units (zero
+per-unit variation): SG 0-25, SMG 15-35, AR 25-45, MG 35-55, SR 45-100, RL 0-0. Combined with the measured
+`RANGE_ELIGIBLE` bands and owner-confirmed distance semantics, the four range bands map MONOTONICALLY (near <
+mid < midfar < **far** = farthest):
+
+| band | distance | rings covering it |
+|---|---|---|
+| near | [0,15] | SG |
+| mid | [25,35] | SMG, AR |
+| midfar | [45,55] | SR, MG |
+| far | [55,100] | SR |
+
+Corroborated by three footage-calibrated tables that all order near→mid→midfar→far by decreasing closeness
+(`CORE_BY_WEAPON_BAND`, `SG_LANDING_BY_BAND`, the owner-authored `SG_LANDING_JITTER`). ⇒ This is the missing
+**distance input** for the shelved geometric `falloff(band)/circle_scale` core model (A15 item (3)): band →
+distance (this table) → angular core size, with per-weapon `circle_scale` known. Still gated on a
+boss-distance-per-frame timeline (`BOSS_RANGE_SCRIPT` is 4 qualitative bands + transition times, no metric
+distances) before an exact `distance ∈ [min,max]` model could replace the ±4-6s band approximation.
+**MG band note (no action):** `RANGE_ELIGIBLE` puts MG in `far` (`{SR,MG}`) though MG's ring [35,55]
+covers the **midfar** distance [45,55], not far [55,100]. That geometry matches the owner's ORIGINAL
+range-data.md guess — but the guess was TESTED and overridden by the crown popup measurement (MG bonus
+read in the `far` TIME window; ±4-6s-edge, boss transits the ring during walks). Measured > datamined-proxy,
+so `RANGE_ELIGIBLE` stands; the datamined ring only re-states the superseded hypothesis. Full write-up:
+`docs/handoffs/2026-07-17-role-object-audit.md` D.1.
 
 ### A10 — Resolved during the original validation passes (2026-07-12)
 - Distributed damage deals the same TOTAL vs 1 target as vs many — never model a split.

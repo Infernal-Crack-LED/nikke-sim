@@ -20,9 +20,16 @@ These are systematic limitations, not per-unit fudge. Each would correct many un
 1. **Per-tick recovery-event emitter** (theme 2b) — heals collapsed to one event break Crown-type
    "on-recovery" consumer uptime. ~8 units: anchor-innocent-maid, blanc, prika, mint, naga, trina,
    anis-star, mana. (COLD for consumer uptime.)
-2. **Honor `excludeSelf` on all typed-ally targets** (theme 11) — the "arcana-fortune-mate bug
-   family": `alliesOfClass`/`alliesOfElement`/`alliesTopAtk` silently ignore `excludeSelf` → self
-   inflation. maiden-ice-rose (1.13 HOT), brid-silent-track, soda-twinkling-bunny, miranda.
+2. **Honor `excludeSelf` on all typed-ally targets** (theme 11) — ✅ **LANDED 2026-07-17.** The
+   "arcana-fortune-mate bug family": `alliesOfClass`/`alliesOfElement`/`alliesTopAtk`/`allies`
+   silently ignored `excludeSelf` → self inflation. Engine now honors `excludeSelf` on all four
+   kinds (applied to the candidate pool BEFORE any top-N slice); the four affected overrides opted
+   in per verified kit prose ("except self"). Result: **maiden-ice-rose** T2 elec-weak comp
+   1.55 HOT → 1.03, board MAD 0.253 → 0.098 (the map's "1.13 HOT" was the mean of 0.81/1.03/1.55;
+   the 1.55 was pure elemAdvantage self-inflation on the Electric-advantaged Water boss). brid-silent-track
+   / miranda / soda-twinkling-bunny: faithful but currently board-neutral (brid/miranda not
+   board-measured; soda's self-block already covers her + she isn't top-ATK in N3). Residual maiden
+   0.76 on the Wind comp is her SEPARATE documented burst Max-HP under-model, deliberately NOT masked.
 3. **Implement `hitRatePct` → core-hit-rate lift** (theme 8) — the stat exists but is engine-inert;
    ~10 units carry an inert Hit-Rate line that is a proven COLD lever (jill measured a ×1.45 core
    window).
@@ -116,10 +123,16 @@ mana, chisato. asuka-wille is the correctly-encoded reference (burstCast).
 Units: anis-sparkling-summer, asuka, brid-silent-track, eve, guillotine-winter-slayer,
 helm-aquamarine, elegg-boom-and-shock.
 
-### 11. `excludeSelf` not honored on typed-ally targets — ~5 units (HOT)
-"arcana-fortune-mate bug family". **Single-fix candidate #2.**
-Units: maiden-ice-rose (1.13 HOT), brid-silent-track, soda-twinkling-bunny (alliesTopAtk incl. owner),
-miranda, arcana-fortune-mate (original, fixed for `alliesOfWeapon`).
+### 11. `excludeSelf` not honored on typed-ally targets — ✅ LANDED 2026-07-17
+"arcana-fortune-mate bug family". **Single-fix candidate #2 — DONE.** Engine now honors `excludeSelf`
+on `allies`/`alliesTopAtk`/`alliesOfElement`/`alliesOfClass` (sim.ts:resolveTargets; the pool is
+filtered BEFORE any top-N slice). Overrides opted in against verified `data/characters.json` prose:
+maiden-ice-rose (alliesOfElement Electric "except for self" → 1.55 HOT collapsed to 1.03, MAD 0.253→0.098),
+brid-silent-track (burst `allies` "except self"), miranda (2× alliesTopAtk "except the skill user"),
+soda-twinkling-bunny (alliesTopAtk "except the skill user"; self covered by its own self-block).
+arcana-fortune-mate was already fixed for `alliesOfWeapon`. False positives ruled out: blanc/mana carry
+"except self" on lowest-HP / incapacitated targets (unmodeled theme-13/18 lines, not these kinds).
+Verify: full gate green; regression snapshot updated (2 maiden comps, both understood).
 
 ### 12. DoT / periodic / function damage does not crit — engine-global (COLD ~4–7%)
 Ties to open-question U1. Units: isabel (~4% cold), neon-vision-eye (~7% cold), modernia. Also eve

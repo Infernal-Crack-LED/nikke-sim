@@ -4,7 +4,7 @@
 // fragment, we stash it in localStorage and send it as `Authorization: Bearer`.
 //
 // Backend contract (implemented in bakery-bot @app/web) — see
-// docs/saved-teams-api.md:
+// docs/handoffs/closed/saved-teams-api.md:
 //   GET  /auth/discord/login?return_to=<url>  -> 302 to Discord authorize
 //   GET  /auth/discord/callback?code=...      -> 302 to <return_to>#nsat=<jwt>
 //   GET  /api/me            (Bearer) -> { id, username, avatar? } | 401

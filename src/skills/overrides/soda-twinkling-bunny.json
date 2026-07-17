@@ -58,7 +58,8 @@
       "everyN": 3,
       "target": {
         "kind": "alliesTopAtk",
-        "count": 1
+        "count": 1,
+        "excludeSelf": true
       },
       "effects": [
         {
@@ -141,6 +142,7 @@
   "caveats": [
     "skill1/burst: the Golden Chip pool is not dynamically tracked — crit damage (42) and the every-burst ATK ▲65.25 gate are steady-state derivations valid for standard double-B3 comps (pre-consume trajectory 50/44/40/38/31, all ≥30); comps that drain below 30 pre-consume over-credit",
     "skill2: Full Burst extension modeled as a flat +4s average; the kit is chip-gated CUMULATIVE (+5s at ≥20 chips = TE-I+TE-II, +2s at 10–19) — late-fight Full Bursts run shorter than modeled (measured last-FB countdown 12.50s at 18–19 chips)",
-    "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)"
+    "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)",
+    "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected)."
   ]
 }

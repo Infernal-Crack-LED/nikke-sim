@@ -71,19 +71,40 @@ const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
 const FULL_BURST_FRAMES = 10 * FPS;
 // AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
 // RELEASE-FIRED charge weapons fire ~22 frames after full charge on auto — measured on
-// Helm SR (22f, docs/"helm 2 6 mag rotations.mov") and Maiden:IR RL (21f avg, her video;
-// modeled per-unit via charFixes.chargeFrames). AUTOFIRING guns (liberalio, anis: star,
-// nayuta-in-burst; newer mechanic) fire at baked cadence with no latency. Engine default:
-// SR = latent, RL = bare cadence (validated RL carries fit autofire); weapon-swap states
-// and charFixes.noBoltRecovery units (SWHA, liberalio) are exempt.
+// Helm SR (22f, docs/"helm 2 6 mag rotations.mov") and Maiden:IR RL (21f avg, her video).
+// "New-style" AUTOFIRING guns fire at baked cadence with NO latency. The split is DATAMINED
+// per unit via role.weapon.shot_detail.input_type: 'UP' = release-fired (latent, +22f);
+// 'DOWN_Charge' = autofire (no latency: liberalio SR + anis-star/cinderella/neon-vision-eye RL,
+// each user-confirmed). input_type is the SSOT (isAutofireCharge below) — NOT weapon type: BOTH
+// SR and RL default to latent, only DOWN_Charge is exempt. (SWHA is 'UP' → she DOES take the
+// recovery; her old noBoltRecovery exemption was wrong, removed 2026-07-17.) Swap states are
+// exempt too. charFixes.noBoltRecovery survives as a dormant manual hand-tune hook (no active
+// override sets it; baselines cite it as the "if measured autofire, set this" recipe).
 const SR_BOLT_RECOVERY_FRAMES = 22;
+// Datamined autofire tell: new-style charge weapons fire on press (DOWN_Charge), skipping the
+// release latency; old-style release-fired weapons are 'UP'. undefined role → treated as
+// release-fired (the safe SR/RL default).
+const isAutofireCharge = (char: CharacterData): boolean =>
+  (char.role?.weapon as { shot_detail?: { input_type?: string } } | undefined)
+    ?.shot_detail?.input_type === 'DOWN_Charge';
 
 // Canon fire cadence per weapon type (doc values; per trigger pull).
 // MG's "60 rps" counts belt rounds (hits): pulls/s = 60 / hitsPerShot and each
 // pull consumes hitsPerShot ammo. MG wind-up follows the measured frame ladder
 // below (docs/nikke-mg-windup-model.md), not a fitted curve.
+// Per-class pull cadence. AR 12 (=720rpm), SG 1.5 (=90rpm), SMG 24 (=1440rpm) all match the datamined
+// weapon-table rate_of_fire (role.weapon.shot_detail; game source). SMG adopted 20→24 on 2026-07-17
+// (role-audit D.2, OWNER DECISION a): the game source is authoritative and 24 holds EVERY SMG
+// measured-FB comp (chisato/nayuta/quency/little-mermaid) except PH-water, which tips 12→13 — the one
+// comp with two SMGs + little-mermaid's `teamAmmo`-400 → 37% fillGauge, whose +20% ammo rate trips that
+// big fill ~one cycle early. PH-water's FB was reclassified into the known ±1 burst-cycle-boundary set
+// (T4/T7/N2/N4/N5) in regression.ts — an UNDERSTOOD boundary over-prediction, not an ununderstood drift.
+// Two alternatives were tested & refuted before adopting: recalc gauge-per-shot ×20/24 (gauge/sec held
+// constant → still 13), and quency consumed=2 for her 2 muzzles (0 FB change — crown MG dominates the
+// teamAmmo counter). Per-unit measured cadences override via charFixes.pullsPerSec (jill 2.5). MG uses
+// the wind-up ladder, not this.
 const PULLS_PER_SEC: Record<string, number> = {
-  AR: 12, SMG: 20, SG: 1.5, MG: 60, Pistol: 4,
+  AR: 12, SMG: 24, SG: 1.5, MG: 60, Pistol: 4,
 };
 // Frame intervals between MG rounds 1→35 (measured, 60fps; identical across units).
 // 142 frames of ramp, then 1 round/frame. Wind-up restarts from the top of the
@@ -950,7 +971,8 @@ export function runSim(
   function resolveTargets(t: TargetDef, ownerIdx: number): UnitState[] {
     switch (t.kind) {
       case 'self': return [units[ownerIdx]];
-      case 'allies': return units;
+      case 'allies':
+        return t.excludeSelf ? units.filter((u) => u.idx !== ownerIdx) : units;
       case 'burstCasters': {
         const casters = rotationCasters.map((i) => units[i]);
         // optional stage filter (Ada S1: "all BURST 3 allies who previously used their
@@ -966,15 +988,26 @@ export function runSim(
       }
       case 'nonBurstCasters': return units.filter((u) => !rotationCasters.includes(u.idx));
       case 'alliesTopAtk':
-        return [...units].sort((a, b) => b.staticAtk - a.staticAtk).slice(0, t.count);
+        // excludeSelf filters the candidate pool BEFORE the top-N slice ("N highest-ATK
+        // ally except the skill user"); a 5-unit team always leaves ≥4 others ≥ count.
+        return [...units]
+          .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
+          .sort((a, b) => b.staticAtk - a.staticAtk)
+          .slice(0, t.count);
       case 'alliesLowestAtk':
         return units
           .filter((u) => !t.burst || u.char.burst === t.burst || u.char.burst === 'Λ')
           .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
           .sort((a, b) => a.staticAtk - b.staticAtk)
           .slice(0, t.count);
-      case 'alliesOfElement': return units.filter((u) => u.char.element === t.element);
-      case 'alliesOfClass': return units.filter((u) => u.char.class === t.cls);
+      case 'alliesOfElement':
+        return units.filter(
+          (u) => u.char.element === t.element && (!t.excludeSelf || u.idx !== ownerIdx)
+        );
+      case 'alliesOfClass':
+        return units.filter(
+          (u) => u.char.class === t.cls && (!t.excludeSelf || u.idx !== ownerIdx)
+        );
       case 'alliesOfWeapon': // weapon-typed, class-blind ("all shotgun-wielding allies")
         return units.filter(
           (u) => u.char.weapon === t.weapon && (!t.excludeSelf || u.idx !== ownerIdx)
@@ -1626,11 +1659,16 @@ export function runSim(
           if (u.chargeProgress >= needed) {
             u.chargeProgress = 0;
             firePull(u, frame, true, unlimited);
-            // release latency applies to ALL release-fired charge weapons (SR + RL);
-            // autofire units are exempted via charFixes.noBoltRecovery (user-tested
-            // 2026-07-13: old-style = diesel-WS, mint, prika, ada, velvet; autofire =
-            // neon-VE, anis: star, liberalio; cinderella custom wind-up has no delay)
-            if ((u.char.weapon === 'SR' || u.char.weapon === 'RL') && !u.swap && !u.noBoltRecovery) {
+            // Release latency applies to ALL release-fired charge weapons (SR + RL). New-style
+            // AUTOFIRE units (datamined input_type === 'DOWN_Charge') are exempt — resolved from
+            // the weapon table, not per-unit flags. charFixes.noBoltRecovery is a dormant manual
+            // hand-tune hook (no active override sets it today); swaps exempt too.
+            if (
+              (u.char.weapon === 'SR' || u.char.weapon === 'RL') &&
+              !u.swap &&
+              !u.noBoltRecovery &&
+              !isAutofireCharge(u.char)
+            ) {
               u.boltRecoveryFrames = SR_BOLT_RECOVERY_FRAMES;
             }
           }
@@ -1876,6 +1914,10 @@ export function runSim(
     }
 
     if (!unlimited) {
+      // MEASURED 2026-07-17 (owner): a dual-muzzle trigger fires 2 bullets (2 hitsplats) but still
+      // consumes ONE ammo — muzzle_count does NOT enter the ammo/teamAmmo economy (quency-escape-queen
+      // visibly spends her full 120-round mag as 120, not 60). So muzzle doubles DAMAGE only
+      // (deriveWeaponFields folds it into normalMult); ammo stays 1/pull. MG burns hitsPerShot rounds.
       const consumed = u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
       u.ammo -= consumed;
       for (const t of teamAmmoBlocks) {

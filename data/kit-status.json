@@ -2363,7 +2363,8 @@
         "provenance": "parser-baseline",
         "date": "2026-07-16",
         "findings": [
-          "S2a hitRatePct restored from unmodeled (hard rule 4) + S2b ATK+29.38 gated inFb (was ungated over-credit) -> board 1.069->1.044 (into +/-5%); F1 Destroy Mode 2.24%/hit rides crit-OFF path but U1 says function-dmg crits (would warm; not pulled)"
+          "S2a hitRatePct restored from unmodeled (hard rule 4) + S2b ATK+29.38 gated inFb (was ungated over-credit) -> board 1.069->1.044 (into +/-5%); F1 Destroy Mode 2.24%/hit rides crit-OFF path but U1 says function-dmg crits (would warm; not pulled)",
+          "0.88 COLD masking-case (2026-07-17): naga's 'auto' no-op default removed her phantom with-shielder team buff (coreDamagePct 85.17 + burst casterAtkPct to all allies) that was propping modernia in N2 — her reading fell 1.0437→0.8807, exposing her own under-model (helm/crown masking pattern). Candidate cause: hitRatePct→core-hit-rate (backlog engine-gap #2); Destroy Mode function damage crit-OFF (theme 12). See docs/engine-modeling-gaps.md."
         ]
       },
       "tier": "MODEL_ONLY",
