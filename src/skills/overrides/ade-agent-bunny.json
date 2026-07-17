@@ -12,7 +12,7 @@
   },
   "caveats": [
     "skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)",
-    "skill2: 'Spy Lens at max stacks' gate modeled as always-satisfied steady state (passive ATK +16% + Pierce) — real onset is a ~15s stack ramp (⚑ unmeasured)",
+    "skill2: 'Spy Lens at max stacks' ATK +16% now activates as a faithful STEP via hitCount count:10 (2026-07-17, theme 3) — Spy Lens gains 1 stack per full-charge SR hit, so the 10th hit (~16s incl. one reload) reaches max and the buff turns on continuously (permanent, no duration = continuous fire keeps stacks maxed). Replaces the always-on-from-t=0 encoding (over-credited the ~16s onset). NOTE: the hasPierce top-level flag (also Spy-Lens-max-gated) still applies from t=0 — a boolean flag can't be step-gated, a residual structural gap. ⚑ count:10 rests on 1 stack/full-charge + the ⚑ SR cadence.",
     "skill2: team Pierce Damage +18.36% rides the same shotFired full-charge proxy (⚑ unmeasured)",
     "cadence: SR bolt-gap (22f) + chargeFrames 60 + reloadFrames 141 are datamine defaults — verify autofire/rounds-per-minute/reload from video (⚑ unmeasured)"
   ],
@@ -56,7 +56,8 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "passive"
+        "kind": "hitCount",
+        "count": 10
       },
       "target": {
         "kind": "self"

@@ -3,6 +3,9 @@
   "charFixes": {
     "reloadFrames": 182
   },
+  "resources": [
+    { "name": "goldenChip", "initial": 50, "min": 0, "max": 50 }
+  ],
   "unmodeled": {
     "skill1": [
       "Activates at the start of battle. Affects self. Golden Chip stacks ▲ 50."
@@ -26,7 +29,8 @@
         {
           "kind": "buff",
           "stat": "critDamagePct",
-          "value": 42
+          "value": 0,
+          "perResource": { "name": "goldenChip", "mult": 1.32 }
         }
       ]
     },
@@ -46,6 +50,11 @@
           "stat": "attackDamagePct",
           "value": 10.51,
           "durationSec": 2
+        },
+        {
+          "kind": "resource",
+          "name": "goldenChip",
+          "delta": 1
         }
       ]
     },
@@ -129,6 +138,7 @@
       "target": {
         "kind": "self"
       },
+      "resourceGate": { "name": "goldenChip", "min": 30 },
       "effects": [
         {
           "kind": "buff",
@@ -137,10 +147,26 @@
           "durationSec": 15
         }
       ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "goldenChip",
+          "delta": -17
+        }
+      ]
     }
   ],
   "caveats": [
-    "skill1/burst: the Golden Chip pool is not dynamically tracked — crit damage (42) and the every-burst ATK ▲65.25 gate are steady-state derivations valid for standard double-B3 comps (pre-consume trajectory 50/44/40/38/31, all ≥30); comps that drain below 30 pre-consume over-credit",
+    "skill1/burst: FAITHFUL DYNAMIC Golden-Chip pool LANDED 2026-07-17 (engine resource-counter primitive) — replaces the flat crit-42 + every-burst-65.25 derivations. Pool: start 50 (cap 50), +1 per datamined '3 normal attacks during Full Burst' (the same trigger as the AD +10.51 block), −17 on her burst (spent AFTER the gates). Crit Damage is LIVE = goldenChip×1.32 (perResource); burst ATK ▲65.25 gated at ≥30 chips (pre-spend). VALIDATED vs soda tb control.mov: sim pre-consume 50/43/38… reproduces the measured 50/44/40/38/31 within 1-2 chips (the datamined per-3-normals generation MATCHES the recorded drain, not fit to it); crit major 2.66 at 50 chips = 1+base1.0+50×1.32/100 ✓. Now comp-correct: N3 no-burst comp chips stay 50 → crit 66% → 0.954→0.974 (matches the note's ~0.96 prediction the flat-42 under-credited); burst comps drain as measured. Hit Rate ▲38.91 (≥20 chips) STILL unmodeled (HR→core open item — deliberately not added despite HRCORE now live, to keep this change scoped to the measured chip mechanic).",
     "skill2: Full Burst extension modeled as a flat +4s average; the kit is chip-gated CUMULATIVE (+5s at ≥20 chips = TE-I+TE-II, +2s at 10–19) — late-fight Full Bursts run shorter than modeled (measured last-FB countdown 12.50s at 18–19 chips)",
     "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)",
     "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected)."

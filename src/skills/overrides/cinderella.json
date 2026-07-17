@@ -26,7 +26,7 @@
         {
           "kind": "buff",
           "stat": "atkOfMaxHpPct",
-          "value": 3.23,
+          "value": 2.71,
           "durationSec": 10
         }
       ]
@@ -44,6 +44,12 @@
           "kind": "buff",
           "stat": "chargeSpeedPct",
           "value": 45
+        },
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 19.2,
+          "rampSec": 36
         }
       ]
     },
@@ -92,13 +98,18 @@
       "effects": [
         {
           "kind": "flatDamage",
-          "atkPct": 14006
+          "atkPct": 13659.2
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 346.8,
+          "rampSec": 36
         }
       ]
     }
   ],
   "caveats": [
-    "skill2: Beautiful (Max HP ▲ 1.6% continuously, stacks up to 12) has no block of its own — it is baked at steady state into skill1's 3.23 (= 2.71 × 1.192) and the burst's 14006 (+28.9 × 12 mirror); bursts before the ~36s ramp completes are slightly over-credited.",
+    "skill2: Beautiful (Max HP ▲ 1.6% ×12 = +19.2% continuously, from her battle-start Decoy) is now modeled FAITHFULLY (2026-07-17, theme 3), replacing the steady-state bake: a self casterMaxHpPct 19.2 with rampSec 36 (passive Max-HP ramp from t=0) feeds her atkOfMaxHp via effectiveAtk (own-kit Max-HP only — engine wiring 2026-07-17, ally grants still excluded per the cindy e3 rule); atkOfMaxHp reverted to base 2.71; the burst's Beautiful-mirror split off as a rampSec-36 flatDamage 346.8 (nuke base back to 13659.2). Steady state (t≥36s) is byte-identical to the old bake (2.71×1.192=3.23; 13659.2+346.8=14006); pre-36s bursts now correctly credit PARTIAL Beautiful, reproducing the measured e3 early→late FB-proc growth (633.7k→667.0k). VALIDATED: mirror ramps 47.5@t=5s → 346.8@t≥36s; drift board-neutral for all other units.",
     "skill2: the Decoy avatar itself is not modeled (defensive/aggro summon; v1 boss deals no damage so full decoy uptime — and thus full Beautiful uptime — is assumed)."
   ]
 }

@@ -3,13 +3,11 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Activates when attacking an Electric Code target. Affects the target. Deals 164.83% of final ATK as additional damage."
-    ]
+    "burst": []
   },
   "caveats": [
     "skill2: the 105.58% random-enemy hit has NO kit-stated trigger — modeled on Skill 1's 30-normal-attack cadence as an unmeasured guess",
-    "burst: the extra 164.83% vs Electric Code targets is not modeled (no Electric-gated burst path; inert vs the non-Electric scope-lock boss)",
+    "burst: the extra 164.83% vs Electric Code targets is now modeled (burstCast + bossElementGate 'Electric'); inert vs the non-Electric scope-lock boss, awakes as a second 164.83% burst hit vs an Electric boss",
     "skill2: the Damage Taken debuff only applies against Electric Code bosses (inert in the scope-lock context)",
     "cadence: assault-rifle fire rate and reload timing are datamined defaults, not yet measured from video"
   ],
@@ -60,6 +58,15 @@
     {
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 164.83 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "bossElementGate": "Electric",
       "target": { "kind": "enemy" },
       "effects": [
         { "kind": "flatDamage", "atkPct": 164.83 }

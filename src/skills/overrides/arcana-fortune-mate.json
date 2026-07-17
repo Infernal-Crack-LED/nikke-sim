@@ -43,7 +43,8 @@
           "kind": "buff",
           "stat": "normalAttackPct",
           "value": 30,
-          "durationSec": 11
+          "durationSec": 11,
+          "rampSec": 11
         }
       ]
     }
@@ -81,13 +82,15 @@
           "kind": "buff",
           "stat": "atkPct",
           "value": 7.47,
-          "durationSec": 11
+          "durationSec": 11,
+          "rampSec": 11
         },
         {
           "kind": "buff",
           "stat": "normalAttackPct",
           "value": 30,
-          "durationSec": 11
+          "durationSec": 11,
+          "rampSec": 11
         }
       ]
     }
@@ -133,7 +136,7 @@
     }
   ],
   "caveats": [
-    "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories pellets as +30 normal, Precious Moments +7.47 ATK) are BAKED to max from burst cast — the real 2/4/6-shot phase counter ramps them over ~18 shots, more than fit in the ~11s window at 1.5 pulls/s; time-average is roughly half of max (HOT direction).",
+    "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories pellets as +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.",
     "skill1: the 39% (=13% x 3 Precious Moments stacks) at Full Burst end assumes 3 stacks; the ramp arithmetic reaches ~2 by FB end (HOT direction), and the block fires on EVERY team FB end even on rotations she did not burst (0 stacks in reality — multi-B2 comps over-credit).",
     "skill2/burst: the kit's in-window reloads (Reload 6 rounds at the 2-hit phase; Reload 2 rounds at burst) are unmodeled — they add ~3-5 window shots (COLD direction, partially masks the ramp over-credit)."
   ]

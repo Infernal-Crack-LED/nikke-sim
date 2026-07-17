@@ -249,7 +249,7 @@ const BEATS: Record<Element, Element> = {
 
 interface BuffInstance {
   key: string;
-  stat: StatKey | 'unlimitedAmmo';
+  stat: StatKey | 'unlimitedAmmo' | 'maxHpFlat';
   value: number;          // per stack; for casterAtkPct this is flat ATK
   stacks: number;
   maxStacks: number;
@@ -257,6 +257,17 @@ interface BuffInstance {
   // buff counts only while this unit's weaponSwap is live (MEASURED 2026-07-14: SWHA's
   // Fully Active charge/sequential buffs are held per swap round, not for a duration)
   whileSwappedIdx?: number;
+  // stack-ramp (theme 3): if set (>0), the buff's contribution ramps linearly 0 → full over
+  // rampFrames from startFrame (its first application), then holds — a value authored at max
+  // stacks but whose stacks really accrue over the opening seconds. undefined = instant-to-max.
+  rampFrames?: number;
+  startFrame?: number;
+  // caster (source) unit index. Own-kit Max-HP grants (casterIdx === target) feed the target's
+  // atkOfMaxHpPct conversion via effectiveAtk; ally-granted Max HP does NOT (cindy e3 video rule).
+  casterIdx?: number;
+  // live resource-scaled value: when set, the buff's contribution is caster.resources[name] × mult
+  // (re-read each frame), ignoring `value` — soda's Critical Damage ▲1.32%/Golden-Chip.
+  perResource?: { name: string; mult: number };
 }
 
 interface Dot {
@@ -281,6 +292,8 @@ interface WeaponSwap {
   chargeFrames?: number;
   chargeMultPct?: number;
   maxAmmo?: number;
+  pullsPerSec?: number;  // swap weapon's own fire cadence (moran: 24/s vs base AR 12/s)
+  weapon?: string;       // swap weapon's class override (nayuta: SR mode) → range/core banding
   trueNormals?: boolean;
   // uses-based termination (MEASURED 2026-07-14, SWHA-focus recording: the swap ends right
   // after the Nth swapped shot fires, at variable time — NOT at a fixed duration; untilFrame
@@ -299,7 +312,8 @@ interface UnitState {
   doll: DollBonus;
   blocks: Block[];
   warnings: string[];
-  hasPierce: boolean;     // kit's attacks are Pierce-tagged (Q10)
+  hasPierce: boolean;     // kit's attacks are Pierce-tagged (Q10) — STATIC (whole-fight or mode-gated)
+  pierceUntilFrame: number; // timed "Gain Pierce for N sec" window end (0 = none); pierce active when > frame
   consolidation?: ConsolidationConfig; // pellet-consolidation mode config (dorothy-S)
   landedAcc: number;      // landed pellets accrued toward the consolidation trigger (near-gated)
   consolShotsLeft: number; // remaining single-bullet consolidation shots in the current episode
@@ -356,6 +370,9 @@ interface UnitState {
   >;
   hitCounters: Map<string, number>;
   blockActivations: Map<string, number>;
+  // live named resource pools (soda-twinkling-bunny's Golden Chip) + their [min,max] bounds
+  resources: Map<string, number>;
+  resourceCfg: { name: string; initial: number; min?: number; max?: number }[];
   burstCdFrames: number;
   lastBurstCastFrame: number;
   // results
@@ -530,6 +547,7 @@ export function runSim(
       hasPierce:
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
+      pierceUntilFrame: 0,
       consolidation: skills.consolidation,
       landedAcc: 0,
       consolShotsLeft: 0,
@@ -570,6 +588,8 @@ export function runSim(
       storedHits: new Map(),
       hitCounters: new Map(),
       blockActivations: new Map(),
+      resources: new Map((skills.resources ?? []).map((r) => [r.name, r.initial])),
+      resourceCfg: skills.resources ?? [],
       burstCdFrames: 0,
       lastBurstCastFrame: -1,
       damage: { normal: 0, skill: 0, burst: 0 },
@@ -593,6 +613,16 @@ export function runSim(
 
   const enemyBuffs: BuffInstance[] = [];
   const dots: Dot[] = [];
+  // heal-over-time recovery emitters: a per-second heal ("Recovers X% every 1 sec for N sec")
+  // emits its first recovery event immediately and schedules the remaining ticks here, so an
+  // on-recovery consumer (Crown's "when recovery takes effect → team ATK ▲") stays refreshed for
+  // the whole HoT window instead of seeing one proc per activation (hard rule 2 / engine gap #1).
+  const recoveryEmitters: Array<{
+    targetIdxs: number[];
+    nextTickFrame: number;
+    intervalFrames: number;
+    ticksRemaining: number;
+  }> = [];
   // flighted skill damage: flatDamage with delaySec lands later and snapshots the buff/FB
   // state at LANDING (MEASURED 2026-07-14: rapi-red-hood's 2808% burst nuke is a missile
   // landing ~0.4s post-banner INSIDE her window at the full buffed state — the cast-instant
@@ -692,6 +722,53 @@ export function runSim(
     : ENV.CORERATEBAND === 'off'
       ? ((weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : LO)
       : coreByWeaponBand(weapon, band);
+
+  // ── Hit-Rate → core-hit multiplier (⚑ DERIVED ESTIMATE; LIVE by default, HRCORE=0 disables for A/B) ──
+  // Higher Hit Rate shrinks the auto-aim reticle (TricK's MEASURED SG reticle regression) → tighter bloom
+  // → more shots land on the core. This ADDS a multiplier on top of the measured CORE_BY_WEAPON_BAND
+  // table; it NEVER refits it (hard-constraint #3). DERIVED by transitivity, NOT measured — p comes from
+  // reticle GEOMETRY, never from fitting the board (measured > fudge; the board is a TEST, not a fit target).
+  // Reproduces the plan's pre-registered predictions: jill AR +80.78% → 0.68 (in CI 0.78[0.55,0.91]);
+  // chisato SMG +22.37% → 0.31 (in CI 0.34[0.22,0.48]). SAT=1 bracket misses jill low ⇒ data leans steep.
+  // See docs/handoffs/2026-07-17-hitrate-core-implementation-plan.md.  hr=0 (no HR source) ⇒ M=1 ⇒ byte-identical.
+  //
+  //   M(w,hr) = ( reticle(0) / reticle(hr) ) ^ p_w              — band-INDEPENDENT: per-band core size cancels,
+  //                                                                so one M scales the whole CORE row at live hr.
+  //   reticle(hr)/reticle(0) = max(FLOOR_FRAC, 1 − s·max(0,hr))  — R4: FLOORED so M is finite + monotone for
+  //                                                                every hr≥0 (the raw 1/(1−s·hr) has a pole ~118).
+  //     s = 1.4285/168.3931 = 0.008483 /pt   (TricK AUTO SG reticle line −1.4285·x+168.3931 px; the SAME
+  //                                            fractional shrink is transported to AR/SMG — premise P2, ⚑ unmeasured)
+  //     FLOOR_FRAC = 1 − s·100 = 0.15169     (TricK AUTO 12.5px-radius floor at x=100; auto never converges to 0)
+  //   p_w = ln(core_base_near_w) / ln(SAT / reticle0_w)          (solve core_base = (SAT/reticle0)^p)
+  //     reticle0_w = datamined per-weapon accuracy_circle_scale (AR 75, SMG 110, SG 250)
+  //     SAT        = reticle at which core saturates to 1. HR_CORE_SAT: default 'circle10' → 10 (data-leaning/
+  //                  steep; units cancel in SAT/reticle0), '1' → 1 (TricK ~1px manual convergence; shallow).
+  //   MG/SR/RL (no circle row) and zero-base bands (SG mid/far core_base=0 ⇒ M×0=0) return the base unchanged.
+  // ⚑ UNVALIDATED (R8): stat() sums multiple HR buffs additive-in-percentage-points — the composition rule is
+  //   an untested hypothesis this phase; a board-MAE gain must NOT be cited as confirming it.
+  const HRCORE = ENV.HRCORE !== '0' && ENV.HRCORE !== 'off'; // LIVE by default (owner 2026-07-17); HRCORE=0 disables for A/B
+  const HR_RETICLE_SLOPE = 1.4285 / 168.3931;            // 0.008483 /pt
+  const HR_RETICLE_FLOOR_FRAC = 1 - HR_RETICLE_SLOPE * 100;
+  const HR_CORE_CIRCLE: Record<string, number> = { AR: 75, SMG: 110, SG: 250 };
+  const HR_CORE_SAT = ENV.HR_CORE_SAT === '1' ? 1 : 10;  // default circle10 (steep, data-leaning)
+  const hrCoreExp = (weapon: string): number => {
+    const c0 = HR_CORE_CIRCLE[weapon];
+    const base = CORE_BY_WEAPON_BAND[weapon]?.near;
+    if (c0 === undefined || base === undefined || base <= 0) return 0; // MG/SR/RL or zero-base → no lift
+    return Math.log(base) / Math.log(HR_CORE_SAT / c0);
+  };
+  const hrCoreMult = (weapon: string, hr: number): number => {
+    if (!HRCORE || hr <= 0) return 1;
+    const p = hrCoreExp(weapon);
+    if (p === 0) return 1;
+    const frac = Math.max(HR_RETICLE_FLOOR_FRAC, 1 - HR_RETICLE_SLOPE * hr);
+    return Math.pow(1 / frac, p);
+  };
+  const acrForHR = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far', hr: number): number => {
+    const base = acrFor(weapon, band);
+    if (!HRCORE || hr <= 0) return base;                 // OFF ⇒ acrFor unchanged (regression byte-stable)
+    return Math.min(1, base * hrCoreMult(weapon, hr));
+  };
   // Pierce core+body double-hit: community evidence is for MULTI-PART bosses; on the
   // partless test boss the A/B against run A says NO doubling (alice/RH overheat with it
   // once the decoded cadences are in). Kept as a switch for part-ed boss support later.
@@ -794,15 +871,29 @@ export function runSim(
   let stallFrames = 0;
 
   const sum = (list: BuffInstance[], stat: string, frame: number) =>
-    list.reduce(
-      (s, b) =>
-        b.stat === stat &&
-        (b.expiresFrame === null || b.expiresFrame > frame) &&
-        (b.whileSwappedIdx === undefined || units[b.whileSwappedIdx].swap != null)
-          ? s + b.value * b.stacks
-          : s,
-      0
-    );
+    list.reduce((s, b) => {
+      if (
+        b.stat !== stat ||
+        (b.expiresFrame !== null && b.expiresFrame <= frame) ||
+        (b.whileSwappedIdx !== undefined && units[b.whileSwappedIdx].swap == null)
+      )
+        return s;
+      // live resource-scaled buff (soda's Golden-Chip crit): value = caster.resources[name]×mult,
+      // re-read each frame from the caster's pool (ignores the static `value`).
+      let contrib: number;
+      if (b.perResource && b.casterIdx !== undefined) {
+        const rv = units[b.casterIdx].resources.get(b.perResource.name) ?? 0;
+        contrib = rv * b.perResource.mult * b.stacks;
+      } else {
+        contrib = b.value * b.stacks;
+      }
+      // stack-ramp (theme 3): scale 0 → full linearly over rampFrames from first application,
+      // then hold at cap. Absent (undefined/0) → instant-to-max, identical to the prior sum.
+      if (b.rampFrames && b.startFrame !== undefined) {
+        contrib *= Math.min(1, Math.max(0, (frame - b.startFrame) / b.rampFrames));
+      }
+      return s + contrib;
+    }, 0);
 
   const stat = (u: UnitState, key: StatKey, frame: number) => sum(u.buffs, key, frame);
 
@@ -815,8 +906,21 @@ export function runSim(
     // VIDEO-MEASURED (cindy e3, 2026-07-13): "ATK = % of final Max HP" conversions count
     // the unit's OWN Max HP (incl. own-kit stacks) but NOT ally-granted Max HP buffs —
     // FB proc popups match own-HP math within 2% early AND late, and would be ~28% higher
-    // if rouge's grants fed the conversion.
-    const liveMaxHp = u.maxHp;
+    // if rouge's grants fed the conversion. So live Max HP = static base + OWN-kit maxHpFlat
+    // buffs only (casterIdx === u.idx); ally-granted maxHpFlat (casterIdx !== u.idx) is excluded.
+    // Honors rampFrames (cinderella's Beautiful +1.6%×12 ramping over ~36s reproduces the
+    // measured early/late FB-proc growth 633.7k→667.0k).
+    let ownMaxHpFlat = 0;
+    for (const b of u.buffs) {
+      if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) continue;
+      if (b.expiresFrame !== null && b.expiresFrame <= frame) continue;
+      let c = b.value * b.stacks;
+      if (b.rampFrames && b.startFrame !== undefined) {
+        c *= Math.min(1, Math.max(0, (frame - b.startFrame) / b.rampFrames));
+      }
+      ownMaxHpFlat += c;
+    }
+    const liveMaxHp = u.maxHp + ownMaxHpFlat;
     return (
       u.staticAtk * (1 + stat(u, 'atkPct', frame) / 100) +
       stat(u, 'casterAtkPct', frame) +
@@ -846,15 +950,18 @@ export function runSim(
     }
   ) {
     const fb = fbEndFrame > frame;
+    // During a weapon swap that overrides the weapon class, range/core banding follows the SWAP
+    // weapon (nayuta: SMG base → SR "Memory Incineration" mode gains SR range eligibility + HI core).
+    const effWeapon = u.swap?.weapon ?? u.char.weapon;
     // +30% effective-range bonus: band-gated per weapon class (test-boss movement script);
     // riders (noRange) and RLs never receive it.
     const inRange =
       cfg.rangeBonus &&
       !opts.noRange &&
-      u.char.weapon !== 'RL' &&
-      (u.char.weapon === 'MG' && MG_RANGE_MODE !== undefined
+      effWeapon !== 'RL' &&
+      (effWeapon === 'MG' && MG_RANGE_MODE !== undefined
         ? MG_RANGE_MODE === 'always'
-        : RANGE_ELIGIBLE[bandAt(frame)].has(u.char.weapon));
+        : RANGE_ELIGIBLE[bandAt(frame)].has(effWeapon));
     let major = 1 + (fb && !opts.noFb ? 0.5 : 0) + (inRange ? 0.3 : 0);
     if (opts.crit) {
       const critRate = Math.min(1, Math.max(0, (u.critRate + stat(u, 'critRatePct', frame)) / 100));
@@ -871,7 +978,10 @@ export function runSim(
       const coreBonus =
         (u.char.coreAttackMultiplier - 100) / 100 +
         (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
-      const acr = opts.coreOverride ?? acrFor(u.char.weapon, bandAt(frame));
+      // ⚑ HRCORE: live Hit Rate shrinks the reticle → higher core fraction (derived; LIVE by default, HRCORE=0 off).
+      // stat() already sums the unit's live hitRatePct buffs; additive-in-pp composition is UNVALIDATED (R8).
+      const hr = HRCORE ? stat(u, 'hitRatePct', frame) : 0;
+      const acr = opts.coreOverride ?? acrForHR(effWeapon, bandAt(frame), hr);
       major += rng
         ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
         : cfg.coreHitRate * acr * coreBonus;
@@ -909,8 +1019,11 @@ export function runSim(
       opts.projFlavor === 'attachment' ? stat(u, 'projectileAttachmentPct', frame) : 0;
     const projFactor = 1 + (projExplosion + projAttachment) / 100;
     // Q10: Pierce Damage ▲ empowers Pierce-tagged units' attacks — a Damage Up
-    // bucket addition, only for units whose kit is Pierce-tagged (hasPierce).
-    const pierce = u.hasPierce || opts.pierceActive ? stat(u, 'pierceDamagePct', frame) : 0;
+    // bucket addition, only while the unit's attacks are Pierce-tagged: static kit
+    // pierce (hasPierce), a live timed "Gain Pierce for N sec" window
+    // (pierceUntilFrame), or the per-shot consolidation-bullet tag (opts.pierceActive).
+    const pierceTagged = u.hasPierce || u.pierceUntilFrame > frame || opts.pierceActive;
+    const pierce = pierceTagged ? stat(u, 'pierceDamagePct', frame) : 0;
     // Q9 A/B: Prydwen says projExpl also hits regular RL normal attacks
     // "as ATK DMG on the base multiplier". Off by default (our validated rule is
     // flavored-hits-only); on → RL normals get projExpl in the Damage Up bucket.
@@ -1030,19 +1143,43 @@ export function runSim(
     durationSec: number | undefined,
     maxStacks: number,
     frame: number,
-    whileSwappedIdx?: number
+    whileSwappedIdx?: number,
+    rampFrames?: number,
+    casterIdx?: number,
+    perResource?: { name: string; mult: number }
   ) {
     const expiresFrame = durationSec != null ? frame + Math.round(durationSec * FPS) : null;
     const existing = list.find((b) => b.key === key);
     if (existing) {
-      if (existing.expiresFrame !== null && existing.expiresFrame <= frame) existing.stacks = 0;
+      if (existing.expiresFrame !== null && existing.expiresFrame <= frame) {
+        existing.stacks = 0;
+        // a buff that FULLY lapsed and re-triggers restarts its ramp clock (per-window stack
+        // ramps: arcana-fortune-mate's Making Memories rebuild 2/4/6 hits fresh each FB window).
+        // A refresh BEFORE expiry keeps the original startFrame (a continuous, never-dropped ramp).
+        existing.startFrame = frame;
+      }
       existing.stacks = Math.min(existing.stacks + 1, maxStacks);
       existing.expiresFrame = expiresFrame;
       existing.value = value;
       existing.whileSwappedIdx = whileSwappedIdx;
+      // ramp clock is the FIRST application (startFrame preserved across pre-expiry refreshes)
+      existing.rampFrames = rampFrames;
+      existing.casterIdx = casterIdx;
+      existing.perResource = perResource;
     } else {
-      list.push({ key, stat, value, stacks: 1, maxStacks, expiresFrame, whileSwappedIdx });
+      list.push({
+        key, stat, value, stacks: 1, maxStacks, expiresFrame, whileSwappedIdx,
+        rampFrames, startFrame: frame, casterIdx, perResource,
+      });
     }
+  }
+
+  // fire the target unit's 'recovery'-triggered blocks (shared by the instant heal event and the
+  // scheduled heal-over-time emitter ticks)
+  function fireRecovery(targetIdx: number, frame: number) {
+    units[targetIdx].blocks.forEach((rb, ri) => {
+      if (rb.trigger.kind === 'recovery') applyBlock(targetIdx, rb, ri, frame);
+    });
   }
 
   function applyBlock(ownerIdx: number, block: Block, blockIdx: number, frame: number) {
@@ -1067,6 +1204,18 @@ export function runSim(
     if (block.swapGate) {
       const swapped = owner.swap != null && owner.swap.untilFrame > frame;
       if ((block.swapGate === 'swapped') !== swapped) return;
+    }
+    // boss-element gate: an element-coded line ("when attacking an Electric Code
+    // target", "all Wind Code enemies") fires only when the boss element matches.
+    // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
+    if (block.bossElementGate && cfg.bossElement !== block.bossElementGate) return;
+    // resource-pool gate: block fires only while a named resource is within [min,max] at trigger
+    // time (soda's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the other abort
+    // gates (before the activation counter), so a gated-out activation does not advance everyN.
+    if (block.resourceGate) {
+      const rv = owner.resources.get(block.resourceGate.name) ?? 0;
+      if (rv < (block.resourceGate.min ?? -Infinity) || rv > (block.resourceGate.max ?? Infinity))
+        return;
     }
     const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
     owner.blockActivations.set(bKey, activations);
@@ -1116,8 +1265,14 @@ export function runSim(
             : e.value;
           const statKey = e.stat === 'casterMaxHpPct' ? ('maxHpFlat' as StatKey) : e.stat;
           // always-on triggers keep their buffs up regardless of listed duration
+          // passive/bossElement buffs are permanent UNLESS the effect declares an explicit
+          // durationSec — a "fused passive" that is live from battle start (frame 0) but
+          // expires after durationSec, modeling a battle-start-charged resource that DECAYS
+          // (chisato's Extrasensory gates: on at t=0, off at 60/90/150s unless her own burst
+          // re-applies them). Duration-less passives stay always-on exactly as before.
           const alwaysOn =
-            block.trigger.kind === 'passive' || block.trigger.kind === 'bossElement';
+            (block.trigger.kind === 'passive' || block.trigger.kind === 'bossElement') &&
+            e.durationSec == null;
           for (const t of resolveTargets(block.target, ownerIdx)) {
             // KR stacking rule (game-mechanics.md §11): the same buff (stat+value) from
             // the same skill slot of the same caster overwrites/refreshes across trigger
@@ -1127,7 +1282,10 @@ export function runSim(
               t.buffs, `${ownerIdx}:${block.slot}:${statKey}:${e.value}`, statKey, value,
               alwaysOn ? undefined : e.durationSec,
               e.maxStacks ?? 1, frame,
-              e.whileSwapped ? ownerIdx : undefined
+              e.whileSwapped ? ownerIdx : undefined,
+              e.rampSec != null ? Math.round(e.rampSec * FPS) : undefined,
+              ownerIdx,
+              e.perResource
             );
             // Max Ammo ▼ clips the CURRENT belt when it lands (user-confirmed);
             // increases never clip. Stacking stays additive inside maxAmmo().
@@ -1137,11 +1295,29 @@ export function runSim(
           }
           break;
         }
+        case 'resource': {
+          // adjust the OWNER's named pool by delta, clamped to its declared [min,max]
+          const cfg = owner.resourceCfg.find((r) => r.name === e.name);
+          const cur = owner.resources.get(e.name) ?? cfg?.initial ?? 0;
+          const next = Math.min(cfg?.max ?? Infinity, Math.max(cfg?.min ?? 0, cur + e.delta));
+          owner.resources.set(e.name, next);
+          if (ENV.DBG_UNIT === owner.char.slug && e.delta !== 0)
+            console.log(
+              `[res ${owner.char.slug}] t=${(frame / FPS).toFixed(2)} ${e.name} ` +
+              `${cur}${e.delta > 0 ? '+' : ''}${e.delta} → ${next}`
+            );
+          break;
+        }
         case 'flatDamage': {
           // pull-count gate (MEASURED 2026-07-14): rapi-red-hood's burst nuke fires only
           // with >=1 sticky charge banked (>=120 shots at cast — her fire-weak banner 1 at
           // ~68 shots had NO nuke; all >=120 banners did)
           if (e.requiresPulls != null && owner.pulls < e.requiresPulls) break;
+          // per-battle-elapsed ramp: a burst component that scales with a stack resource
+          // accruing from battle start (cinderella's Beautiful-mirror). Snapshotted at cast.
+          const fdRampMul =
+            e.rampSec != null ? Math.min(1, frame / Math.round(e.rampSec * FPS)) : 1;
+          const fdAtkPct = e.atkPct * fdRampMul;
           const flavorOpts = {
             crit: e.crit !== false,
             core: e.core === true,
@@ -1162,7 +1338,7 @@ export function runSim(
           if (e.delaySec != null) {
             pendingHits.push({
               ownerIdx,
-              atkPct: e.atkPct,
+              atkPct: fdAtkPct,
               resolveFrame: frame + Math.round(e.delaySec * FPS),
               ...flavorOpts,
             });
@@ -1180,7 +1356,7 @@ export function runSim(
           // function-type "additional damage" CRITS at the caster's rate, never cores,
           // never gets range; FB applies by actual proc timing. Crit is on by default
           // (set crit:false only for verified non-critting sources).
-          dealDamage(owner, e.atkPct, frame, {
+          dealDamage(owner, fdAtkPct, frame, {
             ...flavorOpts,
             charge: false,
             noRange: true, // riders never get the +30% range bonus (user rule, 2026-07-13)
@@ -1221,6 +1397,8 @@ export function runSim(
             chargeFrames: e.chargeTimeSec ? Math.round(e.chargeTimeSec * FPS) : undefined,
             chargeMultPct: e.chargeMultPct,
             maxAmmo: e.maxAmmo,
+            pullsPerSec: e.pullsPerSec,
+            weapon: e.weapon,
             trueNormals: e.trueNormals,
             maxShots: e.maxShots,
             shotsFired: 0,
@@ -1234,16 +1412,27 @@ export function runSim(
           // gauge is locked during full burst — fills landing then are wasted
           if (fbEndFrame <= frame) gauge = Math.min(100, gauge + e.pct);
           break;
-        case 'heal':
+        case 'heal': {
           // a heal has no modeled HP value; it emits a RECOVERY event to its targets,
           // firing their 'recovery'-triggered blocks (heal-synergy kits — Helm's
           // full-charge heal drives Crown's "when recovery takes effect → team ATK ▲").
-          for (const t of resolveTargets(block.target, ownerIdx)) {
-            t.blocks.forEach((rb, ri) => {
-              if (rb.trigger.kind === 'recovery') applyBlock(t.idx, rb, ri, frame);
+          const healTargets = resolveTargets(block.target, ownerIdx);
+          for (const t of healTargets) fireRecovery(t.idx, frame);
+          // heal-over-time: "Recovers X% every 1 sec for N sec" = N ticks. The first tick fired
+          // above; schedule the remaining N-1 so on-recovery consumers stay refreshed across the
+          // whole window (default ticks 1 → no scheduling, back-compatible with instant heals).
+          const ticks = e.ticks ?? 1;
+          if (ticks > 1) {
+            const intervalFrames = Math.max(1, Math.round((e.intervalSec ?? 1) * FPS));
+            recoveryEmitters.push({
+              targetIdxs: healTargets.map((t) => t.idx),
+              nextTickFrame: frame + intervalFrames,
+              intervalFrames,
+              ticksRemaining: ticks - 1,
             });
           }
           break;
+        }
         case 'shield':
           // no shield HP pool is modeled (v1 boss deals no damage); like 'heal', it
           // emits a SHIELDED event to its targets, firing their 'shielded'-triggered
@@ -1318,6 +1507,16 @@ export function runSim(
         case 'unlimitedAmmo':
           for (const t of resolveTargets(block.target, ownerIdx)) {
             applyBuff(t.buffs, key, 'unlimitedAmmo', 1, e.durationSec, 1, frame);
+          }
+          break;
+        case 'gainPierce':
+          // timed "Gain Pierce for N sec": mark the target Pierce-tagged for the window
+          // so its (and teammates') Pierce Damage ▲ buffs go live only during it.
+          for (const t of resolveTargets(block.target, ownerIdx)) {
+            t.pierceUntilFrame = Math.max(
+              t.pierceUntilFrame,
+              frame + Math.round(e.durationSec * FPS)
+            );
           }
           break;
         case 'stackedNuke': {
@@ -1706,7 +1905,12 @@ export function runSim(
       } else {
         const speedMult =
           1 + (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) / 100;
-        const rate = (u.pullsPerSec ?? PULLS_PER_SEC[u.char.weapon] ?? 4) / FPS;
+        // During a weapon swap the swap's OWN cadence governs (moran: 24/s vs base AR 12/s):
+        // explicit swap pullsPerSec wins, else the swap weapon-class default, else base behavior.
+        const basePps = u.swap
+          ? (u.swap.pullsPerSec ?? PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon])
+          : (u.pullsPerSec ?? PULLS_PER_SEC[u.char.weapon]);
+        const rate = (basePps ?? 4) / FPS;
         u.fireAcc += rate * speedMult;
         while (u.fireAcc >= 1 && !u.reloading) {
           u.fireAcc -= 1;
@@ -1783,6 +1987,17 @@ export function runSim(
           projFlavor: d.projFlavor,
         });
         d.nextTickFrame += d.intervalFrames;
+      }
+    }
+
+    // ---- heal-over-time recovery ticks ----
+    for (let i = recoveryEmitters.length - 1; i >= 0; i--) {
+      const em = recoveryEmitters[i];
+      if (frame === em.nextTickFrame) {
+        for (const idx of em.targetIdxs) fireRecovery(idx, frame);
+        em.ticksRemaining--;
+        em.nextTickFrame += em.intervalFrames;
+        if (em.ticksRemaining <= 0) recoveryEmitters.splice(i, 1);
       }
     }
   }

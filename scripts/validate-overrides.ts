@@ -30,7 +30,7 @@ const TARGETS = new Set([
 const EFFECTS = new Set([
   'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
-  'instantReload', 'storedHit', 'stun', 'stackedNuke',
+  'instantReload', 'storedHit', 'stun', 'stackedNuke', 'gainPierce', 'resource',
 ]);
 const FLAVORS = new Set(['distributed', 'sustained', 'sequential', 'true', 'projectileAttachment', 'projectileExplosion']);
 

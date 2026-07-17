@@ -9,7 +9,7 @@
     ]
   },
   "caveats": [
-    "skill2/burst: heals are modeled as ONE recovery event per activation; the real per-second ticks (every 1s for 5s / 8s) are not carried — on-recovery consumers (Crown-type) will show undercounted uptime (⚑)",
+    "skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)",
     "burst: Max HP ▲31.68% on the lowest-remaining-HP ally is unmodeled (no own-%-basis Max HP stat key; no lowest-HP targeting) — only matters if it lands on an HP-scaling teammate",
     "skill1: shield cadence (every 120 normal attacks) scales with the unverified datamine cadence tuple (⚑)"
   ],
@@ -43,7 +43,9 @@
       },
       "effects": [
         {
-          "kind": "heal"
+          "kind": "heal",
+          "ticks": 5,
+          "intervalSec": 1
         }
       ]
     },
@@ -74,7 +76,9 @@
       },
       "effects": [
         {
-          "kind": "heal"
+          "kind": "heal",
+          "ticks": 8,
+          "intervalSec": 1
         }
       ]
     },

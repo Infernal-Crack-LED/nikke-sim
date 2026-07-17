@@ -1,6 +1,22 @@
 [
   {
     "date": "2026-07-17",
+    "title": "Shotgun accuracy by range",
+    "notes": [
+      "Shotgun hit and core-hit rates at each range are now grounded in the game's actual on-screen aim geometry — we measured the spread circle, crosshair, and boss core frame-by-frame and mapped the game's accuracy-circle values to their real sizes.",
+      "This lets a shotgun's pellet landing and core rate at close, mid, and far range come from measured geometry instead of a hand-picked estimate, with run-to-run variance handled by the existing seeded simulation.",
+      "Used data from minas. and _TricK_ to calculate shotgun pellet count and core hit rate."
+    ]
+  },
+  {
+    "date": "2026-07-17",
+    "title": "More nikkes modeled",
+    "notes": [
+      "We've increased the number of modeled nikkes, so more units now simulate with their complete kits."
+    ]
+  },
+  {
+    "date": "2026-07-17",
     "title": "New: Max Ammo breakpoints + clearer Overload tools + DPS profiles",
     "notes": [
       "The Charge Speed Breakpoints tool is now Overload Breakpoints, holding two calculators in one place — Charge Speed and a new Max Ammo one.",

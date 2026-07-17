@@ -1,6 +1,7 @@
 {
   "measurement": "AR range-dependent auto-aim core-hit rate (per normal shot)",
-  "unit": "scarlet-black-shadow",
+  "unit": "scarlet",
+  "_correction_2026-07-17": "PROVENANCE FIX (R7-verified, hitrate-core plan). Footage is base `scarlet` (AR/Electric), proven 3 independent ways: (1) 020->000 reticle counter = 20 shots in ~2.3s (~9-11 shots/sec, a rapid single-bullet AR — NOT scarlet-black-shadow's ~0.67s RL charge cycle); (2) only base-scarlet popup values present (white 70488 / core-red 140977 / crit-orange 110392 / core+crit 220880); (3) ZERO 283/565/848% charge-rider popups anywhere. The prior `unit: scarlet-black-shadow` tag, the `hitValueTableNeutral` block (mislabeled scarlet-black-shadow, normalWhiteBase 109033), and the colourConvention '283/565/848% rider' exclusion note are ALL cross-contamination copied from a scarlet-black-shadow probe and DO NOT apply here. Re-measured near-band core = 0.37 (range 0.33-0.42, Wilson [0.26,0.50], hard ceiling 0.52) via the clean exclusion-free 2-mag reconciliation (mag1+magN2); the mag2 '283% rider = 359835 subtracted' was a merge-blob of two overlapping normals and biased the estimate DOWNWARD. Measured band values UNCHANGED; AR-near 0.40 stands (0.37 is a marginally more conservative central estimate). base scarlet has NO Hit-Rate line -> this is a valid HR-clean base-accuracy anchor.",
   "weapon": "AR",
   "hitsPerShot": 1,
   "video": "docs/probes/ar-sg-smg/scarlet ar.MP4",

@@ -15,6 +15,7 @@ kit parser (`scripts/lib/kit-parser.ts`, run by `scripts/materialize-overrides.t
 kit-parse authoring skill) is an authoring aid only.
 
 **Evidence tiers** used throughout (highest to lowest):
+
 - **MEASURED** — frame-counted from our own recordings/tests under scope lock. Never refit.
 - **DATAMINED** — decoded game tables (github.com/rcasdzxc/SD, coolguydlm123/nikkecsvlibrary)
   or the frame-accurate reference sim github.com/d34d633f/nikke-einkk.
@@ -33,8 +34,8 @@ validation fight twice), so simulation-vs-real deltas under ~5% are noise.
 
 ## 1. Damage formula
 
-Damage is a product of independent **buckets**; buffs *inside* a bucket are additive,
-buckets *multiply*. DATAMINED + COMMUNITY, cross-validated by our board.
+Damage is a product of independent **buckets**; buffs _inside_ a bucket are additive,
+buckets _multiply_. DATAMINED + COMMUNITY, cross-validated by our board.
 
 ```
 damage = FinalATK_term × rate% × Major × Element × Charge × DamageUp × Taken × Distributed
@@ -51,15 +52,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence | Notes |
-|---|---|---|
-| AR | 12/s | |
-| SMG | 20/s | |
-| SG | 1.5/s | 10 pellets/shot |
-| MG | 60 rounds/s cap | after wind-up ladder — §3 |
-| Pistol | 4/s | |
-| SR | charge cycle + 22f bolt | §4 |
-| RL | charge cycle | no bolt recovery |
+| Weapon | Cadence                 | Notes                     |
+| ------ | ----------------------- | ------------------------- |
+| AR     | 12/s                    |                           |
+| SMG    | 20/s                    |                           |
+| SG     | 1.5/s                   | 10 pellets/shot           |
+| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
+| Pistol | 4/s                     |                           |
+| SR     | charge cycle + 22f bolt | §4                        |
+| RL     | charge cycle            | no bolt recovery          |
 
 Base rates: [ore-game measured rates](https://ore-game.com/nikke/post/verify-memo/)
 (AR ~11.79/s, SMG ~20.01/s, SG ~1.50/s at 60fps) + decoded shot tables
@@ -107,15 +108,15 @@ of >100% takes precedence).
   (Helm burst, collection items) multiply BASE charge damage.
 - Excess charge speed past the +100% cap is wasted, except explicit kit conversions
   (Red Hood S1: excess × 2.4 → Charge Damage).
-Details + decoded examples (Red Wolf's 200rpm fire-rate-gated window):
-**[charge-weapons.md](charge-weapons.md)**. Engine: charge block in the per-frame loop.
+  Details + decoded examples (Red Wolf's 200rpm fire-rate-gated window):
+  **[charge-weapons.md](charge-weapons.md)**. Engine: charge block in the per-frame loop.
 
 ## 5. Effective range & the test boss
 
 +30% damage when the target sits in the weapon's effective band; **RL never gets it**;
 the bonus lives in the Major bucket. Test-boss movement is a fixed script (MEASURED):
 mid 0–33s → near 33–70 → far 70–106 → midfar 106–144 → near 144–176 → midfar 176–180,
-with band eligibility near=SG, mid=SMG+AR, midfar=SR, **far=SR+MG**. Each transition has a 1s
+with band eligibility near=SG, mid=SMG+AR, mfar=SR, **mid-far=SR+MG**. Each transition has a 1s
 unhittable window; units whose EFFECTIVE reload is ≤1s get a free full reload during it.
 The machine-gun row is MEASURED (2026-07-14, the crown solo recording): popup class ratios
 read the bonus present in the far band ONLY — mid, near, and mid-far all read the no-bonus
@@ -176,14 +177,14 @@ Details: **[auto-play.md](auto-play.md)**.
   noir's running-damage-counter reconciliation — the arbiter over two visual reads that both under-counted a
   dense cluster of ~10 overlapping identical pellet numbers as ~6; BOND-TERM RECALIBRATED 2026-07-16). ~all 10
   pellets land close on the large boss; the fall-off is only at far. `SG_LANDING_BY_BAND` scales SG shot damage
-  + gauge. Both clean SG solos reconcile (noir/dorothy ratio 1.01). Single-boss (large hitbox) — do not
-  generalize to small-hitbox bosses. **2026-07-16 recalibration:** the noir reconciliation that SET this table
-  used a sim WITHOUT the relationship (bond) bonus; adding bond raised noir's ATK +1.39% and the base5-calibrated
-  table over-shot by the same amount (noir solo 1.006→1.020). Corrected by a UNIFORM ×0.9863 (= base5/bond ATK)
-  on every band — the table SHAPE is unchanged (U17 HOLD: the class table stands). Was 0.90/1.0/0.75/0.90.
-  NB an earlier "0.60 per-band, flash-count-validated" read was SUPERSEDED (visual cluster under-read). The SG
-  CORE rate (0.072) is a popup RATIO over the same clusters and is likely INFLATED (whites under-read, cores
-  spared) → re-derive from the counter. open-questions A26; DECISIONS (FINAL entry).
+  - gauge. Both clean SG solos reconcile (noir/dorothy ratio 1.01). Single-boss (large hitbox) — do not
+    generalize to small-hitbox bosses. **2026-07-16 recalibration:** the noir reconciliation that SET this table
+    used a sim WITHOUT the relationship (bond) bonus; adding bond raised noir's ATK +1.39% and the base5-calibrated
+    table over-shot by the same amount (noir solo 1.006→1.020). Corrected by a UNIFORM ×0.9863 (= base5/bond ATK)
+    on every band — the table SHAPE is unchanged (U17 HOLD: the class table stands). Was 0.90/1.0/0.75/0.90.
+    NB an earlier "0.60 per-band, flash-count-validated" read was SUPERSEDED (visual cluster under-read). The SG
+    CORE rate (0.072) is a popup RATIO over the same clusters and is likely INFLATED (whites under-read, cores
+    spared) → re-derive from the counter. open-questions A26; DECISIONS (FINAL entry).
 - Auto burst priority is **leftmost slot order, with waiting**: inside a timed stage
   window the chain waits for the leftmost stage-filling unit whose cooldown ends before
   the window closes rather than handing the cast to a lower-priority ready unit
@@ -276,7 +277,10 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 - Max Ammunition ▼ clips the CURRENT belt when it lands (MEASURED/user); max-ammo sources
   stack additively. Increases never clip.
 - Distributed damage deals the same TOTAL against 1 target as against many (user-verified).
-- Pierce Damage ▲ only benefits units whose kit is Pierce-tagged (`hasPierce`/`pierceModes`).
+- Pierce Damage ▲ is a **Damage-Up-bucket** entry that benefits any Pierce-damage-type unit —
+  static (`hasPierce`/`pierceModes`) OR during a timed "Gain Pierce for N sec" window
+  (`gainPierce` → `pierceUntilFrame`, 2026-07-17). It **applies on the partless boss** (it is
+  ordinary damage-up, not the double-hit below — do not conflate the two).
 - Pierce core+body double-hits are a MULTI-PART-boss mechanic
   ([nikke.gg index](https://nikke.gg/index/); TV Tropes corroboration); on the partless
   test boss there is no doubling (OUR A/B test vs run A, 2026-07-13; engine

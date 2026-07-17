@@ -33,7 +33,7 @@ export type StatKey =
   | 'projectileAttachmentPct' // boosts the caster's projectile-attachment procs
   | 'normalAttackPct'        // scales the normal attack multiplier (like the SMG/SG doll line)
   | 'burstGenPct'            // scales the unit's burst gauge contribution
-  | 'hitRatePct'        // inert in v1 (100% accuracy assumed)
+  | 'hitRatePct'        // core-hit lift (⚑ derived; sim.ts hrCoreMult; live by default, HRCORE=0 disables)
   | 'defPct';           // inert in v1
 
 export type TriggerDef =
@@ -89,7 +89,26 @@ export type EffectDef =
   | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number;
       // buff counts only while the caster's weaponSwap is live — for "held per swap round"
       // kit lines (MEASURED 2026-07-14, SWHA Fully Active charge/sequential buffs)
-      whileSwapped?: boolean }
+      whileSwapped?: boolean;
+      // per-shot/per-charge STACK-RAMP: when a buff's value is authored at its MAX-stacks
+      // magnitude but the real stacks accrue over the opening seconds (not instant), rampSec
+      // linearly ramps the contribution 0 → full over rampSec from the buff's FIRST
+      // application, then holds at cap — so the sim no longer over-credits t=0 (engine-modeling
+      // -gaps.md theme 3). The ramp clock is the first-apply frame (frame 0 for a `passive`,
+      // the cast frame for a burstCast-keyed self-buff) and is NOT reset by refreshes. Omit =
+      // instant-to-max (back-compatible). ⚑ rampSec is a per-unit estimate unless measured.
+      rampSec?: number;
+      // live resource-scaled buff: the buff's value is IGNORED and instead computed each frame
+      // as caster.resources[name] × mult — for a stat that tracks a dynamic pool (soda-twinkling
+      // -bunny's Critical Damage ▲1.32% per Golden Chip: perResource {name:'goldenChip', mult:1.32}).
+      // Apply as a `passive` self-buff so it is always present and re-reads the live pool.
+      perResource?: { name: string; mult: number } }
+  | {
+      // adjust a named resource pool (declared in CharacterSkills.resources) by `delta` when this
+      // block's trigger fires — soda's burst spends 17 chips (delta:-17), her in-FB every-3-normals
+      // block earns 1 (delta:1). Clamped to the resource's [min,max]. Order within a slot matters:
+      // a spend placed AFTER the resource-gated blocks lets those gates read the PRE-spend pool.
+      kind: 'resource'; name: string; delta: number }
   | {
       kind: 'flatDamage'; // instant hit, % of caster final ATK
       atkPct: number;
@@ -103,6 +122,11 @@ export type EffectDef =
                          // lands ~0.4s post-banner inside her window at the full buff state)
       requiresPulls?: number; // fires only if the caster has fired >= N shots (MEASURED
                               // 2026-07-14: her nuke needs >=1 sticky charge = 120 shots)
+      // per-battle-elapsed ramp: scales this hit's atkPct by min(1, elapsed/rampSec) — for a
+      // burst component that scales with a stack resource accruing from BATTLE START (cinderella's
+      // Beautiful-mirror: 28.9%×12 stacks ramping over ~36s, so an early burst mirrors fewer
+      // stacks). Snapshotted at cast/landing. Omit = full (back-compatible). ⚑ per-unit estimate.
+      rampSec?: number;
     }
   | {
       kind: 'dot'; // ticks every intervalSec (default 1); never core-boosted
@@ -119,13 +143,19 @@ export type EffectDef =
       chargeTimeSec?: number;   // full-charge time (charge weapons)
       chargeMultPct?: number;   // "Full Charge Damage: N% of damage"
       maxAmmo?: number;
+      // The swap weapon's OWN datamined fire cadence (pulls/s), when it differs from the base
+      // weapon — the swap loads a different shot spec (moran: swap shot_id fires 24/s vs base AR 12/s).
+      pullsPerSec?: number;
+      // The swap weapon's CLASS, when it differs from the base weapon — drives range-band
+      // eligibility + auto-core rate for swap shots (nayuta: SMG base → SR "Memory Incineration" mode).
+      weapon?: string;
       trueNormals?: boolean;    // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
       durationSec: number;      // hard time bound (e.g. the 10s burst window)
       maxShots?: number;        // uses-based end: swap terminates right after the Nth swapped
                                 // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
     }
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
-  | { kind: 'heal' }                                          // emits a recovery event to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown)
+  | { kind: 'heal'; ticks?: number; intervalSec?: number }    // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
   | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
@@ -144,6 +174,7 @@ export type EffectDef =
   | { kind: 'escalating'; steps: EffectDef[] }                // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
   | { kind: 'fullBurstExtend'; seconds: number }
   | { kind: 'unlimitedAmmo'; durationSec: number }
+  | { kind: 'gainPierce'; durationSec: number }               // timed "Gain Pierce for N sec": the target's attacks count as Pierce-tagged for the window, so its (and teammates') Pierce Damage ▲ buffs go live during it — for a kit whose pierce is temporary, not the static per-unit `hasPierce` flag
   | { kind: 'instantReload'; fraction?: number }              // refill magazine (fraction of max, default full)
   | { kind: 'stun'; durationSec: number }                     // target can't fire/charge/reload (bursting unaffected)
   | {
@@ -189,6 +220,19 @@ export interface Block {
   // Active extra volley rides only her two swapped full-charge shots),
   // 'unswapped' only outside it
   swapGate?: 'swapped' | 'unswapped';
+  // boss-element gate, checked when the trigger fires: the block only activates
+  // when the fight's boss element matches (e.g. helm-aquamarine's burst "when
+  // attacking an Electric Code target → +164.83%"; brid-silent-track's FB-enter
+  // "all Wind Code enemies → Damage Taken ▲"). Unlike the `bossElement` TRIGGER
+  // (a permanent element-gated passive), this COMPOSES with any real trigger
+  // (fullBurstEnter/hitCount/burstCast/…). Inert vs a non-matching boss (incl.
+  // the neutral scope-lock boss), so it never disturbs graded comps.
+  bossElementGate?: string;
+  // resource-pool gate: block fires only when a named resource (CharacterSkills.resources)
+  // is within [min,max] at trigger time — soda-twinkling-bunny's burst ATK ▲65.25% activates
+  // only at ≥30 Golden Chips ({name:'goldenChip', min:30}), Hit Rate at ≥20, FB-ext tiers at
+  // ≥10/≥20. Evaluated on the PRE-spend pool if the spend effect is ordered after the gated block.
+  resourceGate?: { name: string; min?: number; max?: number };
 }
 
 // Verbatim kit-text lines an override does NOT represent as blocks — the
@@ -205,6 +249,9 @@ export interface CharacterSkills {
   burstSnapshotsPreFb?: boolean; // burst damage resolves pre-FB/pre-stage (per-unit cast timing)
   pierceModes?: string[]; // pierce only while in one of these kit modes (CCW: SR only)
   consolidation?: ConsolidationConfig; // pellet-consolidation mode (dorothy-S) — see OverrideFile / A26
+  // named resource pools tracked live per unit (soda-twinkling-bunny's Golden Chip): initialized
+  // at setup, adjusted by `resource` effects, read by `perResource` buffs + `resourceGate` blocks.
+  resources?: { name: string; initial: number; min?: number; max?: number }[];
 }
 
 // Pellet-consolidation mode: after landing N pellets (near-gated), for K shots the unit fires ONE

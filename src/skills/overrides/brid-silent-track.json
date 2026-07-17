@@ -1,14 +1,8 @@
 {
-  "note": "PROMOTED + SOLO-VALIDATED 2026-07-16 (loaded override). Solo real/sim 1.058 (real 74,592,500). || SG NOTE 2026-07-16: the old 'core bands HR-contaminated' cap is DEAD (isabel solo read confirmed SG core bands HR-clean). She now has her OWN measured solo read — docs/probe-data/brid-silent-track-sg-band.json (end screen 74,592,500; per-band M mid 0.984 / near1 1.224 / far 0.709 / midfar 0.866 / near2 1.374; ATK term measured +1.63% above scope-lock nominal, rider-confirmed) — SG landing at range remains the open lever (LOG 2026-07-16: no engine change; per-unit facts recorded). || Brid: Silent Track — Fire SG Burst II Supporter (ammo 9, reloadFrames 111, hitsPerShot 10 pellets). Her VALUE is the team casterAtk buff, not her own (SG-capped) damage. MODEL: (burst) ATK ▲ 66.52% of caster's ATK to allies 10s on burstCast — main support line; kit 'Affects all allies (except self)' now modeled on `allies` excludeSelf:true [2026-07-17 EXCLUDE-SELF FIX — the `allies` target gained excludeSelf; removes the prior minor self-inflation of her own SG-capped damage; brid is not board-measured so this is faithful-but-board-inert today]. (S1) 636% flatDamage on fullBurstEnter (fires each rotation FB); function rider → crits at sheet rate, no core (no 'core strike' text), FB by TIMING (default noFb OFF — lands at FB enter so gets +50%, prior 2). (S2) 675% flatDamage every 5 normal attacks → hitCount 50 (5 shots × hitsPerShot 10 = 50 pellet-hits; engine hitCounter increments by hitsPerShot/shot, sim.ts:1677) — recurring rider, big cumulative (41.6% of her solo total), crit/no-core/FB-by-timing. MEASURED 2026-07-16 (solo read): trigger CONFIRMED = every 5th PULL (43 riders = floor(215 pulls/5) EXACT, fires as a separate event ~6 frames after the 5th pull, zero fusions); fixed values 673,819 non-crit / 1,010,728 crit = EXACTLY 675.00% at the measured effective term 99,825.6. That term ≈ base 98,227 (static 98,367 − bossDef 140) + her Elysion-Supporter max bond ATK 1367 = 99,594, i.e. the ~+1.63% elevation was the RELATIONSHIP bonus, now modeled globally [DECISIONS/open-questions U18] (the remaining ~0.23% is measurement-basis slack). Coefficient stays the FAITHFUL kit 675% — with the term now correct the rider lands on the measured value; no per-unit fudge. (Historical: before relationship was modeled the sim's term read ~1.6% under, which this note previously flagged as unresolved.) resolved). SKIPPED-CONDITIONAL: the two Wind-Code-gated boss debuffs (S1 Damage Taken ▲15.12%/10s on FB enter; S2 Damage Taken ▲12.12%/10s after 10 NA) are element-gated on a WIND boss — the scope-lock boss element is unspecified/not-Wind, so they are OFF here (documented SKIPPED-CONDITIONAL in this note + the audit table — the validator rejects `ignored` effect blocks, so per repo convention skipped lines live in the note, NOT silently dropped from the audit); vs a Wind boss they become active team-wide damageTaken amps (a big lever) — see FLAG d. No heal/shield/DEF/HP/lifesteal/gauge/reload/ammo lines in this kit; nothing else parked in ignored. ⚑ FLAGS: (a) CADENCE TUPLE — pullsPerSec datamine not supplied + reloadFrames 111 datamine; SG default rate, ammo 9 empties in >1s so no fire-mode escalation; est = class-default SG cadence + reloadFrames 111; recipe = read rounds/min + reload gap from a focus video. (b) SG 'normal attack' = SHOT vs PELLET — 10× lever on both S2 counters; shipped the standard SHOT reading (5 NA = 5 shots = hitCount 50; 10 NA = 10 shots = hitCount 100); if pellets were meant divide by 10; recipe = count shots between 675% popups in a focus video. (c) SG SPRAY UNDER-MODEL + HR-contaminated core bands (G4) — her own SG spray/core damage is low-confidence (~1.5× under per noir/dorothy anchors); est = engine default bands; recipe = SG-clean-anchor re-derivation (open fix #2). (d) WIND-CODE CONDITIONAL DEBUFFS off by default (non-Wind boss); est = OFF; recipe = confirm boss element, if Wind enable both as damageTakenPct enemy buffs (15.12% team-wide FB-enter + 12.12% per-10-NA). (e) noFb on the 636%/675% riders = default OFF (FB by timing, prior 2); set noFb:true ONLY with measured FB-OFF popups; recipe = focus popup value FB-on vs FB-off. (f) burst target 'allies except self' now expressible → `allies` excludeSelf:true (fixed 2026-07-17); self-inflation gone.",
+  "note": "PROMOTED + SOLO-VALIDATED 2026-07-16 (loaded override). Solo real/sim 1.058 (real 74,592,500). || SG NOTE 2026-07-16: the old 'core bands HR-contaminated' cap is DEAD (isabel solo read confirmed SG core bands HR-clean). She now has her OWN measured solo read — docs/probe-data/brid-silent-track-sg-band.json (end screen 74,592,500; per-band M mid 0.984 / near1 1.224 / far 0.709 / midfar 0.866 / near2 1.374; ATK term measured +1.63% above scope-lock nominal, rider-confirmed) — SG landing at range remains the open lever (LOG 2026-07-16: no engine change; per-unit facts recorded). || Brid: Silent Track — Fire SG Burst II Supporter (ammo 9, reloadFrames 111, hitsPerShot 10 pellets). Her VALUE is the team casterAtk buff, not her own (SG-capped) damage. MODEL: (burst) ATK ▲ 66.52% of caster's ATK to allies 10s on burstCast — main support line; kit 'Affects all allies (except self)' now modeled on `allies` excludeSelf:true [2026-07-17 EXCLUDE-SELF FIX — the `allies` target gained excludeSelf; removes the prior minor self-inflation of her own SG-capped damage; brid is not board-measured so this is faithful-but-board-inert today]. (S1) 636% flatDamage on fullBurstEnter (fires each rotation FB); function rider → crits at sheet rate, no core (no 'core strike' text), FB by TIMING (default noFb OFF — lands at FB enter so gets +50%, prior 2). (S2) 675% flatDamage every 5 normal attacks → hitCount 50 (5 shots × hitsPerShot 10 = 50 pellet-hits; engine hitCounter increments by hitsPerShot/shot, sim.ts:1677) — recurring rider, big cumulative (41.6% of her solo total), crit/no-core/FB-by-timing. MEASURED 2026-07-16 (solo read): trigger CONFIRMED = every 5th PULL (43 riders = floor(215 pulls/5) EXACT, fires as a separate event ~6 frames after the 5th pull, zero fusions); fixed values 673,819 non-crit / 1,010,728 crit = EXACTLY 675.00% at the measured effective term 99,825.6. That term ≈ base 98,227 (static 98,367 − bossDef 140) + her Elysion-Supporter max bond ATK 1367 = 99,594, i.e. the ~+1.63% elevation was the RELATIONSHIP bonus, now modeled globally [DECISIONS/open-questions U18] (the remaining ~0.23% is measurement-basis slack). Coefficient stays the FAITHFUL kit 675% — with the term now correct the rider lands on the measured value; no per-unit fudge. (Historical: before relationship was modeled the sim's term read ~1.6% under, which this note previously flagged as unresolved.) resolved). WIND-CODE DEBUFFS NOW MODELED (bossElementGate, 2026-07-17): the two Wind-Code-gated boss debuffs (S1 Damage Taken ▲15.12%/10s on FB enter; S2 Damage Taken ▲12.12%/10s after 10 NA = hitCount 100) use the new `bossElementGate: 'Wind'` block gate — element-gated composed with their real triggers (fullBurstEnter / hitCount). INERT vs a non-Wind (incl. the neutral scope-lock) boss; vs a Wind boss they become active team-wide damageTaken amps (a big lever) — see FLAG d. (Previously parked as SKIPPED-CONDITIONAL in this note because the schema had no way to compose element-gating with an event trigger.) No heal/shield/DEF/HP/lifesteal/gauge/reload/ammo lines in this kit; nothing else parked in ignored. ⚑ FLAGS: (a) CADENCE TUPLE — pullsPerSec datamine not supplied + reloadFrames 111 datamine; SG default rate, ammo 9 empties in >1s so no fire-mode escalation; est = class-default SG cadence + reloadFrames 111; recipe = read rounds/min + reload gap from a focus video. (b) SG 'normal attack' = SHOT vs PELLET — 10× lever on both S2 counters; shipped the standard SHOT reading (5 NA = 5 shots = hitCount 50; 10 NA = 10 shots = hitCount 100); if pellets were meant divide by 10; recipe = count shots between 675% popups in a focus video. (c) SG SPRAY UNDER-MODEL + HR-contaminated core bands (G4) — her own SG spray/core damage is low-confidence (~1.5× under per noir/dorothy anchors); est = engine default bands; recipe = SG-clean-anchor re-derivation (open fix #2). (d) WIND-CODE CONDITIONAL DEBUFFS off by default (non-Wind boss); est = OFF; recipe = confirm boss element, if Wind enable both as damageTakenPct enemy buffs (15.12% team-wide FB-enter + 12.12% per-10-NA). (e) noFb on the 636%/675% riders = default OFF (FB by timing, prior 2); set noFb:true ONLY with measured FB-OFF popups; recipe = focus popup value FB-on vs FB-off. (f) burst target 'allies except self' now expressible → `allies` excludeSelf:true (fixed 2026-07-17); self-inflation gone.",
   "unmodeled": {
-    "skill1": [
-      "Activates when entering Full Burst. Affects all Wind Code enemies.",
-      "Damage Taken ▲ 15.12% for 10 sec."
-    ],
-    "skill2": [
-      "Activates after 10 normal attack(s). Affects 1 Wind Code enemy unit(s) with the lowest remaining HP.",
-      "Damage Taken ▲ 12.12% for 10 sec."
-    ],
+    "skill1": [],
+    "skill2": [],
     "burst": []
   },
   "skill1": [
@@ -24,6 +18,24 @@
         {
           "kind": "flatDamage",
           "atkPct": 636
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "bossElementGate": "Wind",
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 15.12,
+          "durationSec": 10
         }
       ]
     }
@@ -42,6 +54,25 @@
         {
           "kind": "flatDamage",
           "atkPct": 675
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 100
+      },
+      "bossElementGate": "Wind",
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 12.12,
+          "durationSec": 10
         }
       ]
     }
@@ -67,8 +98,8 @@
     }
   ],
   "caveats": [
-    "skill1: Wind Code Damage Taken ▲ 15.12% (Full Burst entry, 10s) not modeled — inert vs a non-Wind boss; a big team-wide lever if the boss is Wind.",
-    "skill2: Wind Code Damage Taken ▲ 12.12% (every 10 normal attacks, 10s) not modeled — inert vs a non-Wind boss; enable alongside the skill1 debuff vs a Wind boss.",
+    "skill1: Wind Code Damage Taken ▲ 15.12% (Full Burst entry, 10s) now modeled via bossElementGate 'Wind' — inert vs a non-Wind (incl. scope-lock) boss; a big team-wide lever if the boss is Wind.",
+    "skill2: Wind Code Damage Taken ▲ 12.12% (every 10 normal attacks = hitCount 100 at 10 pellets/shot, 10s) now modeled via bossElementGate 'Wind' — inert vs a non-Wind boss; stacks with the skill1 debuff vs a Wind boss.",
     "burst: ATK ▲ 66.52% of caster's ATK on all allies EXCEPT self (kit 'except self') — excludeSelf:true enforced on the `allies` target since 2026-07-17; no longer self-inflates her own SG-capped damage."
   ]
 }

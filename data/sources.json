@@ -26,9 +26,9 @@
       "name": "NIKKE Synergy",
       "url": "https://nikke-synergy.com",
       "apiUrl": "https://api.nikke-synergy.com",
-      "region": "global",
+      "region": "JP",
       "category": "stats-api",
-      "tier": "API",
+      "tier": "COMMUNITY",
       "usedFor": "Character base stats, skill coefficients, and unit metadata — the primary sync source for data/characters.json."
     },
     {
@@ -61,8 +61,8 @@
     {
       "id": "discord-minas.",
       "name": "minas.",
-      "url": "https://discord.com/users/1527687380075544808",
-      "region": "en",
+      "url": "https://discord.com/users/204048065831763968",
+      "region": "EN",
       "category": "accuracy-research",
       "tier": "COMMUNITY",
       "usedFor": "Research into the effect of hit rate on pellet spread and core hit accuracy for Noir."
@@ -130,16 +130,6 @@
       "usedFor": "Frame-accurate reference simulator — cross-validates charge/gauge/full-charge mechanics (positionBurstBonus, NikkeFullChargeMode)."
     },
     {
-      "id": "blablalink",
-      "name": "Blablalink (sg-tools) / Battle Records",
-      "url": "https://www.blablalink.com",
-      "cdn": "https://sg-tools-cdn.blablalink.com",
-      "region": "global",
-      "category": "official-tools",
-      "tier": "API",
-      "usedFor": "Official companion stats + the in-game Battle-Records damage screen fields (per-unit totals, combat power) used to grade recordings."
-    },
-    {
       "id": "inven-dcinside",
       "name": "Inven / DCInside (NIKKE boards)",
       "url": "https://m.inven.co.kr",
@@ -157,16 +147,6 @@
       "category": "wiki",
       "tier": "COMMUNITY",
       "usedFor": "JP wiki cross-checks on kit text and mechanics."
-    },
-    {
-      "id": "lbpcascade-animeface",
-      "name": "lbpcascade_animeface (OpenCV LBP cascade for anime faces)",
-      "url": "https://github.com/nagadomi/lbpcascade_animeface",
-      "author": "nagadomi",
-      "region": "JP",
-      "category": "tooling",
-      "tier": "COMMUNITY",
-      "usedFor": "Boss-study forced-cover / boss-walk detection: the five-frontal-faces state is detected with this MIT-licensed anime-face cascade (vendored at scripts/boss-study/lbpcascade_animeface.xml, run via opencv-python-headless<5). Calibrated 2026-07-16 on the 714-noon fight-end cover phase; zero false positives across crown.MP4."
     }
   ]
 }

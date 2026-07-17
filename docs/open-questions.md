@@ -8,6 +8,25 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U19 — grave's burst-window over-model, exposed by the (faithful) timed-pierce primitive (2026-07-17)
+**Surfaced by the `gainPierce` primitive (engine-modeling-gaps fix #7).** The timed-pierce window lets
+"Gain Pierce for N sec" wake a unit's Pierce Damage ▲ buffs. **MECHANISM (owner-confirmed 2026-07-17):**
+Pierce Damage ▲ is a real Damage-Up-bucket entry that DOES apply on the partless scope-lock boss (only
+the separate pierce core+body DOUBLE-HIT is multipart-only, `PIERCE_CORE_DOUBLE=false`). So wiring it on
+**grave** (measured, solo 1.005) at faithful kit values (self 52.8 + team 39.98 = +92.78 Damage Up for
+10s/burst, S1's 48.4 excludeSelf'd) is CORRECT — yet it overshot her three comps from 0.836/0.831/0.800
+COLD to **1.178/1.171/1.219 HOT**. The faithful pierce is now ENABLED (owner-directed 2026-07-17,
+faithful>fit) — so the HOT is a live, isolated residual, not the pierce. Since the pierce is real, the
+overshoot is diagnostic: grave's 0.836 COLD was a **NET of two errors** — the missing pierce (COLD) was
+MASKING a compensating over-model in her burst window (HOT = the documented "AR-carry burst-window
+residual"). **Open question:** where is the burst-window over-model? Candidates — Overheat II/III ramp
+modeled as full-window uptime (her own ⚑3 says durationSec 7.5/5.0 would match the real ramp-in vs the
+current 10s), the unmodeled Prediction-end forced reload (~9-11/fight, ⚑2, would cut shots), or her
+burst-window fire-rate/crit stack. **Method:** a focused grave burst-window recording — fire count across
+the 10s Prediction window + a Pierce-Damage-on/off popup to pin the real pierce magnitude; then trim the
+burst-window over-model (grave should land back near 1.0 with pierce ON). Links: grave override ⚑1,
+engine-modeling-gaps theme 5 / fix #7, damage-calculation.md dmgUp bucket.
+
 ### U18 — Sim ATK term ~+1.63% low = the unmodeled RELATIONSHIP (bond) bonus — RESOLVED + IMPLEMENTED 2026-07-16 (owner-identified)
 **CAUSE (owner, 2026-07-16): the relationship (bond) ATK bonus was unmodeled.** It is a flat
 class×MANUFACTURER stat present in every recording: the manufacturer sets the max bond level
@@ -723,6 +742,12 @@ OVER-credited on SMG core. Cannot be cleanly corrected without a Hit-Rate→core
 SG+AR-first plan, `docs/handoffs/2026-07-17-hitrate-core-landing-plan.md`): once that model's slope is
 validated on AR (jill) + SG (noir), chisato's known +22.37% becomes an SMG VALIDATION point and lets us
 back out the true SMG base and refactor this row. Until then: left as-is, flagged. Owner ruling 2026-07-17.
+**UPDATE 2026-07-17 — contamination MEASURED SMALL, downgraded to minor.** Re-read `chisato smg.MP4` binned
+by her on-screen Extrasensory gauge (HR ▲22.37% on >25%, crosses 25% at fight ~151s; she never bursts →
+FB-deconfounded): SMG near core **HR-off = 0.28 [0.18,0.42]** vs **HR-on = 0.33–0.34**, delta **+0.05
+(p≈0.5, NOT significant)**. So the table's 0.30 is only ~0.02 hot for HR-less SMG units — a MINOR over-credit,
+not a real bug. HR-off SMG-near baseline ≈ 0.28 now measured. Direction (HR raises SMG core) confirmed but
+underpowered; a significant slope needs a bigger HR magnitude on a standard weapon (see the hitrate-core plan).
 
 ### A26 — Shotgun pellet-landing ⚑ + Dorothy: Serendipity consolidation — SEQUENCED (2026-07-15, Fable-arbitrated)
 Two coupled SG items surfaced auditing dorothy-serendipity (owner-greenlit class-A fix). Fable ruled
