@@ -92,7 +92,7 @@ about NIKKE combat interactions, bugs, and hidden mechanics. ~4 hours, no sessio
 - Per-unit: npx tsx scripts/kit.ts <slug>; overrides in src/skills/overrides/*.json;
   validator scripts/validate-overrides.ts <slugs>. Engine: src/engine/sim.ts.
 - Record: probe findings → docs/probe-runs.md; mechanics answers → docs/open-questions.md;
-  per-unit → docs/tier-audit.md. Flag every calibration ⚑. Rebuild site (npm run web:build +
+  per-unit → docs/handoffs/closed/tier-audit.md. Flag every calibration ⚑. Rebuild site (npm run web:build +
   node scripts/web-smoke.mjs) after engine/override changes; full validator sweep at the end.
 - Scope-lock repro: --core-rate 1 --copies 10 --doll no, no cubes; CLI supports 1-5 units.
 - Branch site-auth-deploy, everything uncommitted (user's call; do not commit).

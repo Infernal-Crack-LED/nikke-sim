@@ -1,0 +1,118 @@
+{
+  "unit": "noir",
+  "weaponClass": "SG",
+  "source": "docs/probes/ar-sg-smg/noir sg.MP4",
+  "video": {
+    "width": 2622,
+    "height": 1206,
+    "fps": 60
+  },
+  "definitions": {
+    "center": "core / crosshair center (pink dot) \u2014 all rings concentric",
+    "spread": "the large gray spread circle (cyan in annotation)",
+    "crosshair": "the white broken 4-arc ring",
+    "core": "the boss red core (pink in annotation)",
+    "hitZone": "boss body inside the spread circle \u2014 pellets connect",
+    "missZone": "background/gaps inside the spread circle \u2014 pellets whiff",
+    "areasUnit": "full-image pixels (px^2), measured at native 2622x1206"
+  },
+  "bands": {
+    "mid": {
+      "timestamp": "0:13.9",
+      "frameTimeSec": 13.9,
+      "center": [
+        1577,
+        516
+      ],
+      "diametersPx": {
+        "core": 28,
+        "crosshair": 66,
+        "spread": 162
+      },
+      "spreadAreaPx2": 20523,
+      "hit": {
+        "areaPx2": 14574,
+        "fraction": 0.71
+      },
+      "miss": {
+        "areaPx2": 5949,
+        "fraction": 0.29
+      },
+      "method": "hand-outlined miss zones (ground truth)",
+      "annotation": "docs/data/sg-calc/POC5_missfill.png"
+    },
+    "near": {
+      "timestamp": "1:06.9",
+      "frameTimeSec": 66.9,
+      "center": [
+        1620,
+        551
+      ],
+      "diametersPx": {
+        "core": 31,
+        "crosshair": 66,
+        "spread": 162
+      },
+      "spreadAreaPx2": 20610,
+      "hit": {
+        "areaPx2": 16419,
+        "fraction": 0.797
+      },
+      "miss": {
+        "areaPx2": 4190,
+        "fraction": 0.203
+      },
+      "method": "hand-outlined miss zones (ground truth)",
+      "annotation": "docs/data/sg-calc/noir-sg-near-missred.png"
+    },
+    "far": {
+      "timestamp": "1:15.2",
+      "frameTimeSec": 75.2,
+      "center": [
+        1474,
+        501
+      ],
+      "diametersPx": {
+        "core": 17,
+        "crosshair": 66,
+        "spread": 162
+      },
+      "spreadAreaPx2": 20610,
+      "hit": {
+        "areaPx2": 9582,
+        "fraction": 0.465
+      },
+      "miss": {
+        "areaPx2": 11028,
+        "fraction": 0.535
+      },
+      "method": "hand-outlined miss zones (ground truth)",
+      "annotation": "docs/data/sg-calc/noir-sg-far-missred.png"
+    },
+    "midfar": {
+      "timestamp": "1:57.9",
+      "frameTimeSec": 117.9,
+      "center": [
+        1482,
+        515
+      ],
+      "diametersPx": {
+        "core": 21,
+        "crosshair": 66,
+        "spread": 162
+      },
+      "spreadAreaPx2": 20610,
+      "hit": {
+        "areaPx2": 13074,
+        "fraction": 0.634
+      },
+      "miss": {
+        "areaPx2": 7536,
+        "fraction": 0.366
+      },
+      "method": "hand-outlined miss zones (ground truth)",
+      "annotation": "docs/data/sg-calc/noir-sg-midfar-missred.png"
+    }
+  },
+  "notes": "spread circle fixed at D=162 (screen UI); core scales with boss distance (near 31 -> far 17). crosshair D=66 fixed."
+}

@@ -27,11 +27,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±5%": 7,
-      "±3% ✓": 7,
       "±15%": 8,
-      "±8%": 8,
-      ">15%": 14
+      "±3% ✓": 6,
+      "±8%": 9,
+      ">15%": 13,
+      "±5%": 8
     }
   },
   "units": {
@@ -69,17 +69,17 @@
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.963
+            "ratio": 0.8989
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 0.9378
+            "ratio": 0.9055
           }
         ],
         "n": 2,
-        "mean": 0.9504,
-        "mad": 0.0496,
-        "band": "±5%",
+        "mean": 0.9022,
+        "mad": 0.0978,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -124,12 +124,12 @@
         "records": [
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.9956
+            "ratio": 1.0116
           }
         ],
         "n": 1,
-        "mean": 0.9956,
-        "mad": 0.0044,
+        "mean": 1.0116,
+        "mad": 0.0116,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -173,13 +173,13 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.9097
+            "ratio": 0.9236
           }
         ],
         "n": 1,
-        "mean": 0.9097,
-        "mad": 0.0903,
-        "band": "±15%",
+        "mean": 0.9236,
+        "mad": 0.0764,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -214,7 +214,7 @@
       },
       "caveats": [
         "skill1: 'same squad' heal gate modeled as always-satisfied — if it requires a lore-squad teammate (squad membership not in our data, unverified), recovery events over-fire in other teams (affects on-recovery consumers only)",
-        "skill1: the 8-tick regen (every 1s for 8s) is collapsed to one recovery event per Full Burst — on-recovery consumer uptime is underestimated",
+        "skill1: the 8-tick regen (every 1s for 8s) now emits 8 timed recovery events (heal ticks:8) — on-recovery consumers (Crown-type) stay refreshed across the whole window (engine gap #1 fix, 2026-07-17)",
         "skill1: tier-1 'Potency of HP' is a value-0 placeholder kept only for escalating tier order (heal potency has no engine stat)",
         "skill2: Hit Rate ▲ 10.13% modeled as hitRatePct (engine-inert); its core-hit-rate lift is unmeasured",
         "burst: healing Storage (60.19% Max HP overheal buffer) is unmodeled — defensive, no engine vocabulary; deliberately not encoded as a shield event",
@@ -294,56 +294,56 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 1.0088
+            "ratio": 0.9996
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9994
+            "ratio": 1.0029
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.0082
+            "ratio": 1.0117
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9727
+            "ratio": 0.9846
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9677
+            "ratio": 0.9919
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.9687
+            "ratio": 0.9705
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0416
+            "ratio": 1.0339
           },
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.8082
+            "ratio": 0.804
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.8758
+            "ratio": 0.8723
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.926
+            "ratio": 0.933
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9207
+            "ratio": 0.9296
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9277
+            "ratio": 0.9224
           }
         ],
         "n": 12,
-        "mean": 0.9521,
-        "mad": 0.0577,
+        "mean": 0.9547,
+        "mad": 0.0534,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -429,12 +429,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.4201
+            "ratio": 1.3265
           }
         ],
         "n": 1,
-        "mean": 1.4201,
-        "mad": 0.4201,
+        "mean": 1.3265,
+        "mad": 0.3265,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -543,7 +543,7 @@
         ]
       },
       "caveats": [
-        "skill2/burst: heals are modeled as ONE recovery event per activation; the real per-second ticks (every 1s for 5s / 8s) are not carried — on-recovery consumers (Crown-type) will show undercounted uptime (⚑)",
+        "skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)",
         "burst: Max HP ▲31.68% on the lowest-remaining-HP ally is unmodeled (no own-%-basis Max HP stat key; no lowest-HP targeting) — only matters if it lands on an HP-scaling teammate",
         "skill1: shield cadence (every 120 normal attacks) scales with the unverified datamine cadence tuple (⚑)"
       ],
@@ -608,20 +608,14 @@
       },
       "reference": false,
       "unmodeled": {
-        "skill1": [
-          "Activates when entering Full Burst. Affects all Wind Code enemies.",
-          "Damage Taken ▲ 15.12% for 10 sec."
-        ],
-        "skill2": [
-          "Activates after 10 normal attack(s). Affects 1 Wind Code enemy unit(s) with the lowest remaining HP.",
-          "Damage Taken ▲ 12.12% for 10 sec."
-        ],
+        "skill1": [],
+        "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill1: Wind Code Damage Taken ▲ 15.12% (Full Burst entry, 10s) not modeled — inert vs a non-Wind boss; a big team-wide lever if the boss is Wind.",
-        "skill2: Wind Code Damage Taken ▲ 12.12% (every 10 normal attacks, 10s) not modeled — inert vs a non-Wind boss; enable alongside the skill1 debuff vs a Wind boss.",
-        "burst: ATK ▲ 66.52% of caster's ATK modeled on all allies INCLUDING self (kit says except self; plain `allies` has no excludeSelf) — minor self-inflation of her own SG-capped damage in bursting teams only."
+        "skill1: Wind Code Damage Taken ▲ 15.12% (Full Burst entry, 10s) now modeled via bossElementGate 'Wind' — inert vs a non-Wind (incl. scope-lock) boss; a big team-wide lever if the boss is Wind.",
+        "skill2: Wind Code Damage Taken ▲ 12.12% (every 10 normal attacks = hitCount 100 at 10 pellets/shot, 10s) now modeled via bossElementGate 'Wind' — inert vs a non-Wind boss; stacks with the skill1 debuff vs a Wind boss.",
+        "burst: ATK ▲ 66.52% of caster's ATK on all allies EXCEPT self (kit 'except self') — excludeSelf:true enforced on the `allies` target since 2026-07-17; no longer self-inflates her own SG-capped damage."
       ],
       "board": null
     },
@@ -668,22 +662,22 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9933
+            "ratio": 1.1915
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9975
+            "ratio": 1.1909
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9848
+            "ratio": 1.1243
           }
         ],
         "n": 3,
-        "mean": 0.9919,
-        "mad": 0.0081,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 1.1689,
+        "mad": 0.1689,
+        "band": ">15%",
+        "temp": "HOT ▲"
       }
     },
     "cinderella": {
@@ -725,36 +719,36 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9426
+            "ratio": 0.947
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.9469
+            "ratio": 0.9203
           },
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 1.0078
+            "ratio": 0.9941
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.0012
+            "ratio": 0.9994
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.7119
+            "ratio": 0.7522
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.9476
+            "ratio": 0.925
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0408
+            "ratio": 1.0573
           }
         ],
         "n": 7,
-        "mean": 0.9427,
-        "mad": 0.0715,
+        "mean": 0.9422,
+        "mad": 0.0742,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -796,16 +790,16 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 1.0072
+            "ratio": 1.009
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0746
+            "ratio": 1.0621
           }
         ],
         "n": 2,
-        "mean": 1.0409,
-        "mad": 0.0409,
+        "mean": 1.0356,
+        "mad": 0.0356,
         "band": "±5%",
         "temp": "HOT ▲"
       }
@@ -846,55 +840,55 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.9822
+            "ratio": 0.9678
           },
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.993
+            "ratio": 0.9879
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.1557
+            "ratio": 1.1619
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.1503
+            "ratio": 1.1566
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 1.0045
+            "ratio": 1.0081
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9907
+            "ratio": 1.0042
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.9099
+            "ratio": 0.9212
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0008
+            "ratio": 0.9913
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 1.0149
+            "ratio": 1.0018
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0512
+            "ratio": 1.0389
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0481
+            "ratio": 1.0401
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.048
+            "ratio": 1.054
           }
         ],
         "n": 12,
-        "mean": 1.0291,
+        "mean": 1.0278,
         "mad": 0.0498,
         "band": "±5%",
         "temp": "OK  ·"
@@ -942,28 +936,28 @@
         "skill1: Full Burst Pierce Damage ▲13.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
         "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
         "burst: the Wipe Out area-hit riders are modeled ungated (they fire on this unit's own hits via hitCount 1, not on allies hitting a Wipe Out-afflicted target) — buff uptime is over-credited whenever she is firing outside her 10s post-burst Wipe Out windows",
-        "burst: the parts branch (Damage dealt when attacking core ▲16.26%) is granted to all allies alongside the body branch; on a partless boss no ally can hit parts, so this branch should be inert — yet coreDamagePct is live in-sim (core hits exist on a partless boss), over-crediting every ally's core bucket near-permanently"
+        "burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1)."
       ],
       "board": {
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.0865
+            "ratio": 1.0305
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.96
+            "ratio": 0.9127
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.1054
+            "ratio": 1.0509
           }
         ],
         "n": 3,
-        "mean": 1.0506,
-        "mad": 0.0773,
+        "mean": 0.998,
+        "mad": 0.0562,
         "band": "±8%",
-        "temp": "HOT ▲"
+        "temp": "OK  ·"
       }
     },
     "delta-ninja-thief": {
@@ -1057,12 +1051,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.831
+            "ratio": 0.8238
           }
         ],
         "n": 1,
-        "mean": 0.831,
-        "mad": 0.169,
+        "mean": 0.8238,
+        "mad": 0.1762,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1102,17 +1096,17 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0507
+            "ratio": 1.0627
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.995
+            "ratio": 0.97
           }
         ],
         "n": 2,
-        "mean": 1.0228,
-        "mad": 0.0279,
-        "band": "±3% ✓",
+        "mean": 1.0163,
+        "mad": 0.0463,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -1192,20 +1186,20 @@
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.7225
+            "ratio": 0.7439
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 0.7395
+            "ratio": 0.7359
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9964
+            "ratio": 0.9368
           }
         ],
         "n": 3,
-        "mean": 0.8195,
-        "mad": 0.1805,
+        "mean": 0.8055,
+        "mad": 0.1945,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1260,12 +1254,12 @@
         "records": [
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.8193
+            "ratio": 0.8163
           }
         ],
         "n": 1,
-        "mean": 0.8193,
-        "mad": 0.1807,
+        "mean": 0.8163,
+        "mad": 0.1837,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1340,37 +1334,36 @@
         ],
         "burst": [
           "Prediction:",
-          "Current HP ▼ 1% every 1 sec, lasts for 10 sec.",
-          "Gain Pierce for 10 sec."
+          "Current HP ▼ 1% every 1 sec, lasts for 10 sec."
         ]
       },
       "caveats": [
         "skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst",
         "skill1: Prediction-end 'Removes 100% of ammo' (one forced ~3.35s reload per burst cycle in comps) is not modeled — no engine effect can empty a magazine",
         "skill2: Overheat II/III 30/60-hit build-up approximated as full 10s burst-window uptime (real ramp-in ~2.5s/~5s at the measured 12 rounds/s)",
-        "burst: 'Gain Pierce' (10s) is not modelable — hasPierce is static, so her own Pierce Damage buffs stay inert; undercounts her burst windows in comps (solo unaffected: a lone Burst II never bursts)",
+        "burst: 'Gain Pierce' (10s) is MODELED FAITHFULLY (gainPierce → self, 10s) — its Pierce Damage ▲ +92.78 Damage Up lands during her Prediction window (S1's 48.4 excludeSelf'd, no double-count). This moves her comps ~0.83→1.18 HOT ON PURPOSE (model the real mechanic > fit): the residual HOT is a SEPARATE burst-window over-model, now cleanly isolated and tracked in open-questions U19 (fix with a measurement). Solo unaffected (a lone Burst II never bursts).",
         "burst: team 'Max Ammunition Capacity ▲ 3 round(s)' encoded as maxAmmoPct 3 — the schema is percent-only, flat rounds are inexpressible per-target"
       ],
       "board": {
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.8402
+            "ratio": 1.1786
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.8348
+            "ratio": 1.1716
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.8313
+            "ratio": 1.2198
           }
         ],
         "n": 3,
-        "mean": 0.8354,
-        "mad": 0.1646,
+        "mean": 1.19,
+        "mad": 0.19,
         "band": ">15%",
-        "temp": "COLD ▼"
+        "temp": "HOT ▲"
       }
     },
     "guillotine-winter-slayer": {
@@ -1411,12 +1404,12 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0617
+            "ratio": 1.08
           }
         ],
         "n": 1,
-        "mean": 1.0617,
-        "mad": 0.0617,
+        "mean": 1.08,
+        "mad": 0.08,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -1493,28 +1486,28 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.0519
+            "ratio": 1.0584
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.979
+            "ratio": 0.9802
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.0004
+            "ratio": 1.0016
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0267
+            "ratio": 1.0234
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0138
+            "ratio": 1.0289
           }
         ],
         "n": 5,
-        "mean": 1.0144,
-        "mad": 0.0228,
+        "mean": 1.0185,
+        "mad": 0.0264,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -1540,13 +1533,11 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [],
-        "burst": [
-          "Activates when attacking an Electric Code target. Affects the target. Deals 164.83% of final ATK as additional damage."
-        ]
+        "burst": []
       },
       "caveats": [
         "skill2: the 105.58% random-enemy hit has NO kit-stated trigger — modeled on Skill 1's 30-normal-attack cadence as an unmeasured guess",
-        "burst: the extra 164.83% vs Electric Code targets is not modeled (no Electric-gated burst path; inert vs the non-Electric scope-lock boss)",
+        "burst: the extra 164.83% vs Electric Code targets is now modeled (burstCast + bossElementGate 'Electric'); inert vs the non-Electric scope-lock boss, awakes as a second 164.83% burst hit vs an Electric boss",
         "skill2: the Damage Taken debuff only applies against Electric Code bosses (inert in the scope-lock context)",
         "cadence: assault-rifle fire rate and reload timing are datamined defaults, not yet measured from video"
       ],
@@ -1630,21 +1621,21 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9174
+            "ratio": 0.9155
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9254
+            "ratio": 0.9242
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0856
+            "ratio": 1.075
           }
         ],
         "n": 3,
-        "mean": 0.9761,
-        "mad": 0.0809,
-        "band": "±15%",
+        "mean": 0.9716,
+        "mad": 0.0784,
+        "band": "±8%",
         "temp": "OK  ·"
       }
     },
@@ -1765,24 +1756,24 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.9532
+            "ratio": 0.9565
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9276
+            "ratio": 0.9331
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.2232
+            "ratio": 1.1872
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.9029
+            "ratio": 0.888
           }
         ],
         "n": 4,
-        "mean": 1.0017,
-        "mad": 0.1099,
+        "mean": 0.9912,
+        "mad": 0.1024,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -1859,26 +1850,26 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.0154
+            "ratio": 1.0943
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9881
+            "ratio": 1.0595
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0268
+            "ratio": 1.1337
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0083
+            "ratio": 1.0645
           }
         ],
         "n": 4,
-        "mean": 1.0096,
-        "mad": 0.0156,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 1.088,
+        "mad": 0.088,
+        "band": "±15%",
+        "temp": "HOT ▲"
       }
     },
     "ludmilla-winter-owner": {
@@ -1952,22 +1943,22 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 1.5702
+            "ratio": 1.031
           },
           {
             "comp": "PF maiden solo (boss Water)",
-            "ratio": 1.0205
+            "ratio": 1.0255
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.8079
+            "ratio": 0.7611
           }
         ],
         "n": 3,
-        "mean": 1.1329,
-        "mad": 0.2609,
-        "band": ">15%",
-        "temp": "HOT ▲"
+        "mean": 0.9392,
+        "mad": 0.0985,
+        "band": "±15%",
+        "temp": "COLD ▼"
       }
     },
     "mana": {
@@ -2079,16 +2070,16 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 1.0159
+            "ratio": 1.0122
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 1.017
+            "ratio": 1.0346
           }
         ],
         "n": 2,
-        "mean": 1.0164,
-        "mad": 0.0164,
+        "mean": 1.0234,
+        "mad": 0.0234,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -2133,16 +2124,16 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6625
+            "ratio": 0.6268
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.214
+            "ratio": 1.2235
           }
         ],
         "n": 2,
-        "mean": 0.9383,
-        "mad": 0.2757,
+        "mean": 0.9251,
+        "mad": 0.2984,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2195,16 +2186,16 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9479
+            "ratio": 0.9601
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0651
+            "ratio": 1.0823
           }
         ],
         "n": 2,
-        "mean": 1.0065,
-        "mad": 0.0586,
+        "mean": 1.0212,
+        "mad": 0.0611,
         "band": "±8%",
         "temp": "OK  ·"
       }
@@ -2255,12 +2246,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.7007
+            "ratio": 0.6811
           }
         ],
         "n": 1,
-        "mean": 0.7007,
-        "mad": 0.2993,
+        "mean": 0.6811,
+        "mad": 0.3189,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2310,12 +2301,12 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.7675
+            "ratio": 0.7763
           }
         ],
         "n": 1,
-        "mean": 0.7675,
-        "mad": 0.2325,
+        "mean": 0.7763,
+        "mad": 0.2237,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2363,7 +2354,8 @@
         "provenance": "parser-baseline",
         "date": "2026-07-16",
         "findings": [
-          "S2a hitRatePct restored from unmodeled (hard rule 4) + S2b ATK+29.38 gated inFb (was ungated over-credit) -> board 1.069->1.044 (into +/-5%); F1 Destroy Mode 2.24%/hit rides crit-OFF path but U1 says function-dmg crits (would warm; not pulled)"
+          "S2a hitRatePct restored from unmodeled (hard rule 4) + S2b ATK+29.38 gated inFb (was ungated over-credit) -> board 1.069->1.044 (into +/-5%); F1 Destroy Mode 2.24%/hit rides crit-OFF path but U1 says function-dmg crits (would warm; not pulled)",
+          "0.88 COLD masking-case (2026-07-17): naga's 'auto' no-op default removed her phantom with-shielder team buff (coreDamagePct 85.17 + burst casterAtkPct to all allies) that was propping modernia in N2 — her reading fell 1.0437→0.8807, exposing her own under-model (helm/crown masking pattern). Candidate cause: hitRatePct→core-hit-rate (backlog engine-gap #2); Destroy Mode function damage crit-OFF (theme 12). See docs/engine-modeling-gaps.md."
         ]
       },
       "tier": "MODEL_ONLY",
@@ -2394,12 +2386,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8807
+            "ratio": 0.8695
           }
         ],
         "n": 1,
-        "mean": 0.8807,
-        "mad": 0.1193,
+        "mean": 0.8695,
+        "mad": 0.1305,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -2450,20 +2442,20 @@
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.7006
+            "ratio": 0.7017
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.7507
+            "ratio": 0.7473
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.6879
+            "ratio": 0.6877
           }
         ],
         "n": 3,
-        "mean": 0.7131,
-        "mad": 0.2869,
+        "mean": 0.7122,
+        "mad": 0.2878,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2506,12 +2498,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0259
+            "ratio": 0.9851
           }
         ],
         "n": 1,
-        "mean": 1.0259,
-        "mad": 0.0259,
+        "mean": 0.9851,
+        "mad": 0.0149,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -2555,13 +2547,13 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.6368
+            "ratio": 0.8937
           }
         ],
         "n": 1,
-        "mean": 0.6368,
-        "mad": 0.3632,
-        "band": ">15%",
+        "mean": 0.8937,
+        "mad": 0.1063,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -2606,21 +2598,21 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.9583
+            "ratio": 1.0134
           },
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 1.0928
+            "ratio": 1.1433
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.0685
+            "ratio": 1.0903
           }
         ],
         "n": 3,
-        "mean": 1.0399,
-        "mad": 0.0677,
-        "band": "±8%",
+        "mean": 1.0823,
+        "mad": 0.0823,
+        "band": "±15%",
         "temp": "HOT ▲"
       }
     },
@@ -2658,17 +2650,17 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0831
+            "ratio": 1.0383
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1
+            "ratio": 1.057
           }
         ],
         "n": 2,
-        "mean": 1.0915,
-        "mad": 0.0915,
-        "band": "±15%",
+        "mean": 1.0477,
+        "mad": 0.0477,
+        "band": "±5%",
         "temp": "HOT ▲"
       }
     },
@@ -2720,12 +2712,12 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.6847
+            "ratio": 0.691
           }
         ],
         "n": 1,
-        "mean": 0.6847,
-        "mad": 0.3153,
+        "mean": 0.691,
+        "mad": 0.309,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2764,20 +2756,20 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.0272
+            "ratio": 1.0279
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9919
+            "ratio": 0.9926
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9124
+            "ratio": 0.9042
           }
         ],
         "n": 3,
-        "mean": 0.9771,
-        "mad": 0.041,
+        "mean": 0.9749,
+        "mad": 0.0437,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -2821,18 +2813,18 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 0.5382
+            "ratio": 1.0166
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.5538
+            "ratio": 0.9505
           }
         ],
         "n": 2,
-        "mean": 0.546,
-        "mad": 0.454,
-        "band": ">15%",
-        "temp": "COLD ▼"
+        "mean": 0.9836,
+        "mad": 0.0331,
+        "band": "±5%",
+        "temp": "OK  ·"
       }
     },
     "rapi-red-hood": {
@@ -2874,29 +2866,29 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.0178
+            "ratio": 0.9909
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9827
+            "ratio": 0.9921
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8677
+            "ratio": 0.8855
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0243
+            "ratio": 1.0005
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0107
+            "ratio": 0.9906
           }
         ],
         "n": 5,
-        "mean": 0.9806,
-        "mad": 0.0405,
-        "band": "±5%",
+        "mean": 0.9719,
+        "mad": 0.0283,
+        "band": "±3% ✓",
         "temp": "OK  ·"
       }
     },
@@ -2983,16 +2975,16 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.7209
+            "ratio": 0.7248
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.0116
+            "ratio": 1.0127
           }
         ],
         "n": 2,
-        "mean": 0.8662,
-        "mad": 0.1454,
+        "mean": 0.8687,
+        "mad": 0.1439,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -3070,20 +3062,20 @@
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.986
+            "ratio": 0.9831
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.1098
+            "ratio": 1.088
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.085
+            "ratio": 1.0839
           }
         ],
         "n": 3,
-        "mean": 1.0602,
-        "mad": 0.0696,
+        "mean": 1.0516,
+        "mad": 0.0629,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -3204,16 +3196,16 @@
         "records": [
           {
             "comp": "T1 wind-weak (boss Iron)",
-            "ratio": 0.8918
+            "ratio": 0.8828
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.2053
+            "ratio": 1.2
           }
         ],
         "n": 2,
-        "mean": 1.0486,
-        "mad": 0.1567,
+        "mean": 1.0414,
+        "mad": 0.1586,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -3299,26 +3291,26 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.1282
+            "ratio": 0.9811
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.1465
+            "ratio": 0.997
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.1884
+            "ratio": 1.0309
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9811
+            "ratio": 0.9192
           }
         ],
         "n": 4,
-        "mean": 1.1111,
-        "mad": 0.1205,
-        "band": "±15%",
-        "temp": "HOT ▲"
+        "mean": 0.9821,
+        "mad": 0.0334,
+        "band": "±5%",
+        "temp": "OK  ·"
       }
     },
     "soda-twinkling-bunny": {
@@ -3358,18 +3350,19 @@
       "caveats": [
         "skill1/burst: the Golden Chip pool is not dynamically tracked — crit damage (42) and the every-burst ATK ▲65.25 gate are steady-state derivations valid for standard double-B3 comps (pre-consume trajectory 50/44/40/38/31, all ≥30); comps that drain below 30 pre-consume over-credit",
         "skill2: Full Burst extension modeled as a flat +4s average; the kit is chip-gated CUMULATIVE (+5s at ≥20 chips = TE-I+TE-II, +2s at 10–19) — late-fight Full Bursts run shorter than modeled (measured last-FB countdown 12.50s at 18–19 chips)",
-        "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)"
+        "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)",
+        "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected)."
       ],
       "board": {
         "records": [
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.9676
+            "ratio": 0.9542
           }
         ],
         "n": 1,
-        "mean": 0.9676,
-        "mad": 0.0324,
+        "mean": 0.9542,
+        "mad": 0.0458,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -3450,14 +3443,14 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.0436
+            "ratio": 0.9879
           }
         ],
         "n": 1,
-        "mean": 1.0436,
-        "mad": 0.0436,
-        "band": "±5%",
-        "temp": "HOT ▲"
+        "mean": 0.9879,
+        "mad": 0.0121,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "tove": {
@@ -3546,25 +3539,25 @@
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 1.1277
+            "ratio": 1.1369
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.1609
+            "ratio": 1.1615
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 1.0579
+            "ratio": 1.093
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.2138
+            "ratio": 1.2274
           }
         ],
         "n": 4,
-        "mean": 1.1401,
-        "mad": 0.1401,
-        "band": "±15%",
+        "mean": 1.1547,
+        "mad": 0.1547,
+        "band": ">15%",
         "temp": "HOT ▲"
       }
     },
@@ -3612,12 +3605,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 1.0679
+            "ratio": 1.0649
           }
         ],
         "n": 1,
-        "mean": 1.0679,
-        "mad": 0.0679,
+        "mean": 1.0649,
+        "mad": 0.0649,
         "band": "±8%",
         "temp": "HOT ▲"
       }

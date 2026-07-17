@@ -247,6 +247,12 @@ function chargeSpeedRows(perLinePct: number) {
 // We ceil that infimum to 0.01% so the displayed value, once met, actually lands
 // on N frames (the raw boundary rounds UP to N+1 — Math.round ties go up).
 const FRAME_MS = 1000 / 60; // engine runs at 60 fps
+// Release-fired charge weapons (SR/RL) add a fixed ~22-frame bolt/release
+// recovery after each shot on auto that charge speed does NOT reduce
+// (SR_BOLT_RECOVERY_FRAMES in src/engine/sim.ts). Full Burst runs 10s = 600
+// frames, so shots per FB = 600 / (chargeFrames + release latency).
+const RELEASE_LATENCY_FRAMES = 22;
+const FULL_BURST_FRAMES = 600;
 function chargeFrameBreakpoints(baseFrames: number) {
   const rows: {
     frames: number;
@@ -2842,6 +2848,19 @@ export function App({ user }: { user: AuthUser | null }) {
       // ----- Charge Speed modal data -----
       const chc = chargeChar ? data.characters[chargeChar] : null;
       const baseFrames = chc ? chc.chargeFrames : 60;
+      // Release latency only applies to "old-style" release-fired charge weapons.
+      // New-style AUTOFIRE units are datamined via role.weapon.shot_detail.input_type
+      // === 'DOWN_Charge' (liberalio, anis: star, neon: VE, cinderella) — same SSOT the
+      // engine uses (isAutofireCharge). The charFixes.noBoltRecovery fallback is a dormant
+      // hand-tune hook (no active override sets it today). The generic reference (no unit
+      // picked) is a standard release-fired weapon.
+      const chInput = (chc?.role?.weapon as { shot_detail?: { input_type?: string } } | undefined)
+        ?.shot_detail?.input_type;
+      const chargeLatency =
+        chargeChar &&
+        (chInput === 'DOWN_Charge' || overrides[chargeChar]?.charFixes?.noBoltRecovery)
+          ? 0
+          : RELEASE_LATENCY_FRAMES;
       const allRows = chargeFrameBreakpoints(baseFrames);
       // Deep breakpoints need charge speed most teams never reach; hide them
       // behind a toggle so the default view stays actionable.
@@ -2915,7 +2934,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   <th>Charge speed</th>
                   <th>Charge frames</th>
                   <th>Charge time</th>
-                  <th>Saved vs base</th>
+                  <th>Shots per FB</th>
                 </tr>
               </thead>
               <tbody>
@@ -2928,8 +2947,10 @@ export function App({ user }: { user: AuthUser | null }) {
                     <td className='r'>{row.frames}f</td>
                     <td className='r'>{Math.round(row.ms)} ms</td>
                     <td className='r'>
-                      −{baseFrames - row.frames}f (
-                      {Math.round((baseFrames - row.frames) * FRAME_MS)} ms)
+                      {(
+                        FULL_BURST_FRAMES /
+                        (row.frames + chargeLatency)
+                      ).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -2974,11 +2995,19 @@ export function App({ user }: { user: AuthUser | null }) {
                 breakpoint on their own.
               </li>
               <li>
-                This table is the <b>charge phase only</b>. On auto,
-                release-fired RLs and snipers add a fixed ~22-frame release/bolt
-                recovery after each shot that charge speed does <i>not</i>{' '}
-                reduce, so real cadence is a little longer than the charge time
-                shown.
+                On auto, <b>old-style release-fired</b> RLs and snipers add a
+                fixed ~22-frame release/bolt recovery after each shot that charge
+                speed does <i>not</i> reduce, so real cadence is a little longer
+                than the charge time shown. <b>Shots per FB</b> is the full
+                cadence — 600&nbsp;frames (10s of Full Burst) ÷ (charge frames +{' '}
+                {chargeLatency}f release) — so it counts real shots, not just the
+                charge phase.{' '}
+                {chargeLatency === 0 && (
+                  <>
+                    {chc?.name} <b>autofires</b> (or bakes its cadence into the
+                    charge), so she takes no release latency.
+                  </>
+                )}
               </li>
               <li>
                 Charge speed past 100% is wasted (no shot charges faster than

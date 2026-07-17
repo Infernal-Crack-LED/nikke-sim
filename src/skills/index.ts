@@ -34,6 +34,8 @@ export interface OverrideFile {
   // + high core + Pierce + attack-dmg"). Range-gated to near (where the boss affords the trigger). MEASURED
   // gate; the "80 landed on the small core" story is interpretive. See open-questions A26.
   consolidation?: ConsolidationConfig;
+  // named live resource pools (soda-twinkling-bunny's Golden Chip) — see CharacterSkills.resources
+  resources?: { name: string; initial: number; min?: number; max?: number }[];
   burstSnapshotsPreFb?: boolean;
   // All three slots are REQUIRED for roster units (validated by
   // scripts/validate-overrides.ts); typed optional only so partially-built
@@ -89,5 +91,6 @@ export function resolveSkills(
     burstSnapshotsPreFb: override.burstSnapshotsPreFb,
     pierceModes: override.pierceModes,
     consolidation: override.consolidation,
+    resources: override.resources,
   };
 }

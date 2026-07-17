@@ -8,6 +8,187 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-17) Hit-Rate → core-hit multiplier (`HRCORE`) — LIVE by default (owner-set), ⚑ DERIVED estimate.**
+  `hitRatePct` was engine-inert ("100% accuracy assumed"). Higher Hit Rate shrinks the auto-aim reticle
+  (TricK's MEASURED SG reticle regression −1.4285·x+168.3931 px) → tighter bloom → higher core-hit fraction.
+  Engine: `M(w,hr) = (reticle(0)/reticle(hr))^p_w` scales the existing measured `CORE_BY_WEAPON_BAND` row
+  (never refits it — hard-constraint #3 intact; M=1 at hr=0). Band-INDEPENDENT (per-band core cancels in the
+  ratio). `p_w = ln(core_base_near)/ln(SAT/circle_scale)` from datamined `accuracy_circle_scale` (AR 75/SMG
+  110/SG 250) + saturation bracket; reticle floored (R4) so M is finite+monotone ∀ hr≥0. Applies to AR/SMG/SG
+  via the existing seeded core Bernoulli (operates exactly like crit); MG/SR/RL (pinpoint) + zero-base SG
+  mid/far bands unchanged. **DERIVED, NOT measured** — the exponent comes from reticle geometry, NOT from
+  fitting the board (measured>fudge; the board is a TEST). **Validation:** reproduces the pre-registered
+  predictions — jill (AR +80.78%) core 0.40→0.68 ∈ measured 0.78[0.55,0.91]; chisato (SMG +22.37%) 0.28→0.31
+  ∈ 0.34[0.22,0.48]. Default `circle10` (steep) bracket lands in jill's CI; SAT=1 (shallow) misses low ⇒ data
+  leans steep. Board off→on: only HR carriers move (noir UNCHANGED — burstCast HR on a lone B3 never fires;
+  the load-bearing gating canary). **Fable gate = APPROVE-WITH-REQUIRED-CHANGES (all 5 folded):** R4 floor,
+  jill validator, circle→unit basis, ⚑-UNVALIDATED additive-in-pp composition (R8), quency-may-not-select-the-
+  bracket. **OWNER RULING:** set LIVE by default despite ⚑-unvalidated status; `HRCORE=0` disables for A/B. Risk
+  flagged & accepted: an unvalidated estimate on the live board, and **quency-escape-queen overshoots to 1.04
+  HOT** (her cadence ⚑ confounds it — a FLAG to investigate, NOT a bracket-flip trigger; bracket authority =
+  direct measurement via `asuka` (AR/Fire), still a testing-request). Snapshot regenerated (5 HR-carrier totals:
+  chisato +0.90%, quency-escape-queen +5.6–6.2%, dorothy-serendipity +0.23%; measured-truth FB asserts untouched
+  — HRCORE moves core damage only, not gauge/rotation). Full derivation + validation:
+  `docs/handoffs/2026-07-17-hitrate-core-implementation-plan.md`. OPEN threads: asuka bracket refinement; quency
+  cadence + overshoot; SG landing (H2, hit-rate→pellet-landing) NOT built (out of scope).
+
+- **(2026-07-17) Timed pierce primitive (`gainPierce`) — LANDED and ENABLED on grave (faithful>fit); the
+  residual HOT is a separate, now-isolated burst-window over-model (theme 5 / engine-modeling-gaps fix #7).**
+  Static `hasPierce` couldn't express "Gain Pierce for N sec," so timed-pierce kits left their Pierce
+  Damage ▲ buffs as dead blocks. Engine: added a `gainPierce` effect that sets a per-unit `pierceUntilFrame`
+  window on the block's target(s); the damage-formula pierce gate is now
+  `hasPierce || pierceUntilFrame > frame || opts.pierceActive`. **MECHANISM (owner-confirmed 2026-07-17):**
+  Pierce Damage ▲ is a real **Damage-Up-bucket** entry (see damage-calculation.md) that applies to ANY
+  pierce-damage-type unit — static or during a timed window — and **DOES apply on the partless scope-lock
+  boss.** Only the *separate* pierce **core+body double-hit** is multipart-only (`PIERCE_CORE_DOUBLE=false`);
+  do not conflate the two. **grave is the flagship opt-in and is ENABLED:** burst → self `gainPierce` 10s, so
+  during her Prediction window her Pierce Damage ▲ lands (self pierceDamagePct 52.8 + team 39.98 = +92.78
+  Damage Up; S1's 48.4 `excludeSelf`'d so it does not double-count — Heat Emission is OFF during Prediction,
+  and grave-self can never use the Heat-Emission pierce). This moves her three comps 0.836/0.831/0.800 COLD →
+  **1.178/1.171/1.219 HOT** — kept ON PURPOSE per the owner (faithful > fit): the pierce is a real mechanic,
+  so it is modeled; the remaining HOT is a SEPARATE, now-cleanly-isolated over-model in her burst window (the
+  "AR-carry burst-window residual" the missing pierce had been masking as net-COLD). Modeling the mechanic +
+  tracking the single residual (open-questions **U19**) beats leaving pierce off (a fit-fudge) plus a
+  forgettable "add-pierce-later" TODO. Regression snapshot regenerated (grave-only: her two comps; teammates
+  verified stable — only she becomes pierce-tagged, her team pierce buff stays inert on non-pierce allies).
+  Solo 1.005 unaffected (a lone B2 never bursts → no window). U19 next step: a focused grave burst-window
+  recording (fire count + Pierce-Damage on/off popup) to trim the burst-window over-model. (An earlier draft
+  wrongly called the pierce dmgUp partless-inert and backed grave out — corrected + re-enabled.)
+
+- **(2026-07-17) `bossElementGate` block gate — element-coded triggered lines now compose with any
+  trigger (theme 10 / engine-modeling-gaps fix #6).** The schema previously had only a `bossElement`
+  TRIGGER (a *permanent* element-gated passive) — it could not express "when entering Full Burst / after
+  N hits / on burst cast **against a [element]-Code boss**." Added a block-level gate `bossElementGate:
+  <element>` evaluated in sim.ts `applyBlock` next to fbGate/swapGate: the block fires on its real
+  trigger only when `cfg.bossElement` matches. Inert vs any non-matching boss (incl. the neutral
+  scope-lock boss), so it never disturbs graded comps. **Opted in per verified characters.json prose:**
+  helm-aquamarine burst "when attacking an Electric Code target → +164.83% additional damage" (a second
+  `burstCast` flatDamage 164.83, `bossElementGate:'Electric'`; was UNMODELED — the exact schema gap her
+  note flagged), and brid-silent-track's two Wind-Code team debuffs (S1 `fullBurstEnter`+Wind → enemy
+  damageTakenPct 15.12/10s; S2 `hitCount 100` [10 NA × 10 pellets] +Wind → enemy damageTakenPct 12.12/10s;
+  were SKIPPED-CONDITIONAL). **Verified** both directions: inert on a neutral boss (byte-identical damage
+  to pre-change), and on the matched boss the gate ALONE (isolated from the ×1.1 advantage by flipping the
+  gate to a wrong element) adds brid +32.2M (Wind team-wide debuff) / helm-aquamarine +4.9M (Electric burst
+  rider). `verify.sh` green, all snapshots stable (neither unit is in a graded comp). **Deliberately NOT
+  applied to the element-ADVANTAGE buffs** (anis-sparkling-summer, guillotine-winter-slayer,
+  elegg-boom-and-shock, asuka): `elemAdvantageDamagePct` is already auto-gated by `advantaged(u)` in the
+  damage math (sim.ts:899/942), so those buffs are already correctly inert on non-matched bosses; their
+  residual gaps (e.g. asuka's shield-status gate) are separate themes. eve keeps its permanent `bossElement`
+  trigger for its always-on element-coded lines.
+
+- **(2026-07-17) Per-tick recovery-event emitter — the `heal` effect gained `ticks` + `intervalSec`
+  so per-second heal-over-time lines refresh on-recovery consumers across the whole window (theme 2b /
+  engine-modeling-gaps fix #1, the top blast-radius gap).** Previously a `heal` emitted ONE recovery
+  event per activation, so a HoT ("Recovers X% of Max HP every 1 sec for N sec") collapsed to a single
+  proc — under-firing Crown-type "when recovery takes effect → team ATK ▲" consumers (a hard-rule-2
+  violation: the heal is the trigger, not defensive noise). Engine: `heal` now takes optional `ticks`
+  (default 1 = instant, back-compatible) + `intervalSec` (default 1); it fires the first recovery event
+  immediately and schedules the remaining `ticks-1` on a `recoveryEmitters` queue processed per-frame,
+  each tick re-firing every target's `recovery`-triggered blocks (shared `fireRecovery` helper). Opted
+  in per verified kit prose: **anchor-innocent-maid** S1 `ticks:8` ("every 1 sec for 8 sec"), **blanc**
+  S2 `ticks:5` (5s HoT) + burst `ticks:8` (8s HoT). **Inert across all graded comps** — no graded comp
+  pairs a recovery consumer with a HoT emitter (Crown + `helm` (SR/Water) in T4 already refreshes every
+  full-charge shot, unaffected), so verify.sh stayed green with all regression snapshots stable. Independently
+  verified end-to-end on a Crown + anchor-innocent-maid team: flipping the anchor HoT 1→8 ticks lifted
+  team damage **766.97M → 790.32M (+3.0%, every unit up)** — the expected COLD correction, entirely from
+  Crown's team attackDamagePct 20.99% consumer buff gaining uptime. Still UNMODELED (heals not carried as
+  `heal` blocks): prika (burst 25-tick HoT), trina (S1 5-tick), mint (3-tick); naga/mana heals are
+  instant (not HoTs); anis-star heals dropped — convert per-unit in the `unmodeled` backfill when touched.
+
+- **(2026-07-17) `weaponSwap` gained per-swap `pullsPerSec` (fire cadence) + `weapon` (class)
+  overrides so burst weapon-swaps load their OWN datamine spec (theme 7, engine-modeling-gaps).
+  nayuta LANDED (SR-class); moran's fire-cadence value REFUTED by the board and backed out.** The
+  `weaponSwap` effect/state previously could not express a swap weapon whose fire rate or class
+  differs from the base — so swap shots used the base weapon's cadence + range/core banding. Engine:
+  added `pullsPerSec?` (used in the non-charge fire-cadence branch during a swap) and `weapon?` (an
+  `effWeapon = u.swap?.weapon ?? u.char.weapon` now drives the +30% range-band eligibility and the
+  auto-core rate). Both inert until an override opts in.
+  - **nayuta ✅ LANDED:** her "Memory Incineration" burst swap is an SR mode but was range-banded +
+    core-rated as her base **SMG**. Set `weapon:'SR'` → SR gains the +30% bonus in `midfar`+`far` and
+    the HI auto-core rate (SMG only qualifies in `mid`), exactly the bands where the finding measured
+    a "~2× loss." **Board 0.658 COLD → 0.894** (MAD 0.342→0.106), corroborated by her recording; the
+    residual 0.894 is her other flagged uncertainties (380.46% block scope, chargeTime F2, dropped
+    Hit-Rate F3), deliberately not re-fudged. chargeTimeSec kept 2.13 (swaps are exempt from the
+    engine's auto SR bolt-recovery, so the cycle is folded in — not double-counted).
+  - **moran ⛔ REFUTED then MEASURED — no override; stays base 12/s:** the kit-status finding's datamine
+    (swap shot_id 1028102 rate_of_fire 1440 = **24 pulls/s**, 2× base AR 12/s) was applied via
+    `pullsPerSec:24` and predicted to "cover the 29% gap." The board (3 real-recording comps) **refuted**
+    it: 24/s overshot **0.712 COLD → 1.325 HOT** (tight ±0.7% seedSD). Backed out (not fudged). Then
+    **directly measured** from `moran control.mov` (60fps read, 2026-07-17): her burst prose states NO
+    fire-rate change (only "Damage 14.7% of final ATK" + unlimited ammo); video confirms it — normal fire
+    ~12/s (clean discrete flashes/tracers every 5-6 frames) and swap-window cadence ~10-14/s (boss
+    damage-popup density + tracers), i.e. **base AR ~12/s, unambiguously far below 24/s**. The datamined
+    "1440" was an unlabeled `skill_value` integer (burst `skill_value_data` [1146, **1440**, 1028102, …])
+    with no prose support — NOT a fire rate. So moran keeps base 12/s (faithful). Her **0.712 COLD was then
+    DIAGNOSED as a THROUGHPUT gap, not per-shot** (FOLLOW-UP, footage-blocked): her measured per-shot popup
+    reconciles EXACTLY to the standard formula — recon 30,478 = 14.71% × 131,441 (Crown casterAtkPct-64.51
+    buffed ATK) × 1.5723 (Helm attackDamage dmgUp), 0.3% match — so the coef is faithfully 14.7% of final
+    ATK and the team buffs ARE modeled (an extra-finalATK factor would give ~2.5B/shot, refuted). But sim
+    217M vs real 288M with per-shot matching ⇒ real lands ~1.3× more HITS (~2800 vs 2100), ~1.5× throughput
+    in the swap window — a faster swap fire-rate or the swap weapon firing >1 bullet/pull, NOT measurable
+    from the comp recording (bloom/occlusion/overlap; the recon hit the same wall). Needs an isolated
+    moran-solo recording or the swap weapon's `shot_count` datamine. A textbook premise-gate catch: an
+    unlabeled datamine integer, reused second-hand as a "fact," refuted by the board and then measurement.
+  Regression snapshot updated (nayuta T5 +36.4%, understood); verify.sh green. Trail:
+  `docs/engine-modeling-gaps.md` theme 7 / fix #5.
+
+- **(2026-07-17) d-killer-wife's Wipe-Out PARTS branch (all-ally `coreDamagePct 16.26`) removed as
+  SKIPPED-CONDITIONAL — it was a live HOT over-credit on the partless v1 boss (theme 6, engine-modeling-gaps).**
+  Her burst Wipe-Out grants an area-dependent buff: kit prose "Allies that hit parts: Damage dealt when
+  attacking core ▲16.26%/10s" (PARTS-gated) vs "Allies that hit the body: ATK ▲12.19% of skill user's
+  ATK/10s" (BODY branch). The parts branch can NEVER be earned on the partless scope-lock boss (no parts to
+  hit), but the engine modeled it as an ungated all-ally core-damage buff — and since core hits DO exist on
+  a partless boss's core, it inflated every ally's core bucket near-permanently. Fix: removed the
+  `coreDamagePct 16.26` effect (documented SKIPPED-CONDITIONAL in the override caveat, repo convention for
+  v1-partless-inert lines cf. brid's Wind-Code debuffs); the body-branch `casterAtkPct 12.19` (always active
+  on the partless body) is KEPT. Board win: **d-killer-wife 1.055 HOT → 0.998 OK** (MAD 0.079→0.056),
+  **takina 1.047 HOT → 0.988** (into ±3%), rapi-red-hood into ±3%, jill/liberalio tighter; overall board
+  within-±3% 5→6, worse 22→21. The COLD comp-mates that dipped (grave 0.827→0.823, maxwell's 0.66→0.63 comp,
+  milk-blooming-bunny 0.706→0.681) were already cold for their OWN documented under-models — the wrong buff
+  had been masking them (faithful > fit; not re-added). Regression snapshot updated (2 comps × members,
+  1.1–5.6% drops, all understood); verify.sh green. Re-enable the parts branch only for a boss with
+  destructible parts (OUT OF SCOPE for v1). Trail: `docs/engine-modeling-gaps.md` theme 6.
+
+- **(2026-07-17) Engine now honors `excludeSelf` on all typed-ally targets (`allies` /
+  `alliesTopAtk` / `alliesOfElement` / `alliesOfClass`); the "arcana-fortune-mate bug family" (theme
+  11, engine-modeling-gaps) is CLOSED.** The `excludeSelf` flag only existed on `alliesLowestAtk` /
+  `alliesOfWeapon` — the other multi-ally kinds silently returned the caster even when the kit said
+  "except self", inflating the caster's own buffed damage. Fix: added `excludeSelf?` to those four
+  `TargetDef` kinds and filtered the candidate pool in `resolveTargets` (sim.ts) BEFORE any top-N
+  slice (exclude-then-take-N, faithful to "N highest-ATK ally except the skill user"). Four overrides
+  opted in against verified `data/characters.json` prose: **maiden-ice-rose** (alliesOfElement Electric
+  "except for self"), **brid-silent-track** (burst `allies` "except self"), **miranda** (2× alliesTopAtk
+  "except the skill user"), **soda-twinkling-bunny** (alliesTopAtk "except the skill user" — her self is
+  already covered by a separate self-block). Board impact concentrated in maiden (Electric RL): her
+  elemAdvantage +40.9% self-buff was live on the Electric-advantaged Water boss → T2 elec-weak comp
+  **1.55 HOT → 1.03**, board **MAD 0.253 → 0.098**, range 0.81–1.55 → 0.76–1.03. The map's "1.13 HOT"
+  was the MEAN of [0.81, 1.03, 1.55]; the 1.55 was pure self-inflation. Residual 0.76 (Wind comp) is
+  her SEPARATE, previously-documented burst Max-HP-scaling under-model — deliberately NOT masked by
+  re-adding the self-buff (faithful > fit). brid/miranda are not board-measured and soda isn't top-ATK
+  in her graded comp (N3), so those three are faithful-but-board-neutral today. False positives ruled
+  out via a whole-roster prose cross-ref: blanc/mana carry "except self" on lowest-HP / incapacitated
+  targets (unmodeled theme-13/18 lines, not these kinds). Regression snapshot updated (2 maiden comps,
+  −6.48% / −33.30%, both understood); verify.sh full green. Trail: `docs/engine-modeling-gaps.md`
+  theme 11 / fix #2.
+
+- **(2026-07-17) SMG class fire cadence adopted 20→24 pulls/s = the datamined `rate_of_fire` 1440 rpm
+  (game source authoritative); role-audit D.2, owner decision a.** The engine's SMG class default
+  (`PULLS_PER_SEC.SMG`) was 20/s while the datamined weapon-table ROF is 1440 rpm = 24/s — the ONLY class
+  default disagreeing with the datamine (AR 12=720, SG 1.5=90 match). Owner ruling: the game source wins.
+  Warms all 7 SMG units +10-19% normal-fire damage (chisato +19.4%, quency-escape-queen +12.0%,
+  little-mermaid +10.1%; no SMG override had ever set `pullsPerSec`). **One measured-truth FB count was
+  UNPINNED as a consequence:** the PH-water comp (two SMGs + little-mermaid's `teamAmmo`-400 → 37%
+  `fillGauge`) reads 13 FBs at 24/s vs the video-measured 12 — reclassified into the known ±1
+  burst-cycle-boundary set (T4/T7/N2/N4/N5), an UNDERSTOOD over-prediction (the +20% SMG ammo rate trips
+  LM's big fill ~one cycle early), NOT a silenced drift. Every OTHER SMG measured-FB comp
+  (chisato/nayuta/quency-escape-queen/little-mermaid) still holds at 24. Two cheaper reconciliations were
+  tested and REFUTED first: (a) recalc the gauge-per-shot table ×20/24 to hold gauge/sec constant → still
+  13 (the FB is ammo-rate-driven, not normal-fire-gauge-driven); (b) count quency's 2 muzzles as 2 ammo
+  → 0 FB change (crown's MG dominates the teamAmmo counter). RE-PIN TRIGGER: restore PH-water=12 when the
+  burst-cycle increment fix lands or after a fresh FB re-measure. Engine `PULLS_PER_SEC` + regression.ts
+  (PH-water unpinned) + snapshot regenerated; verify.sh green. Full trail:
+  `docs/handoffs/2026-07-17-role-object-audit.md` D.2.
+
 - **(2026-07-17) SG pellet-landing modeled as a seeded per-band pellet-count JITTER + boss-size profiles;
   the pellet investigation (open-questions A26 → U17) is CLOSED as an owner override.** Rather than pursue
   per-unit landing profiles or a third far anchor (the U17 HOLD), the owner rules landing modeled two ways:

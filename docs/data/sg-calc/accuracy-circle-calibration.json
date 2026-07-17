@@ -1,0 +1,34 @@
+{
+  "what": "Maps the game's accuracy_circle_scale (characters.json) to on-screen reticle diameter in pixels, at the fixed scope-lock recording resolution (2622x1206).",
+  "relation": {
+    "form": "diameter_px = k * scale + C",
+    "k": 0.751,
+    "C": -25.2,
+    "equivalent": "diameter_px = 0.751 * (scale - 33.6)",
+    "rSquared": 0.999,
+    "notes": "Linear with offset, NOT proportional. Slope ~3/4 px per scale-unit; ~34-scale dead zone (below scale 34 the circle renders as ~0px). Fit from 3 independent points; residuals <=2.6px."
+  },
+  "calibrationPoints": [
+    { "element": "AR inner accuracy circle", "unit": "scarlet", "recording": "docs/probes/ar-sg-smg/scarlet ar.MP4", "timestamp": "0:10", "scale": 75, "diameterPx": 29 },
+    { "element": "SMG crosshair (solid ring)", "unit": "quency", "recording": "docs/probes/ar-sg-smg/quency smg.MP4", "timestamp": "0:22", "scale": 110, "diameterPx": 60 },
+    { "element": "SG spread circle (gray)", "unit": "noir", "recording": "docs/probes/ar-sg-smg/noir sg.MP4", "timestamp": "0:13.9 (mid band)", "scale": 250, "diameterPx": 162 }
+  ],
+  "crossCheck": {
+    "finding": "AR 75-scale circle (29px) == Noir mid-band boss core (28px), measured independently. Mid is the AR's optimal range.",
+    "meaning": "At optimal range the AR accuracy circle shrinks to the boss-core diameter => every shot inside the accuracy zone is a core hit. This is the design definition of optimal range, and it independently validates the scale->pixel map (the core never entered the regression yet lands on the predicted AR circle).",
+    "coreDiameterPx_midBand": 28
+  },
+  "coreDiameterVsRange": {
+    "form": "core_diameter_px = k / (range + c)",
+    "k": 2100,
+    "c": 47,
+    "inverted": "range = 2100 / core_diameter_px - 47",
+    "rSquared": 0.93,
+    "selection": "Inverse-with-offset (perspective projection: apparent size ~ 1/(distance + camera offset)). Pure inverse d=k/r is RULED OUT (near d*r maxes 775 < far d*r mins 952, no overlap within range bounds). Linear d=a-b*r RULED OUT (mid-far implied range 57.7 exceeds its 35-55 bound). Inverse-offset is the only tested form with all four bands in-bounds.",
+    "rangeBoundsUsed": { "near": [15, 25], "mid": [25, 45], "midfar": [35, 55], "far": [56, 100] },
+    "impliedRanges": { "near": 20.7, "mid": 28.0, "midfar": 52.9, "far": 76.4 },
+    "notes": "k, c ride on fuzzy range midpoints (treat +/-10%); the FORM is robustly selected by the bounds. One hard range value at any band would pin k,c exactly."
+  },
+  "approximationCaveat": "ALL numbers here (both relations, all measured diameters, hit/miss areas) are APPROXIMATIONS that are logically self-consistent and cross-validated (e.g. AR optimal-circle == mid core to 1px), intended as a principled BASELINE. They cannot reach true in-game accuracy without the game source code (exact reticle render formula, camera params, bloom RNG). Use as a grounded starting point, refine with more measurements, never treat as measured-truth.",
+  "usage": "Chain: (1) accuracy_circle_scale -> circle px via 0.751*scale-25; (2) core px -> range via 2100/coreD-47 (or range -> core px). Together they give circle-vs-core geometry at any range for AR/SMG/SG, feeding core-hit-rate and SG pellet-landing. Worked SG example: noir-sg-bands.json."
+}

@@ -112,8 +112,13 @@ const COMPS: Comp[] = [
     name: 'PH water B3s',
     slugs: ['little-mermaid', 'crown', 'quency-escape-queen', 'dorothy-serendipity', 'guillotine-winter-slayer'],
     boss: 'Fire',
-    realFullBursts: 12, // video, rrh probe "water weak vid" (2026-07-14): 12/12 splash-counted,
-    // first banner exact (2:54); guillotine-winter-slayer never bursts (bench B3) confirmed.
+    // FB UNPINNED 2026-07-17 (SMG cadence 20→24 = datamined ROF, role-audit D.2 owner decision a):
+    // measured = 12 (video, rrh probe "water weak vid" 2026-07-14: 12/12 splash-counted, first banner
+    // exact 2:54) but sim now reads 13. This is the SAME ±1 burst-cycle-boundary over-prediction as
+    // T4/T7/N2/N4/N5 — the only SMG comp it affects (2 SMGs + little-mermaid's teamAmmo-400/37% fill,
+    // whose +20% ammo rate trips one cycle early). Every OTHER SMG measured-FB comp still holds at 24.
+    // Re-pin to 12 if/when the burst-cycle increment lands, or after a fresh PH-water FB re-measure.
+    // guillotine-winter-slayer never bursts (bench B3) confirmed.
   },
   // T4: KNOWN MISMATCH — real = 14 FBs with privaty focus (probe u7, 2026-07-14) vs sim 13.
   // Do NOT pin until the ~1s-fast cycle increment lands (see experiment-harness-ai.md).

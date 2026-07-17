@@ -1,163 +1,152 @@
 {
- "_note": "ACCREDITATION REGISTRY — the external research/data sources the sim is built on. This is the single harvestable sink for the planned web credits/accreditation page (a human owns that feature; this file just guarantees the data exists and stays current). WIRING: every harness that consumes an external source APPENDS its entry here — see docs/CONVENTIONS.md 'Accreditation' + the probe-processing / mechanics-doc-upkeep / scientific-method skills. Rule of thumb: if a docs/DECISIONS/open-questions/probe-data claim cites an outside URL or author, that source belongs here. Tiers per docs/CONVENTIONS.md (MEASURED is our own; the rest are external): DATAMINED / COMMUNITY / API.",
- "_maintenance": "Do NOT delete an entry when a claim it backed is superseded — accreditation is cumulative (we still used the research). Add new entries; refine 'usedFor' as usage grows. Keep 'id' stable (the web feature keys on it).",
- "sources": [
-  {
-   "id": "ginmy",
-   "name": "ginmy.net",
-   "url": "https://ginmy.net",
-   "author": "ginmy",
-   "region": "JP",
-   "category": "empirical-testing",
-   "tier": "COMMUNITY",
-   "usedFor": "Frame-accurate empirical bucket-mechanics tests: enemy DEF (subtractive flat), DoT crit/core, true-damage / defense-ignore, ATK-buff vs Attack-Damage-buff placement, MG heat-up. The backbone of the damage-bucket model."
-  },
-  {
-   "id": "enikk",
-   "name": "enikk.app (SRRankings)",
-   "url": "https://enikk.app",
-   "region": "global",
-   "category": "meta-rankings",
-   "tier": "COMMUNITY",
-   "usedFor": "Top-100 solo-raid ranker team compositions — defines the supported-roster list and realistic team shapes (scripts/enikk/, /enikk-audit)."
-  },
-  {
-   "id": "nikke-synergy",
-   "name": "NIKKE Synergy",
-   "url": "https://nikke-synergy.com",
-   "apiUrl": "https://api.nikke-synergy.com",
-   "region": "global",
-   "category": "stats-api",
-   "tier": "API",
-   "usedFor": "Character base stats, skill coefficients, and unit metadata — the primary sync source for data/characters.json."
-  },
-  {
-   "id": "nikke-gg",
-   "name": "nikke.gg",
-   "url": "https://nikke.gg",
-   "region": "EN",
-   "category": "guides-formula",
-   "tier": "COMMUNITY",
-   "usedFor": "Damage-formula reference, weapon guide (shotgun effective range 0-25, pellet hit counts), unit FAQs, elemental/bucket rules. SG under-model investigation (2026-07-15): burst-gauge-generation page states a clip-reload SG generates up to 450 energy/shot = 45x10 pellets and 'against large bosses shotguns hit all 10 pellets consistently' near range — corroborates true near landing ~1.0 vs our counted-popup ~0.60 (docs/probe-data/sg-undermodel-investigation.md)."
-  },
-  {
-   "id": "prydwen",
-   "name": "Prydwen Institute",
-   "url": "https://prydwen.gg",
-   "region": "EN",
-   "category": "guides-tier",
-   "tier": "COMMUNITY",
-   "usedFor": "Unit guides, kit interpretation, and tier context (scripts/prydwen-fetch.sh)."
-  },
-  {
-   "id": "ore-game",
-   "name": "ore-game.com (verify-memo)",
-   "url": "https://ore-game.com/nikke/post/verify-memo/",
-   "region": "JP",
-   "category": "empirical-testing",
-   "tier": "COMMUNITY",
-   "usedFor": "Measured weapon fire rates, shotgun core-hit-by-range (~6% front / 1.6% mid / 0% back), reload-limit formula, MG heat-up recovery."
-  },
-  {
-   "id": "note-trick",
-   "name": "note.com — _TricK_",
-   "url": "https://note.com/_trick_/n/n6efe08af53e8",
-   "author": "_TricK_",
-   "region": "JP",
-   "category": "accuracy-research",
-   "tier": "COMMUNITY",
-   "usedFor": "Auto-aim reticle / accuracy study: the ~12.5px auto reticle floor and ~18-20% auto-mode accuracy loss (basis of the range-dependent core model)."
-  },
-  {
-   "id": "note-tt00771",
-   "name": "note.com — tt00771",
-   "url": "https://note.com/tt00771",
-   "author": "tt00771",
-   "region": "JP",
-   "category": "weapon-research",
-   "tier": "COMMUNITY",
-   "usedFor": "MG heat-up analysis (n/nce4d6818b73c) and shotgun pellet-hit-vs-accuracy thresholds (n/n7b6204613ade)."
-  },
-  {
-   "id": "arca-nikke",
-   "name": "arca.live (NIKKE channels)",
-   "url": "https://arca.live/b/nikketgv",
-   "region": "KR",
-   "category": "community-research",
-   "tier": "COMMUNITY",
-   "usedFor": "KR core-hit-vs-accuracy-stat curves, shotgun spread formulas, sticky/collision mechanics."
-  },
-  {
-   "id": "namu-wiki",
-   "name": "namu.wiki",
-   "url": "https://namu.wiki",
-   "region": "KR",
-   "category": "wiki",
-   "tier": "COMMUNITY",
-   "usedFor": "KR wiki cross-checks on kit text and mechanic interpretations."
-  },
-  {
-   "id": "gh-rcasdzxc-sd",
-   "name": "github.com/rcasdzxc/SD",
-   "url": "https://github.com/rcasdzxc/SD",
-   "category": "datamine",
-   "tier": "DATAMINED",
-   "usedFor": "Decoded shot tables (rate_of_fire, reload_start_ammo rolling reloads, ammo)."
-  },
-  {
-   "id": "gh-coolguydlm123",
-   "name": "github.com/coolguydlm123/nikkecsvlibrary",
-   "url": "https://github.com/coolguydlm123",
-   "category": "datamine",
-   "tier": "DATAMINED",
-   "usedFor": "CharacterShotTable — datamined per-shot burst-gauge generation (data/gauge-per-shot.json)."
-  },
-  {
-   "id": "gh-einkk",
-   "name": "github.com/d34d633f/nikke-einkk",
-   "url": "https://github.com/d34d633f/nikke-einkk",
-   "category": "reference-sim",
-   "tier": "DATAMINED",
-   "usedFor": "Frame-accurate reference simulator — cross-validates charge/gauge/full-charge mechanics (positionBurstBonus, NikkeFullChargeMode)."
-  },
-  {
-   "id": "blablalink",
-   "name": "Blablalink (sg-tools) / Battle Records",
-   "url": "https://www.blablalink.com",
-   "cdn": "https://sg-tools-cdn.blablalink.com",
-   "region": "global",
-   "category": "official-tools",
-   "tier": "API",
-   "usedFor": "Official companion stats + the in-game Battle-Records damage screen fields (per-unit totals, combat power) used to grade recordings."
-  },
-  {
-   "id": "inven-dcinside",
-   "name": "Inven / DCInside (NIKKE boards)",
-   "url": "https://m.inven.co.kr",
-   "altUrl": "https://gall.dcinside.com",
-   "region": "KR",
-   "category": "community-research",
-   "tier": "COMMUNITY",
-   "usedFor": "KR community mechanic reports and cross-checks (accuracy, core, kit edge cases)."
-  },
-  {
-   "id": "wiki3-jp",
-   "name": "wiki3.jp (NIKKE)",
-   "url": "https://wiki3.jp",
-   "region": "JP",
-   "category": "wiki",
-   "tier": "COMMUNITY",
-   "usedFor": "JP wiki cross-checks on kit text and mechanics."
-  },
-  {
-   "id": "lbpcascade-animeface",
-   "name": "lbpcascade_animeface (OpenCV LBP cascade for anime faces)",
-   "url": "https://github.com/nagadomi/lbpcascade_animeface",
-   "author": "nagadomi",
-   "region": "JP",
-   "category": "tooling",
-   "tier": "COMMUNITY",
-   "usedFor": "Boss-study forced-cover / boss-walk detection: the five-frontal-faces state is detected with this MIT-licensed anime-face cascade (vendored at scripts/boss-study/lbpcascade_animeface.xml, run via opencv-python-headless<5). Calibrated 2026-07-16 on the 714-noon fight-end cover phase; zero false positives across crown.MP4."
-  }
- ]
+  "_note": "ACCREDITATION REGISTRY — the external research/data sources the sim is built on. This is the single harvestable sink for the planned web credits/accreditation page (a human owns that feature; this file just guarantees the data exists and stays current). WIRING: every harness that consumes an external source APPENDS its entry here — see docs/CONVENTIONS.md 'Accreditation' + the probe-processing / mechanics-doc-upkeep / scientific-method skills. Rule of thumb: if a docs/DECISIONS/open-questions/probe-data claim cites an outside URL or author, that source belongs here. Tiers per docs/CONVENTIONS.md (MEASURED is our own; the rest are external): DATAMINED / COMMUNITY / API.",
+  "_maintenance": "Do NOT delete an entry when a claim it backed is superseded — accreditation is cumulative (we still used the research). Add new entries; refine 'usedFor' as usage grows. Keep 'id' stable (the web feature keys on it).",
+  "sources": [
+    {
+      "id": "ginmy",
+      "name": "ginmy.net",
+      "url": "https://ginmy.net",
+      "author": "ginmy",
+      "region": "JP",
+      "category": "empirical-testing",
+      "tier": "COMMUNITY",
+      "usedFor": "Frame-accurate empirical bucket-mechanics tests: enemy DEF (subtractive flat), DoT crit/core, true-damage / defense-ignore, ATK-buff vs Attack-Damage-buff placement, MG heat-up. The backbone of the damage-bucket model."
+    },
+    {
+      "id": "enikk",
+      "name": "enikk.app (SRRankings)",
+      "url": "https://enikk.app",
+      "region": "global",
+      "category": "meta-rankings",
+      "tier": "COMMUNITY",
+      "usedFor": "Top-100 solo-raid ranker team compositions — defines the supported-roster list and realistic team shapes (scripts/enikk/, /enikk-audit)."
+    },
+    {
+      "id": "nikke-synergy",
+      "name": "NIKKE Synergy",
+      "url": "https://nikke-synergy.com",
+      "apiUrl": "https://api.nikke-synergy.com",
+      "region": "JP",
+      "category": "stats-api",
+      "tier": "COMMUNITY",
+      "usedFor": "Character base stats, skill coefficients, and unit metadata — the primary sync source for data/characters.json."
+    },
+    {
+      "id": "nikke-gg",
+      "name": "nikke.gg",
+      "url": "https://nikke.gg",
+      "region": "EN",
+      "category": "guides-formula",
+      "tier": "COMMUNITY",
+      "usedFor": "Damage-formula reference, weapon guide (shotgun effective range 0-25, pellet hit counts), unit FAQs, elemental/bucket rules. SG under-model investigation (2026-07-15): burst-gauge-generation page states a clip-reload SG generates up to 450 energy/shot = 45x10 pellets and 'against large bosses shotguns hit all 10 pellets consistently' near range — corroborates true near landing ~1.0 vs our counted-popup ~0.60 (docs/probe-data/sg-undermodel-investigation.md)."
+    },
+    {
+      "id": "prydwen",
+      "name": "Prydwen Institute",
+      "url": "https://prydwen.gg",
+      "region": "EN",
+      "category": "guides-tier",
+      "tier": "COMMUNITY",
+      "usedFor": "Unit guides, kit interpretation, and tier context (scripts/prydwen-fetch.sh)."
+    },
+    {
+      "id": "ore-game",
+      "name": "ore-game.com (verify-memo)",
+      "url": "https://ore-game.com/nikke/post/verify-memo/",
+      "region": "JP",
+      "category": "empirical-testing",
+      "tier": "COMMUNITY",
+      "usedFor": "Measured weapon fire rates, shotgun core-hit-by-range (~6% front / 1.6% mid / 0% back), reload-limit formula, MG heat-up recovery."
+    },
+    {
+      "id": "discord-minas.",
+      "name": "minas.",
+      "url": "https://discord.com/users/204048065831763968",
+      "region": "EN",
+      "category": "accuracy-research",
+      "tier": "COMMUNITY",
+      "usedFor": "Research into the effect of hit rate on pellet spread and core hit accuracy for Noir."
+    },
+    {
+      "id": "note-trick",
+      "name": "note.com — _TricK_",
+      "url": "https://note.com/_trick_/n/n6efe08af53e8",
+      "author": "_TricK_",
+      "region": "JP",
+      "category": "accuracy-research",
+      "tier": "COMMUNITY",
+      "usedFor": "Auto-aim reticle / accuracy study: the ~12.5px auto reticle floor and ~18-20% auto-mode accuracy loss (basis of the range-dependent core model)."
+    },
+    {
+      "id": "note-tt00771",
+      "name": "note.com — tt00771",
+      "url": "https://note.com/tt00771",
+      "author": "tt00771",
+      "region": "JP",
+      "category": "weapon-research",
+      "tier": "COMMUNITY",
+      "usedFor": "MG heat-up analysis (n/nce4d6818b73c) and shotgun pellet-hit-vs-accuracy thresholds (n/n7b6204613ade)."
+    },
+    {
+      "id": "arca-nikke",
+      "name": "arca.live (NIKKE channels)",
+      "url": "https://arca.live/b/nikketgv",
+      "region": "KR",
+      "category": "community-research",
+      "tier": "COMMUNITY",
+      "usedFor": "KR core-hit-vs-accuracy-stat curves, shotgun spread formulas, sticky/collision mechanics."
+    },
+    {
+      "id": "namu-wiki",
+      "name": "namu.wiki",
+      "url": "https://namu.wiki",
+      "region": "KR",
+      "category": "wiki",
+      "tier": "COMMUNITY",
+      "usedFor": "KR wiki cross-checks on kit text and mechanic interpretations."
+    },
+    {
+      "id": "gh-rcasdzxc-sd",
+      "name": "github.com/rcasdzxc/SD",
+      "url": "https://github.com/rcasdzxc/SD",
+      "category": "datamine",
+      "tier": "DATAMINED",
+      "usedFor": "Decoded shot tables (rate_of_fire, reload_start_ammo rolling reloads, ammo)."
+    },
+    {
+      "id": "gh-coolguydlm123",
+      "name": "github.com/coolguydlm123/nikkecsvlibrary",
+      "url": "https://github.com/coolguydlm123",
+      "category": "datamine",
+      "tier": "DATAMINED",
+      "usedFor": "CharacterShotTable — datamined per-shot burst-gauge generation (data/gauge-per-shot.json)."
+    },
+    {
+      "id": "gh-einkk",
+      "name": "github.com/d34d633f/nikke-einkk",
+      "url": "https://github.com/d34d633f/nikke-einkk",
+      "category": "reference-sim",
+      "tier": "DATAMINED",
+      "usedFor": "Frame-accurate reference simulator — cross-validates charge/gauge/full-charge mechanics (positionBurstBonus, NikkeFullChargeMode)."
+    },
+    {
+      "id": "inven-dcinside",
+      "name": "Inven / DCInside (NIKKE boards)",
+      "url": "https://m.inven.co.kr",
+      "altUrl": "https://gall.dcinside.com",
+      "region": "KR",
+      "category": "community-research",
+      "tier": "COMMUNITY",
+      "usedFor": "KR community mechanic reports and cross-checks (accuracy, core, kit edge cases)."
+    },
+    {
+      "id": "wiki3-jp",
+      "name": "wiki3.jp (NIKKE)",
+      "url": "https://wiki3.jp",
+      "region": "JP",
+      "category": "wiki",
+      "tier": "COMMUNITY",
+      "usedFor": "JP wiki cross-checks on kit text and mechanics."
+    }
+  ]
 }
