@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-07-17",
+    "title": "New: Guided Roll walkthrough on the Overload Rolling tool",
+    "notes": [
+      "New \"Guided Roll\" tab on the Overload Rolling tool: enter one gear piece's current lines and the stats + tiers you want, and it prints a tight, step-by-step roll plan for that exact piece.",
+      "The plan splits into two phases — first reroll for the right stats (locking each as it lands), then value-reset every line up to its target tier — and tells you which lines to lock, which to leave alone, and when.",
+      "It follows the game's real roll odds: a rare line (Line 2 appears in 50% of rolls, Line 3 in 30%) gets locked the moment it lands a stat you need — take whichever comes first — while the always-present Line 1 is left rerolling so you never waste a lock on it."
+    ]
+  },
+  {
+    "date": "2026-07-17",
     "title": "Shotgun accuracy by range",
     "notes": [
       "Shotgun hit and core-hit rates at each range are now grounded in the game's actual on-screen aim geometry — we measured the spread circle, crosshair, and boss core frame-by-frame and mapped the game's accuracy-circle values to their real sizes.",
