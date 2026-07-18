@@ -55,7 +55,8 @@
           "kind": "dot",
           "atkPct": 170.58,
           "durationSec": 9999,
-          "intervalSec": 14.7
+          "intervalSec": 14.7,
+          "crit": true
         }
       ]
     }
@@ -125,7 +126,7 @@
   "caveats": [
     "skill2: kit targets 5 enemies with the highest final DEF — modeled as the lone boss (the multi-target selection has no effect vs a partless single boss)",
     "skill2: the kit gives no activation trigger for this damage — the ~14.7-sec period is a solo measurement (2026-07-16); whether the period holds in team fights is unverified",
-    "skill2: this periodic hit crits in-game (~15-25% of fires observed) but the engine's periodic damage does not crit by default — the rider reads ~4% cold",
+    "skill2: this periodic hit crits in-game (MEASURED 2026-07-17: 3 crits / 11 resolved fires, crit value 308,564 = non-crit 205,709 ×1.5 exactly; docs/probe-data/isabel-sg-band.json riderFinding) — modeled via the per-DoT `crit:true` opt-in (rolls at Isabel's sheet rate). The global DOT_CRIT default stays OFF; most DoTs are validated non-crit (jill acid tick video-confirmed 99.7% non-crit, mihara-bonding-chain Ensnaring validated 1.03 non-crit)",
     "burst: Full Burst Duration ▼ 5 sec is modeled as shortening the team's Full Burst window — its net rotation effect (shorter window vs faster re-cycle) is an unverified estimate",
     "skill1/burst: Marked Target stage is modeled as a permanent count of Isabel's burst uses — a possible in-game stage reset when the 45-sec mark expires (burst spacing over 45 sec) is not modeled"
   ]

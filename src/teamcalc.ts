@@ -40,6 +40,9 @@ export interface TeamCalcInput {
   deps: PrepareDeps;
   cfg: Omit<SimConfig, 'slugs'>; // boss weakness/def/core/level/… (no slugs)
   loadout?: UnitOptions; // uniform loadout assumption applied to every unit
+  /** Per-unit loadout resolver (e.g. 12/12 lines that differ per unit). Overrides
+   *  `loadout` when present; falls back to `loadout` for units it doesn't resolve. */
+  loadoutFor?: (slug: string) => UnitOptions;
   blocked?: string[]; // excluded slugs (don't-own)
   /** DPS-pool prune size (top-N B3 by solo score). Higher = slower, more thorough. */
   poolB3?: number;
@@ -124,10 +127,14 @@ export function makeCalc(input: TeamCalcInput) {
   // effective burst class for selection (pins Red Hood → B3; see FORCED_BURST)
   const eb = (s: string) => effBurst(s, chars);
   // per-unit loadout: pin the rotation stage for forced-burst Λ units so the sim
-  // rotates Red Hood as a B3, consistent with how selection places her.
+  // rotates Red Hood as a B3, consistent with how selection places her. Uses the
+  // per-unit resolver (e.g. 12/12 lines) when supplied, else the uniform loadout.
+  const baseLoadout = (slug: string): UnitOptions =>
+    input.loadoutFor ? input.loadoutFor(slug) : loadout;
   const unitLoadout = (slug: string) => {
     const forced = FORCED_BURST[slug];
-    return forced ? { ...loadout, lambdaStage: LAMBDA_STAGE[forced] } : loadout;
+    const lo = baseLoadout(slug);
+    return forced ? { ...lo, lambdaStage: LAMBDA_STAGE[forced] } : lo;
   };
 
   // memoize full-team sims (keyed by ordered slugs) and solo scores so repeated

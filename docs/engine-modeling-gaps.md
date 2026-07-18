@@ -44,10 +44,25 @@ These are systematic limitations, not per-unit fudge. Each would correct many un
 3. **Implement `hitRatePct` → core-hit-rate lift** (theme 8) — the stat exists but is engine-inert;
    ~10 units carry an inert Hit-Rate line that is a proven COLD lever (jill measured a ×1.45 core
    window).
-4. **`{kind:fullBurstEnter, ownBurstOnly:true}` + `chainGate: selfCast/selfNotCast`** (theme 9) —
-   own-burst-gated triggers over-fire on non-burst rotations. cinderella-crystal-wave,
-   arcana-fortune-mate, mihara-bonding-chain; and the inverse COLD case diesel-winter-sweets
-   (0.831 → ~0.92, stuck in the wrong Intro/Highlight branch).
+4. **Own-burst-gated FB trigger** (theme 9) — ✅ **LANDED 2026-07-17.** A block gate
+   `ownBurstGate: 'cast' | 'notCast'` (types.ts Block; evaluated in sim.ts `applyBlock`
+   against `rotationCasters`) COMPOSES with a `fullBurstEnter` trigger to express "Entering
+   Full Burst AFTER this unit uses her own Burst" (`'cast'`) vs "…WITHOUT using own Burst"
+   (`'notCast'`) — the plain team `fullBurstEnter` over-fired the rider on FBs a DIFFERENT B3
+   completed. Unlike re-keying to `burstCast` (fires PRE-FB, loses the +50% FB major + FB
+   auras), the gate keeps the block AT FB-entry. **Opted in: cinderella-crystal-wave** (both
+   FB-enter core-strike riders → `'cast'`; kit text is explicit). The kit-status finding's
+   "sole-B3 → graded movement ZERO" premise was WRONG — she alternates stage-3 with a co-B3 in
+   BOTH graded comps (Liberalio in T5, Rapi:RH in T8), so the gate is board-MOVING and it
+   **IMPROVES fit**: T8 iron-weak 1.062 HOT → 1.001 (the over-fire was masking a multi-B3
+   over-credit), T5 wind-weak 1.009 → 0.978 (both now within ±3%; board MAD 0.036 → 0.012).
+   Regression snapshot updated for the T5 ccw total (understood). The other theme-9 units are
+   already correct as-is: arcana-fortune-mate / mana / asuka-wille use `burstCast` for their
+   duration self-buffs (the pre-FB shift is acceptable there — no FB-entry instant to preserve),
+   mihara-bonding-chain is a benign sole-B3, chisato has no FB-enter own-burst line. The inverse
+   COLD case **diesel-winter-sweets** (`'notCast'`, Highlight sustained) is now EXPRESSIBLE but
+   stays owner-deferred (document-only, CLAUDE.md web-TODO — her full Highlight state machine +
+   no-op-B3-drives-FB path is the larger unmodeled piece).
 5. **Load the swap weapon's own datamine spec during burst swaps** (theme 7) — two single-cause COLD
    engine bugs: moran (0.713 — swap fires at 24 pulls/s but sim uses base 12/s) and nayuta (0.637 —
    swap shots treated as base SMG, not the swap's SR class).
@@ -140,7 +155,7 @@ alternative for any unit whose accrual is cleanly one-stack-per-shot stays re-au
 real incremental trigger (`shotFired`/`hitCount`/`chargeCounter` + `maxStacks`) — the engine already ramps
 stacks for those; `rampSec` is the time-average approximation for when per-shot authoring is impractical.
 
-### 4. Conditional / team-gated buffs modeled as always-satisfied — ~11 units (HOT)
+### 4. Conditional / team-gated buffs modeled as always-satisfied — ~11 units (HOT) — ⚙️ TEAM-COMP GATE CAPABILITY LANDED 2026-07-17
 Gate ("at max stacks", "while shielder present", "same-squad ally", "Wheel of Fortune") not encoded,
 defaults to always-on.
 Units: arcana, arcana-fortune-mate, asuka, naga (shield-gate fires unconditionally, 1.175 HOT),
@@ -149,6 +164,31 @@ guilty, leona, noir, anchor-innocent-maid.
 No "Activates when…" clause → author invented a proxy.
 Units: helm-aquamarine, liter, mari, rosanna-chic-ocean (TOP flag; also removed a fabricated
 permanent casterAtkPct), snow-white, isabel.
+
+**PREMISE CORRECTION (2026-07-17) — this theme is a RECONCILIATION backlog, not one missing primitive.**
+Reading every unit's `kit-status.json` finding + override showed the gates here are MOSTLY ALREADY
+EXPRESSIBLE, and several units are already fixed: **asuka** (fires-only-with-a-healer → already the
+`recovery` trigger), **snow-white** (already `shotFired`+`swapGate`), **rosanna-chic-ocean** (fabricated
+permanent `casterAtkPct` already removed; residual = 1 invented-uptime S2 trigger), **naga**
+("while shielder present" → the `{kind:shielded}` trigger + 3 live emitters blanc/crown/delta-ninja-thief
+already exist; her over-credit is currently neutralized by the `auto` mode default, theme 17). **guilty's**
+"at max stacks" rider is expressible via `resourceGate` once her stacks are modeled as a resource.
+The residual work is per-unit override reconciliation that is BOARD-MOVING (HOT) with an open magnitude
+question, so it is measurement/Fable-gated — NOT an autonomous inert-landing like themes 3/5/6/7. Routed
+to the kit-parse owner-reconciliation backlog.
+
+**The one genuinely-inexpressible gate WAS the team-composition predicate** ("dead without a Burst-III
+Electric caster present" — the `arcana` RL/Electric override; NOT arcana-fortune-mate). ✅ **CAPABILITY
+LANDED 2026-07-17:** a static block gate `teamHas:{element?/class?/weapon?/burst?}` (types.ts Block;
+evaluated at sim setup in the sim.ts block filter alongside `formation`/`mode`). Facets AND together;
+the block is active only when SOME OTHER ally matches ALL of them (owner never counts, same rule as
+`formation`; burst matches literally so a Λ unit ≠ 'III'). Omit = always active → **inert until an
+override opts in** (regression byte-identical, verified by a stash A/B of the two touched files against
+the pre-existing working-tree snapshot). Verified end-to-end by injecting a `teamHas`-gated +100% ATK
+self-buff on a focus unit: fires with a matching present ally (Water/Electric/B3 → +57%), correctly
+inert when absent (Wind → 0%), correctly inert when only self would match (owner excluded → 0%).
+**No override opts in yet** — enacting arcana is deferred (MODEL_ONLY, no board data; owner currently
+grades her "mono-Electric comp only", and her separate Wheel-of-Fortune status gate is still unmodeled).
 
 ### 5. Pierce gating — static `hasPierce` only — ~14 units (usually COLD)
 Timed / swap-scoped / HP-gated pierce was inexpressible → dead blocks ("modeled ≠ working"). **✅ TIMED
@@ -193,11 +233,16 @@ Real effect is a core-hit-rate lift (jill measured core 0.20→0.90). **Single-f
 Units: anchor-innocent-maid, drake, leona, modernia, noir, quency-escape-queen, soda-twinkling-bunny,
 jill, nayuta. Related: tove (crit-rate stale 3.32→10.08).
 
-### 9. Own-burst-gated vs team-FB trigger (schema gap) — ~7 units (HOT in multi-B3)
-"Entering Full Burst after this unit uses her own Burst" modeled as plain team `fullBurstEnter`.
-Units: cinderella-crystal-wave (near-1.0 only because she's the burster in graded comps),
-diesel-winter-sweets (inverse COLD 0.831), arcana-fortune-mate, mihara-bonding-chain (benign sole-B3),
-mana, chisato. asuka-wille is the correctly-encoded reference (burstCast).
+### 9. Own-burst-gated vs team-FB trigger (schema gap) — ~7 units (HOT in multi-B3) — ✅ CAPABILITY LANDED 2026-07-17
+"Entering Full Burst after this unit uses her own Burst" was modeled as plain team `fullBurstEnter`.
+**RESOLVED** via the `ownBurstGate: 'cast' | 'notCast'` block gate (see ranked fix #4). Opted in:
+cinderella-crystal-wave (both FB-enter core-strike riders → `'cast'`; T8 1.062→1.001, T5 1.009→0.978,
+NOT the sole-B3-inert the finding assumed — she alternates stage-3 with a co-B3 in both graded comps,
+so the gate is board-moving and IMPROVES fit). arcana-fortune-mate / mana / asuka-wille (the reference)
+already correctly use `burstCast` for their duration self-buffs (no FB-entry instant to preserve);
+mihara-bonding-chain is a benign sole-B3; chisato has no FB-enter own-burst line. The inverse COLD case
+diesel-winter-sweets (0.831, `'notCast'` Highlight sustained) is now EXPRESSIBLE but owner-deferred
+(document-only; her full Highlight state machine + no-op-B3-drives-FB path is the larger unmodeled piece).
 
 ### 10. Boss-element-gated debuffs/buffs inert vs neutral scope-lock boss — ~8 units
 `bossElement` couldn't compose with `fullBurstEnter`/`hitCount`/`burstCast`. Big team-wide lever on
@@ -220,19 +265,67 @@ arcana-fortune-mate was already fixed for `alliesOfWeapon`. False positives rule
 "except self" on lowest-HP / incapacitated targets (unmodeled theme-13/18 lines, not these kinds).
 Verify: full gate green; regression snapshot updated (2 maiden comps, both understood).
 
-### 12. DoT / periodic / function damage does not crit — engine-global (COLD ~4–7%)
-Ties to open-question U1. Units: isabel (~4% cold), neon-vision-eye (~7% cold), modernia. Also eve
-Mk2 sequential-doubling caveat.
+### 12. DoT / periodic damage crit — PER-DoT, evidence-gated (isabel ✅ LANDED 2026-07-17)
+Ties to open-question U1. **Resolution: NOT a global flip.** A universal DOT_CRIT default-on was
+MEASURED-REFUTED — a board sweep (DOTCRIT off→on) is a wash (±3%: 8→8) and breaks units whose DoTs
+are *validated non-crit*: jill's acid tick is video-confirmed 99.7% NON-crit, mihara-bonding-chain's
+Ensnaring is validated at 1.03 non-crit, little-mermaid's FB dot/barrage carry no crit evidence. So
+DoT crit is now a **per-DoT `crit:true` opt-in** (types.ts dot effect + `Dot.crit`; the tick site
+falls back to the still-OFF global DOT_CRIT gate when unset) — enabled ONLY where measured.
+- **isabel ✅ LANDED** — her ~14.7s periodic rider crits in-game (MEASURED: 3 crits / 11 resolved
+  fires; crit 308,564 = non-crit 205,709 ×1.5 exactly, `docs/probe-data/isabel-sg-band.json`
+  riderFinding). `crit:true` on her skill2 dot; rider now rolls at her sheet rate (solo recon warms
+  the right direction, ~50.9M→53.1M vs real 55.3M). Zero board blast radius (solo-only unit; per-DoT
+  field leaves every other unit byte-identical). DECISIONS 2026-07-17.
+- **neon-vision-eye** — the "~7% cold" claim is STALE: she reads +8% HOT on the current board and is
+  UNAFFECTED by DOT_CRIT (no critting DoT in her kit). NOT a theme-12 unit; her heat belongs elsewhere.
+- **modernia** — her cold is NOT DoT-crit: her S1 flatDamage rider already crits (U1), and the open
+  piece is the burst Destroy-Mode `extraHitDamagePct` rider modeled crit-OFF (her override ⚑4 finding),
+  not a DoT tick. Route to that finding, not here.
+- eve Mk2 sequential-doubling caveat still open (separate).
 
-### 13. Max-HP-scaling grants with no stat key / no lowest-HP targeting — ~6 units
+### 13. Max-HP-scaling grants with no stat key / no lowest-HP targeting — ~6 units ✅ LANDED 2026-07-17
 "Max HP ▲ X% of user's Max HP" and "affects lowest-remaining-HP ally" have no primitive. Matters only
 on HP-scaling teammates. Units: anis-star, blanc, rouge (double-counted 44.5 vs 30.02, HOT), trina,
 maiden-ice-rose, moran.
 
-### 14. Flat-rounds Max-Ammo inexpressible (percent-only schema) — ~5 units
+**LANDED (kit-completeness sweep):** two primitives added — `targetMaxHpPct` StatKey ("Max HP ▲ X%",
+target's OWN %, distinct from the existing `casterMaxHpPct` = "% of the skill user's Max HP") and the
+`alliesLowestHp` TargetDef (count/excludeSelf; no HP pool in v1 → resolves to the leftmost `count` allies
+as a documented deterministic stand-in). Both honor the e3 rule (ally-granted Max HP feeds a consumer's
+`atkOfMaxHpPct` ONLY when caster === target, i.e. self). Per-unit: **maiden-ice-rose** self "Max HP ▲6.34%
+×10, every 6 full charges" now modeled (targetMaxHpPct on self, hitCount 6, maxStacks 10, 15s) — the ONE
+offensively-live grant (self-fed): her N6 Wind comp 0.76→0.85 (board-verified, +11.6% her total; snapshot
+updated maiden-N6 only). anis-star (burst 15.02% all-allies, hasB1), trina (S2 44.98% Electric-AR allies +
+burst 20.14% all-allies), blanc (burst 31.68% lowest-HP ally) — all ally-facing, **offensively INERT**
+(e3), modeled for kit-SSOT completeness (proven 0.000% board delta on all teammates incl. cinderella).
+rouge already had casterMaxHpPct grants. moran's Max-HP lines are HP<20%-gated (theme 18, never fire) —
+intentionally left as skips. See DECISIONS 2026-07-17.
+
+### 14. Flat-rounds Max-Ammo inexpressible (percent-only schema) — ~5 units — ✅ CAPABILITY LANDED 2026-07-17
+A new `maxAmmoFlat` StatKey (types.ts) expresses "Max Ammunition ▲ N round(s)" as a flat round count,
+added on top of the `maxAmmoPct` scaling in `maxAmmo()` (`round(base*(1+pct/100)) + flat`). Applied as
+a plain `buff` (usually `passive` → self, or an all-allies target for the team grants), so it composes
+with triggers/targets like any other stat. **Inert until an override opts in** (no unit sets it →
+`stat(u,'maxAmmoFlat')` sums 0 → byte-identical `maxAmmo()`; verified by an isolated A/B of the
+`maxAmmo()` edit against the working tree: regression totals identical). Functional check: injecting a
+temporary `maxAmmoFlat 200` passive on a low-mag AR lifted pulls 1099→1908 (fewer reloads → more shots,
++65% total), the expected direction. **NOT auto-enacted:** the listed units currently APPROXIMATE the flat
+grant as a percent (noir `maxAmmoPct 55.56` self-only for +5 all-allies; trina `maxAmmoPct 33.3` for +20
+assuming a 60-round base; grave +3, tove +2, drake), and converting to the faithful flat form is
+board-MOVING (noir's +5 becomes team-wide; the others change the exact round count) → measurement/owner-gated
+per unit, routed to the kit-parse reconciliation backlog.
 Units: grave (+3), noir (+5 all-allies → modeled self-only), tove (+2), drake, trina (+20).
 
-### 15. Ammo-dump / forced-reload "Removes 100% of ammo" inexpressible — 3 units
+### 15. Ammo-dump / forced-reload "Removes 100% of ammo" inexpressible — 3 units — ✅ CAPABILITY LANDED 2026-07-17
+A new `consumeAmmo` effect (types.ts; the inverse of `instantReload`) drains the target's belt by
+`fraction` of MAX capacity (default 1 = the whole magazine) and, if it empties, forces an immediate reload
+— firing the target's `lastBullet` triggers exactly as if it had fired dry (sim.ts `applyEffect`).
+**Inert until an override opts in** (no unit references it → regression byte-identical). Functional check:
+injecting a temporary per-shot `consumeAmmo` collapsed pulls 1099→96 (constant forced reloads eat fire time,
+−89% total), the expected direction. **NOT auto-enacted:** the three units need per-unit trigger authoring
+(grave = Prediction/burst-window END forced reload, the documented comp-COLD cause; asuka-wille + jill on
+their own kit triggers) + board verification → deferred to the reconciliation backlog.
 Units: asuka-wille, grave (Prediction-end forced reload, comp-cold cause), jill.
 
 ### 16. TREASURE-phase prose SSOT gap — 5 units (RESOLVED 2026-07-17)

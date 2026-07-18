@@ -21,21 +21,36 @@ For each recording we locate the boss core (red weak-point) and measure three co
 
 ## 2. `accuracy_circle_scale` → pixel diameter
 
-Three independent (scale, pixel-diameter) points, each from a different weapon class / recording:
+Three independent (scale, pixel-diameter) **bloom-peak** points, each from a different weapon class /
+recording (the reticle pulses on the fire cadence — measure the fully-bloomed peak, not a snapshot):
 
-| Element | Unit | Scale | Measured px |
+| Element | Unit | Scale | Measured px (peak) |
 |---|---|---|---|
-| AR inner accuracy circle | scarlet (0:10) | 75 | 29 |
-| SMG crosshair | quency (0:22) | 110 | 60 |
+| AR accuracy circle | scarlet | 75 | 48 |
+| SMG accuracy circle | little-mermaid (lm, 0:10) | 110 | 71.5 |
 | SG spread circle | noir (mid, 0:13.9) | 250 | 162 |
 
-Least-squares fit:
+Least-squares fit (through the origin):
 
-> **diameter_px = 0.751 · scale − 25.2**  (equivalently `0.751·(scale − 33.6)`), **R² = 0.999**
+> **diameter_px = 0.648 · scale**, **R² = 0.9999**
 
-- **Not proportional** — px/scale runs 0.39 → 0.55 → 0.65 across the three points.
-- Slope ≈ ¾ px per scale-unit; a **~34-scale dead zone** below which the circle renders ~0px.
-- The additive constant (~25px) is the fixed base reticle size.
+- **Proportional** — px/scale is uniform: 48/75 = 0.640, 71.5/110 = 0.650, 162/250 = 0.648.
+- `accuracy_circle_scale` **is** the fully-bloomed reticle diameter; **no dead zone**.
+- **SUPERSEDES (2026-07-17)** the old `0.751·scale − 25.2`: that −25.2 offset was a **bloom-phase
+  artifact**. The earlier AR (29px) and SMG (60px) points were mid-bloom snapshots; re-measuring every
+  class at its **peak** collapses the offset to 0. Consequence: the AR base core fraction drops from
+  ~1.0 (the 29px reading) to **0.34** (48px), which is what makes the HR→core shrink model have real
+  headroom on AR.
+
+### 2b. Reticle bloom (why the peak is the anchor)
+
+The reticle is not static — it **pulses on the fire cadence** (~20 Hz), expanding on each shot and
+contracting between shots, oscillating between a contracted **floor** and a fully-bloomed **peak**.
+Measured directly on `lm.MP4` (SMG little-mermaid) over a 60-frame window: the circle cycles between a
+contracted ~59px and the ~71.5px peak. `accuracy_circle_scale` corresponds to the **peak**, so a
+single-frame snapshot taken mid-cycle under-reads it — which is exactly what happened to the original
+AR (29px) and SMG (60px) points and produced the spurious −25.2 offset. Hit Rate suppresses the bloom
+(shifts the whole oscillation toward the floor), which is the physical basis of the HR→core shrink model.
 
 ## 3. Boss core diameter ↔ range band
 
@@ -78,14 +93,17 @@ Hit% declines cleanly with range (near 79.7 → far 46.5): the boss shrinks insi
 D=162 spread circle, so more pellets land on background. Annotations: `noir-sg-*-missred.png`,
 `POC5_missfill.png`. Data: `noir-sg-bands.json`.
 
-## 5. Cross-check (independent validation)
+## 5. Cross-check (independent validation) — reframed after the bloom recalibration
 
-The AR 75-scale accuracy circle = **29px**, and the mid-band boss core = **28px**, measured
-completely separately (one from the AR reticle, one from hand-outlining Noir's core). They match
-to 1px, and **mid is the AR's optimal range**. That is the design meaning of optimal range: the
-accuracy circle shrinks to the core diameter, so every in-zone shot is a core hit. The core never
-entered the §2 regression yet lands on the predicted AR circle — an independent check on the whole
-scale→pixel map.
+The AR reticle's **contracted floor / inner bound** reads **~29px**, and the mid-band boss core =
+**28px**, measured completely separately. They match to 1px. But 29px is **not** the AR accuracy
+circle — fully bloomed that circle is **48px** (§2). So the correct reading is: **29px is the AR
+reticle's HR-shrink floor**, and it happens to equal the core. That makes the "optimal range =
+all-core" mechanism a *saturation* effect: fully bloomed the AR core fraction is only
+`coreFracGeo(28, 48) ≈ 0.34`; as Hit Rate squeezes the bloom down toward the 29px floor (≈ core),
+`coreFracGeo → ~1`. The old "AR circle 29 ≈ core 28 ⇒ ~100% core at optimal" reading conflated a
+mid-bloom *snapshot* of the accuracy circle with the floor. The core still never entered the §2
+regression, so its ≈ the floor is an independent check on the shrink model.
 
 ## Reproduce
 

@@ -1,0 +1,762 @@
+{
+  "_comment": "Damage-optimal 12/12 remainder OL lines per unit (beyond the 4 elem + 4 atk floor), computed by scripts/build-ol-optimal.ts in the Solo framework. Applied at T11 by the web's 12/12 Overload pill. Regenerate when kits/overrides/engine change.",
+  "framework": "solo",
+  "units": {
+    "ada": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "ade-agent-bunny": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "alice": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargespd",
+        "count": 3
+      }
+    ],
+    "anchor-innocent-maid": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "anis-sparkling-summer": [
+      {
+        "type": "critrate",
+        "count": 2
+      },
+      {
+        "type": "critdmg",
+        "count": 2
+      }
+    ],
+    "anis-star": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargespd",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 2
+      }
+    ],
+    "arcana": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "chargedmg",
+        "count": 2
+      }
+    ],
+    "arcana-fortune-mate": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "asuka": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "asuka-wille": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "blanc": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "bready": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargespd",
+        "count": 3
+      }
+    ],
+    "brid-silent-track": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "critrate",
+        "count": 2
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "chisato": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "cinderella": [
+      {
+        "type": "chargespd",
+        "count": 4
+      }
+    ],
+    "cinderella-crystal-wave": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "crown": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "delta-ninja-thief": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "diesel-winter-sweets": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "chargedmg",
+        "count": 1
+      }
+    ],
+    "d-killer-wife": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "dorothy-serendipity": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "drake": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "ein": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 1
+      },
+      {
+        "type": "chargespd",
+        "count": 2
+      }
+    ],
+    "elegg-boom-and-shock": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "eve": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 3
+      }
+    ],
+    "grave": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "guillotine-winter-slayer": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "guilty": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "helm": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "critrate",
+        "count": 2
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "helm-aquamarine": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "isabel": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "jill": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "critrate",
+        "count": 2
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "laplace": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "leona": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "liberalio": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "chargespd",
+        "count": 2
+      }
+    ],
+    "liter": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "little-mermaid": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "ludmilla-winter-owner": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "maiden-ice-rose": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "chargespd",
+        "count": 2
+      }
+    ],
+    "mana": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "mari": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "mast-romantic-maid": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "maxwell": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "mihara-bonding-chain": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "milk-blooming-bunny": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "mint": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "chargedmg",
+        "count": 2
+      }
+    ],
+    "miranda": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "modernia": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 2
+      }
+    ],
+    "moran": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "naga": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "nayuta": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "neon-vision-eye": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "chargespd",
+        "count": 1
+      }
+    ],
+    "noir": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "prika": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "privaty": [
+      {
+        "type": "critrate",
+        "count": 2
+      },
+      {
+        "type": "critdmg",
+        "count": 2
+      }
+    ],
+    "quency-escape-queen": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 3
+      }
+    ],
+    "rapi-red-hood": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "raven": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "chargespd",
+        "count": 2
+      }
+    ],
+    "red-hood": [
+      {
+        "type": "chargedmg",
+        "count": 4
+      }
+    ],
+    "rosanna-chic-ocean": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "rouge": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "sakura-bloom-in-summer": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      }
+    ],
+    "scarlet": [
+      {
+        "type": "ammo",
+        "count": 4
+      }
+    ],
+    "scarlet-black-shadow": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "chargespd",
+        "count": 2
+      }
+    ],
+    "snow-white": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "critdmg",
+        "count": 1
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "snow-white-heavy-arms": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargespd",
+        "count": 2
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "soda-twinkling-bunny": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "soline-frost-ticket": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "takina": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "tove": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "trina": [
+      {
+        "type": "ammo",
+        "count": 2
+      },
+      {
+        "type": "chargedmg",
+        "count": 2
+      }
+    ],
+    "velvet": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "chargedmg",
+        "count": 3
+      }
+    ],
+    "volume": [
+      {
+        "type": "ammo",
+        "count": 3
+      },
+      {
+        "type": "critrate",
+        "count": 1
+      }
+    ],
+    "zwei": [
+      {
+        "type": "ammo",
+        "count": 1
+      },
+      {
+        "type": "critdmg",
+        "count": 3
+      }
+    ]
+  }
+}

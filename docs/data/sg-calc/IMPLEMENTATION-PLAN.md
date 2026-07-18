@@ -1,5 +1,46 @@
 # Implementation plan — accuracy-circle geometry → engine
 
+> **STATUS 2026-07-17 — SCAFFOLDING LANDED, all arms default-OFF, NONE promoted.**
+> - **Shared module `src/engine/sg-geometry.ts`** (`circleDpx`, `coreDpx`, `rangeFromCoreDpx`,
+>   `coreFracGeo`, `circleDpxAtHr` + the calibration constants / `BAND_CORE_PX` / `BAND_SG_HIT_FRAC`).
+> - **Unit tests `scripts/sg-geometry-regression.ts`** reproduce the §2 calibration points, §3
+>   range→core px at the implied ranges, and the §5 cross-check; wired into `verify.sh` (green).
+> - **Workstream A** — `ENV.ACR_GEO=replace|raw` (raw area ratio) or `=shape|fill` (measured-near-
+>   anchored inter-band shape). **Workstream B** — `ENV.HRCORE_GEO=1` (geometry-derived HR→core
+>   multiplier, sub-flag under `HRCORE`). **Workstream C** — `ENV.SGLANDING=geo` (Noir hit fractions
+>   as the SG-landing mean, centering both the deterministic table and the seeded jitter). All are
+>   **byte-stable with flags off** (regression unchanged; the 6 pre-existing cinderella/soda/ade
+>   drifts are from unrelated uncommitted rouge/types/App changes, not this work).
+> - **PX RECALIBRATION (2026-07-17): peak-anchored proportional `0.648·scale` (offset 0) SUPERSEDES
+>   the old `0.751·scale−25.2`.** Three independent BLOOM-PEAK measurements (AR 48px, SMG lm 71.5px,
+>   SG 162px) fit proportional-through-origin R²=0.9999; the old offset was a bloom-phase artifact
+>   (AR 29px / SMG 60px were mid-bloom snapshots). Consequence: **AR base core fraction 1.0 → 0.34**
+>   (`coreFracGeo(28,48)`), so the geometry stops overshooting AR. See DERIVATION §2/§2b/§5. All arms
+>   stay **byte-stable with flags off** (the constants are only read on the ENV-gated paths).
+> - **A/B board re-run after recalibration (`scripts/board-read.ts`, seeded default):**
+>   baseline ±3%/±5% buckets 8/14 → `ACR_GEO=replace` 8/13, `ACR_GEO=shape` 8/12, `HRCORE_GEO=1` 8/13,
+>   `SGLANDING=geo` 6/10. Per-unit:
+>   - **A (`replace`) is now the promote-candidate for SMG** — with the 48px base, raw geo AR near/mid
+>     (0.42/0.34) ≈ measured (0.40/0.30), so AR stops running hot (grave 1.45→1.23) and every HR-neutral
+>     SMG unit improves toward 1: **chisato 1.171→1.140, quency-escape-queen 1.040→0.991, little-mermaid
+>     1.088→1.069**. Residual hot cells are AR midfar/far (out-of-range core collapse the area ratio
+>     doesn't model). Real gain, but not yet a clean board-wide win — the SMG improvements sit against
+>     ~neutral AR.
+>   - **B (`HRCORE_GEO`) NOT rescued — the recalibration REFUTES the "29px bug" hypothesis.** The prior
+>     "no AR lift" is board COVERAGE, not the px map: `HRCORE=0` leaves every AR board comp byte-identical
+>     — no AR fight carries live Hit Rate to exercise the HR→core path at all. Only chisato/quency
+>     (SMG) are HR-active, and geo-B over-lifts them (quency 1.040→1.322). Testing B for AR needs an
+>     HR-active AR comp (jill's pre-registered +80.78% scenario), which is absent from the board.
+>   - **C (`SGLANDING=geo`) still hurts the calibrated SG board** (noir 1.048→0.861, dorothy-serendipity
+>     1.018→0.941) — the circle recalibration doesn't touch SG landing; that gap is the *method* one
+>     (area-fraction on the D=162 spread disc vs the tighter aim circle pellets actually fill; see the
+>     KR/JP pellet research). Orthogonal to this recalibration.
+> - **Conclusion / owner call:** the px recalibration is landed (independently measured, R²=0.9999) and
+>   makes `ACR_GEO=replace` a genuine SMG-core candidate. Promotion of A is deferred on the AR
+>   out-of-range-collapse and the lack of a board-wide gain; B needs an HR-active AR comp to test at all;
+>   C needs the aim-circle (not spread-disc) landing fix. Arms stay default-off. Not committed.
+
+
 Wire the calibrated pixel geometry (`accuracy-circle-calibration.json`, `DERIVATION.md`) into the
 sim so core-hit-rate and SG pellet-landing are **geometrically grounded** per range band, per
 weapon class, from `accuracy_circle_scale` — instead of owner-chosen tables and an abstract
@@ -31,14 +72,15 @@ free-parameter reticle model.
 Concentric core inside accuracy circle ⇒ fraction of shots on core ≈ **area ratio**:
 
     coreFrac_geo(weapon, range) = min(1, (core_D_px(range) / circle_D_px(weapon))²)
-      circle_D_px(weapon) = 0.751 · accuracy_circle_scale[weapon] − 25.2
+      circle_D_px(weapon) = 0.648 · accuracy_circle_scale[weapon]   (bloom peak; SUPERSEDES 0.751·scale−25.2)
       core_D_px(range)    = 2100 / (range + 47)
 
 - Gives a smooth core-hit curve vs range **per weapon** from one datamined field.
 - **Owner ruling needed:** does this *replace* `CORE_BY_WEAPON_BAND`, or only supply unmeasured
   cells + the inter-band shape while measured cells stay pinned? (Recommend the latter — constraint
-  #3.) Optimal-range check: at AR optimal (mid) `core_D≈circle_D` ⇒ `coreFrac_geo≈1`, matching the
-  §5 cross-check.
+  #3.) Optimal-range check (reframed after the 48px recalibration): at AR mid `core_D 28 vs circle_D
+  48 ⇒ coreFrac_geo ≈ 0.34` (≈ measured AR mid 0.30, NOT ~1); the 29px inner bound ≈ core is the
+  HR-shrink floor, where core saturates. See DERIVATION §5.
 - Land as `acrForGeo` alongside `acrFor`; ENV `ACR_GEO` default off.
 
 ## Workstream B — HR effect on core via the *shrunk* circle (grounds HRCORE `SAT`)
@@ -55,6 +97,10 @@ HRCORE already shrinks the reticle with hit rate. In px:
 - Cross-check against the pre-registered HRCORE predictions (jill AR +80.78%, chisato SMG +22.37%,
   sim.ts:723–724) — must stay inside those CIs or better.
 - Land as an alternate `hrCoreMult` branch under the existing `HRCORE` flag + a sub-flag.
+- **STATUS (2026-07-17):** landed as `ENV.HRCORE_GEO`, but the board cannot currently test it on AR —
+  no AR board comp carries live Hit Rate (`HRCORE=0` is byte-identical on all AR units), so this arm
+  is inert there and over-lifts the only HR-active units (SMG chisato/quency). Needs an HR-active AR
+  comp before the jill/chisato CI cross-check is meaningful. See the STATUS block up top.
 
 ## Workstream C — SG pellet landing from hit/miss areas
 

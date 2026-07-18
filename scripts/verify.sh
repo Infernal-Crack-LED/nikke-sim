@@ -25,6 +25,9 @@ npx tsx scripts/kit-status.ts --check
 say "approved-nickname validation (characters.json nicknames unambiguous)"
 npx tsx scripts/validate-nicknames.ts
 
+say "sg/accuracy-circle geometry regression (calibration points + §5 cross-check)"
+npx tsx scripts/sg-geometry-regression.ts | tail -1
+
 say "engine regression (measured truths + snapshots + seeded determinism)"
 npx tsx scripts/regression.ts
 

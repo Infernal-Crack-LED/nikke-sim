@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-17",
+  "generatedAt": "2026-07-18",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -27,11 +27,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±15%": 8,
-      "±3% ✓": 6,
-      "±8%": 9,
-      ">15%": 13,
-      "±5%": 8
+      "±15%": 7,
+      "±3% ✓": 8,
+      "±8%": 11,
+      ">15%": 12,
+      "±5%": 6
     }
   },
   "units": {
@@ -116,7 +116,7 @@
       },
       "caveats": [
         "skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)",
-        "skill2: 'Spy Lens at max stacks' gate modeled as always-satisfied steady state (passive ATK +16% + Pierce) — real onset is a ~15s stack ramp (⚑ unmeasured)",
+        "skill2: 'Spy Lens at max stacks' ATK +16% now activates as a faithful STEP via hitCount count:10 (2026-07-17, theme 3) — Spy Lens gains 1 stack per full-charge SR hit, so the 10th hit (~16s incl. one reload) reaches max and the buff turns on continuously (permanent, no duration = continuous fire keeps stacks maxed). Replaces the always-on-from-t=0 encoding (over-credited the ~16s onset). NOTE: the hasPierce top-level flag (also Spy-Lens-max-gated) still applies from t=0 — a boolean flag can't be step-gated, a residual structural gap. ⚑ count:10 rests on 1 stack/full-charge + the ⚑ SR cadence.",
         "skill2: team Pierce Damage +18.36% rides the same shotFired full-charge proxy (⚑ unmeasured)",
         "cadence: SR bolt-gap (22f) + chargeFrames 60 + reloadFrames 141 are datamine defaults — verify autofire/rounds-per-minute/reload from video (⚑ unmeasured)"
       ],
@@ -124,12 +124,12 @@
         "records": [
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0116
+            "ratio": 1.0007
           }
         ],
         "n": 1,
-        "mean": 1.0116,
-        "mad": 0.0116,
+        "mean": 1.0007,
+        "mad": 0.0007,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -286,8 +286,7 @@
         ],
         "burst": [
           "Explosion Radius ▲ 100% for 10 sec.",
-          "DEF ▲ 55.01% for 10 sec.",
-          "■ Activates while in Everyone's Star status. Affects all allies.\nMax HP ▲ 15.02% of the skill user's max HP for 10 sec."
+          "DEF ▲ 55.01% for 10 sec."
         ]
       },
       "board": {
@@ -310,15 +309,15 @@
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9919
+            "ratio": 0.9946
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.9705
+            "ratio": 0.9682
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0339
+            "ratio": 1.0362
           },
           {
             "comp": "PA MiKa (boss Iron)",
@@ -326,7 +325,7 @@
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.8723
+            "ratio": 0.868
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
@@ -342,8 +341,8 @@
           }
         ],
         "n": 12,
-        "mean": 0.9547,
-        "mad": 0.0534,
+        "mean": 0.9546,
+        "mad": 0.0539,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -421,7 +420,7 @@
         ]
       },
       "caveats": [
-        "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories pellets as +30 normal, Precious Moments +7.47 ATK) are BAKED to max from burst cast — the real 2/4/6-shot phase counter ramps them over ~18 shots, more than fit in the ~11s window at 1.5 pulls/s; time-average is roughly half of max (HOT direction).",
+        "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories pellets as +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.",
         "skill1: the 39% (=13% x 3 Precious Moments stacks) at Full Burst end assumes 3 stacks; the ramp arithmetic reaches ~2 by FB end (HOT direction), and the block fires on EVERY team FB end even on rotations she did not burst (0 stacks in reality — multi-B2 comps over-credit).",
         "skill2/burst: the kit's in-window reloads (Reload 6 rounds at the 2-hit phase; Reload 2 rounds at burst) are unmodeled — they add ~3-5 window shots (COLD direction, partially masks the ramp over-credit)."
       ],
@@ -429,13 +428,13 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.3265
+            "ratio": 1.0663
           }
         ],
         "n": 1,
-        "mean": 1.3265,
-        "mad": 0.3265,
-        "band": ">15%",
+        "mean": 1.0663,
+        "mad": 0.0663,
+        "band": "±8%",
         "temp": "HOT ▲"
       }
     },
@@ -538,13 +537,12 @@
         "skill1": [],
         "skill2": [],
         "burst": [
-          "Gain Indomitability for 10 sec.",
-          "Max HP ▲ 31.68% for 10 sec."
+          "Gain Indomitability for 10 sec."
         ]
       },
       "caveats": [
         "skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)",
-        "burst: Max HP ▲31.68% on the lowest-remaining-HP ally is unmodeled (no own-%-basis Max HP stat key; no lowest-HP targeting) — only matters if it lands on an HP-scaling teammate",
+        "burst: Max HP ▲31.68% on the lowest-remaining-HP ally is now modeled (theme-13, 2026-07-17) via the new targetMaxHpPct stat (own-% basis) + alliesLowestHp TargetDef (count 1, excludeSelf). Offensively INERT: it lands on a teammate (casterIdx≠self) so it does not feed their atkOfMaxHpPct conversion (e3 rule); and v1 has no HP pool so 'lowest remaining HP' resolves to the leftmost non-self ally as a deterministic stand-in. Kit-SSOT completeness only — no board damage moves.",
         "skill1: shield cadence (every 120 normal attacks) scales with the unverified datamine cadence tuple (⚑)"
       ],
       "board": null
@@ -655,27 +653,27 @@
         ]
       },
       "caveats": [
-        "skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled permanent — derived floor ~79% while she bursts each ~40s rotation; OVER-CREDITS in comps where chisato never bursts (the gauge decays below the 70%/55%/25% gates at ~60s/~90s/~150s).",
+        "skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).",
         "skill2: 'Normal attacks deal true damage for 10 sec' is encoded as a same-weapon swap (trueNormals) so the S1 True Damage ▲ 48.62% applies to normals only inside the window — the swap grants an instant mag refill at cast and at window end (engine artifact, mild shot-count optimism), and core/crit are retained on true normals (takina precedent, unverified in-game)."
       ],
       "board": {
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.1915
+            "ratio": 1.2023
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1909
+            "ratio": 1.2022
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.1243
+            "ratio": 1.1079
           }
         ],
         "n": 3,
-        "mean": 1.1689,
-        "mad": 0.1689,
+        "mean": 1.1708,
+        "mad": 0.1708,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -712,43 +710,43 @@
         "burst": []
       },
       "caveats": [
-        "skill2: Beautiful (Max HP ▲ 1.6% continuously, stacks up to 12) has no block of its own — it is baked at steady state into skill1's 3.23 (= 2.71 × 1.192) and the burst's 14006 (+28.9 × 12 mirror); bursts before the ~36s ramp completes are slightly over-credited.",
+        "skill2: Beautiful (Max HP ▲ 1.6% ×12 = +19.2% continuously, from her battle-start Decoy) is now modeled FAITHFULLY (2026-07-17, theme 3), replacing the steady-state bake: a self casterMaxHpPct 19.2 with rampSec 36 (passive Max-HP ramp from t=0) feeds her atkOfMaxHp via effectiveAtk (own-kit Max-HP only — engine wiring 2026-07-17, ally grants still excluded per the cindy e3 rule); atkOfMaxHp reverted to base 2.71; the burst's Beautiful-mirror split off as a rampSec-36 flatDamage 346.8 (nuke base back to 13659.2). Steady state (t≥36s) is byte-identical to the old bake (2.71×1.192=3.23; 13659.2+346.8=14006); pre-36s bursts now correctly credit PARTIAL Beautiful, reproducing the measured e3 early→late FB-proc growth (633.7k→667.0k). VALIDATED: mirror ramps 47.5@t=5s → 346.8@t≥36s; drift board-neutral for all other units.",
         "skill2: the Decoy avatar itself is not modeled (defensive/aggro summon; v1 boss deals no damage so full decoy uptime — and thus full Beautiful uptime — is assumed)."
       ],
       "board": {
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 0.947
+            "ratio": 0.945
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.9203
+            "ratio": 0.9163
           },
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.9941
+            "ratio": 0.9772
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.9994
+            "ratio": 0.9947
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 0.7522
+            "ratio": 0.7541
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.925
+            "ratio": 0.9193
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0573
+            "ratio": 1.0507
           }
         ],
         "n": 7,
-        "mean": 0.9422,
-        "mad": 0.0742,
+        "mean": 0.9368,
+        "mad": 0.0777,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -761,9 +759,9 @@
       "kitParse": {
         "status": "audited",
         "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "date": "2026-07-17",
         "findings": [
-          "FB-nuke trigger: should be OWN-BURST-GATED fullBurstEnter (NOT plain burstCast — that loses the +50% FB major, measured wrong T5 0.877). Schema gap; needs engine {kind:fullBurstEnter, ownBurstOnly:true}. Graded-comp movement=ZERO (sole-B3, gate always satisfied). Snipe-branch core:true unvalidated (F2)"
+          "RESOLVED 2026-07-17: FB-nuke riders now OWN-BURST-GATED via engine `ownBurstGate:'cast'` block gate (types.ts Block + sim.ts applyBlock) composing with the existing fullBurstEnter trigger — kept at FB-entry (keeps the +50% FB major, unlike re-keying to burstCast). The prior 'sole-B3 → movement ZERO' premise was WRONG: she alternates stage-3 with a co-B3 in BOTH graded comps (Liberalio T5, Rapi:RH T8), so the gate is board-MOVING and IMPROVES fit: T8 1.062 HOT→1.001, T5 1.009→0.978 (both within ±3%, board MAD 0.036→0.012). Regression snapshot updated for T5 ccw total (understood). Snipe-branch core:true still unvalidated (F2)."
         ]
       },
       "tier": "CALIBRATED",
@@ -790,18 +788,18 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 1.009
+            "ratio": 0.9784
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0621
+            "ratio": 1.0018
           }
         ],
         "n": 2,
-        "mean": 1.0356,
-        "mad": 0.0356,
-        "band": "±5%",
-        "temp": "HOT ▲"
+        "mean": 0.9901,
+        "mad": 0.0117,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "crown": {
@@ -856,7 +854,7 @@
           },
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 1.0081
+            "ratio": 1.0094
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -864,11 +862,11 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.9212
+            "ratio": 0.9206
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9913
+            "ratio": 0.992
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
@@ -888,8 +886,8 @@
           }
         ],
         "n": 12,
-        "mean": 1.0278,
-        "mad": 0.0498,
+        "mean": 1.0279,
+        "mad": 0.0499,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -1096,16 +1094,16 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0627
+            "ratio": 1.0655
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.97
+            "ratio": 0.9713
           }
         ],
         "n": 2,
-        "mean": 1.0163,
-        "mad": 0.0463,
+        "mean": 1.0184,
+        "mad": 0.0471,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -1502,12 +1500,12 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0289
+            "ratio": 1.0353
           }
         ],
         "n": 5,
-        "mean": 1.0185,
-        "mad": 0.0264,
+        "mean": 1.0198,
+        "mad": 0.0277,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -1760,7 +1758,7 @@
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9331
+            "ratio": 0.9362
           },
           {
             "comp": "PG iron sweep (boss Electric)",
@@ -1772,8 +1770,8 @@
           }
         ],
         "n": 4,
-        "mean": 0.9912,
-        "mad": 0.1024,
+        "mean": 0.992,
+        "mad": 0.1016,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -1930,8 +1928,7 @@
       "unmodeled": {
         "skill1": [
           "Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
-          "Activates when entering Full Burst with MP above 1. MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
-          "Activates when attacking with Full Charge for 6 time(s). Affects self. Max HP ▲ 6.34% without restoring HP for 15 sec, stacks up to 10 time(s)."
+          "Activates when entering Full Burst with MP above 1. MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill."
         ],
         "skill2": [],
         "burst": []
@@ -1943,7 +1940,7 @@
         "records": [
           {
             "comp": "T2 elec-weak (boss Water)",
-            "ratio": 1.031
+            "ratio": 1.0353
           },
           {
             "comp": "PF maiden solo (boss Water)",
@@ -1951,14 +1948,14 @@
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 0.7611
+            "ratio": 0.8502
           }
         ],
         "n": 3,
-        "mean": 0.9392,
-        "mad": 0.0985,
-        "band": "±15%",
-        "temp": "COLD ▼"
+        "mean": 0.9703,
+        "mad": 0.0702,
+        "band": "±8%",
+        "temp": "OK  ·"
       }
     },
     "mana": {
@@ -2074,12 +2071,12 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 1.0346
+            "ratio": 1.0345
           }
         ],
         "n": 2,
-        "mean": 1.0234,
-        "mad": 0.0234,
+        "mean": 1.0233,
+        "mad": 0.0233,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -2442,11 +2439,11 @@
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.7017
+            "ratio": 0.7023
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.7473
+            "ratio": 0.747
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
@@ -2454,8 +2451,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.7122,
-        "mad": 0.2878,
+        "mean": 0.7123,
+        "mad": 0.2877,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2498,12 +2495,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9851
+            "ratio": 0.9858
           }
         ],
         "n": 1,
-        "mean": 0.9851,
-        "mad": 0.0149,
+        "mean": 0.9858,
+        "mad": 0.0142,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -2547,12 +2544,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8937
+            "ratio": 0.896
           }
         ],
         "n": 1,
-        "mean": 0.8937,
-        "mad": 0.1063,
+        "mean": 0.896,
+        "mad": 0.104,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -2602,16 +2599,16 @@
           },
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 1.1433
+            "ratio": 1.1504
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.0903
+            "ratio": 1.0859
           }
         ],
         "n": 3,
-        "mean": 1.0823,
-        "mad": 0.0823,
+        "mean": 1.0832,
+        "mad": 0.0832,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2813,18 +2810,18 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0166
+            "ratio": 1.0767
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9505
+            "ratio": 1.0043
           }
         ],
         "n": 2,
-        "mean": 0.9836,
-        "mad": 0.0331,
+        "mean": 1.0405,
+        "mad": 0.0405,
         "band": "±5%",
-        "temp": "OK  ·"
+        "temp": "HOT ▲"
       }
     },
     "rapi-red-hood": {
@@ -2874,11 +2871,11 @@
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
-            "ratio": 0.8855
+            "ratio": 0.8823
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 1.0005
+            "ratio": 1.0026
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -2886,8 +2883,8 @@
           }
         ],
         "n": 5,
-        "mean": 0.9719,
-        "mad": 0.0283,
+        "mean": 0.9717,
+        "mad": 0.0293,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3348,7 +3345,7 @@
         ]
       },
       "caveats": [
-        "skill1/burst: the Golden Chip pool is not dynamically tracked — crit damage (42) and the every-burst ATK ▲65.25 gate are steady-state derivations valid for standard double-B3 comps (pre-consume trajectory 50/44/40/38/31, all ≥30); comps that drain below 30 pre-consume over-credit",
+        "skill1/burst: FAITHFUL DYNAMIC Golden-Chip pool LANDED 2026-07-17 (engine resource-counter primitive) — replaces the flat crit-42 + every-burst-65.25 derivations. Pool: start 50 (cap 50), +1 per datamined '3 normal attacks during Full Burst' (the same trigger as the AD +10.51 block), −17 on her burst (spent AFTER the gates). Crit Damage is LIVE = goldenChip×1.32 (perResource); burst ATK ▲65.25 gated at ≥30 chips (pre-spend). VALIDATED vs soda tb control.mov: sim pre-consume 50/43/38… reproduces the measured 50/44/40/38/31 within 1-2 chips (the datamined per-3-normals generation MATCHES the recorded drain, not fit to it); crit major 2.66 at 50 chips = 1+base1.0+50×1.32/100 ✓. Now comp-correct: N3 no-burst comp chips stay 50 → crit 66% → 0.954→0.974 (matches the note's ~0.96 prediction the flat-42 under-credited); burst comps drain as measured. Hit Rate ▲38.91 (≥20 chips) STILL unmodeled (HR→core open item — deliberately not added despite HRCORE now live, to keep this change scoped to the measured chip mechanic).",
         "skill2: Full Burst extension modeled as a flat +4s average; the kit is chip-gated CUMULATIVE (+5s at ≥20 chips = TE-I+TE-II, +2s at 10–19) — late-fight Full Bursts run shorter than modeled (measured last-FB countdown 12.50s at 18–19 chips)",
         "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)",
         "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected)."
@@ -3357,14 +3354,14 @@
         "records": [
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.9542
+            "ratio": 0.9747
           }
         ],
         "n": 1,
-        "mean": 0.9542,
-        "mad": 0.0458,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 0.9747,
+        "mad": 0.0253,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "soline-frost-ticket": {
@@ -3519,11 +3516,9 @@
           "Recovers 1.57% of the skill user's final Max HP as HP."
         ],
         "skill2": [
-          "Max HP ▲ 44.98% of the skill user's Max HP without restoring HP constantly.",
           "Invulnerable for 2 sec."
         ],
         "burst": [
-          "Max HP ▲ 20.14% of the skill user's Max HP without restoring HP for 10 sec.",
           " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
           "Changes Spread Roots to Wilted Roots.",
           "Wilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec.",
@@ -3533,21 +3528,22 @@
       "caveats": [
         "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).",
         "burst: Max Ammunition +20 rounds is encoded as maxAmmoPct 33.3 (assumes a 60-round AR base magazine).",
-        "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina."
+        "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina.",
+        "[2026-07-17 THEME-13] Her two 'Max HP ▲ X% of the skill user's Max HP' grants are now modeled as casterMaxHpPct (S2 44.98% → all Electric-AR allies, passive/constant; burst 20.14% → all allies, 10s). Offensively INERT: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 rule) — no board damage moves. Kit-SSOT completeness only."
       ],
       "board": {
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 1.1369
+            "ratio": 1.1308
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.1615
+            "ratio": 1.1647
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
-            "ratio": 1.093
+            "ratio": 1.0877
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
@@ -3555,8 +3551,8 @@
           }
         ],
         "n": 4,
-        "mean": 1.1547,
-        "mad": 0.1547,
+        "mean": 1.1527,
+        "mad": 0.1527,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -3605,12 +3601,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 1.0649
+            "ratio": 1.0592
           }
         ],
         "n": 1,
-        "mean": 1.0649,
-        "mad": 0.0649,
+        "mean": 1.0592,
+        "mad": 0.0592,
         "band": "±8%",
         "temp": "HOT ▲"
       }

@@ -42,18 +42,21 @@ the frame with the fewest orange-popup pixels near the core, arms-spread pose pr
 ## accuracy_circle_scale -> pixels (calibration)
 
 The game's `accuracy_circle_scale` (characters.json) maps to on-screen reticle diameter by a
-**linear-with-offset** relation (not proportional), fit from three independent measured points
-(AR inner circle 75->29px, SMG crosshair 110->60px, SG spread 250->162px):
+**proportional** relation (offset ≈ 0), fit from three independent **bloom-peak** points
+(AR 75->48px, SMG lm 110->71.5px, SG spread 250->162px):
 
-> **diameter_px = 0.751 * scale - 25.2**  (equivalently `0.751*(scale - 33.6)`), R^2 = 0.999
+> **diameter_px = 0.648 * scale**, R^2 = 0.9999
 
-Slope ~3/4 px per scale-unit, with a ~34-scale dead zone below which the circle is ~0px. Full data
-+ provenance in `accuracy-circle-calibration.json`.
+Uniform ~0.648 px per scale-unit, no dead zone; `accuracy_circle_scale` is the fully-bloomed reticle
+diameter. **SUPERSEDES (2026-07-17)** the old `0.751*scale - 25.2` — that offset was a bloom-phase
+artifact (the earlier AR 29px / SMG 60px were mid-bloom snapshots). Full data + provenance in
+`accuracy-circle-calibration.json`; the reticle pulses on the fire cadence between a contracted floor
+and the peak (see DERIVATION §2b).
 
-**Cross-check / optimal range:** the AR 75-scale circle (29px) equals the mid-band boss core
-(28px), measured independently — mid is the AR's optimal range. At optimal range the accuracy
-circle collapses to the core diameter, so every in-zone shot is a core hit. The core never entered
-the regression yet lands on the predicted AR circle, independently validating the map.
+**Cross-check / optimal range (reframed):** the AR reticle's contracted **floor** (~29px) ≈ the
+mid-band boss core (28px), measured independently — but the AR *accuracy circle* is 48px, not 29px.
+So fully bloomed the AR core fraction is only ~0.34; high Hit Rate squeezes the bloom toward the 29px
+floor (≈ core), where core saturates to ~1. That is the real "optimal range = all-core" mechanism.
 
 This conversion is the bridge from a unit's datamined `accuracy_circle_scale` to the on-screen
 circle used for the hit/miss-vs-range computation above.

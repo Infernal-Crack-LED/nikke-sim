@@ -7,11 +7,9 @@
       "Recovers 1.57% of the skill user's final Max HP as HP."
     ],
     "skill2": [
-      "Max HP ▲ 44.98% of the skill user's Max HP without restoring HP constantly.",
       "Invulnerable for 2 sec."
     ],
     "burst": [
-      "Max HP ▲ 20.14% of the skill user's Max HP without restoring HP for 10 sec.",
       " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
       "Changes Spread Roots to Wilted Roots.",
       "Wilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec.",
@@ -20,6 +18,25 @@
   },
   "skill1": [],
   "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesOfElementWeapon",
+        "element": "Electric",
+        "weapon": "AR",
+        "count": 99
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 44.98
+        }
+      ]
+    },
     {
       "slot": "skill2",
       "trigger": {
@@ -62,6 +79,12 @@
           "stat": "attackDamagePct",
           "value": 20.9,
           "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 20.14,
+          "durationSec": 10
         }
       ]
     },
@@ -89,6 +112,7 @@
   "caveats": [
     "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).",
     "burst: Max Ammunition +20 rounds is encoded as maxAmmoPct 33.3 (assumes a 60-round AR base magazine).",
-    "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina."
+    "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina.",
+    "[2026-07-17 THEME-13] Her two 'Max HP ▲ X% of the skill user's Max HP' grants are now modeled as casterMaxHpPct (S2 44.98% → all Electric-AR allies, passive/constant; burst 20.14% → all allies, 10s). Offensively INERT: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 rule) — no board damage moves. Kit-SSOT completeness only."
   ]
 }

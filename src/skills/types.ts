@@ -17,11 +17,16 @@ export type StatKey =
   | 'attackDamagePct'   // "Attack Damage" — Damage Up bucket
   | 'sustainedDamagePct'
   | 'sequentialDamagePct'
-  | 'casterMaxHpPct' // grants Max HP = % of caster's Max HP (feeds atkOfMaxHpPct consumers)
+  | 'casterMaxHpPct' // grants Max HP = % of CASTER's Max HP ("X% of the skill user's Max HP" — rouge/anis/trina)
+  | 'targetMaxHpPct' // grants Max HP = % of the TARGET's OWN Max HP ("Max HP ▲ X%" — blanc/maiden). Same
+  //                    e3 feed rule as casterMaxHpPct: only feeds atkOfMaxHpPct when caster === target (self)
   | 'partsDamagePct'    // parsed but inert in v1 (no parts on the boss)
   | 'pierceDamagePct'   // parsed but inert in v1
   | 'damageTakenPct'    // debuff on the boss (positive = boss takes more)
   | 'maxAmmoPct'
+  | 'maxAmmoFlat'       // Max Ammunition ▲ N rounds — FLAT round count (not %), added on top of the
+  //                      maxAmmoPct scaling in maxAmmo() (theme 14: "▲ N round(s)" kit lines that the
+  //                      percent-only schema could only approximate — grave/noir/tove/drake/trina)
   | 'reloadSpeedPct'
   | 'attackSpeedPct'
   | 'fireRatePct'
@@ -83,7 +88,13 @@ export type TargetDef =
   // "the N leftmost <element> ally unit(s) with <weapon>s" (Trina S2's real target)
   | { kind: 'alliesOfElementWeapon'; element: string; weapon: string; count?: number }
   // "self and N ally unit(s) on both sides" (Rouge's coin coverage — positional)
-  | { kind: 'selfAndAdjacent'; sides: number };
+  | { kind: 'selfAndAdjacent'; sides: number }
+  // "the N ally unit(s) with the lowest remaining HP [(except self)]" (blanc/moran survival grants).
+  // v1 has no HP pool (immortal boss, nobody takes damage) so "lowest remaining HP" is indeterminate —
+  // resolved deterministically to the leftmost `count` allies as a documented stand-in. The Max-HP grants
+  // these lines carry are offensively INERT anyway (ally-granted Max HP does not feed a teammate's
+  // atkOfMaxHpPct conversion — e3 video rule), so the stand-in choice moves no damage.
+  | { kind: 'alliesLowestHp'; count: number; excludeSelf?: boolean };
 
 export type EffectDef =
   | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number;
@@ -135,7 +146,15 @@ export type EffectDef =
       intervalSec?: number;
       noRange?: boolean;
       noFb?: boolean;
+      crit?: boolean;    // this DoT's ticks roll crit at the caster's sheet rate — opt-in ONLY where MEASURED
+                         // (isabel's ~14.7s periodic hit: ~15-25% of fires observed critting; docs/probe-data/isabel-sg-band.json).
+                         // Overrides the global DOT_CRIT gate (which stays default-OFF): most DoTs are validated NON-crit
+                         // (jill's acid tick video-confirmed at 99.7% non-crit; mihara's Ensnaring validated at 1.03 non-crit).
       flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
+      // live resource-scaled DoT: each tick's atkPct is recomputed as owner.resources[name] × mult
+      // (ignores the static atkPct) — mihara-bonding-chain's Ensnaring DoT (50.05%/s per stack,
+      // stacks cancelled on burst + rebuilt), so a stack pool drives the DoT dynamically.
+      perResource?: { name: string; mult: number };
     }
   | {
       kind: 'weaponSwap'; // "Changes the weapon in use:" — temporary weapon override
@@ -174,6 +193,11 @@ export type EffectDef =
   | { kind: 'escalating'; steps: EffectDef[] }                // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
   | { kind: 'fullBurstExtend'; seconds: number }
   | { kind: 'unlimitedAmmo'; durationSec: number }
+  // "Removes N% of ammunition" / forced-reload dump (theme 15): empties the target's current
+  // magazine by `fraction` of MAX capacity (default 1 = 100%, the whole belt) and, if that drops
+  // the belt to 0, forces an immediate reload (fires lastBullet triggers, same as firing dry).
+  // The inverse of instantReload. e.g. grave's Prediction-end forced reload, asuka-wille, jill.
+  | { kind: 'consumeAmmo'; fraction?: number }
   | { kind: 'gainPierce'; durationSec: number }               // timed "Gain Pierce for N sec": the target's attacks count as Pierce-tagged for the window, so its (and teammates') Pierce Damage ▲ buffs go live during it — for a kit whose pierce is temporary, not the static per-unit `hasPierce` flag
   | { kind: 'instantReload'; fraction?: number }              // refill magazine (fraction of max, default full)
   | { kind: 'stun'; durationSec: number }                     // target can't fire/charge/reload (bursting unaffected)
@@ -199,6 +223,16 @@ export interface Block {
   // Combat Assist only applies when the team has no Burst I unit). The unit
   // itself never counts ("no OTHER Burst 1 allies").
   formation?: 'noB1' | 'hasB1';
+  // static team-composition gate, evaluated once at sim setup (like `formation`):
+  // the block is active only when the team contains SOME OTHER ally matching ALL
+  // specified facets — facets AND together; omit a facet to leave it unconstrained.
+  // e.g. teamHas:{element:'Electric', burst:'III'} — the `arcana` (RL/Electric)
+  // override's team buffs are DEAD "without a Burst-III Electric caster present"
+  // (NOT arcana-fortune-mate), so the block is inert on any
+  // team lacking one. The owner itself never counts (same rule as `formation`);
+  // burst matches literally (a Λ unit does NOT satisfy burst:'III'). Omit = always
+  // active (back-compatible). Burst codes 'I'|'II'|'III'|'Λ'; weapon AR/SMG/SG/SR/RL/MG.
+  teamHas?: { element?: string; class?: string; weapon?: string; burst?: string };
   // mode gate: block active only when the unit's selected mode matches (the
   // override's top-level `modes` array declares the choices; first = default)
   mode?: string;
@@ -228,6 +262,18 @@ export interface Block {
   // (fullBurstEnter/hitCount/burstCast/…). Inert vs a non-matching boss (incl.
   // the neutral scope-lock boss), so it never disturbs graded comps.
   bossElementGate?: string;
+  // own-burst gate, checked when the trigger fires: the block only activates when the
+  // owner DID ('cast') or did NOT ('notCast') cast their own burst in the rotation leading
+  // into this Full Burst. Composes with a `fullBurstEnter` trigger to express "Entering
+  // Full Burst AFTER this unit uses her own Burst" ('cast') vs "…WITHOUT using own Burst"
+  // ('notCast') — a plain team `fullBurstEnter` over-fires in multi-B3 comps where a
+  // DIFFERENT B3 completes the chain. Unlike re-keying to `burstCast` (which fires PRE-FB
+  // and loses the +50% Full-Burst major + FB auras), this keeps the block at FB entry.
+  // e.g. cinderella-crystal-wave's FB-enter core-strike nuke ('cast'); the inverse is
+  // diesel-winter-sweets' Highlight sustained ('notCast'). Evaluated against the same
+  // rotationCasters set the burst-caster targets use; inert on graded comps where the unit
+  // is the sole/actual burster. Omit = fires on any Full Burst (back-compatible).
+  ownBurstGate?: 'cast' | 'notCast';
   // resource-pool gate: block fires only when a named resource (CharacterSkills.resources)
   // is within [min,max] at trigger time — soda-twinkling-bunny's burst ATK ▲65.25% activates
   // only at ≥30 Golden Chips ({name:'goldenChip', min:30}), Hit Rate at ≥20, FB-ext tiers at

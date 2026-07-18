@@ -48,6 +48,14 @@ export function TestingRequestsPage() {
             generates extra burst gauge and that changes the rotation.
           </li>
           <li>
+            <b>Record on the phone client, held horizontal (landscape).</b> Our
+            reader pulls the numbers off the screen automatically, and it’s
+            calibrated to the mobile UI in landscape orientation — so a
+            screenshot from the PC client, or a phone held vertical, can’t be
+            read. Please use the phone app in landscape for the damage screen (a
+            landscape video, if you capture one, is ideal too).
+          </li>
+          <li>
             <b>Capture the result.</b> A screenshot of the end-of-fight damage
             breakdown (per-unit totals) plus, ideally, a video of the full fight
             so full-burst counts and rotation can be checked.
@@ -114,6 +122,14 @@ export function TestingRequestsPage() {
             rel='noreferrer'
           >
             Submit a test fight
+          </a>
+          <a
+            className='dev-link'
+            href={UPLOAD_FOLDER}
+            target='_blank'
+            rel='noreferrer'
+          >
+            Upload a recording
           </a>
         </div>
       </article>

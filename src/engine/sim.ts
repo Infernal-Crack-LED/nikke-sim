@@ -17,6 +17,17 @@ import {
 import type { PreparedUnit } from '../prepare.js';
 import gaugeTable from '../../data/gauge-per-shot.json' with { type: 'json' };
 import { relationshipBonus } from '../relationship.js';
+import {
+  ACCURACY_CIRCLE_SCALE,
+  BAND_CORE_PX,
+  BAND_SG_HIT_FRAC,
+  circleDpx,
+  circleDpxAtHr,
+  coreFracGeo,
+  pelletCoreFrac,
+  pelletLandFrac,
+  pelletSigma,
+} from './sg-geometry.js';
 
 // Debug taps read env vars only under Node; in the browser bundle this is an empty object.
 const ENV: Record<string, string | undefined> =
@@ -190,6 +201,11 @@ const UNHITTABLE_FRAMES = 60;
 // the SHAPE stands per U17 HOLD — the class table is not re-litigated). {0.9,1.0,0.75,0.9} × 0.9863 →
 // {0.888,0.986,0.740,0.888}; restores noir to its pre-bond calibration point (~1.006). The far-band SHAPE
 // deficit (staged far~0.66, U17) is orthogonal and NOT folded in here.
+// ENV.SGLANDING==='geo' (⚑ EXPERIMENT ARM, default off): the hand-outlined per-band SG HIT
+// fraction from the accuracy-circle study (BAND_SG_HIT_FRAC, docs/data/sg-calc/, workstream C) —
+// the geometric fraction of the fixed spread circle on the boss body = expected fraction of pellets
+// that land. This is the noir single-boss silhouette; per-boss transfer needs bossPelletProfile +
+// real per-boss footage (measured landings win where they exist, hard-constraint #3).
 const SG_LANDING_BY_BAND: Record<string, number> =
   ENV.SGLANDING === 'legacy'
     ? { near: 1.0, mid: 0.3, far: 0.3, midfar: 0.3 }
@@ -197,7 +213,9 @@ const SG_LANDING_BY_BAND: Record<string, number> =
       ? { near: 0.6, mid: 0.6, far: 0.45, midfar: 0.55 }
       : ENV.SGLANDING === 'prebond' // the pre-2026-07-16 base5-calibrated table (A/B)
         ? { near: 0.9, mid: 1.0, far: 0.75, midfar: 0.9 }
-        : { near: 0.888, mid: 0.986, far: 0.74, midfar: 0.888 };
+        : ENV.SGLANDING === 'geo'
+          ? { ...BAND_SG_HIT_FRAC }
+          : { near: 0.888, mid: 0.986, far: 0.74, midfar: 0.888 };
 
 // Per-band SG pellet-landing JITTER (2026-07-17, seeded Monte Carlo only). The fixed
 // SG_LANDING_BY_BAND table is the expected-value landing; a real fight's per-shot landed-pellet
@@ -208,12 +226,22 @@ const SG_LANDING_BY_BAND: Record<string, number> =
 // number of its (hitsPerShot) pellets, not a fraction. Averaging N seeds recovers the band mean
 // and the seed sd gives the landing-variance error bar. Expected-value (unseeded) runs keep the
 // fixed table unchanged. Ranges as fractions of full pellet count (owner, 2026-07-17):
-const SG_LANDING_JITTER: Record<string, { min: number; max: number }> = {
-  near:   { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
-  mid:    { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
-  midfar: { min: 0.7, max: 0.9 }, // 10 pellets → {7,8,9},  mean 0.80
-  far:    { min: 0.6, max: 0.8 }, // 10 pellets → {6,7,8},  mean 0.70
-};
+const SG_LANDING_JITTER: Record<string, { min: number; max: number }> =
+  ENV.SGLANDING === 'geo'
+    ? // geo arm: center the ±0.1 jitter window on the geometric hit fraction (workstream C) so the
+      // seeded-by-default board actually sees the geo means; same window width as the owner table.
+      Object.fromEntries(
+        Object.entries(BAND_SG_HIT_FRAC).map(([b, f]) => [
+          b,
+          { min: Math.max(0, f - 0.1), max: Math.min(1, f + 0.1) },
+        ]),
+      )
+    : {
+        near:   { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
+        mid:    { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
+        midfar: { min: 0.7, max: 0.9 }, // 10 pellets → {7,8,9},  mean 0.80
+        far:    { min: 0.6, max: 0.8 }, // 10 pellets → {6,7,8},  mean 0.70
+      };
 // Standard-normal sample (Box-Muller) from the uniform PRNG; the second normal is discarded.
 function gaussian(rng: () => number): number {
   const u1 = rng() || 1e-9; // guard log(0)
@@ -283,7 +311,10 @@ interface Dot {
   trueFlavor?: boolean;
   noRange?: boolean;
   noFb?: boolean;
+  crit?: boolean; // per-DoT crit opt-in (isabel measured); overrides the global DOT_CRIT gate when set
   projFlavor?: 'attachment' | 'explosion';
+  // live resource-scaled DoT: each tick recomputes atkPct = owner.resources[name] × mult
+  perResource?: { name: string; mult: number };
 }
 
 interface WeaponSwap {
@@ -505,10 +536,24 @@ export function runSim(
     // does not flip Anis: Star's My Own Star off)
     const teamHasB1 = chars.some((c, i) => i !== idx && c.burst === 'I');
     const selectedMode = prepared?.[idx]?.mode ?? skills.modes?.[0];
+    // static team-composition gate (`teamHas`): the block is active only when
+    // SOME OTHER ally matches ALL specified facets (element/class/weapon/burst,
+    // ANDed). Owner never counts; burst matches literally (Λ ≠ 'III'). Omit =
+    // always active, so this is inert until an override opts in.
+    const teamHasMatch = (need: NonNullable<Block['teamHas']>) =>
+      chars.some(
+        (c, i) =>
+          i !== idx &&
+          (!need.element || c.element === need.element) &&
+          (!need.class || c.class === need.class) &&
+          (!need.weapon || c.weapon === need.weapon) &&
+          (!need.burst || c.burst === need.burst)
+      );
     const activeBlocks = skills.blocks.filter(
       (b) =>
         (!b.formation || (b.formation === 'hasB1') === teamHasB1) &&
-        (!b.mode || b.mode === selectedMode)
+        (!b.mode || b.mode === selectedMode) &&
+        (!b.teamHas || teamHasMatch(b.teamHas))
     );
     const unitOl = prepared?.[idx]?.ol ?? cfg.ol;
     // Limit-Break stars (grade 0-3) and Core enhancement (0-7) are per-unit;
@@ -716,12 +761,48 @@ export function runSim(
     const row = CORE_BY_WEAPON_BAND[weapon];
     return row ? (row[band] ?? LO) : HI; // MG/SR/RL (no row) → flat HI
   };
-  const acrFor = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far'): number =>
-    ENV.ACR !== undefined ? Number(ENV.ACR)
-    : ENV.CORERATE === 'flat' ? 0.85
-    : ENV.CORERATEBAND === 'off'
-      ? ((weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : LO)
-      : coreByWeaponBand(weapon, band);
+  // ── Workstream A (⚑ EXPERIMENT ARM, ENV.ACR_GEO, default off) ────────────────────────────────
+  // Geometric core-hit fraction from the accuracy-circle px calibration: a concentric core inside
+  // the accuracy circle ⇒ fraction of shots on core ≈ area ratio (core_D_px / circle_D_px)²
+  // (docs/data/sg-calc/, src/engine/sg-geometry.ts). Two arms, both default-off (byte-stable):
+  //   'replace'/'on'/'raw' → the RAW geometric fraction. With the 2026-07-17 PEAK-anchored proportional
+  //     px map (circle 0.648·scale; AR 48px), AR near/mid geo = 0.42/0.34 ≈ measured 0.40/0.30, so this
+  //     no longer overshoots AR (the old 29px map made it ~2.5x hot). BOARD A/B: 'replace' improves every
+  //     HR-neutral SMG unit toward 1 (chisato 1.171→1.140, quency 1.040→0.991, lm 1.088→1.069) and is
+  //     ~neutral on AR; the residual hot cells are AR midfar/far, where core collapses out-of-range
+  //     (a range-eligibility effect the area ratio does not model). Promote-candidate for SMG core.
+  //   'shape'/'fill' → geometry supplies only the inter-band SHAPE, anchored to the measured near
+  //     cell (measured > geometry, hard-constraint #3): acr(band) = measured_near · geo(band)/geo(near).
+  //     This is the recommended ruling — measured cells stay pinned, geometry fills the falloff.
+  // MG/SR/RL (no accuracy-circle model) always fall through to the base table.
+  const geoCoreFrac = (weapon: string, band: string): number | null => {
+    const scale = ACCURACY_CIRCLE_SCALE[weapon];
+    const coreD = BAND_CORE_PX[band];
+    if (scale === undefined || coreD === undefined) return null;
+    return coreFracGeo(coreD, circleDpx(scale));
+  };
+  const acrForGeo = (weapon: string, band: string, mode: string): number | null => {
+    const geo = geoCoreFrac(weapon, band);
+    if (geo === null) return null; // no circle model → let acrFor use the base table
+    if (mode === 'shape' || mode === 'fill') {
+      const geoNear = geoCoreFrac(weapon, 'near');
+      const measuredNear = CORE_BY_WEAPON_BAND[weapon]?.near;
+      if (!geoNear || measuredNear === undefined) return null;
+      return Math.min(1, (measuredNear / geoNear) * geo);
+    }
+    return geo; // raw
+  };
+  const acrFor = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far'): number => {
+    if (ENV.ACR !== undefined) return Number(ENV.ACR);
+    if (ENV.CORERATE === 'flat') return 0.85;
+    if (ENV.CORERATEBAND === 'off')
+      return (weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : LO;
+    if (ENV.ACR_GEO) {
+      const g = acrForGeo(weapon, band, ENV.ACR_GEO);
+      if (g !== null) return g;
+    }
+    return coreByWeaponBand(weapon, band);
+  };
 
   // ── Hit-Rate → core-hit multiplier (⚑ DERIVED ESTIMATE; LIVE by default, HRCORE=0 disables for A/B) ──
   // Higher Hit Rate shrinks the auto-aim reticle (TricK's MEASURED SG reticle regression) → tighter bloom
@@ -764,10 +845,47 @@ export function runSim(
     const frac = Math.max(HR_RETICLE_FLOOR_FRAC, 1 - HR_RETICLE_SLOPE * hr);
     return Math.pow(1 / frac, p);
   };
+  // ── Workstream B (⚑ EXPERIMENT ARM, ENV.HRCORE_GEO, sub-flag under HRCORE, default off) ──────
+  // Geometry-derived HR→core multiplier: HR shrinks the accuracy circle (same fractional shrink as
+  // the exponent model), so the core covers a larger area fraction. M = coreFracGeo(hr)/coreFracGeo(0)
+  // (docs/data/sg-calc/ workstream B). Band-DEPENDENT (per-band core size does NOT cancel here, unlike
+  // the exponent model) — applied to that band's base. This grounds the HR_CORE_SAT free parameter in
+  // real geometry: saturation is simply where the shrunk circle reaches the core diameter.
+  // BOARD STATUS (2026-07-17, after the 48px peak-anchored recalibration): NOT rescued. The prior
+  // "no AR lift" was NOT the old 29px px bug — it is board COVERAGE: HRCORE=0 leaves every AR board
+  // comp byte-identical, i.e. no AR fight carries live Hit Rate to exercise this path at all. Only
+  // chisato/quency-escape-queen (SMG) are HR-active, and geo-B over-lifts them (quency 1.040→1.322).
+  // Testing B for AR needs an HR-active AR comp (e.g. jill's pre-registered +80.78% scenario), absent here.
+  const hrCoreMultGeo = (weapon: string, band: string, hr: number): number => {
+    const scale = ACCURACY_CIRCLE_SCALE[weapon];
+    const coreD = BAND_CORE_PX[band];
+    if (scale === undefined || coreD === undefined) return 1; // MG/SR/RL → no lift
+    const base0 = coreFracGeo(coreD, circleDpx(scale));
+    if (base0 <= 0) return 1;
+    const atHr = coreFracGeo(coreD, circleDpxAtHr(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC));
+    return atHr / base0; // ≥1, monotone in hr, capped where the circle reaches the core
+  };
+  // ── Center-weighted pellet model (⚑ EXPERIMENT ARM, ENV.PELLET_GAUSS, default off) ──────────────
+  // Unifies core-hit + SG landing: a 2D Gaussian pellet cone (σ from the accuracy circle + HR) read at
+  // the core radius (here) or the boss-body radius (SG landing, in firePull). Reproduces the measured
+  // near-core cells (AR 0.40 / SMG 0.25 / SG 0.06) and the recon SG landing (MAE 0.044) from one σ.
+  // Frame-measured on noir sg.MP4 (all bands center-weighted). Spec: docs/data/sg-calc/CENTER-WEIGHTED-PELLET-SPEC.md.
+  const PELLET_GAUSS = ENV.PELLET_GAUSS === 'on' || ENV.PELLET_GAUSS === '1';
+  const pelletSigmaFor = (weapon: string, hr: number): number | null => {
+    const scale = ACCURACY_CIRCLE_SCALE[weapon];
+    if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
+    return pelletSigma(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC);
+  };
   const acrForHR = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far', hr: number): number => {
+    if (PELLET_GAUSS) {
+      const sig = pelletSigmaFor(weapon, hr);
+      if (sig !== null) return Math.min(1, pelletCoreFrac(BAND_CORE_PX[band], sig)); // unified geometric core
+      // MG/SR/RL fall through to the base table below
+    }
     const base = acrFor(weapon, band);
     if (!HRCORE || hr <= 0) return base;                 // OFF ⇒ acrFor unchanged (regression byte-stable)
-    return Math.min(1, base * hrCoreMult(weapon, hr));
+    const mult = ENV.HRCORE_GEO ? hrCoreMultGeo(weapon, band, hr) : hrCoreMult(weapon, hr);
+    return Math.min(1, base * mult);
   };
   // Pierce core+body double-hit: community evidence is for MULTI-PART bosses; on the
   // partless test boss the A/B against run A says NO doubling (alice/RH overheat with it
@@ -980,7 +1098,7 @@ export function runSim(
         (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
       // ⚑ HRCORE: live Hit Rate shrinks the reticle → higher core fraction (derived; LIVE by default, HRCORE=0 off).
       // stat() already sums the unit's live hitRatePct buffs; additive-in-pp composition is UNVALIDATED (R8).
-      const hr = HRCORE ? stat(u, 'hitRatePct', frame) : 0;
+      const hr = HRCORE || PELLET_GAUSS ? stat(u, 'hitRatePct', frame) : 0;
       const acr = opts.coreOverride ?? acrForHR(effWeapon, bandAt(frame), hr);
       major += rng
         ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
@@ -1131,6 +1249,14 @@ export function runSim(
           .slice(0, t.count ?? 1); // units[] is slot order: leftmost first
       case 'selfAndAdjacent':
         return units.filter((u) => Math.abs(u.idx - ownerIdx) <= t.sides);
+      case 'alliesLowestHp':
+        // No HP pool in v1 (immortal boss, nobody takes damage) → "lowest remaining HP" is
+        // indeterminate; resolved deterministically to the leftmost `count` allies as a documented
+        // stand-in. The Max-HP grants these lines carry are offensively inert (ally-granted Max HP
+        // does not feed a teammate's atkOfMaxHpPct conversion — e3 rule), so the choice moves no damage.
+        return units
+          .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
+          .slice(0, t.count); // units[] is slot order: leftmost first
       case 'enemy': return [];
     }
   }
@@ -1209,6 +1335,18 @@ export function runSim(
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
     if (block.bossElementGate && cfg.bossElement !== block.bossElementGate) return;
+    // own-burst gate: block fires only when the owner DID ('cast') or did NOT ('notCast')
+    // cast their own burst in the rotation leading into this Full Burst. Composes with a
+    // `fullBurstEnter` trigger so "Entering Full Burst AFTER this unit uses her own Burst"
+    // fires only on rotations she completes — a plain team `fullBurstEnter` over-fires when a
+    // DIFFERENT B3 bursts in a multi-B3 comp (cinderella-crystal-wave's FB-enter core-strike).
+    // rotationCasters holds this rotation's burst casters (reset at FB-end, accumulated as the
+    // chain casts), so at fullBurstEnter it is the exact set; inert on graded comps where the
+    // unit is the sole/actual burster (owner is in the set → 'cast' always passes).
+    if (block.ownBurstGate) {
+      const cast = rotationCasters.includes(ownerIdx);
+      if ((block.ownBurstGate === 'cast') !== cast) return;
+    }
     // resource-pool gate: block fires only while a named resource is within [min,max] at trigger
     // time (soda's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the other abort
     // gates (before the activation counter), so a gated-out activation does not advance everyN.
@@ -1263,7 +1401,14 @@ export function runSim(
             e.stat === 'casterAtkPct' ? (e.value / 100) * owner.staticAtk
             : e.stat === 'casterMaxHpPct' ? (e.value / 100) * owner.maxHp
             : e.value;
-          const statKey = e.stat === 'casterMaxHpPct' ? ('maxHpFlat' as StatKey) : e.stat;
+          // casterMaxHpPct ("% of the skill user's Max HP") and targetMaxHpPct ("Max HP ▲ X%",
+          // the target's OWN %) both grant flat Max HP; targetMaxHpPct's value is per-target
+          // (computed inside the loop). effectiveAtk's e3 rule (casterIdx === self only) then
+          // decides whether it feeds an atkOfMaxHpPct consumer.
+          const statKey =
+            e.stat === 'casterMaxHpPct' || e.stat === 'targetMaxHpPct'
+              ? ('maxHpFlat' as StatKey)
+              : e.stat;
           // always-on triggers keep their buffs up regardless of listed duration
           // passive/bossElement buffs are permanent UNLESS the effect declares an explicit
           // durationSec — a "fused passive" that is live from battle start (frame 0) but
@@ -1274,12 +1419,15 @@ export function runSim(
             (block.trigger.kind === 'passive' || block.trigger.kind === 'bossElement') &&
             e.durationSec == null;
           for (const t of resolveTargets(block.target, ownerIdx)) {
+            // targetMaxHpPct is "% of the TARGET's own Max HP" → value differs per target.
+            const appliedValue =
+              e.stat === 'targetMaxHpPct' ? (e.value / 100) * t.maxHp : value;
             // KR stacking rule (game-mechanics.md §11): the same buff (stat+value) from
             // the same skill slot of the same caster overwrites/refreshes across trigger
             // blocks instead of co-stacking (e.g. Crown's two S1 "Reloading Speed ▲
             // 44.35%" lines). Different skills / different casters still stack.
             applyBuff(
-              t.buffs, `${ownerIdx}:${block.slot}:${statKey}:${e.value}`, statKey, value,
+              t.buffs, `${ownerIdx}:${block.slot}:${statKey}:${e.value}`, statKey, appliedValue,
               alwaysOn ? undefined : e.durationSec,
               e.maxStacks ?? 1, frame,
               e.whileSwapped ? ownerIdx : undefined,
@@ -1378,6 +1526,7 @@ export function runSim(
             sequential: e.flavor === 'sequential',
             trueFlavor: e.flavor === 'true',
             noRange: e.noRange === true,
+            crit: e.crit,
             // dots preserve original burst-cast handling (FB by e.noFb + timing, no auto-exempt) so
             // 'perkit' is byte-identical; the heuristic rules still apply via the non-burst branch.
             noFb: skillNoFb(e.noFb === true, false, e.flavor ?? 'dot'),
@@ -1387,6 +1536,7 @@ export function runSim(
                 : e.flavor === 'projectileExplosion'
                   ? 'explosion'
                   : undefined,
+            perResource: e.perResource,
           });
           break;
         }
@@ -1549,6 +1699,20 @@ export function runSim(
             }
           }
           break;
+        case 'consumeAmmo':
+          // "Removes N% of ammunition" / forced reload (theme 15): drain the belt by a fraction of
+          // MAX capacity (default 1 = the whole magazine); if it empties, force a reload just as if
+          // the unit had fired dry (fires lastBullet triggers). The inverse of instantReload.
+          for (const t of resolveTargets(block.target, ownerIdx)) {
+            const max = maxAmmo(t, frame);
+            t.ammo = Math.max(0, t.ammo - Math.round(max * (e.fraction ?? 1)));
+            if (t.ammo <= 0 && !t.reloading) {
+              fireTriggered(t, 'lastBullet', frame);
+              t.reloading = true;
+              t.reloadProgress = 0;
+            }
+          }
+          break;
       }
     }
   }
@@ -1563,7 +1727,9 @@ export function runSim(
     const base = u.swap?.maxAmmo ?? u.char.ammo;
     if (u.swap?.maxAmmo !== undefined) return u.swap.maxAmmo; // swapped weapons use their spec directly
     const pct = (u.doll.maxAmmoPct ?? 0) + stat(u, 'maxAmmoPct', frame);
-    return Math.max(1, Math.round(base * (1 + pct / 100)));
+    // flat "▲ N round(s)" grants add on top of the percent scaling (theme 14)
+    const flat = stat(u, 'maxAmmoFlat', frame);
+    return Math.max(1, Math.round(base * (1 + pct / 100)) + flat);
   }
 
   units.forEach((u) =>
@@ -1978,8 +2144,12 @@ export function runSim(
     for (const d of dots) {
       if (frame === d.nextTickFrame && frame <= d.endFrame) {
         skillGauge(units[d.ownerIdx], frame); // dot ticks generate (wiki3: Haran 290/tick)
-        dealDamage(units[d.ownerIdx], d.atkPct, frame, {
-          crit: DOT_CRIT || XCRIT.has(units[d.ownerIdx].char.slug),
+        // live resource-scaled DoT: this tick's atkPct tracks the owner's pool (mihara Ensnaring)
+        const tickAtkPct = d.perResource
+          ? (units[d.ownerIdx].resources.get(d.perResource.name) ?? 0) * d.perResource.mult
+          : d.atkPct;
+        dealDamage(units[d.ownerIdx], tickAtkPct, frame, {
+          crit: d.crit ?? (DOT_CRIT || XCRIT.has(units[d.ownerIdx].char.slug)),
           core: XCORE.has(units[d.ownerIdx].char.slug),
           charge: false, category: d.category,
           distributed: d.distributed, sustained: d.sustained, sequential: d.sequential,
@@ -2006,10 +2176,23 @@ export function runSim(
     const band = bandAt(frame);
     const bandSgFalloff =
       u.char.weapon === 'SG' && !u.swap
-        ? rng
-          ? sgLandedPellets(band, u.char.hitsPerShot, rng, cfg.bossPelletProfile) /
-            u.char.hitsPerShot
-          : SG_LANDING_BY_BAND[band]
+        ? PELLET_GAUSS
+          ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
+            // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
+            (() => {
+              const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+              const prof =
+                cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
+              const mean = pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof);
+              if (!rng) return mean;
+              let k = 0;
+              for (let i = 0; i < u.char.hitsPerShot; i++) if (rng() < mean) k++;
+              return k / u.char.hitsPerShot;
+            })()
+          : rng
+            ? sgLandedPellets(band, u.char.hitsPerShot, rng, cfg.bossPelletProfile) /
+              u.char.hitsPerShot
+            : SG_LANDING_BY_BAND[band]
         : 1;
     // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
     // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED

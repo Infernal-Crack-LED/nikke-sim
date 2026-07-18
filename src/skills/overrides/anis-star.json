@@ -1,5 +1,5 @@
 {
-  "note": "Formation-gated My Own Star / Everyone's Star kit (modeled like Rapi:RH). NoB1 (My Own Star): skill1 grants continuous self ATK 40.01% (modeled passive, 'cannot be removed') + team burst CDR 7.48s on Full Burst end; skill2's caster-ATK 35.01% and burst's self Attack Damage 35.2% are gated to this status. HasB1 (Everyone's Star): the ATK riders are replaced by re-entering burst at Stage 1 (burstEligibility stage 1); its heal and ally Max-HP portions are dropped (defensive). Formation-independent: team burst-gen 6%, full-charge additional damage 120.13% (per pull, RL always full-charges), Full-Burst-enter Attack Damage 34% and Projectile Explosion Damage 92.03% (text targets 'allies with lower DEF than self' -> approximated as all allies since she is a high-DEF Defender). Burst Shooting Stars modeled as a 40.01% ATK dot every 0.25s for 10s (40 ticks); its 'charge time fixed at 0.7s' modeled as chargeSpeedPct 30 (SUBTRACTIVE charge formula, 2026-07-13: 60f x (1-0.30) = 42f = 0.7s). Skipped: heals, ally Max-HP, DEF up, Explosion Radius (defensive/AoE-radius, irrelevant vs single boss). UNCERTAIN: Everyone's Star burst re-entry approximated as stage-1 eligibility; 'lower-DEF allies' target simplified to all allies. CORRECTION: Shooting Stars carry the projectileExplosion flavor (they benefit from Projectile Explosion Damage, incl. her own S2 aura) and, as a rider, never receive core damage. USER CORRECTION (2026-07-13): the CDR IS formation-gated (noB1, restored) — the run-A confusion was that Λ units (Red Hood) count as NO burst type for formation calculations (engine fixed); run C's rotation was gated by Tia's real 20s CD (DB wrongly had 40s). Everyone's Star re-entry now uses the real reenterStage mechanic (was a burstEligibility approximation). USER RULING (2026-07-13): ATK self-riders ARE formation-gated like the CDR. Tia counts as 'B1+' (a re-entry B1) — a rare edge case interacting with anis's formation state that we deliberately DO NOT model (tia+anis is its only occurrence and the pairing is inefficient anyway). Probe run C is EXCLUDED from anis DPS validation for this reason; run A (0.95) is her authoritative probe reading. AUTOFIRE 2026-07-13: user-confirmed autofiring gun (holds fire, baked cadence) — exempt from the 22f release latency. 2026-07-17: exemption now resolves from the datamined role.weapon.shot_detail.input_type='DOWN_Charge' (engine isAutofireCharge + web charge tool); the redundant charFixes.noBoltRecovery flag was removed — the user-tested autofire finding is corroborated by the datamine.",
+  "note": "Formation-gated My Own Star / Everyone's Star kit (modeled like Rapi:RH). NoB1 (My Own Star): skill1 grants continuous self ATK 40.01% (modeled passive, 'cannot be removed') + team burst CDR 7.48s on Full Burst end; skill2's caster-ATK 35.01% and burst's self Attack Damage 35.2% are gated to this status. HasB1 (Everyone's Star): the ATK riders are replaced by re-entering burst at Stage 1 (burstEligibility stage 1); its heal and ally Max-HP portions are dropped (defensive). Formation-independent: team burst-gen 6%, full-charge additional damage 120.13% (per pull, RL always full-charges), Full-Burst-enter Attack Damage 34% and Projectile Explosion Damage 92.03% (text targets 'allies with lower DEF than self' -> approximated as all allies since she is a high-DEF Defender). Burst Shooting Stars modeled as a 40.01% ATK dot every 0.25s for 10s (40 ticks); its 'charge time fixed at 0.7s' modeled as chargeSpeedPct 30 (SUBTRACTIVE charge formula, 2026-07-13: 60f x (1-0.30) = 42f = 0.7s). Skipped: heals, ally Max-HP, DEF up, Explosion Radius (defensive/AoE-radius, irrelevant vs single boss). UNCERTAIN: Everyone's Star burst re-entry approximated as stage-1 eligibility; 'lower-DEF allies' target simplified to all allies. CORRECTION: Shooting Stars carry the projectileExplosion flavor (they benefit from Projectile Explosion Damage, incl. her own S2 aura) and, as a rider, never receive core damage. USER CORRECTION (2026-07-13): the CDR IS formation-gated (noB1, restored) — the run-A confusion was that Λ units (Red Hood) count as NO burst type for formation calculations (engine fixed); run C's rotation was gated by Tia's real 20s CD (DB wrongly had 40s). Everyone's Star re-entry now uses the real reenterStage mechanic (was a burstEligibility approximation). USER RULING (2026-07-13): ATK self-riders ARE formation-gated like the CDR. Tia counts as 'B1+' (a re-entry B1) — a rare edge case interacting with anis's formation state that we deliberately DO NOT model (tia+anis is its only occurrence and the pairing is inefficient anyway). Probe run C is EXCLUDED from anis DPS validation for this reason; run A (0.95) is her authoritative probe reading. AUTOFIRE 2026-07-13: user-confirmed autofiring gun (holds fire, baked cadence) — exempt from the 22f release latency. 2026-07-17: exemption now resolves from the datamined role.weapon.shot_detail.input_type='DOWN_Charge' (engine isAutofireCharge + web charge tool); the redundant charFixes.noBoltRecovery flag was removed — the user-tested autofire finding is corroborated by the datamine. [2026-07-17 THEME-13 KIT-COMPLETENESS] Her Everyone's Star (hasB1) burst 'Max HP ▲ 15.02% of the skill user's Max HP, all allies, 10s' is now modeled as casterMaxHpPct 15.02 (was in unmodeled). Offensively INERT: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 rule, sim.ts effectiveAtk casterIdx===self), so this moves no board damage — kept for kit-SSOT completeness only.",
   "unmodeled": {
     "skill1": [
       "If there are no other Burst 1 allies: Effect 1: Affects self. Cancels Everyone's Star.",
@@ -10,8 +10,7 @@
     ],
     "burst": [
       "Explosion Radius ▲ 100% for 10 sec.",
-      "DEF ▲ 55.01% for 10 sec.",
-      "■ Activates while in Everyone's Star status. Affects all allies.\nMax HP ▲ 15.02% of the skill user's max HP for 10 sec."
+      "DEF ▲ 55.01% for 10 sec."
     ]
   },
   "skill1": [
@@ -181,6 +180,24 @@
         }
       ],
       "formation": "noB1"
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "hasB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 15.02,
+          "durationSec": 10
+        }
+      ]
     }
   ]
 }

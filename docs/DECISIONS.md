@@ -8,6 +8,68 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-17) DoT / periodic-damage crit is PER-DoT, not global (theme 12) — LANDED for isabel.**
+  The engine gains a per-DoT `crit:true` opt-in (`types.ts` dot effect + `Dot.crit`; the dot-tick
+  dealDamage falls back to the still-default-OFF global `DOT_CRIT` gate when the field is unset, so all
+  other DoTs are byte-identical). A **universal DOT_CRIT default-on was measured-REFUTED**: a board sweep
+  (DOTCRIT off→on) is a wash (±3% MAD count 8→8) and it *breaks* units whose DoTs are validated non-crit
+  — jill's acid tick is video-confirmed at 99.7% NON-crit, mihara-bonding-chain's Ensnaring is validated
+  at 1.03 non-crit, little-mermaid's FB dot/barrage carry no crit evidence (and go hot under the flip).
+  The two other units theme 12 cited don't support it either: neon-vision-eye is +8% HOT and has no
+  critting DoT (its "7% cold" was stale); modernia's cold is her burst `extraHitDamagePct` rider (crit-OFF
+  finding ⚑4), not a DoT tick. **isabel opts in** on measured evidence: her ~14.7s periodic rider crits
+  in-game (3 crits / 11 resolved fires; crit 308,564 = non-crit 205,709 ×1.5 exactly —
+  `docs/probe-data/isabel-sg-band.json` riderFinding), so `crit:true` on her skill2 dot rolls at her
+  sheet rate (confirmed live: rider tick `major` 1.000→1.106). Solo recon warms the right direction
+  (~50.9M→53.1M vs real 55.3M); zero board blast radius (solo-only unit). Ties open-question U1. Anis-star's
+  DoT-driven board improvement under the flip is NOT enacted — no evidence her DoTs crit; it's a `fit`, and
+  her open thread is a measurement-blocked dot-gauge re-model, not this.
+- **(2026-07-17) Max-HP-scaling grant primitives (theme 13) — LANDED, kit-completeness sweep across
+  6 units.** Two primitives added: (1) `targetMaxHpPct` StatKey — "Max HP ▲ X%" grants scaled by the
+  TARGET's OWN Max HP, distinct from the existing `casterMaxHpPct` ("X% of the skill user's Max HP");
+  (2) `alliesLowestHp` TargetDef (count/excludeSelf) for "affects the lowest-remaining-HP ally" — v1 has
+  no HP pool (immortal boss), so it resolves to the leftmost `count` allies as a documented deterministic
+  stand-in. Both convert to `maxHpFlat` and honor the **e3 rule** (DECISIONS 2026-07-17, rouge/cindy e3
+  video): ally-granted Max HP feeds a consumer's `atkOfMaxHpPct` conversion ONLY when caster === target
+  (self); ally-facing grants are offensively INERT. **Board footprint proven to be maiden-only** by
+  toggling the change against the live engine (all other teammates 0.000% delta, incl. the HP-scaling
+  consumer cinderella — she'd rise if wrongly fed; she doesn't move). Per-unit: **maiden-ice-rose** — her
+  self "Max HP ▲6.34% ×10 stacks, every 6 full charges" (previously omitted as "unsupportable") is the
+  ONE offensively-live grant: self-granted (casterIdx===self) so it feeds her own S2 burst `atkOfMaxHpPct`
+  3.2% conversion. Modeled as `targetMaxHpPct` 6.34 on self, hitCount 6, maxStacks 10, 15s. Effect is small
+  + correct-direction: her N6 Wind comp **0.76 → 0.85** (partial close of her documented under-model, NOT a
+  full fix — her burst's separate dropped "10% of Max HP per MP" portion is UNCHANGED, still ATK-only, open).
+  Snapshot updated maiden-N6 only (+11.6% her total; understood, single-unit). **anis-star** (hasB1 burst
+  15.02% all-allies), **trina** (S2 44.98% Electric-AR allies passive + burst 20.14% all-allies), **blanc**
+  (burst 31.68% lowest-HP ally, own-% basis) — all ally-facing, modeled for kit-SSOT completeness, INERT.
+  **rouge** already carried casterMaxHpPct grants. **moran**'s Perseverance Max-HP lines are HP<20%-gated
+  (theme 18 — never fire on the immortal boss), intentionally left as skips. All values kit-measured, no
+  fudge. Engine: sim.ts `resolveTargets` (alliesLowestHp), apply-loop per-target `targetMaxHpPct` conversion;
+  validator + web STAT_LABELS/targetLabel updated. Full inventory: engine-modeling-gaps.md theme 13.
+
+- **(2026-07-17) Own-burst-gated Full-Burst trigger (`ownBurstGate: 'cast' | 'notCast'`) — LANDED,
+  ENACTED on cinderella-crystal-wave (faithful; net board improvement).** Kits that read "Activates
+  when entering Full Burst AFTER this unit uses her own Burst Skill" were modeled as a plain team
+  `fullBurstEnter`, which over-fired the rider on EVERY team full burst — including ones a DIFFERENT
+  B3 completed (theme 9, HOT in multi-B3 comps). New block gate `ownBurstGate` (types.ts Block;
+  sim.ts `applyBlock`, checked against `rotationCasters` alongside fbGate/swapGate/bossElementGate)
+  fires only when the owner DID (`'cast'`) or did NOT (`'notCast'`) cast their own burst in the
+  rotation into this FB. Composes with the existing `fullBurstEnter` trigger, so the block stays AT
+  FB-entry and keeps the +50% FB major + FB auras — unlike the prior workaround of re-keying to
+  `burstCast` (which fires PRE-FB and loses them; correct only for duration self-buffs with no
+  FB-entry instant, e.g. arcana-fortune-mate / mana / asuka-wille — those stay burstCast). Inert
+  until an override opts in. **Enacted: cinderella-crystal-wave** — both FB-enter core-strike riders
+  (Snipe 1189.66% / MG 833.79%) → `'cast'`, text-faithful. The kit-status finding assumed "sole-B3 →
+  graded movement ZERO"; that PREMISE WAS WRONG — she alternates stage-3 with a co-B3 in BOTH graded
+  comps (Liberalio in T5, Rapi:RH in T8), so the gate is board-MOVING and it IMPROVES the fit: T8
+  iron-weak 1.062 HOT → 1.001 (the over-fire had been masking a multi-B3 over-credit), T5 wind-weak
+  1.009 → 0.978 (both now within ±3%; board MAD 0.036 → 0.012). Regression snapshot updated for the
+  T5 ccw total (understood, single-unit). The inverse case diesel-winter-sweets (`'notCast'` Highlight
+  sustained, 0.831 COLD) is now expressible but stays owner-deferred (document-only — her full Highlight
+  state machine + no-op-B3-drives-FB path is the larger unmodeled piece). **Faithful>fit:** the prior
+  team-wide fullBurstEnter was a known-wrong model (contradicts explicit kit text); the gate is the
+  faithful mechanic, and here it also happens to help the board.
+
 - **(2026-07-17) Hit-Rate → core-hit multiplier (`HRCORE`) — LIVE by default (owner-set), ⚑ DERIVED estimate.**
   `hitRatePct` was engine-inert ("100% accuracy assumed"). Higher Hit Rate shrinks the auto-aim reticle
   (TricK's MEASURED SG reticle regression −1.4285·x+168.3931 px) → tighter bloom → higher core-hit fraction.

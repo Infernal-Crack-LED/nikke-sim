@@ -1,5 +1,6 @@
 import {
   Fragment,
+  useDeferredValue,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -92,6 +93,7 @@ import cubesJson from '../../data/cubes.json';
 import multJson from '../../data/level-multiplier.json';
 import skillLevelsJson from '../../data/skill-levels.json';
 import olLinesJson from '../../data/ol-lines.json';
+import olOptimalJson from '../../data/ol-optimal.json';
 import olTiersJson from '../../data/ol-tiers.json';
 import olProbJson from '../../data/ol-probabilities.json';
 import dollEconomyJson from '../../data/doll-economy.json';
@@ -163,6 +165,161 @@ const defaultOlSimCurrentCards = (): OlSimCurrentCard[] =>
     current: [blankLine(), blankLine(), blankLine()],
     desired: desiredDefault(),
   }));
+
+// Guided OL roll: turn ONE piece's current 3 lines + a desired target set into a
+// deterministic, human-readable roll plan. Mirrors the sim's "smart" lock policy
+// (src/overload/policy.ts): lock the rare slots (Line 2/3) the moment they hold a
+// desired stat, keep a Line-1 stat only when it's already at tier, and never waste
+// a lock on a junk Line 1 while still hunting the other stats.
+const LINE_APPEAR = [1.0, 0.5, 0.3]; // slot-present probability for Line 1 / 2 / 3
+type GuideResult =
+  | { kind: 'invalid'; msg: ReactNode }
+  | { kind: 'done'; msg: ReactNode }
+  | { kind: 'steps'; steps: ReactNode[]; note: ReactNode };
+function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult {
+  const lineLabel = (i: number) => `Line ${i + 1}`;
+  const statLabel = (k: OlKey) => OL_KEY_LABEL[k];
+  const pct = (p: number) => `${Math.round(p * 100)}%`;
+  const list = (xs: string[]) =>
+    xs.length <= 1
+      ? xs.join('')
+      : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+
+  const reqs = desired
+    .map((d) => ({ key: d.key, tier: d.tier }))
+    .filter((d): d is { key: OlKey; tier: number } => d.key !== '');
+  if (reqs.length === 0)
+    return { kind: 'invalid', msg: 'Add at least one desired line (stat + target tier).' };
+  const dkeys = reqs.map((r) => r.key);
+  if (new Set(dkeys).size !== dkeys.length)
+    return {
+      kind: 'invalid',
+      msg: 'A piece can’t hold the same stat twice — remove the duplicate desired stat.',
+    };
+  const presentCur = current.filter((c) => c.key !== '');
+  if (new Set(presentCur.map((c) => c.key)).size !== presentCur.length)
+    return {
+      kind: 'invalid',
+      msg: 'Two current lines share a stat — a piece can’t hold the same stat twice.',
+    };
+
+  const cur = current.map((c) => ({ key: c.key, tier: c.tier }));
+  const targetTier = (k: OlKey) => reqs.find((r) => r.key === k)!.tier;
+  const satisfies = (k: OlKey, minTier: number) =>
+    cur.some((l) => l.key === k && l.tier >= minTier);
+
+  if (reqs.every((r) => satisfies(r.key, r.tier)))
+    return {
+      kind: 'done',
+      msg: 'This piece already meets every desired stat and tier — you’re done. 🎉',
+    };
+
+  const desiredKeys = new Set(reqs.map((r) => r.key));
+  // Phase-1 lock set (smart policy): lock Line 2/3 that hold a desired stat; lock
+  // Line 1 only when it already meets its target tier (else leave it cheap to
+  // reroll, since Line 1 always reappears).
+  const phase1Lock = cur.map((l, i) => {
+    if (l.key === '' || !desiredKeys.has(l.key as OlKey)) return false;
+    if (i === 0) return l.tier >= targetTier(l.key as OlKey);
+    return true;
+  });
+  const securedKeys = new Set(
+    cur.filter((_, i) => phase1Lock[i]).map((l) => l.key as OlKey),
+  );
+  const toHunt = reqs.filter((r) => !securedKeys.has(r.key));
+  const freeLines = [0, 1, 2].filter((i) => !phase1Lock[i]);
+
+  const steps: ReactNode[] = [];
+  let stepNo = 0;
+  const push = (node: ReactNode) => steps.push(<li key={stepNo++}>{node}</li>);
+
+  // ---- Phase 1: stat acquisition ----
+  if (toHunt.length > 0) {
+    const lockedList = cur
+      .map((l, i) => ({ l, i }))
+      .filter(({ i }) => phase1Lock[i])
+      .map(({ l, i }) => `${lineLabel(i)} (${statLabel(l.key as OlKey)})`);
+    if (lockedList.length)
+      push(
+        <>
+          <b>Lock</b> {list(lockedList)} —{' '}
+          {lockedList.length > 1 ? 'they already hold' : 'it already holds'} a desired
+          stat, so protect {lockedList.length > 1 ? 'them' : 'it'} from rerolls.
+        </>,
+      );
+    const junkL1 =
+      cur[0].key !== '' && desiredKeys.has(cur[0].key as OlKey) && !phase1Lock[0];
+    if (junkL1)
+      push(
+        <>
+          Leave <b>{lineLabel(0)}</b> ({statLabel(cur[0].key as OlKey)}, only T
+          {cur[0].tier}) <b>unlocked</b> — Line 1 always reappears, so don’t spend a
+          lock on a low-tier Line 1 while you still need other stats.
+        </>,
+      );
+    const huntLabels = toHunt.map((r) => statLabel(r.key));
+    const rarest = freeLines.reduce((a, b) =>
+      LINE_APPEAR[b] < LINE_APPEAR[a] ? b : a,
+    );
+    push(
+      <>
+        <b>Reroll</b> the open line{freeLines.length > 1 ? 's' : ''} (
+        {list(freeLines.map(lineLabel))}). Each roll, <b>lock</b> any open line the
+        moment it shows a stat you still need — you’re after {list(huntLabels)}.
+        {freeLines.length > 1 && (
+          <>
+            {' '}
+            {lineLabel(rarest)} only appears {pct(LINE_APPEAR[rarest])} of rolls, so
+            it’s the bottleneck: wait for it to land a needed stat, then the
+            always-present lines fill in fast.
+          </>
+        )}{' '}
+        Stop once {list(huntLabels)} {toHunt.length > 1 ? 'are' : 'is'} all present and
+        locked.
+      </>,
+    );
+  }
+
+  // ---- Phase 2: value reset (tier push) ----
+  push(
+    <>
+      {toHunt.length > 0 ? (
+        <>
+          <b>Unlock everything</b>, then switch to <b>Value Reset</b>
+        </>
+      ) : (
+        <>
+          Switch to <b>Value Reset</b>
+        </>
+      )}{' '}
+      (“Reset Attribute Value”) — it keeps each line’s stat and only re-rolls its
+      tier.
+    </>,
+  );
+  push(
+    <>
+      <b>Lock</b> any line already at its target tier, <b>value-reset</b> the rest, and
+      lock each line the instant it reaches its target. Repeat until every line meets
+      its target.
+    </>,
+  );
+
+  const note = (
+    <>
+      Targets:{' '}
+      {reqs.map((r, i) => (
+        <Fragment key={r.key}>
+          {i > 0 && ', '}
+          <b>{statLabel(r.key)}</b> T{r.tier} (
+          {olTierValues(r.tier)[r.key].toFixed(2)}%)
+        </Fragment>
+      ))}
+      . Want the expected module cost? Enter the same lines on the{' '}
+      <b>Roll from Current</b> tab.
+    </>
+  );
+  return { kind: 'steps', steps, note };
+}
 
 type CalcTab =
   | 'sim'
@@ -490,6 +647,29 @@ const OL_STAT_BY_TYPE: Record<string, string> = {
   def: 'defPct',
 };
 
+// Overload investment presets for the bulk "Overload" pill group. The tiers name
+// how many of the 12 rollable OL lines are filled: none (no lines), 8/12 (4×
+// Elemental DMG + 4× ATK), 12/12 (that floor + 4 per-unit-optimal lines). These
+// pills touch ONLY the OL lines — gear level, cube, and doll keep their own pill
+// groups. Totals are 4× the T11 per-line value from data/ol-tiers.json (elem
+// 23.56, atk 11.81), the common endgame floor.
+const OL_8_12_ELEM = '94.24'; // 4 × 23.56 (T11)
+const OL_8_12_ATK = '47.24'; //  4 × 11.81 (T11)
+// Per-unit damage-optimal 12/12 remainder lines (beyond the 4 elem + 4 atk floor),
+// precomputed in the Solo framework by scripts/build-ol-optimal.ts.
+const olOptimal = (olOptimalJson as { units: Record<string, { type: string; count: number }[]> }).units;
+// A slot's 12/12 `olExtra`: the unit's optimal remainder lines, each collapsed to
+// one entry whose value is count × the T11 per-line value for that stat.
+const optimalOlExtra = (slug: string | null): { type: string; value: string }[] => {
+  const picks = slug ? olOptimal[slug] : undefined;
+  if (!picks?.length) return [];
+  const tv = olTierValues(11);
+  return picks.map((p) => ({
+    type: p.type,
+    value: String(Number((p.count * (tv[p.type] ?? 0)).toFixed(2))),
+  }));
+};
+
 // turn a slot's manual OL entries into engine LineSelection[] (count 1 per
 // entry; the textbox value is the total % for that stat). the sim resolves
 // `type` against data/ol-lines.json and adds `value * count` to the stat.
@@ -659,6 +839,9 @@ const STAT_LABELS: Record<string, string> = {
   burstGenPct: 'Burst Gen ▲',
   hitRatePct: 'Hit Rate ▲',
   defPct: 'DEF ▲',
+  atkOfMaxHpPct: 'ATK ▲ (of own Max HP)',
+  casterMaxHpPct: 'Max HP ▲ (of caster Max HP)',
+  targetMaxHpPct: 'Max HP ▲',
 };
 
 function targetLabel(t: any): string {
@@ -681,6 +864,8 @@ function targetLabel(t: any): string {
       return `${t.cls} allies`;
     case 'alliesOfWeapon':
       return `${t.weapon} allies${t.excludeSelf ? ' (not self)' : ''}`;
+    case 'alliesLowestHp':
+      return `${t.count} lowest-HP all${t.count === 1 ? 'y' : 'ies'}${t.excludeSelf ? ' (not self)' : ''}`;
     default:
       return 'allies';
   }
@@ -1028,7 +1213,17 @@ export function App({ user }: { user: AuthUser | null }) {
   const [olMode, setOlMode] = useState<'matrix' | 'custom'>('matrix');
   // Overload Roll Sim: 4 cards (one per OL piece), each up to 3 target lines
   // (stat + tier). Reports the reroll/value-reset cost to hit them.
-  const [olSimSub, setOlSimSub] = useState<'calc' | 'current' | 'faq'>('calc');
+  const [olSimSub, setOlSimSub] = useState<
+    'calc' | 'current' | 'guide' | 'faq'
+  >('calc');
+  // Guided roll: one piece, current lines → desired target set → step-by-step plan.
+  const [olGuideCur, setOlGuideCur] = useState<OlSimLine[]>(() => [
+    blankLine(),
+    blankLine(),
+    blankLine(),
+  ]);
+  const [olGuideDesired, setOlGuideDesired] =
+    useState<OlSimLine[]>(desiredDefault);
   const [olSimCards, setOlSimCards] =
     useState<OlSimLine[][]>(defaultOlSimCards);
   const [olSimLockMode, setOlSimLockMode] = useState<'permanent' | 'temp'>(
@@ -1155,6 +1350,29 @@ export function App({ user }: { user: AuthUser | null }) {
       return units.length > 0 && units.every(pred);
     }
     return slots.every(pred);
+  };
+
+  // 12/12 Overload preset: the 8/12 floor (4× ELE + 4× ATK) plus each unit's own
+  // precomputed damage-optimal 4 remainder lines. Lines differ per unit, so it can't
+  // go through setAll (uniform patch) — it maps every target to its optimal olExtra.
+  const applyOl12of12 = () => {
+    const patch = (s: SlotState): SlotState => ({
+      ...s,
+      olElem: OL_8_12_ELEM,
+      olAtk: OL_8_12_ATK,
+      olExtra: optimalOlExtra(s.slug),
+    });
+    if (tab === 'dps') setDpsGroups((gs) => gs.map((g) => g.map(patch)));
+    else setSlots((s) => s.map(patch));
+  };
+  // does a slot already carry its 12/12 loadout? (floor + its own optimal remainder)
+  const isOl12of12 = (s: SlotState): boolean => {
+    if (s.olElem !== OL_8_12_ELEM || s.olAtk !== OL_8_12_ATK) return false;
+    const exp = optimalOlExtra(s.slug);
+    return (
+      s.olExtra.length === exp.length &&
+      exp.every((e, i) => s.olExtra[i]?.type === e.type && s.olExtra[i]?.value === e.value)
+    );
   };
 
   // "scope lock" preset: no cubes, no doll, Base 5 gear, 3★/7 core, 400 synchro
@@ -1329,12 +1547,38 @@ export function App({ user }: { user: AuthUser | null }) {
     }
   }, [slots]);
 
+  // Snapshot of everything the live Team-Sim result depends on. Memoized so its
+  // identity changes ONLY when an input changes (preserves useDeferredValue's
+  // bail-out). `active` gates it to the Sim tab — the 25-seed sim never runs on
+  // the roster/team/DPS tabs, which don't display this result.
+  const simInput = useMemo(
+    () => ({
+      slots,
+      weakness,
+      bossDef,
+      core,
+      coreCustom,
+      coreCustomVal,
+      level,
+      active: tab === 'sim',
+    }),
+    [slots, weakness, bossDef, core, coreCustom, coreCustomVal, level, tab],
+  );
+  // Defer the expensive recompute: an edit (e.g. clicking a bulk pill) paints the
+  // urgent UI — the pill's selected state — immediately, and the ~25-fight sim
+  // runs one low-priority render behind instead of blocking the click's paint.
+  const deferredSimInput = useDeferredValue(simInput);
+  const simStale = deferredSimInput !== simInput && deferredSimInput.active;
+
   const sim = useMemo((): {
     result?: SimResult;
     error?: string;
     compWarning?: string;
     teamBuffs?: { name: string; position: number; lines: string[] }[];
   } => {
+    const { slots, weakness, bossDef, core, coreCustom, coreCustomVal, level, active } =
+      deferredSimInput;
+    if (!active) return {};
     if (slots.some((s) => !s.slug))
       return { error: 'pick 5 nikkes to run the sim' };
     const chars = slots.map((s) => data.characters[s.slug!]);
@@ -1381,7 +1625,7 @@ export function App({ user }: { user: AuthUser | null }) {
     } catch (e) {
       return { error: (e as Error).message };
     }
-  }, [slots, weakness, bossDef, core, coreCustom, coreCustomVal, level]);
+  }, [deferredSimInput]);
 
   const r = sim.result;
 
@@ -1565,6 +1809,15 @@ export function App({ user }: { user: AuthUser | null }) {
       skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
     };
   };
+  // Per-unit loadout for the team/roster generators + roster sim, which otherwise
+  // apply one uniform loadout. The template (cube/gear/doll/dupes/skills) comes from
+  // slots[0]; OL lines are uniform for the none/8-12/custom Overload profiles, but
+  // per-unit for 12/12 — each unit swaps in its own precomputed optimal remainder.
+  const loadoutFor = (slug: string): UnitOptions => {
+    const s0 = slots[0];
+    const src = isOl12of12(s0) ? { ...s0, olExtra: optimalOlExtra(slug) } : s0;
+    return { ...calcLoadout(), lines: buildOlLines(src) };
+  };
   const newCalc = () =>
     makeCalc({
       chars: data.characters as any,
@@ -1577,6 +1830,7 @@ export function App({ user }: { user: AuthUser | null }) {
       },
       cfg: calcCfg(),
       loadout: calcLoadout(),
+      loadoutFor,
       blocked,
       meta: metaScoringFor(weakness),
     });
@@ -1664,7 +1918,6 @@ export function App({ user }: { user: AuthUser | null }) {
         olLines: olLinesData,
       };
       const cfg = calcCfg();
-      const loadout = calcLoadout();
       const results = rosterSim
         .map((team) => team.filter((s): s is string => !!s))
         .filter((slugs) => slugs.length > 0)
@@ -1672,7 +1925,7 @@ export function App({ user }: { user: AuthUser | null }) {
           const cs = slugs.map((s) => data.characters[s]);
           const prepared = prepareTeam(
             cs as any,
-            slugs.map(() => loadout),
+            slugs.map((s) => loadoutFor(s)),
             deps as any,
           );
           const r = runSimMean(
@@ -3756,6 +4009,92 @@ export function App({ user }: { user: AuthUser | null }) {
         </>
       );
 
+      const setGuideLine = (
+        which: 'cur' | 'desired',
+        li: number,
+        patch: Partial<OlSimLine>,
+      ) => {
+        const set = which === 'cur' ? setOlGuideCur : setOlGuideDesired;
+        set((lines) => lines.map((l, j) => (j === li ? { ...l, ...patch } : l)));
+      };
+      const guide = buildRollGuide(olGuideCur, olGuideDesired);
+      const guidePanel = (
+        <>
+          <p className='muted'>
+            Step-by-step roll plan for <b>one piece</b>. Enter the lines you{' '}
+            <b>have now</b> (positional — Line 1 / 2 / 3, with their real tier) and
+            the stats + tiers you <b>want</b>. The guide runs the same two-phase T11
+            method the sim uses: reroll for stats (locking the rare slots as they
+            land), then value-reset the tiers.
+          </p>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+              gap: 12,
+              marginTop: 12,
+              maxWidth: 640,
+            }}
+          >
+            <div className='dps-group-block'>
+              <div className='card-group-label'>Current lines</div>
+              {olGuideCur.map((line, li) => (
+                <div
+                  key={li}
+                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <span
+                    className='muted'
+                    style={{ width: 42, fontSize: '0.82em', flexShrink: 0 }}
+                  >
+                    Line {li + 1}
+                  </span>
+                  <div style={{ flex: 1 }}>
+                    {lineRow(
+                      line,
+                      (k) => setGuideLine('cur', li, { key: k }),
+                      (t) => setGuideLine('cur', li, { tier: t }),
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className='dps-group-block'>
+              <div className='card-group-label'>Desired (target tier)</div>
+              {olGuideDesired.map((line, li) => (
+                <Fragment key={li}>
+                  {lineRow(
+                    line,
+                    (k) => setGuideLine('desired', li, { key: k }),
+                    (t) => setGuideLine('desired', li, { tier: t }),
+                  )}
+                </Fragment>
+              ))}
+            </div>
+          </div>
+          {guide.kind === 'invalid' && (
+            <p className='muted' style={{ marginTop: 14 }}>
+              {guide.msg}
+            </p>
+          )}
+          {guide.kind === 'done' && (
+            <div className='calc-result' style={{ marginTop: 14 }}>
+              <p style={{ margin: 0 }}>{guide.msg}</p>
+            </div>
+          )}
+          {guide.kind === 'steps' && (
+            <div className='calc-result' style={{ marginTop: 14 }}>
+              <ol style={{ margin: '4px 0 0', paddingLeft: 22, lineHeight: 1.65 }}>
+                {guide.steps}
+              </ol>
+              <p className='muted' style={{ marginTop: 12 }}>
+                {guide.note}
+              </p>
+            </div>
+          )}
+        </>
+      );
+
       const faqItem = (q: string, tldr: ReactNode, why: ReactNode) => (
         <div style={{ marginBottom: 22 }}>
           <h4 style={{ margin: '0 0 5px' }}>{q}</h4>
@@ -3873,6 +4212,12 @@ export function App({ user }: { user: AuthUser | null }) {
               Roll from Current
             </button>
             <button
+              className={olSimSub === 'guide' ? 'on' : ''}
+              onClick={() => setOlSimSub('guide')}
+            >
+              Guided Roll
+            </button>
+            <button
               className={olSimSub === 'faq' ? 'on' : ''}
               onClick={() => setOlSimSub('faq')}
             >
@@ -3881,6 +4226,7 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
           {olSimSub === 'calc' && calcPanel}
           {olSimSub === 'current' && currentPanel}
+          {olSimSub === 'guide' && guidePanel}
           {olSimSub === 'faq' && faqPanel}
         </section>
       );
@@ -4566,6 +4912,56 @@ export function App({ user }: { user: AuthUser | null }) {
                   ))}
                 </PillGrid>
               </div>
+              <div className='field'>
+                <label title='overload lines only (does not touch gear/cube/doll): none (no lines) · 8/12 (4× Elemental DMG + 4× ATK at T11) · 12/12 (that floor + 4 per-unit-optimal lines)'>
+                  Overload
+                </label>
+                <PillGrid className='small'>
+                  <button
+                    className={
+                      allHave(
+                        (s) =>
+                          !s.olElem && !s.olAtk && s.olExtra.length === 0,
+                      )
+                        ? 'on'
+                        : ''
+                    }
+                    onClick={() =>
+                      setAll({ olElem: '', olAtk: '', olExtra: [] })
+                    }
+                  >
+                    none
+                  </button>
+                  <button
+                    className={
+                      allHave(
+                        (s) =>
+                          s.olElem === OL_8_12_ELEM &&
+                          s.olAtk === OL_8_12_ATK &&
+                          s.olExtra.length === 0,
+                      )
+                        ? 'on'
+                        : ''
+                    }
+                    onClick={() =>
+                      setAll({
+                        olElem: OL_8_12_ELEM,
+                        olAtk: OL_8_12_ATK,
+                        olExtra: [],
+                      })
+                    }
+                  >
+                    8/12
+                  </button>
+                  <button
+                    className={allHave(isOl12of12) ? 'on' : ''}
+                    title='8/12 floor + each unit’s damage-optimal 4 remainder lines (precomputed, Solo framework)'
+                    onClick={applyOl12of12}
+                  >
+                    12/12
+                  </button>
+                </PillGrid>
+              </div>
             </section>
           </>
         )}
@@ -4767,7 +5163,13 @@ export function App({ user }: { user: AuthUser | null }) {
           )}
 
           {r && (
-            <section className='results'>
+            <section
+              className='results'
+              style={{
+                opacity: simStale ? 0.55 : 1,
+                transition: 'opacity 0.12s ease',
+              }}
+            >
               <div className='summary muted'>
                 team <b className='big'>{fmt(r.teamDamage)}</b> ·{' '}
                 {fmt(r.teamDps)} DPS · {r.fullBursts} full bursts ·{' '}

@@ -10,10 +10,10 @@ import { loadOverride } from '../src/skills/overrides-node.js';
 import type { DataFile, LevelMultiplier, SimConfig } from '../src/types.js';
 
 const STATS = new Set([
-  'atkPct', 'casterAtkPct', 'casterMaxHpPct', 'atkOfMaxHpPct', 'critRatePct', 'critDamagePct', 'coreDamagePct',
+  'atkPct', 'casterAtkPct', 'casterMaxHpPct', 'targetMaxHpPct', 'atkOfMaxHpPct', 'critRatePct', 'critDamagePct', 'coreDamagePct',
   'elementDamagePct', 'chargeDamagePct', 'chargeSpeedPct', 'attackDamagePct',
   'sustainedDamagePct', 'sequentialDamagePct', 'partsDamagePct', 'pierceDamagePct', 'damageTakenPct',
-  'maxAmmoPct', 'reloadSpeedPct', 'attackSpeedPct', 'fireRatePct',
+  'maxAmmoPct', 'maxAmmoFlat', 'reloadSpeedPct', 'attackSpeedPct', 'fireRatePct',
   'extraHitDamagePct', 'trueDamagePct', 'projectileExplosionPct',
   'elemAdvantageDamagePct', 'distributedDamagePct', 'projectileAttachmentPct',
   'chargeDamageMultPct',
@@ -26,11 +26,12 @@ const TRIGGERS = new Set([
 const TARGETS = new Set([
   'self', 'allies', 'enemy', 'burstCasters', 'nonBurstCasters',
   'alliesTopAtk', 'alliesLowestAtk', 'alliesOfElement', 'alliesOfClass', 'alliesOfWeapon', 'alliesOfElementWeapon', 'selfAndAdjacent',
+  'alliesLowestHp',
 ]);
 const EFFECTS = new Set([
   'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
-  'instantReload', 'storedHit', 'stun', 'stackedNuke', 'gainPierce', 'resource',
+  'instantReload', 'consumeAmmo', 'storedHit', 'stun', 'stackedNuke', 'gainPierce', 'resource',
 ]);
 const FLAVORS = new Set(['distributed', 'sustained', 'sequential', 'true', 'projectileAttachment', 'projectileExplosion']);
 
