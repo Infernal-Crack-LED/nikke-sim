@@ -26,3 +26,10 @@ CLAUDE.md
 
 # private-repo git dir (harness + AI docs tracked separately)
 .git-private/
+
+# blind kit-rebuild test — generated artifacts (regenerable from build-packet.ts);
+# only the script + prompt templates + README are tracked
+scripts/blind-rebuild/packets/
+scripts/blind-rebuild/truth/
+scripts/blind-rebuild/reconstructions/
+scripts/blind-rebuild/results/

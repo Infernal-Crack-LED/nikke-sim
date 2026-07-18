@@ -175,15 +175,14 @@ const LINE_APPEAR = [1.0, 0.5, 0.3]; // slot-present probability for Line 1 / 2 
 type GuideResult =
   | { kind: 'invalid'; msg: ReactNode }
   | { kind: 'done'; msg: ReactNode }
-  | { kind: 'steps'; steps: ReactNode[]; note: ReactNode };
+  | {
+      kind: 'steps';
+      phases: { title: string; items: ReactNode[] }[];
+      note: ReactNode;
+    };
 function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult {
-  const lineLabel = (i: number) => `Line ${i + 1}`;
   const statLabel = (k: OlKey) => OL_KEY_LABEL[k];
   const pct = (p: number) => `${Math.round(p * 100)}%`;
-  const list = (xs: string[]) =>
-    xs.length <= 1
-      ? xs.join('')
-      : xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
 
   const reqs = desired
     .map((d) => ({ key: d.key, tier: d.tier }))
@@ -229,81 +228,104 @@ function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult
   const toHunt = reqs.filter((r) => !securedKeys.has(r.key));
   const freeLines = [0, 1, 2].filter((i) => !phase1Lock[i]);
 
-  const steps: ReactNode[] = [];
-  let stepNo = 0;
-  const push = (node: ReactNode) => steps.push(<li key={stepNo++}>{node}</li>);
+  const Ln = (i: number) => `L${i + 1}`;
+  const slotTag = (i: number) => (i === 0 ? '100%' : pct(LINE_APPEAR[i]));
+
+  const p1: ReactNode[] = [];
+  const p2: ReactNode[] = [];
 
   // ---- Phase 1: stat acquisition ----
   if (toHunt.length > 0) {
-    const lockedList = cur
-      .map((l, i) => ({ l, i }))
-      .filter(({ i }) => phase1Lock[i])
-      .map(({ l, i }) => `${lineLabel(i)} (${statLabel(l.key as OlKey)})`);
-    if (lockedList.length)
-      push(
-        <>
-          <b>Lock</b> {list(lockedList)} —{' '}
-          {lockedList.length > 1 ? 'they already hold' : 'it already holds'} a desired
-          stat, so protect {lockedList.length > 1 ? 'them' : 'it'} from rerolls.
-        </>,
-      );
+    const huntJoin = toHunt.map((r) => statLabel(r.key)).join(' / ');
+    const M = toHunt.length; // stats still to acquire
+    const F = freeLines.length; // open (unlocked) line slots
+    const openJoin = freeLines.map(Ln).join('+');
+    const rareFree = freeLines.filter((i) => i !== 0); // Line 2/3, open
+    const line1Free = freeLines.includes(0);
     const junkL1 =
       cur[0].key !== '' && desiredKeys.has(cur[0].key as OlKey) && !phase1Lock[0];
-    if (junkL1)
-      push(
+
+    // pre-lock keepers already on rare slots
+    const keepers = cur
+      .map((l, i) => ({ l, i }))
+      .filter(({ i }) => phase1Lock[i])
+      .map(({ l, i }) => `${Ln(i)} (${statLabel(l.key as OlKey)})`);
+    if (keepers.length)
+      p1.push(
         <>
-          Leave <b>{lineLabel(0)}</b> ({statLabel(cur[0].key as OlKey)}, only T
-          {cur[0].tier}) <b>unlocked</b> — Line 1 always reappears, so don’t spend a
-          lock on a low-tier Line 1 while you still need other stats.
+          <b>Lock</b> {keepers.join(', ')} — keeper{keepers.length > 1 ? 's' : ''}.
         </>,
       );
-    const huntLabels = toHunt.map((r) => statLabel(r.key));
-    const rarest = freeLines.reduce((a, b) =>
-      LINE_APPEAR[b] < LINE_APPEAR[a] ? b : a,
-    );
-    push(
-      <>
-        <b>Reroll</b> the open line{freeLines.length > 1 ? 's' : ''} (
-        {list(freeLines.map(lineLabel))}). Each roll, <b>lock</b> any open line the
-        moment it shows a stat you still need — you’re after {list(huntLabels)}.
-        {freeLines.length > 1 && (
+    if (junkL1)
+      p1.push(
+        <>
+          Leave <b>{Ln(0)}</b> ({statLabel(cur[0].key as OlKey)} T{cur[0].tier})
+          unlocked — always reappears, don’t lock.
+        </>,
+      );
+
+    if (F === 1) {
+      const i = freeLines[0];
+      p1.push(
+        <>
+          <b>Reroll</b> {Ln(i)} → {huntJoin}; lock. [{slotTag(i)} slot]
+        </>,
+      );
+    } else if (M === F) {
+      // Greedy: lock each rare slot (L2/L3) the moment it shows a needed stat,
+      // whichever lands first. Waiting to lock the rarer slot first is a wash on
+      // modules (~2, see FAQ) and costs MORE rerolls — verified by MC. L1 (always
+      // present) fills the last stat and is never locked in phase 1.
+      const rareLabel = rareFree.map((i) => `${Ln(i)} (${slotTag(i)})`).join(' / ');
+      p1.push(
+        <>
+          <b>Reroll</b> open ({openJoin}); lock {rareLabel} the moment{' '}
+          {rareFree.length > 1 ? 'either' : 'it'} shows a needed stat ({huntJoin}) —
+          take whichever lands first.
+        </>,
+      );
+      if (line1Free)
+        p1.push(
           <>
-            {' '}
-            {lineLabel(rarest)} only appears {pct(LINE_APPEAR[rarest])} of rolls, so
-            it’s the bottleneck: wait for it to land a needed stat, then the
-            always-present lines fill in fast.
-          </>
-        )}{' '}
-        Stop once {list(huntLabels)} {toHunt.length > 1 ? 'are' : 'is'} all present and
-        locked.
-      </>,
-    );
+            <b>Reroll</b> {Ln(0)} → last needed stat (final roll, no lock).
+          </>,
+        );
+    } else {
+      // M < F: slack — grab stats on any lines, skip the spare rare slot(s)
+      p1.push(
+        <>
+          <b>Reroll</b> open ({openJoin}); lock any {M} lines that hit {huntJoin}.
+          {line1Free ? ` Don’t lock ${Ln(0)}.` : ''} Spare rare slot(s) optional —
+          don’t wait on them.
+        </>,
+      );
+    }
   }
 
   // ---- Phase 2: value reset (tier push) ----
-  push(
+  if (toHunt.length > 0)
+    p2.push(
+      <>
+        <b>Unlock all</b> → <b>Value-reset</b> (keeps stat, rerolls tier only).
+      </>,
+    );
+  else
+    p2.push(
+      <>
+        <b>Value-reset</b> (keeps stat, rerolls tier only).
+      </>,
+    );
+  p2.push(
     <>
-      {toHunt.length > 0 ? (
-        <>
-          <b>Unlock everything</b>, then switch to <b>Value Reset</b>
-        </>
-      ) : (
-        <>
-          Switch to <b>Value Reset</b>
-        </>
-      )}{' '}
-      (“Reset Attribute Value”) — it keeps each line’s stat and only re-rolls its
-      tier.
-    </>,
-  );
-  push(
-    <>
-      <b>Lock</b> any line already at its target tier, <b>value-reset</b> the rest, and
-      lock each line the instant it reaches its target. Repeat until every line meets
-      its target.
+      Lock lines already ≥ target; value-reset the rest; lock each at target. Repeat
+      until all lines ≥ target.
     </>,
   );
 
+  const phases = [
+    ...(p1.length ? [{ title: 'Phase 1 — stats', items: p1 }] : []),
+    { title: 'Phase 2 — tiers', items: p2 },
+  ];
   const note = (
     <>
       Targets:{' '}
@@ -314,11 +336,10 @@ function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult
           {olTierValues(r.tier)[r.key].toFixed(2)}%)
         </Fragment>
       ))}
-      . Want the expected module cost? Enter the same lines on the{' '}
-      <b>Roll from Current</b> tab.
+      . Module estimate → <b>Roll from Current</b> tab.
     </>
   );
-  return { kind: 'steps', steps, note };
+  return { kind: 'steps', phases, note };
 }
 
 type CalcTab =
@@ -4082,16 +4103,38 @@ export function App({ user }: { user: AuthUser | null }) {
               <p style={{ margin: 0 }}>{guide.msg}</p>
             </div>
           )}
-          {guide.kind === 'steps' && (
-            <div className='calc-result' style={{ marginTop: 14 }}>
-              <ol style={{ margin: '4px 0 0', paddingLeft: 22, lineHeight: 1.65 }}>
-                {guide.steps}
-              </ol>
-              <p className='muted' style={{ marginTop: 12 }}>
-                {guide.note}
-              </p>
-            </div>
-          )}
+          {guide.kind === 'steps' &&
+            (() => {
+              let n = 1;
+              return (
+                <div className='calc-result' style={{ marginTop: 14 }}>
+                  {guide.phases.map((ph, pi) => {
+                    const start = n;
+                    n += ph.items.length;
+                    return (
+                      <div key={pi} style={{ marginBottom: 10 }}>
+                        <div className='card-group-label'>{ph.title}</div>
+                        <ol
+                          start={start}
+                          style={{
+                            margin: '4px 0 0',
+                            paddingLeft: 22,
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {ph.items.map((it, k) => (
+                            <li key={k}>{it}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    );
+                  })}
+                  <p className='muted' style={{ marginTop: 6 }}>
+                    {guide.note}
+                  </p>
+                </div>
+              );
+            })()}
         </>
       );
 
