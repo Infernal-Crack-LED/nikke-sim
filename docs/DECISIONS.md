@@ -8,6 +8,37 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-19) Core-hit for accuracy-circle weapons is a δ-offset ("Rician") cone — LANDED LIVE
+  (`CONE_DELTA`, default on).** Replaces the two confirmed bugs of the prior path — the flat
+  `CORE_AUTOAIM = 0.55` cap (over-credits low-HR far, under-credits high-HR near) and the fractional
+  reticle floor — with ONE mechanism: a shot lands on an isotropic 2D Gaussian of spread σ_w(hr) CENTERED
+  δ_w(hr) px off the true core; it cores iff it lands within the band core radius ⇒ `offsetCoreProb`
+  (Rician CDF) in `src/engine/sg-geometry.ts`. **Frozen params** (binomial-MLE refit on the
+  method-tagged campaign cell set; `scripts/cone-refit.ts`): δ0 = AR 18 / SMG 16 / SG 30 px; H = 120;
+  S_FLOOR = 0.10; **per-weapon σ-shrink s = {AR .009, SMG .004, SG .009}**. Held, never refit: K_SIGMA
+  2.53, CIRCLE_PX_K 0.648, datamined per-weapon scale, band core radii (hard-constraint #3). **Why
+  per-weapon σ** (a deliberate deviation from Fable's a-priori "reject per-weapon params"): the shared-s
+  form was **board-REFUTED** — the full A/B regressed via quency-escape-queen +0.171 HOT (the predicted
+  SMG mid-HR over-credit), because a single s must be high to saturate SG ▲98 yet that over-tightens the
+  SMG mid-HR cone; SG/AR need aggressive shrink for their high-HR saturation cells while **no board SMG
+  unit reaches high HR** (so its low s is "no saturation regime," not a free knob). The extra param is
+  evidence-forced, not overfit. **Evidence:** the geometry campaign (`docs/handoffs/2026-07-19-geometry-
+  campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-freeze-prereg.md`, APPROVED
+  round 2), and the full-board A/B — CONE_DELTA=1 vs 0 net board mean|ratio−1| **0.0972→0.0964**, AR/SMG
+  at-range over-credit cooled (guillotine-winter-slayer −0.077, grave −0.064), no unit regresses,
+  rotation/full-burst counts byte-identical. SG ▲98 saturation (0.99) is independently corroborated by
+  the measured dorothy-serendipity ▲98.18 aimed-single-bullet coreRate 0.9 (an aimed single is the spray
+  ceiling — PROVE-IT-DIFFERENTLY). **This REFINES, does not reverse, the 2026-07-18 geometry-is-ground-
+  truth ruling below:** geometry still rules; what changes is that the **drawn crosshair/reticle is
+  DECORATIVE** (measured Hit-Rate-independent — COUNT-4 noir ▲70≡▲98), so reticle-anchored derivations
+  (the fractional-floor / clamp forms) are superseded; the invisible cone is the geometry.
+  **Pre-registered REVERT triggers** (Fable): any SMG/SG unit regresses >0.03 |ratio−1| vs CONE_DELTA=0;
+  the DECLARED bounded tail over-credit (SMG far/mid + SG mid ▲60, from the wide 110px SMG circle's σ)
+  turning board-material on a far-band-heavy unit; band-ordering (near>mid>midfar>far) breaking in data.
+  **Open holdouts to score post-flip** (out-of-sample): soda-twinkling-bunny SG ▲38.91 (pred .16/.13/.08/.05,
+  ±0.12 spawn), chisato SMG midfar HR22 (pred .184), a blanc near-HR39 spawn re-count (the one AR cell
+  still per-frame). `CONE_DELTA=0` restores the prior engine byte-identically.
+
 - **(2026-07-18) Accuracy-circle geometry / HR→core / pellet-landing math is GROUND TRUTH — evidence-tier
   ruling (owner).** The hit-rate→core-hit-rate, pellet-count, and SG-pellet-landing math — the
   accuracy-circle geometry system (`docs/data/sg-calc/`: accuracy-circle-scale→px→range calibration,
