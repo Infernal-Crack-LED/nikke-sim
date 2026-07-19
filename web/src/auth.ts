@@ -12,9 +12,18 @@
 //   POST /api/teams         (Bearer) { name, code } -> SavedTeam   (upsert by name)
 //   DELETE /api/teams/:id   (Bearer) -> 204
 
-export const API_BASE: string =
+// The real backend origin. In production the sim is a separate origin from the
+// API and relies on the backend CORS-allowlisting the sim's origin.
+export const BACKEND_ORIGIN: string =
   (import.meta as any).env?.VITE_API_BASE ??
   'https://appweb-production-a479.up.railway.app';
+
+// What we actually prefix onto `/api/...` fetches. In `vite` dev the browser
+// origin (localhost:5173) is NOT in the backend's CORS allowlist, so we send API
+// calls same-origin ('') and let Vite's dev proxy (vite.config.ts) forward them
+// to BACKEND_ORIGIN server-side — no CORS. In production we hit the backend
+// directly. Full-navigation URLs (OAuth login) still use BACKEND_ORIGIN.
+export const API_BASE: string = (import.meta as any).env?.DEV ? '' : BACKEND_ORIGIN;
 
 const TOKEN_KEY = 'nikke-sim.auth';
 
@@ -100,7 +109,9 @@ export function captureTokenFromUrl(): void {
 
 export function loginUrl(): string {
   const returnTo = window.location.origin + window.location.pathname;
-  return `${API_BASE}/auth/discord/login?return_to=${encodeURIComponent(returnTo)}`;
+  // A top-level browser navigation (not a fetch) — must target the real backend
+  // origin, not the dev proxy, so the OAuth round-trip works in dev and prod.
+  return `${BACKEND_ORIGIN}/auth/discord/login?return_to=${encodeURIComponent(returnTo)}`;
 }
 
 async function api<T>(path: string, init: RequestInit = {}): Promise<T> {

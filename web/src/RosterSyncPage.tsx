@@ -254,14 +254,16 @@ export function RosterSyncPage({
     }
   };
 
-  // Top-CP units first — a compact, recognizable summary of a big roster.
-  const topUnits = useMemo(
-    () =>
-      roster
-        ? [...roster.characters].sort((a, b) => b.combat - a.combat).slice(0, 24)
-        : [],
-    [roster],
-  );
+  // Top-CP units first — a compact, recognizable summary of a big roster. Guard
+  // `characters` defensively: a malformed / partial response must render an empty
+  // summary, never crash the whole page.
+  const topUnits = useMemo(() => {
+    const chars = Array.isArray(roster?.characters) ? roster!.characters : [];
+    return [...chars].sort((a, b) => b.combat - a.combat).slice(0, 24);
+  }, [roster]);
+  const rosterCount = roster
+    ? roster.count ?? (Array.isArray(roster.characters) ? roster.characters.length : 0)
+    : 0;
 
   const history = accounts?.filter((a) => !a.current) ?? [];
 
@@ -299,7 +301,7 @@ export function RosterSyncPage({
               </div>
               <div className='roster-current-meta muted'>
                 <span>open id ···{current.openId.slice(-6)}</span>
-                {roster && <span>· {roster.count} units</span>}
+                {roster && <span>· {rosterCount} units</span>}
               </div>
               <div className='roster-current-actions'>
                 <button
@@ -364,7 +366,7 @@ export function RosterSyncPage({
           {roster && (
             <div className='patch-entry roster-summary'>
               <div className='patch-head'>
-                <span className='patch-title'>{roster.count} units</span>
+                <span className='patch-title'>{rosterCount} units</span>
                 <span className='patch-date'>
                   {roster.source === 'live' ? 'freshly synced' : `synced ${timeAgo(roster.syncedAt)}`}
                 </span>
@@ -374,9 +376,9 @@ export function RosterSyncPage({
                   <UnitTile key={c.name_code} c={c} />
                 ))}
               </div>
-              {roster.count > topUnits.length && (
+              {rosterCount > topUnits.length && (
                 <p className='muted roster-more'>
-                  + {roster.count - topUnits.length} more units
+                  + {rosterCount - topUnits.length} more units
                 </p>
               )}
             </div>
