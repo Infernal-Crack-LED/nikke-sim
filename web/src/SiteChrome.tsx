@@ -150,6 +150,16 @@ export function SiteNav({
                 )}
                 <a
                   className={
+                    'nav-menu-item' + (current === 'roster-sync' ? ' on' : '')
+                  }
+                  role='menuitem'
+                  href={hrefFor('roster-sync')}
+                  onClick={(e) => menuNav(e, 'roster-sync')}
+                >
+                  Sync my roster
+                </a>
+                <a
+                  className={
                     'nav-menu-item' + (current === 'patch-notes' ? ' on' : '')
                   }
                   role='menuitem'
