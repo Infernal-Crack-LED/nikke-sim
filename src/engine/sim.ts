@@ -23,7 +23,10 @@ import {
   BAND_SG_HIT_FRAC,
   circleDpx,
   circleDpxAtHr,
+  coneDelta,
+  coneSigma,
   coreFracGeo,
+  offsetCoreProb,
   pelletCoreFrac,
   pelletLandFrac,
   pelletSigma,
@@ -899,8 +902,26 @@ export function runSim(
     if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
     return pelletSigma(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC);
   };
+  // ── δ-offset cone (ENV.CONE_DELTA; default OFF — byte-identical) ──────────────────────────────
+  // The enactment model (docs/handoffs/2026-07-19-core-geometry-implementation-plan.md): replaces
+  // the CORE_AUTOAIM flat cap + fractional reticle floor with an off-centre Rician cone (sg-geometry
+  // offsetCoreProb). When ON it PRE-EMPTS both PELLET_GAUSS and HRCORE for accuracy-circle weapons
+  // (AR/SMG/SG); those two paths become the flag-OFF A/B fallback. MG/SR/RL fall through to the base
+  // table either way. Parameters (δ0/H/σ-shrink) are ⚑ exploratory in sg-geometry.ts and gate the
+  // owner-only default flip, not this landing. OFF ⇒ this whole block is inert.
+  const CONE_DELTA = ENV.CONE_DELTA === '1' || ENV.CONE_DELTA === 'on';
+  const coneSigmaFor = (weapon: string, hr: number): number | null => {
+    const scale = ACCURACY_CIRCLE_SCALE[weapon];
+    if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
+    return coneSigma(scale, hr);
+  };
   const acrForHR = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far', hr: number): number => {
-    if (PELLET_GAUSS) {
+    if (CONE_DELTA) {
+      const sig = coneSigmaFor(weapon, hr);
+      if (sig !== null)
+        return Math.min(1, offsetCoreProb(BAND_CORE_PX[band] / 2, sig, coneDelta(weapon, hr)));
+      // MG/SR/RL fall through to the base table below
+    } else if (PELLET_GAUSS) {
       const sig = pelletSigmaFor(weapon, hr);
       if (sig !== null) return Math.min(1, pelletCoreFrac(BAND_CORE_PX[band], sig)); // unified geometric core
       // MG/SR/RL fall through to the base table below
@@ -1121,7 +1142,7 @@ export function runSim(
         (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
       // ⚑ HRCORE: live Hit Rate shrinks the reticle → higher core fraction (derived; LIVE by default, HRCORE=0 off).
       // stat() already sums the unit's live hitRatePct buffs; additive-in-pp composition is UNVALIDATED (R8).
-      const hr = HRCORE || PELLET_GAUSS ? stat(u, 'hitRatePct', frame) : 0;
+      const hr = HRCORE || PELLET_GAUSS || CONE_DELTA ? stat(u, 'hitRatePct', frame) : 0;
       const acr = opts.coreOverride ?? acrForHR(effWeapon, bandAt(frame), hr);
       major += rng
         ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
@@ -2199,11 +2220,12 @@ export function runSim(
     const band = bandAt(frame);
     const bandSgFalloff =
       u.char.weapon === 'SG' && !u.swap
-        ? PELLET_GAUSS
-          ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
-            // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
+        ? CONE_DELTA
+          ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
+            // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
+            // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
             (() => {
-              const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+              const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
               const prof =
                 cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
               const mean = pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof);
@@ -2212,10 +2234,23 @@ export function runSim(
               for (let i = 0; i < u.char.hitsPerShot; i++) if (rng() < mean) k++;
               return k / u.char.hitsPerShot;
             })()
-          : rng
-            ? sgLandedPellets(band, u.char.hitsPerShot, rng, cfg.bossPelletProfile) /
-              u.char.hitsPerShot
-            : SG_LANDING_BY_BAND[band]
+          : PELLET_GAUSS
+            ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
+              // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
+              (() => {
+                const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+                const prof =
+                  cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
+                const mean = pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof);
+                if (!rng) return mean;
+                let k = 0;
+                for (let i = 0; i < u.char.hitsPerShot; i++) if (rng() < mean) k++;
+                return k / u.char.hitsPerShot;
+              })()
+            : rng
+              ? sgLandedPellets(band, u.char.hitsPerShot, rng, cfg.bossPelletProfile) /
+                u.char.hitsPerShot
+              : SG_LANDING_BY_BAND[band]
         : 1;
     // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
     // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED
@@ -2250,7 +2285,10 @@ export function runSim(
       charge: charged,
       category: 'normal',
       trueFlavor: !!u.swap?.trueNormals,
-      coreOverride: consolidating && consol ? consol.coreRate : undefined,
+      // Under the δ-cone (CONE_DELTA) the consolidation single bullet draws its core chance from the
+      // SAME SG cone as every other shot — no bespoke coreRate (implementation-plan §1.5). OFF ⇒ the
+      // measured override coreRate, byte-identical.
+      coreOverride: consolidating && consol && !CONE_DELTA ? consol.coreRate : undefined,
       extraDmgUpPct: consolidating && consol ? consol.attackDamagePct : undefined,
       pierceActive: consolidating && consol ? consol.pierce : undefined,
       // the consolidated single bullet takes NO effective-range bonus (MEASURED: its non-core

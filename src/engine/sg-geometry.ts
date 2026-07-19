@@ -128,3 +128,94 @@ export function pelletLandFrac(hitFrac: number, sigma: number, profileScale = 1)
 export function pelletCoreFrac(coreDpxBand: number, sigma: number): number {
   return CORE_AUTOAIM * rayleighWithin(coreDpxBand / 2, sigma);
 }
+
+// ── δ-offset ("Rician") cone — the CONE_DELTA enactment model (owner-gated) ───────────────────────
+// docs/handoffs/2026-07-19-core-geometry-implementation-plan.md §1 (basis:
+// 2026-07-19-geometry-campaign-findings.md). REPLACES the two confirmed bugs of the live path — the
+// flat `CORE_AUTOAIM=0.55` cap (structurally wrong: over-credits low-HR far, under-credits high-HR
+// near) and the fractional reticle floor — with ONE mechanism: shots land on an isotropic Gaussian
+// cone (σ from the accuracy circle at K_SIGMA) whose CENTER sits δ px off the true core (the auto-aim
+// never nails the ~1px center); a shot cores iff it lands within the band core radius ⇒ the Rician
+// CDF. δ shrinks with Hit Rate (auto-aim tightens onto the core), which is the work the flat cap
+// crudely approximated. The measured campaign (blanc far spawn re-count 0.111[0.073,0.165] vs δ+σ
+// prediction 0.103, δ-only 0.232 and centered 0.253 EXCLUDED) selects this family; the drawn reticle
+// is decorative and anchors nothing here.
+//
+// ⚑ PARAMETERS ARE EXPLORATORY — the values below are the campaign's fitted estimates (findings §2),
+// NOT the re-frozen enactment set. They take effect ONLY under CONE_DELTA=1, which stays default-OFF
+// until the parameter-freeze refit + Fable pre-registration + full-board A/B + owner sign-off
+// (implementation-plan §2/§4). K_SIGMA (2.53) is held; CIRCLE_PX_K and the datamined per-weapon scale
+// are the measured constants and are never refit (hard-constraint #3). δ0 is robustly identified; the
+// σ-vs-s split rides a flat likelihood ridge (do not over-read S_FLOOR/CONE_SIGMA_SHRINK individually).
+export const CONE_DELTA0: Record<string, number> = { AR: 16, SMG: 20, SG: 25 }; // px @2622×1206, ⚑ exploratory, monotone in cone size
+export const CONE_DELTA_H = 195;        // Hit Rate at which the centering offset reaches 0 (⚑ exploratory)
+export const CONE_SIGMA_SHRINK = 0.007; // mild σ shrink per Hit-Rate point (⚑ exploratory; flat ridge ~0.005–0.01)
+export const CONE_SIGMA_FLOOR = 0.35;   // σ never shrinks below this fraction of σ(0) (⚑ exploratory)
+
+// Pellet-spread σ (px) under the δ-cone model: half the accuracy circle / K_SIGMA, with a mild
+// Hit-Rate σ-shrink (floored). Matches implementation-plan §2's sigma_w(hr). CIRCLE_PX_C is 0, so
+// this equals circleDpx(scale)/2/K_SIGMA·shrink — written from CIRCLE_PX_K directly per the plan.
+export function coneSigma(scale: number, hr: number): number {
+  const s0 = (CIRCLE_PX_K * scale) / 2 / K_SIGMA;
+  return s0 * Math.max(CONE_SIGMA_FLOOR, 1 - CONE_SIGMA_SHRINK * Math.max(0, hr));
+}
+
+// Per-weapon centering offset δ (px): DELTA0[weapon] shrinking linearly to 0 at Hit Rate H.
+// Unknown weapon (MG/SR/RL) → 0 (they have no accuracy-circle model and never route here).
+export function coneDelta(weapon: string, hr: number): number {
+  const d0 = CONE_DELTA0[weapon];
+  if (d0 === undefined) return 0;
+  return d0 * Math.max(0, 1 - Math.max(0, hr) / CONE_DELTA_H);
+}
+
+// Modified Bessel function I₀(x) — Abramowitz & Stegun 9.8.1/9.8.2 rational approximations
+// (|error| < 2e-7). Needed for the off-center Rician CDF integrand below.
+export function besselI0(x: number): number {
+  const ax = Math.abs(x);
+  if (ax < 3.75) {
+    const t = x / 3.75;
+    const t2 = t * t;
+    return (
+      1 +
+      t2 *
+        (3.5156229 +
+          t2 * (3.0899424 + t2 * (1.2067492 + t2 * (0.2659732 + t2 * (0.0360768 + t2 * 0.0045813)))))
+    );
+  }
+  const t = 3.75 / ax;
+  return (
+    (Math.exp(ax) / Math.sqrt(ax)) *
+    (0.39894228 +
+      t *
+        (0.01328592 +
+          t *
+            (0.00225319 +
+              t *
+                (-0.00157565 +
+                  t *
+                    (0.00916281 +
+                      t *
+                        (-0.02057706 +
+                          t * (0.02635537 + t * (-0.01647633 + t * 0.00392377))))))))
+  );
+}
+
+// P(‖N((δ,0), σ²·I)‖ ≤ R) — the probability a shot whose landing point is an isotropic 2D Gaussian
+// of spread σ CENTERED δ px off the core lands within the core radius R (the Rician CDF). Derived in
+// polar coords about the disc centre: P = ∫₀ᴿ (ρ/σ²)·exp(−(ρ²+δ²)/2σ²)·I₀(ρδ/σ²) dρ (the θ-integral
+// gives 2π·I₀). Deterministic Simpson quadrature, no per-tick RNG. δ=0 reduces EXACTLY to
+// rayleighWithin (special-cased so the reduction is analytic, not quadrature-approximate).
+export function offsetCoreProb(R: number, sigma: number, delta: number): number {
+  if (sigma <= 0) return R > 0 ? 1 : 0;
+  if (R <= 0) return 0;
+  if (delta === 0) return rayleighWithin(R, sigma); // exact centered reduction
+  const s2 = sigma * sigma;
+  const d2 = delta * delta;
+  const N = 64; // even ⇒ Simpson
+  const h = R / N;
+  const f = (rho: number): number =>
+    (rho / s2) * Math.exp(-(rho * rho + d2) / (2 * s2)) * besselI0((rho * delta) / s2);
+  let sum = f(0) + f(R);
+  for (let i = 1; i < N; i++) sum += (i % 2 ? 4 : 2) * f(i * h);
+  return Math.min(1, (h / 3) * sum);
+}
