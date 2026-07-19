@@ -2285,10 +2285,11 @@ export function runSim(
       charge: charged,
       category: 'normal',
       trueFlavor: !!u.swap?.trueNormals,
-      // Under the δ-cone (CONE_DELTA) the consolidation single bullet draws its core chance from the
-      // SAME SG cone as every other shot — no bespoke coreRate (implementation-plan §1.5). OFF ⇒ the
-      // measured override coreRate, byte-identical.
-      coreOverride: consolidating && consol && !CONE_DELTA ? consol.coreRate : undefined,
+      // The consolidation single bullet is one ALIGNED 98%-hit bullet, NOT spray — so it keeps its
+      // measured reliable-core value (consol.coreRate) under the δ-cone too, treated like a regular
+      // single bullet rather than routed through the SG pellet-spray cone (owner ruling 2026-07-19;
+      // supersedes implementation-plan §1.5's fold-in). Only dorothy's ordinary spray shots take the cone.
+      coreOverride: consolidating && consol ? consol.coreRate : undefined,
       extraDmgUpPct: consolidating && consol ? consol.attackDamagePct : undefined,
       pierceActive: consolidating && consol ? consol.pierce : undefined,
       // the consolidated single bullet takes NO effective-range bonus (MEASURED: its non-core
