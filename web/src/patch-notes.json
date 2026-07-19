@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-19",
+    "title": "More accurate auto-aim core hits (Hit Rate now matters)",
+    "notes": [
+      "Reworked how the sim predicts auto-aim core hits for Assault Rifles, SMGs, and Shotguns. Instead of a flat per-range estimate, shots now land in an aim cone that tightens onto the core the closer the boss is and the higher your Hit Rate — so core-hit rates rise smoothly with range and Hit Rate rather than snapping between fixed values.",
+      "Hit Rate buffs now meaningfully improve core-hit damage: a unit under a big Hit Rate boost (e.g. Jill's burst) reaches near-100% core hits at close range, matching what the game actually does.",
+      "Net effect: units that were slightly over-credited for core hits at long range cool off, high-Hit-Rate close-range shooters warm up, and overall board accuracy improved. Rotation and Full Burst counts are unchanged."
+    ]
+  },
+  {
     "date": "2026-07-17",
     "title": "New: Guided Roll walkthrough on the Overload Rolling tool",
     "notes": [
