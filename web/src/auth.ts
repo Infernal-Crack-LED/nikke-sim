@@ -49,12 +49,33 @@ export interface RosterCharacter {
   core: number;
   costume_id: number;
 }
+// One rolled Overload line, normalized by the backend to a label the sim already
+// recognizes (the `name` fields in data/ol-lines.json).
+export interface SyncedOlLine {
+  label: string; // e.g. "Increase ATK"
+  value: number; // rolled % value
+}
+// A unit's actual synced build, normalized by the backend from blablalink detail.
+// See docs/handoffs/2026-07-18-synced-roster-stats-backend-contract.md.
+export interface SyncedUnitLoadout {
+  nameCode: number;
+  grade: number; // Limit Break stars 0-3
+  core: number; // core enhancement 0-7
+  bond?: number; // bond / attractive level
+  level?: number; // this unit's own level (syncLevel fallback)
+  skills?: { skill1: number; skill2: number; burst: number };
+  cube?: { name: string; level: number } | null;
+  ol?: SyncedOlLine[];
+  gearTier?: string;
+}
 export interface RosterResponse {
   source: 'db' | 'live';
   openId: string;
   count: number;
   characters: RosterCharacter[];
   details?: unknown[]; // present only when details=1
+  syncLevel?: number; // account-wide synchro level (details=1)
+  syncedLoadouts?: SyncedUnitLoadout[]; // per-unit normalized build (details=1)
   syncedAt: string;
 }
 // A blablalink account the user has synced — current one first, then history.
@@ -206,3 +227,14 @@ export const deleteNikkeAccount = (openid: string) =>
     `/api/nikke-accounts?openid=${encodeURIComponent(openid)}`,
     { method: 'DELETE' },
   );
+
+// Resolve the logged-in user's CURRENT account and return its full synced roster
+// (with per-unit loadouts, DB-served → instant). Returns null if the user has no
+// synced current account. Throws ApiError on transport failures. Used by the
+// sim's "Synced Roster" preset.
+export async function fetchCurrentSyncedRoster(): Promise<RosterResponse | null> {
+  const accounts = await fetchNikkeAccounts();
+  const current = accounts.find((a) => a.current && a.syncedAt);
+  if (!current) return null;
+  return fetchRoster(current.openId, { details: true });
+}

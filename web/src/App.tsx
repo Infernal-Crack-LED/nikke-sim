@@ -76,12 +76,15 @@ import {
   type Build,
 } from '../../src/share/build-code';
 import {
+  ApiError,
   deleteTeam,
+  fetchCurrentSyncedRoster,
   fetchTeams,
   saveTeam,
   type AuthUser,
   type SavedTeam,
 } from './auth';
+import { indexBySlug, type SlotLoadout } from './rosterApply';
 import {
   makeCalc,
   type TeamResult,
@@ -610,7 +613,9 @@ const CHARGE_CHARS = allChars.filter(
 
 // 'none' = no cube equipped at all (no flat ATK, no elemental damage, no effect);
 // distinct from the 'other' cube, which still grants base stats + elemental damage.
-type CubeChoice = (typeof CUBE_IDS)[number] | 'none';
+// Any cube id in data/cubes.json is valid (the quick-pick pills only surface a few,
+// but the Synced Roster preset can set any real cube — it still applies faithfully).
+type CubeChoice = string | 'none';
 
 interface SlotState {
   slug: string | null;
@@ -1176,6 +1181,15 @@ export function App({ user }: { user: AuthUser | null }) {
     boot?.g.coreCustomVal ?? '10',
   );
   const [level, setLevel] = useState(boot?.g.level ?? '400');
+  // Synced Roster preset: the user's real account build (name_code→loadout), the
+  // account synchro level, and the fetch status. Cached after the first pull so
+  // re-applying is instant; cleared implicitly by a page reload.
+  const [syncedIdx, setSyncedIdx] = useState<Map<string, SlotLoadout> | null>(
+    null,
+  );
+  const [syncedLevel, setSyncedLevel] = useState<number | null>(null);
+  const [syncedBusy, setSyncedBusy] = useState(false);
+  const [syncedMsg, setSyncedMsg] = useState<string | null>(null);
   const [showRotation, setShowRotation] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showBuffs, setShowBuffs] = useState(false);
@@ -1408,6 +1422,79 @@ export function App({ user }: { user: AuthUser | null }) {
       relationshipLevel: '',
     });
     setLevel('400');
+  };
+
+  // "Synced Roster" preset: patch every slot that holds an owned unit with its
+  // actual synced build (cube, gear, grade/core, skills, OL lines, bond) and set
+  // the account synchro level uniformly. Per-unit (like 12/12), not a setAll:
+  // each unit gets its own loadout; units not in the roster are left untouched.
+  const applyOneSyncedLoadout = (s: SlotState, idx: Map<string, SlotLoadout>): SlotState => {
+    if (!s.slug) return s;
+    const L = idx.get(s.slug);
+    if (!L) return s; // slot unit not owned / not modeled — leave as-is
+    return {
+      ...s,
+      ol: L.ol,
+      doll: true, // Overload gear synced builds run the doll
+      stars: L.stars,
+      core: L.core,
+      cubeId: L.cubeId ?? 'none',
+      cubeLevel: L.cubeLevel,
+      cubeCustom: false,
+      skill1: L.skill1 ?? s.skill1,
+      skill2: L.skill2 ?? s.skill2,
+      burst: L.burst ?? s.burst,
+      relationshipLevel: L.bond != null ? String(L.bond) : s.relationshipLevel,
+      olElem: L.olElem ? String(L.olElem) : '',
+      olAtk: L.olAtk ? String(L.olAtk) : '',
+      olExtra: L.olExtra.map((e) => ({ type: e.type, value: String(e.value) })),
+    };
+  };
+  const applySyncedRoster = async () => {
+    setSyncedMsg(null);
+    if (!user) {
+      setSyncedMsg('Log in and sync your roster first (see “Sync my roster”).');
+      return;
+    }
+    setSyncedBusy(true);
+    try {
+      let idx = syncedIdx;
+      let lvl = syncedLevel;
+      if (!idx) {
+        const roster = await fetchCurrentSyncedRoster();
+        if (!roster) {
+          setSyncedMsg('No synced roster yet — sync it on the “Sync my roster” page.');
+          return;
+        }
+        if (!roster.syncedLoadouts?.length) {
+          setSyncedMsg('Your roster needs a re-sync to include build stats (backend update pending).');
+          return;
+        }
+        idx = indexBySlug(roster.syncedLoadouts);
+        const maxLv = roster.characters.reduce((m, c) => Math.max(m, c.lv || 0), 0);
+        lvl = roster.syncLevel ?? (maxLv > 0 ? maxLv : null);
+        setSyncedIdx(idx);
+        setSyncedLevel(lvl);
+      }
+      const matched = (arr: SlotState[]) => arr.filter((s) => s.slug && idx!.has(s.slug)).length;
+      const applied = tab === 'dps' ? matched(dpsGroups.flat()) : matched(slots);
+      if (tab === 'dps') setDpsGroups((gs) => gs.map((g) => g.map((s) => applyOneSyncedLoadout(s, idx!))));
+      else setSlots((s) => s.map((sl) => applyOneSyncedLoadout(sl, idx!)));
+      if (lvl) setLevel(String(lvl));
+      setSyncedMsg(
+        applied > 0
+          ? `Applied your synced build to ${applied} unit${applied === 1 ? '' : 's'}${lvl ? ` · sync ${lvl}` : ''}.`
+          : 'None of your team’s units are in your synced roster.',
+      );
+    } catch (e) {
+      setSyncedMsg(
+        e instanceof ApiError && e.status === 401
+          ? 'Please log in again to use your synced roster.'
+          : 'Could not load your synced roster. Try again.',
+      );
+    } finally {
+      setSyncedBusy(false);
+    }
   };
 
   // ---- build code (full team + loadout + globals) ----
@@ -4824,7 +4911,20 @@ export function App({ user }: { user: AuthUser | null }) {
                   >
                     🔒 Scope Lock
                   </button>
+                  <button
+                    className='scope-lock'
+                    disabled={syncedBusy}
+                    title='apply your synced NIKKE account build (cube · gear · grade/core · skills · overload lines · bond) + synchro level to every unit you own'
+                    onClick={applySyncedRoster}
+                  >
+                    {syncedBusy ? '⏳ Syncing…' : '🔄 Synced Roster'}
+                  </button>
                 </div>
+                {syncedMsg && (
+                  <div className='muted' style={{ fontSize: 12, marginTop: 4 }}>
+                    {syncedMsg}
+                  </div>
+                )}
               </div>
               <div className='field'>
                 <label>All cubes</label>
