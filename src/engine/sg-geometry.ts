@@ -141,16 +141,25 @@ export function pelletCoreFrac(coreDpxBand: number, sigma: number): number {
 // prediction 0.103, δ-only 0.232 and centered 0.253 EXCLUDED) selects this family; the drawn reticle
 // is decorative and anchors nothing here.
 //
-// ⚑ PARAMETERS ARE EXPLORATORY — the values below are the campaign's fitted estimates (findings §2),
-// NOT the re-frozen enactment set. They take effect ONLY under CONE_DELTA=1, which stays default-OFF
-// until the parameter-freeze refit + Fable pre-registration + full-board A/B + owner sign-off
-// (implementation-plan §2/§4). K_SIGMA (2.53) is held; CIRCLE_PX_K and the datamined per-weapon scale
-// are the measured constants and are never refit (hard-constraint #3). δ0 is robustly identified; the
-// σ-vs-s split rides a flat likelihood ridge (do not over-read S_FLOOR/CONE_SIGMA_SHRINK individually).
-export const CONE_DELTA0: Record<string, number> = { AR: 16, SMG: 20, SG: 25 }; // px @2622×1206, ⚑ exploratory, monotone in cone size
-export const CONE_DELTA_H = 195;        // Hit Rate at which the centering offset reaches 0 (⚑ exploratory)
-export const CONE_SIGMA_SHRINK = 0.007; // mild σ shrink per Hit-Rate point (⚑ exploratory; flat ridge ~0.005–0.01)
-export const CONE_SIGMA_FLOOR = 0.35;   // σ never shrinks below this fraction of σ(0) (⚑ exploratory)
+// FROZEN 2026-07-19 (owner-locked) — parameter-freeze refit + Fable pre-registration
+// (docs/handoffs/2026-07-19-cone-param-freeze-prereg.md; reproducible in scripts/cone-refit.ts).
+// δ0 fit by binomial MLE on the method-tagged cell set: AR spawn-confirmed (scarlet COUNT-1 near .25 /
+// far .08; blanc far .111; Label HR23), SMG on the CLEAN chisato near cells (.294 HR0 / .365 HR22 —
+// biased-high quency/LM near cells deliberately NOT used to set the offset), SG on dorothy HR0 + noir
+// ▲60/▲98. K_SIGMA (2.53) held; CIRCLE_PX_K and the datamined per-weapon scale are measured constants,
+// never refit (hard-constraint #3). σ-law (H, s, S_FLOOR): H and s pinned so the cone saturates near-core
+// by the owner-attested jill ▲80 / noir ▲98 cells; S_FLOOR only bites at HR>~90 (saturation mechanism).
+// ⚑ KNOWN, BOUNDED: the shared σ (fixed by the wide 110px SMG circle) over-credits SMG far/mid core
+//   (the datamined circle width is not a free param) — same direction as the live AR-far over-credit,
+//   small damage weight; watched by the board-A/B stop-condition, re-reviewable later.
+// ⚑ NOT SUPPORTED: Hit Rate > 98 (owner-accepted; no board comp reaches it — σ-floor extrapolation only).
+// ⚑ σ-vs-s is a flat likelihood ridge in-range: s∈[.008,.012] / S_FLOOR∈[.10,.20] give ~identical
+//   in-range output (low-HR cells are σ-law-invariant); the frozen point below is the interval
+//   representative that also saturates the ▲80/▲98 cells.
+export const CONE_DELTA0: Record<string, number> = { AR: 18, SMG: 16, SG: 30 }; // px @2622×1206, monotone in cone size
+export const CONE_DELTA_H = 120;        // Hit Rate at which the centering offset δ reaches 0
+export const CONE_SIGMA_SHRINK = 0.01;  // σ shrink per Hit-Rate point (interval [.008,.012])
+export const CONE_SIGMA_FLOOR = 0.10;   // σ floor as a fraction of σ(0) (interval [.10,.20]; bites only at HR>~90)
 
 // Pellet-spread σ (px) under the δ-cone model: half the accuracy circle / K_SIGMA, with a mild
 // Hit-Rate σ-shrink (floored). Matches implementation-plan §2's sigma_w(hr). CIRCLE_PX_C is 0, so

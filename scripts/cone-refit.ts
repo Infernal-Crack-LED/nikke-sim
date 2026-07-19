@@ -85,20 +85,16 @@ function nll(p: P): number {
   return L;
 }
 
-// coordinate-descent grid search
-let best: P = { d0: { AR: 16, SMG: 20, SG: 25 }, H: 195, s: 0.007, floor: 0.35 };
+// LOCKED δ0 (owner 2026-07-19: AR spawn-confirmed 18, SMG on clean chisato 16, SG 30).
+// Optimize only the σ-law (H, s, S_FLOOR) for the agreed δ0 set.
+let best: P = { d0: { AR: 18, SMG: 16, SG: 30 }, H: 120, s: 0.008, floor: 0.15 };
 let bestL = nll(best);
 const grids = {
-  AR: [8, 10, 12, 14, 16, 18, 20, 22, 24, 26],
-  SMG: [12, 16, 20, 24, 28, 32, 36, 40],
-  SG: [15, 20, 25, 30, 35, 40, 45, 50],
-  H: [80, 100, 120, 140, 160, 180, 200, 240, 300, 400],
-  s: [0, 0.002, 0.004, 0.006, 0.008, 0.01, 0.012, 0.014, 0.016, 0.02],
-  floor: [0.1, 0.13, 0.16, 0.2, 0.25, 0.3, 0.4, 0.5, 0.7, 1.0],
+  H: [90, 100, 110, 120, 130, 140, 160],
+  s: [0.006, 0.008, 0.009, 0.01, 0.011, 0.012],
+  floor: [0.1, 0.15, 0.2],
 };
 for (let iter = 0; iter < 8; iter++) {
-  for (const w of ['AR', 'SMG', 'SG'] as const)
-    for (const v of grids[w]) { const t = { ...best, d0: { ...best.d0, [w]: v } }; const l = nll(t); if (l < bestL) { bestL = l; best = t; } }
   for (const v of grids.H) { const t = { ...best, H: v }; const l = nll(t); if (l < bestL) { bestL = l; best = t; } }
   for (const v of grids.s) { const t = { ...best, s: v }; const l = nll(t); if (l < bestL) { bestL = l; best = t; } }
   for (const v of grids.floor) { const t = { ...best, floor: v }; const l = nll(t); if (l < bestL) { bestL = l; best = t; } }
@@ -129,8 +125,6 @@ console.log(`  AR near curve: HR0 ${predCore('AR','near',0,best).toFixed(3)} →
 console.log('\n=== σ-shrink ridge profile (NLL re-optimizing δ0/H at each s,floor) ===');
 function nllAt(s: number, floor: number): number {
   let b = { ...best, s, floor }; let bl = nll(b);
-  for (let it = 0; it < 4; it++)
-    for (const w of ['AR','SMG','SG'] as const) for (const v of grids[w]) { const t = { ...b, d0: { ...b.d0, [w]: v } }; const l = nll(t); if (l < bl) { bl = l; b = t; } }
   for (const v of grids.H) { const t = { ...b, H: v }; const l = nll(t); if (l < bl) { bl = l; b = t; } }
   return bl;
 }
