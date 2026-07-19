@@ -1,4 +1,42 @@
-Doll stats by weapon type
+Favorite Item (doll) stat table — owner-measured 2026-07-18
+Flat HP / ATK / DEF by rarity + level. Measured at checkpoints 0/5/10/15 only;
+the engine (src/stats.ts) piecewise-linear interpolates the intermediate levels.
+The survivability lines (DEF up, Damage Taken down, Cover Max HP up) are recorded
+here for completeness but are NOT modeled — this is an offense-only boss sim.
+
+Rarity  Level  HP       ATK    DEF    DEF up   Damage Taken down   Cover Max HP up
+R       0      19400    638    128    0%       0%                  0%
+R       5      48700    1577   328    0%       0%                  0%
+R       10     91350    2943   620    0%       0%                  0%
+R       15     147250   4736   1002   0%       0%                  0%
+SR      0      94000    3029   638    30%      10%                 12%
+SR      5      149950   4821   1020   32%      12%                 18%
+SR      10     219200   7041   1494   35%      14%                 24%
+SR      15     301800   9688   2058   37%      17%                 30%
+SSR     0-2    301800   9688   2058   37%      17%                 30%   (== SR 15)
+
+SSR's live levels are 0/1/2 and all read == SR 15 (owner-stated); the sim models
+SSR as constant SR-15 stats. The legacy `doll: true` config path (== a maxed doll)
+uses the SR-15 / SSR values 301800 HP / 9688 ATK directly.
+
+Doll weapon "collection effect" — value at level 0 → level 15, per rarity.
+R/SR scale their single weapon buff with level (interpolated); SSR uses the fixed
+max-level value below. The engine keeps the SSR (== `doll: true`) constants as-is
+(AR 17.0, SG/SMG 9.46, RL/SR 9.47, MG/SR 9.5) so the validation basis is unchanged.
+
+Weapon  Buff                       R doll (L0 ~ L15)   SR doll (L0 ~ L15)
+SG      Increase weapon modifier   1.57% ~ 6.3%        4.74% ~ 9.47%
+RL      Increase weapon modifier   1.58% ~ 6.31%       4.73% ~ 9.46%
+SR      Increase weapon modifier   1.58% ~ 6.31%       4.73% ~ 9.46%
+SMG     Increase weapon modifier   1.57% ~ 6.3%        4.74% ~ 9.47%
+AR      Increase core damage       5.67% ~ 12.49%      10.22% ~ 17.04%
+MG      Increase Max Ammo          1.56% ~ 6.32%       4.74% ~ 9.5%
+
+NOTE (owner follow-up): the SR-class doll below carries an extra "+9.5% max ammo"
+line that the measured weapon table above does NOT list for the SR weapon. It is
+preserved in the SSR/`doll: true` bonus only, pending confirmation.
+
+Doll stats by weapon type (SSR / maxed — the `doll: true` collection effect)
 AR
 hp 301800
 atk 9688

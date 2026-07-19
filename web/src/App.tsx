@@ -76,12 +76,15 @@ import {
   type Build,
 } from '../../src/share/build-code';
 import {
+  ApiError,
   deleteTeam,
+  fetchCurrentSyncedRoster,
   fetchTeams,
   saveTeam,
   type AuthUser,
   type SavedTeam,
 } from './auth';
+import { indexBySlug, slotLoadoutToUnitOptions, type SlotLoadout } from './rosterApply';
 import {
   makeCalc,
   type TeamResult,
@@ -610,7 +613,13 @@ const CHARGE_CHARS = allChars.filter(
 
 // 'none' = no cube equipped at all (no flat ATK, no elemental damage, no effect);
 // distinct from the 'other' cube, which still grants base stats + elemental damage.
-type CubeChoice = (typeof CUBE_IDS)[number] | 'none';
+// Any cube id in data/cubes.json is valid (the quick-pick pills only surface a few,
+// but the Synced Roster preset can set any real cube — it still applies faithfully).
+type CubeChoice = string | 'none';
+
+// Favorite Item ("doll") rarity, incl. 'none'. Named to avoid colliding with the
+// doll-leveling tool's `Rarity` (imported as DollRarity above).
+type FavItemRarity = 'none' | 'R' | 'SR' | 'SSR';
 
 interface SlotState {
   slug: string | null;
@@ -618,7 +627,16 @@ interface SlotState {
   cubeLevel: number;
   cubeCustom: boolean;
   ol: 'base5' | 0 | 5; // gear level; 'base5' = scope-lock base gear
-  doll: boolean;
+  // Doll (Favorite Item): 'none' = no doll; SSR/15 is the default (== the old
+  // boolean "Doll 15"). rarity + level map to the sim's doll stat table.
+  // (FavItemRarity is local to avoid colliding with the doll-leveling tool's Rarity.)
+  dollRarity: FavItemRarity;
+  dollLevel: number; // 0-15
+  // Synced real gear stats (T10 pieces + Outpost) — override the ol-level table
+  // when present; set only by the Synced Roster preset. hasOverloadGear = on full
+  // T10 gear (the generator's non-OL filter). Cleared by any manual gear-pill change.
+  gearStats?: { atk: number; hp: number } | null;
+  hasOverloadGear?: boolean;
   lambdaStage: 0 | 1 | 2 | 3; // Λ units only; 0 = auto (any stage)
   stars: number; // Limit Break stars / grade 0-3
   core: number; // Core enhancement 0-7
@@ -708,6 +726,12 @@ function buildOlLines(
   return out;
 }
 
+// A slot's doll → the engine's UnitOptions.doll: 'none' → false (no doll), else
+// the synced rarity + level (resolved against the doll stat table).
+function slotDoll(s: SlotState): UnitOptions['doll'] {
+  return s.dollRarity === 'none' ? false : { rarity: s.dollRarity, level: s.dollLevel };
+}
+
 // SlotState (the per-character card's state) → engine UnitOptions. Shared by the
 // Sim tab and the DPS test's variable units.
 function slotToUnitOptions(s: SlotState): UnitOptions {
@@ -728,7 +752,8 @@ function slotToUnitOptions(s: SlotState): UnitOptions {
         ? undefined
         : { id: s.cubeId, level: Math.min(15, Math.max(1, s.cubeLevel || 15)) },
     ol: s.ol,
-    doll: s.doll,
+    doll: slotDoll(s),
+    gearStats: s.gearStats ?? undefined,
     stars: Math.min(3, Math.max(0, s.stars)),
     core: Math.min(7, Math.max(0, s.core)),
     lambdaStage:
@@ -748,7 +773,10 @@ const defaultSlot = (slug: string | null): SlotState => ({
   cubeLevel: 15,
   cubeCustom: false,
   ol: 0,
-  doll: true,
+  dollRarity: 'SSR',
+  dollLevel: 15,
+  gearStats: null,
+  hasOverloadGear: false,
   lambdaStage: 0,
   stars: 3,
   core: 0,
@@ -786,7 +814,11 @@ function loadStoredTeam(): SlotState[] | null {
           : null;
       // base on defaultSlot(slug) so teams saved before relationshipLevel existed
       // pick up the unit's manufacturer max instead of a blank field
-      return { ...defaultSlot(slug), ...s, slug };
+      const dollRarity: SlotState['dollRarity'] =
+        s?.dollRarity ?? (s?.doll === false ? 'none' : 'SSR');
+      const dollLevel =
+        typeof s?.dollLevel === 'number' ? s.dollLevel : dollRarity === 'none' ? 0 : 15;
+      return { ...defaultSlot(slug), ...s, slug, dollRarity, dollLevel };
     });
   } catch {
     return null;
@@ -804,12 +836,22 @@ function slotFromBuild(sb: any): SlotState {
     sb && typeof sb.slug === 'string' && data.characters[sb.slug]
       ? sb.slug
       : null;
+  // doll: prefer the explicit rarity/level; else migrate the legacy boolean
+  // (true/undefined → SSR15, false → no doll).
+  const dollRarity: SlotState['dollRarity'] =
+    sb?.dollRarity ?? (sb?.doll === false ? 'none' : 'SSR');
+  const dollLevel =
+    typeof sb?.dollLevel === 'number' ? sb.dollLevel : dollRarity === 'none' ? 0 : 15;
   return {
     ...defaultSlot(slug),
     ...sb,
     slug,
     cubeCustom: false,
     dupeCustom: false,
+    dollRarity,
+    dollLevel,
+    gearStats: sb?.gearStats ?? null,
+    hasOverloadGear: sb?.hasOverloadGear ?? false,
     olElem: typeof sb?.olElem === 'string' ? sb.olElem : '',
     olAtk: typeof sb?.olAtk === 'string' ? sb.olAtk : '',
     olExtra: Array.isArray(sb?.olExtra) ? sb.olExtra : [],
@@ -1176,6 +1218,18 @@ export function App({ user }: { user: AuthUser | null }) {
     boot?.g.coreCustomVal ?? '10',
   );
   const [level, setLevel] = useState(boot?.g.level ?? '400');
+  // Synced Roster preset: the user's real account build (name_code→loadout), the
+  // account synchro level, and the fetch status. Cached after the first pull so
+  // re-applying is instant; cleared implicitly by a page reload.
+  const [syncedIdx, setSyncedIdx] = useState<Map<string, SlotLoadout> | null>(
+    null,
+  );
+  const [syncedLevel, setSyncedLevel] = useState<number | null>(null);
+  const [syncedBusy, setSyncedBusy] = useState(false);
+  const [syncedMsg, setSyncedMsg] = useState<string | null>(null);
+  // Generator: when a roster is synced, whether to include the user's non-OL-geared
+  // units (as zero-gear candidates) or disregard them (default). See the pill.
+  const [genIncludeNonOL, setGenIncludeNonOL] = useState(false);
   const [showRotation, setShowRotation] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [showBuffs, setShowBuffs] = useState(false);
@@ -1401,13 +1455,91 @@ export function App({ user }: { user: AuthUser | null }) {
     // relationshipLevel '' → engine uses each unit's manufacturer max (scope-lock basis)
     setAll({
       cubeId: 'none',
-      doll: false,
+      dollRarity: 'none',
       ol: 'base5',
+      gearStats: null,
+      hasOverloadGear: false,
       stars: 3,
       core: 7,
       relationshipLevel: '',
     });
     setLevel('400');
+  };
+
+  // "Synced Roster" preset: patch every slot that holds an owned unit with its
+  // actual synced build (cube, gear, grade/core, skills, OL lines, bond) and set
+  // the account synchro level uniformly. Per-unit (like 12/12), not a setAll:
+  // each unit gets its own loadout; units not in the roster are left untouched.
+  const applyOneSyncedLoadout = (s: SlotState, idx: Map<string, SlotLoadout>): SlotState => {
+    if (!s.slug) return s;
+    const L = idx.get(s.slug);
+    if (!L) return s; // slot unit not owned / not modeled — leave as-is
+    return {
+      ...s,
+      ol: L.ol,
+      gearStats: L.gearStats, // real synced gear stats override the ol-level table
+      hasOverloadGear: L.hasOverloadGear,
+      dollRarity: L.doll ? L.doll.rarity : 'none',
+      dollLevel: L.doll ? L.doll.level : 0,
+      stars: L.stars,
+      core: L.core,
+      cubeId: L.cubeId ?? 'none',
+      cubeLevel: L.cubeLevel,
+      cubeCustom: false,
+      skill1: L.skill1 ?? s.skill1,
+      skill2: L.skill2 ?? s.skill2,
+      burst: L.burst ?? s.burst,
+      relationshipLevel: L.bond != null ? String(L.bond) : s.relationshipLevel,
+      olElem: L.olElem ? String(L.olElem) : '',
+      olAtk: L.olAtk ? String(L.olAtk) : '',
+      olExtra: L.olExtra.map((e) => ({ type: e.type, value: String(e.value) })),
+    };
+  };
+  const applySyncedRoster = async () => {
+    setSyncedMsg(null);
+    if (!user) {
+      setSyncedMsg('Log in and sync your roster first (see “Sync my roster”).');
+      return;
+    }
+    setSyncedBusy(true);
+    try {
+      let idx = syncedIdx;
+      let lvl = syncedLevel;
+      if (!idx) {
+        const roster = await fetchCurrentSyncedRoster();
+        if (!roster) {
+          setSyncedMsg('No synced roster yet — sync it on the “Sync my roster” page.');
+          return;
+        }
+        if (!roster.syncedLoadouts?.length) {
+          setSyncedMsg('Your roster needs a re-sync to include build stats (backend update pending).');
+          return;
+        }
+        idx = indexBySlug(roster.syncedLoadouts);
+        const maxLv = roster.characters.reduce((m, c) => Math.max(m, c.lv || 0), 0);
+        lvl = roster.syncLevel ?? (maxLv > 0 ? maxLv : null);
+        setSyncedIdx(idx);
+        setSyncedLevel(lvl);
+      }
+      const matched = (arr: SlotState[]) => arr.filter((s) => s.slug && idx!.has(s.slug)).length;
+      const applied = tab === 'dps' ? matched(dpsGroups.flat()) : matched(slots);
+      if (tab === 'dps') setDpsGroups((gs) => gs.map((g) => g.map((s) => applyOneSyncedLoadout(s, idx!))));
+      else setSlots((s) => s.map((sl) => applyOneSyncedLoadout(sl, idx!)));
+      if (lvl) setLevel(String(lvl));
+      setSyncedMsg(
+        applied > 0
+          ? `Applied your synced build to ${applied} unit${applied === 1 ? '' : 's'}${lvl ? ` · sync ${lvl}` : ''}.`
+          : 'None of your team’s units are in your synced roster.',
+      );
+    } catch (e) {
+      setSyncedMsg(
+        e instanceof ApiError && e.status === 401
+          ? 'Please log in again to use your synced roster.'
+          : 'Could not load your synced roster. Try again.',
+      );
+    } finally {
+      setSyncedBusy(false);
+    }
   };
 
   // ---- build code (full team + loadout + globals) ----
@@ -1420,7 +1552,11 @@ export function App({ user }: { user: AuthUser | null }) {
       cubeId: s.cubeId,
       cubeLevel: s.cubeLevel,
       ol: s.ol,
-      doll: s.doll,
+      doll: s.dollRarity === 'SSR', // legacy back-compat (SSR15 ≈ old "Doll 15")
+      dollRarity: s.dollRarity,
+      dollLevel: s.dollLevel,
+      gearStats: s.gearStats ?? undefined,
+      hasOverloadGear: s.hasOverloadGear ?? undefined,
       stars: s.stars,
       core: s.core,
       skill1: s.skill1,
@@ -1824,7 +1960,8 @@ export function App({ user }: { user: AuthUser | null }) {
               level: Math.min(15, Math.max(1, s.cubeLevel || 15)),
             },
       ol: s.ol,
-      doll: s.doll,
+      doll: slotDoll(s),
+      gearStats: s.gearStats ?? undefined,
       stars: Math.min(3, Math.max(0, s.stars)),
       core: Math.min(7, Math.max(0, s.core)),
       skillLevels: { skill1: s.skill1, skill2: s.skill2, burst: s.burst },
@@ -1839,6 +1976,16 @@ export function App({ user }: { user: AuthUser | null }) {
     const src = isOl12of12(s0) ? { ...s0, olExtra: optimalOlExtra(slug) } : s0;
     return { ...calcLoadout(), lines: buildOlLines(src) };
   };
+  // When a roster is synced and we're on a generator tab, the candidate pool is the
+  // user's OWNED units simmed with their REAL synced builds. Non-OL-geared units are
+  // disregarded by default; the Ignore/Include pill can add them back as zero-gear
+  // candidates. Otherwise the generator behaves as before (all units, uniform loadout).
+  const genSynced =
+    (tab === 'team' || tab === 'roster') && syncedIdx ? syncedIdx : null;
+  const genEligible = (slug: string): boolean => {
+    const L = genSynced?.get(slug);
+    return !!L && (genIncludeNonOL || L.hasOverloadGear);
+  };
   const newCalc = () =>
     makeCalc({
       chars: data.characters as any,
@@ -1851,8 +1998,19 @@ export function App({ user }: { user: AuthUser | null }) {
       },
       cfg: calcCfg(),
       loadout: calcLoadout(),
-      loadoutFor,
-      blocked,
+      loadoutFor: genSynced
+        ? (slug: string) => {
+            const L = genSynced.get(slug);
+            return L
+              ? slotLoadoutToUnitOptions(L, { zeroGear: !L.hasOverloadGear })
+              : calcLoadout();
+          }
+        : loadoutFor,
+      blocked: genSynced
+        ? Object.keys(data.characters).filter(
+            (s) => !genEligible(s) || blocked.includes(s),
+          )
+        : blocked,
       meta: metaScoringFor(weakness),
     });
 
@@ -1876,6 +2034,40 @@ export function App({ user }: { user: AuthUser | null }) {
       setTeamResult(null);
       setRosterResults(newCalc().topTeams(5));
     });
+
+  // Generator control shown only once a roster is synced: the pool becomes the
+  // user's owned units (each simmed with its real build); non-OL-geared units are
+  // disregarded by default, or included as zero-gear candidates.
+  const genPoolSize = genSynced
+    ? [...genSynced.keys()].filter(genEligible).length
+    : 0;
+  const syncedGenPanel = genSynced ? (
+    <div className='field'>
+      <label title='With a synced roster, the generator builds from the units you own, using each unit’s real build. Units without Overload gear are disregarded by default.'>
+        Synced roster
+      </label>
+      <div className='pills small'>
+        <button
+          className={!genIncludeNonOL ? 'on' : ''}
+          onClick={() => setGenIncludeNonOL(false)}
+          title='Only consider units that have Overload gear'
+        >
+          Ignore Non-OL Units
+        </button>
+        <button
+          className={genIncludeNonOL ? 'on' : ''}
+          onClick={() => setGenIncludeNonOL(true)}
+          title='Also consider your non-OL-geared units, modeled with no gear stats'
+        >
+          Include Non-OL Units
+        </button>
+      </div>
+      <div className='muted' style={{ fontSize: 12, marginTop: 4 }}>
+        Generating from {genPoolSize} of your owned units
+        {genIncludeNonOL ? '' : ' with Overload gear'}, each with its synced build.
+      </div>
+    </div>
+  ) : null;
 
   // Deterministic "Generate link" (run=1): auto-run the generator once on mount so
   // an opened link reproduces the result from the encoded inputs.
@@ -2518,32 +2710,52 @@ export function App({ user }: { user: AuthUser | null }) {
           gear
         </div>
         <div className='pills small'>
+          {/* A manual gear pick clears any synced gear-stat override. */}
           <button
-            className={slot.ol === 'base5' ? 'on' : ''}
-            onClick={() => onChange({ ol: 'base5' })}
+            className={!slot.gearStats && slot.ol === 'base5' ? 'on' : ''}
+            onClick={() => onChange({ ol: 'base5', gearStats: null, hasOverloadGear: false })}
             title='Scope-lock base gear — the real validation basis (lower ATK than OL 0)'
           >
             Base 5
           </button>
           <button
-            className={slot.ol === 0 ? 'on' : ''}
-            onClick={() => onChange({ ol: 0 })}
+            className={!slot.gearStats && slot.ol === 0 ? 'on' : ''}
+            onClick={() => onChange({ ol: 0, gearStats: null, hasOverloadGear: false })}
             title='Full T10 overload set, 0 overload lines'
           >
             OL 0
           </button>
           <button
-            className={slot.ol === 5 ? 'on' : ''}
-            onClick={() => onChange({ ol: 5 })}
+            className={!slot.gearStats && slot.ol === 5 ? 'on' : ''}
+            onClick={() => onChange({ ol: 5, gearStats: null, hasOverloadGear: false })}
             title='Full T10 overload set, overload level 5'
           >
             OL 5
           </button>
+          {slot.gearStats && (
+            <button
+              className='on'
+              title={`Synced T10 gear — real ATK ${Math.round(slot.gearStats.atk)} (incl. Outpost). Click a gear pill to override.`}
+            >
+              Synced OL5
+            </button>
+          )}
           <button
-            className={slot.doll ? 'on' : ''}
-            onClick={() => onChange({ doll: !slot.doll })}
+            className={slot.dollRarity !== 'none' ? 'on' : ''}
+            onClick={() =>
+              onChange(
+                slot.dollRarity === 'none'
+                  ? { dollRarity: 'SSR', dollLevel: 15 }
+                  : { dollRarity: 'none' },
+              )
+            }
+            title='Favorite Item (doll). Toggles a maxed SSR doll; the Synced Roster preset sets your real rarity + level.'
           >
-            Doll 15
+            {slot.dollRarity === 'none'
+              ? 'Doll'
+              : slot.dollRarity === 'SSR' && slot.dollLevel === 15
+                ? 'Doll 15'
+                : `Doll ${slot.dollRarity} ${slot.dollLevel}`}
           </button>
         </div>
         <div className='card-group-label'>dupes</div>
@@ -2817,6 +3029,7 @@ export function App({ user }: { user: AuthUser | null }) {
               </>
             )}
           </p>
+          {syncedGenPanel}
           {blockedPanel}
           <button
             className='calc-run'
@@ -2840,6 +3053,7 @@ export function App({ user }: { user: AuthUser | null }) {
             scoring as Optimal Team). Takes a few seconds — it runs hundreds of
             fights.
           </p>
+          {syncedGenPanel}
           {blockedPanel}
           <button
             className='calc-run'
@@ -4811,7 +5025,8 @@ export function App({ user }: { user: AuthUser | null }) {
                       (allHave(
                         (s) =>
                           s.cubeId === 'none' &&
-                          !s.doll &&
+                          s.dollRarity === 'none' &&
+                          !s.gearStats &&
                           s.ol === 0 &&
                           s.stars === 3 &&
                           s.core === 7,
@@ -4824,7 +5039,20 @@ export function App({ user }: { user: AuthUser | null }) {
                   >
                     🔒 Scope Lock
                   </button>
+                  <button
+                    className='scope-lock'
+                    disabled={syncedBusy}
+                    title='apply your synced NIKKE account build (cube · gear · grade/core · skills · overload lines · bond) + synchro level to every unit you own'
+                    onClick={applySyncedRoster}
+                  >
+                    {syncedBusy ? '⏳ Syncing…' : '🔄 Synced Roster'}
+                  </button>
                 </div>
+                {syncedMsg && (
+                  <div className='muted' style={{ fontSize: 12, marginTop: 4 }}>
+                    {syncedMsg}
+                  </div>
+                )}
               </div>
               <div className='field'>
                 <label>All cubes</label>
@@ -4870,14 +5098,14 @@ export function App({ user }: { user: AuthUser | null }) {
                 <label>All gear</label>
                 <PillGrid className='small'>
                   <button
-                    className={allHave((s) => s.ol === 0) ? 'on' : ''}
-                    onClick={() => setAll({ ol: 0 })}
+                    className={allHave((s) => !s.gearStats && s.ol === 0) ? 'on' : ''}
+                    onClick={() => setAll({ ol: 0, gearStats: null, hasOverloadGear: false })}
                   >
                     OL 0
                   </button>
                   <button
-                    className={allHave((s) => s.ol === 5) ? 'on' : ''}
-                    onClick={() => setAll({ ol: 5 })}
+                    className={allHave((s) => !s.gearStats && s.ol === 5) ? 'on' : ''}
+                    onClick={() => setAll({ ol: 5, gearStats: null, hasOverloadGear: false })}
                   >
                     OL 5
                   </button>
@@ -4887,14 +5115,14 @@ export function App({ user }: { user: AuthUser | null }) {
                 <label>All dolls</label>
                 <PillGrid className='small'>
                   <button
-                    className={allHave((s) => s.doll) ? 'on' : ''}
-                    onClick={() => setAll({ doll: true })}
+                    className={allHave((s) => s.dollRarity === 'SSR' && s.dollLevel === 15) ? 'on' : ''}
+                    onClick={() => setAll({ dollRarity: 'SSR', dollLevel: 15 })}
                   >
                     Doll 15
                   </button>
                   <button
-                    className={allHave((s) => !s.doll) ? 'on' : ''}
-                    onClick={() => setAll({ doll: false })}
+                    className={allHave((s) => s.dollRarity === 'none') ? 'on' : ''}
+                    onClick={() => setAll({ dollRarity: 'none' })}
                   >
                     none
                   </button>

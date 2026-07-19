@@ -12,7 +12,11 @@ export interface SlotBuild {
   cubeId: string; // 'resilience' | 'bastion' | 'other' | 'none'
   cubeLevel: number;
   ol: 'base5' | 0 | 5; // gear level; 'base5' = scope-lock base gear
-  doll: boolean;
+  doll: boolean; // legacy: true == SSR/15 (kept so old codes still decode)
+  dollRarity?: 'none' | 'R' | 'SR' | 'SSR'; // doll rarity (supersedes `doll`)
+  dollLevel?: number; // doll level 0-15
+  gearStats?: { atk: number; hp: number } | null; // synced real gear stats (T10 + Outpost)
+  hasOverloadGear?: boolean; // synced: on full T10 overload gear
   stars: number; // 0-3
   core: number; // 0-7
   skill1: number; // 1-10

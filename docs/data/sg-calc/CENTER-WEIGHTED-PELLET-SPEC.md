@@ -1,6 +1,8 @@
 # Spec — center-weighted pellet-landing model (SG landing + unified core-hit)
 
-> **Status:** IMPLEMENTED behind `ENV.PELLET_GAUSS` (default off, byte-stable), 2026-07-17. Helpers +
+> **Status:** IMPLEMENTED and **LIVE by default** (`ENV.PELLET_GAUSS`; `=0`/`off` reverts to the prior
+> measured tables for A/B), owner-enabled 2026-07-17 to run as the live model and re-evaluate the
+> band-shape overshoot later. **Snapshot regen PENDING a clean tree** (see the A/B note below). Helpers +
 > constants in `sg-geometry.ts` (`rayleighWithin`, `pelletSigma`, `pelletLandFrac`, `pelletCoreFrac`,
 > `K_SIGMA`, `CORE_AUTOAIM`); wired into `sim.ts` core-hit (`acrForHR`) + SG landing (`firePull`);
 > unit tests in `sg-geometry-regression.ts` (reproduce the §3 table). Supersedes the flat area-fraction
@@ -115,9 +117,9 @@ from geometry, and — critically — the *same* σ matches the independently-me
   lands w.p. `land`"), replacing the current bell-curve jitter. Averaging seeds recovers `land`.
 - **Core-hit:** `core(band)` becomes an alternate `acrFor`/`acrForHR` provider (unifies Workstream A/B) —
   same Rayleigh formula at `R_core`. HR shrink comes through σ, retiring the separate `hrCoreMult`.
-- **ENV flag** `PELLET_GAUSS` (default off), byte-stable when off (constants only read on the flagged
-  path). Measured cells (graded core, measured recon landings) win where they exist — the model fills
-  unmeasured bands/bosses and supplies the inter-band + HR shape.
+- **ENV flag** `PELLET_GAUSS` — **LIVE by default** (owner 2026-07-17); `PELLET_GAUSS=0`/`off` reverts to
+  the prior measured `CORE_BY_WEAPON_BAND` / `SG_LANDING_BY_BAND` tables for A/B. Those tables are now the
+  fallback the model is graded against, not the live path.
 - **Constants** live in `sg-geometry.ts`: `K_SIGMA=2.53`, `CORE_AUTOAIM=0.55`, reusing `circleDpx`,
   `circleDpxAtHr`, `BAND_CORE_PX`, `BAND_SG_HIT_FRAC`, `HR_RETICLE_SLOPE/FLOOR`.
 

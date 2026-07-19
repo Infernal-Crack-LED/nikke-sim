@@ -6,6 +6,7 @@ import { MechanicsPage } from './MechanicsPage';
 import { DevPage } from './DevPage';
 import { PatchNotesPage } from './PatchNotesPage';
 import { TestingRequestsPage } from './TestingRequestsPage';
+import { RosterSyncPage } from './RosterSyncPage';
 import { CreditsPage } from './CreditsPage';
 import { SiteFooter, SiteNav } from './SiteChrome';
 import { useRoute } from './router';
@@ -61,6 +62,8 @@ function Root() {
         <PatchNotesPage />
       ) : route === 'testing-requests' ? (
         <TestingRequestsPage />
+      ) : route === 'roster-sync' ? (
+        <RosterSyncPage user={user} onLogin={onLogin} />
       ) : route === 'credits' ? (
         <CreditsPage />
       ) : (

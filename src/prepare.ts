@@ -5,6 +5,15 @@ import type { CharacterData, GearLevel } from './types.js';
 import { MAX_SKILL_LEVELS, resolveSkills, type OverrideFile } from './skills/index.js';
 import type { SkillLevels, SlotLevelArrays } from './skills/scale.js';
 import type { CharacterSkills } from './skills/types.js';
+import {
+  DOLL_ATK,
+  DOLL_HP,
+  dollBonus,
+  dollStats,
+  dollWeaponBonus,
+  type DollBonus,
+  type DollRarity,
+} from './stats.js';
 
 export interface ExtraStat {
   stat: string; // StatKey | 'ammoRefundPerSec' | 'burstGenPct'
@@ -15,7 +24,16 @@ export interface PreparedUnit {
   skills: CharacterSkills;
   extraStats: ExtraStat[];
   ol?: GearLevel;  // per-unit gear level (falls back to cfg.ol)
-  doll?: boolean;  // per-unit doll (falls back to cfg.doll)
+  // Explicit gear-piece stats (synced real gear) — override the per-class OL-level
+  // table when present; undefined = the engine uses its ol/cfg.ol table.
+  gearAtk?: number;
+  gearHp?: number;
+  // Resolved doll (Favorite Item) contribution. dollAtk/dollHp undefined = the
+  // engine falls back to cfg.doll (global boolean). dollWeapon = the SSR-only
+  // weapon collection bonus (empty for R/SR or no doll).
+  dollAtk?: number;
+  dollHp?: number;
+  dollWeapon?: DollBonus;
   lambdaStage?: 1 | 2 | 3; // Λ units only: burst ONLY at this stage (Red Hood "operating as BX")
   stars?: number;  // per-unit Limit Break stars / grade 0-3 (falls back to cfg.copies)
   core?: number;   // per-unit Core enhancement 0-7 (falls back to cfg.copies)
@@ -41,7 +59,11 @@ export interface LineSelection {
 export interface UnitOptions {
   cube?: { id: string; level: number }; // level 1-15
   ol?: GearLevel;
-  doll?: boolean;
+  // explicit gear-piece stats (synced real gear); overrides the ol-level table
+  gearStats?: { atk: number; hp: number };
+  // true = maxed SSR (level 15, back-compat); false = explicit no-doll; the object
+  // form carries a synced rarity + level resolved against the doll stat table.
+  doll?: boolean | { rarity: DollRarity; level: number };
   lambdaStage?: 1 | 2 | 3;
   stars?: number; // Limit Break stars / grade 0-3
   core?: number;  // Core enhancement 0-7
@@ -96,8 +118,11 @@ export function prepareUnit(
 
   const extraStats: ExtraStat[] = [];
   const loadout: string[] = [];
-  if (opts?.ol !== undefined) loadout.push(opts.ol === 'base5' ? 'Base 5 gear' : `OL${opts.ol} gear`);
-  if (opts?.doll !== undefined && opts.doll) loadout.push('Doll 15');
+  if (opts?.gearStats) loadout.push(`synced gear (ATK ${Math.round(opts.gearStats.atk)})`);
+  else if (opts?.ol !== undefined) loadout.push(opts.ol === 'base5' ? 'Base 5 gear' : `OL${opts.ol} gear`);
+  const dollOpt = opts?.doll;
+  if (dollOpt === true) loadout.push('Doll 15');
+  else if (dollOpt && typeof dollOpt === 'object') loadout.push(`Doll ${dollOpt.rarity} ${dollOpt.level}`);
   if (opts?.lambdaStage) loadout.push(`bursts as B${opts.lambdaStage}`);
   const mode = skills.modes?.length
     ? (opts?.mode && skills.modes.includes(opts.mode) ? opts.mode : skills.modes[0])
@@ -133,6 +158,27 @@ export function prepareUnit(
     loadout.push(`${line.name} ×${sel.count} @ ${value}%`);
   }
 
+  // Resolve the doll (Favorite Item) contribution: true = maxed SSR (back-compat),
+  // false = explicit no-doll (0), {rarity,level} = the doll stat table, undefined =
+  // leave for the engine's cfg.doll fallback.
+  let dollAtk: number | undefined;
+  let dollHp: number | undefined;
+  let dollWeapon: DollBonus | undefined;
+  if (dollOpt === true) {
+    dollAtk = DOLL_ATK;
+    dollHp = DOLL_HP;
+    dollWeapon = dollBonus(char.weapon);
+  } else if (dollOpt === false) {
+    dollAtk = 0;
+    dollHp = 0;
+    dollWeapon = {};
+  } else if (dollOpt && typeof dollOpt === 'object') {
+    const s = dollStats(dollOpt.rarity, dollOpt.level);
+    dollAtk = s.atk;
+    dollHp = s.hp;
+    dollWeapon = dollWeaponBonus(dollOpt.rarity, char.weapon, dollOpt.level);
+  }
+
   // burst CDR: subtract from the charFixes-corrected (or DB) cooldown, floor 1s
   const cdBase = deps.overrides[char.slug]?.charFixes?.burstCooldownSec ?? char.burstCooldownSec;
   const burstCooldownSec = opts?.burstCdrSec
@@ -144,7 +190,11 @@ export function prepareUnit(
     skills,
     extraStats,
     ol: opts?.ol,
-    doll: opts?.doll,
+    gearAtk: opts?.gearStats?.atk,
+    gearHp: opts?.gearStats?.hp,
+    dollAtk,
+    dollHp,
+    dollWeapon,
     lambdaStage: opts?.lambdaStage,
     stars: opts?.stars,
     core: opts?.core,

@@ -145,7 +145,9 @@ function histogram(rolls: number[], upper: number, bins = 12): Array<{ lo: numbe
   for (let b = 0; b < bins; b++) out.push({ lo: b * width + 1, hi: (b + 1) * width, count: 0 });
   out.push({ lo: bins * width + 1, hi: Infinity, count: 0, overflow: true });
   for (const r of rolls) {
-    const b = Math.min(bins, Math.floor((r - 1) / width));
+    // r can be 0 when the piece is already at target (0 rolls needed); clamp so
+    // the bin index never goes negative (floor((0-1)/width) = -1).
+    const b = Math.max(0, Math.min(bins, Math.floor((r - 1) / width)));
     out[b].count++;
   }
   return out.filter((h) => h.count > 0);

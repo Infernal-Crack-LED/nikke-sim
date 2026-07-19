@@ -717,3 +717,78 @@ footer { margin-top: 28px; font-size: 12px; }
 @media (max-width: 900px) {
   .dpschart-grid { grid-template-columns: 1fr; }
 }
+
+/* ---- Roster sync page ---- */
+.roster-sync-page header h1 { font-size: 26px; margin: 6px 0 8px; }
+.roster-sync-page header .muted { max-width: 720px; line-height: 1.6; font-size: 14px; }
+.roster-sync-page .patch-entry { margin-top: 16px; }
+
+.roster-login .share-btn.discord { display: inline-flex; align-items: center; gap: 8px; }
+.roster-login .discord-icon { display: inline-flex; width: 18px; height: 18px; }
+.roster-login .discord-icon svg { width: 18px; height: 18px; display: block; }
+
+.share-btn.ghost { border-color: var(--border); }
+.share-btn.ghost:hover:not(:disabled) { background: var(--panel); color: var(--text); border-color: var(--accent); }
+
+.roster-current-meta { font-size: 12px; margin: 6px 0 12px; display: flex; gap: 6px; flex-wrap: wrap; }
+.roster-current-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.roster-input-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.roster-input-card .roster-input-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.roster-openid-input {
+  flex: 1 1 320px; min-width: 0; background: var(--panel2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px; padding: 7px 11px; font-size: 13px;
+}
+.roster-openid-input:focus { outline: none; border-color: var(--accent); }
+.roster-input-hint { font-size: 12px; margin: 10px 0 0; }
+.roster-input-hint code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+
+.roster-error {
+  margin-top: 12px; border: 1px solid var(--warn); background: rgba(224, 176, 75, 0.09);
+  color: var(--text); border-radius: 8px; padding: 10px 14px; font-size: 13px; line-height: 1.5;
+}
+
+.roster-unit-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 10px; margin: 12px 0 4px;
+}
+.roster-unit { text-align: center; font-size: 11px; }
+.roster-unit-portrait {
+  width: 100%; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--panel2);
+  border: 1px solid var(--border); display: flex; align-items: center; justify-content: center;
+}
+.roster-unit-portrait img {
+  width: 100%; height: 100%; object-fit: cover;
+  object-position: center var(--portrait-crop-top, 12%);
+}
+.roster-unit-code { font-size: 11px; color: var(--muted); }
+.roster-unit-name {
+  margin-top: 4px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.roster-unit-cp { font-variant-numeric: tabular-nums; }
+.roster-more { font-size: 12px; margin: 8px 0 0; }
+
+.roster-account-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.roster-account-list li {
+  display: flex; align-items: center; gap: 10px; font-size: 12px;
+  padding: 7px 0; border-top: 1px solid var(--border);
+}
+.roster-account-list li:first-child { border-top: 0; }
+.roster-account-id { color: var(--text); font-weight: 600; }
+.roster-account-btn {
+  margin-left: auto; background: none; border: 1px solid var(--border); color: var(--muted);
+  border-radius: 6px; padding: 3px 9px; cursor: pointer; font-size: 12px;
+}
+.roster-account-list li .roster-account-btn + .roster-account-btn { margin-left: 0; }
+.roster-account-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text); }
+.roster-account-btn.danger:hover:not(:disabled) { border-color: #c05a5a; color: #e08b8b; }
+
+.roster-unprivate-head {
+  width: 100%; background: none; border: 0; color: inherit; cursor: pointer;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0;
+}
+.roster-unprivate-body ol { margin: 6px 0 12px; padding-left: 20px; color: var(--muted); line-height: 1.6; font-size: 13px; }
+.roster-unprivate-body ol strong { color: var(--text); }
+.roster-unprivate-shot {
+  max-width: 100%; width: 520px; border-radius: 10px; border: 1px solid var(--border); display: block;
+}
