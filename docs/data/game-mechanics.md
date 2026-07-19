@@ -152,13 +152,22 @@ mechanics, now modeled directly). Full model + sources + the two solo measuremen
 All of §7 exists because scope-lock runs are full auto — manual play changes these numbers.
 Details: **[auto-play.md](auto-play.md)**.
 
-- **Core rate is RANGE-DEPENDENT** (MEASURED 2026-07-15, three solo recordings): auto-aim's
-  reticle never converges below ~12.5px (COMMUNITY, JP frame analysis), so AUTO_CORE_RATE ⚑
-  multiplies the configured core-hit rate — but the realized rate is **not flat**, it falls with
-  boss distance and differs by weapon (AR > SMG > SG). Per-band ⚑ (near/mid/midfar/far): AR
-  0.40/0.30/0.03/0.00, SMG 0.28/0.244/0.076/0.059, SG 0.072/0.00/0.0045/0.00; MG/SR/RL flat 0.95
-  (core ~near-100% once warmed). Strongly range-concentrated, FB-independent. This OVERTURNS the
-  flat AR/SMG/SG 0.85 (open-questions A15; DECISIONS).
+- **Core rate for accuracy-circle weapons (AR/SMG/SG) = a δ-offset ("Rician") cone** (LANDED LIVE
+  2026-07-19, `CONE_DELTA` default on; DECISIONS 2026-07-19). A shot's landing point is an isotropic
+  2D Gaussian of spread σ_w(hr) CENTERED δ_w(hr) px off the true core (auto-aim never nails the ~1px
+  centre); it cores iff it lands within the band's core radius ⇒ the Rician CDF `offsetCoreProb`.
+  σ_w(hr) comes from the datamined accuracy circle (K_SIGMA=2.53 envelope) with a per-weapon Hit-Rate
+  shrink; δ_w(hr) is a per-weapon centering offset that shrinks to 0 by H=120. Frozen params (refit +
+  Fable-approved): δ0 = AR 18 / SMG 16 / SG 30 px, S_FLOOR 0.10, per-weapon σ-shrink s = {AR .009,
+  SMG .004, SG .009}. This REPLACES the two confirmed bugs of the prior model — the flat
+  `CORE_AUTOAIM=0.55` cap and the fractional reticle floor — and the **drawn reticle is DECORATIVE**
+  (Hit-Rate-independent, measured). Effect is band-dependent (near≫far ∝ core size) and rises with
+  Hit Rate (near-saturates by ▲80–98). MG/SR/RL keep the flat base table. **Prior model (kept as the
+  `CONE_DELTA=0` fallback, never refit):** the measured per-band `CORE_BY_WEAPON_BAND` table (AR
+  0.40/0.30/0.03/0.00, SMG 0.28/0.244/0.076/0.059, SG 0.072/0.00/0.0045/0.00; MG/SR/RL 0.95) × the
+  `HRCORE`/`PELLET_GAUSS` Hit-Rate lift. Evidence: the 2026-07-18/19 geometry campaign (counted core
+  cells at 3–4 Hit-Rate levels × 3 weapons, cross-recording) + full-board A/B. See
+  `docs/handoffs/2026-07-19-geometry-campaign-findings.md`, `docs/data/sg-calc/`.
 - **Early charge releases are rare (~2% of shots**, user-observed ~3/fight from boss
   interruptions) — auto effectively always full-charges, and full-charge-gated proc counters
   fire on essentially every shot. Maiden:IR's former ×0.68 proc factor is RESOLVED as her
