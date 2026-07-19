@@ -12,11 +12,11 @@ const COREPX: Record<string, number> = { near: 31, mid: 28, midfar: 21, far: 17 
 type Cell = { w: string; band: string; hr: number; k: number; n: number; method: 'spawn' | 'perframe'; interval?: [number, number]; note?: string };
 // n = n_eff (pulls for multi-hit); interval = [lo,hi] soft band for method-biased cells.
 const CELLS: Cell[] = [
-  // ── AR (scarlet HR0 per-frame; blanc HR39 per-frame + far spawn; Label HR23 spawn) ──
-  { w: 'AR', band: 'near',   hr: 0,    k: 52, n: 132, method: 'perframe', interval: [0.25, 0.394] },
-  { w: 'AR', band: 'mid',    hr: 0,    k: 25, n: 93,  method: 'perframe' },
-  { w: 'AR', band: 'midfar', hr: 0,    k: 12, n: 95,  method: 'perframe' },
-  { w: 'AR', band: 'far',    hr: 0,    k: 4,  n: 101, method: 'perframe' },
+  // ── AR (scarlet HR0 SPAWN re-count COUNT-1; blanc HR39 near/mid per-frame + far SPAWN COUNT-2; Label HR23 spawn) ──
+  { w: 'AR', band: 'near',   hr: 0,    k: 5,  n: 20,  method: 'spawn', note: 'scarlet COUNT-1 spawn 0.25 ⚠fade-stack' },
+  { w: 'AR', band: 'mid',    hr: 0,    k: 4,  n: 12,  method: 'spawn', note: 'scarlet COUNT-1 spawn 0.33 ⚠ (non-monotone noise)' },
+  { w: 'AR', band: 'midfar', hr: 0,    k: 3,  n: 16,  method: 'spawn', note: 'scarlet COUNT-1 spawn 0.19 ⚠' },
+  { w: 'AR', band: 'far',    hr: 0,    k: 3,  n: 36,  method: 'spawn', note: 'scarlet COUNT-1 spawn 0.08 ✅ clean' },
   { w: 'AR', band: 'near',   hr: 23,   k: 18, n: 48,  method: 'spawn' },   // Label spawn 0.37
   { w: 'AR', band: 'mid',    hr: 23,   k: 14, n: 50,  method: 'spawn', note: '0.28' },
   { w: 'AR', band: 'midfar', hr: 23,   k: 10, n: 50,  method: 'spawn', note: '0.20' },
