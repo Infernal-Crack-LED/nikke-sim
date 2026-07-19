@@ -25,6 +25,7 @@ import {
   circleDpxAtHr,
   coneDelta,
   coneSigma,
+  CONE_SIGMA_SHRINK,
   coreFracGeo,
   offsetCoreProb,
   pelletCoreFrac,
@@ -913,7 +914,7 @@ export function runSim(
   const coneSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
-    return coneSigma(scale, hr);
+    return coneSigma(scale, hr, CONE_SIGMA_SHRINK[weapon] ?? 0.009);
   };
   const acrForHR = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far', hr: number): number => {
     if (CONE_DELTA) {

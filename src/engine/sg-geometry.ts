@@ -153,20 +153,25 @@ export function pelletCoreFrac(coreDpxBand: number, sigma: number): number {
 //   (the datamined circle width is not a free param) — same direction as the live AR-far over-credit,
 //   small damage weight; watched by the board-A/B stop-condition, re-reviewable later.
 // ⚑ NOT SUPPORTED: Hit Rate > 98 (owner-accepted; no board comp reaches it — σ-floor extrapolation only).
-// ⚑ σ-vs-s is a flat likelihood ridge in-range: s∈[.008,.012] / S_FLOOR∈[.10,.20] give ~identical
-//   in-range output (low-HR cells are σ-law-invariant); the frozen point below is the interval
-//   representative that also saturates the ▲80/▲98 cells.
+// σ-shrink is PER-WEAPON (owner 2026-07-19, board-driven): a single shared shrink could not both
+//   saturate SG ▲98 core AND avoid over-crediting SMG mid-HR (quency ▲61) — the board A/B on the
+//   shared-s freeze read quency +0.171 HOT. Decoupled: SG s pinned to saturate ▲98 (≈1.0; consistent
+//   with the measured dorothy-serendipity ▲98.18 aimed-single-bullet coreRate 0.9 as the ceiling and
+//   noir's ~1.0 spray attestation); AR s pinned to saturate jill ▲80; SMG s LOW (no SMG unit reaches
+//   high HR, so SMG needs no saturation shrink) → keeps quency ▲61 at ~0.56 (≈ the biased-high measured
+//   0.583) and chisato ▲22 near-exact. Low-HR cells are σ-shrink-invariant, so the clean chisato/
+//   scarlet base cells are untouched. S_FLOOR shared (bites only at HR>~90).
 export const CONE_DELTA0: Record<string, number> = { AR: 18, SMG: 16, SG: 30 }; // px @2622×1206, monotone in cone size
 export const CONE_DELTA_H = 120;        // Hit Rate at which the centering offset δ reaches 0
-export const CONE_SIGMA_SHRINK = 0.01;  // σ shrink per Hit-Rate point (interval [.008,.012])
-export const CONE_SIGMA_FLOOR = 0.10;   // σ floor as a fraction of σ(0) (interval [.10,.20]; bites only at HR>~90)
+export const CONE_SIGMA_SHRINK: Record<string, number> = { AR: 0.009, SMG: 0.004, SG: 0.009 }; // σ shrink per HR point, per weapon
+export const CONE_SIGMA_FLOOR = 0.10;   // σ floor as a fraction of σ(0) (bites only at HR>~90)
 
 // Pellet-spread σ (px) under the δ-cone model: half the accuracy circle / K_SIGMA, with a mild
 // Hit-Rate σ-shrink (floored). Matches implementation-plan §2's sigma_w(hr). CIRCLE_PX_C is 0, so
 // this equals circleDpx(scale)/2/K_SIGMA·shrink — written from CIRCLE_PX_K directly per the plan.
-export function coneSigma(scale: number, hr: number): number {
+export function coneSigma(scale: number, hr: number, shrink: number): number {
   const s0 = (CIRCLE_PX_K * scale) / 2 / K_SIGMA;
-  return s0 * Math.max(CONE_SIGMA_FLOOR, 1 - CONE_SIGMA_SHRINK * Math.max(0, hr));
+  return s0 * Math.max(CONE_SIGMA_FLOOR, 1 - shrink * Math.max(0, hr));
 }
 
 // Per-weapon centering offset δ (px): DELTA0[weapon] shrinking linearly to 0 at Hit Rate H.
