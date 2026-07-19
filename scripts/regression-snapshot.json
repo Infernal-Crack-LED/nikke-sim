@@ -1,16 +1,16 @@
 {
  "elec battery (run B order)": {
-  "moran": 161456596,
+  "moran": 154238408,
   "cinderella": 579727683,
   "neon-vision-eye": 511488861,
   "trina": 57620846
  },
  "misc B3s (run I order)": {
-  "grave": 353090776,
+  "grave": 335090747,
   "anis-star": 554506759,
-  "jill": 524206475,
-  "chisato": 588071165,
-  "noir": 179696145
+  "jill": 551271629,
+  "chisato": 590963776,
+  "noir": 180640265
  },
  "elec DPS (run E order)": {
   "crown": 143667417,
@@ -42,7 +42,7 @@
  },
  "T4": {
   "anis-star": 1140157888,
-  "privaty": 1153326753,
+  "privaty": 1128058968,
   "snow-white-heavy-arms": 1786468203,
   "helm": 367691503,
   "crown": 434833532
@@ -62,7 +62,7 @@
   "maiden-ice-rose": 258631566
  },
  "T5 wind-weak": {
-  "nayuta": 784292339,
+  "nayuta": 784992592,
   "cinderella-crystal-wave": 1153102725,
   "anis-star": 698050301,
   "liberalio": 966187030,
@@ -83,11 +83,11 @@
   "crown": 273402683
  },
  "PH water B3s": {
-  "little-mermaid": 386053770,
+  "little-mermaid": 388614759,
   "crown": 167094005,
-  "quency-escape-queen": 691050204,
-  "dorothy-serendipity": 906752480,
-  "guillotine-winter-slayer": 314506503
+  "quency-escape-queen": 686281950,
+  "dorothy-serendipity": 913921241,
+  "guillotine-winter-slayer": 293790885
  },
  "PD Eva duo": {
   "emma-tactical-upgrade": 146257354,
@@ -97,20 +97,20 @@
  },
  "N1 rapi/quency wind": {
   "d-killer-wife": 78383133,
-  "grave": 304125736,
+  "grave": 288308333,
   "rapi-red-hood": 555345084,
-  "quency-escape-queen": 416464154,
-  "jill": 276015555
+  "quency-escape-queen": 413340445,
+  "jill": 265482498
  },
  "N3 scarlet/liberalio iron": {
   "rouge": 55545709,
   "trina": 50322892,
   "scarlet-black-shadow": 537825611,
   "liberalio": 480422221,
-  "soda-twinkling-bunny": 136265592
+  "soda-twinkling-bunny": 136726192
  },
  "N6 mihara/maiden wind": {
-  "little-mermaid": 245258910,
+  "little-mermaid": 246982504,
   "ade-agent-bunny": 97843556,
   "mihara-bonding-chain": 774682306,
   "maiden-ice-rose": 357105451,
@@ -124,11 +124,11 @@
   "vesti-tactical-upgrade": 756875620
  },
  "N9 redhood/elegg electric": {
-  "moran": 167166022,
+  "moran": 159367608,
   "crown": 188623325,
   "red-hood": 489933668,
   "elegg-boom-and-shock": 326372310,
-  "dorothy-serendipity": 349046964
+  "dorothy-serendipity": 351534349
  },
  "N10 milk/phantom electric": {
   "little-mermaid": 120905418,

@@ -903,14 +903,16 @@ export function runSim(
     if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
     return pelletSigma(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC);
   };
-  // ── δ-offset cone (ENV.CONE_DELTA; default OFF — byte-identical) ──────────────────────────────
-  // The enactment model (docs/handoffs/2026-07-19-core-geometry-implementation-plan.md): replaces
-  // the CORE_AUTOAIM flat cap + fractional reticle floor with an off-centre Rician cone (sg-geometry
-  // offsetCoreProb). When ON it PRE-EMPTS both PELLET_GAUSS and HRCORE for accuracy-circle weapons
-  // (AR/SMG/SG); those two paths become the flag-OFF A/B fallback. MG/SR/RL fall through to the base
-  // table either way. Parameters (δ0/H/σ-shrink) are ⚑ exploratory in sg-geometry.ts and gate the
-  // owner-only default flip, not this landing. OFF ⇒ this whole block is inert.
-  const CONE_DELTA = ENV.CONE_DELTA === '1' || ENV.CONE_DELTA === 'on';
+  // ── δ-offset cone (ENV.CONE_DELTA; LIVE by default 2026-07-19, CONE_DELTA=0 disables for A/B) ──
+  // The core-hit model for accuracy-circle weapons: replaces the two confirmed bugs of the old path —
+  // the flat CORE_AUTOAIM=0.55 cap + the fractional reticle floor — with an off-centre Rician cone
+  // (sg-geometry offsetCoreProb). PRE-EMPTS both PELLET_GAUSS and HRCORE for AR/SMG/SG; those two
+  // become the CONE_DELTA=0 fallback (the measured CORE_BY_WEAPON_BAND / SG_LANDING tables are the
+  // deep fallback, never refit). MG/SR/RL fall through to the base table either way. Parameters frozen
+  // + Fable-approved (docs/handoffs/2026-07-19-cone-param-freeze-prereg.md; DECISIONS 2026-07-19);
+  // per-weapon σ-shrink decouples SG-▲98 saturation from SMG mid-HR. Flipped LIVE after the full-board
+  // A/B (net board mean|ratio−1| 0.0972→0.0964) + owner sign-off. CONE_DELTA=0 restores the prior engine.
+  const CONE_DELTA = ENV.CONE_DELTA !== '0' && ENV.CONE_DELTA !== 'off';
   const coneSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
