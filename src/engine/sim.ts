@@ -560,13 +560,19 @@ export function runSim(
     // fall back to the global copies count when a unit doesn't specify them.
     const grade = Math.min(3, Math.max(0, prepared?.[idx]?.stars ?? fallback.grade));
     const core = Math.min(7, Math.max(0, prepared?.[idx]?.core ?? fallback.core));
+    const pu = prepared?.[idx];
+    // Gear: explicit synced gear-piece stats override the per-class OL-level table.
+    const gAtk = pu?.gearAtk ?? gearAtk(char.class, unitOl);
+    const gHp = pu?.gearHp ?? gearHp(char.class, unitOl);
+    // Doll: resolved per-unit contribution (rarity/level), else the global cfg.doll
+    // fallback (maxed-SSR boolean). dollAtk/dollHp undefined = fall back.
+    const dAtk = pu?.dollAtk ?? (cfg.doll ? DOLL_ATK : 0);
+    const dHp = pu?.dollHp ?? (cfg.doll ? DOLL_HP : 0);
+    const dWeapon = pu?.dollWeapon ?? (cfg.doll ? dollBonus(char.weapon) : {});
     const atk =
-      characterStat(char.baseStats, mult, 'atk', cfg.level, grade, core) +
-      gearAtk(char.class, unitOl) +
-      ((prepared?.[idx]?.doll ?? cfg.doll) ? DOLL_ATK : 0);
-    const extra = prepared?.[idx]?.extraStats ?? [];
+      characterStat(char.baseStats, mult, 'atk', cfg.level, grade, core) + gAtk + dAtk;
+    const extra = pu?.extraStats ?? [];
     const flatAtk = extra.filter((e) => e.stat === 'flatAtk').reduce((s, e) => s + e.value, 0);
-    const useDoll = prepared?.[idx]?.doll ?? cfg.doll;
     // Relationship (bond) bonus — a flat class×manufacturer stat present in every recording
     // (open-questions U18). Level: per-unit override → cfg default → the manufacturer's max
     // (undefined everywhere = max, which is the scope-lock basis + the web default).
@@ -581,12 +587,12 @@ export function runSim(
       staticAtk: atk + flatAtk + rel.atk,
       maxHp:
         characterStat(char.baseStats, mult, 'hp', cfg.level, grade, core) +
-        gearHp(char.class, unitOl) +
-        (useDoll ? DOLL_HP : 0) +
+        gHp +
+        dHp +
         rel.hp,
       critRate: char.baseStats.critRate ?? 15,
       critDamage: char.baseStats.critDamage ?? 150,
-      doll: useDoll ? dollBonus(char.weapon) : {},
+      doll: dWeapon,
       blocks: activeBlocks,
       warnings: [...skills.warnings],
       hasPierce:
@@ -644,6 +650,21 @@ export function runSim(
     // cube / OL-line stats become permanent buffs
     for (const e of extra) {
       if (e.stat === 'ammoRefundPer10' || e.stat === 'burstGenPct' || e.stat === 'flatAtk') continue;
+      // "Max HP ▲ x%" extras (Vigor cube): convert the percentage into a flat Max-HP
+      // SELF-grant (casterIdx === own idx) so it raises the unit's live Max HP and feeds
+      // HP-scaling ATK (atkOfMaxHpPct) exactly like an own-kit maxHpFlat buff — see effectiveAtk.
+      if (e.stat === 'maxHpPct') {
+        state.buffs.push({
+          key: `extra:${idx}:maxHpFlat`,
+          stat: 'maxHpFlat' as StatKey,
+          value: (e.value / 100) * state.maxHp,
+          casterIdx: idx,
+          stacks: 1,
+          maxStacks: 1,
+          expiresFrame: null,
+        });
+        continue;
+      }
       state.buffs.push({
         key: `extra:${idx}:${e.stat}`,
         stat: e.stat as StatKey,
@@ -865,12 +886,14 @@ export function runSim(
     const atHr = coreFracGeo(coreD, circleDpxAtHr(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC));
     return atHr / base0; // ≥1, monotone in hr, capped where the circle reaches the core
   };
-  // ── Center-weighted pellet model (⚑ EXPERIMENT ARM, ENV.PELLET_GAUSS, default off) ──────────────
+  // ── Center-weighted pellet model (ENV.PELLET_GAUSS; LIVE by default 2026-07-17, PELLET_GAUSS=0 off for A/B) ──
   // Unifies core-hit + SG landing: a 2D Gaussian pellet cone (σ from the accuracy circle + HR) read at
   // the core radius (here) or the boss-body radius (SG landing, in firePull). Reproduces the measured
   // near-core cells (AR 0.40 / SMG 0.25 / SG 0.06) and the recon SG landing (MAE 0.044) from one σ.
   // Frame-measured on noir sg.MP4 (all bands center-weighted). Spec: docs/data/sg-calc/CENTER-WEIGHTED-PELLET-SPEC.md.
-  const PELLET_GAUSS = ENV.PELLET_GAUSS === 'on' || ENV.PELLET_GAUSS === '1';
+  // Owner-enabled as the live model 2026-07-17 (re-evaluate the band-shape overshoot later); the prior
+  // measured CORE_BY_WEAPON_BAND / SG_LANDING tables become the PELLET_GAUSS=0 A/B fallback.
+  const PELLET_GAUSS = ENV.PELLET_GAUSS !== '0' && ENV.PELLET_GAUSS !== 'off';
   const pelletSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model

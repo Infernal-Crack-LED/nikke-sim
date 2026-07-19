@@ -39,7 +39,8 @@ export type StatKey =
   | 'normalAttackPct'        // scales the normal attack multiplier (like the SMG/SG doll line)
   | 'burstGenPct'            // scales the unit's burst gauge contribution
   | 'hitRatePct'        // core-hit lift (⚑ derived; sim.ts hrCoreMult; live by default, HRCORE=0 disables)
-  | 'defPct';           // inert in v1
+  | 'defPct'            // inert in v1 (self DEF doesn't affect own damage — Endurance cube)
+  | 'maxHpPct';         // self Max HP ▲ % (Vigor cube) — converted to a maxHpFlat self-grant in sim.ts, feeds HP-scaling ATK (atkOfMaxHpPct)
 
 export type TriggerDef =
   | { kind: 'passive' }                     // always active

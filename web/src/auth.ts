@@ -49,24 +49,35 @@ export interface RosterCharacter {
   core: number;
   costume_id: number;
 }
-// One rolled Overload line, normalized by the backend to a label the sim already
-// recognizes (the `name` fields in data/ol-lines.json).
+// One rolled Overload line: a canonical label (matches data/ol-lines.json names)
+// + the 1-based roll tier 1-15 (a base T10 roll is tier 11). The sim maps
+// (label, tier) → % via data/ol-tiers.json.
 export interface SyncedOlLine {
   label: string; // e.g. "Increase ATK"
-  value: number; // rolled % value
+  tier: number; // roll tier 1-15
+}
+export type DollRarity = 'R' | 'SR' | 'SSR';
+// The resolved total gear-piece stats (T10 pieces only; null if the unit isn't on
+// full T10 overload gear). Real values from blablalink.
+export interface SyncedGear {
+  atk: number; // summed flat ATK across the T10 gear pieces
+  hp: number; // summed flat HP
+  def?: number; // summed flat DEF (sim ignores DEF in v1)
 }
 // A unit's actual synced build, normalized by the backend from blablalink detail.
-// See docs/handoffs/2026-07-18-synced-roster-stats-backend-contract.md.
+// See docs/handoffs (synced-roster contract v2).
 export interface SyncedUnitLoadout {
   nameCode: number;
   grade: number; // Limit Break stars 0-3
   core: number; // core enhancement 0-7
   bond?: number; // bond / attractive level
-  level?: number; // this unit's own level (syncLevel fallback)
   skills?: { skill1: number; skill2: number; burst: number };
   cube?: { name: string; level: number } | null;
   ol?: SyncedOlLine[];
-  gearTier?: string;
+  gear?: SyncedGear | null; // resolved T10 gear stats; null = not on T10 gear
+  outpost?: { atk: number; hp: number; def: number }; // Outpost (Recycle Research) flat bonus
+  doll?: { rarity: DollRarity; level: number } | null; // Favorite Item
+  gearTier?: string; // "T10" iff all four pieces are max-tier overload gear
 }
 export interface RosterResponse {
   source: 'db' | 'live';

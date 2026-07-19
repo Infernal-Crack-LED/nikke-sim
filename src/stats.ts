@@ -74,3 +74,86 @@ const DOLL_BONUS: Record<Weapon, DollBonus> = {
 export function dollBonus(weapon: Weapon): DollBonus {
   return DOLL_BONUS[weapon];
 }
+
+export type DollRarity = 'R' | 'SR' | 'SSR';
+
+// Favorite Item ("doll") flat stat contribution by rarity + level.
+// Owner-measured checkpoints (gear-doll.md, 2026-07-18): R and SR at levels
+// 0 / 5 / 10 / 15. SSR's live levels are 0-2 and all read == SR 15, so SSR is
+// modeled as constant SR-15 stats (== DOLL_HP / DOLL_ATK). Intermediate levels
+// (1-4, 6-9, 11-14) are piecewise-linear interpolated between the measured
+// checkpoints — ⚑ interpolation is a shape estimate; only 0/5/10/15 are measured.
+type Stat = { atk: number; hp: number; def: number };
+const DOLL_CHECKPOINTS: Record<DollRarity, Record<number, Stat>> = {
+  R: {
+    0: { hp: 19400, atk: 638, def: 128 },
+    5: { hp: 48700, atk: 1577, def: 328 },
+    10: { hp: 91350, atk: 2943, def: 620 },
+    15: { hp: 147250, atk: 4736, def: 1002 },
+  },
+  SR: {
+    0: { hp: 94000, atk: 3029, def: 638 },
+    5: { hp: 149950, atk: 4821, def: 1020 },
+    10: { hp: 219200, atk: 7041, def: 1494 },
+    15: { hp: DOLL_HP, atk: DOLL_ATK, def: 2058 }, // == 301800 / 9688 / 2058
+  },
+  // SSR live levels 0-2 all == SR 15 (owner-stated); model every level as SR 15.
+  SSR: { 0: { hp: DOLL_HP, atk: DOLL_ATK, def: 2058 }, 15: { hp: DOLL_HP, atk: DOLL_ATK, def: 2058 } },
+};
+
+// Piecewise-linear interpolate a measured-checkpoint map at an integer level 0-15.
+function interpCheckpoints(cp: Record<number, Stat>, level: number): Stat {
+  const lv = Math.max(0, Math.min(15, Math.round(level)));
+  if (cp[lv]) return cp[lv];
+  const keys = Object.keys(cp).map(Number).sort((a, b) => a - b);
+  let lo = keys[0];
+  let hi = keys[keys.length - 1];
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (keys[i] <= lv && lv <= keys[i + 1]) { lo = keys[i]; hi = keys[i + 1]; break; }
+  }
+  if (lv <= lo) return cp[lo];
+  if (lv >= hi) return cp[hi];
+  const f = (lv - lo) / (hi - lo);
+  const a = cp[lo];
+  const b = cp[hi];
+  return {
+    atk: Math.round(a.atk + (b.atk - a.atk) * f),
+    hp: Math.round(a.hp + (b.hp - a.hp) * f),
+    def: Math.round(a.def + (b.def - a.def) * f),
+  };
+}
+
+// Flat ATK/HP/DEF a doll of the given rarity+level contributes.
+export function dollStats(rarity: DollRarity, level: number): Stat {
+  return interpCheckpoints(DOLL_CHECKPOINTS[rarity], level);
+}
+
+// Weapon "collection effect" ranges, value at level 0 → level 15, per rarity
+// (gear-doll.md, 2026-07-18). R/SR scale with level; ⚑ intermediate levels are
+// linear-interpolated between the measured L0/L15 endpoints. SSR uses the fixed
+// max-level DOLL_BONUS (its live levels 0-2 read ≈ SR 15), which also keeps the
+// `doll: true` validation basis byte-identical.
+// NOTE (owner follow-up): the SR-class DOLL_BONUS carries an extra maxAmmoPct 9.5
+// line that the measured table does NOT list for the SR weapon — preserved here
+// for SSR only; R/SR SR-weapon dolls get just the charge-damage "weapon modifier".
+type BonusField = 'coreDamagePct' | 'normalAttackPct' | 'chargeDamagePct' | 'maxAmmoPct';
+const DOLL_BONUS_RANGE: Partial<Record<Weapon, { field: BonusField; R: [number, number]; SR: [number, number] }>> = {
+  AR: { field: 'coreDamagePct', R: [5.67, 12.49], SR: [10.22, 17.04] },
+  SMG: { field: 'normalAttackPct', R: [1.57, 6.3], SR: [4.74, 9.47] },
+  SG: { field: 'normalAttackPct', R: [1.57, 6.3], SR: [4.74, 9.47] },
+  RL: { field: 'chargeDamagePct', R: [1.58, 6.31], SR: [4.73, 9.46] },
+  SR: { field: 'chargeDamagePct', R: [1.58, 6.31], SR: [4.73, 9.46] },
+  MG: { field: 'maxAmmoPct', R: [1.56, 6.32], SR: [4.74, 9.5] },
+};
+
+// The doll's weapon "collection effect" (core/normal/charge/ammo multipliers).
+// SSR = the fixed max bonus; R/SR scale their single "weapon modifier" by level.
+export function dollWeaponBonus(rarity: DollRarity, weapon: Weapon, level = 15): DollBonus {
+  if (rarity === 'SSR') return DOLL_BONUS[weapon];
+  const rng = DOLL_BONUS_RANGE[weapon];
+  if (!rng) return {};
+  const [lo, hi] = rng[rarity];
+  const lv = Math.max(0, Math.min(15, Math.round(level)));
+  const val = Math.round((lo + (hi - lo) * (lv / 15)) * 100) / 100;
+  return { [rng.field]: val };
+}

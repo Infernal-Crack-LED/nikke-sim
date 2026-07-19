@@ -21,6 +21,15 @@ change; a confirmed `GOTCHA/ENGINE` is a candidate for
 [kit-parse reconciliation backlog](../../docs/handoffs/kit-parse-reconciliation-backlog.md), subject to
 the usual measured>fudge / DECISIONS discipline.
 
+## Two ways to run this
+
+- **Standalone blind-rebuild** (`RECONSTRUCT.md` → `JUDGE.md`): reconstruct code-only, judge vs truth.
+  The lightweight two-way check documented below.
+- **Full `audit-kit` skill** (`.claude/skills/audit-kit/`): the three-way audit — adds a SIGHTED
+  full-context reviewer (`FULL-CONTEXT-REVIEW.md`) alongside the blind rebuild, then a RECONCILING judge
+  (`RECONCILE.md`) that triangulates both against the real kit text + the damage-formula SSOT. Use that
+  skill for a deep per-unit faithfulness audit; use the standalone loop for a quick code-transparency spot-check.
+
 ## The three roles (strict blindness boundary)
 
 ```
@@ -59,9 +68,10 @@ answer, so the builder fails loudly rather than emit a tainted packet.
 npx tsx scripts/blind-rebuild/build-packet.ts dorothy-serendipity
 npx tsx scripts/blind-rebuild/build-packet.ts --all
 
-# 2. RECONSTRUCT (blind). Spawn a subagent with RECONSTRUCT.md at the top, attach ONE
-#    packets/<slug>.blind.json, and let it read the codeFiles. Save its JSON to
-#    reconstructions/<slug>.json. (Do NOT give it anything from truth/.)
+# 2. RECONSTRUCT (blind, PINNED TO OPUS). Spawn a subagent on Opus (claude-opus-4-8) with
+#    RECONSTRUCT.md at the top, attach ONE packets/<slug>.blind.json, and let it read the codeFiles.
+#    Save its JSON to reconstructions/<slug>.json. (Do NOT give it anything from truth/.)
+#    Agent tool: model: "opus"  ·  Workflow: agent(prompt, { model: 'opus' })
 
 # 3. JUDGE. Spawn a fresh subagent with JUDGE.md at the top, attach
 #    reconstructions/<slug>.json + truth/<slug>.truth.json. Save its JSON to results/<slug>.json.

@@ -1,5 +1,9 @@
 # Blind kit-rebuild — RECONSTRUCTOR prompt
 
+> **Model: Opus (`claude-opus-4-8`).** The rebuild agent is pinned to Opus — reconstructing kit prose
+> from raw engine semantics is the hardest reasoning step in the loop. Spawn with `model: "opus"` (Agent
+> tool) or `agent(..., { model: 'opus' })` (Workflow).
+
 Paste this at the top of a fresh subagent, then attach ONE `packets/<slug>.blind.json`. The subagent
 must be BLIND: it never sees `truth/`, the override's note/unmodeled/caveats, the real skill prose, or
 this unit's identity. Its whole job is to say what the *code* implements, in kit-prose form.

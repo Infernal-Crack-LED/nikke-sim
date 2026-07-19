@@ -47,8 +47,39 @@
     },
     "destruction": {
       "name": "Destruction",
-      "effectStat": "partsDamagePct",
+      "_note": "main effect (Part Damage ▲) unmodeled — boss is partless; treated as 'other' (base stats + elemental damage only). Magnitudes retained for reference.",
+      "effectStat": null,
       "effectByLevel": [15.95, 15.95, 23.92, 23.92, 23.92, 23.92, 31.9, 31.9, 31.9, 31.9, 31.9, 31.9, 31.9, 31.9, 31.9]
+    },
+    "vigor": {
+      "name": "Vigor",
+      "_note": "grants maxHpPct — converted to a flat Max-HP self-grant in sim.ts, so it feeds HP-scaling ATK (atkOfMaxHpPct) for kits like Cinderella / Maiden: Ice Rose. Inert for non-HP-scaling units. base stats + elemental damage still apply.",
+      "effectStat": "maxHpPct",
+      "effectByLevel": [4.84, 4.84, 7.27, 7.27, 7.27, 7.27, 9.69, 9.69, 9.69, 9.69, 9.69, 9.69, 9.69, 9.69, 9.69]
+    },
+    "endurance": {
+      "name": "Endurance",
+      "_note": "grants defPct — inert in v1 (self DEF doesn't affect own damage output). base stats + elemental damage still apply.",
+      "effectStat": "defPct",
+      "effectByLevel": [24.2, 24.2, 36.35, 36.35, 36.35, 36.35, 48.45, 48.45, 48.45, 48.45, 48.45, 48.45, 48.45, 48.45, 48.45]
+    },
+    "healing": {
+      "name": "Healing",
+      "_note": "main effect (HP Potency ▲) unmodeled — healing magnitude doesn't affect damage; treated as 'other' (base stats + elemental damage only). Magnitudes retained for reference.",
+      "effectStat": null,
+      "effectByLevel": [8.08, 8.08, 12.12, 12.12, 12.12, 12.12, 16.16, 16.16, 16.16, 16.16, 16.16, 16.16, 16.16, 16.16, 16.16]
+    },
+    "tempering": {
+      "name": "Tempering",
+      "_note": "main effect (Damage Taken ▼, a self-defense stat — NOT the boss Damage-Taken debuff) unmodeled; treated as 'other' (base stats + elemental damage only). Magnitudes retained for reference.",
+      "effectStat": null,
+      "effectByLevel": [4.84, 4.84, 7.27, 7.27, 7.27, 7.27, 9.69, 9.69, 9.69, 9.69, 9.69, 9.69, 9.69, 9.69, 9.69]
+    },
+    "assist": {
+      "name": "Assist",
+      "_note": "main effect (Critical + Max HP ▲) unmodeled; treated as 'other' (base stats + elemental damage only). Magnitudes retained for reference.",
+      "effectStat": null,
+      "effectByLevel": [6.07, 6.07, 9.1, 9.1, 9.1, 9.1, 12.14, 12.14, 12.14, 12.14, 12.14, 12.14, 12.14, 12.14, 12.14]
     },
     "other": {
       "name": "Other",

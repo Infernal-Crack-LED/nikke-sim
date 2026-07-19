@@ -13,6 +13,48 @@
 > **Ratio direction (see docs/CONVENTIONS.md):** board = `sim/real`. **HOT ▲ = sim over-credits**
 > (ratio > 1); **COLD ▼ = sim under-credits** (ratio < 1).
 
+## Status dashboard — at a glance
+
+> Every theme bucketed by implementation state (verified against the live tree 2026-07-17). Jump to the
+> numbered theme below for detail. **Nearly every discrete engine-primitive gap has now been built** — what
+> remains is per-unit *enactment* of built primitives (board-moving → measurement-gated) plus inherent-v1
+> limitations and measurement backlogs.
+
+### ✅ A. Completely done — primitive wired AND fix enacted/board-verified
+| Theme | Capability | Enacted on |
+|---|---|---|
+| 2b. Recovery-event emitter | `heal.ticks`/`recoveryEmitters` | anchor-innocent-maid, blanc *(HoT backfill tail: prika/trina/mint/naga/mana/anis-star)* |
+| 6. Parts-branch HOT fix | SKIPPED-CONDITIONAL | d-killer-wife (1.055→0.998), takina |
+| 6/10. `bossElementGate` | block gate composes w/ any trigger | helm-aquamarine, brid-silent-track |
+| 8. `hitRatePct` → core lift | `HRCORE` (live default) | roster-wide *(refinements: asuka bracket, quency)* |
+| 9. Own-burst-gated FB | `ownBurstGate:'cast'/'notCast'` | cinderella-crystal-wave (T8 1.062→1.001) |
+| 11. `excludeSelf` on typed allies | resolveTargets honors it | maiden-ice-rose (1.55→1.03), brid/miranda/soda |
+| 12. Per-DoT crit | `dot.crit` opt-in (global gate stays off — recal deferred) | isabel |
+| 13. Max-HP grants | `targetMaxHpPct` + `alliesLowestHp` | maiden-ice-rose (self-fed, 0.76→0.85) + completeness |
+| 16. Treasure SSOT | sync favorite-item prose | helm (0.591→1.014), laplace/moran/miranda/drake |
+
+### ⚙️ B. Wired but NOT enacted / disabled pending verification — capability exists, opt-in is board-moving
+| Theme | Capability (inert until opt-in) | State |
+|---|---|---|
+| 3. Stack-ramp | `buff.rampSec` | ENACTED cinderella + arcana-fortune-mate; rest (chisato/leona/guilty/…) measurement-gated |
+| 4. Team-composition gate | `teamHas:{element/class/weapon/burst}` | **0 enactments**; arcana deferred (no board data + WoF gate unmodeled) |
+| 5. Timed pierce | `gainPierce`/`pierceUntilFrame` | grave ENABLED (0.83→1.18, faithful>fit, U19); milk/prika deferred |
+| 7. Weapon-swap spec | `weaponSwap.weapon`/`pullsPerSec` | nayuta FIXED; moran throughput + chisato/takina/velvet pending |
+| 14. Flat Max-Ammo | `maxAmmoFlat` StatKey | **0 enactments**; grave/noir/tove/drake/trina approximate as % |
+| 15. Ammo-dump | `consumeAmmo` effect | **0 enactments**; grave/asuka-wille/jill need trigger authoring |
+
+### ❌ C. Unwired / inherent-v1 limitation / measurement-only — no discrete primitive to build
+| Theme | Why it's here |
+|---|---|
+| 1. Cadence tuple (~22 units) | measurement backlog (video plan), not an engine gap |
+| 2. Defensive/heal/shield (~25 units) | no HP pool in v1 (immortal boss) → inert by design |
+| 17. User-selected modes (8 units) | config/owner-review, not a primitive |
+| 18. Kill-gated effects (~4 units) | inherent (immortal solo boss) |
+| 19. SG pull-vs-pellet + per-unit landing | measurement/calibration (open-questions U17) |
+| 12-tail. eve Mk2 sequential-doubling | open sub-caveat, no primitive yet |
+
+---
+
 ## Highest-leverage engine fixes (ranked by blast radius)
 
 These are systematic limitations, not per-unit fudge. Each would correct many units at once.
@@ -41,9 +83,11 @@ These are systematic limitations, not per-unit fudge. Each would correct many un
    / miranda / soda-twinkling-bunny: faithful but currently board-neutral (brid/miranda not
    board-measured; soda's self-block already covers her + she isn't top-ATK in N3). Residual maiden
    0.76 on the Wind comp is her SEPARATE documented burst Max-HP under-model, deliberately NOT masked.
-3. **Implement `hitRatePct` → core-hit-rate lift** (theme 8) — the stat exists but is engine-inert;
-   ~10 units carry an inert Hit-Rate line that is a proven COLD lever (jill measured a ×1.45 core
-   window).
+3. **`hitRatePct` → core-hit-rate lift** (theme 8) — ✅ **LIVE BY DEFAULT 2026-07-17** (`HRCORE`,
+   sim.ts:830 — `ENV.HRCORE=0/off` disables for A/B). The Hit-Rate line is no longer inert: a live
+   Hit Rate shrinks the reticle → higher core fraction (⚑ derived slope; jill measured a ×1.45 core
+   window). OPEN refinements only: asuka's saturation bracket, quency-escape-queen's cadence + the
+   +1.04 overshoot, and a measurement (e.g. `soda-tb-control`) to validate the derived slope.
 4. **Own-burst-gated FB trigger** (theme 9) — ✅ **LANDED 2026-07-17.** A block gate
    `ownBurstGate: 'cast' | 'notCast'` (types.ts Block; evaluated in sim.ts `applyBlock`
    against `rotationCasters`) COMPOSES with a `fullBurstEnter` trigger to express "Entering
@@ -63,9 +107,12 @@ These are systematic limitations, not per-unit fudge. Each would correct many un
    COLD case **diesel-winter-sweets** (`'notCast'`, Highlight sustained) is now EXPRESSIBLE but
    stays owner-deferred (document-only, CLAUDE.md web-TODO — her full Highlight state machine +
    no-op-B3-drives-FB path is the larger unmodeled piece).
-5. **Load the swap weapon's own datamine spec during burst swaps** (theme 7) — two single-cause COLD
-   engine bugs: moran (0.713 — swap fires at 24 pulls/s but sim uses base 12/s) and nayuta (0.637 —
-   swap shots treated as base SMG, not the swap's SR class).
+5. **Load the swap weapon's own datamine spec during burst swaps** (theme 7) — ✅ **CAPABILITY LANDED
+   2026-07-17** (`weaponSwap.weapon` + `pullsPerSec`; `effWeapon = swap.weapon ?? char.weapon`, sim.ts:1075).
+   **nayuta FIXED** (0.637 → 0.894 — swap re-classed base SMG → SR "Memory Incineration", MAD 0.342→0.106).
+   **moran** swap-ROF 24/s was REFUTED by the board then MEASURED at base ~12/s — her residual coldness is a
+   THROUGHPUT follow-up needing isolated footage, NOT a per-shot fix (see theme 7). Others (chisato/takina/
+   velvet/…) still HOT-unaddressed.
 6. **`bossElementGate` block gate** (theme 10) — ✅ **LANDED 2026-07-17.** A block-level gate
    (`bossElementGate: <element>`, evaluated in sim.ts `applyBlock` alongside fbGate/swapGate) that
    COMPOSES element-gating with any real trigger — the schema previously could only express a *permanent*
@@ -140,10 +187,15 @@ authored at its MAX-stacks magnitude but the real stacks accrue over the opening
 linearly ramps its contribution `0 → full` over `rampSec` from the buff's FIRST application, then holds
 at cap (sim.ts `sum()` chokepoint scales `value*stacks` by `min(1, (frame-startFrame)/rampFrames)`).
 The ramp clock is the first-apply frame (frame 0 for a `passive`, the cast frame for a burstCast-keyed
-self-buff) and is NOT reset by refreshes. Omit → instant-to-max (back-compatible). **Inert until an
-override opts in** — no unit sets it yet, so the regression snapshot is byte-identical and the whole board
-is unchanged. Verified end-to-end: injecting a temporary `rampSec:8` on red-hood's 10s burst ATK ▲71.42%
-moved her PA-MiKa total 799M→786M (0.936→0.921), the expected opening-seconds de-credit; reverted.
+self-buff) and is NOT reset by refreshes. Omit → instant-to-max (back-compatible). **NOW ENACTED on 2
+units (2026-07-17) — no longer inert/byte-identical:** **cinderella** (`casterMaxHpPct 19.2, rampSec 36`
+for her battle-start Beautiful Max-HP + the `flatDamage 346.8, rampSec 36` Beautiful-mirror split; steady
+state t≥36s byte-identical to the old bake, pre-36s bursts now credit partial Beautiful — this is the
+source of the current cinderella regression-snapshot drift, understood/documented in her caveats) and
+**arcana-fortune-mate** (3× `rampSec 11` on her Making-Memories stack buffs — the 2/4/6-shot phase counter
+caps at ~11s ≥ the window, so each ramps 0→full and resets per window). Verified end-to-end earlier:
+injecting a temporary `rampSec:8` on red-hood's 10s burst ATK ▲71.42% moved her PA-MiKa total 799M→786M
+(0.936→0.921), the expected opening-seconds de-credit.
 **NOT auto-enacted:** each unit's `rampSec` is a ⚑ per-unit estimate — enacting moves the board (these are
 HOT), so it is measurement/Fable-gated per unit (scientific-method harness). **Do NOT double-correct the
 units that already hand-average their ramp in the override note** — cinderella (Beautiful baked `2.71×1.192`
@@ -228,10 +280,14 @@ override opts in.
 Others still optimistic/HOT (unaddressed): chisato, takina (~1.044), velvet (~1.068), red-hood,
 snow-white, laplace, maxwell, zwei, volume.
 
-### 8. `hitRatePct` modeled but engine-inert — ~10 units (COLD)
-Real effect is a core-hit-rate lift (jill measured core 0.20→0.90). **Single-fix candidate #3.**
-Units: anchor-innocent-maid, drake, leona, modernia, noir, quency-escape-queen, soda-twinkling-bunny,
-jill, nayuta. Related: tove (crit-rate stale 3.32→10.08).
+### 8. `hitRatePct` → core-hit-rate lift — ✅ LIVE BY DEFAULT 2026-07-17
+Was engine-inert; now a live core-hit-rate lift (`HRCORE`, sim.ts:830 — a live Hit Rate shrinks the
+reticle → higher core fraction; `ENV.HRCORE=0/off` disables for A/B). jill measured core 0.20→0.90.
+OPEN refinements only (not a capability gap): asuka's saturation bracket, quency-escape-queen's cadence +
+the +1.04 overshoot, slope validation via a measurement (e.g. `soda-tb-control`). Related still-open:
+tove (crit-rate stale 3.32→10.08) is a separate crit-rate fix, not hitRatePct.
+Units affected: anchor-innocent-maid, drake, leona, modernia, noir, quency-escape-queen,
+soda-twinkling-bunny, jill, nayuta.
 
 ### 9. Own-burst-gated vs team-FB trigger (schema gap) — ~7 units (HOT in multi-B3) — ✅ CAPABILITY LANDED 2026-07-17
 "Entering Full Burst after this unit uses her own Burst" was modeled as plain team `fullBurstEnter`.

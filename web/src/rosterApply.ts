@@ -6,9 +6,11 @@
 // the sim already stores in data/ol-lines.json and data/cubes.json.
 import charactersJson from '../../data/characters.json';
 import olLinesJson from '../../data/ol-lines.json';
+import olTiersJson from '../../data/ol-tiers.json';
 import cubesJson from '../../data/cubes.json';
 import type { GearLevel } from '../../src/types';
-import type { SyncedUnitLoadout } from './auth';
+import type { LineSelection, UnitOptions } from '../../src/prepare';
+import type { DollRarity, SyncedUnitLoadout } from './auth';
 
 // name_code → sim slug (name_code lives at role.meta.name_code in characters.json).
 const SLUG_BY_NAME_CODE: Record<number, string> = (() => {
@@ -37,6 +39,14 @@ const CUBE_ID_BY_NAME: Record<string, string> = (() => {
   return map;
 })();
 
+// OL roll tier (1-15) → per-line-key % value (data/ol-tiers.json). The backend
+// sends (label, tier); we resolve tier → value here (a base T10 roll is tier 11).
+const OL_TIER_ROWS = (olTiersJson as { tiers: Array<Record<string, number>> }).tiers;
+function olTierValue(key: string, tier: number): number {
+  const row = OL_TIER_ROWS.find((t) => t.tier === tier);
+  return row ? (row[key] ?? 0) : 0;
+}
+
 const clamp = (v: number, lo: number, hi: number) =>
   Math.max(lo, Math.min(hi, Math.round(v)));
 
@@ -45,7 +55,9 @@ const clamp = (v: number, lo: number, hi: number) =>
 // everything else is an `extra` entry (summed per stat).
 export interface SlotLoadout {
   slug: string;
-  ol: GearLevel; // gear level; synced units run Overload gear
+  ol: GearLevel; // display gear level; the real stats come from gearStats
+  gearStats: { atk: number; hp: number } | null; // real T10 gear stats + Outpost bonus
+  hasOverloadGear: boolean; // on full T10 overload gear (drives the generator's non-OL filter)
   stars: number; // 0-3
   core: number; // 0-7
   bond?: number; // bond level (undefined = leave to manufacturer max)
@@ -54,6 +66,7 @@ export interface SlotLoadout {
   burst?: number;
   cubeId: string | null; // sim cube id, 'other' for an unmapped cube, null = none
   cubeLevel: number;
+  doll: { rarity: DollRarity; level: number } | null; // Favorite Item
   olElem: number; // summed % of "Increase Elemental Damage" lines
   olAtk: number; // summed % of "Increase ATK" lines
   olExtra: { type: string; value: number }[]; // other lines, summed per stat
@@ -77,9 +90,8 @@ export function resolveSyncedLoadout(l: SyncedUnitLoadout): SlotLoadout | null {
       if (!unmappedLines.includes(line.label)) unmappedLines.push(line.label);
       continue;
     }
-    if (Number.isFinite(line.value) && line.value > 0) {
-      summed[key] = (summed[key] ?? 0) + line.value;
-    }
+    const value = olTierValue(key, line.tier); // (label, tier) → % via ol-tiers.json
+    if (value > 0) summed[key] = (summed[key] ?? 0) + value;
   }
   const round2 = (n: number) => Number(n.toFixed(2));
   const olElem = round2(summed.elem ?? 0);
@@ -102,11 +114,29 @@ export function resolveSyncedLoadout(l: SyncedUnitLoadout): SlotLoadout | null {
   }
 
   void hasOl; // (kept for readability of the OL grouping above)
+
+  // Gear: apply the real resolved T10 gear stats + the account Outpost (Recycle
+  // Research) flat bonus. gear === null = not on T10 overload gear → no gearStats
+  // (the sim uses its ol-level table) and the generator can filter it out.
+  // (Outpost on a non-T10 unit is dropped — a negligible edge; those units are
+  // excluded from the generator by default anyway.)
+  const gear = l.gear ?? null;
+  const outpost = l.outpost ?? null;
+  const hasOverloadGear = gear != null;
+  const gearStats = gear
+    ? { atk: gear.atk + (outpost?.atk ?? 0), hp: gear.hp + (outpost?.hp ?? 0) }
+    : null;
+  const displayOl: GearLevel = l.gearTier === 'T10' || hasOverloadGear ? 5 : 0;
+
+  // Doll (Favorite Item): pass rarity+level through; the sim maps it to stats.
+  const doll = l.doll ?? null;
+
   return {
     slug,
-    // Synced units run Overload gear (OL lines only exist on it); default OL5,
-    // the fully-invested endgame basis. gearTier is reserved for a future refine.
-    ol: 5,
+    ol: displayOl,
+    gearStats,
+    hasOverloadGear,
+    doll,
     stars: clamp(l.grade ?? 0, 0, 3),
     core: clamp(l.core ?? 0, 0, 7),
     bond: l.bond != null && Number.isFinite(l.bond) ? Math.max(0, Math.round(l.bond)) : undefined,
@@ -120,6 +150,34 @@ export function resolveSyncedLoadout(l: SyncedUnitLoadout): SlotLoadout | null {
     olExtra,
     unmappedCube,
     unmappedLines: unmappedLines.length ? unmappedLines : undefined,
+  };
+}
+
+// A resolved SlotLoadout → engine UnitOptions, for the generator (which sims each
+// candidate with its own synced build). `zeroGear` models an included non-OL unit
+// as having no gear stats (per the generator's Include-Non-OL option).
+export function slotLoadoutToUnitOptions(
+  L: SlotLoadout,
+  opts: { zeroGear?: boolean } = {},
+): UnitOptions {
+  const lines: LineSelection[] = [];
+  if (L.olElem > 0) lines.push({ type: 'elem', count: 1, value: L.olElem });
+  if (L.olAtk > 0) lines.push({ type: 'atk', count: 1, value: L.olAtk });
+  for (const e of L.olExtra) if (e.value > 0) lines.push({ type: e.type, count: 1, value: e.value });
+  return {
+    ol: L.ol,
+    gearStats: opts.zeroGear ? { atk: 0, hp: 0 } : (L.gearStats ?? undefined),
+    doll: L.doll ? { rarity: L.doll.rarity, level: L.doll.level } : false,
+    stars: L.stars,
+    core: L.core,
+    relationshipLevel: L.bond,
+    cube:
+      L.cubeId && L.cubeId !== 'none' ? { id: L.cubeId, level: L.cubeLevel } : undefined,
+    skillLevels:
+      L.skill1 != null && L.skill2 != null && L.burst != null
+        ? { skill1: L.skill1, skill2: L.skill2, burst: L.burst }
+        : undefined,
+    lines,
   };
 }
 

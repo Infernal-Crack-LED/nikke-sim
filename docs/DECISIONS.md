@@ -8,6 +8,29 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-18) Accuracy-circle geometry / HR→core / pellet-landing math is GROUND TRUTH — evidence-tier
+  ruling (owner).** The hit-rate→core-hit-rate, pellet-count, and SG-pellet-landing math — the
+  accuracy-circle geometry system (`docs/data/sg-calc/`: accuracy-circle-scale→px→range calibration,
+  `CENTER-WEIGHTED-PELLET-SPEC.md`, geometric core-hit fraction, `DERIVATION.md`; wired live as `HRCORE`
+  in `src/engine/sim.ts`) — is **treated as TRUE until proven otherwise**, and it **OUTRANKS the older
+  "measured" core rates** it disagrees with (e.g. dorothy-serendipity `consolidation.coreRate 0.9`,
+  the `CORE_BY_WEAPON_BAND` cells). **Why the tiers invert here:** those older core rates are high-effort
+  estimations **back-derived from damage-per-hit calculations** — they infer the mechanic from observed
+  damage, so they are model-fits, not measurements OF THE MECHANIC. The geometry system is derived from
+  **provable in-game measurements + published game mechanics** (accuracy-circle scale, reticle geometry,
+  real SG hit/miss band footage — `noir-sg-bands.json`), i.e. it measures the mechanic directly. So the
+  usual **measured > derived** tie-break inverts for this subsystem: the geometry/HR model is the higher
+  tier and the damage-back-derived core rates are the refit candidates. **How to apply:** when the
+  geometry/HR math disagrees with an old back-derived core rate OR a board fit, geometry WINS by default —
+  do not correct it back toward the old number, and do not invoke measured>derived to protect a
+  back-derived core rate. **This supersedes the audit-kit judge's 2026-07-17 call** that consolidation
+  `coreRate 0.9` should outrank the HR slope (that call predates this ruling; the 0.9 is itself a
+  back-derivation). **Falsifiable, not permanent** ("until proven otherwise"): an overturn needs a
+  *direct in-game measurement of the mechanic* that contradicts the geometry (per the scientific-method
+  gate), NOT a board-fit residual or another damage-calc back-derivation. Consistent with the
+  faithful>fit / accuracy-to-observed-mechanics invariant — this promotes a directly-measured mechanic
+  model over a fit, and is not a license to fudge. Cross-session pointer: memory `accuracy-geometry-is-ground-truth`.
+
 - **(2026-07-17) DoT / periodic-damage crit is PER-DoT, not global (theme 12) — LANDED for isabel.**
   The engine gains a per-DoT `crit:true` opt-in (`types.ts` dot effect + `Dot.crit`; the dot-tick
   dealDamage falls back to the still-default-OFF global `DOT_CRIT` gate when the field is unset, so all
