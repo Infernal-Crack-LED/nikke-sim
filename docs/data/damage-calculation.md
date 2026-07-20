@@ -224,10 +224,12 @@ Charge = chargeMult/100
 ```
 
 `chargeMult` is the per-unit full-charge multiplier (SR typically 250, Alice 350, cinderella 200;
-weapon-swap states can override it). Ordinary Charge Damage ▲ buffs add flat percentage points;
-"multiplies base charge damage"-class effects (Helm's burst, collection items) scale the base
-term. Auto play always releases at full charge (early releases ≈ 2% of shots, unmodeled).
-Non-charge instances use Charge = 1.
+weapon-swap states can override it, and a `flatDamage` hit may supply its own via `chargeMultPct`
+when there is no swap to source it — Snow White `snow-white`'s cannon, dealt as a delayed
+full-charge hit while her AR keeps firing rather than a weaponSwap that would halt it). Ordinary
+Charge Damage ▲ buffs add flat percentage points; "multiplies base charge damage"-class effects
+(Helm's burst, collection items) scale the base term. Auto play always releases at full charge
+(early releases ≈ 2% of shots, unmodeled). Non-charge instances use Charge = 1.
 
 ### 1e. DamageUp bucket
 

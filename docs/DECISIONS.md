@@ -8,6 +8,25 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) Snow White `snow-white`'s burst cannon fires as a DELAYED charge hit, not a weaponSwap
+  — LANDED (owner-ruled from the sw.MP4 footage).** Base `snow-white` (AR/Iron/B3, NOT
+  `snow-white-heavy-arms`) keeps firing her AR through the ~5s cannon charge in-game; the cannon
+  materializes only for its one shot. The old `weaponSwap` model halted her AR for the whole charge
+  (~5s × 6 bursts ≈ 30s of lost fire — her main residual COLD driver). Re-encoded as a single delayed
+  full-charge `flatDamage` `{atkPct 499.5, charge, chargeMultPct 1000 (×10), core, pierce, rangeOk,
+  delaySec 5.5}`, so the AR fires continuously. **New engine primitive (opt-in, default-off):** a
+  `flatDamage` hit may carry `charge`/`chargeMultPct`/`pierce`/`rangeOk`, threaded through the
+  `pendingHits` landing path (+ a `dealDamage` `chargeMultPct` override) — every existing `delaySec`
+  user (`rapi-red-hood`'s missile) is byte-identical (regression green). A/B (isolated at ae68b90,
+  expected-value): cannon flavor BYTE-IDENTICAL (major/charge/dmgUp/taken across all 6 shots), FB counts
+  byte-identical (rotation neutral), `helm`/`crown` byte-identical; `snow-white` 347M→408M
+  (~0.81-0.90 → ~0.95-1.06 across the 4 control comps) from the recovered AR fire — which faithfully
+  also lifts her S1 self-ATK uptime and `little-mermaid`'s teamAmmo-500 skill (+4M, genuine extra ammo
+  consumption the swap model under-fed). Fable pre-op APPROVED-WITH-CONDITIONS (normalAttackPct
+  divergence on a delayed hit documented as inert-at-scope; rotation verified; flavor opts additively
+  preserved). Reading recorded, NOT tuned. Trail: `snow-white` override note/caveats, commits (engine
+  160cee3, override 9cc9d7a), `damage-calculation.md` §1d.
+
 - **(2026-07-20) Step-gated pierce (ade-agent-bunny) — LANDED (kit-audit Phase A4 primitive).** The
   `gainPierce` effect's `durationSec` is now OPTIONAL — absent = continuous/permanent (`pierceUntilFrame`
   → ∞), mirroring the `shield` effect's optional-duration convention. This lets pierce turn on at a STACK
