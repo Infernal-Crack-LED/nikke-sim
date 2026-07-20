@@ -23,7 +23,7 @@ export const sections: HowToSection[] = [
   {
     title: 'How the numbers are made',
     intro:
-      'The engine plays out the whole fight on a frame clock — every shot, reload, charge, skill proc and burst rotation — and adds up the damage each unit deals. It is not a spreadsheet of averages; it models the actual firing and burst timing.',
+      'The engine plays out the whole fight on a frame clock — every shot, reload, charge, skill proc and burst rotation — and adds up the damage each unit deals. It models actual firing and burst timing, not averaged rates.',
     bullets: [
       'A fight is 180 seconds against a single-part raid boss. All five units run on full auto.',
       'The predictions are checked against real fights the dev records under one fixed test preset (see “Scope Lock” below), then tuned until the sim lands within a few percent per unit. Differences under about 5% are run-to-run noise, not error.',
@@ -34,45 +34,64 @@ export const sections: HowToSection[] = [
   },
   {
     title: 'The tabs across the top',
-    intro: 'The site is split into a few pages, reachable from the top bar.',
+    intro:
+      'The site is split into four tool sections and two reference pages, reachable from the top bar.',
     items: [
       {
         term: 'Sim',
-        def: 'The main calculator. Build a 5-unit team, set the boss and gear, and read per-unit damage. This page itself holds seven tools (see the next section).',
+        def: 'The main calculator: build a 5-unit team, set the boss and gear, and read per-unit damage. Also hosts Roster Sim (five teams at once) and the Team and Roster Generators.',
+      },
+      {
+        term: 'Rankings',
+        def: 'Pre-computed DPS Rankings of the strongest Burst-3 carries, plus Unit Comparison — a head-to-head lab for your own control groups.',
+      },
+      {
+        term: 'Overload',
+        def: 'Everything about overload gear: Optimize Overload (which lines to run), Overload Rolling (what it costs to roll them), and Overload Breakpoints (where the tiers pay off).',
+      },
+      {
+        term: 'Tools',
+        def: 'Team Builder, Doll Leveling, and the Resource Calculator.',
+      },
+      {
+        term: 'How to',
+        def: 'This page.',
       },
       {
         term: 'Mechanics',
         def: 'A reference for every game mechanic the simulator models, each tagged with how strongly it is verified (measured, datamined, community-confirmed, or calibrated).',
       },
-      {
-        term: 'Patch Notes',
-        def: 'The changelog — what changed in the engine or unit modeling and why, in player-readable terms.',
-      },
-      {
-        term: 'Testing Requested',
-        def: 'A board of teams the dev is asking the community to record. If you own the units and can film a clean run under the test preset, that footage helps tune the sim.',
-      },
-      {
-        term: 'Meet the dev',
-        def: 'About the project and its author, plus the companion Discord bot and community links.',
-      },
     ],
+    outro:
+      'Testing Requested stays on the top bar for reach; Sync my roster, Patch Notes, Meet the dev and Credits live under the ☰ menu.',
   },
   {
-    title: 'The seven tools on the Sim page',
+    title: 'The tools, section by section',
     intro:
-      'The Sim page has its own row of tabs. All of them read the same boss options and gear controls, described further down.',
+      'Each section in the top bar holds its own row of tabs. Team Sim, Unit Comparison and the generators all read the same boss options and gear controls, described further down.',
     items: [
       {
-        term: 'Sim',
-        def: 'Hand-build one team. Pick five units, set each one’s gear, and see how much damage every unit deals, their share of the team total, DPS, and how many full bursts the team got. This is the tool to answer “how does THIS exact team perform?”',
+        term: 'Team Sim',
+        def: 'Hand-build one team. Pick five units — search a slot directly, or use Browse Nikkes to filter the full roster by weapon, burst, class, element, manufacturer, or kit role — set each one’s gear, and see how much damage every unit deals, their share of the team total, DPS, and how many full bursts the team got. This is the tool to answer “how does THIS exact team perform?”',
+      },
+      {
+        term: 'Roster Sim',
+        def: 'Enter up to five teams of five and sim them all at once under one shared boss + loadout setup. Each nikke can be used once across the roster (solo-raid rule). Browse Nikkes opens the full 5×5 roster so you can pick all five teams at once — Save Roster applies them to the page.',
+      },
+      {
+        term: 'Team Generator',
+        def: 'Finds the single strongest 5-unit team for the chosen boss weakness out of the units you own.',
+      },
+      {
+        term: 'Roster Generator',
+        def: 'Builds an optimized solo-raid roster — the top 5 teams with no unit reused across them.',
       },
       {
         term: 'DPS Rankings',
         def: 'Pre-computed rankings of the strongest Burst-3 carries, each dropped into a standardized support team so they compete on equal footing. Use it to see which carries lead under a given setup — no team-building required.',
       },
       {
-        term: 'Custom DPS Rankings',
+        term: 'Unit Comparison',
         def: 'A head-to-head lab. Lock in a fixed control group (3 or 4 units), then swap different units into the open slots and rank the variants by damage. Answers “which unit fits best into the rest of my team?”',
       },
       {
@@ -80,23 +99,31 @@ export const sections: HowToSection[] = [
         def: 'Pick one carry and rank how it should spend its four free Overload lines. The 8/12 floor (4× Elemental DMG + 4× ATK) is held fixed; the tool sims every worthwhile spread of the remaining four and charts the damage plus the % gain over 8/12. Use Matrix mode to auto-build a standard control team, or Custom mode to pit the carry against your own support teams (one chart each).',
       },
       {
-        term: 'Charge Speed Breakpoints',
-        def: 'For rocket launchers and snipers: the charge-speed % thresholds at which the charge time drops by one more frame. Pick a carry for its exact charge time, or read the standard 1-second table. Since the game charges in whole frames, charge speed only pays off at these breakpoints.',
+        term: 'Overload Rolling',
+        def: 'Estimate the rerolls and Custom Modules a piece needs — from scratch or from its current lines — and get a guided, step-by-step roll plan for one piece.',
       },
       {
-        term: 'Optimal Team',
-        def: 'Finds the single strongest 5-unit team for the chosen boss weakness out of the units you own.',
+        term: 'Overload Breakpoints',
+        def: 'Two calculators for stats that only pay off in whole steps: Charge Speed (the % thresholds at which charge time drops by one more frame, for any RL/SR or the standard 1-second table) and Max Ammo (every extra round a unit can reach and how many lines each one costs).',
       },
       {
-        term: 'Solo-Raid Roster Generator',
-        def: 'Builds an optimized solo-raid roster — the top 5 teams with no unit reused across them.',
+        term: 'Team Builder',
+        def: 'Browse the full roster with filters, build a team on the strip, and copy it into the Team Sim or the Roster Sim. The + beside the strip expands it to a full 5×5 roster. Units not in the sim yet can be placed here, but the copy buttons refuse them.',
+      },
+      {
+        term: 'Doll Leveling',
+        def: 'Plan the resource-efficient path to level favorite items (dolls) — from scratch or from a current level.',
+      },
+      {
+        term: 'Resource Calculator',
+        def: 'Expected daily income from Anomaly Interception — custom modules, fragments, locks and T10 gear — by boss and tier.',
       },
     ],
   },
   {
     title: 'Boss options (the top filter row)',
     intro:
-      'These describe the fight and apply to the Sim, Custom DPS Rankings and the calculator tabs.',
+      'These describe the fight and apply to Team Sim, Unit Comparison and the generator tabs.',
     items: [
       {
         term: 'Boss weakness',
@@ -119,7 +146,7 @@ export const sections: HowToSection[] = [
   {
     title: 'Gear and loadout',
     intro:
-      'On the Sim and Custom DPS Rankings tabs, each unit has a full card — portrait, gear, duplicates, skill levels, cube and Overload lines. There is also a bulk row above the team to set an option on every unit at once.',
+      'On the Team Sim and Unit Comparison tabs, each unit has a full card — portrait, gear, duplicates, skill levels, cube and Overload lines. There is also a bulk row above the team to set an option on every unit at once.',
     items: [
       {
         term: 'Scope Lock (preset)',
@@ -127,7 +154,7 @@ export const sections: HowToSection[] = [
       },
       {
         term: 'Bulk “All …” buttons',
-        def: 'The row of All cubes / gear / dolls / stars / cores / skills buttons applies that one choice to all five units at once. On the Custom DPS Rankings tab they apply to the swap-in units only, leaving the control group locked.',
+        def: 'The row of All cubes / gear / dolls / stars / cores / skills buttons applies that one choice to all five units at once. On the Unit Comparison tab they apply to the swap-in units only, leaving the control group locked.',
       },
       {
         term: 'Gear (per card)',
@@ -165,7 +192,7 @@ export const sections: HowToSection[] = [
   {
     title: 'DPS Rankings filters',
     intro:
-      'The DPS Rankings (and the Custom DPS Rankings tab’s Matrix mode) is a grid of standardized setups. Four selectors pick which setup you are looking at.',
+      'The DPS Rankings (and the Unit Comparison tab’s Matrix mode) is a grid of standardized setups. Four selectors pick which setup you are looking at.',
     items: [
       {
         term: 'Framework',

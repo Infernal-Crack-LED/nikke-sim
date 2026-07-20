@@ -23,6 +23,7 @@ const ROUTES = [
   { path: '/doll', key: 'doll' },
   { path: '/charge', key: 'charge' },
   { path: '/teambuilder', key: 'teambuilder' },
+  { path: '/resources', key: 'resources' },
   { path: '/howto', key: 'howto' },
   { path: '/mechanics', key: 'mechanics' },
   { path: '/dev', key: 'dev' },
@@ -34,7 +35,8 @@ const ROUTES = [
 
 const META = {
   sim: {
-    title: 'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
+    title:
+      'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
     desc: 'NIKKE solo-raid damage simulator: per-unit DPS calculator, overload optimizer, best overload lines, team builder, and game mechanics reference. Frame-tick accuracy, runs in your browser.',
   },
   dpschart: {
@@ -42,20 +44,20 @@ const META = {
     desc: 'Ranked DPS of every NIKKE B3 carry under standardized solo-raid frameworks. Compare units, see best overload lines, and find your best carries.',
   },
   dps: {
-    title: 'Custom DPS Rankings — NIKKE Head-to-Head Unit Comparator',
-    desc: 'Head-to-head per-unit DPS comparison with a custom framework. Pit any NIKKE against any other under identical conditions.',
+    title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
+    desc: 'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
     desc: 'Find the optimal 3rd overload line for every NIKKE B3. The overload calculator uses frame-tick sim data to rank every roll by DPS gain.',
   },
   team: {
-    title: 'NIKKE Optimal Team Generator — Best 5-Nikke Team Builder',
+    title: 'NIKKE Team Generator — Best 5-Unit Solo Raid Team',
     desc: 'Generate the best 5-Nikke solo-raid team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
   },
   roster: {
-    title: 'NIKKE Solo-Raid Roster Generator — Best Team from Your Units',
-    desc: 'Input your NIKKE roster and generate the optimal solo-raid team. Accounts for your actual units, gear, and overload lines.',
+    title: 'NIKKE Roster Generator — Best Solo-Raid Teams from Your Units',
+    desc: 'Input your NIKKE roster and generate the optimal solo-raid teams. Accounts for your actual units, gear, and overload lines.',
   },
   rostersim: {
     title: 'NIKKE Roster Sim — Compare All Your Solo-Raid Teams',
@@ -70,12 +72,16 @@ const META = {
     desc: 'Calculate the most resource-efficient path to level your dolls (Favorite Items) to SR phase 15. Minimize waste, maximize stats.',
   },
   charge: {
-    title: 'NIKKE Charge Speed Breakpoints — RL & SR Frame Table',
-    desc: 'Charge-speed frame breakpoints for every RL and SR in NIKKE. See exactly how much charge speed you need to hit each frame threshold.',
+    title: 'NIKKE Overload Breakpoints — Charge Speed & Max Ammo Tables',
+    desc: 'Charge-speed frame breakpoints and max-ammo line costs for every RL and SR in NIKKE. See exactly how many overload lines each breakpoint takes.',
   },
   teambuilder: {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
     desc: 'Build and share NIKKE solo-raid teams visually. Set loadouts, tweak overload lines, and share your team composition with a link.',
+  },
+  resources: {
+    title: 'NIKKE Resource Calculator — Daily Custom Module & Fragment Income',
+    desc: 'Expected daily solo-raid resource drops by stage: overload custom modules, module fragments, locks, and XP fodder. Plan your daily farming.',
   },
   howto: {
     title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',
@@ -108,7 +114,11 @@ const META = {
 };
 
 const esc = (s) =>
-  s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  s
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
 function injectMeta(html, route) {
   const m = META[route.key];
@@ -120,10 +130,16 @@ function injectMeta(html, route) {
     .replace(/(<meta name="description" content=")[^"]*(")/, `$1${desc}$2`)
     .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${canonical}$2`)
     .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(/(<meta property="og:description" content=")[^"]*(")/, `$1${desc}$2`)
+    .replace(
+      /(<meta property="og:description" content=")[^"]*(")/,
+      `$1${desc}$2`,
+    )
     .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canonical}$2`)
     .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(/(<meta name="twitter:description" content=")[^"]*(")/, `$1${desc}$2`);
+    .replace(
+      /(<meta name="twitter:description" content=")[^"]*(")/,
+      `$1${desc}$2`,
+    );
 }
 
 async function main() {

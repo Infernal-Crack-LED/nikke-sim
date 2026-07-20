@@ -46,14 +46,28 @@ export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
   const rows = art.cells[cellId(cell)] ?? [];
   return rows.map(([slug, dps], i) => {
     const m = art.units[slug];
-    return { slug, name: m?.name ?? slug, element: m?.element ?? '', weapon: m?.weapon ?? '', tier: m?.tier ?? '?', dps, rank: i + 1, imageUrl: m?.imageUrl ?? null };
+    return {
+      slug,
+      name: m?.name ?? slug,
+      element: m?.element ?? '',
+      weapon: m?.weapon ?? '',
+      tier: m?.tier ?? '?',
+      dps,
+      rank: i + 1,
+      imageUrl: m?.imageUrl ?? null,
+    };
   });
 }
 
 // the charted top-N for the bars. Unfiltered = the SSS/SS chart population; an
 // element filter instead ranks ALL B3s of that element (a single element has only
 // a couple of charted units, so the element view digs into the lower tiers).
-export function chartBars(art: DpsArtifact, cell: Cell, element?: string | null, topN = 10): BarEntry[] {
+export function chartBars(
+  art: DpsArtifact,
+  cell: Cell,
+  element?: string | null,
+  topN = 10,
+): BarEntry[] {
   const pop = element
     ? rankedFor(art, cell).filter((e) => e.element === element)
     : rankedFor(art, cell).filter((e) => art.units[e.slug]?.chartPop);
@@ -63,16 +77,31 @@ export function chartBars(art: DpsArtifact, cell: Cell, element?: string | null,
 // a single unit's standing in a cell (for the compare selector); null if absent.
 // With an element filter, rank/total are within that element's population (and a
 // unit of another element is absent — it has no place on a filtered chart).
-export function compareIn(art: DpsArtifact, cell: Cell, slug: string, element?: string | null): (BarEntry & { total: number }) | null {
+export function compareIn(
+  art: DpsArtifact,
+  cell: Cell,
+  slug: string,
+  element?: string | null,
+): (BarEntry & { total: number }) | null {
   let ranked = rankedFor(art, cell);
-  if (element) ranked = ranked.filter((x) => x.element === element).map((x, i) => ({ ...x, rank: i + 1 }));
+  if (element)
+    ranked = ranked
+      .filter((x) => x.element === element)
+      .map((x, i) => ({ ...x, rank: i + 1 }));
   const e = ranked.find((x) => x.slug === slug);
   return e ? { ...e, total: ranked.length } : null;
 }
 
 // every B3 in the artifact, for the compare dropdown (name-sorted)
-export function allUnits(art: DpsArtifact): { slug: string; name: string; tier: string }[] {
+export function allUnits(
+  art: DpsArtifact,
+): { slug: string; name: string; tier: string; element: string }[] {
   return Object.entries(art.units)
-    .map(([slug, m]) => ({ slug, name: m.name, tier: m.tier }))
+    .map(([slug, m]) => ({
+      slug,
+      name: m.name,
+      tier: m.tier,
+      element: m.element,
+    }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

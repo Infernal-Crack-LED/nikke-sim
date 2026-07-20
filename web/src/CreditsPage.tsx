@@ -43,18 +43,11 @@ export function CreditsPage() {
       <header>
         <h1>Credits</h1>
         <p className='muted'>
-          The NIKKE Solo Raid Sim is built on the back of many other works I
-          found attempting to provide data to our community. All of these
-          sources below were used in conjunction with frame-by-frame video data
-          in game and had a heavy influence on the overall feasibility of this
-          project in addition to serving as external validation I could measure
-          my own testing tools against. Without the sources below, I would not
-          have been able to come as far with this project, so I want to thank
-          all of you for your contributions. I've long consumed data in my
-          obsessive min-maxing career over my long gaming history, I am happy to
-          finally contribute my own tool to a gaming community that I love. And
-          lastly, a special thank you to Tsareena from Maiden's Bakery for
-          cursing me with the idea for this insane project.
+          This sim is built on community research, datamines, and companion
+          tools — listed below with what each one contributes — validated
+          against frame-by-frame recordings of real fights. Thanks to everyone
+          whose work is cited here, and a special thanks to Tsareena from
+          Maiden's Bakery for the idea that started this project.
         </p>
       </header>
 

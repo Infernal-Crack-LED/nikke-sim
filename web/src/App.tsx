@@ -1,5 +1,6 @@
 import {
   Fragment,
+  useCallback,
   useDeferredValue,
   useEffect,
   useLayoutEffect,
@@ -7,12 +8,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import type {
-  PointerEvent as ReactPointerEvent,
-  MouseEvent as ReactMouseEvent,
-  ReactNode,
-} from 'react';
+import type { MouseEvent as ReactMouseEvent, ReactNode } from 'react';
 import { runSimMean, type SimResult } from '../../src/engine/sim';
+import { useDragReorder } from './useDragReorder';
 import { prepareTeam, type UnitOptions } from '../../src/prepare';
 import { maxBondLevel } from '../../src/relationship';
 import type { OverrideFile } from '../../src/skills/index';
@@ -23,8 +21,14 @@ import type {
   SimConfig,
 } from '../../src/types';
 import { DpsChartTab } from './DpsChartTab';
+import { ResourcesPage } from './ResourcesPage';
 import { TeamBuilderPage } from './TeamBuilderPage';
+import {
+  BrowseNikkesModal,
+  BrowseRosterNikkesModal,
+} from './components/BrowseNikkesModal';
 import { useIconThumbs } from './useIconThumbs';
+import { manifestThumbUrl } from './portraitManifest';
 import { navigate } from './router';
 import { MatrixChart } from './components/MatrixChart';
 import { PillGrid } from './components/PillGrid';
@@ -370,23 +374,27 @@ type CalcTab =
   | 'overload'
   | 'olsim'
   | 'doll'
+  | 'resources'
   | 'dps'
   | 'dpschart'
   | 'charge'
   | 'teambuilder';
-type TabGroup = 'sim' | 'tools';
+// Four tool sections, mirrored in the top nav (web/src/router.ts): Sim,
+// Rankings, Overload, Tools. The tab bar shows the current section's tabs.
+type TabGroup = 'sim' | 'rankings' | 'overload' | 'tools';
 const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
   { key: 'sim', label: 'Team Sim', group: 'sim' },
   { key: 'rostersim', label: 'Roster Sim', group: 'sim' },
-  { key: 'dpschart', label: 'DPS Rankings', group: 'sim' },
-  { key: 'dps', label: 'Custom DPS Rankings', group: 'sim' },
-  { key: 'overload', label: 'Optimize Overload', group: 'sim' },
-  { key: 'olsim', label: 'Overload Rolling', group: 'tools' },
-  { key: 'doll', label: 'Doll Leveling', group: 'tools' },
-  { key: 'charge', label: 'Overload Breakpoints', group: 'tools' },
+  { key: 'team', label: 'Team Generator', group: 'sim' },
+  { key: 'roster', label: 'Roster Generator', group: 'sim' },
+  { key: 'dpschart', label: 'DPS Rankings', group: 'rankings' },
+  { key: 'dps', label: 'Unit Comparison', group: 'rankings' },
+  { key: 'overload', label: 'Optimize Overload', group: 'overload' },
+  { key: 'olsim', label: 'Overload Rolling', group: 'overload' },
+  { key: 'charge', label: 'Overload Breakpoints', group: 'overload' },
   { key: 'teambuilder', label: 'Team Builder', group: 'tools' },
-  { key: 'team', label: 'Optimal Team Generator', group: 'tools' },
-  { key: 'roster', label: 'Solo-Raid Roster Generator', group: 'tools' },
+  { key: 'doll', label: 'Doll Leveling', group: 'tools' },
+  { key: 'resources', label: 'Resource Calculator', group: 'tools' },
 ];
 
 // Which tab the current URL selects. The first path segment is authoritative
@@ -533,12 +541,13 @@ const CORE_PRESETS = [
 ] as const;
 
 // Support-tag pools (src/types.ts CharacterData.generatorSupported/.simSupported — set by
-// src/data/sync.ts). "Unsupported" (neither tag) only ever appears on the Team Builder page,
-// which reads data.characters directly and unfiltered. `simChars` backs every picker that
-// runs the live sim engine on a chosen unit (Team Sim, Roster Sim, Optimize Overload, Overload
-// Breakpoints); `generatorChars` backs the DPS-chart-adjacent tools that rank/search across the
-// whole roster (Custom DPS Rankings, the Team/Roster generators) — gated on BOTH tags since a
-// generator candidate also needs a real kit override to produce a meaningful damage number.
+// src/data/sync.ts). "Unsupported" (neither tag) only ever appears in the Browse Nikkes
+// picker (CharacterGrid), which reads data.characters directly and unfiltered. `simChars`
+// backs every picker that runs the live sim engine on a chosen unit (Team Sim, Roster Sim,
+// Optimize Overload, Overload Breakpoints); `generatorChars` backs the DPS-chart-adjacent
+// tools that rank/search across the whole roster (Unit Comparison, the Team/Roster
+// generators) — gated on BOTH tags since a generator candidate also needs a real kit
+// override to produce a meaningful damage number.
 const simChars = Object.values(data.characters)
   .filter((c) => c.simSupported)
   .sort((a, b) => a.name.localeCompare(b.name));
@@ -1034,101 +1043,6 @@ function buffLines(blocks: any[]): string[] {
 
 // react to a media query (used to switch the team into compact/portrait mode)
 
-// pointer-based drag-to-reorder that works for both mouse and touch. items
-// register their DOM node by index; the drag element (a handle, or the item
-// itself) gets handleProps. A press that moves past a small threshold becomes a
-// drag (live-reordering via onMove by nearest item centre); a press that never
-// crosses it is treated as a tap (onTap) — lets one chip both expand and drag.
-function useDragReorder(
-  onMove: (from: number, to: number) => void,
-  onTap?: (i: number) => void,
-) {
-  const items = useRef(new Map<number, HTMLElement>());
-  const drag = useRef<{
-    pointerId: number;
-    startX: number;
-    startY: number;
-    index: number;
-    moved: boolean;
-  } | null>(null);
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-
-  const register = (i: number) => (el: HTMLElement | null) => {
-    if (el) items.current.set(i, el);
-    else items.current.delete(i);
-  };
-
-  // index of the item whose centre is nearest the pointer (2D, so it works for
-  // a horizontal strip, a single row, or a wrapped grid alike)
-  const nearest = (x: number, y: number): number => {
-    let best = -1;
-    let bestDist = Infinity;
-    items.current.forEach((el, idx) => {
-      const r = el.getBoundingClientRect();
-      const dx = r.left + r.width / 2 - x;
-      const dy = r.top + r.height / 2 - y;
-      const d = dx * dx + dy * dy;
-      if (d < bestDist) {
-        bestDist = d;
-        best = idx;
-      }
-    });
-    return best;
-  };
-
-  // onItemTap overrides the shared onTap for this initiator (e.g. a card's image
-  // focuses that card's picker on tap, but reorders on drag)
-  const handleProps = (
-    i: number,
-    onItemTap?: (i: number, e: ReactPointerEvent) => void,
-  ) => ({
-    onPointerDown: (e: ReactPointerEvent) => {
-      if (e.button && e.button !== 0) return;
-      drag.current = {
-        pointerId: e.pointerId,
-        startX: e.clientX,
-        startY: e.clientY,
-        index: i,
-        moved: false,
-      };
-      e.currentTarget.setPointerCapture(e.pointerId);
-    },
-    onPointerMove: (e: ReactPointerEvent) => {
-      const st = drag.current;
-      if (!st || e.pointerId !== st.pointerId) return;
-      if (!st.moved) {
-        const dx = e.clientX - st.startX;
-        const dy = e.clientY - st.startY;
-        if (dx * dx + dy * dy < 36) return; // ~6px threshold before it's a drag
-        st.moved = true;
-        setDragIndex(st.index);
-      }
-      const target = nearest(e.clientX, e.clientY);
-      if (target >= 0 && target !== st.index) {
-        onMove(st.index, target);
-        st.index = target;
-        setDragIndex(target);
-      }
-    },
-    onPointerUp: (e: ReactPointerEvent) => {
-      const st = drag.current;
-      if (!st || e.pointerId !== st.pointerId) return;
-      if (!st.moved) {
-        if (onItemTap) onItemTap(st.index, e);
-        else if (onTap) onTap(st.index);
-      }
-      drag.current = null;
-      setDragIndex(null);
-    },
-    onPointerCancel: () => {
-      drag.current = null;
-      setDragIndex(null);
-    },
-  });
-
-  return { register, handleProps, dragIndex };
-}
-
 // where an expanded-card index lands after a reorder from→to (so the open card
 // in compact mode keeps following the same slot)
 function remapIndex(e: number, from: number, to: number): number {
@@ -1146,7 +1060,7 @@ function CharPicker({
   slot: SlotState;
   onPick: (slug: string) => void;
   // which support-tag pool to offer — defaults to the sim-supported pool (allChars); pass
-  // generatorChars from a generator-context caller (e.g. the Custom DPS Rankings tab).
+  // generatorChars from a generator-context caller (e.g. the Unit Comparison tab).
   pool?: typeof allChars;
 }) {
   const [query, setQuery] = useState('');
@@ -1178,7 +1092,13 @@ function CharPicker({
                 setOpen(false);
               }}
             >
-              {c.imageUrl && <img src={c.imageUrl} alt='' loading='lazy' />}
+              {c.imageUrl && (
+                <img
+                  src={manifestThumbUrl(c.imageUrl, 24) ?? c.imageUrl}
+                  alt=''
+                  loading='lazy'
+                />
+              )}
               <span>{c.name}</span>
               <span className='muted'>
                 B{c.burst} · {c.weapon} · {c.element}
@@ -1233,7 +1153,13 @@ function CharSearch({
                 setQuery('');
               }}
             >
-              {c.imageUrl && <img src={c.imageUrl} alt='' loading='lazy' />}
+              {c.imageUrl && (
+                <img
+                  src={manifestThumbUrl(c.imageUrl, 24) ?? c.imageUrl}
+                  alt=''
+                  loading='lazy'
+                />
+              )}
               <span>{c.name}</span>
               <span className='muted'>
                 B{c.burst} · {c.weapon} · {c.element}
@@ -1283,6 +1209,12 @@ export function App({ user }: { user: AuthUser | null }) {
   const [syncedLevel, setSyncedLevel] = useState<number | null>(null);
   const [syncedBusy, setSyncedBusy] = useState(false);
   const [syncedMsg, setSyncedMsg] = useState<string | null>(null);
+  // Which loadout preset is "armed": while armed, a nikke newly picked into a slot
+  // automatically inherits that preset's loadout (scope lock, or its synced build).
+  // Set by clicking a preset; the most recently clicked one wins.
+  const [activePreset, setActivePreset] = useState<'scope' | 'synced' | null>(
+    null,
+  );
   // Generator: when a roster is synced, whether to include the user's non-OL-geared
   // units (as zero-gear candidates) or disregard them (default). See the pill.
   const [genIncludeNonOL, setGenIncludeNonOL] = useState(false);
@@ -1291,6 +1223,21 @@ export function App({ user }: { user: AuthUser | null }) {
   const [showBuffs, setShowBuffs] = useState(false);
   const [shared, setShared] = useState(false);
   const [imaged, setImaged] = useState(false);
+  // Browse Nikkes modals — the staged-team picker over the Team Sim tab and a
+  // staged 5×5 roster over the Roster Sim tab. The staged picks live HERE (not
+  // in the modal) so dismissing a modal without saving keeps them populated;
+  // nothing is written to the page until a Save button is pressed. Seeded from
+  // the page the first time each modal opens.
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerStaged, setPickerStaged] = useState<(string | null)[] | null>(
+    null,
+  );
+  const [showRosterPicker, setShowRosterPicker] = useState(false);
+  const [rosterPickerStaged, setRosterPickerStaged] = useState<
+    (string | null)[][] | null
+  >(null);
+  // Team Builder's current build, reported up by the page — drives the
+  // Generate link / Copy image buttons in the Team Builder page header
   const [tbSlugs, setTbSlugs] = useState<(string | null)[]>([
     null,
     null,
@@ -1298,6 +1245,14 @@ export function App({ user }: { user: AuthUser | null }) {
     null,
     null,
   ]);
+  const [tbRosterMode, setTbRosterMode] = useState(false);
+  const onTbTeamChange = useCallback(
+    (slugs: (string | null)[], rosterMode: boolean) => {
+      setTbSlugs(slugs);
+      setTbRosterMode(rosterMode);
+    },
+    [],
+  );
   const [showOlCalc, setShowOlCalc] = useState(false);
   const [olTier, setOlTier] = useState(11); // best-OL calc tier (default 11)
   const [tab, setTab] = useState<CalcTab>(() => tabFromLocation());
@@ -1336,9 +1291,19 @@ export function App({ user }: { user: AuthUser | null }) {
   const [rosterResults, setRosterResults] = useState<TeamResult[] | null>(null);
   // Roster Sim: 5 teams × 5 slugs (shared loadout), the active slot being picked,
   // and the sim output (reuses rosterView).
-  const [rosterSim, setRosterSim] = useState<(string | null)[][]>(() =>
-    Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => null)),
-  );
+  const [rosterSim, setRosterSim] = useState<(string | null)[][]>(() => {
+    // shareable prefill: /rostersim?roster=a,b,c,… (25 slugs row-major, blanks
+    // allowed) — produced by the Team Builder's roster-mode Generate link
+    const param = new URLSearchParams(window.location.search).get('roster');
+    const slugs = param
+      ? param
+          .split(',')
+          .map((s) => (data.characters[s.trim()] ? s.trim() : null))
+      : [];
+    return Array.from({ length: 5 }, (_, t) =>
+      Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null),
+    );
+  });
   const [rosterActive, setRosterActive] = useState<[number, number] | null>(
     null,
   );
@@ -1516,20 +1481,22 @@ export function App({ user }: { user: AuthUser | null }) {
     );
   };
 
-  // "scope lock" preset: no cubes, no doll, Base 5 gear, 3★/7 core, 400 synchro
+  // "scope lock" preset: no cubes, no doll, Base 5 gear, 3★/7 core, 400 synchro.
+  // relationshipLevel '' → engine uses each unit's manufacturer max (scope-lock basis).
+  const SCOPE_LOCK_PATCH: Partial<SlotState> = {
+    cubeId: 'none',
+    dollRarity: 'none',
+    ol: 'base5',
+    gearStats: null,
+    hasOverloadGear: false,
+    stars: 3,
+    core: 7,
+    relationshipLevel: '',
+  };
   const applyScopeLock = () => {
-    // relationshipLevel '' → engine uses each unit's manufacturer max (scope-lock basis)
-    setAll({
-      cubeId: 'none',
-      dollRarity: 'none',
-      ol: 'base5',
-      gearStats: null,
-      hasOverloadGear: false,
-      stars: 3,
-      core: 7,
-      relationshipLevel: '',
-    });
+    setAll(SCOPE_LOCK_PATCH);
     setLevel('400');
+    setActivePreset('scope'); // armed: newly picked nikkes inherit this loadout
   };
 
   // "Synced Roster" preset: patch every slot that holds an owned unit with its
@@ -1552,9 +1519,17 @@ export function App({ user }: { user: AuthUser | null }) {
       dollLevel: L.doll ? L.doll.level : 0,
       stars: L.stars,
       core: L.core,
+      // Expand the granular star/core buttons when the synced build isn't one of
+      // the dupe presets, so the applied values are actually visible (a real
+      // account is often e.g. 2★ / core 4, which matches no preset pill).
+      dupeCustom: !DUPE_PRESETS.some(
+        (p) => p.stars === L.stars && p.core === L.core,
+      ),
       cubeId: L.cubeId ?? 'none',
       cubeLevel: L.cubeLevel,
-      cubeCustom: false,
+      // Likewise expose the custom cube-level input when the synced level isn't a
+      // quick-pick (7/10/15), so an odd level still shows instead of nothing.
+      cubeCustom: !(CUBE_LEVELS as readonly number[]).includes(L.cubeLevel),
       skill1: L.skill1 ?? s.skill1,
       skill2: L.skill2 ?? s.skill2,
       burst: L.burst ?? s.burst,
@@ -1564,6 +1539,55 @@ export function App({ user }: { user: AuthUser | null }) {
       olExtra: L.olExtra.map((e) => ({ type: e.type, value: String(e.value) })),
     };
   };
+
+  // The patch for picking a nikke into a slot via its card picker: reset bond
+  // to the new unit's manufacturer max, and — when a loadout preset is armed —
+  // inherit its loadout. (Browse Nikkes commits do a plain slug swap instead.)
+  const pickPatch = (slot: SlotState, slug: string): Partial<SlotState> => {
+    const base: Partial<SlotState> = {
+      slug,
+      relationshipLevel: String(
+        maxBondLevel(data.characters[slug].manufacturer),
+      ),
+    };
+    if (activePreset === 'scope') {
+      // scope lock armed: the new pick inherits the scope-lock loadout
+      return { ...base, ...SCOPE_LOCK_PATCH };
+    }
+    if (activePreset === 'synced' && syncedIdx) {
+      // synced armed: the new pick inherits its synced build (owned units
+      // only; an unowned pick falls through to the default above)
+      return applyOneSyncedLoadout({ ...slot, ...base }, syncedIdx);
+    }
+    return base;
+  };
+  // Browse Nikkes (Team Sim): open with the page's current team staged.
+  const openTeamPicker = () => {
+    setPickerStaged((cur) => cur ?? slots.map((s) => s.slug));
+    setShowPicker(true);
+  };
+  // Save Team: write the staged strip into the page's slots positionally —
+  // same slug-swap semantics as the old Copy to Sim (the slots' loadouts stay
+  // put; only the units change).
+  const savePickerToSim = () => {
+    if (!pickerStaged) return;
+    setSlots((prev) =>
+      prev.map((slot, i) => ({ ...slot, slug: pickerStaged[i] ?? null })),
+    );
+    setShowPicker(false);
+  };
+  // Browse Nikkes (Roster Sim): open with the page's current roster staged.
+  const openRosterPicker = () => {
+    setRosterPickerStaged((cur) => cur ?? rosterSim.map((row) => [...row]));
+    setShowRosterPicker(true);
+  };
+  // Save Roster: write the staged 5×5 into the page wholesale.
+  const savePickerToRoster = () => {
+    if (!rosterPickerStaged) return;
+    setRosterSim(rosterPickerStaged.map((row) => [...row]));
+    setShowRosterPicker(false);
+  };
+
   const applySyncedRoster = async () => {
     setSyncedMsg(null);
     if (!user) {
@@ -1607,10 +1631,22 @@ export function App({ user }: { user: AuthUser | null }) {
         );
       else setSlots((s) => s.map((sl) => applyOneSyncedLoadout(sl, idx!)));
       if (lvl) setLevel(String(lvl));
+      setActivePreset('synced'); // armed: newly picked owned nikkes inherit their synced build
+      // Surface any synced content the sim couldn't map instead of dropping it
+      // silently — this is how a mislabelled OL line (e.g. Ele/Ammo) gets caught.
+      const unmapped = new Set<string>();
+      for (const L of idx!.values()) {
+        for (const u of L.unmappedLines ?? []) unmapped.add(u);
+        if (L.unmappedCube) unmapped.add(`cube “${L.unmappedCube}”`);
+      }
+      const unmappedNote = unmapped.size
+        ? ` Unmapped synced content (ignored): ${[...unmapped].join(', ')}.`
+        : '';
       setSyncedMsg(
-        applied > 0
+        (applied > 0
           ? `Applied your synced build to ${applied} unit${applied === 1 ? '' : 's'}${lvl ? ` · sync ${lvl}` : ''}.`
-          : 'None of your team’s units are in your synced roster.',
+          : 'None of your team’s units are in your synced roster.') +
+          unmappedNote,
       );
     } catch (e) {
       setSyncedMsg(
@@ -1887,54 +1923,6 @@ export function App({ user }: { user: AuthUser | null }) {
   const imageUrlFor = (slug: string) =>
     data.characters[slug]?.imageUrl ?? undefined;
 
-  const onTbGenerateLink = async (slugs: (string | null)[]) => {
-    const team = slugs.map((s) => s ?? '').join(',');
-    const url = new URL(window.location.href);
-    url.pathname = '/';
-    url.search = '';
-    url.searchParams.set('team', team);
-    const urlStr = url.toString();
-    try {
-      await navigator.clipboard.writeText(urlStr);
-      setShared(true);
-      setTimeout(() => setShared(false), 1500);
-    } catch {
-      window.prompt('Copy this team link:', urlStr);
-    }
-  };
-  const onTbCopyImage = async (slugs: (string | null)[]) => {
-    const units = slugs.filter(Boolean).map((s) => {
-      const c = data.characters[s!];
-      return {
-        slug: c.slug,
-        name: c.name,
-        burst: c.burst,
-        weapon: c.weapon,
-        element: c.element,
-        advantaged: weakness ? c.element === weakness : false,
-        share: 0,
-        totalDamage: 0,
-      };
-    });
-    const share: ShareTeamData = {
-      teamDamage: 0,
-      teamDps: 0,
-      fullBursts: 0,
-      fullBurstUptime: 0,
-      units,
-    };
-    const res = await shareTeamCard(
-      share,
-      shareMeta(),
-      imageUrlFor,
-      'nikke-team.png',
-    );
-    if (res !== 'unsupported') {
-      setImaged(true);
-      setTimeout(() => setImaged(false), 1500);
-    }
-  };
-
   const flashImaged = () => {
     setImaged(true);
     setTimeout(() => setImaged(false), 1500);
@@ -2006,6 +1994,85 @@ export function App({ user }: { user: AuthUser | null }) {
     } catch {
       window.prompt('Copy this link:', url);
     }
+  };
+
+  // Team Builder header share buttons — one row is a team build, five rows the
+  // expanded 5×5 roster; the link + card implementations switch accordingly.
+  const tbBuildRows = (): (string | null)[][] =>
+    tbRosterMode
+      ? Array.from({ length: 5 }, (_, r) => tbSlugs.slice(r * 5, r * 5 + 5))
+      : [tbSlugs];
+  const onTbGenerateLink = async (rows: (string | null)[][]) => {
+    const u = new URL(window.location.href);
+    u.search = '';
+    if (rows.length > 1) {
+      u.pathname = '/rostersim';
+      u.searchParams.set(
+        'roster',
+        rows
+          .flat()
+          .map((s) => s ?? '')
+          .join(','),
+      );
+    } else {
+      u.pathname = '/';
+      u.searchParams.set('team', rows[0].map((s) => s ?? '').join(','));
+    }
+    try {
+      await navigator.clipboard.writeText(u.toString());
+      setShared(true);
+      setTimeout(() => setShared(false), 1500);
+    } catch {
+      window.prompt('Copy this link:', u.toString());
+    }
+  };
+  const onTbCopyImage = async (rows: (string | null)[][]): Promise<void> => {
+    const res =
+      rows.length > 1
+        ? await shareRosterCard(
+            {
+              totalDamage: 0,
+              teams: rows.map((row) => ({
+                teamDamage: 0,
+                units: row
+                  .filter((s): s is string => !!s)
+                  .map((s) => {
+                    const c = data.characters[s];
+                    return { slug: c.slug, name: c.name, element: c.element };
+                  }),
+              })),
+            },
+            shareMeta(),
+            imageUrlFor,
+            'nikke-roster.png',
+          )
+        : await shareTeamCard(
+            {
+              teamDamage: 0,
+              teamDps: 0,
+              fullBursts: 0,
+              fullBurstUptime: 0,
+              units: rows[0]
+                .filter((s): s is string => !!s)
+                .map((s) => {
+                  const c = data.characters[s];
+                  return {
+                    slug: c.slug,
+                    name: c.name,
+                    burst: c.burst,
+                    weapon: c.weapon,
+                    element: c.element,
+                    advantaged: weakness ? c.element === weakness : false,
+                    share: 0,
+                    totalDamage: 0,
+                  };
+                }),
+            },
+            shareMeta(),
+            imageUrlFor,
+            'nikke-team.png',
+          );
+    if (res !== 'unsupported') flashImaged();
   };
 
   // Copy the Sim-tab result card (real portraits) to the clipboard via the shared
@@ -2780,7 +2847,11 @@ export function App({ user }: { user: AuthUser | null }) {
           )}
         </div>
         {hidePortrait ? null : c?.imageUrl ? (
-          <img {...portraitProps} src={c.imageUrl} alt={c.name} />
+          <img
+            {...portraitProps}
+            src={manifestThumbUrl(c.imageUrl, 200) ?? c.imageUrl}
+            alt={c.name}
+          />
         ) : drag ? (
           <div {...portraitProps} className='portrait empty draggable'>
             ?
@@ -2793,15 +2864,7 @@ export function App({ user }: { user: AuthUser | null }) {
         <CharPicker
           slot={slot}
           pool={pool}
-          onPick={(slug) =>
-            // reset bond to the newly-picked unit's manufacturer max
-            onChange({
-              slug,
-              relationshipLevel: String(
-                maxBondLevel(data.characters[slug].manufacturer),
-              ),
-            })
-          }
+          onPick={(slug) => onChange(pickPatch(slot, slug))}
         />
         {c?.burst === 'Λ' && (
           <div className='pills small'>
@@ -3167,7 +3230,7 @@ export function App({ user }: { user: AuthUser | null }) {
     if (tab === 'team') {
       return (
         <section className='calc-tab'>
-          <h2>Optimal Team</h2>
+          <h2>Team Generator</h2>
           <p className='muted'>
             Finds the strongest 5-nikke team for the chosen boss weakness
             {weakness ? ` (${weakness})` : ' (no element selected)'} under the
@@ -3199,11 +3262,11 @@ export function App({ user }: { user: AuthUser | null }) {
     if (tab === 'roster') {
       return (
         <section className='calc-tab'>
-          <h2>Solo-Raid Roster Generator</h2>
+          <h2>Roster Generator</h2>
           <p className='muted'>
             Builds the top 5 teams with no character reused across teams (same
-            scoring as Optimal Team). Takes a few seconds — it runs hundreds of
-            fights.
+            scoring as Team Generator). Takes a few seconds — it runs hundreds
+            of fights.
           </p>
           {syncedGenPanel}
           {blockedPanel}
@@ -3240,6 +3303,13 @@ export function App({ user }: { user: AuthUser | null }) {
           </p>
           {rosterInputView}
           <div className='roster-sim-actions'>
+            <button
+              className='share-btn'
+              title='stage all five teams from the filterable roster grid, then save them to the page'
+              onClick={openRosterPicker}
+            >
+              ▦ Browse Nikkes
+            </button>
             <button
               className='calc-run'
               onClick={runRosterSim}
@@ -3284,7 +3354,7 @@ export function App({ user }: { user: AuthUser | null }) {
         dpsControlValid && dpsGroups.some(groupComplete) && !calcBusy;
       return (
         <section className='calc-tab'>
-          <h2>Custom DPS Rankings</h2>
+          <h2>Unit Comparison</h2>
           <div className='pills small dps-mode'>
             <button
               className={dpsMode === 'custom' ? 'on' : ''}
@@ -3427,7 +3497,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     }))}
                     onShareImage={() =>
                       void copyDpsChartImage({
-                        title: 'Custom DPS Rankings — variable groups',
+                        title: 'Unit Comparison — variable groups',
                         bars: dpsResults.map((res) => ({
                           name: res.varUnits.map((u) => u.name).join(' + '),
                           element:
@@ -3440,7 +3510,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     }
                   />
                   <details className='dps-details'>
-                    <summary className='muted'>details table</summary>
+                    <summary className='muted'>full comparison table</summary>
                     <table>
                       <thead>
                         <tr>
@@ -3813,7 +3883,7 @@ export function App({ user }: { user: AuthUser | null }) {
       // compact ranked table beneath a chart
       const olTable = (baseline: number, results: OlConfigResult[]) => (
         <details className='dps-details'>
-          <summary className='muted'>details table</summary>
+          <summary className='muted'>full line ranking</summary>
           <table>
             <thead>
               <tr>
@@ -4526,7 +4596,7 @@ export function App({ user }: { user: AuthUser | null }) {
       const faqPanel = (
         <div style={{ maxWidth: 780 }}>
           {faqItem(
-            '1. Best way to roll an 8/12 T11+ set from scratch?',
+            'Best way to roll an 8/12 T11+ set from scratch?',
             'Put Elemental Damage + ATK on all 4 pieces and stop there. Budget roughly 260 modules for the whole set.',
             <>
               You only need <b>2 good lines per piece</b>, so ignore the third
@@ -4540,7 +4610,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </>,
           )}
           {faqItem(
-            '2. Best way to roll a 12/12 T11+ set from scratch?',
+            'Best way to roll a 12/12 T11+ set from scratch?',
             <>
               Same plan, but fill all <b>3 lines</b> per piece (Elem + ATK + one
               kit line). Budget ~585 modules — a bit over double an 8/12. One
@@ -4565,8 +4635,8 @@ export function App({ user }: { user: AuthUser | null }) {
             </>,
           )}
           {faqItem(
-            '3. I hit a T15 (black line) on Line 1 but nothing else yet — lock it?',
-            'Yes, lock it. A T15 is basically the jackpot — you almost never want to throw it back.',
+            'I hit a T15 (black line) on Line 1 but nothing else yet — lock it?',
+            'Yes, lock it. A specific stat rolling T15 is roughly a 1-in-1,000 event — rerolling it costs more than keeping it.',
             <>
               A specific stat hitting T15 happens only about{' '}
               <b>1 in 1,000 rolls</b>, so tossing it and hoping to get it again
@@ -4584,13 +4654,13 @@ export function App({ user }: { user: AuthUser | null }) {
                   unless you&rsquo;re totally out of modules.
                 </li>
               </ul>
-              Bottom line: keep the jackpot line. The sim does this
-              automatically — it holds Line 1 only when it&rsquo;s already good
-              enough and leaves a weak Line 1 unlocked.
+              Bottom line: keep a T15 Line 1. The sim does this automatically —
+              it holds Line 1 only when it&rsquo;s already good enough and
+              leaves a weak Line 1 unlocked.
             </>,
           )}
           {faqItem(
-            '4. What are the odds to roll T11 or higher?',
+            'What are the odds to roll T11 or higher?',
             'About 1 in 20 (5%) for any single line.',
             <>
               Every line that rolls has a <b>5% chance</b> to land in the top
@@ -4601,7 +4671,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </>,
           )}
           {faqItem(
-            '5. What are the odds to roll all 3 lines on one item in a single roll?',
+            'What are the odds to roll all 3 lines on one item in a single roll?',
             'About 1 in 7 (15%).',
             <>
               A piece always shows Line 1, shows Line 2 half the time (
@@ -4616,7 +4686,7 @@ export function App({ user }: { user: AuthUser | null }) {
 
       return (
         <section className='calc-tab'>
-          <h2>Overload Roll Sim</h2>
+          <h2>Overload Rolling</h2>
           <div className='pills small dps-mode'>
             <button
               className={olSimSub === 'calc' ? 'on' : ''}
@@ -4925,7 +4995,7 @@ export function App({ user }: { user: AuthUser | null }) {
       const dollFaqPanel = (
         <div style={{ maxWidth: 780 }}>
           {dollFaq(
-            '1. What is the overall strategy for leveling dolls?',
+            'What is the overall strategy for leveling dolls?',
             <>
               Use <b>all</b> your kits — don&rsquo;t hoard. Blue kits are the
               workhorse; spend Purple and Gold to relieve the Blue crunch, and
@@ -4943,7 +5013,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </>,
           )}
           {dollFaq(
-            '2. Better to level rare (R) dolls 0→15 first, or combine them?',
+            'Better to level rare (R) dolls 0→15 first, or combine them?',
             <>
               <b>Combine (trade) them.</b> Four spare R dolls traded are worth
               far more than leveling one to 15 to launder.
@@ -4989,8 +5059,11 @@ export function App({ user }: { user: AuthUser | null }) {
         </section>
       );
     }
+    if (tab === 'resources') {
+      return <ResourcesPage />;
+    }
     if (tab === 'teambuilder') {
-      // Team Builder callbacks — save/copy/link/image actions for the built team
+      // Team Builder callbacks — save/copy actions for the built team
       const onTbSaveTeam = async (slugs: (string | null)[]) => {
         const names = slugs
           .filter(Boolean)
@@ -5025,15 +5098,18 @@ export function App({ user }: { user: AuthUser | null }) {
         setSavedFlash(true);
         setTimeout(() => setSavedFlash(false), 1500);
       };
-      const onTbCopyToSim = (slugs: (string | null)[]): string | null => {
+      const unsupportedWarning = (slugs: (string | null)[]): string | null => {
         const unsupported = slugs
           .filter((s): s is string => !!s)
           .map((s) => data.characters[s])
           .filter((c) => c && !c.simSupported);
-        if (unsupported.length) {
-          const names = unsupported.map((c) => c.name).join(', ');
-          return `${names} ${unsupported.length === 1 ? 'is' : 'are'} currently unsupported for the sim. We're constantly updating the backlog of unsupported Nikkes, check back soon.`;
-        }
+        if (!unsupported.length) return null;
+        const names = unsupported.map((c) => c.name).join(', ');
+        return `${names} ${unsupported.length === 1 ? 'is' : 'are'} currently unsupported for the sim. We're constantly updating the backlog of unsupported Nikkes, check back soon.`;
+      };
+      const onTbCopyToSim = (slugs: (string | null)[]): string | null => {
+        const warning = unsupportedWarning(slugs);
+        if (warning) return warning;
         setSlots((prev) =>
           prev.map((slot, i) => ({
             ...slot,
@@ -5043,12 +5119,24 @@ export function App({ user }: { user: AuthUser | null }) {
         selectTab('sim');
         return null;
       };
+      // Only offered in the expanded 5×5 mode — replaces the whole roster.
+      const onTbCopyToRoster = (rows: (string | null)[][]): string | null => {
+        const warning = unsupportedWarning(rows.flat());
+        if (warning) return warning;
+        setRosterSim(rows.map((row) => [...row]));
+        selectTab('rostersim');
+        return null;
+      };
+      // Generate link + Copy image live in the page header (component scope,
+      // since the header renders outside this branch); the page reports its
+      // build up via onTeamChange so they can act on it.
       return (
         <TeamBuilderPage
           user={user}
           onSaveTeam={onTbSaveTeam}
           onCopyToSim={onTbCopyToSim}
-          onTeamChange={setTbSlugs}
+          onCopyToRoster={onTbCopyToRoster}
+          onTeamChange={onTbTeamChange}
         />
       );
     }
@@ -5062,13 +5150,14 @@ export function App({ user }: { user: AuthUser | null }) {
     sim: 'NIKKE Solo Raid Sim',
     rostersim: 'Roster Sim',
     dpschart: 'DPS Rankings',
-    dps: 'Custom DPS Rankings',
-    overload: 'Overload Optimizer',
-    team: 'Optimal Team Generator',
+    dps: 'Unit Comparison',
+    overload: 'Optimize Overload',
+    team: 'Team Generator',
     roster: 'Roster Generator',
     olsim: 'Overload Rolling',
     doll: 'Doll Leveling',
-    charge: 'Charge Speed Breakpoints',
+    resources: 'Resource Calculator',
+    charge: 'Overload Breakpoints',
     teambuilder: 'Team Builder',
   };
   return (
@@ -5076,7 +5165,9 @@ export function App({ user }: { user: AuthUser | null }) {
       <header>
         <div className='header-row'>
           <h1>{TAB_H1[tab] ?? 'NIKKE Solo Raid Sim'}</h1>
-          {!inTools && (
+          {/* team share actions act on the hand-built team, so they stay off
+              the generator tabs (which have their own result share buttons) */}
+          {!inTools && tab !== 'team' && tab !== 'roster' && (
             <div className='share-actions'>
               {user && (
                 <>
@@ -5142,17 +5233,25 @@ export function App({ user }: { user: AuthUser | null }) {
             <div className='share-actions'>
               <button
                 className='share-btn'
-                onClick={() => void onTbGenerateLink(tbSlugs)}
-                disabled={!tbSlugs.some((s) => s !== null)}
-                title='copy a link that prefills this team'
+                onClick={() => void onTbGenerateLink(tbBuildRows())}
+                disabled={!tbSlugs.some(Boolean)}
+                title={
+                  tbRosterMode
+                    ? 'copy a link that prefills this roster in the Roster Sim'
+                    : 'copy a link that prefills this team in the Team Sim'
+                }
               >
                 {shared ? '✓ Link copied' : '🔗 Generate link'}
               </button>
               <button
                 className='share-btn'
-                onClick={() => void onTbCopyImage(tbSlugs)}
-                disabled={!tbSlugs.some((s) => s !== null)}
-                title='copy a summary image of the team to your clipboard'
+                onClick={() => void onTbCopyImage(tbBuildRows())}
+                disabled={!tbSlugs.some(Boolean)}
+                title={
+                  tbRosterMode
+                    ? 'copy a summary image of the roster to your clipboard'
+                    : 'copy a summary image of the team to your clipboard'
+                }
               >
                 {imaged ? '✓ Copied' : '🖼 Copy image'}
               </button>
@@ -5202,6 +5301,7 @@ export function App({ user }: { user: AuthUser | null }) {
         tab !== 'charge' &&
         tab !== 'olsim' &&
         tab !== 'doll' &&
+        tab !== 'resources' &&
         tab !== 'teambuilder' &&
         !(tab === 'overload' && olMode === 'matrix') && (
           <>
@@ -5295,28 +5395,19 @@ export function App({ user }: { user: AuthUser | null }) {
                 <div className='pills small'>
                   <button
                     className={
-                      'scope-lock' +
-                      (allHave(
-                        (s) =>
-                          s.cubeId === 'none' &&
-                          s.dollRarity === 'none' &&
-                          !s.gearStats &&
-                          s.ol === 0 &&
-                          s.stars === 3 &&
-                          s.core === 7,
-                      ) && level === '400'
-                        ? ' on'
-                        : '')
+                      'scope-lock' + (activePreset === 'scope' ? ' on' : '')
                     }
-                    title='no cubes · no doll · OL0 gear · 3★ / 7 core · 400 synchro'
+                    title='no cubes · no doll · Base 5 gear · 3★ / 7 core · 400 synchro — stays armed, so newly picked nikkes inherit it'
                     onClick={applyScopeLock}
                   >
                     🔒 Scope Lock
                   </button>
                   <button
-                    className='scope-lock'
+                    className={
+                      'scope-lock' + (activePreset === 'synced' ? ' on' : '')
+                    }
                     disabled={syncedBusy}
-                    title='apply your synced NIKKE account build (cube · gear · grade/core · skills · overload lines · bond) + synchro level to every unit you own'
+                    title='apply your synced NIKKE account build (cube · gear · grade/core · skills · overload lines · bond) + synchro level to every unit you own — stays armed, so newly picked nikkes inherit it'
                     onClick={applySyncedRoster}
                   >
                     {syncedBusy ? '⏳ Syncing…' : '🔄 Synced Roster'}
@@ -5528,6 +5619,15 @@ export function App({ user }: { user: AuthUser | null }) {
 
       {tab === 'sim' && (
         <>
+          <div className='sim-browse-row'>
+            <button
+              className='share-btn'
+              title='filter the full roster by weapon, burst, class, element, manufacturer, or kit role'
+              onClick={openTeamPicker}
+            >
+              ▦ Browse Nikkes
+            </button>
+          </div>
           {compactTeam ? (
             <section className='team compact'>
               <div className='team-strip'>
@@ -5546,7 +5646,11 @@ export function App({ user }: { user: AuthUser | null }) {
                       {...teamReorder.handleProps(i)}
                     >
                       {c?.imageUrl ? (
-                        <img src={c.imageUrl} alt={c.name} draggable={false} />
+                        <img
+                          src={manifestThumbUrl(c.imageUrl, 64) ?? c.imageUrl}
+                          alt={c.name}
+                          draggable={false}
+                        />
                       ) : (
                         <span className='chip-empty'>?</span>
                       )}
@@ -5730,57 +5834,73 @@ export function App({ user }: { user: AuthUser | null }) {
                 transition: 'opacity 0.12s ease',
               }}
             >
+              {simStale && (
+                <div className='stale-chip'>
+                  inputs changed — showing the last sim; edit-complete results
+                  re-run automatically
+                </div>
+              )}
               <div className='summary muted'>
                 team <b className='big'>{fmt(r.teamDamage)}</b> ·{' '}
                 {fmt(r.teamDps)} DPS · {r.fullBursts} full bursts ·{' '}
                 {(r.fullBurstUptime * 100).toFixed(0)}% FB uptime ·{' '}
-                {r.rotationStallSec.toFixed(1)}s stalled
+                <span title='time a burst stage window sat open with no ready caster — the rotation waited'>
+                  {r.rotationStallSec.toFixed(1)}s stalled
+                </span>
               </div>
-              <table>
-                <thead>
-                  <tr>
-                    <th></th>
-                    <th>nikke</th>
-                    <th className='r'>damage</th>
-                    <th className='r'>share</th>
-                    <th className='r'>DPS</th>
-                    <th className='r'>normal / skill / burst</th>
-                    <th className='r'>bursts</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {r.units.map((u) => (
-                    <tr key={u.position}>
-                      <td className='muted'>{u.position}</td>
-                      <td>
-                        {u.name}
-                        {u.advantaged && (
-                          <span className='adv' title='elemental advantage'>
-                            {' '}
-                            ▲
-                          </span>
-                        )}
-                        {u.warnings.length > 0 && (
-                          <span
-                            title={`not fully modeled — ${u.warnings.length} skipped/unparsed effect${u.warnings.length > 1 ? 's' : ''} (see modeling notes)`}
-                          >
-                            {' '}
-                            ⚠️
-                          </span>
-                        )}
-                      </td>
-                      <td className='r'>{fmt(u.totalDamage)}</td>
-                      <td className='r share'>{(u.share * 100).toFixed(1)}%</td>
-                      <td className='r'>{fmt(u.dps)}</td>
-                      <td className='r muted'>
-                        {fmt(u.breakdown.normal)} / {fmt(u.breakdown.skill)} /{' '}
-                        {fmt(u.breakdown.burst)}
-                      </td>
-                      <td className='r'>{u.burstCasts}</td>
+              <div className='table-x'>
+                <table>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>nikke</th>
+                      <th className='r'>damage</th>
+                      <th className='r'>share</th>
+                      <th className='r'>DPS</th>
+                      <th className='r'>normal / skill / burst</th>
+                      <th className='r'>bursts</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {r.units.map((u) => (
+                      <tr key={u.position}>
+                        <td className='muted'>{u.position}</td>
+                        <td>
+                          {u.name}
+                          {u.advantaged && (
+                            <span className='adv' title='elemental advantage'>
+                              {' '}
+                              ▲
+                            </span>
+                          )}
+                          {u.warnings.length > 0 && (
+                            <span
+                              title={`not fully modeled — ${u.warnings.length} skipped/unparsed effect${u.warnings.length > 1 ? 's' : ''} (see modeling notes)`}
+                            >
+                              {' '}
+                              ⚠️
+                            </span>
+                          )}
+                        </td>
+                        <td className='r'>{fmt(u.totalDamage)}</td>
+                        <td className='r share'>
+                          {(u.share * 100).toFixed(1)}%
+                        </td>
+                        <td className='r'>{fmt(u.dps)}</td>
+                        <td className='r muted'>
+                          {fmt(u.breakdown.normal)} / {fmt(u.breakdown.skill)} /{' '}
+                          {fmt(u.breakdown.burst)}
+                        </td>
+                        <td className='r'>{u.burstCasts}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className='results-legend muted'>
+                ▲ elemental advantage · ⚠️ not fully modeled (see modeling
+                notes)
+              </div>
 
               <div className='toggles'>
                 <button onClick={() => setShowBuffs(!showBuffs)}>
@@ -5857,6 +5977,42 @@ export function App({ user }: { user: AuthUser | null }) {
 
       {tab !== 'sim' && renderCalcTab()}
 
+      {showPicker && pickerStaged && (
+        <BrowseNikkesModal
+          staged={pickerStaged}
+          onStagedChange={setPickerStaged}
+          onClose={() => setShowPicker(false)}
+          actions={
+            <button
+              className='teambuilder-action'
+              disabled={!pickerStaged.some(Boolean)}
+              title='apply this team to the five slots on the page'
+              onClick={savePickerToSim}
+            >
+              Save Team
+            </button>
+          }
+        />
+      )}
+
+      {showRosterPicker && rosterPickerStaged && (
+        <BrowseRosterNikkesModal
+          staged={rosterPickerStaged}
+          onStagedChange={setRosterPickerStaged}
+          onClose={() => setShowRosterPicker(false)}
+          actions={
+            <button
+              className='teambuilder-action'
+              disabled={!rosterPickerStaged.flat().some(Boolean)}
+              title='apply this roster to the page'
+              onClick={savePickerToRoster}
+            >
+              Save Roster
+            </button>
+          }
+        />
+      )}
+
       {showTeams && (
         <div className='modal-backdrop' onClick={() => setShowTeams(false)}>
           <div className='modal' onClick={(e) => e.stopPropagation()}>
@@ -5925,12 +6081,6 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
         </div>
       )}
-
-      <footer className='muted'>
-        v1 assumptions: 0 enemy debuffs · full HP · auto-mode enabled · middle
-        unit is the focused unit · burst order decided left to right · parts
-        &amp; pierce in a later version
-      </footer>
     </div>
   );
 }
