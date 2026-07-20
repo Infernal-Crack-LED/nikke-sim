@@ -8,6 +8,33 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) Datamined skill CDs → sim: audit done, `helm-aquamarine` skill2 landed on `interval:4`;
+  no cooldown-gate primitive needed.** Consuming the new `skillCooldownsSec` field (bakery-bot, per
+  `docs/handoffs/2026-07-20-skill-cooldowns-to-sim.md`). Audit of all 8 units with a non-null skill-1/2
+  CD found **no genuine class-3** (event + rate-limit): the damage lines carrying event-proxy triggers
+  have no "Activates when…" clause in the kit text, so they are class-1 pure timers. The unbuilt
+  per-block cooldown-gate mechanism therefore has no consumer — left unbuilt (no dead schema).
+  - **`helm-aquamarine` (AR/Iron/B2, NOT base `helm`) — LANDED.** skill2 105.58% random-enemy hit had an
+    INVENTED `hitCount:30` proxy (the override note's own flagged ⚑TOP, borrowed from skill1's genuine
+    30-normal trigger; skill2 has no such clause). Re-encoded `{interval, sec:4}` from the datamined CD.
+    Solo total 51.499M→50.142M (−2.6%; over-firing proxy at ~2.5s → true 4s). **MODEL_ONLY** — she is in
+    no graded comp, regression byte-identical. ⚑ first-fire phase (t=4 vs t=0) unpinned.
+  - **`isabel` — reviewed, NOT snapped.** The handoff instructed snapping her measured DoT period 14.7→15
+    to match the CD. Refuted by frame math: 14.7 → 882f → 12 ticks/180s (the RUN-VALIDATED count); 15 →
+    900f → 12th tick lands at frame 10800, outside the 10800-frame loop → 11 ticks, contradicting the
+    measurement. Measured observable > coarser datamined CD; 14.7 stays. Documented in her note.
+  - **No change:** `snow-white` (already `interval:15`), `prika` (CD 0), `liter` (heal, damage-inert),
+    `takina` (continuous `passive` buffs, no lapse).
+  - **DEFERRED to owner (data-provenance conflicts, NOT flipped):** `rosanna-chic-ocean` (new skill2 CD 30
+    vs a deliberate continuous-DoT "hard rule" encoding — implies 50% uptime, current is 100%) and
+    `sakura-bloom-in-summer` (new skill2 CD 30 directly contradicts her note's datamine finding of "no S2
+    CD; S1 force-casts once" — implies ~5× more DoT). Same species as the bready burst flag; needs a
+    source reconciliation before enacting.
+  - **Burst-CD cross-check (roster sweep):** only 2 divergences of `skillCooldownsSec.burst` vs
+    `burstCooldownSec` (both already modeled via `burstCooldownSec`; `.burst` unconsumed → no double-model):
+    **`bready`** `.burst=20` vs `40` — RESOLVED, owner: 40s is correct, `.burst=20` is the wrong source;
+    **`quiry`** `.burst=40` vs `60` — NEW, unresolved (owner/data question).
+
 - **(2026-07-20) Snow White `snow-white`'s burst cannon fires as a DELAYED charge hit, not a weaponSwap
   — LANDED (owner-ruled from the sw.MP4 footage).** Base `snow-white` (AR/Iron/B3, NOT
   `snow-white-heavy-arms`) keeps firing her AR through the ~5s cannon charge in-game; the cannon
