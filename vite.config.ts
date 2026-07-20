@@ -23,5 +23,15 @@ export default defineConfig({
   build: {
     outDir: fileURLToPath(new URL('./dist', import.meta.url)),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        // React lives in its own chunk, shared by the entry and every lazy
+        // route chunk — one framework instance app-wide (also lets browsers
+        // keep caching the framework across app-code deploys).
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-dom/client'],
+        },
+      },
+    },
   },
 });

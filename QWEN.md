@@ -28,6 +28,7 @@ npm run web              # dev server (hot reload)
 npm run web:build        # production build → dist/
 npm run typecheck        # TypeScript check (both web + engine)
 npm run test             # web build + Playwright smoke test
+npm run thumbs           # regenerate portrait thumbnails after a data sync
 npm run sim -- <slugs>   # CLI sim run
 bash scripts/verify.sh   # full verification (run before committing)
 ```
@@ -114,8 +115,9 @@ web/
     HowToPage.tsx        # Usage guide
     CreditsPage.tsx      # Credits
     DevPage.tsx          # Dev tools
-img/
+web/public/
   nikke-icons/           # Game UI icons (burst/class/element/manufacturer/weapon PNGs)
+  img/portraits/         # Generated portrait thumbnails (npm run thumbs; manifest: web/src/portrait-manifest.json)
   bastion.webp           # Cube icons, Maiden avatar, etc.
 data/
   characters.json        # Unit data (slugs, stats, weapons, elements)

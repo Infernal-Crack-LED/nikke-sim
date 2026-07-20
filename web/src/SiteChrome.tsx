@@ -9,6 +9,8 @@ import type { AuthUser } from './auth';
 
 const NAV: { route: Route; label: string }[] = [
   { route: 'sim', label: 'Sim' },
+  { route: 'rankings', label: 'Rankings' },
+  { route: 'overload', label: 'Overload' },
   { route: 'tools', label: 'Tools' },
   { route: 'howto', label: 'How to' },
   { route: 'mechanics', label: 'Mechanics' },
@@ -18,14 +20,24 @@ const NAV: { route: Route; label: string }[] = [
 // (open-in-new-tab, etc.) and the real href behave natively. Page links carry no
 // sim query params, so navigating to a page yields a clean URL.
 function navClick(e: MouseEvent, route: Route) {
-  if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  if (
+    e.defaultPrevented ||
+    e.button !== 0 ||
+    e.metaKey ||
+    e.ctrlKey ||
+    e.shiftKey ||
+    e.altKey
+  )
+    return;
   e.preventDefault();
   navigate(hrefFor(route));
 }
 
-// Slim top nav shared by every page. Left: the Sim / Mechanics tabs. Right:
-// Testing Requested stays visible for reach; everything else (Discord auth,
-// Patch Notes, Meet the dev, Credits) collapses into a hamburger menu.
+// Slim top nav shared by every page. Left: the four tool sections (Sim /
+// Rankings / Overload / Tools) plus the How to and Mechanics pages. Right:
+// the Discord login / account control stays visible (team saving and roster
+// sync depend on it); Testing Requested, Sync my roster, Patch Notes, Meet
+// the dev and Credits collapse into a hamburger menu.
 export function SiteNav({
   current,
   user,
@@ -95,15 +107,29 @@ export function SiteNav({
           )}
         </div>
         <div className='site-nav-right'>
-          <a
-            className={
-              'nav-btn' + (current === 'testing-requests' ? ' on' : '')
-            }
-            href={hrefFor('testing-requests')}
-            onClick={(e) => navClick(e, 'testing-requests')}
-          >
-            Testing Requested
-          </a>
+          {/* Discord auth stays visible — team saving and roster sync depend
+              on it; icon-only on mobile to save width */}
+          {user ? (
+            <div className='nav-user'>
+              <span className='nav-user-name' title='logged in'>
+                {user.username}
+              </span>
+              <button className='nav-btn nav-logout' onClick={onLogout}>
+                Log out
+              </button>
+            </div>
+          ) : (
+            <button
+              className='nav-btn discord nav-login'
+              onClick={onLogin}
+              title='save teams to your Discord account'
+            >
+              <span className='discord-icon' aria-hidden='true'>
+                <BrandIcon name='discord' />
+              </span>
+              {!mobile && <span>Log in with Discord</span>}
+            </button>
+          )}
           <div className='nav-menu' ref={menuRef}>
             <button
               className={'nav-btn nav-menu-btn' + (menuOpen ? ' on' : '')}
@@ -116,38 +142,17 @@ export function SiteNav({
             </button>
             {menuOpen && (
               <div className='nav-menu-panel' role='menu'>
-                {user ? (
-                  <div className='nav-menu-user'>
-                    <span className='nav-menu-user-name' title='logged in'>
-                      {user.username}
-                    </span>
-                    <button
-                      className='nav-menu-item'
-                      role='menuitem'
-                      onClick={() => {
-                        onLogout();
-                        setMenuOpen(false);
-                      }}
-                    >
-                      Log out
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    className='nav-menu-item discord'
-                    role='menuitem'
-                    onClick={() => {
-                      onLogin();
-                      setMenuOpen(false);
-                    }}
-                    title='save teams to your Discord account'
-                  >
-                    <span className='discord-icon' aria-hidden='true'>
-                      <BrandIcon name='discord' />
-                    </span>
-                    <span>Log in with Discord</span>
-                  </button>
-                )}
+                <a
+                  className={
+                    'nav-menu-item' +
+                    (current === 'testing-requests' ? ' on' : '')
+                  }
+                  role='menuitem'
+                  href={hrefFor('testing-requests')}
+                  onClick={(e) => menuNav(e, 'testing-requests')}
+                >
+                  Testing Requested
+                </a>
                 <a
                   className={
                     'nav-menu-item' + (current === 'roster-sync' ? ' on' : '')
@@ -204,7 +209,8 @@ export function SiteFooter() {
           <a
             key={s.label}
             className={
-              'social-tile' + (s.icon.kind === 'img' && s.icon.round ? ' round' : '')
+              'social-tile' +
+              (s.icon.kind === 'img' && s.icon.round ? ' round' : '')
             }
             href={s.href}
             target='_blank'
@@ -223,9 +229,14 @@ export function SiteFooter() {
         ))}
       </div>
       <div className='site-footer-by'>
-        made by <a href={hrefFor('dev')} onClick={(e) => navClick(e, 'dev')}>Max</a>
+        made by{' '}
+        <a href={hrefFor('dev')} onClick={(e) => navClick(e, 'dev')}>
+          Max
+        </a>
         {' · '}
-        <a href={hrefFor('credits')} onClick={(e) => navClick(e, 'credits')}>Credits</a>
+        <a href={hrefFor('credits')} onClick={(e) => navClick(e, 'credits')}>
+          Credits
+        </a>
         {' · '}NIKKE Solo Raid Sim
       </div>
     </footer>

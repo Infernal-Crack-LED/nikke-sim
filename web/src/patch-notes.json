@@ -1,11 +1,24 @@
 [
   {
+    "date": "2026-07-20",
+    "title": "Site reorganization — four sections, Browse Nikkes picker, Team Builder on Tools",
+    "notes": [
+      "The top bar now has four tool sections: Sim (Team Sim, Roster Sim, Team Generator, Roster Generator), Rankings (DPS Rankings, Unit Comparison), Overload (Optimize Overload, Overload Rolling, Overload Breakpoints), and Tools (Team Builder, Doll Leveling, Resource Calculator). Each section keeps its own tab row, and every tab keeps its own URL.",
+      "Custom DPS Rankings is now Unit Comparison — same head-to-head lab, clearer name.",
+      "Team Sim and Roster Sim have a new Browse Nikkes button: a modal with the filterable roster grid (weapon, burst, class, element, manufacturer, and kit-role filters). Team Sim stages a team of 5 and applies it with Save Team; Roster Sim shows the full 5×5 roster so all five teams can be picked at once, applied with Save Roster. Each modal opens with your current picks pre-populated, and closing without saving keeps your staged picks for next time — nothing touches the page until you press Save. Portraits drag between slots (and across teams in the 5×5), and units already placed leave the grid.",
+      "Team Builder keeps its own page on the Tools tab, with a + beside the strip that expands it to the same 5×5 roster grid as Roster Sim. Copy to Sim shows under the 5-portrait strip; Copy to Roster Sim shows when expanded and writes all five teams. Generate link and Copy image work in both modes — a team link/card in strip mode, a roster link/card (new ?roster= prefill for Roster Sim) when expanded. Units drag between slots and across teams in both layouts. Not-in-sim units can be placed on this page; the copy buttons warn and stay put if one is in the selection.",
+      "Optimal Team Generator and Solo-Raid Roster Generator are now Team Generator and Roster Generator.",
+      "Much faster page loads: every page now downloads only its own code — static pages (How to, Mechanics, Credits, Patch Notes) no longer ship the sim's engine and unit data, and the framework chunk caches separately.",
+      "Portraits are now served as pre-generated local thumbnails instead of full-res art downscaled in your browser — the roster grid and team pickers load far less data and no longer depend on the art CDN while browsing."
+    ]
+  },
+  {
     "date": "2026-07-19",
     "title": "More accurate auto-aim core hits (Hit Rate now matters)",
     "notes": [
       "Reworked how the sim predicts auto-aim core hits for Assault Rifles, SMGs, and Shotguns. Instead of a flat per-range estimate, shots now land in an aim cone that tightens onto the core the closer the boss is and the higher your Hit Rate — so core-hit rates rise smoothly with range and Hit Rate rather than snapping between fixed values.",
       "Hit Rate buffs now meaningfully improve core-hit damage: a unit under a big Hit Rate boost (e.g. Jill's burst) reaches near-100% core hits at close range, matching what the game actually does.",
-      "Net effect: units that were slightly over-credited for core hits at long range cool off, high-Hit-Rate close-range shooters warm up, and overall board accuracy improved. Rotation and Full Burst counts are unchanged."
+      "Net effect: predicted damage drops slightly for long-range core-heavy units and rises for high-Hit-Rate close-range shooters; overall board accuracy improved. Rotation and Full Burst counts are unchanged."
     ]
   },
   {

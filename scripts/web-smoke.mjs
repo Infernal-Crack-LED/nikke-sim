@@ -1,5 +1,5 @@
 import { JSDOM } from 'jsdom';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 
 const GLOBALS = [
   'window',
@@ -16,11 +16,21 @@ const GLOBALS = [
   'Event',
 ];
 
-// Mount the built bundle in a fresh JSDOM at `url` and return the dom. The
-// cache-busting query on the dynamic import forces the bundle module to
-// re-execute on each mount, so we can render more than one route (Sim + Team
-// Builder) in a single process. globalThis.document is pointed at the new dom
-// before the import so React mounts into that dom's #root.
+// Poll until pred() is truthy (or timeout) — lazy chunks + the sim's first
+// render land asynchronously after the entry module executes.
+async function waitFor(pred, timeoutMs, what) {
+  const t0 = Date.now();
+  for (;;) {
+    if (pred()) return;
+    if (Date.now() - t0 > timeoutMs)
+      throw new Error(`timed out after ${timeoutMs}ms waiting for ${what}`);
+    await new Promise((r) => setTimeout(r, 50));
+  }
+}
+
+// Mount the built bundle in a fresh JSDOM at `url` and return the dom.
+// globalThis.document is pointed at the new dom before the import so React
+// mounts into that dom's #root.
 async function mountAt(url) {
   const dom = new JSDOM(
     '<!doctype html><html><body><div id="root"></div></body></html>',
@@ -39,16 +49,32 @@ async function mountAt(url) {
   globalThis.document = dom.window.document;
   if (!globalThis.requestAnimationFrame)
     globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 0);
-  const bundle = readdirSync('dist/assets').find((f) => f.endsWith('.js'));
-  await import(
-    'file://' +
-      process.cwd() +
-      '/dist/assets/' +
-      bundle +
-      '?u=' +
-      encodeURIComponent(url)
+  // Vite's modulepreload polyfill probes lazy chunks via fetch() when the DOM
+  // lacks modulepreload support (JSDOM does) — answer the probes with an empty
+  // ok response; the real chunk load goes through Node's file:// import().
+  // (Real browsers support modulepreload and never take the fetch path.)
+  globalThis.fetch = async () => ({
+    ok: true,
+    status: 200,
+    text: async () => '',
+    json: async () => ({}),
+  });
+  // Routes are code-split — the entry chunk is the index-*.js bundle; the page
+  // chunks it lazy-imports resolve over file:// as real Node modules. Import
+  // it exactly once (bare URL): the lazy chunks import shared modules back
+  // from the entry chunk, and a cache-busting query would make Node treat the
+  // entry as two modules — double-booting React on the same #root.
+  const bundle = readdirSync('dist/assets').find(
+    (f) => f.startsWith('index') && f.endsWith('.js'),
   );
-  await new Promise((r) => setTimeout(r, 300));
+  if (!bundle) throw new Error('no entry chunk (index-*.js) in dist/assets');
+  await import('file://' + process.cwd() + '/dist/assets/' + bundle);
+  // wait for the lazy route chunk to resolve + render (Suspense)
+  await waitFor(
+    () => dom.window.document.querySelector('.app'),
+    8000,
+    'the app to mount',
+  );
   return dom;
 }
 
@@ -69,8 +95,16 @@ const menuText =
   sim.window.document.querySelector('.nav-menu-panel')?.textContent ?? '';
 
 // ---- Team Builder tab -----------------------------------------------------
-const tb = await mountAt('http://localhost:4173/teambuilder');
-const tbDoc = tb.window.document;
+// SPA-navigate the mounted app to /teambuilder the way a user would (the top
+// nav does pushState + popstate) — this also exercises the lazy route chunk.
+sim.window.history.pushState({}, '', '/teambuilder');
+sim.window.dispatchEvent(new sim.window.PopStateEvent('popstate'));
+await waitFor(
+  () => sim.window.document.querySelector('.teambuilder-pill'),
+  8000,
+  'the Team Builder tab to render',
+);
+const tbDoc = sim.window.document;
 const tbText = tbDoc.body.textContent;
 const groupLabels = [
   ...tbDoc.querySelectorAll('.teambuilder-archetype-group-label'),
@@ -84,12 +118,13 @@ const checks = {
   'share % rendered': /%/.test(text),
   'full bursts reported': /full\s*bursts/.test(text),
   'site nav renders': text.includes('Mechanics') && text.includes('Sim'),
-  'testing requested stays visible': text.includes('Testing Requested'),
+  'discord login stays visible': text.includes('Log in with Discord'),
   'hamburger menu renders':
+    menuText.includes('Testing Requested') &&
+    menuText.includes('Sync my roster') &&
     menuText.includes('Patch Notes') &&
     menuText.includes('Meet the dev') &&
-    menuText.includes('Credits') &&
-    menuText.includes('Log in with Discord'),
+    menuText.includes('Credits'),
   'social footer renders':
     text.includes('Blablalink') && text.includes('GitHub'),
   // Kit-role archetype pills render bucketed into their groups (Stat Buffs /
