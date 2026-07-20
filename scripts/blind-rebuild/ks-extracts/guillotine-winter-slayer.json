@@ -1,0 +1,50 @@
+{
+  "guillotine-winter-slayer": {
+    "name": "Guillotine: Winter Slayer",
+    "burst": "III",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "EXP trigger hitCount 6->3: materialized used the non-core branch (never fires on 100%-core boss); core branch is faithful -> board 0.94->1.062; her cadence flag (normal-fire ~26% hot, suspect datamine) is now the DOMINANT issue (measurement item). NOTE residual mis-labels her MG (she is AR)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "run H slot-5 + N8 focus: 1.21-1.34",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "PARTIAL — burst DoT + Hero-Level auras measured accurate, but normal-fire ~26% hot, NOT refit (U8; suspect datamined MG param)",
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1/skill2: normal-fire cadence (12/s, reload 81f) is datamined and measured ~26% hot — flagged for video measurement, deliberately NOT refit",
+      "skill2: EXP build rate modeled at 3 hits/stack (core branch at scope-lock 100% core exposure); the blend with the 6-hit non-core branch is an unmeasured estimate",
+      "skill2: Elemental Advantage Attack Damage 7.46% modeled as passive (Hero Level 2 is reached ~3s into the fight)"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PH water B3s (boss Fire)",
+          "ratio": 1.1469
+        }
+      ],
+      "n": 1,
+      "mean": 1.1469,
+      "mad": 0.1469,
+      "band": "±15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

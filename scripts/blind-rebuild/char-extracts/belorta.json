@@ -1,0 +1,456 @@
+{
+  "belorta": {
+    "slug": "belorta",
+    "name": "Belorta",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/yp-94/ge-69/fa335d24f058acddf87dfbd15b41b5e3.png",
+    "weapon": "RL",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Attacker",
+    "element": "Electric",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 61.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 90,
+    "chargeMultiplier": 350,
+    "hitsPerShot": 1,
+    "rl3": 11.2,
+    "burstGaugePerShot": 1.4,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 9.55% for 5 sec.",
+      "skill2": "■ Activates when an attack hits more than 4 enemy unit(s). Affects the target(s). \nDEF ▼ 3.52% for 5 sec. \nDeals 14.96% of final ATK as additional damage.",
+      "burst": "■ Affects enemies within attack range.\nDeals 192% of final ATK as damage. \n■ Affects all allies.\nCharge Speed ▲ 2.82% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1006001,
+        "shot_detail": {
+          "id": 1006001,
+          "damage": 6130,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 150,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 35000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 14000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 35000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 28000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2060101,
+        "skill2_id": 2060201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2060101,
+          "icon": "icn_skill_statexplosion_01",
+          "group_id": 20601,
+          "skill_level": 1,
+          "name_localkey": "Surprise",
+          "next_level_id": 2060102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when performing a Full Charge attack. Affects self.\n<color=#00AEFF>Explosion Radius ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3.41",
+                "4.09",
+                "4.77",
+                "5.46",
+                "6.14",
+                "6.82",
+                "7.5",
+                "8.18",
+                "8.87",
+                "9.55"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2060201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20602,
+          "skill_level": 1,
+          "name_localkey": "Greed",
+          "next_level_id": 2060202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates when an attack hits more than {description_value_01} enemy unit(s). Affects the target(s). \n<color=#00AEFF>DEF ▼ {description_value_02}% for {description_value_03} sec. \nDeals {description_value_04}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "1.25",
+                "1.51",
+                "1.76",
+                "2.01",
+                "2.26",
+                "2.51",
+                "2.77",
+                "3.02",
+                "3.27",
+                "3.52"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5.34",
+                "6.41",
+                "7.48",
+                "8.55",
+                "9.61",
+                "10.68",
+                "11.75",
+                "12.82",
+                "13.89",
+                "14.96"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1060301,
+        "ulti_skill_detail": {
+          "id": 1060301,
+          "icon": "icn_skill_c060_ult",
+          "group_id": 10603,
+          "shake_id": 1,
+          "skill_type": "InstantCircle",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Tricky Bomber",
+          "next_level_id": 1060302,
+          "prefer_target": "LowHP",
+          "resource_name": "c060_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 6857,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 700,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects <word_group=10020>enemies within attack range</word_group>.\nDeals <color=#00AEFF>{description_value_01}% of <word_group=10025>final</word_group> ATK as damage.</color> \n■ Affects all allies.\n<color=#00AEFF>Charge Speed ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "68.57",
+                "82.28",
+                "95.99",
+                "109.71",
+                "123.42",
+                "137.14",
+                "150.85",
+                "164.57",
+                "178.28",
+                "192"
+              ]
+            },
+            {
+              "description_value": [
+                "1.01",
+                "1.21",
+                "1.41",
+                "1.61",
+                "1.81",
+                "2.02",
+                "2.22",
+                "2.42",
+                "2.62",
+                "2.82"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            106030101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 306002,
+        "grade_core_id": 101,
+        "stat_enhance_id": 3105,
+        "stat_enhance_detail": {
+          "id": 3105,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 18,
+          "grade_defence": 90,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100060,
+        "piece_detail": {
+          "id": 5100060,
+          "class": "Attacker",
+          "order": 6000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 60,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Belorta's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 306001,
+        "class": "Attacker",
+        "order": 30017,
+        "name_code": 3007,
+        "corporation": "TETRA",
+        "resource_id": 60,
+        "name_localkey": "Belorta",
+        "original_rare": "SR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 10350,
+      "atk": 540,
+      "def": 79,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 18,
+        "def": 90,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 60
+    }
+  }
+}

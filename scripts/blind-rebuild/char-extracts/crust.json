@@ -1,0 +1,679 @@
+{
+  "crust": {
+    "slug": "crust",
+    "name": "Crust",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/wi-19/fh-19/6126f84f6a2e77bb6bc60d5e3019df70.png",
+    "weapon": "RL",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Water",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 61.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 16.8,
+    "burstGaugePerShot": 1.4,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when attacking with Full Charge and self is in Maillard status. Affects all allies.\nMaillard Duration ▲ 2.5 sec.\n■ Activates when attacking with Full Charge and self is in Blanching status. Affects all allies.\nBlanching Duration ▲ 2.5 sec.\n■ Activates after landing 3 normal attack(s) without Full Charge. Affects all allies.\nMaillard: ATK ▲ 10% of the skill user's ATK for 10 sec.\nRemoves Blanching.\n■ Activates after maintaining 3 Full Charge status for more than 1 sec. Affects all allies.\nBlanching: ATK ▲ 10% of the skill user's ATK for 10 sec.\nRemoves Maillard.",
+      "skill2": "■ Activates after performing 3 normal, non-Full-Charge attacks. Affects all allies not in Reliable Cooking status.\nReliable Cooking: DEF ▲ 10% of the skill user's DEF for 10 sec.\nRemoves 1 debuff.\n■ Activates after maintaining 3 Full Charge for 1 or more sec. Affects all allies not in Reliable Cooking status.\nReliable Cooking: DEF ▲ 10% of the skill user's DEF for 10 sec.\nRemoves 1 debuff.\n■ Activates when entering Full Burst. Affects all targets in Maillard or Blanching status.\nATK ▲ 20% of the skill user's ATK for 10 sec.",
+      "burst": "■ Affects all allies.\nAttack Damage ▲ 20% for 10 sec.\n■ Affects all allies when in Maillard status.\nDistributed Damage ▲ 60% for 10 sec.\n■ Affects all allies when in Blanching status.\nSustained Damage ▲ 10% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1052101,
+        "shot_detail": {
+          "id": 1052101,
+          "damage": 6130,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 14000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 28000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2521101,
+        "skill2_id": 2521201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2521101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25211,
+          "skill_level": 1,
+          "name_localkey": "Grill and Boil",
+          "next_level_id": 2521102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when attacking with Full Charge and self is in Maillard status. Affects all allies.\n<color=#00AEFF>Maillard <word_group=10051>Duration ▲ {description_value_02} sec</word_group>.</color>\n■ Activates when attacking with Full Charge and self is in Blanching status. Affects all allies.\n<color=#00AEFF>Blanching <word_group=10051>Duration ▲ {description_value_02} sec</word_group>.</color>\n■ Activates after landing {description_value_04} normal attack(s) without Full Charge. Affects all allies.\n<color=#00AEFF>Maillard: ATK ▲ {description_value_05}% of the skill user's ATK for {description_value_06} sec.\nRemoves Blanching.</color>\n■ Activates after maintaining {description_value_08} Full Charge status for more than {description_value_07} sec. Affects all allies.\n<color=#00AEFF>Blanching: ATK ▲ {description_value_09}% of the skill user's ATK for {description_value_10} sec.\nRemoves Maillard.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "1.48",
+                "1.59",
+                "1.71",
+                "1.82",
+                "1.93",
+                "2.05",
+                "2.16",
+                "2.28",
+                "2.39",
+                "2.5"
+              ]
+            },
+            {
+              "description_value": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "5.9",
+                "6.36",
+                "6.81",
+                "7.27",
+                "7.72",
+                "8.18",
+                "8.63",
+                "9.09",
+                "9.54",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "5.9",
+                "6.36",
+                "6.81",
+                "7.27",
+                "7.72",
+                "8.18",
+                "8.63",
+                "9.09",
+                "9.54",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2521201,
+          "icon": "icn_skill_debuffremove_01",
+          "group_id": 25212,
+          "skill_level": 1,
+          "name_localkey": "Reliable Cooking",
+          "next_level_id": 2521202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates after performing {description_value_02} normal, non-Full-Charge attacks. Affects all allies not in Reliable Cooking status.\n<color=#00AEFF>Reliable Cooking: DEF ▲ {description_value_03}% of the skill user's DEF for {description_value_04} sec.\n<word_group=10005>Removes 1 debuff</word_group>.</color>\n■ Activates after maintaining {description_value_06} Full Charge for {description_value_05} or more sec. Affects all allies not in Reliable Cooking status.\n<color=#00AEFF>Reliable Cooking: DEF ▲ {description_value_07}% of the skill user's DEF for {description_value_08} sec.\n<word_group=10005>Removes 1 debuff</word_group>.</color>\n■ Activates when entering Full Burst. Affects all targets in Maillard or Blanching status.\n<color=#00AEFF>ATK ▲ {description_value_09}% of the skill user's ATK for {description_value_10} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "5.91",
+                "6.36",
+                "6.82",
+                "7.27",
+                "7.73",
+                "8.18",
+                "8.64",
+                "9.09",
+                "9.55",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "5.91",
+                "6.36",
+                "6.82",
+                "7.27",
+                "7.73",
+                "8.18",
+                "8.64",
+                "9.09",
+                "9.55",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "11.81",
+                "12.72",
+                "13.63",
+                "14.54",
+                "15.45",
+                "16.36",
+                "17.27",
+                "18.18",
+                "19.09",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1521301,
+        "ulti_skill_detail": {
+          "id": 1521301,
+          "icon": "icn_skill_c521_ult",
+          "group_id": 15213,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "True Flavor",
+          "next_level_id": 1521302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c521_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Attack Damage ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects all allies when in Maillard status.\n<color=#00AEFF><word_group=10019>Distributed Damage</word_group> ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all allies when in Blanching status.\n<color=#00AEFF>Sustained Damage ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "11.81",
+                "12.72",
+                "13.63",
+                "14.54",
+                "15.45",
+                "16.36",
+                "17.27",
+                "18.18",
+                "19.09",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "35.45",
+                "38.18",
+                "40.91",
+                "43.64",
+                "46.37",
+                "49.09",
+                "51.82",
+                "54.55",
+                "57.28",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "5.91",
+                "6.36",
+                "6.82",
+                "7.27",
+                "7.73",
+                "8.18",
+                "8.64",
+                "9.09",
+                "9.55",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            152130101,
+            152130102,
+            152130103
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 352102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5305,
+        "stat_enhance_detail": {
+          "id": 5305,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100521,
+        "piece_detail": {
+          "id": 5100521,
+          "class": "Attacker",
+          "order": 52100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 521,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Crust's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 352101,
+        "class": "Supporter",
+        "order": 10130,
+        "name_code": 5136,
+        "corporation": "TETRA",
+        "resource_id": 521,
+        "name_localkey": "Crust",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 98,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 521
+    }
+  }
+}

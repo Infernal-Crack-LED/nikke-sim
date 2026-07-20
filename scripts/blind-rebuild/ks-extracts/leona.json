@@ -1,0 +1,36 @@
+{
+  "leona": {
+    "name": "Leona",
+    "burst": "II",
+    "weapon": "SG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "■ Activates after 15 normal attack(s). Affects all allies with a Shotgun.",
+        "Maximum Effective Range ▲ 20% for 10 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: 'Maximum Effective Range ▲ 20%' to shotgun allies is not modeled — the engine has no range stat and shotgun pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model",
+      "skill2: Hit Rate ▲ 20.28% is recorded but inert in the engine (100% accuracy assumed); in reality it raises the core-hit rate by an unmeasured amount",
+      "skill2: '+5 pellets' is modeled as Normal Attack +50% to ALL shotgun allies (kit: only the 2 highest-ATK shotgun allies) — over-applies in teams running 3 or more shotguns, including Leona herself",
+      "burst: the 21.32% crit-rate line assumes Roar is fully stacked at her burst cast (the stack-count gate is not modeled and may not always hold)"
+    ],
+    "board": null
+  }
+}

@@ -1,0 +1,497 @@
+{
+  "zwei": {
+    "slug": "zwei",
+    "name": "Zwei",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/dd-40/cl-95/bb6c711944734b85bc8a61bb72f94908.png",
+    "weapon": "SG",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Electric",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 201.5,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 21,
+    "burstGaugePerShot": 1.75,
+    "treasure": true,
+    "nicknames": [
+      "tzwei"
+    ],
+    "skills": {
+      "skill1": "■ Activates when entering Full Burst. Affects all allies.\nPierce Damage ▲ 20.13% for 1 round(s).\nPierce Damage ▲ 10.06% for 10 sec.\n■ Activates when performing a normal attack during Full Burst. Affects all allies.\nPierce Damage ▲ 24.99%, stacks up to 3 time(s), for 1 round(s).",
+      "skill2": "■ Activates after 5 normal attack(s). Affects all allies.\nRestores 7.52% of Cover HP.\n■ Activates when entering Full Burst. Affects all allies.\nCritical Rate ▲ 18.63% for 10 sec.\n■ Activates when performing a normal attack while in Pierce Attacks 101 status. Affects all allies.\nCritical Rate ▲ 15% for 5 sec, stacks up to 3 time(s).",
+      "burst": "■ Affects self.\nChanges the weapon in use:\nCharge Time: 1.2 sec\nDamage: 50.69% of final ATK\nFull Charge Damage: 300% of damage\nMax Ammunition Capacity: 1\nAdditional Effect: Pierce\n■ Affects all allies.\nPierce Attacks 101: Pierce Damage ▲ 25.03% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1039001,
+        "shot_detail": {
+          "id": 1039001,
+          "damage": 10075,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 5,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 2,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 3500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 7000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2390101,
+        "skill2_id": 2390201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2390101,
+          "icon": "icn_skill_penetrationdamage_01",
+          "group_id": 23901,
+          "skill_level": 1,
+          "name_localkey": "Pierce Equation",
+          "next_level_id": 2390102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF><word_group=10042>Pierce Damage</word_group> ▲ {description_value_01}% for {description_value_02} round(s). </color>\n<color=#00AEFF><word_group=10042>Pierce Damage</word_group> ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "11.89",
+                "12.81",
+                "13.72",
+                "14.64",
+                "15.55",
+                "16.47",
+                "17.38",
+                "18.3",
+                "19.21",
+                "20.13"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "5.94",
+                "6.4",
+                "6.86",
+                "7.32",
+                "7.77",
+                "8.23",
+                "8.69",
+                "9.15",
+                "9.6",
+                "10.06"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2390201,
+          "icon": "icn_skill_healcover_01",
+          "group_id": 23902,
+          "skill_level": 1,
+          "name_localkey": "Frame Analysis",
+          "next_level_id": 2390202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates after {description_value_01} normal attack(s). Affects all allies.\n<color=#00AEFF><word_group=10017>Restores {description_value_02}% of Cover HP</word_group>.</color>\n■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF>Critical Rate ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "4.38",
+                "4.73",
+                "5.08",
+                "5.43",
+                "5.78",
+                "6.13",
+                "6.48",
+                "6.83",
+                "7.17",
+                "7.52"
+              ]
+            },
+            {
+              "description_value": [
+                "11.01",
+                "11.86",
+                "12.7",
+                "13.55",
+                "14.4",
+                "15.25",
+                "16.09",
+                "16.94",
+                "17.79",
+                "18.63"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1390301,
+        "ulti_skill_detail": {
+          "id": 1390301,
+          "icon": "icn_skill_c390_ult",
+          "group_id": 13903,
+          "shake_id": 1,
+          "skill_type": "ChangeWeapon",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "Shots",
+          "name_localkey": "Overcharge Formula",
+          "next_level_id": 1390302,
+          "prefer_target": "Random",
+          "resource_name": "c390_ulti",
+          "duration_value": 1,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 2995,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 120,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1039002,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Changes the weapon in use:\nCharge Time: 1.5 sec\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK\nFull Charge Damage: 300% of damage\nMax Ammunition Capacity: {description_value_02}\nAdditional Effect: Pierce</color>\n■ Affects all allies.\n<color=#00AEFF><word_group=10042>Pierce Damage</word_group> ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "29.95",
+                "32.26",
+                "34.56",
+                "36.86",
+                "39.17",
+                "41.47",
+                "43.78",
+                "46.08",
+                "48.38",
+                "50.69"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "9.15",
+                "9.85",
+                "10.56",
+                "11.26",
+                "11.96",
+                "12.67",
+                "13.37",
+                "14.08",
+                "14.78",
+                "15.48"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            139030101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 239002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5304,
+        "stat_enhance_detail": {
+          "id": 5304,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100390,
+        "piece_detail": {
+          "id": 5100390,
+          "class": "Attacker",
+          "order": 39000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 390,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Zwei's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 239001,
+        "class": "Supporter",
+        "order": 10027,
+        "name_code": 5088,
+        "corporation": "ELYSION",
+        "resource_id": 390,
+        "name_localkey": "Zwei",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 96,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 390
+    }
+  }
+}

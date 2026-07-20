@@ -1,0 +1,494 @@
+{
+  "ludmilla": {
+    "slug": "ludmilla",
+    "name": "Ludmilla",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/hz-50/ku-59/e909fcf3a43c7a6a4c00b6ada69ad12a.png",
+    "weapon": "SMG",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Defender",
+    "element": "Water",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 10.32,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 187,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 8.55,
+    "burstGaugePerShot": 0.15,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when the last bullet hits the target. Affects the target.\nDEF ▼ 8.4% for 10 sec.\nATK ▼ 8.4% for 10 sec.",
+      "skill2": "■ Activates when entering Full Burst. Affects all enemies. \nAttract: Taunt all enemies for 15.09 sec. \n■ Activates when entering Full Burst. Affects self. \nDamage Taken ▼ 57.86% for 15 sec.",
+      "burst": "■ Affects 10 enemy unit(s) with the highest final ATK.\nDeals 163.1% of final ATK as damage. \n■ Activates when above 50% HP. Affects all allies. \nDEF ▲ 12.93% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1019001,
+        "shot_detail": {
+          "id": 1019001,
+          "damage": 1032,
+          "max_ammo": 120,
+          "shake_id": 1,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 276,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 3000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2190101,
+        "skill2_id": 2190201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2190101,
+          "icon": "icn_skill_atkdown_01",
+          "group_id": 21901,
+          "skill_level": 1,
+          "name_localkey": "Noblesse Oblige",
+          "next_level_id": 2190102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when the last bullet hits the target. Affects the target.\n<color=#00AEFF>DEF ▼ {description_value_01}% for {description_value_02} sec.\nATK ▼ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "4.62",
+                "5.04",
+                "5.46",
+                "5.88",
+                "6.3",
+                "6.72",
+                "7.14",
+                "7.56",
+                "7.98",
+                "8.4"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "4.62",
+                "5.04",
+                "5.46",
+                "5.88",
+                "6.3",
+                "6.72",
+                "7.14",
+                "7.56",
+                "7.98",
+                "8.4"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2190201,
+          "icon": "icn_skill_attention_01",
+          "group_id": 21902,
+          "skill_level": 1,
+          "name_localkey": "Queenly Disposition",
+          "next_level_id": 2190202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates when entering Full Burst. Affects all enemies. \n<color=#00AEFF>Attract: Taunt all enemies for {description_value_01} sec.</color> \n■ Activates when entering Full Burst. Affects self. \n<color=#00AEFF>Damage Taken ▼ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "15.09",
+                "15.09",
+                "15.09",
+                "15.09",
+                "15.09",
+                "15.09",
+                "15.09",
+                "15.09",
+                "15.09",
+                "15.09"
+              ]
+            },
+            {
+              "description_value": [
+                "35.82",
+                "38.27",
+                "40.72",
+                "43.17",
+                "45.62",
+                "48.07",
+                "50.52",
+                "52.97",
+                "55.42",
+                "57.86"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1190301,
+        "ulti_skill_detail": {
+          "id": 1190301,
+          "icon": "icn_skill_c190_ult",
+          "group_id": 11903,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Snow Queen",
+          "next_level_id": 1190302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c190_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 8970,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 10,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 20,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects {description_value_01} enemy unit(s) with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as damage.</color> \n■ Activates when above {description_value_03}% HP. Affects all allies. \n<color=#00AEFF>DEF ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "89.7",
+                "97.86",
+                "106.01",
+                "114.17",
+                "122.32",
+                "130.48",
+                "138.63",
+                "146.79",
+                "154.94",
+                "163.1"
+              ]
+            },
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "7.11",
+                "7.75",
+                "8.4",
+                "9.05",
+                "9.69",
+                "10.34",
+                "10.99",
+                "11.63",
+                "12.28",
+                "12.93"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            119030101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 319002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5203,
+        "stat_enhance_detail": {
+          "id": 5203,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100190,
+        "piece_detail": {
+          "id": 5100190,
+          "class": "Defender",
+          "order": 19000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 190,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Ludmilla's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 319001,
+        "class": "Defender",
+        "order": 10096,
+        "name_code": 5033,
+        "corporation": "TETRA",
+        "resource_id": 190,
+        "name_localkey": "Ludmilla",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 95,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 190
+    }
+  }
+}

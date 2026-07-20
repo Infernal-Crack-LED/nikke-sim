@@ -1,0 +1,182 @@
+{
+  "slug": "anis-star",
+  "board": {
+    "ratio": 0.954,
+    "n": 12,
+    "mad": 0.054,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Start of battle (if self alive), all allies: Burst Gauge filling speed \u25b2 6% continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive\u2192allies burstGenPct 6",
+        "note": "Exact value, correct trigger/target"
+      },
+      {
+        "kitLine": "noB1 Effect 1: Cancels Everyone's Star",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Status-cancel; inert for DPS, formation state handled by reenterStage/atkPct gating instead"
+      },
+      {
+        "kitLine": "noB1 Effect 2: My Own Star \u2014 self ATK \u25b2 40.01%, continuous, cannot be removed",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] passive\u2192self atkPct 40.01 formation:noB1",
+        "note": "Exact; modeled as passive (continuous)"
+      },
+      {
+        "kitLine": "noB1 Effect 3: all allies Cooldown of Burst Skill \u25bc 7.48 sec (on Full Burst end)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] fullBurstEnd\u2192allies burstCdr 7.48 formation:noB1",
+        "note": "Exact; CDR confirmed formation-gated (user correction 2026-07-13)"
+      },
+      {
+        "kitLine": "hasB1 Effect 1: Cancels My Own Star",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Status-cancel; inert, formation gating covers the swap"
+      },
+      {
+        "kitLine": "hasB1 Effect 2: Everyone's Star \u2014 re-enters Burst, changes to Stage 1, continuous",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[3] passive\u2192self reenterStage stage:1 formation:hasB1",
+        "note": "Now uses real reenterStage mechanic (was a burstEligibility approximation)"
+      },
+      {
+        "kitLine": "On landing Full Charge attack, target: 120.13% of final ATK as additional damage",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[4] shotFired\u2192enemy flatDamage atkPct 120.13",
+        "note": "Trigger is shotFired not fullCharge specifically \u2014 note justifies: RL always full-charges, so per-pull is equivalent"
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "On Full Burst enter while My Own Star, all allies: ATK \u25b2 35.01% of caster ATK for 10s",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] fullBurstEnter\u2192allies casterAtkPct 35.01 10s formation:noB1",
+        "note": "Exact value/duration; correctly caster-scaled and noB1-gated"
+      },
+      {
+        "kitLine": "On Full Charge while Everyone's Star, all allies: restore 1.26% of caster final Max HP as HP",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Heal \u2014 defensive, no DPS impact (F1 crown consumer per ks findings)"
+      },
+      {
+        "kitLine": "On Full Burst enter, self + allies with lower final DEF than self: Projectile Explosion Damage \u25b2 92.03% for 10s",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effect[0] fullBurstEnter\u2192allies projectileExplosionPct 92.03 10s",
+        "note": "Value exact; 'lower-DEF-than-self' target simplified to ALL allies (she is a high-DEF Defender) \u2014 documented approximation"
+      },
+      {
+        "kitLine": "On Full Burst enter, all allies: Attack Damage \u25b2 34% for 10s",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effect[1] fullBurstEnter\u2192allies attackDamagePct 34 10s",
+        "note": "Exact; formation-independent"
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Shooting Stars: 40.01% of final ATK, interval 0.25s, duration 10s (auto random-target)",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effect[0] dot atkPct 40.01 10s interval 0.25 flavor:projectileExplosion",
+        "note": "40 ticks; carries projectileExplosion flavor (benefits from her own S2 aura); as a rider never receives core damage"
+      },
+      {
+        "kitLine": "Charge time fixed at 0.7s for 10s",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effect[1] chargeSpeedPct 30 10s",
+        "note": "Subtractive charge formula: 60f\u00d7(1-0.30)=42f=0.7s (measured 2026-07-13)"
+      },
+      {
+        "kitLine": "Explosion Radius \u25b2 100% for 10s",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "AoE-radius \u2014 irrelevant vs single partless boss"
+      },
+      {
+        "kitLine": "DEF \u25b2 55.01% for 10s",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Defensive, no DPS impact (F2 per ks findings)"
+      },
+      {
+        "kitLine": "While My Own Star, self: Attack Damage \u25b2 35.2% for 10s",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] burstCast\u2192self attackDamagePct 35.2 10s formation:noB1",
+        "note": "Exact; correctly noB1-gated"
+      },
+      {
+        "kitLine": "While Everyone's Star, all allies: Max HP \u25b2 15.02% of caster max HP for 10s",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2] burstCast\u2192allies casterMaxHpPct 15.02 10s formation:hasB1",
+        "note": "Added 2026-07-17 THEME-13 for kit-SSOT completeness; offensively INERT (ally Max HP does not feed teammate atkOfMaxHpPct, e3 rule) \u2014 moves no board damage"
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "unmodeled",
+      "text": "skill1 'Cancels Everyone's Star' / 'Cancels My Own Star' status-cancels dropped",
+      "couldCauseGap": "neither",
+      "why": "Pure status bookkeeping; formation gating (atkPct/reenterStage) already represents the active swap, no DPS effect"
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2 Everyone's-Star heal (1.26% caster Max HP) dropped",
+      "couldCauseGap": "neither",
+      "why": "Defensive; no damage contribution"
+    },
+    {
+      "source": "unmodeled",
+      "text": "burst Explosion Radius \u25b2100% dropped",
+      "couldCauseGap": "neither",
+      "why": "AoE radius is inert against a single partless boss"
+    },
+    {
+      "source": "unmodeled",
+      "text": "burst DEF \u25b255.01% dropped",
+      "couldCauseGap": "neither",
+      "why": "Defensive; no DPS effect"
+    },
+    {
+      "source": "note",
+      "text": "S2 Projectile Explosion Damage 92.03% target 'allies with lower DEF than self' approximated as ALL allies",
+      "couldCauseGap": "HOT",
+      "why": "Over-grants projExpl to any ally out-DEFing Anis \u2192 sim over-predicts \u2192 low ratio (COLD). Dedicated 'TB2T2 anis-star projExpl probe' reads 0.868 (sim ~13% high), directly implicating this approximation"
+    },
+    {
+      "source": "open-question",
+      "text": "Dedicated projExpl probe comp = 0.868; board COLD (ratio 0.954, MAD 0.054, range 0.80\u20131.04)",
+      "couldCauseGap": "HOT",
+      "why": "The two lowest records (PA MiKa 0.80, projExpl probe 0.87) drive the COLD band; the projExpl probe is a targeted test of the one modeled mechanic most likely to over-predict"
+    },
+    {
+      "source": "note",
+      "text": "Tia counts as 'B1+' (re-entry B1) for formation \u2014 edge case deliberately NOT modeled",
+      "couldCauseGap": "neither",
+      "why": "Only occurs in tia+anis (inefficient pairing); probe run C explicitly EXCLUDED from anis validation"
+    },
+    {
+      "source": "note",
+      "text": "Shooting Stars never receive core damage (rider)",
+      "couldCauseGap": "neither",
+      "why": "Documented correct behavior, not a gap"
+    },
+    {
+      "source": "note",
+      "text": "Everyone's-Star Max HP grant is offensively inert (e3 rule: ally Max HP doesn't feed teammate atkOfMaxHpPct)",
+      "couldCauseGap": "neither",
+      "why": "Kept for SSOT completeness only; moves no board damage by construction"
+    },
+    {
+      "source": "note",
+      "text": "Everyone's-Star burst re-entry now uses real reenterStage (was burstEligibility approximation)",
+      "couldCauseGap": "neither",
+      "why": "Resolved 2026-07-13; no longer an open approximation"
+    }
+  ],
+  "authorIntentSummary": "The author modeled Anis:Star as a formation-gated Burst-I Defender (patterned on Rapi:RH): noB1 'My Own Star' grants continuous self ATK 40.01% + team burst CDR 7.48s and unlocks the S2 caster-ATK 35.01% and burst self Attack Damage 35.2%; hasB1 'Everyone's Star' replaces those riders with real burst re-entry at Stage 1. The formation-independent core (team burst-gen 6%, full-charge 120.13% additional damage, Full-Burst Attack Damage 34% + Projectile Explosion 92.03%, Shooting Stars projectileExplosion dot, and the 0.7s charge-fix) is fully modeled with exact values. Known-not-faithful spots are all documented: defensive/AoE lines dropped (heal, DEF, Explosion Radius), the 'lower-DEF allies' projExpl target simplified to all allies, and the Max-HP grant kept only for SSOT completeness (offensively inert). The board is COLD (0.954, MAD 0.054) and the dedicated projExpl probe reading 0.868 points at the all-allies projExpl approximation as the most likely remaining gap source."
+}

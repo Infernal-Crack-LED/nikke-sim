@@ -1,0 +1,146 @@
+{
+  "slug": "bready",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self. ATK \u25b2 70.01% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: trigger fullBurstEnter \u2192 self atkPct 70.01, 10s",
+        "note": "Fires on every team Full Burst per hard rule 6 (fullBurstEnter, not burstCast)."
+      },
+      {
+        "kitLine": "Activates when gaining a buff that increases sustained damage. Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Buff-gain entry triggers not simulated; folded into the user-selected `modes` system. Taste-entry timing (first qualifying buff gain, not t=0) is also unmodeled \u2014 taste effects are active from t=0 in the sim."
+      },
+      {
+        "kitLine": "Lingering Taste: Charge Speed \u25bc 20% for 50 sec. This effect cannot be removed.",
+        "status": "MODELED_CONFIG",
+        "where": "charFixes.chargeFrames 72 + modes ['auto','sustained','distributed']",
+        "note": "Engine clamps chargeSpeedPct \u22650 so a \u221220% buff would silently drop; modeled as permanent charge-time increase 60\u219272 frames (subtractive convention). Assumes she is always in a taste. 50s duration \u2248 permanent at scope. \u2691 72 (subtractive) vs 75 (divisive) unmeasured."
+      },
+      {
+        "kitLine": "Cancels Recommended Taste.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Mutual exclusivity enforced structurally by the mode gate (only one taste can be selected); the cancel event itself is not simulated."
+      },
+      {
+        "kitLine": "Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2]",
+        "note": "Same as sustained entry trigger \u2014 buff-gain events not simulated; folded into mode system. The 'while not in a state of increased sustained damage' priority gate is also unmodeled (mode is user-selected)."
+      },
+      {
+        "kitLine": "Recommended Taste: Charge Speed \u25bc 20% for 50 sec. This effect cannot be removed.",
+        "status": "MODELED_CONFIG",
+        "where": "charFixes.chargeFrames 72 + modes",
+        "note": "Identical mechanism to Lingering Taste charge-speed encoding \u2014 same charFixes value applies regardless of which taste is selected."
+      },
+      {
+        "kitLine": "Cancels Lingering Taste.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[3]",
+        "note": "Mutual exclusivity enforced structurally by the mode gate."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after landing 3 Full Charge attack(s) while in Lingering Taste status. Affects the target. Damage Taken \u25b2 10.2% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger hitCount count:3, mode sustained \u2192 enemy damageTakenPct 10.2, 5s",
+        "note": "Team-wide amp (enemy-targeted damageTakenPct buffs every teammate's damage). hitCount:3 with hitsPerShot 1 = 3 full-charge shots. Mode-gated to sustained (Lingering Taste)."
+      },
+      {
+        "kitLine": "Aftertaste: Deals 150.04% of final ATK as sustained damage every 1 sec for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: dot atkPct 150.04, durationSec 5, intervalSec 1, flavor sustained",
+        "note": "Encoded as repeating-trigger DoT per kit-parse directive. Stacks per proc if 3 charges land <5s apart; at est. ~1.57s/shot the proc period ~4.7s \u2248 dur 5 \u2192 mild overlap. \u2691 stack-vs-refresh depends on real cadence."
+      },
+      {
+        "kitLine": "Activates when hitting a target with Full Charge while in Recommended Taste status. Affects self. Attack Damage \u25b2 60.01% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: trigger shotFired, mode distributed \u2192 self attackDamagePct 60.01, 5s",
+        "note": "Refreshes on every full-charge hit \u2248 permanent while firing. Mode-gated to distributed (Recommended Taste)."
+      },
+      {
+        "kitLine": "Activates when hitting a target with Full Charge while in Recommended Taste status. Affects all enemies. Deals 265.07% of final ATK as distributed damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2]: trigger shotFired, mode distributed \u2192 enemy flatDamage atkPct 265.07, flavor distributed",
+        "note": "Full value vs single boss (engine default for distributed). \u2691 Whether this proc takes +50% FB bonus by landing timing is unverified."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Attack Damage \u25b2 60.19% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast \u2192 self attackDamagePct 60.19, 10s",
+        "note": "Unconditional (no taste gate). Own-burst block \u2192 burstCast trigger."
+      },
+      {
+        "kitLine": "Activates when in Lingering Taste status. Affects self. Aftertaste Effect \u25b2 349.8% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: trigger burstCast, mode sustained \u2192 self sustainedDamagePct 349.8, 10s",
+        "note": "Modeled as additive sustained-damage Damage-Up bucket (sim.ts:801). \u2691 A multiplicative DoT-magnitude reading would give \u00d77.20 vs the additive \u00d75.10 (~41% hotter) \u2014 unmeasured."
+      },
+      {
+        "kitLine": "Activates when in Recommended Taste status. Affects self. ATK \u25b2 70.09% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2]: trigger burstCast, mode distributed \u2192 self atkPct 70.09, 10s",
+        "note": "Mode-gated to distributed (Recommended Taste)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: which Taste is active is a user-selected mode (default sustained); buff-gain entry triggers not simulated; a team providing neither buff type leaves her tasteless (all taste-gated lines inert), which the sim cannot represent",
+      "couldCauseGap": "HOT",
+      "why": "Taste effects (charge-speed debuff + all taste-gated S2/burst lines) are active from t=0 in the sim. In reality they start at first qualifying buff gain. If the team provides the buff late or not at all, the sim over-credits. The tasteless state (all gated lines inert) is unrepresentable."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: Charge Speed \u25bc20% modeled as permanent 60\u219272 frames (subtractive convention); divisive would be 75 \u2014 unmeasured",
+      "couldCauseGap": "HOT",
+      "why": "72 frames < 75 frames \u2192 if the real game uses divisive convention, the sim charges faster than reality \u2192 more shots \u2192 over-models. 3-frame difference \u2248 4% faster charge cycle."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Aftertaste DoT encoded as repeating per-3-full-charge instances that stack when procs land <5s apart \u2014 stack-vs-refresh and overlap depend on unmeasured charge cadence",
+      "couldCauseGap": "HOT",
+      "why": "If the real DoT refreshes (not stacks) on re-proc, the sim over-counts sustained damage by stacking overlapping instances. At est. ~4.7s proc period vs 5s duration, mild overlap is possible."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: 'Aftertaste Effect \u25b2349.8%' modeled as additive sustained-damage Damage-Up; multiplicative DoT-magnitude reading would be ~41% hotter during burst window \u2014 unmeasured",
+      "couldCauseGap": "COLD",
+      "why": "Additive: 60.19 + 349.8 = \u00d75.10 tick multiplier. Multiplicative: 1.6019 \u00d7 4.498 = \u00d77.20. If multiplicative is correct, the sim under-models burst-window DoT damage by ~41%."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1/skill2: full cadence tuple (chargeFrames 60, reloadFrames 141, 22-frame bolt gap vs autofire) is unmeasured datamine \u2014 ~15-20% shot-count swing",
+      "couldCauseGap": "neither",
+      "why": "Direction unknown: if real cadence is faster (autofire, no bolt gap), sim under-counts shots (COLD); if slower, sim over-counts (HOT). The 22f bolt gap is assumed ON but unverified."
+    },
+    {
+      "source": "note",
+      "text": "\u2691 DISTRIBUTED-RIDER FB: verify the 265.07% proc takes +50% by landing timing (in-FB vs out-FB popup)",
+      "couldCauseGap": "HOT",
+      "why": "If the distributed rider does NOT receive the Full Burst +50% damage bonus in-game but the sim applies it by timing, the sim over-models the 265.07% rider during FB windows."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1: the two taste-ENTRY trigger lines + two 'Cancels \u2026' lines are in unmodeled.skill1 (4 entries)",
+      "couldCauseGap": "neither",
+      "why": "Structural: mutual exclusivity is enforced by the mode gate; entry triggers are replaced by user mode selection. No damage direction \u2014 it's a control-flow gap, not a magnitude gap. The tasteless-state edge case is the only damage-relevant consequence (covered by caveat 1)."
+    }
+  ],
+  "authorIntentSummary": "Parser-baseline hypothesis (explicitly NOT validated). The author modeled Bready as a taste-mode machine: the mutually-exclusive Lingering/Recommended Taste states are a user-selected `modes` config (default sustained), with the Charge Speed \u25bc20% debuff encoded as charFixes.chargeFrames 72 (engine can't represent negative chargeSpeedPct). All taste-gated damage lines (S2 DoT + damage-taken amp in sustained; S2 attack-damage self-buff + distributed rider in distributed; burst's 349.8% sustained or 70.09% ATK) are mode-gated blocks. Key approximations: taste entry is from t=0 not first-buff-gain, the 349.8% Aftertaste Effect is additive (not multiplicative), DoT stacking behavior is unverified, and the entire SR cadence tuple is datamine-default. Every \u2691 is flagged unmeasured; the unit has zero board data and has never been fielded."
+}

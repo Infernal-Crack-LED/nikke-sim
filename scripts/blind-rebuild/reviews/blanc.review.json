@@ -1,0 +1,104 @@
+{
+  "slug": "blanc",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 120 normal attack(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger {kind:hitCount, count:120}",
+        "note": "Cadence of those 120 normals rides the unverified AR datamine cadence tuple (\u2691); shield proc rate scales with it (caveat 3)."
+      },
+      {
+        "kitLine": "Creates a shared Shield equal to 11.8% of the skill user's final Max HP that protects all allies from damage. Lasts for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] target:allies \u2192 effect shield {maxHpPct:11.8, durationSec:5}",
+        "note": "Event-only shield (fires `shielded` triggers for naga-type consumers). No HP pool / damage absorption in v1, so the 11.8% basis is defensive-only; value 11.8 = lvl10."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after Full Burst ends. Affects all allies. Constantly recovers 3.68% of the skill user's final Max HP every 1 sec for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger:fullBurstEnd target:allies \u2192 heal {ticks:5, intervalSec:1}",
+        "note": "Per-second tick cadence modeled (5 events) so on-recovery consumers stay refreshed (caveat 1). The 3.68%-of-MaxHP magnitude is NOT encoded \u2014 inert, no HP pool; only the recovery-event cadence matters."
+      },
+      {
+        "kitLine": "Activates when Full Burst ends with an ally from the same squad still on the battlefield. Affects self. Cooldown of Burst Skill \u25bc 40.76 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger:fullBurstEnd target:self \u2192 burstCdr {seconds:40.76}",
+        "note": "'Ally still on battlefield' condition modeled UNCONDITIONAL \u2014 always true on the partless boss (nobody dies). Collapses 60s CD to ~19.2s residual = the kit's engine for debuff/heal uptime."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Constantly recovers 3.84% of the skill user's final Max HP every 1 sec for 8 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] trigger:burstCast target:allies \u2192 heal {ticks:8, intervalSec:1}",
+        "note": "8 per-second recovery events modeled (caveat 1). 3.84% magnitude inert (no HP pool); only event cadence is load-bearing for recovery consumers."
+      },
+      {
+        "kitLine": "Affects 1 ally unit(s) with the lowest remaining HP (except the skill user). Gain Indomitability for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0] 'Gain Indomitability for 10 sec.'",
+        "note": "Genuinely-skippable survival (revive/death-immunity class). Boss lethality unmodeled in v1, so death-immunity has no consumer. Targeting line shared with the Max HP block below."
+      },
+      {
+        "kitLine": "Affects 1 ally unit(s) with the lowest remaining HP (except the skill user). Max HP \u25b2 31.68% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2] trigger:burstCast target:alliesLowestHp {count:1, excludeSelf:true} \u2192 buff {stat:targetMaxHpPct, value:31.68, durationSec:10}",
+        "note": "Modeled for kit-SSOT completeness (caveat 2, theme-13). Offensively INERT: lands on a teammate (casterIdx\u2260self) so it does NOT feed their atkOfMaxHpPct conversion (e3 rule). v1 has no HP pool, so 'lowest remaining HP' resolves to the leftmost non-self ally as a deterministic stand-in. No board damage moves."
+      },
+      {
+        "kitLine": "Affects all enemies. Damage Taken \u25b2 39.26% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] trigger:burstCast target:enemy \u2192 buff {stat:damageTakenPct, value:39.26, durationSec:10}",
+        "note": "Her ONLY direct offensive line vs a partless boss. Value 39.26 = lvl10. High uptime thanks to the S2 burst-CDR engine."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 is an UNMEASURED estimate; unit is tier MODEL_ONLY, tuned=false, never fielded (graded.teams=0).",
+      "couldCauseGap": "neither",
+      "why": "Umbrella status: no number on this unit has been confirmed against a real fight. Direction of any future gap is unknown a priori; this is the dominant uncertainty, not a specific HOT/COLD lever."
+    },
+    {
+      "source": "note",
+      "text": "\u2691(1) CADENCE TUPLE: pullsPerSec at AR class default / reloadFrames 81 / rolling-reload \u2014 unmeasured, NOT escalated (60-ammo AR at class rate doesn't empty <1s; no revolver/per-N-round/charge flavor).",
+      "couldCauseGap": "neither",
+      "why": "Affects her own (small, Defender-class) normal DPS and the S1 shield proc rate. Note judges it low-impact and unescalated; no per-shot flavor that a wrong rate would distort. Verify rounds/min + reload gap from any Blanc focus video."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: shield cadence (every 120 normal attacks) scales with the unverified datamine cadence tuple (\u2691).",
+      "couldCauseGap": "neither",
+      "why": "Shield is event-only and defensive; only matters if a shield-gated consumer (naga-type 'when a Shield is set') is in the comp. Inert for board damage in consumer-less teams; a wrong cadence would mis-time `shielded` procs only."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2/burst: heals now emit real per-second ticks (ticks:5 S2 / ticks:8 burst) \u2014 on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17).",
+      "couldCauseGap": "neither",
+      "why": "Documented FIX, not an open gap. Inert in a team with no recovery-consumer; the prior under-count (1 event/activation) is resolved. Residual \u2691(2): exact tick-refresh semantics still unmeasured in a live consumer team \u2014 verify consumer buff uptime across an FB cycle if such a comp is graded."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: Max HP \u25b231.68% on lowest-remaining-HP ally modeled via targetMaxHpPct (own-% basis) + alliesLowestHp; offensively INERT, leftmost non-self ally is the deterministic stand-in (no HP pool).",
+      "couldCauseGap": "neither",
+      "why": "Explicitly kit-SSOT completeness only \u2014 no board damage moves. Would become offensive ONLY if it lands on an HP-scaling (atkOfMaxHpPct) teammate AND the e3 casterIdx\u2260self rule were revisited; guardrail caveat, revisit if such a comp is graded."
+    },
+    {
+      "source": "note",
+      "text": "HP-SCALING DETERMINATION: NOT an HP-scaling kit \u2014 every Max-HP reference is a defensive/heal BASIS (shield 11.8%, heals 3.68%/3.84%, burst Max HP \u25b231.68% survival buff), never an HP\u2192ATK conversion. No atkOfMaxHpPct/casterMaxHpPct scaler modeled.",
+      "couldCauseGap": "neither",
+      "why": "A settled determination (confirms 2026-07-16 baseline), not an open gap. Rules OUT a class of missing scaler; if wrong it would be a HOT surprise, but the prose supports it (no conversion language anywhere in the kit)."
+    }
+  ],
+  "authorIntentSummary": "The author modeled Blanc as a Wind AR Defender/enabler whose ONLY direct offensive line vs a partless boss is her burst's Damage Taken \u25b239.26% debuff (damageTakenPct on burstCast, 10s). The S2 burst-CDR (\u25bc40.76s on fullBurstEnd, 'ally alive' condition treated as unconditional since nobody dies on the partless boss) collapses her 60s CD to ~19.2s and is the engine for high debuff/heal uptime. S1 shield and S2/burst heals are event-only blocks that exist to fire teammate `shielded`/`recovery` triggers (naga-/Crown-type); heal magnitudes are deliberately not encoded because v1 has no HP pool. Known-not-faithful spots: Indomitability skipped as inert survival, the burst Max HP \u25b231.68% buff is a kit-SSOT-only placeholder (offensively inert, leftmost-ally stand-in for lowest-remaining-HP), and the entire unit is an unmeasured MODEL_ONLY parser baseline carrying an unverified AR cadence tuple \u2691. No kit line is silently dropped (zero MISSING)."
+}

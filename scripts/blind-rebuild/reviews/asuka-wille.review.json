@@ -1,0 +1,146 @@
+{
+  "slug": "asuka-wille",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after landing 50 normal attack(s). Affects the target(s). Deals 471.86% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: hitCount 50 \u2192 flatDamage 471.86%",
+        "note": "Verbatim from prior hand-authored slot. Values match kit Lv10."
+      },
+      {
+        "kitLine": "Activates only when in Annihilation State status. Affects 2 enemy unit(s) nearest to the crosshair every 10 shot(s). Deals 15.62% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: hitCount 44 \u2192 flatDamage 15.62%",
+        "note": "Annihilation-State gate (9s of 40s cycle) approximated as steady-state every-44-hits proxy. 2-target collapsed to 1 (single boss). Both approximations documented in caveats (\u26914/\u26915)."
+      },
+      {
+        "kitLine": "Anti A.T. Field: Damage Taken \u25b2 0.83% for 30 sec, stacks up to 30 time(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: buff damageTakenPct 0.83, durationSec 30, maxStacks 30",
+        "note": "Modeled at 30-stack cap (24.9%) as near-permanent boss debuff. Note flags this as 'slightly generous' \u2014 reaching 30 stacks assumes ~300 shots inside the 9s window (\u26914/\u26915)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst while in Annihilation State status. Affects self. Attack Damage \u25b2 30.97% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger burstCast \u2192 self, buff attackDamagePct 30.97, 10s",
+        "note": "Trigger is burstCast (not fullBurstEnter) because Annihilation State exists only via HER OWN burst \u2014 correctly prevents over-credit in multi-B3 teams. Sub-second timing shift (cast vs FB-entry) negligible. Documented in caveat."
+      },
+      {
+        "kitLine": "Effect 1: MG heating up speed \u25bc 100% for 3 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Ambiguous localization (\u26912): reading A = wind-up frozen (self-nerf, implausible), reading B = instant full fire rate for 3s (~+107 rounds, plausible). No engine vocabulary for wind-up ladder either way. Measure before modeling."
+      },
+      {
+        "kitLine": "Effect 2: Removes 100% of ammo.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "No ammo-dump vocabulary in engine. Damage content (forced early reload) approximated by the reloadSpeedPct window in skill2[1]. The dump itself is ~timing-neutral (she refills to 300 either way)."
+      },
+      {
+        "kitLine": "Effect 3: Constantly recovers 3.77% of the skill user's final Max HP every 1 sec over 3 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: heal event (collapsed 3 ticks \u2192 1 event at cast)",
+        "note": "Really activates ~9s AFTER burst cast (at Annihilation State end); schema has no delayed trigger so event fires 9s early. Recovery-consumer teammates (e.g. Crown) key off this. Documented in caveat (\u26913)."
+      },
+      {
+        "kitLine": "Effect 4: Reload speed is fixed at a 60% increase for 1 rounds.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: buff reloadSpeedPct 60, durationSec 10.5",
+        "note": "Window sized so buff covers ~ONE reload per burst cycle (mag cycle \u2248 9.6s; buffed reload \u2248 1.27s). 'Fixed at' may mean non-composing but no other reload buff in kit, so equivalent solo. Timing shifted 9s early (same caveat as Effect 3, \u26913)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Effect 1: Normal Attack Damage Multiplier \u25bc 40% for 9 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: buff normalAttackPct -40, 9s",
+        "note": "Verbatim from prior hand-authored slot."
+      },
+      {
+        "kitLine": "Effect 2: Reloads 21% magazine(s).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: instantReload fraction 0.21",
+        "note": "Verbatim from prior hand-authored slot."
+      },
+      {
+        "kitLine": "Effect 3: ATK \u25b2 46.8% of the skill user's ATK for 9 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: buff casterAtkPct 46.8, 9s",
+        "note": "Caster-relative ATK buff. Verbatim from prior hand-authored slot."
+      },
+      {
+        "kitLine": "Effect 4: Attack Damage \u25b2 36% for 9 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: buff attackDamagePct 36, 9s",
+        "note": "Verbatim from prior hand-authored slot."
+      },
+      {
+        "kitLine": "Annihilation: After Annihilation State ends, fires powerful attacks at targets affected by Anti A.T. Field. Deals 6.62% of final ATK as additional damage. Mirrors the stack count of Anti A.T. Field for certain targets.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: flatDamage 198.6% (= 6.62 \u00d7 30-stack cap)",
+        "note": "Modeled as one hit at burst cast. Real hit lands ~9s later INSIDE the Full Burst window \u2014 may be FB-boosted in-game (finding F2). Stack count baked to 30 cap. Both approximations documented in caveats."
+      },
+      {
+        "kitLine": "Anti A.T. Field status is removed after the effect is triggered.",
+        "status": "MISSING",
+        "where": "\u2014",
+        "note": "SILENT DROP. The debuff removal on Annihilation fire (~t+9s) is represented nowhere \u2014 not in blocks, config, or unmodeled. The 30s duration on the skill1[1] debuff provides a natural lapse, but real removal at t+9s would reduce debuff uptime by ~21s per 40s cycle. The note's 'slightly generous' / 'rebuilds each cycle' language partially acknowledges debuff over-credit but does not address this specific removal mechanic. Direction: HOT (over-credits damageTakenPct uptime)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: cadence tuple (MG wind-up ladder / 300 ammo / reloadFrames 161) is the unverified datamine (\u26911)",
+      "couldCauseGap": "neither",
+      "why": "Direction unknown \u2014 if real MG fire rate or reload differs from datamine, all hit-count proxies and shot economies shift. Magnitude could be large but sign is unpredictable without footage."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: the in-Annihilation-State every-10-shots proc + Anti A.T. Field stacks are steady-state proxies (every 44 hits, debuff at its 30-stack cap) (\u26914/\u26915)",
+      "couldCauseGap": "HOT",
+      "why": "Both the 44-hit proxy and the 30-stack-cap assumption are generous. If real stacks < 30, the finisher (198.6%) and the debuff (24.9%) are over-credited. The note explicitly says 'slightly generous' and 'may be optimistic'."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: the Full-Burst-entry Attack Damage buff is encoded as burstCast because it requires Annihilation State (granted only by HER OWN burst)",
+      "couldCauseGap": "neither",
+      "why": "Correctness fix, not a gap. Identical to fullBurstEnter in single-B3 comps; correctly prevents over-credit in multi-B3 teams. No damage distortion."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Emergency Repair really activates ~9s AFTER burst cast; heal event + reload-speed window start at cast (\u26913)",
+      "couldCauseGap": "neither",
+      "why": "Heal is inert without a recovery-consumer teammate. Reload-speed window starting 9s early shifts which reload is buffed but net effect (one fast reload per cycle) is approximately preserved. Small timing distortion, no clear directional bias."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2: 'MG heating up speed \u25bc 100% for 3 sec' and 'Removes 100% of ammo' are UNMODELED (\u26912)",
+      "couldCauseGap": "COLD",
+      "why": "If reading B is correct (instant full fire rate for 3s post-reload), she gains ~+107 free rounds per burst cycle that the sim does not credit \u2014 a COLD bias. The ammo dump is ~timing-neutral per the note. Net direction likely COLD if the plausible reading holds."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the Annihilation finisher (6.62% \u00d7 stacks) is modeled as one 198.6% hit at cast; the real hit lands ~9s later INSIDE the Full Burst window, so it may be FB-boosted in-game (F2)",
+      "couldCauseGap": "COLD",
+      "why": "If the finisher is FB-boosted in-game, the sim under-credits it by the Full Burst damage multiplier (~10-20%). 198.6% ATK is a significant hit; the FB boost on it is non-trivial. COLD direction."
+    },
+    {
+      "source": "note",
+      "text": "MISSING: 'Anti A.T. Field status is removed after the effect is triggered' \u2014 debuff removal at ~t+9s is not modeled; 30s duration provides natural lapse but over-credits uptime by ~21s per 40s cycle",
+      "couldCauseGap": "HOT",
+      "why": "The damageTakenPct debuff (up to 24.9%) persists for 30s in the sim but should be removed at ~t+9s when Annihilation fires. This over-credits the debuff's damage amplification for ~52% of each cycle. Partially masked by the note's 'slightly generous' flag on stack count, but the removal mechanic itself is a silent drop."
+    }
+  ],
+  "authorIntentSummary": "The override is a parser-baseline hypothesis (never fielded, no board data) with hand-authored skill1 and burst slots preserved from a prior analysis, plus an authored skill2 from the 2026-07-16 kit-parse. Skill1 models the 50-hit proc verbatim and approximates the Annihilation-State-gated every-10-shots proc as a steady-state every-44-hits proxy with the Anti A.T. Field debuff baked to its 30-stack cap. Skill2 correctly re-triggers the FB-entry buff on burstCast (not fullBurstEnter) and models Emergency Repair's heal + reload-speed as a single event at cast (9s early). Burst encodes the four Annihilation State self-buffs verbatim and collapses the Annihilation finisher to one 198.6% hit at cast. Key known-not-yet-faithful spots: the MG wind-up/ammo-dump mechanics are unmodeled (ambiguous localization, no engine vocabulary), the finisher timing shift may cost a FB boost, the debuff removal on Annihilation fire is silently dropped, and the entire cadence tuple is unverified datamine."
+}

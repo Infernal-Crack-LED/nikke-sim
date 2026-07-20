@@ -1,0 +1,39 @@
+{
+  "arcana": {
+    "name": "Arcana",
+    "burst": "II",
+    "weapon": "RL",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "team buffs (180% AD / 180% casterATK) are DEAD without a B3 Electric caster present + her Wheel-of-Fortune status; grade only in mono-Electric comp"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — audit/review language only, not fight-validated",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: the 180% Attack Damage grant targets Burst 3 Electric allies who cast their Burst Skill this rotation — inert in teams without one (⚑ unmeasured team-conditional)",
+      "skill2: the 180% caster-ATK 'Strength' grant has the same Burst-3-Electric-caster condition — inert in teams without one (⚑)",
+      "skill1/skill2: Wheel of Fortune gate approximated as every-2nd-Full-Burst-end (assumes she bursts every other rotation at her 40s cooldown) — unverified against a recording (⚑)",
+      "cadence: RL fire cadence / reloadFrames 171 / 60-frame charge are unmeasured datamine values; bolt-recovery gap shipped ON, autofire unverified (⚑)"
+    ],
+    "board": null
+  }
+}

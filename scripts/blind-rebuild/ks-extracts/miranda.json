@@ -1,0 +1,35 @@
+{
+  "miranda": {
+    "name": "Miranda",
+    "burst": "I",
+    "weapon": "SMG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "reconciled",
+      "provenance": "hand-authored",
+      "date": "2026-07-17",
+      "findings": [
+        "F0 BASIS MISMATCH: override models the TREASURE kit (owner screenshot); base kit differs (treasure SSOT gap family — helm/moran/laplace/miranda). F1 burst target count 2 vs base 1. F2 both S1 Hit-Rate lines dropped (hard rule 4). MODEL_ONLY/unowned",
+        "✅ CONFIRMED 2026-07-17: DB favorite-item prose now matches the existing screenshot-derived treasure override line-for-line; no change needed. Residual: alliesTopAtk can't exclude-self (unowned/model-only)."
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded (not owned)",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates after landing 30 normal attack(s). Affects all allies: Hit Rate ▲ 5.44% for 5 sec.",
+        "Activates after landing 30 normal attack(s). Affects all SMG-wielding allies: Hit Rate ▲ 3.79% for 5 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "board": null
+  }
+}

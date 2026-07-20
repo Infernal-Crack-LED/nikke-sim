@@ -1,0 +1,507 @@
+{
+  "sugar": {
+    "slug": "sugar",
+    "name": "Sugar",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/dw-50/ep-89/2d46168e088d0f8fa53fd98f58d22011.png",
+    "weapon": "SG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Iron",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 231.6,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 142,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 27,
+    "burstGaugePerShot": 4.5,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ 20% chance of activating when cover is attacked. Affects self. \nCritical Damage ▲ 16.39% for 10 sec. \nReload Speed ▲ 12.12% for 10 sec.",
+      "skill2": "■ Affects self. Cast when entering Full Burst.\nCritical Rate ▲ 13.02% for 10 sec. \n■ Affects all allies with a Shotgun. Cast when entering Full Burst.\nMax Ammunition Capacity ▲ 83.8% for 10 sec.",
+      "burst": "■ Affects self. \nAttack Speed ▲ 66% for 15 sec. \nHit Rate ▲33% for 15 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1014001,
+        "shot_detail": {
+          "id": 1014001,
+          "damage": 23160,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Bio",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 67,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 3300,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 4500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 9000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2140101,
+        "skill2_id": 2140201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2140101,
+          "icon": "icn_skill_statreloadtime_01",
+          "group_id": 21401,
+          "skill_level": 1,
+          "name_localkey": "Black Typhoon",
+          "next_level_id": 2140102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ {description_value_01}% chance of activating when cover is attacked. Affects self. \n<color=#00AEFF>Critical Damage ▲ {description_value_02}% for {description_value_03} sec. \nReload Speed ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "9.68",
+                "10.43",
+                "11.17",
+                "11.92",
+                "12.66",
+                "13.41",
+                "14.15",
+                "14.9",
+                "15.64",
+                "16.39"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "7.16",
+                "7.71",
+                "8.26",
+                "8.82",
+                "9.37",
+                "9.92",
+                "10.47",
+                "11.02",
+                "11.57",
+                "12.12"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2140201,
+          "icon": "icn_skill_statcritical_01",
+          "group_id": 21402,
+          "skill_level": 1,
+          "name_localkey": "Noire Sensor",
+          "next_level_id": 2140202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Affects self. Cast when entering Full Burst.\n<color=#00AEFF>Critical Rate ▲ {description_value_01}% for {description_value_02} sec.</color> \n■ Affects all allies with a Shotgun. Cast when entering Full Burst.\n<color=#00AEFF>Max Ammunition Capacity ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "7.69",
+                "8.28",
+                "8.87",
+                "9.46",
+                "10.06",
+                "10.65",
+                "11.24",
+                "11.83",
+                "12.42",
+                "13.02"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "49.52",
+                "53.33",
+                "57.14",
+                "60.95",
+                "64.76",
+                "68.57",
+                "72.38",
+                "76.19",
+                "80",
+                "83.8"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1140301,
+        "ulti_skill_detail": {
+          "id": 1140301,
+          "icon": "icn_skill_c140_ult",
+          "group_id": 11403,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Energy_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Trouble Shooter",
+          "next_level_id": 1140302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c140_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self. \n<color=#00AEFF>Attack Speed ▲ {description_value_01}% for {description_value_02} sec. \nHit Rate ▲{description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "39",
+                "42",
+                "45",
+                "48",
+                "51",
+                "54",
+                "57",
+                "60",
+                "63",
+                "66"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "19.5",
+                "21",
+                "22.5",
+                "24",
+                "25.5",
+                "27",
+                "28.5",
+                "30",
+                "31.5",
+                "33"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            114030101
+          ],
+          "before_use_function_id_list": [
+            114030103
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 314002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5104,
+        "stat_enhance_detail": {
+          "id": 5104,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100140,
+        "piece_detail": {
+          "id": 5100140,
+          "class": "Attacker",
+          "order": 14000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 140,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Sugar's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 314001,
+        "class": "Attacker",
+        "order": 10087,
+        "name_code": 5002,
+        "corporation": "TETRA",
+        "resource_id": 140,
+        "name_localkey": "Sugar",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 140
+    }
+  }
+}

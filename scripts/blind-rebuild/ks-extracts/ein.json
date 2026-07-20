@@ -1,0 +1,60 @@
+{
+  "ein": {
+    "name": "Ein",
+    "burst": "III",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "0.72-1.27 spread: F1 (top ~35% cold) 34-feather burst lump resolves at cast-instant BEFORE her own True-Damage +55.3% buff -> x1.553 under-credit (fix delaySec on lump); F2 between-burst trickle keyed to FB-count but really time-cadenced -> spread. 34/burst+6/rotation are Prydwen-tier (not kit-derivable, ein-focus recording needed)"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Run E: 0.89-0.98; orb gauge from datamined arena data",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 1
+    },
+    "reference": false,
+    "residual": "U8 lists an older 0.71-0.76 read — worth an ein-focus recording",
+    "unmodeled": {
+      "skill1": [
+        "Activates at the start of battle. Affects self. Summons 4 Near Feathers."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: Near Feather cadence (34 instances per her burst, 6 per rotation between bursts) is a community-sourced (Prydwen) estimate, not kit-derivable — kit only states 4 feathers at battle start + 6 summoned at burst; needs an ein-focused recording (U8)",
+      "skill2: the between-burst feather trickle is keyed to full-burst COUNT (6 per FB end), not to time — comps with long rotations under-count it, fast rotations over-count it",
+      "burst: the 34-feather burst lump resolves at cast-instant, BEFORE her own True Damage ▲ 55.3% burst buff and teammates' full-burst-entry auras register (block order) — real feathers land inside the 10s window with those buffs up"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+          "ratio": 0.7439
+        },
+        {
+          "comp": "PE elec DPS (boss Water)",
+          "ratio": 0.7359
+        },
+        {
+          "comp": "N2 modernia wind (boss Wind)",
+          "ratio": 0.9365
+        }
+      ],
+      "n": 3,
+      "mean": 0.8054,
+      "mad": 0.1946,
+      "band": ">15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

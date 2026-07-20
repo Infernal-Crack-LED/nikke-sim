@@ -11,7 +11,8 @@ interface HeadMeta {
 // Google sees each route as a distinct, relevant result.
 const META: Record<string, HeadMeta> = {
   sim: {
-    title: 'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
+    title:
+      'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
     description:
       'NIKKE solo-raid damage simulator: per-unit DPS calculator, overload optimizer, best overload lines, team builder, and game mechanics reference. Frame-tick accuracy, runs in your browser.',
   },
@@ -64,6 +65,11 @@ const META: Record<string, HeadMeta> = {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
     description:
       'Build and share NIKKE solo-raid teams visually. Set loadouts, tweak overload lines, and share your team composition with a link.',
+  },
+  resources: {
+    title: 'NIKKE Resource Calculator — Daily Custom Module & Fragment Income',
+    description:
+      'Expected daily solo-raid resource drops by stage: overload custom modules, module fragments, locks, and XP fodder. Plan your daily farming.',
   },
   howto: {
     title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',

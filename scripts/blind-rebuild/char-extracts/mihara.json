@@ -1,0 +1,442 @@
+{
+  "mihara": {
+    "slug": "mihara",
+    "name": "Mihara",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/zt-93/xe-02/645e88c65de3b6a21d85a1af3784fcce.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 15.07,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 121,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 9.5,
+    "burstGaugePerShot": 0.25,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when the last bullet hits the target. Affects self. \nCritical Damage ▲ 18.7% for 10 sec.",
+      "skill2": "■ Activates when using Burst Skill. Affects self.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Highway to Hell 1 - ATK ▲ 15.56% for 45 sec.\nTwice: Highway to Hell 2 - Critical Rate ▲ 11.28% for 45 sec.",
+      "burst": "■ Affects all allies.\nFull Burst Duration ▼ 5 sec.\n■ Affects all enemies.\nDeals 399.6% of final ATK as Burst Skill damage.\n■ Activates while in Highway to Hell 2 status. Affects all enemies.\nDeals 266.4% of final ATK as additional damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1016101,
+        "shot_detail": {
+          "id": 1016101,
+          "damage": 1507,
+          "max_ammo": 60,
+          "shake_id": 1,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Bio",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 167,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 5000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 500,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2161101,
+        "skill2_id": 2161201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2161101,
+          "icon": "icn_skill_criticaldamage_01",
+          "group_id": 21611,
+          "skill_level": 1,
+          "name_localkey": "Endure",
+          "next_level_id": 2161102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when the last bullet hits the target. Affects self. \n<color=#00AEFF>Critical Damage ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "8.18",
+                "9.35",
+                "10.52",
+                "11.69",
+                "12.85",
+                "14.02",
+                "15.19",
+                "16.36",
+                "17.53",
+                "18.7"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2161201,
+          "icon": "icn_skill_statcritical_01",
+          "group_id": 21612,
+          "skill_level": 1,
+          "name_localkey": "Highway to Hell",
+          "next_level_id": 2161202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>Effects vary according to the number of times used. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nOnce: Highway to Hell 1 - ATK ▲ {description_value_01}% for {description_value_02} sec.\nTwice: Highway to Hell 2 - Critical Rate ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6.81",
+                "7.78",
+                "8.75",
+                "9.72",
+                "10.7",
+                "11.67",
+                "12.64",
+                "13.62",
+                "14.59",
+                "15.56"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {
+              "description_value": [
+                "4.93",
+                "5.64",
+                "6.34",
+                "7.05",
+                "7.75",
+                "8.46",
+                "9.17",
+                "9.87",
+                "10.58",
+                "11.28"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1161301,
+        "ulti_skill_detail": {
+          "id": 1161301,
+          "icon": "icn_skill_c161_ult",
+          "group_id": 11613,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Sense Sharing",
+          "next_level_id": 1161302,
+          "prefer_target": "LowHP",
+          "resource_name": "c161_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 17482,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Full Burst Duration ▼ 5 sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>\n■ Activates while in Highway to Hell 2 status. Affects all enemies.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "174.82",
+                "199.8",
+                "224.77",
+                "249.75",
+                "274.72",
+                "299.7",
+                "324.67",
+                "349.65",
+                "374.62",
+                "399.6"
+              ]
+            },
+            {
+              "description_value": [
+                "116.55",
+                "133.2",
+                "149.85",
+                "166.5",
+                "183.15",
+                "199.8",
+                "216.45",
+                "233.1",
+                "249.75",
+                "266.4"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            116130101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 116102,
+        "grade_core_id": 101,
+        "stat_enhance_id": 3101,
+        "stat_enhance_detail": {
+          "id": 3101,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 18,
+          "grade_defence": 90,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100161,
+        "piece_detail": {
+          "id": 5100161,
+          "class": "Attacker",
+          "order": 16100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 161,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Mihara's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 116101,
+        "class": "Attacker",
+        "order": 30011,
+        "name_code": 3006,
+        "corporation": "MISSILIS",
+        "resource_id": 161,
+        "name_localkey": "Mihara",
+        "original_rare": "SR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 10350,
+      "atk": 540,
+      "def": 81,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 18,
+        "def": 90,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 161
+    }
+  }
+}

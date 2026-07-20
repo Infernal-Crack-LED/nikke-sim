@@ -1,0 +1,589 @@
+{
+  "guillotine-winter-slayer": {
+    "slug": "guillotine-winter-slayer",
+    "name": "Guillotine: Winter Slayer",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/vq-37/pt-14/1c0cd513739ac5f0f15443718fa804fc.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 13.65,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "nicknames": [
+      "gws"
+    ],
+    "skills": {
+      "skill1": "■ Activates every time EXP stacks 10. Affects self.\nHero Level Up: Reaches a maximum of Level 11.\nHero Level Up Reward: Reloads 10.26%.\nHero Level Up Reward: Recovers 2.44% of the skill user's final Max HP.\n■ Activates when Hero levels up. Affects all Water Code allies.\nElemental Advantage Attack Damage ▲ 1.16% * Hero Level continuously.\nATK ▲ 0.91% of the skill user's ATK * Hero Level continuously.",
+      "skill2": "■ Activates after landing 6 normal attack(s) without hitting the core. Affects self.\nEXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously. \n■ Activates when hitting the Core for 3 time(s). Affects self.\nEXP: ATK ▲ 1.81%, stacks up to 100 time(s) continuously.\n■ Activates when Hero Level is 2 or above. Affects self.\nElemental Advantage Attack Damage ▲ 7.46% continuously.",
+      "burst": "■ Affects all Water Code allies.\nAttack Damage ▲ 10.14% for 10 sec.\nElemental Advantage Attack Damage ▲ 18.75% for 10 sec.\n■ Affects 1 enemy unit(s) with the highest final Max HP.\nDeals continuous damage equal to 20.87% of the final ATK * Hero Level every sec for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1018201,
+        "shot_detail": {
+          "id": 1018201,
+          "damage": 1365,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2182101,
+        "skill2_id": 2182201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2182101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 21821,
+          "skill_level": 1,
+          "name_localkey": "Hero's Fate",
+          "next_level_id": 2182102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates every time EXP stacks {description_value_01}. Affects self.\n<color=#00AEFF>Hero Level Up: Reaches a maximum of Level 11.\nHero Level Up Reward: Reloads {description_value_02}%.\nHero Level Up Reward: Recovers {description_value_03}% of the skill user's <word_group=10025>final</word_group> Max HP.</color>\n■ Activates when Hero levels up. Affects all Water Code allies.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_04}% * Hero Level continuously.\nATK ▲ {description_value_05}% of the skill user's ATK * Hero Level continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "6.06",
+                "6.53",
+                "7",
+                "7.46",
+                "7.93",
+                "8.4",
+                "8.86",
+                "9.33",
+                "9.8",
+                "10.26"
+              ]
+            },
+            {
+              "description_value": [
+                "1.44",
+                "1.55",
+                "1.66",
+                "1.77",
+                "1.88",
+                "2",
+                "2.11",
+                "2.22",
+                "2.33",
+                "2.44"
+              ]
+            },
+            {
+              "description_value": [
+                "0.68",
+                "0.74",
+                "0.79",
+                "0.84",
+                "0.89",
+                "0.94",
+                "1",
+                "1.06",
+                "1.1",
+                "1.16"
+              ]
+            },
+            {
+              "description_value": [
+                "0.55",
+                "0.58",
+                "0.63",
+                "0.67",
+                "0.71",
+                "0.75",
+                "0.79",
+                "0.84",
+                "0.88",
+                "0.91"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2182201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 21822,
+          "skill_level": 1,
+          "name_localkey": "Hero's Gift",
+          "next_level_id": 2182202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s) without hitting the core. Affects self.\n<color=#00AEFF>EXP: ATK ▲ {description_value_02}%, stacks up to {description_value_03} time(s) continuously. </color>\n■ Activates when hitting the Core for {description_value_04} time(s). Affects self.\n<color=#00AEFF>EXP: ATK ▲ {description_value_05}%, stacks up to {description_value_06} time(s) continuously.</color>\n■ Activates when Hero Level is 2 or above. Affects self.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_07}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {
+              "description_value": [
+                "1.07",
+                "1.15",
+                "1.24",
+                "1.32",
+                "1.4",
+                "1.48",
+                "1.57",
+                "1.65",
+                "1.73",
+                "1.81"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "1.07",
+                "1.15",
+                "1.24",
+                "1.32",
+                "1.4",
+                "1.48",
+                "1.57",
+                "1.65",
+                "1.73",
+                "1.81"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "4.37",
+                "4.76",
+                "5.07",
+                "5.4",
+                "5.72",
+                "6.05",
+                "6.42",
+                "6.81",
+                "7.07",
+                "7.46"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1182301,
+        "ulti_skill_detail": {
+          "id": 1182301,
+          "icon": "icn_skill_c182_ult",
+          "group_id": 11823,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Extermination",
+          "next_level_id": 1182302,
+          "prefer_target": "HighMaxHP",
+          "resource_name": "c182_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all Water Code allies.\n<color=#00AEFF>Attack Damage ▲ {description_value_01}% for {description_value_02} sec.\n<word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects {description_value_05} enemy unit(s) with the highest <word_group=10025>final</word_group> Max HP.\n<color=#00AEFF>Deals continuous damage equal to {description_value_06}% of the <word_group=10025>final</word_group> ATK * Hero Level every sec for {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5.99",
+                "6.45",
+                "6.91",
+                "7.37",
+                "7.83",
+                "8.29",
+                "8.76",
+                "9.22",
+                "9.68",
+                "10.14"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "11.08",
+                "11.93",
+                "12.78",
+                "13.64",
+                "14.49",
+                "15.34",
+                "16.19",
+                "17.05",
+                "17.9",
+                "18.75"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "12.34",
+                "13.28",
+                "14.23",
+                "15.17",
+                "16.14",
+                "17.08",
+                "18.03",
+                "18.99",
+                "19.93",
+                "20.87"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            118230101,
+            118230102
+          ],
+          "after_hurt_function_id_list": [
+            118230103
+          ],
+          "before_use_function_id_list": [
+            118230104
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 218202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100182,
+        "piece_detail": {
+          "id": 5100182,
+          "class": "Attacker",
+          "order": 18200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 182,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Guillotine: Winter Slayer's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 218201,
+        "class": "Attacker",
+        "order": 10030,
+        "name_code": 5128,
+        "corporation": "ELYSION",
+        "resource_id": 182,
+        "name_localkey": "Guillotine: Winter Slayer",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 182
+    }
+  }
+}

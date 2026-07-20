@@ -1,0 +1,53 @@
+{
+  "ade-agent-bunny": {
+    "name": "Ade: Agent Bunny",
+    "burst": "II",
+    "weapon": "SR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "hasPierce added (was note-dropped) → her own pierce buffs feed her Damage Up; board 0.85→0.996 (into +/-3%)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded; a focus A/B is batched",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec."
+      ],
+      "skill2": [],
+      "burst": [
+        "Minimum Effective Range ▲ 55.56% for 10 sec."
+      ]
+    },
+    "caveats": [
+      "skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)",
+      "skill2: 'Spy Lens at max stacks' ATK +16% now activates as a faithful STEP via hitCount count:10 (2026-07-17, theme 3) — Spy Lens gains 1 stack per full-charge SR hit, so the 10th hit (~16s incl. one reload) reaches max and the buff turns on continuously (permanent, no duration = continuous fire keeps stacks maxed). Replaces the always-on-from-t=0 encoding (over-credited the ~16s onset). NOTE: the hasPierce top-level flag (also Spy-Lens-max-gated) still applies from t=0 — a boolean flag can't be step-gated, a residual structural gap. ⚑ count:10 rests on 1 stack/full-charge + the ⚑ SR cadence.",
+      "skill2: team Pierce Damage +18.36% rides the same shotFired full-charge proxy (⚑ unmeasured)",
+      "cadence: SR bolt-gap (22f) + chargeFrames 60 + reloadFrames 141 are datamine defaults — verify autofire/rounds-per-minute/reload from video (⚑ unmeasured)"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "N6 mihara/maiden wind (boss Wind)",
+          "ratio": 1.0007
+        }
+      ],
+      "n": 1,
+      "mean": 1.0007,
+      "mad": 0.0007,
+      "band": "±3% ✓",
+      "temp": "OK  ·"
+    }
+  }
+}

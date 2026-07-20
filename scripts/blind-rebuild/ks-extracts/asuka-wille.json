@@ -1,0 +1,42 @@
+{
+  "asuka-wille": {
+    "name": "Asuka: WILLE",
+    "burst": "III",
+    "weapon": "MG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "skill2 FB->burstCast (Annihilation-State gate, cinderella-crystal-wave class); Emergency Repair reload+heal modeled (was wrongly skipped as defensive)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Effect 1: MG heating up speed ▼ 100% for 3 sec.",
+        "Effect 2: Removes 100% of ammo."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: cadence tuple (MG wind-up ladder / 300 ammo / reloadFrames 161) is the unverified datamine — read rounds/min + the reload gap from any focus video (⚑1)",
+      "skill1: the in-Annihilation-State every-10-shots proc + Anti A.T. Field stacks are steady-state proxies (every 44 hits, debuff at its 30-stack cap) — count 15.62% popups per burst window and read the Annihilation popup ÷ 6.62 for the real stack count (⚑4/⚑5)",
+      "skill2: the Full-Burst-entry Attack Damage buff is encoded as burstCast because it requires Annihilation State (granted only by HER OWN burst) — identical to FB-enter when she is the only Burst III unit, and it correctly does NOT fire on another Burst III unit's rotations",
+      "skill2: Emergency Repair really activates ~9s AFTER burst cast (at Annihilation State end); the schema has no delayed trigger, so the heal event + reload-speed window start at cast — the 10.5s reload-speed window is an unmeasured encoding of 'one fast reload per burst cycle' (⚑3)",
+      "skill2: 'MG heating up speed ▼ 100% for 3 sec' and 'Removes 100% of ammo' are UNMODELED — the heating line is ambiguous (frozen wind-up vs instant full spin) and the engine has no ammo-dump/wind-up vocabulary; measure her post-Emergency-Repair fire cadence before modeling (⚑2)",
+      "burst: the Annihilation finisher (6.62% × stacks) is modeled as one 198.6% hit at cast; the real hit lands ~9s later INSIDE the Full Burst window, so it may be FB-boosted in-game (hand-slot finding F2 — verify before re-encoding)"
+    ],
+    "board": null
+  }
+}

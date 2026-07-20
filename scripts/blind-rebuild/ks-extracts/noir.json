@@ -1,0 +1,50 @@
+{
+  "noir": {
+    "name": "Noir",
+    "burst": "III",
+    "weapon": "SG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "wave-1: comp reading warmed 1.040→1.092 HOT after kit-faithful S2 fix (+5 rounds self, instantReload allies) — solo anchor bit-identical; residual comp-side over-model to hand-tune (SG landing is solo-calibrated)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: Max Ammo +5 rounds is ALL-allies in-kit; modeled self-only as maxAmmoPct 55.56 (engine has no flat per-unit ammo) — teammates' +5 rounds unmodeled (⚑)",
+      "burst: Hit Rate ▲ (13.93% SG-allies /10s, 11.61% allies /30s) modeled as hitRatePct — currently inert in the engine; magnitude unmeasured (⚑)",
+      "burst: the 11.61%/19.36% block requires a same-squad ally (Blanc) on the battlefield — engine has no squad gate, modeled un-gated (effects inert vs the partless boss) (⚑)"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+          "ratio": 1.0975
+        },
+        {
+          "comp": "PI misc B3s (boss Water)",
+          "ratio": 1.1297
+        }
+      ],
+      "n": 2,
+      "mean": 1.1136,
+      "mad": 0.1136,
+      "band": "±15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

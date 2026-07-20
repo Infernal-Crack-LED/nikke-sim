@@ -1,0 +1,567 @@
+{
+  "grave": {
+    "slug": "grave",
+    "name": "Grave",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ao-10/hr-53/f236a162b511bf99c9f9a5b4193d6d68.png",
+    "weapon": "AR",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Fire",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 17.91,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 17.1,
+    "burstGaugePerShot": 0.45,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when Prediction status ends. Affects self.\nRemoves 100% of ammo.\nHeat Emission: Reload Ratio ▼ 50%. Removes Heat Emission under certain conditions.\n■ Activates only when in Heat Emission status. Affects self.\nRecovers 2% of the skill user's final Max HP every 1 sec continuously.\n■ Activates only when in Heat Emission status. Affects all allies.\nBurst Gauge filling speed ▲ 38.96% continuously.\nPierce Damage ▲ 48.4% continuously.",
+      "skill2": "■ Activates after landing 15 normal attacks. Affects self.\nOverheat I: ATK ▲ 15.48%. Removed upon reloading to max ammunition.\n■ Activates when landing a normal attack after Prediction takes effect. Affects self.\nEffects vary according to the number of attacks landed. Each subsequent effect triggers all effects before it:\n30 attacks landed: While in Prediction and Overheat I status,\nOverheat II: ATK ▲ 20.66% continuously.\n60 attacks landed: While in Prediction and Overheat II status,\nOverheat III: Attack Damage ▲ 30.8% continuously.",
+      "burst": "■ Affects self.\nPrediction:\nCurrent HP ▼ 1% every 1 sec, lasts for 10 sec.\nGrants unlimited ammunition for 10 sec.\nGain Pierce for 10 sec.\nPierce Damage ▲ 52.8% for 10 sec.\nCritical Rate ▲ 85.19% for 10 sec.\n■ Affects all allies.\nAttack Damage ▲ 48.2% for 10 sec.\nPierce Damage ▲ 39.98% for 10 sec.\nMax Ammunition Capacity ▲ 3 round(s) for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1051401,
+        "shot_detail": {
+          "id": 1051401,
+          "damage": 1791,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 5000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 4500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 9000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2514101,
+        "skill2_id": 2514201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2514101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 25141,
+          "skill_level": 1,
+          "name_localkey": "Heat Emission",
+          "next_level_id": 2514102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates when Prediction status ends. Affects self.\n<color=#00AEFF>Removes {description_value_01}% of ammo.\nHeat Emission: Reload Ratio ▼ {description_value_02}%. <word_group=10059>Removes Heat Emission under certain conditions</word_group>.</color>\n■ Activates only when in Heat Emission status. Affects self.\n<color=#00AEFF>Recovers {description_value_03}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec continuously.</color>\n■ Activates only when in Heat Emission status. Affects all allies.\n<color=#00AEFF><word_group=10014>Burst Gauge filling speed</word_group> ▲ {description_value_04}% continuously.\n<word_group=10042>Pierce Damage</word_group> ▲ {description_value_05}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "23.02",
+                "24.79",
+                "26.56",
+                "28.33",
+                "30.1",
+                "31.87",
+                "33.64",
+                "35.42",
+                "37.19",
+                "38.96"
+              ]
+            },
+            {
+              "description_value": [
+                "28.6",
+                "30.8",
+                "33",
+                "35.2",
+                "37.4",
+                "39.6",
+                "41.8",
+                "44",
+                "46.2",
+                "48.4"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2514201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25142,
+          "skill_level": 1,
+          "name_localkey": "Overheat",
+          "next_level_id": 2514202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attacks. Affects self.\n<color=#00AEFF>Overheat I: ATK ▲ {description_value_02}%. Removed upon reloading to max ammunition.</color>\n■ Activates when landing a normal attack after Prediction takes effect. Affects self.\n<color=#00AEFF>Effects vary according to the number of attacks landed. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:</color>\n{description_value_03} attacks landed: While in Prediction and Overheat I status,\n<color=#00AEFF>Overheat II: ATK ▲ {description_value_04}% continuously.</color>\n{description_value_05} attacks landed: While in Prediction and Overheat II status,\n<color=#00AEFF>Overheat III: Attack Damage ▲ {description_value_06}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "9.15",
+                "9.85",
+                "10.56",
+                "11.26",
+                "11.96",
+                "12.67",
+                "13.37",
+                "14.07",
+                "14.78",
+                "15.48"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "12.21",
+                "13.14",
+                "14.09",
+                "15.03",
+                "15.97",
+                "16.9",
+                "17.84",
+                "18.79",
+                "19.72",
+                "20.66"
+              ]
+            },
+            {
+              "description_value": [
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "18.2",
+                "19.6",
+                "21",
+                "22.4",
+                "23.8",
+                "25.2",
+                "26.6",
+                "28",
+                "29.4",
+                "30.8"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1514301,
+        "ulti_skill_detail": {
+          "id": 1514301,
+          "icon": "icn_skill_c514_ult",
+          "group_id": 15143,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Plot Spoiler",
+          "next_level_id": 1514302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c514_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Prediction:\nCurrent HP ▼ {description_value_01}% every 1 sec, lasts for 10 sec.\nGrants unlimited ammunition for 10 sec.\nGain Pierce for 10 sec.\n<word_group=10042>Pierce Damage</word_group> ▲ {description_value_02}% for 10 sec.\nCritical Rate ▲ {description_value_06}% for 10 sec.</color>\n■ Affects all allies.\n<color=#00AEFF>Attack Damage ▲ {description_value_03}% for 10 sec.\n<word_group=10042>Pierce Damage</word_group> ▲ {description_value_04}% for 10 sec.\nMax Ammunition Capacity ▲ {description_value_05} round(s) for 10 sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "31.2",
+                "33.6",
+                "36",
+                "38.4",
+                "40.8",
+                "43.2",
+                "45.6",
+                "48",
+                "50.4",
+                "52.8"
+              ]
+            },
+            {
+              "description_value": [
+                "28.48",
+                "30.67",
+                "32.86",
+                "35.05",
+                "37.25",
+                "39.44",
+                "41.63",
+                "43.82",
+                "46.01",
+                "48.2"
+              ]
+            },
+            {
+              "description_value": [
+                "23.63",
+                "25.44",
+                "27.26",
+                "29.08",
+                "30.9",
+                "32.72",
+                "34.53",
+                "36.35",
+                "38.17",
+                "39.98"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "53.24",
+                "56.79",
+                "60.34",
+                "63.89",
+                "67.44",
+                "70.99",
+                "74.54",
+                "78.09",
+                "81.64",
+                "85.19"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            151430101,
+            151430102,
+            151430103,
+            151430104,
+            151430105,
+            151430106,
+            151430107,
+            151430108
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 451402,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5301,
+        "stat_enhance_detail": {
+          "id": 5301,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100514,
+        "piece_detail": {
+          "id": 5100514,
+          "class": "Attacker",
+          "order": 51400,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 514,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Grave's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 451401,
+        "class": "Supporter",
+        "order": 10153,
+        "name_code": 5125,
+        "corporation": "PILGRIM",
+        "resource_id": 514,
+        "name_localkey": "Grave",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 100,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 514
+    }
+  }
+}

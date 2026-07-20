@@ -1,0 +1,56 @@
+{
+  "arcana-fortune-mate": {
+    "name": "Arcana: Fortune Mate",
+    "burst": "II",
+    "weapon": "SG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "1.42 HOT: F4 REFUTES the 'pellet/Snapshots double-count' premise (distinct buffs; additive model UNDER-counts ~5% vs true multiplicative). Real cause F1: stack ramp baked to max not time-averaged (~+8-10%) + F2 S1 stacks baked (~+5-6%); F5 skipped kit reloads (hard rule 1) offset cold. Budget F1+F2 -> 1.42->~1.24, remainder = SG per-unit landing"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "N5 unfocused: 1.88",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "Normals bucket drives it; unfocused — a focus recording is batched",
+    "unmodeled": {
+      "skill1": [
+        "Full Burst ends: self removes Making Memories + Snapshots of Youth."
+      ],
+      "skill2": [
+        "Normal attacks in Making Memories (one at a time, resets on MM removal): 2 time(s): Reload 6 rounds."
+      ],
+      "burst": [
+        "Making Memories: Reload 2 rounds."
+      ]
+    },
+    "caveats": [
+      "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories pellets as +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.",
+      "skill1: the 39% (=13% x 3 Precious Moments stacks) at Full Burst end assumes 3 stacks; the ramp arithmetic reaches ~2 by FB end (HOT direction), and the block fires on EVERY team FB end even on rotations she did not burst (0 stacks in reality — multi-B2 comps over-credit).",
+      "skill2/burst: the kit's in-window reloads (Reload 6 rounds at the 2-hit phase; Reload 2 rounds at burst) are unmodeled — they add ~3-5 window shots (COLD direction, partially masks the ramp over-credit)."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "N5 snowwhite-HA fire (boss Fire)",
+          "ratio": 1.1265
+        }
+      ],
+      "n": 1,
+      "mean": 1.1265,
+      "mad": 0.1265,
+      "band": "±15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

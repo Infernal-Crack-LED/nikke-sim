@@ -1,0 +1,412 @@
+{
+  "product-12": {
+    "slug": "product-12",
+    "name": "Product 12",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/am-12/cs-32/52b3e4788770fac707e526d29c8d685c.png",
+    "weapon": "MG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 5.67,
+    "coreAttackMultiplier": 200,
+    "ammo": 300,
+    "reloadFrames": 181,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 3.55,
+    "burstGaugePerShot": 0.05,
+    "treasure": false,
+    "nicknames": [
+      "p1"
+    ],
+    "skills": {
+      "skill1": "■ Affects self. Activates after 200 normal attacks.\nATK ▲ 8.28% for 5 sec.",
+      "skill2": "■ Affects 1 enemy unit(s) with the lowest remaining HP. \nDeals 109.09% of final ATK as damage.",
+      "burst": "■ Affects enemies within attack range. \nDeals 720% of final ATK as damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1030301,
+        "shot_detail": {
+          "id": 1030301,
+          "damage": 567,
+          "max_ammo": 300,
+          "shake_id": 1,
+          "ShakeType": "Fire_MG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 267,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "MG",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Machine Gun",
+          "prefer_target": "TargetPS",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 4200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 299,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 150,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 7,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 100,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 150,
+          "rate_of_fire_change_pershot": 100,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 1000,
+          "auto_accuracy_change_pershot": 7,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 55,
+        "bonusrange_min": 35
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2303101,
+        "skill2_id": 1303201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2303101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 23031,
+          "skill_level": 1,
+          "name_localkey": "Action: Increase ATK",
+          "next_level_id": 2303102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Affects self. Activates after {description_value_03} normal attacks.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2.07",
+                "2.76",
+                "3.45",
+                "4.14",
+                "4.83",
+                "5.52",
+                "6.21",
+                "6.9",
+                "7.59",
+                "8.28"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1303201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 13032,
+          "skill_level": 1,
+          "name_localkey": "Action: Focus Fire",
+          "next_level_id": 1303202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Affects {description_value_02} enemy unit(s) with the lowest remaining HP. \n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "27.27",
+                "36.36",
+                "45.45",
+                "54.54",
+                "63.63",
+                "72.72",
+                "81.81",
+                "90.9",
+                "100",
+                "109.09"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1303301,
+        "ulti_skill_detail": {
+          "id": 1303301,
+          "icon": "icn_skill_c303_ult",
+          "group_id": 13033,
+          "shake_id": 1,
+          "skill_type": "InstantCircle",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Action: Precision Strike",
+          "next_level_id": 1303302,
+          "prefer_target": "LowHP",
+          "resource_name": "c303_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 18000,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 500,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects <word_group=10020>enemies within attack range</word_group>. \nDeals <color=#00AEFF>{description_value_02}% of <word_group=10025>final</word_group> ATK as damage. </color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "180",
+                "240",
+                "300",
+                "360",
+                "420",
+                "480",
+                "540",
+                "600",
+                "660",
+                "720"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 0,
+        "grade_core_id": 201,
+        "stat_enhance_id": 1106,
+        "stat_enhance_detail": {
+          "id": 1106,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 16,
+          "grade_defence": 80,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 0
+      },
+      "meta": {
+        "id": 130301,
+        "class": "Attacker",
+        "order": 50005,
+        "name_code": 1016,
+        "corporation": "MISSILIS",
+        "resource_id": 303,
+        "name_localkey": "Product 12",
+        "original_rare": "R",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 10350,
+      "atk": 480,
+      "def": 60,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 16,
+        "def": 80,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 303
+    }
+  }
+}

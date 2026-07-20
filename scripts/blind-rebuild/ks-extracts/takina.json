@@ -1,0 +1,48 @@
+{
+  "takina": {
+    "name": "Takina",
+    "burst": "II",
+    "weapon": "SR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "true-damage buffs verified firing (trueNormals stamps trueFlavor on swap shots); values exact. F5 burst fbGate->swapGate; F6 swap-window shot economy unmeasured (~1.044 HOT)"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Solo sniper gauge recording (A22) + focus/unfocused gauge steps (A24); run G 1.01 after SR-gen fix",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates at the start of battle: ATK ▲ 80.04% for 5 sec (the battle-start activation only; the Full-Burst-end activation of the same line IS modeled as the fullBurstEnd block — engine has no battleStart trigger and passive-trigger buffs ignore durationSec, sim.ts:983-993, so this instance is not override-expressible today)"
+      ],
+      "skill2": [
+        "Deals Stun to all enemies for 2 sec (boss-inert: the sim's boss does not fire/charge/reload, so a stun on it changes nothing; genuinely-skippable class)"
+      ],
+      "burst": []
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "PG iron sweep (boss Electric)",
+          "ratio": 0.9879
+        }
+      ],
+      "n": 1,
+      "mean": 0.9879,
+      "mad": 0.0121,
+      "band": "±3% ✓",
+      "temp": "OK  ·"
+    }
+  }
+}

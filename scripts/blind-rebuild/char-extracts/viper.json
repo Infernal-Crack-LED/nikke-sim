@@ -1,0 +1,481 @@
+{
+  "viper": {
+    "slug": "viper",
+    "name": "Viper",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/dc-22/za-89/ee6875b41f559d45f11145a9b3749c6d.png",
+    "weapon": "SG",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 220.4,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 122,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 27,
+    "burstGaugePerShot": 4.5,
+    "treasure": true,
+    "skills": {
+      "skill1": "■ Activates when the stage target appears. Affects all allies.\nATK ▲ 25.98% for 10 sec.\nHit Rate ▲ 11.13% for 10 sec.\n■ Only activates when attacking in Vamp status. Affects self.\nSustained Damage ▲ 4.4%. Stacks up to 10 times and lasts for 10 sec.\nHit Rate ▲ 1.84%. Stacks up to 10 times and lasts for 10 sec.",
+      "skill2": "■ Affects self.\nHit Rate ▲ 21.96% continuously.\n■ Activates when entering Full Burst. Affects self.\nVamp: Prevents being targeted by single-target attacks continuously. This effect is removed upon taking a direct hit.\nInvulnerable for 1 sec.\n■ Activates when using Burst Skill. Affects all allies.\nRe-enters Burst Stage 2.",
+      "burst": "■ Affects 1 designated enemy unit(s).\nDeals 1029.6% of final ATK as damage.\n■ Affects the enemy if the enemy is the stage target.\nDEF ▼ 19.83% for 10 sec.\nDeals 105.3% of final ATK as sustained damage every 1 sec for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1011201,
+        "shot_detail": {
+          "id": 1011201,
+          "damage": 22040,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 56,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 3300,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 4500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 9000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2112101,
+        "skill2_id": 2112201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2112101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 21121,
+          "skill_level": 1,
+          "name_localkey": "Snake Sense",
+          "next_level_id": 2112102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when the <word_group=10105>stage target</word_group> appears. Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.\nHit Rate ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "12.99",
+                "14.43",
+                "15.88",
+                "17.32",
+                "18.76",
+                "20.21",
+                "21.65",
+                "23.1",
+                "24.54",
+                "25.98"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "5.56",
+                "6.18",
+                "6.8",
+                "7.42",
+                "8.04",
+                "8.66",
+                "9.28",
+                "9.9",
+                "10.51",
+                "11.13"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2112201,
+          "icon": "icn_skill_stataccuracycircle_01",
+          "group_id": 21122,
+          "skill_level": 1,
+          "name_localkey": "Snake Scale",
+          "next_level_id": 2112202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Hit Rate ▲ {description_value_01}% continuously.</color>\n■ Activates when entering Full Burst. Affects self.\n<color=#00AEFF>Vamp: <word_group=10004>Prevents being targeted by single-target attacks</word_group> for {description_value_02} sec. This effect is removed upon taking a direct hit.\nInvulnerable for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1.71",
+                "1.9",
+                "2.1",
+                "2.29",
+                "2.48",
+                "2.67",
+                "2.86",
+                "3.05",
+                "3.24",
+                "3.43"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1112301,
+        "ulti_skill_detail": {
+          "id": 1112301,
+          "icon": "icn_skill_c112_ult",
+          "group_id": 11123,
+          "shake_id": 1,
+          "skill_type": "InstantCircle",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Snake Bite",
+          "next_level_id": 1112302,
+          "prefer_target": "Random",
+          "resource_name": "c112_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 23142,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 700,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects {description_value_01} designated enemy unit(s).\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as damage.</color>\n■ Affects the enemy if the enemy is the <word_group=10105>stage target</word_group>.\n<color=#00AEFF>DEF ▼ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "231.42",
+                "257.14",
+                "282.85",
+                "308.57",
+                "334.28",
+                "360",
+                "385.71",
+                "411.42",
+                "437.14",
+                "462.85"
+              ]
+            },
+            {
+              "description_value": [
+                "9.91",
+                "11.02",
+                "12.12",
+                "13.22",
+                "14.32",
+                "15.42",
+                "16.53",
+                "17.63",
+                "18.73",
+                "19.83"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            111230101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 311202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5104,
+        "stat_enhance_detail": {
+          "id": 5104,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100112,
+        "piece_detail": {
+          "id": 5100112,
+          "class": "Attacker",
+          "order": 11200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 112,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Viper's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 311201,
+        "class": "Attacker",
+        "order": 10103,
+        "name_code": 1022,
+        "corporation": "TETRA",
+        "resource_id": 112,
+        "name_localkey": "Viper",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 112
+    }
+  }
+}

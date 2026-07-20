@@ -1,0 +1,116 @@
+{
+  "slug": "jill",
+  "board": {
+    "ratio": 1.042,
+    "n": 3,
+    "mad": 0.042,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Magnum Ammo: Normal Attack Damage Multiplier \u25b2 30% for 9 round(s) (on battle start / reload to max ammo)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: passive \u2192 self \u2192 normalAttackPct 30",
+        "note": "30% value correct. 'For 9 rounds' duration and reload-refresh trigger collapsed to permanent passive \u2014 justified by rolling reload (reload_start_ammo=8, reloadFrames 0) so she effectively always has max ammo. charFixes.reloadFrames=0 supports this."
+      },
+      {
+        "kitLine": "True Damage \u25b2 34.99% for 10 sec (on burst cast)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: burstCast \u2192 self \u2192 trueDamagePct 34.99, 10s",
+        "note": "Block present with correct value/duration. HOWEVER ks-extracts finding F1: burst true-dmg conversion is unmodeled in the engine (needs weaponSwap trueNormals), making trueDamagePct 34.99 ENGINE-INERT. The block exists but likely contributes zero damage."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Acid Ammo: first round deals 192% of final ATK as sustained damage every 1 sec for 30 sec (on battle start / reload to max ammo)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: passive \u2192 enemy \u2192 dot atkPct 192, intervalSec 1, durationSec 99999, flavor sustained",
+        "note": "192% and 1s interval correct. Duration extended from 30s to 99999 (whole fight) because re-applied every reload (~5s cadence) so effectively permanent. 'First round only' mechanic abstracted away. noFb relic REMOVED (2026-07-15) \u2014 dot now correctly receives FB +50% timing. noRange kept (universal for sustained). charFixes.pullsPerSec=2.5 (video-confirmed 150rpm cadence) drives the reload-refresh economy."
+      },
+      {
+        "kitLine": "ATK \u25b2 40.03% for 10 sec (on entering Full Burst)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: fullBurstEnter \u2192 self \u2192 atkPct 40.03, 10s",
+        "note": "Correct value, duration, and trigger."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Reload speed is fixed at a 99.96% increase for 10 sec",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0] + caveats[0]",
+        "note": "Listed in both unmodeled and caveats. Reload economy is instead approximated via charFixes (pullsPerSec 2.5, reloadFrames 0). The 99.96% reload-speed buff during burst window is not separately modeled."
+      },
+      {
+        "kitLine": "Removes 100% of ammo",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1] + caveats[1]",
+        "note": "Ammo removal on burst cast not modeled. Partially offset by charFixes.reloadFrames=0 (rolling reload means no real ammo-gap penalty)."
+      },
+      {
+        "kitLine": "Forced Reload",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2] + caveats[2]",
+        "note": "Forced reload mechanic not modeled. Same offset logic as ammo removal \u2014 rolling reload with reloadFrames 0 means the forced reload has negligible DPS impact in the sim."
+      },
+      {
+        "kitLine": "Hit Rate \u25b2 80.78% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 self \u2192 hitRatePct 80.78, 10s",
+        "note": "Block present with correct value. ks-extracts finding F2 flags hit-rate as functionally unmodeled in the engine (measured core 0.20\u21920.90, x1.45 window) \u2014 the block may be engine-inert or partially inert depending on how the engine consumes hitRatePct."
+      },
+      {
+        "kitLine": "Attack Damage \u25b2 75% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 self \u2192 attackDamagePct 75, 10s",
+        "note": "Correct value and duration."
+      },
+      {
+        "kitLine": "Normal attacks deal True Damage for 10 sec",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[3]",
+        "note": "Listed in unmodeled but NOT in caveats (asymmetric with the other three burst unmodeled lines). This is the F1 confound: without weaponSwap trueNormals, the engine cannot convert normal attacks to true damage. Interacts with skill1's trueDamagePct 34.99 \u2014 both are inert without the conversion mechanic."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "F1: burst true-dmg conversion unmodeled \u2192 trueDamagePct 34.99 is engine-inert (needs weaponSwap trueNormals). Burst 'normal attacks deal True Damage for 10s' also unmodeled.",
+      "couldCauseGap": "COLD",
+      "why": "Both true-damage effects are inert, so they contribute zero \u2014 this makes the sim UNDER-count Jill's damage, pushing ratio > 1.0 (sim low). Consistent with HOT 1.042. However the note says per-hit popups matched at 99.7%, suggesting the true-damage window may be a small fraction of total DPS."
+    },
+    {
+      "source": "note",
+      "text": "F2: Hit-Rate 80.78 block present but engine handling uncertain \u2014 measured core 0.20\u21920.90 (x1.45 window).",
+      "couldCauseGap": "HOT",
+      "why": "If hitRatePct is engine-inert, Jill loses a x1.45 core-hit multiplier during burst windows. This would make the sim UNDER-count, pushing ratio > 1.0. A live confound that could explain residual heat."
+    },
+    {
+      "source": "note",
+      "text": "F4 cadence conflict RESOLVED: datamined 150 rpm = 2.5 shots/sec confirmed by focus video. charFixes.pullsPerSec=2.5 applied. Prior 1.67 heat was entirely cadence.",
+      "couldCauseGap": "neither",
+      "why": "Resolved and video-confirmed. Per-hit popups matched at 99.7% across all four damage classes."
+    },
+    {
+      "source": "note",
+      "text": "noFb relic REMOVED (2026-07-15): acid dot (192%/s sustained, permanent) no longer carries noFb:true. Now correctly receives FB +50% timing. Note predicts she grades ~1.07\u20131.34 hottest in high-FB comps.",
+      "couldCauseGap": "HOT",
+      "why": "Removing noFb increases sim damage for acid ticks inside FB windows. If the real game does NOT apply FB to sustained acid ticks (only Modernia Paradise Lost is type-exempt per DECISIONS), this over-counts. The note flags this as the primary residual risk and says to confirm x1.5 acid tick inside FB from video."
+    },
+    {
+      "source": "open-question",
+      "text": "OPEN: confirm acid tick jumps x1.5 inside FB from battery-2-test-4 focus video (the 288,662 read was ambiguous on FB-state). Do NOT re-fudge.",
+      "couldCauseGap": "HOT",
+      "why": "If acid ticks do NOT get x1.5 in FB, the noFb removal over-counts. If they DO, the current model is correct. This is the single largest open measurement question."
+    },
+    {
+      "source": "caveat",
+      "text": "Burst forced-reload economy unsupported: reload speed 99.96%, removes 100% ammo, forced reload \u2014 all unmodeled.",
+      "couldCauseGap": "COLD",
+      "why": "These affect reload timing/economy. With charFixes.reloadFrames=0 (rolling reload, fire never stops), the DPS impact of burst-window reload manipulation is minimal. Unlikely to move the needle."
+    }
+  ],
+  "authorIntentSummary": "The override models Jill as a sustained-DPS AR attacker whose core loop is a permanent 192%/s acid dot (duration extended to whole-fight because reload-refresh makes it effectively permanent) plus a passive +30% normal attack buff, with burst providing +75% attack damage and +80.78% hit rate for 10s. The major calibration was cadence: video evidence proved her datamined 150rpm (2.5 shots/sec) rather than the AR class default, fixing a 1.67x heat entirely via charFixes.pullsPerSec. The noFb relic on her acid dot was removed (2026-07-15) so sustained ticks now correctly receive FB +50% timing, but this is the primary residual risk \u2014 the open question is whether acid ticks truly jump x1.5 inside FB. True-damage mechanics (skill1 trueDamagePct 34.99 and burst true-damage conversion) are blocked but engine-inert pending weaponSwap support."
+}

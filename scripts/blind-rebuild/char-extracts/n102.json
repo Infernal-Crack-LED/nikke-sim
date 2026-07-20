@@ -1,0 +1,469 @@
+{
+  "n102": {
+    "slug": "n102",
+    "name": "N102",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/kh-18/ny-88/5d9dd26316df25c086ad005465b60bb4.png",
+    "weapon": "RL",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Water",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 61.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 90,
+    "chargeMultiplier": 350,
+    "hitsPerShot": 1,
+    "rl3": 11.2,
+    "burstGaugePerShot": 1.4,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when performing a Full Charge attack. Affects the 1 ally unit(s) with the highest final ATK. \nMax Ammunition Capacity ▲ 3 for 10 sec. \nCritical Damage ▲ 10.34% for 10 sec.",
+      "skill2": "■ Affects 1 ally unit(s) with the highest final ATK. \nCharge Damage ▲ 25.84% for 5 sec.",
+      "burst": "■ Affects all allies.\nATK ▲ 25.86% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1012001,
+        "shot_detail": {
+          "id": 1012001,
+          "damage": 6130,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 150,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 35000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 14000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 35000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 28000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2120101,
+        "skill2_id": 1120201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2120101,
+          "icon": "icn_skill_statammo_01",
+          "group_id": 21201,
+          "skill_level": 1,
+          "name_localkey": "Written Memories",
+          "next_level_id": 2120102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when performing a Full Charge attack. Affects the {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK. \n<color=#00AEFF>Max Ammunition Capacity ▲ {description_value_02} for {description_value_03} sec. \nCritical Damage ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "2.45",
+                "3.33",
+                "4.2",
+                "5.08",
+                "5.96",
+                "6.83",
+                "7.71",
+                "8.59",
+                "9.46",
+                "10.34"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1120201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 11202,
+          "skill_level": 1,
+          "name_localkey": "Impaired Memory",
+          "next_level_id": 1120202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Affects {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK. \n<color=#00AEFF>Charge Damage ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "11.3",
+                "12.92",
+                "14.53",
+                "16.15",
+                "17.76",
+                "19.38",
+                "21",
+                "22.61",
+                "24.23",
+                "25.84"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1120301,
+        "ulti_skill_detail": {
+          "id": 1120301,
+          "icon": "icn_skill_c120_ult",
+          "group_id": 11203,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Memories of Blue Butterflies",
+          "next_level_id": 1120302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c120_ulti",
+          "duration_value": 1000,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "11.31",
+                "12.93",
+                "14.54",
+                "16.16",
+                "17.77",
+                "19.39",
+                "21.01",
+                "22.62",
+                "24.24",
+                "25.86"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            112030101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 112002,
+        "grade_core_id": 101,
+        "stat_enhance_id": 3305,
+        "stat_enhance_detail": {
+          "id": 3305,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 18,
+          "grade_defence": 90,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100120,
+        "piece_detail": {
+          "id": 5100120,
+          "class": "Supporter",
+          "order": 12000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 120,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "N102's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 112001,
+        "class": "Supporter",
+        "order": 30012,
+        "name_code": 3009,
+        "corporation": "MISSILIS",
+        "resource_id": 120,
+        "name_localkey": "N102",
+        "original_rare": "SR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 11500,
+      "atk": 450,
+      "def": 88,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 18,
+        "def": 90,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 120
+    }
+  }
+}

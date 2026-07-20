@@ -1,0 +1,40 @@
+{
+  "snow-white": {
+    "name": "Snow White",
+    "burst": "III",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "S2a 144.73% was materialized as passive firing ~1x/fight (inert) -> now shotFired+swapGate (~5x/fight); S2b crit fbGate; burst charge-cannon 4995%/full-charge (1000% of 499.5% base). Pierce swap-scoped (unmodeled, no swap-pierce vocab)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": true,
+    "evidence": "N4 confounded: 1.11",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "DPS-chart FILLER control — control-trusted for its minimal team buffs, but own calibration is thin (one confounded read)",
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Additional Effect: Pierce"
+      ]
+    },
+    "caveats": [
+      "skill2: the 144.73% line's trigger is INVENTED (kit text has no 'Activates when…' clause) — modeled as one proc per full-charge shot of the burst weapon swap; unmeasured ⚑",
+      "burst: swap shot economy is an unmeasured estimate — engine yields exactly 1 full-charge shot (4995%) per burst window; a 2nd shot (charge-speed comps) is not expressible (engine zeroes charge speed for swap cadences) ⚑",
+      "burst: 'Additional Effect: Pierce' unmodeled — pierce is swap-scoped and the schema only has always-on hasPierce; potential core+body double-hit on the nuke is missing ⚑"
+    ],
+    "board": null
+  }
+}

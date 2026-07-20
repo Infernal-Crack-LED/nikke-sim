@@ -1,0 +1,523 @@
+{
+  "asuka": {
+    "slug": "asuka",
+    "name": "Asuka",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ez-21/hj-18/8cf2b0e82fd654ba6fbdf424b529b9cd.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Abnormal",
+    "normalAttackMultiplier": 18.76,
+    "coreAttackMultiplier": 200,
+    "ammo": 20,
+    "reloadFrames": 84,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 11.4,
+    "burstGaugePerShot": 0.3,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates at the start of battle. Affects self.\nDamage dealt to Shield ▲ 601.01% continuously.\n■ Activates when recovery takes effect. Affects self.\nATK ▲ 96.98% for 25 sec.",
+      "skill2": "■ Activates when entering Full Burst. Affects self when in Shield status.\nElemental Advantage Attack Damage ▲ 30.02% for 10 sec.\n■ Activates when entering Full Burst. Affects all Fire Code allies.\nDamage dealt when attacking core ▲ 60.07% for 10 sec.",
+      "burst": "■ Affects self.\nGain Pierce for 25 sec.\nAttack damage ▲ 150.04% for 10 sec.\nRecovers 3.16% of attack damage as HP over 10 sec.\nHit Rate ▲ 101.37% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1083001,
+        "shot_detail": {
+          "id": 1083001,
+          "damage": 1876,
+          "max_ammo": 20,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 19,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 3000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 6000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2830101,
+        "skill2_id": 2830201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2830101,
+          "icon": "icn_skill_barrierdamage_01",
+          "group_id": 28301,
+          "skill_level": 1,
+          "name_localkey": "Competitiveness",
+          "next_level_id": 2830102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10054>Damage dealt to Shield</word_group> ▲ {description_value_01}% continuously.</color>\n■ Activates when <word_group=10027>recovery takes effect</word_group>. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "404.65",
+                "426.47",
+                "448.29",
+                "470.1",
+                "491.92",
+                "513.74",
+                "535.56",
+                "557.38",
+                "579.2",
+                "601.01"
+              ]
+            },
+            {
+              "description_value": [
+                "57.93",
+                "62.27",
+                "66.61",
+                "70.94",
+                "75.28",
+                "79.62",
+                "83.96",
+                "88.3",
+                "92.64",
+                "96.98"
+              ]
+            },
+            {
+              "description_value": [
+                "25",
+                "25",
+                "25",
+                "25",
+                "25",
+                "25",
+                "25",
+                "25",
+                "25",
+                "25"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2830201,
+          "icon": "icn_skill_coredamage_01",
+          "group_id": 28302,
+          "skill_level": 1,
+          "name_localkey": "Assault Tactics",
+          "next_level_id": 2830202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates when entering Full Burst. Affects self when in <word_group=10023>Shield</word_group> status.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when entering Full Burst. Affects all Fire Code allies.\n<color=#00AEFF>Damage dealt when attacking core ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "17.78",
+                "19.14",
+                "20.5",
+                "21.86",
+                "23.22",
+                "24.58",
+                "25.94",
+                "27.3",
+                "28.66",
+                "30.02"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "33.19",
+                "36.18",
+                "39.17",
+                "42.15",
+                "45.14",
+                "48.13",
+                "51.11",
+                "54.1",
+                "57.09",
+                "60.07"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1830301,
+        "ulti_skill_detail": {
+          "id": 1830301,
+          "icon": "icn_skill_c830_ult",
+          "group_id": 18303,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Piercing Bullets",
+          "next_level_id": 1830302,
+          "prefer_target": "Defender",
+          "resource_name": "c830_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 2,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Gain Pierce for {description_value_01} sec.</color>\n<color=#00AEFF>Attack damage ▲ {description_value_02}% for {description_value_03} sec.</color>\n<color=#00AEFF>Recovers {description_value_04}% of attack damage as HP over {description_value_05} sec.</color>\n<color=#00AEFF>Hit Rate ▲ {description_value_06}% for {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "20",
+                "20",
+                "20",
+                "25",
+                "25",
+                "25",
+                "25"
+              ]
+            },
+            {
+              "description_value": [
+                "63.64",
+                "73.24",
+                "82.84",
+                "92.44",
+                "102.04",
+                "111.64",
+                "121.24",
+                "130.84",
+                "140.44",
+                "150.04"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1.87",
+                "2.01",
+                "2.16",
+                "2.3",
+                "2.44",
+                "2.59",
+                "2.73",
+                "2.88",
+                "3.02",
+                "3.16"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "59.9",
+                "64.51",
+                "69.12",
+                "73.72",
+                "78.33",
+                "82.94",
+                "87.55",
+                "92.16",
+                "96.76",
+                "101.37"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            183030101,
+            183030102,
+            183030103,
+            183030104
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 583002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100830,
+        "piece_detail": {
+          "id": 5100830,
+          "class": "Attacker",
+          "order": 83000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ABNORMAL",
+          "resource_id": 830,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Asuka's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 583001,
+        "class": "Attacker",
+        "order": 10167,
+        "name_code": 5118,
+        "corporation": "ABNORMAL",
+        "resource_id": 830,
+        "name_localkey": "Asuka",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 830
+    }
+  }
+}

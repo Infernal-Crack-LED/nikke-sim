@@ -1,0 +1,56 @@
+{
+  "maxwell": {
+    "name": "Maxwell",
+    "burst": "III",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "0.938 COLD: F1 burst hit modeled 813.42% (uncharged) vs kit-literal full-charge 2440% (x3 lever); F2 flatDamage strips crit+core the Pierce railgun rolls. Recipe: popup-read burst hit in run-G footage"
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Railgun single-shot fix from run G (1.93->0.81)",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "Over-corrected; reads 0.80 (G) but 1.17 (N6) — unstable, audit candidate",
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Activates when there are above 5 enemy units, excluding Nikkes. Affects self. Critical Rate ▲ 4.83%. Critical Damage ▲ 13.91%."
+      ],
+      "burst": [
+        "Change the weapon in use: Charge Time 2 sec",
+        "Full Charge Damage 300% of damage",
+        "Max Ammunition Capacity 1 round",
+        "Additional Effect: Pierce"
+      ]
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "PG iron sweep (boss Electric)",
+          "ratio": 0.6268
+        },
+        {
+          "comp": "N6 mihara/maiden wind (boss Wind)",
+          "ratio": 1.2235
+        }
+      ],
+      "n": 2,
+      "mean": 0.9251,
+      "mad": 0.2984,
+      "band": ">15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

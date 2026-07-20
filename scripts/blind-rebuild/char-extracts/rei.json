@@ -1,0 +1,473 @@
+{
+  "rei": {
+    "slug": "rei",
+    "name": "Rei",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/kh-48/xh-55/d301aa7e49a8a48421e04c9364b8afab.png",
+    "weapon": "SMG",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Defender",
+    "element": "Water",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 9.15,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 131,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "nicknames": [
+      "reitn"
+    ],
+    "skills": {
+      "skill1": "■ Activates after 60 normal attacks. Affects all allies.\nFills Burst Gauge by 2.47%. \n■ Activates when a decoy is present. Affects self.\nRestores the decoy's HP an amount equal to 2.1% of the skill user's final Max HP.",
+      "skill2": "■ Activates at the start of battle. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP that lasts for 240 sec.",
+      "burst": "■ Affects self.\nAttract: Taunts all enemies for 5 sec.\nDamage Taken ▼ 14.4% for 10 sec.\n■ Activates when a decoy is present. Affects self.\nContinuously restores the decoy's HP an amount equal to 2.27% of the skill user's final Max HP every 1 sec for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1039201,
+        "shot_detail": {
+          "id": 1039201,
+          "damage": 915,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 183,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2392101,
+        "skill2_id": 2392201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2392101,
+          "icon": "icn_skill_burstgaugespeedup_01",
+          "group_id": 23921,
+          "skill_level": 1,
+          "name_localkey": "Senior Support",
+          "next_level_id": 2392102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates after {description_value_01} normal attacks. Affects all allies.\n<color=#00AEFF><word_group=10015>Fills Burst Gauge</word_group> by {description_value_02}%.</color> \n■ Activates <word_group=10056>when a decoy is present</word_group>. Affects self.\n<color=#00AEFF><word_group=10057>Restores the decoy's HP</word_group> an amount equal to {description_value_03}% of the skill user's <word_group=10025>final</word_group> Max HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "1.35",
+                "1.48",
+                "1.6",
+                "1.72",
+                "1.85",
+                "1.97",
+                "2.09",
+                "2.22",
+                "2.34",
+                "2.47"
+              ]
+            },
+            {
+              "description_value": [
+                "1.15",
+                "1.26",
+                "1.36",
+                "1.47",
+                "1.57",
+                "1.68",
+                "1.78",
+                "1.89",
+                "2",
+                "2.1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2392201,
+          "icon": "icn_skill_defup_01",
+          "group_id": 23922,
+          "skill_level": 1,
+          "name_localkey": "Senior Spirit",
+          "next_level_id": 2392202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10024>Decoy</word_group>: Creates an avatar with {description_value_03}% of the skill user's <word_group=10025>final</word_group> Max HP that lasts for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {},
+            {},
+            {
+              "description_value": [
+                "52.8",
+                "57.6",
+                "62.4",
+                "67.2",
+                "72",
+                "76.8",
+                "81.6",
+                "86.4",
+                "91.2",
+                "96"
+              ]
+            },
+            {
+              "description_value": [
+                "240",
+                "240",
+                "240",
+                "240",
+                "240",
+                "240",
+                "240",
+                "240",
+                "240",
+                "240"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1392301,
+        "ulti_skill_detail": {
+          "id": 1392301,
+          "icon": "icn_skill_c392_ult",
+          "group_id": 13923,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Model Senior Student",
+          "next_level_id": 1392302,
+          "prefer_target": "LowHP",
+          "resource_name": "c392_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Attract: Taunts all enemies for {description_value_01} sec.\nDamage Taken ▼ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates <word_group=10056>when a decoy is present</word_group>. Affects self.\n<color=#00AEFF><word_group=10058>Continuously restores the decoy's HP</word_group> an amount equal to {description_value_04}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "7.92",
+                "8.64",
+                "9.36",
+                "10.08",
+                "10.8",
+                "11.52",
+                "12.24",
+                "12.96",
+                "13.68",
+                "14.4"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1.61",
+                "1.68",
+                "1.76",
+                "1.83",
+                "1.91",
+                "1.98",
+                "2.05",
+                "2.13",
+                "2.2",
+                "2.27"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            139230101,
+            139230102,
+            139230103
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 339202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5203,
+        "stat_enhance_detail": {
+          "id": 5203,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100392,
+        "piece_detail": {
+          "id": 5100392,
+          "class": "Attacker",
+          "order": 39200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 392,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Rei's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 339201,
+        "class": "Defender",
+        "order": 10107,
+        "name_code": 5069,
+        "corporation": "TETRA",
+        "resource_id": 392,
+        "name_localkey": "Rei",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 95,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 392
+    }
+  }
+}

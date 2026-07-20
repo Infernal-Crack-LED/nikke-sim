@@ -1,0 +1,37 @@
+{
+  "isabel": {
+    "name": "Isabel",
+    "burst": "III",
+    "weapon": "SG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "S2 rider matches measured (coef 170.58 correct post-bond); crits in-game ~15-25% but engine DoT-crit off → reads ~4% cold (engine-global)",
+        "Marked-Target stage modeled as monotonic burst-count; possible in-game 45s stage reset unmodeled (over-credits MT2/3 on >45s burst spacing)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: kit targets 5 enemies with the highest final DEF — modeled as the lone boss (the multi-target selection has no effect vs a partless single boss)",
+      "skill2: the kit gives no activation trigger for this damage — the ~14.7-sec period is a solo measurement (2026-07-16); whether the period holds in team fights is unverified",
+      "skill2: this periodic hit crits in-game (MEASURED 2026-07-17: 3 crits / 11 resolved fires, crit value 308,564 = non-crit 205,709 ×1.5 exactly; docs/probe-data/isabel-sg-band.json riderFinding) — modeled via the per-DoT `crit:true` opt-in (rolls at Isabel's sheet rate). The global DOT_CRIT default stays OFF; most DoTs are validated non-crit (jill acid tick video-confirmed 99.7% non-crit, mihara-bonding-chain Ensnaring validated 1.03 non-crit)",
+      "burst: Full Burst Duration ▼ 5 sec is modeled as shortening the team's Full Burst window — its net rotation effect (shorter window vs faster re-cycle) is an unverified estimate",
+      "skill1/burst: Marked Target stage is modeled as a permanent count of Isabel's burst uses — a possible in-game stage reset when the 45-sec mark expires (burst spacing over 45 sec) is not modeled"
+    ],
+    "board": null
+  }
+}

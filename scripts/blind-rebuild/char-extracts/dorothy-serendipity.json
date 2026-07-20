@@ -1,0 +1,555 @@
+{
+  "dorothy-serendipity": {
+    "slug": "dorothy-serendipity",
+    "name": "Dorothy: Serendipity",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ad-64/tf-12/a5157c03de127fd65974c2b0ef49f90f.png",
+    "weapon": "SG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 201.5,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": false,
+    "nicknames": [
+      "ds",
+      "sdoro"
+    ],
+    "skills": {
+      "skill1": "■ Activates when hitting the target with 80 pellets. Affects self.\nGains Pierce for 3 round(s).\nHit Rate ▲ 98.18% for 3 round(s).\nAttack damage ▲ 72% for 3 round(s).\nPellet count is fixed at 1 for 3 round(s).\n■ Activates when hitting the target with 160 pellets. Affects self.\nExpands Pierce range by 200% for 3 round(s).",
+      "skill2": "■ Activates at the start of battle. Affects self.\nPierce damage ▲ 55.08% continuously.\n■ Activates only during Full Burst. Affects self.\nATK ▲ 75.24% continuously.\nHit Rate ▲ 40.68% continuously.",
+      "burst": "■ Affects self.\nAttack speed ▲ 65% for 15 sec.\nATK ▲ 88.12% for 15 sec.\nNumber of pellets ▲ 5 for 15 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1023401,
+        "shot_detail": {
+          "id": 1023401,
+          "damage": 20150,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "aim_prefab": "base_aim_reference_c234",
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2234101,
+        "skill2_id": 2234201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2234101,
+          "icon": "icn_skill_statpenetration_01",
+          "group_id": 22341,
+          "skill_level": 1,
+          "name_localkey": "Flash",
+          "next_level_id": 2234102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when hitting the target with {description_value_01} <word_group=10038>pellets</word_group>. Affects self.\n<color=#00AEFF>Gains Pierce for {description_value_02} round(s).\nHit Rate ▲ {description_value_03}% for {description_value_02} round(s).\nAttack damage ▲ {description_value_04}% for {description_value_02} round(s).\n<word_group=10038>Pellet</word_group> count is fixed at 1 for {description_value_02} round(s).</color>\n■ Activates when hitting the target with {description_value_05} <word_group=10038>pellets</word_group>. Affects self.\n<color=#00AEFF>Expands Pierce range by {description_value_06}% for {description_value_07} round(s).</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "80",
+                "80",
+                "80",
+                "80",
+                "80",
+                "80",
+                "80",
+                "80",
+                "80",
+                "80"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "78.54",
+                "80.72",
+                "82.9",
+                "85.09",
+                "87.27",
+                "89.45",
+                "91.63",
+                "93.81",
+                "96",
+                "98.18"
+              ]
+            },
+            {
+              "description_value": [
+                "43.2",
+                "46.4",
+                "49.6",
+                "52.8",
+                "56",
+                "59.2",
+                "62.4",
+                "65.6",
+                "68.8",
+                "72"
+              ]
+            },
+            {
+              "description_value": [
+                "160",
+                "160",
+                "160",
+                "160",
+                "160",
+                "160",
+                "160",
+                "160",
+                "160",
+                "160"
+              ]
+            },
+            {
+              "description_value": [
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2234201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 22342,
+          "skill_level": 1,
+          "name_localkey": "Radiant Wings",
+          "next_level_id": 2234202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10042>Pierce damage</word_group> ▲ {description_value_01}% continuously.</color>\n■ Activates only during Full Burst. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_02}% continuously.\nHit Rate ▲ {description_value_03}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "31.68",
+                "34.28",
+                "36.88",
+                "39.48",
+                "42.08",
+                "44.68",
+                "47.28",
+                "49.88",
+                "52.48",
+                "55.08"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "48.36",
+                "51.72",
+                "55.08",
+                "58.44",
+                "61.8",
+                "65.16",
+                "68.52",
+                "71.88",
+                "75.24"
+              ]
+            },
+            {
+              "description_value": [
+                "23.4",
+                "25.32",
+                "27.24",
+                "29.16",
+                "31.08",
+                "33",
+                "34.92",
+                "36.84",
+                "38.76",
+                "40.68"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1234301,
+        "ulti_skill_detail": {
+          "id": 1234301,
+          "icon": "icn_skill_c234_ult",
+          "group_id": 12343,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "False Salvation",
+          "next_level_id": 1234302,
+          "prefer_target": "Random",
+          "resource_name": "c234_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack speed ▲ {description_value_01}% for {description_value_02} sec.\nATK ▲ {description_value_03}% for {description_value_04} sec.\nNumber of <word_group=10038>pellets</word_group> ▲ {description_value_05} for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "36.72",
+                "39.86",
+                "43",
+                "46.14",
+                "49.29",
+                "52.43",
+                "55.57",
+                "58.71",
+                "61.86",
+                "65"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "51.08",
+                "55.19",
+                "59.31",
+                "63.42",
+                "67.54",
+                "71.65",
+                "75.77",
+                "79.89",
+                "84",
+                "88.12"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "4",
+                "4",
+                "4",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            123430101,
+            123430102,
+            123430103,
+            123430104
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 423402,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5104,
+        "stat_enhance_detail": {
+          "id": 5104,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100234,
+        "piece_detail": {
+          "id": 5100234,
+          "class": "Attacker",
+          "order": 23400,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 234,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Dorothy: Serendipity's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 423401,
+        "class": "Attacker",
+        "order": 10155,
+        "name_code": 5145,
+        "corporation": "PILGRIM",
+        "resource_id": 234,
+        "name_localkey": "Dorothy: Serendipity",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 234
+    }
+  }
+}

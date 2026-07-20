@@ -1,0 +1,60 @@
+{
+  "prika": {
+    "name": "Prika",
+    "burst": "II",
+    "weapon": "SR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "re-materialized",
+      "date": "2026-07-16",
+      "findings": [
+        "~0.68 COLD hypotheses: F1 missing hasPierce (strongest, alice precedent +16-33%), F3 solo-Encore CD over-penalty, F5 Performance-duration under-credit"
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Duet burstFirst confirmed live in MiKa recording",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "Total 0.82 cold residual",
+    "unmodeled": {
+      "skill1": [
+        "Outgoing healing ▲ 49.92% continuously.",
+        "Gains Pierce. This effect is continuous."
+      ],
+      "skill2": [
+        "Max HP ▲ 19.98% for 10 sec.",
+        "Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.",
+        "Effect 2: Affects all allies. Performance duration ▲ 21 sec."
+      ],
+      "burst": [
+        "Effect 1: Restores 3.04% of the skill user's final max HP as HP every 1 sec for 25 sec. This effect cannot be removed."
+      ]
+    },
+    "caveats": [
+      "Encore is a proxy: the real trigger is 'Sing Along takes effect while Prika is in Performance' (a partner mechanic, e.g. Mint) — solo mode fires it on EVERY Full Burst entry even in teams with no Sing Along caster (over-credits the ally Attack Damage ▲ 25.01% AND over-applies the self Burst-cooldown ▲ 21s).",
+      "Prika's kit grants her continuous Pierce while in Performance, but the override carries no Pierce tag (hasPierce) — her own Pierce Damage ▲ 13.09% and any partner Pierce buffs do not land on her (held pending a popup measurement, probe-runs 2026-07-14).",
+      "The burst Performance heal (3.04% of caster max HP per sec, 25s) is not emitted as recovery events — 'when recovery takes effect' consumer kits (Crown-type) will not proc off Prika.",
+      "Encore's 'Performance duration ▲ 21 sec' is unmodeled — in solo mode the burst's Charge Damage ▲ 25% (and heal) run 25s instead of an extended ~46s when Encore fires."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PA MiKa (boss Iron)",
+          "ratio": 0.691
+        }
+      ],
+      "n": 1,
+      "mean": 0.691,
+      "mad": 0.309,
+      "band": ">15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

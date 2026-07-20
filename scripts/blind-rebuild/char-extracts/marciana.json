@@ -1,0 +1,469 @@
+{
+  "marciana": {
+    "slug": "marciana",
+    "name": "Marciana",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/mx-36/da-05/bf4e72c5198e332368a96db93aa2bd58.png",
+    "weapon": "SG",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Iron",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 201.5,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when the last bullet hits the target. Affects all allies.\nRecovers 10.95% of attack damage as HP over 3 sec.\n■ Activates when the last bullet hits the target. Affects 2 ally unit(s) with the highest final ATK.\nIncoming healing ▲ 26.98% for 3 sec.",
+      "skill2": "■ Activates when using Burst Skill. Affects all allies. \nRecovers 28.11% of the skill user's final Max HP as HP.",
+      "burst": "■ Affects all allies.\nStorage: Stores excess healing received by the skill user, up to 27.87% of their Max HP. Lasts for 10 sec.\nDEF ▲ 20.9% of the skill user's DEF for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1032101,
+        "shot_detail": {
+          "id": 1032101,
+          "damage": 20150,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2321101,
+        "skill2_id": 2321201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2321101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 23211,
+          "skill_level": 1,
+          "name_localkey": "Drone Supporter",
+          "next_level_id": 2321102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates when the last bullet hits the target. Affects all allies.\n<color=#00AEFF>Recovers {description_value_01}% of attack damage as HP over {description_value_02} sec.</color>\n■ Activates when the last bullet hits the target. Affects {description_value_03} ally unit(s) with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Incoming healing ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6.47",
+                "6.97",
+                "7.47",
+                "7.96",
+                "8.46",
+                "8.96",
+                "9.46",
+                "9.96",
+                "10.46",
+                "10.95"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "15.94",
+                "17.16",
+                "18.39",
+                "19.62",
+                "20.84",
+                "22.07",
+                "23.3",
+                "24.52",
+                "25.75",
+                "26.98"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2321201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 23212,
+          "skill_level": 1,
+          "name_localkey": "School Nurse",
+          "next_level_id": 2321202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates when using Burst Skill. Affects all allies. \n<color=#00AEFF>Recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP as HP. </color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "17.31",
+                "18.51",
+                "19.71",
+                "20.91",
+                "22.11",
+                "23.31",
+                "24.51",
+                "25.71",
+                "26.91",
+                "28.11"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1321301,
+        "ulti_skill_detail": {
+          "id": 1321301,
+          "icon": "icn_skill_c321_ult",
+          "group_id": 13213,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "A Teacher's Grace",
+          "next_level_id": 1321302,
+          "prefer_target": "LowHP",
+          "resource_name": "c321_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Storage: Stores excess healing received by the skill user, up to {description_value_01}% of their Max HP. Lasts for {description_value_02} sec.\nDEF ▲ {description_value_03}% of the skill user's DEF for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "16.47",
+                "17.74",
+                "19",
+                "20.27",
+                "21.54",
+                "22.8",
+                "24.07",
+                "25.34",
+                "26.61",
+                "27.87"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "12.35",
+                "13.3",
+                "14.25",
+                "15.2",
+                "16.15",
+                "17.1",
+                "18.05",
+                "19",
+                "19.95",
+                "20.9"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            132130101,
+            132130102
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 232102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5304,
+        "stat_enhance_detail": {
+          "id": 5304,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100321,
+        "piece_detail": {
+          "id": 5100321,
+          "class": "Attacker",
+          "order": 32100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 321,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Marciana's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 232101,
+        "class": "Supporter",
+        "order": 10023,
+        "name_code": 5048,
+        "corporation": "ELYSION",
+        "resource_id": 321,
+        "name_localkey": "Marciana",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 96,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 321
+    }
+  }
+}

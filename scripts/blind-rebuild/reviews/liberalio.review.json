@@ -1,0 +1,110 @@
+{
+  "slug": "liberalio",
+  "board": {
+    "ratio": 0.992,
+    "n": 4,
+    "mad": 0.102,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "On Full Burst entry, self: ATK \u25b2 160% for 3 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (fullBurstEnter\u2192self, buff atkPct 160 / 3s)",
+        "note": "Faithful."
+      },
+      {
+        "kitLine": "On Full Charge attack landing on a target's core, self: Attack Damage \u25b2 20.83% for 60 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (shotFired\u2192self, buff attackDamagePct 20.83 / 60s, requiresCore:true)",
+        "note": "Trigger approximated as shotFired+requiresCore rather than literal core-full-charge; note assumes SR steady-state core hits. Inert at core-rate 0; 60s duration keeps it up under any core exposure (matches in-game)."
+      },
+      {
+        "kitLine": "On Full Charge attack, target: 40.5% of final ATK as additional damage. Activates 5 times.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] (shotFired\u2192enemy, flatDamage atkPct 202.5, noRange:true)",
+        "note": "5 hits \u00d7 40.5% consolidated to one 202.5% flatDamage (user-confirmed reading; single-hit read was 0.70 cold). noRange = Q1 calibration: procs exempt from +30% range and +50% full-burst majors (calibrated vs 2 scope-lock runs; mechanism unconfirmed)."
+      },
+      {
+        "kitLine": "On Full Burst entry, the 1 Burst-3 ally with lowest final ATK: Charge Speed \u25b2 12.74% of the skill user's Charge Speed for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[3] (fullBurstEnter\u2192alliesLowestAtk count 1 burst III excludeSelf, buff chargeSpeedPct 12.74 / 10s)",
+        "note": "FIXED in review: now lowest-ATK B3 ally (was mis-parsed top-3). excludeSelf encodes her S2 self-immunity. '12.74% of the skill user's Charge Speed' modeled as flat chargeSpeedPct 12.74 (relative-to-caster nuance not separately modeled; not flagged by author)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "On Full Charge vs the stage target, self: Raging Current \u2014 Attack Damage \u25b2 231% continuously. Removes Gentle Current.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] (passive\u2192self, buff attackDamagePct 231, no duration)",
+        "note": "Solo-raid single boss = always the stage target, so Raging Current is permanently active \u2192 modeled as a continuous passive."
+      },
+      {
+        "kitLine": "On Full Charge vs a Rapture that is NOT the stage target, self: Gentle Current \u2014 fixes charge time at 1 sec continuously. Removes Raging Current.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Inert in scope: solo-raid boss is always the stage target, so this branch can never fire."
+      },
+      {
+        "kitLine": "At battle start, self: immunity to Increase Charge Speed effects and to Decrease Charge Speed effects (continuous, unremovable).",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Defensive/inert vs the sim's own buffs EXCEPT it is only enforced against her OWN S1 buff via excludeSelf; external teammate charge-speed buffs are NOT blocked (see confounds)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Self: Attack Damage \u25b2 50% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (burstCast\u2192self, buff attackDamagePct 50 / 10s)",
+        "note": "Faithful; materialized 2026-07-16 from offline parser, behavior-identical to prior runtime parse."
+      },
+      {
+        "kitLine": "All enemies: 925% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] (burstCast\u2192enemy, flatDamage atkPct 925)",
+        "note": "Target kind 'enemy' (single) vs prose 'all enemies' \u2014 equivalent in solo raid (single boss). Faithful."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2 Gentle Current (charge time fixed at 1s vs non-stage-target Raptures) not modeled.",
+      "couldCauseGap": "COLD",
+      "why": "Solo-raid boss is always the stage target, so Raging Current is permanent and Gentle Current can never fire \u2014 zero in-scope impact."
+    },
+    {
+      "source": "caveat",
+      "text": "Charge-speed immunity only enforced vs her OWN S1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (Maxwell, Alice) would wrongly speed her up in the sim.",
+      "couldCauseGap": "HOT",
+      "why": "In teams with external charge-speed buffers the sim over-cycles her (more shots/procs) \u2192 over-predicts her damage. Dormant until paired with such buffers; ks finding F2 confirms engine sums all charge-speed at sim.ts:1522."
+    },
+    {
+      "source": "note",
+      "text": "Q1 CALIBRATED (flagged for manual review): the 202.5% core-hit procs are exempt from the +30% range and +50% full-burst majors; calibrated vs two scope-lock runs (T1 1.16\u21921.00, T5 1.25\u21921.10); mechanism unconfirmed (user researching).",
+      "couldCauseGap": "neither",
+      "why": "Calibrated to match measurement (reduces gap), but the underlying mechanic is unconfirmed \u2014 a measured fudge, not a derived rule. Risk if the real exemption differs across comps."
+    },
+    {
+      "source": "note",
+      "text": "S1 20.83% Attack Damage rider is core-hit-gated via requiresCore \u2014 inert at core-rate 0; at any core exposure the 60s duration keeps it up.",
+      "couldCauseGap": "neither",
+      "why": "Matches in-game steady state for an SR; correctly off when no core, correctly up under sustained core hits."
+    },
+    {
+      "source": "note",
+      "text": "Q8 autofire / noBoltRecovery removed: chargeFrames reflect the full validated cycle (kit-fixed 1.2s / DB 90f), resolving from datamined input_type='DOWN_Charge'.",
+      "couldCauseGap": "neither",
+      "why": "Resolved against datamine; no live gap."
+    },
+    {
+      "source": "note",
+      "text": "noFb REMOVED from the 202.5 proc (panel-accepted): flag was a Q1 calibration-era relic contradicting the datamined U1 rule (function damage takes FB by actual landing timing; cast-instant rule is burst-slot-scoped). noRange stays (datamine-confirmed).",
+      "couldCauseGap": "neither",
+      "why": "Resolved/accepted against datamine; post-landing MEASURED verification (liberalio-focus) materialized 2026-07-16."
+    }
+  ],
+  "authorIntentSummary": "The author models Liberalio as a solo-raid SR attacker: S2's Raging Current is a permanent +231% Attack Damage passive (single boss = always the stage target, so Gentle Current is dropped as inert), S1 carries a Full-Burst ATK buff, a core-gated 20.83% Attack Damage rider (always-up under SR steady-state core hits), a consolidated 5\u00d740.5%=202.5% flatDamage proc per full charge (noRange, Q1-calibrated to be exempt from range/full-burst majors), and a lowest-ATK B3-ally charge-speed buff with excludeSelf encoding her self-immunity. The burst (50%/10s self Attack Damage + 925% nuke) is faithful and materialized from the offline parser. Known-not-faithful spots: her charge-speed immunity is NOT enforced against external teammate buffs (a dormant HOT gap with charge-speed buffers), and the 202.5% proc's major-exemption is a measured calibration whose mechanism is still unconfirmed. Board reads 0.992 mean / MAD 0.102 over N=4 (OK), with one 1.19 outlier in an Electric-boss PG sweep."
+}

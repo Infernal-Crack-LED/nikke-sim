@@ -1,0 +1,51 @@
+{
+  "alice": {
+    "name": "Alice",
+    "burst": "III",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "materialization clean; hasPierce correctly retained (note STALE re pierce double-hit — PIERCE_CORE_DOUBLE=false); 0.91 residual is basis/comp-side (read 1.10-1.12 HOT w/ same model 07-13/14)"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "tb2 test-5 focus — pierce = one popup per shot, no double-hit (A23); run A 1.12",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Affects self. Activates when above 80% HP. Gain continuous Pierce.",
+        "■ Affects self. Activates when HP falls below 80%. Continuously recover HP by 8.12% of attack damage."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: Charge Speed 11.67% is modeled as a flat target-own buff; the kit says '11.67% of the skill user's Charge Speed' (caster-relative) — qualifier unreconciled (no caster-relative charge-speed StatKey exists). Low impact at scope lock.",
+      "skill2: Pierce is modeled UNGATED (hasPierce); the kit gates it '>80% HP' — always satisfied in v1 (boss deals no damage to units). Re-encode the gate if incoming damage is ever modeled."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PA MiKa (boss Iron)",
+          "ratio": 0.9236
+        }
+      ],
+      "n": 1,
+      "mean": 0.9236,
+      "mad": 0.0764,
+      "band": "±8%",
+      "temp": "COLD ▼"
+    }
+  }
+}

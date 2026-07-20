@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 export type Route =
   | 'sim'
   | 'tools'
+  | 'resources'
   | 'howto'
   | 'mechanics'
   | 'dev'
@@ -21,6 +22,7 @@ export type Route =
 export const ROUTES: Route[] = [
   'sim',
   'tools',
+  'resources',
   'howto',
   'mechanics',
   'dev',
@@ -33,6 +35,7 @@ export const ROUTES: Route[] = [
 // Top-level PAGE routes. The sim app owns "/" plus its sub-tab paths
 // (/dpschart, /overload, …); any segment that isn't a page or a tool resolves to sim.
 const PAGE_ROUTES: Route[] = [
+  'resources',
   'howto',
   'mechanics',
   'dev',

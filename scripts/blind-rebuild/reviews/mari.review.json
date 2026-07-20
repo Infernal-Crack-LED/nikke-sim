@@ -1,0 +1,128 @@
+{
+  "slug": "mari",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when landing a Full Charge attack. Affects all allies.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Activation clause for the shield-damage bullet; dropped together with its effect because the v1 raid boss is partless and never shields. Not a shield GRANT, so no shield/shielded-trigger synergy orphaned."
+      },
+      {
+        "kitLine": "Damage dealt to Shield \u25b2 100.09% for 3 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Offensive buff vs an ENEMY shield; no StatKey for shield-damage and boss never shields. Inert at current scope; resurface if a shielded boss enters scope."
+      },
+      {
+        "kitLine": "Activates when landing an attack on a target's core. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (trigger shotFired + requiresCore:true, target allies)",
+        "note": "Modeled as shotFired+requiresCore rather than a literal core-landing trigger; at scope-lock 100% core exposure this refreshes every shot \u2192 near-permanent. Inert at coreHitRate 0."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 40.99% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effect pierceDamagePct 40.99 / 10s",
+        "note": "Ally pierceDamagePct; inert for non-pierce allies but feeds Pierce carriers (alice/red-hood) and Mari herself via her S2 pierce."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] target self",
+        "note": "Self-targeting of bullet 1 captured by the self block."
+      },
+      {
+        "kitLine": "Gain Pierce for 5 sec.",
+        "status": "MODELED_CONFIG",
+        "where": "hasPierce:true (also kept verbatim in unmodeled.skill2[0])",
+        "note": "No timed-pierce primitive; modeled as static hasPierce. Under the \u2691 shotFired trigger the 5s grant refreshes every ~1.4s pull \u2192 uptime \u2248100% while firing, so static \u2248 faithful. Verbatim line retained in unmodeled because a config flag is not a block. Coupled to the kit-silent trigger \u2691 \u2014 remove flag if trigger resolves burst-gated."
+      },
+      {
+        "kitLine": "ATK \u25b2 30.78% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effect atkPct 30.78 / 5s (target self)",
+        "note": "Self ATK buff riding the estimated shotFired trigger."
+      },
+      {
+        "kitLine": "Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] target allies",
+        "note": "Ally-targeting of bullet 2 captured by the allies block."
+      },
+      {
+        "kitLine": "ATK \u25b2 30.78% of the skill user's ATK for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effect casterAtkPct 30.78 / 5s",
+        "note": "Flat add off Mari's own ATK (casterAtkPct), riding the same estimated shotFired trigger."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all enemies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] target enemy",
+        "note": "Prose says 'all enemies'; block targets single enemy. In the partless single-boss raid the one boss takes the full value, so equivalent at current scope."
+      },
+      {
+        "kitLine": "Deals 639.36% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effect flatDamage atkPct 639.36",
+        "note": "burstCast nuke \u2192 engine auto FB-exempt, snapshots pre-FB; noFb NOT set. Single boss takes full value."
+      },
+      {
+        "kitLine": "Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] target allies",
+        "note": "Ally-targeting of the burst buff captured by the allies block."
+      },
+      {
+        "kitLine": "Attack damage \u25b2 40.99% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] effect attackDamagePct 40.99 / 10s",
+        "note": "Trigger is burstCast NOT fullBurstEnter (hard-rule-6): buff fires only on rotations SHE bursts; a second B2 in the team must not proc it."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: trigger is KIT-SILENT \u2014 modeled as refresh-on-shot (near-permanent while firing); if the real trigger is burst-gated this over-credits out-of-Full-Burst uptime.",
+      "couldCauseGap": "HOT",
+      "why": "ShotFired gives near-permanent self atkPct + ally casterAtkPct; a burst-gated reality would cut ally-ATK uptime to ~5s/rotation, so the current model would OVER-credit damage \u2192 sim runs HOT. This is the TOP per-unit \u2691 (note \u26913)."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: 'Gain Pierce for 5 sec' modeled as static hasPierce (no timed-pierce primitive); tied to the same \u2691 trigger estimate.",
+      "couldCauseGap": "HOT",
+      "why": "Static pierce = permanent; coupled to the trigger \u2691. Faithful only while she fires continuously; if trigger resolves burst-gated, pierce uptime is over-credited \u2192 HOT. Magnitude scales with how many pierce carriers benefit."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1: 'Damage dealt to Shield \u25b2 100.09%' unmodeled \u2014 the raid boss is partless and never shields.",
+      "couldCauseGap": "neither",
+      "why": "Inert at current scope: there is no shield to damage and no StatKey for shield-damage. No gap for the partless v1 boss; becomes COLD only if a shielded boss ever enters scope."
+    },
+    {
+      "source": "note",
+      "text": "\u26912 SR AUTOFIRE vs 22f BOLT GAP \u2014 engine default ships bolt gap ON (no charFixes.noBoltRecovery); autofire would add ~15\u201320% shots.",
+      "couldCauseGap": "COLD",
+      "why": "Model assumes the 22-frame bolt gap (fewer shots). If Mari actually autofires, real shot count is ~15\u201320% higher \u2192 sim UNDER-counts her own (minor) SR damage and buff refreshes \u2192 COLD. Direction flips only if her true cadence is slower than modeled."
+    },
+    {
+      "source": "note",
+      "text": "\u26911 CADENCE TUPLE \u2014 datamined chargeFrames 60 + 22f bolt gap (~1.37s/shot), reloadFrames 141, ammo 6, no rolling reload; mag-empty ~8.2s, no implausibility tell.",
+      "couldCauseGap": "neither",
+      "why": "Datamined numbers are plausible and internally consistent (no implausibility tell); low gap risk on their own. Gap exposure is via \u26912 (autofire) rather than the tuple itself."
+    }
+  ],
+  "authorIntentSummary": "Parser-baseline HYPOTHESIS (explicitly not validated/measured). The author modeled Mari as an SR/Burst-II ally-ATK + Pierce support: S1 core-hit pierce-damage buff to allies (shotFired+requiresCore), S2 self atkPct + ally casterAtkPct on an ESTIMATED shotFired trigger, a static hasPierce config standing in for the S2 'Gain Pierce 5s' grant, and a burstCast nuke (FB-exempt, pre-FB snapshot) plus a burstCast\u2014not fullBurstEnter\u2014ally attackDamagePct buff (hard-rule-6). Key approximations: the S2 trigger is kit-silent (TOP \u2691) and the pierce is static-not-timed, both of which over-credit uptime if the real trigger is burst-gated (HOT risk); the S1 shield-damage line is deliberately dropped as inert vs the partless boss; and SR cadence/autofire are unmeasured (COLD risk if she autofires). No board data exists yet for mari."
+}

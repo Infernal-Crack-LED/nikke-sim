@@ -1,0 +1,546 @@
+{
+  "phantom": {
+    "slug": "phantom",
+    "name": "Phantom",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/yf-19/ti-36/3acf749fd25325f44d1d5c088ab44829.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 15.78,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 141,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 9.5,
+    "burstGaugePerShot": 0.25,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when landing a normal attack on a Rapture that is not in the Calling Card state. Affects the target.\nCalling Card: DEF ▼ 32.19% for 5 sec.\n■ Activates when landing a normal attack on a Rapture that is not in the Calling Card state. Affects self.\nThief's Dagger: Hit Rate ▲ 25.75%. Stacks up to 3 times and lasts for 5 sec.\n■ Activates when landing a normal attack on a target that is in the Calling Card state. Affects self.\nAttack Damage ▲ 75.17% for 1 round(s).",
+      "skill2": "■ Activates when Thief's Dagger is at max stacks. Removes stacks and affects targets in Calling Card status.\nDeals 84.33% of final ATK as additional damage. Removes Calling Card.\n■ Activates when Thief's Dagger is at max stacks. Removes stacks and affects self.\nDistributed Damage ▲ 12.86% continuously. Stacks up to 3 times. Stacks are removed after Burst Skill is used.\n■ Activates after landing 10 normal attacks. Affects self.\nATK ▲ 85.12% for 5 sec.\nDistributed Damage ▲ 31.92% for 10 sec.",
+      "burst": "■ Affects all enemies.\nDeals 1457.28% of final ATK as Distributed Damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1058001,
+        "shot_detail": {
+          "id": 1058001,
+          "damage": 1578,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 5000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2580101,
+        "skill2_id": 2580201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2580101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25801,
+          "skill_level": 1,
+          "name_localkey": "Thief's Calling Card",
+          "next_level_id": 2580102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when landing a normal attack on a Rapture that is not in the Calling Card state. Affects the target.\n<color=#00AEFF>Calling Card: DEF ▼ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when landing a normal attack on a Rapture that is not in the Calling Card state. Affects self.\n<color=#00AEFF>Thief's Dagger: Hit Rate ▲ {description_value_03}%. Stacks up to {description_value_04} times and lasts for {description_value_05} sec.</color>\n■ Activates when landing a normal attack on a target that is in the Calling Card state. Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_06}% for {description_value_07} round(s).</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "19.02",
+                "20.49",
+                "21.96",
+                "23.43",
+                "24.87",
+                "26.34",
+                "27.81",
+                "29.28",
+                "30.75",
+                "32.19"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "15.22",
+                "16.39",
+                "17.57",
+                "18.74",
+                "19.9",
+                "21.07",
+                "22.25",
+                "23.42",
+                "24.6",
+                "25.75"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "44.41",
+                "47.83",
+                "51.25",
+                "54.67",
+                "58.09",
+                "61.49",
+                "64.91",
+                "68.33",
+                "71.75",
+                "75.17"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2580201,
+          "icon": "icn_skill_sharedamageincrease",
+          "group_id": 25802,
+          "skill_level": 1,
+          "name_localkey": "Thief's Vision",
+          "next_level_id": 2580202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates when Thief's Dagger is at max stacks. Removes stacks and affects targets in Calling Card status.\n<color=#00AEFF>Deals {description_value_08}% of <word_group=10025>final</word_group> ATK as additional damage. Removes Calling Card.</color>\n■ Activates when Thief's Dagger is at max stacks. Removes stacks and affects self.\n<color=#00AEFF><word_group=10019>Distributed Damage</word_group> ▲ {description_value_01}% continuously. Stacks up to {description_value_02} times. Stacks are removed after Burst Skill is used.</color>\n■ Activates after landing {description_value_03} normal attacks. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_04}% for {description_value_05} sec.\n<word_group=10019>Distributed Damage</word_group> ▲ {description_value_06}% for {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "7.61",
+                "8.18",
+                "8.78",
+                "9.36",
+                "9.94",
+                "10.54",
+                "11.11",
+                "11.71",
+                "12.29",
+                "12.86"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "50.32",
+                "54.16",
+                "58.08",
+                "61.92",
+                "65.76",
+                "69.68",
+                "73.52",
+                "77.44",
+                "81.28",
+                "85.12"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "18.87",
+                "20.31",
+                "21.78",
+                "23.22",
+                "24.66",
+                "26.13",
+                "27.57",
+                "29.04",
+                "30.48",
+                "31.92"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "49.82",
+                "53.66",
+                "57.49",
+                "61.33",
+                "65.16",
+                "68.99",
+                "72.82",
+                "76.67",
+                "80.5",
+                "84.33"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1580301,
+        "ulti_skill_detail": {
+          "id": 1580301,
+          "icon": "icn_skill_c580_ult",
+          "group_id": 15803,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Secret Trick: Rampage of Thieves",
+          "next_level_id": 1580302,
+          "prefer_target": "LowDefence",
+          "resource_name": "c580_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 86112,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as <word_group=10019>Distributed Damage</word_group>.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "861.12",
+                "927.36",
+                "993.6",
+                "1059.84",
+                "1126.08",
+                "1192.32",
+                "1258.56",
+                "1324.8",
+                "1391.04",
+                "1457.28"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            158030102
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            158030101
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 258002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100580,
+        "piece_detail": {
+          "id": 5100580,
+          "class": "Attacker",
+          "order": 58000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 580,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Phantom's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 258001,
+        "class": "Attacker",
+        "order": 10028,
+        "name_code": 5122,
+        "corporation": "ELYSION",
+        "resource_id": 580,
+        "name_localkey": "Phantom",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 580
+    }
+  }
+}

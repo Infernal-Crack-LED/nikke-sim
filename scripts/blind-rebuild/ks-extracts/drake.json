@@ -1,0 +1,38 @@
+{
+  "drake": {
+    "name": "Drake",
+    "burst": "III",
+    "weapon": "SG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "reconciled",
+      "provenance": "parser-baseline",
+      "date": "2026-07-17",
+      "findings": [
+        "S2 '10 attacks' = pulls-vs-pellets 10x lever (shipped count 100 = 10 pulls, brid-anchored); maxAmmo burst window economy unverified",
+        "✅ RESOLVED 2026-07-17 (favorite-item sync): enacted S1 hitRate 11.85→20.09 + NEW alliesOfWeapon-SG ATK 63.88/maxAmmo 50.14; S2 NEW 2nd nuke 201.6 (hitCount 50); burst 1254→3009.6 + self AD 31.68. All blocks DBG-confirmed firing. Model-only (no board comp)."
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded (not owned)",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: Hit Rate ▲ 20.09% (TREASURE) is modeled as hitRatePct, which is inert in the engine — the real effect (a core-hit-rate lift) is proven but unmeasured",
+      "skill1: the TREASURE 'all Shotgun-wielding allies' ATK 63.88 + Max Ammo 50.14 buff hits every SG ally incl. self on FB enter — run /sim-battery before any board claim on SG teams",
+      "skill2: both nukes read '10/5 attacks' as trigger PULLS (hitCount 100/50 in pellet-counter semantics), anchored by a same-chassis brid-silent-track measurement but unmeasured for drake — pull-vs-pellet is a 10x cadence lever on each",
+      "burst: Max Ammunition Capacity ▲ 72.18%/10s only pays out when a reload lands inside the window (cap raise fills on the next reload; no instant ammo grant assumed)"
+    ],
+    "board": null
+  }
+}

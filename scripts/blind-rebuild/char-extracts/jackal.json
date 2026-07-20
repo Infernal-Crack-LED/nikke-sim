@@ -1,0 +1,522 @@
+{
+  "jackal": {
+    "slug": "jackal",
+    "name": "Jackal",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/mn-18/vm-63/1b68deb545798efc729918302b829d67.png",
+    "weapon": "RL",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Defender",
+    "element": "Iron",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 65.02,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 142,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 42.6,
+    "burstGaugePerShot": 3.55,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when attacked 10 time(s). Affects 1 enemy unit(s) with the highest final Max HP.\nDamage Taken ▲ 9.09% for 10 sec.\nATK ▼ 9.09% for 10 sec.",
+      "skill2": "■ Activates at the start of battle. Affects self and 2 ally unit(s) with the highest final ATK.\nEqually shares damage taken  for 120 sec.\nDEF ▲ 8.27% for 120 sec.",
+      "burst": "■ Affects all allies.\nBurst Skill damage of skills with \"Affects 1 enemy unit(s)\" in the description ▲ 38.91% for 15 sec.\nDEF ▲ 14.69% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1011101,
+        "shot_detail": {
+          "id": 1011101,
+          "damage": 6502,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 67,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 3300,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 35500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 71000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2111101,
+        "skill2_id": 2111201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2111101,
+          "icon": "icn_skill_atkdown_01",
+          "group_id": 21111,
+          "skill_level": 1,
+          "name_localkey": "Happy Jackal",
+          "next_level_id": 2111102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates when attacked {description_value_01} time(s). Affects {description_value_02} enemy unit(s) with the highest <word_group=10025>final</word_group> Max HP.\n<color=#00AEFF>Damage Taken ▲ {description_value_03}% for {description_value_04} sec.\nATK ▼ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5.45",
+                "5.9",
+                "6.36",
+                "6.81",
+                "7.27",
+                "7.72",
+                "8.18",
+                "8.63",
+                "9.09"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5.45",
+                "5.9",
+                "6.36",
+                "6.81",
+                "7.27",
+                "7.72",
+                "8.18",
+                "8.63",
+                "9.09"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2111201,
+          "icon": "icn_skill_defup_01",
+          "group_id": 21112,
+          "skill_level": 1,
+          "name_localkey": "Jumpin' Jackal Flash",
+          "next_level_id": 2111202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates at the start of battle. Affects self and {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF><word_group=10044>Equally shares damage taken</word_group>  for {description_value_02} sec.\nDEF ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120"
+              ]
+            },
+            {
+              "description_value": [
+                "4.55",
+                "4.96",
+                "5.37",
+                "5.79",
+                "6.2",
+                "6.61",
+                "7.03",
+                "7.44",
+                "7.85",
+                "8.27"
+              ]
+            },
+            {
+              "description_value": [
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1111301,
+        "ulti_skill_detail": {
+          "id": 1111301,
+          "icon": "icn_skill_c111_ult",
+          "group_id": 11113,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Crazy Jackal",
+          "next_level_id": 1111302,
+          "prefer_target": "LowHP",
+          "resource_name": "c111_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF><word_group=10069>Burst Skill damage of skills with \"Affects 1 enemy unit(s)\" in the description</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nDEF ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "21.4",
+                "23.35",
+                "25.29",
+                "27.24",
+                "29.18",
+                "31.13",
+                "33.08",
+                "35.02",
+                "36.97",
+                "38.91"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "8.08",
+                "8.81",
+                "9.55",
+                "10.28",
+                "11.02",
+                "11.75",
+                "12.48",
+                "13.22",
+                "13.95",
+                "14.69"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            111130101,
+            111130102
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 111102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5205,
+        "stat_enhance_detail": {
+          "id": 5205,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100111,
+        "piece_detail": {
+          "id": 5100111,
+          "class": "Defender",
+          "order": 11100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 111,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Jackal's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 111101,
+        "class": "Defender",
+        "order": 10058,
+        "name_code": 1020,
+        "corporation": "MISSILIS",
+        "resource_id": 111,
+        "name_localkey": "Jackal",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 107,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 111
+    }
+  }
+}

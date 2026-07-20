@@ -1,0 +1,134 @@
+{
+  "slug": "arcana-fortune-mate",
+  "board": {
+    "ratio": 1.132,
+    "n": 1,
+    "mad": 0.132,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when Full Burst ends. Affects all shotgun-wielding allies. ATK \u25b2 13% of the skill user's ATK x stack count of Precious Moments for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: fullBurstEnd \u2192 alliesOfWeapon SG \u2192 casterAtkPct 39, 15s",
+        "note": "39% = 13% \u00d7 3 stacks baked to max. Caveat: ramp reaches ~2 stacks by FB end (over-credits ~13% casterATK); fires on EVERY team FB end even rotations she did not burst (0 stacks in multi-B2 comps)."
+      },
+      {
+        "kitLine": "Activates when Happy Memories takes effect. Affects self. Snapshots of Youth: Normal Attack Damage Multiplier \u25b2 10% continuously, stacks up to 3 time(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: burstCast \u2192 self \u2192 normalAttackPct 30, 11s, rampSec 11",
+        "note": "30% = 10% \u00d7 3 stacks. Trigger proxied from 'when Happy Memories takes effect' to burstCast (MM start). rampSec 11 approximates the 2/4/6-shot phase ramp; rests on \u26911.5 pulls/s SG cadence."
+      },
+      {
+        "kitLine": "Activates when Full Burst ends. Affects self. Removes Making Memories. Removes Snapshots of Youth.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Mode cleanup \u2014 non-damage. Buff expiry is handled implicitly by durationSec 11 lapse on the self-buff blocks."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when performing normal attacks while in Making Memories status. Affects self. Effect varies according to the number of attacks. Only one effect is triggered at a time. Resets when Making Memories is removed.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (self-buff block) + skill1[1] (Snapshots) via rampSec 11 + durationSec 11",
+        "note": "Phase-counter cycling (2\u21924\u21926\u21922\u2192\u2026) approximated as linear ramp 0\u2192cap over 11s. Reset handled by durationSec 11 lapse. 'One at a time' cycling is averaged into the ramp. Documented in caveat 1."
+      },
+      {
+        "kitLine": "Two times: Reloads 6 rounds.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "In-window reload \u2014 non-damage QoL. Adds ~3-5 window shots (COLD direction, partially masks ramp over-credit). Documented in caveat 3."
+      },
+      {
+        "kitLine": "Four times: Happy Memories: Number of pellets \u25b2 1 continuously. Stacks up to 3 times.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] second effect: normalAttackPct 30, 11s, rampSec 11",
+        "note": "+3 pellets on 10-pellet base \u2248 +30% normal damage (additive approx). True multiplicative pellet\u00d7snapshot interaction is ~1.69x vs modeled ~1.6x \u2014 under-counts ~5% (COLD). Documented in note."
+      },
+      {
+        "kitLine": "Six times: Precious Moments: ATK \u25b2 2.49% continuously. Stacks up to 3 times.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] first effect: atkPct 7.47, 11s, rampSec 11",
+        "note": "7.47% = 2.49% \u00d7 3 stacks. rampSec 11 approximates phase-counter ramp."
+      },
+      {
+        "kitLine": "Activates when using Burst Skill. Affects all shotgun-wielding allies (except self). Attack Damage \u25b2 55% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: burstCast \u2192 alliesOfWeapon SG excludeSelf \u2192 attackDamagePct 55, 10s",
+        "note": "Kit-faithful: weapon-typed target with excludeSelf. Fixed 2026-07-16 from alliesOfClass Attacker (which silently ignored excludeSelf)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Making Memories. Function: Enhances attack capabilities.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 self, durationSec 11 on both buffs",
+        "note": "MM status modeled implicitly via burstCast trigger + 11s duration (spans burst \u2192 FB exit). No separate mode/resource config. Keyed to OWN burstCast, not fullBurstEnter \u2014 correct per owner confirmation (MM only on her own burst, not any team FB)."
+      },
+      {
+        "kitLine": "Effect 1: Critical Rate \u25b2 20.09% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] first effect: critRatePct 20.09, 11s",
+        "note": "Kit-faithful value. 'Continuously' = permanent until MM removal; 11s duration matches MM window."
+      },
+      {
+        "kitLine": "Effect 2: Reloads 2 round(s).",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "In-window reload \u2014 non-damage QoL. Adds ~2 window shots (COLD direction). Documented in caveat 3."
+      },
+      {
+        "kitLine": "Effect 3: Attack Damage \u25b2 29.99% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] second effect: attackDamagePct 29.99, 11s",
+        "note": "Kit-faithful value."
+      },
+      {
+        "kitLine": "Affects all enemies. Deals 554.4% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast \u2192 enemy \u2192 flatDamage atkPct 554.4",
+        "note": "Kit-faithful value."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "rampSec 11 rests on \u26911.5 pulls/s SG cadence estimate; a focus recording refines it",
+      "couldCauseGap": "HOT",
+      "why": "If true SG cadence differs from 1.5 pulls/s, the ramp timing is wrong \u2014 faster cadence reaches cap sooner (more HOT), slower cadence means less ramp coverage (less HOT). Unmeasured."
+    },
+    {
+      "source": "caveat",
+      "text": "S1 39% (=13% \u00d7 3 Precious Moments stacks) at FB end assumes 3 stacks; ramp arithmetic reaches ~2 by FB end",
+      "couldCauseGap": "HOT",
+      "why": "Over-credits ~13% casterATK to all SG allies every FB end. At 2 stacks the correct value is 26%, not 39%."
+    },
+    {
+      "source": "caveat",
+      "text": "S1 block fires on EVERY team FB end even on rotations she did not burst (0 stacks in reality \u2014 multi-B2 comps over-credit)",
+      "couldCauseGap": "HOT",
+      "why": "In multi-B2 teams, she may not burst every rotation. The fullBurstEnd trigger fires regardless, granting 39% casterATK from 0 stacks. Over-credits in any comp with another B2."
+    },
+    {
+      "source": "caveat",
+      "text": "In-window reloads (Reload 6 at 2-hit phase; Reload 2 at burst) are unmodeled \u2014 they add ~3-5 window shots",
+      "couldCauseGap": "COLD",
+      "why": "More shots in-window = more damage. Skipping them under-counts her real output, partially masking the ramp/stack over-credit (HOT confounds above)."
+    },
+    {
+      "source": "note",
+      "text": "Happy Memories +3 pellets modeled as additive normalAttackPct 30; true multiplicative pellet\u00d7snapshot interaction is ~1.69x vs modeled ~1.6x (~5% under-count)",
+      "couldCauseGap": "COLD",
+      "why": "Additive approximation under-counts the compound pellet bonus. Small (~5%) but structurally biased COLD."
+    },
+    {
+      "source": "note",
+      "text": "F4 REFUTES the 'pellet/Snapshots double-count' premise \u2014 distinct buffs; additive model UNDER-counts ~5% vs true multiplicative. Real HOT cause: F1 stack ramp baked to max + F2 S1 stacks baked",
+      "couldCauseGap": "HOT",
+      "why": "The rampSec 11 fix (theme 3, 2026-07-17) addresses F1/F2. Board moved from 1.88\u21921.132. Residual HOT attributed to SG per-unit pellet landing mechanics (unmodeled per-pellet hit resolution)."
+    }
+  ],
+  "authorIntentSummary": "The override models Arcana: Fortune Mate as a whole-kit steady-state representation of her Making Memories mode: burst grants MM (crit rate 20.09% + attack damage 29.99%) plus a 554.4% nuke, keyed to her OWN burstCast with 11s duration spanning burst\u2192FB exit. Phase-counter stack buffs (Snapshots normalAttackPct 30, Happy-Memories pellets as normalAttackPct 30, Precious Moments atkPct 7.47) use rampSec 11 linear ramps replacing the prior baked-to-max encoding, with per-window reset via duration lapse. Key approximations: pellet bonus as additive normalAttackPct (under-counts ~5%), rampSec from unmeasured 1.5 pulls/s SG cadence, S1 39% casterATK baked to 3 stacks (ramp reaches ~2). Known-not-yet-faithful: in-window reloads skipped, S1 over-fires on non-burst rotations in multi-B2 comps. Board 1.132 HOT (n=1); residual attributed to SG per-unit pellet landing mechanics."
+}

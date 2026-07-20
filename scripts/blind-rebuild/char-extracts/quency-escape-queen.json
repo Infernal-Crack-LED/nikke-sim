@@ -1,0 +1,537 @@
+{
+  "quency-escape-queen": {
+    "slug": "quency-escape-queen",
+    "name": "Quency: Escape Queen",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/lb-07/gx-62/5266e44bf5c163ca0b22ea817a600202.png",
+    "weapon": "SMG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 10.12,
+    "coreAttackMultiplier": 250,
+    "ammo": 120,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 2,
+    "rl3": 8.436,
+    "burstGaugePerShot": 0.074,
+    "treasure": false,
+    "nicknames": [
+      "qeq"
+    ],
+    "skills": {
+      "skill1": "■ Activates only when Explore Route Stage 1 is at max stacks. Affects self.\nDistributed Damage ▲ 49.58% continuously.\n■ Activates only when Explore Route Stage 2 is at max stacks. Affects self.\nDamage dealt when attacking core ▲ 25.25% continuously.\n■ Activates only when Explore Route Stage 3 is at max stacks. Affects self.\nCritical Rate ▲ 16.73% continuously.",
+      "skill2": "■ Activates after 2 normal attacks. Affects self.\nEffects vary for each stage. Each subsequent effect triggers all effects before it:\nStage 1: Affects self.\nHit Rate ▲ 1.36%. Stacks up to 10 times and lasts for 2 sec.\nATK ▲ 2.45%. Stacks up to 10 times and lasts for 2 sec.\nStage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.\nHit Rate ▲ 2.71%. Stacks up to 10 times and lasts for 1 sec.\nATK ▲ 4.9%, stacks up to 10 time(s) and lasts for 1 sec.\nStage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.\nHit Rate ▲ 4.08%. Stacks up to 5 times and lasts for 0.5 sec.\nATK ▲ 7.36%. Stacks up to 5 times and lasts for 0.5 sec.",
+      "burst": "■ Affects self.\nAttack Damage ▲ 57.08% for 10 sec.\nReload Speed ▲ 25.87% for 10 sec.\n■ Affects all enemies.\nDeals 1736.31% of final ATK as Distributed Damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1040301,
+        "shot_detail": {
+          "id": 1040301,
+          "damage": 506,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 2,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 25000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 740,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 1480,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2403101,
+        "skill2_id": 2403201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2403101,
+          "icon": "icn_skill_damageshareinstant",
+          "group_id": 24031,
+          "skill_level": 1,
+          "name_localkey": "Secure Route",
+          "next_level_id": 2403102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates only when Explore Route Stage 1 is at max stacks. Affects self.\n<color=#00AEFF><word_group=10019>Distributed Damage</word_group> ▲ {description_value_01}% continuously.</color>\n■ Activates only when Explore Route Stage 2 is at max stacks. Affects self.\n<color=#00AEFF>Damage dealt when attacking core ▲ {description_value_02}% continuously.</color>\n■ Activates only when Explore Route Stage 3 is at max stacks. Affects self.\n<color=#00AEFF>Critical Rate ▲ {description_value_03}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "29.3",
+                "31.55",
+                "33.81",
+                "36.05",
+                "38.31",
+                "40.57",
+                "42.82",
+                "45.08",
+                "47.32",
+                "49.58"
+              ]
+            },
+            {
+              "description_value": [
+                "14.92",
+                "16.07",
+                "17.21",
+                "18.36",
+                "19.51",
+                "20.65",
+                "21.8",
+                "22.95",
+                "24.1",
+                "25.25"
+              ]
+            },
+            {
+              "description_value": [
+                "9.89",
+                "10.65",
+                "11.41",
+                "12.17",
+                "12.93",
+                "13.69",
+                "14.45",
+                "15.21",
+                "15.97",
+                "16.73"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2403201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 24032,
+          "skill_level": 1,
+          "name_localkey": "Explore Route",
+          "next_level_id": 2403202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates after {description_value_01} normal attacks. Affects self.\n<color=#00AEFF>Effects vary for each stage. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:</color>\nStage 1: Affects self.\n<color=#00AEFF>Hit Rate ▲ {description_value_02}%. Stacks up to 10 times and lasts for 2 sec.\nATK ▲ {description_value_03}%. Stacks up to 10 times and lasts for 2 sec.</color>\nStage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.\n<color=#00AEFF>Hit Rate ▲ {description_value_04}%. Stacks up to 10 times and lasts for 1 sec.\nATK ▲ {description_value_05}%, stacks up to 10 time(s) and lasts for 1 sec.</color>\nStage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.\n<color=#00AEFF>Hit Rate ▲ {description_value_06}%. Stacks up to 5 times and lasts for 0.5 sec.\nATK ▲ {description_value_07}%. Stacks up to 5 times and lasts for 0.5 sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "0.79",
+                "0.87",
+                "0.93",
+                "0.99",
+                "1.05",
+                "1.12",
+                "1.16",
+                "1.22",
+                "1.3",
+                "1.36"
+              ]
+            },
+            {
+              "description_value": [
+                "1.43",
+                "1.55",
+                "1.67",
+                "1.78",
+                "1.89",
+                "2.02",
+                "2.1",
+                "2.21",
+                "2.34",
+                "2.45"
+              ]
+            },
+            {
+              "description_value": [
+                "1.6",
+                "1.74",
+                "1.86",
+                "1.97",
+                "2.11",
+                "2.23",
+                "2.34",
+                "2.46",
+                "2.6",
+                "2.71"
+              ]
+            },
+            {
+              "description_value": [
+                "2.88",
+                "3.12",
+                "3.35",
+                "3.56",
+                "3.79",
+                "4.02",
+                "4.23",
+                "4.45",
+                "4.69",
+                "4.9"
+              ]
+            },
+            {
+              "description_value": [
+                "2.4",
+                "2.6",
+                "2.77",
+                "2.98",
+                "3.15",
+                "3.35",
+                "3.52",
+                "3.72",
+                "3.89",
+                "4.08"
+              ]
+            },
+            {
+              "description_value": [
+                "4.34",
+                "4.69",
+                "5.01",
+                "5.36",
+                "5.68",
+                "6.03",
+                "6.36",
+                "6.71",
+                "7.03",
+                "7.36"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1403301,
+        "ulti_skill_detail": {
+          "id": 1403301,
+          "icon": "icn_skill_c403_ult",
+          "group_id": 14033,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "The Great Thief",
+          "next_level_id": 1403302,
+          "prefer_target": "LowDefence",
+          "resource_name": "c403_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 102600,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_01}% for {description_value_02} sec.\nReload Speed ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as <word_group=10019>Distributed Damage</word_group>.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "33.72",
+                "36.32",
+                "38.92",
+                "41.5",
+                "44.1",
+                "46.7",
+                "49.3",
+                "51.89",
+                "54.47",
+                "57.08"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "15.28",
+                "16.46",
+                "17.64",
+                "18.81",
+                "19.99",
+                "21.16",
+                "22.34",
+                "23.52",
+                "24.69",
+                "25.87"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1026",
+                "1104.93",
+                "1183.85",
+                "1262.77",
+                "1341.69",
+                "1420.62",
+                "1499.54",
+                "1578.47",
+                "1657.39",
+                "1736.31"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            140330101,
+            140330102
+          ],
+          "before_hurt_function_id_list": [
+            140330103
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 140302,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5103,
+        "stat_enhance_detail": {
+          "id": 5103,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100403,
+        "piece_detail": {
+          "id": 5100403,
+          "class": "Attacker",
+          "order": 40300,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 403,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Quency: Escape Queen's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 140301,
+        "class": "Attacker",
+        "order": 10078,
+        "name_code": 5121,
+        "corporation": "MISSILIS",
+        "resource_id": 403,
+        "name_localkey": "Quency: Escape Queen",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 78,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 403
+    }
+  }
+}

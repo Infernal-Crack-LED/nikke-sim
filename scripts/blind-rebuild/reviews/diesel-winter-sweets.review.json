@@ -1,0 +1,206 @@
+{
+  "slug": "diesel-winter-sweets",
+  "board": {
+    "ratio": 0.824,
+    "n": 1,
+    "mad": 0.176,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst for the first time after using Burst Skill. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger fullBurstEnter \u2192 self",
+        "note": "Intro trigger. Modeled as plain fullBurstEnter; the 'first time after using Burst Skill' gate is assumed always-true because the sim casts her burst every rotation (B3). No chainGate/selfCast condition."
+      },
+      {
+        "kitLine": "Intro: Critical damage \u25b2 20.28% continuously. This effect cannot be removed. Effect persists after revival.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effects[0] critDamagePct 20.28 (no durationSec = permanent)",
+        "note": "'Cannot be removed' and 'persists after revival' are inert in sim (no dispel/revival mechanics)."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Highlight trigger. Mutually exclusive with Intro. Only applies when she does NOT cast her own burst \u2014 the sim always casts her burst, so this never fires in the modeled scenario. KEY GAP when comp prevents her from bursting (see documentedConfounds[0])."
+      },
+      {
+        "kitLine": "Highlight: Critical damage \u25b2 20.28% continuously. This effect cannot be removed. Effect persists after revival.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Same value as Intro crit damage. Mutually exclusive branch."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self if in Intro status.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger fullBurstEnter \u2192 self",
+        "note": "The 'if in Intro status' condition is implicitly assumed true (she always bursts). No explicit status check in the block."
+      },
+      {
+        "kitLine": "Sustained damage \u25b2 60.19% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effects[1] sustainedDamagePct 60.19 durationSec 10",
+        "note": "Intro-branch sustained. Correct value and duration."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self if in Highlight status.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2]",
+        "note": "Highlight-branch trigger. Mutually exclusive with Intro."
+      },
+      {
+        "kitLine": "Sustained damage \u25b2 235.03% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[3]",
+        "note": "Highlight-branch sustained \u2014 3.9\u00d7 the Intro value. This is the material damage gap when she cannot burst."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0], caveat[1]",
+        "note": "Part-destruction trigger unsupported. Inert in v1 single-boss (partless) scope."
+      },
+      {
+        "kitLine": "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1], caveat[0]",
+        "note": "Defensive/hit-rate mechanic. Inert in sim (no Noise Pollution sources modeled)."
+      },
+      {
+        "kitLine": "Activates when an ally or self destroys an enemy's part. Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[2], caveat[2]",
+        "note": "Part-destruction trigger unsupported. Inert in v1 single-boss (partless) scope."
+      },
+      {
+        "kitLine": "Sustained Damage \u25b2 68.04% for 15 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[3]",
+        "note": "Effect of the part-destruction trigger. Never fires because the trigger is unsupported and the sim has no parts."
+      },
+      {
+        "kitLine": "Activates when performing a Full Charge attack. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger shotFired \u2192 self",
+        "note": "Trigger is shotFired, not fullChargeAttack. Acceptable for RL (chargeFrames=60, every shot is a full charge). Auto-filled from offline parser."
+      },
+      {
+        "kitLine": "Sustained Damage \u25b2 318.14% for 3 sec. Stacks up to 2 times.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effects[0] sustainedDamagePct 318.14 durationSec 3 maxStacks 2",
+        "note": "Correct value, duration, and stack cap."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects the stage target.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger fullBurstEnter \u2192 enemy",
+        "note": "'Stage target' = the single boss in v1. Correct."
+      },
+      {
+        "kitLine": "Deals 63.33% of final ATK as sustained damage every 1 sec for 9 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effects[0] dot atkPct 63.33 durationSec 9 intervalSec 1",
+        "note": "Correct value, duration, interval."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all enemies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] target enemy",
+        "note": "Single-boss sim: all enemies = the boss."
+      },
+      {
+        "kitLine": "Damage Taken \u25b2 25.09% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[0] damageTakenPct 25.09 durationSec 10",
+        "note": "Team-amp debuff on enemy. Correct value and duration."
+      },
+      {
+        "kitLine": "Deals 18.43% of final ATK as sustained damage every 1 sec for 9 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[1] dot atkPct 18.43 durationSec 9 intervalSec 1",
+        "note": "AoE DoT. Correct."
+      },
+      {
+        "kitLine": "Affects the enemy if the enemy is the stage target.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] target enemy",
+        "note": "Single boss = stage target. No explicit stage-target gate needed in v1."
+      },
+      {
+        "kitLine": "Deals 181.2% of final ATK as sustained damage every 1 sec for 9 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] effects[0] dot atkPct 181.2 durationSec 9 intervalSec 1",
+        "note": "Single-target DoT. Correct."
+      },
+      {
+        "kitLine": "Activates while the skill user is in Highlight status. Affects all allies (except self).",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Highlight-only branch. She is always Intro in the sim (always bursts), so this never fires."
+      },
+      {
+        "kitLine": "Noise Pollution: Hit Rate \u25bc 100% for 1 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Hit-rate debuff on allies. Inert in sim (auto-play, hit-rate not modeled for damage). Also Highlight-only."
+      },
+      {
+        "kitLine": "Affects all allies if the skill user is in Highlight status.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2]",
+        "note": "Highlight-only trigger for Mute stack removal."
+      },
+      {
+        "kitLine": "Mute stacks \u25bc 1.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[3], caveat[3]",
+        "note": "Defensive stack mechanic. Inert \u2014 Mute is unmodeled and this is Highlight-only."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "COLD ROOT CAUSE CONFIRMED (ks-extracts finding): in graded comp N5 (Privaty/SWHA alternate), she makes 0 bursts \u2014 never reaches B3 slot \u2014 so she stays in Highlight, but the override hard-codes Intro (60.19% sustained). Should be 235.03% sustained in that comp.",
+      "couldCauseGap": "HOT",
+      "why": "Directly explains the 0.824 ratio. The override assumes she always bursts (Intro), but the graded comp prevents her from bursting. The 235.03% vs 60.19% sustained gap is ~3.9\u00d7 on a 10s buff every Full Burst cycle \u2014 a massive damage swing. Proposed fix: chainGate selfCast/selfNotCast on fullBurstEnter."
+    },
+    {
+      "source": "note",
+      "text": "Intro/Highlight mutual exclusion is not enforced by the block schema \u2014 the override simply omits the Highlight branch rather than gating on burst-cast state.",
+      "couldCauseGap": "HOT",
+      "why": "Any comp where she does not cast her burst will get the wrong (Intro) sustained value. This is the structural cause of the COLD rating."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: unsupported trigger 'Activates when an ally or self destroys an enemy's part' \u2014 part-destruction Sustained 68.04% for 15s skipped.",
+      "couldCauseGap": "COLD",
+      "why": "v1 scope is partless single boss. This effect never triggers in the sim's target scenario. Would matter for multi-part bosses."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2/burst: Mute, Noise Pollution, and Mute-stack mechanics are unmodeled.",
+      "couldCauseGap": "neither",
+      "why": "Purely defensive/hit-rate mechanics. No damage impact in auto-play sim. Inert regardless of comp."
+    },
+    {
+      "source": "note",
+      "text": "skill2/burst blocks were auto-filled from the offline parser (blablalink prose) on 2026-07-16, not hand-verified.",
+      "couldCauseGap": "neither",
+      "why": "Provenance note. The values match the char-extract prose exactly (63.33%, 18.43%, 181.2%, 25.09%, 318.14%). No discrepancy found."
+    },
+    {
+      "source": "note",
+      "text": "skill2 trigger is shotFired rather than fullChargeAttack.",
+      "couldCauseGap": "COLD",
+      "why": "RL weapons have chargeFrames=60; every shot is a full charge. shotFired is behaviorally equivalent for this weapon type. Would be wrong for non-RL weapons but she is RL-only."
+    }
+  ],
+  "authorIntentSummary": "The override author modeled Diesel: Winter Sweets as an always-bursting B3 (Intro state only): permanent Crit Damage +20.28% and Sustained Damage +60.19% for 10s on every Full Burst, plus parser-derived skill2 (Full-Charge sustained 318.14% \u00d72 stacks, 63.33%/s DoT on burst) and burst (Damage Taken +25.09%, two DoTs at 18.43%/s and 181.2%/s). The Highlight branch (Sustained 235.03%) is deliberately omitted as mutually exclusive with Intro, flagged as the key uncertainty. The COLD 0.824 board rating is confirmed to stem from this assumption: in the graded N5 comp she never reaches B3, stays in Highlight, and should receive 235.03% sustained instead of 60.19%. Part-destruction and Mute/Noise-Pollution mechanics are documented as inert in v1 partless-boss scope."
+}

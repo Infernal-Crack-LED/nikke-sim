@@ -1,0 +1,48 @@
+{
+  "mast-romantic-maid": {
+    "name": "Mast: Romantic Maid",
+    "burst": "II",
+    "weapon": "MG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "all 7 values byte-exact; Drunken-stack scaling modeled statically (cycle-avg 2, exact sole-B2). F1 Hangover trigger her-cast vs prose FB-end (Q5 measured, keep); F4 miss-model gauge over-credit (normalAttackPct-40 is damage-only)"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": true,
+    "evidence": "T1 0.95-1.06; Hangover-gate recalibration",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 2
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T1 wind-weak (boss Iron)",
+          "ratio": 1.0122
+        },
+        {
+          "comp": "T7 elec-weak probe (boss Water)",
+          "ratio": 1.0345
+        }
+      ],
+      "n": 2,
+      "mean": 1.0233,
+      "mad": 0.0233,
+      "band": "±3% ✓",
+      "temp": "OK  ·"
+    }
+  }
+}

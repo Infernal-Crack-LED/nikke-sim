@@ -1,0 +1,134 @@
+{
+  "slug": "velvet",
+  "board": {
+    "ratio": 1.059,
+    "n": 1,
+    "mad": 0.059,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at battle start + on entering Burst Stage 2 \u2014 Bullet Snatch: removes 5% ammo from all enemies; fills own ammo pouch to 6,000 (max 6,000), continuous, unremovable",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Resource/defensive bullet-steal + pouch-fill; skipped as inert for damage (pouch treated as never-dry per note)."
+      },
+      {
+        "kitLine": "Full Charge while NOT in Full Burst \u2014 Effect 1: expends 100 ammo from pouch",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Ammo spend dropped; pouch bookkeeping inert (spend stays well under 6000)."
+      },
+      {
+        "kitLine": "Full Charge while NOT in Full Burst \u2014 Effect 2: ATK \u25b2 30.5% for 3 sec (self)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] atkPct 30.5 / 3s",
+        "note": "trigger shotFired + fbGate:outFb (hard cutoff; SR full-charge approximated as shotFired). Note flags ~3s of in-game carryover into FB is lost = slight undercount."
+      },
+      {
+        "kitLine": "Full Charge while NOT in Full Burst \u2014 Effect 3: Attack Damage \u25b2 30.5% for 3 sec (self)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] attackDamagePct 30.5 / 3s",
+        "note": "Same block/gate as the ATK buff."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Full Charge during Full Burst \u2014 Effect 1: expends 300 ammo from pouch (self)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Ammo spend dropped; inert."
+      },
+      {
+        "kitLine": "Full Charge during Full Burst \u2014 Effect 2: all allies ATK \u25b2 25.2% of skill user's ATK for 3 sec continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] casterAtkPct 25.2 / 3s, target allies",
+        "note": "trigger shotFired + fbGate:inFb; continuous while she fires in FB. Caveat: kept alive by SWAPPED shots \u2014 unverified if swap weapon full-charges."
+      },
+      {
+        "kitLine": "Full Charge during Full Burst \u2014 Effect 3: all allies Charge Damage \u25b2 100.8% for 3 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] chargeDamagePct 100.8 / 3s, target allies",
+        "note": "Same block/gate as the caster-ATK team buff."
+      },
+      {
+        "kitLine": "After landing 50 normal attacks during Full Burst \u2014 Effect 1: expends 300 ammo from pouch (self)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Ammo spend dropped; inert."
+      },
+      {
+        "kitLine": "After landing 50 normal attacks during Full Burst \u2014 Effect 2: self Attack Damage \u25b2 15.03% for 5 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2] attackDamagePct 15.03 / 5s, target self",
+        "note": "trigger hitCount:50 + fbGate:inFb. SR lands ~10 hits/FB window so procs rarely; kept for fidelity (draft used hitCount 100 fudge, now corrected to 50)."
+      },
+      {
+        "kitLine": "After landing 50 normal attacks during Full Burst \u2014 Effect 3: target takes 400.92% of final ATK as additional damage",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] flatDamage atkPct 400.92, target enemy",
+        "note": "trigger hitCount:50 + fbGate:inFb; same rare-proc caveat."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self \u2014 Changes weapon in use: Damage 7% of final ATK, Duration 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] weaponSwap damagePct 7 / 10s",
+        "note": "trigger burstCast. Swap shot economy (fire rate, charge bucket) is a materialized parser estimate, NOT hand-verified \u2014 engine fires ~10 swapped shots/10s (60f cycle, no bolt gap) each carrying the SR charge-damage bucket on top of 7%."
+      },
+      {
+        "kitLine": "Additional Effect \u2014 Attack Damage \u25b2 34.52% for 10 sec (self)",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] attackDamagePct 34.52 / 10s",
+        "note": "Same burstCast block."
+      },
+      {
+        "kitLine": "Weapon-change spec (swap weapon charge time / ammo / Full Charge Damage that pins swap shot economy)",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Verbatim text not available to audit; flagged as the unverified input behind the swap economy estimate."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2 team buff (ATK 25.2% caster + Charge Damage 100.8%) kept alive by SWAPPED shots during her own 10s burst weapon-swap; kit requires a Full Charge attack; unverified whether the swap weapon full-charges (needs footage).",
+      "couldCauseGap": "HOT",
+      "why": "ks-extract finding names this as the plausible ~1.068 HOT contributor: if the swap weapon does NOT full-charge, the team buff should drop during swap shots and the sim over-buffs. swapGate:unswapped is the fix-if-confirmed."
+    },
+    {
+      "source": "caveat",
+      "text": "burst swap shot economy is a materialized parser estimate, not hand-verified \u2014 engine fires ~10 swapped shots/10s (60f cycle, no bolt gap) each carrying her SR charge-damage bucket on top of the 7% multiplier.",
+      "couldCauseGap": "HOT",
+      "why": "If the swap fires fewer shots or does not carry the full SR charge-damage bucket, the burst-window damage is overcounted; this is unverified and directly scales the HOT residual."
+    },
+    {
+      "source": "unmodeled",
+      "text": "burst Additional Effect weapon-change spec (swap charge time / ammo / Full Charge Damage) \u2014 verbatim text not available.",
+      "couldCauseGap": "HOT",
+      "why": "This missing spec is exactly what would pin the swap shot economy in caveat #2; its absence is why the swap is an estimate."
+    },
+    {
+      "source": "note",
+      "text": "S1 self ATK/Attack-Damage buff is text-gated 'while NOT in Full Burst'; fbGate:outFb is a hard cutoff \u2014 in-game ~3s of carryover into each FB window is lost.",
+      "couldCauseGap": "COLD",
+      "why": "This is a documented slight UNDERCOUNT (drops buff uptime at FB edges), so it pushes the ratio down \u2014 opposite to the observed HOT; it partially offsets, not causes, the gap."
+    },
+    {
+      "source": "note",
+      "text": "OPEN: if the pouch refill required HER OWN stage-2 cast, a never-bursting Velvet would run dry in ~2 rotations and lose all skill buffs \u2014 revisit if she still reads hot.",
+      "couldCauseGap": "neither",
+      "why": "Hypothetical undercount scenario for a never-bursting config; the probe comp bursts, so it is not manifesting and cannot explain the current HOT reading."
+    },
+    {
+      "source": "unmodeled",
+      "text": "All ammo-pouch spend/fill lines (S1 bullet-snatch + 100 spend; S2 300 spend x2) deliberately dropped.",
+      "couldCauseGap": "neither",
+      "why": "Pouch refills to 6000 at battle start + every Burst Stage 2 entry and per-rotation spend stays well under 6000, so every ammo-gated effect fires at full uptime \u2014 inert for damage."
+    }
+  ],
+  "authorIntentSummary": "The author hand-verified Velvet against a real scope-lock wind-weak T5 probe run (1.50 -> 1.05) and models the damage-relevant buffs/procs: S1 self ATK 30.5% + Attack Damage 30.5% (gated outFb), S2 team buff casterAtk 25.2% + Charge Damage 100.8% (gated inFb, shotFired) plus the corrected 50-hit proc (400.92% + self 15.03%/5s), and the burst weaponSwap 7%/shot + Attack Damage 34.52%/10s. Ammo-pouch bookkeeping is deliberately dropped as inert (pouch never runs dry). The known-not-faithful spots are the burst swap shot economy \u2014 a materialized parser estimate (~10 shots/10s carrying the SR charge bucket) that is NOT hand-verified \u2014 and the unverified question of whether the swap weapon full-charges (which keeps the S2 team buff alive); both are the prime suspects for the residual HOT (1.059) reading."
+}

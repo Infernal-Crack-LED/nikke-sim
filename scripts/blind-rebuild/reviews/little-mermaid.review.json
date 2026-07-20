@@ -1,0 +1,116 @@
+{
+  "slug": "little-mermaid",
+  "board": {
+    "ratio": 1.097,
+    "n": 4,
+    "mad": 0.097,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates only when in Focusing status. Affects all allies. / Focuses fire continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0..1]",
+        "note": "No numeric effect; targeting/taunt behavior inert for damage sim. Skipped per note."
+      },
+      {
+        "kitLine": "Activates when Full Burst ends. Affects all allies. Cooldown of Burst Skill \u25bc 7.48 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger fullBurstEnd \u2192 burstCdr 7.48, target allies",
+        "note": "Re-included verbatim (parser-dropped)."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies. Attack Damage \u25b2 4% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] trigger fullBurstEnter \u2192 buff attackDamagePct 4 / 10s, target allies",
+        "note": "Re-included verbatim."
+      },
+      {
+        "kitLine": "Activates each time total ammo expended by allies reaches 400. Affects all allies. Fills Burst Gauge by 37%.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] trigger teamAmmo count 400 \u2192 fillGauge 37, target allies",
+        "note": "Q6 update: now fires on TEAM ammo via teamAmmo trigger (was self-hitCount proxy that underfilled). Burst-cadence effect, not her own damage."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when the enemy appears. Affects the target. Bubble: Damage Taken \u25b2 5.05% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger passive \u2192 buff damageTakenPct 5.05, target enemy",
+        "note": "Modeled as permanent passive enemy debuff."
+      },
+      {
+        "kitLine": "Activates after landing 50 normal attacks (target in Bubble). Explosive Bubble: Damage Taken \u25b2 5.05% continuously. Stuns 3 sec. Removes Bubble.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0..1]",
+        "note": "Author ruling: relocates the same 5.05% debuff, does NOT stack to 10.1%; stun skipped (boss doesn't act). DISPUTED by kit-status F1 / caveat \u2014 possible 10.1% steady-state, needs measurement."
+      },
+      {
+        "kitLine": "Activates every 1 sec only during Full Burst. Affects random enemy units. Deals 63.36% of final ATK as damage. Attacks sequentially 4 times.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger fullBurstEnter \u2192 dot atkPct 253.44 / 10s / interval 1s, noRange, target enemy",
+        "note": "63.36%x4 = 253.44%/s as 10s DoT. Video-confirmed: ticks get +50% FB (noFb removed), all 4 sub-hits land on single boss. Assumes nominal 10s FB window."
+      },
+      {
+        "kitLine": "Activates each time total ammo expended by allies reaches 500. Affects random enemy units. Bubble Barrage: Deals 85% of final ATK as damage. Attacks sequentially 10 times.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2] trigger teamAmmo count 500 \u2192 flatDamage atkPct 850, noRange, target enemy",
+        "note": "85x10 = 850% per hit (user-confirmed per-hit). Q6: fires on TEAM ammo via teamAmmo (was self-hitCount undercount). core:false / flatDamage default (user-confirmed)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Attack damage \u25b2 10.13% for 10 sec. Reloads 33.26% magazine(s).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] trigger burstCast \u2192 buff attackDamagePct 10.13 / 10s + instantReload 0.3326, target allies",
+        "note": "Parser-materialized (offline parser), not hand-verified but behavior-identical."
+      },
+      {
+        "kitLine": "Affects self. ATK \u25b2 17.28% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] trigger burstCast \u2192 buff casterAtkPct 17.28 / 10s, target self",
+        "note": "skill-user's-ATK \u2192 casterAtkPct via upgraded offline parser; not hand-verified."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "Explosive Bubble may stack with Bubble to 10.1% team damage-taken vs modeled 5.05% \u2014 unverified, needs in-game debuff-icon/popup measurement.",
+      "couldCauseGap": "neither",
+      "why": "An under-modeled damage-taken makes sim team damage too LOW (COLD direction), opposite the observed HOT (ratio 1.097). Cannot cause the HOT gap; resolving it would INCREASE sim damage and worsen the HOT over-prediction."
+    },
+    {
+      "source": "caveat",
+      "text": "FB nuke encoded as 10s DoT started at FB entry; tick count assumes nominal 10s FB window, doesn't track shortened/extended FB.",
+      "couldCauseGap": "neither",
+      "why": "Investigated and ruled out by 2026-07-15 video re-read: DoT ticks confirmed +50% FB and all 4 sub-hits land on single boss; residual over traced to SMG normals, not the DoT."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1 Focusing-status / focuses-fire lines.",
+      "couldCauseGap": "neither",
+      "why": "No numeric damage effect; targeting/taunt behavior inert in partless-boss sim."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2 Explosive Bubble (after 50 normals): 5.05% debuff + 3s stun + removes Bubble.",
+      "couldCauseGap": "neither",
+      "why": "Author ruling: relocates (not stacks) the existing 5.05% debuff; stun inert on partless boss. The stacking question is the same as caveat F1 (opposite-sign to HOT)."
+    },
+    {
+      "source": "note",
+      "text": "OPEN residual ~22% HOT over lives in SMG NORMALS \u2014 flat SMG core-rate over-count off-optimal-range; to be fixed by the range-dependent core model (Chisato SMG recording), not an LM-specific change.",
+      "couldCauseGap": "HOT",
+      "why": "This is the author's identified cause of the current HOT gap: teammates Crown/Helm/SW match ~1.0 while only LM's normals overshoot; per-hit coefficients video-confirmed correct, so excess is in normal-fire uptime/range."
+    },
+    {
+      "source": "note",
+      "text": "U13 DoT-crit: DoT sub-hits crit in-game (measured orange 450,314 = 337,736 \u00d7 1.333) but sim models DoT without crit (DOT_CRIT off) \u2192 ~7.5% DoT under-count.",
+      "couldCauseGap": "neither",
+      "why": "Under-count pushes COLD, partially offsetting the HOT over; opposite sign. Gated on a global panel/Fable decision affecting ALL DoTs \u2014 must not be flipped in isolation (would worsen LM's normal-driven over)."
+    }
+  ],
+  "authorIntentSummary": "The override models Little Mermaid as a Burst-I Wind supporter: skill1 recovers the parser-dropped team burst-CDR (7.48s on FB end), team Attack Damage 4%/10s (on FB enter), and 37% gauge fill per 400 TEAM ammo (teamAmmo trigger); skill2 carries a permanent 5.05% enemy damage-taken debuff (Bubble), a 253.44%/s \u00d710s Full-Burst DoT (63.36%\u00d74, video-confirmed to get +50% FB and land all 4 sub-hits on the single boss), and an 850% Bubble Barrage per 500 team ammo; burst is parser-materialized (team Attack Damage 10.13%/10s + 33.26% reload, self casterAtkPct 17.28%/10s). Key approximations: Explosive Bubble is intentionally NOT added as a second damage-taken stack (author rules it a relocation, not 10.1%) though kit-status F1 disputes this pending measurement, and the FB DoT assumes a nominal 10s window. The known-not-faithful spot is the ~22% HOT over-prediction (ratio 1.097, n=4), which the author traced to SMG normal-fire core-rate over-count off-optimal-range \u2014 to be fixed by the global range-dependent core model, not an LM-specific change; a secondary U13 DoT-crit under-count (~7.5%) is held pending a global DoT-crit decision."
+}

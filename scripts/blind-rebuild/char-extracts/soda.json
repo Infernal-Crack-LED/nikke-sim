@@ -1,0 +1,468 @@
+{
+  "soda": {
+    "slug": "soda",
+    "name": "Soda",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/yg-12/ve-57/f69f77d59a71d64525c071020ff6baae.png",
+    "weapon": "MG",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Fire",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 5.57,
+    "coreAttackMultiplier": 200,
+    "ammo": 300,
+    "reloadFrames": 171,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 3.55,
+    "burstGaugePerShot": 0.05,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after 180 normal attack(s). Affects self.\nMaid Spirit: Max HP ▲ 13%, stacks up to 5 time(s) and lasts for 10 sec.",
+      "skill2": "■ Affects all allies.\nRestores HP equal to 3.23% of the skill user's final Max HP.\n■ Activates when Maid Spirit is at max stacks. Affects all allies.\nRestores HP equal to 12.71% of the skill user's final Max HP.",
+      "burst": "■ Affects 2 enemy unit(s) randomly.\nDeals 321.28% of final ATK as damage.\nStun for 1 sec.\n■ Affects all Fire Code allies.\nStack count of buffs ▲ 1."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1031201,
+        "shot_detail": {
+          "id": 1031201,
+          "damage": 557,
+          "max_ammo": 300,
+          "shake_id": 2,
+          "ShakeType": "Fire_MG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 250,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "MG",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Machine Gun",
+          "prefer_target": "TargetPS",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 4200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 299,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 150,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 7,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 100,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 150,
+          "rate_of_fire_change_pershot": 100,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 1000,
+          "auto_accuracy_change_pershot": 7,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 55,
+        "bonusrange_min": 35
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2312101,
+        "skill2_id": 1312201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2312101,
+          "icon": "icn_skill_stathp_01",
+          "group_id": 23121,
+          "skill_level": 1,
+          "name_localkey": "Spotless Chair",
+          "next_level_id": 2312102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates after {description_value_01} normal attack(s). Affects self.\n<color=#00AEFF>Maid Spirit: Max HP ▲ {description_value_02}%, stacks up to {description_value_03} time(s) and lasts for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "180",
+                "180",
+                "180",
+                "180",
+                "180",
+                "180",
+                "180",
+                "180",
+                "180",
+                "180"
+              ]
+            },
+            {
+              "description_value": [
+                "7.15",
+                "7.8",
+                "8.45",
+                "9.1",
+                "9.75",
+                "10.4",
+                "11.05",
+                "11.7",
+                "12.35",
+                "13"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1312201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 13122,
+          "skill_level": 1,
+          "name_localkey": "Squeaky Clean Floor",
+          "next_level_id": 1312202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Restores HP equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP.</color>\n■ Activates when Maid Spirit is at max stacks. Affects all allies.\n<color=#00AEFF>Restores HP equal to {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2.04",
+                "2.17",
+                "2.3",
+                "2.43",
+                "2.57",
+                "2.7",
+                "2.83",
+                "2.96",
+                "3.1",
+                "3.23"
+              ]
+            },
+            {
+              "description_value": [
+                "5.37",
+                "6.19",
+                "7",
+                "7.82",
+                "8.63",
+                "9.45",
+                "10.26",
+                "11.08",
+                "11.89",
+                "12.71"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1312301,
+        "ulti_skill_detail": {
+          "id": 1312301,
+          "icon": "icn_skill_c312_ult",
+          "group_id": 13123,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Spring Cleaning",
+          "next_level_id": 1312302,
+          "prefer_target": "Random",
+          "resource_name": "c312_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 11068,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 2,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects {description_value_01} enemy unit(s) randomly.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as damage.\nStun for {description_value_04} sec.</color>\n■ Affects all Fire Code allies.\n<color=#00AEFF><word_group=10001>Stack count of buffs</word_group> ▲ {description_value_03}.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "110.68",
+                "134.08",
+                "157.48",
+                "180.88",
+                "204.28",
+                "227.68",
+                "251.08",
+                "274.48",
+                "297.88",
+                "321.28"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            131230101
+          ],
+          "after_hurt_function_id_list": [
+            131230102
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 331202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5306,
+        "stat_enhance_detail": {
+          "id": 5306,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100312,
+        "piece_detail": {
+          "id": 5100312,
+          "class": "Attacker",
+          "order": 31200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 312,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Soda's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 331201,
+        "class": "Supporter",
+        "order": 10105,
+        "name_code": 5051,
+        "corporation": "TETRA",
+        "resource_id": 312,
+        "name_localkey": "Soda",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 84,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 312
+    }
+  }
+}

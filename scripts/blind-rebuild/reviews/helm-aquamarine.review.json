@@ -1,0 +1,98 @@
+{
+  "slug": "helm-aquamarine",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after landing 30 normal attacks. Affects the target. Deals 131.34% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: trigger hitCount 30 \u2192 target enemy \u2192 flatDamage 131.34",
+        "note": "Crits at sheet rate by engine default; no core-strike (text silent); FB-exempt by TIMING per prior-2 rule; noRange automatic."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies. Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it: Once: Cooldown of Burst Skill \u25bc1.82s. Twice: \u25bc2.2s. Three times: \u25bc2.6s.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: trigger fullBurstEnter \u2192 target allies \u2192 escalating [burstCdr 1.82, 2.2, 2.6]",
+        "note": "'Each subsequent effect triggers all effects before it' = escalating semantics (steps 1..N on Nth entry). Implemented, not unmodeled. Rotation blast radius touches every teammate's burst cadence \u2014 verify via /sim-battery diff."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects 1 enemy unit(s) randomly. Deals 105.58% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger hitCount 30 \u2192 target enemy \u2192 flatDamage 105.58",
+        "note": "\u2691 TOP: trigger is INVENTED \u2014 kit prose has NO 'Activates when\u2026' clause. Anchored to S1's 30-normal cadence as sibling-pattern guess. Could be burst-driven, a different N, or once-per-activation of something else. Pure hypothesis."
+      },
+      {
+        "kitLine": "Activates when attacking an Electric Code target. Affects the target. Damage Taken \u25b25.64%, stacks up to 5 time(s) and lasts for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: trigger bossElement Electric \u2192 target enemy \u2192 buff damageTakenPct 28.2",
+        "note": "Steady-state collapse: 5.64\u00d75 = 28.2 (AR continuous fire rebuilds 5 stacks in ~1s, 5s window \u226b refresh \u2192 ~full uptime). INERT under scope-lock (boss is not Electric). Per-stack accrual unexpressible in engine; steady-state is the faithful encoding."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all enemies. Deals 164.83% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast \u2192 target enemy \u2192 flatDamage 164.83",
+        "note": "Burst-cast auto FB-exempt, snapshots pre-FB. Single boss so 'all enemies' = the target."
+      },
+      {
+        "kitLine": "Activates when attacking an Electric Code target. Affects the target. Deals 164.83% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: trigger burstCast + bossElementGate Electric \u2192 target enemy \u2192 flatDamage 164.83",
+        "note": "Caveat 2 confirms 'now modeled'. INERT under scope-lock (boss not Electric). Note text still says 'UNMODELED' \u2014 stale; the block and caveat supersede it. Would add +164.83%/burst vs an Electric boss."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: the 105.58% random-enemy hit has NO kit-stated trigger \u2014 modeled on Skill 1's 30-normal-attack cadence as an unmeasured guess",
+      "couldCauseGap": "HOT",
+      "why": "Invented trigger+cadence (hitCount 30) is pure hypothesis. If the real trigger is burst-driven or a different N, the 105.58% hit fires at the wrong frequency, directly shifting damage."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the extra 164.83% vs Electric Code targets is now modeled (burstCast + bossElementGate 'Electric'); inert vs the non-Electric scope-lock boss",
+      "couldCauseGap": "COLD",
+      "why": "Scope-lock boss is not Electric, so this block never fires. Zero impact on current grading context."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: the Damage Taken debuff only applies against Electric Code bosses (inert in the scope-lock context)",
+      "couldCauseGap": "COLD",
+      "why": "bossElement gate is Electric; scope-lock boss is not Electric. Block never fires. Zero impact."
+    },
+    {
+      "source": "caveat",
+      "text": "cadence: assault-rifle fire rate and reload timing are datamined defaults, not yet measured from video",
+      "couldCauseGap": "HOT",
+      "why": "AR fire rate + reload timing drive hitCount cadence, which gates both S1a (131.34%) and the invented S2a (105.58%) triggers. Wrong cadence = wrong proc frequency = systematic damage error."
+    },
+    {
+      "source": "note",
+      "text": "\u2691[3] S2b steady-state 28.2 uptime assumption \u2014 untestable under scope-lock (needs an Electric boss)",
+      "couldCauseGap": "COLD",
+      "why": "Inert under scope-lock. Only relevant if an Electric-boss context is ever graded."
+    },
+    {
+      "source": "note",
+      "text": "\u2691[5] burstCdr rotation blast radius \u2014 /sim-battery diff before any board-level claim",
+      "couldCauseGap": "neither",
+      "why": "Methodology concern: the escalating burstCdr touches every teammate's burst cadence. Not a per-unit damage error but a team-rotation interaction that needs differential testing."
+    },
+    {
+      "source": "note",
+      "text": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number.",
+      "couldCauseGap": "HOT",
+      "why": "Entire file is an unvalidated hypothesis. No measurement has been done. Any or all \u2691 estimates could be wrong."
+    }
+  ],
+  "authorIntentSummary": "The override is a parser-baseline hypothesis (not yet measured or hand-tuned) modeling all 6 kit lines as blocks. S1a is a straightforward hitCount-30 rider; S1b implements the escalating burstCdr with correct 'each subsequent triggers all prior' semantics. S2a's trigger is the riskiest invention \u2014 the kit prose has NO activation clause, so the author guessed hitCount 30 by analogy with S1a. S2b collapses the 5-stack Damage Taken debuff to a steady-state 28.2% behind an Electric element gate (inert under scope-lock). Both burst lines are modeled, with the Electric-gated rider using bossElementGate. The two Electric-gated blocks (S2b, Bb) are faithfully inert against the non-Electric scope-lock boss. The top risks are the invented S2a trigger and the unmeasured AR cadence tuple."
+}

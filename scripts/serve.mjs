@@ -79,6 +79,10 @@ const TAB_META = {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
     desc: 'Build and share NIKKE solo-raid teams visually. Set loadouts, tweak overload lines, and share your team composition with a link.',
   },
+  resources: {
+    title: 'NIKKE Resource Calculator — Daily Custom Module & Fragment Income',
+    desc: 'Expected daily solo-raid resource drops by stage: overload custom modules, module fragments, locks, and XP fodder. Plan your daily farming.',
+  },
   howto: {
     title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',
     desc: 'Learn how to use the NIKKE Solo Raid Sim: build a team, configure the boss, read DPS results, and optimize your overload lines.',

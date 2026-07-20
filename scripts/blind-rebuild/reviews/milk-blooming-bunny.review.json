@@ -1,0 +1,176 @@
+{
+  "slug": "milk-blooming-bunny",
+  "board": {
+    "ratio": 0.681,
+    "n": 1,
+    "mad": 0.319,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "\u25a0 Activates when performing a Full Charge attack. Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Trigger header for the Pierce line; listed unmodeled. Inert anyway (Pierce/pierceDamagePct v1-inert)."
+      },
+      {
+        "kitLine": "Gain Pierce for 6 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Inert: 'Gain Pierce' is v1-inert per note; no block, no hasPierce."
+      },
+      {
+        "kitLine": "\u25a0 Activates when not in the Embarrassment state and when Full Charge lasts for 0.5 sec or more. Affects self.",
+        "status": "MODELED_CONFIG",
+        "where": "modes (\"auto (no Embarrassment)\" default vs \"manual (Embarrassment cycle)\")",
+        "note": "The 0.5s-charge-hold trigger is a manual action the AI never performs; approximated by the mode split. Default auto mode = never active (plain SR); manual mode = treated as permanent. A naive block-only check misses this gating."
+      },
+      {
+        "kitLine": "Embarrassment \u2014 Function: forcefully reloads at reduced reload speed, increases attack capabilities, deals Distributed Damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive (mode: manual)",
+        "note": "Summary line realized via reloadSpeedPct -50 + atkPct 118.7 + the shotFired 290% distributed block. Only in manual mode."
+      },
+      {
+        "kitLine": "Effect 1: Affects all enemies. Deals 290% of final ATK as Distributed Damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] shotFired flatDamage atkPct 290 flavor distributed (mode: manual)",
+        "note": "Fires ~once/cycle because ammo floored to 1. Manual mode only."
+      },
+      {
+        "kitLine": "Effect 2: Affects self. Removes 100% of ammo.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive maxAmmoPct -100 (mode: manual)",
+        "note": "Approximation: floors magazine to 1 \u2192 one shot then reload. First magazine still fires all 6 starting rounds before the cap applies (early-fight over-count, see note uncertainty 2)."
+      },
+      {
+        "kitLine": "Effect 3: Affects self. Reload speed is fixed at a 50% reduction for 1 reload(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive reloadSpeedPct -50 (mode: manual)",
+        "note": "Modeled as permanent rather than 1-reload; re-triggers every cycle so effectively always on."
+      },
+      {
+        "kitLine": "Effect 4: Affects self. Forced Reload.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive maxAmmoPct -100 (mode: manual)",
+        "note": "No discrete forced-reload block; captured implicitly by the 1-shot-then-reload cadence from the ammo floor."
+      },
+      {
+        "kitLine": "Effect 5: Affects self. ATK \u25b2 118.7% for 40 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive atkPct 118.7 (mode: manual)",
+        "note": "Modeled as permanent (refreshed every cycle) rather than a 40s duration."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "\u25a0 Activates only when in Embarrassment status. Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Trigger header for the Pierce Damage line; listed unmodeled. Inert (pierceDamagePct v1-inert)."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 64.7% continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Inert: pierceDamagePct is v1-inert per note; deliberately not blocked."
+      },
+      {
+        "kitLine": "\u25a0 Activates only when in Overconfident, Huh?! status. Affects all enemies every 2 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] burstCast dot (intervalSec 2, durationSec 10)",
+        "note": "Trigger is the Overconfident status granted by burst; proxied as burstCast. NOT mode-gated \u2192 fires in both auto and manual modes. Parser had dropped it under an unsupported trigger; re-added as DoT (5 ticks)."
+      },
+      {
+        "kitLine": "Deals 447.7% of final ATK as Distributed Damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] dot atkPct 447.7",
+        "note": "Distributed flavor lost (dot has no flavor field) but vs single boss distributed deals full value and she has no distributedDamagePct, so no boost lost."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "\u25a0 Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (target self)",
+        "note": "Header; burst block targets self. Not mode-gated \u2192 applies in both modes."
+      },
+      {
+        "kitLine": "Overconfident, Huh?!:",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0] + caveat",
+        "note": "Unparsed status-name line. Functionally benign: the DoT this status gates (S2 447.7%/2s) IS modeled via the burstCast DoT."
+      },
+      {
+        "kitLine": "Gains Immunity to Embarrassment for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1] + caveat + note uncertainty 1",
+        "note": "NOT modeled. During the 10s burst she should revert to a full 6-round magazine + normal reload (more charged normals, no 290% procs); instead she keeps the 1-shot slow-reload cadence \u2192 burst-window normals UNDER-counted, ~1-2 stray 290% procs OVER-counted (partial offset). Counter-buff approach rejected (would re-proc 290% on every burst normal \u2014 larger over-count)."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 117.64% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] buff pierceDamagePct 117.64 / 10s",
+        "note": "\u2691 DEAD BLOCK (kit-status F3): present in the array but never fires \u2014 no hasPierce config and pierceDamagePct is v1-inert. modeled != working. Auto-filled from offline parser; not hand-verified."
+      },
+      {
+        "kitLine": "ATK \u25b2 220% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] buff atkPct 220 / 10s",
+        "note": "Present in the burst block (auto-filled from offline parser, behavior-identical to prior runtime parse). Note text says 'left to the parser (correct)'; either way it is represented in a block and is functional."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "open-question",
+      "text": "F3 dead block: burst pierceDamagePct 117.64 never fires (no hasPierce; pierceDamagePct v1-inert). modeled != working; finding says 'Fix hasPierce'.",
+      "couldCauseGap": "COLD",
+      "why": "A pierce-damage buff that should apply during the 10s burst window contributes nothing \u2192 sim under-counts damage, pushing the ratio down (aligns with observed COLD 0.68)."
+    },
+    {
+      "source": "open-question",
+      "text": "F3/auto-mode: default 'auto (no Embarrassment)' mode is too pessimistic \u2014 real auto-play procs Embarrassment partially, but the sim models her as a plain SR with no 118.7% ATK / no 290% procs / normal magazine.",
+      "couldCauseGap": "COLD",
+      "why": "Likely the dominant confound: board runs full-auto, so the sim drops the entire Embarrassment damage package that real auto-play partially realizes \u2192 large under-count \u2192 COLD."
+    },
+    {
+      "source": "open-question",
+      "text": "F5: the old 'poor auto-play' 0.70 ACCEPTED-DECISION rationale is DIRECTION-SUSPECT \u2014 it predates the ratio-direction fix; poor auto-play predicts a HOT sim, but she is observed COLD.",
+      "couldCauseGap": "neither",
+      "why": "Interpretive, not a mechanic: it undermines the framing of the 0.68 residual as a benign accepted decision and suggests it may instead be a genuine under-count (reinforces the two COLD confounds above)."
+    },
+    {
+      "source": "note",
+      "text": "Uncertainty 1: burst 'Immunity to Embarrassment for 10s' not modeled \u2014 she keeps the 1-shot slow-reload cadence during burst instead of reverting to a full 6-round magazine + normal reload.",
+      "couldCauseGap": "COLD",
+      "why": "Net under-count of burst-window charged normals (partially offset by ~1-2 stray 290% procs that are over-counted) \u2192 pushes sim low."
+    },
+    {
+      "source": "note",
+      "text": "Uncertainty 2: first magazine fires all 6 starting rounds before the -100 max-ammo cap applies on reload.",
+      "couldCauseGap": "HOT",
+      "why": "Minor early-fight OVER-count of normals + 290% procs \u2192 pushes sim high, i.e. against the observed COLD gap (not a cause of it)."
+    },
+    {
+      "source": "note",
+      "text": "Uncertainty 3: S2 DoT loses the 'distributed' flavor (dot has no flavor field).",
+      "couldCauseGap": "neither",
+      "why": "No boost lost: distributed vs a single boss deals full value and she carries no distributedDamagePct."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: unparsed effect \"Overconfident, Huh?!:\"",
+      "couldCauseGap": "neither",
+      "why": "Status-name line only; the damage it gates (S2 447.7%/2s DoT) is modeled via the burstCast DoT."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: unparsed effect \"Gains Immunity to Embarrassment for 10 sec.\"",
+      "couldCauseGap": "COLD",
+      "why": "Same substantive gap as note uncertainty 1 \u2014 the unmodeled immunity causes a net burst-window under-count."
+    }
+  ],
+  "authorIntentSummary": "The author models Milk: Blooming Bunny with two modes: a default 'auto (no Embarrassment)' mode (matching full-auto validation runs) where she is a plain SR keeping only S2's burst DoT (447.7%/2s for 10s) and the burst buffs, and a 'manual (Embarrassment cycle)' mode that treats Embarrassment as a permanent operating state \u2014 passive maxAmmoPct -100 (1-shot/reload cadence), reloadSpeedPct -50, permanent ATK +118.7%, and a shotFired 290% distributed proc. Key approximations: the 0.5s-charge-hold Embarrassment trigger is encoded as the mode split rather than a real trigger; the burst's 10s Embarrassment-immunity is deliberately NOT modeled (under-counts burst-window normals, partially offset by stray procs); the first magazine over-counts 6 starting rounds; and all Pierce buffs (S1 Gain Pierce, S2 +64.7%, burst +117.64%) are inert \u2014 the burst pierce block is a documented dead block (no hasPierce, pierceDamagePct v1-inert). The known-not-faithful spot is the COLD 0.68 residual, with the documented suspicion that the default auto mode is too pessimistic (real auto-play procs Embarrassment partially) and that the older 'poor auto-play' accepted-decision rationale is direction-suspect."
+}

@@ -1,0 +1,442 @@
+{
+  "yulha": {
+    "slug": "yulha",
+    "name": "Yulha",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ez-22/nb-07/9947238fd5c639a018a7ae7cbb5973f7.png",
+    "weapon": "SR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 68.23,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 133,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 8.25,
+    "burstGaugePerShot": 2.75,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when attacked 30 time(s). Affects self.\nCalm: Critical Rate ▲ 24.53% for 20 sec.",
+      "skill2": "■ Affects all allies.\nATK ▲ 90.75% for 5 sec. \nEqually shares damage taken for 10 sec.",
+      "burst": "■ Affects all enemies.\nDeals 457.87% of final ATK as Burst Skill damage. \n■ Affects the same target(s) when in Calm status.\nDeals 457.87% of final ATK as additional damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1017101,
+        "shot_detail": {
+          "id": 1017101,
+          "damage": 6823,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 30,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Bio",
+          "camera_work": "camera_work_02",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 187,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 27500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 55000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2171101,
+        "skill2_id": 1171201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2171101,
+          "icon": "icn_skill_statcritical_01",
+          "group_id": 21711,
+          "skill_level": 1,
+          "name_localkey": "Tough Leadership",
+          "next_level_id": 2171102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates when attacked {description_value_01} time(s). Affects self.\n<color=#00AEFF>Calm: Critical Rate ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "14.5",
+                "15.61",
+                "16.73",
+                "17.84",
+                "18.96",
+                "20.07",
+                "21.19",
+                "22.3",
+                "23.42",
+                "24.53"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1171201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 11712,
+          "skill_level": 1,
+          "name_localkey": "The Weakener",
+          "next_level_id": 1171202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec. \n<word_group=10044>Equally shares damage taken</word_group> for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "53.62",
+                "57.75",
+                "61.87",
+                "66",
+                "70.12",
+                "74.25",
+                "78.37",
+                "82.5",
+                "86.62",
+                "90.75"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1171301,
+        "ulti_skill_detail": {
+          "id": 1171301,
+          "icon": "icn_skill_c171_ult",
+          "group_id": 11713,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Busy Bee",
+          "next_level_id": 1171302,
+          "prefer_target": "LowHP",
+          "resource_name": "c171_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 27056,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color> \n■ Affects the same target(s) when in Calm status.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "270.56",
+                "291.37",
+                "312.18",
+                "333",
+                "353.81",
+                "374.62",
+                "395.43",
+                "416.25",
+                "437.06",
+                "457.87"
+              ]
+            },
+            {
+              "description_value": [
+                "270.56",
+                "291.37",
+                "312.18",
+                "333",
+                "353.81",
+                "374.62",
+                "395.43",
+                "416.25",
+                "437.06",
+                "457.87"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            117130101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 317102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5102,
+        "stat_enhance_detail": {
+          "id": 5102,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100171,
+        "piece_detail": {
+          "id": 5100171,
+          "class": "Attacker",
+          "order": 17100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 171,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Yulha's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 317101,
+        "class": "Attacker",
+        "order": 10095,
+        "name_code": 5029,
+        "corporation": "TETRA",
+        "resource_id": 171,
+        "name_localkey": "Yulha",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 76,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 171
+    }
+  }
+}

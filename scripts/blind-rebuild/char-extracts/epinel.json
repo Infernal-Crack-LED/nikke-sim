@@ -1,0 +1,455 @@
+{
+  "epinel": {
+    "slug": "epinel",
+    "name": "Epinel",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/fa-49/ac-53/e54a26d7e356d5fb3ff89d1934292073.png",
+    "weapon": "SMG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 10.12,
+    "coreAttackMultiplier": 250,
+    "ammo": 120,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when killing an enemy. Affects self.\nTotal Noob: ATK ▲ 13.86%, stacks up to 5 time(s) and lasts for 15 sec.",
+      "skill2": "■ Activates when the last bullet hits the target. Affects self.\nCritical Rate▲ 5.05% for 5 sec.\nCritical Damage ▲ 6.4% for 5 sec.",
+      "burst": "■ Affects all enemies.\nDeals 457.87% of final ATK as Burst Skill damage. \n■ Activates when Total Noob is at max stacks. Affects the same targets.\nDeals 457.87% of final ATK as additional damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1024101,
+        "shot_detail": {
+          "id": 1024101,
+          "damage": 1012,
+          "max_ammo": 120,
+          "shake_id": 1,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 25000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2241101,
+        "skill2_id": 2241201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2241101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 22411,
+          "skill_level": 1,
+          "name_localkey": "Total Noob",
+          "next_level_id": 2241102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates when killing an enemy. Affects self.\n<color=#00AEFF>Total Noob: ATK ▲ {description_value_01}%, stacks up to {description_value_02} time(s) and lasts for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "8.18",
+                "8.82",
+                "9.44",
+                "10.08",
+                "10.71",
+                "11.34",
+                "11.97",
+                "12.6",
+                "13.23",
+                "13.86"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2241201,
+          "icon": "icn_skill_criticaldamage_01",
+          "group_id": 22412,
+          "skill_level": 1,
+          "name_localkey": "Arachnid",
+          "next_level_id": 2241202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates when the last bullet hits the target. Affects self.\n<color=#00AEFF>Critical Rate▲ {description_value_01}% for {description_value_02} sec.\nCritical Damage ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2.98",
+                "3.21",
+                "3.44",
+                "3.67",
+                "3.9",
+                "4.13",
+                "4.36",
+                "4.59",
+                "4.82",
+                "5.05"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "3.78",
+                "4.07",
+                "4.36",
+                "4.65",
+                "4.95",
+                "5.24",
+                "5.53",
+                "5.82",
+                "6.11",
+                "6.4"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1241301,
+        "ulti_skill_detail": {
+          "id": 1241301,
+          "icon": "icn_skill_c241_ult",
+          "group_id": 12413,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "SAFE 50-50",
+          "next_level_id": 1241302,
+          "prefer_target": "HighDefence",
+          "resource_name": "c241_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 27056,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color> \n■ Activates when Total Noob is at max stacks. Affects the same targets.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "270.56",
+                "291.37",
+                "312.18",
+                "333",
+                "353.81",
+                "374.62",
+                "395.43",
+                "416.25",
+                "437.06",
+                "457.87"
+              ]
+            },
+            {
+              "description_value": [
+                "270.56",
+                "291.37",
+                "312.18",
+                "333",
+                "353.81",
+                "374.62",
+                "395.43",
+                "416.25",
+                "437.06",
+                "457.87"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            124130101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 324102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5103,
+        "stat_enhance_detail": {
+          "id": 5103,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100241,
+        "piece_detail": {
+          "id": 5100241,
+          "class": "Attacker",
+          "order": 24100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 241,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Epinel's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 324101,
+        "class": "Attacker",
+        "order": 10070,
+        "name_code": 5038,
+        "corporation": "MISSILIS",
+        "resource_id": 241,
+        "name_localkey": "Epinel",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 78,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 241
+    }
+  }
+}

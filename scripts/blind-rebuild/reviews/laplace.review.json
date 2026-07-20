@@ -1,0 +1,134 @@
+{
+  "slug": "laplace",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when attacking with Full Charge. Affects self. Hero Vision: Explosion Radius \u25b2 3.57%, stacks up to 5 time(s) and lasts for 15 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "AoE radius inert vs partless single boss; stack state only gates burst true damage (assumed maxed throughout window). skill1 block array is empty []."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when hitting a target with Full Charge. Affects the target. Deals 132.45% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger shotFired \u2192 flatDamage 132.45% crit",
+        "note": "Every RL pull = one full charge, so shotFired fires every shot. Replaces the wave-6 lastBullet 81.66 per-mag proc per treasure reconcile. \u2691 trigger read unverified \u2014 caveat flags retune if popup doesn't land once per rocket."
+      },
+      {
+        "kitLine": "Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Partless boss at scope lock \u2014 parts-hit trigger never fires. Correctly skipped."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Changes the weapon in use.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: trigger burstCast \u2192 weaponSwap (self-target)",
+        "note": "weaponSwap block encodes the bazooka beam mode."
+      },
+      {
+        "kitLine": "First Damage: 1455.72% of final ATK",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast \u2192 flatDamage 1455.72% crit (enemy-target)",
+        "note": "Auto FB-exempt pre-FB per note. Crit per prior-2 default (unmeasured \u2691)."
+      },
+      {
+        "kitLine": "Normal Damage: 22.2% of final ATK",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: weaponSwap damagePct 22.2",
+        "note": "Beam tick damage per swap window."
+      },
+      {
+        "kitLine": "Duration: 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: weaponSwap durationSec 10",
+        "note": "Swap window length."
+      },
+      {
+        "kitLine": "Additional Effect 1: Gains Pierce.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "No swap-gated pierce mechanism exists; hasPierce would mis-tag ~97% non-swap uptime. PIERCE_CORE_DOUBLE hard-off, no pierce-damage buffs in kit \u2192 inert at scope lock."
+      },
+      {
+        "kitLine": "Additional Effect 2: Normal damage is applied as true damage when Hero Vision is at max stacks.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: weaponSwap trueNormals true",
+        "note": "ASSUMES Hero Vision maxed throughout the 10s window \u2691. If uptime < 100%, beam normals would not be true \u2014 HOT confound."
+      },
+      {
+        "kitLine": "Note: Unable to take cover while using Burst Skill.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Defensive/positional \u2014 irrelevant to damage sim at scope lock (auto-play, partless boss)."
+      },
+      {
+        "kitLine": "Affects the same enemy unit(s) when Hero Vision is at max stacks. Deals 11.9% of final ATK as true damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2]: trigger shotFired + swapGate swapped \u2192 flatDamage 11.9% flavor true crit",
+        "note": "Rides each beam tick, gated on swap active AND Hero Vision max (assumed). Crit per prior-2 default (unmeasured \u2691)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "burst: bazooka beam economy is UNMEASURED \u2014 0.25s/tick + reload-free are \u2691 estimates over the 10s window; count beam popups in any focus video",
+      "couldCauseGap": "HOT",
+      "why": "Tick rate (chargeTimeSec 0.25) and maxAmmo 999 directly determine how many 22.2% beam hits land in 10s. If real tick rate differs, total beam damage scales linearly."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the swap beam (22.2%, true at max Hero Vision) and the 11.9% true rider both assume Hero Vision is at max stacks for the whole window (\u2691 uptime haircut candidate)",
+      "couldCauseGap": "HOT",
+      "why": "trueNormals and the 11.9% rider are both gated on Hero Vision max stacks. If stacks drop during the 10s window, beam normals revert to non-true and the rider stops firing \u2014 significant damage loss."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: 'Gains Pierce' not modeled \u2014 no swap-gated pierce mechanism; inert at scope lock (no pierce-damage buffs in kit, pierce core-double disabled)",
+      "couldCauseGap": "neither",
+      "why": "Pierce only matters with pierce-damage buffs or core-double, neither of which exist at scope lock. Correctly inert."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: the 132.45% full-charge additional hit is modeled on shotFired (every RL pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
+      "couldCauseGap": "HOT",
+      "why": "If the 132.45% proc doesn't fire on every full-charge shot (e.g. only on last bullet or on hit-confirm), the modeled frequency is wrong and S2 contribution is over/under-counted."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: Explosion Radius \u25b2 is inert vs the partless boss; its stacks only gate the burst true damage (assumed maxed)",
+      "couldCauseGap": "neither",
+      "why": "Explosion radius has no damage effect vs single partless boss. Stack gating is handled by the trueNormals assumption (covered by confound #2)."
+    },
+    {
+      "source": "note",
+      "text": "\u2691 cadence tuple: chargeFrames 60 + default 22f bolt gap (verify autofire \u2192 charFixes.noBoltRecovery, ~15-20% shots) + reloadFrames 161",
+      "couldCauseGap": "HOT",
+      "why": "Bolt-gap and reload cadence determine shots-per-180s. If noBoltRecovery is wrong, shot count (and thus S2 procs + burst gauge) shifts ~15-20%."
+    },
+    {
+      "source": "note",
+      "text": "\u2691 hitsPerShot 2 twin-projectile split vs merge (read popups)",
+      "couldCauseGap": "HOT",
+      "why": "If the RL fires 2 projectiles that merge vs split, effective hitsPerShot changes, altering S2 proc count and burst gauge generation."
+    },
+    {
+      "source": "note",
+      "text": "\u2691 rider/first-hit crit flags = prior-2 default, unmeasured",
+      "couldCauseGap": "HOT",
+      "why": "If the 1455.72% first hit or 11.9% rider cannot crit, the crit:true flag overstates their contribution by ~critRate\u00d7critDamage."
+    }
+  ],
+  "authorIntentSummary": "The override models Laplace (Treasure) as a charge-RL attacker whose every shot is a full charge (chargeFrames 60, chargeMult 250). S2's 132.45% additional hit is encoded as a shotFired flatDamage block (per-full-charge trigger, replacing the wave-6 lastBullet 81.66 reading). The burst encodes a three-block structure: a 1455.72% first-damage nuke, a weaponSwap beam (22.2% per tick at 0.25s cadence, 10s duration, reload-free, trueNormals assuming Hero Vision maxed), and an 11.9% true-damage rider gated on swap active. S1 (explosion radius) and S2b (parts hit) are deliberately unmodeled as inert vs the partless single boss. The entire model is flagged as PARSER BASELINE / HYPOTHESIS \u2014 never validated against a real fight, with 7+ \u2691 unmeasured estimates (beam tick rate, Hero Vision uptime, bolt gap, hitsPerShot, crit flags). No board data exists."
+}

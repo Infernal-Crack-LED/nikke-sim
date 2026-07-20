@@ -1,0 +1,446 @@
+{
+  "soline-frost-ticket": {
+    "slug": "soline-frost-ticket",
+    "name": "Soline: Frost Ticket",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/dw-46/hg-62/fa6dce33bebff1770752d55b67506081.png",
+    "weapon": "SG",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Supporter",
+    "element": "Water",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 201.5,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": false,
+    "nicknames": [
+      "sft",
+      "solineft"
+    ],
+    "skills": {
+      "skill1": "■ Activates at the start of battle and when using Burst Skill. Affects all allies.\nIssues 1 ticket, up to a maximum of 2. This effect is continuous.\nTicket effect: Max HP ▲ number of tickets * 10% of the skill user's Max HP.\n■ Activates when entering Full Burst. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.\n■ Activates when entering Full Burst. Affects all allies.\nRemoves First Train Discount.",
+      "skill2": "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.\nRecovers 12.27% of the skill user's final Max HP as HP.\nTicket count ▼ 1.\n■ Activates at the start of battle. Affects all allies.\nFirst Train Discount for 6 sec.\nFunction: The effects of I'll Help You Board the Train! will not consume tickets.",
+      "burst": "■ Affects all allies.\nRecovers 32.26% of the skill user's final Max HP as HP."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1007401,
+        "shot_detail": {
+          "id": 1007401,
+          "damage": 20150,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2074101,
+        "skill2_id": 2074201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2074101,
+          "icon": "icn_skill_stathp_01",
+          "group_id": 20741,
+          "skill_level": 1,
+          "name_localkey": "I'll Check Your Ticket!",
+          "next_level_id": 2074102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates at the start of battle and when using Burst Skill. Affects all allies.\n<color=#00AEFF>Issues 1 ticket, up to a maximum of 2. This effect is continuous.\nTicket effect: Max HP ▲ number of tickets * {description_value_01}% of the skill user's Max HP.</color>\n■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ {description_value_03} sec.</color>\n■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF>Removes First Train Discount.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5.91",
+                "6.36",
+                "6.82",
+                "7.27",
+                "7.73",
+                "8.18",
+                "8.64",
+                "9.09",
+                "9.55",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "5.34",
+                "5.58",
+                "5.82",
+                "6.05",
+                "6.29",
+                "6.53",
+                "6.77",
+                "7",
+                "7.24",
+                "7.48"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2074201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 20742,
+          "skill_level": 1,
+          "name_localkey": "I'll Help You Board the Train!",
+          "next_level_id": 2074202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates when the HP of anyone in the squad is lower than {description_value_01}%. Affects the target if the target has any tickets.\n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.\nTicket count ▼ {description_value_03}.</color>\n■ Activates at the start of battle. Affects all allies.\n<color=#00AEFF>First Train Discount for {description_value_04} sec.\nFunction: The effects of I'll Help You Board the Train! will not consume tickets.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "7.25",
+                "7.8",
+                "8.36",
+                "8.92",
+                "9.48",
+                "10.03",
+                "10.59",
+                "11.15",
+                "11.71",
+                "12.27"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1074301,
+        "ulti_skill_detail": {
+          "id": 1074301,
+          "icon": "icn_skill_c074_ult",
+          "group_id": 10743,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "I'll Get You There Safely!",
+          "next_level_id": 1074302,
+          "prefer_target": "Random",
+          "resource_name": "c074_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "19.06",
+                "20.53",
+                "22",
+                "23.46",
+                "24.93",
+                "26.4",
+                "27.86",
+                "29.33",
+                "30.8",
+                "32.26"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            107430101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 207402,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5304,
+        "stat_enhance_detail": {
+          "id": 5304,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100074,
+        "piece_detail": {
+          "id": 5100074,
+          "class": "Attacker",
+          "order": 7400,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 74,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Soline: Frost Ticket's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 207401,
+        "class": "Supporter",
+        "order": 10041,
+        "name_code": 5158,
+        "corporation": "ELYSION",
+        "resource_id": 74,
+        "name_localkey": "Soline: Frost Ticket",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 96,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 74
+    }
+  }
+}

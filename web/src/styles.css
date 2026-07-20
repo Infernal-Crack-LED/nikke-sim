@@ -2693,3 +2693,111 @@ footer {
     gap: 8px;
   }
 }
+
+/* ---- Resource Calculator page ---- */
+.res-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 12px 0 4px;
+}
+.res-tier {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.res-heading {
+  font-size: 15px;
+  margin: 14px 0 0;
+}
+.res-heading .muted {
+  font-size: 12px;
+  font-weight: 400;
+}
+.res-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 10px 0 4px;
+  /* the grid is keyed on boss+tier in JSX, so this replays on every change —
+     the numbers visibly re-roll instead of swapping silently */
+  animation: res-refresh 0.18s ease;
+}
+@keyframes res-refresh {
+  from {
+    opacity: 0.35;
+    transform: translateY(2px);
+  }
+}
+.res-stat {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+.res-stat:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+/* headline metric (custom modules) carries the accent so the eye lands on it */
+.res-stat.main {
+  box-shadow: 0 0 0 1px var(--accent) inset;
+}
+.res-stat.main .res-stat-value {
+  color: var(--accent);
+}
+.res-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.res-stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.res-stat-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.res-detail {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 6px 0 14px;
+}
+.res-detail b {
+  color: var(--text);
+}
+/* the tier ladder doubles as a picker — rows highlight on hover and carry an
+   accent bar on the selected tier */
+.res-ladder tbody tr {
+  cursor: pointer;
+}
+.res-ladder td {
+  transition: background 0.12s ease;
+}
+.res-ladder tbody tr:hover td,
+.res-ladder tbody tr.on td {
+  background: var(--panel2);
+}
+.res-ladder tbody tr.on td:first-child {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+@media (max-width: 640px) {
+  .res-stat {
+    padding: 10px 12px;
+  }
+  .res-stat-value {
+    font-size: 19px;
+  }
+}

@@ -1,0 +1,728 @@
+{
+  "neon-vision-eye": {
+    "slug": "neon-vision-eye",
+    "name": "Neon: Vision Eye",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ll-65/rp-31/443cc2d2304dd8b47356442cb692a2c0.png",
+    "weapon": "RL",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Electric",
+    "manufacturer": "Missilis Overspec",
+    "normalAttackMultiplier": 61.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 9,
+    "burstGaugePerShot": 0.75,
+    "treasure": false,
+    "nicknames": [
+      "nve",
+      "neo neon",
+      "veon",
+      "nneon"
+    ],
+    "skills": {
+      "skill1": "■ Activates when attacked while not in Healthy Body status. Affects self.\nInvulnerable for 3 sec. Activates 5 time(s) per battle.\nGains debuff immunity to ∞ debuffs for 3 sec. Activates 5 time(s) per battle.\nHealthy Body: Incoming healing ▲ 10.26% for 20 sec.\n■ Activates when landing a Full Charge attack. Affects the enemy if the enemy is the stage target.\nFirepower Explosion:\nEffect: Deals 437.98% of final ATK as additional damage.\nAdditional effect of Super Firepower status: Deals 262.79% of final ATK as additional damage.",
+      "skill2": "■ Activates at the start of battle. Affects self.\nIncreases the Firepower Gauge's charge by 100.\n■ Activates when performing a normal attack while in Firepower Charge status. Affects self.\nIncreases the Firepower Gauge's charge by 2.\n■ Activates when Firepower Charge ends. Affects self.\nIncreases the Firepower Gauge's charge by 45.\n■ Activates when Full Burst ends while Firepower Gauge is active. Affects self.\nBurst Gauge filling speed ▲ 5% x Firepower Gauge charge amount for 5 sec.\n■ Activates when entering Full Burst. Affects self.\nMaximum Firepower: \nEffect: ATK ▲ 80.04% for 10 sec.\nAdditional effect for Super Firepower: ATK ▲ 35.05% for 10 sec.",
+      "burst": "■ Activates when the Firepower Gauge's charge is lower than 100. Affects self.\nFirepower Charge: Charges the Firepower Gauge for 10 sec. This effect cannot be removed.\nIncreases the Firepower Gauge's charge by 1.\n■ Activates when the Firepower Gauge's charge is at 100. Affects self.\nSuper Firepower: Attack Damage ▲ 45.03% for 10 sec.\nDecreases the Firepower Gauge's charge by 100.\n■ Affects self.\nExplosion Radius ▲ 200% for 10 sec.\nAttack Damage ▲ 110.21% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1001801,
+        "shot_detail": {
+          "id": 1001801,
+          "damage": 6130,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "aim_prefab": "base_aim_reference_c018",
+          "input_type": "DOWN_Charge",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 300,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 300,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 7500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 15000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2018101,
+        "skill2_id": 2018201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2018101,
+          "icon": "icn_skill_debuffimmune_01",
+          "group_id": 20181,
+          "skill_level": 1,
+          "name_localkey": "Healthy Body",
+          "next_level_id": 2018102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when attacked while not in Healthy Body status. Affects self.\n<color=#00AEFF>Invulnerable for {description_value_03} sec. Activates {description_value_04} time(s) per battle.\nGains <word_group=10039>debuff immunity</word_group> to ∞ debuffs for {description_value_05} sec. Activates {description_value_06} time(s) per battle.\nHealthy Body: Incoming healing ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when landing a Full Charge attack. Affects the enemy if the enemy is the <word_group=10105>stage target</word_group>.\n<color=#00AEFF>Firepower Explosion:\nEffect: Deals {description_value_07}% of <word_group=10025>final</word_group> ATK as additional damage.\nAdditional effect of Super Firepower status: Deals {description_value_08}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6.06",
+                "6.53",
+                "7",
+                "7.46",
+                "7.93",
+                "8.4",
+                "8.86",
+                "9.33",
+                "9.8",
+                "10.26"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "258.81",
+                "278.71",
+                "298.62",
+                "318.53",
+                "338.44",
+                "358.34",
+                "378.25",
+                "398.16",
+                "418.07",
+                "437.98"
+              ]
+            },
+            {
+              "description_value": [
+                "155.28",
+                "167.23",
+                "179.17",
+                "191.12",
+                "203.06",
+                "215.01",
+                "226.95",
+                "238.9",
+                "250.84",
+                "262.79"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2018201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20182,
+          "skill_level": 1,
+          "name_localkey": "Firepower Charge",
+          "next_level_id": 2018202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Increases the Firepower Gauge's charge by {description_value_08}.</color>\n■ Activates when performing a normal attack while in Firepower Charge status. Affects self.\n<color=#00AEFF>Increases the Firepower Gauge's charge by 2.</color>\n■ Activates when Firepower Charge ends. Affects self.\n<color=#00AEFF>Increases the Firepower Gauge's charge by {description_value_09}.</color>\n■ Activates when Full Burst ends while Firepower Gauge is active. Affects self.\n<color=#00AEFF><word_group=10014>Burst Gauge filling speed</word_group> ▲ {description_value_02}% x Firepower Gauge charge amount for {description_value_03} sec.</color>\n■ Activates when entering Full Burst. Affects self.\n<color=#00AEFF>Maximum Firepower: \nEffect: ATK ▲ {description_value_04}% for {description_value_05} sec.\nAdditional effect for Super Firepower: ATK ▲ {description_value_06}% for {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "2.96",
+                "3.19",
+                "3.42",
+                "3.65",
+                "3.87",
+                "4.1",
+                "4.33",
+                "4.56",
+                "4.79",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "47.29",
+                "50.93",
+                "54.57",
+                "58.21",
+                "61.85",
+                "65.49",
+                "69.12",
+                "72.76",
+                "76.4",
+                "80.04"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "20.71",
+                "22.31",
+                "23.9",
+                "25.49",
+                "27.09",
+                "28.68",
+                "30.27",
+                "31.87",
+                "33.46",
+                "35.05"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1018301,
+        "ulti_skill_detail": {
+          "id": 1018301,
+          "icon": "icn_skill_c018_ult",
+          "group_id": 10183,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Super Firepower",
+          "next_level_id": 1018302,
+          "prefer_target": "Random",
+          "resource_name": "c018_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Activates when the Firepower Gauge's charge is lower than 100. Affects self.\n<color=#00AEFF>Firepower Charge: Charges the Firepower Gauge for {description_value_02} sec. This effect cannot be removed.\nIncreases the Firepower Gauge's charge by 1.</color>\n■ Activates when the Firepower Gauge's charge is at 100. Affects self.\n<color=#00AEFF>Super Firepower: Attack Damage ▲ {description_value_04}% for {description_value_05} sec.\nDecreases the Firepower Gauge's charge by 100.</color>\n■ Affects self.\n<color=#00AEFF>Explosion Radius ▲ {description_value_06}% for {description_value_07} sec.\nAttack Damage ▲ {description_value_10}% for {description_value_11} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "99",
+                "99",
+                "99",
+                "99",
+                "99",
+                "99",
+                "99",
+                "99",
+                "99",
+                "99"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+              ]
+            },
+            {
+              "description_value": [
+                "34.56",
+                "35.72",
+                "36.89",
+                "38.05",
+                "39.22",
+                "40.38",
+                "41.54",
+                "42.71",
+                "43.87",
+                "45.03"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "0.5",
+                "0.5",
+                "0.5",
+                "0.5",
+                "0.5",
+                "0.5",
+                "0.5",
+                "0.5",
+                "0.5",
+                "0.5"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "22.94",
+                "32.64",
+                "42.33",
+                "52.03",
+                "61.73",
+                "71.42",
+                "81.12",
+                "90.82",
+                "100.51",
+                "110.21"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            }
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            101830103,
+            101830101,
+            101830102,
+            101830104,
+            101830106
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 101802,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5105,
+        "stat_enhance_detail": {
+          "id": 5105,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100018,
+        "piece_detail": {
+          "id": 5100018,
+          "class": "Attacker",
+          "order": 1800,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 18,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Neon: Vision Eye's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 101801,
+        "class": "Attacker",
+        "order": 10086,
+        "name_code": 5170,
+        "corporation": "MISSILIS",
+        "resource_id": 18,
+        "name_localkey": "Neon: Vision Eye",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 88,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 18
+    }
+  }
+}

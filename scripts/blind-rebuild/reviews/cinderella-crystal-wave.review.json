@@ -1,0 +1,158 @@
+{
+  "slug": "cinderella-crystal-wave",
+  "board": {
+    "ratio": 0.99,
+    "n": 2,
+    "mad": 0.012,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates upon reloading to max ammunition while in Preparation for Change state. Changes weapon to Snipe Mode (Charge Time 1s, Damage 62.13% final ATK, Full Charge 250%, Max Ammo 15 rounds). Additional Effect 1: Gains Pierce. Additional Effect 2: Full Charge expends 40 rounds. Additional Effect 3: Charge time fixed at 1 sec. Removal: reloading to max ammo in Preparation for Change state.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] weaponSwap (mode Snipe): damagePct 62.13, chargeTimeSec 1, chargeMultPct 250, maxAmmo 1, durationSec 100000",
+        "note": "maxAmmo modeled as 1 (not 15) because Additional Effect 2 expends 40 rounds/full-charge vs 15-round mag \u2192 1 shot per reload cycle (~3.9s/shot). Note flags ambiguity: if 40-round expend draws from a separate pool, maxAmmo should be 15. Pierce handled via pierceModes config (see next entry). Charge-time-fixed-1s folded into chargeTimeSec:1. Mode removal handled implicitly by the mode system."
+      },
+      {
+        "kitLine": "Additional Effect 1: Gains Pierce (Snipe Mode).",
+        "status": "MODELED_CONFIG",
+        "where": "top-level pierceModes: [\"Snipe\"]",
+        "note": "Pierce is inert in v1 (partless boss, no pierce consumer). Correctly gated to Snipe mode only."
+      },
+      {
+        "kitLine": "Activates at the start of battle. Beauty-Full: Attack Damage \u25b2 24% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] buff attackDamagePct 24, passive, self",
+        "note": "Mode-independent, always-on. Faithful."
+      },
+      {
+        "kitLine": "Activates upon reloading to max ammunition. Preparation for Change: Reload time fixed at 3 sec for 6 sec. Removed upon firing the last bullet.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Skipped per note: 'Preparation for Change reload bookkeeping (reload uses her normal reload time)'. Reload-time manipulation has no engine vocabulary; affects only the Snipe-mode transition cadence."
+      },
+      {
+        "kitLine": "Activates every 5 sec. Affects the enemy nearest to the crosshair. Deals 900% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] dot atkPct 900, intervalSec 5, durationSec 100000, target enemy",
+        "note": "Mode-independent periodic hit. Encoded as a repeating dot. Targeting (nearest to crosshair) collapses to single boss at scope lock."
+      },
+      {
+        "kitLine": "Activates each time total ammo consumed by allies reaches 200. Affects all allies. Fills Burst Gauge by 12%.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[3] teamAmmo count 200, fillGauge 12%, target allies",
+        "note": "Added 2026-07-15 (was wrongly skipped as 'team ammo not trackable'). Same mechanism as Little Mermaid (count 400 \u2192 37%). Feeds team burst cadence."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle and when using Burst Skill. Decoy: Creates an avatar with 70.34% of the skill user's final Max HP. Continuous.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Skipped per note: 'Decoy (defensive)'. No HP pool or aggro mechanic in v1 engine; purely defensive."
+      },
+      {
+        "kitLine": "Activates at the start of battle. ATK \u25b2 29% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] buff atkPct 29, passive, self",
+        "note": "Mode-independent, always-on. Faithful."
+      },
+      {
+        "kitLine": "Activates when Snipe Mode takes effect. Destroy: Damage to Parts \u25b2 26.21% continuously. Removes Pinpoint.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] buff partsDamagePct 26.21, mode Snipe, passive, self",
+        "note": "Mutual exclusion with Pinpoint handled by mode system (mode:'Snipe' vs mode:'MG'). partsDamagePct is inert in v1 (partless boss)."
+      },
+      {
+        "kitLine": "Activates at the start of battle and when Snipe Mode is removed. Pinpoint: Damage dealt when attacking core \u25b2 26% continuously. Removes Destroy.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2] buff coreDamagePct 26, mode MG, passive, self",
+        "note": "Mutual exclusion with Destroy handled by mode system. coreDamagePct matters when core-rate > 0 (MG default mode at core 100%)."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst after this unit uses her Burst Skill. Snipe Mode: Deals 1189.66% of final ATK as damage (all enemies including parts).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[3] flatDamage atkPct 1189.66, core:true, fullBurstEnter, ownBurstGate:'cast', mode Snipe, target enemy",
+        "note": "ownBurstGate:'cast' added 2026-07-17 \u2014 fires only on FB entries she initiated (not co-B3 rotations). core:true on the Snipe rider is unvalidated (kit-status F2). Kept at fullBurstEnter (not burstCast) so it receives the +50% FB major."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst after this unit uses her Burst Skill. MG (not Snipe): Deals 833.79% of final ATK as core strike damage (all enemies with activated cores).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[4] flatDamage atkPct 833.79, core:true, fullBurstEnter, ownBurstGate:'cast', mode MG, target enemy",
+        "note": "core:true restored 2026-07-16 (text explicitly says 'core strike damage'), overturning the 2026-07-13 U1 no-core ruling for THIS unit. The U1 rule (function-type additional damage procs crit, never core, never range) was deemed inapplicable because the text labels it core strike. Single-variable test: T5 0.877\u21920.99, T8 0.868\u21921.02."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Attack Damage \u25b2 92% for 10 sec. ATK \u25b2 65% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] buff attackDamagePct 92 + atkPct 65, durationSec 10, burstCast, self",
+        "note": "Parser-auto-filled (blablalink prose), behavior-identical to prior runtime parse. NOT hand-verified per note. Values match kit prose at skill level 10."
+      },
+      {
+        "kitLine": "Affects the enemy with the highest final ATK. Deals 6000% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] flatDamage atkPct 6000, burstCast, target enemy",
+        "note": "Targeting specificity ('highest final ATK') not encoded \u2014 collapses to single boss at scope lock. Parser-auto-filled, NOT hand-verified."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "Snipe maxAmmo modeled as 1 (not 15): 40-round expend per full-charge vs 15-round mag \u2192 1 shot/reload cycle. If the 40-round expend draws from a separate pool, maxAmmo should be 15.",
+      "couldCauseGap": "COLD",
+      "why": "Only affects Snipe mode (not the default MG mode). If maxAmmo should be 15, Snipe fires more often \u2192 sim under-counts Snipe damage. Inert for MG-default graded comps."
+    },
+    {
+      "source": "note",
+      "text": "U1 core-strike rule reversal: 833.79% MG rider had core:true removed (2026-07-13, procs never receive core bucket) then RESTORED (2026-07-16, text explicitly says 'core strike damage'). Current state: core:true.",
+      "couldCauseGap": "neither",
+      "why": "Resolved by the 2026-07-16 re-tune. Board improved (T5 0.877\u21920.99, T8 0.868\u21921.02). The current encoding is text-faithful."
+    },
+    {
+      "source": "note",
+      "text": "ownBurstGate:'cast' added 2026-07-17 on both FB-enter riders. Prior plain fullBurstEnter over-fired on co-B3 rotations. Board-moving: T8 1.062\u21921.001, T5 1.009\u21920.978.",
+      "couldCauseGap": "neither",
+      "why": "Resolved. The gate improved fit in both graded comps (both now within \u00b13%). Regression snapshot updated for T5."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Preparation for Change: reload time fixed at 3 sec for 6 sec (removed on last bullet fired). Skipped \u2014 reload uses her normal reload time.",
+      "couldCauseGap": "COLD",
+      "why": "Affects Snipe-mode transition cadence only. In MG-default comps, this is inert. In Snipe comps, the sim uses the normal MG reload (171f \u2248 2.85s) instead of the fixed 3s, a minor cadence difference."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Decoy avatar (70.34% Max HP, continuous). Skipped \u2014 defensive, no HP pool or aggro in v1.",
+      "couldCauseGap": "neither",
+      "why": "Purely defensive. No damage impact. No engine vocabulary for decoys/aggro."
+    },
+    {
+      "source": "note",
+      "text": "Snipe-branch core:true on the 1189.66% FB rider is unvalidated (kit-status finding F2). The MG rider's core:true was text-justified ('core strike damage'); the Snipe rider's text says plain 'damage', not 'core strike damage'.",
+      "couldCauseGap": "HOT",
+      "why": "If the Snipe rider should NOT have core:true, removing it would reduce Snipe-mode FB damage by the core bucket (~200% core mult). Only affects Snipe-mode comps. No graded Snipe comps exist, so no board signal."
+    },
+    {
+      "source": "note",
+      "text": "Burst slot auto-filled from offline parser (blablalink prose), behavior-identical to prior runtime parse. NOT hand-verified.",
+      "couldCauseGap": "neither",
+      "why": "Values match kit prose at skill level 10 (92% AD, 65% ATK, 6000% nuke). Parser output is behavior-identical. Low risk."
+    },
+    {
+      "source": "open-question",
+      "text": "kit-status residual: 'U3 open \u2014 elemental-advantage delivery type'.",
+      "couldCauseGap": "COLD",
+      "why": "Open measurement question about how elemental advantage is delivered. No graded comp exercises this (both graded comps are T5 wind-weak and T8 iron-weak; CCW is Iron element). Could matter in Electric-advantage comps."
+    },
+    {
+      "source": "caveat",
+      "text": "Pierce (pierceModes: Snipe) is inert in v1 \u2014 partless boss, no pierce consumer.",
+      "couldCauseGap": "neither",
+      "why": "Correctly configured but has no mechanical effect at scope lock. Would matter only if pierce-aware bosses or multi-target content were added."
+    }
+  ],
+  "authorIntentSummary": "The override models Cinderella: Crystal Wave as a dual-mode (MG default / Snipe) Burst-III Iron attacker with a user-selectable mode switch. The MG path carries a 26% core-damage passive (Pinpoint) and an 833.79% core-strike FB rider (core:true, text-justified); the Snipe path carries a permanent weapon swap (62.13%/shot, 1s charge, 1-round magazine approximation), Pierce (inert in v1), 26.21% parts damage (inert in v1), and a 1189.66% FB rider (core:true, unvalidated). Mode-independent damage comes from Beauty-Full (+24% AD), ATK +29%, a 900%/5s periodic hit, and a team-ammo burst-gauge fill (200 ammo \u2192 12%). The burst slot is parser-auto-filled (92% AD + 65% ATK for 10s + 6000% nuke). Key approximations: the Snipe 1-round magazine (40-round expend ambiguity), the U1 core-strike rule reversal (resolved in favor of core:true), and the 2026-07-17 ownBurstGate fix (board-moving, improved both graded comps to within \u00b13%). Known-not-yet-faithful: Preparation for Change reload bookkeeping, Decoy, and the Snipe rider's core:true flag (F2 unvalidated)."
+}

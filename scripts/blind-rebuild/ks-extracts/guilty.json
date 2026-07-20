@@ -1,0 +1,37 @@
+{
+  "guilty": {
+    "name": "Guilty",
+    "burst": "II",
+    "weapon": "SG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "S2 '+1 stack count of stackable buffs' UNMODELED (no schema); measured real, modeling it runs ~0.6% hotter solo + amplifies allies' stacks — owner-triage",
+        "burst 'at max stacks' gate on DEF-20.25%/277.71% riders modeled always-on (over-credits a pre-ramp first burst)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Increases stack count of stackable buffs by 1."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: 'Duplicates 8.81% of the ATK of the ally with the highest ATK' is modeled as % of Guilty's OWN ATK (casterAtkPct) — exact solo / when she is the top-ATK ally, cold when a buffed teammate outranks her.",
+      "skill2: 'Increases stack count of stackable buffs by 1' is unmodeled (no schema support). Measured REAL solo (guilty-sg-band probe): it bumps her own S1 stack ramp to cap one trigger early; allies' stackable buffs are also not amplified in teams.",
+      "burst: the 'at max stacks' gate on the DEF ▼ 20.25% + 277.71% additional-damage riders is not modeled (always-on) — a burst cast before the S1 ramp completes is slightly over-credited."
+    ],
+    "board": null
+  }
+}

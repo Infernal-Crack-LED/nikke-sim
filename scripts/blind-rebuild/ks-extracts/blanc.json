@@ -1,0 +1,34 @@
+{
+  "blanc": {
+    "name": "Blanc",
+    "burst": "II",
+    "weapon": "AR",
+    "class": "Defender",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Gain Indomitability for 10 sec."
+      ]
+    },
+    "caveats": [
+      "skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)",
+      "burst: Max HP ▲31.68% on the lowest-remaining-HP ally is now modeled (theme-13, 2026-07-17) via the new targetMaxHpPct stat (own-% basis) + alliesLowestHp TargetDef (count 1, excludeSelf). Offensively INERT: it lands on a teammate (casterIdx≠self) so it does not feed their atkOfMaxHpPct conversion (e3 rule); and v1 has no HP pool so 'lowest remaining HP' resolves to the leftmost non-self ally as a deterministic stand-in. Kit-SSOT completeness only — no board damage moves.",
+      "skill1: shield cadence (every 120 normal attacks) scales with the unverified datamine cadence tuple (⚑)"
+    ],
+    "board": null
+  }
+}

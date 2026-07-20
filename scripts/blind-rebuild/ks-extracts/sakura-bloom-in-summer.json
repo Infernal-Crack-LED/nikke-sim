@@ -1,0 +1,44 @@
+{
+  "sakura-bloom-in-summer": {
+    "name": "Sakura: Bloom in Summer",
+    "burst": "III",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "materialized dropped 'Attacks sequentially 10 times' (burst nuke was x1) — restored x10; S2 shipped kit-literal single 15s window (rejected unsupported 'permanent DoT' premise; no S2 cooldown in datamine)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded (not owned)",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates when an ally or self destroys an enemy's part. Affects self.",
+        "Sustained Damage ▲ 5.1% for 30 sec.",
+        "Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.",
+        "Dancing Flower Duration ▲ 10.02 sec.",
+        "Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.",
+        "Sakura Petals Duration ▲ 10.02 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: force-cast ONCE at battle start (S1) — Sakura Petals 256%/s + Dancing Flower modeled as a single 15s window (t=0–15); the part-destroy duration extensions never fire vs the partless boss, so she is a plain AR after ~t=15 until her bursts ⚑",
+      "skill2: Dancing Flower Attack Damage ▲ 15.64%/15s is time-averaged to a permanent 1.30% (engine passive buffs cannot carry a duration) ⚑",
+      "burst: 457.14% ×10 sequential attacks modeled as 10 same-frame hits vs the single boss; the stacking DoT assumes all 10 stacks apply per cast (351.6%/s ×10s) ⚑",
+      "cadence: datamined 12 pulls/s + 81-frame reload are unverified estimates ⚑"
+    ],
+    "board": null
+  }
+}

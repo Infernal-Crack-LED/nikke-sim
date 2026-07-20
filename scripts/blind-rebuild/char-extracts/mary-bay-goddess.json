@@ -1,0 +1,550 @@
+{
+  "mary-bay-goddess": {
+    "slug": "mary-bay-goddess",
+    "name": "Mary: Bay Goddess",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ik-61/ue-22/da7cafe73236f06e9297365e727a281d.png",
+    "weapon": "SR",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Water",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 65.95,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 111,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 7.95,
+    "burstGaugePerShot": 2.65,
+    "treasure": false,
+    "nicknames": [
+      "mbg"
+    ],
+    "skills": {
+      "skill1": "■ Activates when entering Full Burst. Affects all allies.\nEffects vary according to the number of times entered. Each subsequent effect triggers all effects before it:\nOnce: Recovers 1.05% of the skill user's final Max HP every 1 sec for 5 sec.\nTwice: Recovers 3.69% of the skill user's final Max HP every 1 sec for 5 sec.\nThree times: Recovers 6.86% of the skill user's final Max HP every 1 sec for 5 sec.",
+      "skill2": "■ Activates when using Burst Skill. Affects all Water Code allies.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Elemental Advantage Attack Damage ▲ 20.85% for 3 sec.\nTwice: Elemental Advantage Attack Damage ▲ 13.88% for 5 sec.\nThree times: Elemental Advantage Attack Damage ▲ 8.36% for 10 sec.",
+      "burst": "■ Affects all Water Code allies.\nATK ▲ 23.23% for 3 sec. \n■ Affects all allies.\nMax HP ▲ 27.87% of the skill user's final Max HP for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1013201,
+        "shot_detail": {
+          "id": 1013201,
+          "damage": 6595,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 30,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 26500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 53000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2132101,
+        "skill2_id": 2132201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2132101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 21321,
+          "skill_level": 1,
+          "name_localkey": "Seaside Sunshine",
+          "next_level_id": 2132102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF>Effects vary according to the number of times entered. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nOnce: Recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.\nTwice: Recovers {description_value_03}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_04} sec.\nThree times: Recovers {description_value_05}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "0.62",
+                "0.67",
+                "0.72",
+                "0.76",
+                "0.81",
+                "0.86",
+                "0.91",
+                "0.96",
+                "1",
+                "1.05"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "2.18",
+                "2.35",
+                "2.52",
+                "2.68",
+                "2.85",
+                "3.02",
+                "3.19",
+                "3.36",
+                "3.52",
+                "3.69"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "4.05",
+                "4.36",
+                "4.68",
+                "4.99",
+                "5.3",
+                "5.61",
+                "5.92",
+                "6.24",
+                "6.55",
+                "6.86"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2132201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 21322,
+          "skill_level": 1,
+          "name_localkey": "Waves Kiss The Feet",
+          "next_level_id": 2132202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates when using Burst Skill. Affects all Water Code allies.\n<color=#00AEFF>Effects vary according to the number of times used. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nOnce: <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nTwice: <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_03}% for {description_value_04} sec.\nThree times: <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3.43",
+                "5.36",
+                "7.3",
+                "9.24",
+                "11.17",
+                "13.11",
+                "15.04",
+                "16.98",
+                "18.92",
+                "20.85"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "3.43",
+                "4.59",
+                "5.75",
+                "6.91",
+                "8.07",
+                "9.24",
+                "10.4",
+                "11.56",
+                "12.72",
+                "13.88"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "2.97",
+                "3.57",
+                "4.17",
+                "4.76",
+                "5.36",
+                "5.96",
+                "6.56",
+                "7.16",
+                "7.76",
+                "8.36"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1132301,
+        "ulti_skill_detail": {
+          "id": 1132301,
+          "icon": "icn_skill_c132_ult",
+          "group_id": 11323,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Tranquil Waters",
+          "next_level_id": 1132302,
+          "prefer_target": "LowHP",
+          "resource_name": "c132_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all Water Code allies.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color> \n■ Affects all allies.\n<color=#00AEFF>Max HP ▲ {description_value_03}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "13.72",
+                "14.78",
+                "15.84",
+                "16.89",
+                "17.95",
+                "19",
+                "20.06",
+                "21.12",
+                "22.17",
+                "23.23"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "16.47",
+                "17.74",
+                "19",
+                "20.27",
+                "21.54",
+                "22.8",
+                "24.07",
+                "25.34",
+                "26.61",
+                "27.87"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            113230101,
+            113230102
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 313202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5302,
+        "stat_enhance_detail": {
+          "id": 5302,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100132,
+        "piece_detail": {
+          "id": 5100132,
+          "class": "Attacker",
+          "order": 13200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 132,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Mary: Bay Goddess' spare body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 313201,
+        "class": "Supporter",
+        "order": 10113,
+        "name_code": 5064,
+        "corporation": "TETRA",
+        "resource_id": 132,
+        "name_localkey": "Mary: Bay Goddess",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 84,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 132
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "slug": "mihara-bonding-chain",
+  "board": {
+    "ratio": 1.021,
+    "n": 2,
+    "mad": 0.061,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Charges Restraint Chains by 10, up to 10.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive flatDamage 500.6",
+        "note": "Charge-to-10 is implicit: the 10 chains are immediately dumped as 10x50.06%=500.6% at battle start. Resource itself not tracked, only its damage payoff."
+      },
+      {
+        "kitLine": "Activates when Full Burst ends if this unit has just used her Burst Skill. Affects self. Charges Restraint Chains by 10, up to 10.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] fullBurstEnd flatDamage 500.6",
+        "note": "Refill+dump once per rotation. Modeled UNCONDITIONAL on fullBurstEnd; kit gates on 'if she just bursted'. Over-fires in multi-B3 teams, benign in scope-lock (she is the sole B3, so FB end == her burst end). See findings + note."
+      },
+      {
+        "kitLine": "Affects random enemy units at a specific timing. Deals 50.06% of final ATK as damage. Attacks once for every Restraint Chain. Restraint Chain -1 for each attack.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]+skill1[1] flatDamage 500.6 each",
+        "note": "Consolidated 10 per-chain hits into one 500.6% flatDamage dump. 'Specific timing' is kit-silent; pinned to battle start / FB end (flagged caveat)."
+      },
+      {
+        "kitLine": "Affects the same enemy units. Ensnaring Chains: Deals 25.08% final ATK as sustained damage every 1 sec continuously, stacks up to 20 time(s). Cannot be removed.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] passive dot atkPct 301, durationSec 999, intervalSec 1, flavor sustained",
+        "note": "Permanent baseline DoT at the rebuild-aware average of ~12 stacks (12x25.08%=300.96~301%/s), NOT the 20 cap. Average absorbs burst-cancel/rebuild cycle + S2's +1-per-40-normals feed. Refit 10.8->12 (2026-07-13). Inherits S2 sustainedDamagePct via Damage-Up bucket."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after landing 40 normal attacks during Full Burst on a target in the Ensnaring Chains state. Affects the target. Ensnaring Chains stacks +1.",
+        "status": "MODELED_BLOCK",
+        "where": "folded into skill1[2] dot atkPct 301 (12-stack average)",
+        "note": "NOT a discrete hitCount block. The +1-per-40-normals feed during FB windows is folded into the calibrated steady-state stack average (caveat: '12-stack rebuild average'). This is the main calibration lever."
+      },
+      {
+        "kitLine": "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state. Ensnaring Chains stacks +20.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0..1]",
+        "note": "Defensive trigger; boss deals no damage in v1 so she is never incapacitated. Inert in scope-lock."
+      },
+      {
+        "kitLine": "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self. Restraint Chain +1, up to 10.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[2..3]",
+        "note": "Boss never dies in scope-lock, so never fires. Inert."
+      },
+      {
+        "kitLine": "Activates when entering Burst Stage 3. Affects self. Sustained Damage +59.98% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] stageEnter stage 3 buff sustainedDamagePct 59.98 / 10s",
+        "note": "Parsed correctly; DoTs inherit this via the Damage-Up bucket. skill2 blocks auto-filled from offline parser 2026-07-16, behavior-identical to runtime parse, NOT hand-verified (provenance flag)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects targets in Ensnaring Chains status. Dragging Chain: Deals 50.05% of final ATK as sustained damage every 1 sec. Mirrors the stack count of Ensnaring Chains on each target for 10 sec. Cannot be removed.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] burstCast dot atkPct 700 / 10s / intervalSec 1 / sustained",
+        "note": "Mirror of 20 stacks = 1001%/s, but encoded as the DELTA 700 (=1001-301 baseline) for 10s to avoid double-counting the always-on skill1 baseline. During the burst window total DoT = 301+700 = 1001%/s, correct. Parser had missed the x20 mirror entirely (read only 50.05%/s)."
+      },
+      {
+        "kitLine": "Cancels Ensnaring Chains after the effect is triggered.",
+        "status": "MODELED_BLOCK",
+        "where": "encoded in skill1[2] steady-state baseline (note)",
+        "note": "The cancel-to-0-then-rebuild cycle is what drives the ~12-stack time-weighted average baseline (rebuilds +10 from Restraint dump at next FB end + 1/40 normals, re-reaching ~20 just before next burst). Not a standalone block; represented through the baseline DoT magnitude. Documented in note."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1 Restraint-dump timing ('at a specific timing') is kit-silent \u2014 modeled at battle start / Full Burst end (flag).",
+      "couldCauseGap": "neither",
+      "why": "Total dumped damage (10 chains x 50.06%) is preserved regardless of timing; only the frame of delivery shifts, negligible on a 180s total."
+    },
+    {
+      "source": "note",
+      "text": "fullBurstEnd dump is unconditional; kit gates on 'if she just bursted' \u2014 over-fires in multi-B3 teams.",
+      "couldCauseGap": "neither",
+      "why": "Benign in scope-lock: she is the team's sole Burst III, so Full Burst end coincides with her own burst end. Only matters in multi-B3 comps, out of scope."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2 40-normals-in-Full-Burst Ensnaring generation folded into skill1 steady-state DoT average (flag calibrated 12-stack rebuild average), not a discrete hitCount block.",
+      "couldCauseGap": "HOT",
+      "why": "This is the active calibration lever. It moved the ratio from 1.19-1.51 (permanent-20-stack baseline) to 1.03, and was refit 10.8->12 after riders lost the universal range bonus. Any error in the stack average directly scales the dominant DoT damage; most likely source of residual gap."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2 'when incapacitated' +20 Ensnaring \u2014 defensive, skipped (boss deals no damage in v1).",
+      "couldCauseGap": "COLD",
+      "why": "Trigger cannot fire against a partless boss that deals no damage; zero damage impact in scope-lock."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2 'when enemy neutralized' +1 Restraint \u2014 boss never dies, skipped.",
+      "couldCauseGap": "COLD",
+      "why": "Boss is never neutralized in a 180s DPS sim; trigger inert, zero damage impact."
+    },
+    {
+      "source": "note",
+      "text": "Burst Dragging Chain encoded as 700%/s DELTA on top of the 301%/s baseline (not a naive 1001 stacked on baseline) to avoid ~195M over-count.",
+      "couldCauseGap": "neither",
+      "why": "Decomposition is arithmetically exact (301+700=1001=20x50.05 during the window); documented and self-consistent. Risk would be a double-count, which the author explicitly avoided."
+    },
+    {
+      "source": "note",
+      "text": "skill2 blocks materialized 2026-07-16 from offline parser (blablalink prose), behavior-identical to prior runtime parse, NOT hand-verified.",
+      "couldCauseGap": "neither",
+      "why": "Provenance flag only; claimed behavior-identical. The only skill2 block that affects damage (stageEnter-3 sustainedDamagePct) is a simple buff and parses unambiguously."
+    }
+  ],
+  "authorIntentSummary": "The author models Mihara: Bonding Chain's two stack currencies (Restraint Chains, Ensnaring Chains) as steady-state throughput rather than discrete stack simulation. Restraint is charged to 10 and dumped as a consolidated 500.6% (10x50.06%) flatDamage hit at battle start and once per rotation at Full Burst end; Ensnaring is a permanent baseline DoT at a calibrated ~12-stack average (301%/s), and the burst's Dragging Chain mirror (20 stacks = 1001%/s) is added as a 700%/s delta for 10s to avoid double-counting the baseline. Key approximations: the kit-silent Restraint-dump timing is pinned to battle start/FB end, the fullBurstEnd dump is unconditional (benign because she is the sole B3), and S2's +1-per-40-normals feed is folded into the calibrated stack average \u2014 the main tuning lever, refit 10.8->12 (2026-07-13), which brought the ratio from 1.19-1.51 hot to 1.03. Known-not-faithful spots are all documented and inert in scope-lock: S2's 'when incapacitated' (+20 Ensnaring) and 'when enemy neutralized' (+1 Restraint) triggers are skipped (boss deals no damage / never dies), and the skill2 blocks are parser-materialized, not hand-verified."
+}

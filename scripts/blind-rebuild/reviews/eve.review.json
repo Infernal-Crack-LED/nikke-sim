@@ -1,0 +1,122 @@
+{
+  "slug": "eve",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Impact-Type Exospine: Critical Rate \u25b2 60% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: passive \u2192 self, critRatePct +60",
+        "note": "Exact value, passive trigger. Faithful."
+      },
+      {
+        "kitLine": "Activates after landing 44 critical hit(s) with normal attacks. Affects random enemy units. Unstable Energy: Deals 240% of final ATK as damage. Attacks sequentially 3 time(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: hitCount 59 \u2192 enemy, flatDamage 720% (240\u00d73 consolidated), flavor sequential",
+        "note": "Trigger approximated: 44 crit hits \u00f7 0.75 crit rate \u2248 59 total hits. Damage consolidated 240%\u00d73 = 720%. Sequential flavor exempts from FB per noFb relic status (FB now applies by timing per DECISIONS). Cadence is kit-math, not measured."
+      },
+      {
+        "kitLine": "Activates when Unstable Energy hits an Electric Code target. Affects the target. Damage Taken \u25b2 10% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2]: bossElement Electric \u2192 enemy, damageTakenPct +10",
+        "note": "Modeled as permanent while boss is Electric, not 10s-duration per proc. Over-credits only the opening ~4.9s before first proc. Approximation documented in caveats."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Eagle Eye-Type Exospine. Previous effects trigger repeatedly.",
+        "status": "MODELED_BLOCK",
+        "where": "Inherent in sim design \u2014 skill1 blocks keep firing throughout the fight",
+        "note": "'Previous effects trigger repeatedly' is a restatement that S1 keeps working; no separate block needed. The Eagle Eye label itself is cosmetic."
+      },
+      {
+        "kitLine": "ATK \u25b2 50% of the skill user's ATK continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: passive \u2192 self, casterAtkPct +50",
+        "note": "Exact value, passive. Faithful."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity \u25b2 25% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: passive \u2192 self, maxAmmoPct +25 (same block as ATK buff)",
+        "note": "Exact value. Faithful."
+      },
+      {
+        "kitLine": "Activates when landing 10 normal attack(s) on an Electric Code target. Affects self. Reloads 3 round(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: hitCount 10 \u2192 self, instantReload fraction 0.05",
+        "note": "Two deviations: (1) Electric-target gate dropped \u2014 fires unconditionally; (2) 5% of buffed 75-round mag = 4 rounds vs kit's flat 3. Both documented in caveats."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects random enemy units. Deals 457.14% of final ATK as damage. Attacks sequentially for 6 time(s).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 enemy, flatDamage 2742.84% (457.14\u00d76 consolidated)",
+        "note": "Consolidated 457.14%\u00d76 = 2742.84%. Deliberately NO sequential flavor on the nuke \u2014 kit tags it sequential, but flavoring it would let Mk2 double the nuke, which the kit does NOT say. Documented in caveats."
+      },
+      {
+        "kitLine": "Affects self. Exospine Mk2. Function: Enhances Exospine. Duration: 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast \u2192 self, durationSec 10 on both buffs",
+        "note": "Container for the two Mk2 sub-effects below."
+      },
+      {
+        "kitLine": "Triggers Impact-Type Exospine Mk2. Effect: Damage multiplier of Unstable Energy sequential attacks is scaled by 100%.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: sequentialDamagePct +100, 10s",
+        "note": "Gates on the sequential flavor of Unstable Energy. True \u00d72 solo, but dilutes below \u00d72 when other Damage-Up-bucket buffs are live. Accepted \u2691."
+      },
+      {
+        "kitLine": "Triggers Eagle Eye-Type Exospine Mk2. Effect: Damage multiplier of Eagle Eye-Type Exospine is scaled by 100%.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: casterAtkPct +50, 10s",
+        "note": "Eagle Eye's damage multiplier IS the casterAtkPct 50 buff. Scaling by 100% = doubling it = +50 more for 10s (total 100 during Mk2). Correct."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: Unstable Energy cadence (hitCount 59) assumes 75% crit at scope lock (44 crit hits / 0.75 = 58.67); external crit-rate buffs on eve would shorten the real cadence \u2014 the static threshold cannot respond.",
+      "couldCauseGap": "COLD",
+      "why": "Scope lock has no external crit-rate buffs (solo raid, fixed team). The 75% assumption (60 kit + 15 base) is exact at scope. Only breaks if eve receives external crit buffs, which is out of scope."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: Damage Taken \u25b210% is modeled as permanent while the boss is Electric (kit: 10s per Unstable Energy hit on an Electric target; ~full uptime after the first proc at ~4.9s, so the approximation over-credits only the opening seconds).",
+      "couldCauseGap": "COLD",
+      "why": "Over-credits ~4.9s of opening time only. In a 180s fight this is <3% of fight duration applied to a 10% taken buff \u2014 negligible DPS impact."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: the 3-round reload refund is modeled unconditionally (kit gates it on hitting an ELECTRIC target \u2014 it should be inert vs non-Electric bosses) and as 5% of BUFFED max ammo (engine rounds 75\u00d70.05 to 4 rounds vs the kit's flat 3).",
+      "couldCauseGap": "HOT",
+      "why": "Two deviations compound: (1) fires vs non-Electric bosses where it should be inert \u2014 free reloads; (2) grants 4 rounds not 3 even vs Electric. Both inflate DPS. The 4-vs-3 is ~33% over-credit per proc; the unconditional gate is a full false-positive vs non-Electric."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: Mk2's Unstable Energy doubling uses sequentialDamagePct +100 in the shared Damage-Up bucket \u2014 a TRUE \u00d72 solo, but dilutes below \u00d72 whenever other Damage-Up-bucket buffs are live (accepted \u2691). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say.",
+      "couldCauseGap": "neither",
+      "why": "Direction depends on team comp: dilution under-counts Mk2's Unstable Energy boost when other Damage-Up buffs are present (under-credit), but the nuke deliberately excludes sequential to avoid a false Mk2 doubling (correct). Net direction is team-dependent. Accepted \u2691 \u2014 cannot be resolved without a separate sequential-damage multiplier bucket."
+    },
+    {
+      "source": "note",
+      "text": "noFb RELIC status: Unstable Energy's sequential proc had noFb removed in a prior session \u2014 FB now applies by timing (DECISIONS-mandated). She grades ~1.14 (over).",
+      "couldCauseGap": "HOT",
+      "why": "The note states she grades ~1.14 (over-predicts by 14%). The residual is attributed to the Mk2 sequentialDamagePct dilution \u2691 interacting with now-applied FB. No focused eve video exists to settle empirically. Documented OPEN."
+    },
+    {
+      "source": "note",
+      "text": "NO focused eve video exists in the catalog, so the Mk2 dilution residual cannot be settled empirically \u2014 documented OPEN, do NOT fudge to close it.",
+      "couldCauseGap": "neither",
+      "why": "Measurement gap, not a modeling error. The author explicitly flags this as unresolvable with current evidence."
+    }
+  ],
+  "authorIntentSummary": "The override models all 8 kit lines: S1 crit-rate passive, Unstable Energy nuke (44-crit-hit cadence proxied as hitCount 59 at 75% crit, 240%\u00d73 consolidated to 720% sequential), Electric-gated Damage Taken; S2 casterAtk +50 and maxAmmo +25 passives plus a 10-hit reload refund; burst 457.14%\u00d76 nuke (deliberately unflavored to prevent Mk2 doubling it) and Mk2's 10s sequentialDamagePct +100 / casterAtkPct +50. Key approximations: hitCount 59 is kit-math not measured, Damage Taken is permanent-vs-Electric not 10s-per-proc, reload refund is unconditional and grants 4 rounds not 3, and Mk2's Unstable Energy doubling uses the shared Damage-Up bucket (dilutes under other Damage-Up buffs \u2014 accepted \u2691). The unit grades ~1.14 over with no board data and no focused video to resolve the residual; the author explicitly marks this OPEN and forbids fudging."
+}

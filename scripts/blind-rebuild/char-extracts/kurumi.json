@@ -1,0 +1,429 @@
+{
+  "kurumi": {
+    "slug": "kurumi",
+    "name": "Kurumi",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/wr-96/it-83/a53f95a6d28e9aae2b1e9373f84bc8ee.png",
+    "weapon": "AR",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Iron",
+    "manufacturer": "Abnormal",
+    "normalAttackMultiplier": 13.65,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after landing 36 normal attack(s). Affects the target.\nHacked: Deals 52.24% of final ATK as sustained damage every 1 sec for 5 sec.\n■ Activates when using Burst Skill. Affects all enemies.\nHacked: Deals 52.24% of final ATK as sustained damage every 1 sec for 5 sec.",
+      "skill2": "■ Activates during Full Burst after landing 36 normal attack(s) while the target is in Hacked status. Affects the target.\nDeals 86.17% of final ATK as additional damage.",
+      "burst": "■ Affects all enemies.\nDamage Taken ▲ 18.06% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1086201,
+        "shot_detail": {
+          "id": 1086201,
+          "damage": 1365,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2862101,
+        "skill2_id": 2862201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2862101,
+          "icon": "icn_skill_damage_01",
+          "group_id": 28621,
+          "skill_level": 1,
+          "name_localkey": "Malicious Code Injection",
+          "next_level_id": 2862102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s). Affects the target.\n<color=#00AEFF>Hacked: Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec for {description_value_03} sec.</color>\n■ Activates when using Burst Skill. Affects all enemies.\n<color=#00AEFF>Hacked: Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36"
+              ]
+            },
+            {
+              "description_value": [
+                "30.87",
+                "33.24",
+                "35.62",
+                "37.99",
+                "40.37",
+                "42.74",
+                "45.12",
+                "47.49",
+                "49.86",
+                "52.24"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2862201,
+          "icon": "icn_skill_damage_01",
+          "group_id": 28622,
+          "skill_level": 1,
+          "name_localkey": "Payload Diffusion",
+          "next_level_id": 2862202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates during Full Burst after landing {description_value_01} normal attack(s) while the target is in Hacked status. Affects the target.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36",
+                "36"
+              ]
+            },
+            {
+              "description_value": [
+                "50.92",
+                "54.83",
+                "58.75",
+                "62.67",
+                "66.59",
+                "70.5",
+                "74.42",
+                "78.34",
+                "82.25",
+                "86.17"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1862301,
+        "ulti_skill_detail": {
+          "id": 1862301,
+          "icon": "icn_skill_c862_ult",
+          "group_id": 18623,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Defense Protocol Breakdown",
+          "next_level_id": 1862302,
+          "prefer_target": "Random",
+          "resource_name": "c862_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Damage Taken ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10.67",
+                "11.49",
+                "12.31",
+                "13.13",
+                "13.95",
+                "14.77",
+                "15.59",
+                "16.42",
+                "17.24",
+                "18.06"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            186230101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 586202,
+        "grade_core_id": 101,
+        "stat_enhance_id": 3301,
+        "stat_enhance_detail": {
+          "id": 3301,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 18,
+          "grade_defence": 90,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100862,
+        "piece_detail": {
+          "id": 5100862,
+          "class": "Attacker",
+          "order": 86200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ABNORMAL",
+          "resource_id": 862,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Kurumi's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 586201,
+        "class": "Supporter",
+        "order": 30027,
+        "name_code": 3018,
+        "corporation": "ABNORMAL",
+        "resource_id": 862,
+        "name_localkey": "Kurumi",
+        "original_rare": "SR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 11500,
+      "atk": 450,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 18,
+        "def": 90,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 862
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "rosanna-chic-ocean": {
+    "name": "Rosanna: Chic Ocean",
+    "burst": "II",
+    "weapon": "AR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "removed fabricated permanent all-ally casterAtkPct 15 (part-destroy stacks can't fire on partless boss); S2 DoT re-encoded dur-15->maintained; S2 has NO activation clause (invented 100%-uptime trigger, TOP flag)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "■ Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5, 30s."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: part-destroy ATK stacks (3% caster ATK ×5 to all allies) are inert vs a partless boss and NOT modeled — big hidden lever on parts bosses",
+      "skill2: sustained DoT modeled as 100%-uptime maintained (one passive instance) — the kit text prints no activation clause; real uptime is unmeasured",
+      "skill1/skill2: Damage to Parts ▲ 24.26% buffs are inert vs the partless boss (kept for fidelity)"
+    ],
+    "board": null
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "slug": "miranda",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after landing 30 normal attack(s). Affects all allies. Hit Rate \u25b2 5.44% for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Hit Rate is an inert stat in the sim (no accuracy model); deliberately dropped per hard rule 4."
+      },
+      {
+        "kitLine": "Activates after landing 30 normal attack(s). Affects all allies with a Submachine Gun. Hit Rate \u25b2 3.79% for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Hit Rate inert in sim; deliberately dropped per hard rule 4."
+      },
+      {
+        "kitLine": "Activates after landing 30 normal attack(s). Affects self. ATK \u25b2 50.06% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]",
+        "note": "trigger hitCount 30, target self, atkPct 50.06 / 5s. At SMG cadence (~1.5s per 30 hits) this is effectively permanent; faithful."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies. Critical Damage \u25b2 32.99% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]",
+        "note": "trigger fullBurstEnter, target allies, critDamagePct 32.99 / 10s. Exact match."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self. Critical Rate \u25b2 30.1% for 10 sec. Attack Damage \u25b2 23.7% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]",
+        "note": "trigger fullBurstEnter, target self, critRatePct 30.1 + attackDamagePct 23.7 / 10s. Exact match."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects 1 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). Critical Rate \u25b2 85.42% for 1 round(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2]",
+        "note": "trigger fullBurstEnter, target alliesTopAtk count 1 excludeSelf:true, critRatePct 85.42 / 1.5s. 'for 1 round' approximated as 1.5s (one SR carry shot \u2014 the Miranda crit-snapshot for RH/Alice). excludeSelf added 2026-07-17 per 'except the skill user'."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects 2 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). ATK \u25b2 40.4% for 10 sec. Critical Damage \u25b2 56.23% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]",
+        "note": "trigger burstCast, target alliesTopAtk count 2 excludeSelf:true, atkPct 40.4 + critDamagePct 56.23 / 10s. Exact match; excludeSelf added 2026-07-17."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "unmodeled",
+      "text": "Both S1 Hit Rate lines (allies 5.44%, SMG allies 3.79%) dropped \u2014 Hit Rate is inert in the sim (no accuracy model).",
+      "couldCauseGap": "neither",
+      "why": "Hit Rate has no effect on damage in the sim; dropping it is correct and cannot shift DPS."
+    },
+    {
+      "source": "note",
+      "text": "S2 '1 round' crit-rate buff on 1 top-ATK ally modeled as 1.5s (one SR carry shot approximation).",
+      "couldCauseGap": "neither",
+      "why": "Deliberate, documented approximation of the Miranda crit-snapshot window for RH/Alice. Unit is MODEL_ONLY (never fielded, no board data) so no measured gap exists to explain; the approximation is the intended model."
+    },
+    {
+      "source": "note",
+      "text": "F0 BASIS MISMATCH: override models the TREASURE kit (owner screenshot); base kit differs (burst targets 2 vs base 1; S1 self-ATK line is treasure-only).",
+      "couldCauseGap": "neither",
+      "why": "CONFIRMED 2026-07-17: DB favorite-item prose now matches the screenshot-derived override line-for-line. Resolved; no residual gap."
+    },
+    {
+      "source": "note",
+      "text": "alliesTopAtk excludeSelf was silently ignored before 2026-07-17; now fixed on both S2 (count 1) and burst (count 2).",
+      "couldCauseGap": "neither",
+      "why": "Fixed 2026-07-17. Board-neutral anyway: Miranda is a low-ATK support so top-N selection almost never included her. Not board-measured."
+    }
+  ],
+  "authorIntentSummary": "The override models Miranda's TREASURE kit (confirmed matching DB prose 2026-07-17): S1 self ATK 50.06%/5s on hitCount 30 (effectively permanent at SMG cadence), S2 on Full Burst enter (allies critDmg 32.99%, self critRate 30.1 + AD 23.7, 1 top-ATK ally critRate 85.42% as a 1.5s snapshot), and burst 2 top-ATK allies ATK 40.4% + critDmg 56.23%/10s. Both S1 Hit Rate lines are deliberately dropped as inert. The '1 round' \u2192 1.5s approximation on the S2 crit-snapshot is the only non-literal modeling choice; excludeSelf was fixed 2026-07-17. Unit is MODEL_ONLY with no board data."
+}

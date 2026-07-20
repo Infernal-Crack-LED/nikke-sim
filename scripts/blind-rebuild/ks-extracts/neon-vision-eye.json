@@ -1,0 +1,61 @@
+{
+  "neon-vision-eye": {
+    "name": "Neon: Vision Eye",
+    "burst": "III",
+    "weapon": "RL",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "Firepower-Gauge/Super alternation modeled + video-verified (every-3rd-Super). Values verbatim. F1: Super +262.79 rider crit-OFF (extraHitDamagePct) vs base crit-ON (~7% cold, offsets 1.040 HOT). Backfilled"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Run B video — gauge tracked cast-by-cast, every-3rd-Super confirmed; 0.91-1.06",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "When attacked while not in Healthy Body: Invulnerability for 3 sec (5 times per battle) and debuff immunity; Healthy Body: incoming healing ▲10.26% for 20 sec (defensive — invuln/immunity/received-heal amp; emits no heal event, no cross-unit consumer wiring needed)"
+      ],
+      "skill2": [
+        "Firepower Gauge bookkeeping: gains 100 Firepower Gauge at battle start; +2 per normal attack during Firepower Charge; +45 when Firepower Charge ends (NOT a block — the steady-state consequence is ABSORBED into the skill1 Super block's everyN 3 / everyNOffset 1: start at 100 → Super on her burst casts 1, 4, 7…; video-confirmed cast-by-cast, Run B)",
+        "When Full Burst ends: charges own burst gauge in proportion to the current Firepower Gauge (gauge→burst-gauge conversion; burst-generation only, unmodeled; empirically does not consume the Firepower cycle — every-3rd-Super held on video)"
+      ],
+      "burst": [
+        "Firepower Gauge below 100: activates Firepower Charge, charging the gauge for 10 sec (bookkeeping — ABSORBED into the everyN 3 alternation)",
+        "Firepower Gauge at 100: consumes 100 Firepower Gauge on activating Super Firepower (bookkeeping — ABSORBED into the everyN 3 alternation)",
+        "Explosion Radius ▲200% for 10 sec (inert — single partless boss, no AoE surface)"
+      ]
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T2 elec-weak (boss Water)",
+          "ratio": 1.0134
+        },
+        {
+          "comp": "PB elec battery (boss Water)",
+          "ratio": 1.1504
+        },
+        {
+          "comp": "PB2 elec battery RERUN w/ video (boss Water)",
+          "ratio": 1.0859
+        }
+      ],
+      "n": 3,
+      "mean": 1.0832,
+      "mad": 0.0832,
+      "band": "±15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

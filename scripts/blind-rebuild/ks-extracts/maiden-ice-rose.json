@@ -1,0 +1,59 @@
+{
+  "maiden-ice-rose": {
+    "name": "Maiden: Ice Rose",
+    "burst": "III",
+    "weapon": "RL",
+    "class": "Defender",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "1.13 HOT: F1 kit team buff is 'except self' but model uses alliesOfElement Electric w/o self-exclusion -> she self-buffs +40.9/+20.9 every FB (arcana-fortune-mate bug family; fix=excludeSelf on alliesOfElement); F2 burst stackedNuke undercounts a stack when she bursts every rotation (offsets cold). Reconcile F1+F2 together"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Solo neutral video — 547.62% rider popups exact, cadence measured (A12); solo 1.01",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 3,
+      "within3pct": 1
+    },
+    "reference": false,
+    "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound",
+    "unmodeled": {
+      "skill1": [
+        "Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",
+        "Activates when entering Full Burst with MP above 1. MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: unparsed effect \"MP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\""
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "T2 elec-weak (boss Water)",
+          "ratio": 1.0353
+        },
+        {
+          "comp": "PF maiden solo (boss Water)",
+          "ratio": 1.0255
+        },
+        {
+          "comp": "N6 mihara/maiden wind (boss Wind)",
+          "ratio": 0.8502
+        }
+      ],
+      "n": 3,
+      "mean": 0.9703,
+      "mad": 0.0702,
+      "band": "±8%",
+      "temp": "OK  ·"
+    }
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "slug": "rosanna-chic-ocean",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects all allies. Damage to Parts \u25b2 24.26% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: trigger passive / target allies / buff partsDamagePct 24.26 dur 15",
+        "note": "Inert vs the partless scope-lock boss; kept for fidelity / future parts consumer (caveat 3)."
+      },
+      {
+        "kitLine": "Activates when an ally or self destroys an enemy's part. Affects all allies. ATK \u25b2 3% of the skill user's ATK, stacks up to 5, lasts 30 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Trigger 'destroys an enemy's part' never fires vs partless boss (genuinely-skippable class). \u26913 BIG lever vs parts bosses: casterAtkPct 3\u00d75=15% to ALL allies. Override deliberately REMOVED a prior optimistic permanent 15% casterAtkPct encoding that over-counted."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects all allies. Damage to Parts \u25b2 24.26% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger passive / target allies / buff partsDamagePct 24.26 dur 15",
+        "note": "Kit text prints NO activation clause for skill2 (\u26912); encoded passive. Inert vs partless boss (caveat 3)."
+      },
+      {
+        "kitLine": "Affects the enemy nearest to the crosshair. Deals 70.4% of final ATK as sustained damage every 1 sec for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: trigger passive / target enemy / dot atkPct 70.4 dur 999 interval 1 flavor sustained",
+        "note": "Encoded per DoT-overlap hard rule as ONE maintained passive instance (dur 999 = continuous steady-state), NOT a stacking per-trigger DoT. Printed 15s + unprinted re-activation cadence \u21d2 maintained. 100% uptime is an INVENTED trigger (\u26912); real uptime unmeasured. FB on ticks = by timing (default, no noFb). 'final ATK' read as caster ATK."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Sustained Damage \u25b2 20.32% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast / target allies / buff sustainedDamagePct 20.32 dur 10",
+        "note": "Feeds her own S2 DoT and any DoT teammates. Plain buff, no snapshot issue."
+      },
+      {
+        "kitLine": "Affects all enemies. Damage Taken \u25b2 32.23% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: trigger burstCast / target enemy / buff damageTakenPct 32.23 dur 10",
+        "note": "Big team-wide lever; blast radius is TEAM-WIDE (sim-battery diff before board claims). Encoded on enemy target."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: part-destroy ATK stacks (3% caster ATK \u00d75 to all allies) are inert vs a partless boss and NOT modeled \u2014 big hidden lever on parts bosses.",
+      "couldCauseGap": "COLD",
+      "why": "Within the partless scope-lock boss the trigger never fires, so it cannot move this unit's sim number; it is a genuine (documented) gap only on parts bosses, outside current scope."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: sustained DoT modeled as 100%-uptime maintained (one passive instance) \u2014 the kit text prints no activation clause; real uptime is unmeasured.",
+      "couldCauseGap": "HOT",
+      "why": "If real activation has gaps (e.g. gated on attacking/charge), both the S2 DoT damage and the sustained-damage feed over-count proportionally. This is the primary unmeasured lever on her personal contribution."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1/skill2: Damage to Parts \u25b2 24.26% buffs are inert vs the partless boss (kept for fidelity).",
+      "couldCauseGap": "neither",
+      "why": "partsDamagePct has no target to act on against a partless boss, so these blocks contribute zero either way; they cannot open a gap in this scope."
+    },
+    {
+      "source": "note",
+      "text": "\u26911 cadence tuple: AR pulls/s + reloadFrames 81 + rolling-reload unverified (datamine estimate; 60 ammo empties in ~5s at class rate, plausible).",
+      "couldCauseGap": "HOT",
+      "why": "Unverified fire/reload cadence drives her personal normal-attack damage and burst-gauge timing; if wrong it shifts her own damage share. Secondary contributor (she is primarily a buffer) but unmeasured."
+    },
+    {
+      "source": "unmodeled",
+      "text": "\u26913 part-destroy stacks: casterAtkPct 3\u00d75=15% to ALL allies vs parts bosses (same mechanic as caveat 1).",
+      "couldCauseGap": "COLD",
+      "why": "Duplicate of the skill1 caveat; inert in the partless scope, large only on parts bosses. Documented skip, not a silent drop."
+    }
+  ],
+  "authorIntentSummary": "The author modeled Rosanna: Chic Ocean (AR/Wind/Supporter/B2) as a parts-support buffer whose kit value is largely INERT against the partless scope-lock boss, so she is expected to look weak here (faithful, not a bug). Modeled: S1a/S2a partsDamagePct 24.26 buffs (kept for fidelity though inert), S2b sustained DoT as a single maintained 100%-uptime passive instance (dur 999) per the DoT-overlap hard rule, and burst as team-wide sustainedDamagePct 20.32 + boss damageTakenPct 32.23. Deliberately skipped (unmodeled) the S1b part-destroy ATK stacks \u2014 never fire vs partless boss, and the override explicitly removed a prior over-counting permanent 15% casterAtkPct encoding. Key not-yet-faithful spots: skill2 has NO printed activation clause so the 100% uptime is an invented trigger (\u26912, the main HOT risk), and fire cadence is an unverified datamine estimate (\u26911). Whole file is a PARSER BASELINE / HYPOTHESIS, never fielded, with no board data."
+}

@@ -1,0 +1,510 @@
+{
+  "miranda": {
+    "slug": "miranda",
+    "name": "Miranda",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/xv-66/wc-38/6202adb5b62786c389c4612cde9008ea.png",
+    "weapon": "SMG",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Fire",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 10.8,
+    "coreAttackMultiplier": 250,
+    "ammo": 120,
+    "reloadFrames": 107,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": true,
+    "nicknames": [
+      "tmiranda"
+    ],
+    "skills": {
+      "skill1": "■ Activates after landing 30 normal attack(s). Affects all allies.\nHit Rate ▲ 5.44% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects all allies with a Submachine Gun.\nHit Rate ▲ 3.79% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects self.\nATK ▲ 50.06% for 5 sec.",
+      "skill2": "■ Activates when entering Full Burst. Affects all allies.\nCritical Damage ▲ 32.99% for 10 sec.\n■ Activates when entering Full Burst. Affects self.\nCritical Rate ▲ 30.1% for 10 sec.\nAttack Damage ▲ 23.7% for 10 sec.\n■ Activates when entering Full Burst. Affects 1 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nCritical Rate ▲ 85.42% for 1 round(s).",
+      "burst": "■ Affects 2 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nATK ▲ 40.4% for 10 sec. \nCritical Damage ▲ 56.23% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1003201,
+        "shot_detail": {
+          "id": 1003201,
+          "damage": 1080,
+          "max_ammo": 120,
+          "shake_id": 1,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 143,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 25000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2032101,
+        "skill2_id": 2032201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2032101,
+          "icon": "icn_skill_stataccuracycircle_01",
+          "group_id": 20321,
+          "skill_level": 1,
+          "name_localkey": "Health Up!",
+          "next_level_id": 2032102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s). Affects all allies.\n<color=#00AEFF>Hit Rate ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates after landing {description_value_04} normal attack(s). Affects all allies with a Submachine Gun.\n<color=#00AEFF>Hit Rate ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "3.31",
+                "3.55",
+                "3.78",
+                "4.02",
+                "4.26",
+                "4.49",
+                "4.73",
+                "4.97",
+                "5.2",
+                "5.44"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "2.09",
+                "2.28",
+                "2.47",
+                "2.66",
+                "2.85",
+                "3.03",
+                "3.22",
+                "3.41",
+                "3.6",
+                "3.79"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2032201,
+          "icon": "icn_skill_criticaldamage_01",
+          "group_id": 20322,
+          "skill_level": 1,
+          "name_localkey": "Wake Up!",
+          "next_level_id": 2032202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates at the beginning of Full Burst. Affects all allies. <color=#00AEFF>Critical Damage ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "19.49",
+                "20.99",
+                "22.49",
+                "23.99",
+                "25.49",
+                "26.99",
+                "28.49",
+                "29.99",
+                "31.49",
+                "32.99"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1032301,
+        "ulti_skill_detail": {
+          "id": 1032301,
+          "icon": "icn_skill_c032_ult",
+          "group_id": 10323,
+          "shake_id": 4,
+          "skill_type": "SetBuff",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Powering Up!",
+          "next_level_id": 1032302,
+          "prefer_target": "HighAttackLastSelf",
+          "resource_name": "c032_ulti",
+          "duration_value": 1000,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK (includes the skill user if there are not enough allies). \n<color=#00AEFF>ATK ▲ {description_value_02}% for {description_value_03} sec. \nCritical Damage ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "23.87",
+                "25.71",
+                "27.55",
+                "29.38",
+                "31.22",
+                "33.06",
+                "34.89",
+                "36.73",
+                "38.57",
+                "40.4"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "33.22",
+                "35.78",
+                "38.34",
+                "40.89",
+                "43.45",
+                "46.01",
+                "48.56",
+                "51.12",
+                "53.67",
+                "56.23"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            103230101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 203202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5303,
+        "stat_enhance_detail": {
+          "id": 5303,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100032,
+        "piece_detail": {
+          "id": 5100032,
+          "class": "Supporter",
+          "order": 3200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 32,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Miranda's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 203201,
+        "class": "Supporter",
+        "order": 10005,
+        "name_code": 5017,
+        "corporation": "ELYSION",
+        "resource_id": 32,
+        "name_localkey": "Miranda",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 32
+    }
+  }
+}

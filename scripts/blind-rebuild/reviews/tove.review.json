@@ -1,0 +1,98 @@
+{
+  "slug": "tove",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 10 normal attack(s) [datamine template: 5% chance on attack, L10]. Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Self reload proc skipped as QoL ammo refill, negligible for damage (note). Source prose says 'after 10 normal attacks' but skill1_detail template says 5%-on-attack chance (L10=5); override note uses the 5%-on-attack reading. Either way the reload itself is unmodeled."
+      },
+      {
+        "kitLine": "Activates during Emergency-Crafted Bullets. Affects all allies. Temporary Modification: Max Ammunition Capacity \u25b2 2, stacks up to 3 time(s), lasts 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Flat +2 rounds/stack skipped: maxAmmoPct is percent-of-base not flat rounds, and the extra ammo is negligible for damage (note). The stack counter itself is the backbone of the whole kit but is collapsed into a steady-state fully-stacked assumption rather than modeled explicitly."
+      },
+      {
+        "kitLine": "Critical Damage \u25b2 5.24% for 5 sec (part of Temporary Modification, all allies).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (passive, allies, critDamagePct 5.24)",
+        "note": "Value 5.24 matches L10. Real kit gates this on Temp Mod stacks and gives a 5s duration; override models it as an unconditional passive, justified by the steady-state fully-stacked assumption (5%-on-attack proc keeps buff maxed across a 180s full-team raid). Ramp-up/uptime not modeled."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Only activates when Temporary Modification is at max stacks. Affects all allies. Critical Rate \u25b2 10.08% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] (passive, allies, critRatePct 3.32)",
+        "note": "\u2691 VALUE STALE. Override models 3.32 (the skill2_detail datamine-table L10 value), but the char-extract in-game prose says 10.08% and ks-extract flags '3.32->10.08 (3x under)'. Line is represented, but at ~3x too low. Max-stacks gating collapsed into passive via steady-state assumption."
+      },
+      {
+        "kitLine": "Only activates when Temporary Modification is at max stacks. Affects all shotgun-wielding allies. Attack Speed \u25b2 42.24% continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Shotgun-gated. Skipped deliberately: no weapon-based target exists and the generic sim team has no SG (note FLAG). Value 42.24 matches L10. Would be a large contributor on a real SG team."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Miracle of Makeshifts: ATK \u25b2 2.32% of skill user's ATK. Mirrors the stack count of Temporary Modification, lasts 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (burstCast, allies, casterAtkPct 6.96, durationSec 10)",
+        "note": "Value 6.96 = 2.32 x 3 max stacks, baking 'mirrors stack count' into a steady-state constant (L10 base 2.32 correct). \u2691 DURATION STALE: override models 10s (skill_value/description_value table), but char-extract prose says 15s and ks-extract flags '10->15s'. On a 20s CD this is 50% vs 75% uptime."
+      },
+      {
+        "kitLine": "Affects all shotgun-wielding allies. Miracle of Makeshifts: ATK \u25b2 24.21% of skill user's ATK. Mirrors the stack count of Temporary Modification, lasts 15 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Shotgun-gated. Skipped deliberately (note FLAG): SG allies should get (2.32+24.21)=26.53% x3 = 79.59% of caster ATK; override drops the entire 24.21%*3 = 72.63% SG component. Massive understatement on a real SG team."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "Whole kit modeled at steady-state fully-stacked (Temp Mod max 3 stacks assumed permanent); stack counter, 5s buff duration, and ramp-up are not modeled explicitly.",
+      "couldCauseGap": "COLD",
+      "why": "Justified for a 180s full-team raid where the 5%-on-attack proc keeps the buff maxed; only early-fight ramp would differ, negligible over 180s."
+    },
+    {
+      "source": "unmodeled",
+      "text": "S1 self reload 5.31% skipped as QoL ammo refill.",
+      "couldCauseGap": "COLD",
+      "why": "Reload/ammo economy does not meaningfully change damage in the sim's auto-play scope."
+    },
+    {
+      "source": "unmodeled",
+      "text": "S1 Temporary Modification flat Max Ammo +2/stack skipped (maxAmmoPct is percent-of-base, not flat rounds).",
+      "couldCauseGap": "COLD",
+      "why": "Flat +2 rounds is negligible for damage and not expressible via the percent-based ammo stat."
+    },
+    {
+      "source": "note",
+      "text": "FLAG: every Shotgun-gated line skipped (S2 Attack Speed 42.24%; burst ATK 24.21%*3 = 72.63% caster ATK) \u2014 no weapon-based target and generic sim team has no SG.",
+      "couldCauseGap": "HOT",
+      "why": "Deliberate and KNOWN, but would massively understate Tove on any real shotgun team (drops her largest single contribution). COLD only within the current non-SG generic-team scope (graded teams = 0)."
+    },
+    {
+      "source": "open-question",
+      "text": "ks-extract finding: S2 crit-rate STALE 3.32 -> 10.08 (3x under). Override models 3.32; char-extract in-game prose shows 10.08%.",
+      "couldCauseGap": "HOT",
+      "why": "NOT acknowledged in the override note (author treats 3.32 as the full-stack value). If 10.08 is the true L10 value, team crit rate is ~3x too low, directly understating team DPS. Root cause is a source-data split between the datamine table (3.32) and the composed prose (10.08)."
+    },
+    {
+      "source": "open-question",
+      "text": "ks-extract finding: burst duration STALE 10 -> 15s. Override models durationSec 10; char-extract prose says 15 sec.",
+      "couldCauseGap": "HOT",
+      "why": "On a 20s burst CD, 10s vs 15s duration is 50% vs 75% uptime of the 6.96% caster-ATK buff \u2014 a real DPS gap. Source-data split between description_value table (10) and prose (15)."
+    }
+  ],
+  "authorIntentSummary": "The author built a steady-state, fully-stacked model of Tove: S1 = passive all-ally Crit Damage 5.24%, S2 = passive all-ally Crit Rate 3.32%, burst = all-ally casterAtkPct 6.96% (2.32% x 3 max 'mirrored' stacks) for 10s on burstCast. The Temporary Modification stack counter and all durations/ramp are collapsed into the assumption that her 5%-on-attack proc keeps the buff permanently maxed across a 180s full-team raid. All Shotgun-gated lines (S2 Attack Speed 42.24%, burst SG ATK 72.63% caster ATK) and the ammo/reload QoL lines are deliberately skipped as unexpressible/irrelevant for the generic non-SG sim team. Known-not-faithful spots per the note are the SG lines; additionally the override uses datamine-table values (crit rate 3.32, burst 10s) that the char-extract prose and ks-extract flag as stale (10.08%, 15s) \u2014 a discrepancy the author does not appear to have caught."
+}
