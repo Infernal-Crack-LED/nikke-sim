@@ -31,6 +31,15 @@ const OL_KEY_BY_LABEL: Record<string, string> = (() => {
   return map;
 })();
 
+// Backend label variants that mean a known line but don't match data/ol-lines.json
+// `name` exactly. bakery-bot forwards the blablalink locale string for these (the
+// contract asks it to normalize to the canonical label; this is the sim-side safety
+// net so the line isn't silently dropped). Exact backend label → sim line key.
+const OL_LABEL_ALIASES: Record<string, string> = {
+  'Increase Element Damage Dealt': 'elem',
+  'Increase Max Ammunition Capacity': 'ammo',
+};
+
 // Cube name (data/cubes.json `name`) → sim cube id ("Bastion" → "bastion").
 const CUBE_ID_BY_NAME: Record<string, string> = (() => {
   const map: Record<string, string> = {};
@@ -41,7 +50,8 @@ const CUBE_ID_BY_NAME: Record<string, string> = (() => {
 
 // OL roll tier (1-15) → per-line-key % value (data/ol-tiers.json). The backend
 // sends (label, tier); we resolve tier → value here (a base T10 roll is tier 11).
-const OL_TIER_ROWS = (olTiersJson as { tiers: Array<Record<string, number>> }).tiers;
+const OL_TIER_ROWS = (olTiersJson as { tiers: Array<Record<string, number>> })
+  .tiers;
 function olTierValue(key: string, tier: number): number {
   const row = OL_TIER_ROWS.find((t) => t.tier === tier);
   return row ? (row[key] ?? 0) : 0;
@@ -85,7 +95,7 @@ export function resolveSyncedLoadout(l: SyncedUnitLoadout): SlotLoadout | null {
   const summed: Record<string, number> = {};
   const unmappedLines: string[] = [];
   for (const line of l.ol ?? []) {
-    const key = OL_KEY_BY_LABEL[line.label];
+    const key = OL_KEY_BY_LABEL[line.label] ?? OL_LABEL_ALIASES[line.label];
     if (!key) {
       if (!unmappedLines.includes(line.label)) unmappedLines.push(line.label);
       continue;
@@ -139,7 +149,10 @@ export function resolveSyncedLoadout(l: SyncedUnitLoadout): SlotLoadout | null {
     doll,
     stars: clamp(l.grade ?? 0, 0, 3),
     core: clamp(l.core ?? 0, 0, 7),
-    bond: l.bond != null && Number.isFinite(l.bond) ? Math.max(0, Math.round(l.bond)) : undefined,
+    bond:
+      l.bond != null && Number.isFinite(l.bond)
+        ? Math.max(0, Math.round(l.bond))
+        : undefined,
     skill1: l.skills ? clamp(l.skills.skill1, 1, 10) : undefined,
     skill2: l.skills ? clamp(l.skills.skill2, 1, 10) : undefined,
     burst: l.skills ? clamp(l.skills.burst, 1, 10) : undefined,
@@ -163,7 +176,8 @@ export function slotLoadoutToUnitOptions(
   const lines: LineSelection[] = [];
   if (L.olElem > 0) lines.push({ type: 'elem', count: 1, value: L.olElem });
   if (L.olAtk > 0) lines.push({ type: 'atk', count: 1, value: L.olAtk });
-  for (const e of L.olExtra) if (e.value > 0) lines.push({ type: e.type, count: 1, value: e.value });
+  for (const e of L.olExtra)
+    if (e.value > 0) lines.push({ type: e.type, count: 1, value: e.value });
   return {
     ol: L.ol,
     gearStats: opts.zeroGear ? { atk: 0, hp: 0 } : (L.gearStats ?? undefined),
@@ -172,7 +186,9 @@ export function slotLoadoutToUnitOptions(
     core: L.core,
     relationshipLevel: L.bond,
     cube:
-      L.cubeId && L.cubeId !== 'none' ? { id: L.cubeId, level: L.cubeLevel } : undefined,
+      L.cubeId && L.cubeId !== 'none'
+        ? { id: L.cubeId, level: L.cubeLevel }
+        : undefined,
     skillLevels:
       L.skill1 != null && L.skill2 != null && L.burst != null
         ? { skill1: L.skill1, skill2: L.skill2, burst: L.burst }

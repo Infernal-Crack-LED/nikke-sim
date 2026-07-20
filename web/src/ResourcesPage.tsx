@@ -1,4 +1,5 @@
 import { Fragment, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   BOSS_TABLES,
   RUNS_PER_DAY,
@@ -7,27 +8,24 @@ import {
   type ModuleBoss,
 } from './resources-data';
 
-// Resource calculators, one tab per resource family. Custom Modules is the
-// first; new tabs (doll mats, skill books, …) join RES_TABS as they land.
+// Resource calculators, one pill per resource family. Anomaly Interception is
+// the first; new families join RES_TABS as they land.
 type ResTab = 'modules';
 const RES_TABS: { key: ResTab; label: string }[] = [
-  { key: 'modules', label: 'Custom Modules' },
+  { key: 'modules', label: 'Anomaly Interception' },
 ];
 
 const pct = (p: number) => `${(p * 100).toFixed(2)}%`;
 
+// Hosted as a tool tab inside App (addressable at /resources). App provides
+// the .app chrome and the "Resource Calculator" h1; this supplies the
+// resource-family picker and the calculators themselves.
 export function ResourcesPage() {
   const [tab, setTab] = useState<ResTab>('modules');
   return (
-    <div className='app res-page'>
-      <header>
-        <h1>Resource Calculator</h1>
-        <p className='muted'>
-          Expected daily income from solo-raid farming — pick what you’re after
-          and how far you’ve pushed, and see what a day is worth.
-        </p>
-      </header>
-      <nav className='tabs-bar'>
+    <section className='calc-tab'>
+      <p className='muted'>Expected daily income calculators.</p>
+      <div className='pills' style={{ gap: 8 }}>
         {RES_TABS.map((t) => (
           <button
             key={t.key}
@@ -37,15 +35,15 @@ export function ResourcesPage() {
             {t.label}
           </button>
         ))}
-      </nav>
+      </div>
       {tab === 'modules' && <CustomModulesTab />}
-    </div>
+    </section>
   );
 }
 
 interface StatTile {
   label: string;
-  value: string;
+  value: ReactNode;
   sub: string;
   main?: boolean;
 }
@@ -58,7 +56,15 @@ function CustomModulesTab() {
     table.stages.find((s) => s.stage === tier) ??
     table.stages[table.stages.length - 1];
   const perRun = expectedModulesPerRun(stage);
+  const modulesPerDay = perRun * RUNS_PER_DAY;
   const hasGear = table.stages.some((s) => s.gearRate !== null);
+  // Kraken's fragments ARE custom-module fragments — the shop converts them
+  // at 100:1, so the tile's parenthesized total counts them as modules.
+  // Other bosses pay T10 fragments, which don't convert, so no total there.
+  const krakenTotal =
+    table.key === 'kraken'
+      ? modulesPerDay + (stage.fragments * RUNS_PER_DAY) / 100
+      : null;
 
   // The drop pool is boss-dependent: modules + locks + fodder are shared, but
   // Kraken pays module fragments while other bosses pay T10 fragments plus a
@@ -66,14 +72,22 @@ function CustomModulesTab() {
   const tiles: StatTile[] = [
     {
       label: 'Custom modules',
-      value: (perRun * RUNS_PER_DAY).toFixed(2),
+      value: (
+        <>
+          {modulesPerDay.toFixed(2)}
+          {krakenTotal !== null && (
+            <span
+              className='res-stat-total'
+              title='including module fragments converted at 100:1'
+            >
+              {' '}
+              ({krakenTotal.toFixed(2)})
+            </span>
+          )}
+        </>
+      ),
       sub: `expected / day · ${perRun.toFixed(2)} per run`,
       main: true,
-    },
-    {
-      label: table.fragmentLabel,
-      value: String(stage.fragments * RUNS_PER_DAY),
-      sub: `${stage.fragments} per run · guaranteed`,
     },
   ];
   if (stage.gearRate !== null) {
@@ -84,6 +98,11 @@ function CustomModulesTab() {
     });
   }
   tiles.push(
+    {
+      label: table.fragmentLabel,
+      value: String(stage.fragments * RUNS_PER_DAY),
+      sub: `${stage.fragments} per run · guaranteed`,
+    },
     {
       label: 'Locks',
       value: String(stage.locks * RUNS_PER_DAY),
@@ -98,13 +117,10 @@ function CustomModulesTab() {
 
   return (
     <section className='calc-tab'>
-      <h2>Overload Custom Modules</h2>
+      <h2>Custom Modules + T10 Gear</h2>
       <p className='muted'>
-        Every solo-raid boss run can drop overload custom modules —{' '}
-        {RUNS_PER_DAY} runs per boss per day. Side drops differ by boss: Kraken
-        pays module fragments and more locks; other bosses drop T10 fragments
-        and a chance at T10 gear. Pick your boss and stage to see the expected
-        daily haul.
+        Calculate your custom module and T10 gear expected daily incomes by boss
+        tier.
       </p>
 
       <div className='res-controls'>
@@ -164,7 +180,10 @@ function CustomModulesTab() {
         )}
       </p>
 
-      <div className='table-scroll res-ladder'>
+      {/* 9 rows fit comfortably — no scroll wrapper, the ladder stands at
+          full height. tbody is keyed on boss so the rows re-deal (staggered)
+          whenever the drop pool changes */}
+      <div className='res-ladder'>
         <table className='breakpoint-table'>
           <thead>
             <tr>
@@ -172,19 +191,20 @@ function CustomModulesTab() {
               <th>Module chance / run</th>
               <th>Expected modules / run</th>
               <th>Expected modules / day</th>
-              <th>{table.fragmentLabel} / day</th>
               {hasGear && <th>T10 gear / day</th>}
+              <th>{table.fragmentLabel} / day</th>
               <th>Locks / day</th>
             </tr>
           </thead>
-          <tbody>
-            {table.stages.map((s) => {
+          <tbody key={boss}>
+            {table.stages.map((s, i) => {
               const e = expectedModulesPerRun(s);
               return (
                 <tr
                   key={s.stage}
                   className={s.stage === tier ? 'on' : ''}
                   title='select this tier'
+                  style={{ ['--row' as string]: i }}
                   onClick={() => setTier(s.stage)}
                 >
                   <td>
@@ -193,7 +213,6 @@ function CustomModulesTab() {
                   <td className='r'>{pct(s.moduleDropRate)}</td>
                   <td className='r'>{e.toFixed(2)}</td>
                   <td className='r share'>{(e * RUNS_PER_DAY).toFixed(2)}</td>
-                  <td className='r'>{s.fragments * RUNS_PER_DAY}</td>
                   {hasGear && (
                     <td className='r'>
                       {s.gearRate === null
@@ -201,6 +220,7 @@ function CustomModulesTab() {
                         : (s.gearRate * RUNS_PER_DAY).toFixed(2)}
                     </td>
                   )}
+                  <td className='r'>{s.fragments * RUNS_PER_DAY}</td>
                   <td className='r'>{s.locks * RUNS_PER_DAY}</td>
                 </tr>
               );
@@ -222,6 +242,14 @@ function CustomModulesTab() {
             drops. The expected value is drop chance × average quantity ×{' '}
             {RUNS_PER_DAY} runs; real days will swing around it.
           </li>
+          {krakenTotal !== null && (
+            <li>
+              <b>Module fragments convert at 100:1</b> — the parenthesized total
+              on the modules tile counts expected drops plus every fragment
+              converted. The table columns stay separate so you can see what’s
+              actually rolling versus what you’re converting.
+            </li>
+          )}
           <li>
             <b>Side drops are boss-dependent.</b> Kraken pays custom-module
             fragments (and more locks); other bosses pay T10 fragments and a

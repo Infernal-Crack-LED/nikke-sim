@@ -1,0 +1,112 @@
+{
+  "note": "HAND-AUTHORED from kit prose (NOT measured/hand-tuned against a real fight). Every ⚑ below is an UNMEASURED estimate; record against a real fight before trusting any number. — Rei Ayanami (`rei-ayanami`, MG B3 Attacker Fire Abnormal, ammo 300 / reloadFrames 171 / hitsPerShot 1 / normalMult 5.57 / burstGaugePerShot 0.05): S1 block A = 'after 100 normal attacks, self, Elemental Advantage Attack Damage ▲ 30.23% for 3 sec' → hitCount 100 self elemAdvantageDamagePct 30.23 dur 3 — Damage-Up-bucket entry active ONLY with elemental advantage (Fire vs a Fire-weak boss); inert vs a non-advantaged/neutral boss (⚑1). S1 block B = 'after landing 100 normal attacks, enemy nearest crosshair, Deals 112.37% of final ATK as damage' → hitCount 100 enemy flatDamage 112.37 — function-type skill damage: crit at caster rate (engine default), never core, noRange automatic for flatDamage, FB by landing timing. S2 block A = 'start of battle, self, Damage dealt to Shield ▲ 700.5% continuously' → UNMODELED: the schema has no shield-damage StatKey and the scope-lock boss is partless (no shield), so this buff moves no damage (inert). S2 block B = 'entering Burst stage 3, all Fire Code allies, ATK ▲ 25.03% of the skill user's ATK for 10 sec' → stageEnter stage 3 alliesOfElement Fire casterAtkPct 25.03 dur 10 — flat caster-static-ATK add (casterAtkPct). Burst block A = 'all Fire Code allies, Shield 13.44% of caster final Max HP 10s + Attack damage ▲ 48.02% 10s' → burstCast alliesOfElement Fire [shield maxHpPct 13.44 dur 10 (event-only, no HP pool modeled), buff attackDamagePct 48.02 dur 10 (Damage-Up bucket)]. Burst block B = 'all enemies, Deals 990.2% of final ATK as damage' → burstCast enemy flatDamage 990.2 — burst nuke: crit at caster rate, never core, noRange, FB-exempt by cast-instant timing (lands before Full Burst begins). ⚑ LIST: (1) elemAdvantageDamagePct active only vs a Fire-weak boss; inert on the neutral scope-lock boss unless the graded comp is Fire-advantaged. (2) hitCount-100 proc cadence depends on MG fire rate (MG wind-up ladder + full-spin are measured engine constants, but her reloadFrames 171 is unverified datamine). (3) burst shield is event-only (no HP pool in v1; fires shielded triggers only).",
+  "caveats": [
+    "skill1: Elemental Advantage Attack Damage ▲ 30.23% is active only with elemental advantage (Fire vs a Fire-weak boss); inert on a non-advantaged/neutral boss (⚑1)",
+    "skill1: the 112.37% proc cadence (hitCount 100) depends on MG fire rate; reloadFrames 171 is unverified datamine (⚑2)",
+    "burst: the 13.44% caster-Max-HP shield is event-only (no HP pool modeled in v1); fires shielded triggers only (⚑3)"
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Damage dealt to Shield ▲ 700.5% continuously — no shield-damage StatKey in the schema; inert vs the partless scope-lock boss (no shield)."
+    ],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 100
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 30.23,
+          "durationSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 100
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 112.37
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Fire"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 25.03,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Fire"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 13.44,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 48.02,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 990.2
+        }
+      ]
+    }
+  ]
+}

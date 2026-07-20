@@ -15,6 +15,19 @@ export interface BaseStats {
   core: { atk: number; hp: number; def: number };
 }
 
+// Skill activation cooldowns in SECONDS, sourced by bakery-bot from the community wiki
+// (Fandom) and folded into the DB's skill_descriptions jsonb. Per slot: a number = seconds,
+// `null` = no cooldown (a passive skill — must never be scheduled on a timer). The whole object
+// being ABSENT from a character (see CharacterData.skillCooldownsSec being optional) means
+// "unknown" — the unit hasn't been matched to its wiki page yet — which is distinct from a
+// null slot. Cooldowns are static kit data (they do NOT scale with skill level), same for
+// every account. See docs/handoffs/2026-07-20-skill-cooldowns-to-sim.md (bakery-bot contract).
+export interface SkillCooldownsSec {
+  skill1: number | null;
+  skill2: number | null;
+  burst: number | null;
+}
+
 export interface CharacterData {
   slug: string;
   name: string;

@@ -7,10 +7,9 @@
   },
   "caveats": [
     "skill2: the 144.73% damage line fires on a 15s internal cooldown (owner-ruled 2026-07-20); ⚑ first-fire phase (t=15 vs t=0) and whether the line is FB-scoped are unmeasured — recipe: scan sw.MP4 for 144.73%-class popups (appearance outside FB windows falsifies FB-scoping; first-popup time pins the phase)",
-    "burst: full-charge coefficient is 4995% = 499.5 × 10 (chargeMultPct 1000; owner re-ruled ×10 from the sw.MP4 footage 2026-07-20 — charge UI reads '1000%' like an SR's '250%', 6 popups ~630 ATK-multiples reconcile only with ×10). The earlier additive 1499.5% reading is set aside.",
-    "burst: footage shows her AR KEEPS FIRING during the ~5s cannon charge (cannon materializes only for the shot) — inexpressible with weaponSwap, sim loses ~5s AR fire per window; likely her main residual COLD driver (⚑)",
-    "burst: exactly 1 cannon shot per burst then she resumes her AR (owner-ruled maxShots:1); ⚑ the swap-end does not reset ammo so AR resumes at 0 ammo → 111f reload first — recipe: does the AR resume firing immediately post-nuke in sw.MP4?",
-    "burst: swapped shot is Pierce-tagged (weaponSwap.hasPierce; Pierce Damage ▲ feeds the swap shot's Damage-Up bucket); the pierce core+body double-hit stays unmodeled (PIERCE_CORE_DOUBLE=false, multipart-scope only)"
+    "burst: the cannon is one DELAYED full-charge hit (flatDamage delaySec 5.5 + charge/chargeMultPct 1000/core/pierce/rangeOk) — NOT a weaponSwap — so her AR keeps firing through the ~5s charge (owner-ruled 2026-07-20; resolves the AR-during-charge gap). Full-charge coefficient 4995% = 499.5 × 10 (charge bucket ×10; footage-confirmed). A/B vs the swap encoding: cannon flavor byte-identical (major/charge/dmgUp/taken match), board 347M→408M / ~0.81-0.90→~0.95-1.06 from the recovered AR fire (which also lifts her S1 self-ATK uptime and little-mermaid's team-ammo skill); FB counts byte-identical.",
+    "burst: FIDELITY GAP (inert at scope) — a delayed flatDamage does NOT receive Normal Attack Damage ▲ (the swap-shot path's normalScale). The cannon is a charge-weapon normal attack in-game and should get it; no control-comp ally grants it and snow-white doesn't self-grant, so it is inert here, but a future comp with a Normal-Attack-Damage buffer would under-credit the cannon under this encoding (⚑)",
+    "burst: cannon is Pierce-tagged (flatDamage pierce → Pierce Damage ▲ feeds its Damage-Up bucket) and takes the +30% range bonus like the swap shot it replaces; the pierce core+body double-hit stays unmodeled (PIERCE_CORE_DOUBLE=false, multipart-scope only)"
   ],
   "skill1": [
     {
@@ -90,18 +89,18 @@
         "kind": "burstCast"
       },
       "target": {
-        "kind": "self"
+        "kind": "enemy"
       },
       "effects": [
         {
-          "kind": "weaponSwap",
-          "damagePct": 499.5,
-          "durationSec": 10,
-          "chargeTimeSec": 5,
+          "kind": "flatDamage",
+          "atkPct": 499.5,
+          "charge": true,
           "chargeMultPct": 1000,
-          "maxAmmo": 1,
-          "maxShots": 1,
-          "hasPierce": true
+          "core": true,
+          "pierce": true,
+          "rangeOk": true,
+          "delaySec": 5.5
         }
       ]
     }

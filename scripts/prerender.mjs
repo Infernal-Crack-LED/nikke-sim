@@ -44,20 +44,20 @@ const META = {
     desc: 'Ranked DPS of every NIKKE B3 carry under standardized solo-raid frameworks. Compare units, see best overload lines, and find your best carries.',
   },
   dps: {
-    title: 'Custom DPS Rankings — NIKKE Head-to-Head Unit Comparator',
-    desc: 'Head-to-head per-unit DPS comparison with a custom framework. Pit any NIKKE against any other under identical conditions.',
+    title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
+    desc: 'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
     desc: 'Find the optimal 3rd overload line for every NIKKE B3. The overload calculator uses frame-tick sim data to rank every roll by DPS gain.',
   },
   team: {
-    title: 'NIKKE Optimal Team Generator — Best 5-Nikke Team Builder',
+    title: 'NIKKE Team Generator — Best 5-Unit Solo Raid Team',
     desc: 'Generate the best 5-Nikke solo-raid team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
   },
   roster: {
-    title: 'NIKKE Solo-Raid Roster Generator — Best Team from Your Units',
-    desc: 'Input your NIKKE roster and generate the optimal solo-raid team. Accounts for your actual units, gear, and overload lines.',
+    title: 'NIKKE Roster Generator — Best Solo-Raid Teams from Your Units',
+    desc: 'Input your NIKKE roster and generate the optimal solo-raid teams. Accounts for your actual units, gear, and overload lines.',
   },
   rostersim: {
     title: 'NIKKE Roster Sim — Compare All Your Solo-Raid Teams',
@@ -72,8 +72,8 @@ const META = {
     desc: 'Calculate the most resource-efficient path to level your dolls (Favorite Items) to SR phase 15. Minimize waste, maximize stats.',
   },
   charge: {
-    title: 'NIKKE Charge Speed Breakpoints — RL & SR Frame Table',
-    desc: 'Charge-speed frame breakpoints for every RL and SR in NIKKE. See exactly how much charge speed you need to hit each frame threshold.',
+    title: 'NIKKE Overload Breakpoints — Charge Speed & Max Ammo Tables',
+    desc: 'Charge-speed frame breakpoints and max-ammo line costs for every RL and SR in NIKKE. See exactly how many overload lines each breakpoint takes.',
   },
   teambuilder: {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',

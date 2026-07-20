@@ -25,10 +25,50 @@ body {
     sans-serif;
 }
 
+/* keyboard focus is visible everywhere (pills/tabs/chips are borderless and
+   lose the UA default) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .app {
   max-width: 1180px;
   margin: 0 auto;
   padding: 24px 20px 60px;
+}
+/* Suspense fallback while a route's code-split chunk streams in */
+.page-fallback {
+  min-height: 55vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 14px;
+}
+.page-fallback-spin {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: page-fallback-rot 0.8s linear infinite;
+}
+@keyframes page-fallback-rot {
+  to {
+    transform: rotate(360deg);
+  }
 }
 .header-row {
   display: flex;
@@ -93,6 +133,10 @@ body {
   width: 100%;
   max-width: 520px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+/* room for the Browse Nikkes grid (8 card columns + filter panel) */
+.modal-wide {
+  max-width: 1080px;
 }
 .modal-head {
   display: flex;
@@ -301,6 +345,11 @@ input.num {
   border-radius: 8px;
   padding: 4px 8px;
   font-size: 13px;
+}
+
+/* entry point to the Browse Nikkes picker, above the team cards */
+.sim-browse-row {
+  margin: 12px 0 10px;
 }
 
 /* team cards */
@@ -1154,6 +1203,27 @@ input.num {
 .summary {
   margin-bottom: 10px;
 }
+/* explicit "results are stale" notice (the section also dims to 55%) */
+.stale-chip {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 3px 10px;
+  font-size: 12px;
+  color: var(--warn);
+  border: 1px solid var(--warn);
+  border-radius: 999px;
+}
+.results-legend {
+  margin-top: 6px;
+  font-size: 12px;
+}
+/* horizontal scroll for wide tables on narrow screens */
+.table-x {
+  overflow-x: auto;
+}
+.table-x table {
+  min-width: 640px;
+}
 table {
   width: 100%;
   border-collapse: collapse;
@@ -1161,6 +1231,7 @@ table {
   border: 1px solid var(--border);
   border-radius: 10px;
   overflow: hidden;
+  font-variant-numeric: tabular-nums; /* columns of numbers stay aligned */
 }
 th,
 td {
@@ -1348,6 +1419,44 @@ footer {
 .nav-btn.discord:hover {
   background: #4752c4;
 }
+/* top-level Discord login button (icon + label; icon-only on mobile) */
+.nav-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.nav-login .discord-icon,
+.nav-login .discord-icon svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+/* logged-in account chip beside the hamburger */
+.nav-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.nav-user-name {
+  color: var(--muted);
+  font-size: 12px;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nav-logout {
+  border-color: var(--border);
+  background: var(--panel2);
+  color: var(--muted);
+  font-weight: 600;
+}
+.nav-logout:hover {
+  background: var(--panel2);
+  color: var(--warn);
+  border-color: var(--warn);
+}
 
 /* hamburger menu (right-side overflow) */
 .nav-menu {
@@ -1397,54 +1506,6 @@ footer {
   color: var(--accent);
   background: var(--panel2);
 }
-.nav-menu-item.discord {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: #5865f2;
-  color: #fff;
-  border: 1px solid #5865f2;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  padding: 8px 14px;
-}
-.nav-menu-item.discord:hover {
-  background: #4752c4;
-  border-color: #4752c4;
-}
-.nav-menu-item.discord .discord-icon {
-  display: inline-flex;
-  width: 20px;
-  height: 20px;
-}
-.nav-menu-item.discord .discord-icon svg {
-  width: 20px;
-  height: 20px;
-  display: block;
-}
-.nav-menu-user {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 6px 10px 8px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
-}
-.nav-menu-user-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text);
-}
-.nav-menu-user .nav-menu-item {
-  width: auto;
-  color: var(--muted);
-  padding: 4px 8px;
-}
-.nav-menu-user .nav-menu-item:hover {
-  color: var(--warn);
-}
-
 /* shared social footer */
 .site-footer {
   border-top: 1px solid var(--border);
@@ -1987,6 +2048,12 @@ footer {
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
+/* raw DPS beside the normalized score — visible without hover (touch) */
+.dpschart-val-raw {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
 .dpschart-empty {
   color: var(--muted);
   font-size: 12px;
@@ -2316,13 +2383,18 @@ footer {
   display: block;
 }
 
-/* ---- Team Builder ---- */
+/* ---- Browse Nikkes picker (Team Sim / Roster Sim modals + Team Builder page) ---- */
 .teambuilder-page {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-/* Team slots row — mirrors .roster-slots layout */
+.teambuilder-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* Team slots strip — mirrors .roster-slots layout */
 .teambuilder-team {
   display: flex;
   align-items: center;
@@ -2330,7 +2402,10 @@ footer {
   gap: 12px;
   width: 100%;
 }
-.teambuilder-team .roster-slots {
+/* direct child = the 5-slot strip (team mode), which gets the wide chips; the
+   expanded 5×5 nests .roster-input rows instead, so those slots fall through
+   to the Roster Sim's own .roster-slots sizing — pixel-identical grid */
+.teambuilder-team > .roster-slots {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 10px;
@@ -2340,6 +2415,35 @@ footer {
 .teambuilder-team .roster-slot {
   aspect-ratio: 1;
   width: 100%;
+}
+/* the 5×5 roster block reuses the Roster Sim input rows — drop its page margin */
+.teambuilder-team .roster-input {
+  margin: 0;
+}
+/* + / − switch between the 5-slot strip and the full 5×5 roster */
+.teambuilder-expand {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+.teambuilder-expand:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.picker-hint {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  text-align: center;
 }
 .teambuilder-filters {
   display: grid;
@@ -2553,15 +2657,14 @@ footer {
 .teambuilder-card:hover {
   border-color: var(--muted);
 }
-.teambuilder-card.in-team {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent) inset;
-}
 .teambuilder-card.unsupported {
   opacity: 0.55;
 }
 .teambuilder-card.unsupported:hover {
   opacity: 0.85;
+}
+.teambuilder-card:disabled {
+  cursor: default;
 }
 .teambuilder-portrait {
   position: relative;
@@ -2635,6 +2738,10 @@ footer {
   flex-wrap: wrap;
   gap: 8px;
 }
+/* inside the Browse Nikkes modal there's no flex-gap parent — add breathing room */
+.modal-wide .teambuilder-actions {
+  margin: 12px 0 14px;
+}
 .teambuilder-action {
   background: var(--panel2);
   border: 1px solid var(--border);
@@ -2645,9 +2752,13 @@ footer {
   font-size: 13px;
   font-weight: 600;
 }
-.teambuilder-action:hover {
+.teambuilder-action:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
+}
+.teambuilder-action:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 .teambuilder-warning {
   border: 1px solid var(--warn);
@@ -2770,6 +2881,13 @@ footer {
   color: var(--muted);
   margin-top: 4px;
 }
+/* fragment-inclusive total on Kraken's modules tile — secondary to the raw
+   expected value, but always in view */
+.res-stat-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
 .res-detail {
   font-size: 13px;
   color: var(--muted);
@@ -2779,12 +2897,22 @@ footer {
   color: var(--text);
 }
 /* the tier ladder doubles as a picker — rows highlight on hover and carry an
-   accent bar on the selected tier */
+   accent bar on the selected tier. 9 rows need no scroll wrapper, so the
+   table stands at full height; rows stagger in when the boss pool changes
+   (tbody keyed on boss, --row set per tr in JSX) */
 .res-ladder tbody tr {
   cursor: pointer;
 }
-.res-ladder td {
+.res-ladder tbody td {
   transition: background 0.12s ease;
+  animation: res-row-in 0.2s ease backwards;
+  animation-delay: calc(var(--row, 0) * 22ms);
+}
+@keyframes res-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
 }
 .res-ladder tbody tr:hover td,
 .res-ladder tbody tr.on td {

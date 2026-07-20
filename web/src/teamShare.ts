@@ -13,6 +13,7 @@ import {
   type TeamCardUnit,
 } from '../../src/share/teamCard';
 import { portraitThumb } from './portraitThumb';
+import { manifestThumbUrl } from './portraitManifest';
 
 // One share-card unit as the callers know it: the drawn fields (minus the loaded
 // `img`, which this module fills in) plus the slug used to find its portrait.
@@ -25,23 +26,31 @@ export interface ShareTeamData {
   units: ShareUnit[];
 }
 
-// Load a portrait for the share canvas as a high-quality, pre-downscaled square
-// (via portraitThumb — stepped halving avoids the outline aliasing a single big
-// drawImage reduction causes). Falls back to the raw cross-origin image if the
-// thumbnail can't be produced; the CDN sends `access-control-allow-origin: *`, so
-// `crossOrigin='anonymous'` keeps the canvas untainted (toBlob/clipboard allowed).
-// Resolves null on any failure so a missing portrait degrades to a placeholder.
+// Load a portrait for the share canvas. Prefers the generated local thumbnail
+// (same-origin, pre-cropped — no canvas work and no taint risk); falls back to
+// the runtime downscale of the raw CDN art (via portraitThumb — stepped halving
+// avoids the outline aliasing a single big drawImage reduction causes), then to
+// the raw cross-origin image. The CDN sends `access-control-allow-origin: *`,
+// so `crossOrigin='anonymous'` keeps the canvas untainted (toBlob/clipboard
+// allowed). Resolves null on any failure so a missing portrait degrades to a
+// placeholder.
 export function loadPortrait(url: string): Promise<HTMLImageElement | null> {
-  return (async () => {
-    const thumb = await portraitThumb(url, 120); // crisp square, comfortably above draw size
-    const src = thumb ?? url;
-    return new Promise<HTMLImageElement | null>((resolve) => {
+  const load = (src: string, crossOrigin: boolean) =>
+    new Promise<HTMLImageElement | null>((resolve) => {
       const img = new Image();
-      img.crossOrigin = 'anonymous';
+      if (crossOrigin) img.crossOrigin = 'anonymous';
       img.onload = () => resolve(img);
       img.onerror = () => resolve(null);
       img.src = src;
     });
+  return (async () => {
+    const local = manifestThumbUrl(url, 120); // crisp square, comfortably above draw size
+    if (local) {
+      const img = await load(local, false);
+      if (img) return img;
+    }
+    const thumb = await portraitThumb(url, 120);
+    return load(thumb ?? url, true);
   })();
 }
 
@@ -81,7 +90,13 @@ export async function buildTeamCardBlob(
   ctx.imageSmoothingQuality = 'high'; // crisp portrait downscale
   drawTeamCard(
     ctx as unknown as Canvas2DLike,
-    { teamDamage: data.teamDamage, teamDps: data.teamDps, fullBursts: data.fullBursts, fullBurstUptime: data.fullBurstUptime, units },
+    {
+      teamDamage: data.teamDamage,
+      teamDps: data.teamDps,
+      fullBursts: data.fullBursts,
+      fullBurstUptime: data.fullBurstUptime,
+      units,
+    },
     meta,
   );
   return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'));
@@ -89,11 +104,16 @@ export async function buildTeamCardBlob(
 
 // Copy a PNG blob to the clipboard, falling back to a download where the async
 // clipboard image API isn't available (e.g. Firefox).
-export async function copyOrDownloadPng(blob: Blob, filename: string): Promise<'copied' | 'downloaded'> {
+export async function copyOrDownloadPng(
+  blob: Blob,
+  filename: string,
+): Promise<'copied' | 'downloaded'> {
   const nav = navigator as any;
   try {
     if (nav.clipboard?.write && (window as any).ClipboardItem) {
-      await nav.clipboard.write([new (window as any).ClipboardItem({ 'image/png': blob })]);
+      await nav.clipboard.write([
+        new (window as any).ClipboardItem({ 'image/png': blob }),
+      ]);
       return 'copied';
     }
   } catch {
@@ -151,7 +171,11 @@ export async function buildRosterCardBlob(
     data.teams.map(async (t) => ({
       teamDamage: t.teamDamage,
       units: await Promise.all(
-        t.units.map(async (u) => ({ name: u.name, element: u.element, img: (await load(u.slug)) ?? undefined })),
+        t.units.map(async (u) => ({
+          name: u.name,
+          element: u.element,
+          img: (await load(u.slug)) ?? undefined,
+        })),
       ),
     })),
   );
@@ -165,7 +189,11 @@ export async function buildRosterCardBlob(
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  drawRosterCard(ctx as unknown as Canvas2DLike, { totalDamage: data.totalDamage, teams }, meta);
+  drawRosterCard(
+    ctx as unknown as Canvas2DLike,
+    { totalDamage: data.totalDamage, teams },
+    meta,
+  );
   return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'));
 }
 

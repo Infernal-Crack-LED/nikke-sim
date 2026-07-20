@@ -9,8 +9,9 @@ import { useEffect, useRef, useState } from 'react';
 // path to index.html, and the web-smoke loads at "/?team=…" which resolves to sim.
 export type Route =
   | 'sim'
+  | 'rankings'
+  | 'overload'
   | 'tools'
-  | 'resources'
   | 'howto'
   | 'mechanics'
   | 'dev'
@@ -21,8 +22,9 @@ export type Route =
 
 export const ROUTES: Route[] = [
   'sim',
+  'rankings',
+  'overload',
   'tools',
-  'resources',
   'howto',
   'mechanics',
   'dev',
@@ -33,9 +35,9 @@ export const ROUTES: Route[] = [
 ];
 
 // Top-level PAGE routes. The sim app owns "/" plus its sub-tab paths
-// (/dpschart, /overload, …); any segment that isn't a page or a tool resolves to sim.
+// (/dpschart, /overload, …); any segment that isn't a page or a section path
+// resolves to sim.
 const PAGE_ROUTES: Route[] = [
-  'resources',
   'howto',
   'mechanics',
   'dev',
@@ -44,25 +46,42 @@ const PAGE_ROUTES: Route[] = [
   'roster-sync',
   'credits',
 ];
-// The App also hosts the "Tools" section — these sub-tab paths group under /tools in
-// the top nav (but are still served by the App, addressed by their own path).
-const TOOL_PATHS = ['olsim', 'doll', 'charge', 'team', 'roster', 'teambuilder'];
-const TOOL_LANDING = '/olsim'; // where the "Tools" nav link points (Overload Rolling)
+// The App hosts four tool SECTIONS — Sim, Rankings, Overload, Tools. Each sub-tab
+// is still served by the App at its own path; these maps group the paths under
+// their section in the top nav.
+const RANKINGS_PATHS = ['dpschart', 'dps'];
+const OVERLOAD_PATHS = ['overload', 'olsim', 'charge'];
+// Team Generator + Roster Generator live in the Sim section, so their paths
+// (/team, /roster) fall through to 'sim' below.
+const TOOL_PATHS = ['teambuilder', 'doll', 'resources'];
+// Where each section's nav link lands — the section's first tab.
+const SECTION_LANDING: Record<'rankings' | 'overload' | 'tools', string> = {
+  rankings: '/dpschart',
+  overload: '/overload',
+  tools: '/teambuilder',
+};
 
-// map the first path segment to a Route; tool paths → 'tools', other sim-app paths (and "/") → sim
+// map the first path segment to a Route; section paths → their section route,
+// other sim-app paths (and "/") → sim
 export function routeFromPath(pathname: string): Route {
   const seg = pathname
     .replace(/^\/+|\/+$/g, '')
     .split('/')[0]
     .toLowerCase();
   if ((PAGE_ROUTES as string[]).includes(seg)) return seg as Route;
+  if (RANKINGS_PATHS.includes(seg)) return 'rankings';
+  if (OVERLOAD_PATHS.includes(seg)) return 'overload';
   if (TOOL_PATHS.includes(seg)) return 'tools';
   return 'sim';
 }
 
 // href for a route — a real path so links are hyperlinkable and crawlable
 export const hrefFor = (route: Route): string =>
-  route === 'sim' ? '/' : route === 'tools' ? TOOL_LANDING : `/${route}`;
+  route === 'sim'
+    ? '/'
+    : route === 'rankings' || route === 'overload' || route === 'tools'
+      ? SECTION_LANDING[route]
+      : `/${route}`;
 
 // SPA navigation: update the URL via pushState (no full reload), then notify every
 // listener (this router + the sim App's tab sync) with a popstate event. Callers

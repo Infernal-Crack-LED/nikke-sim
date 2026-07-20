@@ -137,6 +137,17 @@ export type EffectDef =
       delaySec?: number; // flighted damage: lands delaySec later, snapshotting buffs/FB at
                          // LANDING (MEASURED 2026-07-14: rapi-red-hood's burst nuke missile
                          // lands ~0.4s post-banner inside her window at the full buff state)
+      // A full-charge cannon shot dealt as a DELAYED hit while the caster keeps firing her base
+      // weapon (snow-white: her AR fires through the ~5s cannon charge; the cannon is one flighted
+      // charge shot, NOT a weaponSwap that halts the base weapon — sw.MP4 2026-07-20). These four
+      // only take effect on the delaySec path; instant flatDamage riders keep charge:false/noRange:true.
+      charge?: boolean;       // route through the charge bucket (§1d) — a real full-charge shot
+      chargeMultPct?: number; // full-charge multiplier for a `charge` hit when no swap sources it
+                              // (base AR chargeMultiplier is 0); only read when charge:true
+      pierce?: boolean;       // Pierce-tagged (Pierce Damage ▲ feeds this hit's Damage-Up bucket),
+                              // independent of the unit-level hasPierce flag — one-shot/swap-scoped pierce
+      rangeOk?: boolean;      // opt this DELAYED hit INTO the +30% range bonus (delayed hits force
+                              // noRange by default; the cannon gets range like the swap shot it replaces)
       requiresPulls?: number; // fires only if the caster has fired >= N shots (MEASURED
                               // 2026-07-14: her nuke needs >=1 sticky charge = 120 shots)
       // per-battle-elapsed ramp: scales this hit's atkPct by min(1, elapsed/rampSec) — for a

@@ -716,6 +716,14 @@ export function runSim(
     sequential: boolean;
     trueFlavor: boolean;
     projFlavor?: 'attachment' | 'explosion';
+    // delayed full-charge cannon shot (snow-white): route through the charge bucket, keep its
+    // pierce tag, and (unlike ordinary riders) receive the +30% range bonus. Omitted → the
+    // existing rider defaults (charge:false / noRange:true / no pierce) — every current delaySec
+    // user (rapi-red-hood's missile) carries none of these, so it is byte-identical.
+    charge?: boolean;
+    chargeMultPct?: number;
+    pierce?: boolean;
+    rangeOk?: boolean;
   }> = [];
   // teamAmmo triggers: fire whenever TOTAL ally ammo consumed crosses each block's count
   // (infinite-ammo shots never consume, matching the in-game rule)
@@ -1123,6 +1131,7 @@ export function runSim(
       coreOverride?: number;   // per-shot core rate override (pellet-consolidation single bullet) — bypasses acrFor
       extraDmgUpPct?: number;  // per-shot Damage-Up addition (consolidation's window-only Attack Damage ▲%)
       pierceActive?: boolean;  // per-shot Pierce-tag (consolidation bullet) → pierceDamagePct goes live (dmg only, no double-hit)
+      chargeMultPct?: number;  // full-charge multiplier override when there is no swap to source it (delayed charge hit — snow-white's cannon); only read when charge:true
     }
   ) {
     const fb = fbEndFrame > frame;
@@ -1173,7 +1182,7 @@ export function runSim(
           (elemAdvInElement ? stat(u, 'elemAdvantageDamagePct', frame) : 0)) /
           100
       : 1;
-    const chargeMult = u.swap?.chargeMultPct ?? u.char.chargeMultiplier;
+    const chargeMult = opts.chargeMultPct ?? u.swap?.chargeMultPct ?? u.char.chargeMultiplier;
     // Collection items and Helm-style burst buffs scale by BASE charge damage
     // (chargeMult × pct); ordinary charge-damage buffs add flat percentage points.
     const baseCharge = chargeMult / 100;
@@ -1562,6 +1571,10 @@ export function runSim(
               atkPct: fdAtkPct,
               resolveFrame: frame + Math.round(e.delaySec * FPS),
               ...flavorOpts,
+              charge: e.charge === true,
+              chargeMultPct: e.chargeMultPct,
+              pierce: e.pierce === true,
+              rangeOk: e.rangeOk === true,
             });
             break;
           }
@@ -2236,8 +2249,12 @@ export function runSim(
         dealDamage(units[p.ownerIdx], p.atkPct, frame, {
           crit: p.crit,
           core: p.core,
-          charge: false,
-          noRange: true,
+          // a delayed full-charge cannon shot (snow-white) routes through the charge bucket, keeps
+          // its pierce tag, and gets the +30% range bonus; ordinary riders keep charge:false/noRange:true.
+          charge: p.charge === true,
+          chargeMultPct: p.chargeMultPct,
+          pierceActive: p.pierce === true || undefined,
+          noRange: !p.rangeOk,
           category: p.category,
           distributed: p.distributed,
           sustained: p.sustained,
