@@ -330,6 +330,22 @@ recalibration: for each dot unit, de-crit the calibrated base (÷~1.075, net-zer
 mechanism is right AND the graded fit holds — worth it mainly for crit-BUFF interactions + variance,
 which no current recording isolates. Knob stays for that future increment.
 
+**PHASE A RULING (2026-07-20, owner) — LEAVE IN PLACE (reaffirms HELD-default-off).** The kit-audit
+implementation plan (`docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A1) routed every
+DoT/rider crit-OFF gotcha here rather than flipping the engine. Owner ruling on A1: **leave the XCRIT/
+DOTCRIT gate default-off**; this stays a tracked future increment, NOT enacted in the Phase A pass. The
+gate is the shared cause of a cluster of kit-audit findings — two sub-populations to recalibrate together
+when the increment is finally taken:
+- **DoT-tick crit-OFF** (dominant-damage DoT units read under-credited): `ada` (grenade DoT), `mana`,
+  `raven`, `rosanna-chic-ocean` (all FRESH from the 2026-07-20 audit) plus the previously-tracked
+  `kind:dot` roster; interacting magnitude/delivery questions on `bready`, `elegg-boom-and-shock`, `privaty`.
+- **`extraHitDamagePct` function-rider crit-OFF** (hard-coded `crit:false` in the rider path): `modernia`
+  (Destroy Mode 2.24%), `nayuta` (Memory Incineration 530.46%), `neon-vision-eye` (Super Firepower 262.79%).
+Enactment remains gated on: (1) a focus-video crit-signature confirmation per rider (the maiden-solo
+×1.5 read is the template), AND (2) the DoT-roster de-crit recalibration (÷~1.075) so measured-DoT units
+(e.g. guillotine, popup-measured) are not double-counted. High blast radius ⇒ a dedicated increment in a
+fresh session, never a per-unit edit inside another pass.
+
 ### U14 — When do +50% Full Burst / +30% range apply to SKILL damage? (test framework built)
 Range is SETTLED: skill/rider/DoT damage NEVER gets the +30% range bonus (`noRange` universal; ein's
 feathers "get FB but not range"). The open question is FB (+50%). Current model = per-kit `noFb` flags
