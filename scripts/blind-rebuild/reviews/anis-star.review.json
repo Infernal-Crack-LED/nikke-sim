@@ -42,7 +42,7 @@
         "kitLine": "hasB1 Effect 2: Everyone's Star \u2014 re-enters Burst, changes to Stage 1, continuous",
         "status": "MODELED_BLOCK",
         "where": "skill1[3] passive\u2192self reenterStage stage:1 formation:hasB1",
-        "note": "Now uses real reenterStage mechanic (was a burstEligibility approximation)"
+        "note": "CORRECTED 2026-07-20: the block is INERT as authored — it carries a passive trigger, but the engine's only reenterStage consumer is the rotation stage-hold detector, which matches burstCast-triggered blocks exclusively (the effect handler is an explicit no-op). The paired-B1 re-entry does NOT function. Board-inert (only the tia pairing, deliberately excluded from validation), but the prior 'uses real reenterStage mechanic' claim was wrong."
       },
       {
         "kitLine": "On landing Full Charge attack, target: 120.13% of final ATK as additional damage",
@@ -121,7 +121,7 @@
       "source": "unmodeled",
       "text": "skill1 'Cancels Everyone's Star' / 'Cancels My Own Star' status-cancels dropped",
       "couldCauseGap": "neither",
-      "why": "Pure status bookkeeping; formation gating (atkPct/reenterStage) already represents the active swap, no DPS effect"
+      "why": "Pure status bookkeeping; formation gating (atkPct) represents the active swap (NOTE 2026-07-20: the reenterStage block itself is inert — passive trigger, not honored by the burstCast-only stage-hold detector), no DPS effect"
     },
     {
       "source": "unmodeled",
@@ -173,9 +173,9 @@
     },
     {
       "source": "note",
-      "text": "Everyone's-Star burst re-entry now uses real reenterStage (was burstEligibility approximation)",
+      "text": "Everyone's-Star burst re-entry authored as a passive-triggered reenterStage block — CORRECTED 2026-07-20: INERT (the stage-hold detector only honors burstCast triggers)",
       "couldCauseGap": "neither",
-      "why": "Resolved 2026-07-13; no longer an open approximation"
+      "why": "Board-inert today (tia pairing only, excluded from validation); fix = re-author under a burstCast stage-1 trigger or extend the detector (kit-audit plan 2026-07-20)"
     }
   ],
   "authorIntentSummary": "The author modeled Anis:Star as a formation-gated Burst-I Defender (patterned on Rapi:RH): noB1 'My Own Star' grants continuous self ATK 40.01% + team burst CDR 7.48s and unlocks the S2 caster-ATK 35.01% and burst self Attack Damage 35.2%; hasB1 'Everyone's Star' replaces those riders with real burst re-entry at Stage 1. The formation-independent core (team burst-gen 6%, full-charge 120.13% additional damage, Full-Burst Attack Damage 34% + Projectile Explosion 92.03%, Shooting Stars projectileExplosion dot, and the 0.7s charge-fix) is fully modeled with exact values. Known-not-faithful spots are all documented: defensive/AoE lines dropped (heal, DEF, Explosion Radius), the 'lower-DEF allies' projExpl target simplified to all allies, and the Max-HP grant kept only for SSOT completeness (offensively inert). The board is COLD (0.954, MAD 0.054) and the dedicated projExpl probe reading 0.868 points at the all-allies projExpl approximation as the most likely remaining gap source."

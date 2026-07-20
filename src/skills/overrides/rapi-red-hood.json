@@ -8,7 +8,8 @@
       "Attachable Projectile — Max Ammo: 1"
     ],
     "burst": [
-      "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)"
+      "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)",
+      "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)"
     ]
   },
   "skill1": [

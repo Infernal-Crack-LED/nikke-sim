@@ -24,7 +24,7 @@
         "kitLine": "Hit Rate \u25b2 98.18% for 3 round(s)",
         "status": "UNMODELED",
         "where": "unmodeled.skill1[1]",
-        "note": "Inert \u2014 hit rate does not affect damage in the sim engine. Kept in unmodeled for fidelity documentation."
+        "note": "UNMODELED (not encoded as a stat). CORRECTED 2026-07-20: the 'hit rate does not affect damage' premise is STALE \u2014 since CONE_DELTA (2026-07-19) hitRatePct feeds SG core rate via acrForHR; the in-mode effect is separately carried by the measured consolidation config. Kept in unmodeled for fidelity documentation."
       },
       {
         "kitLine": "Attack damage \u25b2 72% for 3 round(s)",
@@ -80,7 +80,7 @@
         "kitLine": "Hit Rate \u25b2 40.68% continuously",
         "status": "MODELED_BLOCK",
         "where": "skill2[1] effects[1]: hitRatePct 40.68, durationSec 10",
-        "note": "Inert \u2014 hit rate does not affect damage. Kept for fidelity. Same 10s approximation as ATK buff."
+        "note": "CORRECTED 2026-07-20: LIVE since CONE_DELTA (2026-07-19) \u2014 hitRatePct 40.68 lifts her SG core fraction during the team-FB window (HOT-direction contributor to the 1.115 residual). Kept for fidelity. Same 10s approximation as ATK buff."
       }
     ],
     "burst": [
@@ -119,9 +119,9 @@
     },
     {
       "source": "unmodeled",
-      "text": "Hit Rate \u25b2 98.18% (S1) and Hit Rate \u25b2 40.68% (S2) are inert in the sim",
-      "couldCauseGap": "neither",
-      "why": "Hit rate does not feed the damage formula. No gap impact."
+      "text": "Hit Rate \u25b2 98.18% (S1, unmodeled) and Hit Rate \u25b2 40.68% (S2, encoded) \u2014 CORRECTED 2026-07-20: the S2 40.68 is LIVE via CONE_DELTA (2026-07-19) and lifts SG core rate in the team-FB window; the S1 98.18 moves nothing only because it is not encoded",
+      "couldCauseGap": "HOT",
+      "why": "STALE premise corrected: hitRatePct feeds acrForHR for SG since CONE_DELTA. The live S2 40.68 raises sim damage during team FB \u2014 a HOT-direction contributor to the 1.115 residual."
     },
     {
       "source": "unmodeled",
