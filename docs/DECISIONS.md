@@ -25,15 +25,23 @@ lives. Newest first within each section.
     measurement. Measured observable > coarser datamined CD; 14.7 stays. Documented in her note.
   - **No change:** `snow-white` (already `interval:15`), `prika` (CD 0), `liter` (heal, damage-inert),
     `takina` (continuous `passive` buffs, no lapse).
-  - **DEFERRED to owner (data-provenance conflicts, NOT flipped):** `rosanna-chic-ocean` (new skill2 CD 30
-    vs a deliberate continuous-DoT "hard rule" encoding — implies 50% uptime, current is 100%) and
-    `sakura-bloom-in-summer` (new skill2 CD 30 directly contradicts her note's datamine finding of "no S2
-    CD; S1 force-casts once" — implies ~5× more DoT). Same species as the bready burst flag; needs a
-    source reconciliation before enacting.
+  - **`rosanna-chic-ocean` — LANDED (owner ruled the 30s CD is real).** S2 sustained DoT was ONE
+    `passive` `durationSec:999` (continuous, a deliberate but note-flagged-⚑2 "invented 100%-uptime"
+    encoding). Re-encoded `{interval, sec:30}` + `dot durationSec:15`. No force-cast in S1 → first fire
+    waits for the CD = **t=30** (owner ruling: force-cast → t=0, else t=CD). DoT windows [30-45]…[150-165]
+    = 5×15 = 75s (was 180s). Solo 41.763M→34.472M (−17.5%). MODEL_ONLY, regression byte-identical.
+  - **`sakura-bloom-in-summer` — LANDED (owner ruled the 30s CD is real; supersedes her note's earlier
+    "datamine has NO S2 CD" claim).** S1 "Forcefully uses Skill 2" → S2 first-fires at **t=0**, then
+    re-casts every 30s = 6×15s windows (90s uptime). Sakura Petals DoT = passive dur15 (t=0) + interval:30
+    dur15 (re-casts). Dancing Flower AD self-buff (engine passive buffs are always-on so it stays
+    time-averaged) 1.30→7.82 (15.64×90/180). Solo 40.165M→67.494M (+68%). MODEL_ONLY, regression
+    byte-identical. **Owner clarification (first-fire convention):** a "force-cast" skill fires at t=0; a
+    normal CD skill waits its first CD (t=CD).
   - **Burst-CD cross-check (roster sweep):** only 2 divergences of `skillCooldownsSec.burst` vs
     `burstCooldownSec` (both already modeled via `burstCooldownSec`; `.burst` unconsumed → no double-model):
-    **`bready`** `.burst=20` vs `40` — RESOLVED, owner: 40s is correct, `.burst=20` is the wrong source;
-    **`quiry`** `.burst=40` vs `60` — NEW, unresolved (owner/data question).
+    **`bready`** `.burst=20` vs `40` — owner: 40s correct, `.burst=20` is the wrong source; no change.
+    **`quiry`** `.burst=40` vs `60` — owner: **40s is correct**, `burstCooldownSec=60` is wrong → flagged
+    for a data-source fix at bakery-bot/sync (would change her rotation; not hand-patched here).
 
 - **(2026-07-20) Snow White `snow-white`'s burst cannon fires as a DELAYED charge hit, not a weaponSwap
   — LANDED (owner-ruled from the sw.MP4 footage).** Base `snow-white` (AR/Iron/B3, NOT
