@@ -34,6 +34,22 @@ popup value and back-derives whether the same-cast self-buff is in it (× the bu
 that measurement lands, NEITHER direction is enacted; the engine keeps its current (ordering-accidental)
 behavior. Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A2.
 
+### U21 — maxwell's "highest final ATK" buff recipient (A3, HELD 2026-07-20)
+**A3 landed `byFinalAtk` on 4 units but HELD `maxwell`** — her S1 grants atkPct 43.1 + chargeSpeed to the
+2 highest-FINAL-ATK allies on `fullBurstEnter`. Switching her to live-ATK ranking swings her only graded
+comp ("PG iron sweep" [d-killer-wife, `takina`, `milk-blooming-bunny`, `maxwell`, `liberalio`]): the +43.1%
+ATK lands on `takina` (Burst II — structurally the sole possible cause), pushing takina 0.988 OK → 1.280
+HOT. This is a **transient-snapshot artifact**: peak effective ATK in that comp is milk 446k > liberalio
+377k > takina 234k > maxwell 132k, so takina is NOT naturally top-2 — she only ranks up at maxwell's FB
+*instant* because milk's 446k (her own burst peak) is transiently at base then. Entangled with milk's known
+COLD (0.681, pierce package inert) under-model, so the ranking there is untrustworthy. **RESOLVER:** a
+maxwell-focus video reading which 2 allies actually receive her ATK/charge-speed buff icon at FB entry
+(and whether the real game snapshots instantaneously or over the window). Until then maxwell stays on
+STATIC ranking (status quo, no regression). NOTE when she lands: she'd be the first FB-enter atkPct final-ATK
+selector, activating a same-frame apply-ordering dependence (other FB-enter final-ATK selectors' ATK grants
+would then reorder her pick) — verify apply order at that time. Trail: DECISIONS 2026-07-20 A3,
+`docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A3.
+
 ### U19 — grave's burst-window over-model, exposed by the (faithful) timed-pierce primitive (2026-07-17)
 **Surfaced by the `gainPierce` primitive (engine-modeling-gaps fix #7).** The timed-pierce window lets
 "Gain Pierce for N sec" wake a unit's Pierce Damage ▲ buffs. **MECHANISM (owner-confirmed 2026-07-17):**

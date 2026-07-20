@@ -8,6 +8,31 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) "Highest/lowest FINAL ATK" ally-selectors rank by LIVE effectiveAtk — LANDED (kit-audit
+  Phase A3, 4 of 5 units).** The `alliesTopAtk`/`alliesLowestAtk` selectors ranked candidates by base
+  `staticAtk`, but several kits' PRIMARY game text says "highest/lowest **final** ATK" (final = live
+  buffed ATK). **Owner ruling:** implement, keyed strictly on the literal word "final" — selectors that
+  say "final ATK" rank by live `effectiveAtk` at the apply frame; `casterAtkPct` ("% of the skill user's
+  ATK", ~30 units incl. moran) AND plain "highest ATK" (no "final", e.g. `naga`) stay on static.
+  Encoded as an optional per-selector `byFinalAtk` flag (absent = static; byte-identical fallback proven
+  by a no-flag board-read == baseline). **Landed on the 4 board-neutral units** whose text says "final":
+  `alice`, `liberalio`, `miranda` (×2 selectors), `soda-twinkling-bunny`. Board net 7/11/21/23 unchanged;
+  the only drifts are `liberalio` correctly moving her "lowest final ATK B3" charge-speed from `milk-blooming-bunny`
+  (high final ATK) to `maxwell` (lowest, and never exceeds milk — stable idx tie-break), all full-burst
+  counts byte-identical. **`maxwell` HELD** (her `byFinalAtk` NOT set): faithful in principle but her
+  sole graded comp ("PG iron sweep") is a **transient-snapshot artifact** — her fullBurstEnter atkPct 43.1
+  top-2 pick lands on `takina` (Burst II, structurally proven the sole cause) only because at that instant
+  `milk-blooming-bunny`'s 446k ATK peak is transiently at base; entangled with milk's known COLD (0.681)
+  under-model, so it swings takina 0.988→1.280 with no way to validate the real recipient. HELD pending a
+  focus-video of who actually receives maxwell's buff (LOG outcome, evidence-proportionality). Also OUT of
+  scope: `guilty`'s "highest ATK" (no "final") duplicate-ATK line correctly stays static, but its basis bug
+  (sizes off the caster's OWN ATK, not the highest ally) is a separate `highestAllyAtkPct`-source fix.
+  **Scientific-method:** Fable pre-op APPROVED-WITH-REVISIONS (full-roster "final" sweep affirmed — only 6
+  simSupported units use the ranking selector; R1 flip-conditioned rotation invariant; R2 12 call sites),
+  post-op ACCEPT/HIGH, 2-of-2. verify.sh green. WATCH (non-blocking): `soda-twinkling-bunny`'s per-3-shot
+  re-rank can now oscillate the recipient mid-FB (same-caster-slot overwrite becomes load-bearing;
+  board-neutral today). Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A3, open-questions U21.
+
 - **(2026-07-19) Core-hit for accuracy-circle weapons is a δ-offset ("Rician") cone — LANDED LIVE
   (`CONE_DELTA`, default on).** Replaces the two confirmed bugs of the prior path — the flat
   `CORE_AUTOAIM = 0.55` cap (over-credits low-HR far, under-credits high-HR near) and the fractional
