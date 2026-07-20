@@ -19,10 +19,15 @@ lives. Newest first within each section.
     30-normal trigger; skill2 has no such clause). Re-encoded `{interval, sec:4}` from the datamined CD.
     Solo total 51.499M→50.142M (−2.6%; over-firing proxy at ~2.5s → true 4s). **MODEL_ONLY** — she is in
     no graded comp, regression byte-identical. ⚑ first-fire phase (t=4 vs t=0) unpinned.
-  - **`isabel` — reviewed, NOT snapped.** The handoff instructed snapping her measured DoT period 14.7→15
-    to match the CD. Refuted by frame math: 14.7 → 882f → 12 ticks/180s (the RUN-VALIDATED count); 15 →
-    900f → 12th tick lands at frame 10800, outside the 10800-frame loop → 11 ticks, contradicting the
-    measurement. Measured observable > coarser datamined CD; 14.7 stays. Documented in her note.
+  - **`isabel` — RE-ENCODED (owner-corrected).** Datamine confirms S2 "Pointed Feather" is a SINGLE hit
+    on the 15s CD — NOT a DoT (her only "45 sec" values are S1's three Marked-Target BUFFs: crit rate /
+    crit dmg / ATK, gated on burst). The override had modeled it as a `dot intervalSec:14.7` device (each
+    "tick" = one activation). Re-encoded faithfully as `passive flatDamage 170.58` (t=0 battle-start hit)
+    + `interval:15 flatDamage 170.58` (recurrences t=15…165) = 12 hits/180s. **Behavior-identical** (solo
+    A/B byte-for-byte at crit-off: 2.4610M, 12 hits, same per-hit), just correctly labeled as a CD-gated
+    single hit. Note the first-fire phase is load-bearing for the count: `interval:15` alone (first at
+    t=15) gives 11 (the 12th lands at t=180.000, the excluded final frame); the t=0 battle-start hit is
+    what reproduces the measured 12. MODEL_ONLY.
   - **No change:** `snow-white` (already `interval:15`), `prika` (CD 0), `liter` (heal, damage-inert),
     `takina` (continuous `passive` buffs, no lapse).
   - **`rosanna-chic-ocean` — LANDED (owner ruled the 30s CD is real).** S2 sustained DoT was ONE
