@@ -228,7 +228,6 @@ export const COMPS: Comp[] = [
     slugs: ['d-killer-wife', 'naga', 'modernia', 'chisato', 'ein'],
     boss: 'Wind',
     focus: 'modernia',
-    modes: { naga: 'no shielder' },
     real: { 'd-killer-wife': 59_028_536, naga: 67_268_906, modernia: 285_422_521, chisato: 273_624_248, ein: 121_442_400 },
   },
   {
