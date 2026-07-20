@@ -209,7 +209,7 @@ export type EffectDef =
   // the belt to 0, forces an immediate reload (fires lastBullet triggers, same as firing dry).
   // The inverse of instantReload. e.g. grave's Prediction-end forced reload, asuka-wille, jill.
   | { kind: 'consumeAmmo'; fraction?: number }
-  | { kind: 'gainPierce'; durationSec: number }               // timed "Gain Pierce for N sec": the target's attacks count as Pierce-tagged for the window, so its (and teammates') Pierce Damage ▲ buffs go live during it — for a kit whose pierce is temporary, not the static per-unit `hasPierce` flag
+  | { kind: 'gainPierce'; durationSec?: number }              // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and teammates') Pierce Damage ▲ buffs go live. durationSec = timed "for N sec" window; ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't step-gate)
   | { kind: 'instantReload'; fraction?: number }              // refill magazine (fraction of max, default full)
   | { kind: 'stun'; durationSec: number }                     // target can't fire/charge/reload (bursting unaffected)
   | {

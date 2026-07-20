@@ -1747,12 +1747,14 @@ export function runSim(
           }
           break;
         case 'gainPierce':
-          // timed "Gain Pierce for N sec": mark the target Pierce-tagged for the window
-          // so its (and teammates') Pierce Damage ▲ buffs go live only during it.
+          // "Gain Pierce": mark the target Pierce-tagged so its (and teammates') Pierce
+          // Damage ▲ buffs go live. durationSec present = timed "for N sec" window; absent =
+          // continuous/permanent (step-gated pierce turned on at a stack threshold — ade-agent-bunny
+          // on hitCount:10, staying on thereafter while she keeps firing).
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             t.pierceUntilFrame = Math.max(
               t.pierceUntilFrame,
-              frame + Math.round(e.durationSec * FPS)
+              e.durationSec != null ? frame + Math.round(e.durationSec * FPS) : Number.MAX_SAFE_INTEGER
             );
           }
           break;

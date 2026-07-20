@@ -116,7 +116,7 @@
       },
       "caveats": [
         "skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)",
-        "skill2: 'Spy Lens at max stacks' ATK +16% now activates as a faithful STEP via hitCount count:10 (2026-07-17, theme 3) — Spy Lens gains 1 stack per full-charge SR hit, so the 10th hit (~16s incl. one reload) reaches max and the buff turns on continuously (permanent, no duration = continuous fire keeps stacks maxed). Replaces the always-on-from-t=0 encoding (over-credited the ~16s onset). NOTE: the hasPierce top-level flag (also Spy-Lens-max-gated) still applies from t=0 — a boolean flag can't be step-gated, a residual structural gap. ⚑ count:10 rests on 1 stack/full-charge + the ⚑ SR cadence.",
+        "skill2: 'Spy Lens at max stacks' ATK +16% now activates as a faithful STEP via hitCount count:10 (2026-07-17, theme 3) — Spy Lens gains 1 stack per full-charge SR hit, so the 10th hit (~16s incl. one reload) reaches max and the buff turns on continuously (permanent, no duration = continuous fire keeps stacks maxed). Replaces the always-on-from-t=0 encoding (over-credited the ~16s onset). [2026-07-20, A4 step-gated pierce] the PIERCE tag is now ALSO step-gated: the top-level hasPierce:true flag is removed and a duration-less `gainPierce` effect rides the same hitCount:10 trigger → pierceUntilFrame → ∞ at the 10th full-charge hit and stays on (continuous fire keeps stacks maxed). This closes the prior residual gap (a boolean flag couldn't be step-gated); her own 18.36+10.13 Pierce-Damage self-feed and teammates' pierce buffs now correctly go live only after Spy Lens maxes (~16s), not from t=0. ⚑ count:10 rests on 1 stack/full-charge + the ⚑ SR cadence.",
         "skill2: team Pierce Damage +18.36% rides the same shotFired full-charge proxy (⚑ unmeasured)",
         "cadence: SR bolt-gap (22f) + chargeFrames 60 + reloadFrames 141 are datamine defaults — verify autofire/rounds-per-minute/reload from video (⚑ unmeasured)"
       ],
@@ -124,12 +124,12 @@
         "records": [
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0007
+            "ratio": 0.9897
           }
         ],
         "n": 1,
-        "mean": 1.0007,
-        "mad": 0.0007,
+        "mean": 0.9897,
+        "mad": 0.0103,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3285,7 +3285,7 @@
       },
       "caveats": [
         "skill2: the 144.73% damage line fires on a 15s internal cooldown (owner-ruled 2026-07-20); ⚑ first-fire phase (t=15 vs t=0) and whether the line is FB-scoped are unmeasured — recipe: scan sw.MP4 for 144.73%-class popups (appearance outside FB windows falsifies FB-scoping; first-popup time pins the phase)",
-        "burst: full-charge coefficient is 1499.5% = 499.5 + 1000 (owner-ruled ADDITIVE 2026-07-20; chargeMultPct=300.2002 is a DERIVED constant — recompute if damagePct changes) — ⚑⚑ CONTESTED: the sw.MP4 footage pass (charge UI ramps to '1000%'; 6 popups ~630 ATK-multiples) reconciles only with the ×10 4995% read — OWNER TO RE-RULE (see note)",
+        "burst: full-charge coefficient is 4995% = 499.5 × 10 (chargeMultPct 1000; owner re-ruled ×10 from the sw.MP4 footage 2026-07-20 — charge UI reads '1000%' like an SR's '250%', 6 popups ~630 ATK-multiples reconcile only with ×10). The earlier additive 1499.5% reading is set aside.",
         "burst: footage shows her AR KEEPS FIRING during the ~5s cannon charge (cannon materializes only for the shot) — inexpressible with weaponSwap, sim loses ~5s AR fire per window; likely her main residual COLD driver (⚑)",
         "burst: exactly 1 cannon shot per burst then she resumes her AR (owner-ruled maxShots:1); ⚑ the swap-end does not reset ammo so AR resumes at 0 ammo → 111f reload first — recipe: does the AR resume firing immediately post-nuke in sw.MP4?",
         "burst: swapped shot is Pierce-tagged (weaponSwap.hasPierce; Pierce Damage ▲ feeds the swap shot's Damage-Up bucket); the pierce core+body double-hit stays unmodeled (PIERCE_CORE_DOUBLE=false, multipart-scope only)"
@@ -3294,24 +3294,24 @@
         "records": [
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 0.4519
+            "ratio": 0.7929
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.4534
+            "ratio": 0.7932
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 0.5032
+            "ratio": 0.8812
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.4649
+            "ratio": 0.8142
           }
         ],
         "n": 4,
-        "mean": 0.4684,
-        "mad": 0.5316,
+        "mean": 0.8204,
+        "mad": 0.1796,
         "band": ">15%",
         "temp": "COLD ▼"
       }

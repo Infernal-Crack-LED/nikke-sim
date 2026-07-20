@@ -8,6 +8,19 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) Step-gated pierce (ade-agent-bunny) — LANDED (kit-audit Phase A4 primitive).** The
+  `gainPierce` effect's `durationSec` is now OPTIONAL — absent = continuous/permanent (`pierceUntilFrame`
+  → ∞), mirroring the `shield` effect's optional-duration convention. This lets pierce turn on at a STACK
+  THRESHOLD and stay on, which a boolean `hasPierce` flag can't express. ade-agent-bunny's kit gains Pierce
+  continuously "only if Spy Lens is at max stacks" (10 full-charge hits ≈ 16s): her top-level
+  `hasPierce:true` (applied from t=0) is replaced by a duration-less `gainPierce` riding the SAME
+  `hitCount:10` trigger her ATK ▲16% already used — closing the documented residual gap (over-credited the
+  first ~16s ≈ 9% of the fight, where her 18.36+10.13 Pierce-Damage self-feed and teammates' pierce buffs
+  fired before Spy Lens maxed). No tuned value; faithful onset. Board: ade-agent-bunny only, 1.001→~0.990
+  (isolated regression drift 1.10% down, her own damage; no comp-mate moved — the pierce TAG is per-unit).
+  verify.sh green. Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A4 (swap-scoped /
+  step-gated pierce), ade-agent-bunny override caveat.
+
 - **(2026-07-20) Wipe-Out area-hit ATK buff (d-killer-wife) is GATED on the Wipe Out status + core —
   LANDED (kit-audit Phase A4 primitive, owner ruling).** New engine vocabulary: a `wipeOut` effect
   opens a global boss-status window (like `fbEndFrame`) and a `requiresWipeOut` block gate reads it
