@@ -27,11 +27,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±15%": 11,
+      "±15%": 10,
       "±3% ✓": 7,
-      "±8%": 10,
-      ">15%": 12,
-      "±5%": 4
+      "±8%": 7,
+      "±5%": 7,
+      ">15%": 14
     }
   },
   "units": {
@@ -329,11 +329,11 @@
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9355
+            "ratio": 1.011
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9281
+            "ratio": 1.0015
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -341,9 +341,9 @@
           }
         ],
         "n": 12,
-        "mean": 0.9542,
-        "mad": 0.0542,
-        "band": "±8%",
+        "mean": 0.9666,
+        "mad": 0.0439,
+        "band": "±5%",
         "temp": "COLD ▼"
       }
     },
@@ -660,20 +660,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.2313
+            "ratio": 1.2376
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.2334
+            "ratio": 1.2339
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.1412
+            "ratio": 1.1088
           }
         ],
         "n": 3,
-        "mean": 1.202,
-        "mad": 0.202,
+        "mean": 1.1934,
+        "mad": 0.1934,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -883,11 +883,27 @@
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
             "ratio": 1.0553
+          },
+          {
+            "comp": "C-SW control (neutral, focus snow-white)",
+            "ratio": 1.0485
+          },
+          {
+            "comp": "C-Helm control (neutral, focus helm)",
+            "ratio": 0.9838
+          },
+          {
+            "comp": "C-LM control (neutral, focus little-mermaid)",
+            "ratio": 1.0387
+          },
+          {
+            "comp": "C-Crown control (neutral, focus crown)",
+            "ratio": 1.0093
           }
         ],
-        "n": 12,
-        "mean": 1.0279,
-        "mad": 0.0499,
+        "n": 16,
+        "mean": 1.026,
+        "mad": 0.0445,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -922,40 +938,36 @@
         ],
         "skill2": [],
         "burst": [
-          "Inflicts Wipe Out on the target for 10 sec.",
-          "■ Activates when allies' normal attack hits a certain area of the target afflicted with Wipe Out. Affects allies.",
-          "Buff takes effect depending on the area hit."
+          "Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats)."
         ]
       },
       "caveats": [
-        "burst: unparsed effect \"Inflicts Wipe Out on the target for 10 sec.\"",
-        "burst: unparsed effect \"Buff takes effect depending on the area hit.\"",
         "burst: unrecognized target \"allies\" — applied to all allies",
         "skill1: Full Burst Pierce Damage ▲13.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
         "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
-        "burst: the Wipe Out area-hit riders are modeled ungated (they fire on this unit's own hits via hitCount 1, not on allies hitting a Wipe Out-afflicted target) — buff uptime is over-credited whenever she is firing outside her 10s post-burst Wipe Out windows",
+        "burst: [FIXED 2026-07-20, A4 Wipe-Out primitive] the body-branch ATK buff (casterAtkPct 12.19%, 'Allies that hit the body') is now GATED on the Wipe Out status: her burst inflicts a wipeOut effect (10s window) and the buff fires at burstCast for that 10s window with requiresWipeOut + requiresCore (core-only proxy). This replaces the prior ungated hitCount:1 model that ran ~permanently (over-credited team ATK outside the 10s windows). Faithful to '≈71% uptime = 10s Wipe Out of a ~14s rotation'; no tuned value (12.19 unchanged). TODO PARTS: the parts branch 'Allies that hit parts → coreDamagePct 16.26%' still needs destructible-part modeling (currently core is the only modelable 'area'); wire it as requiresWipeOut + a parts-hit trigger when parts enter scope.",
         "burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1)."
       ],
       "board": {
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.0305
+            "ratio": 0.9914
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9127
+            "ratio": 0.8846
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0455
+            "ratio": 0.987
           }
         ],
         "n": 3,
-        "mean": 0.9962,
-        "mad": 0.0544,
-        "band": "±8%",
-        "temp": "OK  ·"
+        "mean": 0.9544,
+        "mad": 0.0456,
+        "band": "±5%",
+        "temp": "COLD ▼"
       }
     },
     "delta-ninja-thief": {
@@ -1192,12 +1204,12 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9357
+            "ratio": 0.8997
           }
         ],
         "n": 3,
-        "mean": 0.8052,
-        "mad": 0.1948,
+        "mean": 0.7932,
+        "mad": 0.2068,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1346,20 +1358,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.168
+            "ratio": 1.1709
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1608
+            "ratio": 1.1623
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.2078
+            "ratio": 1.1972
           }
         ],
         "n": 3,
-        "mean": 1.1789,
-        "mad": 0.1789,
+        "mean": 1.1768,
+        "mad": 0.1768,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -1501,11 +1513,27 @@
           {
             "comp": "T8 iron-weak (boss Electric)",
             "ratio": 1.0353
+          },
+          {
+            "comp": "C-SW control (neutral, focus snow-white)",
+            "ratio": 1.0168
+          },
+          {
+            "comp": "C-Helm control (neutral, focus helm)",
+            "ratio": 0.9908
+          },
+          {
+            "comp": "C-LM control (neutral, focus little-mermaid)",
+            "ratio": 1.0066
+          },
+          {
+            "comp": "C-Crown control (neutral, focus crown)",
+            "ratio": 1.0483
           }
         ],
-        "n": 5,
-        "mean": 1.0198,
-        "mad": 0.0277,
+        "n": 9,
+        "mean": 1.0179,
+        "mad": 0.0244,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -1618,20 +1646,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0297
+            "ratio": 1.0378
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0325
+            "ratio": 1.0371
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0645
+            "ratio": 1.0492
           }
         ],
         "n": 3,
-        "mean": 1.0422,
-        "mad": 0.0422,
+        "mean": 1.0414,
+        "mad": 0.0414,
         "band": "±5%",
         "temp": "HOT ▲"
       }
@@ -1761,16 +1789,16 @@
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.1872
+            "ratio": 1.1783
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.8884
+            "ratio": 0.8923
           }
         ],
         "n": 4,
-        "mean": 0.9921,
-        "mad": 0.1015,
+        "mean": 0.9908,
+        "mad": 0.0983,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -1860,11 +1888,27 @@
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
             "ratio": 1.0731
+          },
+          {
+            "comp": "C-SW control (neutral, focus snow-white)",
+            "ratio": 1.1193
+          },
+          {
+            "comp": "C-Helm control (neutral, focus helm)",
+            "ratio": 1.0848
+          },
+          {
+            "comp": "C-LM control (neutral, focus little-mermaid)",
+            "ratio": 1.1106
+          },
+          {
+            "comp": "C-Crown control (neutral, focus crown)",
+            "ratio": 1.1114
           }
         ],
-        "n": 4,
-        "mean": 1.0967,
-        "mad": 0.0967,
+        "n": 8,
+        "mean": 1.1016,
+        "mad": 0.1016,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2120,7 +2164,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6268
+            "ratio": 0.6467
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -2128,8 +2172,8 @@
           }
         ],
         "n": 2,
-        "mean": 0.9251,
-        "mad": 0.2984,
+        "mean": 0.9351,
+        "mad": 0.2884,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2242,12 +2286,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6811
+            "ratio": 0.6529
           }
         ],
         "n": 1,
-        "mean": 0.6811,
-        "mad": 0.3189,
+        "mean": 0.6529,
+        "mad": 0.3471,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2382,13 +2426,13 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8679
+            "ratio": 0.8338
           }
         ],
         "n": 1,
-        "mean": 0.8679,
-        "mad": 0.1321,
-        "band": "±15%",
+        "mean": 0.8338,
+        "mad": 0.1662,
+        "band": ">15%",
         "temp": "COLD ▼"
       }
     },
@@ -2490,18 +2534,21 @@
           "Affects self. Gains Pierce for 10 sec."
         ]
       },
+      "caveats": [
+        "skill1/burst: shield-gated lines (coreDamagePct 85.17, casterAtkPct 31.02) fire only off REAL shield events/state (owner-ruled default-off 2026-07-20) — uptime inherits the shielder's shield cadence, unmeasured vs in-game (⚑)"
+      ],
       "board": {
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0797
+            "ratio": 1.0263
           }
         ],
         "n": 1,
-        "mean": 1.0797,
-        "mad": 0.0797,
-        "band": "±8%",
-        "temp": "HOT ▲"
+        "mean": 1.0263,
+        "mad": 0.0263,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "nayuta": {
@@ -2638,24 +2685,24 @@
         "burst": []
       },
       "caveats": [
-        "skill2: Max Ammo +5 rounds is ALL-allies in-kit; modeled self-only as maxAmmoPct 55.56 (engine has no flat per-unit ammo) — teammates' +5 rounds unmodeled (⚑)",
+        "skill2: Max Ammo +5 rounds now modeled kit-literal (maxAmmoFlat 5, ALL allies, 10s — enacted 2026-07-20; a focused-SG-teammate mag-length read remains the nice-to-have confirmation ⚑)",
         "burst: Hit Rate ▲ (13.93% SG-allies /10s, 11.61% allies /30s) modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19): feeds acrForHR core-hit fraction for AR/SMG/SG recipients (MG/SR/RL keep the flat table); in-game magnitude unmeasured (⚑)",
-        "burst: the 11.61%/19.36% block requires a same-squad ally (Blanc) on the battlefield — engine has no squad gate, modeled un-gated; partsDamagePct is inert vs the partless boss but the Hit Rate half is LIVE via CONE_DELTA, so the missing gate now over-credits teams without Blanc (⚑)"
+        "burst: the 11.61%/19.36% block is gated on a same-squad ally in the team (blanc or rouge — owner-ruled 2026-07-20, teamHas slug gate); inert in comps without one"
       ],
       "board": {
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.1036
+            "ratio": 1.1034
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1348
+            "ratio": 1.1276
           }
         ],
         "n": 2,
-        "mean": 1.1192,
-        "mad": 0.1192,
+        "mean": 1.1155,
+        "mad": 0.1155,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2813,12 +2860,12 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.099
+            "ratio": 1.091
           }
         ],
         "n": 2,
-        "mean": 1.1398,
-        "mad": 0.1398,
+        "mean": 1.1358,
+        "mad": 0.1358,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2879,13 +2926,13 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9906
+            "ratio": 0.9841
           }
         ],
         "n": 5,
-        "mean": 0.9717,
-        "mad": 0.0293,
-        "band": "±3% ✓",
+        "mean": 0.9704,
+        "mad": 0.0306,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -3197,12 +3244,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.2013
+            "ratio": 1.1834
           }
         ],
         "n": 2,
-        "mean": 1.042,
-        "mad": 0.1592,
+        "mean": 1.0331,
+        "mad": 0.1503,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -3214,7 +3261,7 @@
       "class": "Attacker",
       "kitParse": {
         "status": "authored",
-        "provenance": "parser-baseline",
+        "provenance": "hand-authored",
         "date": "2026-07-16",
         "findings": [
           "S2a 144.73% was materialized as passive firing ~1x/fight (inert) -> now shotFired+swapGate (~5x/fight); S2b crit fbGate; burst charge-cannon 4995%/full-charge (1000% of 499.5% base). Pierce swap-scoped (unmodeled, no swap-pierce vocab)"
@@ -3234,16 +3281,40 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [],
-        "burst": [
-          "Additional Effect: Pierce"
-        ]
+        "burst": []
       },
       "caveats": [
-        "skill2: the 144.73% line's trigger is INVENTED (kit text has no 'Activates when…' clause) — modeled as one proc per full-charge shot of the burst weapon swap; unmeasured ⚑",
-        "burst: swap shot economy is an unmeasured estimate — engine yields exactly 1 full-charge shot (4995%) per burst window; a 2nd shot (charge-speed comps) is not expressible (engine zeroes charge speed for swap cadences) ⚑",
-        "burst: 'Additional Effect: Pierce' unmodeled — pierce is swap-scoped and the schema only has always-on hasPierce; potential core+body double-hit on the nuke is missing ⚑"
+        "skill2: the 144.73% damage line fires on a 15s internal cooldown (owner-ruled 2026-07-20); ⚑ first-fire phase (t=15 vs t=0) and whether the line is FB-scoped are unmeasured — recipe: scan sw.MP4 for 144.73%-class popups (appearance outside FB windows falsifies FB-scoping; first-popup time pins the phase)",
+        "burst: full-charge coefficient is 1499.5% = 499.5 + 1000 (owner-ruled ADDITIVE 2026-07-20; chargeMultPct=300.2002 is a DERIVED constant — recompute if damagePct changes) — ⚑⚑ CONTESTED: the sw.MP4 footage pass (charge UI ramps to '1000%'; 6 popups ~630 ATK-multiples) reconciles only with the ×10 4995% read — OWNER TO RE-RULE (see note)",
+        "burst: footage shows her AR KEEPS FIRING during the ~5s cannon charge (cannon materializes only for the shot) — inexpressible with weaponSwap, sim loses ~5s AR fire per window; likely her main residual COLD driver (⚑)",
+        "burst: exactly 1 cannon shot per burst then she resumes her AR (owner-ruled maxShots:1); ⚑ the swap-end does not reset ammo so AR resumes at 0 ammo → 111f reload first — recipe: does the AR resume firing immediately post-nuke in sw.MP4?",
+        "burst: swapped shot is Pierce-tagged (weaponSwap.hasPierce; Pierce Damage ▲ feeds the swap shot's Damage-Up bucket); the pierce core+body double-hit stays unmodeled (PIERCE_CORE_DOUBLE=false, multipart-scope only)"
       ],
-      "board": null
+      "board": {
+        "records": [
+          {
+            "comp": "C-SW control (neutral, focus snow-white)",
+            "ratio": 0.4519
+          },
+          {
+            "comp": "C-Helm control (neutral, focus helm)",
+            "ratio": 0.4534
+          },
+          {
+            "comp": "C-LM control (neutral, focus little-mermaid)",
+            "ratio": 0.5032
+          },
+          {
+            "comp": "C-Crown control (neutral, focus crown)",
+            "ratio": 0.4649
+          }
+        ],
+        "n": 4,
+        "mean": 0.4684,
+        "mad": 0.5316,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
     },
     "snow-white-heavy-arms": {
       "name": "Snow White: Heavy Arms",
@@ -3441,12 +3512,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9879
+            "ratio": 0.9755
           }
         ],
         "n": 1,
-        "mean": 0.9879,
-        "mad": 0.0121,
+        "mean": 0.9755,
+        "mad": 0.0245,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }

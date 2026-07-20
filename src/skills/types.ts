@@ -186,6 +186,7 @@ export type EffectDef =
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
   | { kind: 'heal'; ticks?: number; intervalSec?: number }    // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
   | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
+  | { kind: 'wipeOut'; durationSec: number }                  // inflicts a "Wipe Out" status on the boss for durationSec — opens a global window read by the requiresWipeOut block gate (d-killer-wife's burst: her area-hit ATK/core riders are earnable only while the target is Wipe-Out-afflicted). TODO parts: the parts-hit branch (coreDamagePct) needs destructible-part modeling; core-only for now.
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
       atkPct: number;    // per charge, % of caster's final ATK at release time
@@ -274,6 +275,11 @@ export interface Block {
   // this unit" lines evaluated at cast time (naga's burst 31.02% — owner-ruled default-off
   // 2026-07-20). Distinct from the `shielded` TRIGGER (fires at shield application).
   requiresShielded?: boolean;
+  // wipe-out-state gate, checked when the trigger fires: the block only activates while the
+  // boss carries the "Wipe Out" status (a 'wipeOut' effect's window). d-killer-wife's burst
+  // area riders — "when allies hit an area of the Wipe-Out-afflicted target". Composes with
+  // requiresCore (core-only proxy; the parts-hit branch awaits destructible-part modeling).
+  requiresWipeOut?: boolean;
   // boss-element gate, checked when the trigger fires: the block only activates
   // when the fight's boss element matches (e.g. helm-aquamarine's burst "when
   // attacking an Electric Code target → +164.83%"; brid-silent-track's FB-enter

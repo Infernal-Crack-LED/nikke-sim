@@ -8,6 +8,27 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U22 — Snow White (`snow-white`) "Full Charge Damage: 1000% of damage": ADDITIVE (owner ruling) vs ×10 MULTIPLICATIVE (footage) — CONTESTED 2026-07-20
+The owner ruled the 1000% ADDITIVE ("part of the normal charge damage bucket" → full-charge coefficient
+499.5 + 1000 = 1499.5% of ATK; encoded as the derived chargeMultPct 300.2002, landed). The SAME-DAY
+control-footage pass (sw.MP4, all 6 of her cannon windows read) contradicts additive on two independent
+axes: (a) the in-game charge readout ramps 929→966→**"1000%"** at the shot — the charge UI displays the
+full-charge MULTIPLIER, exactly as an SR displays 250%; (b) the six nuke popups (50.5M / 54.1M / 45.1M /
+59.5M ×2 / ~45.1M — every one labeled CORE HIT + PIERCE + crit-starburst, two exact value-repeats) sit at
+~630 sheet-ATK-multiples, reconcilable with the ×10 4995% class × FB × core × crit × live buffs but ~3-4×
+above anything the additive class can produce. Third corroboration: the control-board A/B — additive
+encoding reads **0.452–0.503 COLD** (sim ~194M vs real 385–429M) across all four control runs; the old ×10
+encoding read 0.696–0.777. Single-recording evidence, so the landed additive encoding was LEFT STANDING
+per evidence-proportionality — **OWNER TO RE-RULE**. Related NEW observed gap (same footage): she KEEPS
+FIRING HER AR during the ~5s cannon charge (the cannon materializes only for the shot; the cast animation
+precedes the FB banner by ~1-2s) — the engine's weaponSwap cannot fire the base weapon while a swap charge
+runs, so the sim silently loses ~5s of AR fire per burst window (~30s/fight; her plausible residual COLD
+driver even under ×10). Candidate faithful re-encode: drop the weaponSwap, model the cannon as a
+delaySec≈5.5 charge-bucket hit while the AR keeps firing — needs an owner ruling on charge-buff
+composition. Trail: `src/skills/overrides/snow-white.json` note (footage-pass appendix),
+`docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §snow-white, DECISIONS 2026-07-20
+(control comps wired).
+
 ### U20 — Does a unit's OWN same-cast self-buff apply to its OWN cast-instant burst damage? (Phase A A2, DEFERRED 2026-07-20)
 **Owner ruling 2026-07-20: DEFER A2 entirely — blocked on an isolating measurement.** The kit-audit plan
 (§A2) proposed a "same-cast self-buff guard": exclude a unit's own same-`burstCast` self-buff from its own

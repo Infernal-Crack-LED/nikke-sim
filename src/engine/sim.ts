@@ -1036,6 +1036,10 @@ export function runSim(
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
   const STAGE_WINDOW_FRAMES = 600; // burst_duration 1000 (=10s) standard
   let fbEndFrame = -1;
+  // "Wipe Out" status window on the boss (0/-1 = none): opened by a 'wipeOut' effect
+  // (d-killer-wife's burst) and read by the requiresWipeOut block gate. One global boss →
+  // one window (like fbEndFrame), not a per-unit status.
+  let wipeOutUntilFrame = -1;
   let pendingFbExtendSec = 0;
   let rotationCasters: number[] = [];
   let fullBursts = 0;
@@ -1396,6 +1400,10 @@ export function runSim(
     // 31.02%; owner-ruled default-off/requires-a-shielder 2026-07-20). No shielder in the
     // comp → no shield events → the block never fires.
     if (block.requiresShielded && owner.shieldedUntilFrame <= frame) return;
+    // wipe-out-state gate: "when allies hit an area of the Wipe-Out-afflicted target"
+    // (d-killer-wife's burst area riders) fires only while the boss carries the Wipe Out
+    // status. Composes with requiresCore (core-only proxy until destructible parts exist).
+    if (block.requiresWipeOut && wipeOutUntilFrame <= frame) return;
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
@@ -1665,6 +1673,12 @@ export function runSim(
               if (rb.trigger.kind === 'shielded') applyBlock(t.idx, rb, ri, frame);
             });
           }
+          break;
+        case 'wipeOut':
+          // inflict "Wipe Out" on the boss: open the global window read by requiresWipeOut.
+          // One boss → one window (max-extends like the shield window). Target is implicitly
+          // the enemy; no per-part state (core-only proxy until destructible parts exist).
+          wipeOutUntilFrame = Math.max(wipeOutUntilFrame, frame + Math.round(e.durationSec * FPS));
           break;
         case 'storedHit': {
           const entry = owner.storedHits.get(key) ?? {

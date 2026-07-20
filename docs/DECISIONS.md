@@ -8,6 +8,25 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) Wipe-Out area-hit ATK buff (d-killer-wife) is GATED on the Wipe Out status + core —
+  LANDED (kit-audit Phase A4 primitive, owner ruling).** New engine vocabulary: a `wipeOut` effect
+  opens a global boss-status window (like `fbEndFrame`) and a `requiresWipeOut` block gate reads it
+  (mirrors the `shield`/`requiresShielded` pattern). d-killer-wife's burst now inflicts Wipe Out (10s)
+  and her body-branch ATK buff (`casterAtkPct` 12.19%, "Allies that hit the body") fires at burstCast
+  for that 10s window with `requiresWipeOut` + `requiresCore` — replacing the prior ungated `hitCount:1`
+  model that ran ~permanently (documented over-credit, old caveat: "buff uptime over-credited whenever
+  she is firing outside her 10s Wipe Out windows"). **No tuned value** — the datamined 12.19 is unchanged;
+  only its uptime is corrected to ~71% (10s Wipe Out of a ~14s rotation). **Owner ruling:** model the
+  Wipe-Out area-hit as CORE-only for now (core is the only modelable "area" on the partless boss); the
+  **parts branch** ("Allies that hit parts → coreDamagePct 16.26%") stays a documented **TODO — needs
+  destructible-part modeling** (wire as `requiresWipeOut` + a parts-hit trigger when parts enter scope).
+  **Board (isolated A/B, faithful>fit, mixed as expected — removing an over-credit cools HOT recipients
+  and unmasks COLD ones):** cools naga 1.080→1.026, chisato 1.141→1.109, d-killer-wife 1.046→0.987 /
+  1.030→0.991, jill/grave/quency-escape-queen slightly; nudges the already-COLD modernia 0.868→0.834, ein 0.936→0.900,
+  maxwell colder (their true coldness was masked by the spurious team-ATK boost). Regression footprint
+  confined to her 3 comps; snapshot updated, verify.sh green. Trail:
+  `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A4 (Wipe-Out primitive), d-killer-wife override caveat.
+
 - **(2026-07-20) Naga's shield-gated lines are DEFAULT-OFF and ride the REAL shield machinery — LANDED
   (kit-audit Phase C, owner ruling).** The old encoding was a user-selected "with shielder"/"no shielder"
   mode (and the later "auto" modes[0] default was a no-op string that silently left the shield blocks
