@@ -128,3 +128,108 @@ export function pelletLandFrac(hitFrac: number, sigma: number, profileScale = 1)
 export function pelletCoreFrac(coreDpxBand: number, sigma: number): number {
   return CORE_AUTOAIM * rayleighWithin(coreDpxBand / 2, sigma);
 }
+
+// ── δ-offset ("Rician") cone — the CONE_DELTA enactment model (owner-gated) ───────────────────────
+// docs/handoffs/2026-07-19-core-geometry-implementation-plan.md §1 (basis:
+// 2026-07-19-geometry-campaign-findings.md). REPLACES the two confirmed bugs of the live path — the
+// flat `CORE_AUTOAIM=0.55` cap (structurally wrong: over-credits low-HR far, under-credits high-HR
+// near) and the fractional reticle floor — with ONE mechanism: shots land on an isotropic Gaussian
+// cone (σ from the accuracy circle at K_SIGMA) whose CENTER sits δ px off the true core (the auto-aim
+// never nails the ~1px center); a shot cores iff it lands within the band core radius ⇒ the Rician
+// CDF. δ shrinks with Hit Rate (auto-aim tightens onto the core), which is the work the flat cap
+// crudely approximated. The measured campaign (blanc far spawn re-count 0.111[0.073,0.165] vs δ+σ
+// prediction 0.103, δ-only 0.232 and centered 0.253 EXCLUDED) selects this family; the drawn reticle
+// is decorative and anchors nothing here.
+//
+// FROZEN 2026-07-19 (owner-locked) — parameter-freeze refit + Fable pre-registration
+// (docs/handoffs/2026-07-19-cone-param-freeze-prereg.md; reproducible in scripts/cone-refit.ts).
+// δ0 fit by binomial MLE on the method-tagged cell set: AR spawn-confirmed (scarlet COUNT-1 near .25 /
+// far .08; blanc far .111; Label HR23), SMG on the CLEAN chisato near cells (.294 HR0 / .365 HR22 —
+// biased-high quency/LM near cells deliberately NOT used to set the offset), SG on dorothy HR0 + noir
+// ▲60/▲98. K_SIGMA (2.53) held; CIRCLE_PX_K and the datamined per-weapon scale are measured constants,
+// never refit (hard-constraint #3). σ-law (H, s, S_FLOOR): H and s pinned so the cone saturates near-core
+// by the owner-attested jill ▲80 / noir ▲98 cells; S_FLOOR only bites at HR>~90 (saturation mechanism).
+// ⚑ KNOWN, BOUNDED: the shared σ (fixed by the wide 110px SMG circle) over-credits SMG far/mid core
+//   (the datamined circle width is not a free param) — same direction as the live AR-far over-credit,
+//   small damage weight; watched by the board-A/B stop-condition, re-reviewable later.
+// ⚑ NOT SUPPORTED: Hit Rate > 98 (owner-accepted; no board comp reaches it — σ-floor extrapolation only).
+// σ-shrink is PER-WEAPON (owner 2026-07-19, board-driven): a single shared shrink could not both
+//   saturate SG ▲98 core AND avoid over-crediting SMG mid-HR (quency ▲61) — the board A/B on the
+//   shared-s freeze read quency +0.171 HOT. Decoupled: SG s pinned to saturate ▲98 (≈1.0; consistent
+//   with the measured dorothy-serendipity ▲98.18 aimed-single-bullet coreRate 0.9 as the ceiling and
+//   noir's ~1.0 spray attestation); AR s pinned to saturate jill ▲80; SMG s LOW (no SMG unit reaches
+//   high HR, so SMG needs no saturation shrink) → keeps quency ▲61 at ~0.56 (≈ the biased-high measured
+//   0.583) and chisato ▲22 near-exact. Low-HR cells are σ-shrink-invariant, so the clean chisato/
+//   scarlet base cells are untouched. S_FLOOR shared (bites only at HR>~90).
+export const CONE_DELTA0: Record<string, number> = { AR: 18, SMG: 16, SG: 30 }; // px @2622×1206, monotone in cone size
+export const CONE_DELTA_H = 120;        // Hit Rate at which the centering offset δ reaches 0
+export const CONE_SIGMA_SHRINK: Record<string, number> = { AR: 0.009, SMG: 0.004, SG: 0.009 }; // σ shrink per HR point, per weapon
+export const CONE_SIGMA_FLOOR = 0.10;   // σ floor as a fraction of σ(0) (bites only at HR>~90)
+
+// Pellet-spread σ (px) under the δ-cone model: half the accuracy circle / K_SIGMA, with a mild
+// Hit-Rate σ-shrink (floored). Matches implementation-plan §2's sigma_w(hr). CIRCLE_PX_C is 0, so
+// this equals circleDpx(scale)/2/K_SIGMA·shrink — written from CIRCLE_PX_K directly per the plan.
+export function coneSigma(scale: number, hr: number, shrink: number): number {
+  const s0 = (CIRCLE_PX_K * scale) / 2 / K_SIGMA;
+  return s0 * Math.max(CONE_SIGMA_FLOOR, 1 - shrink * Math.max(0, hr));
+}
+
+// Per-weapon centering offset δ (px): DELTA0[weapon] shrinking linearly to 0 at Hit Rate H.
+// Unknown weapon (MG/SR/RL) → 0 (they have no accuracy-circle model and never route here).
+export function coneDelta(weapon: string, hr: number): number {
+  const d0 = CONE_DELTA0[weapon];
+  if (d0 === undefined) return 0;
+  return d0 * Math.max(0, 1 - Math.max(0, hr) / CONE_DELTA_H);
+}
+
+// Modified Bessel function I₀(x) — Abramowitz & Stegun 9.8.1/9.8.2 rational approximations
+// (|error| < 2e-7). Needed for the off-center Rician CDF integrand below.
+export function besselI0(x: number): number {
+  const ax = Math.abs(x);
+  if (ax < 3.75) {
+    const t = x / 3.75;
+    const t2 = t * t;
+    return (
+      1 +
+      t2 *
+        (3.5156229 +
+          t2 * (3.0899424 + t2 * (1.2067492 + t2 * (0.2659732 + t2 * (0.0360768 + t2 * 0.0045813)))))
+    );
+  }
+  const t = 3.75 / ax;
+  return (
+    (Math.exp(ax) / Math.sqrt(ax)) *
+    (0.39894228 +
+      t *
+        (0.01328592 +
+          t *
+            (0.00225319 +
+              t *
+                (-0.00157565 +
+                  t *
+                    (0.00916281 +
+                      t *
+                        (-0.02057706 +
+                          t * (0.02635537 + t * (-0.01647633 + t * 0.00392377))))))))
+  );
+}
+
+// P(‖N((δ,0), σ²·I)‖ ≤ R) — the probability a shot whose landing point is an isotropic 2D Gaussian
+// of spread σ CENTERED δ px off the core lands within the core radius R (the Rician CDF). Derived in
+// polar coords about the disc centre: P = ∫₀ᴿ (ρ/σ²)·exp(−(ρ²+δ²)/2σ²)·I₀(ρδ/σ²) dρ (the θ-integral
+// gives 2π·I₀). Deterministic Simpson quadrature, no per-tick RNG. δ=0 reduces EXACTLY to
+// rayleighWithin (special-cased so the reduction is analytic, not quadrature-approximate).
+export function offsetCoreProb(R: number, sigma: number, delta: number): number {
+  if (sigma <= 0) return R > 0 ? 1 : 0;
+  if (R <= 0) return 0;
+  if (delta === 0) return rayleighWithin(R, sigma); // exact centered reduction
+  const s2 = sigma * sigma;
+  const d2 = delta * delta;
+  const N = 64; // even ⇒ Simpson
+  const h = R / N;
+  const f = (rho: number): number =>
+    (rho / s2) * Math.exp(-(rho * rho + d2) / (2 * s2)) * besselI0((rho * delta) / s2);
+  let sum = f(0) + f(R);
+  for (let i = 1; i < N; i++) sum += (i % 2 ? 4 : 2) * f(i * h);
+  return Math.min(1, (h / 3) * sum);
+}

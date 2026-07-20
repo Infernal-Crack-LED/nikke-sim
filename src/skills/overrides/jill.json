@@ -11,7 +11,6 @@
       "Reload speed is fixed at a 99.96% increase for 10 sec.",
       "Removes 100% of ammo.",
       "Forced Reload",
-      "Hit Rate ▲ 80.78% for 10 sec.",
       "Normal attacks deal True Damage for 10 sec."
     ]
   },
@@ -106,6 +105,12 @@
           "kind": "buff",
           "stat": "attackDamagePct",
           "value": 75,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 80.78,
           "durationSec": 10
         }
       ]

@@ -15,10 +15,12 @@ const MIME = {
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml',
+  '.xml': 'application/xml; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
+  '.gif': 'image/gif',
   '.ico': 'image/x-icon',
   '.woff': 'font/woff',
   '.woff2': 'font/woff2',
@@ -31,66 +33,75 @@ const MIME = {
 // tags on the URL's `?tab=` (mirrors the client's tabFromLocation) so each tab is
 // independently linkable with its own title/description.
 const SITE = 'https://nikkesim.app';
-const BASE_DESC =
-  'Solo-raid Simulator for NIKKE: Goddess of Victory — frame-tick damage prediction, per unit, for any team.';
 const TAB_META = {
-  sim: { title: 'NIKKE Solo Raid Sim', desc: BASE_DESC },
+  sim: {
+    title:
+      'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
+    desc: 'NIKKE solo-raid damage simulator: per-unit DPS calculator, overload optimizer, best overload lines, team builder, and game mechanics reference. Frame-tick accuracy, runs in your browser.',
+  },
   dpschart: {
-    title: 'DPS Rankings — NIKKE Solo Raid Sim',
-    desc: 'Ranked DPS of the top B3 carries under standardized control frameworks.',
+    title: 'NIKKE DPS Rankings — Best Units & Overload Lines Tier List',
+    desc: 'Ranked DPS of every NIKKE B3 carry under standardized solo-raid frameworks. Compare units, see best overload lines, and find your best carries.',
   },
   dps: {
-    title: 'Custom DPS Rankings — NIKKE Solo Raid Sim',
-    desc: `Head-to-head per-unit DPS with a user selected control framework.`,
+    title: 'Custom DPS Rankings — NIKKE Head-to-Head Unit Comparator',
+    desc: 'Head-to-head per-unit DPS comparison with a custom framework. Pit any NIKKE against any other under identical conditions.',
   },
   team: {
-    title: 'Optimal Team Generator — NIKKE Solo Raid Sim',
-    desc: `Generate an optimal team against a custom boss profile.`,
+    title: 'NIKKE Optimal Team Generator — Best 5-Nikke Team Builder',
+    desc: 'Generate the best 5-Nikke solo-raid team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
   },
   roster: {
-    title: 'Solo-Raid Roster Generator — NIKKE Solo Raid Sim',
-    desc: `Generate a solo-raid roster against a custom boss profile.`,
+    title: 'NIKKE Solo-Raid Roster Generator — Best Team from Your Units',
+    desc: 'Input your NIKKE roster and generate the optimal solo-raid team. Accounts for your actual units, gear, and overload lines.',
   },
   rostersim: {
-    title: 'Roster Sim — NIKKE Solo Raid Sim',
-    desc: `Sim your own five solo-raid teams at once and compare their damage.`,
+    title: 'NIKKE Roster Sim — Compare All Your Solo-Raid Teams',
+    desc: 'Sim your own five solo-raid teams at once and compare their damage side by side. See which roster lineup deals the most DPS.',
   },
   overload: {
-    title: 'Optimize Overload — NIKKE Solo Raid Sim',
-    desc: `Use a controlled framework to determine the optimal 3rd line for B3s.`,
+    title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
+    desc: 'Find the optimal 3rd overload line for every NIKKE B3. The overload calculator uses frame-tick sim data to rank every roll by DPS gain.',
   },
   olsim: {
-    title: 'Overload Rolling — NIKKE Solo Raid Sim',
-    desc: `Estimate the rerolls and Custom Modules to hit a target Overload build.`,
+    title: 'NIKKE Overload Rolling Simulator — Module Cost Calculator',
+    desc: 'Estimate the rerolls and Custom Modules needed to hit a target overload build. Plan your overload rolling budget before spending.',
   },
   doll: {
-    title: 'Doll Leveling — NIKKE Solo Raid Sim',
-    desc: `Calculate the most efficient path to level dolls to SR phase 15.`,
+    title: 'NIKKE Doll Leveling Calculator — Efficient SR Leveling Path',
+    desc: 'Calculate the most resource-efficient path to level your dolls (Favorite Items) to SR phase 15. Minimize waste, maximize stats.',
   },
   charge: {
-    title: 'Charge Speed Breakpoints — NIKKE Solo Raid Sim',
-    desc: `Charge-speed frame breakpoints for any RL/SR.`,
+    title: 'NIKKE Charge Speed Breakpoints — RL & SR Frame Table',
+    desc: 'Charge-speed frame breakpoints for every RL and SR in NIKKE. See exactly how much charge speed you need to hit each frame threshold.',
   },
-  // top-level pages (path-routed, so independently linkable + embeddable)
+  teambuilder: {
+    title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
+    desc: 'Build and share NIKKE solo-raid teams visually. Set loadouts, tweak overload lines, and share your team composition with a link.',
+  },
   howto: {
-    title: 'How to — NIKKE Solo Raid Sim',
-    desc: 'How to use the NIKKE Solo Raid Sim: build a team, set the boss, and read the results.',
+    title: 'How to Use the NIKKE Solo Raid Sim — Quick Start Guide',
+    desc: 'Learn how to use the NIKKE Solo Raid Sim: build a team, configure the boss, read DPS results, and optimize your overload lines.',
   },
   mechanics: {
-    title: 'Game Mechanics — NIKKE Solo Raid Sim',
-    desc: 'The damage mechanics the sim models, with sources and evidence tiers.',
+    title: 'NIKKE Game Mechanics Reference — Damage Formula & Solo Raid Guide',
+    desc: 'Comprehensive NIKKE mechanics reference: damage formula, burst rotation, charge math, and solo-raid mechanics — all sourced and tiered.',
   },
   dev: {
     title: 'Meet the Dev — NIKKE Solo Raid Sim',
-    desc: `About the NIKKE Solo Raid Sim and its developer. ${BASE_DESC}`,
+    desc: 'About the developer behind the NIKKE Solo Raid Sim and the Maiden Discord bot.',
   },
   'patch-notes': {
-    title: 'Patch Notes — NIKKE Solo Raid Sim',
-    desc: 'Changelog for the NIKKE Solo Raid Sim — engine, override, and mechanics updates.',
+    title: 'Patch Notes — NIKKE Solo Raid Sim Changelog',
+    desc: 'Changelog for the NIKKE Solo Raid Sim: accuracy improvements, new unit models, mechanics updates, and bug fixes.',
   },
   'testing-requests': {
-    title: 'Testing Requested — NIKKE Solo Raid Sim',
-    desc: 'Units and matchups the sim needs real recordings for - help improve accuracy.',
+    title: 'Testing Requested — Help Improve NIKKE Sim Accuracy',
+    desc: 'Units and matchups the NIKKE sim needs real recordings for. Submit your Union Shooting Range tests to help close the accuracy gap.',
+  },
+  'roster-sync': {
+    title: 'Sync Your NIKKE Roster — Import from blablalink',
+    desc: 'Import your real NIKKE roster into the sim via blablalink. Auto-fills your units, gear, and overload lines for accurate team generation.',
   },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
@@ -120,6 +131,7 @@ function injectMeta(html, reqUrl) {
   return html
     .replace(/(<title>)[^<]*(<\/title>)/, `$1${title}$2`)
     .replace(/(<meta name="description" content=")[^"]*(")/, `$1${desc}$2`)
+    .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${canonical}$2`)
     .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${title}$2`)
     .replace(
       /(<meta property="og:description" content=")[^"]*(")/,

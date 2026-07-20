@@ -16,11 +16,10 @@ const SYNERGY_HEADERS = { apikey: 'dummy-key', Authorization: 'Bearer dummy-key'
 // entry is the kit players actually run (favorite-item upgrade of the same
 // unit). Re-point them and prefer the API's skill text over the DB's.
 // (helm already maps to her treasure entry, 145.)
-// Units rated Bossing C or below on Prydwen (DB column prydwen_tiers.bossing) are dropped
-// at sync time — never fielded in raid comps, only waste bundle size and coverage compute.
-// Unknown/missing tiers are kept (safe default). data/bossing-tiers.json is regenerated as
-// the checked-in record of what was applied.
-const EXCLUDED_TIERS = new Set(['C', 'D', 'E', 'F']);
+// data/bossing-tiers.json is still regenerated on every sync (build-dpschart.ts reads it to
+// pick its SSS–B chart/selector population) — but bossing tier no longer PRUNES characters.json;
+// that job now belongs to the generator/sim support tags below (2026-07-19, owner-directed —
+// the tier drop predated the tag system and is redundant with it).
 
 const TREASURE_SYNERGY_IDS: Record<string, number> = {
   privaty: 198,
@@ -40,13 +39,17 @@ const OVERSPEC_SLUGS = new Set<string>([
   'neon-vision-eye',      // Missilis → "Missilis Overspec"
 ]);
 
-// Second-stage roster prune (DECISIONS 2026-07-14): the supported roster is the
-// enikk-proven list — the "All raids — NIKKE union" of the top-100 ranker teams,
-// mirrored machine-readably in data/enikk-supported.json (regenerated with the MD
-// by scripts/enikk/roster-audit.ts) — PLUS every unit we already hand-tuned an
-// override for. Keep a unit iff it satisfies one of those; drop the parse-only
-// rest that never show up in the top-100 meta. Never drop a hand-tuned override,
-// even if it falls out of the enikk list.
+// Second-stage roster TAGGING (DECISIONS 2026-07-14, expanded 2026-07-19): every character
+// the DB has now flows into characters.json — nobody is dropped for support status. Instead
+// each character is tagged with two independent booleans (CharacterData.generatorSupported /
+// .simSupported); "unsupported" is just both false. generatorSupported = the enikk-proven list
+// — the "All raids — NIKKE union" of the top-100 ranker teams, mirrored machine-readably in
+// data/enikk-supported.json (regenerated with the MD by scripts/enikk/roster-audit.ts).
+// simSupported = has a hand-tuned kit override in src/skills/overrides/. Today the two sets
+// coincide (74/74 enikk-proven units are also override-authored), but they'll diverge as the
+// override backlog grows independent of the enikk audit — the web app gates DPS chart/generator
+// tabs on generatorSupported, Team Sim/Roster Sim/Overload tools on simSupported, and shows
+// EVERY character (including unsupported) on the Team Builder page.
 const normalizeName = (n: string) => n.replace(' (Treasure)', '').trim();
 
 function loadSupportPolicy() {
@@ -102,14 +105,9 @@ async function main() {
   const characters: DataFile['characters'] = {};
   const skipped: string[] = [];
   const bossingTiers: Record<string, string> = {};
-  let tierDropped = 0;
   for (const row of rows) {
     const tier = row.prydwen_tiers?.bossing ?? '?';
     bossingTiers[row.id] = tier;
-    if (EXCLUDED_TIERS.has(tier)) {
-      tierDropped++;
-      continue;
-    }
     const a = row.attributes ?? {};
     const treasureId = TREASURE_SYNERGY_IDS[row.id];
     const api =
@@ -202,18 +200,26 @@ async function main() {
         ...(row.role_piece != null ? { piece: row.role_piece } : {}),
         ...(row.role_meta != null ? { meta: row.role_meta } : {}),
       },
+      // Support tags — see the "Second-stage roster TAGGING" note above. Nobody is dropped;
+      // these two booleans gate which web-app surfaces offer this character.
+      generatorSupported: false,
+      simSupported: false,
       baseStats: row.base_stats,
     };
     characters[row.id] = char;
   }
 
-  // Second stage: keep only enikk-proven units + hand-tuned overrides.
+  // Second stage: TAG (never drop) with the two support booleans.
   const { proven, overrideSlugs } = loadSupportPolicy();
+  let generatorCount = 0;
+  let simCount = 0;
   const unsupported: string[] = [];
   for (const [slug, c] of Object.entries(characters)) {
-    if (proven.has(normalizeName(c.name)) || overrideSlugs.has(slug)) continue;
-    unsupported.push(slug);
-    delete characters[slug];
+    c.generatorSupported = proven.has(normalizeName(c.name));
+    c.simSupported = overrideSlugs.has(slug);
+    if (c.generatorSupported) generatorCount++;
+    if (c.simSupported) simCount++;
+    if (!c.generatorSupported && !c.simSupported) unsupported.push(slug);
   }
 
   mkdirSync(new URL('../../data/', import.meta.url), { recursive: true });
@@ -225,7 +231,6 @@ async function main() {
       {
         updated: new Date().toISOString().slice(0, 10),
         source: 'bakery-bot DB nikke_characters.prydwen_tiers.bossing',
-        excludedTiers: [...EXCLUDED_TIERS].sort(),
         tiers: Object.fromEntries(Object.entries(bossingTiers).sort()),
       },
       null,
@@ -240,12 +245,12 @@ async function main() {
   const total = Object.keys(characters).length;
   const noStats = Object.values(characters).filter((c) => !c.baseStats).length;
   const noApi = rows.filter((r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id)).length;
-  console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API, ${tierDropped} dropped as Bossing C-or-below, ${unsupported.length} dropped as not-enikk-proven + no override)`);
+  console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API)`);
+  console.log(`support tags: ${generatorCount} generatorSupported, ${simCount} simSupported, ${unsupported.length} unsupported (Team Builder only)`);
   const nickKept = Object.values(characters).filter((c) => c.nicknames?.length).length;
   console.log(`nicknames: ${nickKept} units with approved nicknames; ${nick.dropped.length} aliases dropped as unsafe:`);
   for (const d of nick.dropped) console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);
   if (skipped.length) console.log('skipped:', skipped.join(', '));
-  if (unsupported.length) console.log('not-enikk-proven (dropped):', unsupported.sort().join(', '));
 }
 
 main().catch((e) => {

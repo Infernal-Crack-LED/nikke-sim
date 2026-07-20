@@ -23,7 +23,11 @@ import {
   BAND_SG_HIT_FRAC,
   circleDpx,
   circleDpxAtHr,
+  coneDelta,
+  coneSigma,
+  CONE_SIGMA_SHRINK,
   coreFracGeo,
+  offsetCoreProb,
   pelletCoreFrac,
   pelletLandFrac,
   pelletSigma,
@@ -899,8 +903,28 @@ export function runSim(
     if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
     return pelletSigma(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC);
   };
+  // ── δ-offset cone (ENV.CONE_DELTA; LIVE by default 2026-07-19, CONE_DELTA=0 disables for A/B) ──
+  // The core-hit model for accuracy-circle weapons: replaces the two confirmed bugs of the old path —
+  // the flat CORE_AUTOAIM=0.55 cap + the fractional reticle floor — with an off-centre Rician cone
+  // (sg-geometry offsetCoreProb). PRE-EMPTS both PELLET_GAUSS and HRCORE for AR/SMG/SG; those two
+  // become the CONE_DELTA=0 fallback (the measured CORE_BY_WEAPON_BAND / SG_LANDING tables are the
+  // deep fallback, never refit). MG/SR/RL fall through to the base table either way. Parameters frozen
+  // + Fable-approved (docs/handoffs/2026-07-19-cone-param-freeze-prereg.md; DECISIONS 2026-07-19);
+  // per-weapon σ-shrink decouples SG-▲98 saturation from SMG mid-HR. Flipped LIVE after the full-board
+  // A/B (net board mean|ratio−1| 0.0972→0.0964) + owner sign-off. CONE_DELTA=0 restores the prior engine.
+  const CONE_DELTA = ENV.CONE_DELTA !== '0' && ENV.CONE_DELTA !== 'off';
+  const coneSigmaFor = (weapon: string, hr: number): number | null => {
+    const scale = ACCURACY_CIRCLE_SCALE[weapon];
+    if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
+    return coneSigma(scale, hr, CONE_SIGMA_SHRINK[weapon] ?? 0.009);
+  };
   const acrForHR = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far', hr: number): number => {
-    if (PELLET_GAUSS) {
+    if (CONE_DELTA) {
+      const sig = coneSigmaFor(weapon, hr);
+      if (sig !== null)
+        return Math.min(1, offsetCoreProb(BAND_CORE_PX[band] / 2, sig, coneDelta(weapon, hr)));
+      // MG/SR/RL fall through to the base table below
+    } else if (PELLET_GAUSS) {
       const sig = pelletSigmaFor(weapon, hr);
       if (sig !== null) return Math.min(1, pelletCoreFrac(BAND_CORE_PX[band], sig)); // unified geometric core
       // MG/SR/RL fall through to the base table below
@@ -1121,7 +1145,7 @@ export function runSim(
         (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
       // ⚑ HRCORE: live Hit Rate shrinks the reticle → higher core fraction (derived; LIVE by default, HRCORE=0 off).
       // stat() already sums the unit's live hitRatePct buffs; additive-in-pp composition is UNVALIDATED (R8).
-      const hr = HRCORE || PELLET_GAUSS ? stat(u, 'hitRatePct', frame) : 0;
+      const hr = HRCORE || PELLET_GAUSS || CONE_DELTA ? stat(u, 'hitRatePct', frame) : 0;
       const acr = opts.coreOverride ?? acrForHR(effWeapon, bandAt(frame), hr);
       major += rng
         ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
@@ -2199,11 +2223,12 @@ export function runSim(
     const band = bandAt(frame);
     const bandSgFalloff =
       u.char.weapon === 'SG' && !u.swap
-        ? PELLET_GAUSS
-          ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
-            // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
+        ? CONE_DELTA
+          ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
+            // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
+            // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
             (() => {
-              const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+              const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
               const prof =
                 cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
               const mean = pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof);
@@ -2212,10 +2237,23 @@ export function runSim(
               for (let i = 0; i < u.char.hitsPerShot; i++) if (rng() < mean) k++;
               return k / u.char.hitsPerShot;
             })()
-          : rng
-            ? sgLandedPellets(band, u.char.hitsPerShot, rng, cfg.bossPelletProfile) /
-              u.char.hitsPerShot
-            : SG_LANDING_BY_BAND[band]
+          : PELLET_GAUSS
+            ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
+              // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
+              (() => {
+                const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+                const prof =
+                  cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
+                const mean = pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof);
+                if (!rng) return mean;
+                let k = 0;
+                for (let i = 0; i < u.char.hitsPerShot; i++) if (rng() < mean) k++;
+                return k / u.char.hitsPerShot;
+              })()
+            : rng
+              ? sgLandedPellets(band, u.char.hitsPerShot, rng, cfg.bossPelletProfile) /
+                u.char.hitsPerShot
+              : SG_LANDING_BY_BAND[band]
         : 1;
     // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
     // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED
@@ -2250,6 +2288,10 @@ export function runSim(
       charge: charged,
       category: 'normal',
       trueFlavor: !!u.swap?.trueNormals,
+      // The consolidation single bullet is one ALIGNED 98%-hit bullet, NOT spray — so it keeps its
+      // measured reliable-core value (consol.coreRate) under the δ-cone too, treated like a regular
+      // single bullet rather than routed through the SG pellet-spray cone (owner ruling 2026-07-19;
+      // supersedes implementation-plan §1.5's fold-in). Only dorothy's ordinary spray shots take the cone.
       coreOverride: consolidating && consol ? consol.coreRate : undefined,
       extraDmgUpPct: consolidating && consol ? consol.attackDamagePct : undefined,
       pierceActive: consolidating && consol ? consol.pierce : undefined,

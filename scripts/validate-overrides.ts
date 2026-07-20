@@ -119,6 +119,10 @@ function validate(slug: string): boolean {
   if (caveats !== undefined && (!Array.isArray(caveats) || caveats.some((l: any) => typeof l !== 'string' || !l.trim()))) {
     errors.push('caveats: must be an array of non-empty strings');
   }
+  const kitDescription = (override as any).kitDescription;
+  if (kitDescription !== undefined && (typeof kitDescription !== 'string' || !kitDescription.trim())) {
+    errors.push('kitDescription: must be a non-empty string');
+  }
 
   if (errors.length) {
     console.log(`✗ ${slug}: structural errors`);

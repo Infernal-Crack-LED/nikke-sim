@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://nikkesim.app/</loc><priority>1.0</priority></url>
+  <url><loc>https://nikkesim.app/dpschart</loc><priority>0.9</priority></url>
+  <url><loc>https://nikkesim.app/overload</loc><priority>0.9</priority></url>
+  <url><loc>https://nikkesim.app/dps</loc><priority>0.8</priority></url>
+  <url><loc>https://nikkesim.app/team</loc><priority>0.8</priority></url>
+  <url><loc>https://nikkesim.app/roster</loc><priority>0.8</priority></url>
+  <url><loc>https://nikkesim.app/rostersim</loc><priority>0.7</priority></url>
+  <url><loc>https://nikkesim.app/olsim</loc><priority>0.7</priority></url>
+  <url><loc>https://nikkesim.app/doll</loc><priority>0.7</priority></url>
+  <url><loc>https://nikkesim.app/charge</loc><priority>0.7</priority></url>
+  <url><loc>https://nikkesim.app/teambuilder</loc><priority>0.7</priority></url>
+  <url><loc>https://nikkesim.app/mechanics</loc><priority>0.6</priority></url>
+  <url><loc>https://nikkesim.app/howto</loc><priority>0.5</priority></url>
+  <url><loc>https://nikkesim.app/patch-notes</loc><priority>0.4</priority></url>
+  <url><loc>https://nikkesim.app/credits</loc><priority>0.3</priority></url>
+</urlset>

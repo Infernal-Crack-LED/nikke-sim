@@ -1,0 +1,1 @@
+- [Frontend stack and conventions](project-frontend-stack.md) — React 18 + Vite 5 in web/, single CSS, dark theme. Read docs/frontend-conventions.md before writing UI code.

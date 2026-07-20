@@ -1,12 +1,6 @@
 {
- "updated": "2026-07-17",
+ "updated": "2026-07-19",
  "source": "bakery-bot DB nikke_characters.prydwen_tiers.bossing",
- "excludedTiers": [
-  "C",
-  "D",
-  "E",
-  "F"
- ],
  "tiers": {
   "2b": "B",
   "a2": "B",

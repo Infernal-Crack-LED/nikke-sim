@@ -119,24 +119,35 @@ Crit  = critRate × critBonus         (expected-value mode)
       | critBonus or 0, Bernoulli(critRate)      (Monte Carlo mode, cfg.seed set)
         critRate  = (base crit rate + Crit Rate ▲ %) / 100, clamped 0..1   (base 15%)
         critBonus = (critDamage − 100)/100 + Crit Damage ▲ %/100           (base +50%)
-Core  = coreExposure × AUTO_CORE_RATE × coreBonus    (expected-value mode)
-      | coreBonus or 0, Bernoulli(coreExposure × AUTO_CORE_RATE)   (Monte Carlo mode)
+Core  = coreExposure × ACR × coreBonus    (expected-value mode)
+      | coreBonus or 0, Bernoulli(coreExposure × ACR)   (Monte Carlo mode)
         coreExposure = cfg.coreHitRate (1.0 on the scope-lock boss)
-        AUTO_CORE_RATE ⚑ — RANGE-DEPENDENT per (weapon, band) (2026-07-15 refit; the
-              AR/SMG/SG flat 0.85 is OVERTURNED by same-tier footage). Indexed by the boss-
-              range band the engine already computes (bandAt → near|mid|midfar|far); the
-              auto-aim core rate is strongly range-concentrated (high close → ~0 far),
-              FB-independent, weapon-ordered AR > SMG > SG. Measured per-band ⚑ (solo
-              recordings, Wilson CIs in docs/probe-data/coreband2-*.json):
+        ACR = acrForHR(weapon, band, hitRatePct) — the auto-aim core-hit fraction.
+        LIVE MODEL (CONE_DELTA default on, 2026-07-19; DECISIONS): for accuracy-circle weapons
+              (AR/SMG/SG) a δ-offset ("Rician") cone. A shot lands ~N((δ_w(hr), 0), σ_w(hr)²·I) px
+              and cores iff it falls within the band core radius R_band ⇒
+                ACR = offsetCoreProb(R_band, σ_w(hr), δ_w(hr))            (Rician CDF; δ=0 ⇒ Rayleigh)
+                σ_w(hr) = (CIRCLE_PX_K·scale_w)/2/K_SIGMA · max(S_FLOOR, 1 − s_w·hr)
+                δ_w(hr) = δ0_w · max(0, 1 − hr/H)
+              Frozen (refit + Fable-approved; scripts/cone-refit.ts, sg-geometry.ts): δ0 = AR 18 /
+              SMG 16 / SG 30 px; H = 120; S_FLOOR = 0.10; s = {AR .009, SMG .004, SG .009}; held
+              K_SIGMA 2.53, CIRCLE_PX_K 0.648, scale {AR 75, SMG 110, SG 250}, R_band = BAND_CORE_PX/2
+              {near 31, mid 28, midfar 21, far 17}. Band-dependent (near≫far ∝ core size), rises with
+              Hit Rate (near-saturates by ▲80–98). Replaces the structurally-wrong flat CORE_AUTOAIM=0.55
+              cap + fractional reticle floor; the drawn reticle is DECORATIVE. MG/SR/RL → base table.
+              Engine: acrForHR → offsetCoreProb (src/engine/sg-geometry.ts).
+        FALLBACK MODEL (CONE_DELTA=0, restores the prior engine): measured per-band
+              CORE_BY_WEAPON_BAND × the HRCORE/PELLET_GAUSS Hit-Rate lift (solo recordings, Wilson CIs
+              in docs/probe-data/coreband2-*.json; NEVER refit):
                         near    mid     midfar   far
                 AR      0.40    0.30    0.03     0.00
                 SMG     0.28    0.244   0.076    0.059
                 SG      0.072   0.00    0.0045   0.00
               MG/SR/RL keep flat 0.95 (not measured per-band; core ~near-100% once warmed —
               MG gated by its wind-up ramp). Engine: acrFor(weapon, band) + CORE_BY_WEAPON_BAND.
-              Knobs: ACR=flat override; CORERATE=flat → old flat 0.85; CORERATEBAND=off →
-              prior flat per-weapon table (A/B). SG near 0.072 CORROBORATED (ore-game ~6% front
-              row); AR near 0.40 CONFIRMED (Scarlet + Moran, two methods). open-questions A15 / DECISIONS.
+              Knobs: CONE_DELTA=0 → this fallback; ACR=flat override; CORERATE=flat → old flat 0.85.
+              SG near 0.072 CORROBORATED (ore-game ~6% front row); AR near 0.40 CONFIRMED (Scarlet +
+              Moran, two methods). open-questions A15 / DECISIONS.
               PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
               OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
               and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,

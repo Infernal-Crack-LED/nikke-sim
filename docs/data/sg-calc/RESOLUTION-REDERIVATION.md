@@ -1,6 +1,14 @@
 # Core-hit geometry re-derivation — resolution fix + auto-aim-offset model
 
-Status: **SPEC / findings — not yet landed.** Owner-directed 2026-07-18. Land in a focused pass
+> **CLOSED-BY 2026-07-19 — SUPERSEDED by the landed δ-offset cone.** The re-derivation's two confirmed
+> bugs (the flat `CORE_AUTOAIM=0.55` cap + the fractional reticle floor) were fixed not by refitting the
+> reticle-shrink constants but by replacing the whole path with a δ-offset ("Rician") cone
+> (`offsetCoreProb`) — the geometry campaign proved the drawn reticle DECORATIVE, so the reticle-anchored
+> forms here (height-refit, clamp/base-offset/fractional) are moot. See DECISIONS 2026-07-19 and
+> `docs/handoffs/2026-07-19-{geometry-campaign-findings,cone-param-freeze-prereg}.md`. This doc is retained
+> as the historical spec that motivated the pass; disregard its "not yet landed" plan below.
+
+Status: **SPEC / findings — SUPERSEDED (see CLOSED-BY above).** Owner-directed 2026-07-18. Land in a focused pass
 (full-board A/B + Fable + verify), NOT inline. This corrects the HR→core-hit model; blast radius is
 every core-exposed comp (all SG/AR/SMG core rates), so it is a scoped workstream, not a hot edit.
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-18",
+  "generatedAt": "2026-07-19",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -27,11 +27,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±15%": 7,
-      "±3% ✓": 8,
-      "±8%": 11,
+      "±15%": 12,
+      "±3% ✓": 7,
+      "±8%": 9,
       ">15%": 12,
-      "±5%": 6
+      "±5%": 4
     }
   },
   "units": {
@@ -329,20 +329,20 @@
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.933
+            "ratio": 0.9355
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9296
+            "ratio": 0.9281
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9224
+            "ratio": 0.9172
           }
         ],
         "n": 12,
-        "mean": 0.9546,
-        "mad": 0.0539,
+        "mean": 0.9542,
+        "mad": 0.0542,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -428,13 +428,13 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.0663
+            "ratio": 1.1265
           }
         ],
         "n": 1,
-        "mean": 1.0663,
-        "mad": 0.0663,
-        "band": "±8%",
+        "mean": 1.1265,
+        "mad": 0.1265,
+        "band": "±15%",
         "temp": "HOT ▲"
       }
     },
@@ -660,20 +660,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.2023
+            "ratio": 1.225
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.2022
+            "ratio": 1.227
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.1079
+            "ratio": 1.1389
           }
         ],
         "n": 3,
-        "mean": 1.1708,
-        "mad": 0.1708,
+        "mean": 1.197,
+        "mad": 0.197,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -878,11 +878,11 @@
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0401
+            "ratio": 1.0388
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.054
+            "ratio": 1.0553
           }
         ],
         "n": 12,
@@ -948,12 +948,12 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0509
+            "ratio": 1.0463
           }
         ],
         "n": 3,
-        "mean": 0.998,
-        "mad": 0.0562,
+        "mean": 0.9965,
+        "mad": 0.0547,
         "band": "±8%",
         "temp": "OK  ·"
       }
@@ -1049,12 +1049,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.8238
+            "ratio": 0.8241
           }
         ],
         "n": 1,
-        "mean": 0.8238,
-        "mad": 0.1762,
+        "mean": 0.8241,
+        "mad": 0.1759,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1094,18 +1094,18 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0655
+            "ratio": 1.1731
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.9713
+            "ratio": 1.0572
           }
         ],
         "n": 2,
-        "mean": 1.0184,
-        "mad": 0.0471,
-        "band": "±5%",
-        "temp": "OK  ·"
+        "mean": 1.1151,
+        "mad": 0.1151,
+        "band": "±15%",
+        "temp": "HOT ▲"
       }
     },
     "drake": {
@@ -1192,12 +1192,12 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9368
+            "ratio": 0.9365
           }
         ],
         "n": 3,
-        "mean": 0.8055,
-        "mad": 0.1945,
+        "mean": 0.8054,
+        "mad": 0.1946,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1252,12 +1252,12 @@
         "records": [
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.8163
+            "ratio": 0.8251
           }
         ],
         "n": 1,
-        "mean": 0.8163,
-        "mad": 0.1837,
+        "mean": 0.8251,
+        "mad": 0.1749,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1346,20 +1346,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.1786
+            "ratio": 1.232
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1716
+            "ratio": 1.2234
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.2198
+            "ratio": 1.2733
           }
         ],
         "n": 3,
-        "mean": 1.19,
-        "mad": 0.19,
+        "mean": 1.2429,
+        "mad": 0.2429,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -1402,13 +1402,13 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.08
+            "ratio": 1.1469
           }
         ],
         "n": 1,
-        "mean": 1.08,
-        "mad": 0.08,
-        "band": "±8%",
+        "mean": 1.1469,
+        "mad": 0.1469,
+        "band": "±15%",
         "temp": "HOT ▲"
       }
     },
@@ -1570,7 +1570,7 @@
       "caveats": [
         "skill2: kit targets 5 enemies with the highest final DEF — modeled as the lone boss (the multi-target selection has no effect vs a partless single boss)",
         "skill2: the kit gives no activation trigger for this damage — the ~14.7-sec period is a solo measurement (2026-07-16); whether the period holds in team fights is unverified",
-        "skill2: this periodic hit crits in-game (~15-25% of fires observed) but the engine's periodic damage does not crit by default — the rider reads ~4% cold",
+        "skill2: this periodic hit crits in-game (MEASURED 2026-07-17: 3 crits / 11 resolved fires, crit value 308,564 = non-crit 205,709 ×1.5 exactly; docs/probe-data/isabel-sg-band.json riderFinding) — modeled via the per-DoT `crit:true` opt-in (rolls at Isabel's sheet rate). The global DOT_CRIT default stays OFF; most DoTs are validated non-crit (jill acid tick video-confirmed 99.7% non-crit, mihara-bonding-chain Ensnaring validated 1.03 non-crit)",
         "burst: Full Burst Duration ▼ 5 sec is modeled as shortening the team's Full Burst window — its net rotation effect (shorter window vs faster re-cycle) is an unverified estimate",
         "skill1/burst: Marked Target stage is modeled as a permanent count of Isabel's burst uses — a possible in-game stage reset when the 45-sec mark expires (burst spacing over 45 sec) is not modeled"
       ],
@@ -1606,7 +1606,6 @@
           "Reload speed is fixed at a 99.96% increase for 10 sec.",
           "Removes 100% of ammo.",
           "Forced Reload",
-          "Hit Rate ▲ 80.78% for 10 sec.",
           "Normal attacks deal True Damage for 10 sec."
         ]
       },
@@ -1619,21 +1618,21 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9155
+            "ratio": 0.9795
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9242
+            "ratio": 0.9906
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.075
+            "ratio": 1.1086
           }
         ],
         "n": 3,
-        "mean": 0.9716,
-        "mad": 0.0784,
-        "band": "±8%",
+        "mean": 1.0262,
+        "mad": 0.0462,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -1766,12 +1765,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.888
+            "ratio": 0.8884
           }
         ],
         "n": 4,
-        "mean": 0.992,
-        "mad": 0.1016,
+        "mean": 0.9921,
+        "mad": 0.1015,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -1848,24 +1847,24 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.0943
+            "ratio": 1.0954
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0595
+            "ratio": 1.0606
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.1337
+            "ratio": 1.1374
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0645
+            "ratio": 1.0658
           }
         ],
         "n": 4,
-        "mean": 1.088,
-        "mad": 0.088,
+        "mean": 1.0898,
+        "mad": 0.0898,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2383,12 +2382,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8695
+            "ratio": 0.8677
           }
         ],
         "n": 1,
-        "mean": 0.8695,
-        "mad": 0.1305,
+        "mean": 0.8677,
+        "mad": 0.1323,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -2439,20 +2438,20 @@
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.7023
+            "ratio": 0.7288
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.747
+            "ratio": 0.7739
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.6877
+            "ratio": 0.7153
           }
         ],
         "n": 3,
-        "mean": 0.7123,
-        "mad": 0.2877,
+        "mean": 0.7393,
+        "mad": 0.2607,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2495,14 +2494,14 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9858
+            "ratio": 1.0713
           }
         ],
         "n": 1,
-        "mean": 0.9858,
-        "mad": 0.0142,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 1.0713,
+        "mad": 0.0713,
+        "band": "±8%",
+        "temp": "HOT ▲"
       }
     },
     "nayuta": {
@@ -2544,12 +2543,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.896
+            "ratio": 0.8963
           }
         ],
         "n": 1,
-        "mean": 0.896,
-        "mad": 0.104,
+        "mean": 0.8963,
+        "mad": 0.1037,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -2647,17 +2646,17 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0383
+            "ratio": 1.0975
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.057
+            "ratio": 1.1297
           }
         ],
         "n": 2,
-        "mean": 1.0477,
-        "mad": 0.0477,
-        "band": "±5%",
+        "mean": 1.1136,
+        "mad": 0.1136,
+        "band": "±15%",
         "temp": "HOT ▲"
       }
     },
@@ -2753,19 +2752,19 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.0279
+            "ratio": 1.0453
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9926
+            "ratio": 1.0094
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9042
+            "ratio": 0.9237
           }
         ],
         "n": 3,
-        "mean": 0.9749,
+        "mean": 0.9928,
         "mad": 0.0437,
         "band": "±5%",
         "temp": "OK  ·"
@@ -2804,23 +2803,23 @@
         "skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate — rebuild timing after reloads is approximate (⚑)",
         "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
         "skill2: Hit Rate stacks modeled as hitRatePct (inert in v1) — magnitude of the core-rate lift unmeasured (⚑)",
-        "all: cadence tuple is the raw datamine (24 pulls/s, reloadFrames 81) — unverified (⚑)"
+        "all: cadence = datamined 24 pulls/s (SHOT rate = rate_of_fire 1440rpm/60). muzzle_count 2 → 48 bullets/s, but the shot damage SPLITS over the 2 bullets (nAM 10.12 = per-bullet 5.06 × 2 muzzles, already baked in), so throughput = 24 shots × 10.12 is self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (⚑). Her flag-off HOT baseline is the kit (Explore-Route stage-2/3 parallel-build over-credit, ⚑2), not cadence — deferred to the kit audit."
       ],
       "board": {
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0767
+            "ratio": 1.1895
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0043
+            "ratio": 1.107
           }
         ],
         "n": 2,
-        "mean": 1.0405,
-        "mad": 0.0405,
-        "band": "±5%",
+        "mean": 1.1483,
+        "mad": 0.1483,
+        "band": "±15%",
         "temp": "HOT ▲"
       }
     },
@@ -2976,12 +2975,12 @@
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.0127
+            "ratio": 1.0094
           }
         ],
         "n": 2,
-        "mean": 0.8687,
-        "mad": 0.1439,
+        "mean": 0.8671,
+        "mad": 0.1423,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -3067,12 +3066,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.0839
+            "ratio": 1.0865
           }
         ],
         "n": 3,
-        "mean": 1.0516,
-        "mad": 0.0629,
+        "mean": 1.0525,
+        "mad": 0.0638,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -3197,12 +3196,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.2
+            "ratio": 1.2013
           }
         ],
         "n": 2,
-        "mean": 1.0414,
-        "mad": 0.1586,
+        "mean": 1.042,
+        "mad": 0.1592,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -3300,12 +3299,12 @@
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9192
+            "ratio": 0.9196
           }
         ],
         "n": 4,
         "mean": 0.9821,
-        "mad": 0.0334,
+        "mad": 0.0333,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -3354,12 +3353,12 @@
         "records": [
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.9747
+            "ratio": 1.0168
           }
         ],
         "n": 1,
-        "mean": 0.9747,
-        "mad": 0.0253,
+        "mean": 1.0168,
+        "mad": 0.0168,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3547,12 +3546,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.2274
+            "ratio": 1.2191
           }
         ],
         "n": 4,
-        "mean": 1.1527,
-        "mad": 0.1527,
+        "mean": 1.1506,
+        "mad": 0.1506,
         "band": ">15%",
         "temp": "HOT ▲"
       }

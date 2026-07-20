@@ -39,9 +39,15 @@ const SOLO_CELL: Cell = { framework: 'solo', eleadv: 'eleweak', core: 'c100', in
 
 const charFor = (slug: string) => (data.characters as any)[slug] ?? (NOOP_CHARACTERS as any)[slug];
 
+// generatorSupported && simSupported: same eligibility as the DPS chart population
+// (build-dpschart.ts) — without a kit override a "damage-optimal" line pick is
+// meaningless (no buffs/burst behavior to optimize around).
+const eligible = Object.entries(data.characters).filter(
+  ([, c]) => c.generatorSupported && c.simSupported,
+);
 const units: Record<string, { type: string; count: number }[]> = {};
 let done = 0;
-for (const [slug, c] of Object.entries(data.characters)) {
+for (const [slug, c] of eligible) {
   const tested = { slug, element: c.element as Element };
   // provisional solo team: tested carries only the 8-line floor; bestOl fills the rest.
   const team = assembleTeam(SOLO_CELL, tested);
@@ -52,7 +58,7 @@ for (const [slug, c] of Object.entries(data.characters)) {
   for (const p of res.picks) counts.set(p.type, (counts.get(p.type) ?? 0) + 1);
   units[slug] = [...counts].map(([type, count]) => ({ type, count }));
   done++;
-  if (done % 20 === 0) process.stderr.write(`  …${done}/${Object.keys(data.characters).length}\n`);
+  if (done % 20 === 0) process.stderr.write(`  …${done}/${eligible.length}\n`);
 }
 
 const artifact = {

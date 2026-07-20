@@ -62,6 +62,10 @@ function noop(
     rl3: w.rl3,
     burstGaugePerShot: null,
     treasure: false,
+    // Synthetic scaffolding, not a real roster entry — never surfaced by a support-tag
+    // filtered picker, but tagged true so nothing incidentally excludes it.
+    generatorSupported: true,
+    simSupported: true,
     skills: { skill1: '', skill2: '', burst: '' }, // parser → zero blocks
     baseStats: NOOP_BASE_STATS,
   };

@@ -94,8 +94,11 @@ if (mode === '--refresh') {
   const { collectBoardReadings, boardStats } = await import('./lib/board-readings.js');
   const readings = collectBoardReadings();
 
+  // kit-status is the rollout SSOT for units that HAVE a kit override — i.e. simSupported.
+  // The 2026-07-19 sync tagging change made characters.json roster-wide (includes
+  // Team-Builder-only "unsupported" units with no override file); scope out here.
   const units: Record<string, UnitEntry> = {};
-  for (const slug of Object.keys(data.characters).sort()) {
+  for (const slug of Object.keys(data.characters).filter((s) => data.characters[s].simSupported).sort()) {
     const c = data.characters[slug];
     const o = JSON.parse(readFileSync(OVERRIDE_URL(slug), 'utf8'));
     const prev: Partial<UnitEntry> = prior?.units?.[slug] ?? {};
@@ -173,7 +176,7 @@ if (mode === '--refresh') {
   const errors: string[] = [];
   if (!doc) errors.push('data/kit-status.json missing — run scripts/kit-status.ts --refresh');
   else {
-    for (const slug of Object.keys(data.characters)) {
+    for (const slug of Object.keys(data.characters).filter((s) => data.characters[s].simSupported)) {
       const u = doc.units[slug];
       if (!u) {
         errors.push(`${slug}: missing from kit-status.json (run --refresh after sync)`);

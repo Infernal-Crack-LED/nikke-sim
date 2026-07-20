@@ -32,15 +32,26 @@ export const ROUTES: Route[] = [
 
 // Top-level PAGE routes. The sim app owns "/" plus its sub-tab paths
 // (/dpschart, /overload, …); any segment that isn't a page or a tool resolves to sim.
-const PAGE_ROUTES: Route[] = ['howto', 'mechanics', 'dev', 'patch-notes', 'testing-requests', 'roster-sync', 'credits'];
+const PAGE_ROUTES: Route[] = [
+  'howto',
+  'mechanics',
+  'dev',
+  'patch-notes',
+  'testing-requests',
+  'roster-sync',
+  'credits',
+];
 // The App also hosts the "Tools" section — these sub-tab paths group under /tools in
 // the top nav (but are still served by the App, addressed by their own path).
-const TOOL_PATHS = ['olsim', 'doll', 'charge', 'team', 'roster'];
+const TOOL_PATHS = ['olsim', 'doll', 'charge', 'team', 'roster', 'teambuilder'];
 const TOOL_LANDING = '/olsim'; // where the "Tools" nav link points (Overload Rolling)
 
 // map the first path segment to a Route; tool paths → 'tools', other sim-app paths (and "/") → sim
 export function routeFromPath(pathname: string): Route {
-  const seg = pathname.replace(/^\/+|\/+$/g, '').split('/')[0].toLowerCase();
+  const seg = pathname
+    .replace(/^\/+|\/+$/g, '')
+    .split('/')[0]
+    .toLowerCase();
   if ((PAGE_ROUTES as string[]).includes(seg)) return seg as Route;
   if (TOOL_PATHS.includes(seg)) return 'tools';
   return 'sim';
@@ -60,7 +71,9 @@ export function navigate(url: string): void {
 }
 
 export function useRoute(): Route {
-  const [route, setRoute] = useState<Route>(() => routeFromPath(window.location.pathname));
+  const [route, setRoute] = useState<Route>(() =>
+    routeFromPath(window.location.pathname),
+  );
   const prev = useRef(route);
   useEffect(() => {
     const onNav = () => {

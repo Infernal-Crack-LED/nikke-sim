@@ -9,8 +9,8 @@ say() { printf '\n== %s ==\n' "$*"; }
 say "typecheck"
 npm run typecheck
 
-say "override validation (all roster units — a synced unit without an override fails here)"
-node -e "const d=JSON.parse(require('fs').readFileSync('data/characters.json','utf8')); console.log(Object.keys(d.characters).join('\n'))" \
+say "override validation (every simSupported unit — a synced unit without an override fails here)"
+node -e "const d=JSON.parse(require('fs').readFileSync('data/characters.json','utf8')); console.log(Object.values(d.characters).filter(c=>c.simSupported).map(c=>c.slug).join('\n'))" \
   | xargs npx tsx scripts/validate-overrides.ts | tail -2
 
 say "runtime is prose-free (kit parser lives only in scripts/, never in src/ or web/src/)"

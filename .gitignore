@@ -1,3 +1,4 @@
+.DS_Store
 # secrets / local env
 .env
 
@@ -11,7 +12,7 @@ node_modules/
 dist/
 
 # DPS-chart matrix artifact — regenerated on every build/deploy (npm prebuild)
-img/dpschart.json
+web/public/dpschart.json
 
 # ephemeral probe-processing workspace (frame extractions, regenerable from the
 # videoSec anchors in docs/probe-data/*.json; never source of truth)
