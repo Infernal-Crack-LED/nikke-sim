@@ -61,6 +61,7 @@ export type TriggerDef =
   | { kind: 'lastBullet' }                  // on the owner's last bullet / reload start
   | { kind: 'recovery' }                    // when the owner RECEIVES a heal (a 'heal' effect targets them) — Crown's "when recovery takes effect"
   | { kind: 'shielded' }                    // when the owner RECEIVES a shield (a 'shield' effect targets them) — shield-synergy kits (e.g. naga's shield-gate)
+  | { kind: 'interval'; sec: number }       // fires every `sec` seconds of battle, first at t=sec — kit lines that "just happen" on an internal cooldown with no visible activation clause (snow-white S2a 144.73%, owner-stated 15s CD 2026-07-20). ⚑ first-fire phase (t=sec vs t=0) is a convention; pin from footage when a consumer's cadence is popup-read
   | { kind: 'stageEnter'; stage: 1 | 2 | 3 } // when a stage-N burst is cast by anyone
   | { kind: 'bossElement'; element: string } // permanent, but only if the boss has this element
   | { kind: 'unsupported'; raw: string };
@@ -74,12 +75,16 @@ export type TargetDef =
   | { kind: 'nonBurstCasters' }
   // excludeSelf: "N highest-ATK ally (except the skill user)" — miranda, soda-twinkling-bunny.
   // Applied to the candidate pool BEFORE the count-slice (exclude-then-take-N).
-  | { kind: 'alliesTopAtk'; count: number; excludeSelf?: boolean }
+  // byFinalAtk: rank by LIVE effectiveAtk (buffed) instead of staticAtk (base) — set ONLY when the
+  // kit text literally says "highest/lowest FINAL ATK" (A3, 2026-07-20). Absent = static ranking
+  // (kits that say plain "highest ATK", e.g. naga, keep base-ATK ranking per the owner literal-word rule).
+  | { kind: 'alliesTopAtk'; count: number; excludeSelf?: boolean; byFinalAtk?: boolean }
   | {
       kind: 'alliesLowestAtk'; // "N [Burst X] ally unit(s) with the lowest final ATK"
       count: number;
       burst?: 'I' | 'II' | 'III';
       excludeSelf?: boolean; // e.g. Liberalio is immune to charge-speed buffs
+      byFinalAtk?: boolean;  // rank by live effectiveAtk when the kit says "lowest FINAL ATK" (A3)
     }
   | { kind: 'alliesOfElement'; element: string; excludeSelf?: boolean }
   | { kind: 'alliesOfClass'; cls: string; excludeSelf?: boolean }
@@ -170,6 +175,10 @@ export type EffectDef =
       // eligibility + auto-core rate for swap shots (nayuta: SMG base → SR "Memory Incineration" mode).
       weapon?: string;
       trueNormals?: boolean;    // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
+      hasPierce?: boolean;      // swap shots are Pierce-tagged ("Additional Effect: Pierce" scoped to the
+                                // swapped weapon, snow-white's cannon — owner-ruled 2026-07-20). Feeds the
+                                // per-shot pierce tag only (Pierce Damage ▲ bucket eligibility); never the
+                                // static whole-fight hasPierce flag
       durationSec: number;      // hard time bound (e.g. the 10s burst window)
       maxShots?: number;        // uses-based end: swap terminates right after the Nth swapped
                                 // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
@@ -233,7 +242,10 @@ export interface Block {
   // team lacking one. The owner itself never counts (same rule as `formation`);
   // burst matches literally (a Λ unit does NOT satisfy burst:'III'). Omit = always
   // active (back-compatible). Burst codes 'I'|'II'|'III'|'Λ'; weapon AR/SMG/SG/SR/RL/MG.
-  teamHas?: { element?: string; class?: string; weapon?: string; burst?: string };
+  // `slugs`: the team contains one of these SPECIFIC units (matches some OTHER ally's exact slug) —
+  // for kit gates keyed to named squad-mates the data has no squad axis for (noir's burst block 3
+  // "an ally from the same squad": owner-ruled 2026-07-20 satisfied by blanc or rouge).
+  teamHas?: { element?: string; class?: string; weapon?: string; burst?: string; slugs?: string[] };
   // mode gate: block active only when the unit's selected mode matches (the
   // override's top-level `modes` array declares the choices; first = default)
   mode?: string;
@@ -255,6 +267,13 @@ export interface Block {
   // Active extra volley rides only her two swapped full-charge shots),
   // 'unswapped' only outside it
   swapGate?: 'swapped' | 'unswapped';
+  // shield-state gate, checked when the trigger fires: the block only activates while the
+  // OWNER currently has a shield set on them (a 'shield' effect targeted them and its
+  // durationSec has not elapsed; no duration = permanent at scope, since boss damage is
+  // unmodeled and nothing breaks shields). For "Activates if a Shield is set in front of
+  // this unit" lines evaluated at cast time (naga's burst 31.02% — owner-ruled default-off
+  // 2026-07-20). Distinct from the `shielded` TRIGGER (fires at shield application).
+  requiresShielded?: boolean;
   // boss-element gate, checked when the trigger fires: the block only activates
   // when the fight's boss element matches (e.g. helm-aquamarine's burst "when
   // attacking an Electric Code target → +164.83%"; brid-silent-track's FB-enter

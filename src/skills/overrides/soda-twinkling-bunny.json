@@ -67,6 +67,7 @@
       "everyN": 3,
       "target": {
         "kind": "alliesTopAtk",
+        "byFinalAtk": true,
         "count": 1,
         "excludeSelf": true
       },

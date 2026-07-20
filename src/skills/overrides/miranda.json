@@ -76,6 +76,7 @@
       },
       "target": {
         "kind": "alliesTopAtk",
+        "byFinalAtk": true,
         "count": 1,
         "excludeSelf": true
       },
@@ -97,6 +98,7 @@
       },
       "target": {
         "kind": "alliesTopAtk",
+        "byFinalAtk": true,
         "count": 2,
         "excludeSelf": true
       },

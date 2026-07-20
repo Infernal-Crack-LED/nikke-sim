@@ -17,6 +17,7 @@
       },
       "target": {
         "kind": "alliesTopAtk",
+        "byFinalAtk": true,
         "count": 2
       },
       "effects": [

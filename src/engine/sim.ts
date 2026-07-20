@@ -330,6 +330,8 @@ interface WeaponSwap {
   pullsPerSec?: number;  // swap weapon's own fire cadence (moran: 24/s vs base AR 12/s)
   weapon?: string;       // swap weapon's class override (nayuta: SR mode) → range/core banding
   trueNormals?: boolean;
+  hasPierce?: boolean;   // swap shots are Pierce-tagged (swap-scoped "Additional Effect: Pierce",
+                         // snow-white's cannon) — feeds the per-shot pierceActive tag only
   // uses-based termination (MEASURED 2026-07-14, SWHA-focus recording: the swap ends right
   // after the Nth swapped shot fires, at variable time — NOT at a fixed duration; untilFrame
   // remains the hard bound, e.g. the 10s burst window)
@@ -349,6 +351,9 @@ interface UnitState {
   warnings: string[];
   hasPierce: boolean;     // kit's attacks are Pierce-tagged (Q10) — STATIC (whole-fight or mode-gated)
   pierceUntilFrame: number; // timed "Gain Pierce for N sec" window end (0 = none); pierce active when > frame
+  shieldedUntilFrame: number; // shield-state window end (0 = none): set when a 'shield' effect targets this
+                              // unit (durationSec; none = permanent at scope — boss damage unmodeled, nothing
+                              // breaks shields). Read by the requiresShielded block gate (naga's burst 31.02%)
   consolidation?: ConsolidationConfig; // pellet-consolidation mode config (dorothy-S)
   landedAcc: number;      // landed pellets accrued toward the consolidation trigger (near-gated)
   consolShotsLeft: number; // remaining single-bullet consolidation shots in the current episode
@@ -551,7 +556,8 @@ export function runSim(
           (!need.element || c.element === need.element) &&
           (!need.class || c.class === need.class) &&
           (!need.weapon || c.weapon === need.weapon) &&
-          (!need.burst || c.burst === need.burst)
+          (!need.burst || c.burst === need.burst) &&
+          (!need.slugs || need.slugs.includes(c.slug))
       );
     const activeBlocks = skills.blocks.filter(
       (b) =>
@@ -603,6 +609,7 @@ export function runSim(
         skills.hasPierce === true ||
         (skills.pierceModes?.includes(selectedMode ?? '') ?? false),
       pierceUntilFrame: 0,
+      shieldedUntilFrame: 0,
       consolidation: skills.consolidation,
       landedAcc: 0,
       consolShotsLeft: 0,
@@ -1246,7 +1253,13 @@ export function runSim(
     u.damage[opts.category] += dmg;
   }
 
-  function resolveTargets(t: TargetDef, ownerIdx: number): UnitState[] {
+  function resolveTargets(t: TargetDef, ownerIdx: number, frame: number): UnitState[] {
+    // A3 (2026-07-20): "highest/lowest FINAL ATK" selectors rank by LIVE effectiveAtk; plain
+    // "highest ATK" (byFinalAtk absent) keeps base staticAtk. Ranking is evaluated ONCE here, at the
+    // apply frame, and returns BEFORE the buff is placed — so the buff being granted never feeds its
+    // own ranking input. Deterministic tie-break by slot index (live ATK values can tie).
+    const atkRank = (u: UnitState, byFinalAtk?: boolean) =>
+      byFinalAtk ? effectiveAtk(u, frame) : u.staticAtk;
     switch (t.kind) {
       case 'self': return [units[ownerIdx]];
       case 'allies':
@@ -1270,13 +1283,13 @@ export function runSim(
         // ally except the skill user"); a 5-unit team always leaves ≥4 others ≥ count.
         return [...units]
           .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
-          .sort((a, b) => b.staticAtk - a.staticAtk)
+          .sort((a, b) => atkRank(b, t.byFinalAtk) - atkRank(a, t.byFinalAtk) || a.idx - b.idx)
           .slice(0, t.count);
       case 'alliesLowestAtk':
         return units
           .filter((u) => !t.burst || u.char.burst === t.burst || u.char.burst === 'Λ')
           .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
-          .sort((a, b) => a.staticAtk - b.staticAtk)
+          .sort((a, b) => atkRank(a, t.byFinalAtk) - atkRank(b, t.byFinalAtk) || a.idx - b.idx)
           .slice(0, t.count);
       case 'alliesOfElement':
         return units.filter(
@@ -1378,6 +1391,11 @@ export function runSim(
       const swapped = owner.swap != null && owner.swap.untilFrame > frame;
       if ((block.swapGate === 'swapped') !== swapped) return;
     }
+    // shield-state gate: "if a Shield is set in front of this unit" evaluated at trigger
+    // time — active only while a 'shield' effect's window covers the owner (naga's burst
+    // 31.02%; owner-ruled default-off/requires-a-shielder 2026-07-20). No shielder in the
+    // comp → no shield events → the block never fires.
+    if (block.requiresShielded && owner.shieldedUntilFrame <= frame) return;
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
@@ -1465,7 +1483,7 @@ export function runSim(
           const alwaysOn =
             (block.trigger.kind === 'passive' || block.trigger.kind === 'bossElement') &&
             e.durationSec == null;
-          for (const t of resolveTargets(block.target, ownerIdx)) {
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             // targetMaxHpPct is "% of the TARGET's own Max HP" → value differs per target.
             const appliedValue =
               e.stat === 'targetMaxHpPct' ? (e.value / 100) * t.maxHp : value;
@@ -1597,6 +1615,7 @@ export function runSim(
             pullsPerSec: e.pullsPerSec,
             weapon: e.weapon,
             trueNormals: e.trueNormals,
+            hasPierce: e.hasPierce,
             maxShots: e.maxShots,
             shotsFired: 0,
           };
@@ -1613,7 +1632,7 @@ export function runSim(
           // a heal has no modeled HP value; it emits a RECOVERY event to its targets,
           // firing their 'recovery'-triggered blocks (heal-synergy kits — Helm's
           // full-charge heal drives Crown's "when recovery takes effect → team ATK ▲").
-          const healTargets = resolveTargets(block.target, ownerIdx);
+          const healTargets = resolveTargets(block.target, ownerIdx, frame);
           for (const t of healTargets) fireRecovery(t.idx, frame);
           // heal-over-time: "Recovers X% every 1 sec for N sec" = N ticks. The first tick fired
           // above; schedule the remaining N-1 so on-recovery consumers stay refreshed across the
@@ -1633,8 +1652,15 @@ export function runSim(
         case 'shield':
           // no shield HP pool is modeled (v1 boss deals no damage); like 'heal', it
           // emits a SHIELDED event to its targets, firing their 'shielded'-triggered
-          // blocks (shield-synergy kits — e.g. naga's shield-gated lines).
-          for (const t of resolveTargets(block.target, ownerIdx)) {
+          // blocks (shield-synergy kits — e.g. naga's shield-gated lines), and opens
+          // each target's shield-state window (shieldedUntilFrame — the requiresShielded
+          // gate; durationSec-less shields are permanent at scope, unexercised today:
+          // all current emitters carry a duration).
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            t.shieldedUntilFrame = Math.max(
+              t.shieldedUntilFrame,
+              e.durationSec != null ? frame + Math.round(e.durationSec * FPS) : Number.MAX_SAFE_INTEGER
+            );
             t.blocks.forEach((rb, ri) => {
               if (rb.trigger.kind === 'shielded') applyBlock(t.idx, rb, ri, frame);
             });
@@ -1671,22 +1697,22 @@ export function runSim(
           break;
         }
         case 'burstEligibility':
-          for (const t of resolveTargets(block.target, ownerIdx)) t.extraStages.add(e.stage);
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) t.extraStages.add(e.stage);
           break;
         case 'burstFirst':
-          for (const t of resolveTargets(block.target, ownerIdx)) t.burstFirstPending = true;
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) t.burstFirstPending = true;
           break;
         case 'reenterStage':
           break; // handled by the rotation (stage hold) after the cast resolves
         case 'advantageVs':
-          for (const t of resolveTargets(block.target, ownerIdx)) t.advantageVs.add(e.element);
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) t.advantageVs.add(e.element);
           break;
         case 'burstCdr':
           if (e.oncePerBattle) {
             if (usedOncePerBattle.has(key)) break;
             usedOncePerBattle.add(key);
           }
-          for (const t of resolveTargets(block.target, ownerIdx)) {
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             t.burstCdFrames = Math.max(0, t.burstCdFrames - Math.round(e.seconds * FPS));
           }
           break;
@@ -1702,14 +1728,14 @@ export function runSim(
           else pendingFbExtendSec += e.seconds;
           break;
         case 'unlimitedAmmo':
-          for (const t of resolveTargets(block.target, ownerIdx)) {
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             applyBuff(t.buffs, key, 'unlimitedAmmo', 1, e.durationSec, 1, frame);
           }
           break;
         case 'gainPierce':
           // timed "Gain Pierce for N sec": mark the target Pierce-tagged for the window
           // so its (and teammates') Pierce Damage ▲ buffs go live only during it.
-          for (const t of resolveTargets(block.target, ownerIdx)) {
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             t.pierceUntilFrame = Math.max(
               t.pierceUntilFrame,
               frame + Math.round(e.durationSec * FPS)
@@ -1729,7 +1755,7 @@ export function runSim(
           break;
         }
         case 'stun':
-          for (const t of resolveTargets(block.target, ownerIdx)) {
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             t.stunnedUntilFrame = Math.max(
               t.stunnedUntilFrame,
               frame + Math.round(e.durationSec * FPS)
@@ -1737,7 +1763,7 @@ export function runSim(
           }
           break;
         case 'instantReload':
-          for (const t of resolveTargets(block.target, ownerIdx)) {
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             const max = maxAmmo(t, frame);
             t.ammo = Math.min(max, t.ammo + Math.round(max * (e.fraction ?? 1)));
             if (t.ammo > 0) {
@@ -1750,7 +1776,7 @@ export function runSim(
           // "Removes N% of ammunition" / forced reload (theme 15): drain the belt by a fraction of
           // MAX capacity (default 1 = the whole magazine); if it empties, force a reload just as if
           // the unit had fired dry (fires lastBullet triggers). The inverse of instantReload.
-          for (const t of resolveTargets(block.target, ownerIdx)) {
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             const max = maxAmmo(t, frame);
             t.ammo = Math.max(0, t.ammo - Math.round(max * (e.fraction ?? 1)));
             if (t.ammo <= 0 && !t.reloading) {
@@ -1785,6 +1811,18 @@ export function runSim(
     })
   );
 
+  // internal-cooldown skills ({kind:'interval', sec}): fire every sec seconds of battle,
+  // first at t=sec (⚑ phase convention — see types.ts; snow-white S2a 144.73%, 15s CD)
+  const intervalBlocks: Array<{ unitIdx: number; block: Block; bi: number; period: number; next: number }> = [];
+  units.forEach((u) =>
+    u.blocks.forEach((b, bi) => {
+      if (b.trigger.kind === 'interval') {
+        const period = Math.max(1, Math.round(b.trigger.sec * FPS));
+        intervalBlocks.push({ unitIdx: u.idx, block: b, bi, period, next: period });
+      }
+    })
+  );
+
   // passives on at frame 0 (boss-element conditionals count when the element matches)
   units.forEach((u) =>
     u.blocks.forEach((b, bi) => {
@@ -1802,6 +1840,14 @@ export function runSim(
   for (let frame = 0; frame < totalFrames; frame++) {
     const fbActive = fbEndFrame > frame;
     if (fbActive) fbFrames++;
+
+    // ---- internal-cooldown ('interval') skills ----
+    for (const ib of intervalBlocks) {
+      if (frame === ib.next) {
+        applyBlock(ib.unitIdx, ib.block, ib.bi, frame);
+        ib.next += ib.period;
+      }
+    }
 
     // ---- full burst end ----
     if (fbEndFrame === frame) {
@@ -2294,7 +2340,9 @@ export function runSim(
       // supersedes implementation-plan §1.5's fold-in). Only dorothy's ordinary spray shots take the cone.
       coreOverride: consolidating && consol ? consol.coreRate : undefined,
       extraDmgUpPct: consolidating && consol ? consol.attackDamagePct : undefined,
-      pierceActive: consolidating && consol ? consol.pierce : undefined,
+      // per-shot pierce tag: consolidation-bullet pierce, or a swap-scoped Pierce weapon
+      // (weaponSwap.hasPierce — the shot is a swap shot whenever u.swap is live here)
+      pierceActive: (consolidating && consol ? consol.pierce : undefined) || u.swap?.hasPierce || undefined,
       // the consolidated single bullet takes NO effective-range bonus (MEASURED: its non-core
       // value = full-shot base × dmgUp with major ≈ 1.0, not 1.3 — dorothy-solo-reanalysis.json)
       noRange: consolidating || undefined,
