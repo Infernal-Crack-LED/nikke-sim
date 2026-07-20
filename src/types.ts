@@ -36,6 +36,15 @@ export interface CharacterData {
   rl3: number | null;             // burst gen: % of gauge generated per 3 seconds
   burstGaugePerShot: number | null;
   treasure: boolean;              // has a Treasure (favorite item); DB prydwen_slug ends -treasure
+  // Support tags (sync.ts second stage). Independent — a unit can be one, both, or
+  // neither. Neither = "unsupported": pulled in for Team Builder browsing only, never
+  // offered by the sim/roster-sim engine tabs or the DPS chart/generator tabs.
+  generatorSupported: boolean;    // enikk top-100-proven (data/enikk-supported.json) — DPS
+                                   // chart + the Team/Roster/Custom-DPS generator tabs
+  simSupported: boolean;          // has a hand-tuned kit override (src/skills/overrides/) —
+                                   // Team Sim, Roster Sim, Optimize Overload, Overload
+                                   // Breakpoints. Today == generatorSupported (74/74 overrides
+                                   // authored); will outgrow it as more kits get overrides.
   nicknames?: string[];           // APPROVED community nicknames (src/data/nicknames.ts derivation)
   skills: { skill1: string; skill2: string; burst: string };
   // Raw, UNPRUNED blablalink roledata snapshot (game source-of-truth), passed through verbatim

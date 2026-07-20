@@ -1,0 +1,18 @@
+{
+ "cinderella": {
+  "elec battery (run B order)": 585508385,
+  "elec DPS (run E order)": 376078706,
+  "T2": 1207914737,
+  "T7": 1213021011,
+  "T2 elec-weak": 1306021918
+ },
+ "cinderella-crystal-wave": {
+  "T5 wind-weak": 1197629008
+ },
+ "soda-twinkling-bunny": {
+  "N3 scarlet/liberalio iron": 132098122
+ },
+ "ade-agent-bunny": {
+  "N6 mihara/maiden wind": 98921602
+ }
+}

@@ -40,11 +40,20 @@ Then **cross-check the two agents against each other**: for each blind `codeDriv
 full-context review corroborate it (documented in note/caveats) or was it undocumented (a fresh find)?
 Undocumented + formula-confirmed = the most valuable output.
 
+## Also produce: `kitDescription`
+
+Separately from the gotcha-hunting above, write a plain-English paragraph (3-6 sentences) describing what
+this unit's kit (skill1/skill2/burst) actually DOES in game terms — grounded in the real kit text, not
+audit jargon. This is NOT a verdict or a findings summary; it's the kind of description you'd give someone
+who just wants to know "what does this unit do" so the owner can sanity-check it against their own
+intuition for the unit. No gotcha subkinds, no file:line citations, no severity — plain description only.
+
 ## Return ONLY this JSON
 
 ```json
 {
   "slug": "<exact slug>",
+  "kitDescription": "<plain-English 3-6 sentence description of what the kit does, for owner sanity-check>",
   "board": { "ratio": <num|null>, "tag": "HOT|COLD|OK|no-data" },
   "lineFindings": {
     "skill1": [ { "realLine": "...", "category": "FAITHFUL|EXPECTED_GAP|GOTCHA|RECON_ERROR", "subkind": "ENCODING|ENGINE|FIDELITY|SILENT_DROP|null", "blindSaid": "...", "reviewSaid": "...", "formulaCheck": "<what damage-calc/game-mechanics says about the correct routing>", "explanation": "..." } ],

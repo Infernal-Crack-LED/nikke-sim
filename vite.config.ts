@@ -9,7 +9,7 @@ const BACKEND =
 
 export default defineConfig({
   root: 'web',
-  publicDir: fileURLToPath(new URL('./img', import.meta.url)), // cube images at /bastion.webp etc.
+  publicDir: 'public', // static assets served at root (images, robots.txt, sitemap.xml)
   plugins: [react()],
   // Dev-only: forward /api (and /auth) to the backend server-side so localhost
   // dev isn't blocked by CORS (the backend only allowlists the deployed sim

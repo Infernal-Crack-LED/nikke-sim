@@ -1,0 +1,1394 @@
+{
+ "updated": "2026-07-20",
+ "generated": "scripts/build-archetype-tags.ts",
+ "source": "data/characters.json — skill prose only (skills.skill1/skill2/burst); role.* datamine ignored",
+ "policy": "Archetype tags for Team Builder filtering. Derived deterministically from kit prose by scripts/build-archetype-tags.ts (re-run as a sweep with --write). The prose is split on the \"■\" block marker and each block's \"Affects …\" target is read, so an ally ATK ▲ tags `buffer` while an enemy ATK ▼ tags `debuffer`. Stat/damage buffer-family tags match a buff on self OR allies (a self-only buffer still carries the tag); burst-support, ally-filter and role tags stay ally-facing. Each tag carries a `group` for the UI filter panel. Manual edits are allowed for edge cases but will be overwritten by the next --write sweep; to make a change stick, adjust the rule in build-archetype-tags.ts. See docs/data/archetype-tags.md.",
+ "vocabulary": {
+  "buffer": {
+   "label": "Buffer",
+   "blurb": "Buffs stats (ATK / HP / DEF / Crit / generic DMG up), self or ally.",
+   "group": "Stat Buffs"
+  },
+  "attack-buffer": {
+   "label": "ATK ▲",
+   "blurb": "Buffs ATK / Attack Damage (self or ally).",
+   "group": "Stat Buffs"
+  },
+  "def-buffer": {
+   "label": "DEF ▲",
+   "blurb": "Buffs DEF (self or ally).",
+   "group": "Stat Buffs"
+  },
+  "hp-buffer": {
+   "label": "HP ▲",
+   "blurb": "Buffs Max HP (self or ally; not cover HP).",
+   "group": "Stat Buffs"
+  },
+  "reload-buffer": {
+   "label": "Reload ▲",
+   "blurb": "Buffs Reload Speed (self or ally).",
+   "group": "Stat Buffs"
+  },
+  "charge-buffer": {
+   "label": "Charge ▲",
+   "blurb": "Buffs Charge Speed (self or ally; charge weapons).",
+   "group": "Stat Buffs"
+  },
+  "charge-damage-buffer": {
+   "label": "Charge Damage ▲",
+   "blurb": "Buffs Charge Damage (self or ally; per charge shot, not speed).",
+   "group": "Stat Buffs"
+  },
+  "hit-rate-buffer": {
+   "label": "Hit Rate ▲",
+   "blurb": "Buffs Hit Rate / Accuracy (self or ally).",
+   "group": "Stat Buffs"
+  },
+  "ammo-buffer": {
+   "label": "Ammo ▲",
+   "blurb": "Buffs Max Ammunition Capacity (self or ally).",
+   "group": "Stat Buffs"
+  },
+  "incoming-healing-buffer": {
+   "label": "Incoming Healing ▲",
+   "blurb": "Buffs Incoming Healing (self or ally; amplifies heals received).",
+   "group": "Stat Buffs"
+  },
+  "ele-buffer": {
+   "label": "Element ▲",
+   "blurb": "Element-focused: buffs Elemental Advantage DMG (self or ally) or keys off a specific element Code.",
+   "group": "Damage Buffs"
+  },
+  "core-buffer": {
+   "label": "Core ▲",
+   "blurb": "Buffs core hits (Core Hit Rate / Core DMG up, self or ally).",
+   "group": "Damage Buffs"
+  },
+  "projectile-buffer": {
+   "label": "Projectile ▲",
+   "blurb": "Buffs projectile DMG (self or ally; RL / SR / launcher kits).",
+   "group": "Damage Buffs"
+  },
+  "pierce-buffer": {
+   "label": "Pierce ▲",
+   "blurb": "Grants/buffs Penetration (pierce), self or ally.",
+   "group": "Damage Buffs"
+  },
+  "true-damage-buffer": {
+   "label": "True Damage ▲",
+   "blurb": "Buffs True Damage (self or ally; ignores DEF).",
+   "group": "Damage Buffs"
+  },
+  "parts-buffer": {
+   "label": "Parts ▲",
+   "blurb": "Buffs Damage to Parts / Interruption Parts (self or ally).",
+   "group": "Damage Buffs"
+  },
+  "sustained-buffer": {
+   "label": "Sustained ▲",
+   "blurb": "Buffs Sustained Damage dealt (self or ally).",
+   "group": "Damage Buffs"
+  },
+  "distributed-buffer": {
+   "label": "Distributed ▲",
+   "blurb": "Buffs Distributed Damage dealt (self or ally).",
+   "group": "Damage Buffs"
+  },
+  "shotgun-buffer": {
+   "label": "Shotgun ▲",
+   "blurb": "Buffs shotgun-wielding allies.",
+   "group": "Ally Filters"
+  },
+  "ar-buffer": {
+   "label": "Assault Rifle ▲",
+   "blurb": "Buffs assault-rifle allies.",
+   "group": "Ally Filters"
+  },
+  "sr-buffer": {
+   "label": "Sniper Rifle ▲",
+   "blurb": "Buffs sniper-rifle allies.",
+   "group": "Ally Filters"
+  },
+  "smg-buffer": {
+   "label": "Submachine Gun ▲",
+   "blurb": "Buffs submachine-gun allies.",
+   "group": "Ally Filters"
+  },
+  "rl-buffer": {
+   "label": "Rocket Launcher ▲",
+   "blurb": "Buffs rocket-launcher allies.",
+   "group": "Ally Filters"
+  },
+  "attacker-buffer": {
+   "label": "Attacker ▲",
+   "blurb": "Buffs Attacker-class allies.",
+   "group": "Ally Filters"
+  },
+  "defender-buffer": {
+   "label": "Defender ▲",
+   "blurb": "Buffs Defender-class allies.",
+   "group": "Ally Filters"
+  },
+  "supporter-buffer": {
+   "label": "Supporter ▲",
+   "blurb": "Buffs Supporter-class allies.",
+   "group": "Ally Filters"
+  },
+  "burst-gauge-buffer": {
+   "label": "Burst Gauge ▲",
+   "blurb": "Fills ally Burst Gauge / buffs Burst Gauge filling speed.",
+   "group": "Burst Support"
+  },
+  "burst-cdr": {
+   "label": "Burst CDR",
+   "blurb": "Reduces ally Burst Skill cooldown.",
+   "group": "Burst Support"
+  },
+  "burst-stage": {
+   "label": "Burst Stage",
+   "blurb": "Re-enters / advances the Burst Stage for allies.",
+   "group": "Burst Support"
+  },
+  "healer": {
+   "label": "Healer",
+   "blurb": "Recovers ally HP.",
+   "group": "Role"
+  },
+  "shield": {
+   "label": "Shield",
+   "blurb": "Grants allies a shield.",
+   "group": "Role"
+  },
+  "taunt": {
+   "label": "Taunt",
+   "blurb": "Provoke / draw enemy fire (tank).",
+   "group": "Role"
+  },
+  "debuffer": {
+   "label": "Debuffer",
+   "blurb": "Lowers enemy DEF/ATK or raises damage taken.",
+   "group": "Role"
+  },
+  "damage-reduction": {
+   "label": "Damage Reduction",
+   "blurb": "Lowers Damage Taken by allies.",
+   "group": "Role"
+  },
+  "damage-share": {
+   "label": "Damage Share",
+   "blurb": "Shares damage taken across allies (tank).",
+   "group": "Role"
+  },
+  "invulnerability": {
+   "label": "Invulnerability",
+   "blurb": "Grants allies invulnerability / indomitability.",
+   "group": "Role"
+  },
+  "cleanse": {
+   "label": "Cleanse",
+   "blurb": "Removes ally debuffs / grants debuff immunity.",
+   "group": "Role"
+  },
+  "sustained-damage": {
+   "label": "Sustained Damage",
+   "blurb": "Deals or enables sustained single-target damage.",
+   "group": "Role"
+  },
+  "distributed-damage": {
+   "label": "Distributed Damage",
+   "blurb": "Deals or enables distributed damage (split across the wave).",
+   "group": "Role"
+  },
+  "pierce": {
+   "label": "Pierce",
+   "blurb": "Own attacks penetrate (ignore DEF / shield-pierce).",
+   "group": "Role"
+  }
+ },
+ "tags": {
+  "2b": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "distributed-damage"
+  ],
+  "a2": [
+   "buffer",
+   "attack-buffer",
+   "charge-buffer",
+   "charge-damage-buffer",
+   "parts-buffer"
+  ],
+  "ada": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer",
+   "true-damage-buffer",
+   "healer"
+  ],
+  "ade": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "cleanse"
+  ],
+  "ade-agent-bunny": [
+   "buffer",
+   "attack-buffer",
+   "pierce-buffer",
+   "pierce"
+  ],
+  "admi": [
+   "buffer",
+   "reload-buffer",
+   "charge-damage-buffer",
+   "damage-reduction"
+  ],
+  "alice": [
+   "buffer",
+   "attack-buffer",
+   "charge-buffer",
+   "charge-damage-buffer",
+   "pierce"
+  ],
+  "alice-wonderland-bunny": [
+   "ammo-buffer",
+   "incoming-healing-buffer",
+   "parts-buffer",
+   "burst-gauge-buffer",
+   "burst-stage",
+   "healer"
+  ],
+  "anchor": [
+   "buffer",
+   "def-buffer",
+   "projectile-buffer",
+   "taunt"
+  ],
+  "anchor-innocent-maid": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "reload-buffer",
+   "hit-rate-buffer",
+   "distributed-buffer",
+   "healer",
+   "distributed-damage"
+  ],
+  "anis": [
+   "buffer",
+   "def-buffer",
+   "debuffer",
+   "damage-share"
+  ],
+  "anis-sparkling-summer": [
+   "buffer",
+   "attack-buffer",
+   "reload-buffer",
+   "ele-buffer",
+   "parts-buffer"
+  ],
+  "anis-star": [
+   "buffer",
+   "attack-buffer",
+   "def-buffer",
+   "hp-buffer",
+   "projectile-buffer",
+   "burst-gauge-buffer",
+   "burst-cdr",
+   "burst-stage",
+   "healer"
+  ],
+  "arcana": [
+   "buffer",
+   "attack-buffer",
+   "burst-cdr",
+   "debuffer"
+  ],
+  "arcana-fortune-mate": [
+   "buffer",
+   "attack-buffer",
+   "shotgun-buffer"
+  ],
+  "aria": [
+   "buffer",
+   "hit-rate-buffer",
+   "shield"
+  ],
+  "ark-ranger-black": [
+   "buffer",
+   "attack-buffer",
+   "parts-buffer",
+   "sustained-buffer",
+   "ar-buffer",
+   "sustained-damage"
+  ],
+  "asuka": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "ele-buffer",
+   "core-buffer",
+   "pierce"
+  ],
+  "asuka-wille": [
+   "buffer",
+   "attack-buffer",
+   "debuffer"
+  ],
+  "avistar": [
+   "buffer",
+   "hp-buffer",
+   "burst-stage"
+  ],
+  "bay": [
+   "buffer",
+   "def-buffer",
+   "healer",
+   "damage-reduction",
+   "damage-share"
+  ],
+  "belorta": [
+   "charge-buffer",
+   "debuffer"
+  ],
+  "biscuit": [
+   "buffer",
+   "attack-buffer",
+   "attacker-buffer",
+   "defender-buffer",
+   "supporter-buffer",
+   "healer",
+   "invulnerability"
+  ],
+  "blanc": [
+   "buffer",
+   "hp-buffer",
+   "healer",
+   "debuffer",
+   "invulnerability"
+  ],
+  "bready": [
+   "buffer",
+   "attack-buffer",
+   "debuffer",
+   "sustained-damage",
+   "distributed-damage"
+  ],
+  "brid": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "brid-silent-track": [
+   "buffer",
+   "attack-buffer",
+   "ele-buffer",
+   "debuffer"
+  ],
+  "centi": [
+   "buffer",
+   "hp-buffer",
+   "healer",
+   "shield",
+   "debuffer"
+  ],
+  "chime": [
+   "ammo-buffer",
+   "burst-stage"
+  ],
+  "chisato": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "true-damage-buffer"
+  ],
+  "cinderella": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "charge-buffer"
+  ],
+  "cinderella-crystal-wave": [
+   "buffer",
+   "attack-buffer",
+   "core-buffer",
+   "parts-buffer",
+   "burst-gauge-buffer",
+   "pierce"
+  ],
+  "claire": [
+   "healer",
+   "shield",
+   "cleanse"
+  ],
+  "clay": [
+   "buffer",
+   "attack-buffer",
+   "projectile-buffer",
+   "true-damage-buffer",
+   "cleanse"
+  ],
+  "cocoa": [
+   "healer",
+   "debuffer",
+   "cleanse"
+  ],
+  "crow": [
+   "buffer",
+   "def-buffer",
+   "debuffer"
+  ],
+  "crown": [
+   "buffer",
+   "attack-buffer",
+   "def-buffer",
+   "reload-buffer",
+   "incoming-healing-buffer",
+   "shield",
+   "taunt"
+  ],
+  "crust": [
+   "buffer",
+   "attack-buffer",
+   "def-buffer",
+   "sustained-buffer",
+   "distributed-buffer",
+   "cleanse",
+   "sustained-damage",
+   "distributed-damage"
+  ],
+  "d": [
+   "buffer",
+   "attack-buffer",
+   "ele-buffer",
+   "parts-buffer",
+   "attacker-buffer",
+   "burst-gauge-buffer"
+  ],
+  "d-killer-wife": [
+   "buffer",
+   "attack-buffer",
+   "core-buffer",
+   "pierce-buffer",
+   "sr-buffer",
+   "burst-cdr",
+   "pierce"
+  ],
+  "delta": [
+   "buffer",
+   "def-buffer",
+   "hp-buffer",
+   "taunt"
+  ],
+  "delta-ninja-thief": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "distributed-buffer",
+   "healer",
+   "shield",
+   "taunt",
+   "debuffer",
+   "distributed-damage"
+  ],
+  "diesel": [
+   "buffer",
+   "def-buffer",
+   "hp-buffer",
+   "ammo-buffer",
+   "pierce-buffer",
+   "taunt"
+  ],
+  "diesel-winter-sweets": [
+   "buffer",
+   "sustained-buffer",
+   "debuffer",
+   "sustained-damage"
+  ],
+  "dolla": [
+   "buffer",
+   "attack-buffer",
+   "burst-cdr"
+  ],
+  "dorothy": [
+   "parts-buffer",
+   "burst-cdr",
+   "distributed-damage",
+   "pierce"
+  ],
+  "dorothy-serendipity": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "pierce-buffer",
+   "pierce"
+  ],
+  "drake": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "ammo-buffer",
+   "shotgun-buffer"
+  ],
+  "e-h": [
+   "buffer",
+   "attack-buffer",
+   "ele-buffer"
+  ],
+  "ein": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer",
+   "true-damage-buffer"
+  ],
+  "elegg": [
+   "buffer",
+   "attack-buffer",
+   "projectile-buffer",
+   "distributed-buffer",
+   "burst-gauge-buffer",
+   "debuffer",
+   "distributed-damage"
+  ],
+  "elegg-boom-and-shock": [
+   "buffer",
+   "attack-buffer",
+   "ele-buffer"
+  ],
+  "emilia": [
+   "charge-buffer",
+   "charge-damage-buffer",
+   "ammo-buffer"
+  ],
+  "emma": [
+   "incoming-healing-buffer",
+   "healer"
+  ],
+  "emma-tactical-upgrade": [
+   "buffer",
+   "attack-buffer",
+   "incoming-healing-buffer",
+   "projectile-buffer",
+   "true-damage-buffer",
+   "taunt"
+  ],
+  "epinel": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "ether": [
+   "shield",
+   "debuffer",
+   "damage-reduction"
+  ],
+  "eunhwa": [
+   "buffer",
+   "charge-buffer",
+   "charge-damage-buffer",
+   "debuffer"
+  ],
+  "eunhwa-tactical-upgrade": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer",
+   "projectile-buffer",
+   "true-damage-buffer"
+  ],
+  "eve": [
+   "buffer",
+   "attack-buffer",
+   "ammo-buffer",
+   "ele-buffer",
+   "debuffer"
+  ],
+  "exia": [
+   "buffer",
+   "attack-buffer",
+   "debuffer"
+  ],
+  "flora": [
+   "incoming-healing-buffer",
+   "true-damage-buffer",
+   "healer",
+   "shield"
+  ],
+  "folkwang": [
+   "buffer",
+   "hp-buffer",
+   "incoming-healing-buffer",
+   "healer",
+   "shield",
+   "taunt"
+  ],
+  "frima": [
+   "buffer",
+   "hp-buffer",
+   "true-damage-buffer",
+   "debuffer"
+  ],
+  "grave": [
+   "buffer",
+   "attack-buffer",
+   "ammo-buffer",
+   "pierce-buffer",
+   "burst-gauge-buffer",
+   "pierce"
+  ],
+  "guillotine": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "guillotine-winter-slayer": [
+   "buffer",
+   "attack-buffer",
+   "ele-buffer"
+  ],
+  "guilty": [
+   "buffer",
+   "attack-buffer",
+   "debuffer"
+  ],
+  "harran": [
+   "buffer",
+   "attack-buffer",
+   "pierce"
+  ],
+  "helm": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer",
+   "parts-buffer",
+   "burst-gauge-buffer",
+   "healer"
+  ],
+  "helm-aquamarine": [
+   "ele-buffer",
+   "burst-cdr",
+   "debuffer"
+  ],
+  "himeno": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer",
+   "ammo-buffer",
+   "sr-buffer",
+   "debuffer"
+  ],
+  "idoll-flower": [
+   "taunt",
+   "debuffer"
+  ],
+  "idoll-ocean": [
+   "healer"
+  ],
+  "idoll-sun": [
+   "buffer",
+   "def-buffer",
+   "ammo-buffer"
+  ],
+  "isabel": [
+   "buffer",
+   "attack-buffer",
+   "debuffer"
+  ],
+  "jackal": [
+   "buffer",
+   "def-buffer",
+   "debuffer",
+   "damage-share"
+  ],
+  "jill": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "true-damage-buffer",
+   "sustained-damage"
+  ],
+  "julia": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "k": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "kilo": [
+   "buffer",
+   "hp-buffer"
+  ],
+  "kurumi": [
+   "debuffer",
+   "sustained-damage"
+  ],
+  "label": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer"
+  ],
+  "laplace": [
+   "pierce"
+  ],
+  "leona": [
+   "buffer",
+   "hit-rate-buffer",
+   "shotgun-buffer"
+  ],
+  "liberalio": [
+   "buffer",
+   "attack-buffer",
+   "charge-buffer"
+  ],
+  "lily": [
+   "buffer",
+   "attack-buffer",
+   "healer"
+  ],
+  "liter": [
+   "buffer",
+   "attack-buffer",
+   "ammo-buffer",
+   "burst-cdr",
+   "healer"
+  ],
+  "little-mermaid": [
+   "buffer",
+   "attack-buffer",
+   "burst-gauge-buffer",
+   "burst-cdr",
+   "debuffer"
+  ],
+  "ludmilla": [
+   "buffer",
+   "def-buffer",
+   "taunt",
+   "debuffer"
+  ],
+  "ludmilla-winter-owner": [
+   "buffer",
+   "attack-buffer",
+   "reload-buffer",
+   "debuffer"
+  ],
+  "maiden": [
+   "buffer",
+   "attack-buffer",
+   "taunt"
+  ],
+  "maiden-ice-rose": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "ele-buffer"
+  ],
+  "makima": [
+   "buffer",
+   "def-buffer",
+   "reload-buffer",
+   "incoming-healing-buffer",
+   "taunt",
+   "pierce"
+  ],
+  "mana": [
+   "buffer",
+   "attack-buffer",
+   "sustained-buffer",
+   "healer",
+   "sustained-damage"
+  ],
+  "marciana": [
+   "buffer",
+   "def-buffer",
+   "incoming-healing-buffer",
+   "healer"
+  ],
+  "marciana-marine-study": [
+   "buffer",
+   "attack-buffer",
+   "ele-buffer",
+   "debuffer"
+  ],
+  "mari": [
+   "buffer",
+   "attack-buffer",
+   "pierce-buffer",
+   "shield",
+   "pierce"
+  ],
+  "mary": [
+   "buffer",
+   "def-buffer",
+   "incoming-healing-buffer",
+   "healer"
+  ],
+  "mary-bay-goddess": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "ele-buffer",
+   "healer"
+  ],
+  "mast": [
+   "buffer",
+   "hp-buffer",
+   "debuffer"
+  ],
+  "mast-romantic-maid": [
+   "buffer",
+   "attack-buffer",
+   "reload-buffer",
+   "distributed-buffer",
+   "distributed-damage"
+  ],
+  "maxwell": [
+   "buffer",
+   "attack-buffer",
+   "charge-buffer",
+   "pierce"
+  ],
+  "mica": [
+   "buffer",
+   "def-buffer",
+   "ammo-buffer",
+   "debuffer"
+  ],
+  "mica-snow-buddy": [
+   "buffer",
+   "attack-buffer",
+   "ammo-buffer",
+   "damage-reduction",
+   "cleanse"
+  ],
+  "mihara": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "mihara-bonding-chain": [
+   "sustained-buffer",
+   "sustained-damage"
+  ],
+  "milk": [
+   "buffer",
+   "attack-buffer",
+   "incoming-healing-buffer",
+   "burst-cdr",
+   "healer"
+  ],
+  "milk-blooming-bunny": [
+   "buffer",
+   "attack-buffer",
+   "pierce-buffer",
+   "distributed-damage",
+   "pierce"
+  ],
+  "mint": [
+   "buffer",
+   "attack-buffer",
+   "ammo-buffer",
+   "projectile-buffer",
+   "pierce-buffer",
+   "healer"
+  ],
+  "miranda": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "smg-buffer"
+  ],
+  "misato": [
+   "hit-rate-buffer",
+   "healer",
+   "shield"
+  ],
+  "modernia": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer"
+  ],
+  "moran": [
+   "buffer",
+   "attack-buffer",
+   "def-buffer",
+   "hp-buffer",
+   "burst-cdr",
+   "taunt",
+   "damage-reduction"
+  ],
+  "mori": [
+   "buffer",
+   "hp-buffer",
+   "sustained-buffer",
+   "taunt",
+   "sustained-damage"
+  ],
+  "n102": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer",
+   "ammo-buffer"
+  ],
+  "naga": [
+   "buffer",
+   "attack-buffer",
+   "core-buffer",
+   "healer",
+   "shield",
+   "pierce"
+  ],
+  "nayuta": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "core-buffer",
+   "damage-share"
+  ],
+  "neon": [
+   "buffer",
+   "ammo-buffer",
+   "shotgun-buffer"
+  ],
+  "neon-blue-ocean": [
+   "buffer",
+   "attack-buffer",
+   "ele-buffer",
+   "parts-buffer"
+  ],
+  "neon-vision-eye": [
+   "buffer",
+   "attack-buffer",
+   "incoming-healing-buffer"
+  ],
+  "nero": [
+   "buffer",
+   "hp-buffer",
+   "incoming-healing-buffer",
+   "taunt",
+   "debuffer"
+  ],
+  "neve": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "pierce"
+  ],
+  "nihilister": [
+   "ammo-buffer",
+   "sustained-damage",
+   "pierce"
+  ],
+  "noah": [
+   "buffer",
+   "def-buffer",
+   "taunt",
+   "debuffer",
+   "damage-reduction",
+   "invulnerability"
+  ],
+  "noir": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "ammo-buffer",
+   "parts-buffer",
+   "shotgun-buffer"
+  ],
+  "noise": [
+   "buffer",
+   "hp-buffer",
+   "healer",
+   "taunt",
+   "damage-reduction"
+  ],
+  "novel": [
+   "debuffer"
+  ],
+  "pascal": [
+   "incoming-healing-buffer",
+   "healer"
+  ],
+  "pepper": [
+   "incoming-healing-buffer",
+   "healer",
+   "debuffer"
+  ],
+  "phantom": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "distributed-buffer",
+   "debuffer",
+   "distributed-damage"
+  ],
+  "poli": [
+   "buffer",
+   "attack-buffer",
+   "def-buffer",
+   "damage-share"
+  ],
+  "power": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "prika": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "charge-damage-buffer",
+   "projectile-buffer",
+   "pierce-buffer",
+   "healer",
+   "pierce"
+  ],
+  "privaty": [
+   "buffer",
+   "attack-buffer",
+   "reload-buffer",
+   "ele-buffer",
+   "debuffer"
+  ],
+  "privaty-unkind-maid": [
+   "buffer",
+   "attack-buffer",
+   "reload-buffer"
+  ],
+  "product-08": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "product-12": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "product-23": [
+   "buffer",
+   "def-buffer",
+   "debuffer"
+  ],
+  "quency": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer"
+  ],
+  "quency-escape-queen": [
+   "buffer",
+   "attack-buffer",
+   "reload-buffer",
+   "hit-rate-buffer",
+   "core-buffer",
+   "distributed-buffer",
+   "distributed-damage"
+  ],
+  "quiry": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "defender-buffer",
+   "healer",
+   "debuffer"
+  ],
+  "ram": [
+   "buffer",
+   "def-buffer",
+   "hp-buffer",
+   "shield",
+   "debuffer"
+  ],
+  "rapi": [
+   "buffer",
+   "attack-buffer",
+   "taunt"
+  ],
+  "rapi-red-hood": [
+   "buffer",
+   "attack-buffer",
+   "projectile-buffer",
+   "parts-buffer",
+   "burst-cdr"
+  ],
+  "rapunzel": [
+   "buffer",
+   "hp-buffer",
+   "incoming-healing-buffer",
+   "healer"
+  ],
+  "rapunzel-pure-grace": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "shield"
+  ],
+  "raven": [
+   "buffer",
+   "attack-buffer",
+   "parts-buffer",
+   "sustained-buffer",
+   "sustained-damage"
+  ],
+  "red-hood": [
+   "buffer",
+   "attack-buffer",
+   "def-buffer",
+   "charge-buffer",
+   "charge-damage-buffer",
+   "incoming-healing-buffer",
+   "taunt",
+   "pierce"
+  ],
+  "rei": [
+   "burst-gauge-buffer",
+   "taunt"
+  ],
+  "rei-ayanami": [
+   "buffer",
+   "attack-buffer",
+   "ele-buffer",
+   "shield"
+  ],
+  "rem": [
+   "buffer",
+   "attack-buffer",
+   "ammo-buffer",
+   "rl-buffer",
+   "damage-share"
+  ],
+  "rosanna": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "rosanna-chic-ocean": [
+   "buffer",
+   "attack-buffer",
+   "parts-buffer",
+   "sustained-buffer",
+   "debuffer",
+   "sustained-damage"
+  ],
+  "rouge": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "burst-cdr",
+   "shield",
+   "damage-reduction"
+  ],
+  "rumani": [
+   "buffer",
+   "hp-buffer",
+   "parts-buffer",
+   "taunt"
+  ],
+  "rupee": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "rupee-winter-shopper": [
+   "buffer",
+   "def-buffer",
+   "reload-buffer",
+   "burst-gauge-buffer",
+   "burst-stage",
+   "taunt"
+  ],
+  "sakura": [
+   "buffer",
+   "attack-buffer",
+   "projectile-buffer",
+   "parts-buffer",
+   "burst-cdr"
+  ],
+  "sakura-bloom-in-summer": [
+   "buffer",
+   "attack-buffer",
+   "sustained-buffer",
+   "sustained-damage"
+  ],
+  "sakura-suzuhara": [
+   "incoming-healing-buffer",
+   "healer",
+   "debuffer",
+   "damage-reduction"
+  ],
+  "scarlet": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "scarlet-black-shadow": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer",
+   "ammo-buffer",
+   "distributed-damage"
+  ],
+  "signal": [
+   "debuffer"
+  ],
+  "sin": [
+   "buffer",
+   "def-buffer",
+   "incoming-healing-buffer",
+   "taunt",
+   "debuffer"
+  ],
+  "snow-crane": [
+   "buffer",
+   "hp-buffer",
+   "healer",
+   "shield",
+   "pierce"
+  ],
+  "snow-white": [
+   "buffer",
+   "attack-buffer",
+   "pierce"
+  ],
+  "snow-white-heavy-arms": [
+   "buffer",
+   "attack-buffer",
+   "def-buffer",
+   "charge-damage-buffer",
+   "parts-buffer",
+   "debuffer",
+   "pierce"
+  ],
+  "snow-white-innocent-days": [
+   "buffer",
+   "attack-buffer",
+   "ammo-buffer"
+  ],
+  "soda": [
+   "buffer",
+   "hp-buffer",
+   "healer"
+  ],
+  "soda-twinkling-bunny": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer"
+  ],
+  "soldier-eg": [
+   "ammo-buffer"
+  ],
+  "soldier-fa": [
+   "buffer",
+   "def-buffer",
+   "hp-buffer"
+  ],
+  "soldier-ow": [
+   "buffer",
+   "def-buffer",
+   "ammo-buffer"
+  ],
+  "soline": [
+   "buffer"
+  ],
+  "soline-frost-ticket": [
+   "buffer",
+   "hp-buffer",
+   "burst-cdr",
+   "healer"
+  ],
+  "sora": [
+   "buffer",
+   "attack-buffer",
+   "healer",
+   "cleanse"
+  ],
+  "sugar": [
+   "buffer",
+   "reload-buffer",
+   "hit-rate-buffer",
+   "ammo-buffer",
+   "shotgun-buffer"
+  ],
+  "takina": [
+   "buffer",
+   "attack-buffer",
+   "true-damage-buffer",
+   "debuffer"
+  ],
+  "tia": [
+   "buffer",
+   "attack-buffer",
+   "burst-stage",
+   "shield",
+   "taunt"
+  ],
+  "tove": [
+   "buffer",
+   "attack-buffer",
+   "ammo-buffer",
+   "shotgun-buffer"
+  ],
+  "trina": [
+   "buffer",
+   "attack-buffer",
+   "hp-buffer",
+   "reload-buffer",
+   "hit-rate-buffer",
+   "ammo-buffer",
+   "ar-buffer",
+   "healer",
+   "invulnerability"
+  ],
+  "trony": [
+   "buffer",
+   "attack-buffer",
+   "distributed-buffer",
+   "debuffer",
+   "distributed-damage"
+  ],
+  "velvet": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer"
+  ],
+  "vesti": [
+   "buffer",
+   "attack-buffer"
+  ],
+  "vesti-tactical-upgrade": [
+   "buffer",
+   "attack-buffer",
+   "charge-buffer",
+   "charge-damage-buffer",
+   "projectile-buffer",
+   "true-damage-buffer"
+  ],
+  "viper": [
+   "buffer",
+   "attack-buffer",
+   "hit-rate-buffer",
+   "sustained-buffer",
+   "burst-stage",
+   "debuffer",
+   "sustained-damage"
+  ],
+  "volume": [
+   "buffer",
+   "attack-buffer",
+   "burst-cdr"
+  ],
+  "yan": [
+   "buffer",
+   "attack-buffer",
+   "charge-damage-buffer"
+  ],
+  "yulha": [
+   "buffer",
+   "attack-buffer",
+   "damage-share"
+  ],
+  "yuni": [
+   "buffer",
+   "def-buffer",
+   "charge-buffer",
+   "ammo-buffer",
+   "healer"
+  ],
+  "zwei": [
+   "buffer",
+   "pierce-buffer",
+   "healer",
+   "pierce"
+  ]
+ }
+}

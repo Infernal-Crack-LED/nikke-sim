@@ -4,21 +4,21 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "sync": "tsx src/data/sync.ts",
+    "sync": "tsx src/data/sync.ts && tsx scripts/build-archetype-tags.ts --write",
     "sync:skills": "tsx src/data/sync-skill-levels.ts",
     "sim": "tsx src/cli.ts",
     "web": "vite",
     "dpschart": "tsx scripts/build-dpschart.ts",
     "meta-weights": "tsx scripts/build-meta-weights.ts",
     "ui-shot": "node scripts/ui-shot.mjs",
-    "prebuild": "tsx scripts/build-dpschart.ts",
-    "preweb:build": "tsx scripts/build-dpschart.ts",
-    "web:build": "vite build",
+    "web:build": "vite build && node scripts/prerender.mjs",
     "web:preview": "vite preview",
-    "build": "vite build",
+    "build": "vite build && node scripts/prerender.mjs",
+    "build:deploy": "npm run dpschart && npm run build",
     "start": "node scripts/serve.mjs",
     "typecheck": "tsc -p web/tsconfig.json --noEmit && tsc -p tsconfig.json --noEmit",
-    "test": "npm run web:build && node scripts/web-smoke.mjs && node scripts/web-smoke-dpschart.mjs"
+    "test": "npm run web:build && node scripts/web-smoke.mjs",
+    "test:dpschart": "npm run dpschart && npm run build && node scripts/web-smoke-dpschart.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.0",

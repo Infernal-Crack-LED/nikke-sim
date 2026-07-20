@@ -10,6 +10,7 @@ import { RosterSyncPage } from './RosterSyncPage';
 import { CreditsPage } from './CreditsPage';
 import { SiteFooter, SiteNav } from './SiteChrome';
 import { useRoute } from './router';
+import { useDocumentHead } from './useDocumentHead';
 import {
   captureTokenFromUrl,
   clearToken,
@@ -24,17 +25,24 @@ import { PORTRAIT_CROP_TOP } from '../../src/share/teamCard';
 // Feed the shared portrait-crop constant into CSS as `--portrait-crop-top` (a
 // percentage), so the `object-position` on portrait <img>s stays in lockstep with
 // the canvas crops. Set before React renders any portrait, so no reframe flash.
-document.documentElement.style.setProperty('--portrait-crop-top', `${PORTRAIT_CROP_TOP * 100}%`);
+document.documentElement.style.setProperty(
+  '--portrait-crop-top',
+  `${PORTRAIT_CROP_TOP * 100}%`,
+);
 
 function Root() {
   const route = useRoute();
+  useDocumentHead();
 
   // Discord auth lives here so the login control can sit in the shared header
   // on every page; the sim (App) still owns team save/load and reads `user`.
   const [user, setUser] = useState<AuthUser | null>(null);
   useEffect(() => {
     captureTokenFromUrl();
-    if (getToken()) fetchMe().then(setUser).catch(() => setUser(null));
+    if (getToken())
+      fetchMe()
+        .then(setUser)
+        .catch(() => setUser(null));
   }, []);
   const onLogin = () => {
     window.location.href = loginUrl();
@@ -77,5 +85,5 @@ function Root() {
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Root />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

@@ -23,6 +23,8 @@ import type {
   SimConfig,
 } from '../../src/types';
 import { DpsChartTab } from './DpsChartTab';
+import { TeamBuilderPage } from './TeamBuilderPage';
+import { useIconThumbs } from './useIconThumbs';
 import { navigate } from './router';
 import { MatrixChart } from './components/MatrixChart';
 import { PillGrid } from './components/PillGrid';
@@ -84,7 +86,11 @@ import {
   type AuthUser,
   type SavedTeam,
 } from './auth';
-import { indexBySlug, slotLoadoutToUnitOptions, type SlotLoadout } from './rosterApply';
+import {
+  indexBySlug,
+  slotLoadoutToUnitOptions,
+  type SlotLoadout,
+} from './rosterApply';
 import {
   makeCalc,
   type TeamResult,
@@ -183,7 +189,10 @@ type GuideResult =
       phases: { title: string; items: ReactNode[] }[];
       note: ReactNode;
     };
-function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult {
+function buildRollGuide(
+  current: OlSimLine[],
+  desired: OlSimLine[],
+): GuideResult {
   const statLabel = (k: OlKey) => OL_KEY_LABEL[k];
   const pct = (p: number) => `${Math.round(p * 100)}%`;
 
@@ -191,7 +200,10 @@ function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult
     .map((d) => ({ key: d.key, tier: d.tier }))
     .filter((d): d is { key: OlKey; tier: number } => d.key !== '');
   if (reqs.length === 0)
-    return { kind: 'invalid', msg: 'Add at least one desired line (stat + target tier).' };
+    return {
+      kind: 'invalid',
+      msg: 'Add at least one desired line (stat + target tier).',
+    };
   const dkeys = reqs.map((r) => r.key);
   if (new Set(dkeys).size !== dkeys.length)
     return {
@@ -246,7 +258,9 @@ function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult
     const rareFree = freeLines.filter((i) => i !== 0); // Line 2/3, open
     const line1Free = freeLines.includes(0);
     const junkL1 =
-      cur[0].key !== '' && desiredKeys.has(cur[0].key as OlKey) && !phase1Lock[0];
+      cur[0].key !== '' &&
+      desiredKeys.has(cur[0].key as OlKey) &&
+      !phase1Lock[0];
 
     // pre-lock keepers already on rare slots
     const keepers = cur
@@ -256,7 +270,8 @@ function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult
     if (keepers.length)
       p1.push(
         <>
-          <b>Lock</b> {keepers.join(', ')} — keeper{keepers.length > 1 ? 's' : ''}.
+          <b>Lock</b> {keepers.join(', ')} — keeper
+          {keepers.length > 1 ? 's' : ''}.
         </>,
       );
     if (junkL1)
@@ -279,12 +294,14 @@ function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult
       // whichever lands first. Waiting to lock the rarer slot first is a wash on
       // modules (~2, see FAQ) and costs MORE rerolls — verified by MC. L1 (always
       // present) fills the last stat and is never locked in phase 1.
-      const rareLabel = rareFree.map((i) => `${Ln(i)} (${slotTag(i)})`).join(' / ');
+      const rareLabel = rareFree
+        .map((i) => `${Ln(i)} (${slotTag(i)})`)
+        .join(' / ');
       p1.push(
         <>
           <b>Reroll</b> open ({openJoin}); lock {rareLabel} the moment{' '}
-          {rareFree.length > 1 ? 'either' : 'it'} shows a needed stat ({huntJoin}) —
-          take whichever lands first.
+          {rareFree.length > 1 ? 'either' : 'it'} shows a needed stat (
+          {huntJoin}) — take whichever lands first.
         </>,
       );
       if (line1Free)
@@ -297,9 +314,9 @@ function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult
       // M < F: slack — grab stats on any lines, skip the spare rare slot(s)
       p1.push(
         <>
-          <b>Reroll</b> open ({openJoin}); lock any {M} lines that hit {huntJoin}.
-          {line1Free ? ` Don’t lock ${Ln(0)}.` : ''} Spare rare slot(s) optional —
-          don’t wait on them.
+          <b>Reroll</b> open ({openJoin}); lock any {M} lines that hit{' '}
+          {huntJoin}.{line1Free ? ` Don’t lock ${Ln(0)}.` : ''} Spare rare
+          slot(s) optional — don’t wait on them.
         </>,
       );
     }
@@ -320,8 +337,8 @@ function buildRollGuide(current: OlSimLine[], desired: OlSimLine[]): GuideResult
     );
   p2.push(
     <>
-      Lock lines already ≥ target; value-reset the rest; lock each at target. Repeat
-      until all lines ≥ target.
+      Lock lines already ≥ target; value-reset the rest; lock each at target.
+      Repeat until all lines ≥ target.
     </>,
   );
 
@@ -355,7 +372,8 @@ type CalcTab =
   | 'doll'
   | 'dps'
   | 'dpschart'
-  | 'charge';
+  | 'charge'
+  | 'teambuilder';
 type TabGroup = 'sim' | 'tools';
 const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
   { key: 'sim', label: 'Team Sim', group: 'sim' },
@@ -366,6 +384,7 @@ const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
   { key: 'olsim', label: 'Overload Rolling', group: 'tools' },
   { key: 'doll', label: 'Doll Leveling', group: 'tools' },
   { key: 'charge', label: 'Overload Breakpoints', group: 'tools' },
+  { key: 'teambuilder', label: 'Team Builder', group: 'tools' },
   { key: 'team', label: 'Optimal Team Generator', group: 'tools' },
   { key: 'roster', label: 'Solo-Raid Roster Generator', group: 'tools' },
 ];
@@ -513,9 +532,24 @@ const CORE_PRESETS = [
   { label: '100%', value: 1 },
 ] as const;
 
-const allChars = Object.values(data.characters).sort((a, b) =>
-  a.name.localeCompare(b.name),
-);
+// Support-tag pools (src/types.ts CharacterData.generatorSupported/.simSupported — set by
+// src/data/sync.ts). "Unsupported" (neither tag) only ever appears on the Team Builder page,
+// which reads data.characters directly and unfiltered. `simChars` backs every picker that
+// runs the live sim engine on a chosen unit (Team Sim, Roster Sim, Optimize Overload, Overload
+// Breakpoints); `generatorChars` backs the DPS-chart-adjacent tools that rank/search across the
+// whole roster (Custom DPS Rankings, the Team/Roster generators) — gated on BOTH tags since a
+// generator candidate also needs a real kit override to produce a meaningful damage number.
+const simChars = Object.values(data.characters)
+  .filter((c) => c.simSupported)
+  .sort((a, b) => a.name.localeCompare(b.name));
+const generatorChars = Object.values(data.characters)
+  .filter((c) => c.generatorSupported && c.simSupported)
+  .sort((a, b) => a.name.localeCompare(b.name));
+const generatorCharacters: Record<string, (typeof data.characters)[string]> =
+  Object.fromEntries(generatorChars.map((c) => [c.slug, c]));
+
+// legacy alias — most pickers on the site are sim-engine pickers; keep the short name for them
+const allChars = simChars;
 
 // search predicate for the char pickers: slug, name, or an APPROVED community
 // nickname (characters.json `nicknames`, sync-derived from bakery-bot aliases)
@@ -696,10 +730,14 @@ const OL_8_12_ELEM = '94.24'; // 4 × 23.56 (T11)
 const OL_8_12_ATK = '47.24'; //  4 × 11.81 (T11)
 // Per-unit damage-optimal 12/12 remainder lines (beyond the 4 elem + 4 atk floor),
 // precomputed in the Solo framework by scripts/build-ol-optimal.ts.
-const olOptimal = (olOptimalJson as { units: Record<string, { type: string; count: number }[]> }).units;
+const olOptimal = (
+  olOptimalJson as { units: Record<string, { type: string; count: number }[]> }
+).units;
 // A slot's 12/12 `olExtra`: the unit's optimal remainder lines, each collapsed to
 // one entry whose value is count × the T11 per-line value for that stat.
-const optimalOlExtra = (slug: string | null): { type: string; value: string }[] => {
+const optimalOlExtra = (
+  slug: string | null,
+): { type: string; value: string }[] => {
   const picks = slug ? olOptimal[slug] : undefined;
   if (!picks?.length) return [];
   const tv = olTierValues(11);
@@ -729,7 +767,9 @@ function buildOlLines(
 // A slot's doll → the engine's UnitOptions.doll: 'none' → false (no doll), else
 // the synced rarity + level (resolved against the doll stat table).
 function slotDoll(s: SlotState): UnitOptions['doll'] {
-  return s.dollRarity === 'none' ? false : { rarity: s.dollRarity, level: s.dollLevel };
+  return s.dollRarity === 'none'
+    ? false
+    : { rarity: s.dollRarity, level: s.dollLevel };
 }
 
 // SlotState (the per-character card's state) → engine UnitOptions. Shared by the
@@ -817,7 +857,11 @@ function loadStoredTeam(): SlotState[] | null {
       const dollRarity: SlotState['dollRarity'] =
         s?.dollRarity ?? (s?.doll === false ? 'none' : 'SSR');
       const dollLevel =
-        typeof s?.dollLevel === 'number' ? s.dollLevel : dollRarity === 'none' ? 0 : 15;
+        typeof s?.dollLevel === 'number'
+          ? s.dollLevel
+          : dollRarity === 'none'
+            ? 0
+            : 15;
       return { ...defaultSlot(slug), ...s, slug, dollRarity, dollLevel };
     });
   } catch {
@@ -841,7 +885,11 @@ function slotFromBuild(sb: any): SlotState {
   const dollRarity: SlotState['dollRarity'] =
     sb?.dollRarity ?? (sb?.doll === false ? 'none' : 'SSR');
   const dollLevel =
-    typeof sb?.dollLevel === 'number' ? sb.dollLevel : dollRarity === 'none' ? 0 : 15;
+    typeof sb?.dollLevel === 'number'
+      ? sb.dollLevel
+      : dollRarity === 'none'
+        ? 0
+        : 15;
   return {
     ...defaultSlot(slug),
     ...sb,
@@ -1093,17 +1141,21 @@ function remapIndex(e: number, from: number, to: number): number {
 function CharPicker({
   slot,
   onPick,
+  pool = allChars,
 }: {
   slot: SlotState;
   onPick: (slug: string) => void;
+  // which support-tag pool to offer — defaults to the sim-supported pool (allChars); pass
+  // generatorChars from a generator-context caller (e.g. the Custom DPS Rankings tab).
+  pool?: typeof allChars;
 }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const selected = slot.slug ? data.characters[slot.slug] : null;
   const q = query.toLowerCase();
   const matches = q
-    ? allChars.filter((c) => charMatchesQuery(c, q)).slice(0, 12)
-    : allChars.slice(0, 12);
+    ? pool.filter((c) => charMatchesQuery(c, q)).slice(0, 12)
+    : pool.slice(0, 12);
   return (
     <div className='picker'>
       <input
@@ -1146,15 +1198,19 @@ function CharSearch({
   placeholder,
   exclude,
   onPick,
+  pool = allChars,
 }: {
   placeholder: string;
   exclude: string[];
   onPick: (slug: string) => void;
+  // which support-tag pool to offer — defaults to the sim-supported pool (allChars); pass
+  // generatorChars from a generator-context caller (Team/Roster generator, Custom DPS Rankings).
+  pool?: typeof allChars;
 }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const q = query.toLowerCase();
-  const matches = allChars
+  const matches = pool
     .filter((c) => !exclude.includes(c.slug))
     .filter((c) => !q || charMatchesQuery(c, q))
     .slice(0, 12);
@@ -1235,6 +1291,13 @@ export function App({ user }: { user: AuthUser | null }) {
   const [showBuffs, setShowBuffs] = useState(false);
   const [shared, setShared] = useState(false);
   const [imaged, setImaged] = useState(false);
+  const [tbSlugs, setTbSlugs] = useState<(string | null)[]>([
+    null,
+    null,
+    null,
+    null,
+    null,
+  ]);
   const [showOlCalc, setShowOlCalc] = useState(false);
   const [olTier, setOlTier] = useState(11); // best-OL calc tier (default 11)
   const [tab, setTab] = useState<CalcTab>(() => tabFromLocation());
@@ -1446,7 +1509,10 @@ export function App({ user }: { user: AuthUser | null }) {
     const exp = optimalOlExtra(s.slug);
     return (
       s.olExtra.length === exp.length &&
-      exp.every((e, i) => s.olExtra[i]?.type === e.type && s.olExtra[i]?.value === e.value)
+      exp.every(
+        (e, i) =>
+          s.olExtra[i]?.type === e.type && s.olExtra[i]?.value === e.value,
+      )
     );
   };
 
@@ -1470,7 +1536,10 @@ export function App({ user }: { user: AuthUser | null }) {
   // actual synced build (cube, gear, grade/core, skills, OL lines, bond) and set
   // the account synchro level uniformly. Per-unit (like 12/12), not a setAll:
   // each unit gets its own loadout; units not in the roster are left untouched.
-  const applyOneSyncedLoadout = (s: SlotState, idx: Map<string, SlotLoadout>): SlotState => {
+  const applyOneSyncedLoadout = (
+    s: SlotState,
+    idx: Map<string, SlotLoadout>,
+  ): SlotState => {
     if (!s.slug) return s;
     const L = idx.get(s.slug);
     if (!L) return s; // slot unit not owned / not modeled — leave as-is
@@ -1508,22 +1577,34 @@ export function App({ user }: { user: AuthUser | null }) {
       if (!idx) {
         const roster = await fetchCurrentSyncedRoster();
         if (!roster) {
-          setSyncedMsg('No synced roster yet — sync it on the “Sync my roster” page.');
+          setSyncedMsg(
+            'No synced roster yet — sync it on the “Sync my roster” page.',
+          );
           return;
         }
         if (!roster.syncedLoadouts?.length) {
-          setSyncedMsg('Your roster needs a re-sync to include build stats (backend update pending).');
+          setSyncedMsg(
+            'Your roster needs a re-sync to include build stats (backend update pending).',
+          );
           return;
         }
         idx = indexBySlug(roster.syncedLoadouts);
-        const maxLv = roster.characters.reduce((m, c) => Math.max(m, c.lv || 0), 0);
+        const maxLv = roster.characters.reduce(
+          (m, c) => Math.max(m, c.lv || 0),
+          0,
+        );
         lvl = roster.syncLevel ?? (maxLv > 0 ? maxLv : null);
         setSyncedIdx(idx);
         setSyncedLevel(lvl);
       }
-      const matched = (arr: SlotState[]) => arr.filter((s) => s.slug && idx!.has(s.slug)).length;
-      const applied = tab === 'dps' ? matched(dpsGroups.flat()) : matched(slots);
-      if (tab === 'dps') setDpsGroups((gs) => gs.map((g) => g.map((s) => applyOneSyncedLoadout(s, idx!))));
+      const matched = (arr: SlotState[]) =>
+        arr.filter((s) => s.slug && idx!.has(s.slug)).length;
+      const applied =
+        tab === 'dps' ? matched(dpsGroups.flat()) : matched(slots);
+      if (tab === 'dps')
+        setDpsGroups((gs) =>
+          gs.map((g) => g.map((s) => applyOneSyncedLoadout(s, idx!))),
+        );
       else setSlots((s) => s.map((sl) => applyOneSyncedLoadout(sl, idx!)));
       if (lvl) setLevel(String(lvl));
       setSyncedMsg(
@@ -1733,8 +1814,16 @@ export function App({ user }: { user: AuthUser | null }) {
     compWarning?: string;
     teamBuffs?: { name: string; position: number; lines: string[] }[];
   } => {
-    const { slots, weakness, bossDef, core, coreCustom, coreCustomVal, level, active } =
-      deferredSimInput;
+    const {
+      slots,
+      weakness,
+      bossDef,
+      core,
+      coreCustom,
+      coreCustomVal,
+      level,
+      active,
+    } = deferredSimInput;
     if (!active) return {};
     if (slots.some((s) => !s.slug))
       return { error: 'pick 5 nikkes to run the sim' };
@@ -1797,6 +1886,54 @@ export function App({ user }: { user: AuthUser | null }) {
   });
   const imageUrlFor = (slug: string) =>
     data.characters[slug]?.imageUrl ?? undefined;
+
+  const onTbGenerateLink = async (slugs: (string | null)[]) => {
+    const team = slugs.map((s) => s ?? '').join(',');
+    const url = new URL(window.location.href);
+    url.pathname = '/';
+    url.search = '';
+    url.searchParams.set('team', team);
+    const urlStr = url.toString();
+    try {
+      await navigator.clipboard.writeText(urlStr);
+      setShared(true);
+      setTimeout(() => setShared(false), 1500);
+    } catch {
+      window.prompt('Copy this team link:', urlStr);
+    }
+  };
+  const onTbCopyImage = async (slugs: (string | null)[]) => {
+    const units = slugs.filter(Boolean).map((s) => {
+      const c = data.characters[s!];
+      return {
+        slug: c.slug,
+        name: c.name,
+        burst: c.burst,
+        weapon: c.weapon,
+        element: c.element,
+        advantaged: weakness ? c.element === weakness : false,
+        share: 0,
+        totalDamage: 0,
+      };
+    });
+    const share: ShareTeamData = {
+      teamDamage: 0,
+      teamDps: 0,
+      fullBursts: 0,
+      fullBurstUptime: 0,
+      units,
+    };
+    const res = await shareTeamCard(
+      share,
+      shareMeta(),
+      imageUrlFor,
+      'nikke-team.png',
+    );
+    if (res !== 'unsupported') {
+      setImaged(true);
+      setTimeout(() => setImaged(false), 1500);
+    }
+  };
 
   const flashImaged = () => {
     setImaged(true);
@@ -1911,6 +2048,7 @@ export function App({ user }: { user: AuthUser | null }) {
       <CharSearch
         placeholder='block a nikke…'
         exclude={blocked}
+        pool={generatorChars}
         onPick={(slug) => setBlocked((b) => [...b, slug])}
       />
       {blocked.length > 0 && (
@@ -1988,7 +2126,8 @@ export function App({ user }: { user: AuthUser | null }) {
   };
   const newCalc = () =>
     makeCalc({
-      chars: data.characters as any,
+      // Team/Roster generator candidate pool = generatorSupported (+ simSupported) only.
+      chars: generatorCharacters as any,
       mult,
       deps: {
         overrides,
@@ -2007,7 +2146,7 @@ export function App({ user }: { user: AuthUser | null }) {
           }
         : loadoutFor,
       blocked: genSynced
-        ? Object.keys(data.characters).filter(
+        ? Object.keys(generatorCharacters).filter(
             (s) => !genEligible(s) || blocked.includes(s),
           )
         : blocked,
@@ -2064,7 +2203,8 @@ export function App({ user }: { user: AuthUser | null }) {
       </div>
       <div className='muted' style={{ fontSize: 12, marginTop: 4 }}>
         Generating from {genPoolSize} of your owned units
-        {genIncludeNonOL ? '' : ' with Overload gear'}, each with its synced build.
+        {genIncludeNonOL ? '' : ' with Overload gear'}, each with its synced
+        build.
       </div>
     </div>
   ) : null;
@@ -2305,7 +2445,9 @@ export function App({ user }: { user: AuthUser | null }) {
       });
       // Solo framework injects synthetic no-op controls (NOOP_B1/B2/B3) that live
       // outside data.characters — resolve them the same way the engine's charFor does.
-      const chars = team.slugs.map((s) => data.characters[s] ?? NOOP_CHARACTERS[s]);
+      const chars = team.slugs.map(
+        (s) => data.characters[s] ?? NOOP_CHARACTERS[s],
+      );
       const carryIdx = team.slugs.indexOf(olCarry);
       const { baselineDamage, results } = rankFreeLineConfigs({
         chars: chars as any,
@@ -2601,6 +2743,9 @@ export function App({ user }: { user: AuthUser | null }) {
     // compact mode already shows the portrait in the strip, so the expanded
     // card omits the big duplicate image
     hidePortrait?: boolean,
+    // support-tag pool for the embedded picker — defaults to sim-supported (Team Sim);
+    // the Custom DPS Rankings caller passes generatorChars.
+    pool: typeof allChars = allChars,
   ) => {
     const c = slot.slug ? data.characters[slot.slug] : null;
     const maxBond = maxBondLevel(c?.manufacturer ?? null); // 0 = no bond table
@@ -2647,6 +2792,7 @@ export function App({ user }: { user: AuthUser | null }) {
         )}
         <CharPicker
           slot={slot}
+          pool={pool}
           onPick={(slug) =>
             // reset bond to the newly-picked unit's manufacturer max
             onChange({
@@ -2713,21 +2859,27 @@ export function App({ user }: { user: AuthUser | null }) {
           {/* A manual gear pick clears any synced gear-stat override. */}
           <button
             className={!slot.gearStats && slot.ol === 'base5' ? 'on' : ''}
-            onClick={() => onChange({ ol: 'base5', gearStats: null, hasOverloadGear: false })}
+            onClick={() =>
+              onChange({ ol: 'base5', gearStats: null, hasOverloadGear: false })
+            }
             title='Scope-lock base gear — the real validation basis (lower ATK than OL 0)'
           >
             Base 5
           </button>
           <button
             className={!slot.gearStats && slot.ol === 0 ? 'on' : ''}
-            onClick={() => onChange({ ol: 0, gearStats: null, hasOverloadGear: false })}
+            onClick={() =>
+              onChange({ ol: 0, gearStats: null, hasOverloadGear: false })
+            }
             title='Full T10 overload set, 0 overload lines'
           >
             OL 0
           </button>
           <button
             className={!slot.gearStats && slot.ol === 5 ? 'on' : ''}
-            onClick={() => onChange({ ol: 5, gearStats: null, hasOverloadGear: false })}
+            onClick={() =>
+              onChange({ ol: 5, gearStats: null, hasOverloadGear: false })
+            }
             title='Full T10 overload set, overload level 5'
           >
             OL 5
@@ -3187,6 +3339,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   <CharSearch
                     placeholder='add control nikke…'
                     exclude={dpsControl}
+                    pool={generatorChars}
                     onPick={(slug) => setControl([...dpsControl, slug])}
                   />
                 )}
@@ -3226,6 +3379,9 @@ export function App({ user }: { user: AuthUser | null }) {
                                 unit,
                                 (p) => setGroupUnit(gi, ui, p),
                                 `unit ${ui + 1}`,
+                                undefined,
+                                undefined,
+                                generatorChars,
                               )}
                             </Fragment>
                           ))}
@@ -3342,11 +3498,15 @@ export function App({ user }: { user: AuthUser | null }) {
       // engine uses (isAutofireCharge). The charFixes.noBoltRecovery fallback is a dormant
       // hand-tune hook (no active override sets it today). The generic reference (no unit
       // picked) is a standard release-fired weapon.
-      const chInput = (chc?.role?.weapon as { shot_detail?: { input_type?: string } } | undefined)
-        ?.shot_detail?.input_type;
+      const chInput = (
+        chc?.role?.weapon as
+          | { shot_detail?: { input_type?: string } }
+          | undefined
+      )?.shot_detail?.input_type;
       const chargeLatency =
         chargeChar &&
-        (chInput === 'DOWN_Charge' || overrides[chargeChar]?.charFixes?.noBoltRecovery)
+        (chInput === 'DOWN_Charge' ||
+          overrides[chargeChar]?.charFixes?.noBoltRecovery)
           ? 0
           : RELEASE_LATENCY_FRAMES;
       const allRows = chargeFrameBreakpoints(baseFrames);
@@ -3484,12 +3644,12 @@ export function App({ user }: { user: AuthUser | null }) {
               </li>
               <li>
                 On auto, <b>old-style release-fired</b> RLs and snipers add a
-                fixed ~22-frame release/bolt recovery after each shot that charge
-                speed does <i>not</i> reduce, so real cadence is a little longer
-                than the charge time shown. <b>Shots per FB</b> is the full
-                cadence — 600&nbsp;frames (10s of Full Burst) ÷ (charge frames +{' '}
-                {chargeLatency}f release) — so it counts real shots, not just the
-                charge phase.{' '}
+                fixed ~22-frame release/bolt recovery after each shot that
+                charge speed does <i>not</i> reduce, so real cadence is a little
+                longer than the charge time shown. <b>Shots per FB</b> is the
+                full cadence — 600&nbsp;frames (10s of Full Burst) ÷ (charge
+                frames + {chargeLatency}f release) — so it counts real shots,
+                not just the charge phase.{' '}
                 {chargeLatency === 0 && (
                   <>
                     {chc?.name} <b>autofires</b> (or bakes its cadence into the
@@ -4250,17 +4410,19 @@ export function App({ user }: { user: AuthUser | null }) {
         patch: Partial<OlSimLine>,
       ) => {
         const set = which === 'cur' ? setOlGuideCur : setOlGuideDesired;
-        set((lines) => lines.map((l, j) => (j === li ? { ...l, ...patch } : l)));
+        set((lines) =>
+          lines.map((l, j) => (j === li ? { ...l, ...patch } : l)),
+        );
       };
       const guide = buildRollGuide(olGuideCur, olGuideDesired);
       const guidePanel = (
         <>
           <p className='muted'>
             Step-by-step roll plan for <b>one piece</b>. Enter the lines you{' '}
-            <b>have now</b> (positional — Line 1 / 2 / 3, with their real tier) and
-            the stats + tiers you <b>want</b>. The guide runs the same two-phase T11
-            method the sim uses: reroll for stats (locking the rare slots as they
-            land), then value-reset the tiers.
+            <b>have now</b> (positional — Line 1 / 2 / 3, with their real tier)
+            and the stats + tiers you <b>want</b>. The guide runs the same
+            two-phase T11 method the sim uses: reroll for stats (locking the
+            rare slots as they land), then value-reset the tiers.
           </p>
           <div
             style={{
@@ -4827,16 +4989,93 @@ export function App({ user }: { user: AuthUser | null }) {
         </section>
       );
     }
+    if (tab === 'teambuilder') {
+      // Team Builder callbacks — save/copy/link/image actions for the built team
+      const onTbSaveTeam = async (slugs: (string | null)[]) => {
+        const names = slugs
+          .filter(Boolean)
+          .map((s) => data.characters[s!].name);
+        const defaultName = names.slice(0, 2).join(' / ') || 'My team';
+        const name = window.prompt('Save team as:', defaultName);
+        if (!name?.trim()) return;
+        // Build a minimal Build payload from the slugs (default loadout)
+        const build: Build = {
+          v: BUILD_VERSION,
+          g: { weakness, bossDef, core, coreCustom, coreCustomVal, level },
+          s: Array.from({ length: 5 }, (_, i) => ({
+            slug: slugs[i] ?? null,
+            cubeId: 'other',
+            cubeLevel: 10,
+            ol: 'base5',
+            doll: false,
+            dollRarity: 'none',
+            dollLevel: 0,
+            stars: 0,
+            core: 0,
+            skill1: 10,
+            skill2: 10,
+            burst: 10,
+            lambdaStage: 0,
+            olElem: '',
+            olAtk: '',
+            olExtra: [],
+          })),
+        };
+        await saveTeam(name.trim(), encodeBuild(build));
+        setSavedFlash(true);
+        setTimeout(() => setSavedFlash(false), 1500);
+      };
+      const onTbCopyToSim = (slugs: (string | null)[]): string | null => {
+        const unsupported = slugs
+          .filter((s): s is string => !!s)
+          .map((s) => data.characters[s])
+          .filter((c) => c && !c.simSupported);
+        if (unsupported.length) {
+          const names = unsupported.map((c) => c.name).join(', ');
+          return `${names} ${unsupported.length === 1 ? 'is' : 'are'} currently unsupported for the sim. We're constantly updating the backlog of unsupported Nikkes, check back soon.`;
+        }
+        setSlots((prev) =>
+          prev.map((slot, i) => ({
+            ...slot,
+            slug: slugs[i] ?? null,
+          })),
+        );
+        selectTab('sim');
+        return null;
+      };
+      return (
+        <TeamBuilderPage
+          user={user}
+          onSaveTeam={onTbSaveTeam}
+          onCopyToSim={onTbCopyToSim}
+          onTeamChange={setTbSlugs}
+        />
+      );
+    }
     return null;
   };
 
   const inTools =
     (CALC_TABS.find((t) => t.key === tab)?.group ?? 'sim') === 'tools';
+  // Per-tab h1 — keyword-rich for SEO; Google weighs <h1> heavily.
+  const TAB_H1: Record<string, string> = {
+    sim: 'NIKKE Solo Raid Sim',
+    rostersim: 'Roster Sim',
+    dpschart: 'DPS Rankings',
+    dps: 'Custom DPS Rankings',
+    overload: 'Overload Optimizer',
+    team: 'Optimal Team Generator',
+    roster: 'Roster Generator',
+    olsim: 'Overload Rolling',
+    doll: 'Doll Leveling',
+    charge: 'Charge Speed Breakpoints',
+    teambuilder: 'Team Builder',
+  };
   return (
     <div className='app'>
       <header>
         <div className='header-row'>
-          <h1>NIKKE Solo Raid Sim</h1>
+          <h1>{TAB_H1[tab] ?? 'NIKKE Solo Raid Sim'}</h1>
           {!inTools && (
             <div className='share-actions'>
               {user && (
@@ -4899,6 +5138,26 @@ export function App({ user }: { user: AuthUser | null }) {
               </button>
             </div>
           )}
+          {tab === 'teambuilder' && (
+            <div className='share-actions'>
+              <button
+                className='share-btn'
+                onClick={() => void onTbGenerateLink(tbSlugs)}
+                disabled={!tbSlugs.some((s) => s !== null)}
+                title='copy a link that prefills this team'
+              >
+                {shared ? '✓ Link copied' : '🔗 Generate link'}
+              </button>
+              <button
+                className='share-btn'
+                onClick={() => void onTbCopyImage(tbSlugs)}
+                disabled={!tbSlugs.some((s) => s !== null)}
+                title='copy a summary image of the team to your clipboard'
+              >
+                {imaged ? '✓ Copied' : '🖼 Copy image'}
+              </button>
+            </div>
+          )}
         </div>
         {!inTools && <p className='muted'>180s fight · auto-mode</p>}
       </header>
@@ -4943,6 +5202,7 @@ export function App({ user }: { user: AuthUser | null }) {
         tab !== 'charge' &&
         tab !== 'olsim' &&
         tab !== 'doll' &&
+        tab !== 'teambuilder' &&
         !(tab === 'overload' && olMode === 'matrix') && (
           <>
             <section className='global'>
@@ -4951,15 +5211,29 @@ export function App({ user }: { user: AuthUser | null }) {
                   Boss weakness
                 </label>
                 <PillGrid>
-                  {ELEMENTS.map((e) => (
-                    <button
-                      key={e ?? 'none'}
-                      className={weakness === e ? 'on' : ''}
-                      onClick={() => setWeakness(e)}
-                    >
-                      {e ?? 'None'}
-                    </button>
-                  ))}
+                  {ELEMENTS.map((e) => {
+                    const src = e
+                      ? `/nikke-icons/code_${e.toLowerCase()}.svg`
+                      : null;
+                    return (
+                      <button
+                        key={e ?? 'none'}
+                        className={weakness === e ? 'on' : ''}
+                        onClick={() => setWeakness(e)}
+                      >
+                        {src && (
+                          <img
+                            className='pill-icon'
+                            src={src}
+                            alt=''
+                            aria-hidden='true'
+                            data-colored=''
+                          />
+                        )}
+                        {e ?? 'None'}
+                      </button>
+                    );
+                  })}
                 </PillGrid>
               </div>
               <div className='field'>
@@ -5098,14 +5372,22 @@ export function App({ user }: { user: AuthUser | null }) {
                 <label>All gear</label>
                 <PillGrid className='small'>
                   <button
-                    className={allHave((s) => !s.gearStats && s.ol === 0) ? 'on' : ''}
-                    onClick={() => setAll({ ol: 0, gearStats: null, hasOverloadGear: false })}
+                    className={
+                      allHave((s) => !s.gearStats && s.ol === 0) ? 'on' : ''
+                    }
+                    onClick={() =>
+                      setAll({ ol: 0, gearStats: null, hasOverloadGear: false })
+                    }
                   >
                     OL 0
                   </button>
                   <button
-                    className={allHave((s) => !s.gearStats && s.ol === 5) ? 'on' : ''}
-                    onClick={() => setAll({ ol: 5, gearStats: null, hasOverloadGear: false })}
+                    className={
+                      allHave((s) => !s.gearStats && s.ol === 5) ? 'on' : ''
+                    }
+                    onClick={() =>
+                      setAll({ ol: 5, gearStats: null, hasOverloadGear: false })
+                    }
                   >
                     OL 5
                   </button>
@@ -5115,13 +5397,21 @@ export function App({ user }: { user: AuthUser | null }) {
                 <label>All dolls</label>
                 <PillGrid className='small'>
                   <button
-                    className={allHave((s) => s.dollRarity === 'SSR' && s.dollLevel === 15) ? 'on' : ''}
+                    className={
+                      allHave(
+                        (s) => s.dollRarity === 'SSR' && s.dollLevel === 15,
+                      )
+                        ? 'on'
+                        : ''
+                    }
                     onClick={() => setAll({ dollRarity: 'SSR', dollLevel: 15 })}
                   >
                     Doll 15
                   </button>
                   <button
-                    className={allHave((s) => s.dollRarity === 'none') ? 'on' : ''}
+                    className={
+                      allHave((s) => s.dollRarity === 'none') ? 'on' : ''
+                    }
                     onClick={() => setAll({ dollRarity: 'none' })}
                   >
                     none
@@ -5191,8 +5481,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   <button
                     className={
                       allHave(
-                        (s) =>
-                          !s.olElem && !s.olAtk && s.olExtra.length === 0,
+                        (s) => !s.olElem && !s.olAtk && s.olExtra.length === 0,
                       )
                         ? 'on'
                         : ''
