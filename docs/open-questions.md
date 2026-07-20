@@ -8,6 +8,32 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U20 — Does a unit's OWN same-cast self-buff apply to its OWN cast-instant burst damage? (Phase A A2, DEFERRED 2026-07-20)
+**Owner ruling 2026-07-20: DEFER A2 entirely — blocked on an isolating measurement.** The kit-audit plan
+(§A2) proposed a "same-cast self-buff guard": exclude a unit's own same-`burstCast` self-buff from its own
+cast-instant burst nuke. **Premise gate (fresh-context, blind) came back CANNOT-VERIFY**, and undercut the
+plan's stated basis:
+- **The leak is REAL and inconsistent (P1, CONFIRMED empirically).** `ein`'s 300.02% true nuke (burst slot)
+  reads `dmgUp=1.9819` = baseline 1.4289 + her own same-cast +55.3% `trueDamagePct` (burst[0]), while her
+  feather lump (skill2 slot, resolved earlier) at the same instant is `dmgUp=1.4289` — no self-buff. Pure
+  block-array-ordering accident: same-slot-later damage eats the self-buff, earlier-slot damage doesn't.
+- **The correctness DIRECTION is unmeasured (P2, CANNOT-VERIFY).** The SSOT's only "misses same-cast
+  self-buffs" statement is scoped to **skill-slot** blocks ([damage-calculation.md:190-192], [game-mechanics.md:238-240]) —
+  there is NO burst-slot rule. The one measured burst-slot anchor, Cinderella (`cinderella`) §5b
+  ([damage-calculation.md:380-381]), actually **INCLUDES** her own cast-granted conversion in the matching
+  FinalATK (it isolates the +50% FB and *another unit's* entry aura as excluded — never the caster's own
+  same-cast self-buff). No probe recording isolates this variable for any unit.
+- **Blast radius:** 16 units carry a burstCast self-buff + cast-instant burst damage (`ein`,
+  `elegg-boom-and-shock`, `arcana-fortune-mate`, `quency-escape-queen`, `soda-twinkling-bunny`, `privaty`,
+  `liberalio`, `eve`, `raven`, `drake`, `scarlet`, `nayuta`, `asuka-wille`, `cinderella-crystal-wave`,
+  `delta-ninja-thief`, `helm`[inert: `charge:false` nuke]). Several are board-CALIBRATED (soda/privaty/
+  liberalio OK), so a board A/B cannot reveal the direction (co-calibration, same wall as U14). The two
+  directions move `ein` OPPOSITE ways (exclude → colder; include-everywhere → hotter toward 1.0).
+**RESOLVER (the real test):** a focus-video that reads `ein`'s (or `elegg-boom-and-shock`'s) burst-nuke
+popup value and back-derives whether the same-cast self-buff is in it (× the buff factor or not). Until
+that measurement lands, NEITHER direction is enacted; the engine keeps its current (ordering-accidental)
+behavior. Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A2.
+
 ### U19 — grave's burst-window over-model, exposed by the (faithful) timed-pierce primitive (2026-07-17)
 **Surfaced by the `gainPierce` primitive (engine-modeling-gaps fix #7).** The timed-pierce window lets
 "Gain Pierce for N sec" wake a unit's Pierce Damage ▲ buffs. **MECHANISM (owner-confirmed 2026-07-17):**
