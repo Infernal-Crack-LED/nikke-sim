@@ -257,6 +257,21 @@ function damage whose ticks reference CURRENT buffs (not snapshots); tick-crit i
 unverified (kept off). Sustained/True/Sequential Damage ▲ buffs gate on hit flavor.
 Full rules table: **[nikke-damage-formula.md](nikke-damage-formula.md)** §3.
 
+Some kit lines with NO printed "Activates when…" clause are **internal-cooldown skills**:
+the effect just fires every N seconds of battle (OWNER-stated mechanic 2026-07-20; first
+example: Snow White `snow-white`'s Skill-2 144.73% area damage, cooldown 15 s /owner).
+Engine: the `interval` trigger fires every N sec, first at t=N — the first-fire phase
+(t=N vs t=0) is a ⚑ convention pending a popup-cadence read.
+
+Shield-gated kit lines ("when/if a Shield is set in front of this unit" — Naga `naga`)
+follow the REAL shield machinery (owner-ruled default-off 2026-07-20): "when a Shield is
+set" lines fire on the shield-application EVENT (`shielded` trigger); "if a Shield is set"
+lines check the live shield-state WINDOW at their own trigger time (`requiresShielded`,
+window = the emitting shield's stated duration). No shielder in the team ⇒ the lines are
+inert. Same-squad gates ("with an ally from the same squad on the battlefield" — Noir
+`noir`, satisfied by Blanc `blanc` / Rouge `rouge`, owner-confirmed) are static team-
+composition checks (`teamHas.slugs`), exact at scope lock where no ally ever dies.
+
 ## 10. Elemental advantage
 
 ×(1.1 + Element Damage ▲ sources) as its own bucket, only with advantage; "Superior
@@ -287,9 +302,12 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   stack additively. Increases never clip.
 - Distributed damage deals the same TOTAL against 1 target as against many (user-verified).
 - Pierce Damage ▲ is a **Damage-Up-bucket** entry that benefits any Pierce-damage-type unit —
-  static (`hasPierce`/`pierceModes`) OR during a timed "Gain Pierce for N sec" window
-  (`gainPierce` → `pierceUntilFrame`, 2026-07-17). It **applies on the partless boss** (it is
-  ordinary damage-up, not the double-hit below — do not conflate the two).
+  static (`hasPierce`/`pierceModes`), during a timed "Gain Pierce for N sec" window
+  (`gainPierce` → `pierceUntilFrame`, 2026-07-17), OR — swap-scoped — on the shots of a burst
+  weapon-swap whose "Additional Effect: Pierce" belongs to the swapped weapon only
+  (`weaponSwap.hasPierce` → per-shot tag, 2026-07-20, owner-ruled; Snow White `snow-white`'s
+  cannon). It **applies on the partless boss** (it is ordinary damage-up, not the double-hit
+  below — do not conflate the two).
 - Pierce core+body double-hits are a MULTI-PART-boss mechanic
   ([nikke.gg index](https://nikke.gg/index/); TV Tropes corroboration); on the partless
   test boss there is no doubling (OUR A/B test vs run A, 2026-07-13; engine

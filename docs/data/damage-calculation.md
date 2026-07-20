@@ -236,7 +236,9 @@ DamageUp = 1 + ( Attack Damage ▲ %
                + Sustained Damage ▲ %      [only on sustained-flavored instances (dots)]
                + Sequential Damage ▲ %     [only on sequential-flavored instances]
                + True Damage ▲ %           [only on true-flavored instances]
-               + Pierce Damage ▲ %         [only for Pierce-tagged units]
+               + Pierce Damage ▲ %         [only for Pierce-tagged shots: static hasPierce,
+                                            a live gainPierce window, or a swap-scoped
+                                            weaponSwap.hasPierce shot (snow-white cannon)]
                + Projectile Explosion ▲ %  [RL NORMAL attacks — see 1f]
                ) / 100
 ```
@@ -314,7 +316,22 @@ Function-type instances (DATAMINED rules, table in
   instant, observed +6.2 to +7.7 seconds — bounded by her burst window; a shot lost to fight
   end delivers nothing. Buffs "held per swap round" (her +528 Charge Damage and +158.4
   Sequential) are modeled with the `whileSwapped` buff gate: they count only while the swap is
-  live, so they never leak onto baseline shots in the window tail.
+  live, so they never leak onto baseline shots in the window tail. Base Snow White
+  (`snow-white`) uses `maxShots: 1` — OWNER-ruled 2026-07-20: exactly one cannon shot per
+  burst, then she returns to her AR for the window's remainder. A swap can also carry
+  swap-scoped Pierce (`weaponSwap.hasPierce`, 2026-07-20): its shots are Pierce-tagged for
+  the DamageUp Pierce term without the unit being statically Pierce.
+- Internal-cooldown skills (`interval` trigger, 2026-07-20): a kit line with no printed
+  activation clause that "just happens" every N seconds of battle (owner-stated mechanic;
+  snow-white S2a 144.73%, N=15 /owner). Fires first at t=N (⚑ phase convention — pin from a
+  popup-cadence read).
+- Shield-state gates (2026-07-20, owner-ruled default-off): "when a Shield is set" lines ride
+  the `shielded` event trigger (fires when an ally's `shield` effect targets the unit);
+  "if a Shield is set" lines use `requiresShielded` — active only while a shield window
+  (the emitter's stated duration) covers the unit (`shieldedUntilFrame`). Naga (`naga`).
+- Static team-composition gates (`teamHas`) can also match SPECIFIC units (`slugs`,
+  2026-07-20): noir's same-squad burst line requires `blanc` or `rouge` in the team
+  (owner-confirmed the gate is real).
 
 ### 2c. Damage over time
 

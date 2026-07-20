@@ -8,6 +8,49 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) Naga's shield-gated lines are DEFAULT-OFF and ride the REAL shield machinery — LANDED
+  (kit-audit Phase C, owner ruling).** The old encoding was a user-selected "with shielder"/"no shielder"
+  mode (and the later "auto" modes[0] default was a no-op string that silently left the shield blocks
+  inactive — a phantom toggle either way). **Owner ruling: default off, require a shielder.** Enacted:
+  Skill 1's "Activates **when** a Shield is set in front of this unit" (85.17% team core-damage, 10s) is now
+  a `{kind:'shielded'}` EVENT-trigger block — it fires only when an ally's `shield` effect actually targets
+  naga (emitters today: `crown` burst 15s, `blanc` per-120-team-hits 5s; `delta-ninja-thief` self-only and
+  `rei-ayanami` Fire-allies can never hit her). The burst's "Activates **if** a Shield is set" (31.02%
+  casterAtk) is `burstCast` + the new `requiresShielded` STATE gate (`shieldedUntilFrame`, opened by each
+  shield's durationSec). The modes array is gone. No shielder in comp = both lines inert — the faithful
+  default. Board: N2 (the only graded naga comp, no shielder) byte-identical. ⚑ WATCH: shield-line uptime
+  now inherits the shielder's shield cadence (unmeasured vs in-game shield uptime) — recipe: naga+crown
+  focus video, 85.17% buff-icon windows vs crown's shield icon.
+
+- **(2026-07-20) Red Hood's base SR is BOLT-ACTION outside Red Wolf — owner-confirmed (kit-audit Phase C
+  gotcha closed, no behavior change).** The blind-rebuild audit's open question ("autofire vs bolt-action
+  outside the Red Wolf window is untested"; the autofire hypothesis would have added ~2.2 rounds/s) is
+  closed by owner testimony: **base SR has bolt recovery** — the engine's +22f SR default was already the
+  model, so nothing changes. Consequence: `red-hood`'s COLD 0.867 residual must live elsewhere; prime
+  suspect is the S1 excess-Charge-Speed→Charge-Damage conversion still modeled as a static
+  chargeDamagePct 90 average (gotcha 2, MEASUREMENT-gated).
+
+- **(2026-07-20) Noir: +5-rounds is a TEAM flat grant, and the burst same-squad gate is REAL (blanc/rouge)
+  — LANDED (kit-audit Phase C, ENACT-NOW + owner ruling).** (1) S2 "Max Ammunition Capacity ▲ 5 round(s)"
+  re-encoded from the self-only `maxAmmoPct 55.56` proxy to `maxAmmoFlat 5` → ALL allies, 10s (the flat
+  path was already live in `maxAmmo()`; noir's own 9→14 is numerically identical, proven byte-identical
+  on her own totals). (2) Burst block 3 (Hit Rate ▲11.61% + Parts ▲19.36%, 30s) is now gated
+  `teamHas:{slugs:['blanc','rouge']}` — **owner-confirmed the "ally from the same squad" gate is real**
+  (the buff does not appear without one), enacted via the new `teamHas.slugs` facet ("still on the
+  battlefield" is scope-trivial). A/B PI/PI2: rotation identical (13×100%); noir cools 1.134→1.127 /
+  1.103→1.102; the faithful ammo grant warms teammates — `anis-star` (RL, small mag) 0.935→1.010 and
+  0.927→1.001 (lands ON the board), grave +0.3%, jill +1.2%, chisato +0.6%. Snapshot regenerated with
+  the change.
+
+- **(2026-07-20) Base `snow-white` IS board-graded — the control-anchor runs are her data (owner
+  correction).** The kit-audit plan's "board no-data" for `snow-white` was wrong: the 4
+  `docs/probes/control` recordings ({sw,helm,lm,crown}) are 4 independent 3:00 runs of the 4-unit
+  control comp [`little-mermaid`, `helm`, `crown`, `snow-white`] (slot 5 empty). Wired as graded comps
+  C-SW/C-Helm/C-LM/C-Crown: boss NEUTRAL (owner-confirmed "record neutral" control design → boss:null),
+  focus = the filename unit — independently corroborated by the battle-records slot orders (the focused
+  unit sits in middle slot 3 in ALL FOUR runs, matching the middle-slot focus default). Totals read from
+  the four screenshots this session.
+
 - **(2026-07-20) "Highest/lowest FINAL ATK" ally-selectors rank by LIVE effectiveAtk — LANDED (kit-audit
   Phase A3, 4 of 5 units).** The `alliesTopAtk`/`alliesLowestAtk` selectors ranked candidates by base
   `staticAtk`, but several kits' PRIMARY game text says "highest/lowest **final** ATK" (final = live
