@@ -289,7 +289,11 @@ Per trigger pull, at the weapon's cadence, 60 fps frame-quantized:
 - **Charge weapons (SR/RL)**: charge for `chargeFrames × (1 − Σ Charge Speed %)` (SUBTRACTIVE,
   floor 1 frame, cap +100%), then — for release-fired units — a 22-frame release latency
   (MEASURED). Autofire units skip the latency (`charFixes.noBoltRecovery`, sparse list).
-  Details: [charge-weapons.md](charge-weapons.md).
+  Details: [charge-weapons.md](charge-weapons.md). **Whole-magazine dump (cinderella,
+  `charFixes.magDumpRof`)**: one charge feeds the whole magazine — after the first charge she
+  autofires all 24 rounds at the datamined `rate_of_fire` without recharging, then reloads and
+  charges once again (MEASURED 2026-07-21 by ammo-counter frame read; ≈390 pulls/180s). Charge
+  Speed shortens only the once-per-mag prime charge. See [charge-weapons.md](charge-weapons.md) §2a.
 - **Reload**: `round(displayed × 0.975 × (1 − Reload Speed ▲)) + 13 frames` (SUBTRACTIVE; the
   13-frame tail is what a ~100% buff leaves — corroborated by ore-game's 0.2s measurement).
   Rolling reloads exist (`reload_start_ammo` — Jill tops up while firing, zero downtime).

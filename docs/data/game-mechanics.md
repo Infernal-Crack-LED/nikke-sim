@@ -101,6 +101,10 @@ of >100% takes precedence).
 - **SR bolt cycle**: +22 frames after each shot (MEASURED: helm recording, 1.37s cycle =
   60f charge + 22f). Weapon-swap states and `charFixes.noBoltRecovery` units are exempt.
   Reload starts immediately after the final shot.
+- **Whole-magazine dump** (`charFixes.magDumpRof`): `cinderella` charges ONCE per magazine, then
+  autofires all 24 rounds at her datamined `rate_of_fire` without recharging, then reloads and
+  re-charges (MEASURED 2026-07-21, ammo-counter frame read; ≈390 pulls/180s). Charge Speed
+  shortens only the once-per-mag prime charge. Details: [charge-weapons.md](charge-weapons.md) §2a.
 - **Auto always full-charges** (DATAMINED, einkk `NikkeFullChargeMode.always`) — but
   full-charge-GATED procs miss on ~32% of auto releases (§7).
 - Full-charge multiplier is per-weapon-per-unit (SR typ. 250%, Alice 350%); ordinary Charge

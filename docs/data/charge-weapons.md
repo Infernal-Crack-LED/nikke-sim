@@ -35,7 +35,8 @@ effective_charge_time = base_charge_time × (1 − ΣChargeSpeed%)     [floor: 1
   (engine recomputes `needed` per frame).
 - ⚠ Modeling rule (2026-07-13): CS values taken from KIT TEXT keep in-game semantics under
   this formula; hand-AVERAGED values fitted under the old divisive engine had to be
-  re-expressed (cinderella ramp 80→45, anis-star fixed-0.7s 42.86→30) to preserve their
+  re-expressed (cinderella ramp 80→45 — SUPERSEDED 2026-07-21, the +45 proxy was REMOVED; her
+  cadence is now the whole-magazine dump, §2a; anis-star fixed-0.7s 42.86→30) to preserve their
   validated real cadences.
 
 ## 2. Fire cycle — autofire vs release-fired (user taxonomy, 2026-07-13)
@@ -60,7 +61,7 @@ SR + RL by default — the autofire system is SPARSE (user-tested old-style: die
 mint, prika, ada, velvet, laplace, a2, raven, rapunzel, noise, crust, anchor-IM, arcana,
 and trina — the last measured directly at 22 frames between shots, matching the default
 exactly). Exempt via `charFixes.noBoltRecovery`: neon-VE (user-tested), anis: star,
-liberalio (autofire), cinderella (custom wind-up, no inter-rocket delay), SWHA (DB
+liberalio (autofire), cinderella (whole-magazine dump, §2a), SWHA (DB
 cycle-inclusive), SBS (user-CONFIRMED autofire; her 150% charge cap also matches the DB
 chargeMultiplier column, validating the per-unit values), plus all weapon-swap states.
 Vesti: Tactical Upgrade is a custom post-charge volley (4 rockets over ~1s). The only
@@ -71,6 +72,28 @@ it instantly (steady ~100% releases = autofire; 150%+ readings = release-fired).
 - **Partial charge** damage interpolates linearly:
   `mult = 1 + (fullChargeMult − 1 + chargeDamageBuffs) × chargeFraction` [einkk;
   ore-game]. Moot on auto (see §4) but matters for full-charge-gated procs.
+
+## 2a. Whole-magazine dump (cinderella) — one charge feeds the whole mag
+
+`cinderella` (RL/Electric, "cindy") does NOT charge per rocket. She charges ONCE per magazine,
+then autofires the entire 24-round magazine at her datamined `rate_of_fire` WITHOUT recharging;
+on empty she reloads and charges once again. MEASURED 2026-07-21 by reading her on-screen ammo
+counter frame-by-frame (`docs/probes/720-kit-audit/cindy solo neutral.MP4`):
+- charge ≈ 1.0s (datamined `charge_time 100`), then 24 rockets at ≈3/s (datamined `rate_of_fire
+  180` = 20f/rocket), then reload ≈2.1s (datamined `reload_time 200`), then re-charge.
+- Full cycle ≈ 10.75s / 24 rockets → **≈390 pulls / 180s** (≈2.2/s sustained). The old
+  per-rocket-charge model fired ≈300 (via a `chargeSpeedPct +45` proxy), which under-fired her —
+  the cause of her COLD 0.937 board reading.
+
+Modeled by the opt-in engine primitive **`charFixes.magDumpRof`** (`sim.ts`): after the first
+charge completes the unit enters a "primed" state and fires one rocket every
+`round(3600 / rate_of_fire)` frames while ammo remains; the reload-to-max clears "primed" so the
+next magazine charges once again. Charge Speed shortens ONLY the once-per-mag prime charge, never
+the dump cadence (the `rate_of_fire` is the fixed autofire rate). The flag is inert for every
+other unit (regression byte-identical). Her `+45` chargeSpeedPct proxy and the old twin-rocket
+`normalAttackPct +100` were both removed — see DECISIONS 2026-07-21 and her override note. The
+"Charge Speed ▲100%, Removed upon reloading to max" kit text is the game's description of exactly
+this autofire-after-first-charge behaviour, not a per-rocket charge-speed buff.
 
 ## 3. Charge damage bucket
 
