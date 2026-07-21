@@ -387,6 +387,12 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 >   FB4; supersedes the "leftmost-tiebreak selection" framing).
 > - **ludmilla-winter-owner / rosanna-chic-ocean 13-vs-12 → recorder startup-lag artifact** (sim first-FB 3.4s
 >   optimal vs footage ~7s; clean 14s cadence; MC-unanimous 13). Unchanged by the fix; not an engine defect.
+>   **⚠ FRAMING CORRECTED 2026-07-21 (owner ruling; see probe-processing skill + [[fb-timing-anchor-not-startup-lag]]):**
+>   the "~7s footage first-FB / startup-lag" here was NOT measured from the 3:00-timer-start — the pre-timer video is
+>   a LOAD SCREEN, not "human startup lag." This 13-vs-12 (and the chisato-comp 13-vs-~11) needs RE-ANCHORING to the
+>   exact 03:00→02:59 frame before it can be called a confound; a first-FB/cadence residual that survives clean
+>   anchoring is a REAL signal, not player slop. Conclusion (not-an-engine-defect) is NOT overturned here — it is
+>   re-opened pending a properly-anchored re-measure.
 >
 > **⚠ FIT-EXPOSURE LEDGER (open — footage-gated re-tune, do NOT re-fudge in-place).** The corrected rotation
 > exposes per-cast over-credits in overrides that were fit to the OLD (sometimes under-counted) rotation. Seeded
