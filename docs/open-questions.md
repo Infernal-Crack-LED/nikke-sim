@@ -8,6 +8,27 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U24 — Do TRUE-flavored normal attacks retain CORE hits? (chisato/jill shared; footage says YES, but jill enactment gated) (2026-07-20)
+The kit-audit flagged (chisato gotcha 1, jill gotcha 1) that whether true-damage normal attacks forfeit
+core is unverified — a large lever, because `coreMult` is big. **Direct-observation finding (kit-audit
+measurement pass, from the EXISTING `docs/probe-data/jill-hitrate-core.json` recon of `jill control.MP4`):
+true normals DO retain core.** In `jill`'s own-burst window (her "Normal attacks deal True Damage for
+10s" is active) her bullet popups are red **"CORE HIT"** — ~14-15 of 15 sampled shots, with crit arrows,
+and NO white/orange bullet popups. If true normals forfeited core, there would be zero CORE-HIT popups in
+that window; instead they dominate (also lifted by her burst Hit Rate +80.78%). So the faithful direction
+is **true normals keep core/crit** — `chisato`'s SMG `coreMult 250` and a `jill` trueNormals window should
+NOT strip core. **This is a direct game-behavior observation (strong), but n=1 recording** → recorded here,
+not stamped on the model.
+**ENACTMENT STILL GATED for `jill` (do NOT blind-land the trueNormals window).** Separate risk: `jill`'s
+per-hit popup values are ALREADY sim-matched at ~99.7% (her main note) WITHOUT the +34.99% `trueDamagePct`
+being live (it is engine-inert today). If those matched values were read inside her burst window, adding a
+trueNormals window (which activates +34.99%) would OVER-credit by ~35% and push her further HOT (she is
+board HOT 1.041). Required before enacting: a per-hit reconciliation — does real jill burst-core reconstruct
+as sim × 1.0 (no true bonus ⇒ do NOT enact / the +34.99% is not a per-hit add) or sim × 1.3499 (⇒ enact the
+trueNormals window)? Recipe: reconcile `jill-hitrate-core.json` burst core popups (1.65–1.98M near-band)
+against a sim burst-window per-shot core with vs without trueNormals. Trail: plan §jill / §chisato,
+`docs/probe-data/jill-hitrate-core.json`.
+
 ### U23 — milk-blooming-bunny's burst-window over-model, exposed by the (faithful) Gain-Pierce landing (2026-07-20)
 Enacting the kit-literal S1 "Gain Pierce for 6 sec" (`gainPierce` on `shotFired`; kit-audit Phase C
 ENACT-NOW, DECISIONS 2026-07-20) lit `milk-blooming-bunny`'s previously-dead Pierce package — her burst
