@@ -1076,7 +1076,16 @@ export function runSim(
   let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
   const POST_FB_CHAIN_DELAY_FRAMES = 180;
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
-  const STAGE_WINDOW_FRAMES = 600; // burst_duration 1000 (=10s) standard
+  // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
+  // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
+  // B2→~1s→B3), NOT the Full-Burst state duration — it was mistakenly set to burst_duration=1000
+  // (=10s), which let a B3 up to 10s out of cooldown get reserved as the leftmost window-maker and
+  // wait for it, over-allocating the leftmost of two alternating B3s (sakura-bloom-in-summer 6/4 vs
+  // the footage's 5/5). 120f (2s) = the real ~1s grace padded for the sim's 0.5s STAGE_CAST_GAP
+  // (which reaches B3 ~0.5s early); calibrated across all 12 graded FB comps (all pass; PH's
+  // separate over-by-1 untouched). 90f overshoots (PH 13→11); raising STAGE_CAST_GAP to 1s to allow
+  // 90f craters measured cadence — the 0.5s gap is pinned. DECISIONS 2026-07-21. STAGE_WINDOW=600 reverts.
+  const STAGE_WINDOW_FRAMES = ENV.STAGE_WINDOW ? Number(ENV.STAGE_WINDOW) : 120;
   let fbEndFrame = -1;
   // "Wipe Out" status window on the boss (0/-1 = none): opened by a 'wipeOut' effect
   // (d-killer-wife's burst) and read by the requiresWipeOut block gate. One global boss →
