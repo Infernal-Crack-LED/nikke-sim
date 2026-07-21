@@ -39,6 +39,13 @@ const ENV: Record<string, string | undefined> =
 import type { Block, ConsolidationConfig, EffectDef, StatKey, TargetDef } from '../skills/types.js';
 
 const FPS = 60;
+// FIGHTDELAY (measured 2026-07-21): a fight-start deploy delay in SECONDS during which no unit fires,
+// charges, reloads, or generates burst gauge — the chisato.mov recording shows the first bullet only
+// LANDS at 2:59, i.e. ~1s after the 3:00 timer starts ticking (units deploy/aim first). DEFAULT 1s
+// (LANDED 2026-07-21 — owner-directed; full-board A/B: every measured-exact FB count PRESERVED, board
+// ±3% 6→7; total snapshots drift ~0.5% from ~1s less fire time, regenerated with the change). Global
+// but FB-neutral. `FIGHTDELAY=0` disables (A/B revert); a custom value overrides the seconds.
+const FIGHT_DELAY_FRAMES = Math.round(Number(ENV.FIGHTDELAY ?? 1) * FPS);
 // Experiment-only slug-scoped knobs (see experiment-harness-ai.md; all default OFF/empty):
 // XCRIT=<slug,slug> dot ticks + stored-hit releases roll crit for those units;
 // XCORE=<slug,...>  same paths roll core (subject to AUTO_CORE_RATE);
@@ -102,6 +109,16 @@ const FULL_BURST_FRAMES = 10 * FPS;
 // exempt too. charFixes.noBoltRecovery survives as a dormant manual hand-tune hook (no active
 // override sets it; baselines cite it as the "if measured autofire, set this" recipe).
 const SR_BOLT_RECOVERY_FRAMES = 22;
+// BOLTSTART (frame-measured 2026-07-21, chisato.mov/helm SR): the 22f bolt-cycle recovery is really
+// +11f at the START of a shot (before charge) + 11f at the END (after fire). The 22f post-fire value
+// above already models the between-shots 11-end+11-start (they're contiguous), so the ONLY missing
+// piece is the FIRST shot's 11f START recovery — without it shot1 fires at 60f instead of the measured
+// 71f (and every subsequent SR shot is 11f early). BOLTSTART=1 seeds that initial 11f for eligible
+// SR/RL bolt-recovery units. Since Helm's SR is nearly all of a Liter/Crown team's burst-gauge gen,
+// this shifts the first full burst later. DEFAULT ON (LANDED 2026-07-21 — owner-directed; full-board
+// A/B: measured-exact FB counts PRESERVED, board-neutral on its own). `BOLTSTART=off` disables (A/B
+// revert). Global (all SR/RL charge units).
+const SR_BOLT_START_FRAMES = ENV.BOLTSTART === 'off' ? 0 : Math.round(SR_BOLT_RECOVERY_FRAMES / 2);
 // Datamined autofire tell: new-style charge weapons fire on press (DOWN_Charge), skipping the
 // release latency; old-style release-fired weapons are 'UP'. undefined role → treated as
 // release-fired (the safe SR/RL default).
@@ -653,7 +670,15 @@ export function runSim(
       advantageVs: new Set(),
       ammo: char.ammo,
       fireAcc: 0,
-      boltRecoveryFrames: 0,
+      // Fight-start: eligible SR/RL bolt-recovery units begin with the +11f START recovery before
+      // their first charge (BOLTSTART; measured — shot1 fires at 71f not 60f). Default off → 0.
+      boltRecoveryFrames:
+        SR_BOLT_START_FRAMES > 0 &&
+        (char.weapon === 'SR' || char.weapon === 'RL') &&
+        !(prepared?.[idx]?.noBoltRecovery ?? false) &&
+        !isAutofireCharge(char)
+          ? SR_BOLT_START_FRAMES
+          : 0,
       noBoltRecovery: prepared?.[idx]?.noBoltRecovery ?? false,
       pullsPerSec: prepared?.[idx]?.pullsPerSec,
       magDumpRof: prepared?.[idx]?.magDumpRof ?? false,
@@ -2175,6 +2200,10 @@ export function runSim(
 
     // ---- per-unit weapon FSM ----
     for (const u of units) {
+      // Fight-start deploy delay: no firing/charging/reloading/gauge for the first FIGHT_DELAY_FRAMES
+      // (measured — first bullet lands ~1s after the 3:00 timer). MG spin stays at rest (idle). Default
+      // 0 → this never triggers. burstCd/gauge are 0 at fight start, so gating the whole body is safe.
+      if (frame < FIGHT_DELAY_FRAMES) { u.mgIdleFrames++; continue; }
       if (u.burstCdFrames > 0) u.burstCdFrames--;
 
       if (u.swap && frame >= u.swap.untilFrame) {
