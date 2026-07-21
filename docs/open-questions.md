@@ -458,6 +458,29 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 >   a SEPARATE wait-tolerance that must clear the ~1.6s natural chain span with margin (90f under, 120f over).
 >   No engine change (the gap stays 30f); DECISIONS 2026-07-21 corrected accordingly.
 > - **Dynamic chip-state (below) is UNAFFECTED — still open engine work.**
+>
+> **⇒ FIRST-BURST / BURST-GEN TIMING — measured corrections (2026-07-21, chisato.mov Liter/Crown/Chisato/Helm
+> Fire; owner frame-by-frame). LANDED so far: fight-delay + bolt-split (DECISIONS 2026-07-21). STILL OPEN as a
+> coherent burst-chain-timing + gauge REWORK (the pieces interact — don't land piecemeal):**
+> - **Measured chain-timing spec:** `gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB countdown (10000ms)`.
+>   The engine had B1 fire the instant gauge fills (no 30f) and FB start at the B3 cast (no 22f). The 30f between
+>   stages was already correct (`STAGE_CAST_GAP_FRAMES`).
+> - **Implemented ENV-gated, default OFF** (commit 3d7f6a3, regression byte-identical): `PREB1GAP=1` (30f before B1)
+>   and `PREFB=1` (22f before FB; defers fbEndFrame + fullBurstEnter + stored-hit release via `emitFbEnter`, gates
+>   the cast/expire checks off the 22f gap). **Each shifts FB 13→12 alone** on this comp — the OVERSHOOT: today's
+>   B1=3.5s match rides a slightly-too-fast gauge, so adding a delay without re-tuning the gauge pushes B1 late.
+>   → they can only become defaults TOGETHER WITH the gauge fix, tuned to reproduce the full measured timeline.
+> - **Gauge composition (measured 2026-07-21):** with this team ~90% of burst gen should come from Helm's SR (the
+>   gauge is ~90% full when her **3rd** shot tips it to 100 → B1). The sim currently reads **Helm 64% / chisato-SMG
+>   15% / liter-SMG 15% / crown 6%, B1 on Helm's 2nd shot** — the two SMGs OVER-contribute (~30% vs ~10%). Leading
+>   hypothesis: SMG fire-rate too high (rof 1440 ≈ 24/s) — which would ALSO cool chisato's damage hotness (one root
+>   cause). NOT changed (validated gauge-v4 datamine, board-wide blast radius; needs a measured SMG shot-count).
+> - **INVESTIGATION ITEM (owner):** the 22f pre-FB gap is likely WHY instant burst-cast attacks miss the +50% FB
+>   (they land before FB begins) — today modeled per-unit via `noFb`/`burstSnapshotsPreFb`. Verify PREFB reproduces
+>   that generally, and whether the per-unit flags then become redundant.
+> - **NEXT (the timeline pass):** a focused frame-by-frame read of chisato.mov's first burst window — Helm's exact
+>   shot frames, the burst-bar %-fill over time, and the B1/B2/B3/FB frames — as the target, then tune all knobs
+>   (fight-delay ✓, bolt ✓, +30f, +22f, gauge/SMG) TOGETHER to reproduce it and flip the defaults with a full A/B.
 
 Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
 - **Rotation over-generation [RESOLVED 2026-07-21 — see banner above; STALE claim retained for the trail]:**
