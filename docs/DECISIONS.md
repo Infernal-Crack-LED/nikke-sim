@@ -8,6 +8,22 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) Grave: team "Max Ammunition Capacity ▲ 3 round(s)" is a FLAT grant → `maxAmmoFlat 3`
+  — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED 4-of-4).** Base `grave` (AR/Fire/B2,
+  Supporter). Her burst's team ammo buff was the schema-forced fudge `maxAmmoPct 3` (+3 PERCENT ≈ inert);
+  the kit line is "▲ 3 round(s)" (flat). Re-encoded `maxAmmoFlat 3` to ALL allies, 10s (the flat-rounds
+  path was already live in `maxAmmo()` — the noir 2026-07-20 precedent). **The plan's "negligible on a
+  60-round AR mag" premise was WRONG** — it only weighed grave herself; the buff goes to the whole team,
+  and because she is a frequent B2 (~13 bursts/fight = 10s window at ~72% uptime) it is near-permanent for
+  small-mag SG/SR teammates. **Isolated board A/B (faithful>fit, mixed as expected):** improves the COLD
+  units it feeds — d-killer-wife 0.954→0.969, anis-star 0.967→0.979 — and worsens the separately-tracked
+  HOT ones — **noir 1.116→1.150** (+3.83% in her PI/PI2 totals; her 9-round SG gains most relative to a
+  +3-round grant), jill 1.041→1.051; grave/chisato/quency ~flat. The noir/jill worsening is the faithful
+  consequence of a real buff amplifying THEIR own over-models (both are open HOT gotchas), not a reason to
+  suppress the kit mechanic. No tuned value (3 is kit-literal). Regression: all full-burst/measured-truth
+  asserts byte-identical (rotation neutral); only per-comp totals drift (snapshot updated). Trail:
+  `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §grave gotcha 3, grave override caveat.
+
 - **(2026-07-20) Datamined skill CDs → sim: audit done, `helm-aquamarine` skill2 landed on `interval:4`;
   no cooldown-gate primitive needed.** Consuming the new `skillCooldownsSec` field (bakery-bot, per
   `docs/handoffs/2026-07-20-skill-cooldowns-to-sim.md`). Audit of all 8 units with a non-null skill-1/2
