@@ -3840,9 +3840,8 @@ export function App({ user }: { user: AuthUser | null }) {
           {rosterGenMode === 'solo' ? (
             <>
               <p className='muted'>
-                Builds the top 5 teams with no character reused across teams
-                (same scoring as Team Generator). Takes a few seconds — it runs
-                hundreds of fights.
+                Generates 5 sim-optimized teams for Solo Raid. Takes a few
+                seconds — it runs hundreds of fights.
               </p>
               {syncedGenPanel}
               {blockedPanel}
@@ -3869,9 +3868,8 @@ export function App({ user }: { user: AuthUser | null }) {
           ) : (
             <>
               <p className='muted'>
-                Builds three teams — each against its own boss — with no
-                character reused across teams. Set the boss options for each
-                team below. Takes a few seconds.
+                Generates 3 sim-optimized teams for Union Raid. Takes a few
+                seconds — it runs hundreds of fights.
               </p>
               {syncedGenPanel}
               {blockedPanel}
@@ -3930,10 +3928,7 @@ export function App({ user }: { user: AuthUser | null }) {
           {rosterSimMode === 'solo' ? (
             <>
               <p className='muted'>
-                Enter up to five teams and sim them all at once under the boss
-                options + "apply to all" loadout above. Each nikke can be used
-                once across the roster (solo-raid rule). Tap a slot to pick a
-                unit.
+                Click Browse Nikkes or a slot to add units.
               </p>
               {rosterInputView}
               <div className='roster-sim-actions'>
@@ -3984,8 +3979,7 @@ export function App({ user }: { user: AuthUser | null }) {
           ) : (
             <>
               <p className='muted'>
-                Enter three teams — each fights a different boss with its own
-                weakness, DEF, and core visibility. Tap a slot to pick a unit.
+                Click Browse Nikkes or a slot to add units.
               </p>
               {unionInputView}
               <div className='roster-sim-actions'>
@@ -4278,11 +4272,9 @@ export function App({ user }: { user: AuthUser | null }) {
         <div className='bp-panel'>
           <p className='muted'>
             Charge weapons fire in whole frames (the game runs at 60&nbsp;fps),
-            so charge speed only shaves time in discrete steps. A{' '}
-            <b>breakpoint</b> is the least charge speed&nbsp;% that drops the
-            charge by one more frame — anything between two breakpoints is
-            wasted. Pick a nikke for her charge time, or read the standard
-            1-second table below.
+            so charge speed only increases firing rate if it changes the number
+            of frames required to fire.Pick a nikke for her charge time, or read
+            the standard 1-second table below.
           </p>
 
           <div className='field'>
@@ -4315,9 +4307,8 @@ export function App({ user }: { user: AuthUser | null }) {
               </>
             ) : (
               <>
-                Showing the <b>standard 1-second charge</b> — {baseFrames}{' '}
-                frames, shared by most rocket launchers and snipers (Cinderella,
-                Maxwell, Red Hood, Alice&apos;s base, …).
+                Showing the standard 1-second charge — {baseFrames} frames,
+                shared by most rocket launchers and snipers.
               </>
             )}
           </p>
@@ -4418,11 +4409,8 @@ export function App({ user }: { user: AuthUser | null }) {
       const ammoPanel = (
         <div className='bp-panel'>
           <p className='muted'>
-            Max ammo = floor(base × (1 + total ammo&nbsp;%)), so it only climbs
-            in whole rounds. A <b>breakpoint</b> is the least ammo&nbsp;% that
-            adds one more round — anything between two breakpoints is wasted.
-            Pick a nikke to see the rounds she can reach and the overload lines
-            each one costs.
+            Max Ammo only increments in whole rounds. Calculate the breakpoints
+            per round below.
           </p>
 
           <div className='field'>
@@ -4507,9 +4495,8 @@ export function App({ user }: { user: AuthUser | null }) {
         <section className='calc-tab'>
           <h2>Overload Breakpoints</h2>
           <p className='muted'>
-            Overload lines roll in discrete tiers, and some stats only pay off
-            when they cross a whole-step <b>breakpoint</b>. Pick a calculator to
-            see the thresholds and how many overload lines each one costs.
+            Calculate the required overload rolls to meet breakpoints for Charge
+            Speed and Max Ammo.
           </p>
           <div
             style={{
@@ -4597,10 +4584,8 @@ export function App({ user }: { user: AuthUser | null }) {
         <section className='calc-tab'>
           <h2>Optimize Overload</h2>
           <p className='muted'>
-            Ranks how one Nikke should spend its <b>four free overload lines</b>
-            . The 8/12 floor — 4× Elemental DMG + 4× ATK — is held fixed on
-            everyone; only the Nikke’s remaining four lines vary, scored by the
-            Nikke’s own damage and the % gain over that plain 8/12 baseline.
+            Calculates the optimal overload lines under the selected conditions.
+            Assumes 4 ATK/4 ELE.
           </p>
           <div className='pills small dps-mode'>
             <button
@@ -4634,9 +4619,8 @@ export function App({ user }: { user: AuthUser | null }) {
           {olMode === 'matrix' ? (
             <>
               <p className='muted'>
-                Pick a Nikke and a matrix cell — the control team (Solo by
-                default) auto-fills around it. Investment is pinned to{' '}
-                <b>8/12</b>.
+                Pick a Nikke and a test matrix. The control team (Solo by
+                default) auto-fills around it.
               </p>
               <MatrixFilter cell={olCell} onChange={setOlCell} hideInvest />
               <div className='field'>
@@ -5066,10 +5050,8 @@ export function App({ user }: { user: AuthUser | null }) {
       const calcPanel = (
         <>
           <p className='muted'>
-            Estimate the reroll cost to hit a target build from scratch. Set up
-            to 3 target lines per piece (stat + minimum tier). The sim runs the
-            two-phase T11 method — reroll for the right stats, locking as you
-            go, then value-reset each line up to tier.
+            Estimate the number of Custom Modules required to roll your target
+            build.
           </p>
           {lockModePills}
           <div style={gridStyle}>
@@ -5098,10 +5080,9 @@ export function App({ user }: { user: AuthUser | null }) {
       const currentPanel = (
         <>
           <p className='muted'>
-            Recalc from where you are. For each piece, enter the lines you{' '}
-            <b>already have</b> (top, with their real tier) and the lines you{' '}
-            <b>want</b> (bottom, as a minimum tier). The sim measures the
-            remaining reroll cost from your current state.
+            Recalc from where you are. For each piece, enter the lines you
+            already have (top) and the lines you want (bottom). The sim measures
+            the remaining reroll cost from your current state.
           </p>
           {lockModePills}
           <div style={gridStyle}>
@@ -5166,11 +5147,8 @@ export function App({ user }: { user: AuthUser | null }) {
       const guidePanel = (
         <>
           <p className='muted'>
-            Step-by-step roll plan for <b>one piece</b>. Enter the lines you{' '}
-            <b>have now</b> (positional — Line 1 / 2 / 3, with their real tier)
-            and the stats + tiers you <b>want</b>. The guide runs the same
-            two-phase T11 method the sim uses: reroll for stats (locking the
-            rare slots as they land), then value-reset the tiers.
+            Step-by-step guide for <b>one piece</b>. Enter the lines you have
+            now and the stats + tiers you want.
           </p>
           <div
             style={{

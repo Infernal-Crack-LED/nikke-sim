@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-07-20",
+    "title": "Union Raid support + roster UX overhaul",
+    "notes": [
+      "New: Union Raid support. The Roster Sim and Roster Generator now have a Solo Raid / Union Raid switch at the top. Union Raid works on three teams, and each team fights a different boss — so you set the boss weakness, boss DEF, and core visibility separately for each team.",
+      "In the Roster Sim's Union Raid mode, each team's boss options sit right beside its slots. Sim all three teams at once, and the share card lists each team's boss options alongside its portraits. Browse Nikkes works for union rosters too.",
+      "The Roster Generator's Union Raid mode builds the best team for each of the three bosses with no nikke reused across teams, then copies straight into the Union Raid Roster Sim — boss options included.",
+      "Team Builder's + button now asks whether you want a Solo Raid or Union Raid roster. Union Raid stages three teams with per-team boss options, and Generate link / Copy image carry them through.",
+      "Roster UX polish: per-team boss options now line up beside each team instead of below it; roster portraits are a uniform size across the solo and union grids; and the Save button in every Browse Nikkes popup now sits right under your staged portraits, above the filters."
+    ]
+  },
+  {
+    "date": "2026-07-20",
     "title": "Site reorganization — four sections, Browse Nikkes picker, Team Builder on Tools",
     "notes": [
       "The top bar now has four tool sections: Sim (Team Sim, Roster Sim, Team Generator, Roster Generator), Rankings (DPS Rankings, Unit Comparison), Overload (Optimize Overload, Overload Rolling, Overload Breakpoints), and Tools (Team Builder, Doll Leveling, Resource Calculator). Each section keeps its own tab row, and every tab keeps its own URL.",

@@ -2488,11 +2488,12 @@ footer {
   margin-bottom: 10px;
 }
 /* Union Raid: per-team block — slot row on the left, boss options inline to
-   the right (stacks vertically on narrow screens) */
+   the right; the portrait strip is vertically centered against the (taller)
+   boss-options panel. Stacks vertically on narrow screens. */
 .union-team-block {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: center;
   gap: 14px;
   padding: 8px 0;
 }
@@ -2509,6 +2510,7 @@ footer {
 @media (max-width: 640px) {
   .union-team-block {
     flex-direction: column;
+    align-items: stretch;
   }
   .union-team-block > .union-boss-opts {
     min-width: 0;
