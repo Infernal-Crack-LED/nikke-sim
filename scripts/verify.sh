@@ -31,6 +31,9 @@ npx tsx scripts/sg-geometry-regression.ts | tail -1
 say "engine regression (measured truths + snapshots + seeded determinism)"
 npx tsx scripts/regression.ts
 
+say "engine primitive tests (reload-triggered buff removal)"
+npx tsx scripts/tests/reload-buff-removal.test.ts | tail -1
+
 say "overload roll-cost regression (model invariants + analytic/MC + determinism)"
 npx tsx scripts/overload-regression.ts
 

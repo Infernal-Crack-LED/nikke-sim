@@ -120,7 +120,13 @@ export type EffectDef =
       // as caster.resources[name] × mult — for a stat that tracks a dynamic pool (soda-twinkling
       // -bunny's Critical Damage ▲1.32% per Golden Chip: perResource {name:'goldenChip', mult:1.32}).
       // Apply as a `passive` self-buff so it is always present and re-reads the live pool.
-      perResource?: { name: string; mult: number } }
+      perResource?: { name: string; mult: number };
+      // reload-triggered removal: this buff is STRIPPED from the target when it next reloads to max
+      // ammunition (natural magazine reload-completion, or a fast-reloader's boss-transition
+      // snap-refill) — kit lines "…Removed upon reloading to max ammunition" (cinderella's S1 Charge
+      // Speed toggle). Apply it via a per-shot/full-charge trigger with NO durationSec so it persists
+      // across the magazine and only the reload ends it. INERT for every unit that does not set it.
+      removeOnReload?: boolean }
   | {
       // adjust a named resource pool (declared in CharacterSkills.resources) by `delta` when this
       // block's trigger fires — soda's burst spends 17 chips (delta:-17), her in-FB every-3-normals

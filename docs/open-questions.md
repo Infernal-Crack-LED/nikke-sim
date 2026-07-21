@@ -8,6 +8,30 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U25 — Charge Speed: SUBTRACTIVE vs DIVISIVE formula (cinderella's CS toggle exposes it) (2026-07-21)
+The engine models Charge Speed as SUBTRACTIVE on charge time — `needed = max(1, round(chargeFrames ×
+(1 − ΣCS/100)))`, capped at CS 100 (`sim.ts` charge loop) — decoded-data + einkk basis, and every
+calibrated CS value on the board (e.g. cinderella's +45 proxy) was fit UNDER that formula. Building the
+faithful `cinderella` (RL/Electric, aka "cindy") S1 toggle — "Charge Speed ▲ 100%. Activates when
+attacking with Full Charge. Removed upon reloading to max ammunition." — surfaced a discriminating test.
+Under SUBTRACTIVE, CS 100 → charge floored to 1 frame → she fires ~1 rocket/frame between reloads
+→ ~1536 pulls/180s (measured on the wired toggle; board 0.937 COLD → 4.834 HOT). But her MEASURED
+cadence (override note, u8-e3 popup pairs) is **~315 pulls/180s**. The **DIVISIVE** model
+(`needed = round(chargeFrames / (1 + ΣCS/100))`, the standard community/Prydwen form) gives CS 100 →
+charge HALVED (60f→30f): magazine cycle = 60 (shot 1, CS off) + 23×30 (shots 2-24) + 83 (reload) = 833f
+/24 shots → **~311 pulls/180s — a 1.2% match with ZERO free parameters**, closer than the calibrated +45
+subtractive proxy (~296) which itself sits at her COLD board direction. A rate-of-fire floor (rockets
+gated at the datamined 180 rpm = 20f even at instant charge) was CONSIDERED and REFUTED — it predicts
+~430 pulls, overshooting the measured 315. **Hypothesis (n=1-arithmetic-derived, HYPOTHESIS-strength,
+NOT enacted): NIKKE charge speed is DIVISIVE, not subtractive.** This is engine-wide — it re-scales
+EVERY charge unit (alice/red-hood/the SR/RL roster) and invalidates every CS value calibrated under
+subtractive (incl. cinderella's +45; the divisive re-derivation of her old proxy is 60/1.45 ≈ 41.4f ≠ the
+calibrated 33f). Enactment requires a separate GATED pass: fresh context + Fable pre-reg + full-board A/B
++ owner sign-off, never the session that found it. Independent confirmation wanted: a second charge unit's
+popup-read cadence at a known CS%, and/or the isolated-cinderella footage that pins her buffed-shot
+cadence + reload timing directly. See DECISIONS 2026-07-21 (removeOnReload primitive) + the pre-reg
+`scratchpad/prereg-cinderella-cs-toggle.md`.
+
 ### U24 — Do TRUE-flavored normal attacks retain CORE hits? (chisato/jill shared; footage says YES, but jill enactment gated) (2026-07-20)
 The kit-audit flagged (chisato gotcha 1, jill gotcha 1) that whether true-damage normal attacks forfeit
 core is unverified — a large lever, because `coreMult` is big. **Direct-observation finding (kit-audit

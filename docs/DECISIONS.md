@@ -8,6 +8,30 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) Reload-triggered buff removal — new engine primitive `removeOnReload`, LANDED INERT;
+  cinderella CS-toggle wiring HELD (awaiting owner + a gated CS-formula pass).** Built the capability the
+  kit-audit plan (§cinderella gotcha #2) named: a `buff` effect may set `removeOnReload:true`, tagging the
+  applied `BuffInstance`; a `stripReloadBuffs(u)` helper drops flagged buffs at the two genuine
+  reload-to-max sites — natural magazine reload-completion (`sim.ts` ~2118) + the fast-reloader
+  boss-transition snap-refill (~2092). Deliberately NOT stripped at weaponSwap start/end, `maxAmmoFlat`
+  grants, `instantReload` skill refills, or per-shot ammoRefund top-ups (none are the weapon's own "reload
+  to max ammunition"; site enumeration audited per Fable). **INERT:** no committed override sets the flag →
+  regression snapshot BYTE-IDENTICAL, all 12 measured full-burst truths green; a dedicated functional test
+  (`scripts/tests/reload-buff-removal.test.ts`, wired into verify.sh) proves the strip actually fires
+  (in-memory cinderella toggle: strip-on 1536 pulls < strip-off 2376 — the per-magazine CS reset).
+  **Why cinderella's CS was NOT re-wired (the intended consumer):** her S1 "Charge Speed ▲ 100%. …Removed
+  upon reloading to max ammunition" stays the PERMANENT `chargeSpeedPct 45` proxy. Wiring the faithful
+  toggle (shotFired → CS 100 + removeOnReload; every RL pull is a full charge) under the engine's SUBTRACTIVE charge formula
+  floors CS-100 charges to 1 frame (no rate floor for RL) → ~1536 pulls/180s vs MEASURED ~315 → board
+  0.937 COLD → **4.834 HOT** (measured on the wired toggle, 7 comps 3.14–7.07; her focus-charge gauge also
+  cascades more FBs onto teammates). faithful>fit + measured>fudge ⇒ do NOT force a 5× regression. The
+  measured cadence instead fits a DIVISIVE charge-speed formula at ~311/315 with zero free parameters — an
+  engine-wide, HYPOTHESIS-strength finding recorded in open-questions **U25**, requiring its own gated pass
+  (fresh context + Fable pre-reg + full-board A/B + owner). Under EITHER formula the removeOnReload
+  primitive is the correct building block for her toggle, so it lands now; the CS wiring waits on U25 +
+  owner. Trail: pre-reg `scratchpad/prereg-cinderella-cs-toggle.md`, Fable pre-op REVISE (site-audit +
+  divisive-CS surfaced), plan §cinderella, cinderella.json caveat, open-questions U25.
+
 - **(2026-07-20) eve: sequential-damage TRUE-multiplier bucket — new engine primitive `sequentialMultPct`,
   LANDED (kit-audit Phase A4; owner-authorized "confirmed, implement"; Fable pre-op APPROVE).** `eve`
   (AR/Iron/B3, the NieR: Automata collab Eve — NOT a variant; ungraded/no footage). Her burst "Exospine Mk2"

@@ -300,6 +300,10 @@ interface BuffInstance {
   // live resource-scaled value: when set, the buff's contribution is caster.resources[name] × mult
   // (re-read each frame), ignoring `value` — soda's Critical Damage ▲1.32%/Golden-Chip.
   perResource?: { name: string; mult: number };
+  // reload-triggered removal: stripped from the unit when it next reloads to max ammunition
+  // (stripReloadBuffs, called at the genuine reload-to-max sites). Set from the buff effect's
+  // removeOnReload flag; INERT unless an override declares it.
+  removeOnReload?: boolean;
 }
 
 interface Dot {
@@ -1352,7 +1356,8 @@ export function runSim(
     whileSwappedIdx?: number,
     rampFrames?: number,
     casterIdx?: number,
-    perResource?: { name: string; mult: number }
+    perResource?: { name: string; mult: number },
+    removeOnReload?: boolean
   ) {
     const expiresFrame = durationSec != null ? frame + Math.round(durationSec * FPS) : null;
     const existing = list.find((b) => b.key === key);
@@ -1372,11 +1377,25 @@ export function runSim(
       existing.rampFrames = rampFrames;
       existing.casterIdx = casterIdx;
       existing.perResource = perResource;
+      existing.removeOnReload = removeOnReload;
     } else {
       list.push({
         key, stat, value, stacks: 1, maxStacks, expiresFrame, whileSwappedIdx,
-        rampFrames, startFrame: frame, casterIdx, perResource,
+        rampFrames, startFrame: frame, casterIdx, perResource, removeOnReload,
       });
+    }
+  }
+
+  // Reload-triggered buff removal (primitive): drop every buff on `u` flagged removeOnReload.
+  // Called ONLY at genuine reload-to-max-ammunition events (natural magazine reload-completion +
+  // the fast-reloader boss-transition snap-refill) — NOT weaponSwap start/end, maxAmmoFlat grants,
+  // instantReload skill refills, or per-shot ammoRefund top-ups, none of which are the weapon's own
+  // "reload to max" the kit line ("…Removed upon reloading to max ammunition") refers to. INERT for
+  // every unit: no override sets removeOnReload today, so the filter is a no-op (regression-proven).
+  function stripReloadBuffs(u: UnitState) {
+    if (u.buffs.length === 0) return;
+    for (let i = u.buffs.length - 1; i >= 0; i--) {
+      if (u.buffs[i].removeOnReload) u.buffs.splice(i, 1);
     }
   }
 
@@ -1522,7 +1541,8 @@ export function runSim(
               e.whileSwapped ? ownerIdx : undefined,
               e.rampSec != null ? Math.round(e.rampSec * FPS) : undefined,
               ownerIdx,
-              e.perResource
+              e.perResource,
+              e.removeOnReload
             );
             // Max Ammo ▼ clips the CURRENT belt when it lands (user-confirmed);
             // increases never clip. Stacking stays additive inside maxAmmo().
@@ -2089,7 +2109,10 @@ export function runSim(
       // window start: fast reloaders (effective reload <= 1s) snap-refill their mag
       for (const u of units) {
         const effReload = reloadFramesNeeded(u.char.reloadFrames ?? 0, stat(u, 'reloadSpeedPct', frame));
-        if (effReload <= FPS && !u.reloading) u.ammo = maxAmmo(u, frame);
+        if (effReload <= FPS && !u.reloading) {
+          u.ammo = maxAmmo(u, frame);
+          stripReloadBuffs(u); // transition snap-refill is a reload-to-max (downtime reload fiction)
+        }
       }
     }
 
@@ -2115,6 +2138,7 @@ export function runSim(
           u.reloading = false;
           u.reloadProgress = 0;
           u.ammo = maxAmmo(u, frame);
+          stripReloadBuffs(u); // reload-to-max: drop removeOnReload buffs (cinderella's CS toggle)
         }
         continue;
       }
