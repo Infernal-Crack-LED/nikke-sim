@@ -16,7 +16,7 @@
 import { chromium } from 'playwright';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { PORTRAIT_CROP_TOP } from '../src/share/teamCard';
+import { PORTRAIT_CROP_TOP } from '../src/share/teamCard.js';
 
 const TIERS = [128, 256]; // px squares; runtime picks the smallest tier ≥ cssSize×dpr
 const QUALITY = 0.85; // webp quality

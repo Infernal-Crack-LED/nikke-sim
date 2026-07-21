@@ -18,7 +18,7 @@ const w = loadWorld();
 const teams = fillRoster(w, []).map((t, i) => ({
   ...t,
   name: `auto ${i + 1}`,
-  source: t.source.replace('roster fill', 'auto-generated'),
+  source: (t.source ?? 'roster fill').replace('roster fill', 'auto-generated'),
 }));
 
 runBattery(w, teams, (team) => {

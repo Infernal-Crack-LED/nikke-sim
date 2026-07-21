@@ -34,7 +34,7 @@ const boss = (flags.boss as Element) ?? null;
 const focusSlug = flags.focus ?? focus;
 
 const w = loadWorld();
-const bt: BatteryTeam = { slugs: team, focus: focusSlug, modes: {}, lambda: {} };
+const bt: BatteryTeam = { name: focus, slugs: team, focus: focusSlug, modes: {}, lambda: {} };
 autoWire(w, bt);
 
 // Capture the engine's DBG instance lines in-process (DBG_UNIT is read live from process.env).
