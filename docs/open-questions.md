@@ -396,6 +396,45 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 > naga 1.026→1.066, soda-twinkling-bunny 1.021→1.048, rouge 1.062→1.074, trina 1.177→1.180. These are the fix
 > revealing old over-credits, not the fix being wrong; re-tune each against footage in a separate gated pass.
 >
+> **⇒ UPDATE 2026-07-21 (fresh-session re-derivation, worktree `fit-exposure-retune`; owner-directed) — the
+> "fit-to-rotation" framing DOESN'T HOLD. These are pre-existing UNIT-LEVEL over-models, NOT rotation-fit
+> artifacts; the window fix merely ADDED to them.** Per-comp ratio decomposition (ROT=1 seeded board) shows each
+> unit's hotness is rotation-INDEPENDENT:
+> - **chisato — uniform ~1.19–1.24 at EVERY FB count.** PI2 1.193 (13 FBs), PI 1.195 (13 FBs), N2 1.236 (10 FBs).
+>   PI/PI2 are measured-exact at 13 FBs and were UNTOUCHED by the window fix, yet she's ~1.19 there → her over-credit
+>   is unit-level, not the N2 8→10 exposure (that only added ~+0.05 on top). The "clean fit-to-8-now-10" reading is
+>   wrong: de-fitting per-cast to fix N2 would leave PI/PI2 hot. Suspect levers (ALL ⚑, from her override note):
+>   true-normal core retention on SMG coreMult 250, swap mag-refill optimism (~2 free reloads/cycle), cadence,
+>   hitCount-48 flatDamage 472.18%. NOTE: the true-normal-CRIT lever is NOT in play — owner ruled 2026-07-21 that the
+>   `crit && !trueFlavor` guard (DECISIONS 2026-07-21 line 113) is not meant to exist (crit re-determined); the
+>   engine has no such guard on `main` and it was left as-is (that DECISIONS entry now reads stale — flag only, not
+>   edited). **Footage EXISTS**: `docs/probes/ar-sg-smg/chisato smg.MP4` + `docs/probes/720-kit-audit/chisato.mov`
+>   — a focused /probe-processing read of the true-damage window (core-popup presence + swap-window shot count) can
+>   localize, then a separate gated enactment pass.
+> - **trina — INVERSELY correlated with FB count** (hottest where FBs are FEWEST): PB/PB2 1.124/1.139 (12 FBs),
+>   TB2T2 1.188 (5 FBs), N3 1.228 (10 FBs). A per-FB BURST over-credit would trend the OTHER way; her over-credit is
+>   in her NON-burst footprint (Electric-AR normals / a passive), diluted by burst share in high-FB comps. She barely
+>   moved with the fix (1.177→1.180) — hot before AND after, so the window fix is a red herring for her. Small
+>   absolute error (~7M on ~51M; she's a buffer). No isolated footage → a trina-focus recording is needed (LOW prio).
+> - **rouge — mostly REAL run-to-run variance, not a model error.** PE and PE2 are the SAME team recorded twice;
+>   real rouge 106.7M (PE) vs 114.96M (PE2) = +7.7% real spread → sim ~constant → ratio swings 1.011↔1.111. Central
+>   ~1.07 is a mild unit-level residual her own note already flags (offensive-buff / F1–F2 burst-Max-HP double-count
+>   suspicion). Small-damage support (56–119M). No isolated footage.
+> - **naga — n=1 (N2, 1.065).** Shield-gated support; N2 has NO shielder so both headline blocks are inert (her note)
+>   → the reading is just her SG normals + S2. Mild SG-spray residual. n=1 = hypothesis-strength, NOT enactable. No
+>   isolated footage.
+> - **soda-twinkling-bunny — n=1 (N3, 1.047).** Her own note PREDICTED N3 ~0.974 (no-burst → chips stay 50); the drift
+>   to 1.047 came from later engine changes (CONE_DELTA SG core + the window fix), NOT rotation-fit. Her Hit Rate ▲38.91
+>   is unmodeled (would make her COLDER). **Footage EXISTS**: `docs/probes/control + carry/soda tb control.mov` +
+>   `docs/probes/720-kit-audit/soda tb.MP4`. n=1 → not enactable without a fresh graded read.
+>
+> **Net:** de-fitting these per-cast values to cancel the window fix would FUDGE unit-level modeling errors (violates
+> the accuracy-to-observed-mechanics invariant). Each needs footage-gated per-unit localization, NOT a rotation
+> de-fit. chisato + soda have isolated footage already (unblocked for a focused /probe-processing + gated pass);
+> naga/trina/rouge need new recordings (→ /testing-requests, LOW prio — small magnitudes / n=1). The original
+> ledger's pre/post board deltas above stay as the measured trail; the "fit-to-rotation" INTERPRETATION is SUPERSEDED
+> by this decomposition. (Nothing enacted this session — engine untouched, findings-only per batch-and-stop.)
+>
 > **Two open sub-questions filed (Fable pre-op revisions):**
 > - **(a) leftmost-vs-first-ready selection → RESOLVED 2026-07-21: switched to FIRST-READY (DECISIONS 2026-07-21,
 >   commit 533bf88).** Real auto casts whichever burst comes up first, and for equal-CD B3s first-ready guarantees
