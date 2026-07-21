@@ -8,6 +8,16 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) tove: datamine-refresh of two stale kit values — LANDED (kit-audit Phase C; Fable pre-op
+  APPROVE-WITH-REVISION).** `tove` (AR/Water/B1, ungraded). Two override values were stale vs the CURRENT
+  datamined kit prose (`characters.json`): (1) S2 team Crit Rate `critRatePct 3.32 → 10.08` (prose: "at max
+  stacks … Critical Rate ▲ 10.08% continuously"; the 3.32 was pre-rebalance); (2) burst all-ally ATK
+  `casterAtkPct 6.96 durationSec 10 → 15` (prose: "ATK ▲ 2.32% … Mirrors the stack count … for 15 sec"; 6.96
+  = 2.32×3 max stacks, unchanged — only the stale 10s duration fixed). Evidence tier = current kit prose
+  (faithful refresh, no board-fit). The embedded note was synced in the same edit (per Fable). SG-gated lines
+  (Attack Speed 42.24%, burst SG ATK 24.21×3) stay skipped (no SG in the generic team). **Ungraded** → regression
+  byte-identical (verified), solo-wiring smoke confirms the crit moves her solo total (32.599M). Trail: plan §tove.
+
 - **(2026-07-20) milk-blooming-bunny: S1 "Gain Pierce for 6 sec" is MODELED → her Pierce package goes live
   — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED; grave-pierce precedent).**
   `milk-blooming-bunny` (SR/Iron/B3, Attacker; the variant, not base `milk` SR/Water). Her S1 full-charge

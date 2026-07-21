@@ -1,5 +1,5 @@
 {
-  "note": "Whole-kit built on Temporary Modification stacks (max 3), modeled at steady-state fully-stacked since her 5%-on-attack proc keeps the buff maxed across a 180s raid with a full team firing. S1: at 3 stacks the team gets Crit Damage 5.24% (modeled passive). The self 5% reload proc is a QoL ammo refill (skipped), and Temp Mod's flat +2-rounds/stack is skipped — maxAmmoPct is percent-of-base not flat rounds, and the ammo is negligible for damage. S2: at full stacks, team Crit Rate 3.32% (passive). Burst: 'Mirrors the stack count' means value x3 at max stacks, so all-ally ATK is 2.32%*3 = 6.96% of caster ATK for 10s. FLAG: every Shotgun-gated line is skipped because there is no weapon-based target and the generic sim team has no SG — this understates Tove badly on a real shotgun team (skipped: S2 Attack Speed 42.24%, and the burst's ATK 24.21%*3 = 72.63% of caster ATK for SG allies).",
+  "note": "Whole-kit built on Temporary Modification stacks (max 3), modeled at steady-state fully-stacked since her 5%-on-attack proc keeps the buff maxed across a 180s raid with a full team firing. S1: at 3 stacks the team gets Crit Damage 5.24% (modeled passive). The self 5% reload proc is a QoL ammo refill (skipped), and Temp Mod's flat +2-rounds/stack is skipped — maxAmmoPct is percent-of-base not flat rounds, and the ammo is negligible for damage. S2: at full stacks, team Crit Rate 10.08% (passive; refreshed 2026-07-20 from the current datamined prose — the prior 3.32% was a pre-rebalance value). Burst: 'Mirrors the stack count' means value x3 at max stacks, so all-ally ATK is 2.32%*3 = 6.96% of caster ATK for 15s (duration refreshed 2026-07-20 from current prose; prior 10s was stale). FLAG: every Shotgun-gated line is skipped because there is no weapon-based target and the generic sim team has no SG — this understates Tove badly on a real shotgun team (skipped: S2 Attack Speed 42.24%, and the burst's ATK 24.21%*3 = 72.63% of caster ATK for SG allies).",
   "unmodeled": {
     "skill1": [
       "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine.",
@@ -43,7 +43,7 @@
         {
           "kind": "buff",
           "stat": "critRatePct",
-          "value": 3.32
+          "value": 10.08
         }
       ]
     }
@@ -62,7 +62,7 @@
           "kind": "buff",
           "stat": "casterAtkPct",
           "value": 6.96,
-          "durationSec": 10
+          "durationSec": 15
         }
       ]
     }
