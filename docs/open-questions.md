@@ -8,7 +8,21 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
-### U25 — Charge Speed: SUBTRACTIVE vs DIVISIVE formula (cinderella's CS toggle exposes it) (2026-07-21)
+### U25 — Charge Speed formula + cinderella's unique RL cadence (2026-07-21)
+**OWNER RULING 2026-07-21 — Charge Speed is ADDITIVE (subtractive on charge time); the DIVISIVE hypothesis
+is REJECTED. Do NOT change the global CS formula.** The divisive model only *appeared* to fit because it was
+being asked to explain cinderella's cadence via CS — but cinderella's ~315 is NOT a CS effect. Her RL is a
+UNIQUE weapon (`role.weapon` shot_id 1051101): `charge_time 100` (1.0s), `rate_of_fire 180` (3 rockets/s),
+`max_ammo 24`, `reload_time 200` (2.0s), `input_type DOWN_Charge`. Her REAL mechanism = **charge once (1s),
+then fire the mag at ROF 180 (3/s), reload, recharge** — and her in-game kit text ("Charge Speed ▲100%,
+removed on reload") is an UNFAITHFUL description of that rapid-fire behavior (a known issue with some unique
+weapons). So the faithful cinderella model is a per-unit FIRE-PATTERN off her datamine (ROF 180 + 1s initial
+charge + `removeOnReload`), NOT a CS-buff on charge time and NOT a global-formula change. Building it as a
+follow-up (targeting her popup-measured ~315 cadence). The CS-formula question below is now CLOSED (additive);
+the cinderella cadence question moves to her fire-pattern build. ORIGINAL FINDING (kept for the record, now
+superseded by the ruling above):
+
+
 The engine models Charge Speed as SUBTRACTIVE on charge time — `needed = max(1, round(chargeFrames ×
 (1 − ΣCS/100)))`, capped at CS 100 (`sim.ts` charge loop) — decoded-data + einkk basis, and every
 calibrated CS value on the board (e.g. cinderella's +45 proxy) was fit UNDER that formula. Building the
