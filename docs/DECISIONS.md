@@ -8,6 +8,38 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) Burst-chain reserve window `STAGE_WINDOW_FRAMES` 600→120 — it was the FB-STATE duration, not the auto chain-grace — LANDED.**
+  The stage-2/3 "reserve/grace" window (how long a filled burst chain WAITS for a stage-filling unit to come
+  off cooldown before the chain expires) was set to **600f = the datamined `burst_duration` (=10s)** — but that
+  is the Full-Burst STATE duration, the WRONG quantity. The correct value is the auto's inter-activation grace
+  (owner mechanic 2026-07-21: on auto the gauge fills → B1 → **~1s** → B2 → ~1s → B3 → Full Burst, so a chain
+  waits only ~1s for a stage-filler, not 10s). **Root cause of the U16 Burst-III over-allocation:** at 10s a B3
+  up to ~8s out of cooldown still qualifies as a "window-maker" and the leftmost-with-waiting rule reserves it
+  and waits — so with two alternating 40s-CD B3s (sakura-bloom-in-summer slot 3 / cinderella slot 4) it
+  double-casts the leftmost (sakura-bloom-in-summer 6/4 vs the footage's burst-color-verified 5/5); the same
+  applies at stage 2 for a slow leftmost B2. This is NOT a genuine tiebreak — with a realistic window the
+  earlier-ready unit is the *unique* candidate (supersedes the "leftmost-tiebreak Burst-III selection" framing
+  the prior 2026-07-21 in-FB-CDR entry pointed to for U16). **Corrected to 120f (2s)** = the ~1s grace padded
+  for the sim's 0.5s `STAGE_CAST_GAP` (which reaches B3 ~0.5s early). VALUE = ⚑ CALIBRATED against MEASURED FB
+  counts (not a measured 2s): all 12 pinned measured-FB regression asserts PASS with clean seeded distributions;
+  the passing plateau is wide (sakura 5/5 holds 120–500f; graded clean 120–300f), so 120 = the shortest clean
+  window (the mechanic wants short). 90f (owner's first 1.5s) overshoots — PH 13→11 (past its real 12) + bimodal
+  FB stragglers — because the 0.5s stage-gap reaches B3 early; raising the gap to 1s to rescue 90f CRATERS
+  measured cadence board-wide (80 regression fails), so the 0.5s gap is pinned and only the window changes.
+  Rotation moves TOWARD measured wherever it moves: sakura-bloom-in-summer 6/4→5/5, N2 8→10 (real ≥10), PE
+  10→11 (real 11-12); PH stays 13 (its separate open burst-cycle over-by-1, untouched). Blast radius (40-team
+  random battery, @600 vs @120): one UNGRADED team (moran/arcana/eve/soda-twinkling-bunny/modernia) drops 6→5
+  FBs — ROBUST across 120–450f, via a stage-2 expiry on its single 40s-CD B2 (arcana) — a *correction* of the
+  same long-window over-generation, not a regression; no graded comp affected. Evidence: owner mechanic +
+  measured-FB calibration; Fable pre-op **APPROVE-WITH-REVISIONS** (all 5 revisions cleared: plateau swept,
+  90-rejection rests on pinned-comp bimodality, confounded units ledgered, open-questions filed, blast-radius
+  diffed). Snapshot regenerated (byte-stability totals only; **zero** measured-FB asserts changed). `STAGE_WINDOW=600`
+  env reverts. Commit c8e1511. ⚠ **Fit-exposure follow-up:** the corrected rotation EXPOSES per-cast over-credits
+  in overrides that were fit to the OLD (sometimes under-counted) rotation — the snapshot bakes the new totals
+  but board-read shows true vs-real ratios; these units need a separate footage-gated re-tune (NOT re-fudged in
+  this session), ledgered in [open-questions.md](open-questions.md) U16. Trail:
+  `docs/handoffs/2026-07-21-b3-earliest-ready-tiebreak-plan.md`.
+
 - **(2026-07-21) Skill-granted burst-cooldown REDUCTION DOES apply during Full Burst — the "suppress in-FB burst-CDR" change is REFUTED / abandoned.**
   A proposed game rule ("burst-CDR does not apply during the 10s Full Burst window; only the FB-entry instant
   is exempt") was prototyped on an isolated worktree: a gate in the engine's `case 'burstCdr'` keyed on a new

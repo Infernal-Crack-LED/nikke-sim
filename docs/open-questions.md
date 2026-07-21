@@ -373,8 +373,41 @@ docs/probe-data/guilty-sg-band.json + brid-silent-track-sg-band.json (+ -events)
 the pre-registration in the session archive, DECISIONS 2026-07-16.
 
 ### U16 — Soda burst over-generation + dynamic chip-state (2026-07-16, from the re-tune)
+
+> **⇒ ROTATION OVER-GENERATION LARGELY RESOLVED 2026-07-21 (DECISIONS 2026-07-21, `STAGE_WINDOW_FRAMES`
+> 600→120; commit c8e1511).** The whole "does the engine over-generate / mis-allocate bursts?" family traced
+> to ONE mis-sourced constant: the burst-chain reserve/grace window was set to the 10s Full-Burst STATE
+> duration instead of the auto's ~1s inter-activation grace, so a stage-filler up to ~8s out of cooldown got
+> reserved and waited for. Fixed → the items below are resolved/reclassified:
+> - **soda-twinkling-bunny 6-vs-5 → STALE, already resolved before the window fix** (post-2026-07-16 FB-extension/
+>   cadence work): current engine gives a clean 5/5 (soda-twinkling-bunny at 3.4/39.4/75.4/111.4/147.4s in the
+>   LM/Crown/soda-twinkling-bunny/Helm control comp). The U16 soda bullet below is obsolete.
+> - **sakura-bloom-in-summer 6/4 → FIXED** (5/5, matching the burst-color footage) — it was the reserve-window
+>   bug, NOT a genuine leftmost-tiebreak (with a realistic window cinderella is the *unique* ready candidate at
+>   FB4; supersedes the "leftmost-tiebreak selection" framing).
+> - **ludmilla-winter-owner / rosanna-chic-ocean 13-vs-12 → recorder startup-lag artifact** (sim first-FB 3.4s
+>   optimal vs footage ~7s; clean 14s cadence; MC-unanimous 13). Unchanged by the fix; not an engine defect.
+>
+> **⚠ FIT-EXPOSURE LEDGER (open — footage-gated re-tune, do NOT re-fudge in-place).** The corrected rotation
+> exposes per-cast over-credits in overrides that were fit to the OLD (sometimes under-counted) rotation. Seeded
+> board-read pre→post the window fix (sim/real; N2's chisato is the clean case: fit to the buggy 8 FBs, now reads
+> hot at the correct 10): **toward** — scarlet-black-shadow 1.036→1.001, ada 0.954→0.984, liberalio 0.991→1.001,
+> ein 0.795→0.812, d-killer-wife 0.964→0.975; **fit-exposed (need re-validation)** — chisato 1.154→1.209,
+> naga 1.026→1.066, soda-twinkling-bunny 1.021→1.048, rouge 1.062→1.074, trina 1.177→1.180. These are the fix
+> revealing old over-credits, not the fix being wrong; re-tune each against footage in a separate gated pass.
+>
+> **Two open sub-questions filed (Fable pre-op revisions):**
+> - **(a) leftmost-vs-first-ready selection under a small window.** The window fix makes leftmost and
+>   earliest-ready mostly coincide, but a comp with two B3s ready within ~2s of each other could still mis-allocate
+>   under the leftmost rule. Not resolved, only masked in current comps — needs a comp that isolates it + footage.
+> - **(b) owner ~1s activation delay vs the sim's calibrated 0.5s `STAGE_CAST_GAP`.** The 120f-over-90f choice
+>   hangs on this 0.5s discrepancy. Raising the gap to 1s craters measured cadence (80 regression fails), so
+>   either the owner's ~1s is imprecise or another term (gauge fill / post-FB delay) absorbs it. Unexplained.
+> - **Dynamic chip-state (below) is UNAFFECTED — still open engine work.**
+
 Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
-- **Rotation over-generation:** the sim gives Soda **6 bursts vs the recorded 5** in the soda-control comp
+- **Rotation over-generation [RESOLVED 2026-07-21 — see banner above; STALE claim retained for the trail]:**
+  the sim gives Soda **6 bursts vs the recorded 5** in the soda-control comp
   (LM/Crown/Soda/Helm). Reality's 6th burst would sit at ~20 pre-consume chips (<30) and wouldn't clear her
   own ATK gate anyway — so the sim over-credits a nuke + a 65.25% ATK window. Suspect the Soda/Helm B3-
   alternation cooldown collision or FB-extension-shifted timing (her +4s FB-extend). This FLATTERS her
