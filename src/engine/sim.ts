@@ -2019,18 +2019,29 @@ export function runSim(
         u.burstCdFrames === 0 && fillsStage(u) && gatePasses(u);
       // burst-order overrides: a pending burstFirst unit (Prika duet opener) outranks
       // everything; then max-MP priority (Maiden, opt-in for manual-play comps); then
-      // slot-order priority WITH waiting: inside a timed stage window the chain WAITS
-      // for the leftmost stage-filling unit whose cooldown ends before the window
-      // closes, rather than instantly handing the cast to a lower-priority ready unit.
-      // (User ruling 2026-07-13: a 3rd-from-left Burst 3 like Maiden in the elec-weak
-      // fight NEVER bursts on auto — no comp has enough CDR for the leftmost two to
-      // both sit out a whole window. Without the wait, rotation jitter occasionally
-      // let her in, bifurcating her damage across Monte Carlo seeds. A least-recently-
-      // burst round-robin was tried earlier the same day and rejected: bench B3s cast
-      // where real fights never pick them.)
+      // FIRST-READY WITH WAITING: inside a timed stage window the chain waits for the
+      // stage-filling unit whose cooldown ends SOONEST (tie → leftmost), then fires when it
+      // is ready — matching real auto, which casts with whichever burst comes up first.
+      // (Owner ruling 2026-07-21: first-ready is truer to form than the old strict-leftmost
+      // wait. For equal-CD B3s this GUARANTEES clean alternation — "earliest-ready" always
+      // picks the longest-waiting one, a natural round-robin — whereas strict-leftmost let the
+      // leftmost slot MONOPOLIZE (e.g. two 40s B3s where leftmost fits the window every cycle →
+      // it casts all of them, the other never bursts). GRADED-BOARD-NEUTRAL (regression
+      // byte-identical, board-read ratios unchanged); it moves only UNGRADED comps, and toward
+      // faithful (measured on a 40-team random battery: ~1/3 differ, all first-ready correcting
+      // a leftmost monopoly/skip). `B3_LEFTMOST` env restores the old pick. Bench-B3 exclusion
+      // still holds: a 3rd same-CD B3 whose cooldown can't fit the short window is a non-candidate
+      // either way (2026-07-13 maiden-ice-rose ruling). Round-robin was tried + rejected earlier:
+      // bench B3s cast where real fights never pick them — first-ready does NOT do that (a bench
+      // B3 that never becomes earliest-ready-and-in-window never casts).
       const inWindow = stage >= 2 && stageExpireFrame !== Infinity;
+      const windowFits = (u: UnitState) =>
+        fillsStage(u) && gatePasses(u) && frame + u.burstCdFrames < stageExpireFrame;
       const next = inWindow
-        ? units.find((u) => fillsStage(u) && gatePasses(u) && frame + u.burstCdFrames < stageExpireFrame)
+        ? ENV.B3_LEFTMOST
+          ? units.find(windowFits)
+          : units.filter(windowFits).reduce<UnitState | undefined>(
+              (best, u) => (!best || u.burstCdFrames < best.burstCdFrames ? u : best), undefined)
         : units.find(eligible);
       const cand =
         units.find((u) => u.burstFirstPending && eligible(u)) ??
