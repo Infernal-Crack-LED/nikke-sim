@@ -1227,6 +1227,13 @@ export function runSim(
         (opts.extraDmgUpPct ?? 0) +
         rlNormalProjExpl) /
         100;
+    // Sequential-attack TRUE multiplier — its OWN multiplicative bucket (like charge/projFactor),
+    // NOT additive into Damage Up. Kit wording "Damage multiplier of sequential attacks is scaled
+    // by x%" (eve's Exospine Mk2 ×2) is a genuine multiplier on the sequential-flavored instance, so
+    // it must not dilute against other Damage-Up buffs (which the additive `sequentialDamagePct` does
+    // — that stat is a DIFFERENT mechanic: swha's "Sequential Attack Damage ▲158.4%", kept diluting).
+    // Applies only to sequential-flavored hits; defaults to 1 for everyone with no such buff.
+    const seqMult = opts.sequential ? 1 + stat(u, 'sequentialMultPct', frame) / 100 : 1;
     // Distributed Damage debuffs share the taken bucket, but only affect
     // distributed sources and only while a Damage Taken ▲ is active on the boss
     const dmgTakenSum = sum(enemyBuffs, 'damageTakenPct', frame);
@@ -1237,7 +1244,7 @@ export function runSim(
 
     const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
     const dmg =
-      baseAtk * (atkPct / 100) * major * elem * charge * dmgUp * projFactor * taken * distributed;
+      baseAtk * (atkPct / 100) * major * elem * charge * dmgUp * seqMult * projFactor * taken * distributed;
     // DBG_UNIT=<slug> [DBG_N=<count>]: log per-instance bucket decomposition (video
     // popup reconciliation — popups show single non-crit/crit instances, so compare
     // against major recomputed without the crit expectation)
@@ -1248,7 +1255,7 @@ export function runSim(
         console.log(
           `[dbg ${u.char.slug}] t=${(frame / FPS).toFixed(2)} ${opts.category} atkPct=${atkPct.toFixed(1)} ` +
           `baseAtk=${baseAtk.toFixed(0)} major=${major.toFixed(3)} elem=${elem.toFixed(3)} charge=${charge.toFixed(3)} ` +
-          `dmgUp=${dmgUp.toFixed(4)} taken=${taken.toFixed(3)} dmg=${dmg.toFixed(0)}`
+          `dmgUp=${dmgUp.toFixed(4)} seqMult=${seqMult.toFixed(3)} taken=${taken.toFixed(3)} dmg=${dmg.toFixed(0)}`
         );
         // DBG_BUFFS=1: dump the unit's live buff entries with each logged instance
         if (ENV.DBG_BUFFS) {

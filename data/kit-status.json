@@ -1305,7 +1305,7 @@
         "skill1: Unstable Energy cadence (hitCount 59) assumes 75% crit at scope lock (44 crit hits / 0.75 = 58.67); external crit-rate buffs on eve would shorten the real cadence — the static threshold cannot respond.",
         "skill1: Damage Taken ▲10% is modeled as permanent while the boss is Electric (kit: 10s per Unstable Energy hit on an Electric target; ~full uptime after the first proc at ~4.9s, so the approximation over-credits only the opening seconds).",
         "skill2: the 3-round reload refund is modeled unconditionally (kit gates it on hitting an ELECTRIC target — it should be inert vs non-Electric bosses) and as 5% of BUFFED max ammo (engine rounds 75×0.05 to 4 rounds vs the kit's flat 3).",
-        "burst: Mk2's Unstable Energy doubling uses sequentialDamagePct +100 in the shared Damage-Up bucket — a TRUE ×2 solo, but dilutes below ×2 whenever other Damage-Up-bucket buffs are live (accepted ⚑). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say."
+        "burst: Mk2's Unstable Energy doubling is a TRUE ×2 via sequentialMultPct +100 — its OWN multiplicative bucket (engine seqMult; multiplicative with Damage Up, not additive into it; kit-audit Phase A4 2026-07-20), so the ×2 holds regardless of other live Damage-Up buffs (no dilution; supersedes the prior accepted ⚑). Distinct from the additive sequentialDamagePct that snow-white-heavy-arms uses (kept diluting, untouched). The burst nuke carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say."
       ],
       "board": null
     },

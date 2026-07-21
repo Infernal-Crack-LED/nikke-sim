@@ -8,6 +8,29 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) eve: sequential-damage TRUE-multiplier bucket — new engine primitive `sequentialMultPct`,
+  LANDED (kit-audit Phase A4; owner-authorized "confirmed, implement"; Fable pre-op APPROVE).** `eve`
+  (AR/Iron/B3, the NieR: Automata collab Eve — NOT a variant; ungraded/no footage). Her burst "Exospine Mk2"
+  reads "Damage multiplier of Unstable Energy sequential attacks is scaled by 100%" = a TRUE ×2 on her
+  sequential-flavored damage. It was wired as a self-buff `sequentialDamagePct +100` living in the SHARED
+  additive Damage-Up bucket — a clean ×2 SOLO, but it DILUTED below ×2 whenever any other Damage-Up buff was
+  live (with an ally attackDamagePct 50: 2.5/1.5 = 1.667, not 2), the documented ⚑. **Fix (capability, not a
+  board-fit):** added a NEW stat `sequentialMultPct` in its OWN multiplicative bucket (engine `seqMult`,
+  `sim.ts` dealDamage — `seqMult = opts.sequential ? 1 + stat(u,'sequentialMultPct',frame)/100 : 1`,
+  multiplied into the dmg product alongside charge/projFactor), applied ONLY to sequential-flavored hits;
+  rewired eve.json's Mk2 buff `sequentialDamagePct → sequentialMultPct` (value 100, 10s). **Why a NEW stat,
+  not repurposing `sequentialDamagePct`:** that stat has exactly two users — eve AND
+  `snow-white-heavy-arms`, whose "Sequential Attack Damage ▲158.4%" is a Prydwen-confirmed, board-validated
+  (1.31→0.99) ADDITIVE Damage-Up buff that SHOULD dilute; repurposing would have silently broken her. swha's
+  path is untouched. **Validation (eve is ungraded → solo unit-test, not board):** synthetic-block invariant
+  test proved the 720% Unstable Energy proc is EXACTLY ×2 with Mk2 (soloRatio 2.000000) AND does NOT dilute
+  against a synthetic extra Damage-Up buff (nonDilRatio 2.000000, vs additive's 1.666667); normal attacks
+  stay ×1 under Mk2 (same code path that keeps her unflavored burst nuke undoubled — kit doesn't say to
+  double the nuke). Board-read BYTE-IDENTICAL for every graded unit; regression snapshot byte-identical (eve
+  in no comp; sole `sequentialMultPct` holder). Fable required + delivered: nuke-not-doubled assertion + the
+  stale-dilution-docs sync (eve.json note/caveat + kit-status.json). Trail: pre-reg
+  `scratchpad/eve-seqmult-prereg.md`, plan §A4, eve.json caveat.
+
 - **(2026-07-20) tove: datamine-refresh of two stale kit values — LANDED (kit-audit Phase C; Fable pre-op
   APPROVE-WITH-REVISION).** `tove` (AR/Water/B1, ungraded). Two override values were stale vs the CURRENT
   datamined kit prose (`characters.json`): (1) S2 team Crit Rate `critRatePct 3.32 → 10.08` (prose: "at max

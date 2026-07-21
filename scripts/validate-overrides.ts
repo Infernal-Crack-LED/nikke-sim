@@ -12,7 +12,7 @@ import type { DataFile, LevelMultiplier, SimConfig } from '../src/types.js';
 const STATS = new Set([
   'atkPct', 'casterAtkPct', 'casterMaxHpPct', 'targetMaxHpPct', 'atkOfMaxHpPct', 'critRatePct', 'critDamagePct', 'coreDamagePct',
   'elementDamagePct', 'chargeDamagePct', 'chargeSpeedPct', 'attackDamagePct',
-  'sustainedDamagePct', 'sequentialDamagePct', 'partsDamagePct', 'pierceDamagePct', 'damageTakenPct',
+  'sustainedDamagePct', 'sequentialDamagePct', 'sequentialMultPct', 'partsDamagePct', 'pierceDamagePct', 'damageTakenPct',
   'maxAmmoPct', 'maxAmmoFlat', 'reloadSpeedPct', 'attackSpeedPct', 'fireRatePct',
   'extraHitDamagePct', 'trueDamagePct', 'projectileExplosionPct',
   'elemAdvantageDamagePct', 'distributedDamagePct', 'projectileAttachmentPct',

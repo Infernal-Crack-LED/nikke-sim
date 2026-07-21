@@ -16,7 +16,8 @@ export type StatKey =
   | 'chargeSpeedPct'
   | 'attackDamagePct'   // "Attack Damage" — Damage Up bucket
   | 'sustainedDamagePct'
-  | 'sequentialDamagePct'
+  | 'sequentialDamagePct'  // "Sequential Attack Damage ▲x%" — ADDITIVE in the Damage Up bucket (diluted by other support buffs; e.g. snow-white-heavy-arms)
+  | 'sequentialMultPct' // "Damage multiplier of sequential attacks scaled by x%" — a TRUE multiplier on sequential-flavored damage in its OWN multiplicative bucket (NOT diluted; eve Mk2 ×2). Distinct mechanic from the additive sequentialDamagePct above.
   | 'casterMaxHpPct' // grants Max HP = % of CASTER's Max HP ("X% of the skill user's Max HP" — rouge/anis/trina)
   | 'targetMaxHpPct' // grants Max HP = % of the TARGET's OWN Max HP ("Max HP ▲ X%" — blanc/maiden). Same
   //                    e3 feed rule as casterMaxHpPct: only feeds atkOfMaxHpPct when caster === target (self)
