@@ -53,7 +53,7 @@
       "target": { "kind": "enemy" },
       "swapGate": "swapped",
       "effects": [
-        { "kind": "flatDamage", "atkPct": 11.9, "flavor": "true", "crit": true }
+        { "kind": "flatDamage", "atkPct": 11.9, "flavor": "true" }
       ]
     }
   ]

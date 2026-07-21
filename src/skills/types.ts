@@ -6,6 +6,7 @@ export type SkillSlot = 'skill1' | 'skill2' | 'burst';
 export type StatKey =
   | 'atkPct'            // ATK ▲ x% (scales target's own ATK)
   | 'casterAtkPct'      // ATK ▲ x% of caster's ATK (flat add)
+  | 'highestAllyAtkPct' // ATK ▲ x% of the HIGHEST ally's ATK (flat add — guilty "Mind If I Borrow This?"). Resolves to (value/100)×max(all units' staticAtk) at apply time; feeds the same flat-ATK path as casterAtkPct. Solo (self is the max) == casterAtkPct.
   | 'atkOfMaxHpPct'     // ATK ▲ x% of the unit's own final Max HP (flat add — Cinderella, Maiden:IR)
   | 'critRatePct'
   | 'critDamagePct'
@@ -16,7 +17,8 @@ export type StatKey =
   | 'chargeSpeedPct'
   | 'attackDamagePct'   // "Attack Damage" — Damage Up bucket
   | 'sustainedDamagePct'
-  | 'sequentialDamagePct'
+  | 'sequentialDamagePct'  // "Sequential Attack Damage ▲x%" — ADDITIVE in the Damage Up bucket (diluted by other support buffs; e.g. snow-white-heavy-arms)
+  | 'sequentialMultPct' // "Damage multiplier of sequential attacks scaled by x%" — a TRUE multiplier on sequential-flavored damage in its OWN multiplicative bucket (NOT diluted; eve Mk2 ×2). Distinct mechanic from the additive sequentialDamagePct above.
   | 'casterMaxHpPct' // grants Max HP = % of CASTER's Max HP ("X% of the skill user's Max HP" — rouge/anis/trina)
   | 'targetMaxHpPct' // grants Max HP = % of the TARGET's OWN Max HP ("Max HP ▲ X%" — blanc/maiden). Same
   //                    e3 feed rule as casterMaxHpPct: only feeds atkOfMaxHpPct when caster === target (self)
@@ -37,6 +39,14 @@ export type StatKey =
   | 'distributedDamagePct'   // boosts the caster's own distributed-damage hits
   | 'projectileAttachmentPct' // boosts the caster's projectile-attachment procs
   | 'normalAttackPct'        // scales the normal attack multiplier (like the SMG/SG doll line)
+  | 'pelletCountFlat'        // "Number of pellets ▲ N" — flat effective SG pellet-count add for a window.
+  //                            Threaded through the SG landing/gauge path so extra pellets pass the SAME
+  //                            per-pellet landing fraction / range falloff / shot-level core as the base
+  //                            (each pellet = 1/base of the shot). Opt-in; SG-only & swap-off (inert on
+  //                            non-SG and when 0). Damage-neutral vs the old normalAttackPct proxy for a
+  //                            unit with no OTHER normal-mult; the faithful gain is a real, queryable
+  //                            pellet count (effectivePellets) + correct multiplicative interaction with
+  //                            any co-active normalAttackPct. Gauge is NOT pumped (energy is per-trigger).
   | 'burstGenPct'            // scales the unit's burst gauge contribution
   | 'hitRatePct'        // core-hit lift (⚑ derived; sim.ts hrCoreMult; live by default, HRCORE=0 disables)
   | 'defPct'            // inert in v1 (self DEF doesn't affect own damage — Endurance cube)
@@ -119,7 +129,13 @@ export type EffectDef =
       // as caster.resources[name] × mult — for a stat that tracks a dynamic pool (soda-twinkling
       // -bunny's Critical Damage ▲1.32% per Golden Chip: perResource {name:'goldenChip', mult:1.32}).
       // Apply as a `passive` self-buff so it is always present and re-reads the live pool.
-      perResource?: { name: string; mult: number } }
+      perResource?: { name: string; mult: number };
+      // reload-triggered removal: this buff is STRIPPED from the target when it next reloads to max
+      // ammunition (natural magazine reload-completion, or a fast-reloader's boss-transition
+      // snap-refill) — kit lines "…Removed upon reloading to max ammunition" (cinderella's S1 Charge
+      // Speed toggle). Apply it via a per-shot/full-charge trigger with NO durationSec so it persists
+      // across the magazine and only the reload ends it. INERT for every unit that does not set it.
+      removeOnReload?: boolean }
   | {
       // adjust a named resource pool (declared in CharacterSkills.resources) by `delta` when this
       // block's trigger fires — soda's burst spends 17 chips (delta:-17), her in-FB every-3-normals

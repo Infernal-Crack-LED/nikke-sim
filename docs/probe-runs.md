@@ -109,7 +109,7 @@ run-B residual (trina 2.55/cindy 1.49/neon 1.57 — gauge model), alice-A 0.59 /
 milk-BB accepted-cold, maiden 1.26 (U2 x0.68 proc factor).
 
 
-## DEEP-DIVE PASS (2026-07-13, second session) — see docs/deep-dive-brief.md for the mission
+## DEEP-DIVE PASS (2026-07-13, second session) — see docs/closed/deep-dive-brief.md for the mission
 
 ### New ground truth ingested (docs/probes/"712 probes"/ — 9 screenshots, named by boss weakness)
 Seven were the original T1-T7 fights (numbers match exactly) but carried corrections:

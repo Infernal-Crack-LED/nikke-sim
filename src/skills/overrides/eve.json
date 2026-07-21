@@ -1,5 +1,5 @@
 {
-  "note": "Tier audit straggler (Bossing A; queue miss — story-tier proxy). Exospine system rebuilt from kit text (review pending fetch). Impact Exospine: crit rate +60 passive (parser ok, restated). Unstable Energy: per 44 CRIT normal hits -> 240% x3 sequential = 720%; at ~75% crit (60+15 base) that's ~1 proc per 59 hits -> hitCount 59, flavor sequential (joins the sequential exempt class: noFb ⚑; range exemption universal). Its Damage Taken 10%/10s applies only vs Electric-code enemies -> bossElement Electric gate. Eagle Eye: casterAtk 50 + maxAmmo 25 passives. Burst: 457.14 x6 sequential nuke (parser 2742.84 kept, burst-class = full FB); Mk2 doubles Unstable and Eagle Eye for 10s -> sequentialDamagePct +100 (gates on the sequential flavor) + casterAtkPct +50, both 10s. S2's reload-3-per-10-hits-on-Electric skipped (minor, element-gated). REVIEW-RECONCILED: AR 12RPS -> S1 proc every ~4.9s matches hitCount 59 exactly; Mk2 'doubles S1+S2' -> casterAtk +50 correct, the S1 doubling via sequentialDamagePct+100 undercounts ~20% vs a true x2 (dilution) — accepted ⚑; ADDED the missed 3-rounds-per-10th-hit refund (instantReload 0.05, Electric-target condition holds in her Iron-weak-only usage; review: 60-mag lasts 12.5s not 5s). noFb RELIC status (2026-07-15, autonomous-invariant-audit): her 720% Unstable-Energy proc (sequential) had its noFb ALREADY removed in a prior session -> FB applies by timing (DECISIONS-mandated; sequential is not type-exempt). She grades ~1.14 (over). Her cadence (hitCount 59) is kit-math (44 crit hits at ~75% crit) and her values are datamined, so the residual is the known ⚑ 'Mk2 doubling via sequentialDamagePct+100 undercounts ~20% vs a true x2' interacting with the now-applied FB. NO focused eve video exists in the catalog, so this cannot be settled empirically tonight -- documented OPEN, do NOT fudge to close it. Revisit if eve focus footage is captured.",
+  "note": "Tier audit straggler (Bossing A; queue miss — story-tier proxy). Exospine system rebuilt from kit text (review pending fetch). Impact Exospine: crit rate +60 passive (parser ok, restated). Unstable Energy: per 44 CRIT normal hits -> 240% x3 sequential = 720%; at ~75% crit (60+15 base) that's ~1 proc per 59 hits -> hitCount 59, flavor sequential (joins the sequential exempt class: noFb ⚑; range exemption universal). Its Damage Taken 10%/10s applies only vs Electric-code enemies -> bossElement Electric gate. Eagle Eye: casterAtk 50 + maxAmmo 25 passives. Burst: 457.14 x6 sequential nuke (parser 2742.84 kept, burst-class = full FB); Mk2 doubles Unstable and Eagle Eye for 10s -> sequentialDamagePct +100 (gates on the sequential flavor) + casterAtkPct +50, both 10s. S2's reload-3-per-10-hits-on-Electric skipped (minor, element-gated). REVIEW-RECONCILED: AR 12RPS -> S1 proc every ~4.9s matches hitCount 59 exactly; Mk2 'doubles S1+S2' -> casterAtk +50 correct; the S1 doubling is now a TRUE x2 via sequentialMultPct+100 (kit-audit Phase A4, 2026-07-20) — the new own-bucket multiplier (multiplicative with Damage Up, not additive into it), so it no longer dilutes below x2 when other Damage-Up buffs are live (superseding the prior 'undercounts ~20% via dilution — accepted ⚑'); ADDED the missed 3-rounds-per-10th-hit refund (instantReload 0.05, Electric-target condition holds in her Iron-weak-only usage; review: 60-mag lasts 12.5s not 5s). noFb RELIC status (2026-07-15, autonomous-invariant-audit): her 720% Unstable-Energy proc (sequential) had its noFb ALREADY removed in a prior session -> FB applies by timing (DECISIONS-mandated; sequential is not type-exempt). She grades ~1.14 (over). Her cadence (hitCount 59) is kit-math (44 crit hits at ~75% crit) and her values are datamined, so the residual is the known ⚑ 'Mk2 doubling via sequentialDamagePct+100 undercounts ~20% vs a true x2' interacting with the now-applied FB. NO focused eve video exists in the catalog, so this cannot be settled empirically tonight -- documented OPEN, do NOT fudge to close it. Revisit if eve focus footage is captured.",
   "unmodeled": {
     "skill1": [],
     "skill2": [],
@@ -88,10 +88,11 @@
       "target": {
         "kind": "self"
       },
+      "bossElementGate": "Electric",
       "effects": [
         {
           "kind": "instantReload",
-          "fraction": 0.05
+          "fraction": 0.04
         }
       ]
     }
@@ -123,7 +124,7 @@
       "effects": [
         {
           "kind": "buff",
-          "stat": "sequentialDamagePct",
+          "stat": "sequentialMultPct",
           "value": 100,
           "durationSec": 10
         },
@@ -139,7 +140,7 @@
   "caveats": [
     "skill1: Unstable Energy cadence (hitCount 59) assumes 75% crit at scope lock (44 crit hits / 0.75 = 58.67); external crit-rate buffs on eve would shorten the real cadence — the static threshold cannot respond.",
     "skill1: Damage Taken ▲10% is modeled as permanent while the boss is Electric (kit: 10s per Unstable Energy hit on an Electric target; ~full uptime after the first proc at ~4.9s, so the approximation over-credits only the opening seconds).",
-    "skill2: the 3-round reload refund is modeled unconditionally (kit gates it on hitting an ELECTRIC target — it should be inert vs non-Electric bosses) and as 5% of BUFFED max ammo (engine rounds 75×0.05 to 4 rounds vs the kit's flat 3).",
-    "burst: Mk2's Unstable Energy doubling uses sequentialDamagePct +100 in the shared Damage-Up bucket — a TRUE ×2 solo, but dilutes below ×2 whenever other Damage-Up-bucket buffs are live (accepted ⚑). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say."
+    "skill2: the 3-round reload refund is now GATED on Electric bosses (bossElementGate Electric — inert vs non-Electric, kit-faithful) and fraction 0.04 (0.04 × 75 buffed mag = exactly 3 rounds, matching the kit's flat 3; the prior 0.05 rounded to 4). Enacted 2026-07-20 (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED). eve is ungraded — validated by solo unit-test (off-Electric total is now element/refund-clean: Iron == neutral).",
+    "burst: Mk2's Unstable Energy doubling is a TRUE ×2 via sequentialMultPct +100 — its OWN multiplicative bucket (multiplicative with Damage Up, not additive into it; engine seqMult, kit-audit Phase A4 2026-07-20), so the ×2 holds regardless of other live Damage-Up buffs (no dilution). Distinct from the additive sequentialDamagePct that snow-white-heavy-arms uses (her 'Sequential Attack Damage ▲158.4%' is a Damage-Up-bucket buff that SHOULD dilute — untouched). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say. Solo unit-test verified (eve is ungraded): the 720% proc is ×2 with Mk2 and does NOT dilute against a synthetic extra Damage-Up buff; normal attacks stay ×1 under Mk2."
   ]
 }

@@ -3,10 +3,24 @@
     "**/docs/probes/**": true,
     "**/node_modules/**": true,
     "**/.git/objects/**": true,
-    "**/.git-private/objects/**": true
+    "**/.git-private/objects/**": true,
+    "**/dist/**": true,
+    "**/web/dist/**": true,
+    "**/.turbo/**": true
   },
   "search.exclude": {
     "**/node_modules": true,
     "**/web/node_modules": true
+  },
+  "js/ts.tsserver.maxMemory": 8192,
+  "js/ts.tsserver.watchOptions": {
+    "watchFile": "useFsEvents",
+    "watchDirectory": "useFsEvents"
+  },
+  "search.followSymlinks": false,
+  "git.autofetch": false,
+  "git.scanRepositories": [],
+  "files.exclude": {
+    "**/.git-private": true
   }
 }

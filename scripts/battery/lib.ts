@@ -29,7 +29,9 @@ export const BEATS: Record<Element, Element> = {
 export interface BatteryTeam {
   name: string;
   slugs: string[]; // slot order; index 2 = default camera focus (middle)
-  source: string;  // provenance: enikk raid + popularity, or 'roster fill'
+  source?: string; // provenance: enikk raid + popularity, or 'roster fill' (label-only; not consumed by the sim)
+  focus?: string;  // camera-focus slug → SimConfig.focusSlug (honored by the shared runOnce path).
+                   // undefined ⇒ engine default (middle slot).
   modes?: Record<string, string>;
   lambda?: Record<string, 1 | 2 | 3>;
 }
@@ -81,7 +83,7 @@ export function autoWire(w: World, team: BatteryTeam): string[] {
   const warnings: string[] = [];
   const has = (s: string) => team.slugs.includes(s);
   team.modes = { ...team.modes };
-  team.lambda = { ...team.lambda };
+  const lambda = (team.lambda = { ...team.lambda });
   if (has('mint') && has('prika')) {
     team.modes.mint ??= 'duet (w/ Prika)';
     team.modes.prika ??= 'duet (w/ Mint)';
@@ -92,13 +94,13 @@ export function autoWire(w: World, team: BatteryTeam): string[] {
   if (has('eunhwa-tactical-upgrade') && !has('emma-tactical-upgrade')) {
     warnings.push('eunhwa-tactical-upgrade has only a duo kit parse but emma-tactical-upgrade is absent');
   }
-  if (has('red-hood') && team.lambda['red-hood'] === undefined) {
-    team.lambda['red-hood'] = 3;
+  if (has('red-hood') && lambda['red-hood'] === undefined) {
+    lambda['red-hood'] = 3;
   }
   // rotation-viability check (owner ruling: a real team always has at least
   // B1 + B2 + 2x B3)
   const eff = team.slugs.map((s) =>
-    s === 'red-hood' ? `${['', 'I', 'II', 'III'][team.lambda['red-hood'] ?? 3]}` : burstOf(w, s));
+    s === 'red-hood' ? `${['', 'I', 'II', 'III'][lambda['red-hood'] ?? 3]}` : burstOf(w, s));
   const n = (b: string) => eff.filter((x) => x === b).length;
   if (n('I') < 1 || n('II') < 1 || n('III') < 2) {
     warnings.push(`rotation-outlier shape (B1 x${n('I')}, B2 x${n('II')}, B3 x${n('III')})`);
@@ -116,6 +118,7 @@ export function runOnce(w: World, team: BatteryTeam, boss: Element | null, coreH
   const cfg: SimConfig = {
     slugs: team.slugs, bossElement: boss, bossDef: 0, level: 400, copies: 10,
     doll: false, ol: 'base5', coreHitRate, rangeBonus: true, durationSec: 180, seed,
+    focusSlug: team.focus, // undefined ⇒ engine default (middle slot)
   };
   const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels: w.skillLevels, cubes: w.cubes, olLines: w.olLines });
   return runSim(chars, w.mult, cfg, prepared);

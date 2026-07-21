@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20",
+  "generatedAt": "2026-07-21",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -18,20 +18,21 @@
     "status": {
       "audited": 40,
       "authored": 30,
-      "reconciled": 4
+      "reconciled": 4,
+      "pending": 1
     },
     "tier": {
       "VALIDATED": 10,
-      "MODEL_ONLY": 40,
+      "MODEL_ONLY": 41,
       "MEASURED": 14,
       "CALIBRATED": 10
     },
     "band": {
       "±15%": 10,
-      "±3% ✓": 7,
-      "±8%": 7,
-      "±5%": 7,
-      ">15%": 14
+      "±3% ✓": 6,
+      "±8%": 10,
+      ">15%": 13,
+      "±5%": 6
     }
   },
   "units": {
@@ -329,11 +330,11 @@
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.011
+            "ratio": 1.0799
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0015
+            "ratio": 1.0735
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -341,10 +342,10 @@
           }
         ],
         "n": 12,
-        "mean": 0.9666,
-        "mad": 0.0439,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 0.9784,
+        "mad": 0.0557,
+        "band": "±8%",
+        "temp": "OK  ·"
       }
     },
     "arcana": {
@@ -660,20 +661,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.2376
+            "ratio": 1.1955
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.2339
+            "ratio": 1.2003
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.1088
+            "ratio": 1.0834
           }
         ],
         "n": 3,
-        "mean": 1.1934,
-        "mad": 0.1934,
+        "mean": 1.1598,
+        "mad": 0.1598,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -711,7 +712,8 @@
       },
       "caveats": [
         "skill2: Beautiful (Max HP ▲ 1.6% ×12 = +19.2% continuously, from her battle-start Decoy) is now modeled FAITHFULLY (2026-07-17, theme 3), replacing the steady-state bake: a self casterMaxHpPct 19.2 with rampSec 36 (passive Max-HP ramp from t=0) feeds her atkOfMaxHp via effectiveAtk (own-kit Max-HP only — engine wiring 2026-07-17, ally grants still excluded per the cindy e3 rule); atkOfMaxHp reverted to base 2.71; the burst's Beautiful-mirror split off as a rampSec-36 flatDamage 346.8 (nuke base back to 13659.2). Steady state (t≥36s) is byte-identical to the old bake (2.71×1.192=3.23; 13659.2+346.8=14006); pre-36s bursts now correctly credit PARTIAL Beautiful, reproducing the measured e3 early→late FB-proc growth (633.7k→667.0k). VALIDATED: mirror ramps 47.5@t=5s → 346.8@t≥36s; drift board-neutral for all other units.",
-        "skill2: the Decoy avatar itself is not modeled (defensive/aggro summon; v1 boss deals no damage so full decoy uptime — and thus full Beautiful uptime — is assumed)."
+        "skill2: the Decoy avatar itself is not modeled (defensive/aggro summon; v1 boss deals no damage so full decoy uptime — and thus full Beautiful uptime — is assumed).",
+        "skill1 CHARGE-SPEED (2026-07-21): the chargeSpeedPct 45 passive is a FORMULA-COUPLED proxy — it re-expresses the kit's real toggle ('Charge Speed ▲ 100% on full charge, Removed upon reloading to max ammunition') as a permanent average that reproduces her MEASURED ~315 pulls/180s (u8-e3) UNDER the engine's SUBTRACTIVE charge formula. The faithful toggle is now BUILDABLE via the removeOnReload engine primitive (shotFired → chargeSpeedPct 100 removeOnReload:true; every RL pull is a full charge), but is HELD: under subtractive-CS, CS-100 floors charges to 1 frame (no RL rate floor) → ~1536 pulls → board 0.937 COLD → 4.834 HOT (5× overshoot, measured on the wired toggle). Her measured cadence instead fits a DIVISIVE charge formula at ~311/315 with zero free params (open-questions U25). If the CS formula is ever changed to divisive, this 45 MUST be re-derived (60/1.45 ≈ 41.4f ≠ the calibrated 33f) — it is a subtractive-formula landmine. DECISIONS 2026-07-21."
       ],
       "board": {
         "records": [
@@ -886,24 +888,24 @@
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 1.0485
+            "ratio": 1.0463
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.9838
+            "ratio": 0.9821
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 1.0387
+            "ratio": 1.0365
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 1.0093
+            "ratio": 1.0072
           }
         ],
         "n": 16,
-        "mean": 1.026,
-        "mad": 0.0445,
+        "mean": 1.0254,
+        "mad": 0.0442,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -943,7 +945,7 @@
       },
       "caveats": [
         "burst: unrecognized target \"allies\" — applied to all allies",
-        "skill1: Full Burst Pierce Damage ▲13.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
+        "skill1: Full Burst Pierce Damage ▲13.55% now targets alliesOfWeapon SR (fixed 2026-07-20, kit-audit Phase C ENACT-NOW — kit targets only Sniper-Rifle-wielding allies). d-killer-wife is herself SR so keeps it; the only board effect was removing the spurious buff from grave (AR, Pierce-tagged during her Prediction window in comp N1), cooling that over-modeled HOT unit grave 1.179→1.162. Fable pre-op APPROVED.",
         "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
         "burst: [FIXED 2026-07-20, A4 Wipe-Out primitive] the body-branch ATK buff (casterAtkPct 12.19%, 'Allies that hit the body') is now GATED on the Wipe Out status: her burst inflicts a wipeOut effect (10s window) and the buff fires at burstCast for that 10s window with requiresWipeOut + requiresCore (core-only proxy). This replaces the prior ungated hitCount:1 model that ran ~permanently (over-credited team ATK outside the 10s windows). Faithful to '≈71% uptime = 10s Wipe Out of a ~14s rotation'; no tuned value (12.19 unchanged). TODO PARTS: the parts branch 'Allies that hit parts → coreDamagePct 16.26%' still needs destructible-part modeling (currently core is the only modelable 'area'); wire it as requiresWipeOut + a parts-hit trigger when parts enter scope.",
         "burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1)."
@@ -952,20 +954,20 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9914
+            "ratio": 0.9951
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.8846
+            "ratio": 0.9271
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.987
+            "ratio": 0.9867
           }
         ],
         "n": 3,
-        "mean": 0.9544,
-        "mad": 0.0456,
+        "mean": 0.9696,
+        "mad": 0.0304,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1204,12 +1206,12 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8997
+            "ratio": 0.898
           }
         ],
         "n": 3,
-        "mean": 0.7932,
-        "mad": 0.2068,
+        "mean": 0.7926,
+        "mad": 0.2074,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1304,8 +1306,8 @@
       "caveats": [
         "skill1: Unstable Energy cadence (hitCount 59) assumes 75% crit at scope lock (44 crit hits / 0.75 = 58.67); external crit-rate buffs on eve would shorten the real cadence — the static threshold cannot respond.",
         "skill1: Damage Taken ▲10% is modeled as permanent while the boss is Electric (kit: 10s per Unstable Energy hit on an Electric target; ~full uptime after the first proc at ~4.9s, so the approximation over-credits only the opening seconds).",
-        "skill2: the 3-round reload refund is modeled unconditionally (kit gates it on hitting an ELECTRIC target — it should be inert vs non-Electric bosses) and as 5% of BUFFED max ammo (engine rounds 75×0.05 to 4 rounds vs the kit's flat 3).",
-        "burst: Mk2's Unstable Energy doubling uses sequentialDamagePct +100 in the shared Damage-Up bucket — a TRUE ×2 solo, but dilutes below ×2 whenever other Damage-Up-bucket buffs are live (accepted ⚑). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say."
+        "skill2: the 3-round reload refund is now GATED on Electric bosses (bossElementGate Electric — inert vs non-Electric, kit-faithful) and fraction 0.04 (0.04 × 75 buffed mag = exactly 3 rounds, matching the kit's flat 3; the prior 0.05 rounded to 4). Enacted 2026-07-20 (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED). eve is ungraded — validated by solo unit-test (off-Electric total is now element/refund-clean: Iron == neutral).",
+        "burst: Mk2's Unstable Energy doubling is a TRUE ×2 via sequentialMultPct +100 — its OWN multiplicative bucket (multiplicative with Damage Up, not additive into it; engine seqMult, kit-audit Phase A4 2026-07-20), so the ×2 holds regardless of other live Damage-Up buffs (no dilution). Distinct from the additive sequentialDamagePct that snow-white-heavy-arms uses (her 'Sequential Attack Damage ▲158.4%' is a Damage-Up-bucket buff that SHOULD dilute — untouched). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say. Solo unit-test verified (eve is ungraded): the 720% proc is ×2 with Mk2 and does NOT dilute against a synthetic extra Damage-Up buff; normal attacks stay ×1 under Mk2."
       ],
       "board": null
     },
@@ -1352,26 +1354,26 @@
         "skill1: Prediction-end 'Removes 100% of ammo' (one forced ~3.35s reload per burst cycle in comps) is not modeled — no engine effect can empty a magazine",
         "skill2: Overheat II/III 30/60-hit build-up approximated as full 10s burst-window uptime (real ramp-in ~2.5s/~5s at the measured 12 rounds/s)",
         "burst: 'Gain Pierce' (10s) is MODELED FAITHFULLY (gainPierce → self, 10s) — its Pierce Damage ▲ +92.78 Damage Up lands during her Prediction window (S1's 48.4 excludeSelf'd, no double-count). This moves her comps ~0.83→1.18 HOT ON PURPOSE (model the real mechanic > fit): the residual HOT is a SEPARATE burst-window over-model, now cleanly isolated and tracked in open-questions U19 (fix with a measurement). Solo unaffected (a lone Burst II never bursts).",
-        "burst: team 'Max Ammunition Capacity ▲ 3 round(s)' encoded as maxAmmoPct 3 — the schema is percent-only, flat rounds are inexpressible per-target"
+        "burst: team 'Max Ammunition Capacity ▲ 3 round(s)' modeled as maxAmmoFlat 3 to ALL allies, 10s (kit-literal flat rounds; enacted 2026-07-20 per the kit-audit ENACT-NOW item — the prior maxAmmoPct 3 percent proxy was near-inert, and the flat-rounds path was already live in maxAmmo(). Materially larger relative buff to small-mag SG/SR teammates in her 10s burst window than the +3% was — faithful>fit; A/B recorded in DECISIONS)"
       ],
       "board": {
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.1709
+            "ratio": 1.165
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1623
+            "ratio": 1.1578
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.1972
+            "ratio": 1.1581
           }
         ],
         "n": 3,
-        "mean": 1.1768,
-        "mad": 0.1768,
+        "mean": 1.1603,
+        "mad": 0.1603,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -1453,7 +1455,7 @@
         "burst": []
       },
       "caveats": [
-        "skill1: 'Duplicates 8.81% of the ATK of the ally with the highest ATK' is modeled as % of Guilty's OWN ATK (casterAtkPct) — exact solo / when she is the top-ATK ally, cold when a buffed teammate outranks her.",
+        "skill1: 'Duplicates 8.81% of the ATK of the ally with the highest ATK' now uses the new highestAllyAtkPct stat (landed 2026-07-21) — resolves to 8.81% × max(all units' staticAtk) at apply time, feeding the same flat-ATK path as casterAtkPct. Solo (guilty is her own max) is byte-identical to the old casterAtkPct proxy; in a team it now correctly sizes off the highest-ATK ally instead of Guilty's own ATK. Basis is STATIC ATK (not final/buffed) per the caster-ATK convention (⚑ a future refinement could rank by live effectiveAtk if measurement shows the duplicate tracks buffed ATK).",
         "skill2: 'Increases stack count of stackable buffs by 1' is unmodeled (no schema support). Measured REAL solo (guilty-sg-band probe): it bumps her own S1 stack ramp to cap one trigger early; allies' stackable buffs are also not amplified in teams.",
         "burst: the 'at max stacks' gate on the DEF ▼ 20.25% + 277.71% additional-damage riders is not modeled (always-on) — a burst cast before the S1 ramp completes is slightly over-credited."
       ],
@@ -1516,24 +1518,24 @@
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 1.0168
+            "ratio": 1.0185
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.9908
+            "ratio": 0.9918
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 1.0066
+            "ratio": 1.0075
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 1.0483
+            "ratio": 1.0501
           }
         ],
         "n": 9,
-        "mean": 1.0179,
-        "mad": 0.0244,
+        "mean": 1.0185,
+        "mad": 0.0248,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -1562,7 +1564,7 @@
         "burst": []
       },
       "caveats": [
-        "skill2: the 105.58% random-enemy hit has NO kit-stated trigger — modeled on Skill 1's 30-normal-attack cadence as an unmeasured guess",
+        "skill2: the 105.58% random-enemy hit has NO kit-stated trigger — fires on its datamined internal cooldown (interval:4, skillCooldownsSec.skill2), resolved 2026-07-20 (was an invented hitCount:30 proxy)",
         "burst: the extra 164.83% vs Electric Code targets is now modeled (burstCast + bossElementGate 'Electric'); inert vs the non-Electric scope-lock boss, awakes as a second 164.83% burst hit vs an Electric boss",
         "skill2: the Damage Taken debuff only applies against Electric Code bosses (inert in the scope-lock context)",
         "cadence: assault-rifle fire rate and reload timing are datamined defaults, not yet measured from video"
@@ -1646,21 +1648,21 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0378
+            "ratio": 1.0432
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0371
+            "ratio": 1.0472
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0492
+            "ratio": 1.0637
           }
         ],
         "n": 3,
-        "mean": 1.0414,
-        "mad": 0.0414,
-        "band": "±5%",
+        "mean": 1.0514,
+        "mad": 0.0514,
+        "band": "±8%",
         "temp": "HOT ▲"
       }
     },
@@ -1789,7 +1791,7 @@
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.1783
+            "ratio": 1.1809
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
@@ -1797,8 +1799,8 @@
           }
         ],
         "n": 4,
-        "mean": 0.9908,
-        "mad": 0.0983,
+        "mean": 0.9915,
+        "mad": 0.099,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -1891,24 +1893,24 @@
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 1.1193
+            "ratio": 1.1308
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 1.0848
+            "ratio": 1.0955
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 1.1106
+            "ratio": 1.121
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 1.1114
+            "ratio": 1.1229
           }
         ],
         "n": 8,
-        "mean": 1.1016,
-        "mad": 0.1016,
+        "mean": 1.1071,
+        "mad": 0.1071,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2164,7 +2166,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6467
+            "ratio": 0.6515
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -2172,8 +2174,8 @@
           }
         ],
         "n": 2,
-        "mean": 0.9351,
-        "mad": 0.2884,
+        "mean": 0.9375,
+        "mad": 0.286,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2265,10 +2267,7 @@
       "reference": false,
       "residual": "~0.7 is an ACCEPTED DECISION (poor auto-play) — validated-by-decision, not tuned to 1.0",
       "unmodeled": {
-        "skill1": [
-          "■ Activates when performing a Full Charge attack. Affects self.",
-          "Gain Pierce for 6 sec."
-        ],
+        "skill1": [],
         "skill2": [
           "■ Activates only when in Embarrassment status. Affects self.",
           "Pierce Damage ▲ 64.7% continuously."
@@ -2279,6 +2278,7 @@
         ]
       },
       "caveats": [
+        "skill1: 'Gain Pierce for 6 sec' (full-charge trigger) is now MODELED (gainPierce durationSec 6 on shotFired — SR auto-full-charges every shot, so the 6s window refreshes continuously → she stays Pierce-tagged). Enacted 2026-07-20 (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED). This lights her previously-DEAD Pierce package: her burst pierceDamagePct +117.64% (10s) now applies to her burst-window damage (and she becomes an SR recipient of d-killer-wife's +13.55% in PG). DELIBERATE overshoot per faithful>fit (grave-pierce precedent DECISIONS 2026-07-17): PG 0.653 COLD → 1.301 HOT (total ~254M→506M, ~×2 — her burst window carries huge atkPct-220 + FB normals, and pierce ~doubles it). The residual HOT is now cleanly isolated to milk-blooming-bunny's SEPARATE over-models, NOT the pierce: (1) her second gotcha — the Embarrassment mode-split (MEASUREMENT-gated; auto-mode faithfulness of the burst atkPct 220 / S2 DoT 447.7 magnitudes), and (2) needs a milk-blooming-bunny-FOCUS pierce-window measurement (pierce-window DPS share). Do NOT re-fudge the pierce value (117.64 is datamined); fix the residual with a measurement. ⇒ open-questions U23.",
         "burst: unparsed effect \"Overconfident, Huh?!:\"",
         "burst: unparsed effect \"Gains Immunity to Embarrassment for 10 sec.\""
       ],
@@ -2286,14 +2286,14 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6529
+            "ratio": 1.3002
           }
         ],
         "n": 1,
-        "mean": 0.6529,
-        "mad": 0.3471,
+        "mean": 1.3002,
+        "mad": 0.3002,
         "band": ">15%",
-        "temp": "COLD ▼"
+        "temp": "HOT ▲"
       }
     },
     "mint": {
@@ -2426,12 +2426,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8338
+            "ratio": 0.8196
           }
         ],
         "n": 1,
-        "mean": 0.8338,
-        "mad": 0.1662,
+        "mean": 0.8196,
+        "mad": 0.1804,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2541,12 +2541,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0263
+            "ratio": 1.0279
           }
         ],
         "n": 1,
-        "mean": 1.0263,
-        "mad": 0.0263,
+        "mean": 1.0279,
+        "mad": 0.0279,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -2693,16 +2693,16 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.1034
+            "ratio": 1.1394
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1276
+            "ratio": 1.1571
           }
         ],
         "n": 2,
-        "mean": 1.1155,
-        "mad": 0.1155,
+        "mean": 1.1482,
+        "mad": 0.1482,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2860,12 +2860,12 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.091
+            "ratio": 1.0867
           }
         ],
         "n": 2,
-        "mean": 1.1358,
-        "mad": 0.1358,
+        "mean": 1.1337,
+        "mad": 0.1337,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2926,14 +2926,14 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9841
+            "ratio": 0.9797
           }
         ],
         "n": 5,
-        "mean": 0.9704,
-        "mad": 0.0306,
+        "mean": 0.9695,
+        "mad": 0.0315,
         "band": "±5%",
-        "temp": "OK  ·"
+        "temp": "COLD ▼"
       }
     },
     "raven": {
@@ -3033,6 +3033,33 @@
         "temp": "COLD ▼"
       }
     },
+    "rei-ayanami": {
+      "name": "Rei Ayanami",
+      "burst": "III",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "pending",
+        "provenance": "hand-authored",
+        "date": null,
+        "findings": []
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Damage dealt to Shield ▲ 700.5% continuously — no shield-damage StatKey in the schema; inert vs the partless scope-lock boss (no shield)."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: Elemental Advantage Attack Damage ▲ 30.23% is active only with elemental advantage (Fire vs a Fire-weak boss); inert on a non-advantaged/neutral boss (⚑1)",
+        "skill1: the 112.37% proc cadence (hitCount 100) depends on MG fire rate; reloadFrames 171 is unverified datamine (⚑2)",
+        "burst: the 13.44% caster-Max-HP shield is event-only (no HP pool modeled in v1); fires shielded triggers only (⚑3)"
+      ],
+      "board": null
+    },
     "rosanna-chic-ocean": {
       "name": "Rosanna: Chic Ocean",
       "burst": "II",
@@ -3064,7 +3091,7 @@
       },
       "caveats": [
         "skill1: part-destroy ATK stacks (3% caster ATK ×5 to all allies) are inert vs a partless boss and NOT modeled — big hidden lever on parts bosses",
-        "skill2: sustained DoT modeled as 100%-uptime maintained (one passive instance) — the kit text prints no activation clause; real uptime is unmeasured",
+        "skill2: sustained DoT re-casts on its datamined 30s CD, 15s window each, first fire t=30 (no force-cast) — resolved 2026-07-20 (owner); was an invented 100%-uptime passive-continuous encoding",
         "skill1/skill2: Damage to Parts ▲ 24.26% buffs are inert vs the partless boss (kept for fidelity)"
       ],
       "board": null
@@ -3159,8 +3186,8 @@
         "burst": []
       },
       "caveats": [
-        "skill2: force-cast ONCE at battle start (S1) — Sakura Petals 256%/s + Dancing Flower modeled as a single 15s window (t=0–15); the part-destroy duration extensions never fire vs the partless boss, so she is a plain AR after ~t=15 until her bursts ⚑",
-        "skill2: Dancing Flower Attack Damage ▲ 15.64%/15s is time-averaged to a permanent 1.30% (engine passive buffs cannot carry a duration) ⚑",
+        "skill2: force-cast at t=0 (S1 'Forcefully uses Skill 2') AND re-cast every 30s on its datamined CD — Sakura Petals 256%/s runs 6×15s windows (90s uptime); resolved 2026-07-20 (owner), was a single t=0–15 window",
+        "skill2: Dancing Flower Attack Damage ▲ 15.64%/15s time-averaged to 7.82% over the 90s/180s (50%) uptime (engine passive buffs cannot carry a duration) — was 1.30% for the single-window model ⚑",
         "burst: 457.14% ×10 sequential attacks modeled as 10 same-frame hits vs the single boss; the stacking DoT assumes all 10 stacks apply per cast (351.6%/s ×10s) ⚑",
         "cadence: datamined 12 pulls/s + 81-frame reload are unverified estimates ⚑"
       ],
@@ -3285,35 +3312,34 @@
       },
       "caveats": [
         "skill2: the 144.73% damage line fires on a 15s internal cooldown (owner-ruled 2026-07-20); ⚑ first-fire phase (t=15 vs t=0) and whether the line is FB-scoped are unmeasured — recipe: scan sw.MP4 for 144.73%-class popups (appearance outside FB windows falsifies FB-scoping; first-popup time pins the phase)",
-        "burst: full-charge coefficient is 4995% = 499.5 × 10 (chargeMultPct 1000; owner re-ruled ×10 from the sw.MP4 footage 2026-07-20 — charge UI reads '1000%' like an SR's '250%', 6 popups ~630 ATK-multiples reconcile only with ×10). The earlier additive 1499.5% reading is set aside.",
-        "burst: footage shows her AR KEEPS FIRING during the ~5s cannon charge (cannon materializes only for the shot) — inexpressible with weaponSwap, sim loses ~5s AR fire per window; likely her main residual COLD driver (⚑)",
-        "burst: exactly 1 cannon shot per burst then she resumes her AR (owner-ruled maxShots:1); ⚑ the swap-end does not reset ammo so AR resumes at 0 ammo → 111f reload first — recipe: does the AR resume firing immediately post-nuke in sw.MP4?",
-        "burst: swapped shot is Pierce-tagged (weaponSwap.hasPierce; Pierce Damage ▲ feeds the swap shot's Damage-Up bucket); the pierce core+body double-hit stays unmodeled (PIERCE_CORE_DOUBLE=false, multipart-scope only)"
+        "burst: the cannon is one DELAYED full-charge hit (flatDamage delaySec 5.5 + charge/chargeMultPct 1000/core/pierce/rangeOk) — NOT a weaponSwap — so her AR keeps firing through the ~5s charge (owner-ruled 2026-07-20; resolves the AR-during-charge gap). Full-charge coefficient 4995% = 499.5 × 10 (charge bucket ×10; footage-confirmed). A/B vs the swap encoding: cannon flavor byte-identical (major/charge/dmgUp/taken match), board 347M→408M / ~0.81-0.90→~0.95-1.06 from the recovered AR fire (which also lifts her S1 self-ATK uptime and little-mermaid's team-ammo skill); FB counts byte-identical.",
+        "burst: FIDELITY GAP (inert at scope) — a delayed flatDamage does NOT receive Normal Attack Damage ▲ (the swap-shot path's normalScale). The cannon is a charge-weapon normal attack in-game and should get it; no control-comp ally grants it and snow-white doesn't self-grant, so it is inert here, but a future comp with a Normal-Attack-Damage buffer would under-credit the cannon under this encoding (⚑)",
+        "burst: cannon is Pierce-tagged (flatDamage pierce → Pierce Damage ▲ feeds its Damage-Up bucket) and takes the +30% range bonus like the swap shot it replaces; the pierce core+body double-hit stays unmodeled (PIERCE_CORE_DOUBLE=false, multipart-scope only)"
       ],
       "board": {
         "records": [
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 0.7929
+            "ratio": 0.962
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.7932
+            "ratio": 0.9616
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 0.8812
+            "ratio": 1.0725
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.8142
+            "ratio": 0.9909
           }
         ],
         "n": 4,
-        "mean": 0.8204,
-        "mad": 0.1796,
-        "band": ">15%",
-        "temp": "COLD ▼"
+        "mean": 0.9968,
+        "mad": 0.0395,
+        "band": "±5%",
+        "temp": "OK  ·"
       }
     },
     "snow-white-heavy-arms": {
@@ -3512,14 +3538,14 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9755
+            "ratio": 0.9356
           }
         ],
         "n": 1,
-        "mean": 0.9755,
-        "mad": 0.0245,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 0.9356,
+        "mad": 0.0644,
+        "band": "±8%",
+        "temp": "COLD ▼"
       }
     },
     "tove": {
@@ -3546,15 +3572,10 @@
       "reference": false,
       "unmodeled": {
         "skill1": [
-          "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine.",
-          "■ Activates during Emergency-Crafted Bullets. Affects all allies. Temporary Modification: Max Ammunition Capacity ▲ 2, stacks up to 3 time(s) and lasts for 5 sec."
+          "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine."
         ],
-        "skill2": [
-          "■ Only activates when Temporary Modification is fully stacked. Affects all shotgun-wielding allies. Attack Speed ▲ 42.24% continuously."
-        ],
-        "burst": [
-          "■ Affects all shotgun-wielding allies. Miracle of Makeshifts: ATK ▲ 24.21% of caster's ATK. Mirrors the stack count of Temporary Modification for 15 sec."
-        ]
+        "skill2": [],
+        "burst": []
       },
       "board": null
     },

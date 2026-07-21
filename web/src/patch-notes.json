@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-21",
+    "title": "Engine accuracy pass — burst rotation & kit fixes",
+    "notes": [
+      "Full Burst rotation timing is more accurate: a Full Burst now fires the moment the next Burst unit actually comes off cooldown, so two Burst III units with the same cooldown alternate cleanly instead of one monopolizing them — and the sim no longer squeezes in Full Bursts a real fight wouldn't reach.",
+      "Damage-over-time effects and follow-up hits can now land critical hits, matching the game.",
+      "A batch of per-unit kit refinements landed across the roster for closer sim-vs-real accuracy — including a more accurate rocket fire pattern for Cinderella and Snow White continuing to fire while her cannon charges."
+    ]
+  },
+  {
     "date": "2026-07-20",
     "title": "Union Raid support + roster UX overhaul",
     "notes": [

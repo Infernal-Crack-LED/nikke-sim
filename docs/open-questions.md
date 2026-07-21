@@ -8,6 +8,139 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U26 — "All-or-nothing" crit on sequential attacks + an Eve carve-out (2026-07-21)
+**Surfaced while modeling cinderella's burst** (a 10-hit "1365.92% × 10 sequential" nuke the engine
+represents as one flatDamage instance). The engine rolls crit ONCE per damage instance
+(`dealDamage`, `src/engine/sim.ts` ~1186–1191: a single Bernoulli `rng() < critRate` → full crit bonus
+or nothing), so a single instance is inherently all-or-nothing. For a **sequential attack** this is
+believed CORRECT: in NIKKE a multi-hit sequential round (Snow White: Heavy Arms' sequence, cinderella's
+10-hit nuke, Eve's concentrated payload) has its critical hit decided at the **round/action level** — if
+the round crits, the crit multiplier scales the whole round's damage; it does NOT independently roll
+"crit, normal, crit, normal" across the micro-hits inside the round.
+
+**Open items for later review:**
+1. **Verify the engine's all-or-nothing crit is applied at the right granularity** for every sequential
+   attack — i.e. one crit determination per sequential *round*, not per micro-hit, and not per whole
+   multi-round skill either. Confirm cinderella's nuke, Snow White: Heavy Arms' sequence, and Eve's
+   sequential procs/burst are each rolled once per round as intended.
+2. **Eve (`eve`) is the exception and needs a carve-out.** Her kit is built around sequential attacks
+   plus Unstable Energy, a passive that triggers after landing **44 critical NORMAL hits**. For that
+   counter to fill at the right rate her ordinary rapid-fire weapon attacks must roll a **normal
+   per-shot crit chance** (each shot independently crits or not, stacking the counter), even though the
+   sequential payload it eventually fires resolves all-or-nothing. Today the engine does NOT roll a live
+   per-shot crit counter for her — her cadence is approximated by a static threshold (`hitCount 59` =
+   44 crit hits ÷ ~0.75 crit, `src/skills/overrides/eve.json`), which cannot respond to external
+   crit-rate buffs shortening the real cadence (already flagged in her caveats). A faithful Eve wants
+   per-shot crit rolling driving the counter, distinct from the round-level all-or-nothing rule.
+
+Eve is currently **ungraded** (no board data, no focused Eve footage in the catalog), so this is a
+model-correctness note to settle when Eve footage is captured — do not fudge her to close it. Related:
+[[full-kit-audit-requirement]], sequential/`sequentialMultPct` bucket (Phase A4), U13 (DoT/rider crit).
+
+### U25 — Charge Speed formula + cinderella's unique RL cadence (2026-07-21)
+**OWNER RULING 2026-07-21 — Charge Speed is ADDITIVE (subtractive on charge time); the DIVISIVE hypothesis
+is REJECTED. Do NOT change the global CS formula.** The divisive model only *appeared* to fit because it was
+being asked to explain cinderella's cadence via CS — but cinderella's ~315 is NOT a CS effect. Her RL is a
+UNIQUE weapon (`role.weapon` shot_id 1051101): `charge_time 100` (1.0s), `rate_of_fire 180` (3 rockets/s),
+`max_ammo 24`, `reload_time 200` (2.0s), `input_type DOWN_Charge`. Her REAL mechanism = **charge once (1s),
+then fire the mag at ROF 180 (3/s), reload, recharge** — and her in-game kit text ("Charge Speed ▲100%,
+removed on reload") is an UNFAITHFUL description of that rapid-fire behavior (a known issue with some unique
+weapons). So the faithful cinderella model is a per-unit FIRE-PATTERN off her datamine (ROF 180 + 1s initial
+charge + `removeOnReload`), NOT a CS-buff on charge time and NOT a global-formula change. Building it as a
+follow-up (targeting her popup-measured ~315 cadence). The CS-formula question below is now CLOSED (additive);
+the cinderella cadence question moves to her fire-pattern build. ORIGINAL FINDING (kept for the record, now
+superseded by the ruling above):
+
+
+The engine models Charge Speed as SUBTRACTIVE on charge time — `needed = max(1, round(chargeFrames ×
+(1 − ΣCS/100)))`, capped at CS 100 (`sim.ts` charge loop) — decoded-data + einkk basis, and every
+calibrated CS value on the board (e.g. cinderella's +45 proxy) was fit UNDER that formula. Building the
+faithful `cinderella` (RL/Electric, aka "cindy") S1 toggle — "Charge Speed ▲ 100%. Activates when
+attacking with Full Charge. Removed upon reloading to max ammunition." — surfaced a discriminating test.
+Under SUBTRACTIVE, CS 100 → charge floored to 1 frame → she fires ~1 rocket/frame between reloads
+→ ~1536 pulls/180s (measured on the wired toggle; board 0.937 COLD → 4.834 HOT). But her MEASURED
+cadence (override note, u8-e3 popup pairs) is **~315 pulls/180s**. The **DIVISIVE** model
+(`needed = round(chargeFrames / (1 + ΣCS/100))`, the standard community/Prydwen form) gives CS 100 →
+charge HALVED (60f→30f): magazine cycle = 60 (shot 1, CS off) + 23×30 (shots 2-24) + 83 (reload) = 833f
+/24 shots → **~311 pulls/180s — a 1.2% match with ZERO free parameters**, closer than the calibrated +45
+subtractive proxy (~296) which itself sits at her COLD board direction. A rate-of-fire floor (rockets
+gated at the datamined 180 rpm = 20f even at instant charge) was CONSIDERED and REFUTED — it predicts
+~430 pulls, overshooting the measured 315. **Hypothesis (n=1-arithmetic-derived, HYPOTHESIS-strength,
+NOT enacted): NIKKE charge speed is DIVISIVE, not subtractive.** This is engine-wide — it re-scales
+EVERY charge unit (alice/red-hood/the SR/RL roster) and invalidates every CS value calibrated under
+subtractive (incl. cinderella's +45; the divisive re-derivation of her old proxy is 60/1.45 ≈ 41.4f ≠ the
+calibrated 33f). Enactment requires a separate GATED pass: fresh context + Fable pre-reg + full-board A/B
++ owner sign-off, never the session that found it. Independent confirmation wanted: a second charge unit's
+popup-read cadence at a known CS%, and/or the isolated-cinderella footage that pins her buffed-shot
+cadence + reload timing directly. See DECISIONS 2026-07-21 (removeOnReload primitive) + the pre-reg
+`scratchpad/prereg-cinderella-cs-toggle.md`.
+
+**FOLLOW-UP BUILD RESULT — the datamine whole-mag-dump-at-3/s fire-pattern is NOT SUPPORTED by the popup
+measurement (built + full-board A/B, 2026-07-21; NO enactment — held).** The owner-directed follow-up (model
+her cadence off the datamine fire-pattern instead of a Charge-Speed buff) was BUILT and MEASURED: an opt-in
+engine primitive `charFixes.magDumpRof` (charge ONCE per mag → rapid-fire the whole magazine at the datamined
+rate_of_fire → reload → re-charge; every rocket a full-charge shot), wired to `cinderella` at rof/60 = **3.0
+rockets/s** (the confirmed scale — jill rof 150 → her measured 2.5/s charFix; scarlet(AR) rof 720 → 12/s).
+Board-exact A/B (7 graded comps, MC-mean): the literal 3/s dump fires **420 pulls/180s solo (420–449 in-comp)**
+and moves her board **0.93 COLD → 1.29 HOT** (ratios up to 1.57) — vs her popup-MEASURED **~287 pulls (862
+popups / 3-per-pull) ≈ ~315/180s**. So the datamined rate_of_fire 180 is her nominal/**in-burst** rocket rate,
+NOT her **sustained** cadence: her measured ~1.75 rockets/s is roughly HALF a clean 24-at-3/s dump. Comp downtime
+does NOT close the gap — solo≈in-comp in BOTH models (288≈288–306 baseline; 420≈420–449 dump), i.e. she fires
+essentially continuously; there is no ~25% rotation downtime to pull 420 down to 315. And no faithful whole-mag
+variant reaches 315: even the fully-datamined 2.0s reload gives ~405; hitting 315 would need a ~5s reload,
+contradicting her measured ~1.2s. Her measured 1.75/s sits BETWEEN the two datamine-literal readings — the
+per-rocket-charge literal (1s each, no CS → ~1/s ≈ 160 pulls, far too COLD) and the whole-mag-dump literal (3/s
+→ 420, too HOT) — the signature of an **INTERMEDIATE mechanism** (she likely re-charges MID-mag / fires K < 24
+rockets per prime, not one prime per full magazine). **ENACTMENT: none** — the engine primitive was reverted
+(regression-proven byte-identical/opt-in inert, but no valid consumer since its only intended consumer
+overshoots). `cinderella` KEEPS her `+45 chargeSpeedPct` proxy, which is MEASUREMENT-ANCHORED (validated vs real
+T2/T7 + the e3 popup pass; steady-state ~0.55s/shot ≈ 1.8/s ≈ measured 1.75/s) and already reproduces ~288
+pulls ≈ the measured 287 — retained as status-quo, NOT to be mistaken for validated mechanism. **NEEDS-MEASUREMENT
+(the actual unknown):** isolated `cinderella`-solo footage to pin (a) rockets-per-prime K + whether she
+re-charges mid-magazine, (b) her real reload, and (c) a re-confirm of the "3 popups/pull" divisor the whole 315
+rests on. Fable pre-op APPROVED the hold; harness pre-reg `scratchpad/prereg-cindy-firepattern.md`.
+
+### U24 — Do TRUE-flavored normal attacks retain CORE hits? (chisato/jill shared; footage says YES, but jill enactment gated) (2026-07-20)
+The kit-audit flagged (chisato gotcha 1, jill gotcha 1) that whether true-damage normal attacks forfeit
+core is unverified — a large lever, because `coreMult` is big. **Direct-observation finding (kit-audit
+measurement pass, from the EXISTING `docs/probe-data/jill-hitrate-core.json` recon of `jill control.MP4`):
+true normals DO retain core.** In `jill`'s own-burst window (her "Normal attacks deal True Damage for
+10s" is active) her bullet popups are red **"CORE HIT"** — ~14-15 of 15 sampled shots, with crit arrows,
+and NO white/orange bullet popups. If true normals forfeited core, there would be zero CORE-HIT popups in
+that window; instead they dominate (also lifted by her burst Hit Rate +80.78%). So the faithful direction
+is **true normals keep core/crit** — `chisato`'s SMG `coreMult 250` and a `jill` trueNormals window should
+NOT strip core. **This is a direct game-behavior observation (strong), but n=1 recording** → recorded here,
+not stamped on the model.
+**ENACTMENT STILL GATED for `jill` (do NOT blind-land the trueNormals window).** Separate risk: `jill`'s
+per-hit popup values are ALREADY sim-matched at ~99.7% (her main note) WITHOUT the +34.99% `trueDamagePct`
+being live (it is engine-inert today). If those matched values were read inside her burst window, adding a
+trueNormals window (which activates +34.99%) would OVER-credit by ~35% and push her further HOT (she is
+board HOT 1.041). Required before enacting: a per-hit reconciliation — does real jill burst-core reconstruct
+as sim × 1.0 (no true bonus ⇒ do NOT enact / the +34.99% is not a per-hit add) or sim × 1.3499 (⇒ enact the
+trueNormals window)? Recipe: reconcile `jill-hitrate-core.json` burst core popups (1.65–1.98M near-band)
+against a sim burst-window per-shot core with vs without trueNormals. Trail: plan §jill / §chisato,
+`docs/probe-data/jill-hitrate-core.json`.
+
+### U23 — milk-blooming-bunny's burst-window over-model, exposed by the (faithful) Gain-Pierce landing (2026-07-20)
+Enacting the kit-literal S1 "Gain Pierce for 6 sec" (`gainPierce` on `shotFired`; kit-audit Phase C
+ENACT-NOW, DECISIONS 2026-07-20) lit `milk-blooming-bunny`'s previously-dead Pierce package — her burst
+`pierceDamagePct +117.64%` now applies to her burst-window damage. Isolated A/B: **PG 0.653 COLD → 1.301
+HOT** (total ~×2). The pierce value is datamined (not tuned) and the mechanism is verified faithful (debug:
+`dmgUp` 1.00→2.31 during her ~10s burst window, correctly ending at t≈13.17 — the same unit-tagged pierce
+Damage-Up model grave uses). So the residual **+0.30 HOT is a SEPARATE over-model**, not the pierce. Two
+candidate drivers, both measurement-gated: **(1)** her 2nd audit gotcha — the Embarrassment mode-split: in
+the default auto-mode the burst `atkPct 220` + S2 DoT `447.7% ×5` magnitudes and the whole
+Embarrassment-off cadence are an unmeasured parser baseline (plan §milk-blooming-bunny gotcha 2, MEASUREMENT);
+**(2)** the pierce-window DPS share is unmeasured — a milk-blooming-bunny-FOCUS recording is needed to
+confirm how much of her damage really lands inside the +117.64% window. Do NOT re-fudge 117.64 to cool her.
+Recipe: milk-blooming-bunny-focus video, read burst-window vs out-of-window DPS split + confirm the pierce
+buff-icon window. Trail: `src/skills/overrides/milk-blooming-bunny.json` caveat, DECISIONS 2026-07-20, plan
+§milk-blooming-bunny.
+**UPDATE 2026-07-21 (U13 DoT-crit flip):** enabling DoT crit added +0.030 to her HOT residual (1.300→1.330)
+via her S2 447.7% dot now critting — a FAITHFUL mechanic, not new over-model. So when this reconciliation is
+finally taken, ~0.03 of her heat is now correctly attributed to dot-crit; do not re-chase it as part of the
+Embarrassment/pierce-window over-model.
+
 ### U22 — Snow White (`snow-white`) "Full Charge Damage: 1000% of damage": ADDITIVE (owner ruling) vs ×10 MULTIPLICATIVE (footage) — CONTESTED 2026-07-20
 The owner ruled the 1000% ADDITIVE ("part of the normal charge damage bucket" → full-charge coefficient
 499.5 + 1000 = 1499.5% of ATK; encoded as the derived chargeMultPct 300.2002, landed). The SAME-DAY
@@ -133,7 +266,7 @@ term measured in FIVE reads spanning THREE weapon classes and ALL THREE unit cla
 The four clean reads agree to ~0.03% at ~+1.63%. **The measured term matches the OL0 numbers
 (Attacker 120,143 / Supporter 100,130 / Defender 80,118) to ~0.17% — NOT base5.**
 **IT IS A GEAR-TIER QUESTION, NOT CORE.** (A first pass entertained a "core 8" fit — base5+core8
-= 119,943 matches to 0.002% — but core MAXES at 7 (owner-confirmed; the base-stats-handoff.md:69
+= 119,943 matches to 0.002% — but core MAXES at 7 (owner-confirmed; the docs/handoffs/closed/base-stats-handoff.md:71
 "core can exceed 7" line was WRONG, now corrected), so that was a coincidence. Core-7 ×1.14 is itself
 VALIDATED — the 2026-07-13 video-verified combat ATK 120,143 = core-7 ×1.14 + OL0 gear. So the
 elevation is gear, not core.) This DIRECTLY re-opens **DECISIONS 2026-07-14 (base5 switch)**, which
@@ -154,7 +287,7 @@ omitted stat source (bond/affinity/collection) to hunt. WHY the 2026-07-14 base5
 damage disagree is the piece to reconcile (did the recorded units carry better gear than the base5
 set that was measured?). Full memo: session archive docs/handoffs/closed/2026-07-16-u18-atk-term-diagnosis.md; Fable check
 SOUND-WITH-CAVEATS/HIGH. Fixed en route: the stale "treasure-inclusive" comment in scope-lock.ts (the
-120,143 figure is OL0 GEAR, not treasure) and the base-stats-handoff.md:69 "core >7" error.
+120,143 figure is OL0 GEAR, not treasure) and the docs/handoffs/closed/base-stats-handoff.md:71 "core >7" error.
 Isabel/brid-silent-track baseline notes encode the measured term per-unit; revert to kit coefficients
 IF the basis is corrected globally.
 
@@ -240,8 +373,50 @@ docs/probe-data/guilty-sg-band.json + brid-silent-track-sg-band.json (+ -events)
 the pre-registration in the session archive, DECISIONS 2026-07-16.
 
 ### U16 — Soda burst over-generation + dynamic chip-state (2026-07-16, from the re-tune)
+
+> **⇒ ROTATION OVER-GENERATION LARGELY RESOLVED 2026-07-21 (DECISIONS 2026-07-21, `STAGE_WINDOW_FRAMES`
+> 600→120; commit c8e1511).** The whole "does the engine over-generate / mis-allocate bursts?" family traced
+> to ONE mis-sourced constant: the burst-chain reserve/grace window was set to the 10s Full-Burst STATE
+> duration instead of the auto's ~1s inter-activation grace, so a stage-filler up to ~8s out of cooldown got
+> reserved and waited for. Fixed → the items below are resolved/reclassified:
+> - **soda-twinkling-bunny 6-vs-5 → STALE, already resolved before the window fix** (post-2026-07-16 FB-extension/
+>   cadence work): current engine gives a clean 5/5 (soda-twinkling-bunny at 3.4/39.4/75.4/111.4/147.4s in the
+>   LM/Crown/soda-twinkling-bunny/Helm control comp). The U16 soda bullet below is obsolete.
+> - **sakura-bloom-in-summer 6/4 → FIXED** (5/5, matching the burst-color footage) — it was the reserve-window
+>   bug, NOT a genuine leftmost-tiebreak (with a realistic window cinderella is the *unique* ready candidate at
+>   FB4; supersedes the "leftmost-tiebreak selection" framing).
+> - **ludmilla-winter-owner / rosanna-chic-ocean 13-vs-12 → recorder startup-lag artifact** (sim first-FB 3.4s
+>   optimal vs footage ~7s; clean 14s cadence; MC-unanimous 13). Unchanged by the fix; not an engine defect.
+>
+> **⚠ FIT-EXPOSURE LEDGER (open — footage-gated re-tune, do NOT re-fudge in-place).** The corrected rotation
+> exposes per-cast over-credits in overrides that were fit to the OLD (sometimes under-counted) rotation. Seeded
+> board-read pre→post the window fix (sim/real; N2's chisato is the clean case: fit to the buggy 8 FBs, now reads
+> hot at the correct 10): **toward** — scarlet-black-shadow 1.036→1.001, ada 0.954→0.984, liberalio 0.991→1.001,
+> ein 0.795→0.812, d-killer-wife 0.964→0.975; **fit-exposed (need re-validation)** — chisato 1.154→1.209,
+> naga 1.026→1.066, soda-twinkling-bunny 1.021→1.048, rouge 1.062→1.074, trina 1.177→1.180. These are the fix
+> revealing old over-credits, not the fix being wrong; re-tune each against footage in a separate gated pass.
+>
+> **Two open sub-questions filed (Fable pre-op revisions):**
+> - **(a) leftmost-vs-first-ready selection → RESOLVED 2026-07-21: switched to FIRST-READY (DECISIONS 2026-07-21,
+>   commit 533bf88).** Real auto casts whichever burst comes up first, and for equal-CD B3s first-ready guarantees
+>   clean alternation (round-robin) while strict-leftmost let the leftmost slot monopolize. Graded-board-neutral
+>   (regression byte-identical); moves only ungraded comps and every diff is first-ready correcting a leftmost
+>   monopoly/skip (traced random 9 cinderella ×6 → cinderella/bready 3/3; random 10 diesel-winter-sweets excluded →
+>   startup burst). `B3_LEFTMOST` env reverts. (Owner premise "they never conflict at current CDR" was slightly
+>   off — ~1/3 of random teams differ — but first-ready is the more faithful pick in every conflict, so the
+>   change stands.)
+> - **(b) owner ~1s activation delay vs the sim's 0.5s `STAGE_CAST_GAP` → RESOLVED 2026-07-21: the 0.5s gap is
+>   MEASURED-CORRECT; the owner's ~1s was hand-wavey.** Two independent lines: (1) auto-play.md §3 (nikke-synergy
+>   arena guide) measures B1→B2 / B2→B3 ≈ 0.533s each (gauge→B1 ≈ 0.433s); (2) an isolated gap sweep at
+>   window=120 keeps all 12 measured-FB asserts clean across 26–45f (0.43–0.75s) and BREAKS at 60f/1s (6 comps
+>   under-count) — the FB counts themselves reject a 1s gap. So the gap is NOT the 120-vs-90 lever; the window is
+>   a SEPARATE wait-tolerance that must clear the ~1.6s natural chain span with margin (90f under, 120f over).
+>   No engine change (the gap stays 30f); DECISIONS 2026-07-21 corrected accordingly.
+> - **Dynamic chip-state (below) is UNAFFECTED — still open engine work.**
+
 Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
-- **Rotation over-generation:** the sim gives Soda **6 bursts vs the recorded 5** in the soda-control comp
+- **Rotation over-generation [RESOLVED 2026-07-21 — see banner above; STALE claim retained for the trail]:**
+  the sim gives Soda **6 bursts vs the recorded 5** in the soda-control comp
   (LM/Crown/Soda/Helm). Reality's 6th burst would sit at ~20 pre-consume chips (<30) and wouldn't clear her
   own ATK gate anyway — so the sim over-credits a nuke + a 65.25% ATK window. Suspect the Soda/Helm B3-
   alternation cooldown collision or FB-extension-shifted timing (her +4s FB-extend). This FLATTERS her
@@ -252,6 +427,31 @@ Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
   effective ~50 and grades 0.96 with flat-42 under-crediting ~3%. The faithful model is dynamic Golden-Chip
   tracking (crit-damage = 1.32 × live chip count), which needs an engine currency-state feature. Until then
   the flat passive is comp-dependent-approximate (right-ish for burst-cycling comps, low for no-burst).
+- **Community-footage corroboration (2026-07-21, submission-review session — OBSERVATIONS ONLY, not enacted):**
+  three more recordings independently show the same rotation over-generation family (all n=1, gear-confounded):
+  - **Sakura: Bloom in Summer comp** (Rouge, Ade: Agent Bunny, Sakura: Bloom in Summer, Cinderella, Mihara:
+    Bonding Chain): the total full-burst count is right (10 = 10), but the two-Burst-III **allocation is wrong** —
+    the sim gives Sakura: Bloom in Summer 6 bursts / Cinderella 4, while the footage shows strict 5/5 alternation
+    (Sakura on full-bursts 1,3,5,7,9; Cinderella on 2,4,6,8,10, verified by burst-color signature on all 10).
+    Rotation-log diagnosis: the sim double-casts Sakura at full-bursts 3 (41.6s) and 4 (67.6s) — a leftmost-
+    tiebreak when both Burst-IIIs are ready. This is a Burst-III **selection** question (the count is fine), and
+    touches Cinderella, who IS board-graded — so an engine tiebreak change has real blast radius.
+    - **[2026-07-21] in-FB burst-CDR hypothesis REFUTED — the source is elsewhere.** One theory for the Sakura
+      double-cast was that Rouge's S1 "Burst CD ▼ 7s" was being applied *during* Full Burst (shaving Sakura's
+      40s cooldown so she came off CD early at Cinderella's turn). A prototype that suppressed in-FB skill CDR
+      was built + verified faithful but REGRESSED three measured FB-count comps, and the owner then re-watched
+      the footage and confirmed the CDR proc DOES apply during Full Burst (DECISIONS 2026-07-21). So in-FB CDR
+      is real and is NOT the cause. The Burst-III **leftmost-tiebreak selection** (above) remains the leading
+      candidate for the 6-cast-vs-5 over-allocation — to be opened fresh. (No engine change on `main`.)
+  - **Ludmilla: Winter Owner comp** and **Rosanna: Chic Ocean comp**: both read **12 real full bursts vs the
+    sim's 13** (sim over-generates by one). The Rosanna reviewer pinned the mechanism: the sim opens its first
+    full burst at ~3.4s vs the footage's ~7s (optimal-start vs human startup lag) plus a slightly tighter cadence,
+    squeezing one extra full burst into the 180s. Since the sim's rotation is measured-exact on the owner's graded
+    scope-lock comps and first-full-burst timing is a measured constant (never refit), this 13-vs-12 gap is most
+    likely a recorder startup-lag + gear confound, NOT an engine defect.
+  Net: these strengthen "does the engine over-generate / mis-allocate bursts?" as an open thread, but none are
+  enactable from community footage (n=1, gear-confounded, engine-wide blast radius, measured-constant domain).
+  Full record: docs/handoffs/closed/2026-07-21-submission-review-session.md.
 
 ### U15 — Rapi: Red Hood explosion residual (after the 2026-07-16 reopen)
 The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,
@@ -363,6 +563,19 @@ gained less from elemental advantage in reality than the sim's x1.1 — do funct
 skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
 
 ### U13 — DoT / function-rider ticks do not crit in the engine (systematic under-credit)
+**ANSWERED / LANDED 2026-07-21 — `DOT_CRIT` flipped default OFF→ON (DoT ticks + stored-hit releases
+now roll crit universally; core stays off; `DOTCRIT=off` = revert switch; per-dot explicit `crit`
+still overrides). Owner-directed; full-board A/B + ONE consolidated Fable review APPROVE; faithful>fit,
+board-NEUTRAL (weighted mean|ratio−1| 0.0710→0.0712, ±3% count 6→7). The ÷1.075 "de-crit the calibrated
+base" prep step was DROPPED — a provenance audit found ~15/17 dot bases are kit-datamined true multipliers
+(NOT crit-absorbed), so ÷1.075 would have net-degraded the board. Full ruling + evidence + queued
+follow-ups (mihara-bonding-chain suspected tuned-base double-count; function-rider path still separate) →
+DECISIONS 2026-07-21. **ada follow-up RESOLVED same day (owner ruling): TRUE DAMAGE CANNOT CRIT — her
+`flavor:"true"` grenade DoT is crit-exempt via a new engine `crit && !trueFlavor` guard (her U13-flip gain
+was spurious, reverted 0.933→0.903); the guard also fixed a pre-existing true-crit bug on ein/laplace/chisato
+true flatDamage + trueNormals windows, board-confirmed chisato 1.154→1.119. DECISIONS 2026-07-21.** Everything below is the PRE-LANDING trail;
+the DECISION-HELD and PHASE-A-RULING blocks are SUPERSEDED by the flip.**
+
 The engine gates DoT/rider crit/core behind env-only `XCRIT`/`XCORE` sets (empty by default), so
 **those hits never crit in normal runs**. But they DO crit — the MECHANIC is confirmed empirically by **ginmy.net/nikke_dot_test**: DoT
 observed ~47% crit with elem-advantage+crit vs ~10% elem-only; DoT takes ATK/element/Full-Burst/
@@ -818,7 +1031,7 @@ The `CORE_BY_WEAPON_BAND.SMG` row (near 0.28 / mid 0.244 / midfar 0.076 / far 0.
 battle start to ~t150s of the ~180s read. So those figures are SMG core at `x_base+22.37% Hit Rate`, NOT
 base accuracy, yet the engine applies them to EVERY SMG unit including Hit-Rate-less ones → those units are
 OVER-credited on SMG core. Cannot be cleanly corrected without a Hit-Rate→core model (the deferred
-SG+AR-first plan, `docs/handoffs/2026-07-17-hitrate-core-landing-plan.md`): once that model's slope is
+SG+AR-first plan, `docs/handoffs/closed/2026-07-17-hitrate-core-landing-plan.md`): once that model's slope is
 validated on AR (jill) + SG (noir), chisato's known +22.37% becomes an SMG VALIDATION point and lets us
 back out the true SMG base and refactor this row. Until then: left as-is, flagged. Owner ruling 2026-07-17.
 **UPDATE 2026-07-17 — contamination MEASURED SMALL, downgraded to minor.** Re-read `chisato smg.MP4` binned

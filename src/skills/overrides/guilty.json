@@ -20,7 +20,7 @@
       "effects": [
         {
           "kind": "buff",
-          "stat": "casterAtkPct",
+          "stat": "highestAllyAtkPct",
           "value": 8.81,
           "durationSec": 10,
           "maxStacks": 5
@@ -88,7 +88,7 @@
     }
   ],
   "caveats": [
-    "skill1: 'Duplicates 8.81% of the ATK of the ally with the highest ATK' is modeled as % of Guilty's OWN ATK (casterAtkPct) — exact solo / when she is the top-ATK ally, cold when a buffed teammate outranks her.",
+    "skill1: 'Duplicates 8.81% of the ATK of the ally with the highest ATK' now uses the new highestAllyAtkPct stat (landed 2026-07-21) — resolves to 8.81% × max(all units' staticAtk) at apply time, feeding the same flat-ATK path as casterAtkPct. Solo (guilty is her own max) is byte-identical to the old casterAtkPct proxy; in a team it now correctly sizes off the highest-ATK ally instead of Guilty's own ATK. Basis is STATIC ATK (not final/buffed) per the caster-ATK convention (⚑ a future refinement could rank by live effectiveAtk if measurement shows the duplicate tracks buffed ATK).",
     "skill2: 'Increases stack count of stackable buffs by 1' is unmodeled (no schema support). Measured REAL solo (guilty-sg-band probe): it bumps her own S1 stack ramp to cap one trigger early; allies' stackable buffs are also not amplified in teams.",
     "burst: the 'at max stacks' gate on the DEF ▼ 20.25% + 277.71% additional-damage riders is not modeled (always-on) — a burst cast before the S1 ramp completes is slightly over-credited."
   ]

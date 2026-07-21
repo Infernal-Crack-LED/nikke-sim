@@ -5,10 +5,7 @@
     "manual (Embarrassment cycle)"
   ],
   "unmodeled": {
-    "skill1": [
-      "■ Activates when performing a Full Charge attack. Affects self.",
-      "Gain Pierce for 6 sec."
-    ],
+    "skill1": [],
     "skill2": [
       "■ Activates only when in Embarrassment status. Affects self.",
       "Pierce Damage ▲ 64.7% continuously."
@@ -19,6 +16,7 @@
     ]
   },
   "caveats": [
+    "skill1: 'Gain Pierce for 6 sec' (full-charge trigger) is now MODELED (gainPierce durationSec 6 on shotFired — SR auto-full-charges every shot, so the 6s window refreshes continuously → she stays Pierce-tagged). Enacted 2026-07-20 (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED). This lights her previously-DEAD Pierce package: her burst pierceDamagePct +117.64% (10s) now applies to her burst-window damage (and she becomes an SR recipient of d-killer-wife's +13.55% in PG). DELIBERATE overshoot per faithful>fit (grave-pierce precedent DECISIONS 2026-07-17): PG 0.653 COLD → 1.301 HOT (total ~254M→506M, ~×2 — her burst window carries huge atkPct-220 + FB normals, and pierce ~doubles it). The residual HOT is now cleanly isolated to milk-blooming-bunny's SEPARATE over-models, NOT the pierce: (1) her second gotcha — the Embarrassment mode-split (MEASUREMENT-gated; auto-mode faithfulness of the burst atkPct 220 / S2 DoT 447.7 magnitudes), and (2) needs a milk-blooming-bunny-FOCUS pierce-window measurement (pierce-window DPS share). Do NOT re-fudge the pierce value (117.64 is datamined); fix the residual with a measurement. ⇒ open-questions U23.",
     "burst: unparsed effect \"Overconfident, Huh?!:\"",
     "burst: unparsed effect \"Gains Immunity to Embarrassment for 10 sec.\""
   ],
@@ -66,6 +64,21 @@
         }
       ],
       "mode": "manual (Embarrassment cycle)"
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 6
+        }
+      ]
     }
   ],
   "skill2": [

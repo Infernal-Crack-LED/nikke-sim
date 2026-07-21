@@ -101,6 +101,10 @@ of >100% takes precedence).
 - **SR bolt cycle**: +22 frames after each shot (MEASURED: helm recording, 1.37s cycle =
   60f charge + 22f). Weapon-swap states and `charFixes.noBoltRecovery` units are exempt.
   Reload starts immediately after the final shot.
+- **Whole-magazine dump** (`charFixes.magDumpRof`): `cinderella` charges ONCE per magazine, then
+  autofires all 24 rounds at her datamined `rate_of_fire` without recharging, then reloads and
+  re-charges (MEASURED 2026-07-21, ammo-counter frame read; ≈390 pulls/180s). Charge Speed
+  shortens only the once-per-mag prime charge. Details: [charge-weapons.md](charge-weapons.md) §2a.
 - **Auto always full-charges** (DATAMINED, einkk `NikkeFullChargeMode.always`) — but
   full-charge-GATED procs miss on ~32% of auto releases (§7).
 - Full-charge multiplier is per-weapon-per-unit (SR typ. 250%, Alice 350%); ordinary Charge
@@ -167,7 +171,7 @@ Details: **[auto-play.md](auto-play.md)**.
   0.40/0.30/0.03/0.00, SMG 0.28/0.244/0.076/0.059, SG 0.072/0.00/0.0045/0.00; MG/SR/RL 0.95) × the
   `HRCORE`/`PELLET_GAUSS` Hit-Rate lift. Evidence: the 2026-07-18/19 geometry campaign (counted core
   cells at 3–4 Hit-Rate levels × 3 weapons, cross-recording) + full-board A/B. See
-  `docs/handoffs/2026-07-19-geometry-campaign-findings.md`, `docs/data/sg-calc/`.
+  `docs/handoffs/closed/2026-07-19-geometry-campaign-findings.md`, `docs/data/sg-calc/`.
 - **Early charge releases are rare (~2% of shots**, user-observed ~3/fight from boss
   interruptions) — auto effectively always full-charges, and full-charge-gated proc counters
   fire on essentially every shot. Maiden:IR's former ×0.68 proc factor is RESOLVED as her
@@ -254,7 +258,9 @@ chain timing ([nikke-synergy](https://nikke-synergy.com/arena-guide_en)), Λ/B1+
 never take charge multipliers. Weapon-based deliveries (launchWeapon: Anis:Star's stars,
 Rapi:RH's projectiles) DO core+crit but still no range. DoTs are Sustained-flavored
 function damage whose ticks reference CURRENT buffs (not snapshots); tick-crit is
-unverified (kept off). Sustained/True/Sequential Damage ▲ buffs gate on hit flavor.
+ON by default (`DOT_CRIT`, U13 2026-07-21) — but **TRUE DAMAGE NEVER CRITS** (owner ruling 2026-07-21;
+engine `crit && !trueFlavor` guard), so `flavor:"true"` dots/flatDamage + `trueNormals` windows are
+crit-exempt. Sustained/True/Sequential Damage ▲ buffs gate on hit flavor.
 Full rules table: **[nikke-damage-formula.md](nikke-damage-formula.md)** §3.
 
 Some kit lines with NO printed "Activates when…" clause are **internal-cooldown skills**:

@@ -10,14 +10,14 @@ import { loadOverride } from '../src/skills/overrides-node.js';
 import type { DataFile, LevelMultiplier, SimConfig } from '../src/types.js';
 
 const STATS = new Set([
-  'atkPct', 'casterAtkPct', 'casterMaxHpPct', 'targetMaxHpPct', 'atkOfMaxHpPct', 'critRatePct', 'critDamagePct', 'coreDamagePct',
+  'atkPct', 'casterAtkPct', 'highestAllyAtkPct', 'casterMaxHpPct', 'targetMaxHpPct', 'atkOfMaxHpPct', 'critRatePct', 'critDamagePct', 'coreDamagePct',
   'elementDamagePct', 'chargeDamagePct', 'chargeSpeedPct', 'attackDamagePct',
-  'sustainedDamagePct', 'sequentialDamagePct', 'partsDamagePct', 'pierceDamagePct', 'damageTakenPct',
+  'sustainedDamagePct', 'sequentialDamagePct', 'sequentialMultPct', 'partsDamagePct', 'pierceDamagePct', 'damageTakenPct',
   'maxAmmoPct', 'maxAmmoFlat', 'reloadSpeedPct', 'attackSpeedPct', 'fireRatePct',
   'extraHitDamagePct', 'trueDamagePct', 'projectileExplosionPct',
   'elemAdvantageDamagePct', 'distributedDamagePct', 'projectileAttachmentPct',
   'chargeDamageMultPct',
-  'normalAttackPct', 'burstGenPct', 'hitRatePct', 'defPct',
+  'normalAttackPct', 'pelletCountFlat', 'burstGenPct', 'hitRatePct', 'defPct',
 ]);
 const TRIGGERS = new Set([
   'passive', 'burstCast', 'fullBurstEnter', 'fullBurstEnd', 'hitCount', 'teamAmmo',

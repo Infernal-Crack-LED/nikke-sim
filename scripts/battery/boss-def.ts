@@ -57,13 +57,13 @@ const SWEEP: { name: string; team: BatteryTeam; boss: Element }[] = [
   {
     name: 'T1 (attacker-heavy)',
     boss: 'Iron',
-    team: { slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'],
+    team: { name: 'T1 (attacker-heavy)', slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'],
       focus: 'anis-star', modes: {}, lambda: {} },
   },
   {
     name: 'T3 (support-heavy)',
     boss: 'Wind',
-    team: { slugs: ['rapi-red-hood', 'mihara-bonding-chain', 'little-mermaid', 'crown', 'helm'],
+    team: { name: 'T3 (support-heavy)', slugs: ['rapi-red-hood', 'mihara-bonding-chain', 'little-mermaid', 'crown', 'helm'],
       focus: 'little-mermaid', modes: {}, lambda: {} },
   },
 ];

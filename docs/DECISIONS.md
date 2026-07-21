@@ -8,6 +8,297 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) B3/B2 in-window stage selection: strict-leftmost → FIRST-READY (earliest-ready, tie→leftmost) — LANDED.**
+  Real auto casts whichever burst comes up first, so the timed-window stage-2/3 pick is the stage-filler whose
+  cooldown ends SOONEST, not the strictly-leftmost one (owner ruling 2026-07-21). For equal-CD B3s this
+  GUARANTEES clean alternation — "earliest-ready" is always the longest-waiting unit, a natural round-robin —
+  whereas strict-leftmost let the leftmost slot MONOPOLIZE (a 40s B3 that fits the window every cycle casts all
+  of them; the equal-CD unit beside it never bursts). This is the correct resolution of the U16
+  sakura-bloom-in-summer over-allocation *family* at the selection layer (the `STAGE_WINDOW` 600→120 fix, same
+  date, already resolved the graded cases by removing the false contention; first-ready generalizes it).
+  **GRADED-BOARD-NEUTRAL:** regression byte-identical, board-read ratios unchanged to 3 decimals — at the ~2s
+  window with current game CDR the two rules coincide on every graded comp. It moves only UNGRADED comps, and
+  every diff is first-ready CORRECTING a leftmost monopoly/skip (40-team random battery: ~1/3 of teams differ;
+  traced random 9 cinderella ×6 → cinderella/bready 3/3 alternation, random 10 diesel-winter-sweets excluded →
+  gets her startup burst). Bench-B3 exclusion preserved: a 3rd same-CD B3 that can't fit the short window never
+  becomes earliest-ready-in-window, so it never casts (round-robin-that-benches was tried + rejected 2026-07-13;
+  first-ready is NOT that — it never picks a genuinely-unavailable bench B3). Evidence: owner mechanic (real-auto
+  first-available) + graded-board-neutrality proven + conflict traces confirming faithfulness (ungraded/unfootaged
+  so "more faithful" rests on the mechanic, not per-comp footage). `B3_LEFTMOST` env reverts. Commit 533bf88;
+  closes open-questions U16 sub-question (a).
+
+- **(2026-07-21) Burst-chain reserve window `STAGE_WINDOW_FRAMES` 600→120 — it was the FB-STATE duration, not the auto chain-grace — LANDED.**
+  The stage-2/3 "reserve/grace" window (how long a filled burst chain WAITS for a stage-filling unit to come
+  off cooldown before the chain expires) was set to **600f = the datamined `burst_duration` (=10s)** — but that
+  is the Full-Burst STATE duration, the WRONG quantity. The correct value is the auto's inter-activation grace
+  (owner mechanic 2026-07-21: on auto the gauge fills → B1 → **~1s** → B2 → ~1s → B3 → Full Burst, so a chain
+  waits only ~1s for a stage-filler, not 10s). **Root cause of the U16 Burst-III over-allocation:** at 10s a B3
+  up to ~8s out of cooldown still qualifies as a "window-maker" and the leftmost-with-waiting rule reserves it
+  and waits — so with two alternating 40s-CD B3s (sakura-bloom-in-summer slot 3 / cinderella slot 4) it
+  double-casts the leftmost (sakura-bloom-in-summer 6/4 vs the footage's burst-color-verified 5/5); the same
+  applies at stage 2 for a slow leftmost B2. This is NOT a genuine tiebreak — with a realistic window the
+  earlier-ready unit is the *unique* candidate (supersedes the "leftmost-tiebreak Burst-III selection" framing
+  the prior 2026-07-21 in-FB-CDR entry pointed to for U16). **Corrected to 120f (2s).** The window is the auto's
+  wait-tolerance for a not-yet-ready stage-filler — a SEPARATE quantity from the inter-stage cast gap
+  (`STAGE_CAST_GAP` = 30f/0.5s), which is MEASURED-CORRECT and unchanged: auto cast timing is B1→B2 / B2→B3 ≈
+  0.533s each ([data/auto-play.md](data/auto-play.md) §3, nikke-synergy arena guide), and an isolated gap sweep
+  at window=120 independently confirms it — measured-FB asserts stay clean across 26–45f (0.43–0.75s) and BREAK
+  at 60f/1s (6 comps under-count), so the FB counts themselves reject a 1s gap (owner's initial ~1s was
+  hand-wavey; RESOLVES open-questions U16 sub-question (b)). VALUE 120f = ⚑ CALIBRATED against MEASURED FB
+  counts (not a measured 2s): all 12 pinned measured-FB regression asserts PASS with clean seeded distributions;
+  the passing plateau is wide (sakura 5/5 holds 120–500f; graded clean 120–300f), so 120 = the shortest clean
+  window (the mechanic wants short). 90f (owner's first 1.5s) overshoots — PH 13→11 (past its real 12) + bimodal
+  FB stragglers — because the grace window must clear the ~1.6s natural chain-completion span (0.433 + 0.533 +
+  0.533 + effect delays) with margin: 90f (1.5s) sits under it, 120f (2s) has margin. Only the window changes.
+  Rotation moves TOWARD measured wherever it moves: sakura-bloom-in-summer 6/4→5/5, N2 8→10 (real ≥10), PE
+  10→11 (real 11-12); PH stays 13 (its separate open burst-cycle over-by-1, untouched). Blast radius (40-team
+  random battery, @600 vs @120): one UNGRADED team (moran/arcana/eve/soda-twinkling-bunny/modernia) drops 6→5
+  FBs — ROBUST across 120–450f, via a stage-2 expiry on its single 40s-CD B2 (arcana) — a *correction* of the
+  same long-window over-generation, not a regression; no graded comp affected. Evidence: owner mechanic +
+  measured-FB calibration; Fable pre-op **APPROVE-WITH-REVISIONS** (all 5 revisions cleared: plateau swept,
+  90-rejection rests on pinned-comp bimodality, confounded units ledgered, open-questions filed, blast-radius
+  diffed). Snapshot regenerated (byte-stability totals only; **zero** measured-FB asserts changed). `STAGE_WINDOW=600`
+  env reverts. Commit c8e1511. ⚠ **Fit-exposure follow-up:** the corrected rotation EXPOSES per-cast over-credits
+  in overrides that were fit to the OLD (sometimes under-counted) rotation — the snapshot bakes the new totals
+  but board-read shows true vs-real ratios; these units need a separate footage-gated re-tune (NOT re-fudged in
+  this session), ledgered in [open-questions.md](open-questions.md) U16. Trail:
+  `docs/handoffs/2026-07-21-b3-earliest-ready-tiebreak-plan.md`.
+
+- **(2026-07-21) Skill-granted burst-cooldown REDUCTION DOES apply during Full Burst — the "suppress in-FB burst-CDR" change is REFUTED / abandoned.**
+  A proposed game rule ("burst-CDR does not apply during the 10s Full Burst window; only the FB-entry instant
+  is exempt") was prototyped on an isolated worktree: a gate in the engine's `case 'burstCdr'` keyed on a new
+  `fbStartFrame`/`fbEndFrame` marker that no-ops any mid-FB skill CDR proc (the natural 10s cooldown tick during
+  FB was always kept — that is just time elapsing). The gate was verified FAITHFUL to the proposed rule (per-proc
+  trace: a "Burst CD ▼ 7s" proc whose 8th-full-charge shot lands mid-FB → no-op; landing in the post-FB gap →
+  applies). But it dropped THREE measured comps below their video-counted full-burst pins — elec DPS (run E)
+  11→10, iron sweep (run G) 13→12, N1 rapi/quency wind 13→12 — because in those comps the sim reaches its
+  measured FB count VIA that in-FB CDR (rouge's + d-killer-wife's 8-full-charge → −7s procs). The residual traced
+  to proc PHASE: the sim's charged-shot cadence is deterministic (the MC seed jitters SG pellets, not the SR
+  charge counter), so the early procs land on a fixed unlucky phase just inside the FB window (iron sweep's first
+  proc lands 0.35s inside FB-end) and no-op, while the real fights land them in the gap. **RESOLUTION (owner,
+  2026-07-21): re-watched the source footage and observed the CDR proc APPLYING during Full Burst — so the
+  premise was wrong. In-FB skill burst-CDR is REAL; the measured FB pins already encode it; the change is
+  incorrect.** The engine was never modified on `main` (the prototype lived only on the removed
+  `burstcdr-no-fb` worktree). The Sakura: Bloom in Summer 6-cast-vs-5 Burst-III over-allocation that originally
+  motivated this has a DIFFERENT source (NOT in-FB CDR) → tracked in [open-questions.md](open-questions.md) U16
+  (leftmost-tiebreak Burst-III selection candidate), to be opened in a fresh session. Trail: the now-closed
+  handoff `docs/handoffs/closed/2026-07-21-burstcdr-no-fb-change-pulled.md`.
+
+- **(2026-07-21) cinderella (RL/Electric, "cindy") RL fire pattern = WHOLE-MAG DUMP + single-rocket magnitude — LANDED.**
+  Isolated cinderella-solo footage (`docs/probes/720-kit-audit/cindy solo neutral.MP4`, ammo-counter frame
+  read + owner ruling + Fable pre-op APPROVED-WITH-REVISIONS) settles her unique cadence. She charges ONCE
+  per mag (~1.0s = datamine `charge_time 100`), then autofires all 24 rockets at datamine `rate_of_fire 180`
+  (3/s) WITHOUT recharging, reloads ~2.1s, re-charges → **~390 pulls/180s** (the old per-rocket-charge model
+  fired ~300 = the COLD-0.937 cause). Wired via a new opt-in engine primitive `charFixes.magDumpRof` (dump
+  cadence derived from the weapon table; inert for every other unit — regression byte-identical). `reloadFrames`
+  72→120 (datamine `reload_time 200`; footage ~2.1s; the old ~1.2s read superseded). MAGNITUDE: per pull =
+  ONE rocket (32.11% × 200% charge) + the 136.6% S1 rider — a same-footage popup recon (~97.5s, one ATK)
+  reconciles both to ATK 80,385 (rider 109806 = 136.6%×ATK; rocket-core 103246 = 64.22%×2×ATK exact;
+  datamine `shot_count 1`/`muzzle_count 1`), so the old TWIN-INSTANCE `normalAttackPct +100` was a 2× rocket
+  over-credit and is REMOVED; the `chargeSpeedPct +45` cadence proxy is REMOVED (cadence modeled directly),
+  retiring the subtractive-CS-formula landmine + the U25 divisive hypothesis (built on the ~315 popup-division
+  estimate; the divisor was 2, not 3 — rocket + rider). Board 0.937→~0.90 COLD, within single-run recording
+  variance on her clean comps (same team PE 0.98 vs PE2 0.88); ruled-out under-count sources: RL core rate is
+  already the top-tier flat 0.95 (matches footage), and her HP→ATK is fully applied to her burst nuke (removing
+  it drops her 43%). All measured FB counts preserved. Superseded: open-questions U25 (divisive-CS hypothesis).
+  Trail: cinderella override note + caveats, U25.
+- **(2026-07-21) Regression full-burst counts judged vs the SEEDED distribution, not the single EV run.**
+  The FB count itself varies ±1 at boss-transition boundaries (the boss range-transition times + burst
+  chain-cast gaps jitter per seed, `sim.ts` ~781/2127; the unseeded EV run pins them and can sit exactly on a
+  burst-cadence collision any jitter avoids). So `scripts/regression.ts` now runs each graded comp over the MC
+  seed set (`MC_SEED_BASE + i`, the set board-read uses) and PASSES when the measured value/range overlaps the
+  seeded `[min,max]` — a comp fails only if the sim can NEVER produce a measured value. Per-unit total snapshots
+  stay on the EV run (byte-stable mean; snapshot-gen ≡ verify). This removes the ±1 false failures (PE elec-DPS,
+  T4/T7/N2/N4/N5) without weakening the measured-FB truth. Trail: `regression.ts` `fbDistribution`.
+- **(2026-07-21) TRUE DAMAGE CANNOT CRIT — engine `crit && !trueFlavor` guard (owner ruling) — LANDED.**
+  Owner mechanic ruling: true damage never crits (a game fact). Enforced at the engine — the crit-major
+  block is guarded by `!opts.trueFlavor`, so every true-flavored hit is crit-exempt regardless of any
+  per-entry `crit` flag: `flavor:"true"` dots/flatDamage (`ada` grenade DoT, `ein`/`laplace`/`chisato`
+  true flatDamage) AND `trueNormals` swap windows (`chisato`/`takina`/`laplace`). This is partly a
+  PRE-EXISTING bug the U13 DoT-crit flip exposed — the flatDamage true procs (ein/laplace/chisato) were
+  already wrongly critting by default before the flip; `ada`'s true DoT started critting at the flip. Core
+  is NOT ruled here (still ⚑ unverified — the chisato SMG coreMult 250 lever stands). Cleaned up the now-inert
+  explicit `crit:true` on ein (×2) + laplace (×1) true entries and corrected chisato's note. **Board (isolated
+  via board-read):** owner-predicted and confirmed — `chisato` 1.154→**1.119** (−0.035, N=3, over-credit
+  removed); `ada` reverts 0.933→**0.903** (her U13-flip gain was purely the spurious true-crit; her COLD is a
+  separate DoT under-model); `takina`/`ein` cool (true normals/feathers correctly lose crit; their COLD is
+  separate/documented). Aggregate ~flat (weighted mean|ratio−1| 0.0710→0.0714 across the whole U13 landing) —
+  a FAITHFUL correctness fix, not a fit change. Also recorded (owner): in our sim true flavor's only material
+  effect is gating `trueDamagePct` buffs (like ada's) — the DEF-ignore is negligible at the boss's 140 DEF.
+  Trail: engine `sim.ts` crit-guard comment; DoT-crit entry below.
+
+- **(2026-07-21) DoT/rider crit ENABLED by default (`DOT_CRIT` flip OFF→ON, U13) — LANDED
+  (owner-directed; full-board A/B + ONE consolidated Fable review APPROVE; faithful>fit, board-neutral).**
+  DoT ticks + stored-hit releases now roll crit universally (this is the default; a per-dot explicit
+  `crit` field still overrides it either way; core stays OFF; `DOTCRIT=off` is the A/B revert switch).
+  The `extraHitDamagePct` function-rider path (`modernia` Destroy Mode, `nayuta` Memory Incineration,
+  `neon-vision-eye` Super Firepower — hard-coded `crit:false`) is OUT OF SCOPE, still gated on per-rider
+  footage. **Why faithful (mechanic multiply-confirmed):** ginmy /nikke_dot_test (elem-adv DoT ~47% crit
+  vs ~10% elem-only) + `maiden-ice-rose` solo rider 437,296 white / 655,945 orange = ×1.5 + `little-mermaid`
+  DoT sub-hit 450,314 = 337,736 × 1.333 (FB-crit). The two footage reads land on the two DISTINCT
+  signatures of the engine's additive `major += critRate·critBonus` bucket (×1.5 out-of-FB, ×1.333 in-FB)
+  — prove-it-differently on the mechanic AND its bucket placement. **Board = NET-NEUTRAL, NOT a fit win:**
+  datapoint-weighted mean|ratio−1| 0.0710→0.0712, within-±3% count 6→7, within-±5% 12→11; 16 dot-unit
+  sim-total snapshots drift +1.2–7.5%, EVERY measured-truth FB/rotation/no-op assert byte-stable; verify
+  green. **Mixed per-unit (faithful>fit):** helps cold `ada`/`diesel-winter-sweets`/`anis-star`(N=12)/
+  `cinderella-crystal-wave`/`privaty`; regresses already-hot `little-mermaid` (+0.025)/`jill` (+0.020)/
+  `milk-blooming-bunny` (+0.030)/`mihara-bonding-chain` (+0.048). Each regressing unit carries a SEPARATE
+  documented over-credit the missing crit was masking (LM SMG-normals; milk U23 deliberate overshoot; jill
+  FB-uptime) — EXCEPT `mihara-bonding-chain`, which has no separate over-credit (suspected tuned-base
+  double-count → follow-up). **The ÷1.075 "de-crit the calibrated base" prep step was DROPPED (owner):**
+  a provenance audit found ~15/17 dot bases are kit-datamined true multipliers (NOT crit-absorbed), so
+  ÷1.075 would have net-DEGRADED the board; and the two genuinely-tuned candidates don't behave
+  crit-absorbed either — `mihara-bonding-chain`'s COLD comp 0.96→1.01 IMPROVES under crit (only her hot
+  comp regresses), so her base was never uniformly crit-absorbed. **Follow-ups (queued, NON-blocking):**
+  (1) `ada` `flavor:"true"` — the flip applies crit to TRUE-damage dots too; UNVERIFIED whether NIKKE true
+  damage crits → maiden-solo-template footage check (ada-focus grenade-tick white/orange pair; white-only
+  across ≥20 ticks ⇒ carve `crit:false` on her dot blocks + revert her BETTER move); (2) `mihara-bonding-chain`
+  suspected tuned-base double-count → gated per-unit base review; (3) function-rider path stays separate.
+  Trail: open-questions U13 (LANDED note), this session's provenance audit + A/B + consolidated Fable review.
+
+- **(2026-07-21) tove: 3 datamined SG-team lines enacted (Temp Mod max-ammo + SG attack-speed + SG
+  burst-ATK) — LANDED (autonomous submission-review session; Fable pre-op APPROVED-WITH-REVISIONS/HIGH;
+  owner-authorized enactment; board-neutral).** `tove` (AR/Water/Supporter/B1). Three datamined lines had
+  been INERT in `unmodeled` — skipped only for now-removed technical reasons ("maxAmmoPct is percent not
+  flat"; "no weapon-typed target"). The engine since gained `maxAmmoFlat` (noir/grave) and `alliesOfWeapon`
+  (leona/arcana/drake), so this executes the DECISIONS-queued tove SG reconciliation (not a re-litigation).
+  Enacted: (1) S1 Temporary Modification Max Ammo +2/stack×3 = `maxAmmoFlat 6` to ALL allies (passive/steady-
+  state-max-stack); (2) S2 (max-stack gated) `attackSpeedPct 42.24` to alliesOfWeapon SG (passive); (3) burst
+  `casterAtkPct 72.63` (24.21×3, 15s) to alliesOfWeapon SG (burstCast) — co-stacks additively with the
+  existing all-ally 6.96 line (buff-key embeds value → no same-slot overwrite; DBG-verified 79.59% on SG
+  allies). **Evidence:** premise-gate (blind) confirmed all 3 values verbatim from characters.json + no
+  forbidding ruling; the max-ammo line is VIDEO-CONFIRMED (community submission 2026-07-15-1754-req1-tove,
+  HIGH conf: +6 mag on every ally, incl. non-SG nayuta 120→126); the 2 SG-buff magnitudes are DATAMINED-only
+  (community footage gear-confounded — same tier as other landed datamine-faithful lines; zero free knobs).
+  **Board-neutral:** tove in no graded comp → regression snapshot BYTE-IDENTICAL; verify.sh green.
+  **Discriminating check (P2):** in the tove SG community comp the shares moved TOWARD the observed
+  distribution on ALL 5 units (nayuta 21.5→13.5 [obs ~15], soda-twinkling-bunny 27.4→31.8 [obs ~30],
+  dorothy-serendipity 26.6→29.6 [obs ~32], tove 5.1→3.3 [obs ~3.8]) — a faithful-mechanic signature, not a
+  fit. Trail: `docs/handoffs/closed/2026-07-21-tove-sg-team-fix-preop.md`, `src/skills/overrides/tove.json`.
+
+- **(2026-07-21) guilty: S1 "duplicate the HIGHEST ally's ATK" → new `highestAllyAtkPct` stat — LANDED
+  (kit-audit guilty #2; board-safe).** `guilty` (SG/Wind/B2, no-data). Her S1 "Mind If I Borrow This?:
+  Duplicates 8.81% of the ATK of the ally with the highest ATK (×5 stacks)" was proxied as `casterAtkPct`
+  (% of GUILTY's own ATK) — exact only when she is the top-ATK ally. New StatKey `highestAllyAtkPct` resolves
+  at apply time to `(value/100) × max(all units' staticAtk)` and remaps to the flat-ATK path (feeds
+  `effectiveAtk` exactly like `casterAtkPct`). **Basis = STATIC ATK** (per the caster-ATK convention; a live
+  `effectiveAtk` ranking is a future refinement if measurement shows the duplicate tracks buffed ATK). Validated:
+  guilty SOLO byte-identical (she is her own max → identical to the old proxy); in a synthetic team with a
+  higher-ATK ally (scarlet-black-shadow 120367 > guilty 119667) her total rises 75.180→75.302M (buff now sizes
+  off the higher ally — the faithful fix). **Board byte-identical** (guilty ungraded; no other unit uses the
+  stat) — regression + verify.sh green. Trail: plan §guilty gotcha 2, types.ts `highestAllyAtkPct`, sim.ts value
+  resolution + statKey remap.
+
+- **(2026-07-21) Same-weapon flavor swaps (`trueNormals`) no longer grant free mag-refills — LANDED
+  (kit-audit chisato #2; owner-ruled faithful fix).** The engine's generic `weaponSwap` refilled the mag to
+  full on BOTH swap entry (sim.ts) and exit — correct for a REAL weapon swap (snow-white-heavy-arms cannon,
+  moran unlimited-ammo, nayuta SR-mode: a fresh weapon), but WRONG for a same-weapon `trueNormals` flavor
+  swap (`chisato`/`takina`/`laplace` — the gun never changes, only normals become true-flavored), which the
+  kit grants no reload for. Guarded both refill sites on `!trueNormals`. **Board (isolated A/B, faithful>fit):**
+  cools the over-modeled HOT **chisato 1.192→1.160**; drops **takina 0.975→0.936** (OK→COLD — her 0.975 was
+  FLATTERED by the spurious ~2 free reloads/cycle on her 6-round SR mag; her kit also grants no reload, verified
+  — so 0.936 is her faithful board and the COLD is now a separate under-model to chase). laplace no-data. Real
+  swaps (snow-white-heavy-arms/crown) byte-identical; small teammate cascades in chisato/takina comps; all 12
+  full-burst asserts green. No tuned value. Owner ruling: land the faithful fix. Trail: plan §chisato gotcha 2,
+  sim.ts swap entry/exit guards.
+
+- **(2026-07-21) Reload-triggered buff removal — new engine primitive `removeOnReload`, LANDED INERT;
+  cinderella CS-toggle wiring HELD (awaiting owner + a gated CS-formula pass).** Built the capability the
+  kit-audit plan (§cinderella gotcha #2) named: a `buff` effect may set `removeOnReload:true`, tagging the
+  applied `BuffInstance`; a `stripReloadBuffs(u)` helper drops flagged buffs at the two genuine
+  reload-to-max sites — natural magazine reload-completion (`sim.ts` ~2118) + the fast-reloader
+  boss-transition snap-refill (~2092). Deliberately NOT stripped at weaponSwap start/end, `maxAmmoFlat`
+  grants, `instantReload` skill refills, or per-shot ammoRefund top-ups (none are the weapon's own "reload
+  to max ammunition"; site enumeration audited per Fable). **INERT:** no committed override sets the flag →
+  regression snapshot BYTE-IDENTICAL, all 12 measured full-burst truths green; a dedicated functional test
+  (`scripts/tests/reload-buff-removal.test.ts`, wired into verify.sh) proves the strip actually fires
+  (in-memory cinderella toggle: strip-on 1536 pulls < strip-off 2376 — the per-magazine CS reset).
+  **Why cinderella's CS was NOT re-wired (the intended consumer):** her S1 "Charge Speed ▲ 100%. …Removed
+  upon reloading to max ammunition" stays the PERMANENT `chargeSpeedPct 45` proxy. Wiring the faithful
+  toggle (shotFired → CS 100 + removeOnReload; every RL pull is a full charge) under the engine's SUBTRACTIVE charge formula
+  floors CS-100 charges to 1 frame (no rate floor for RL) → ~1536 pulls/180s vs MEASURED ~315 → board
+  0.937 COLD → **4.834 HOT** (measured on the wired toggle, 7 comps 3.14–7.07; her focus-charge gauge also
+  cascades more FBs onto teammates). faithful>fit + measured>fudge ⇒ do NOT force a 5× regression. The
+  measured cadence instead fits a DIVISIVE charge-speed formula at ~311/315 with zero free parameters — an
+  engine-wide, HYPOTHESIS-strength finding recorded in open-questions **U25**, requiring its own gated pass
+  (fresh context + Fable pre-reg + full-board A/B + owner). Under EITHER formula the removeOnReload
+  primitive is the correct building block for her toggle, so it lands now; the CS wiring waits on U25 +
+  owner. Trail: pre-reg `scratchpad/prereg-cinderella-cs-toggle.md`, Fable pre-op REVISE (site-audit +
+  divisive-CS surfaced), plan §cinderella, cinderella.json caveat, open-questions U25.
+
+- **(2026-07-20) eve: sequential-damage TRUE-multiplier bucket — new engine primitive `sequentialMultPct`,
+  LANDED (kit-audit Phase A4; owner-authorized "confirmed, implement"; Fable pre-op APPROVE).** `eve`
+  (AR/Iron/B3, the NieR: Automata collab Eve — NOT a variant; ungraded/no footage). Her burst "Exospine Mk2"
+  reads "Damage multiplier of Unstable Energy sequential attacks is scaled by 100%" = a TRUE ×2 on her
+  sequential-flavored damage. It was wired as a self-buff `sequentialDamagePct +100` living in the SHARED
+  additive Damage-Up bucket — a clean ×2 SOLO, but it DILUTED below ×2 whenever any other Damage-Up buff was
+  live (with an ally attackDamagePct 50: 2.5/1.5 = 1.667, not 2), the documented ⚑. **Fix (capability, not a
+  board-fit):** added a NEW stat `sequentialMultPct` in its OWN multiplicative bucket (engine `seqMult`,
+  `sim.ts` dealDamage — `seqMult = opts.sequential ? 1 + stat(u,'sequentialMultPct',frame)/100 : 1`,
+  multiplied into the dmg product alongside charge/projFactor), applied ONLY to sequential-flavored hits;
+  rewired eve.json's Mk2 buff `sequentialDamagePct → sequentialMultPct` (value 100, 10s). **Why a NEW stat,
+  not repurposing `sequentialDamagePct`:** that stat has exactly two users — eve AND
+  `snow-white-heavy-arms`, whose "Sequential Attack Damage ▲158.4%" is a Prydwen-confirmed, board-validated
+  (1.31→0.99) ADDITIVE Damage-Up buff that SHOULD dilute; repurposing would have silently broken her. swha's
+  path is untouched. **Validation (eve is ungraded → solo unit-test, not board):** synthetic-block invariant
+  test proved the 720% Unstable Energy proc is EXACTLY ×2 with Mk2 (soloRatio 2.000000) AND does NOT dilute
+  against a synthetic extra Damage-Up buff (nonDilRatio 2.000000, vs additive's 1.666667); normal attacks
+  stay ×1 under Mk2 (same code path that keeps her unflavored burst nuke undoubled — kit doesn't say to
+  double the nuke). Board-read BYTE-IDENTICAL for every graded unit; regression snapshot byte-identical (eve
+  in no comp; sole `sequentialMultPct` holder). Fable required + delivered: nuke-not-doubled assertion + the
+  stale-dilution-docs sync (eve.json note/caveat + kit-status.json). Trail: pre-reg
+  `scratchpad/eve-seqmult-prereg.md`, plan §A4, eve.json caveat.
+
+- **(2026-07-20) tove: datamine-refresh of two stale kit values — LANDED (kit-audit Phase C; Fable pre-op
+  APPROVE-WITH-REVISION).** `tove` (AR/Water/B1, ungraded). Two override values were stale vs the CURRENT
+  datamined kit prose (`characters.json`): (1) S2 team Crit Rate `critRatePct 3.32 → 10.08` (prose: "at max
+  stacks … Critical Rate ▲ 10.08% continuously"; the 3.32 was pre-rebalance); (2) burst all-ally ATK
+  `casterAtkPct 6.96 durationSec 10 → 15` (prose: "ATK ▲ 2.32% … Mirrors the stack count … for 15 sec"; 6.96
+  = 2.32×3 max stacks, unchanged — only the stale 10s duration fixed). Evidence tier = current kit prose
+  (faithful refresh, no board-fit). The embedded note was synced in the same edit (per Fable). SG-gated lines
+  (Attack Speed 42.24%, burst SG ATK 24.21×3) stay skipped (no SG in the generic team). **Ungraded** → regression
+  byte-identical (verified), solo-wiring smoke confirms the crit moves her solo total (32.599M). Trail: plan §tove.
+
+- **(2026-07-20) milk-blooming-bunny: S1 "Gain Pierce for 6 sec" is MODELED → her Pierce package goes live
+  — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED; grave-pierce precedent).**
+  `milk-blooming-bunny` (SR/Iron/B3, Attacker; the variant, not base `milk` SR/Water). Her S1 full-charge
+  "Gain Pierce for 6 sec" sat in `unmodeled.skill1`, so she was NEVER Pierce-tagged and her whole Pierce
+  package (burst `pierceDamagePct +117.64%`, 10s) was INERT — a prime suspect for her COLD 0.653. Enacted a
+  `{shotFired → self, gainPierce durationSec:6}` block (SR auto-full-charges every shot → the 6s window
+  refreshes continuously → permanent tag; the ade-agent-bunny/grave `gainPierce` precedent). **DELIBERATE
+  overshoot, faithful>fit (exactly the grave 2026-07-17 pierce precedent):** isolated A/B **PG 0.653 COLD →
+  1.301 HOT** (total ~254M→506M, ~×2). Mechanism verified by debug: during her ~10s burst window her pierce
+  Damage-Up (`dmgUp` 1.00→2.31, the +117.64 + d-killer-wife's SR +13.55) roughly doubles her already-large
+  burst-window damage (atkPct-220 + FB normals: 5M/shot vs 0.47M outside); the buff correctly ends at
+  t≈13.17. **No tuned value** (117.64 is datamined). The residual +0.30 HOT is now cleanly isolated to
+  milk-blooming-bunny's SEPARATE, measurement-gated over-models — her 2nd gotcha (the Embarrassment
+  mode-split: auto-mode faithfulness of the burst atkPct-220 / S2 DoT-447.7 magnitudes) + an unmeasured
+  pierce-window DPS share — NOT the pierce mechanic. Tracked → open-questions **U23**. Regression: her PG
+  total is the only drift (+99.22%); all full-burst asserts byte-identical (self-only tag). Trail: plan
+  §milk-blooming-bunny gotcha 1, override caveat.
+
+- **(2026-07-20) d-killer-wife: S1 FB Pierce Damage ▲13.55% targets SR allies only → `alliesOfWeapon SR`
+  — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED).** `d-killer-wife` (SR/Fire/B1, Supporter;
+  the variant, not base `d` SMG/Wind). Her S1 FB-enter Pierce Damage ▲13.55% (10s) targeted ALL allies; the
+  kit targets only Sniper-Rifle-wielding allies. Re-targeted `alliesOfWeapon SR`. She is herself SR so keeps
+  the buff; the ONLY board effect (isolated A/B) was removing the spurious buff from the one non-SR
+  Pierce-tagged ally — **grave** (AR), who is Pierce-tagged during her Prediction burst in comp N1 — cooling
+  that over-modeled HOT unit **grave 1.179→1.162** (N1 total −4.29%). All other comps + full-burst asserts
+  byte-identical. Kit-literal target scope, no fit. Trail: plan §d-killer-wife gotcha 2, override caveat.
+
+- **(2026-07-20) Eve: S2 reload-refund is Electric-gated + refunds exactly 3 rounds — LANDED (kit-audit
+  Phase C ENACT-NOW; Fable pre-op APPROVED).** `eve` (AR/Iron/B3, the NieR collab Eve). Her S2 "when
+  hitting an Electric-code target for the 10th time, Reload 3 round(s)" was modeled UNCONDITIONALLY
+  (fired vs any boss) and as `instantReload fraction:0.05` (0.05 × 75 buffed mag → 4 rounds, over by 1).
+  Both defects were flagged in her own caveats. Enacted: (1) block-level `bossElementGate:"Electric"`
+  (existing engine primitive, sim.ts:1419 — block inert unless boss is Electric); (2) fraction 0.05 → 0.04
+  (0.04 × 75 = 3.00 exactly, the kit's flat 3). Both kit-literal, no fit. **eve is ungraded** → validated
+  by solo unit-test: off-Electric her total is now element/refund-clean (Iron == neutral == 117.20M; the
+  refund + her Iron→Electric advantage + S1 Electric-target debuff only fire on the Electric boss). No comp
+  → regression byte-identical. `instantReload` has no flat-rounds field, so 0.04 is exact only at the 75-mag
+  (external max-ammo buffs would drift it — moot; eve is solo-tested). Her separate Mk2 ×2 sequential-bucket
+  gotcha (A4) stays deferred. Trail: plan §eve gotcha 1, eve override caveat.
+
 - **(2026-07-20) Grave: team "Max Ammunition Capacity ▲ 3 round(s)" is a FLAT grant → `maxAmmoFlat 3`
   — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED 4-of-4).** Base `grave` (AR/Fire/B2,
   Supporter). Her burst's team ammo buff was the schema-forced fudge `maxAmmoPct 3` (+3 PERCENT ≈ inert);
@@ -320,7 +611,7 @@ lives. Newest first within each section.
   direct measurement via `asuka` (AR/Fire), still a testing-request). Snapshot regenerated (5 HR-carrier totals:
   chisato +0.90%, quency-escape-queen +5.6–6.2%, dorothy-serendipity +0.23%; measured-truth FB asserts untouched
   — HRCORE moves core damage only, not gauge/rotation). Full derivation + validation:
-  `docs/handoffs/2026-07-17-hitrate-core-implementation-plan.md`. OPEN threads: asuka bracket refinement; quency
+  `docs/handoffs/closed/2026-07-17-hitrate-core-implementation-plan.md`. OPEN threads: asuka bracket refinement; quency
   cadence + overshoot; SG landing (H2, hit-rate→pellet-landing) NOT built (out of scope).
 
 - **(2026-07-17) Timed pierce primitive (`gainPierce`) — LANDED and ENABLED on grave (faithful>fit); the
@@ -1364,5 +1655,5 @@ lives. Newest first within each section.
   --set/--finding update workflow fields, --check is a verify.sh gate: roster coverage + fresh
   unmodeled/provenance mirrors). Wave protocol, wave order (materialized class first; noir carries an
   SG-landing-anchor guard: solo total moves >0.5% → owner sign-off), and the wave log live in
-  docs/handoffs/2026-07-16-kit-parse-rollout.md. Done-when: all 74 units authored/audited/reconciled with
+  docs/handoffs/closed/2026-07-16-kit-parse-rollout.md. Done-when: all 74 units authored/audited/reconciled with
   findings triaged; board improvement expected but NOT a gate (faithful > fit).
