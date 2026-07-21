@@ -79,7 +79,11 @@ const NEED = { I: 1, II: 1, III: 2 } as const;
 // ever field her as a B3 — matching the sim-battery harness. Selection uses
 // `effBurst` below; the sim rotation is pinned via lambdaStage in simTeam.
 const FORCED_BURST: Record<string, 'I' | 'II' | 'III'> = { 'red-hood': 'III' };
-const LAMBDA_STAGE: Record<'I' | 'II' | 'III', 1 | 2 | 3> = { I: 1, II: 2, III: 3 };
+const LAMBDA_STAGE: Record<'I' | 'II' | 'III', 1 | 2 | 3> = {
+  I: 1,
+  II: 2,
+  III: 3,
+};
 /** Effective burst class for selection — a forced slot for pinned Λ units, else the char's own. */
 const effBurst = (slug: string, chars: Record<string, Char>): string =>
   FORCED_BURST[slug] ?? chars[slug].burst;
@@ -95,9 +99,72 @@ function deficits(counts: Record<string, number>): number {
 /** 5 distinct units that can cover 1×BI, 1×BII, 2×BIII with Λ as wildcards. */
 function isLegal(slugs: string[], chars: Record<string, Char>): boolean {
   if (slugs.length !== 5 || new Set(slugs).size !== 5) return false;
-  const c: Record<string, number> = { I: 0, II: 0, III: 0, 'Λ': 0 };
+  const c: Record<string, number> = { I: 0, II: 0, III: 0, Λ: 0 };
   for (const s of slugs) c[effBurst(s, chars)]++;
   return (c['Λ'] ?? 0) >= deficits(c);
+}
+
+/**
+ * Can a PARTIAL locked set still be completed to a legal 5-team? The outstanding
+ * burst deficits (deficits() ignores Λ) must be coverable by the locked Λ units
+ * plus the (5 − k) free slots still to fill. Used to decide whether a "must-use"
+ * unit can be assigned to a team without making it unbuildable.
+ */
+export function locksFeasible(
+  locked: string[],
+  chars: Record<string, Char>,
+): boolean {
+  if (locked.length > 5 || new Set(locked).size !== locked.length) return false;
+  const c: Record<string, number> = { I: 0, II: 0, III: 0, Λ: 0 };
+  for (const s of locked) {
+    if (!chars[s]) return false;
+    c[effBurst(s, chars)]++;
+  }
+  return deficits(c) <= (c['Λ'] ?? 0) + (5 - locked.length);
+}
+
+/**
+ * Spread generic "must-use" units across teams for the roster generators. Each
+ * unit goes to the team with the most free room that stays feasible (so units
+ * fan out rather than piling onto team 1). Units already pinned to a team count
+ * as used; a unit that fits nowhere is returned in `unplaced` so the UI can warn.
+ * `assigned[t]` holds only the must-use units added to team t (pinned units are
+ * tracked separately by the caller).
+ */
+export function assignMustUse(
+  mustUse: string[],
+  pinnedByTeam: string[][],
+  chars: Record<string, Char>,
+  teamCount: number,
+): { assigned: string[][]; unplaced: string[] } {
+  const locked: string[][] = Array.from({ length: teamCount }, (_, t) => [
+    ...(pinnedByTeam[t] ?? []),
+  ]);
+  const assigned: string[][] = Array.from({ length: teamCount }, () => []);
+  const unplaced: string[] = [];
+  const seen = new Set<string>();
+  for (const slug of mustUse) {
+    if (seen.has(slug) || !chars[slug]) continue;
+    seen.add(slug);
+    if (locked.some((team) => team.includes(slug))) continue; // already pinned
+    let bestT = -1;
+    let bestRoom = -1;
+    for (let t = 0; t < teamCount; t++) {
+      if (locked[t].length >= 5) continue;
+      if (!locksFeasible([...locked[t], slug], chars)) continue;
+      const room = 5 - locked[t].length;
+      if (room > bestRoom) {
+        bestRoom = room;
+        bestT = t;
+      }
+    }
+    if (bestT < 0) unplaced.push(slug);
+    else {
+      locked[bestT].push(slug);
+      assigned[bestT].push(slug);
+    }
+  }
+  return { assigned, unplaced };
 }
 
 export function makeCalc(input: TeamCalcInput) {
@@ -121,7 +188,10 @@ export function makeCalc(input: TeamCalcInput) {
   };
   // Ranking score: strong co-equal blend of simulated damage and meta prior.
   // Reduces to raw teamDamage when no meta is supplied (backwards-compatible).
-  const scoreOf = (r: { teamDamage: number; units: { slug: string }[] }): number =>
+  const scoreOf = (r: {
+    teamDamage: number;
+    units: { slug: string }[];
+  }): number =>
     r.teamDamage * (1 + META_W * metaPrior(r.units.map((u) => u.slug)));
 
   // effective burst class for selection (pins Red Hood → B3; see FORCED_BURST)
@@ -189,8 +259,10 @@ export function makeCalc(input: TeamCalcInput) {
     return [...topB3, ...byBurst('I'), ...byBurst('II'), ...byBurst('Λ')];
   };
 
-  // legal seed by role: fill 2×B3, 1×B1, 1×B2 (Λ substitutes), then best flex
-  const seedTeam = (pool: string[], mustInclude?: string): string[] => {
+  // legal seed by role: fill 2×B3, 1×B1, 1×B2 (Λ substitutes), then best flex.
+  // With locked units (mustInclude), pin them first and fill the outstanding
+  // burst needs + flex around them instead.
+  const seedTeam = (pool: string[], mustInclude?: string[]): string[] => {
     const score = new Map(pool.map((s) => [s, soloScore(s)]));
     const ranked = [...pool].sort(
       (a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0),
@@ -200,14 +272,39 @@ export function makeCalc(input: TeamCalcInput) {
       const s = ranked.find((x) => !team.includes(x) && pred(x));
       if (s) team.push(s);
     };
-    if (mustInclude && chars[mustInclude]) team.push(mustInclude);
-    const isB = (b: string) => (s: string) =>
-      eb(s) === b || eb(s) === 'Λ';
-    take(isB('III'));
-    take(isB('III'));
-    take(isB('I'));
-    take(isB('II'));
-    take(() => true); // flex
+    const isB = (b: string) => (s: string) => eb(s) === b || eb(s) === 'Λ';
+    const locked = (mustInclude ?? []).filter(
+      (s, i, a) => chars[s] && a.indexOf(s) === i,
+    );
+    if (locked.length === 0) {
+      // Unchanged seed for the no-lock case — keeps generator output identical.
+      take(isB('III'));
+      take(isB('III'));
+      take(isB('I'));
+      take(isB('II'));
+      take(() => true); // flex
+      return team.slice(0, 5);
+    }
+    for (const s of locked) team.push(s);
+    // burst needs still open after the pinned units (Λ acts as flex — isLegal
+    // counts it as a wildcard, so don't spend a need on it here)
+    const needBursts = (): ('I' | 'II' | 'III')[] => {
+      const c: Record<string, number> = { I: 0, II: 0, III: 0 };
+      for (const s of team) {
+        const b = eb(s);
+        if (b === 'I' || b === 'II' || b === 'III') c[b]++;
+      }
+      const out: ('I' | 'II' | 'III')[] = [];
+      for (let k = c.I; k < NEED.I; k++) out.push('I');
+      for (let k = c.II; k < NEED.II; k++) out.push('II');
+      for (let k = c.III; k < NEED.III; k++) out.push('III');
+      return out;
+    };
+    for (const need of needBursts()) {
+      if (team.length >= 5) break;
+      take(isB(need));
+    }
+    while (team.length < 5) take(() => true);
     return team.slice(0, 5);
   };
 
@@ -270,15 +367,19 @@ export function makeCalc(input: TeamCalcInput) {
 
   const bestTeam = (opts?: {
     exclude?: Set<string>;
-    mustInclude?: string;
+    mustInclude?: string[];
   }): TeamResult | null => {
     const exclude = opts?.exclude ?? new Set<string>();
+    // Locked units override the blocked list (an explicit lock wins over a
+    // don't-own exclusion), but a unit already used by another team (exclude)
+    // can't be locked again. Dedupe + drop unknowns.
+    const mustInclude = (opts?.mustInclude ?? []).filter(
+      (s, i, a) => chars[s] && !exclude.has(s) && a.indexOf(s) === i,
+    );
     const pool = buildPool(exclude);
-    const seed = seedTeam(pool, opts?.mustInclude);
+    const seed = seedTeam(pool, mustInclude);
     if (!isLegal(seed, chars)) return null; // e.g. everything useful blocked
-    const locked = opts?.mustInclude
-      ? new Set([opts.mustInclude])
-      : new Set<string>();
+    const locked = new Set(mustInclude);
     let best = refine(seed, pool, locked);
     let bestScore = scoreOf(best);
     // full-team match: evaluate the popular ranker comps directly so a real meta
@@ -288,12 +389,16 @@ export function makeCalc(input: TeamCalcInput) {
         if (
           comp.length !== 5 ||
           comp.some((s) => !chars[s] || blocked.has(s) || exclude.has(s)) ||
-          (opts?.mustInclude && !comp.includes(opts.mustInclude)) ||
+          mustInclude.some((s) => !comp.includes(s)) ||
           !isLegal(comp, chars)
-        ) continue;
+        )
+          continue;
         const r = toResult(simTeam(comp));
         const sc = scoreOf(r);
-        if (sc > bestScore) { best = r; bestScore = sc; }
+        if (sc > bestScore) {
+          best = r;
+          bestScore = sc;
+        }
       }
     }
     return best;
@@ -301,12 +406,30 @@ export function makeCalc(input: TeamCalcInput) {
 
   return {
     bestTeam,
-    /** Top-N teams that share no characters (greedy-sequential). */
-    topTeams: (n: number): TeamResult[] => {
+    /**
+     * Top-N teams that share no characters (greedy-sequential). Optionally pin
+     * units to specific teams (`pinnedByTeam[t]` must appear in team t) and/or
+     * require generic "must-use" units somewhere (`mustUse`, spread across teams
+     * by assignMustUse). Units reserved for a later team are excluded from the
+     * earlier teams' pools so team 1 can't consume a unit team 3 pinned.
+     */
+    topTeams: (
+      n: number,
+      opts?: { pinnedByTeam?: string[][]; mustUse?: string[] },
+    ): TeamResult[] => {
+      const pinned = opts?.pinnedByTeam ?? [];
+      const assigned = assignMustUse(opts?.mustUse ?? [], pinned, chars, n);
+      const reserved: string[][] = Array.from({ length: n }, (_, i) => [
+        ...(pinned[i] ?? []),
+        ...assigned.assigned[i],
+      ]);
       const used = new Set<string>();
       const out: TeamResult[] = [];
       for (let i = 0; i < n; i++) {
-        const t = bestTeam({ exclude: used });
+        const exclude = new Set(used);
+        for (let j = i + 1; j < n; j++)
+          for (const s of reserved[j]) exclude.add(s);
+        const t = bestTeam({ exclude, mustInclude: reserved[i] });
         if (!t) break;
         out.push(t);
         t.slugs.forEach((s) => used.add(s));
@@ -314,8 +437,10 @@ export function makeCalc(input: TeamCalcInput) {
       return out;
     },
     /** Best team built around a pinned unit + that unit's line in it. */
-    characterAnalysis: (slug: string): { team: TeamResult; unit: TeamUnit } | null => {
-      const team = bestTeam({ mustInclude: slug });
+    characterAnalysis: (
+      slug: string,
+    ): { team: TeamResult; unit: TeamUnit } | null => {
+      const team = bestTeam({ mustInclude: [slug] });
       if (!team) return null;
       const unit = team.units.find((u) => u.slug === slug)!;
       return { team, unit };
