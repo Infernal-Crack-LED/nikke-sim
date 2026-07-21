@@ -400,9 +400,13 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 > - **(a) leftmost-vs-first-ready selection under a small window.** The window fix makes leftmost and
 >   earliest-ready mostly coincide, but a comp with two B3s ready within ~2s of each other could still mis-allocate
 >   under the leftmost rule. Not resolved, only masked in current comps — needs a comp that isolates it + footage.
-> - **(b) owner ~1s activation delay vs the sim's calibrated 0.5s `STAGE_CAST_GAP`.** The 120f-over-90f choice
->   hangs on this 0.5s discrepancy. Raising the gap to 1s craters measured cadence (80 regression fails), so
->   either the owner's ~1s is imprecise or another term (gauge fill / post-FB delay) absorbs it. Unexplained.
+> - **(b) owner ~1s activation delay vs the sim's 0.5s `STAGE_CAST_GAP` → RESOLVED 2026-07-21: the 0.5s gap is
+>   MEASURED-CORRECT; the owner's ~1s was hand-wavey.** Two independent lines: (1) auto-play.md §3 (nikke-synergy
+>   arena guide) measures B1→B2 / B2→B3 ≈ 0.533s each (gauge→B1 ≈ 0.433s); (2) an isolated gap sweep at
+>   window=120 keeps all 12 measured-FB asserts clean across 26–45f (0.43–0.75s) and BREAKS at 60f/1s (6 comps
+>   under-count) — the FB counts themselves reject a 1s gap. So the gap is NOT the 120-vs-90 lever; the window is
+>   a SEPARATE wait-tolerance that must clear the ~1.6s natural chain span with margin (90f under, 120f over).
+>   No engine change (the gap stays 30f); DECISIONS 2026-07-21 corrected accordingly.
 > - **Dynamic chip-state (below) is UNAFFECTED — still open engine work.**
 
 Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):

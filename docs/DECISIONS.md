@@ -19,13 +19,18 @@ lives. Newest first within each section.
   double-casts the leftmost (sakura-bloom-in-summer 6/4 vs the footage's burst-color-verified 5/5); the same
   applies at stage 2 for a slow leftmost B2. This is NOT a genuine tiebreak — with a realistic window the
   earlier-ready unit is the *unique* candidate (supersedes the "leftmost-tiebreak Burst-III selection" framing
-  the prior 2026-07-21 in-FB-CDR entry pointed to for U16). **Corrected to 120f (2s)** = the ~1s grace padded
-  for the sim's 0.5s `STAGE_CAST_GAP` (which reaches B3 ~0.5s early). VALUE = ⚑ CALIBRATED against MEASURED FB
+  the prior 2026-07-21 in-FB-CDR entry pointed to for U16). **Corrected to 120f (2s).** The window is the auto's
+  wait-tolerance for a not-yet-ready stage-filler — a SEPARATE quantity from the inter-stage cast gap
+  (`STAGE_CAST_GAP` = 30f/0.5s), which is MEASURED-CORRECT and unchanged: auto cast timing is B1→B2 / B2→B3 ≈
+  0.533s each ([data/auto-play.md](data/auto-play.md) §3, nikke-synergy arena guide), and an isolated gap sweep
+  at window=120 independently confirms it — measured-FB asserts stay clean across 26–45f (0.43–0.75s) and BREAK
+  at 60f/1s (6 comps under-count), so the FB counts themselves reject a 1s gap (owner's initial ~1s was
+  hand-wavey; RESOLVES open-questions U16 sub-question (b)). VALUE 120f = ⚑ CALIBRATED against MEASURED FB
   counts (not a measured 2s): all 12 pinned measured-FB regression asserts PASS with clean seeded distributions;
   the passing plateau is wide (sakura 5/5 holds 120–500f; graded clean 120–300f), so 120 = the shortest clean
   window (the mechanic wants short). 90f (owner's first 1.5s) overshoots — PH 13→11 (past its real 12) + bimodal
-  FB stragglers — because the 0.5s stage-gap reaches B3 early; raising the gap to 1s to rescue 90f CRATERS
-  measured cadence board-wide (80 regression fails), so the 0.5s gap is pinned and only the window changes.
+  FB stragglers — because the grace window must clear the ~1.6s natural chain-completion span (0.433 + 0.533 +
+  0.533 + effect delays) with margin: 90f (1.5s) sits under it, 120f (2s) has margin. Only the window changes.
   Rotation moves TOWARD measured wherever it moves: sakura-bloom-in-summer 6/4→5/5, N2 8→10 (real ≥10), PE
   10→11 (real 11-12); PH stays 13 (its separate open burst-cycle over-by-1, untouched). Blast radius (40-team
   random battery, @600 vs @120): one UNGRADED team (moran/arcana/eve/soda-twinkling-bunny/modernia) drops 6→5
