@@ -96,6 +96,18 @@ function skillNoFb(perKitNoFb: boolean, isBurstCast: boolean, flavor: string | u
   }
 }
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
+// PREB1GAP (frame-measured 2026-07-21, chisato.mov): the burst chain has a 30f delay BETWEEN
+// gauge-full and the B1 cast (gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB), same as the
+// inter-stage gap — the sim currently fires B1 the instant the gauge fills. Default OFF (inert): this
+// interacts with the gauge-fill timing (adding it alone shifts B1 ~0.5s late, since today's B1=3.5s
+// match rides a slightly-too-fast gauge), so it is A/B-only until the gauge composition is re-tuned
+// against the full measured burst-window timeline. `PREB1GAP=1` enables. (open-questions U16.)
+const PRE_B1_GAP_FRAMES = ENV.PREB1GAP ? STAGE_CAST_GAP_FRAMES : 0;
+// PREFB (frame-measured 2026-07-21, chisato.mov): a 22f delay between the B3 cast and the FB
+// countdown actually starting (b3 → 22f → 10s FB). Likely the mechanistic reason instant burst-cast
+// attacks miss the +50% (they land in this gap, before FB begins — today modeled via per-unit noFb
+// flags). Default OFF (inert). `PREFB=1` enables. INVESTIGATION ITEM (owner). (open-questions U16.)
+const FB_PRE_DELAY_FRAMES = ENV.PREFB ? 22 : 0;
 const FULL_BURST_FRAMES = 10 * FPS;
 // AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
 // RELEASE-FIRED charge weapons fire ~22 frames after full charge on auto — measured on
@@ -1112,6 +1124,11 @@ export function runSim(
   // 90f craters measured cadence — the 0.5s gap is pinned. DECISIONS 2026-07-21. STAGE_WINDOW=600 reverts.
   const STAGE_WINDOW_FRAMES = ENV.STAGE_WINDOW ? Number(ENV.STAGE_WINDOW) : 120;
   let fbEndFrame = -1;
+  // PREFB (default off): when the B3 cast should defer the FB start by FB_PRE_DELAY_FRAMES, the
+  // fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here and fired that many
+  // frames later (during the gap fbEndFrame stays old, so "in FB" is correctly false).
+  let pendingFbStartFrame = -1;
+  let pendingFbStartExtendSec = 0;
   // "Wipe Out" status window on the boss (0/-1 = none): opened by a 'wipeOut' effect
   // (d-killer-wife's burst) and read by the requiresWipeOut block gate. One global boss →
   // one window (like fbEndFrame), not a per-unit status.
@@ -1963,7 +1980,51 @@ export function runSim(
 
   const romanStage: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III' };
 
+  // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can
+  // fire inline at the B3 cast (default) OR be deferred by FB_PRE_DELAY_FRAMES (PREFB). fbEndFrame
+  // must already be set when this runs (the log reads it).
+  const emitFbEnter = (atFrame: number) => {
+    units.forEach((u) => fireTriggered(u, 'fullBurstEnter', atFrame));
+    // release stored hits (e.g. Rapi:RH's attached projectiles exploding) AFTER enter-buffs so FB
+    // auras apply to them; charges added this frame (from the stage-3 cast itself) wait for next FB
+    for (const u of units) {
+      for (const entry of u.storedHits.values()) {
+        if (entry.freshFrame < atFrame) {
+          entry.releasable += entry.fresh;
+          entry.fresh = 0;
+          entry.freshFrame = atFrame;
+        }
+        if (entry.releasable > 0) {
+          dealDamage(u, entry.atkPct * entry.releasable, atFrame, {
+            crit: entry.critRoll || DOT_CRIT || XCRIT.has(u.char.slug),
+            core: entry.coreRate != null || XCORE.has(u.char.slug),
+            coreOverride: entry.coreRate,
+            charge: false,
+            category: entry.category,
+            distributed: entry.distributed,
+            sustained: entry.sustained,
+            sequential: entry.sequential,
+            trueFlavor: entry.trueFlavor,
+            noRange: true,
+            projFlavor: entry.projFlavor,
+          });
+          entry.releasable = 0;
+        }
+      }
+    }
+    rotationLog.push(`${(atFrame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
+  };
+
   for (let frame = 0; frame < totalFrames; frame++) {
+    // PREFB: a deferred full-burst start fires here, FB_PRE_DELAY_FRAMES after the B3 cast (default
+    // off → pendingFbStartFrame stays -1, so this is inert/byte-identical).
+    if (pendingFbStartFrame >= 0 && frame >= pendingFbStartFrame) {
+      fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbStartExtendSec * FPS);
+      pendingFbStartExtendSec = 0;
+      fullBursts++;
+      emitFbEnter(frame);
+      pendingFbStartFrame = -1;
+    }
     const fbActive = fbEndFrame > frame;
     if (fbActive) fbFrames++;
 
@@ -2004,8 +2065,9 @@ export function runSim(
       gauge = 0; // the chain consumes the gauge (refill required if it collapses)
       stage = 1;
       stageExpireFrame = Infinity;
+      stageGapFrames = PRE_B1_GAP_FRAMES; // measured 30f between gauge-full and B1 (default 0 = fire immediately)
     }
-    if (!fbActive && stage >= 2 && frame >= stageExpireFrame) {
+    if (!fbActive && pendingFbStartFrame < 0 && stage >= 2 && frame >= stageExpireFrame) {
       rotationLog.push(`${(frame / FPS).toFixed(1)}s  CHAIN EXPIRED at stage ${stage} (refill)`);
       stage = 0;
       stageExpireFrame = Infinity;
@@ -2015,7 +2077,7 @@ export function runSim(
     // ~1s unhittable window. This is the real source of knife-edge full-burst-count
     // variance between otherwise identical runs — a chain-vs-transition collision
     // depends on the boss's timing jitter. The stage window keeps ticking while blocked.
-    if (!fbActive && stage >= 1 && stageGapFrames === 0 && !bossUnhittable(frame)) {
+    if (!fbActive && pendingFbStartFrame < 0 && stage >= 1 && stageGapFrames === 0 && !bossUnhittable(frame)) {
       const want = romanStage[stage];
       const fillsStage = (u: UnitState) => {
         if (u.char.burst === 'Λ') {
@@ -2096,12 +2158,19 @@ export function runSim(
           });
         }
         if (stage === 3) {
-          fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
-          pendingFbExtendSec = 0;
           gauge = 0;
-          fullBursts++;
           lastStage3Caster = cand.idx;
           if (cand.idx === focusIdx) focusBurstCount++;
+          if (FB_PRE_DELAY_FRAMES > 0) {
+            // defer FB start by 22f (PREFB): schedule; fbEndFrame/fullBursts/enter fire later
+            pendingFbStartFrame = frame + FB_PRE_DELAY_FRAMES;
+            pendingFbStartExtendSec = pendingFbExtendSec;
+            pendingFbExtendSec = 0;
+          } else {
+            fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
+            pendingFbExtendSec = 0;
+            fullBursts++;
+          }
         }
         units.forEach((u) =>
           u.blocks.forEach((b, bi) => {
@@ -2124,39 +2193,10 @@ export function runSim(
             applyBlock(cand.idx, b, bi, frame);
           }
         });
-        if (castStage === 3) {
-          units.forEach((u) => fireTriggered(u, 'fullBurstEnter', frame));
-          // release stored hits (e.g. Rapi:RH's attached projectiles exploding)
-          // AFTER enter-buffs so FB auras apply to them; charges added this
-          // frame (from the stage-3 cast itself) wait for the next full burst
-          for (const u of units) {
-            for (const entry of u.storedHits.values()) {
-              if (entry.freshFrame < frame) {
-                entry.releasable += entry.fresh;
-                entry.fresh = 0;
-                entry.freshFrame = frame;
-              }
-              if (entry.releasable > 0) {
-                dealDamage(u, entry.atkPct * entry.releasable, frame, {
-                  crit: entry.critRoll || DOT_CRIT || XCRIT.has(u.char.slug),
-                  // per-entry core RATE (RRH explosions ~1/3) via the coreOverride path —
-                  // aim/range-independent; falls back to the env XCORE gate when unset
-                  core: entry.coreRate != null || XCORE.has(u.char.slug),
-                  coreOverride: entry.coreRate,
-                  charge: false,
-                  category: entry.category,
-                  distributed: entry.distributed,
-                  sustained: entry.sustained,
-                  sequential: entry.sequential,
-                  trueFlavor: entry.trueFlavor,
-                  noRange: true,
-                  projFlavor: entry.projFlavor,
-                });
-                entry.releasable = 0;
-              }
-            }
-          }
-          rotationLog.push(`${(frame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
+        // FB entry fires inline at the B3 cast (default). With PREFB it is deferred — the scheduled
+        // block in the frame loop calls emitFbEnter() FB_PRE_DELAY_FRAMES later instead.
+        if (castStage === 3 && FB_PRE_DELAY_FRAMES === 0) {
+          emitFbEnter(frame);
         }
         cand.fbMissedSinceBurst = 0; // MP spent (blocks above already read it)
         if (castStage !== 3) {
