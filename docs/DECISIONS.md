@@ -8,6 +8,26 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) FIGHT-START DEPLOY DELAY (1s) + SR BOLT-RECOVERY SPLIT (11f start / 11f end) — LANDED (owner-directed, frame-measured).**
+  Two timing corrections from a frame-by-frame scrub of `chisato.mov` (Liter/Crown/Chisato/Helm, Fire boss),
+  both fixing **first-burst-gauge OVER-generation** (the sim opened its first burst too early → fed the FB
+  over-count). (1) **Fight-start delay** (`FIGHT_DELAY_FRAMES`, default 1s, `FIGHTDELAY=0` reverts): no unit
+  fires / charges / generates gauge for the first 1s — the recording shows the first bullet only LANDS at 2:59,
+  i.e. ~1s after the 3:00 timer starts ticking (the pre-timer is a load screen; units then deploy/aim — see the
+  probe-processing anchor rule + [[fb-timing-anchor-not-startup-lag]]). (2) **SR/RL bolt-recovery split**
+  (`SR_BOLT_START_FRAMES`, default 11f = half the 22f `SR_BOLT_RECOVERY_FRAMES`, `BOLTSTART=off` reverts): the
+  22f bolt-cycle recovery is +11f at the START of a shot + 11f at the END, not 22f at the end. The 22f post-fire
+  value already modeled the between-shots 11-end+11-start (contiguous); the missing piece was the FIRST shot's
+  11f start recovery, so shot1 fires at 71f not 60f and every SR shot shifts +11f. Helm's SR is nearly all of a
+  Liter/Crown team's burst-gauge gen, so her timing dominates. **Together they reproduce the measured first-burst
+  timing EXACTLY:** B1 cast 2.4s→**3.5s** (owner-measured real B1 = 3.5s), first FB 3.4s→4.5s — no residual
+  gauge-*rate* over-model remains (an earlier ~1s "residual" was an anchor misread, corrected). **Full-board A/B:**
+  every measured-exact FB count PRESERVED (10/11/12/13 all match), board mean|ratio−1| improved (±3% 6→7; the 1s
+  delay cools everyone ~0.5% via ~1s less fire time, nudging the net-hot board toward 1.0; bolt-start board-neutral
+  on its own). Total snapshots regenerated (~0.5% drift, DERIVED — the measured-FB asserts were untouched);
+  kit-status mirror refreshed; verify.sh green. GLOBAL blast radius but FB-neutral. Trail: `sim.ts` FIGHTDELAY /
+  BOLTSTART comments; open-questions U16.
+
 - **(2026-07-21) B3/B2 in-window stage selection: strict-leftmost → FIRST-READY (earliest-ready, tie→leftmost) — LANDED.**
   Real auto casts whichever burst comes up first, so the timed-window stage-2/3 pick is the stage-filler whose
   cooldown ends SOONEST, not the strictly-leftmost one (owner ruling 2026-07-21). For equal-CD B3s this
