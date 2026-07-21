@@ -8,6 +8,35 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) DoT/rider crit ENABLED by default (`DOT_CRIT` flip OFF→ON, U13) — LANDED
+  (owner-directed; full-board A/B + ONE consolidated Fable review APPROVE; faithful>fit, board-neutral).**
+  DoT ticks + stored-hit releases now roll crit universally (this is the default; a per-dot explicit
+  `crit` field still overrides it either way; core stays OFF; `DOTCRIT=off` is the A/B revert switch).
+  The `extraHitDamagePct` function-rider path (`modernia` Destroy Mode, `nayuta` Memory Incineration,
+  `neon-vision-eye` Super Firepower — hard-coded `crit:false`) is OUT OF SCOPE, still gated on per-rider
+  footage. **Why faithful (mechanic multiply-confirmed):** ginmy /nikke_dot_test (elem-adv DoT ~47% crit
+  vs ~10% elem-only) + `maiden-ice-rose` solo rider 437,296 white / 655,945 orange = ×1.5 + `little-mermaid`
+  DoT sub-hit 450,314 = 337,736 × 1.333 (FB-crit). The two footage reads land on the two DISTINCT
+  signatures of the engine's additive `major += critRate·critBonus` bucket (×1.5 out-of-FB, ×1.333 in-FB)
+  — prove-it-differently on the mechanic AND its bucket placement. **Board = NET-NEUTRAL, NOT a fit win:**
+  datapoint-weighted mean|ratio−1| 0.0710→0.0712, within-±3% count 6→7, within-±5% 12→11; 16 dot-unit
+  sim-total snapshots drift +1.2–7.5%, EVERY measured-truth FB/rotation/no-op assert byte-stable; verify
+  green. **Mixed per-unit (faithful>fit):** helps cold `ada`/`diesel-winter-sweets`/`anis-star`(N=12)/
+  `cinderella-crystal-wave`/`privaty`; regresses already-hot `little-mermaid` (+0.025)/`jill` (+0.020)/
+  `milk-blooming-bunny` (+0.030)/`mihara-bonding-chain` (+0.048). Each regressing unit carries a SEPARATE
+  documented over-credit the missing crit was masking (LM SMG-normals; milk U23 deliberate overshoot; jill
+  FB-uptime) — EXCEPT `mihara-bonding-chain`, which has no separate over-credit (suspected tuned-base
+  double-count → follow-up). **The ÷1.075 "de-crit the calibrated base" prep step was DROPPED (owner):**
+  a provenance audit found ~15/17 dot bases are kit-datamined true multipliers (NOT crit-absorbed), so
+  ÷1.075 would have net-DEGRADED the board; and the two genuinely-tuned candidates don't behave
+  crit-absorbed either — `mihara-bonding-chain`'s COLD comp 0.96→1.01 IMPROVES under crit (only her hot
+  comp regresses), so her base was never uniformly crit-absorbed. **Follow-ups (queued, NON-blocking):**
+  (1) `ada` `flavor:"true"` — the flip applies crit to TRUE-damage dots too; UNVERIFIED whether NIKKE true
+  damage crits → maiden-solo-template footage check (ada-focus grenade-tick white/orange pair; white-only
+  across ≥20 ticks ⇒ carve `crit:false` on her dot blocks + revert her BETTER move); (2) `mihara-bonding-chain`
+  suspected tuned-base double-count → gated per-unit base review; (3) function-rider path stays separate.
+  Trail: open-questions U13 (LANDED note), this session's provenance audit + A/B + consolidated Fable review.
+
 - **(2026-07-21) tove: 3 datamined SG-team lines enacted (Temp Mod max-ammo + SG attack-speed + SG
   burst-ATK) — LANDED (autonomous submission-review session; Fable pre-op APPROVED-WITH-REVISIONS/HIGH;
   owner-authorized enactment; board-neutral).** `tove` (AR/Water/Supporter/B1). Three datamined lines had

@@ -87,8 +87,9 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
 
-**OPEN ENGINE ISSUE:** DoT crit/core are gated by env-only `XCRIT`/`XCORE` (empty default), so DoT
-ticks **never crit** in normal runs — but DoTs DO crit. Now **empirically confirmed** by ginmy.net's
+**DoT CRIT — ENABLED by default (`DOT_CRIT` ON, landed 2026-07-21, open-questions U13 / DECISIONS
+2026-07-21).** DoT ticks + stored-hit releases now roll crit universally (core still gated off; a
+per-dot explicit `crit` field overrides; `DOTCRIT=off` reverts). **Empirically confirmed** by ginmy.net's
 DoT test (/nikke_dot_test): DoT observed critting ~47% with elem-advantage+crit vs ~10% elem-only,
 and the worked Mana example reconstructs a tick as `(ATK×1.9936 − 100 DEF) × 3.24 DoT × 1.5 FB ×
 crit/elem` — DoT gets ATK/element/FB/**crit** and subtracts DEF, but **NOT** the distance bonus
@@ -338,8 +339,8 @@ Function-type instances (DATAMINED rules, table in
 ### 2c. Damage over time
 
 Sustained-flavored function damage on a tick timer; ticks reference CURRENT buffs (no snapshot),
-never core/range; tick-crit unverified and kept OFF. A dot's ticks land during whatever window
-they land in (Full Burst rules by timing).
+never core/range; **tick-crit ON by default** (`DOT_CRIT`, U13 2026-07-21 — ginmy + our footage
+confirmed). A dot's ticks land during whatever window they land in (Full Burst rules by timing).
 
 ### 2d. Stored hits
 

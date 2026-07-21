@@ -254,7 +254,7 @@ chain timing ([nikke-synergy](https://nikke-synergy.com/arena-guide_en)), Λ/B1+
 never take charge multipliers. Weapon-based deliveries (launchWeapon: Anis:Star's stars,
 Rapi:RH's projectiles) DO core+crit but still no range. DoTs are Sustained-flavored
 function damage whose ticks reference CURRENT buffs (not snapshots); tick-crit is
-unverified (kept off). Sustained/True/Sequential Damage ▲ buffs gate on hit flavor.
+ON by default (`DOT_CRIT`, U13 2026-07-21). Sustained/True/Sequential Damage ▲ buffs gate on hit flavor.
 Full rules table: **[nikke-damage-formula.md](nikke-damage-formula.md)** §3.
 
 Some kit lines with NO printed "Activates when…" clause are **internal-cooldown skills**:

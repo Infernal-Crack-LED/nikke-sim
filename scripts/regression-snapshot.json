@@ -7,22 +7,22 @@
  },
  "misc B3s (run I order)": {
   "grave": 335629416,
-  "anis-star": 647857900,
-  "jill": 557813313,
+  "anis-star": 658491271,
+  "jill": 568457733,
   "chisato": 573269147,
   "noir": 187247616
  },
  "elec DPS (run E order)": {
   "crown": 143667417,
   "ein": 386653578,
-  "ada": 446791111,
+  "ada": 459816800,
   "rouge": 113597679,
   "cinderella": 373820353
  },
  "iron sweep (run G)": {
   "d-killer-wife": 57135860,
   "takina": 403346361,
-  "milk-blooming-bunny": 506091826,
+  "milk-blooming-bunny": 517460896,
   "maxwell": 81911469,
   "liberalio": 563072868
  },
@@ -41,8 +41,8 @@
   "maiden-ice-rose": 301519148
  },
  "T4": {
-  "anis-star": 1140157888,
-  "privaty": 1128058968,
+  "anis-star": 1175245340,
+  "privaty": 1199028285,
   "snow-white-heavy-arms": 1786468203,
   "helm": 367691503,
   "crown": 434833532
@@ -50,26 +50,26 @@
  "T7": {
   "crown": 263346446,
   "rapi-red-hood": 1012738812,
-  "anis-star": 851506084,
+  "anis-star": 881608642,
   "cinderella": 1206253572,
   "mast-romantic-maid": 132686475
  },
  "T2 elec-weak": {
   "crown": 197240314,
   "neon-vision-eye": 1480181805,
-  "anis-star": 981224328,
+  "anis-star": 998497269,
   "cinderella": 1297971920,
   "maiden-ice-rose": 258631566
  },
  "T5 wind-weak": {
   "nayuta": 784992592,
-  "cinderella-crystal-wave": 1153102725,
-  "anis-star": 698050301,
+  "cinderella-crystal-wave": 1166659822,
+  "anis-star": 708845036,
   "liberalio": 966187030,
   "velvet": 201577236
  },
  "PA MiKa": {
-  "anis-star": 811074748,
+  "anis-star": 871565954,
   "mint": 216562986,
   "prika": 154935668,
   "alice": 460166820,
@@ -78,12 +78,12 @@
  "T1 wind-weak": {
   "mast-romantic-maid": 151262755,
   "scarlet-black-shadow": 1751117514,
-  "anis-star": 924383706,
+  "anis-star": 971656607,
   "liberalio": 1088457435,
   "crown": 273402683
  },
  "PH water B3s": {
-  "little-mermaid": 388614759,
+  "little-mermaid": 394832973,
   "crown": 167094005,
   "quency-escape-queen": 686281950,
   "dorothy-serendipity": 913921241,
@@ -100,7 +100,7 @@
   "grave": 273555722,
   "rapi-red-hood": 552039056,
   "quency-escape-queen": 405735263,
-  "jill": 265071208
+  "jill": 270975425
  },
  "N3 scarlet/liberalio iron": {
   "rouge": 55545709,
@@ -110,9 +110,9 @@
   "soda-twinkling-bunny": 136726192
  },
  "N6 mihara/maiden wind": {
-  "little-mermaid": 246982504,
+  "little-mermaid": 251582545,
   "ade-agent-bunny": 96766638,
-  "mihara-bonding-chain": 774682306,
+  "mihara-bonding-chain": 803830903,
   "maiden-ice-rose": 357105451,
   "maxwell": 116447627
  },

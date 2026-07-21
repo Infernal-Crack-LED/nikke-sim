@@ -48,13 +48,19 @@ const envSlugSet = (v?: string) => new Set((v ?? '').split(',').filter(Boolean))
 const XCRIT = envSlugSet(ENV.XCRIT);
 const XCORE = envSlugSet(ENV.XCORE);
 const XINSTEXPL = envSlugSet(ENV.XINSTEXPL);
-// DOTCRIT (2026-07-14): DoT ticks + stored-hit releases roll crit UNIVERSALLY. Mechanic confirmed —
+// DOTCRIT: DoT ticks + stored-hit releases roll crit UNIVERSALLY. Mechanic confirmed —
 // DoT/function-rider damage crits (never cores): ginmy /nikke_dot_test + maiden-solo footage
-// (rider 437296 white / 655945 orange = ×1.5). flatDamage procs already crit by default (dealDamage
-// call ~920, see U1 note); this extends the same rule to the dot-tick (1479) and stored-release
-// (1259) paths, which were wrongly XCRIT-gated off. Default OFF pending the dot-tick roster recal;
-// DOTCRIT=on enables (measure blast radius, recalibrate, then flip the default). Core stays off.
-const DOT_CRIT = ENV.DOTCRIT === 'on';
+// (rider 437296 white / 655945 orange = ×1.5) + little-mermaid DoT (450,314 = 337,736 × 1.333
+// FB-crit — cross-corroborates the additive major bucket). flatDamage procs already crit by default
+// (dealDamage call ~920, see U1 note); this extends the same rule to the dot-tick (1479) and
+// stored-release (1259) paths, which were wrongly XCRIT-gated off. Core stays off.
+// DEFAULT ON (landed 2026-07-21, U13): the ÷1.075 "de-crit the calibrated base" prep step was
+// dropped — a provenance audit found ~15/17 dot bases are kit-datamined true multipliers (NOT
+// crit-absorbed), so de-crit would have net-degraded the board. Full-board A/B: net-neutral
+// (weighted mean|ratio−1| 0.0710→0.0712, ±3% count 6→7), mixed per-unit (faithful>fit; the
+// regressing units carry separate documented over-credits). Fable APPROVE. `DOTCRIT=off` disables
+// (A/B revert switch). Per-dot explicit `crit` fields still override this default either way.
+const DOT_CRIT = ENV.DOTCRIT !== 'off';
 // FBRULE (2026-07-14): candidate HEURISTICS for when SKILL/rider/DoT damage gets the +50% Full Burst
 // major. (Range is settled — skills never get the +30% range bonus; noRange is universal.) The
 // default 'perkit' uses the calibrated per-unit noFb flags; other rules replace them with a GENERAL

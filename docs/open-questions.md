@@ -107,6 +107,10 @@ confirm how much of her damage really lands inside the +117.64% window. Do NOT r
 Recipe: milk-blooming-bunny-focus video, read burst-window vs out-of-window DPS split + confirm the pierce
 buff-icon window. Trail: `src/skills/overrides/milk-blooming-bunny.json` caveat, DECISIONS 2026-07-20, plan
 §milk-blooming-bunny.
+**UPDATE 2026-07-21 (U13 DoT-crit flip):** enabling DoT crit added +0.030 to her HOT residual (1.300→1.330)
+via her S2 447.7% dot now critting — a FAITHFUL mechanic, not new over-model. So when this reconciliation is
+finally taken, ~0.03 of her heat is now correctly attributed to dot-crit; do not re-chase it as part of the
+Embarrassment/pierce-window over-model.
 
 ### U22 — Snow White (`snow-white`) "Full Charge Damage: 1000% of damage": ADDITIVE (owner ruling) vs ×10 MULTIPLICATIVE (footage) — CONTESTED 2026-07-20
 The owner ruled the 1000% ADDITIVE ("part of the normal charge damage bucket" → full-charge coefficient
@@ -481,6 +485,16 @@ gained less from elemental advantage in reality than the sim's x1.1 — do funct
 skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
 
 ### U13 — DoT / function-rider ticks do not crit in the engine (systematic under-credit)
+**ANSWERED / LANDED 2026-07-21 — `DOT_CRIT` flipped default OFF→ON (DoT ticks + stored-hit releases
+now roll crit universally; core stays off; `DOTCRIT=off` = revert switch; per-dot explicit `crit`
+still overrides). Owner-directed; full-board A/B + ONE consolidated Fable review APPROVE; faithful>fit,
+board-NEUTRAL (weighted mean|ratio−1| 0.0710→0.0712, ±3% count 6→7). The ÷1.075 "de-crit the calibrated
+base" prep step was DROPPED — a provenance audit found ~15/17 dot bases are kit-datamined true multipliers
+(NOT crit-absorbed), so ÷1.075 would have net-degraded the board. Full ruling + evidence + queued
+follow-ups (ada true-damage-crit footage check; mihara-bonding-chain suspected tuned-base double-count;
+function-rider path still separate) → DECISIONS 2026-07-21. Everything below is the PRE-LANDING trail;
+the DECISION-HELD and PHASE-A-RULING blocks are SUPERSEDED by the flip.**
+
 The engine gates DoT/rider crit/core behind env-only `XCRIT`/`XCORE` sets (empty by default), so
 **those hits never crit in normal runs**. But they DO crit — the MECHANIC is confirmed empirically by **ginmy.net/nikke_dot_test**: DoT
 observed ~47% crit with elem-advantage+crit vs ~10% elem-only; DoT takes ATK/element/Full-Burst/
