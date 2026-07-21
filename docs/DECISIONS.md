@@ -98,7 +98,7 @@ lives. Newest first within each section.
   **Discriminating check (P2):** in the tove SG community comp the shares moved TOWARD the observed
   distribution on ALL 5 units (nayuta 21.5→13.5 [obs ~15], soda-twinkling-bunny 27.4→31.8 [obs ~30],
   dorothy-serendipity 26.6→29.6 [obs ~32], tove 5.1→3.3 [obs ~3.8]) — a faithful-mechanic signature, not a
-  fit. Trail: `docs/handoffs/2026-07-21-tove-sg-team-fix-preop.md`, `src/skills/overrides/tove.json`.
+  fit. Trail: `docs/handoffs/closed/2026-07-21-tove-sg-team-fix-preop.md`, `src/skills/overrides/tove.json`.
 
 - **(2026-07-21) guilty: S1 "duplicate the HIGHEST ally's ATK" → new `highestAllyAtkPct` stat — LANDED
   (kit-audit guilty #2; board-safe).** `guilty` (SG/Wind/B2, no-data). Her S1 "Mind If I Borrow This?:
@@ -535,7 +535,7 @@ lives. Newest first within each section.
   direct measurement via `asuka` (AR/Fire), still a testing-request). Snapshot regenerated (5 HR-carrier totals:
   chisato +0.90%, quency-escape-queen +5.6–6.2%, dorothy-serendipity +0.23%; measured-truth FB asserts untouched
   — HRCORE moves core damage only, not gauge/rotation). Full derivation + validation:
-  `docs/handoffs/2026-07-17-hitrate-core-implementation-plan.md`. OPEN threads: asuka bracket refinement; quency
+  `docs/handoffs/closed/2026-07-17-hitrate-core-implementation-plan.md`. OPEN threads: asuka bracket refinement; quency
   cadence + overshoot; SG landing (H2, hit-rate→pellet-landing) NOT built (out of scope).
 
 - **(2026-07-17) Timed pierce primitive (`gainPierce`) — LANDED and ENABLED on grave (faithful>fit); the
@@ -1579,5 +1579,5 @@ lives. Newest first within each section.
   --set/--finding update workflow fields, --check is a verify.sh gate: roster coverage + fresh
   unmodeled/provenance mirrors). Wave protocol, wave order (materialized class first; noir carries an
   SG-landing-anchor guard: solo total moves >0.5% → owner sign-off), and the wave log live in
-  docs/handoffs/2026-07-16-kit-parse-rollout.md. Done-when: all 74 units authored/audited/reconciled with
+  docs/handoffs/closed/2026-07-16-kit-parse-rollout.md. Done-when: all 74 units authored/audited/reconciled with
   findings triaged; board improvement expected but NOT a gate (faithful > fit).

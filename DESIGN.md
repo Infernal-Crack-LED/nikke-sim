@@ -1,7 +1,7 @@
 # NIKKE Solo Raid Damage Simulator — v1 Design
 
 > **Status (2026-07-12): v1 is built and running** — see `README.md` for usage. Base ATK now comes
-> from the DB (`base_stats`, see `base-stats-handoff.md`) instead of user input; gear (OL0/OL5) and
+> from the DB (`base_stats`, see `docs/handoffs/closed/base-stats-handoff.md`) instead of user input; gear (OL0/OL5) and
 > doll bonuses come from `gear_doll.md` via `--ol` / `--doll`. The open questions below are resolved.
 
 ## Goal

@@ -24,7 +24,7 @@ DATAMINED — all are COMMUNITY measurements.
   rates that do exist in the community record (40%–90%) all require heavy accuracy-stat
   investment (75%–85% accuracy), which is not our validation condition (base gear, no cube, no
   accuracy buffs).
-- Correction to our own notes: docs/range-dependent-core-model.md and docs/open-questions.md
+- Correction to our own notes: docs/closed/range-dependent-core-model.md and docs/open-questions.md
   cite ore-game verify-memo as "**~100% front row**." That is a transcription error. The
   verify-memo actually says **~6%** front row. The 1.6% mid / ~0% back figures we cite are
   correct; the front-row figure is off by more than an order of magnitude.

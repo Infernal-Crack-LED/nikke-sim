@@ -171,7 +171,7 @@ Details: **[auto-play.md](auto-play.md)**.
   0.40/0.30/0.03/0.00, SMG 0.28/0.244/0.076/0.059, SG 0.072/0.00/0.0045/0.00; MG/SR/RL 0.95) × the
   `HRCORE`/`PELLET_GAUSS` Hit-Rate lift. Evidence: the 2026-07-18/19 geometry campaign (counted core
   cells at 3–4 Hit-Rate levels × 3 weapons, cross-recording) + full-board A/B. See
-  `docs/handoffs/2026-07-19-geometry-campaign-findings.md`, `docs/data/sg-calc/`.
+  `docs/handoffs/closed/2026-07-19-geometry-campaign-findings.md`, `docs/data/sg-calc/`.
 - **Early charge releases are rare (~2% of shots**, user-observed ~3/fight from boss
   interruptions) — auto effectively always full-charges, and full-charge-gated proc counters
   fire on essentially every shot. Maiden:IR's former ×0.68 proc factor is RESOLVED as her

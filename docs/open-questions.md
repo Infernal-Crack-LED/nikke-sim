@@ -266,7 +266,7 @@ term measured in FIVE reads spanning THREE weapon classes and ALL THREE unit cla
 The four clean reads agree to ~0.03% at ~+1.63%. **The measured term matches the OL0 numbers
 (Attacker 120,143 / Supporter 100,130 / Defender 80,118) to ~0.17% — NOT base5.**
 **IT IS A GEAR-TIER QUESTION, NOT CORE.** (A first pass entertained a "core 8" fit — base5+core8
-= 119,943 matches to 0.002% — but core MAXES at 7 (owner-confirmed; the base-stats-handoff.md:69
+= 119,943 matches to 0.002% — but core MAXES at 7 (owner-confirmed; the docs/handoffs/closed/base-stats-handoff.md:71
 "core can exceed 7" line was WRONG, now corrected), so that was a coincidence. Core-7 ×1.14 is itself
 VALIDATED — the 2026-07-13 video-verified combat ATK 120,143 = core-7 ×1.14 + OL0 gear. So the
 elevation is gear, not core.) This DIRECTLY re-opens **DECISIONS 2026-07-14 (base5 switch)**, which
@@ -287,7 +287,7 @@ omitted stat source (bond/affinity/collection) to hunt. WHY the 2026-07-14 base5
 damage disagree is the piece to reconcile (did the recorded units carry better gear than the base5
 set that was measured?). Full memo: session archive docs/handoffs/closed/2026-07-16-u18-atk-term-diagnosis.md; Fable check
 SOUND-WITH-CAVEATS/HIGH. Fixed en route: the stale "treasure-inclusive" comment in scope-lock.ts (the
-120,143 figure is OL0 GEAR, not treasure) and the base-stats-handoff.md:69 "core >7" error.
+120,143 figure is OL0 GEAR, not treasure) and the docs/handoffs/closed/base-stats-handoff.md:71 "core >7" error.
 Isabel/brid-silent-track baseline notes encode the measured term per-unit; revert to kit coefficients
 IF the basis is corrected globally.
 
@@ -402,7 +402,7 @@ Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
     likely a recorder startup-lag + gear confound, NOT an engine defect.
   Net: these strengthen "does the engine over-generate / mis-allocate bursts?" as an open thread, but none are
   enactable from community footage (n=1, gear-confounded, engine-wide blast radius, measured-constant domain).
-  Full record: docs/handoffs/2026-07-21-submission-review-session.md.
+  Full record: docs/handoffs/closed/2026-07-21-submission-review-session.md.
 
 ### U15 — Rapi: Red Hood explosion residual (after the 2026-07-16 reopen)
 The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,
@@ -982,7 +982,7 @@ The `CORE_BY_WEAPON_BAND.SMG` row (near 0.28 / mid 0.244 / midfar 0.076 / far 0.
 battle start to ~t150s of the ~180s read. So those figures are SMG core at `x_base+22.37% Hit Rate`, NOT
 base accuracy, yet the engine applies them to EVERY SMG unit including Hit-Rate-less ones → those units are
 OVER-credited on SMG core. Cannot be cleanly corrected without a Hit-Rate→core model (the deferred
-SG+AR-first plan, `docs/handoffs/2026-07-17-hitrate-core-landing-plan.md`): once that model's slope is
+SG+AR-first plan, `docs/handoffs/closed/2026-07-17-hitrate-core-landing-plan.md`): once that model's slope is
 validated on AR (jill) + SG (noir), chisato's known +22.37% becomes an SMG VALIDATION point and lets us
 back out the true SMG base and refactor this row. Until then: left as-is, flagged. Owner ruling 2026-07-17.
 **UPDATE 2026-07-17 — contamination MEASURED SMALL, downgraded to minor.** Re-read `chisato smg.MP4` binned

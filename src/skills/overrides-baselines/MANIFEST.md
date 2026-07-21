@@ -40,7 +40,7 @@ untouched; kit-status `kitParse.status=audited`). Staging in `<scratchpad>/kit-p
 **✅ ROLLOUT COMPLETE (74/74, 2026-07-16):** all 18 staged baselines consumed (Waves 1–3 above) + the
 remaining roster processed direct-from-materialized/hand-authored (Waves 4–10; those units had no staged
 baseline). 32 AUTHOR + 42 AUDIT. This whole `overrides-baselines/` dir is now HISTORICAL — see
-`docs/handoffs/2026-07-16-kit-parse-rollout.md` for the wave log + the owner-reconciliation findings backlog.
+`docs/handoffs/closed/2026-07-16-kit-parse-rollout.md` for the wave log + the owner-reconciliation findings backlog.
 
 ## The 18 baselines
 
