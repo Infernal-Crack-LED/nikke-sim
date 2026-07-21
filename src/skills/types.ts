@@ -39,6 +39,14 @@ export type StatKey =
   | 'distributedDamagePct'   // boosts the caster's own distributed-damage hits
   | 'projectileAttachmentPct' // boosts the caster's projectile-attachment procs
   | 'normalAttackPct'        // scales the normal attack multiplier (like the SMG/SG doll line)
+  | 'pelletCountFlat'        // "Number of pellets ▲ N" — flat effective SG pellet-count add for a window.
+  //                            Threaded through the SG landing/gauge path so extra pellets pass the SAME
+  //                            per-pellet landing fraction / range falloff / shot-level core as the base
+  //                            (each pellet = 1/base of the shot). Opt-in; SG-only & swap-off (inert on
+  //                            non-SG and when 0). Damage-neutral vs the old normalAttackPct proxy for a
+  //                            unit with no OTHER normal-mult; the faithful gain is a real, queryable
+  //                            pellet count (effectivePellets) + correct multiplicative interaction with
+  //                            any co-active normalAttackPct. Gauge is NOT pumped (energy is per-trigger).
   | 'burstGenPct'            // scales the unit's burst gauge contribution
   | 'hitRatePct'        // core-hit lift (⚑ derived; sim.ts hrCoreMult; live by default, HRCORE=0 disables)
   | 'defPct'            // inert in v1 (self DEF doesn't affect own damage — Endurance cube)

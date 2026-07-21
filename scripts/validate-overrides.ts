@@ -17,7 +17,7 @@ const STATS = new Set([
   'extraHitDamagePct', 'trueDamagePct', 'projectileExplosionPct',
   'elemAdvantageDamagePct', 'distributedDamagePct', 'projectileAttachmentPct',
   'chargeDamageMultPct',
-  'normalAttackPct', 'burstGenPct', 'hitRatePct', 'defPct',
+  'normalAttackPct', 'pelletCountFlat', 'burstGenPct', 'hitRatePct', 'defPct',
 ]);
 const TRIGGERS = new Set([
   'passive', 'burstCast', 'fullBurstEnter', 'fullBurstEnd', 'hitCount', 'teamAmmo',

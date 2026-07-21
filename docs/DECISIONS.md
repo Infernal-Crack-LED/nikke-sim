@@ -8,6 +8,49 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) cinderella (RL/Electric, "cindy") RL fire pattern = WHOLE-MAG DUMP + single-rocket magnitude — LANDED.**
+  Isolated cinderella-solo footage (`docs/probes/720-kit-audit/cindy solo neutral.MP4`, ammo-counter frame
+  read + owner ruling + Fable pre-op APPROVED-WITH-REVISIONS) settles her unique cadence. She charges ONCE
+  per mag (~1.0s = datamine `charge_time 100`), then autofires all 24 rockets at datamine `rate_of_fire 180`
+  (3/s) WITHOUT recharging, reloads ~2.1s, re-charges → **~390 pulls/180s** (the old per-rocket-charge model
+  fired ~300 = the COLD-0.937 cause). Wired via a new opt-in engine primitive `charFixes.magDumpRof` (dump
+  cadence derived from the weapon table; inert for every other unit — regression byte-identical). `reloadFrames`
+  72→120 (datamine `reload_time 200`; footage ~2.1s; the old ~1.2s read superseded). MAGNITUDE: per pull =
+  ONE rocket (32.11% × 200% charge) + the 136.6% S1 rider — a same-footage popup recon (~97.5s, one ATK)
+  reconciles both to ATK 80,385 (rider 109806 = 136.6%×ATK; rocket-core 103246 = 64.22%×2×ATK exact;
+  datamine `shot_count 1`/`muzzle_count 1`), so the old TWIN-INSTANCE `normalAttackPct +100` was a 2× rocket
+  over-credit and is REMOVED; the `chargeSpeedPct +45` cadence proxy is REMOVED (cadence modeled directly),
+  retiring the subtractive-CS-formula landmine + the U25 divisive hypothesis (built on the ~315 popup-division
+  estimate; the divisor was 2, not 3 — rocket + rider). Board 0.937→~0.90 COLD, within single-run recording
+  variance on her clean comps (same team PE 0.98 vs PE2 0.88); ruled-out under-count sources: RL core rate is
+  already the top-tier flat 0.95 (matches footage), and her HP→ATK is fully applied to her burst nuke (removing
+  it drops her 43%). All measured FB counts preserved. Superseded: open-questions U25 (divisive-CS hypothesis).
+  Trail: cinderella override note + caveats, U25.
+- **(2026-07-21) Regression full-burst counts judged vs the SEEDED distribution, not the single EV run.**
+  The FB count itself varies ±1 at boss-transition boundaries (the boss range-transition times + burst
+  chain-cast gaps jitter per seed, `sim.ts` ~781/2127; the unseeded EV run pins them and can sit exactly on a
+  burst-cadence collision any jitter avoids). So `scripts/regression.ts` now runs each graded comp over the MC
+  seed set (`MC_SEED_BASE + i`, the set board-read uses) and PASSES when the measured value/range overlaps the
+  seeded `[min,max]` — a comp fails only if the sim can NEVER produce a measured value. Per-unit total snapshots
+  stay on the EV run (byte-stable mean; snapshot-gen ≡ verify). This removes the ±1 false failures (PE elec-DPS,
+  T4/T7/N2/N4/N5) without weakening the measured-FB truth. Trail: `regression.ts` `fbDistribution`.
+- **(2026-07-21) TRUE DAMAGE CANNOT CRIT — engine `crit && !trueFlavor` guard (owner ruling) — LANDED.**
+  Owner mechanic ruling: true damage never crits (a game fact). Enforced at the engine — the crit-major
+  block is guarded by `!opts.trueFlavor`, so every true-flavored hit is crit-exempt regardless of any
+  per-entry `crit` flag: `flavor:"true"` dots/flatDamage (`ada` grenade DoT, `ein`/`laplace`/`chisato`
+  true flatDamage) AND `trueNormals` swap windows (`chisato`/`takina`/`laplace`). This is partly a
+  PRE-EXISTING bug the U13 DoT-crit flip exposed — the flatDamage true procs (ein/laplace/chisato) were
+  already wrongly critting by default before the flip; `ada`'s true DoT started critting at the flip. Core
+  is NOT ruled here (still ⚑ unverified — the chisato SMG coreMult 250 lever stands). Cleaned up the now-inert
+  explicit `crit:true` on ein (×2) + laplace (×1) true entries and corrected chisato's note. **Board (isolated
+  via board-read):** owner-predicted and confirmed — `chisato` 1.154→**1.119** (−0.035, N=3, over-credit
+  removed); `ada` reverts 0.933→**0.903** (her U13-flip gain was purely the spurious true-crit; her COLD is a
+  separate DoT under-model); `takina`/`ein` cool (true normals/feathers correctly lose crit; their COLD is
+  separate/documented). Aggregate ~flat (weighted mean|ratio−1| 0.0710→0.0714 across the whole U13 landing) —
+  a FAITHFUL correctness fix, not a fit change. Also recorded (owner): in our sim true flavor's only material
+  effect is gating `trueDamagePct` buffs (like ada's) — the DEF-ignore is negligible at the boss's 140 DEF.
+  Trail: engine `sim.ts` crit-guard comment; DoT-crit entry below.
+
 - **(2026-07-21) DoT/rider crit ENABLED by default (`DOT_CRIT` flip OFF→ON, U13) — LANDED
   (owner-directed; full-board A/B + ONE consolidated Fable review APPROVE; faithful>fit, board-neutral).**
   DoT ticks + stored-hit releases now roll crit universally (this is the default; a per-dot explicit

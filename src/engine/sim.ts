@@ -393,6 +393,12 @@ interface UnitState {
   boltRecoveryFrames: number; // remaining post-shot bolt-cycle frames (SR)
   noBoltRecovery: boolean;
   pullsPerSec?: number;
+  // Whole-magazine dump (cinderella: opt-in charFixes.magDumpRof). One charge PRIMES the mag, then
+  // the whole magazine autofires at the datamined rate_of_fire WITHOUT recharging; the reload-to-max
+  // clears `primed` so the next mag re-charges once. Inert unless the flag is set (regression-proven).
+  magDumpRof: boolean;
+  magDumpRofFrames: number; // frames between dumped rockets = round(3600 / rate_of_fire)
+  primed: boolean; // in the dump phase (charged once, now autofiring the mag)
   reloadProgress: number;
   reloading: boolean;
   mgRampRound: number;  // rounds fired since wind-up start (indexes the ramp ladder)
@@ -650,6 +656,14 @@ export function runSim(
       boltRecoveryFrames: 0,
       noBoltRecovery: prepared?.[idx]?.noBoltRecovery ?? false,
       pullsPerSec: prepared?.[idx]?.pullsPerSec,
+      magDumpRof: prepared?.[idx]?.magDumpRof ?? false,
+      magDumpRofFrames: (() => {
+        const rof = (
+          char.role?.weapon as { shot_detail?: { rate_of_fire?: number } } | undefined
+        )?.shot_detail?.rate_of_fire;
+        return rof && rof > 0 ? Math.round((FPS * 60) / rof) : 20;
+      })(),
+      primed: false,
       chargeProgress: 0,
       reloadProgress: 0,
       reloading: false,
@@ -1016,6 +1030,16 @@ export function runSim(
     const rounds = u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
     addGauge(u, frame, gaugePerShot(u) * rounds * hitFraction);
   };
+  // Effective SG pellet count — the char-static base (`hitsPerShot`) plus any live `pelletCountFlat`
+  // buff ("Number of pellets ▲ N"). SG-only & swap-off (a swap fires the swap weapon, not the SG
+  // spread). Threaded through the SG landing/gauge path (firePull) so a "+N pellets" buff is a real,
+  // queryable pellet-count change — each pellet carries 1/base of the shot — instead of a
+  // normalAttackPct proxy. `stat()` sums pelletCountFlat buffs (0 for every non-carrier ⇒ eff = base
+  // ⇒ byte-identical). May be fractional while a pelletCountFlat buff ramps (rampSec).
+  const effectivePellets = (u: UnitState, frame: number): number =>
+    u.char.weapon === 'SG' && !u.swap
+      ? u.char.hitsPerShot + stat(u, 'pelletCountFlat', frame)
+      : u.char.hitsPerShot;
   // one skill-damage impact (flatDamage proc, dot tick) = one target-base hit of gen
   // (maiden's rider measured exactly her target per-shot value, 364, no focus bonus)
   const skillGauge = (u: UnitState, frame: number) => {
@@ -2124,6 +2148,7 @@ export function runSim(
         if (effReload <= FPS && !u.reloading) {
           u.ammo = maxAmmo(u, frame);
           stripReloadBuffs(u); // transition snap-refill is a reload-to-max (downtime reload fiction)
+          u.primed = false; // snap-refill is a reload-to-max → re-charge before the next dump
         }
       }
     }
@@ -2137,6 +2162,7 @@ export function runSim(
         u.swap = null;
         if (!wasFlavorSwap) u.ammo = maxAmmo(u, frame);
         u.chargeProgress = 0;
+        u.primed = false; // leaving a weapon-swap re-arms the once-per-mag prime (magDumpRof)
       }
 
       if (frame < u.stunnedUntilFrame) {
@@ -2152,6 +2178,7 @@ export function runSim(
           u.reloadProgress = 0;
           u.ammo = maxAmmo(u, frame);
           stripReloadBuffs(u); // reload-to-max: drop removeOnReload buffs (cinderella's CS toggle)
+          u.primed = false; // reloaded to max → next mag re-charges before the dump (magDumpRof)
         }
         continue;
       }
@@ -2170,7 +2197,18 @@ export function runSim(
         // RL/SR (or swapped charge weapon): charge → fire full-charge shot → recharge.
         // Standard SRs insert a bolt-cycle recovery (not charge-speed-scaled) after
         // each shot; swap states and noBoltRecovery units are exempt.
-        if (u.boltRecoveryFrames > 0) {
+        if (u.magDumpRof && u.primed) {
+          // DUMP PHASE (cinderella, opt-in): one charge PRIMED the mag; now autofire the whole
+          // magazine at the datamined rate_of_fire WITHOUT recharging. Charge Speed does NOT
+          // shorten the dump cadence — the rof is the fixed autofire rate (CS only shortens the
+          // once-per-mag prime, below). firePull consumes ammo and, on the last round, flips
+          // `reloading` → the reload-to-max clears `primed` so the next mag charges once again.
+          u.chargeProgress += 1;
+          if (u.chargeProgress >= u.magDumpRofFrames) {
+            u.chargeProgress = 0;
+            firePull(u, frame, true, unlimited); // every dumped rocket is a full-charge shot
+          }
+        } else if (u.boltRecoveryFrames > 0) {
           u.boltRecoveryFrames--;
         } else {
           // Charge Speed is SUBTRACTIVE on charge time (decoded game data + einkk:
@@ -2189,18 +2227,24 @@ export function runSim(
           const needed = Math.max(1, Math.round(chargeFrames * (1 - cs / 100)));
           if (u.chargeProgress >= needed) {
             u.chargeProgress = 0;
-            firePull(u, frame, true, unlimited);
-            // Release latency applies to ALL release-fired charge weapons (SR + RL). New-style
-            // AUTOFIRE units (datamined input_type === 'DOWN_Charge') are exempt — resolved from
-            // the weapon table, not per-unit flags. charFixes.noBoltRecovery is a dormant manual
-            // hand-tune hook (no active override sets it today); swaps exempt too.
-            if (
-              (u.char.weapon === 'SR' || u.char.weapon === 'RL') &&
-              !u.swap &&
-              !u.noBoltRecovery &&
-              !isAutofireCharge(u.char)
-            ) {
-              u.boltRecoveryFrames = SR_BOLT_RECOVERY_FRAMES;
+            if (u.magDumpRof) {
+              // PRIME COMPLETE: enter the dump phase and fire the first rocket of the mag.
+              u.primed = true;
+              firePull(u, frame, true, unlimited);
+            } else {
+              firePull(u, frame, true, unlimited);
+              // Release latency applies to ALL release-fired charge weapons (SR + RL). New-style
+              // AUTOFIRE units (datamined input_type === 'DOWN_Charge') are exempt — resolved from
+              // the weapon table, not per-unit flags. charFixes.noBoltRecovery is a dormant manual
+              // hand-tune hook (no active override sets it today); swaps exempt too.
+              if (
+                (u.char.weapon === 'SR' || u.char.weapon === 'RL') &&
+                !u.swap &&
+                !u.noBoltRecovery &&
+                !isAutofireCharge(u.char)
+              ) {
+                u.boltRecoveryFrames = SR_BOLT_RECOVERY_FRAMES;
+              }
             }
           }
         }
@@ -2344,7 +2388,33 @@ export function runSim(
 
   function firePull(u: UnitState, frame: number, charged: boolean, unlimited: boolean) {
     const band = bandAt(frame);
-    const bandSgFalloff =
+    // Effective SG pellet count (base `hitsPerShot` + any live `pelletCountFlat` buff). Extra pellets
+    // take the SAME per-pellet landing cone as the base; each pellet carries 1/base of the shot, so the
+    // DAMAGE fraction divides landed pellets by BASE — eff>base genuinely adds spray output, and it is
+    // byte-identical when eff===base (every non-carrier). GAUGE is capped at base pellets: a "+N pellets"
+    // buff does NOT pump per-trigger burst energy (datamine is per-trigger; preserves measured-exact FB
+    // counts). See docs/handoffs/2026-07-21-a4-pellet-count-prereg.md.
+    const sgBase = u.char.hitsPerShot;
+    const sgEff = effectivePellets(u, frame);
+    // per-pellet landing mean → { dmg: landed/base over `sgEff` pellets, gauge: base-capped landed/base }.
+    // For sgEff===sgBase this draws exactly `sgBase` Bernoulli(mean) — identical rng sequence & return
+    // to the pre-primitive `k / hitsPerShot`.
+    const sgLandFromMean = (mean: number): { dmg: number; gauge: number } => {
+      if (!rng) return { dmg: (mean * sgEff) / sgBase, gauge: mean };
+      let k = 0;
+      let kBase = 0;
+      const full = Math.floor(sgEff);
+      for (let i = 0; i < full; i++) {
+        if (rng() < mean) {
+          k++;
+          if (i < sgBase) kBase++;
+        }
+      }
+      const frac = sgEff - full;
+      if (frac > 0 && rng() < frac * mean) k++; // fractional extra pellet (ramp); never counts toward gauge
+      return { dmg: k / sgBase, gauge: Math.min(kBase, sgBase) / sgBase };
+    };
+    const bandSg: { dmg: number; gauge: number } =
       u.char.weapon === 'SG' && !u.swap
         ? CONE_DELTA
           ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
@@ -2354,11 +2424,7 @@ export function runSim(
               const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
               const prof =
                 cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
-              const mean = pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof);
-              if (!rng) return mean;
-              let k = 0;
-              for (let i = 0; i < u.char.hitsPerShot; i++) if (rng() < mean) k++;
-              return k / u.char.hitsPerShot;
+              return sgLandFromMean(pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof));
             })()
           : PELLET_GAUSS
             ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
@@ -2367,17 +2433,16 @@ export function runSim(
                 const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
                 const prof =
                   cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
-                const mean = pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof);
-                if (!rng) return mean;
-                let k = 0;
-                for (let i = 0; i < u.char.hitsPerShot; i++) if (rng() < mean) k++;
-                return k / u.char.hitsPerShot;
+                return sgLandFromMean(pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof));
               })()
             : rng
-              ? sgLandedPellets(band, u.char.hitsPerShot, rng, cfg.bossPelletProfile) /
-                u.char.hitsPerShot
-              : SG_LANDING_BY_BAND[band]
-        : 1;
+              ? // legacy jitter fallback (non-cone A/B): scale the drawn landed count by eff, gauge base-capped
+                (() => {
+                  const landed = sgLandedPellets(band, Math.round(sgEff), rng, cfg.bossPelletProfile);
+                  return { dmg: landed / sgBase, gauge: Math.min(landed, sgBase) / sgBase };
+                })()
+              : { dmg: (SG_LANDING_BY_BAND[band] * sgEff) / sgBase, gauge: SG_LANDING_BY_BAND[band] }
+        : { dmg: 1, gauge: 1 };
     // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
     // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED
     // (exact-counter re-read, dorothy-solo-reanalysis.json + owner): "3 rounds" = 3 SHOTS/episode (the
@@ -2391,7 +2456,16 @@ export function runSim(
     if (consol) {
       if (u.consolShotsLeft > 0) consolidating = true;
       else {
-        u.landedAcc += u.char.hitsPerShot;
+        // accrue LANDED pellets toward the 80-pellet trigger — the kit reads "after hitting the target
+        // with 80 pellets", so this consumes the cone remodel's actual per-shot landed count
+        // (bandSg.dmg × sgBase = k, the pellets that hit the boss BODY = BAND_SG_HIT_FRAC, 0.47–0.8× at
+        // scope-lock bands; ≈ eff on a 'large' profile). Includes the +5 burst pellets (via sgEff), so
+        // more pellets → faster trigger in her buff window. Owner ruling 2026-07-21 (A4 ruling #2).
+        // ⚑ MEASUREMENT CONFLICT (unresolved): her solo reanalysis (dorothy-solo-reanalysis.json) matched
+        // the FIRED/all-land model (~55–64 episodes); landed-count triggers ~1.5–2× LESS often at
+        // scope-lock bands, so the solo episode count now reads LOW. Needs solo re-validation — see
+        // docs/handoffs/2026-07-21-a4-pellet-count-prereg.md.
+        u.landedAcc += bandSg.dmg * sgBase;
         if (u.landedAcc >= consol.triggerLandedPellets) {
           u.landedAcc = 0;
           u.consolShotsLeft = consol.shots;
@@ -2404,7 +2478,8 @@ export function runSim(
       : 1 + ((u.doll.normalAttackPct ?? 0) + stat(u, 'normalAttackPct', frame)) / 100;
     const baseMult = u.swap?.damagePct ?? u.char.normalAttackMultiplier;
     const isMg = u.char.weapon === 'MG' && !u.swap;
-    const sgFalloff = consolidating && consol ? consol.pelletFraction : bandSgFalloff;
+    const sgFalloff = consolidating && consol ? consol.pelletFraction : bandSg.dmg;
+    const sgGaugeFrac = consolidating && consol ? consol.pelletFraction : bandSg.gauge;
     dealDamage(u, baseMult * normalScale * sgFalloff, frame, {
       crit: true,
       core: !(isMg && u.mgRampRound < MG_NO_CORE_RAMP_ROUNDS),
@@ -2439,7 +2514,7 @@ export function runSim(
       });
     }
     u.pulls++;
-    shotGauge(u, frame, sgFalloff); // out-of-near SG pellets that miss generate nothing
+    shotGauge(u, frame, sgGaugeFrac); // out-of-near SG pellets that miss generate nothing (base-capped: +pellets buffs don't pump per-trigger energy)
 
     const extraPerHit = stat(u, 'extraHitDamagePct', frame);
     if (extraPerHit > 0) {

@@ -340,7 +340,9 @@ Function-type instances (DATAMINED rules, table in
 
 Sustained-flavored function damage on a tick timer; ticks reference CURRENT buffs (no snapshot),
 never core/range; **tick-crit ON by default** (`DOT_CRIT`, U13 2026-07-21 — ginmy + our footage
-confirmed). A dot's ticks land during whatever window they land in (Full Burst rules by timing).
+confirmed) — **EXCEPT `flavor:"true"` (true-damage) dots, which never crit** (owner ruling 2026-07-21:
+true damage cannot crit; engine `crit && !trueFlavor` guard; ada's grenade DoT is the case). A dot's
+ticks land during whatever window they land in (Full Burst rules by timing).
 
 ### 2d. Stored hits
 

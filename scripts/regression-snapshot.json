@@ -1,9 +1,9 @@
 {
  "elec battery (run B order)": {
-  "moran": 154238408,
-  "cinderella": 579727683,
-  "neon-vision-eye": 511488861,
-  "trina": 57620846
+  "moran": 154509677,
+  "cinderella": 562830546,
+  "neon-vision-eye": 522827616,
+  "trina": 57570307
  },
  "misc B3s (run I order)": {
   "grave": 335629416,
@@ -13,11 +13,11 @@
   "noir": 187247616
  },
  "elec DPS (run E order)": {
-  "crown": 143667417,
-  "ein": 386653578,
-  "ada": 459816800,
-  "rouge": 113597679,
-  "cinderella": 373820353
+  "crown": 133927112,
+  "ein": 390569872,
+  "ada": 355950541,
+  "rouge": 105250868,
+  "cinderella": 332823528
  },
  "iron sweep (run G)": {
   "d-killer-wife": 57135860,
@@ -48,18 +48,18 @@
   "crown": 434833532
  },
  "T7": {
-  "crown": 263346446,
-  "rapi-red-hood": 1012738812,
-  "anis-star": 881608642,
-  "cinderella": 1206253572,
-  "mast-romantic-maid": 132686475
+  "crown": 270217535,
+  "rapi-red-hood": 1028345485,
+  "anis-star": 908996526,
+  "cinderella": 1173732498,
+  "mast-romantic-maid": 135693366
  },
  "T2 elec-weak": {
-  "crown": 197240314,
-  "neon-vision-eye": 1480181805,
-  "anis-star": 998497269,
-  "cinderella": 1297971920,
-  "maiden-ice-rose": 258631566
+  "crown": 196170274,
+  "neon-vision-eye": 1480556194,
+  "anis-star": 992945244,
+  "cinderella": 1211779752,
+  "maiden-ice-rose": 256615778
  },
  "T5 wind-weak": {
   "nayuta": 784992592,
@@ -83,11 +83,11 @@
   "crown": 273402683
  },
  "PH water B3s": {
-  "little-mermaid": 394832973,
-  "crown": 167094005,
-  "quency-escape-queen": 686281950,
-  "dorothy-serendipity": 913921241,
-  "guillotine-winter-slayer": 293790885
+  "little-mermaid": 394279250,
+  "crown": 166405636,
+  "quency-escape-queen": 684987078,
+  "dorothy-serendipity": 918080599,
+  "guillotine-winter-slayer": 293115888
  },
  "PD Eva duo": {
   "emma-tactical-upgrade": 146257354,
@@ -124,11 +124,11 @@
   "vesti-tactical-upgrade": 756875620
  },
  "N9 redhood/elegg electric": {
-  "moran": 159367608,
-  "crown": 188623325,
+  "moran": 159371582,
+  "crown": 188617583,
   "red-hood": 489933668,
-  "elegg-boom-and-shock": 326372310,
-  "dorothy-serendipity": 351534349
+  "elegg-boom-and-shock": 326359132,
+  "dorothy-serendipity": 336914619
  },
  "N10 milk/phantom electric": {
   "little-mermaid": 120905418,

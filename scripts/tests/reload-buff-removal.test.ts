@@ -36,6 +36,11 @@ function cindyPulls(strip: boolean): number {
   const base = loadOverride('cinderella');
   if (!base) throw new Error('cinderella override missing');
   const ov = JSON.parse(JSON.stringify(base)) as any;
+  // This fixture isolates the CS/removeOnReload per-rocket-charge cadence path, so disable her
+  // committed magDumpRof (whole-mag dump, DECISIONS 2026-07-21): under mag-dump CS only shortens the
+  // ONE prime charge per magazine, not each rocket, so the toggle would have no observable cadence
+  // effect. Removing it here restores the per-rocket-charge model the mechanism test needs.
+  if (ov.charFixes) delete ov.charFixes.magDumpRof;
   // Replace her passive chargeSpeedPct-45 block with the faithful full-charge → CS 100 toggle.
   ov.skill1 = [
     {

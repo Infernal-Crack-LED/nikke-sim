@@ -47,6 +47,7 @@ export interface PreparedUnit {
   burstCooldownSec?: number; // override charFixes: corrected burst cooldown (bad DB data)
   noBoltRecovery?: boolean; // charFixes: this SR's DB chargeFrames already includes the bolt recovery
   pullsPerSec?: number; // charFixes: datamined per-unit rate_of_fire deviating from the weapon-class rate
+  magDumpRof?: boolean; // charFixes: whole-mag dump (one charge primes, then autofire the mag at rate_of_fire)
   loadout: string[]; // human-readable, for the report
 }
 
@@ -207,6 +208,7 @@ export function prepareUnit(
     burstCooldownSec,
     noBoltRecovery: deps.overrides[char.slug]?.charFixes?.noBoltRecovery,
     pullsPerSec: deps.overrides[char.slug]?.charFixes?.pullsPerSec,
+    magDumpRof: deps.overrides[char.slug]?.charFixes?.magDumpRof,
     loadout,
   };
 }

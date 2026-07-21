@@ -8,6 +8,35 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U26 — "All-or-nothing" crit on sequential attacks + an Eve carve-out (2026-07-21)
+**Surfaced while modeling cinderella's burst** (a 10-hit "1365.92% × 10 sequential" nuke the engine
+represents as one flatDamage instance). The engine rolls crit ONCE per damage instance
+(`dealDamage`, `src/engine/sim.ts` ~1186–1191: a single Bernoulli `rng() < critRate` → full crit bonus
+or nothing), so a single instance is inherently all-or-nothing. For a **sequential attack** this is
+believed CORRECT: in NIKKE a multi-hit sequential round (Snow White: Heavy Arms' sequence, cinderella's
+10-hit nuke, Eve's concentrated payload) has its critical hit decided at the **round/action level** — if
+the round crits, the crit multiplier scales the whole round's damage; it does NOT independently roll
+"crit, normal, crit, normal" across the micro-hits inside the round.
+
+**Open items for later review:**
+1. **Verify the engine's all-or-nothing crit is applied at the right granularity** for every sequential
+   attack — i.e. one crit determination per sequential *round*, not per micro-hit, and not per whole
+   multi-round skill either. Confirm cinderella's nuke, Snow White: Heavy Arms' sequence, and Eve's
+   sequential procs/burst are each rolled once per round as intended.
+2. **Eve (`eve`) is the exception and needs a carve-out.** Her kit is built around sequential attacks
+   plus Unstable Energy, a passive that triggers after landing **44 critical NORMAL hits**. For that
+   counter to fill at the right rate her ordinary rapid-fire weapon attacks must roll a **normal
+   per-shot crit chance** (each shot independently crits or not, stacking the counter), even though the
+   sequential payload it eventually fires resolves all-or-nothing. Today the engine does NOT roll a live
+   per-shot crit counter for her — her cadence is approximated by a static threshold (`hitCount 59` =
+   44 crit hits ÷ ~0.75 crit, `src/skills/overrides/eve.json`), which cannot respond to external
+   crit-rate buffs shortening the real cadence (already flagged in her caveats). A faithful Eve wants
+   per-shot crit rolling driving the counter, distinct from the round-level all-or-nothing rule.
+
+Eve is currently **ungraded** (no board data, no focused Eve footage in the catalog), so this is a
+model-correctness note to settle when Eve footage is captured — do not fudge her to close it. Related:
+[[full-kit-audit-requirement]], sequential/`sequentialMultPct` bucket (Phase A4), U13 (DoT/rider crit).
+
 ### U25 — Charge Speed formula + cinderella's unique RL cadence (2026-07-21)
 **OWNER RULING 2026-07-21 — Charge Speed is ADDITIVE (subtractive on charge time); the DIVISIVE hypothesis
 is REJECTED. Do NOT change the global CS formula.** The divisive model only *appeared* to fit because it was
@@ -491,8 +520,11 @@ still overrides). Owner-directed; full-board A/B + ONE consolidated Fable review
 board-NEUTRAL (weighted mean|ratio−1| 0.0710→0.0712, ±3% count 6→7). The ÷1.075 "de-crit the calibrated
 base" prep step was DROPPED — a provenance audit found ~15/17 dot bases are kit-datamined true multipliers
 (NOT crit-absorbed), so ÷1.075 would have net-degraded the board. Full ruling + evidence + queued
-follow-ups (ada true-damage-crit footage check; mihara-bonding-chain suspected tuned-base double-count;
-function-rider path still separate) → DECISIONS 2026-07-21. Everything below is the PRE-LANDING trail;
+follow-ups (mihara-bonding-chain suspected tuned-base double-count; function-rider path still separate) →
+DECISIONS 2026-07-21. **ada follow-up RESOLVED same day (owner ruling): TRUE DAMAGE CANNOT CRIT — her
+`flavor:"true"` grenade DoT is crit-exempt via a new engine `crit && !trueFlavor` guard (her U13-flip gain
+was spurious, reverted 0.933→0.903); the guard also fixed a pre-existing true-crit bug on ein/laplace/chisato
+true flatDamage + trueNormals windows, board-confirmed chisato 1.154→1.119. DECISIONS 2026-07-21.** Everything below is the PRE-LANDING trail;
 the DECISION-HELD and PHASE-A-RULING blocks are SUPERSEDED by the flip.**
 
 The engine gates DoT/rider crit/core behind env-only `XCRIT`/`XCORE` sets (empty by default), so
