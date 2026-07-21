@@ -46,6 +46,31 @@ popup-read cadence at a known CS%, and/or the isolated-cinderella footage that p
 cadence + reload timing directly. See DECISIONS 2026-07-21 (removeOnReload primitive) + the pre-reg
 `scratchpad/prereg-cinderella-cs-toggle.md`.
 
+**FOLLOW-UP BUILD RESULT — the datamine whole-mag-dump-at-3/s fire-pattern is NOT SUPPORTED by the popup
+measurement (built + full-board A/B, 2026-07-21; NO enactment — held).** The owner-directed follow-up (model
+her cadence off the datamine fire-pattern instead of a Charge-Speed buff) was BUILT and MEASURED: an opt-in
+engine primitive `charFixes.magDumpRof` (charge ONCE per mag → rapid-fire the whole magazine at the datamined
+rate_of_fire → reload → re-charge; every rocket a full-charge shot), wired to `cinderella` at rof/60 = **3.0
+rockets/s** (the confirmed scale — jill rof 150 → her measured 2.5/s charFix; scarlet(AR) rof 720 → 12/s).
+Board-exact A/B (7 graded comps, MC-mean): the literal 3/s dump fires **420 pulls/180s solo (420–449 in-comp)**
+and moves her board **0.93 COLD → 1.29 HOT** (ratios up to 1.57) — vs her popup-MEASURED **~287 pulls (862
+popups / 3-per-pull) ≈ ~315/180s**. So the datamined rate_of_fire 180 is her nominal/**in-burst** rocket rate,
+NOT her **sustained** cadence: her measured ~1.75 rockets/s is roughly HALF a clean 24-at-3/s dump. Comp downtime
+does NOT close the gap — solo≈in-comp in BOTH models (288≈288–306 baseline; 420≈420–449 dump), i.e. she fires
+essentially continuously; there is no ~25% rotation downtime to pull 420 down to 315. And no faithful whole-mag
+variant reaches 315: even the fully-datamined 2.0s reload gives ~405; hitting 315 would need a ~5s reload,
+contradicting her measured ~1.2s. Her measured 1.75/s sits BETWEEN the two datamine-literal readings — the
+per-rocket-charge literal (1s each, no CS → ~1/s ≈ 160 pulls, far too COLD) and the whole-mag-dump literal (3/s
+→ 420, too HOT) — the signature of an **INTERMEDIATE mechanism** (she likely re-charges MID-mag / fires K < 24
+rockets per prime, not one prime per full magazine). **ENACTMENT: none** — the engine primitive was reverted
+(regression-proven byte-identical/opt-in inert, but no valid consumer since its only intended consumer
+overshoots). `cinderella` KEEPS her `+45 chargeSpeedPct` proxy, which is MEASUREMENT-ANCHORED (validated vs real
+T2/T7 + the e3 popup pass; steady-state ~0.55s/shot ≈ 1.8/s ≈ measured 1.75/s) and already reproduces ~288
+pulls ≈ the measured 287 — retained as status-quo, NOT to be mistaken for validated mechanism. **NEEDS-MEASUREMENT
+(the actual unknown):** isolated `cinderella`-solo footage to pin (a) rockets-per-prime K + whether she
+re-charges mid-magazine, (b) her real reload, and (c) a re-confirm of the "3 popups/pull" divisor the whole 315
+rests on. Fable pre-op APPROVED the hold; harness pre-reg `scratchpad/prereg-cindy-firepattern.md`.
+
 ### U24 — Do TRUE-flavored normal attacks retain CORE hits? (chisato/jill shared; footage says YES, but jill enactment gated) (2026-07-20)
 The kit-audit flagged (chisato gotcha 1, jill gotcha 1) that whether true-damage normal attacks forfeit
 core is unverified — a large lever, because `coreMult` is big. **Direct-observation finding (kit-audit
