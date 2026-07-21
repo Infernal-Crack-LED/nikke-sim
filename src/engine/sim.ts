@@ -1507,6 +1507,7 @@ export function runSim(
           }
           const value =
             e.stat === 'casterAtkPct' ? (e.value / 100) * owner.staticAtk
+            : e.stat === 'highestAllyAtkPct' ? (e.value / 100) * Math.max(...units.map((x) => x.staticAtk))
             : e.stat === 'casterMaxHpPct' ? (e.value / 100) * owner.maxHp
             : e.value;
           // casterMaxHpPct ("% of the skill user's Max HP") and targetMaxHpPct ("Max HP ▲ X%",
@@ -1516,7 +1517,9 @@ export function runSim(
           const statKey =
             e.stat === 'casterMaxHpPct' || e.stat === 'targetMaxHpPct'
               ? ('maxHpFlat' as StatKey)
-              : e.stat;
+              : e.stat === 'highestAllyAtkPct'
+                ? ('casterAtkPct' as StatKey) // resolved flat ATK → feed the same effectiveAtk consumer
+                : e.stat;
           // always-on triggers keep their buffs up regardless of listed duration
           // passive/bossElement buffs are permanent UNLESS the effect declares an explicit
           // durationSec — a "fused passive" that is live from battle start (frame 0) but

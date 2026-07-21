@@ -8,6 +8,19 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) guilty: S1 "duplicate the HIGHEST ally's ATK" → new `highestAllyAtkPct` stat — LANDED
+  (kit-audit guilty #2; board-safe).** `guilty` (SG/Wind/B2, no-data). Her S1 "Mind If I Borrow This?:
+  Duplicates 8.81% of the ATK of the ally with the highest ATK (×5 stacks)" was proxied as `casterAtkPct`
+  (% of GUILTY's own ATK) — exact only when she is the top-ATK ally. New StatKey `highestAllyAtkPct` resolves
+  at apply time to `(value/100) × max(all units' staticAtk)` and remaps to the flat-ATK path (feeds
+  `effectiveAtk` exactly like `casterAtkPct`). **Basis = STATIC ATK** (per the caster-ATK convention; a live
+  `effectiveAtk` ranking is a future refinement if measurement shows the duplicate tracks buffed ATK). Validated:
+  guilty SOLO byte-identical (she is her own max → identical to the old proxy); in a synthetic team with a
+  higher-ATK ally (scarlet-black-shadow 120367 > guilty 119667) her total rises 75.180→75.302M (buff now sizes
+  off the higher ally — the faithful fix). **Board byte-identical** (guilty ungraded; no other unit uses the
+  stat) — regression + verify.sh green. Trail: plan §guilty gotcha 2, types.ts `highestAllyAtkPct`, sim.ts value
+  resolution + statKey remap.
+
 - **(2026-07-21) Same-weapon flavor swaps (`trueNormals`) no longer grant free mag-refills — LANDED
   (kit-audit chisato #2; owner-ruled faithful fix).** The engine's generic `weaponSwap` refilled the mag to
   full on BOTH swap entry (sim.ts) and exit — correct for a REAL weapon swap (snow-white-heavy-arms cannon,
