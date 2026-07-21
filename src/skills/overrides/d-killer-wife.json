@@ -12,7 +12,7 @@
   },
   "caveats": [
     "burst: unrecognized target \"allies\" — applied to all allies",
-    "skill1: Full Burst Pierce Damage ▲13.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
+    "skill1: Full Burst Pierce Damage ▲13.55% now targets alliesOfWeapon SR (fixed 2026-07-20, kit-audit Phase C ENACT-NOW — kit targets only Sniper-Rifle-wielding allies). d-killer-wife is herself SR so keeps it; the only board effect was removing the spurious buff from grave (AR, Pierce-tagged during her Prediction window in comp N1), cooling that over-modeled HOT unit grave 1.179→1.162. Fable pre-op APPROVED.",
     "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
     "burst: [FIXED 2026-07-20, A4 Wipe-Out primitive] the body-branch ATK buff (casterAtkPct 12.19%, 'Allies that hit the body') is now GATED on the Wipe Out status: her burst inflicts a wipeOut effect (10s window) and the buff fires at burstCast for that 10s window with requiresWipeOut + requiresCore (core-only proxy). This replaces the prior ungated hitCount:1 model that ran ~permanently (over-credited team ATK outside the 10s windows). Faithful to '≈71% uptime = 10s Wipe Out of a ~14s rotation'; no tuned value (12.19 unchanged). TODO PARTS: the parts branch 'Allies that hit parts → coreDamagePct 16.26%' still needs destructible-part modeling (currently core is the only modelable 'area'); wire it as requiresWipeOut + a parts-hit trigger when parts enter scope.",
     "burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1)."
@@ -24,7 +24,8 @@
         "kind": "fullBurstEnter"
       },
       "target": {
-        "kind": "allies"
+        "kind": "alliesOfWeapon",
+        "weapon": "SR"
       },
       "effects": [
         {

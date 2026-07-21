@@ -8,6 +8,15 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) d-killer-wife: S1 FB Pierce Damage ▲13.55% targets SR allies only → `alliesOfWeapon SR`
+  — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED).** `d-killer-wife` (SR/Fire/B1, Supporter;
+  the variant, not base `d` SMG/Wind). Her S1 FB-enter Pierce Damage ▲13.55% (10s) targeted ALL allies; the
+  kit targets only Sniper-Rifle-wielding allies. Re-targeted `alliesOfWeapon SR`. She is herself SR so keeps
+  the buff; the ONLY board effect (isolated A/B) was removing the spurious buff from the one non-SR
+  Pierce-tagged ally — **grave** (AR), who is Pierce-tagged during her Prediction burst in comp N1 — cooling
+  that over-modeled HOT unit **grave 1.179→1.162** (N1 total −4.29%). All other comps + full-burst asserts
+  byte-identical. Kit-literal target scope, no fit. Trail: plan §d-killer-wife gotcha 2, override caveat.
+
 - **(2026-07-20) Eve: S2 reload-refund is Electric-gated + refunds exactly 3 rounds — LANDED (kit-audit
   Phase C ENACT-NOW; Fable pre-op APPROVED).** `eve` (AR/Iron/B3, the NieR collab Eve). Her S2 "when
   hitting an Electric-code target for the 10th time, Reload 3 round(s)" was modeled UNCONDITIONALLY
