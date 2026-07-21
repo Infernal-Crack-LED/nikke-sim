@@ -2,5 +2,8 @@
   "permissions": {
     "deny": []
   },
+  "context": {
+    "includeDirectories": ["/Users/maxwellsutton/bakery-bot"]
+  },
   "$version": 4
 }
