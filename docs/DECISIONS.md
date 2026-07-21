@@ -8,6 +8,19 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) Eve: S2 reload-refund is Electric-gated + refunds exactly 3 rounds — LANDED (kit-audit
+  Phase C ENACT-NOW; Fable pre-op APPROVED).** `eve` (AR/Iron/B3, the NieR collab Eve). Her S2 "when
+  hitting an Electric-code target for the 10th time, Reload 3 round(s)" was modeled UNCONDITIONALLY
+  (fired vs any boss) and as `instantReload fraction:0.05` (0.05 × 75 buffed mag → 4 rounds, over by 1).
+  Both defects were flagged in her own caveats. Enacted: (1) block-level `bossElementGate:"Electric"`
+  (existing engine primitive, sim.ts:1419 — block inert unless boss is Electric); (2) fraction 0.05 → 0.04
+  (0.04 × 75 = 3.00 exactly, the kit's flat 3). Both kit-literal, no fit. **eve is ungraded** → validated
+  by solo unit-test: off-Electric her total is now element/refund-clean (Iron == neutral == 117.20M; the
+  refund + her Iron→Electric advantage + S1 Electric-target debuff only fire on the Electric boss). No comp
+  → regression byte-identical. `instantReload` has no flat-rounds field, so 0.04 is exact only at the 75-mag
+  (external max-ammo buffs would drift it — moot; eve is solo-tested). Her separate Mk2 ×2 sequential-bucket
+  gotcha (A4) stays deferred. Trail: plan §eve gotcha 1, eve override caveat.
+
 - **(2026-07-20) Grave: team "Max Ammunition Capacity ▲ 3 round(s)" is a FLAT grant → `maxAmmoFlat 3`
   — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED 4-of-4).** Base `grave` (AR/Fire/B2,
   Supporter). Her burst's team ammo buff was the schema-forced fudge `maxAmmoPct 3` (+3 PERCENT ≈ inert);
