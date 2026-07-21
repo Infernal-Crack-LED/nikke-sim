@@ -1,16 +1,11 @@
 {
-  "note": "Whole-kit built on Temporary Modification stacks (max 3), modeled at steady-state fully-stacked since her 5%-on-attack proc keeps the buff maxed across a 180s raid with a full team firing. S1: at 3 stacks the team gets Crit Damage 5.24% (modeled passive). The self 5% reload proc is a QoL ammo refill (skipped), and Temp Mod's flat +2-rounds/stack is skipped — maxAmmoPct is percent-of-base not flat rounds, and the ammo is negligible for damage. S2: at full stacks, team Crit Rate 10.08% (passive; refreshed 2026-07-20 from the current datamined prose — the prior 3.32% was a pre-rebalance value). Burst: 'Mirrors the stack count' means value x3 at max stacks, so all-ally ATK is 2.32%*3 = 6.96% of caster ATK for 15s (duration refreshed 2026-07-20 from current prose; prior 10s was stale). FLAG: every Shotgun-gated line is skipped because there is no weapon-based target and the generic sim team has no SG — this understates Tove badly on a real shotgun team (skipped: S2 Attack Speed 42.24%, and the burst's ATK 24.21%*3 = 72.63% of caster ATK for SG allies).",
+  "note": "Whole-kit built on Temporary Modification stacks (max 3), modeled at steady-state fully-stacked: her Emergency-Crafted Bullets procs on her OWN 10 normal attacks (AR ~12/s → sub-second cadence) and each proc applies/refreshes Temporary Modification, so across a 180s raid the buff stays maxed. [2026-07-21 SG-TEAM RECONCILIATION] Enacted the 3 previously-skipped datamined lines now that the engine primitives exist (maxAmmoFlat + alliesOfWeapon SG) — this executes the DECISIONS-queued tove SG reconciliation, NOT a re-litigation (the old skips were technical: 'no weapon-typed target' and 'maxAmmoPct is percent not flat', both since removed). Fable pre-op APPROVED-WITH-REVISIONS / HIGH; board-neutral (tove is in no graded comp → regression byte-identical); community submission 2026-07-15-1754-req1-tove (HIGH conf) video-confirmed the +6 max-ammo on ALL allies (tove 60→66, nayuta 120→126, the 3 SG allies 9→15). (1) S1 Temporary Modification Max Ammo +2/stack ×3 = maxAmmoFlat 6 to ALL allies (was skipped 'negligible' — video refutes it: +67% mag on a 9-round SG = materially more shots/mag). (2) S2 at max stacks, all shotgun-wielding allies Attack Speed ▲ 42.24% (alliesOfWeapon SG; passive/steady-state-max-stack, matching the S2 crit-rate line's gate). (3) Burst, all shotgun-wielding allies ATK ▲ 24.21% of caster ATK, mirrors stacks ×3 = 72.63% for 15s (alliesOfWeapon SG; burstCast) — co-stacks ADDITIVELY with the all-ally 6.96 line (different buff-key value, so no same-slot overwrite → SG allies get 79.59% total). S1 team Crit Damage 5.24% (passive, 3-stack). S2 team Crit Rate 10.08% (passive; refreshed 2026-07-20 from current prose, prior 3.32% was pre-rebalance). Burst all-ally ATK 2.32×3 = 6.96% of caster ATK for 15s (refreshed 2026-07-20). EVIDENCE TIER: the max-ammo line is video-confirmed + datamined; the two SG buffs (attack-speed, burst-ATK) are DATAMINED magnitudes only — community footage is gear-confounded so they were not independently video-measured (same tier as other landed datamine-faithful lines). Still skipped: the self 5%-reload QoL proc (Reload 5.31% of magazine, non-damage ammo refill).",
   "unmodeled": {
     "skill1": [
-      "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine.",
-      "■ Activates during Emergency-Crafted Bullets. Affects all allies. Temporary Modification: Max Ammunition Capacity ▲ 2, stacks up to 3 time(s) and lasts for 5 sec."
+      "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine."
     ],
-    "skill2": [
-      "■ Only activates when Temporary Modification is fully stacked. Affects all shotgun-wielding allies. Attack Speed ▲ 42.24% continuously."
-    ],
-    "burst": [
-      "■ Affects all shotgun-wielding allies. Miracle of Makeshifts: ATK ▲ 24.21% of caster's ATK. Mirrors the stack count of Temporary Modification for 15 sec."
-    ]
+    "skill2": [],
+    "burst": []
   },
   "skill1": [
     {
@@ -26,6 +21,11 @@
           "kind": "buff",
           "stat": "critDamagePct",
           "value": 5.24
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 6
         }
       ]
     }
@@ -46,6 +46,23 @@
           "value": 10.08
         }
       ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 42.24
+        }
+      ]
     }
   ],
   "burst": [
@@ -62,6 +79,24 @@
           "kind": "buff",
           "stat": "casterAtkPct",
           "value": 6.96,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 72.63,
           "durationSec": 15
         }
       ]

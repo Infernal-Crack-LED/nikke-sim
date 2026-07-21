@@ -8,6 +8,26 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) tove: 3 datamined SG-team lines enacted (Temp Mod max-ammo + SG attack-speed + SG
+  burst-ATK) — LANDED (autonomous submission-review session; Fable pre-op APPROVED-WITH-REVISIONS/HIGH;
+  owner-authorized enactment; board-neutral).** `tove` (AR/Water/Supporter/B1). Three datamined lines had
+  been INERT in `unmodeled` — skipped only for now-removed technical reasons ("maxAmmoPct is percent not
+  flat"; "no weapon-typed target"). The engine since gained `maxAmmoFlat` (noir/grave) and `alliesOfWeapon`
+  (leona/arcana/drake), so this executes the DECISIONS-queued tove SG reconciliation (not a re-litigation).
+  Enacted: (1) S1 Temporary Modification Max Ammo +2/stack×3 = `maxAmmoFlat 6` to ALL allies (passive/steady-
+  state-max-stack); (2) S2 (max-stack gated) `attackSpeedPct 42.24` to alliesOfWeapon SG (passive); (3) burst
+  `casterAtkPct 72.63` (24.21×3, 15s) to alliesOfWeapon SG (burstCast) — co-stacks additively with the
+  existing all-ally 6.96 line (buff-key embeds value → no same-slot overwrite; DBG-verified 79.59% on SG
+  allies). **Evidence:** premise-gate (blind) confirmed all 3 values verbatim from characters.json + no
+  forbidding ruling; the max-ammo line is VIDEO-CONFIRMED (community submission 2026-07-15-1754-req1-tove,
+  HIGH conf: +6 mag on every ally, incl. non-SG nayuta 120→126); the 2 SG-buff magnitudes are DATAMINED-only
+  (community footage gear-confounded — same tier as other landed datamine-faithful lines; zero free knobs).
+  **Board-neutral:** tove in no graded comp → regression snapshot BYTE-IDENTICAL; verify.sh green.
+  **Discriminating check (P2):** in the tove SG community comp the shares moved TOWARD the observed
+  distribution on ALL 5 units (nayuta 21.5→13.5 [obs ~15], soda-twinkling-bunny 27.4→31.8 [obs ~30],
+  dorothy-serendipity 26.6→29.6 [obs ~32], tove 5.1→3.3 [obs ~3.8]) — a faithful-mechanic signature, not a
+  fit. Trail: `docs/handoffs/2026-07-21-tove-sg-team-fix-preop.md`, `src/skills/overrides/tove.json`.
+
 - **(2026-07-21) guilty: S1 "duplicate the HIGHEST ally's ATK" → new `highestAllyAtkPct` stat — LANDED
   (kit-audit guilty #2; board-safe).** `guilty` (SG/Wind/B2, no-data). Her S1 "Mind If I Borrow This?:
   Duplicates 8.81% of the ATK of the ally with the highest ATK (×5 stacks)" was proxied as `casterAtkPct`
