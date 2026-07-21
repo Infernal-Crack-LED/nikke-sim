@@ -26,7 +26,10 @@ import { TeamBuilderPage } from './TeamBuilderPage';
 import {
   BrowseNikkesModal,
   BrowseRosterNikkesModal,
+  BrowseRosterGenModal,
+  BrowseExcludeModal,
 } from './components/BrowseNikkesModal';
+import { SaveProfileControl } from './components/SaveProfileControl';
 import { useIconThumbs } from './useIconThumbs';
 import { manifestThumbUrl } from './portraitManifest';
 import { navigate } from './router';
@@ -84,6 +87,8 @@ import {
 import {
   ApiError,
   deleteTeam,
+  decodeNikkeList,
+  encodeNikkeList,
   fetchCurrentSyncedRoster,
   fetchTeams,
   saveTeam,
@@ -97,6 +102,7 @@ import {
 } from './rosterApply';
 import {
   makeCalc,
+  assignMustUse,
   type TeamResult,
   type MetaScoring,
 } from '../../src/teamcalc';
@@ -585,6 +591,11 @@ const generatorChars = Object.values(data.characters)
   .sort((a, b) => a.name.localeCompare(b.name));
 const generatorCharacters: Record<string, (typeof data.characters)[string]> =
   Object.fromEntries(generatorChars.map((c) => [c.slug, c]));
+
+// Slot count for the roster generator's "Use these Nikkes" box — generic locks
+// the generator places onto whichever team fits. Generous for a 5-team (solo) or
+// 3-team (union) roster; anything beyond can be pinned to a specific team instead.
+const GEN_BOX_SLOTS = 12;
 
 // legacy alias — most pickers on the site are sim-engine pickers; keep the short name for them
 const allChars = simChars;
@@ -1407,6 +1418,30 @@ export function App({ user }: { user: AuthUser | null }) {
   const [unionGenResults, setUnionGenResults] = useState<TeamResult[] | null>(
     null,
   );
+  // Generator "lock-in" picks — Nikkes the generator must include. The Team
+  // Generator locks a strip of up to 5 (forced into the one team). The Roster
+  // Generator distinguishes units PINNED to a specific team row from generic
+  // "use these" box units the generator places wherever they fit best.
+  const [teamGenLock, setTeamGenLock] = useState<(string | null)[]>(() =>
+    Array(5).fill(null),
+  );
+  const [showTeamGenPicker, setShowTeamGenPicker] = useState(false);
+  const [rosterGenPinned, setRosterGenPinned] = useState<(string | null)[][]>(
+    () => Array.from({ length: 5 }, () => Array(5).fill(null)),
+  );
+  const [rosterGenGeneric, setRosterGenGeneric] = useState<(string | null)[]>(
+    () => Array(GEN_BOX_SLOTS).fill(null),
+  );
+  const [showRosterGenPicker, setShowRosterGenPicker] = useState(false);
+  const [unionGenPinned, setUnionGenPinned] = useState<(string | null)[][]>(
+    () => Array.from({ length: 3 }, () => Array(5).fill(null)),
+  );
+  const [unionGenGeneric, setUnionGenGeneric] = useState<(string | null)[]>(
+    () => Array(GEN_BOX_SLOTS).fill(null),
+  );
+  const [showUnionGenPicker, setShowUnionGenPicker] = useState(false);
+  // Exclude picker (the old "Blocked characters" text entry, now a Browse modal)
+  const [showExcludePicker, setShowExcludePicker] = useState(false);
   // Overload Calc: rank one carry's four free OL lines. Matrix mode auto-builds
   // the 8/12 control team from a matrix cell; custom mode pins one carry and pits
   // it against several hand-built support teams (one chart each).
@@ -2385,37 +2420,180 @@ export function App({ user }: { user: AuthUser | null }) {
     if (res !== 'unsupported') flashImaged();
   };
 
-  // shared blocked-character panel (Team Calc + Roster Calc) — exclude nikkes
-  // the user doesn't own from the search
-  const blockedPanel = (
+  // Shared "nikke list" panel for the generator tabs — opens a Browse Nikkes
+  // modal and lists the current picks as removable chips. Used for BOTH list
+  // kinds: Include ("always use", the old Lock Nikkes) and Exclude ("never use",
+  // the old Blocked characters text entry). `extra` slots in the save/load
+  // profile control for the lists that support it.
+  const genListField = (
+    slugs: string[],
+    onOpen: () => void,
+    onRemove: (slug: string) => void,
+    onClear: () => void,
+    label: string,
+    buttonLabel: string,
+    title: string,
+    extra?: ReactNode,
+  ) => (
     <div className='field'>
-      <label title='nikkes you do not own / want excluded from the search'>
-        Blocked characters
-      </label>
-      <CharSearch
-        placeholder='block a nikke…'
-        exclude={blocked}
-        pool={generatorChars}
-        onPick={(slug) => setBlocked((b) => [...b, slug])}
-      />
-      {blocked.length > 0 && (
-        <div className='chips'>
-          {blocked.map((slug) => (
-            <button
-              key={slug}
-              className='chip'
-              title='remove'
-              onClick={() => setBlocked((b) => b.filter((s) => s !== slug))}
-            >
-              {data.characters[slug]?.name ?? slug} ×
+      <label title={title}>{label}</label>
+      <div className='genlock-row'>
+        <button className='share-btn' onClick={onOpen}>
+          {buttonLabel}
+        </button>
+        {extra}
+        {slugs.length > 0 && (
+          <div className='chips'>
+            {slugs.map((slug) => (
+              <button
+                key={slug}
+                className='chip'
+                title='remove'
+                onClick={() => onRemove(slug)}
+              >
+                {data.characters[slug]?.name ?? slug} ×
+              </button>
+            ))}
+            <button className='chip clear' onClick={onClear}>
+              clear all
             </button>
-          ))}
-          <button className='chip clear' onClick={() => setBlocked([])}>
-            clear all
-          </button>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
+  );
+
+  // Apply a saved Include list: every saved Nikke drops into the generic "use
+  // these" box (NOT pinned to a team) — the generator decides where each goes.
+  const loadIncludeList = (
+    code: string,
+    setPinned: (v: (string | null)[][]) => void,
+    setGeneric: (v: (string | null)[]) => void,
+    teams: number,
+  ) => {
+    const slugs = decodeNikkeList(code);
+    if (!slugs) {
+      window.alert('This saved list is in an unrecognized format.');
+      return;
+    }
+    const valid = [...new Set(slugs.filter((s) => data.characters[s]))].slice(
+      0,
+      GEN_BOX_SLOTS,
+    );
+    const box = Array(GEN_BOX_SLOTS).fill(null) as (string | null)[];
+    valid.forEach((s, i) => (box[i] = s));
+    setPinned(Array.from({ length: teams }, () => Array(5).fill(null)));
+    setGeneric(box);
+  };
+  // Apply a saved Exclude list straight to the blocked set.
+  const loadExcludeList = (code: string) => {
+    const slugs = decodeNikkeList(code);
+    if (!slugs) {
+      window.alert('This saved list is in an unrecognized format.');
+      return;
+    }
+    setBlocked([...new Set(slugs.filter((s) => data.characters[s]))]);
+  };
+
+  const blockedPanel = genListField(
+    blocked,
+    () => setShowExcludePicker(true),
+    (slug) => setBlocked((b) => b.filter((s) => s !== slug)),
+    () => setBlocked([]),
+    'Exclude Nikkes',
+    '🚫 Exclude Nikkes',
+    'nikkes you do not own / want excluded from the search',
+    <SaveProfileControl
+      kind='exclude'
+      user={user}
+      getCode={() => (blocked.length ? encodeNikkeList(blocked) : null)}
+      onLoad={loadExcludeList}
+      suggestName={() => 'My exclude list'}
+    />,
+  );
+
+  const teamGenLockPanel = genListField(
+    teamGenLock.filter((s): s is string => !!s),
+    () => setShowTeamGenPicker(true),
+    (slug) => setTeamGenLock((l) => l.map((s) => (s === slug ? null : s))),
+    () => setTeamGenLock(Array(5).fill(null)),
+    'Include Nikkes',
+    '➕ Include Nikkes',
+    'nikkes the generator must include in its teams',
+  );
+  const rosterGenLockPanel = genListField(
+    [...rosterGenPinned.flat(), ...rosterGenGeneric].filter(
+      (s): s is string => !!s,
+    ),
+    () => setShowRosterGenPicker(true),
+    (slug) => {
+      setRosterGenPinned((p) =>
+        p.map((row) => row.map((s) => (s === slug ? null : s))),
+      );
+      setRosterGenGeneric((g) => g.map((s) => (s === slug ? null : s)));
+    },
+    () => {
+      setRosterGenPinned(Array.from({ length: 5 }, () => Array(5).fill(null)));
+      setRosterGenGeneric(Array(GEN_BOX_SLOTS).fill(null));
+    },
+    'Include Nikkes',
+    '➕ Include Nikkes',
+    'nikkes the generator must include in its teams',
+    <SaveProfileControl
+      kind='include'
+      user={user}
+      getCode={() => {
+        const s = [
+          ...new Set(
+            [...rosterGenPinned.flat(), ...rosterGenGeneric].filter(
+              (x): x is string => !!x,
+            ),
+          ),
+        ];
+        return s.length ? encodeNikkeList(s) : null;
+      }}
+      onLoad={(code) =>
+        loadIncludeList(code, setRosterGenPinned, setRosterGenGeneric, 5)
+      }
+      suggestName={() => 'My include list'}
+    />,
+  );
+  const unionGenLockPanel = genListField(
+    [...unionGenPinned.flat(), ...unionGenGeneric].filter(
+      (s): s is string => !!s,
+    ),
+    () => setShowUnionGenPicker(true),
+    (slug) => {
+      setUnionGenPinned((p) =>
+        p.map((row) => row.map((s) => (s === slug ? null : s))),
+      );
+      setUnionGenGeneric((g) => g.map((s) => (s === slug ? null : s)));
+    },
+    () => {
+      setUnionGenPinned(Array.from({ length: 3 }, () => Array(5).fill(null)));
+      setUnionGenGeneric(Array(GEN_BOX_SLOTS).fill(null));
+    },
+    'Include Nikkes',
+    '➕ Include Nikkes',
+    'nikkes the generator must include in its teams',
+    <SaveProfileControl
+      kind='include'
+      user={user}
+      getCode={() => {
+        const s = [
+          ...new Set(
+            [...unionGenPinned.flat(), ...unionGenGeneric].filter(
+              (x): x is string => !!x,
+            ),
+          ),
+        ];
+        return s.length ? encodeNikkeList(s) : null;
+      }}
+      onLoad={(code) =>
+        loadIncludeList(code, setUnionGenPinned, setUnionGenGeneric, 3)
+      }
+      suggestName={() => 'My include list'}
+    />,
   );
 
   // ---- calc tabs: shared inputs + async runners (Team/Roster/Character) ----
@@ -2471,7 +2649,7 @@ export function App({ user }: { user: AuthUser | null }) {
     const L = genSynced?.get(slug);
     return !!L && (genIncludeNonOL || L.hasOverloadGear);
   };
-  const newCalc = () =>
+  const newCalc = (unblock?: Set<string>) =>
     makeCalc({
       // Team/Roster generator candidate pool = generatorSupported (+ simSupported) only.
       chars: generatorCharacters as any,
@@ -2492,11 +2670,14 @@ export function App({ user }: { user: AuthUser | null }) {
               : calcLoadout();
           }
         : loadoutFor,
-      blocked: genSynced
+      // locked Nikkes override the blocked list — an explicit lock wins over a
+      // don't-own / non-OL exclusion so the generator can always field its locks
+      blocked: (genSynced
         ? Object.keys(generatorCharacters).filter(
             (s) => !genEligible(s) || blocked.includes(s),
           )
-        : blocked,
+        : blocked
+      ).filter((s) => !unblock?.has(s)),
       meta: metaScoringFor(weakness),
     });
 
@@ -2512,17 +2693,29 @@ export function App({ user }: { user: AuthUser | null }) {
   };
   const runBestTeam = () =>
     runCalc(() => {
+      const locks = teamGenLock.filter((s): s is string => !!s);
       setRosterResults(null);
-      setTeamResult(newCalc().bestTeam());
+      setTeamResult(newCalc(new Set(locks)).bestTeam({ mustInclude: locks }));
     });
   const runTopTeams = () =>
     runCalc(() => {
+      const pinned = rosterGenPinned.map((row) =>
+        row.filter((s): s is string => !!s),
+      );
+      const mustUse = rosterGenGeneric.filter((s): s is string => !!s);
+      const locks = new Set([...pinned.flat(), ...mustUse]);
       setTeamResult(null);
-      setRosterResults(newCalc().topTeams(5));
+      setRosterResults(
+        newCalc(locks).topTeams(5, { pinnedByTeam: pinned, mustUse }),
+      );
     });
   // A calc bound to explicit boss options + weakness (union raid generator —
   // each team fights a different boss, so each gets its own cfg/meta).
-  const newCalcWith = (cfg: ReturnType<typeof calcCfg>, weak: Element | null) =>
+  const newCalcWith = (
+    cfg: ReturnType<typeof calcCfg>,
+    weak: Element | null,
+    unblock?: Set<string>,
+  ) =>
     makeCalc({
       chars: generatorCharacters as any,
       mult,
@@ -2542,31 +2735,63 @@ export function App({ user }: { user: AuthUser | null }) {
               : calcLoadout();
           }
         : loadoutFor,
-      blocked: genSynced
+      blocked: (genSynced
         ? Object.keys(generatorCharacters).filter(
             (s) => !genEligible(s) || blocked.includes(s),
           )
-        : blocked,
+        : blocked
+      ).filter((s) => !unblock?.has(s)),
       meta: metaScoringFor(weak),
     });
   // Union Raid generator: 3 teams, each built against its own boss; no unit is
   // reused across the three teams (greedy-sequential over the shared pool).
+  // Locked Nikkes: units pinned to a team row must appear in that team; generic
+  // "use these" box units are spread across the three teams by assignMustUse.
   const runUnionTopTeams = () =>
     runCalc(() => {
       setTeamResult(null);
       setRosterResults(null);
+      const pinned = unionGenPinned.map((row) =>
+        row.filter((s): s is string => !!s),
+      );
+      const mustUse = unionGenGeneric.filter((s): s is string => !!s);
+      const locks = new Set([...pinned.flat(), ...mustUse]);
+      const assigned = assignMustUse(
+        mustUse,
+        pinned,
+        generatorCharacters as any,
+        3,
+      );
+      const reserved = Array.from({ length: 3 }, (_, i) => [
+        ...pinned[i],
+        ...assigned.assigned[i],
+      ]);
       const used = new Set<string>();
       const out: TeamResult[] = [];
       for (let i = 0; i < 3; i++) {
         const opts = unionGenBossOpts[i] ?? defaultUnionBossOpts();
-        const calc = newCalcWith(unionCalcCfg(opts), opts.weakness);
-        const t = calc.bestTeam({ exclude: used });
+        const calc = newCalcWith(unionCalcCfg(opts), opts.weakness, locks);
+        // keep later teams' reserved units out of this team's pool
+        const exclude = new Set(used);
+        for (let j = i + 1; j < 3; j++)
+          for (const s of reserved[j]) exclude.add(s);
+        const t = calc.bestTeam({ exclude, mustInclude: reserved[i] });
         if (!t) break;
         for (const s of t.slugs) used.add(s);
         out.push(t);
       }
       setUnionGenResults(out);
     });
+
+  // The units the generator can actually field — the pool the lock-picker grid
+  // offers (CharacterGrid `restrict`). With a synced roster on "Ignore Non-OL",
+  // only eligible owned units are offered so a user can't lock a unit the
+  // generator would disregard.
+  const genPickPool = useMemo(() => {
+    const slugs = Object.keys(generatorCharacters);
+    return new Set(genSynced ? slugs.filter(genEligible) : slugs);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [genSynced, genIncludeNonOL]);
 
   // Generator control shown only once a roster is synced: the pool becomes the
   // user's owned units (each simmed with its real build); non-OL-geared units are
@@ -3806,6 +4031,7 @@ export function App({ user }: { user: AuthUser | null }) {
           </p>
           {syncedGenPanel}
           {blockedPanel}
+          {teamGenLockPanel}
           <button
             className='calc-run'
             onClick={runBestTeam}
@@ -3845,6 +4071,7 @@ export function App({ user }: { user: AuthUser | null }) {
               </p>
               {syncedGenPanel}
               {blockedPanel}
+              {rosterGenLockPanel}
               <button
                 className='calc-run'
                 onClick={runTopTeams}
@@ -3873,6 +4100,7 @@ export function App({ user }: { user: AuthUser | null }) {
               </p>
               {syncedGenPanel}
               {blockedPanel}
+              {unionGenLockPanel}
               <div className='roster-input'>
                 {unionGenBossOpts.map((o, ti) => (
                   <div className='union-team-block' key={ti}>
@@ -6744,6 +6972,79 @@ export function App({ user }: { user: AuthUser | null }) {
               onClick={saveUnionPickerToRoster}
             >
               Save Roster
+            </button>
+          }
+        />
+      )}
+
+      {showTeamGenPicker && (
+        <BrowseNikkesModal
+          staged={teamGenLock}
+          onStagedChange={setTeamGenLock}
+          onClose={() => setShowTeamGenPicker(false)}
+          restrict={genPickPool}
+          hint='Click a card to include it in the team — the generator fills the remaining slots around your picks. Drag to reorder, click × to remove. Include all five to fully specify the team. Picks apply the next time you calculate.'
+          actions={
+            <button
+              className='teambuilder-action'
+              onClick={() => setShowTeamGenPicker(false)}
+            >
+              Done
+            </button>
+          }
+        />
+      )}
+
+      {showRosterGenPicker && (
+        <BrowseRosterGenModal
+          staged={rosterGenPinned}
+          onStagedChange={setRosterGenPinned}
+          generic={rosterGenGeneric}
+          onGenericChange={setRosterGenGeneric}
+          onClose={() => setShowRosterGenPicker(false)}
+          restrict={genPickPool}
+          actions={
+            <button
+              className='teambuilder-action'
+              onClick={() => setShowRosterGenPicker(false)}
+            >
+              Done
+            </button>
+          }
+        />
+      )}
+
+      {showUnionGenPicker && (
+        <BrowseRosterGenModal
+          staged={unionGenPinned}
+          onStagedChange={setUnionGenPinned}
+          generic={unionGenGeneric}
+          onGenericChange={setUnionGenGeneric}
+          onClose={() => setShowUnionGenPicker(false)}
+          restrict={genPickPool}
+          actions={
+            <button
+              className='teambuilder-action'
+              onClick={() => setShowUnionGenPicker(false)}
+            >
+              Done
+            </button>
+          }
+        />
+      )}
+
+      {showExcludePicker && (
+        <BrowseExcludeModal
+          staged={blocked}
+          onStagedChange={setBlocked}
+          onClose={() => setShowExcludePicker(false)}
+          restrict={genPickPool}
+          actions={
+            <button
+              className='teambuilder-action'
+              onClick={() => setShowExcludePicker(false)}
+            >
+              Done
             </button>
           }
         />

@@ -200,10 +200,14 @@ export function CharacterGrid({
   exclude,
   onToggle,
   allowUnsupported = false,
+  restrict,
 }: {
   exclude: Set<string>;
   onToggle: (slug: string) => void;
   allowUnsupported?: boolean;
+  // when set, only these slugs are browsable (the generator modals restrict the
+  // pool to the units the generator can actually field); omit = every unit
+  restrict?: Set<string>;
 }) {
   const [search, setSearch] = useState('');
   const [weaponFilter, setWeaponFilter] = useState<Set<string>>(emptySet);
@@ -243,7 +247,9 @@ export function CharacterGrid({
   };
 
   const characters = useMemo(() => {
-    const all = Object.values(data.characters);
+    const all = Object.values(data.characters).filter(
+      (c) => !restrict || restrict.has(c.slug),
+    );
     const q = search.toLowerCase();
     return all.filter((c) => {
       // Already placed — removed from the list entirely
@@ -287,6 +293,7 @@ export function CharacterGrid({
     });
   }, [
     exclude,
+    restrict,
     search,
     weaponFilter,
     burstFilter,
@@ -308,7 +315,9 @@ export function CharacterGrid({
   );
   const portraitThumbs = usePortraitThumbs(allPortraitUrls, 120);
 
-  const total = Object.values(data.characters).length;
+  const total = restrict
+    ? [...restrict].filter((s) => data.characters[s]).length
+    : Object.values(data.characters).length;
   const showing = characters.length;
   const anyActive =
     search !== '' ||

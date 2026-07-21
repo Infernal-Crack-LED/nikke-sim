@@ -23,7 +23,9 @@ export const BACKEND_ORIGIN: string =
 // calls same-origin ('') and let Vite's dev proxy (vite.config.ts) forward them
 // to BACKEND_ORIGIN server-side — no CORS. In production we hit the backend
 // directly. Full-navigation URLs (OAuth login) still use BACKEND_ORIGIN.
-export const API_BASE: string = (import.meta as any).env?.DEV ? '' : BACKEND_ORIGIN;
+export const API_BASE: string = (import.meta as any).env?.DEV
+  ? ''
+  : BACKEND_ORIGIN;
 
 const TOKEN_KEY = 'nikke-sim.auth';
 
@@ -134,7 +136,9 @@ export function captureTokenFromUrl(): void {
     params.delete('nsat');
     const rest = params.toString();
     const url =
-      window.location.pathname + window.location.search + (rest ? `#${rest}` : '');
+      window.location.pathname +
+      window.location.search +
+      (rest ? `#${rest}` : '');
     window.history.replaceState(null, '', url);
   }
 }
@@ -208,6 +212,61 @@ export const saveTeam = (name: string, code: string) =>
   });
 export const deleteTeam = (id: string) =>
   api<void>(`/api/teams/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
+// ---- Saved profiles (generic kind-tagged store) ----------------------------
+// The backend (bakery-bot /api/profiles) stores an opaque base64url `code` blob
+// per (user, kind, name). The sim owns the payload shape per kind, so the same
+// endpoints serve many features: 'include'/'exclude' Nikke lists today, and
+// positioned team/roster builds later (which DO remember order/location) — add a
+// new kind + codec, no backend change. See packages/db user_profiles.
+export interface SavedProfile {
+  id: string;
+  kind: string;
+  name: string;
+  code: string;
+  updatedAt: string;
+}
+
+export const fetchProfiles = (kind: string) =>
+  api<SavedProfile[]>(`/api/profiles?kind=${encodeURIComponent(kind)}`);
+export const saveProfile = (kind: string, name: string, code: string) =>
+  api<SavedProfile>('/api/profiles', {
+    method: 'POST',
+    body: JSON.stringify({ kind, name, code }),
+  });
+export const deleteProfile = (id: string) =>
+  api<void>(`/api/profiles/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
+// Versioned codec for a flat Nikke list (the include/exclude profile payload).
+// base64url of UTF-8 JSON — same URL/DB-safe shape as the build-code format.
+const NIKKE_LIST_VERSION = 1;
+function b64urlEncode(str: string): string {
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlDecode(code: string): string {
+  const b64 = code.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = b64.length % 4 ? '='.repeat(4 - (b64.length % 4)) : '';
+  const bin = atob(b64 + pad);
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+}
+export function encodeNikkeList(slugs: string[]): string {
+  return b64urlEncode(JSON.stringify({ v: NIKKE_LIST_VERSION, slugs }));
+}
+// Returns null for anything malformed / wrong version — callers treat that as
+// "unrecognized profile".
+export function decodeNikkeList(code: string): string[] | null {
+  try {
+    const obj = JSON.parse(b64urlDecode(code.trim()));
+    if (!obj || obj.v !== NIKKE_LIST_VERSION || !Array.isArray(obj.slugs))
+      return null;
+    return obj.slugs.filter((s: unknown): s is string => typeof s === 'string');
+  } catch {
+    return null;
+  }
+}
 
 // Roster sync: one call reads (DB-served) or force-refreshes (live) a roster and,
 // on success, auto-links the open id as the user's current account. `openid`

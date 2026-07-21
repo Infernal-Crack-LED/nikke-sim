@@ -2862,6 +2862,156 @@ footer {
   opacity: 0.45;
   cursor: default;
 }
+/* ---- Roster Generator lock picker (Browse Nikkes + "use these" box) ---- */
+/* The filterable grid and the "Use these Nikkes" box sit side by side; the grid
+   shrinks to make room for the fixed-width box on the right. */
+.rostergen-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.rostergen-body > .teambuilder-picker {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rostergen-box {
+  flex: 0 0 190px;
+  width: 190px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+.rostergen-box-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rostergen-box-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+.rostergen-box-sub {
+  font-size: 11px;
+}
+.rostergen-box-slots {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+/* empty box slots read as drop targets (dashed) until a portrait fills them */
+.rostergen-box-slot:not(.active) {
+  border-style: dashed;
+  opacity: 0.55;
+}
+.rostergen-box-hint {
+  margin: 0;
+  font-size: 11px;
+}
+/* Locked Nikkes panel row on the generator tabs (open button + lock chips) */
+.genlock-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* Exclude picker: wrapping strip of excluded portraits above the grid */
+.exclude-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  width: 100%;
+}
+.exclude-chip {
+  width: 56px;
+  flex: 0 0 auto;
+}
+.exclude-empty {
+  text-align: center;
+  margin: 4px 0;
+}
+/* ---- Saved-profiles save/load control (reusable) ---- */
+.saveprofile {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.saveprofile-signin {
+  font-size: 12px;
+}
+.saveprofile-list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  min-width: 220px;
+  max-width: 320px;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  padding: 4px;
+}
+.saveprofile-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.saveprofile-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: var(--text);
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.saveprofile-name:hover {
+  background: var(--panel);
+}
+.saveprofile-del {
+  flex: 0 0 auto;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 4px 6px;
+  opacity: 0.55;
+  font-size: 13px;
+}
+.saveprofile-del:hover {
+  opacity: 1;
+}
+@media (max-width: 640px) {
+  .rostergen-body {
+    flex-direction: column;
+  }
+  .rostergen-box {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: none;
+  }
+  .rostergen-box-slots {
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  }
+}
 .teambuilder-warning {
   border: 1px solid var(--warn);
   color: var(--warn);
