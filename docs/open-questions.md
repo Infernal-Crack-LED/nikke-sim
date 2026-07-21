@@ -352,6 +352,24 @@ Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
   effective ~50 and grades 0.96 with flat-42 under-crediting ~3%. The faithful model is dynamic Golden-Chip
   tracking (crit-damage = 1.32 × live chip count), which needs an engine currency-state feature. Until then
   the flat passive is comp-dependent-approximate (right-ish for burst-cycling comps, low for no-burst).
+- **Community-footage corroboration (2026-07-21, submission-review session — OBSERVATIONS ONLY, not enacted):**
+  three more recordings independently show the same rotation over-generation family (all n=1, gear-confounded):
+  - **Sakura: Bloom in Summer comp** (Rouge, Ade: Agent Bunny, Sakura: Bloom in Summer, Cinderella, Mihara:
+    Bonding Chain): the total full-burst count is right (10 = 10), but the two-Burst-III **allocation is wrong** —
+    the sim gives Sakura: Bloom in Summer 6 bursts / Cinderella 4, while the footage shows strict 5/5 alternation
+    (Sakura on full-bursts 1,3,5,7,9; Cinderella on 2,4,6,8,10, verified by burst-color signature on all 10).
+    Rotation-log diagnosis: the sim double-casts Sakura at full-bursts 3 (41.6s) and 4 (67.6s) — a leftmost-
+    tiebreak when both Burst-IIIs are ready. This is a Burst-III **selection** question (the count is fine), and
+    touches Cinderella, who IS board-graded — so an engine tiebreak change has real blast radius.
+  - **Ludmilla: Winter Owner comp** and **Rosanna: Chic Ocean comp**: both read **12 real full bursts vs the
+    sim's 13** (sim over-generates by one). The Rosanna reviewer pinned the mechanism: the sim opens its first
+    full burst at ~3.4s vs the footage's ~7s (optimal-start vs human startup lag) plus a slightly tighter cadence,
+    squeezing one extra full burst into the 180s. Since the sim's rotation is measured-exact on the owner's graded
+    scope-lock comps and first-full-burst timing is a measured constant (never refit), this 13-vs-12 gap is most
+    likely a recorder startup-lag + gear confound, NOT an engine defect.
+  Net: these strengthen "does the engine over-generate / mis-allocate bursts?" as an open thread, but none are
+  enactable from community footage (n=1, gear-confounded, engine-wide blast radius, measured-constant domain).
+  Full record: docs/handoffs/2026-07-21-submission-review-session.md.
 
 ### U15 — Rapi: Red Hood explosion residual (after the 2026-07-16 reopen)
 The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,
