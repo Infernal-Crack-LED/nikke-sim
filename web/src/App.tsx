@@ -495,6 +495,35 @@ const ELEMENTS: (Element | null)[] = [
   'Iron',
 ];
 
+// Per-team boss options for Union Raid (each of the 3 teams fights a different boss)
+interface UnionBossOpts {
+  weakness: Element | null;
+  bossDef: string;
+  core: number;
+  coreCustom: boolean;
+  coreCustomVal: string;
+}
+const defaultUnionBossOpts = (): UnionBossOpts => ({
+  weakness: null,
+  bossDef: '0',
+  core: 0,
+  coreCustom: false,
+  coreCustomVal: '10',
+});
+// Compact label for the share card, e.g. "Fire-weak · DEF 140 · 100% core"
+const unionBossLabel = (o: UnionBossOpts): string => {
+  const parts: string[] = [];
+  parts.push(o.weakness ? `${o.weakness}-weak` : 'no element');
+  const def = Number(o.bossDef) || 0;
+  if (def) parts.push(`DEF ${def}`);
+  parts.push(
+    o.coreCustom
+      ? `${o.coreCustomVal}% core`
+      : `${Math.round(o.core * 100)}% core`,
+  );
+  return parts.join(' · ');
+};
+
 // The boss's element, given the element it is weak to (i.e. the element the
 // user picks). A nikke of the weakness element is elementally advantaged, which
 // the engine models as BEATS[nikke.element] === bossElement — so bossElement is
@@ -1236,6 +1265,10 @@ export function App({ user }: { user: AuthUser | null }) {
   const [rosterPickerStaged, setRosterPickerStaged] = useState<
     (string | null)[][] | null
   >(null);
+  const [showUnionRosterPicker, setShowUnionRosterPicker] = useState(false);
+  const [unionRosterPickerStaged, setUnionRosterPickerStaged] = useState<
+    (string | null)[][] | null
+  >(null);
   // Team Builder's current build, reported up by the page — drives the
   // Generate link / Copy image buttons in the Team Builder page header
   const [tbSlugs, setTbSlugs] = useState<(string | null)[]>([
@@ -1245,11 +1278,21 @@ export function App({ user }: { user: AuthUser | null }) {
     null,
     null,
   ]);
-  const [tbRosterMode, setTbRosterMode] = useState(false);
+  const [tbRosterMode, setTbRosterMode] = useState<'team' | 'solo' | 'union'>(
+    'team',
+  );
+  const [tbUnionBossOpts, setTbUnionBossOpts] = useState<UnionBossOpts[]>(
+    Array.from({ length: 3 }, defaultUnionBossOpts),
+  );
   const onTbTeamChange = useCallback(
-    (slugs: (string | null)[], rosterMode: boolean) => {
+    (
+      slugs: (string | null)[],
+      rosterMode: 'team' | 'solo' | 'union',
+      unionBoss?: UnionBossOpts[],
+    ) => {
       setTbSlugs(slugs);
       setTbRosterMode(rosterMode);
+      if (unionBoss) setTbUnionBossOpts(unionBoss);
     },
     [],
   );
@@ -1308,6 +1351,60 @@ export function App({ user }: { user: AuthUser | null }) {
     null,
   );
   const [rosterSimResults, setRosterSimResults] = useState<TeamResult[] | null>(
+    null,
+  );
+  // Roster Sim mode pill: Solo Raid (5×5) vs Union Raid (3×5)
+  const [rosterSimMode, setRosterSimMode] = useState<'solo' | 'union'>(() => {
+    const p = new URLSearchParams(window.location.search);
+    return p.get('mode') === 'union' ? 'union' : 'solo';
+  });
+  // Union Raid: 3 teams × 5 slugs, per-team boss options, active slot, results
+  const [unionRosterSim, setUnionRosterSim] = useState<(string | null)[][]>(
+    () => {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get('mode') !== 'union')
+        return Array.from({ length: 3 }, () =>
+          Array.from({ length: 5 }, () => null),
+        );
+      const param = p.get('roster');
+      const slugs = param
+        ? param
+            .split(',')
+            .map((s) => (data.characters[s.trim()] ? s.trim() : null))
+        : [];
+      return Array.from({ length: 3 }, (_, t) =>
+        Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null),
+      );
+    },
+  );
+  const [unionBossOpts, setUnionBossOpts] = useState<UnionBossOpts[]>(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get('mode') !== 'union')
+      return Array.from({ length: 3 }, defaultUnionBossOpts);
+    const bw = p.get('bw')?.split(',') ?? [];
+    const bd = p.get('bd')?.split(',') ?? [];
+    const cv = p.get('cv')?.split(',') ?? [];
+    return Array.from({ length: 3 }, (_, i) => ({
+      weakness: (bw[i] as Element) || null,
+      bossDef: bd[i] ?? '0',
+      core: cv[i] ? Number(cv[i]) : 0,
+      coreCustom: false,
+      coreCustomVal: '10',
+    }));
+  });
+  const [unionRosterActive, setUnionRosterActive] = useState<
+    [number, number] | null
+  >(null);
+  const [unionRosterSimResults, setUnionRosterSimResults] = useState<
+    TeamResult[] | null
+  >(null);
+  // Roster Generator mode pill: Solo Raid (top 5) vs Union Raid (3 teams,
+  // each with its own boss options).
+  const [rosterGenMode, setRosterGenMode] = useState<'solo' | 'union'>('solo');
+  const [unionGenBossOpts, setUnionGenBossOpts] = useState<UnionBossOpts[]>(
+    Array.from({ length: 3 }, defaultUnionBossOpts),
+  );
+  const [unionGenResults, setUnionGenResults] = useState<TeamResult[] | null>(
     null,
   );
   // Overload Calc: rank one carry's four free OL lines. Matrix mode auto-builds
@@ -1586,6 +1683,19 @@ export function App({ user }: { user: AuthUser | null }) {
     if (!rosterPickerStaged) return;
     setRosterSim(rosterPickerStaged.map((row) => [...row]));
     setShowRosterPicker(false);
+  };
+  // Browse Nikkes (Union Raid): open with the page's current 3-team roster staged.
+  const openUnionRosterPicker = () => {
+    setUnionRosterPickerStaged(
+      (cur) => cur ?? unionRosterSim.map((row) => [...row]),
+    );
+    setShowUnionRosterPicker(true);
+  };
+  // Save Union Roster: write the staged 3×5 into the page wholesale.
+  const saveUnionPickerToRoster = () => {
+    if (!unionRosterPickerStaged) return;
+    setUnionRosterSim(unionRosterPickerStaged.map((row) => [...row]));
+    setShowUnionRosterPicker(false);
   };
 
   const applySyncedRoster = async () => {
@@ -1977,6 +2087,130 @@ export function App({ user }: { user: AuthUser | null }) {
     if (res !== 'unsupported') flashImaged();
   };
 
+  // Share the Union Raid card (3 teams + per-team boss options).
+  const shareUnionRoster = async (
+    teams: TeamResult[],
+    opts: UnionBossOpts[],
+  ) => {
+    const share: ShareRosterData = {
+      title: 'NIKKE Solo Raid Sim · Union Raid',
+      totalDamage: teams.reduce((sum, t) => sum + t.teamDamage, 0),
+      teams: teams.map((t, i) => ({
+        teamDamage: t.teamDamage,
+        bossLabel: unionBossLabel(opts[i] ?? defaultUnionBossOpts()),
+        units: t.units.map((u) => ({
+          slug: u.slug,
+          name: u.name,
+          element: u.element,
+        })),
+      })),
+    };
+    const res = await shareRosterCard(
+      share,
+      shareMeta(),
+      imageUrlFor,
+      'nikke-union-raid.png',
+    );
+    if (res !== 'unsupported') flashImaged();
+  };
+
+  // Generate link for the Roster Sim (solo or union mode).
+  const onRosterSimGenLink = async () => {
+    const u = new URL(window.location.href);
+    u.pathname = '/rostersim';
+    u.search = '';
+    if (rosterSimMode === 'union') {
+      u.searchParams.set('mode', 'union');
+      u.searchParams.set(
+        'roster',
+        unionRosterSim
+          .flat()
+          .map((s) => s ?? '')
+          .join(','),
+      );
+      u.searchParams.set(
+        'bw',
+        unionBossOpts.map((o) => o.weakness ?? '').join(','),
+      );
+      u.searchParams.set('bd', unionBossOpts.map((o) => o.bossDef).join(','));
+      u.searchParams.set(
+        'cv',
+        unionBossOpts
+          .map((o) => (o.coreCustom ? o.coreCustomVal : String(o.core)))
+          .join(','),
+      );
+    } else {
+      u.searchParams.set(
+        'roster',
+        rosterSim
+          .flat()
+          .map((s) => s ?? '')
+          .join(','),
+      );
+    }
+    try {
+      await navigator.clipboard.writeText(u.toString());
+      setShared(true);
+      setTimeout(() => setShared(false), 1500);
+    } catch {
+      window.prompt('Copy this link:', u.toString());
+    }
+  };
+
+  // Copy image for the Roster Sim (solo or union mode) — works from the
+  // current grid even without sim results (portraits only, zero damage).
+  const onRosterSimCopyImage = async () => {
+    if (rosterSimMode === 'union') {
+      const rows = unionRosterSim;
+      const res = await shareRosterCard(
+        {
+          title: 'NIKKE Solo Raid Sim · Union Raid',
+          totalDamage: unionRosterSimResults
+            ? unionRosterSimResults.reduce((s, t) => s + t.teamDamage, 0)
+            : 0,
+          teams: rows.map((row, i) => ({
+            teamDamage: unionRosterSimResults?.[i]?.teamDamage ?? 0,
+            bossLabel: unionBossLabel(
+              unionBossOpts[i] ?? defaultUnionBossOpts(),
+            ),
+            units: row
+              .filter((s): s is string => !!s)
+              .map((s) => {
+                const c = data.characters[s];
+                return { slug: c.slug, name: c.name, element: c.element };
+              }),
+          })),
+        },
+        shareMeta(),
+        imageUrlFor,
+        'nikke-union-raid.png',
+      );
+      if (res !== 'unsupported') flashImaged();
+    } else {
+      const rows = rosterSim;
+      const res = await shareRosterCard(
+        {
+          totalDamage: rosterSimResults
+            ? rosterSimResults.reduce((s, t) => s + t.teamDamage, 0)
+            : 0,
+          teams: rows.map((row, i) => ({
+            teamDamage: rosterSimResults?.[i]?.teamDamage ?? 0,
+            units: row
+              .filter((s): s is string => !!s)
+              .map((s) => {
+                const c = data.characters[s];
+                return { slug: c.slug, name: c.name, element: c.element };
+              }),
+          })),
+        },
+        shareMeta(),
+        imageUrlFor,
+        'nikke-roster.png',
+      );
+      if (res !== 'unsupported') flashImaged();
+    }
+  };
+
   // Deterministic "Generate link": encode the full build (loadout + globals +
   // blocked) into a ?b= link on the generator's tab path with run=1, so opening
   // it restores the inputs and auto-runs — reproducing the identical result.
@@ -1997,15 +2231,39 @@ export function App({ user }: { user: AuthUser | null }) {
   };
 
   // Team Builder header share buttons — one row is a team build, five rows the
-  // expanded 5×5 roster; the link + card implementations switch accordingly.
+  // expanded 5×5 roster (solo), three rows the 3×5 union raid; the link + card
+  // implementations switch accordingly.
   const tbBuildRows = (): (string | null)[][] =>
-    tbRosterMode
+    tbRosterMode === 'solo'
       ? Array.from({ length: 5 }, (_, r) => tbSlugs.slice(r * 5, r * 5 + 5))
-      : [tbSlugs];
+      : tbRosterMode === 'union'
+        ? Array.from({ length: 3 }, (_, r) => tbSlugs.slice(r * 5, r * 5 + 5))
+        : [tbSlugs];
   const onTbGenerateLink = async (rows: (string | null)[][]) => {
     const u = new URL(window.location.href);
     u.search = '';
-    if (rows.length > 1) {
+    if (tbRosterMode === 'union') {
+      u.pathname = '/rostersim';
+      u.searchParams.set('mode', 'union');
+      u.searchParams.set(
+        'roster',
+        rows
+          .flat()
+          .map((s) => s ?? '')
+          .join(','),
+      );
+      u.searchParams.set(
+        'bw',
+        tbUnionBossOpts.map((o) => o.weakness ?? '').join(','),
+      );
+      u.searchParams.set('bd', tbUnionBossOpts.map((o) => o.bossDef).join(','));
+      u.searchParams.set(
+        'cv',
+        tbUnionBossOpts
+          .map((o) => (o.coreCustom ? o.coreCustomVal : String(o.core)))
+          .join(','),
+      );
+    } else if (rows.length > 1) {
       u.pathname = '/rostersim';
       u.searchParams.set(
         'roster',
@@ -2028,12 +2286,16 @@ export function App({ user }: { user: AuthUser | null }) {
   };
   const onTbCopyImage = async (rows: (string | null)[][]): Promise<void> => {
     const res =
-      rows.length > 1
+      tbRosterMode === 'union'
         ? await shareRosterCard(
             {
+              title: 'NIKKE Solo Raid Sim · Union Raid',
               totalDamage: 0,
-              teams: rows.map((row) => ({
+              teams: rows.map((row, i) => ({
                 teamDamage: 0,
+                bossLabel: unionBossLabel(
+                  tbUnionBossOpts[i] ?? defaultUnionBossOpts(),
+                ),
                 units: row
                   .filter((s): s is string => !!s)
                   .map((s) => {
@@ -2044,34 +2306,52 @@ export function App({ user }: { user: AuthUser | null }) {
             },
             shareMeta(),
             imageUrlFor,
-            'nikke-roster.png',
+            'nikke-union-raid.png',
           )
-        : await shareTeamCard(
-            {
-              teamDamage: 0,
-              teamDps: 0,
-              fullBursts: 0,
-              fullBurstUptime: 0,
-              units: rows[0]
-                .filter((s): s is string => !!s)
-                .map((s) => {
-                  const c = data.characters[s];
-                  return {
-                    slug: c.slug,
-                    name: c.name,
-                    burst: c.burst,
-                    weapon: c.weapon,
-                    element: c.element,
-                    advantaged: weakness ? c.element === weakness : false,
-                    share: 0,
-                    totalDamage: 0,
-                  };
-                }),
-            },
-            shareMeta(),
-            imageUrlFor,
-            'nikke-team.png',
-          );
+        : rows.length > 1
+          ? await shareRosterCard(
+              {
+                totalDamage: 0,
+                teams: rows.map((row) => ({
+                  teamDamage: 0,
+                  units: row
+                    .filter((s): s is string => !!s)
+                    .map((s) => {
+                      const c = data.characters[s];
+                      return { slug: c.slug, name: c.name, element: c.element };
+                    }),
+                })),
+              },
+              shareMeta(),
+              imageUrlFor,
+              'nikke-roster.png',
+            )
+          : await shareTeamCard(
+              {
+                teamDamage: 0,
+                teamDps: 0,
+                fullBursts: 0,
+                fullBurstUptime: 0,
+                units: rows[0]
+                  .filter((s): s is string => !!s)
+                  .map((s) => {
+                    const c = data.characters[s];
+                    return {
+                      slug: c.slug,
+                      name: c.name,
+                      burst: c.burst,
+                      weapon: c.weapon,
+                      element: c.element,
+                      advantaged: weakness ? c.element === weakness : false,
+                      share: 0,
+                      totalDamage: 0,
+                    };
+                  }),
+              },
+              shareMeta(),
+              imageUrlFor,
+              'nikke-team.png',
+            );
     if (res !== 'unsupported') flashImaged();
   };
 
@@ -2240,6 +2520,53 @@ export function App({ user }: { user: AuthUser | null }) {
       setTeamResult(null);
       setRosterResults(newCalc().topTeams(5));
     });
+  // A calc bound to explicit boss options + weakness (union raid generator —
+  // each team fights a different boss, so each gets its own cfg/meta).
+  const newCalcWith = (cfg: ReturnType<typeof calcCfg>, weak: Element | null) =>
+    makeCalc({
+      chars: generatorCharacters as any,
+      mult,
+      deps: {
+        overrides,
+        skillLevels: skillLevelData,
+        cubes,
+        olLines: olLinesData,
+      },
+      cfg,
+      loadout: calcLoadout(),
+      loadoutFor: genSynced
+        ? (slug: string) => {
+            const L = genSynced.get(slug);
+            return L
+              ? slotLoadoutToUnitOptions(L, { zeroGear: !L.hasOverloadGear })
+              : calcLoadout();
+          }
+        : loadoutFor,
+      blocked: genSynced
+        ? Object.keys(generatorCharacters).filter(
+            (s) => !genEligible(s) || blocked.includes(s),
+          )
+        : blocked,
+      meta: metaScoringFor(weak),
+    });
+  // Union Raid generator: 3 teams, each built against its own boss; no unit is
+  // reused across the three teams (greedy-sequential over the shared pool).
+  const runUnionTopTeams = () =>
+    runCalc(() => {
+      setTeamResult(null);
+      setRosterResults(null);
+      const used = new Set<string>();
+      const out: TeamResult[] = [];
+      for (let i = 0; i < 3; i++) {
+        const opts = unionGenBossOpts[i] ?? defaultUnionBossOpts();
+        const calc = newCalcWith(unionCalcCfg(opts), opts.weakness);
+        const t = calc.bestTeam({ exclude: used });
+        if (!t) break;
+        for (const s of t.slugs) used.add(s);
+        out.push(t);
+      }
+      setUnionGenResults(out);
+    });
 
   // Generator control shown only once a roster is synced: the pool becomes the
   // user's owned units (each simmed with its real build); non-OL-geared units are
@@ -2371,8 +2698,104 @@ export function App({ user }: { user: AuthUser | null }) {
     setRosterSim(normalizeRoster(teams.map((t) => t.slugs)));
     setRosterSimResults(null);
     setRosterActive(null);
+    setRosterSimMode('solo');
     selectTab('rostersim');
   };
+  // Copy the generated union-raid teams (+ their boss options) into the Union
+  // Raid Roster Sim grid and jump there.
+  const copyUnionGenToRosterSim = (teams: TeamResult[]) => {
+    setUnionRosterSim(normalizeUnionRoster(teams.map((t) => t.slugs)));
+    setUnionBossOpts(unionGenBossOpts.map((o) => ({ ...o })));
+    setUnionRosterSimResults(null);
+    setUnionRosterActive(null);
+    setRosterSimMode('union');
+    selectTab('rostersim');
+  };
+
+  // ---- Union Raid: 3 teams × 5, each team with its own boss options ----
+  const unionSlugsPlaced = unionRosterSim
+    .flat()
+    .filter((s): s is string => !!s);
+  const unionAnyFilled = unionSlugsPlaced.length > 0;
+  const assignUnionSlot = (ti: number, ui: number, slug: string | null) => {
+    setUnionRosterSim((r) =>
+      r.map((team, t) =>
+        t === ti ? team.map((s, u) => (u === ui ? slug : s)) : team,
+      ),
+    );
+    setUnionRosterSimResults(null);
+    if (!slug) return setUnionRosterActive([ti, ui]);
+    let n: [number, number] | null = null;
+    for (let k = ti * 5 + ui + 1; k < 15; k++) {
+      const [t, u] = [Math.floor(k / 5), k % 5];
+      if (!unionRosterSim[t][u]) {
+        n = [t, u];
+        break;
+      }
+    }
+    setUnionRosterActive(n);
+  };
+  const setUnionBossOpt = (ti: number, patch: Partial<UnionBossOpts>) =>
+    setUnionBossOpts((prev) =>
+      prev.map((o, i) => (i === ti ? { ...o, ...patch } : o)),
+    );
+  const setUnionGenBossOpt = (ti: number, patch: Partial<UnionBossOpts>) =>
+    setUnionGenBossOpts((prev) =>
+      prev.map((o, i) => (i === ti ? { ...o, ...patch } : o)),
+    );
+  // Per-team sim config from union boss options (synchro level is shared)
+  const unionCalcCfg = (o: UnionBossOpts) => ({
+    bossElement: o.weakness ? WEAKNESS_TO_BOSS[o.weakness] : null,
+    bossDef: Number(o.bossDef) || 0,
+    level: Math.min(1200, Math.max(1, Number(level) || 400)),
+    copies: 0,
+    doll: false,
+    ol: 0 as const,
+    coreHitRate: o.coreCustom
+      ? Math.min(1, Math.max(0, Number(o.coreCustomVal) / 100 || 0))
+      : o.core,
+    rangeBonus: true,
+    durationSec: 180,
+  });
+  const runUnionRosterSim = () =>
+    runCalc(() => {
+      const deps = {
+        overrides,
+        skillLevels: skillLevelData,
+        cubes,
+        olLines: olLinesData,
+      };
+      const results = unionRosterSim
+        .map((team, ti) => ({ team, opts: unionBossOpts[ti] }))
+        .filter(({ team }) => team.some(Boolean))
+        .map(({ team, opts }) => {
+          const slugs = team.filter((s): s is string => !!s);
+          const cs = slugs.map((s) => data.characters[s]);
+          const prepared = prepareTeam(
+            cs as any,
+            slugs.map((s) => loadoutFor(s)),
+            deps as any,
+          );
+          const cfg = unionCalcCfg(opts);
+          const r = runSimMean(
+            cs as any,
+            mult,
+            { ...cfg, slugs } as SimConfig,
+            prepared,
+          );
+          return toTeamResult(r);
+        });
+      setUnionRosterSimResults(results);
+    });
+  const normalizeUnionRoster = (
+    raw: (string | null)[][],
+  ): (string | null)[][] =>
+    Array.from({ length: 3 }, (_, i) =>
+      Array.from({ length: 5 }, (_, j) => {
+        const s = raw?.[i]?.[j];
+        return s && data.characters[s] ? s : null;
+      }),
+    );
 
   // ---- Overload Calc: rank one carry's four free OL lines in an 8/12 team ----
   const olDeps = {
@@ -2789,6 +3212,143 @@ export function App({ user }: { user: AuthUser | null }) {
             )}
             onPick={(slug) =>
               assignRosterSlot(rosterActive[0], rosterActive[1], slug)
+            }
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  // Union Raid input: 3×5 grid + per-team boss options + shared picker
+  const unionInputThumbs = usePortraitThumbs(
+    unionRosterSim.flat().map((s) => (s ? data.characters[s]?.imageUrl : null)),
+    72,
+  );
+  // Compact per-team boss options (weakness pills + DEF input + core pills).
+  // Generic over the options object + setter so the Roster Sim and the Roster
+  // Generator can each drive their own per-team state.
+  const renderBossControls = (
+    o: UnionBossOpts,
+    setOpt: (patch: Partial<UnionBossOpts>) => void,
+  ) => (
+    <div className='union-boss-opts'>
+      <div className='union-boss-row'>
+        <span className='union-boss-label'>Weakness</span>
+        <div className='pills small'>
+          {ELEMENTS.map((e) => (
+            <button
+              key={e ?? 'none'}
+              className={o.weakness === e ? 'on' : ''}
+              onClick={() => setOpt({ weakness: e })}
+            >
+              {e ?? 'None'}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className='union-boss-row'>
+        <span className='union-boss-label'>Boss DEF</span>
+        <input
+          className='num'
+          value={o.bossDef}
+          onChange={(e) => setOpt({ bossDef: e.target.value })}
+        />
+      </div>
+      <div className='union-boss-row'>
+        <span className='union-boss-label'>Core</span>
+        <div className='pills small'>
+          {CORE_PRESETS.map((p) => (
+            <button
+              key={p.label}
+              className={!o.coreCustom && o.core === p.value ? 'on' : ''}
+              onClick={() => setOpt({ core: p.value, coreCustom: false })}
+            >
+              {p.label}
+            </button>
+          ))}
+          <button
+            className={o.coreCustom ? 'on' : ''}
+            onClick={() => setOpt({ coreCustom: true })}
+          >
+            Custom
+          </button>
+        </div>
+        {o.coreCustom && (
+          <input
+            className='num'
+            value={o.coreCustomVal}
+            onChange={(e) => setOpt({ coreCustomVal: e.target.value })}
+            placeholder='%'
+          />
+        )}
+      </div>
+    </div>
+  );
+  const unionBossControls = (ti: number) =>
+    renderBossControls(unionBossOpts[ti], (p) => setUnionBossOpt(ti, p));
+  const unionInputView = (
+    <div className='roster-input'>
+      {unionRosterSim.map((team, ti) => (
+        <div className='union-team-block' key={ti}>
+          <div className='roster-input-row'>
+            <span className='rg-label muted'>team {ti + 1}</span>
+            <div className='roster-slots'>
+              {team.map((slug, ui) => {
+                const c = slug ? data.characters[slug] : null;
+                const active =
+                  unionRosterActive?.[0] === ti &&
+                  unionRosterActive?.[1] === ui;
+                return (
+                  <button
+                    key={ui}
+                    type='button'
+                    className={`team-chip roster-slot${active ? ' active' : ''}`}
+                    title={c?.name ?? `team ${ti + 1} · slot ${ui + 1}`}
+                    onClick={() =>
+                      setUnionRosterActive(active ? null : [ti, ui])
+                    }
+                  >
+                    {c?.imageUrl ? (
+                      <img
+                        src={unionInputThumbs[c.imageUrl] ?? c.imageUrl}
+                        alt={c.name}
+                        draggable={false}
+                      />
+                    ) : (
+                      <span className='chip-empty'>+</span>
+                    )}
+                    {slug && (
+                      <span
+                        className='chip-x'
+                        role='button'
+                        aria-label='remove'
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          assignUnionSlot(ti, ui, null);
+                        }}
+                      >
+                        ×
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {unionBossControls(ti)}
+        </div>
+      ))}
+      {unionRosterActive && (
+        <div className='roster-picker'>
+          <CharSearch
+            placeholder={`pick for team ${unionRosterActive[0] + 1}, slot ${unionRosterActive[1] + 1}…`}
+            exclude={unionSlugsPlaced.filter(
+              (s) =>
+                s !==
+                unionRosterSim[unionRosterActive[0]][unionRosterActive[1]],
+            )}
+            onPick={(slug) =>
+              assignUnionSlot(unionRosterActive[0], unionRosterActive[1], slug)
             }
           />
         </div>
@@ -3263,30 +3823,87 @@ export function App({ user }: { user: AuthUser | null }) {
       return (
         <section className='calc-tab'>
           <h2>Roster Generator</h2>
-          <p className='muted'>
-            Builds the top 5 teams with no character reused across teams (same
-            scoring as Team Generator). Takes a few seconds — it runs hundreds
-            of fights.
-          </p>
-          {syncedGenPanel}
-          {blockedPanel}
-          <button
-            className='calc-run'
-            onClick={runTopTeams}
-            disabled={calcBusy}
-          >
-            {calcBusy ? 'Calculating…' : 'Calculate top 5 teams'}
-          </button>
-          {rosterResults && (
+          <div className='pills roster-mode-pills'>
+            <button
+              className={rosterGenMode === 'solo' ? 'on' : ''}
+              onClick={() => setRosterGenMode('solo')}
+            >
+              Solo Raid
+            </button>
+            <button
+              className={rosterGenMode === 'union' ? 'on' : ''}
+              onClick={() => setRosterGenMode('union')}
+            >
+              Union Raid
+            </button>
+          </div>
+          {rosterGenMode === 'solo' ? (
             <>
+              <p className='muted'>
+                Builds the top 5 teams with no character reused across teams
+                (same scoring as Team Generator). Takes a few seconds — it runs
+                hundreds of fights.
+              </p>
+              {syncedGenPanel}
+              {blockedPanel}
               <button
-                className='share-btn roster-copy-btn'
-                onClick={() => copyToRosterSim(rosterResults)}
-                title='send these 5 teams to the Roster Sim tab to edit + re-sim'
+                className='calc-run'
+                onClick={runTopTeams}
+                disabled={calcBusy}
               >
-                ✎ Copy to Roster Sim
+                {calcBusy ? 'Calculating…' : 'Calculate top 5 teams'}
               </button>
-              {rosterView(rosterResults)}
+              {rosterResults && (
+                <>
+                  <button
+                    className='share-btn roster-copy-btn'
+                    onClick={() => copyToRosterSim(rosterResults)}
+                    title='send these teams to the Roster Sim tab to edit + re-sim'
+                  >
+                    ✎ Copy to Roster Sim
+                  </button>
+                  {rosterView(rosterResults)}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <p className='muted'>
+                Builds three teams — each against its own boss — with no
+                character reused across teams. Set the boss options for each
+                team below. Takes a few seconds.
+              </p>
+              {syncedGenPanel}
+              {blockedPanel}
+              <div className='roster-input'>
+                {unionGenBossOpts.map((o, ti) => (
+                  <div className='union-team-block' key={ti}>
+                    <div className='roster-input-row'>
+                      <span className='rg-label muted'>team {ti + 1}</span>
+                    </div>
+                    {renderBossControls(o, (p) => setUnionGenBossOpt(ti, p))}
+                  </div>
+                ))}
+              </div>
+              <button
+                className='calc-run'
+                onClick={runUnionTopTeams}
+                disabled={calcBusy}
+              >
+                {calcBusy ? 'Calculating…' : 'Calculate 3 teams'}
+              </button>
+              {unionGenResults && (
+                <>
+                  <button
+                    className='share-btn roster-copy-btn'
+                    onClick={() => copyUnionGenToRosterSim(unionGenResults)}
+                    title='send these teams to the Roster Sim tab to edit + re-sim'
+                  >
+                    ✎ Copy to Roster Sim
+                  </button>
+                  {rosterView(unionGenResults)}
+                </>
+              )}
             </>
           )}
         </section>
@@ -3296,56 +3913,117 @@ export function App({ user }: { user: AuthUser | null }) {
       return (
         <section className='calc-tab'>
           <h2>Roster Sim</h2>
-          <p className='muted'>
-            Enter up to five teams of five and sim them all at once under the
-            boss options + “apply to all” loadout above. Each nikke can be used
-            once across the roster (solo-raid rule). Tap a slot to pick a unit.
-          </p>
-          {rosterInputView}
-          <div className='roster-sim-actions'>
+          <div className='pills roster-mode-pills'>
             <button
-              className='share-btn'
-              title='stage all five teams from the filterable roster grid, then save them to the page'
-              onClick={openRosterPicker}
+              className={rosterSimMode === 'solo' ? 'on' : ''}
+              onClick={() => setRosterSimMode('solo')}
             >
-              ▦ Browse Nikkes
+              Solo Raid
             </button>
             <button
-              className='calc-run'
-              onClick={runRosterSim}
-              disabled={!rosterAnyFilled || calcBusy}
+              className={rosterSimMode === 'union' ? 'on' : ''}
+              onClick={() => setRosterSimMode('union')}
             >
-              {calcBusy ? 'Simming…' : 'Sim roster'}
+              Union Raid
             </button>
-            {user && (
-              <button
-                className='share-btn'
-                onClick={onSaveRoster}
-                disabled={!rosterAnyFilled}
-                title='save this roster to your account'
-              >
-                {savedFlash ? '✓ Saved' : '💾 Save roster'}
-              </button>
-            )}
-            {rosterSlugsPlaced.length > 0 && (
-              <button
-                className='share-btn'
-                onClick={() => {
-                  setRosterSim(
-                    Array.from({ length: 5 }, () =>
-                      Array.from({ length: 5 }, () => null),
-                    ),
-                  );
-                  setRosterActive(null);
-                  setRosterSimResults(null);
-                }}
-                title='clear all slots'
-              >
-                Clear
-              </button>
-            )}
           </div>
-          {rosterSimResults && rosterView(rosterSimResults)}
+          {rosterSimMode === 'solo' ? (
+            <>
+              <p className='muted'>
+                Enter up to five teams and sim them all at once under the boss
+                options + "apply to all" loadout above. Each nikke can be used
+                once across the roster (solo-raid rule). Tap a slot to pick a
+                unit.
+              </p>
+              {rosterInputView}
+              <div className='roster-sim-actions'>
+                <button
+                  className='share-btn'
+                  title='stage all teams from the filterable roster grid, then save them to the page'
+                  onClick={openRosterPicker}
+                >
+                  ▦ Browse Nikkes
+                </button>
+                <button
+                  className='calc-run'
+                  onClick={runRosterSim}
+                  disabled={!rosterAnyFilled || calcBusy}
+                >
+                  {calcBusy ? 'Simming…' : 'Sim roster'}
+                </button>
+                {user && (
+                  <button
+                    className='share-btn'
+                    onClick={onSaveRoster}
+                    disabled={!rosterAnyFilled}
+                    title='save this roster to your account'
+                  >
+                    {savedFlash ? '✓ Saved' : '💾 Save roster'}
+                  </button>
+                )}
+                {rosterSlugsPlaced.length > 0 && (
+                  <button
+                    className='share-btn'
+                    onClick={() => {
+                      setRosterSim(
+                        Array.from({ length: 5 }, () =>
+                          Array.from({ length: 5 }, () => null),
+                        ),
+                      );
+                      setRosterActive(null);
+                      setRosterSimResults(null);
+                    }}
+                    title='clear all slots'
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {rosterSimResults && rosterView(rosterSimResults)}
+            </>
+          ) : (
+            <>
+              <p className='muted'>
+                Enter three teams — each fights a different boss with its own
+                weakness, DEF, and core visibility. Tap a slot to pick a unit.
+              </p>
+              {unionInputView}
+              <div className='roster-sim-actions'>
+                <button
+                  className='share-btn'
+                  title='stage all teams from the filterable roster grid, then save them to the page'
+                  onClick={openUnionRosterPicker}
+                >
+                  ▦ Browse Nikkes
+                </button>
+                <button
+                  className='calc-run'
+                  onClick={runUnionRosterSim}
+                  disabled={!unionAnyFilled || calcBusy}
+                >
+                  {calcBusy ? 'Simming…' : 'Sim union raid'}
+                </button>
+                {unionSlugsPlaced.length > 0 && (
+                  <button
+                    className='share-btn'
+                    onClick={() => {
+                      setUnionRosterSim(
+                        Array.from({ length: 3 }, () =>
+                          Array.from({ length: 5 }, () => null),
+                        ),
+                      );
+                      setUnionRosterActive(null);
+                      setUnionRosterSimResults(null);
+                    }}
+                    title='clear all slots'
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+              {unionRosterSimResults && rosterView(unionRosterSimResults)}
+            </>
+          )}
         </section>
       );
     }
@@ -5119,11 +5797,25 @@ export function App({ user }: { user: AuthUser | null }) {
         selectTab('sim');
         return null;
       };
-      // Only offered in the expanded 5×5 mode — replaces the whole roster.
-      const onTbCopyToRoster = (rows: (string | null)[][]): string | null => {
+      // Only offered in the expanded 5×5 (solo) or 3×5 (union) mode — replaces
+      // the whole roster and switches to the matching roster sim mode.
+      const onTbCopyToRoster = (
+        rows: (string | null)[][],
+        mode: 'solo' | 'union',
+      ): string | null => {
         const warning = unsupportedWarning(rows.flat());
         if (warning) return warning;
-        setRosterSim(rows.map((row) => [...row]));
+        if (mode === 'union') {
+          setUnionRosterSim(normalizeUnionRoster(rows));
+          setUnionRosterSimResults(null);
+          setUnionRosterActive(null);
+          setRosterSimMode('union');
+        } else {
+          setRosterSim(normalizeRoster(rows));
+          setRosterSimResults(null);
+          setRosterActive(null);
+          setRosterSimMode('solo');
+        }
         selectTab('rostersim');
         return null;
       };
@@ -5166,41 +5858,69 @@ export function App({ user }: { user: AuthUser | null }) {
         <div className='header-row'>
           <h1>{TAB_H1[tab] ?? 'NIKKE Solo Raid Sim'}</h1>
           {/* team share actions act on the hand-built team, so they stay off
-              the generator tabs (which have their own result share buttons) */}
-          {!inTools && tab !== 'team' && tab !== 'roster' && (
+              the generator tabs (which have their own result share buttons)
+              and the roster sim (which has its own generate link / copy image) */}
+          {!inTools &&
+            tab !== 'team' &&
+            tab !== 'roster' &&
+            tab !== 'rostersim' && (
+              <div className='share-actions'>
+                {user && (
+                  <>
+                    <button
+                      className='share-btn'
+                      onClick={onSaveTeam}
+                      disabled={slots.every((s) => !s.slug)}
+                      title='save this team + full loadout to your account'
+                    >
+                      {savedFlash ? '✓ Saved' : '💾 Save team'}
+                    </button>
+                    <button
+                      className='share-btn'
+                      onClick={openTeams}
+                      title='your saved teams'
+                    >
+                      📋 My teams
+                    </button>
+                  </>
+                )}
+                <button
+                  className='share-btn'
+                  onClick={onShare}
+                  disabled={slots.every((s) => !s.slug)}
+                  title='copy a link that prefills this team'
+                >
+                  {shared ? '✓ Link copied' : '🔗 Share team'}
+                </button>
+                <button
+                  className='share-btn'
+                  onClick={onShareImage}
+                  disabled={!r}
+                  title='copy a summary image of the results to your clipboard'
+                >
+                  {imaged ? '✓ Copied' : '🖼 Copy image'}
+                </button>
+              </div>
+            )}
+          {tab === 'rostersim' && (
             <div className='share-actions'>
-              {user && (
-                <>
-                  <button
-                    className='share-btn'
-                    onClick={onSaveTeam}
-                    disabled={slots.every((s) => !s.slug)}
-                    title='save this team + full loadout to your account'
-                  >
-                    {savedFlash ? '✓ Saved' : '💾 Save team'}
-                  </button>
-                  <button
-                    className='share-btn'
-                    onClick={openTeams}
-                    title='your saved teams'
-                  >
-                    📋 My teams
-                  </button>
-                </>
-              )}
               <button
                 className='share-btn'
-                onClick={onShare}
-                disabled={slots.every((s) => !s.slug)}
-                title='copy a link that prefills this team'
+                onClick={() => void onRosterSimGenLink()}
+                disabled={
+                  rosterSimMode === 'union' ? !unionAnyFilled : !rosterAnyFilled
+                }
+                title='copy a link that prefills this roster'
               >
-                {shared ? '✓ Link copied' : '🔗 Share team'}
+                {shared ? '✓ Link copied' : '🔗 Generate link'}
               </button>
               <button
                 className='share-btn'
-                onClick={onShareImage}
-                disabled={!r}
-                title='copy a summary image of the results to your clipboard'
+                onClick={() => void onRosterSimCopyImage()}
+                disabled={
+                  rosterSimMode === 'union' ? !unionAnyFilled : !rosterAnyFilled
+                }
+                title='copy a summary image of the roster to your clipboard'
               >
                 {imaged ? '✓ Copied' : '🖼 Copy image'}
               </button>
@@ -5220,9 +5940,18 @@ export function App({ user }: { user: AuthUser | null }) {
                 onClick={() =>
                   tab === 'team'
                     ? teamResult && void shareTeam(teamResult)
-                    : rosterResults && void shareRoster(rosterResults)
+                    : rosterGenMode === 'union'
+                      ? unionGenResults &&
+                        void shareUnionRoster(unionGenResults, unionGenBossOpts)
+                      : rosterResults && void shareRoster(rosterResults)
                 }
-                disabled={tab === 'team' ? !teamResult : !rosterResults}
+                disabled={
+                  tab === 'team'
+                    ? !teamResult
+                    : rosterGenMode === 'union'
+                      ? !unionGenResults
+                      : !rosterResults
+                }
                 title='copy a summary image of the result to your clipboard'
               >
                 {imaged ? '✓ Copied' : '🖼 Copy image'}
@@ -5236,9 +5965,11 @@ export function App({ user }: { user: AuthUser | null }) {
                 onClick={() => void onTbGenerateLink(tbBuildRows())}
                 disabled={!tbSlugs.some(Boolean)}
                 title={
-                  tbRosterMode
-                    ? 'copy a link that prefills this roster in the Roster Sim'
-                    : 'copy a link that prefills this team in the Team Sim'
+                  tbRosterMode === 'union'
+                    ? 'copy a link that prefills this union raid in the Roster Sim'
+                    : tbRosterMode === 'solo'
+                      ? 'copy a link that prefills this roster in the Roster Sim'
+                      : 'copy a link that prefills this team in the Team Sim'
                 }
               >
                 {shared ? '✓ Link copied' : '🔗 Generate link'}
@@ -5248,9 +5979,11 @@ export function App({ user }: { user: AuthUser | null }) {
                 onClick={() => void onTbCopyImage(tbBuildRows())}
                 disabled={!tbSlugs.some(Boolean)}
                 title={
-                  tbRosterMode
-                    ? 'copy a summary image of the roster to your clipboard'
-                    : 'copy a summary image of the team to your clipboard'
+                  tbRosterMode === 'union'
+                    ? 'copy a summary image of the union raid to your clipboard'
+                    : tbRosterMode === 'solo'
+                      ? 'copy a summary image of the roster to your clipboard'
+                      : 'copy a summary image of the team to your clipboard'
                 }
               >
                 {imaged ? '✓ Copied' : '🖼 Copy image'}
@@ -5306,76 +6039,83 @@ export function App({ user }: { user: AuthUser | null }) {
         !(tab === 'overload' && olMode === 'matrix') && (
           <>
             <section className='global'>
-              <div className='field'>
-                <label title='the element that is strong against the boss'>
-                  Boss weakness
-                </label>
-                <PillGrid>
-                  {ELEMENTS.map((e) => {
-                    const src = e
-                      ? `/nikke-icons/code_${e.toLowerCase()}.svg`
-                      : null;
-                    return (
+              {/* Boss weakness / DEF / core are per-team in Union Raid mode */}
+              {!(tab === 'rostersim' && rosterSimMode === 'union') && (
+                <>
+                  <div className='field'>
+                    <label title='the element that is strong against the boss'>
+                      Boss weakness
+                    </label>
+                    <PillGrid>
+                      {ELEMENTS.map((e) => {
+                        const src = e
+                          ? `/nikke-icons/code_${e.toLowerCase()}.svg`
+                          : null;
+                        return (
+                          <button
+                            key={e ?? 'none'}
+                            className={weakness === e ? 'on' : ''}
+                            onClick={() => setWeakness(e)}
+                          >
+                            {src && (
+                              <img
+                                className='pill-icon'
+                                src={src}
+                                alt=''
+                                aria-hidden='true'
+                                data-colored=''
+                              />
+                            )}
+                            {e ?? 'None'}
+                          </button>
+                        );
+                      })}
+                    </PillGrid>
+                  </div>
+                  <div className='field'>
+                    <label>Boss DEF</label>
+                    <input
+                      className='num'
+                      value={bossDef}
+                      onChange={(e) => setBossDef(e.target.value)}
+                    />
+                  </div>
+                  <div className='field'>
+                    <label>Core visibility</label>
+                    <PillGrid>
+                      {CORE_PRESETS.map((p) => (
+                        <button
+                          key={p.label}
+                          className={
+                            !coreCustom && core === p.value ? 'on' : ''
+                          }
+                          onClick={() => {
+                            setCore(p.value);
+                            setCoreCustom(false);
+                          }}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
                       <button
-                        key={e ?? 'none'}
-                        className={weakness === e ? 'on' : ''}
-                        onClick={() => setWeakness(e)}
+                        className={coreCustom ? 'on' : ''}
+                        onClick={() => setCoreCustom(true)}
                       >
-                        {src && (
-                          <img
-                            className='pill-icon'
-                            src={src}
-                            alt=''
-                            aria-hidden='true'
-                            data-colored=''
-                          />
-                        )}
-                        {e ?? 'None'}
+                        Custom
                       </button>
-                    );
-                  })}
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label>Boss DEF</label>
-                <input
-                  className='num'
-                  value={bossDef}
-                  onChange={(e) => setBossDef(e.target.value)}
-                />
-              </div>
-              <div className='field'>
-                <label>Core visibility</label>
-                <PillGrid>
-                  {CORE_PRESETS.map((p) => (
-                    <button
-                      key={p.label}
-                      className={!coreCustom && core === p.value ? 'on' : ''}
-                      onClick={() => {
-                        setCore(p.value);
-                        setCoreCustom(false);
-                      }}
-                    >
-                      {p.label}
-                    </button>
-                  ))}
-                  <button
-                    className={coreCustom ? 'on' : ''}
-                    onClick={() => setCoreCustom(true)}
-                  >
-                    Custom
-                  </button>
-                </PillGrid>
-                {coreCustom && (
-                  <input
-                    className='num'
-                    style={{ marginTop: 6 }}
-                    value={coreCustomVal}
-                    onChange={(e) => setCoreCustomVal(e.target.value)}
-                    placeholder='%'
-                  />
-                )}
-              </div>
+                    </PillGrid>
+                    {coreCustom && (
+                      <input
+                        className='num'
+                        style={{ marginTop: 6 }}
+                        value={coreCustomVal}
+                        onChange={(e) => setCoreCustomVal(e.target.value)}
+                        placeholder='%'
+                      />
+                    )}
+                  </div>
+                </>
+              )}
               <div className='field'>
                 <label>Synchro level</label>
                 <div className='pills'>
@@ -6013,6 +6753,24 @@ export function App({ user }: { user: AuthUser | null }) {
         />
       )}
 
+      {showUnionRosterPicker && unionRosterPickerStaged && (
+        <BrowseRosterNikkesModal
+          staged={unionRosterPickerStaged}
+          onStagedChange={setUnionRosterPickerStaged}
+          onClose={() => setShowUnionRosterPicker(false)}
+          actions={
+            <button
+              className='teambuilder-action'
+              disabled={!unionRosterPickerStaged.flat().some(Boolean)}
+              title='apply this roster to the page'
+              onClick={saveUnionPickerToRoster}
+            >
+              Save Roster
+            </button>
+          }
+        />
+      )}
+
       {showTeams && (
         <div className='modal-backdrop' onClick={() => setShowTeams(false)}>
           <div className='modal' onClick={(e) => e.stopPropagation()}>
@@ -6050,7 +6808,7 @@ export function App({ user }: { user: AuthUser | null }) {
                           const n = b.roster
                             .flat()
                             .filter((s) => s && data.characters[s]).length;
-                          return `${n} unit${n === 1 ? '' : 's'} across 5 teams`;
+                          return `${n} unit${n === 1 ? '' : 's'} across ${b.roster.length} teams`;
                         }
                         const names = (b?.s ?? [])
                           .map((s) =>

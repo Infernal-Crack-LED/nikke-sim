@@ -253,10 +253,14 @@ export interface RosterCardUnit {
 export interface RosterCardTeam {
   teamDamage: number;
   units: RosterCardUnit[];
+  // per-team boss options line (union raid); rendered beside the team label
+  bossLabel?: string;
 }
 export interface RosterCardData {
   totalDamage: number; // sum across all teams
   teams: RosterCardTeam[];
+  // card title override (defaults to "NIKKE Solo Raid Sim · Roster Generator")
+  title?: string;
 }
 
 const R_HEAD_H = 156;
@@ -279,6 +283,7 @@ export function drawRosterCard(
   const W = CARD_W;
   const padX = PAD_X;
   const H = rosterCardHeight(data.teams.length);
+  const hasBossLabels = data.teams.some((t) => t.bossLabel);
 
   // background + accent bar
   ctx.fillStyle = '#101216';
@@ -291,23 +296,39 @@ export function drawRosterCard(
   ctx.textAlign = 'left';
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 30px ${FONT}`;
-  ctx.fillText('NIKKE Solo Raid Sim · Roster Generator', padX, 56);
+  ctx.fillText(
+    data.title ?? 'NIKKE Solo Raid Sim · Roster Generator',
+    padX,
+    56,
+  );
   ctx.font = `700 40px ${FONT}`;
   ctx.fillText(fmt(data.totalDamage), padX, 108);
   const bigW = ctx.measureText(fmt(data.totalDamage)).width;
   ctx.font = `400 18px ${FONT}`;
   ctx.fillStyle = '#8b93a3';
-  ctx.fillText('total damage across all 5 teams', padX + bigW + 24, 102);
   ctx.fillText(
-    `${meta.weakness ? `${meta.weakness}-weak boss` : 'no element'}  ·  lvl ${
-      meta.level
-    }  ·  ${meta.coreLabel}  ·  180s`,
-    padX,
-    136,
+    `total damage across all ${data.teams.length} teams`,
+    padX + bigW + 24,
+    102,
   );
+  // global meta line — omitted when per-team boss labels carry the options
+  if (!hasBossLabels) {
+    ctx.fillText(
+      `${meta.weakness ? `${meta.weakness}-weak boss` : 'no element'}  ·  lvl ${
+        meta.level
+      }  ·  ${meta.coreLabel}  ·  180s`,
+      padX,
+      136,
+    );
+  } else {
+    ctx.fillText(`lvl ${meta.level}  ·  180s`, padX, 136);
+  }
 
   // one row per team: portraits then a total-damage bar scaled to the top team.
-  const stripW = data.teams[0] ? data.teams[0].units.length * R_PS + (data.teams[0].units.length - 1) * R_GAP : 0;
+  const stripW = data.teams[0]
+    ? data.teams[0].units.length * R_PS +
+      (data.teams[0].units.length - 1) * R_GAP
+    : 0;
   const barX = padX + stripW + 28;
   const barW = W - barX - 200;
   const maxDmg = Math.max(...data.teams.map((t) => t.teamDamage), 1);
@@ -338,21 +359,35 @@ export function drawRosterCard(
         ctx.fillStyle = col;
         ctx.font = `700 24px ${FONT}`;
         ctx.textAlign = 'center';
-        ctx.fillText((u.name[0] ?? '?').toUpperCase(), px + R_PS / 2, py + R_PS / 2 + 8);
+        ctx.fillText(
+          (u.name[0] ?? '?').toUpperCase(),
+          px + R_PS / 2,
+          py + R_PS / 2 + 8,
+        );
         ctx.textAlign = 'left';
       }
     });
-    // team label
+    // team label (+ per-team boss options when present)
     ctx.fillStyle = '#8b93a3';
     ctx.font = `600 13px ${FONT}`;
-    ctx.fillText(`team ${i + 1}`, padX, py - 6);
+    const label = t.bossLabel
+      ? `team ${i + 1}  ·  ${t.bossLabel}`
+      : `team ${i + 1}`;
+    ctx.fillText(label, padX, py - 6);
     // damage bar (scaled to the strongest team)
     const barY = y + R_ROW_H / 2 - 11;
     ctx.fillStyle = '#2a2f3b';
     roundRect(ctx, barX, barY, barW, 22, 11);
     ctx.fill();
     ctx.fillStyle = '#5b9dff';
-    roundRect(ctx, barX, barY, Math.max(2, (t.teamDamage / maxDmg) * barW), 22, 11);
+    roundRect(
+      ctx,
+      barX,
+      barY,
+      Math.max(2, (t.teamDamage / maxDmg) * barW),
+      22,
+      11,
+    );
     ctx.fill();
     // value (right aligned)
     ctx.textAlign = 'right';

@@ -8,20 +8,23 @@ import { CharacterGrid } from './CharacterGrid';
 
 const data = charactersJson as unknown as DataFile;
 
-// Shared shell for the Browse Nikkes modals: heading + selection area + hint +
-// commit buttons + the filterable roster grid. The selection state is OWNED BY
-// THE CALLER (App) so a dismissed modal keeps its staged team — nothing is
-// applied to the page until a Save button is pressed, and reopening shows the
-// picks exactly as they were left.
+// Shared shell for the Browse Nikkes modals: heading + selection area + commit
+// buttons + the filterable roster grid + hint. The commit buttons sit directly
+// under the staged portraits so they're in reach before scrolling the grid. The
+// selection state is OWNED BY THE CALLER (App) so a dismissed modal keeps its
+// staged team — nothing is applied to the page until a Save button is pressed,
+// and reopening shows the picks exactly as they were left.
 function PickerShell({
   hint,
   actions,
   onClose,
+  portraits,
   children,
 }: {
   hint: string;
   actions: ReactNode;
   onClose: () => void;
+  portraits: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -33,9 +36,10 @@ function PickerShell({
             ×
           </button>
         </div>
+        {portraits}
+        <div className='teambuilder-actions'>{actions}</div>
         {children}
         <p className='muted picker-hint'>{hint}</p>
-        <div className='teambuilder-actions'>{actions}</div>
       </div>
     </div>
   );
@@ -86,59 +90,62 @@ export function BrowseNikkesModal({
       hint='Click a card to fill the next open slot, drag portraits to reorder, click × to remove. Placed units leave the list. Nothing is applied to the page until you press Save Team.'
       actions={actions}
       onClose={onClose}
-    >
-      <div className='teambuilder-team'>
-        <div className='roster-slots'>
-          {staged.map((slug, i) => {
-            const c = slug ? data.characters[slug] : null;
-            return (
-              <button
-                key={i}
-                type='button'
-                ref={reorder.register(i)}
-                className={
-                  'team-chip roster-slot' +
-                  (slug ? ' active' : '') +
-                  (reorder.dragIndex === i ? ' dragging' : '')
-                }
-                title={c?.name ?? `slot ${i + 1}`}
-                {...reorder.handleProps(i)}
-              >
-                {c?.imageUrl ? (
-                  <img
-                    src={stripThumbs[c.imageUrl] ?? c.imageUrl}
-                    alt={c.name}
-                    draggable={false}
-                  />
-                ) : (
-                  <span className='chip-empty'>+</span>
-                )}
-                {slug && (
-                  <span
-                    className='chip-x'
-                    role='button'
-                    aria-label='remove'
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      remove(i);
-                    }}
-                  >
-                    ×
-                  </span>
-                )}
-              </button>
-            );
-          })}
+      portraits={
+        <div className='teambuilder-team'>
+          <div className='roster-slots'>
+            {staged.map((slug, i) => {
+              const c = slug ? data.characters[slug] : null;
+              return (
+                <button
+                  key={i}
+                  type='button'
+                  ref={reorder.register(i)}
+                  className={
+                    'team-chip roster-slot' +
+                    (slug ? ' active' : '') +
+                    (reorder.dragIndex === i ? ' dragging' : '')
+                  }
+                  title={c?.name ?? `slot ${i + 1}`}
+                  {...reorder.handleProps(i)}
+                >
+                  {c?.imageUrl ? (
+                    <img
+                      src={stripThumbs[c.imageUrl] ?? c.imageUrl}
+                      alt={c.name}
+                      draggable={false}
+                    />
+                  ) : (
+                    <span className='chip-empty'>+</span>
+                  )}
+                  {slug && (
+                    <span
+                      className='chip-x'
+                      role='button'
+                      aria-label='remove'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        remove(i);
+                      }}
+                    >
+                      ×
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      }
+    >
       <CharacterGrid exclude={new Set(stagedUrls)} onToggle={place} />
     </PickerShell>
   );
 }
 
-// Roster Sim's picker: the full 5×5 roster grid, so all five teams are staged
-// at once. Click a slot to target it, or just click cards to fill the next
-// open slot row-by-row; "Save Roster" writes all 25 slots to the page.
+// Roster Sim's picker: the full roster grid (5 teams for solo raid, 3 for
+// union raid), so every team is staged at once. Click a slot to target it, or
+// just click cards to fill the next open slot row-by-row; "Save Roster" writes
+// all slots to the page.
 export function BrowseRosterNikkesModal({
   staged,
   onStagedChange,
@@ -180,16 +187,17 @@ export function BrowseRosterNikkesModal({
     next[t][u] = null;
     onStagedChange(next);
   };
-  // drag to move a unit between slots — including across teams (all 25 chips
+  // drag to move a unit between slots — including across teams (all chips
   // register into one flat nearest-centre field); a press without movement
   // toggles the slot's targeting instead
+  const rows = staged.length;
   const reorder = useDragReorder(
     (from, to) => {
       const flat = staged.flat();
       const [item] = flat.splice(from, 1);
       flat.splice(to, 0, item);
       onStagedChange(
-        Array.from({ length: 5 }, (_, t) => flat.slice(t * 5, t * 5 + 5)),
+        Array.from({ length: rows }, (_, t) => flat.slice(t * 5, t * 5 + 5)),
       );
     },
     (i) => {
@@ -205,54 +213,56 @@ export function BrowseRosterNikkesModal({
       hint='Click a slot to target it, then click a card — or just click cards to fill the next open slot. Drag portraits between slots or across teams; click × to clear a slot. Nothing is applied to the page until you press Save Roster.'
       actions={actions}
       onClose={onClose}
-    >
-      <div className='roster-input'>
-        {staged.map((row, t) => (
-          <div className='roster-input-row' key={t}>
-            <span className='rg-label muted'>team {t + 1}</span>
-            <div className='roster-slots'>
-              {row.map((slug, u) => {
-                const c = slug ? data.characters[slug] : null;
-                const i = t * 5 + u;
-                const isActive = active?.[0] === t && active?.[1] === u;
-                return (
-                  <button
-                    key={u}
-                    type='button'
-                    ref={reorder.register(i)}
-                    className={`team-chip roster-slot${isActive ? ' active' : ''}${reorder.dragIndex === i ? ' dragging' : ''}`}
-                    title={c?.name ?? `team ${t + 1} · slot ${u + 1}`}
-                    {...reorder.handleProps(i)}
-                  >
-                    {c?.imageUrl ? (
-                      <img
-                        src={chipThumbs[c.imageUrl] ?? c.imageUrl}
-                        alt={c.name}
-                        draggable={false}
-                      />
-                    ) : (
-                      <span className='chip-empty'>+</span>
-                    )}
-                    {slug && (
-                      <span
-                        className='chip-x'
-                        role='button'
-                        aria-label='remove'
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearAt(t, u);
-                        }}
-                      >
-                        ×
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+      portraits={
+        <div className='roster-input'>
+          {staged.map((row, t) => (
+            <div className='roster-input-row' key={t}>
+              <span className='rg-label muted'>team {t + 1}</span>
+              <div className='roster-slots'>
+                {row.map((slug, u) => {
+                  const c = slug ? data.characters[slug] : null;
+                  const i = t * 5 + u;
+                  const isActive = active?.[0] === t && active?.[1] === u;
+                  return (
+                    <button
+                      key={u}
+                      type='button'
+                      ref={reorder.register(i)}
+                      className={`team-chip roster-slot${isActive ? ' active' : ''}${reorder.dragIndex === i ? ' dragging' : ''}`}
+                      title={c?.name ?? `team ${t + 1} · slot ${u + 1}`}
+                      {...reorder.handleProps(i)}
+                    >
+                      {c?.imageUrl ? (
+                        <img
+                          src={chipThumbs[c.imageUrl] ?? c.imageUrl}
+                          alt={c.name}
+                          draggable={false}
+                        />
+                      ) : (
+                        <span className='chip-empty'>+</span>
+                      )}
+                      {slug && (
+                        <span
+                          className='chip-x'
+                          role='button'
+                          aria-label='remove'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            clearAt(t, u);
+                          }}
+                        >
+                          ×
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      }
+    >
       <CharacterGrid exclude={new Set(stagedUrls)} onToggle={place} />
     </PickerShell>
   );

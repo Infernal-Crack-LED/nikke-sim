@@ -145,10 +145,12 @@ export async function shareTeamCard(
 export interface ShareRosterTeam {
   teamDamage: number;
   units: { slug: string; name: string; element: string }[];
+  bossLabel?: string;
 }
 export interface ShareRosterData {
   totalDamage: number;
   teams: ShareRosterTeam[];
+  title?: string;
 }
 
 // Render the roster summary card (real portraits) to a PNG blob. Portraits for
@@ -170,6 +172,7 @@ export async function buildRosterCardBlob(
   const teams = await Promise.all(
     data.teams.map(async (t) => ({
       teamDamage: t.teamDamage,
+      bossLabel: t.bossLabel,
       units: await Promise.all(
         t.units.map(async (u) => ({
           name: u.name,
@@ -191,7 +194,7 @@ export async function buildRosterCardBlob(
   ctx.imageSmoothingQuality = 'high';
   drawRosterCard(
     ctx as unknown as Canvas2DLike,
-    { totalDamage: data.totalDamage, teams },
+    { totalDamage: data.totalDamage, teams, title: data.title },
     meta,
   );
   return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'));
