@@ -397,9 +397,14 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 > revealing old over-credits, not the fix being wrong; re-tune each against footage in a separate gated pass.
 >
 > **Two open sub-questions filed (Fable pre-op revisions):**
-> - **(a) leftmost-vs-first-ready selection under a small window.** The window fix makes leftmost and
->   earliest-ready mostly coincide, but a comp with two B3s ready within ~2s of each other could still mis-allocate
->   under the leftmost rule. Not resolved, only masked in current comps — needs a comp that isolates it + footage.
+> - **(a) leftmost-vs-first-ready selection → RESOLVED 2026-07-21: switched to FIRST-READY (DECISIONS 2026-07-21,
+>   commit 533bf88).** Real auto casts whichever burst comes up first, and for equal-CD B3s first-ready guarantees
+>   clean alternation (round-robin) while strict-leftmost let the leftmost slot monopolize. Graded-board-neutral
+>   (regression byte-identical); moves only ungraded comps and every diff is first-ready correcting a leftmost
+>   monopoly/skip (traced random 9 cinderella ×6 → cinderella/bready 3/3; random 10 diesel-winter-sweets excluded →
+>   startup burst). `B3_LEFTMOST` env reverts. (Owner premise "they never conflict at current CDR" was slightly
+>   off — ~1/3 of random teams differ — but first-ready is the more faithful pick in every conflict, so the
+>   change stands.)
 > - **(b) owner ~1s activation delay vs the sim's 0.5s `STAGE_CAST_GAP` → RESOLVED 2026-07-21: the 0.5s gap is
 >   MEASURED-CORRECT; the owner's ~1s was hand-wavey.** Two independent lines: (1) auto-play.md §3 (nikke-synergy
 >   arena guide) measures B1→B2 / B2→B3 ≈ 0.533s each (gauge→B1 ≈ 0.433s); (2) an isolated gap sweep at

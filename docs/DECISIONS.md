@@ -8,6 +8,25 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) B3/B2 in-window stage selection: strict-leftmost → FIRST-READY (earliest-ready, tie→leftmost) — LANDED.**
+  Real auto casts whichever burst comes up first, so the timed-window stage-2/3 pick is the stage-filler whose
+  cooldown ends SOONEST, not the strictly-leftmost one (owner ruling 2026-07-21). For equal-CD B3s this
+  GUARANTEES clean alternation — "earliest-ready" is always the longest-waiting unit, a natural round-robin —
+  whereas strict-leftmost let the leftmost slot MONOPOLIZE (a 40s B3 that fits the window every cycle casts all
+  of them; the equal-CD unit beside it never bursts). This is the correct resolution of the U16
+  sakura-bloom-in-summer over-allocation *family* at the selection layer (the `STAGE_WINDOW` 600→120 fix, same
+  date, already resolved the graded cases by removing the false contention; first-ready generalizes it).
+  **GRADED-BOARD-NEUTRAL:** regression byte-identical, board-read ratios unchanged to 3 decimals — at the ~2s
+  window with current game CDR the two rules coincide on every graded comp. It moves only UNGRADED comps, and
+  every diff is first-ready CORRECTING a leftmost monopoly/skip (40-team random battery: ~1/3 of teams differ;
+  traced random 9 cinderella ×6 → cinderella/bready 3/3 alternation, random 10 diesel-winter-sweets excluded →
+  gets her startup burst). Bench-B3 exclusion preserved: a 3rd same-CD B3 that can't fit the short window never
+  becomes earliest-ready-in-window, so it never casts (round-robin-that-benches was tried + rejected 2026-07-13;
+  first-ready is NOT that — it never picks a genuinely-unavailable bench B3). Evidence: owner mechanic (real-auto
+  first-available) + graded-board-neutrality proven + conflict traces confirming faithfulness (ungraded/unfootaged
+  so "more faithful" rests on the mechanic, not per-comp footage). `B3_LEFTMOST` env reverts. Commit 533bf88;
+  closes open-questions U16 sub-question (a).
+
 - **(2026-07-21) Burst-chain reserve window `STAGE_WINDOW_FRAMES` 600→120 — it was the FB-STATE duration, not the auto chain-grace — LANDED.**
   The stage-2/3 "reserve/grace" window (how long a filled burst chain WAITS for a stage-filling unit to come
   off cooldown before the chain expires) was set to **600f = the datamined `burst_duration` (=10s)** — but that
