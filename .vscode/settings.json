@@ -1,17 +1,10 @@
 {
-  // docs/probes/ is ~27 GB of gitignored recordings. Watching/indexing it pins the
-  // VSCode extension host at 100% CPU and freezes the UI (which kills in-progress agents).
-  // Exclude it from file-watching, search, and the explorer.
   "files.watcherExclude": {
     "**/docs/probes/**": true,
     "**/node_modules/**": true,
     "**/.git/objects/**": true,
     "**/.git-private/objects/**": true
   },
-  // NOTE: docs/probes is intentionally NOT search-excluded — the video files stay
-  // findable by name in search / Quick Open / the Claude @-picker. Full-text search
-  // skips binary content, so this costs only filename enumeration (278 files), not
-  // the 27 GB scan. The watcherExclude above is what prevents the freezes.
   "search.exclude": {
     "**/node_modules": true,
     "**/web/node_modules": true
