@@ -1,0 +1,438 @@
+{
+  "product-08": {
+    "slug": "product-08",
+    "name": "Product 08",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/jx-08/fh-52/8b63108b04e07654fc11117bea6fb2c7.png",
+    "weapon": "SR",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Electric",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 69.04,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 8.4,
+    "burstGaugePerShot": 2.8,
+    "treasure": false,
+    "nicknames": [
+      "p0"
+    ],
+    "skills": {
+      "skill1": "■ When a normal attack hits, there is a 20% chance of affecting 1 ally unit(s) with the lowest remaining HP.\nDEF ▲ 9.09% for 5 sec.",
+      "skill2": "■ Affects 1 ally unit(s) with the highest final ATK. \nCritical Rate ▲ 22.99% for 5 sec.",
+      "burst": "■ Affects all allies.\nATK ▲ 19.39% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1030201,
+        "shot_detail": {
+          "id": 1030201,
+          "damage": 6904,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 30,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Bio",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 28000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 56000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2302101,
+        "skill2_id": 1302201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2302101,
+          "icon": "icn_skill_defup_01",
+          "group_id": 23021,
+          "skill_level": 1,
+          "name_localkey": "Tactic: Enhance Armor",
+          "next_level_id": 2302102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ When a normal attack hits, there is a {description_value_04}% chance of affecting {description_value_01} ally unit(s) with the lowest remaining HP.\n<color=#00AEFF>DEF ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "2.27",
+                "3.03",
+                "3.78",
+                "4.54",
+                "5.3",
+                "6.06",
+                "6.81",
+                "7.57",
+                "8.33",
+                "9.09"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1302201,
+          "icon": "icn_skill_statcritical_01",
+          "group_id": 13022,
+          "skill_level": 1,
+          "name_localkey": "Tactic: Crack Shot",
+          "next_level_id": 1302202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Affects {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK. \n<color=#00AEFF>Critical Rate ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "5.74",
+                "7.66",
+                "9.58",
+                "11.49",
+                "13.41",
+                "15.32",
+                "17.24",
+                "19.16",
+                "21.07",
+                "22.99"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1302301,
+        "ulti_skill_detail": {
+          "id": 1302301,
+          "icon": "icn_skill_c302_ult",
+          "group_id": 13023,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Tactic: Power Boost",
+          "next_level_id": 1302302,
+          "prefer_target": "LowHP",
+          "resource_name": "c302_ulti",
+          "duration_value": 1000,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "4.84",
+                "6.46",
+                "8.08",
+                "9.69",
+                "11.31",
+                "12.93",
+                "14.54",
+                "16.16",
+                "17.77",
+                "19.39"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            130230101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 0,
+        "grade_core_id": 201,
+        "stat_enhance_id": 1302,
+        "stat_enhance_detail": {
+          "id": 1302,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 16,
+          "grade_defence": 80,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 0
+      },
+      "meta": {
+        "id": 130201,
+        "class": "Supporter",
+        "order": 50004,
+        "name_code": 1015,
+        "corporation": "MISSILIS",
+        "resource_id": 302,
+        "name_localkey": "Product 08",
+        "original_rare": "R",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 11500,
+      "atk": 400,
+      "def": 67,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 16,
+        "def": 80,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 302
+    }
+  }
+}

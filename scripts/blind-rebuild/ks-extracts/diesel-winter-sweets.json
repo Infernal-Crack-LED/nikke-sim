@@ -1,0 +1,65 @@
+{
+  "diesel-winter-sweets": {
+    "name": "Diesel: Winter Sweets",
+    "burst": "III",
+    "weapon": "RL",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "0.831 COLD ROOT CAUSE CONFIRMED: she makes 0 bursts in graded comp N5 (Privaty/SWHA alternate, never reach slot 5) -> stays in HIGHLIGHT -> sustained should be 235.03% not hard-coded Intro 60.19% -> fixing = 0.831->~0.92 (+real FB ~0.96). COMP-DEPENDENT (Run D leftmost-B3 -> Intro was right there). Fix: chainGate selfCast/selfNotCast on fullBurstEnter+target self"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Run D: 1.01-1.06",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.",
+        "Highlight: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.",
+        "Activates when entering Full Burst. Affects self if in Highlight status.",
+        "Sustained damage ▲ 235.03% for 10 sec."
+      ],
+      "skill2": [
+        "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
+        "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
+        "Activates when an ally or self destroys an enemy's part. Affects self.",
+        "Sustained Damage ▲ 68.04% for 15 sec."
+      ],
+      "burst": [
+        "Activates while the skill user is in Highlight status. Affects all allies (except self).",
+        "Noise Pollution: Hit Rate ▼ 100% for 1 sec.",
+        "Affects all allies if the skill user is in Highlight status.",
+        "Mute stacks ▼ 1."
+      ]
+    },
+    "caveats": [
+      "skill2: unparsed effect \"Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.\"",
+      "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all allies (except self).\" — its effects are skipped",
+      "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
+      "burst: unparsed effect \"Mute stacks ▼ 1.\""
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "N5 snowwhite-HA fire (boss Fire)",
+          "ratio": 0.8241
+        }
+      ],
+      "n": 1,
+      "mean": 0.8241,
+      "mad": 0.1759,
+      "band": ">15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

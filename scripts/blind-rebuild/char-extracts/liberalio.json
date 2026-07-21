@@ -1,0 +1,513 @@
+{
+  "liberalio": {
+    "slug": "liberalio",
+    "name": "Liberalio",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ax-92/sr-65/8a2253a4093e94991343ae0b9d95d37f.png",
+    "weapon": "SR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 69.04,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 90,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 33.6,
+    "burstGaugePerShot": 2.8,
+    "treasure": false,
+    "nicknames": [
+      "lib",
+      "libby"
+    ],
+    "skills": {
+      "skill1": "■ Activates when entering Full Burst. Affects self.\nATK ▲ 160% for 3 sec.\n■ Activates when landing a Full Charge attack on a target's core. Affects self.\nAttack Damage ▲ 20.83% for 60 sec.\n■ Activates when landing a Full Charge attack. Affects the target.\nDeals 40.5% of final ATK as additional damage. Activates 5 times.\n■ Activates when entering Full Burst. Affects the 1 Burst 3 ally unit(s) with the lowest final ATK.\nCharge Speed ▲ 12.74% of the skill user's Charge Speed for 10 sec.",
+      "skill2": "■ Activates when landing a Full Charge attack against the stage target. Affects self.\nRaging Current: Attack Damage ▲ 231% continuously.\nRemoves Gentle Current.\n■ Activates when landing a Full Charge attack against a Rapture that is not the stage target. Affects self.\nGentle Current: Fixes charge time at 1 sec continuously.\nRemoves Raging Current.\n■ Activates at the start of battle. Affects self.\nGains immunity to Increase Charge Speed effects. This effect is continuous and cannot be removed.\nGains immunity to Decrease Charge Speed effects. This effect is continuous and cannot be removed.",
+      "burst": "■ Affects self.\nAttack Damage ▲ 50% for 10 sec.\n■ Affects all enemies.\nDeals 925% of final ATK as additional damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1026201,
+        "shot_detail": {
+          "id": 1026201,
+          "damage": 6904,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "aim_prefab": "base_aim_reference_c262",
+          "input_type": "DOWN_Charge",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 150,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 200,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 28000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 56000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2262101,
+        "skill2_id": 2262201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2262101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 22621,
+          "skill_level": 1,
+          "name_localkey": "Calm Depths",
+          "next_level_id": 2262102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates when entering Full Burst. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when landing a Full Charge attack on a target's core. Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates when landing a Full Charge attack. Affects the target.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as additional damage. Activates 5 times.</color>\n■ Activates when entering Full Burst. Affects the {description_value_08} <word_group=10082>Burst 3</word_group> ally unit(s) with the lowest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Charge Speed ▲ {description_value_06}% of the skill user's Charge Speed for {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "94.54",
+                "101.82",
+                "109.09",
+                "116.36",
+                "123.64",
+                "130.91",
+                "138.18",
+                "145.46",
+                "152.73",
+                "160"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "12.31",
+                "13.26",
+                "14.2",
+                "15.15",
+                "16.1",
+                "17.04",
+                "17.99",
+                "18.94",
+                "19.89",
+                "20.83"
+              ]
+            },
+            {
+              "description_value": [
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "23.93",
+                "25.77",
+                "27.61",
+                "29.46",
+                "31.3",
+                "33.14",
+                "34.98",
+                "36.82",
+                "38.66",
+                "40.5"
+              ]
+            },
+            {
+              "description_value": [
+                "7.52",
+                "8.1",
+                "8.68",
+                "9.26",
+                "9.84",
+                "10.42",
+                "11",
+                "11.58",
+                "12.16",
+                "12.74"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2262201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 22622,
+          "skill_level": 1,
+          "name_localkey": "Strange Currents",
+          "next_level_id": 2262202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates when landing a Full Charge attack against the <word_group=10105>stage target</word_group>. Affects self.\n<color=#00AEFF>Raging Current: Attack Damage ▲ {description_value_01}% continuously.\nRemoves Gentle Current.</color>\n■ Activates when landing a Full Charge attack against a Rapture that is not the <word_group=10105>stage target</word_group>. Affects self.\n<color=#00AEFF>Gentle Current: Fixes charge time at {description_value_02} sec continuously.\nRemoves Raging Current.</color>\n■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Gains <word_group=10092>immunity to Increase Charge Speed effects</word_group>. This effect is continuous and cannot be removed.\nGains <word_group=10093>immunity to Decrease Charge Speed effects</word_group>. This effect is continuous and cannot be removed.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "136.5",
+                "147",
+                "157.5",
+                "168",
+                "178.5",
+                "189",
+                "199.5",
+                "210",
+                "220.5",
+                "231"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1262301,
+        "ulti_skill_detail": {
+          "id": 1262301,
+          "icon": "icn_skill_c262_ult",
+          "group_id": 12623,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Submerged World",
+          "next_level_id": 1262302,
+          "prefer_target": "Random",
+          "resource_name": "c262_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "29.54",
+                "31.82",
+                "34.09",
+                "36.36",
+                "38.64",
+                "40.91",
+                "43.18",
+                "45.45",
+                "47.73",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "546.59",
+                "588.63",
+                "630.68",
+                "672.72",
+                "714.77",
+                "756.82",
+                "798.86",
+                "840.91",
+                "882.95",
+                "925"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            126230102
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            126230101
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 426202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5102,
+        "stat_enhance_detail": {
+          "id": 5102,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100262,
+        "piece_detail": {
+          "id": 5100262,
+          "class": "Attacker",
+          "order": 26200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 262,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Liberalio's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 426201,
+        "class": "Attacker",
+        "order": 10157,
+        "name_code": 5156,
+        "corporation": "PILGRIM",
+        "resource_id": 262,
+        "name_localkey": "Liberalio",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 76,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 262
+    }
+  }
+}

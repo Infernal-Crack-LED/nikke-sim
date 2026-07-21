@@ -1,0 +1,425 @@
+{
+  "idoll-sun": {
+    "slug": "idoll-sun",
+    "name": "iDoll Sun",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/rc-39/cb-24/b0e645bbbaf2042548cfa607eb92f1ca.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Supporter",
+    "element": "Iron",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 14.71,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 9.5,
+    "burstGaugePerShot": 0.25,
+    "treasure": false,
+    "nicknames": [
+      "is"
+    ],
+    "skills": {
+      "skill1": "■ Affects self. Activates after landing 10 normal attack(s).\nDEF ▲ 7.56% for 5 sec.",
+      "skill2": "■ There is a 20% chance to activate when attacked. \nATK ▲ 9.09% for 5 sec.",
+      "burst": "■ Affects self.\nMax Ammunition Capacity ▲ 787.5% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1030801,
+        "shot_detail": {
+          "id": 1030801,
+          "damage": 1471,
+          "max_ammo": 60,
+          "shake_id": 1,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 5000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2308101,
+        "skill2_id": 2308201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2308101,
+          "icon": "icn_skill_defup_01",
+          "group_id": 23081,
+          "skill_level": 1,
+          "name_localkey": "Sunshine",
+          "next_level_id": 2308102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Affects self. Activates after landing {description_value_01} normal attack(s).\n<color=#00AEFF>DEF ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1.89",
+                "2.52",
+                "3.15",
+                "3.78",
+                "4.41",
+                "5.04",
+                "5.67",
+                "6.3",
+                "6.93",
+                "7.56"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2308201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 23082,
+          "skill_level": 1,
+          "name_localkey": "Sunlight",
+          "next_level_id": 2308202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ There is a {description_value_01}% chance to activate when attacked. \n<color=#00AEFF>ATK ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "2.27",
+                "3.03",
+                "3.78",
+                "4.54",
+                "5.3",
+                "6.06",
+                "6.81",
+                "7.57",
+                "8.33",
+                "9.09"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1308301,
+        "ulti_skill_detail": {
+          "id": 1308301,
+          "icon": "icn_skill_c308_ult",
+          "group_id": 13083,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Energy_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Sunset",
+          "next_level_id": 1308302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c308_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Max Ammunition Capacity ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "196.87",
+                "262.5",
+                "328.12",
+                "393.75",
+                "459.37",
+                "525",
+                "590.62",
+                "656.25",
+                "721.87",
+                "787.5"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            130830101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 0,
+        "grade_core_id": 201,
+        "stat_enhance_id": 1301,
+        "stat_enhance_detail": {
+          "id": 1301,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 16,
+          "grade_defence": 80,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 0
+      },
+      "meta": {
+        "id": 330801,
+        "class": "Supporter",
+        "order": 50009,
+        "name_code": 1023,
+        "corporation": "TETRA",
+        "resource_id": 308,
+        "name_localkey": "iDoll Sun",
+        "original_rare": "R",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 11500,
+      "atk": 400,
+      "def": 80,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 16,
+        "def": 80,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 308
+    }
+  }
+}

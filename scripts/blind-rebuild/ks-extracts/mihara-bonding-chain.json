@@ -1,0 +1,64 @@
+{
+  "mihara-bonding-chain": {
+    "name": "Mihara: Bonding Chain",
+    "burst": "III",
+    "weapon": "MG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "DoT encoding CORRECT (one passive instance); zero value drift; F1 skill1 chain-dump modeled unconditional fullBurstEnd but kit gates 'if she just bursted' (over-fires multi-B3, benign sole-B3)"
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Stack-average (10.8->12) fit to real T3 sample; 1.19-1.51 -> 1.03",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.",
+        "Ensnaring Chains stacks ▲ 20.",
+        "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.",
+        "Restraint Chain ▲ 1, up to 10."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: unparsed effect \"Ensnaring Chains stacks ▲ 1.\"",
+      "skill2: unparsed effect \"Ensnaring Chains stacks ▲ 20.\"",
+      "skill2: unsupported trigger \"Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\" — its effects are skipped",
+      "skill2: unparsed effect \"Restraint Chain ▲ 1, up to 10.\"",
+      "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — its effects are skipped",
+      "skill2: 40-normals-in-Full-Burst Ensnaring generation is folded into skill1's steady-state DoT average (⚑ calibrated 12-stack rebuild average), not a discrete hitCount block",
+      "skill2: unsupported trigger \"Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\" — defensive, skipped (boss deals no damage in v1)",
+      "skill2: unsupported trigger \"Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\" — boss never dies, skipped",
+      "skill1: Restraint-dump timing (\"at a specific timing\") is kit-silent — modeled at battle start / Full Burst end (⚑)"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "T3 fire-weak (boss Wind)",
+          "ratio": 0.9601
+        },
+        {
+          "comp": "N6 mihara/maiden wind (boss Wind)",
+          "ratio": 1.0823
+        }
+      ],
+      "n": 2,
+      "mean": 1.0212,
+      "mad": 0.0611,
+      "band": "±8%",
+      "temp": "OK  ·"
+    }
+  }
+}

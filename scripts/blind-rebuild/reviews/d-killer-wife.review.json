@@ -1,0 +1,158 @@
+{
+  "slug": "d-killer-wife",
+  "board": {
+    "ratio": 0.996,
+    "n": 3,
+    "mad": 0.054,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "\u25a0 Activates when attacking with Full Charge for 3 time(s). Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Trigger line for the self-Pierce proc. Deliberately unmodeled \u2014 see next line."
+      },
+      {
+        "kitLine": "Gain Pierce for 1 shot.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "On a partless single-target boss the Pierce tag adds no targets. Caveat documents a small own-damage undercount: a tagged shot would become eligible for the S1 Pierce Damage \u25b213.55% Damage-Up during Full Burst."
+      },
+      {
+        "kitLine": "\u25a0 Activates when entering Full Burst. Affects all allies with a Sniper Rifle.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] \u2014 trigger fullBurstEnter, target allies",
+        "note": "Trigger is faithful (fullBurstEnter). Target is OVER-BROAD: kit says 'allies with a Sniper Rifle' (alliesOfWeapon SR) but block targets ALL allies. Documented in caveat #4."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b213.55% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] \u2014 effects[0]: buff pierceDamagePct 13.55, durationSec 10",
+        "note": "Value and duration match kit Lv10. Correct."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "\u25a0 Activates when attacking with Full Charge for 8 time(s). Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 trigger hitCount count:8, target allies",
+        "note": "Parser-bug fix documented in note: was previously shotFired (fired on EVERY shot, ~120/fight), now correctly hitCount 8 (~once per rotation). Faithful."
+      },
+      {
+        "kitLine": "Cooldown of Burst Skill \u25bc 7 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 effects[0]: burstCdr seconds:7",
+        "note": "Value matches kit Lv10 (7s). Correct."
+      },
+      {
+        "kitLine": "\u25a0 Activates when attacking with Full Charge for 5 time(s). Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] \u2014 trigger hitCount count:5, target allies",
+        "note": "Same parser-bug fix as the 8-count block. Faithful."
+      },
+      {
+        "kitLine": "Attack damage \u25b2 5.06% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] \u2014 effects[0]: buff attackDamagePct 5.06, durationSec 10",
+        "note": "Value and duration match kit Lv10. ~Permanent uptime (5 full charges \u2248 every ~8s at SR cadence, 10s duration). Correct."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "\u25a0 Affects the enemy nearest to the crosshair.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] \u2014 target enemy",
+        "note": "Targeting detail ('nearest to crosshair') approximated as generic enemy. Single-target boss scope-lock makes this equivalent."
+      },
+      {
+        "kitLine": "Deals 269.28% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] \u2014 effects[0]: flatDamage atkPct 269.28",
+        "note": "Value matches kit Lv10. 'final ATK' = casterAtkPct basis per re-materialized parser. Correct."
+      },
+      {
+        "kitLine": "Inflicts Wipe Out on the target for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0] + caveat #1",
+        "note": "Wipe Out is a status effect that gates the area-hit riders below. The riders are modeled ungated (hitCount 1), so the Wipe Out status itself has no independent engine effect. Unparsed \u2014 no engine vocabulary for area-status application."
+      },
+      {
+        "kitLine": "\u25a0 Activates when allies' normal attack hits a certain area of the target afflicted with Wipe Out. Affects allies.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1] + caveat #6",
+        "note": "The real trigger (ally hits Wipe Out-afflicted area) is unmodeled. The riders below fire ungated via hitCount 1 on this unit's own hits \u2014 over-credits buff uptime outside the 10s post-burst Wipe Out windows. Documented HOT-direction confound."
+      },
+      {
+        "kitLine": "Buff takes effect depending on the area hit.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2] + caveat #2",
+        "note": "Area-differentiation logic (parts vs body) is unmodeled as a routing rule. On the partless v1 boss only the body branch can apply, so the routing is moot \u2014 the body branch is modeled directly."
+      },
+      {
+        "kitLine": "Allies that hit parts: Damage dealt when attacking core \u25b2 16.26% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "caveat #7 (SKIPPED-CONDITIONAL, fixed 2026-07-17) \u2014 NOT in unmodeled array",
+        "note": "Deliberately REMOVED from the effects array. Parts-gated: on the partless v1 boss no ally can hit parts, so it can never be earned. Was previously an ungated all-ally coreDamagePct 16.26 over-credit (core hits DO exist on partless boss core). Now correctly absent. Documented in caveat but not mirrored into the unmodeled array \u2014 not a silent drop."
+      },
+      {
+        "kitLine": "Allies that hit the body: ATK \u25b2 12.19% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 trigger hitCount count:1, target allies, effects[0]: buff casterAtkPct 12.19, durationSec 10",
+        "note": "Value and basis (casterAtkPct = % of skill user's ATK) match kit Lv10. Body branch is always active on the partless boss \u2014 correct to keep. However the trigger is ungated (hitCount 1 = every hit) rather than Wipe Out-area-gated \u2014 over-credits uptime outside Wipe Out windows (caveat #6)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: Full Burst Pierce Damage \u25b213.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
+      "couldCauseGap": "HOT",
+      "why": "Over-credits non-SR allies with a 13.55% Pierce Damage buff they shouldn't receive. In comps with non-SR units (RL, AR, MG, SG) this inflates their pierce-damage bucket. Magnitude depends on comp SR fraction."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled \u2014 a tagged shot would become eligible for the Pierce Damage \u25b213.55% Damage-Up during Full Burst (small own-damage undercount)",
+      "couldCauseGap": "COLD",
+      "why": "Undercounts D: Killer Wife's own damage during Full Burst windows. The Pierce tag would make ~1/3 of her shots eligible for the 13.55% pierce Damage-Up. Small magnitude (one shot per 3, only during FB)."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the Wipe Out area-hit riders are modeled ungated (hitCount 1, not on allies hitting a Wipe Out-afflicted target) \u2014 buff uptime over-credited outside 10s post-burst Wipe Out windows",
+      "couldCauseGap": "HOT",
+      "why": "The body ATK buff (casterAtkPct 12.19%) fires on every one of her hits instead of only during the 10s Wipe Out windows following her burst. With a 20s burst CD, real uptime is ~50% (10s/20s); modeled uptime is ~100%. Over-credits all allies' ATK by 12.19% of her ATK for the ~50% of fight time outside Wipe Out."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: unparsed effect 'Inflicts Wipe Out on the target for 10 sec.'",
+      "couldCauseGap": "neither",
+      "why": "Wipe Out is a status that only gates the area-hit riders. Since the riders are already modeled ungated, the status itself has no independent damage effect. Its absence doesn't add or remove damage beyond what the ungated riders already do."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: unparsed effect 'Buff takes effect depending on the area hit.'",
+      "couldCauseGap": "neither",
+      "why": "Area-routing logic. On the partless v1 boss only the body branch applies, which is modeled. The routing rule is moot at scope-lock."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: unrecognized target 'allies' \u2014 applied to all allies",
+      "couldCauseGap": "neither",
+      "why": "The kit text says 'Affects allies' (all allies). The override targeting all allies is correct \u2014 this caveat is a parser-warning artifact, not a real confound."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] parts branch coreDamagePct 16.26 REMOVED \u2014 was an ungated all-ally core-bucket over-credit on the partless boss",
+      "couldCauseGap": "neither",
+      "why": "Already fixed. The removal is correct for v1 partless scope. No residual gap \u2014 the line can never be earned on a partless boss. Would need re-enablement (parts-hit-gated) only for a boss with destructible parts (out of v1 scope)."
+    },
+    {
+      "source": "note",
+      "text": "Materialized from offline parser (blablalink prose), NOT hand-verified. Re-materialized 2026-07-16 with upgraded parser.",
+      "couldCauseGap": "neither",
+      "why": "Provenance flag, not a mechanical confound. The parser output has been audited (kit-status status: audited) and the S2 parser-bug fix + parts-branch removal were hand-applied post-materialization."
+    }
+  ],
+  "authorIntentSummary": "The override models D: Killer Wife as a Burst-I SR supporter: S1 grants a team-wide Pierce Damage buff at Full Burst entry (over-broad to all allies vs kit's SR-only), S2 provides periodic team burst-CDR (every 8 full charges) and a near-permanent Attack Damage buff (every 5 full charges), and burst deals a 269.28% nuke plus a body-hit ATK buff (12.19% caster ATK) to all allies. Key approximations: the Wipe Out area-hit riders fire ungated on every hit (hitCount 1) instead of only during 10s post-burst Wipe Out windows (~2\u00d7 uptime over-credit, HOT); the S1 pierce buff targets all allies instead of SR-only (HOT in non-SR comps); the self-Pierce proc is dropped (small COLD). The parts-branch coreDamagePct was correctly removed as v1-partless-inert after being identified as a live over-credit. Board reads 0.996 mean (N=3, MAD 0.054, OK) \u2014 the HOT and COLD confounds appear to roughly cancel at current comp mix."
+}

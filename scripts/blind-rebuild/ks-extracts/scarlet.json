@@ -1,0 +1,39 @@
+{
+  "scarlet": {
+    "name": "Scarlet",
+    "burst": "III",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Current HP ▼ 4.01%."
+      ],
+      "skill2": [
+        "There is a 30% chance of activating when attacked.",
+        "Deals 138.24% of final ATK as additional damage."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: the 'Current HP ▼ 4.01%' self-drain is not simulated as HP; it justifies treating her HP-gated crit buffs as active (unmeasured assumption)",
+      "skill2: the 30%-when-attacked 138.24% proc is unmodeled — the sim has no incoming boss attacks; real-fight contribution is an open ⚑",
+      "skill2: the HP<60% gate on the 6.61% crit-damage buff is assumed permanently active (S1 self-drain); over-credits roughly the first 30s",
+      "burst: the HP<50% gate on the 19.57% crit-rate buff is assumed active at cast; her first burst may really occur above the threshold",
+      "cadence: 20-ammo AR with a 27.08% per-shot multiplier is a non-standard fire-mode tell — the datamined rate of fire and 159-frame reload are unverified estimates"
+    ],
+    "board": null
+  }
+}

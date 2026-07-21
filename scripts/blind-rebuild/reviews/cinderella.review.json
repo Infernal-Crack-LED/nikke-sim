@@ -1,0 +1,116 @@
+{
+  "slug": "cinderella",
+  "board": {
+    "ratio": 0.937,
+    "n": 7,
+    "mad": 0.078,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Burst Stage 3. Affects self. ATK \u25b2 2.71% of the skill user's final Max HP for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: stageEnter stage 3 \u2192 atkOfMaxHpPct 2.71, durationSec 10, target self",
+        "note": "Exact value. Video-verified own-Max-HP only (ally grants excluded per e3 rule)."
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge. Affects self. Charge Speed \u25b2 100%. Removed upon reloading to max ammunition.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: passive \u2192 chargeSpeedPct 45, target self",
+        "note": "APPROXIMATED: kit says 100% on/off (removed on reload); re-expressed as permanent +45 under the SUBTRACTIVE charge formula to preserve the validated ~0.55s/shot steady-state cadence. The on/off toggle and reload-removal are not explicitly simulated; the averaged value embeds the duty cycle. Cadence validated vs T2/T7 popups."
+      },
+      {
+        "kitLine": "Activates when hitting a target with Full Charge. Affects the target. Deals 136.6% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2]: shotFired \u2192 flatDamage atkPct 136.6, target enemy",
+        "note": "Exact value. Video-verified per-instance popup match."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Defensive/aggro summon. v1 boss deals no damage so decoy uptime is assumed permanent; no HP pool or aggro model exists. Deliberately skipped."
+      },
+      {
+        "kitLine": "Activates when entering Burst Skill Stage 3. Affects self. Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Same as above \u2014 decoy refresh on stage 3. Defensive, no engine vocabulary."
+      },
+      {
+        "kitLine": "Activates every 3 sec when a decoy is present. Affects self. Beautiful: Max HP \u25b2 1.6% continuously, stacks up to 12 times.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (cross-slot): passive \u2192 casterMaxHpPct 19.2, rampSec 36, target self",
+        "note": "1.6% \u00d7 12 = 19.2% total. rampSec 36 models the ~36s ramp to full stacks (1 stack/3s \u00d7 12 = 36s). Placed in skill1 array but represents skill2's Beautiful. Feeds atkOfMaxHp via effectiveAtk (own-kit Max-HP only). Video-validated: early\u2192late FB-proc growth 633.7k\u2192667.0k matches ramp. Decoy-present gate assumed always-satisfied (v1 no damage)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects random enemies. Deals 1365.92% of final ATK as damage. Attacks sequentially for 10 time(s).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effect 0: burstCast \u2192 flatDamage atkPct 13659.2, target enemy",
+        "note": "1365.92 \u00d7 10 = 13659.2 consolidated. Random targeting \u2192 single-boss (no distribution needed). burstSnapshotsPreFb flag governs FB/stage-buff timing (see confounds)."
+      },
+      {
+        "kitLine": "Affects the same target(s) when in Beautiful status. Deals 28.9% of final ATK as additional damage. Mirrors the stack count of Beautiful.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effect 1: burstCast \u2192 flatDamage atkPct 346.8, rampSec 36, target enemy",
+        "note": "28.9 \u00d7 12 = 346.8 at max stacks. rampSec 36 mirrors the Beautiful ramp so pre-36s bursts credit partial stacks. Beautiful-status gate assumed always-satisfied (decoy always up in v1)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "Charge Speed 100% (on full-charge, removed on reload) re-expressed as permanent passive +45 under SUBTRACTIVE formula to preserve validated ~0.55s/shot cadence. The on/off duty cycle is averaged, not simulated.",
+      "couldCauseGap": "neither",
+      "why": "Deliberate calibration choice validated against T2/T7 popup cadence. The averaged value reproduces the measured steady-state; the transient on/off edges are sub-frame-scale at RL cadence."
+    },
+    {
+      "source": "note",
+      "text": "Twin rockets are SEPARATE damage instances at 32.11% each (video-verified: 862 popups / 3-per-pull / 287 pulls). Engine fires baseMult once per pull, so doubled via self normalAttackPct +100 (skill1[3]). Affects rockets only, not the 136.6 proc.",
+      "couldCauseGap": "neither",
+      "why": "Video-verified fix. The normalAttackPct +100 is a faithful encoding of the twin-instance behavior. Contrast with maiden (twins merge into one instance) \u2014 per-unit behavior confirmed for both."
+    },
+    {
+      "source": "note",
+      "text": "burstSnapshotsPreFb: false in override, but the note says the nuke resolves PRE-full-burst and PRE-same-frame-stage-buffs (JP/einkk use-time snapshot). kit-status F1 flags this as a contradiction: 'either stale or a regression; large term \u2014 decidable from existing footage at both flag values'.",
+      "couldCauseGap": "HOT",
+      "why": "If the flag should be true (nuke pre-FB), the nuke loses the FB \u00d71.5 multiplier and the same-cast stage-3 ATK stack \u2014 a large damage term. The current false setting may be over- or under-crediting the nuke depending on the engine's flag semantics. This is the single largest open structural question for this unit."
+    },
+    {
+      "source": "caveat",
+      "text": "Beautiful (Max HP \u25b2 1.6% \u00d712 = +19.2%) modeled as casterMaxHpPct 19.2 with rampSec 36. Steady state (t\u226536s) byte-identical to old bake (2.71\u00d71.192=3.23). Pre-36s bursts credit partial Beautiful. Validated vs e3 early\u2192late FB-proc growth.",
+      "couldCauseGap": "neither",
+      "why": "Faithful encoding validated against video popups. The ramp reproduces the measured 633.7k\u2192667.0k growth. No residual gap expected from this mechanic."
+    },
+    {
+      "source": "caveat",
+      "text": "Decoy avatar itself not modeled (defensive/aggro summon). v1 boss deals no damage so full decoy uptime \u2014 and thus full Beautiful uptime \u2014 is assumed.",
+      "couldCauseGap": "neither",
+      "why": "Inert in v1 scope (no incoming damage, no aggro model). Beautiful uptime assumption is validated by the e3 popup data showing consistent Beautiful stacks."
+    },
+    {
+      "source": "note",
+      "text": "charFixes.reloadFrames 72 (video-measured ~1.2s reload, visibly faster than DB 141 frames / 2.35s). Her Preparation-for-Change reload.",
+      "couldCauseGap": "neither",
+      "why": "Video-measured correction. The faster reload increases her effective fire cadence; already baked into the validated cadence model."
+    },
+    {
+      "source": "note",
+      "text": "AUTOFIRE exemption: no delay between rockets (custom 1s wind-up already modeled via averaged CS ramp). Exempt from 22f release latency. Resolves from datamined input_type='DOWN_Charge'.",
+      "couldCauseGap": "neither",
+      "why": "Datamine-confirmed exemption. The DOWN_Charge input type means no bolt-recovery gap applies."
+    },
+    {
+      "source": "note",
+      "text": "Burst CD re-verified 40s (test battery 2 test 2 video): counting nuke laser storms gives full bursts at 40s intervals (5 per fight). DB 40s cooldown is CORRECT. Earlier 20s misread from cut-in false positives. With moran/anis-star CDR 7.48s, effective cooldown is 32.5s.",
+      "couldCauseGap": "neither",
+      "why": "Video-verified. The 40s base cooldown is correct in data/characters.json (burstCooldownSec: 40)."
+    }
+  ],
+  "authorIntentSummary": "The override models Cinderella as an HP-stacking RL nuke carry: S1's ATK-from-Max-HP conversion (2.71%, own-HP only per e3 video), a charge-speed ramp re-expressed as +45 passive (averaged from the kit's 100% on/off toggle to preserve the validated 0.55s/shot cadence), and the 136.6% per-shot proc. S2's Beautiful is faithfully encoded as a 36s casterMaxHpPct ramp feeding atkOfMaxHp. The burst consolidates 1365.92%\u00d710 + 28.9%\u00d712 Beautiful mirror into two flatDamage terms with matching rampSec. Twin rockets are doubled via normalAttackPct +100 (video-verified separate instances). The Decoy summon is deliberately unmodeled (defensive, inert in v1). The single largest open question is the burstSnapshotsPreFb flag (false in override vs note claiming pre-FB resolution), flagged as F1 in kit-status \u2014 a large-term structural uncertainty decidable from existing footage."
+}

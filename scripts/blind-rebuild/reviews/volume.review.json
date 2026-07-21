@@ -1,0 +1,128 @@
+{
+  "slug": "volume",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Affects self when killing an enemy.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Kill-gated trigger; scope-lock raid boss never dies mid-fight so this can never fire. Sanctioned skip."
+      },
+      {
+        "kitLine": "ATK \u25b2 12.6% for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Effect payload of the kill-gated trigger above. Prior materialized override incorrectly modeled this as a passive permanent +12.6% ATK; that was removed. Correctly unmodeled vs partless boss."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger:fullBurstEnter target:allies",
+        "note": "fullBurstEnter counts team FB entries regardless of who bursted \u2014 faithful to 'entering Full Burst' text."
+      },
+      {
+        "kitLine": "Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it:",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effects[0] kind:escalating",
+        "note": "Engine escalating semantics: Nth activation applies steps 1..N capped at steps.length. Exactly matches the descriptor."
+      },
+      {
+        "kitLine": "Once: Cooldown of Burst Skill \u25bc 2.34 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] escalating step[0] burstCdr 2.34",
+        "note": ""
+      },
+      {
+        "kitLine": "Twice: Cooldown of Burst Skill \u25bc 2.7 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] escalating step[1] burstCdr 2.7",
+        "note": ""
+      },
+      {
+        "kitLine": "Three times: Cooldown of Burst Skill \u25bc 3.17 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] escalating step[2] burstCdr 3.17",
+        "note": "From 3rd FB on, every FB refunds 2.34+2.7+3.17 = 8.21s of every ally's burst CD."
+      },
+      {
+        "kitLine": "Activates when using Burst Skill. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger:burstCast target:allies",
+        "note": "burstCast fires ONLY on rotations she personally bursts \u2014 faithful to 'when using Burst Skill'."
+      },
+      {
+        "kitLine": "Effects vary according to the number of uses. Each subsequent effect triggers all effects before it:",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effects[0] kind:escalating",
+        "note": "Engine gives each escalating step a distinct buff key (key:sN), so all three steps coexist and sum from 3rd cast."
+      },
+      {
+        "kitLine": "Once: Critical Damage \u25b2 10.77% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] escalating step[0] buff critDamagePct 10.77 dur 5",
+        "note": ""
+      },
+      {
+        "kitLine": "Twice: Critical Damage \u25b2 12.46% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] escalating step[1] buff critDamagePct 12.46 dur 5",
+        "note": ""
+      },
+      {
+        "kitLine": "Three times: Critical Damage \u25b2 14.42% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] escalating step[2] buff critDamagePct 14.42 dur 5",
+        "note": "From 3rd burst cast, all three steps sum = +37.65% team crit damage for 5s."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] target:allies",
+        "note": ""
+      },
+      {
+        "kitLine": "Critical Rate \u25b2 31.9% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] buff critRatePct 31.9 dur 5",
+        "note": ""
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: the kill-gated ATK \u25b2 12.6% is unmodeled \u2014 it can never trigger against the raid boss (the boss does not die mid-fight)",
+      "couldCauseGap": "COLD",
+      "why": "Correctly sanctioned skip. The trigger condition (enemy killed) is impossible vs a partless raid boss. Zero damage impact in scope-lock."
+    },
+    {
+      "source": "caveat",
+      "text": "cadence: fire rate / reload are unmeasured estimates (engine SMG default 20 pulls/s shipped; the raw datamine says 24 pulls/s, and reload_start_ammo 119 hints at rolling reload) \u2014 verify on a focus video",
+      "couldCauseGap": "HOT",
+      "why": "Fire rate was resolved to 24/s per note (owner decision 2026-07-17, datamine rate_of_fire 1440 rpm authoritative). BUT reloadFrames 111 vs datamine reload_time 150 (~90f) and possible rolling reload (reload_start_ammo 119) remain open. Reload timing directly affects personal DPS (downtime per mag cycle). Caveat text is slightly stale re: fire rate but the reload question is live."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2/burst: escalating tiers reach full value only from her 3rd Full Burst / 3rd burst cast, and every modeled effect is burst-gated \u2014 the whole kit is inert in a team that cannot chain Full Bursts",
+      "couldCauseGap": "neither",
+      "why": "This is a correct property of the kit and its modeling, not a modeling error. The escalating semantics are faithfully encoded; the caveat documents a team-comp dependency (no FB chain \u2192 no value). A /sim-battery diff is the real check per the note."
+    },
+    {
+      "source": "note",
+      "text": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number.",
+      "couldCauseGap": "HOT",
+      "why": "The entire override is flagged as unvalidated hypothesis. No board data exists (board: null, no graded teams). All numbers are datamine-derived but unverified against gameplay."
+    }
+  ],
+  "authorIntentSummary": "The override models Volume as a rotation-accelerator + crit-support: S2 block A gives team-wide escalating burst CDR on Full Burst entry (fullBurstEnter, steps [2.34, 2.7, 3.17]s), S2 block B gives team-wide escalating crit-damage buffs on her own burst cast (burstCast, steps [10.77, 12.46, 14.42]% for 5s), and burst gives a flat team crit-rate buff (31.9% for 5s). S1 (kill-gated ATK self-buff) is deliberately unmodeled because the raid boss never dies. The whole file is flagged PARSER BASELINE / HYPOTHESIS \u2014 fire rate was resolved to 24/s but reloadFrames (111 vs ~90) and possible rolling reload remain open measurement items, and no board/graded data exists to validate any number."
+}

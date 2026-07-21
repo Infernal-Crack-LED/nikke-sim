@@ -1,0 +1,510 @@
+{
+  "isabel": {
+    "slug": "isabel",
+    "name": "Isabel",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/qr-45/uv-26/4f0b1e0ca693eba0ba244f6ae328350e.png",
+    "weapon": "SG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Electric",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 210.7,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 133,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when using Burst Skill. Affects self.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Marked Target 1 - Critical Rate ▲ 6.26% for 45 sec.\nTwice: Marked Target 2 - Critical Damage ▲ 18.03% for 45 sec.\nThree times: Marked Target 3 - ATK ▲ 17.28% for 45 sec.",
+      "skill2": "■ Affects 5 enemy unit(s) with the highest final DEF. \nDeals 170.58% of final ATK as damage.",
+      "burst": "■ Affects all enemies.\nDeals 149.85% of final ATK as Burst Skill damage.\nEffects vary for each stage of Marked Target. Each subsequent effect triggers all effects before it:\nMarked Target 1: Damage Taken ▲ 39.96% for 5 sec.\nMarked Target 2: Deals 299.7% of final ATK as additional damage.\nMarked Target 3: Deals 349.65% of final ATK as additional damage.\n■ Affects all allies.\nFull Burst Duration ▼ 5 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1023101,
+        "shot_detail": {
+          "id": 1023101,
+          "damage": 21070,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Bio",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 186,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 500,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2231101,
+        "skill2_id": 1231201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2231101,
+          "icon": "icn_skill_criticaldamage_01",
+          "group_id": 22311,
+          "skill_level": 1,
+          "name_localkey": "Marked Target",
+          "next_level_id": 2231102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>Effects vary according to the number of times used. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nOnce: Marked Target 1 - Critical Rate ▲ {description_value_01}% for {description_value_02} sec.\nTwice: Marked Target 2 - Critical Damage ▲ {description_value_03}% for {description_value_04} sec.\nThree times: Marked Target 3 - ATK ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3.91",
+                "4.17",
+                "4.43",
+                "4.69",
+                "4.95",
+                "5.22",
+                "5.48",
+                "5.74",
+                "6",
+                "6.26"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {
+              "description_value": [
+                "11.27",
+                "12.02",
+                "12.77",
+                "13.52",
+                "14.27",
+                "15.03",
+                "15.78",
+                "16.53",
+                "17.28",
+                "18.03"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {
+              "description_value": [
+                "10.8",
+                "11.52",
+                "12.24",
+                "12.96",
+                "13.68",
+                "14.4",
+                "15.12",
+                "15.84",
+                "16.56",
+                "17.28"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1231201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 12312,
+          "skill_level": 1,
+          "name_localkey": "Pointed Feather",
+          "next_level_id": 1231202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Affects {description_value_01} enemy unit(s) with the highest <word_group=10025>final</word_group> DEF. \n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "106.61",
+                "113.72",
+                "120.83",
+                "127.93",
+                "135.04",
+                "142.15",
+                "149.26",
+                "156.36",
+                "163.47",
+                "170.58"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1231301,
+        "ulti_skill_detail": {
+          "id": 1231301,
+          "icon": "icn_skill_c231_ult",
+          "group_id": 12313,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Sonic Chaser",
+          "next_level_id": 1231302,
+          "prefer_target": "HighDefence",
+          "resource_name": "c231_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 9365,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.\nEffects vary for each stage of Marked Target. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nMarked Target 1: Damage Taken ▲ {description_value_02}% for {description_value_03} sec.\nMarked Target 2: Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as additional damage.\nMarked Target 3: Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as additional damage.</color>\n■ Affects all allies.\n<color=#00AEFF>Full Burst Duration ▼ 5 sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "93.65",
+                "99.9",
+                "106.14",
+                "112.38",
+                "118.63",
+                "124.87",
+                "131.11",
+                "137.36",
+                "143.6",
+                "149.85"
+              ]
+            },
+            {
+              "description_value": [
+                "24.97",
+                "26.64",
+                "28.3",
+                "29.97",
+                "31.63",
+                "33.3",
+                "34.96",
+                "36.63",
+                "38.29",
+                "39.96"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "187.31",
+                "199.8",
+                "212.28",
+                "224.77",
+                "237.26",
+                "249.75",
+                "262.23",
+                "274.72",
+                "287.21",
+                "299.7"
+              ]
+            },
+            {
+              "description_value": [
+                "218.53",
+                "233.1",
+                "247.66",
+                "262.23",
+                "276.8",
+                "291.37",
+                "305.94",
+                "320.51",
+                "335.08",
+                "349.65"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            123130101,
+            123130102,
+            123130103
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 423102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5104,
+        "stat_enhance_detail": {
+          "id": 5104,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100231,
+        "piece_detail": {
+          "id": 5100231,
+          "class": "Attacker",
+          "order": 23100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 231,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Isabel's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 423101,
+        "class": "Attacker",
+        "order": 10139,
+        "name_code": 5013,
+        "corporation": "PILGRIM",
+        "resource_id": 231,
+        "name_localkey": "Isabel",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 231
+    }
+  }
+}

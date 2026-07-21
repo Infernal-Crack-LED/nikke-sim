@@ -1,0 +1,116 @@
+{
+  "slug": "ada",
+  "board": {
+    "ratio": 0.902,
+    "n": 2,
+    "mad": 0.098,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all Burst 3 allies who previously used their Burst Skill.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger(fullBurstEnter) + skill1[0].target(burstCasters, stage:3)",
+        "note": "Scope is the run-E fix: targets only allies who already burst this rotation (stage 3), not the unfiltered burstCasters set that was feeding crown/rouge every rotation."
+      },
+      {
+        "kitLine": "ATK \u25b2 60% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0] (buff casterAtkPct 60, 10s)",
+        "note": "casterAtkPct = %-of-caster-ATK basis, matches 'of the skill user's ATK'."
+      },
+      {
+        "kitLine": "True Damage \u25b2 50% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[1] (buff trueDamagePct 50, 10s)",
+        "note": "Engine gates trueDamagePct by flavor, so this lands only on true-flavored damage (the grenades)."
+      },
+      {
+        "kitLine": "Recovers 10% of damage as HP for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Lifesteal skipped \u2014 no HP-pool consumer modeled. Per note F1/F2: it targets bursted Burst-3 allies and would fire their 'recovery' triggers if a B3 recovery-consumer comp appears (latent gap; inert at scope lock)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates during Full Burst. Affects enemies within attack range nearest to the crosshair every 2 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].trigger(fullBurstEnter) + target(enemy) + dot intervalSec:2 durationSec:10",
+        "note": "REWORK (tier audit): baseline 420% true dot every 2s for 10s on EVERY full-burst enter, replacing the old hitCount:3 blend that assumed ~25% FB uptime (validated fights run ~75%, a ~2x undercount). 'nearest to crosshair / within attack range' resolves to the partless boss at scope lock."
+      },
+      {
+        "kitLine": "Flash Grenade Toss: Deals 420% of final ATK as True Damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[0] + skill2[1].effects[0] (dot atkPct:420, flavor:true)",
+        "note": "atkPct scales off final ATK; flavor:true routes her S1/burst True Damage buffs onto the grenades only."
+      },
+      {
+        "kitLine": "Activates when using Burst Skill. Affects self. Flash Grenade Toss activation time condition \u25bc 1 sec for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1].trigger(burstCast) + dot atkPct:420 intervalSec:2 durationSec:10 flavor:true",
+        "note": "The interval reduction (2s\u21921s) is encoded as a SECOND identical every-2s stream on her own burstCast, so the combined rate during her burst windows is exactly 1/s (rate-equivalent to the kit; tick phasing differs but totals match). Fires only on HER burst, correctly inert on other B3s' rotations."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].target(self)",
+        "note": ""
+      },
+      {
+        "kitLine": "ATK \u25b2 40% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] (buff atkPct 40, 10s)",
+        "note": "Self ATK (atkPct), distinct from S1's caster-relative grant."
+      },
+      {
+        "kitLine": "True Damage \u25b2 42% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[1] (buff trueDamagePct 42, 10s)",
+        "note": "Applies only to true-flavored damage (grenades), per engine flavor gating."
+      },
+      {
+        "kitLine": "Special Modification \u2014 Charge Speed \u25bc 300% / Charge Damage \u25b2 1500% for 1 round(s).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[2] (weaponSwap damagePct:61.3, chargeTimeSec:4, chargeMultPct:1750, durationSec:10)",
+        "note": "chargeTimeSec:4 = base 1s \u00d74 (\u25bc300% as \u00d74 charge time); chargeMultPct:1750 = base 250% + 1500%. \u26a0 The '1 round(s)' cap is NOT encoded (no maxShots) \u2192 over-fires 2 specials per 10s window. Documented in kit-status findings F3 but ABSENT from the override's own unmodeled array \u2014 a documentation asymmetry in the override file."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "open-question",
+      "text": "F3: Special Modification over-fires 2 specials/window vs kit '1 round' (no maxShots) = ~45% of her total sim damage; kit-literal would drop the sim ~20%. 'board 0.950 may lean on the 2nd shot \u2014 measure popups before touching.'",
+      "couldCauseGap": "HOT",
+      "why": "Over-credit relative to kit-literal (HOT direction), so it MASKS the current COLD residual \u2014 fixing to 1 round would make the ratio colder, UNLESS the real game also fires 2 specials (the finding's open hypothesis). Unresolved measurement; not disclosed in the override file's unmodeled array."
+    },
+    {
+      "source": "unmodeled",
+      "text": "S1 10% lifesteal skipped (no HP-pool consumer). Targets bursted Burst-3 allies; would fire their 'recovery' triggers if a B3 recovery-consumer comp appears.",
+      "couldCauseGap": "neither",
+      "why": "Inert at scope lock (no HP pool, no recovery consumer). Latent gap only for Crown-type on-recovery comps."
+    },
+    {
+      "source": "note",
+      "text": "S2 Flash Grenade REWORKED: exact 1/s model replaced the old hitCount:3 blend that assumed ~25% FB uptime (validated fights ~75%, a ~2x undercount).",
+      "couldCauseGap": "neither",
+      "why": "Resolved a prior COLD undercount; the current encoding is designed to be rate-faithful (baseline 2s stream + burstCast 2s stream = 1/s in her windows)."
+    },
+    {
+      "source": "note",
+      "text": "S1 scope fix (run-E 2026-07-13): unfiltered burstCasters target was feeding her +60%-of-caster ATK grant to crown/rouge every rotation (source of their ~1.44 heat); now stage-3 filtered.",
+      "couldCauseGap": "neither",
+      "why": "Resolved a prior HOT over-credit; validated from run-E video. Context for the retune, not a live gap."
+    },
+    {
+      "source": "open-question",
+      "text": "Board is COLD at 0.902 (n=2, both PE elec DPS vs Water boss \u2014 her elemental-advantage comp), but no documented confound explains a ~10% undercount: lifesteal is inert, S2 rework was a warm-fix, S1 scope fix removed heat, and F3 is a HOT over-credit masking the cold.",
+      "couldCauseGap": "COLD",
+      "why": "The residual cold is undocumented \u2014 likely RL cadence/ammo economy, special-modification landing rate, or comp-side basis, none of which carry a caveat. The F3 over-fire means the true kit-literal gap is even colder than 0.902."
+    }
+  ],
+  "authorIntentSummary": "The author modeled Ada as an RL charge-attacker whose damage is dominated by true-flavored Flash Grenade dots and a Special Modification charge shot. S1 grants bursted Burst-3 allies (stage-3 scoped, per the run-E fix) +60% caster-ATK and +50% True Damage; S2 was reworked into two interleaved 420%-ATK true dots (baseline every FB enter + a second stream on her own burstCast) to faithfully hit a 1/s rate during her windows, replacing an undercounting hitCount blend; burst gives self +40% ATK / +42% True Damage plus a weaponSwap special charge (4s charge, 1750% mult). Known-not-faithful: the Special Modification '1 round' cap is unencoded so it over-fires 2 specials/window (kit-status finding F3, ~45% of her total, an open popup-measurement) \u2014 and this gap is NOT disclosed in the override's own unmodeled array. The 10% lifesteal is a deliberate inert skip. The board reads COLD (0.902, n=2) and that residual is not explained by any documented confound \u2014 the F3 over-fire actively masks it."
+}

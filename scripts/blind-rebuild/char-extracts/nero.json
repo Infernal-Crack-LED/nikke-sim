@@ -1,0 +1,547 @@
+{
+  "nero": {
+    "slug": "nero",
+    "name": "Nero",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ou-36/rb-22/400ea2c60b22bc170dd8842520a5a6ae.png",
+    "weapon": "SMG",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Defender",
+    "element": "Fire",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 8.39,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 99,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when recovery takes effect. Affects the target who cast the skill with recovery effect on Nero.\nDamage Taken ▼ 14.14% for 5 sec.\n■ Activates when recovery takes effect. Affects self.\nCat's Repayment: Damage Taken ▼ 8.43%, stacks up to 5 time(s) and lasts for 5 sec.",
+      "skill2": "■ There is a 30% chance of activating when attacked. Affects the target.\nDamage Taken ▲ 8.26% for 5 sec.\n■ There is a 30% chance of activating when attacked in Grumpy Cat status. Affects the target.\nDeals 158.05% of final ATK as damage.\n■ Activates at the start of battle. Affects self.\nMax HP ▲ 60.28% continuously.",
+      "burst": "■ Affects the 1 enemy unit(s) with the highest remaining HP.\nDeals 1104.91% of final ATK as Burst Skill damage.\n■ Affects self.\nAttract: Taunts all enemies for 15 sec.\n■ Activates when Cat's Repayment is at max stacks. Affects self.\nGrumpy Cat: Incoming healing ▲ 60.08% for 15 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1038001,
+        "shot_detail": {
+          "id": 1038001,
+          "damage": 839,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 130,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 13,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2380101,
+        "skill2_id": 2380201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2380101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 23801,
+          "skill_level": 1,
+          "name_localkey": "Cat's Repayment",
+          "next_level_id": 2380102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates when <word_group=10027>recovery takes effect</word_group>. Affects the target who cast the skill with recovery effect on Nero.\n<color=#00AEFF>Damage Taken ▼ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when <word_group=10027>recovery takes effect</word_group>. Affects self.\n<color=#00AEFF>Cat's Repayment: Damage Taken ▼ {description_value_03}%, stacks up to {description_value_04} time(s) and lasts for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "8.07",
+                "8.74",
+                "9.42",
+                "10.09",
+                "10.77",
+                "11.44",
+                "12.12",
+                "12.79",
+                "13.47",
+                "14.14"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5.24",
+                "5.59",
+                "5.95",
+                "6.3",
+                "6.66",
+                "7.01",
+                "7.37",
+                "7.72",
+                "8.08",
+                "8.43"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2380201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 23802,
+          "skill_level": 1,
+          "name_localkey": "Lil' Paw",
+          "next_level_id": 2380202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ There is a {description_value_01}% chance of activating when attacked. Affects the target.\n<color=#00AEFF>Damage Taken ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ There is a {description_value_04}% chance of activating when attacked in Grumpy Cat status. Affects the target.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as damage.</color>\n■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Max HP ▲ {description_value_06}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "5.33",
+                "5.66",
+                "5.98",
+                "6.31",
+                "6.63",
+                "6.96",
+                "7.28",
+                "7.61",
+                "7.94",
+                "8.26"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "62.4",
+                "73.02",
+                "83.65",
+                "94.28",
+                "104.91",
+                "115.54",
+                "126.17",
+                "136.8",
+                "147.42",
+                "158.05"
+              ]
+            },
+            {
+              "description_value": [
+                "38.68",
+                "41.08",
+                "43.48",
+                "45.88",
+                "48.28",
+                "50.68",
+                "53.08",
+                "55.48",
+                "57.88",
+                "60.28"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1380301,
+        "ulti_skill_detail": {
+          "id": 1380301,
+          "icon": "icn_skill_c380_ult",
+          "group_id": 13803,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Grumpy Cat",
+          "next_level_id": 1380302,
+          "prefer_target": "HighHP",
+          "resource_name": "c380_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 97531,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects the {description_value_01} enemy unit(s) with the highest remaining HP.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>\n■ Affects self.\n<color=#00AEFF>Attract: Taunts all enemies for {description_value_03} sec.</color>\n■ Activates when Cat's Repayment is at max stacks. Affects self.\n<color=#00AEFF>Grumpy Cat: Incoming healing ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "975.31",
+                "989.71",
+                "1004.11",
+                "1018.51",
+                "1032.91",
+                "1047.31",
+                "1061.71",
+                "1076.11",
+                "1090.51",
+                "1104.91"
+              ]
+            },
+            {
+              "description_value": [
+                "8",
+                "8",
+                "8",
+                "10",
+                "10",
+                "10",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "38.48",
+                "40.88",
+                "43.28",
+                "45.68",
+                "48.08",
+                "50.48",
+                "52.88",
+                "55.28",
+                "57.68",
+                "60.08"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            138030102,
+            138030101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 338002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5203,
+        "stat_enhance_detail": {
+          "id": 5203,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100380,
+        "piece_detail": {
+          "id": 5100380,
+          "class": "Attacker",
+          "order": 38000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 380,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Nero's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 338001,
+        "class": "Defender",
+        "order": 10114,
+        "name_code": 5068,
+        "corporation": "TETRA",
+        "resource_id": 380,
+        "name_localkey": "Nero",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 95,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 380
+    }
+  }
+}

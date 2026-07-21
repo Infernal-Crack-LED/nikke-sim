@@ -1,0 +1,55 @@
+{
+  "quency-escape-queen": {
+    "name": "Quency: Escape Queen",
+    "burst": "III",
+    "weapon": "SMG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "hitRatePct lines restored from unmodeled (hard rule 4) + S1 stage-gates no longer 100% uptime; still 0.546 COLD (separate under-model, hand-tune)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "run H / N: 0.77-0.86",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "Cold; owns a timing-rule regression, untuned",
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate — rebuild timing after reloads is approximate (⚑)",
+      "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
+      "skill2: Hit Rate stacks modeled as hitRatePct (inert in v1) — magnitude of the core-rate lift unmeasured (⚑)",
+      "all: cadence = datamined 24 pulls/s (SHOT rate = rate_of_fire 1440rpm/60). muzzle_count 2 → 48 bullets/s, but the shot damage SPLITS over the 2 bullets (nAM 10.12 = per-bullet 5.06 × 2 muzzles, already baked in), so throughput = 24 shots × 10.12 is self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (⚑). Her flag-off HOT baseline is the kit (Explore-Route stage-2/3 parallel-build over-credit, ⚑2), not cadence — deferred to the kit audit."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PH water B3s (boss Fire)",
+          "ratio": 1.1895
+        },
+        {
+          "comp": "N1 rapi/quency wind (boss Wind)",
+          "ratio": 1.107
+        }
+      ],
+      "n": 2,
+      "mean": 1.1483,
+      "mad": 0.1483,
+      "band": "±15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

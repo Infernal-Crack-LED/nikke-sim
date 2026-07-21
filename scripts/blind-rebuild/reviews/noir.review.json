@@ -1,0 +1,128 @@
+{
+  "slug": "noir",
+  "board": {
+    "ratio": 1.119,
+    "n": 2,
+    "mad": 0.119,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when above 70% HP",
+        "status": "UNMODELED",
+        "where": "note (assumption-noted, NOT in unmodeled array)",
+        "note": "Gate assumed always-satisfied at scope lock (boss damage unmodeled). Recon corroborates constant uptime solo. Documented in note but absent from the formal unmodeled[] array \u2014 minor tracking gap, not a silent drop."
+      },
+      {
+        "kitLine": "Affects all allies. ATK \u25b2 14.08% of the skill user's ATK constantly",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: passive \u2192 allies, buff casterAtkPct 14.08 (no duration = constant)",
+        "note": "casterAtkPct correctly encodes 'of the skill user's ATK'. Passive trigger = constant uptime. Recon corroborates: effectiveAtk 134,645 = 118,027 \u00d7 1.1408."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].trigger + skill2[1].trigger: fullBurstEnter",
+        "note": "Kit-literal 'when entering Full Burst'. Note explicitly corrects prior baseline's burstCast trigger to fullBurstEnter."
+      },
+      {
+        "kitLine": "Affects all allies. Max Ammunition Capacity \u25b2 5 round(s) for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: fullBurstEnter \u2192 self, buff maxAmmoPct 55.56, 10s",
+        "note": "Scope narrowed from all-allies to self-only (caveat \u26912). 55.56 = 5/9 exact for noir's 9-round base; a flat +5 on a high-ammo ally is NOT +55.56%. Engine lacks flat per-unit ammo path. Teammates' +5 rounds unmodeled."
+      },
+      {
+        "kitLine": "Reload 39.88% magazine(s)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: fullBurstEnter \u2192 allies, instantReload fraction 0.3988",
+        "note": "Fraction refills each ally's own mag \u2014 per-unit-faithful. All-allies scope correctly modeled here (unlike max ammo)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all enemies. Deals 351.64% of final ATK as Burst Skill damage",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 enemy, flatDamage atkPct 351.64",
+        "note": "Burst-cast damage auto-snapshots pre-FB / FB-exempt in-engine. noFb NOT set (prior 2 removed). Value matches L10 datamine (351.64)."
+      },
+      {
+        "kitLine": "Affects all allies with a Shotgun. Hit Rate \u25b2 13.93% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast \u2192 alliesOfWeapon SG, buff hitRatePct 13.93, 10s",
+        "note": "alliesOfWeapon SG target supersedes baseline's self-only compromise. hitRatePct is INERT in the engine (per types.ts) \u2014 magnitude unmeasured (\u26913)."
+      },
+      {
+        "kitLine": "Damage to Interruption Parts \u25b2 23.23% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: buff partsDamagePct 23.23, 10s (same block, alliesOfWeapon SG)",
+        "note": "Inert vs the partless boss at scope lock. Kept for fidelity."
+      },
+      {
+        "kitLine": "Activates with an ally from the same squad still on the battlefield",
+        "status": "UNMODELED",
+        "where": "note + caveat (\u26914, NOT in unmodeled array)",
+        "note": "Engine has no squad gate; block 3 modeled un-gated. Gate FALSE in any team without Blanc. Documented in note + caveat but absent from formal unmodeled[] array. Effects are inert anyway (hitRatePct inert, partsDamagePct inert vs partless boss)."
+      },
+      {
+        "kitLine": "Affects all allies. Hit Rate \u25b2 11.61% for 30 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2]: burstCast \u2192 allies, buff hitRatePct 11.61, 30s",
+        "note": "Modeled un-gated (\u26914). hitRatePct inert in engine. Magnitude unmeasured (\u26913)."
+      },
+      {
+        "kitLine": "Damage to Interruption Parts \u25b2 19.36% for 30 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2]: buff partsDamagePct 19.36, 30s (same block, allies)",
+        "note": "Inert vs partless boss. Kept for fidelity per HARD RULES 2-4."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: Max Ammo +5 rounds is ALL-allies in-kit; modeled self-only as maxAmmoPct 55.56 (engine has no flat per-unit ammo) \u2014 teammates' +5 rounds unmodeled (\u26912)",
+      "couldCauseGap": "HOT",
+      "why": "In comp, SG allies (e.g. 9-round base) get +5 rounds = +55% mag for 10s of FB \u2014 real DPS lift for every SG teammate that the sim omits. Directly under-models team damage during FB windows."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: Hit Rate \u25b2 (13.93% SG-allies /10s, 11.61% allies /30s) modeled as hitRatePct \u2014 currently inert in the engine; magnitude unmeasured (\u26913)",
+      "couldCauseGap": "COLD",
+      "why": "Recon shows near-all-pellet landing on the large boss already, so marginal in-FB hit-rate gain is likely small. Engine-inert stat \u2014 no sim impact today. Could matter on small/evasive bosses out of scope."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the 11.61%/19.36% block requires a same-squad ally (Blanc) on the battlefield \u2014 engine has no squad gate, modeled un-gated (effects inert vs the partless boss) (\u26914)",
+      "couldCauseGap": "neither",
+      "why": "Both stats (hitRatePct, partsDamagePct) are engine-inert, so the missing gate has zero sim impact. Would only matter if those stats gain engine support AND a non-Blanc team is simulated."
+    },
+    {
+      "source": "note",
+      "text": "\u26911 CADENCE TUPLE: pullsPerSec ~1.5 / reloadFrames 62 / rolling-reload \u2014 datamine shipped; recon MEASURED cadence is the trustworthy read; minor tension on reload (62f \u2248 1.03s vs recon 0.6-0.9s)",
+      "couldCauseGap": "COLD",
+      "why": "LOW priority per note. Cadence is engine-owned (SG class defaults). Minor reload tension unlikely to shift damage materially at 180s."
+    },
+    {
+      "source": "note",
+      "text": "\u26915 MULTI-PROJECTILE (10 pellets): split-vs-merge is engine-owned (SG landing bands) \u2014 noir IS the anchor those bands are calibrated to; no override lever",
+      "couldCauseGap": "neither",
+      "why": "Engine-side concern, not an override gap. Noir's recon calibrates the landing table, so this is the reference point, not a source of error."
+    },
+    {
+      "source": "note",
+      "text": "S1 HP>70% activation gate assumed always-satisfied at scope lock \u2014 not encoded, documented in note only (not in unmodeled array)",
+      "couldCauseGap": "COLD",
+      "why": "At scope lock (no incoming damage modeled), HP stays at 100%. Gate is trivially satisfied. Would only matter if boss-damage / HP-drain mechanics enter scope."
+    },
+    {
+      "source": "note",
+      "text": "PARSER BASELINE banner: entire override is HYPOTHESIS \u2014 NOT a validated model. Every \u2691 is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number.",
+      "couldCauseGap": "HOT",
+      "why": "The override has never been hand-tuned or validated against measured fight data. The HOT board reading (1.119, n=2) is consistent with un-tuned comp-side over-model noted in ks-extracts findings."
+    }
+  ],
+  "authorIntentSummary": "The override is an explicitly-labeled PARSER BASELINE (hypothesis, not validated): a kit-faithful reconstruction derived from kit text and merged with a reviewed staging baseline. S1 is a passive team ATK buff (casterAtkPct 14.08) with the HP>70% gate assumed always-on at scope lock. S2 fires on fullBurstEnter, modeling +5 rounds self-only as maxAmmoPct 55.56 (engine lacks flat per-unit ammo; ally scope is the primary known gap \u26912) and 39.88% instant reload to all allies. Burst encodes 351.64% flat damage, SG-allied hit-rate/parts buffs (both engine-inert), and an un-gated same-squad block (inert). The author kept every kit line as a block (unmodeled arrays are empty) and flagged all approximations with \u2691 markers. The unit is HOT at 1.119 (n=2) with residual comp-side over-model attributed to SG landing being solo-calibrated; the override itself is strictly kit-faithful with all magnitude levers living engine-side."
+}

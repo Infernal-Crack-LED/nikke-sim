@@ -1,0 +1,158 @@
+{
+  "slug": "scarlet-black-shadow",
+  "board": {
+    "ratio": 1.042,
+    "n": 2,
+    "mad": 0.159,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when performing a Full Charge attack.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger {kind:chargeCounter}",
+        "note": "Charge-counter trigger; per-full-charge phase counter."
+      },
+      {
+        "kitLine": "Effects vary according to the number of attacks. Only one effect is triggered at a time.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger {count:3,countInFb:1} + effects[0..2]",
+        "note": "Modeled as scalar cumulative phase counter (3rd/6th/9th charge outside, every charge in-burst). The per-phase vs cumulative semantics are the live documented confound \u2014 see documentedConfounds."
+      },
+      {
+        "kitLine": "Three times: Affects the 1 enemy unit(s) with the lowest final DEF.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].target {kind:enemy}",
+        "note": "Per-phase targeting (lowest-DEF single) NOT individually encoded; collapses to target enemy under partless single-boss scope."
+      },
+      {
+        "kitLine": "Deals 283.03% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0] {flatDamage,atkPct:283.03}",
+        "note": "Post-patch value pinned (from 250.47)."
+      },
+      {
+        "kitLine": "Six times: Affects enemies within range.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].target {kind:enemy}",
+        "note": "Per-phase 'within range' targeting NOT individually encoded; collapses to target enemy under partless single-boss scope."
+      },
+      {
+        "kitLine": "Deals 565% of final ATK as Distributed Damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[1] {flatDamage,atkPct:565,flavor:distributed}",
+        "note": "Post-patch value pinned (from 500)."
+      },
+      {
+        "kitLine": "Nine times: Affects all enemies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].target {kind:enemy}",
+        "note": "Per-phase 'all enemies' targeting NOT individually encoded; collapses to target enemy under partless single-boss scope."
+      },
+      {
+        "kitLine": "Deals 848.03% of final ATK as Distributed Damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[2] {flatDamage,atkPct:848.03,flavor:distributed}",
+        "note": "Post-patch value pinned (from 750.47). In-burst count of this large phase is the over-fire hotspot \u2014 see confounds."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].trigger {kind:fullBurstEnter}, target {kind:self}",
+        "note": "Auto-filled from offline parser 2026-07-16, behavior-identical to prior runtime parse, NOT hand-verified (per note)."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity \u25b2 60% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[0] {buff,maxAmmoPct:60,durationSec:10}",
+        "note": "Lvl-10 value 60."
+      },
+      {
+        "kitLine": "Reload 100% of the magazine(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[1] {instantReload,fraction:1}",
+        "note": "Lvl-10 reload fraction 100%."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].target {kind:self}",
+        "note": ""
+      },
+      {
+        "kitLine": "Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.",
+        "status": "MODELED_CONFIG",
+        "where": "skill1[0].trigger.countInFb:1 + engine gating on HER OWN burst cast (sim.ts:1745)",
+        "note": "NOT a burst-block effect; encoded via skill1 trigger countInFb + sim.ts gating for 10s on her own burst cast. Caveat #3 confirms this IS modeled; the older 'unparsed' caveat is stale. Modeled as scalar countInFb=1 (per-phase 1/2/3 reading tested cold and reverted)."
+      },
+      {
+        "kitLine": "ATK \u25b2 115.12% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] {buff,atkPct:115.12,durationSec:10}",
+        "note": "Lvl-10 value."
+      },
+      {
+        "kitLine": "Charge Damage \u25b2 169.63% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[1] {buff,chargeDamagePct:169.63,durationSec:10}",
+        "note": "Lvl-10 value."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: phase-threshold semantics are a scalar 3 (outside) / 1 (in-burst) model = the CUMULATIVE '3rd/6th/9th charge' reading; the per-phase reading ([3,6,9]/[1,2,3]) tested ~22% cold and own-probe evidence is split (sbs-control: procs ~every charge in burst; N3 re-read: 848% absent in one window) \u2014 isolated-burst recording queued.",
+      "couldCauseGap": "HOT",
+      "why": "This is THE live proc-count knot: the every-charge in-burst model over-fires the large 848% phase (~5x/burst), driving the HOT band (N3 ~1.13-1.18 OVER). Reverted to scalar 3/1 pending isolated-burst SBS recording."
+    },
+    {
+      "source": "note",
+      "text": "Charge cycle modeled 40f (datamined 18f charge + standard 22f SR/RL recovery) vs video-measured ~42f/0.70s.",
+      "couldCauseGap": "HOT",
+      "why": "ks-extract finding F2: ~2f short per cycle => sim ~4.8% fast, ~= the +4.9% HOT contribution. Re-pinnable from N3/sbs-control footage."
+    },
+    {
+      "source": "note",
+      "text": "After charge fix + FB-by-timing on clustered burst-window procs she grades ~1.13->~1.18 in N3 (OVER, flipped from old ~0.73 under); baseline rose 505.6M->528.3M once soda's Golden Chip +10.51% ATK pulse on scarlet was modeled.",
+      "couldCauseGap": "HOT",
+      "why": "Confirms the over-model direction and magnitude; the extra hotness is her own proc-count over-fire now more fully exposed after the real soda buff was added."
+    },
+    {
+      "source": "note",
+      "text": "Secondary candidate: non-core normal value (DBG max 1.30M vs a real 1.55M popup, buff-state dependent).",
+      "couldCauseGap": "neither",
+      "why": "Open, not yet pinned; secondary to the proc-count knot, direction/magnitude unconfirmed."
+    },
+    {
+      "source": "note",
+      "text": "ATK/rotation confound: sim charge-normal 1.64M vs real 1.03M; sim rotation faster than real.",
+      "couldCauseGap": "HOT",
+      "why": "Measurement-side confound entangled with the proc-count pin; 'sim rotation faster than real' would over-fire => HOT-leaning, but it obscures rather than confirms the exact gap."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the count-requirement line IS modeled \u2014 chargeCounter.countInFb gated on HER OWN burst cast for 10s (sim.ts:1745); the previous 'unparsed' caveat and unmodeled.burst entry were stale.",
+      "couldCauseGap": "neither",
+      "why": "Clarification that the line is modeled; resolves the stale 'unparsed' caveat \u2014 a KNOWN-non-gap, not a surprise."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: unparsed effect \"Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\"",
+      "couldCauseGap": "neither",
+      "why": "STALE \u2014 superseded by the caveat above confirming the line is modeled via countInFb + sim.ts gating."
+    },
+    {
+      "source": "open-question",
+      "text": "ks-extract F5 (P0-adjacent): coreband-scarlet-ar.json tagged scarlet-black-shadow but records a 20-round AR \u2014 likely base scarlet footage misattributed; owner identity re-verify.",
+      "couldCauseGap": "neither",
+      "why": "Evidence-provenance risk affecting calibration confidence, not a sim modeling gap; does not itself shift sim output but could mislead the pin."
+    }
+  ],
+  "authorIntentSummary": "The author modeled S1 faithfully as a real per-full-charge phase counter (chargeCounter trigger, count 3 outside / countInFb 1 in-burst) firing 283.03% single / 565% distributed / 848.03% distributed, with her burst lowering the thresholds for 10s gated on HER OWN burst cast (not the team FB window) so procs cluster into her burst window and the +50% Full Burst applies per-proc by landing timing \u2014 retiring the old hitCount:10 + noFb fudge. Key approximations: a scalar 3/1 cumulative phase model (the per-phase [3,6,9]/[1,2,3] reading tested ~22% cold and was reverted pending an isolated-burst recording), and charge latency settled at datamined 18f + 22f recovery = 40f cycle vs measured ~42f. Known-not-yet-faithful: the in-burst large-phase (848%) proc count is over-modeled (every-charge over-fires), the primary driver of the HOT band (N3 ~1.13-1.18 OVER); a secondary non-core normal-value discrepancy and an ATK/rotation measurement confound remain open, and a misattributed coreband evidence file needs identity re-verify."
+}

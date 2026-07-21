@@ -1,0 +1,523 @@
+{
+  "sakura-suzuhara": {
+    "slug": "sakura-suzuhara",
+    "name": "Sakura Suzuhara",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/xx-59/ed-89/a469f346789e8dfde4f7294de81beb80.png",
+    "weapon": "SMG",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Supporter",
+    "element": "Water",
+    "manufacturer": "Abnormal",
+    "normalAttackMultiplier": 8.1,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "nicknames": [
+      "ss"
+    ],
+    "skills": {
+      "skill1": "■ Activates after landing 120 normal attacks. Affects the target(s).\nDamage Taken ▲ 17.18% for 5 sec.",
+      "skill2": "■ Activates after landing 60 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.\nIncoming healing ▲ 15.18% for 10 sec.\n■ Activates after landing 120 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.\nDamage Taken ▼ 14.97% for 10 sec.",
+      "burst": "■ Affects 2 ally unit(s) with the lowest HP percentage.\nRecovers 10.03% of the skill user's final Max HP every 1 sec for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1083601,
+        "shot_detail": {
+          "id": 1083601,
+          "damage": 810,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2836101,
+        "skill2_id": 2836201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2836101,
+          "icon": "icn_skill_damagereductionup_01",
+          "group_id": 28361,
+          "skill_level": 1,
+          "name_localkey": "Support Fire",
+          "next_level_id": 2836102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attacks. Affects the target(s).\n<color=#00AEFF>Damage Taken ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120"
+              ]
+            },
+            {
+              "description_value": [
+                "10.15",
+                "10.93",
+                "11.71",
+                "12.49",
+                "13.27",
+                "14.05",
+                "14.84",
+                "15.62",
+                "16.4",
+                "17.18"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2836201,
+          "icon": "icn_skill_damagereductiondown_01",
+          "group_id": 28362,
+          "skill_level": 1,
+          "name_localkey": "Intensive Condition Management",
+          "next_level_id": 2836202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attacks. Affects the {description_value_02} ally unit(s) with the lowest HP percentage.\n<color=#00AEFF>Incoming healing ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates after landing {description_value_05} normal attacks. Affects the {description_value_06} ally unit(s) with the lowest HP percentage.\n<color=#00AEFF>Damage Taken ▼ {description_value_07}% for {description_value_08} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "8.97",
+                "9.66",
+                "10.35",
+                "11.04",
+                "11.73",
+                "12.42",
+                "13.11",
+                "13.8",
+                "14.49",
+                "15.18"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "8.84",
+                "9.53",
+                "10.21",
+                "10.89",
+                "11.57",
+                "12.25",
+                "12.93",
+                "13.61",
+                "14.29",
+                "14.97"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1836301,
+        "ulti_skill_detail": {
+          "id": 1836301,
+          "icon": "icn_skill_c836_ult",
+          "group_id": 18363,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Emergency Healing",
+          "next_level_id": 1836302,
+          "prefer_target": "LowHPRatio",
+          "resource_name": "c836_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 2,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects {description_value_01} ally unit(s) with the lowest HP percentage.\n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "5.93",
+                "6.38",
+                "6.84",
+                "7.3",
+                "7.75",
+                "8.21",
+                "8.66",
+                "9.12",
+                "9.58",
+                "10.03"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            183630101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 583602,
+        "grade_core_id": 101,
+        "stat_enhance_id": 3303,
+        "stat_enhance_detail": {
+          "id": 3303,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 18,
+          "grade_defence": 90,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100836,
+        "piece_detail": {
+          "id": 5100836,
+          "class": "Attacker",
+          "order": 83600,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ABNORMAL",
+          "resource_id": 836,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Sakura's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 583601,
+        "class": "Supporter",
+        "order": 30024,
+        "name_code": 3015,
+        "corporation": "ABNORMAL",
+        "resource_id": 836,
+        "name_localkey": "Sakura",
+        "original_rare": "SR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 11500,
+      "atk": 450,
+      "def": 78,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 18,
+        "def": 90,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 836
+    }
+  }
+}

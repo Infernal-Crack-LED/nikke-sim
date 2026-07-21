@@ -1,0 +1,32 @@
+{
+  "liter": {
+    "name": "Liter",
+    "burst": "I",
+    "weapon": "SMG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: cadence tuple (SMG datamined rate of fire, reloadFrames 111) is the unverified datamine — read rounds/min + reload gap from any focus video (⚑1)",
+      "skill2: cover-HP restore is modeled as a recovery event to ALL allies on Full Burst enter — the trigger is not in the kit text (invented), the real target is only the 2 allies with lowest remaining cover HP, and whether cover repair fires 'when recovery takes effect' consumers (e.g. Crown) is unmeasured (⚑2)",
+      "burst: team buffs are short (5 sec) by kit text — low uptime on a ~20 sec cycle is faithful, not a modeling gap"
+    ],
+    "board": null
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "cinderella-crystal-wave": {
+    "name": "Cinderella: Crystal Wave",
+    "burst": "III",
+    "weapon": "MG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-17",
+      "findings": [
+        "RESOLVED 2026-07-17: FB-nuke riders now OWN-BURST-GATED via engine `ownBurstGate:'cast'` block gate (types.ts Block + sim.ts applyBlock) composing with the existing fullBurstEnter trigger — kept at FB-entry (keeps the +50% FB major, unlike re-keying to burstCast). The prior 'sole-B3 → movement ZERO' premise was WRONG: she alternates stage-3 with a co-B3 in BOTH graded comps (Liberalio T5, Rapi:RH T8), so the gate is board-MOVING and IMPROVES fit: T8 1.062 HOT→1.001, T5 1.009→0.978 (both within ±3%, board MAD 0.036→0.012). Regression snapshot updated for T5 ccw total (understood). Snipe-branch core:true still unvalidated (F2)."
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "U1 core-strike rule fix; T5 1.09 / T8 1.25",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 2
+    },
+    "reference": false,
+    "residual": "U3 open — elemental-advantage delivery type",
+    "unmodeled": {
+      "skill1": [
+        "Activates when reloading to max ammunition capacity. Affects self. Preparation for Change: Reloading Time changes to fixed 3 sec for 6 sec. (Removed when the last bullet is fired.)"
+      ],
+      "skill2": [
+        "Activates at the start of battle and when using Burst Skill. Affects self. Creates a Decoy avatar with 70.34% of the caster's Max HP, continuously."
+      ],
+      "burst": []
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T5 wind-weak probe (boss Iron)",
+          "ratio": 0.9784
+        },
+        {
+          "comp": "T8 iron-weak (boss Electric)",
+          "ratio": 1.0018
+        }
+      ],
+      "n": 2,
+      "mean": 0.9901,
+      "mad": 0.0117,
+      "band": "±3% ✓",
+      "temp": "OK  ·"
+    }
+  }
+}

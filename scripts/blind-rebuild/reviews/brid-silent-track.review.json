@@ -1,0 +1,98 @@
+{
+  "slug": "brid-silent-track",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all Wind Code enemies. Damage Taken \u25b2 15.12% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1 block[1] (trigger fullBurstEnter, bossElementGate 'Wind', buff damageTakenPct 15.12/10s)",
+        "note": "bossElementGate 'Wind' is inert vs the neutral scope-lock boss; becomes a big team-wide damageTaken amp vs a Wind boss. 'All Wind Code enemies' trivially satisfied in single-boss scope."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all enemies. Deals 636% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1 block[0] (trigger fullBurstEnter, flatDamage atkPct 636)",
+        "note": "Fires each rotation on FB enter. FB-by-timing (default noFb OFF = prior 2, gets +50% FB multiplier). Crits at sheet rate, no core (no 'core strike' text). Solo-validated: measured popup values confirm the coefficient."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after 10 normal attack(s). Affects 1 Wind Code enemy unit(s) with the lowest remaining HP. Damage Taken \u25b2 12.12% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 block[1] (trigger hitCount 100, bossElementGate 'Wind', buff damageTakenPct 12.12/10s)",
+        "note": "'10 normal attacks' = hitCount 100 (10 shots \u00d7 10 pellets/shot, SHOT reading per FLAG b). bossElementGate 'Wind' inert vs non-Wind boss. 'Lowest remaining HP' targeting trivially satisfied in single-boss scope. Stacks with S1 debuff vs Wind boss."
+      },
+      {
+        "kitLine": "Activates after 5 normal attack(s). Affects 1 enemy unit(s) with the lowest remaining HP. Deals 675% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 block[0] (trigger hitCount 50, flatDamage atkPct 675)",
+        "note": "'5 normal attacks' = hitCount 50 (5 shots \u00d7 10 pellets/shot). MEASURED 2026-07-16: trigger confirmed = every 5th PULL (43 riders = floor(215/5) EXACT). Fixed values 673,819 non-crit / 1,010,728 crit = exactly 675.00% at measured effective term 99,825.6. Recurring rider, ~41.6% of her solo total. FB-by-timing, crits at sheet rate, no core."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies (except self). ATK \u25b2 66.52% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst block[0] (trigger burstCast, target allies excludeSelf:true, buff casterAtkPct 66.52/10s)",
+        "note": "Main support line \u2014 her VALUE is this team casterAtk buff, not her own SG-capped damage. excludeSelf:true enforced since 2026-07-17 (FLAG f fix); removes prior minor self-inflation of her own SG-capped damage. Board-inert today (brid not board-measured in a graded comp)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "FLAG (a) CADENCE TUPLE \u2014 pullsPerSec datamine not supplied + reloadFrames 111 datamine; SG default rate, ammo 9 empties in >1s so no fire-mode escalation; est = class-default SG cadence + reloadFrames 111.",
+      "couldCauseGap": "COLD",
+      "why": "If the real SG cadence is faster than the class default, S2 hitCount triggers fire sooner and more often \u2192 more 675% riders \u2192 sim under-counts. Conversely a slower cadence would over-count. Direction uncertain but the note flags it as unmeasured."
+    },
+    {
+      "source": "note",
+      "text": "FLAG (b) SG 'normal attack' = SHOT vs PELLET \u2014 10\u00d7 lever on both S2 counters; shipped the standard SHOT reading (5 NA = 5 shots = hitCount 50; 10 NA = 10 shots = hitCount 100); if pellets were meant divide by 10.",
+      "couldCauseGap": "HOT",
+      "why": "If 'normal attack' means pellet (not shot), the real hitCount thresholds are 5 and 10 pellets (= 1 shot), making the riders fire ~10\u00d7 more often. The shipped SHOT reading was MEASURED-confirmed (43 riders = floor(215 pulls/5) EXACT), so this flag is effectively resolved in favor of SHOT. Residual risk: near-zero."
+    },
+    {
+      "source": "note",
+      "text": "FLAG (c) SG SPRAY UNDER-MODEL + HR-contaminated core bands (G4) \u2014 her own SG spray/core damage is low-confidence (~1.5\u00d7 under per noir/dorothy anchors); est = engine default bands.",
+      "couldCauseGap": "COLD",
+      "why": "Her normal-attack SG spray damage (the 201.5% \u00d7 10 pellets per shot) is modeled at engine-default SG band multipliers which are HR-contaminated and likely ~1.5\u00d7 too low. This affects her own damage contribution (not the team buff). Direction: sim under-models her personal spray damage \u2192 COLD for her own damage line."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: Wind Code Damage Taken \u25b2 15.12% (Full Burst entry, 10s) now modeled via bossElementGate 'Wind' \u2014 inert vs a non-Wind (incl. scope-lock) boss; a big team-wide lever if the boss is Wind.",
+      "couldCauseGap": "neither",
+      "why": "Inert at scope-lock (neutral boss). Only becomes active vs a Wind boss. Not a gap in the standard scope-lock validation; would be a big HOT lever if graded vs a Wind boss without the gate."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Wind Code Damage Taken \u25b2 12.12% (every 10 normal attacks = hitCount 100 at 10 pellets/shot, 10s) now modeled via bossElementGate 'Wind' \u2014 inert vs a non-Wind boss; stacks with the skill1 debuff vs a Wind boss.",
+      "couldCauseGap": "neither",
+      "why": "Same as above \u2014 inert at scope-lock. Combined with S1 debuff would be ~27% team-wide damageTaken amp vs Wind boss. Not a gap in neutral-boss validation."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: ATK \u25b2 66.52% of caster's ATK on all allies EXCEPT self \u2014 excludeSelf:true enforced since 2026-07-17; no longer self-inflates her own SG-capped damage.",
+      "couldCauseGap": "neither",
+      "why": "Previously a minor HOT source (self-inflation of her own SG-capped damage). Fixed 2026-07-17. No longer a confound \u2014 documented for historical traceability."
+    },
+    {
+      "source": "note",
+      "text": "FLAG (e) noFb on the 636%/675% riders = default OFF (FB by timing, prior 2); set noFb:true ONLY with measured FB-OFF popups.",
+      "couldCauseGap": "HOT",
+      "why": "If the riders actually fire outside the FB window (noFb = true), they would NOT get the +50% FB multiplier, making the sim ~50% too hot on those lines. The default OFF (FB-by-timing) was chosen because the S1 trigger IS fullBurstEnter (definitionally in FB) and the S2 rider lands ~6 frames after the 5th pull which coincides with FB. Solo-validated popup values are consistent with FB-ON. Residual risk: low."
+    },
+    {
+      "source": "note",
+      "text": "Solo real/sim 1.058 (real 74,592,500) \u2014 PROMOTED + SOLO-VALIDATED 2026-07-16. ATK term measured +1.63% above scope-lock nominal (relationship bonus, now modeled globally). Remaining ~0.23% is measurement-basis slack.",
+      "couldCauseGap": "HOT",
+      "why": "The 1.058 solo ratio means the sim over-predicts her solo damage by ~5.8%. This is a solo probe (not a board comp). The over-prediction is likely attributable to FLAG (c) SG spray under-model interacting with the solo total, or residual cadence/landing uncertainty. Not a graded board comp."
+    }
+  ],
+  "authorIntentSummary": "The override models Brid: Silent Track as a Fire SG Burst II Supporter whose primary value is the 66.52% casterAtk team buff (burst, allies-except-self), with two recurring flatDamage riders (S1 636% on FB enter, S2 675% every 5 shots = hitCount 50) that constitute her personal damage. The S2 rider is solo-validated to exact popup values (675.00% at measured term 99,825.6). Two Wind-Code-gated damageTaken debuffs (S1 15.12%, S2 12.12%) are modeled via bossElementGate but inert vs the neutral scope-lock boss. Key approximations: SG cadence is unmeasured datamine (FLAG a), the shot-vs-pellet NA reading is measured-confirmed (FLAG b resolved), and her personal SG spray/core damage runs on HR-contaminated default bands likely ~1.5\u00d7 too low (FLAG c, COLD direction). The solo probe reads 1.058 (sim over by ~5.8%) but she has no graded board comps (board = null, tier MODEL_ONLY)."
+}

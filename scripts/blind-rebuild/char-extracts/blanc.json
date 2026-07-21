@@ -1,0 +1,522 @@
+{
+  "blanc": {
+    "slug": "blanc",
+    "name": "Blanc",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/yz-13/ns-11/0d8be3628e6f048e55e4a81c0ccc3480.png",
+    "weapon": "AR",
+    "burst": "II",
+    "burstCooldownSec": 60,
+    "class": "Defender",
+    "element": "Wind",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 13.65,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after 120 normal attack(s).\nCreates a shared Shield equal to 11.8% of the skill user's final Max HP that protects all allies from damage. Lasts for 5 sec.",
+      "skill2": "■ Activates after Full Burst ends. Affects all allies.\nConstantly recovers 3.68% of the skill user's final Max HP every 1 sec for 5 sec.\n■ Activates when Full Burst ends with an ally from the same squad still on the battlefield. Affects self.\nCooldown of Burst Skill ▼ 40.76 sec.",
+      "burst": "■ Affects all allies.\nConstantly recovers 3.84% of the skill user's final Max HP every 1 sec for 8 sec.\n■ Affects 1 ally unit(s) with the lowest remaining HP (except the skill user).\nGain Indomitability for 10 sec.\nMax HP ▲ 31.68% for 10 sec.\n■ Affects all enemies.\nDamage Taken ▲ 39.26% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1027001,
+        "shot_detail": {
+          "id": 1027001,
+          "damage": 1365,
+          "max_ammo": 60,
+          "shake_id": 1,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2270101,
+        "skill2_id": 2270201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2270101,
+          "icon": "icn_skill_barrier_01",
+          "group_id": 22701,
+          "skill_level": 1,
+          "name_localkey": "Lucky Guard",
+          "next_level_id": 2270102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates after {description_value_01} normal attack(s).\n<color=#00AEFF>Creates a shared <word_group=10023>Shield</word_group> equal to {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP that protects all allies from damage. Lasts for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120"
+              ]
+            },
+            {
+              "description_value": [
+                "6.97",
+                "7.51",
+                "8.04",
+                "8.58",
+                "9.12",
+                "9.65",
+                "10.19",
+                "10.73",
+                "11.26",
+                "11.8"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2270201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 22702,
+          "skill_level": 1,
+          "name_localkey": "Rabbit Twins W",
+          "next_level_id": 2270202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates after Full Burst ends. Affects all allies.\n<color=#00AEFF>Constantly recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.</color>\n■ Activates when Full Burst ends with an ally from the same squad still on the battlefield. Affects self.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1.78",
+                "1.99",
+                "2.2",
+                "2.41",
+                "2.62",
+                "2.84",
+                "3.05",
+                "3.26",
+                "3.47",
+                "3.68"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "40.76",
+                "40.76",
+                "40.76",
+                "40.76",
+                "40.76",
+                "40.76",
+                "40.76",
+                "40.76",
+                "40.76",
+                "40.76"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1270301,
+        "ulti_skill_detail": {
+          "id": 1270301,
+          "icon": "icn_skill_c270_ult",
+          "group_id": 12703,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Showtime",
+          "next_level_id": 1270302,
+          "prefer_target": "LowHP",
+          "resource_name": "c270_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 6000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            6000,
+            6000,
+            6000,
+            6000,
+            6000,
+            6000,
+            6000,
+            6000,
+            6000,
+            6000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Constantly recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.</color>\n■ Affects {description_value_03} ally unit(s) with the lowest remaining HP (except the skill user).\n<color=#00AEFF>Gain <word_group=10006>Indomitability</word_group> for {description_value_04} sec.\nMax HP ▲ {description_value_05}% for {description_value_06} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Damage Taken ▲ {description_value_07}% for {description_value_08} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2.05",
+                "2.25",
+                "2.45",
+                "2.65",
+                "2.85",
+                "3.04",
+                "3.24",
+                "3.44",
+                "3.64",
+                "3.84"
+              ]
+            },
+            {
+              "description_value": [
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "18.72",
+                "20.16",
+                "21.6",
+                "23.04",
+                "24.48",
+                "25.92",
+                "27.36",
+                "28.8",
+                "30.24",
+                "31.68"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "20.08",
+                "22.21",
+                "24.34",
+                "26.48",
+                "28.61",
+                "30.74",
+                "32.87",
+                "35",
+                "37.13",
+                "39.26"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "ExcludeSelf",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            127030101,
+            127030104
+          ],
+          "after_hurt_function_id_list": [
+            127030102,
+            127030103
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 327002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5201,
+        "stat_enhance_detail": {
+          "id": 5201,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100270,
+        "piece_detail": {
+          "id": 5100270,
+          "class": "Attacker",
+          "order": 27000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 270,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Blanc's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 327001,
+        "class": "Defender",
+        "order": 10090,
+        "name_code": 5008,
+        "corporation": "TETRA",
+        "resource_id": 270,
+        "name_localkey": "Blanc",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 110,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 270
+    }
+  }
+}

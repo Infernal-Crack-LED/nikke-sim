@@ -1,0 +1,188 @@
+{
+  "slug": "elegg-boom-and-shock",
+  "board": {
+    "ratio": 0.825,
+    "n": 1,
+    "mad": 0.175,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects 1 random enemy.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 (possession bookkeeping); note: 'possession/capture bookkeeping lines\u2026folded into the derived trajectory'",
+        "note": "Activation/target descriptor for the possession mechanic; no direct damage effect of its own"
+      },
+      {
+        "kitLine": "Possession lasts for 6 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 verbatim",
+        "note": "Possession bookkeeping; folded into derived 1-ghost/6s capture cadence"
+      },
+      {
+        "kitLine": "Ability: Find and capture ghosts possessing the enemy.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 verbatim",
+        "note": "Flavor/bookkeeping line; no direct effect"
+      },
+      {
+        "kitLine": "Required hit count: 100 time(s) in total, cumulative across all allies.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 verbatim",
+        "note": "Hit-gate assumed to clear well inside 6s for a 5-unit MG team; \u2691 may bind in slow/charge teams"
+      },
+      {
+        "kitLine": "Effect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 verbatim",
+        "note": "Ghost cap 13 is bookkeeping; derived trajectory uses sawtooth 1\u21927 in rotation, 0\u219213 in no-burst"
+      },
+      {
+        "kitLine": "Recurring interval: 6 sec",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 verbatim",
+        "note": "Folded into derived capture cadence (1 ghost/6s)"
+      },
+      {
+        "kitLine": "Affects all Water Code allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1 blocks: target { kind: alliesOfElement, element: Water }",
+        "note": "Target descriptor for both buff tiers"
+      },
+      {
+        "kitLine": "Effects vary according to the number of ghosts. Each subsequent effect triggers all effects before it:",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 verbatim",
+        "note": "Tier-header line; ghost-count gate approximated by uptime haircut + modes, not tracked"
+      },
+      {
+        "kitLine": "1 or more ghosts: ATK \u25b2 16.2% of the skill user's ATK continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: passive, alliesOfElement Water, casterAtkPct 16.2",
+        "note": "\u22651 ghost \u2248 permanent (first capture t\u22486, burst 'maintains at least 1'); shipped at full value"
+      },
+      {
+        "kitLine": "4 or more ghosts: Elemental Advantage Attack Damage \u25b2 35% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (rotation): elemAdvantageDamagePct 17.5; skill1[2] (no-burst): elemAdvantageDamagePct 35",
+        "note": "Rotation: 35 \u00d7 0.5 derived uptime \u2691; no-burst: full 35 (\u224887% uptime). Uptime estimate is unmeasured"
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when using Burst Skill. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger burstCast, target self",
+        "note": "Trigger + target descriptor for the ATK buff"
+      },
+      {
+        "kitLine": "ATK \u25b2 40% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: buff atkPct 40, durationSec 10",
+        "note": "\u2691(6): whether this snapshots into her own same-frame 4800% burst nuke is unverified"
+      },
+      {
+        "kitLine": "Activates when a ghost is captured while at maximum ghost capacity. Affects all enemies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (no-burst mode): passive dot approximates repeated procs; rotation mode: correctly zero procs (ghosts never reach 13)",
+        "note": "Trigger condition approximated; in rotation mode the condition is never satisfied"
+      },
+      {
+        "kitLine": "Deals 1100% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (no-burst): dot atkPct 1100, durationSec 102, intervalSec 6 (= 17 ticks)",
+        "note": "No-burst only; ~17 procs/180s is a derived estimate \u2691(4). Rotation mode: zero procs, correctly absent"
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects random enemy units if the number of ghosts is not 13.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: target enemy",
+        "note": "Ghost-count condition always satisfied in rotation (ghosts never 13); single-boss context makes 'random' moot"
+      },
+      {
+        "kitLine": "Deals 800% of final ATK as damage. Attacks sequentially for 6 time(s).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: flatDamage atkPct 4800 (800\u00d76), flavor sequential",
+        "note": "6 sequential hits merged into one expectation-equivalent flat hit"
+      },
+      {
+        "kitLine": "Number of ghosts \u25bc 6. Maintains at least 1 ghost.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst verbatim",
+        "note": "Ghost decrement bookkeeping; folded into derived sawtooth trajectory"
+      },
+      {
+        "kitLine": "Affects random enemy units if the number of ghosts is 13.",
+        "status": "UNMODELED",
+        "where": "note: 'the 13-hit burst branch (unreachable in both modeled contexts)'",
+        "note": "Condition header for the unreachable 13-ghost branch; not verbatim in unmodeled array but explicitly covered by note"
+      },
+      {
+        "kitLine": "Deals 800% of final ATK as damage. Attacks sequentially for 13 time(s).",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst verbatim",
+        "note": "13-hit branch unreachable when bursting on CD (needs 72 burst-free seconds from floor)"
+      },
+      {
+        "kitLine": "Number of ghosts \u25bc 9.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst verbatim",
+        "note": "Ghost decrement for the unreachable 13-ghost branch"
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: Elemental Advantage Damage \u25b235% (4+ ghosts) shipped at 17.5% = derived ~50% uptime in rotation mode \u2014 unmeasured ghost-economy estimate",
+      "couldCauseGap": "HOT",
+      "why": "Directly scales all Water-ally damage via elemAdvantageDamagePct; if true uptime differs from 50%, every Water ally's damage shifts"
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: the 1100% capture-at-max-capacity nuke fires ONLY in no-burst mode; its ~17 procs/180s are a derived estimate",
+      "couldCauseGap": "neither",
+      "why": "In rotation mode (the team-sim context) the nuke correctly fires zero times; the no-burst mode is a solo-probe convenience, not used for team comps"
+    },
+    {
+      "source": "caveat",
+      "text": "burst: modeled as the 6-hit branch (800% x 6 = 4800%); the 13-ghost 13-hit branch is unreachable when bursting on cooldown",
+      "couldCauseGap": "neither",
+      "why": "Correctly identifies the unreachable branch; the 6-hit branch is the only one that fires in rotation"
+    },
+    {
+      "source": "caveat",
+      "text": "cadence: datamined MG fire rate + reloadFrames 171 are unverified (mandatory cadence flag)",
+      "couldCauseGap": "HOT",
+      "why": "Cadence drives burst-gauge generation, hit counts, and thus ghost-economy timing; wrong cadence shifts burst count and ghost trajectory"
+    },
+    {
+      "source": "note",
+      "text": "\u2691(2): capture cadence 6s vs hit-gated \u2014 the 100-cumulative-team-hit gate may bind in slow/charge-weapon teams",
+      "couldCauseGap": "HOT",
+      "why": "If the hit-gate slows capture below 1/6s, the ghost sawtooth peak drops, reducing \u22654-tier uptime below 50%"
+    },
+    {
+      "source": "note",
+      "text": "\u2691(6): whether S2's +40% self ATK (same burstCast frame) snapshots into her own 4800% burst nuke \u2014 engine same-frame ordering unverified",
+      "couldCauseGap": "HOT",
+      "why": "If the +40% ATK does NOT apply to the same-frame burst hit, her burst damage drops by ~29% (4800% \u00d7 0.4/1.4)"
+    },
+    {
+      "source": "note",
+      "text": "\u2691(4): no-burst nuke count 17 + ramp-to-13 time 78s are derived estimates",
+      "couldCauseGap": "neither",
+      "why": "Only affects the no-burst solo-probe mode, not team-sim rotation"
+    },
+    {
+      "source": "note",
+      "text": "\u2691(5): at-burst ghost count never 13 (verify vs UI counter)",
+      "couldCauseGap": "neither",
+      "why": "Verification flag for the rotation-mode assumption; if wrong, the 13-hit branch and S2 nuke would activate"
+    }
+  ],
+  "authorIntentSummary": "The override is an explicitly-labeled parser baseline / hypothesis, not a validated model. The author replaced ghost-count tracking with a derived sawtooth trajectory (1\u21927 ghosts in rotation, 0\u219213 in no-burst) and approximated the \u22654-ghost Elemental Advantage tier as 50% uptime (17.5% shipped vs 35% full). The burst is the 6-hit branch only (4800% flat); the 13-hit branch and S2's 1100% nuke are correctly unreachable when bursting on CD. A separate no-burst mode encodes the full ghost ramp + nuke as a dot for solo-probe contexts. All ghost-economy numbers are unmeasured \u2691 estimates; the unit is COLD at 0.825 ratio (N=1) and needs real hand-tuning against measured fight data."
+}

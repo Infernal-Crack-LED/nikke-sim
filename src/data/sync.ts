@@ -189,6 +189,22 @@ async function main() {
         skill2: row.skill_descriptions?.skill2 || api?.skill_2_en || '',
         burst: row.skill_descriptions?.burst || api?.burst_skill_en || '',
       },
+      // Skill activation cooldowns (SECONDS), folded into skill_descriptions.cooldowns by
+      // bakery-bot from the community wiki — blablalink roledata only carries the burst CD, not
+      // skills 1 & 2. Per slot: number = seconds, `null` = passive (no cooldown / wiki "N/A").
+      // The whole `cooldowns` object may be ABSENT (unit not yet matched to a wiki page) — in
+      // that case we OMIT skillCooldownsSec entirely so a consumer reads it as "unknown", NOT as
+      // a passive `null`. Static kit data (does NOT scale with skill level); the engine doesn't
+      // read it yet. See docs/handoffs/2026-07-20-skill-cooldowns-to-sim.md.
+      ...(row.skill_descriptions?.cooldowns
+        ? {
+            skillCooldownsSec: {
+              skill1: row.skill_descriptions.cooldowns.skill1 ?? null,
+              skill2: row.skill_descriptions.cooldowns.skill2 ?? null,
+              burst: row.skill_descriptions.cooldowns.burst ?? null,
+            },
+          }
+        : {}),
       // Raw blablalink roledata snapshot, UNPRUNED (prefix stripped: role_weapon -> role.weapon, …).
       // Nothing reads it yet; staged for a later api.* -> role.* migration. Omit empty keys.
       role: {

@@ -1,0 +1,182 @@
+{
+  "slug": "crown",
+  "board": {
+    "ratio": 1.028,
+    "n": 12,
+    "mad": 0.05,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of Full Burst.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger.kind=fullBurstEnter, skill1[1].trigger.kind=fullBurstEnter",
+        "note": "Both blocks fire on fullBurstEnter."
+      },
+      {
+        "kitLine": "Affects all allies who previously used their Burst Skills.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].target.kind=burstCasters",
+        "note": "Per-chain membership; engine resets burstCasters/nonBurstCasters at FB end."
+      },
+      {
+        "kitLine": "ATK \u25b2 64.51% of the skill user's ATK for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0]: casterAtkPct 64.51, 15s",
+        "note": "casterAtkPct = % of Crown's ATK, not target's own ATK. Fixed in 2026-07-16 rebuild."
+      },
+      {
+        "kitLine": "Reload Speed \u25b2 44.35% for 15 sec. (burst casters)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[1]: reloadSpeedPct 44.35, 15s",
+        "note": ""
+      },
+      {
+        "kitLine": "Affects all allies who did not previously use their Burst Skills.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1].target.kind=nonBurstCasters",
+        "note": "Disjoint from burstCasters \u2014 no unit receives both blocks."
+      },
+      {
+        "kitLine": "DEF \u25b2 37.44% of the skill user's DEF for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1].effects[0]: defPct 37.44, 15s",
+        "note": "DEF is damage-inert in the sim; modeled for completeness. Value is % of Crown's DEF (casterDef semantics)."
+      },
+      {
+        "kitLine": "Reload Speed \u25b2 44.35% for 15 sec. (non-casters)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1].effects[1]: reloadSpeedPct 44.35, 15s",
+        "note": ""
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after 43 normal attacks. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].trigger.kind=hitCount, count=860",
+        "note": "Aggregated: 43 attacks/stack \u00d7 20 stacks = 860 hits per heal cycle. Per-stack cadence not separately modeled; timing is equivalent."
+      },
+      {
+        "kitLine": "Relax: Incoming healing \u25b2 4.06% continuously. Stacks up to 20 times.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Defensive stat (incoming healing buff). No DPS impact; dropped deliberately."
+      },
+      {
+        "kitLine": "Activates when Relax is at max stacks. Removes stacks and affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].trigger.kind=hitCount count=860",
+        "note": "The 860-hit counter IS the max-stacks condition (43\u00d720). Stack removal is implicit in counter reset."
+      },
+      {
+        "kitLine": "Invulnerable for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Defensive; no DPS impact; single-boss sim has no taunt/aggro model."
+      },
+      {
+        "kitLine": "Attract: Taunts all enemies for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[2]",
+        "note": "Defensive; partless single-boss sim \u2014 taunt is inert."
+      },
+      {
+        "kitLine": "Restores HP equal to 5.23% of the skill user's final Max HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[0]: {kind:heal}",
+        "note": "Heal event emitted to self (no HP value \u2014 no HP pool in sim). The event is the trigger for the recovery block below. Actual HP amount is immaterial."
+      },
+      {
+        "kitLine": "Activates when recovery takes effect. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1].trigger.kind=recovery, target.kind=allies",
+        "note": "Fires whenever Crown RECEIVES a heal (self-Relax or external healer). Corrected 2026-07-14 from fixed-cadence to heal-triggered."
+      },
+      {
+        "kitLine": "Attack Damage \u25b2 20.99% for 7 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1].effects[0]: attackDamagePct 20.99, 7s",
+        "note": "Team-wide AD buff. Uptime depends on heal frequency: ~27% off self-Relax alone, near-permanent with a frequent healer."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].target.kind=allies",
+        "note": ""
+      },
+      {
+        "kitLine": "Attack Damage \u25b2 36.24% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0]: attackDamagePct 36.24, 15s",
+        "note": ""
+      },
+      {
+        "kitLine": "Creates a Shield equal to 10.45% of the skill user's final Max HP for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[1]: shield maxHpPct 10.45, 15s",
+        "note": "No HP pool modeled; shield event fires 'shielded' triggers for shield-synergy kits but does not track shield HP or absorb damage."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "unmodeled",
+      "text": "Relax: Incoming healing \u25b2 4.06% continuously. Stacks up to 20 times.",
+      "couldCauseGap": "neither",
+      "why": "Defensive stat; no DPS impact in the sim."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Invulnerable for 5 sec.",
+      "couldCauseGap": "neither",
+      "why": "Defensive; no DPS impact."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Attract: Taunts all enemies for 5 sec.",
+      "couldCauseGap": "neither",
+      "why": "Partless single-boss sim; taunt is inert."
+    },
+    {
+      "source": "note",
+      "text": "DEF buff (37.44% of Crown's DEF) is damage-inert in the sim \u2014 DEF does not enter the damage formula.",
+      "couldCauseGap": "neither",
+      "why": "DEF has no DPS contribution; modeled for completeness only."
+    },
+    {
+      "source": "note",
+      "text": "Shield has no HP pool \u2014 fires 'shielded' triggers but does not absorb damage or track shield HP.",
+      "couldCauseGap": "neither",
+      "why": "Shield-synergy triggers fire correctly; shield HP is irrelevant in a partless DPS sim."
+    },
+    {
+      "source": "note",
+      "text": "S2 Relax cycle aggregated to 860-hit counter (43\u00d720) rather than modeling per-stack Relax accumulation.",
+      "couldCauseGap": "neither",
+      "why": "Timing is equivalent (860 hits = 43\u00d720); the per-stack incoming-healing buff is UNMODELED anyway, so no intermediate state matters."
+    },
+    {
+      "source": "note",
+      "text": "S2 +20.99% AD is heal-triggered (recovery event), not fixed-cadence. In healer-less teams ~27% uptime off self-Relax; with frequent healer near-permanent.",
+      "couldCauseGap": "COLD",
+      "why": "If external healer frequency is under-modeled in a comp, the recovery trigger fires less often than real \u2192 team AD buff uptime too low \u2192 sim under-predicts. Corrected 2026-07-14; now matches real kit."
+    },
+    {
+      "source": "note",
+      "text": "S1 casterAtkPct uses Crown's ATK (not target's own ATK). Fixed 2026-07-16 from a parser mis-parse that applied % of each target's own ATK.",
+      "couldCauseGap": "neither",
+      "why": "Fixed and verified; the old bug would have been HOT (over-buff). Current encoding is kit-exact."
+    },
+    {
+      "source": "note",
+      "text": "S1 burst casters vs non-casters are disjoint groups; engine resets membership at FB end so it is per-chain.",
+      "couldCauseGap": "neither",
+      "why": "Matches real kit structure; no unit receives both 44.35% reload lines."
+    }
+  ],
+  "authorIntentSummary": "The override models Crown's full DPS-relevant kit: S1 disjoint caster/non-caster buffs at Full Burst enter (casterAtkPct + reloadSpeed for casters, defPct + reloadSpeed for non-casters), S2 Relax-cycle heal event every 860 hits triggering a team-wide +20.99% AD buff on any recovery event (self or external healer), and burst team AD + shield event. Defensive lines (incoming healing buff, invulnerable, taunt) are deliberately dropped as inert in a partless single-boss DPS sim. The key approximation is the 860-hit aggregate for the Relax cycle and the heal-triggered (not fixed-cadence) recovery buff, both corrected and verified as of 2026-07-16. Board shows N=12, mean 1.028, MAD 0.050 \u2014 solidly OK band."
+}

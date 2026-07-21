@@ -1,0 +1,128 @@
+{
+  "slug": "liter",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger fullBurstEnter / target allies",
+        "note": "Literal trigger per kit text; fires on every team FB regardless of who bursted."
+      },
+      {
+        "kitLine": "Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it:",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effects[0] kind escalating",
+        "note": "Escalating kind implements the cumulative-step semantics; engine applies steps 1..N on Nth activation (sim.ts:1172)."
+      },
+      {
+        "kitLine": "Once: Cooldown of Burst Skill \u25bc 2.34 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] escalating steps[0] burstCdr 2.34",
+        "note": ""
+      },
+      {
+        "kitLine": "Twice: Cooldown of Burst Skill \u25bc 2.7 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] escalating steps[1] burstCdr 2.7",
+        "note": ""
+      },
+      {
+        "kitLine": "Three times: Cooldown of Burst Skill \u25bc 3.17 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] escalating steps[2] burstCdr 3.17",
+        "note": "From 3rd FB onward every FB-enter grants full 2.34+2.7+3.17=8.21s CDR."
+      },
+      {
+        "kitLine": "Activates when using Burst Skill. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] trigger burstCast / target allies",
+        "note": "Literal trigger; fires ONLY on rotations Liter herself bursts, not another B1's cast."
+      },
+      {
+        "kitLine": "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] effects[0] kind escalating",
+        "note": "Same escalating semantics as block A; ramps to all three buffs by her 3rd burst cast."
+      },
+      {
+        "kitLine": "Once: Max Ammunition Capacity \u25b2 45.17% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] escalating steps[0] buff maxAmmoPct 45.17 5s",
+        "note": "Weapon-state modifier (team ammo \u25b2 = more shots before reload); not skippable as defensive per note."
+      },
+      {
+        "kitLine": "Twice: Critical Damage \u25b2 12.46% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] escalating steps[1] buff critDamagePct 12.46 5s",
+        "note": ""
+      },
+      {
+        "kitLine": "Three times: ATK \u25b2 14.42% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] escalating steps[2] buff atkPct 14.42 5s",
+        "note": ""
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects 2 ally unit(s) with the lowest remaining cover HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger fullBurstEnter / target allies",
+        "note": "Two documented approximations (\u26912): (a) trigger fullBurstEnter is INVENTED \u2014 kit text gives no trigger; (b) schema has no lowest-cover-HP target kind, approximated to all allies (real effect hits 2 units; recovery-consumer procs may over-fire ~2.5\u00d7)."
+      },
+      {
+        "kitLine": "Restores 52.5% of Cover HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effects[0] kind heal",
+        "note": "Heal event with no magnitude by design (v1 models no HP pools). Whether a cover-HP restore emits an HP-recovery event in game is UNMEASURED (\u26912c); if a Liter+consumer recording shows no proc, demote to unmodeled."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] trigger burstCast / target allies",
+        "note": ""
+      },
+      {
+        "kitLine": "ATK \u25b2 66% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[0] buff atkPct 66 5s",
+        "note": "5s on ~20s B1 cycle \u2192 low uptime is kit-faithful, not a modeling gap."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: cadence tuple (SMG datamined rate of fire, reloadFrames 111) is the unverified datamine \u2014 read rounds/min + reload gap from any focus video (\u26911)",
+      "couldCauseGap": "COLD",
+      "why": "Liter's own SMG damage is minor (support unit); 120 ammo at SMG class rate is a plausible multi-second magazine with no special fire-mode flavor. Cadence error barely moves her contribution; team buffs are the real value and are unaffected."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: cover-HP restore modeled as recovery event to ALL allies on Full Burst enter \u2014 trigger invented, real target is 2 lowest-cover-HP allies, cover-repair recovery-emission unmeasured (\u26912)",
+      "couldCauseGap": "COLD",
+      "why": "Heal event carries no magnitude and v1 models no HP pools, so non-consumer teams are entirely unaffected. Only a recovery-consumer teammate (e.g. Crown 'when recovery takes effect') could key off it, and even then the over-fire is ~2.5\u00d7 on a zero-magnitude event \u2014 no damage-number impact in a self-sim."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: team buffs are short (5 sec) by kit text \u2014 low uptime on a ~20 sec cycle is faithful, not a modeling gap",
+      "couldCauseGap": "neither",
+      "why": "Explicitly ruled as kit-faithful by the author; the 5s duration is taken verbatim from kit text. Not a gap."
+    },
+    {
+      "source": "note",
+      "text": "\u26913 blast radius: team burstCdr accelerates the WHOLE team's rotation and can add full bursts board-wide \u2014 reviewer must run /sim-battery diff before any board-level claim",
+      "couldCauseGap": "neither",
+      "why": "This is a validation-methodology note (how to check the model), not a modeling gap. The CDR values [2.34, 2.7, 3.17] are taken directly from kit text; the escalating semantics match the literal 'each subsequent effect triggers all effects before it'."
+    }
+  ],
+  "authorIntentSummary": "Parser-baseline HYPOTHESIS (not yet validated/measured). The author modeled Liter as the canonical B1 CDR/enabler: S1 block A gives escalating team burst-CDR [2.34/2.7/3.17]s on every fullBurstEnter, S1 block B gives escalating team buffs [maxAmmo 45.17% / critDmg 12.46% / ATK 14.42%] on Liter's own burstCast, and burst gives team ATK 66% for 5s. S2 cover-HP restore is modeled as a zero-magnitude heal event with an invented fullBurstEnter trigger and all-allies targeting (both \u26912 approximations). All kit lines are represented by blocks; unmodeled arrays are empty. Key not-yet-faithful spots: S2 trigger/target/recovery-emission are unmeasured (\u26912), SMG cadence is unverified datamine (\u26911), and the whole override carries a PARSER BASELINE banner pending hand-tune + real-fight recording."
+}

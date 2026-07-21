@@ -1,0 +1,35 @@
+{
+  "volume": {
+    "name": "Volume",
+    "burst": "I",
+    "weapon": "SMG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Affects self when killing an enemy.",
+        "ATK ▲ 12.6% for 5 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: the kill-gated ATK ▲ 12.6% is unmodeled — it can never trigger against the raid boss (the boss does not die mid-fight)",
+      "cadence: fire rate / reload are unmeasured estimates (engine SMG default 20 pulls/s shipped; the raw datamine says 24 pulls/s, and reload_start_ammo 119 hints at rolling reload) — verify on a focus video",
+      "skill2/burst: escalating tiers reach full value only from her 3rd Full Burst / 3rd burst cast, and every modeled effect is burst-gated — the whole kit is inert in a team that cannot chain Full Bursts"
+    ],
+    "board": null
+  }
+}

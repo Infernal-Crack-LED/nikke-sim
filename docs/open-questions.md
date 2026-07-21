@@ -8,6 +8,69 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U22 — Snow White (`snow-white`) "Full Charge Damage: 1000% of damage": ADDITIVE (owner ruling) vs ×10 MULTIPLICATIVE (footage) — CONTESTED 2026-07-20
+The owner ruled the 1000% ADDITIVE ("part of the normal charge damage bucket" → full-charge coefficient
+499.5 + 1000 = 1499.5% of ATK; encoded as the derived chargeMultPct 300.2002, landed). The SAME-DAY
+control-footage pass (sw.MP4, all 6 of her cannon windows read) contradicts additive on two independent
+axes: (a) the in-game charge readout ramps 929→966→**"1000%"** at the shot — the charge UI displays the
+full-charge MULTIPLIER, exactly as an SR displays 250%; (b) the six nuke popups (50.5M / 54.1M / 45.1M /
+59.5M ×2 / ~45.1M — every one labeled CORE HIT + PIERCE + crit-starburst, two exact value-repeats) sit at
+~630 sheet-ATK-multiples, reconcilable with the ×10 4995% class × FB × core × crit × live buffs but ~3-4×
+above anything the additive class can produce. Third corroboration: the control-board A/B — additive
+encoding reads **0.452–0.503 COLD** (sim ~194M vs real 385–429M) across all four control runs; the old ×10
+encoding read 0.696–0.777. Single-recording evidence, so the landed additive encoding was LEFT STANDING
+per evidence-proportionality — **OWNER TO RE-RULE**. Related NEW observed gap (same footage): she KEEPS
+FIRING HER AR during the ~5s cannon charge (the cannon materializes only for the shot; the cast animation
+precedes the FB banner by ~1-2s) — the engine's weaponSwap cannot fire the base weapon while a swap charge
+runs, so the sim silently loses ~5s of AR fire per burst window (~30s/fight; her plausible residual COLD
+driver even under ×10). Candidate faithful re-encode: drop the weaponSwap, model the cannon as a
+delaySec≈5.5 charge-bucket hit while the AR keeps firing — needs an owner ruling on charge-buff
+composition. Trail: `src/skills/overrides/snow-white.json` note (footage-pass appendix),
+`docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §snow-white, DECISIONS 2026-07-20
+(control comps wired).
+
+### U20 — Does a unit's OWN same-cast self-buff apply to its OWN cast-instant burst damage? (Phase A A2, DEFERRED 2026-07-20)
+**Owner ruling 2026-07-20: DEFER A2 entirely — blocked on an isolating measurement.** The kit-audit plan
+(§A2) proposed a "same-cast self-buff guard": exclude a unit's own same-`burstCast` self-buff from its own
+cast-instant burst nuke. **Premise gate (fresh-context, blind) came back CANNOT-VERIFY**, and undercut the
+plan's stated basis:
+- **The leak is REAL and inconsistent (P1, CONFIRMED empirically).** `ein`'s 300.02% true nuke (burst slot)
+  reads `dmgUp=1.9819` = baseline 1.4289 + her own same-cast +55.3% `trueDamagePct` (burst[0]), while her
+  feather lump (skill2 slot, resolved earlier) at the same instant is `dmgUp=1.4289` — no self-buff. Pure
+  block-array-ordering accident: same-slot-later damage eats the self-buff, earlier-slot damage doesn't.
+- **The correctness DIRECTION is unmeasured (P2, CANNOT-VERIFY).** The SSOT's only "misses same-cast
+  self-buffs" statement is scoped to **skill-slot** blocks ([damage-calculation.md:190-192], [game-mechanics.md:238-240]) —
+  there is NO burst-slot rule. The one measured burst-slot anchor, Cinderella (`cinderella`) §5b
+  ([damage-calculation.md:380-381]), actually **INCLUDES** her own cast-granted conversion in the matching
+  FinalATK (it isolates the +50% FB and *another unit's* entry aura as excluded — never the caster's own
+  same-cast self-buff). No probe recording isolates this variable for any unit.
+- **Blast radius:** 16 units carry a burstCast self-buff + cast-instant burst damage (`ein`,
+  `elegg-boom-and-shock`, `arcana-fortune-mate`, `quency-escape-queen`, `soda-twinkling-bunny`, `privaty`,
+  `liberalio`, `eve`, `raven`, `drake`, `scarlet`, `nayuta`, `asuka-wille`, `cinderella-crystal-wave`,
+  `delta-ninja-thief`, `helm`[inert: `charge:false` nuke]). Several are board-CALIBRATED (soda/privaty/
+  liberalio OK), so a board A/B cannot reveal the direction (co-calibration, same wall as U14). The two
+  directions move `ein` OPPOSITE ways (exclude → colder; include-everywhere → hotter toward 1.0).
+**RESOLVER (the real test):** a focus-video that reads `ein`'s (or `elegg-boom-and-shock`'s) burst-nuke
+popup value and back-derives whether the same-cast self-buff is in it (× the buff factor or not). Until
+that measurement lands, NEITHER direction is enacted; the engine keeps its current (ordering-accidental)
+behavior. Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A2.
+
+### U21 — maxwell's "highest final ATK" buff recipient (A3, HELD 2026-07-20)
+**A3 landed `byFinalAtk` on 4 units but HELD `maxwell`** — her S1 grants atkPct 43.1 + chargeSpeed to the
+2 highest-FINAL-ATK allies on `fullBurstEnter`. Switching her to live-ATK ranking swings her only graded
+comp ("PG iron sweep" [d-killer-wife, `takina`, `milk-blooming-bunny`, `maxwell`, `liberalio`]): the +43.1%
+ATK lands on `takina` (Burst II — structurally the sole possible cause), pushing takina 0.988 OK → 1.280
+HOT. This is a **transient-snapshot artifact**: peak effective ATK in that comp is milk 446k > liberalio
+377k > takina 234k > maxwell 132k, so takina is NOT naturally top-2 — she only ranks up at maxwell's FB
+*instant* because milk's 446k (her own burst peak) is transiently at base then. Entangled with milk's known
+COLD (0.681, pierce package inert) under-model, so the ranking there is untrustworthy. **RESOLVER:** a
+maxwell-focus video reading which 2 allies actually receive her ATK/charge-speed buff icon at FB entry
+(and whether the real game snapshots instantaneously or over the window). Until then maxwell stays on
+STATIC ranking (status quo, no regression). NOTE when she lands: she'd be the first FB-enter atkPct final-ATK
+selector, activating a same-frame apply-ordering dependence (other FB-enter final-ATK selectors' ATK grants
+would then reorder her pick) — verify apply order at that time. Trail: DECISIONS 2026-07-20 A3,
+`docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A3.
+
 ### U19 — grave's burst-window over-model, exposed by the (faithful) timed-pierce primitive (2026-07-17)
 **Surfaced by the `gainPierce` primitive (engine-modeling-gaps fix #7).** The timed-pierce window lets
 "Gain Pierce for N sec" wake a unit's Pierce Damage ▲ buffs. **MECHANISM (owner-confirmed 2026-07-17):**
@@ -329,6 +392,22 @@ well-calibrated board and refits measured values (constraint 3). The correct lan
 recalibration: for each dot unit, de-crit the calibrated base (÷~1.075, net-zero expected) so the
 mechanism is right AND the graded fit holds — worth it mainly for crit-BUFF interactions + variance,
 which no current recording isolates. Knob stays for that future increment.
+
+**PHASE A RULING (2026-07-20, owner) — LEAVE IN PLACE (reaffirms HELD-default-off).** The kit-audit
+implementation plan (`docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A1) routed every
+DoT/rider crit-OFF gotcha here rather than flipping the engine. Owner ruling on A1: **leave the XCRIT/
+DOTCRIT gate default-off**; this stays a tracked future increment, NOT enacted in the Phase A pass. The
+gate is the shared cause of a cluster of kit-audit findings — two sub-populations to recalibrate together
+when the increment is finally taken:
+- **DoT-tick crit-OFF** (dominant-damage DoT units read under-credited): `ada` (grenade DoT), `mana`,
+  `raven`, `rosanna-chic-ocean` (all FRESH from the 2026-07-20 audit) plus the previously-tracked
+  `kind:dot` roster; interacting magnitude/delivery questions on `bready`, `elegg-boom-and-shock`, `privaty`.
+- **`extraHitDamagePct` function-rider crit-OFF** (hard-coded `crit:false` in the rider path): `modernia`
+  (Destroy Mode 2.24%), `nayuta` (Memory Incineration 530.46%), `neon-vision-eye` (Super Firepower 262.79%).
+Enactment remains gated on: (1) a focus-video crit-signature confirmation per rider (the maiden-solo
+×1.5 read is the template), AND (2) the DoT-roster de-crit recalibration (÷~1.075) so measured-DoT units
+(e.g. guillotine, popup-measured) are not double-counted. High blast radius ⇒ a dedicated increment in a
+fresh session, never a per-unit edit inside another pass.
 
 ### U14 — When do +50% Full Burst / +30% range apply to SKILL damage? (test framework built)
 Range is SETTLED: skill/rider/DoT damage NEVER gets the +30% range bonus (`noRange` universal; ein's

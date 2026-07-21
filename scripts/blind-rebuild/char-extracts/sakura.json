@@ -1,0 +1,509 @@
+{
+  "sakura": {
+    "slug": "sakura",
+    "name": "Sakura",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/xc-56/ty-44/e86b127025d078abf0573e843d4cbb10.png",
+    "weapon": "SR",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Supporter",
+    "element": "Fire",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 67,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 121,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 8.1,
+    "burstGaugePerShot": 2.7,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after 3 normal attack(s). Affects all allies.\nCherry Blossom Tea: 8.15% of DEF, stacks up to 10 time(s) and lasts for 15 sec.",
+      "skill2": "■ Affects all allies.\nWhen attacking an enemy projectile, damage to that projectile ▲ 7.74% continuously.\n■ Activates when entering Full Burst. Affects all allies.\nCooldown of Burst Skill ▼ 4.84 sec.",
+      "burst": "■ Affects all allies.\nDamage dealt by Wind Code enemies ▼ 90.72% for 30 sec. Activates 1 time(s) per battle.\nATK ▲ 23.76% of the skill user's ATK for 10 sec.\n■ Activates when Cherry Blossom Tea is at max stacks. Affects all allies.\nDamage to Interruption Parts ▲ 23.54% for 30 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1028201,
+        "shot_detail": {
+          "id": 1028201,
+          "damage": 6700,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 30,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Bio",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 167,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 27000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 54000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2282101,
+        "skill2_id": 2282201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2282101,
+          "icon": "icn_skill_defup_01",
+          "group_id": 22821,
+          "skill_level": 1,
+          "name_localkey": "Cherry Blossom Tea",
+          "next_level_id": 2282102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates after {description_value_01} normal attack(s). Affects all allies.\n<color=#00AEFF>Cherry Blossom Tea: {description_value_02}% of DEF, stacks up to {description_value_03} time(s) and lasts for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "4.81",
+                "5.18",
+                "5.55",
+                "5.92",
+                "6.29",
+                "6.66",
+                "7.04",
+                "7.41",
+                "7.78",
+                "8.15"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2282201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 22822,
+          "skill_level": 1,
+          "name_localkey": "Falling Petals",
+          "next_level_id": 2282202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF><word_group=10007>When attacking an enemy projectile, damage to that projectile</word_group> ▲ {description_value_01}% continuously.</color>\n■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "4.57",
+                "4.92",
+                "5.28",
+                "5.63",
+                "5.98",
+                "6.33",
+                "6.68",
+                "7.04",
+                "7.39",
+                "7.74"
+              ]
+            },
+            {
+              "description_value": [
+                "2.86",
+                "3.08",
+                "3.3",
+                "3.52",
+                "3.74",
+                "3.96",
+                "4.18",
+                "4.4",
+                "4.62",
+                "4.84"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1282301,
+        "ulti_skill_detail": {
+          "id": 1282301,
+          "icon": "icn_skill_c282_ult",
+          "group_id": 12823,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Resplendent Cherry Blossom",
+          "next_level_id": 1282302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c282_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF><word_group=10008>Damage dealt by Wind Code enemies</word_group> ▼ {description_value_01}% for {description_value_02} sec. Activates {description_value_03} time(s) per battle.\nATK ▲ {description_value_04}% of the skill user's ATK for {description_value_05} sec.</color>\n■ Activates when Cherry Blossom Tea is at max stacks. Affects all allies.\n<color=#00AEFF><word_group=10000>Damage to Interruption Parts</word_group> ▲ {description_value_06}% for {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "56.16",
+                "60",
+                "63.84",
+                "67.68",
+                "71.52",
+                "75.36",
+                "79.2",
+                "83.04",
+                "86.88",
+                "90.72"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "12.35",
+                "13.62",
+                "14.88",
+                "16.15",
+                "17.42",
+                "18.69",
+                "19.95",
+                "21.22",
+                "22.49",
+                "23.76"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "13.91",
+                "14.98",
+                "16.05",
+                "17.12",
+                "18.19",
+                "19.26",
+                "20.33",
+                "21.4",
+                "22.47",
+                "23.54"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            128230101,
+            128230102,
+            128230103
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 328202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5302,
+        "stat_enhance_detail": {
+          "id": 5302,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100282,
+        "piece_detail": {
+          "id": 5100282,
+          "class": "Supporter",
+          "order": 28200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 282,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Sakura's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 328201,
+        "class": "Supporter",
+        "order": 10102,
+        "name_code": 1012,
+        "corporation": "TETRA",
+        "resource_id": 282,
+        "name_localkey": "Sakura",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 84,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 282
+    }
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "slug": "delta-ninja-thief",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all enemies. Ninjutsu Acid Bomb: Damage Taken \u25b2 12% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]",
+        "note": "fullBurstEnter \u2192 enemy damageTakenPct 12 / 15s. Fires on every team Full Burst (hard rule 6)."
+      },
+      {
+        "kitLine": "Activates when using Burst Skill. Affects self. ATK \u25b2 15.04% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]",
+        "note": "burstCast \u2192 self atkPct 15.04 / 10s. Only on rotations where SHE casts burst."
+      },
+      {
+        "kitLine": "Activates when using Burst Skill. Affects enemies within attack range nearest to the crosshair. Ninjutsu Hyper Acid Bomb: Damage Taken \u25b2 8% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2]",
+        "note": "burstCast \u2192 enemy damageTakenPct 8 / 10s. nearest-crosshair = the single partless boss. Distinct named effect from the 12% Acid Bomb \u2192 co-stacks during overlap, faithful to kit."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Effects vary according to squad formation. Only one set of effects is applied.",
+        "status": "MODELED_CONFIG",
+        "where": "modes ([\"auto\",\"solo defender\",\"with defender ally\"])",
+        "note": "Defender-count formation branch is user-selectable via modes, NOT auto-detected from squad (engine `formation` only supports B1-count). 'solo defender' is the DEFAULT (\u26913, assumed control-team case). Caveat #1."
+      },
+      {
+        "kitLine": "Affects self if there are no other Defender allies. Effect 1: Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] (mode 'solo defender')",
+        "note": "passive (battle-start) \u2192 self shield maxHpPct 12.25 / 10s. Event-only, no HP pool; fires `shielded` triggers but has no in-kit consumer. Magnitude has no damage effect."
+      },
+      {
+        "kitLine": "Affects self if there are no other Defender allies. Effect 2: Attract: Taunt all enemies continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Taunt; partless boss is unaffected by taunt \u2192 inert for damage. COLD."
+      },
+      {
+        "kitLine": "Affects self if there is another Defender ally. Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. Removed upon taking a direct hit.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Single-target immunity, defensive vs partless boss \u2192 no damage effect. COLD."
+      },
+      {
+        "kitLine": "Affects self if there is another Defender ally. Effect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2] (mode 'with defender ally')",
+        "note": "shotFired \u2192 self heal (per-pull \u2248 continuous proxy). \u26a0 The 11.22%-of-attack-damage MAGNITUDE is NOT in any block value and NOT in the unmodeled array \u2014 it is dropped as event-only and documented ONLY in the note ('amount unmodeled \u2014 heal is event-only'). Heal has no damage effect (no HP pool). See documentedConfounds."
+      },
+      {
+        "kitLine": "Activates when performing 200 normal attack(s). Affects self while in Attract status. Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (mode 'solo defender')",
+        "note": "hitCount 200 \u2192 self shield maxHpPct 12.25 / 10s. 'while in Attract' \u2261 the solo branch. Event-only, no HP pool."
+      },
+      {
+        "kitLine": "Affects self every 4 sec while in Ninjutsu Injection status. Ninjutsu IFAK lasts for 4 sec. Function: Stores up HP recovery for a time, after which all allies are healed for the stored amount.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[3] (mode 'with defender ally')",
+        "note": "The all-ally heal DELIVERY is modeled as hitCount 200 \u2192 allies heal (\u26912 hitCount-200 proxy for the 'every 4 sec' timer \u2014 no timed-interval trigger exists; caveat #2). Fires teammate `recovery` triggers (Crown-style consumers). The 4s storage DELAY itself is unmodeled (see next line)."
+      },
+      {
+        "kitLine": "Ninjutsu IFAK lasts for 4 sec (storage duration/delay before the stored heal is delivered).",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[2]",
+        "note": "The 4s storage delay/timer is unmodeled; cadence approximated by hitCount-200 proxy on skill2[3]. Heal has no magnitude \u2192 timing only matters as a recovery-trigger cadence. COLD for own damage."
+      },
+      {
+        "kitLine": "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[3]",
+        "note": "IFAK stored-amount cap; heal has no magnitude/HP pool \u2192 no modeled effect. COLD."
+      },
+      {
+        "kitLine": "Effect 2: Once the duration ends, all allies are healed for the stored recovery amount.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[3] (mode 'with defender ally')",
+        "note": "Heal EVENT to allies is modeled (hitCount 200 \u2192 allies heal); the stored-amount MAGNITUDE is unmodeled (see unmodeled.skill2[3]). Event-only."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Distributed Damage \u25b2 20% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]",
+        "note": "burstCast \u2192 allies distributedDamagePct 20 / 10s. Team-facing damage lever."
+      },
+      {
+        "kitLine": "Affects all allies. ATK \u25b2 15% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]",
+        "note": "burstCast \u2192 allies casterAtkPct 15 / 10s ('15% of the skill user's ATK' = flat add of caster ATK). Team-facing damage lever."
+      },
+      {
+        "kitLine": "Affects all enemies. Deals 170% of final ATK as distributed damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]",
+        "note": "burstCast \u2192 enemy flatDamage atkPct 170, flavor 'distributed'. Auto-FB-exempt as burst-cast instant damage (no noFb); picks up her own +20% distributed buff landing same cast. This + MG normals = her own damage."
+      },
+      {
+        "kitLine": "Affects self while in Attract status. Next shield's HP \u25b2 20.13% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Scales shield SIZE; shields are event-only with no HP pool \u2192 no modeled effect (caveat #3). COLD."
+      },
+      {
+        "kitLine": "Affects self while in Ninjutsu Injection status. Maximum Accumulation of Ninjutsu IFAK \u25b2 20.13% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Scales IFAK heal-amount cap; heal is event-only with no HP pool \u2192 no modeled effect (caveat #3). COLD."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: Defender-count formation branch is user-selected via modes ('solo defender' default) \u2014 not auto-detected from the squad; pick 'with defender ally' when another Defender is present.",
+      "couldCauseGap": "COLD",
+      "why": "Default matches the assumed solo-Defender control team, so faithful there. Branch flip only swaps shields/taunt (solo) for Injection-lifesteal/IFAK (with-defender) \u2014 all event-only/inert for damage in a partless-boss sim, so the damage delta between branches is minimal. Could go HOT only if a graded 2-Defender comp consumes recovery and the mode isn't flipped."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: IFAK all-ally heal cadence is a hitCount-200 proxy for 'every 4 sec' (unmeasured estimate).",
+      "couldCauseGap": "COLD",
+      "why": "Heal has no magnitude; cadence only matters as a teammate `recovery`-consumer trigger (Crown-style). No effect on Delta: Ninja Thief's own damage. Could matter for a recovery-consuming teammate's damage."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2/burst: shields and heals are event-only (no HP pools) \u2014 the shield-size and IFAK-accumulation \u25b220.13% riders therefore have no modeled effect.",
+      "couldCauseGap": "COLD",
+      "why": "Shields/heals do not affect DPS in a partless-boss damage sim; the riders scale magnitudes that have no engine pool. Inert by construction."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2: Attract: Taunt all enemies continuously.",
+      "couldCauseGap": "COLD",
+      "why": "Taunt is irrelevant vs a partless boss and has no damage component."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2: Ninjutsu Camouflage (prevents being targeted by single-target attacks).",
+      "couldCauseGap": "COLD",
+      "why": "Defensive single-target immunity vs a partless boss; no damage effect."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2: Ninjutsu IFAK lasts for 4 sec (storage delay).",
+      "couldCauseGap": "COLD",
+      "why": "Timing of a heal that has no magnitude; only relevant as recovery-trigger cadence, already proxied by hitCount-200."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2: maximum amount stored = 165.28% of final ATK (IFAK cap).",
+      "couldCauseGap": "COLD",
+      "why": "Heal magnitude with no HP pool \u2192 no damage effect."
+    },
+    {
+      "source": "unmodeled",
+      "text": "burst: Next shield's HP \u25b2 20.13% for 10 sec.",
+      "couldCauseGap": "COLD",
+      "why": "Scales shield size; shields are event-only, no pool."
+    },
+    {
+      "source": "unmodeled",
+      "text": "burst: Maximum Accumulation of Ninjutsu IFAK \u25b2 20.13% for 10 sec.",
+      "couldCauseGap": "COLD",
+      "why": "Scales heal-amount cap; heal is event-only, no pool."
+    },
+    {
+      "source": "note",
+      "text": "Ninjutsu Injection 11.22%-of-attack-damage lifesteal MAGNITUDE is dropped (heal is event-only) \u2014 documented in the note but NOT listed in the unmodeled array.",
+      "couldCauseGap": "COLD",
+      "why": "Surfacing so the judge treats it as a KNOWN gap, not a silent drop. Self-heal magnitude has no HP pool and no damage effect; inert unless a self-recovery consumer appears."
+    },
+    {
+      "source": "open-question",
+      "text": "\u2691 NEEDS-MEASUREMENT (1) CADENCE TUPLE [MANDATORY]: MG rate of fire (engine MG wind-up ladder + class default) + reloadFrames 171 + rolling-reload behavior; estimate = datamine as-is.",
+      "couldCauseGap": "HOT",
+      "why": "This is the one confound that directly drives her OWN damage (MG normal-attack DPS + burst gauge from 0.05/shot). Unmeasured. Author notes 'normal MG profile, no odd-fire-mode text tell \u2192 NOT escalated,' but it remains the mandatory unmeasured foundation of her damage number \u2014 the prime suspect if a real gap appears."
+    },
+    {
+      "source": "open-question",
+      "text": "\u2691 NEEDS-MEASUREMENT (2) IFAK heal cadence \u2014 hitCount 200 as the 'every 4 sec' proxy.",
+      "couldCauseGap": "COLD",
+      "why": "Same as caveat #2; matters only as a teammate recovery-consumer trigger, not her own damage."
+    },
+    {
+      "source": "open-question",
+      "text": "\u2691 NEEDS-MEASUREMENT (3) FORMATION-MODE DEFAULT \u2014 'solo defender' assumed for the standard control team; verify per-comp.",
+      "couldCauseGap": "COLD",
+      "why": "Same as caveat #1; branch flip is largely damage-inert (event-only shields/heals), only recovery-consumer edge could matter."
+    },
+    {
+      "source": "open-question",
+      "text": "\u2691 NEEDS-MEASUREMENT (4) Injection self-heal cadence \u2014 shotFired (per trigger pull) as the 'continuously' proxy.",
+      "couldCauseGap": "COLD",
+      "why": "Inert unless a self-recovery consumer appears; heal has no magnitude."
+    }
+  ],
+  "authorIntentSummary": "Parser-baseline HYPOTHESIS (explicitly NOT validated \u2014 banner says hand-tune + record vs a real fight before trusting any number). Her own damage is modeled as MG normal attacks plus one burst distributed nuke (burst[1] flatDamage 170%, which picks up her own +20% distributed buff same cast); the team-facing levers are boss damageTakenPct 12%+8% (skill1) and allies casterAtkPct 15% + distributedDamagePct 20% (burst). skill2 is formation-branched via user-selectable modes ('solo defender' default \u2192 battle-start + hitCount-200 shields and taunt; 'with defender ally' \u2192 Injection lifesteal + IFAK all-ally heal as recovery-trigger events). Key approximations: ALL shields/heals are event-only with no HP pools, so every magnitude (12.25% shield, 11.22% lifesteal, 165.28% IFAK cap) and both \u25b220.13% riders are inert; the IFAK 'every 4 sec' is a hitCount-200 proxy; and the MG cadence tuple is datamine-as-is and UNMEASURED (the mandatory gap most likely to move her own damage). Known-not-yet-faithful: Attract/Camouflage, IFAK storage delay/cap, all shield/heal magnitudes, and the cadence tuple all need measurement."
+}

@@ -1,0 +1,51 @@
+{
+  "nayuta": {
+    "name": "Nayuta",
+    "burst": "II",
+    "weapon": "SMG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "0.637 COLD (leading, ENGINE): Memory Incineration swap shots core-rated + range-gated as base SMG instead of the swap weapon's SR-class treatment -> ~2x loss on swap-shot damage in far/midfar (half her FBs); whole-picture reproduces 0.62-0.68. F2 swap chargeTimeSec 2.13 vs measured 1.8. F3 Hit Rate 42%@cap dropped"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "T5 wind-weak 0.86-1.03 (A5)",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "High run-to-run variance",
+    "unmodeled": {
+      "skill1": [
+        "Unchanging Heart: Gain Indomitability for 9 sec. Activates 1 time(s) during battle.",
+        "Equally shares HP recovery for 5 sec.",
+        "Recovers 25% of the skill user's final Max HP as HP."
+      ],
+      "skill2": [
+        "Memory Absorption: Hit Rate ▲ 1.4%, stacks up to 30 time(s) and immune to stack count increase or decrease effects continuously. This effect cannot be removed."
+      ],
+      "burst": []
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T5 wind-weak probe (boss Iron)",
+          "ratio": 0.8963
+        }
+      ],
+      "n": 1,
+      "mean": 0.8963,
+      "mad": 0.1037,
+      "band": "±15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

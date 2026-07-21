@@ -1,0 +1,42 @@
+{
+  "soline-frost-ticket": {
+    "name": "Soline: Frost Ticket",
+    "burst": "I",
+    "weapon": "SG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Removes First Train Discount."
+      ],
+      "skill2": [
+        "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.",
+        "Recovers 12.27% of the skill user's final Max HP as HP.",
+        "Ticket count ▼ 1.",
+        "■ Activates at the start of battle. Affects all allies.",
+        "First Train Discount for 6 sec.",
+        "Function: The effects of I'll Help You Board the Train! will not consume tickets."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: ticket Max-HP grant modeled at steady-state cap (2 tickets = 20% of caster Max HP, all allies); she starts at 1 ticket (10%) and reaches 2 only after her first Burst — in a team that never Full Bursts it stays 10% (⚑)",
+      "skill1: cadence tuple (SG rate of fire, reloadFrames 111) is the unverified datamine — read rounds/min + the reload gap from a focus video (⚑)",
+      "skill1: her only damage is base SG spray — per-unit SG pellet landing is unmeasured; the class SG landing table is the shipped default (⚑)",
+      "skill2: the emergency heal (squad HP < 15%, consumes a ticket) is unmodeled — the sim models no incoming boss damage and the schema has no HP-threshold trigger; on-recovery consumers are still driven every rotation by her Burst heal"
+    ],
+    "board": null
+  }
+}

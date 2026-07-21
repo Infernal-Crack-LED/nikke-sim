@@ -1,0 +1,66 @@
+{
+  "little-mermaid": {
+    "name": "Little Mermaid",
+    "burst": "I",
+    "weapon": "SMG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "re-materialized",
+      "date": "2026-07-16",
+      "findings": [
+        "F1 Explosive Bubble may coexist with Bubble = 10.1% team damage-taken (vs modeled 5.05) — measure before touch"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": true,
+    "evidence": "T3/T6 ~1.0, run H 1.03; Q1-family exempt-proc calibration",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 4,
+      "within3pct": 2
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "■ Activates only when in Focusing status. Affects all allies.",
+        "Focuses fire continuously."
+      ],
+      "skill2": [
+        "■ Activates after landing 50 normal attacks. Affects the target if the target is in Bubble status.",
+        "Explosive Bubble: Damage Taken ▲ 5.05% continuously. Stuns for 3 sec. Removes Bubble."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "Explosive Bubble (skill 2) is not modeled: the override carries a single permanent Damage Taken ▲ 5.05% (Bubble). If Bubble re-applies after the explosion and Explosive Bubble's debuff persists, the boss would carry BOTH stacks (10.1%) in steady state — unverified, needs an in-game debuff-icon / popup-delta measurement before any change.",
+      "The 'every 1 sec only during Full Burst' nuke is encoded as a 10-second damage-over-time started at Full Burst entry — tick count assumes the nominal 10s Full Burst window and does not track shortened or extended Full Bursts."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "T3 fire-weak (boss Wind)",
+          "ratio": 1.0954
+        },
+        {
+          "comp": "T6 fire-weak (boss Wind)",
+          "ratio": 1.0606
+        },
+        {
+          "comp": "PH water B3s (boss Fire)",
+          "ratio": 1.1374
+        },
+        {
+          "comp": "N6 mihara/maiden wind (boss Wind)",
+          "ratio": 1.0658
+        }
+      ],
+      "n": 4,
+      "mean": 1.0898,
+      "mad": 0.0898,
+      "band": "±15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

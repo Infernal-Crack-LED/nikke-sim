@@ -1,0 +1,38 @@
+{
+  "tove": {
+    "name": "Tove",
+    "burst": "I",
+    "weapon": "AR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "FULL RECONCILIATION (owner-queued): 6 of 7 lines discrepant. S2 crit-rate STALE 3.32->10.08 (3x under); S2 SG attack-speed 42.24% MISSING (alliesOfWeapon SG); burst SG 24.21% MISSING (SG allies should get 2.32+24.21 = 79.59% caster ATK); burst duration STALE 10->15s; S1 reload 5.31% + Max-Ammo+2 skipped (hard rule 1). Backfilled"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — bare override, never validated",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine.",
+        "■ Activates during Emergency-Crafted Bullets. Affects all allies. Temporary Modification: Max Ammunition Capacity ▲ 2, stacks up to 3 time(s) and lasts for 5 sec."
+      ],
+      "skill2": [
+        "■ Only activates when Temporary Modification is fully stacked. Affects all shotgun-wielding allies. Attack Speed ▲ 42.24% continuously."
+      ],
+      "burst": [
+        "■ Affects all shotgun-wielding allies. Miracle of Makeshifts: ATK ▲ 24.21% of caster's ATK. Mirrors the stack count of Temporary Modification for 15 sec."
+      ]
+    },
+    "board": null
+  }
+}

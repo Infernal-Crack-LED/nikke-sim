@@ -1,0 +1,134 @@
+{
+  "slug": "chisato",
+  "board": {
+    "ratio": 1.202,
+    "n": 3,
+    "mad": 0.202,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Charges Extrasensory to 100%, up to 100%. Continuous, cannot be removed.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Currency bookkeeping folded into the fused-passive derivation \u2014 gauge starts at 100% so all thresholds are met at t=0."
+      },
+      {
+        "kitLine": "Only when at 100%: Dodging Bullets: Invulnerable for 2 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Genuinely skippable \u2014 invulnerability has no engine vocabulary and no DPS impact at scope lock (partless boss, no incoming damage)."
+      },
+      {
+        "kitLine": "Only when above 70%: ATK \u25b2 53.69%. Continuous, cannot be removed.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive buff atkPct 53.69 durationSec:60",
+        "note": "Fused passive: live from t=0, expires at 60s (derived >70% crossing time at 0.5%/s drain from 100%). Refreshed on own burstCast via skill1[2]."
+      },
+      {
+        "kitLine": "Only when above 55%: True Damage \u25b2 48.62%. Continuous, cannot be removed.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] passive buff trueDamagePct 48.62 durationSec:90",
+        "note": "Fused passive: expires at 90s (derived >55% crossing). Refreshed on own burstCast via skill1[2]."
+      },
+      {
+        "kitLine": "Only when above 25%: Hit Rate \u25b2 22.37%. Continuous, cannot be removed.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] passive buff hitRatePct 22.37 durationSec:150",
+        "note": "Fused passive: expires at 150s (derived >25% crossing). Refreshed on own burstCast via skill1[2]. hitRatePct is engine-inert in v1 (hard rule 4)."
+      },
+      {
+        "kitLine": "Each subsequent effect triggers all effects before it (cumulative thresholds).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]+skill1[1] three separate duration fuses (60/90/150s)",
+        "note": "Implicitly captured: all three buffs active simultaneously from t=0, dropping off in order as the gauge drains. Correctly models the cumulative nature."
+      },
+      {
+        "kitLine": "Affects self every 2 sec. Extrasensory \u25bc 1%.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2]",
+        "note": "Currency drain bookkeeping folded into the fused-passive duration derivation (0.5%/s = 1%/2s). Not simulated tick-by-tick."
+      },
+      {
+        "kitLine": "(Burst refresh: own burstCast recharges Extrasensory to 100%, re-applying all three threshold buffs.)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] burstCast block (atkPct 53.69/60s + trueDamagePct 48.62/90s + hitRatePct 22.37/150s)",
+        "note": "Same keys \u2192 refresh semantics. Reproduces permanent gates in burst-each-~40s rotation (40s refresh < 60s ATK fuse) and correct decay in never-burst comps."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when using Burst Skill. Affects self. Normal attacks deal true damage for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] burstCast weaponSwap damagePct:10.12 durationSec:10 trueNormals:true",
+        "note": "Same-weapon swap (takina precedent). damagePct 10.12 = her own normalAttackMultiplier (unchanged). trueNormals:true makes normals true damage for 10s. The S1 trueDamagePct 48.62 applies to normals ONLY inside this window (flavor gate). Engine artifact: swap start+end each instant-refill mag (~2 free reloads/cycle, mild optimism)."
+      },
+      {
+        "kitLine": "Activates after landing 48 normal attack(s). Affects the target. Deals 472.18% of final ATK as true damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] hitCount count:48, flatDamage atkPct:472.18 flavor:'true'",
+        "note": "Hard rule 5 (flatDamage for fixed-ATK% hits). FB-by-timing default (no noFb flag). Permanently boosted by the flavor-gated 48.62% trueDamagePct from S1."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Charges Extrasensory to 100%.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Folded into the trajectory derivation \u2014 the burstCast skill1[2] block handles the mechanical effect (refreshing all three threshold buffs). The currency line itself is bookkeeping."
+      },
+      {
+        "kitLine": "ATK \u25b2 73.16% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] burstCast buff atkPct:73.16 durationSec:10",
+        "note": "Her own burst cast (hard rule 6). Straightforward timed self-buff."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: Extrasensory threshold buffs modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s, REFRESH on own burstCast). Replaces prior permanent encoding that OVER-CREDITED never-burst comps.",
+      "couldCauseGap": "neither",
+      "why": "This is the corrected model \u2014 it fixes a prior over-credit. In burst-each-rotation comps (PI/PI2) gates stay permanently refreshed (unchanged); in never-burst comps gates correctly decay. The note verifies PI/PI2 comps unchanged at ~1.19 after the A/B."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: weaponSwap trueNormals grants instant mag refill at cast AND at window end (engine artifact, ~2 free reloads/cycle, mild shot-count optimism).",
+      "couldCauseGap": "HOT",
+      "why": "Extra shots from free reloads inflate damage. At SMG 120-round mag with 81f reload, ~2 free reloads/cycle \u2248 240 extra shots/180s \u2248 meaningful over-count. Note explicitly identifies this as a contributor to her HOT board."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: core/crit retained on true normals (takina precedent, unverified in-game). SMG coreMult 250 = big lever if true damage actually forfeits core.",
+      "couldCauseGap": "HOT",
+      "why": "If true damage forfeits core hits in-game, the sim over-credits every true-normal shot by the core multiplier (250%). Note explicitly flags this as a potential major HOT contributor. Unverified."
+    },
+    {
+      "source": "note",
+      "text": "\u2691 cadence tuple: SMG class pullsPerSec + reloadFrames 81 + rolling-reload unverified (datamine); 120-round mag at class rate \u2248 9\u201310s, plausible, no escalation tells.",
+      "couldCauseGap": "neither",
+      "why": "Unmeasured but plausible; no directional bias identified. Could shift either way if real cadence differs from datamine."
+    },
+    {
+      "source": "note",
+      "text": "hitRatePct 22.37 is engine-inert in v1 (hard rule 4) \u2014 raises core-hit rate, magnitude \u2691.",
+      "couldCauseGap": "neither",
+      "why": "Inert means no over- or under-credit currently. If hit-rate affects core-hit probability in-game, the sim under-credits her slightly (COLD direction), but the effect is unmeasured and likely small."
+    },
+    {
+      "source": "note",
+      "text": "The 0.5%/s drain + gate thresholds are DERIVED from kit text, not measured \u2014 crossing times are exact given the drain rate; the drain rate itself is the kit's stated 1%/2s.",
+      "couldCauseGap": "neither",
+      "why": "Derivation is internally consistent. Only breaks if the real drain rate differs from the stated 1%/2s (unlikely but unmeasured)."
+    },
+    {
+      "source": "note",
+      "text": "Her dominant hotness in PI/PI2 misc-B3 comps is NOT Extrasensory decay but a SEPARATE over-model (swap mag-refill optimism / true-normal core retention on SMG coreMult 250 / \u2691 cadence).",
+      "couldCauseGap": "HOT",
+      "why": "Author's own diagnosis: the ~1.19\u20131.23 HOT is driven by the weaponSwap mag-refill + core-on-true-normals interaction, not the Extrasensory model. These are the primary suspects for the board gap."
+    }
+  ],
+  "authorIntentSummary": "The override models Chisato's Extrasensory gauge as three FUSED PASSIVES (ATK 53.69%/60s, True Damage 48.62%/90s, Hit Rate 22.37%/150s) that decay from battle start and refresh on her own burstCast \u2014 faithfully reproducing both permanent (burst-each-rotation) and decaying (never-burst) regimes. Skill 2's true-damage normals use the takina-precedent weaponSwap encoding (trueNormals:true, 10s window), and the 48-hit proc is a straightforward true flatDamage. The author explicitly flags the HOT board (~1.20) as driven NOT by the Extrasensory model but by weaponSwap mag-refill optimism (~2 free reloads/cycle) and unverified core/crit retention on true normals (SMG coreMult 250 is a large lever if forfeited). The unit remains MODEL_ONLY/untuned with no measurement against a real fight."
+}

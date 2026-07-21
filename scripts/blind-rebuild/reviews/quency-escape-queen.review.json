@@ -1,0 +1,152 @@
+{
+  "slug": "quency-escape-queen",
+  "board": {
+    "ratio": 1.14,
+    "n": 2,
+    "mad": 0.14,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates only when Explore Route Stage 1 is at max stacks. Affects self. Distributed Damage \u25b2 49.58% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (passive self distributedDamagePct 49.58)",
+        "note": "Stage-1-max gate encoded as a blind passive proxy (2s stack window outlasts 1.35s reload \u2192 effectively permanent). Only boosts her distributed hits = the burst nuke. Gate timing approximate (\u26913 proxy)."
+      },
+      {
+        "kitLine": "Activates only when Explore Route Stage 2 is at max stacks. Affects self. Damage dealt when attacking core \u25b2 25.25% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (hitCount 20 self coreDamagePct 25.25 dur 1 maxStacks 1)",
+        "note": "Gate encoded as firing-tracking proxy: hitCount 20 = 10 pulls = the 10-stack rebuild, dur 1s. Lapses ~1s into reload, ~0.42s rebuild. hit-counter carries over reloads so rebuild is slightly optimistic (\u26913)."
+      },
+      {
+        "kitLine": "Activates only when Explore Route Stage 3 is at max stacks. Affects self. Critical Rate \u25b2 16.73% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] (hitCount 10 self critRatePct 16.73 dur 0.5 maxStacks 1)",
+        "note": "Gate encoded as firing-tracking proxy: hitCount 10 = 5 pulls, dur 0.5s. Same construction as S1b (\u26913 proxy, slightly optimistic rebuild)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after 2 normal attacks. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger hitCount count 2, target self",
+        "note": "\u26912 hits-vs-pulls ambiguity: count 2 = every pull at hitsPerShot 2; if '2 normal attacks' means 2 SHOTS it would be count 4. Steady-state insensitive, ramp-only."
+      },
+      {
+        "kitLine": "Effects vary for each stage. Each subsequent effect triggers all effects before it (cascade).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 all six stacks on the ONE hitCount-2 block",
+        "note": "Cascade encoded by co-locating all stages on one block (at stage 3 every activation applies all). Stage-unlock ORDERING is NOT encoded \u2014 see next two gate lines / \u26914."
+      },
+      {
+        "kitLine": "Stage 1: Hit Rate \u25b2 1.36%. Stacks up to 10 times and lasts for 2 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] hitRatePct 1.36 dur 2 maxStacks 10",
+        "note": "hitRatePct is INERT in v1 (HARD RULE 4, kept) \u2014 core-rate lift unmeasured (\u26915)."
+      },
+      {
+        "kitLine": "Stage 1: ATK \u25b2 2.45%. Stacks up to 10 times and lasts for 2 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] atkPct 2.45 dur 2 maxStacks 10",
+        "note": "Stage-1 (2s) survives the 1.35s reload \u2192 near-permanent while firing."
+      },
+      {
+        "kitLine": "Stage 2: Activates when Explore Route Stage 1 is at max stacks. Affects self.",
+        "status": "MISSING",
+        "where": "not encoded as a gate (documented in note + caveat \u26914, NOT in unmodeled array)",
+        "note": "Stage-unlock ordering gate is represented nowhere in block/config/unmodeled \u2014 but it is DOCUMENTED (not a silent drop): stage-2/3 build in parallel with stage-1, slight over-credit during ramp/post-reload (~0.4\u20130.8s). This is the named HOT baseline driver (\u26912/\u26914)."
+      },
+      {
+        "kitLine": "Stage 2: Hit Rate \u25b2 2.71%. Stacks up to 10 times and lasts for 1 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] hitRatePct 2.71 dur 1 maxStacks 10",
+        "note": "hitRatePct inert v1 (\u26915). 1s duration lapses each reload and rebuilds on resume."
+      },
+      {
+        "kitLine": "Stage 2: ATK \u25b2 4.9%, stacks up to 10 times and lasts for 1 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] atkPct 4.9 dur 1 maxStacks 10",
+        "note": "1s lapses each reload, rebuilds on resume (distinct value = distinct co-stacking key)."
+      },
+      {
+        "kitLine": "Stage 3: Activates when Explore Route Stage 2 is at max stacks. Affects self.",
+        "status": "MISSING",
+        "where": "not encoded as a gate (documented in note + caveat \u26914, NOT in unmodeled array)",
+        "note": "Same as stage-2 gate: ordering not encoded, parallel build over-credits. Documented, not silent."
+      },
+      {
+        "kitLine": "Stage 3: Hit Rate \u25b2 4.08%. Stacks up to 5 times and lasts for 0.5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] hitRatePct 4.08 dur 0.5 maxStacks 5",
+        "note": "hitRatePct inert v1 (\u26915). 0.5s lapses each reload, rebuilds on resume."
+      },
+      {
+        "kitLine": "Stage 3: ATK \u25b2 7.36%. Stacks up to 5 times and lasts for 0.5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] atkPct 7.36 dur 0.5 maxStacks 5",
+        "note": "Peak while firing (all stages): ATK +110.3%, Hit Rate +61.1% (HR inert)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Attack Damage \u25b2 57.08% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (burstCast self attackDamagePct 57.08 dur 10)",
+        "note": "burstCast trigger; prior 9 default."
+      },
+      {
+        "kitLine": "Affects self. Reload Speed \u25b2 25.87% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (burstCast self reloadSpeedPct 25.87 dur 10)",
+        "note": "Reload speed modeled as shot count."
+      },
+      {
+        "kitLine": "Affects all enemies. Deals 1736.31% of final ATK as Distributed Damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] (burstCast enemy flatDamage atkPct 1736.31 flavor distributed)",
+        "note": "burstCast \u2192 auto-FB-exempt. \u26916: S1a's +49.58 distributed bucket is assumed to apply to this nuke at cast \u2014 UNMEASURED, verify vs popup."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate \u2014 rebuild timing after reloads is approximate (\u26913).",
+      "couldCauseGap": "HOT",
+      "why": "hit-counter carries over reloads so rebuild is slightly optimistic \u2192 mild over-credit on S1b core-dmg and S1c crit uptime."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (stage-unlock ordering not encoded) \u2014 slight over-credit during ramp/post-reload (\u26914).",
+      "couldCauseGap": "HOT",
+      "why": "Explicitly named in the note as her flag-off HOT baseline driver: parallel build over-credits stage-2/3 by ~0.4\u20130.8s per ramp/post-reload rebuild \u2192 ratio > 1."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Hit Rate stacks modeled as hitRatePct (inert in v1) \u2014 magnitude of the core-rate lift unmeasured (\u26915).",
+      "couldCauseGap": "COLD",
+      "why": "hitRatePct does nothing in v1; if the real kit grants a core-hit-rate lift, the model UNDER-counts it. Inert today, so a missing real lift would pull ratio down."
+    },
+    {
+      "source": "caveat",
+      "text": "all: cadence = datamined 24 pulls/s (rate_of_fire 1440/60); muzzle_count 2 splits shot damage (nAM 10.12 = 5.06\u00d72 already baked) \u2014 throughput self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (\u26911).",
+      "couldCauseGap": "neither",
+      "why": "Owner-confirmed cadence is self-consistent and not the HOT source; reloadFrames 81 raw is a small unmeasured residual, direction unknown."
+    },
+    {
+      "source": "note",
+      "text": "\u26912 'after 2 normal attacks' hits-vs-pulls ambiguity (count 2 hits = per pull; if 2 SHOTS use count 4).",
+      "couldCauseGap": "neither",
+      "why": "Steady-state insensitive, ramp-only \u2014 negligible at 24 pulls/s."
+    },
+    {
+      "source": "note",
+      "text": "\u26916 burst distributed nuke: S1a's +49.58 distributed bucket assumed to apply at cast \u2014 verify vs popup.",
+      "couldCauseGap": "HOT",
+      "why": "If the +49.58 distributed bucket does NOT actually apply to the burst nuke, the model over-credits the nuke \u2192 would reduce the HOT ratio; unmeasured."
+    }
+  ],
+  "authorIntentSummary": "This is an explicit PARSER-BASELINE HYPOTHESIS, not a validated model (banner + every \u2691 flagged unmeasured; hand-tune required before trusting numbers). Skill2 'Explore Route' is built as a single hitCount-2 self block carrying all six stacks (3 stages \u00d7 ATK+HitRate); the 'each subsequent effect triggers all before it' cascade is encoded by co-location, but the stage-unlock ORDERING is deliberately NOT encoded, so stages build in parallel \u2014 the documented HOT driver (\u26914 over-credit). Skill1's three Explore-Route-max gates are approximated as firing-tracking proxies (one passive, two hitCount-threshold buffs) rather than real stack-count gates. Burst is a clean self attackDamage/reloadSpeed buff plus a 1736.31% distributed nuke, with an unmeasured assumption (\u26916) that S1a's distributed bucket applies to the nuke at cast. Known-not-faithful spots: stage parallel-build over-credit, inert hitRatePct core-rate lift (\u26915), proxy gate rebuild timing, and raw reloadFrames 81."
+}

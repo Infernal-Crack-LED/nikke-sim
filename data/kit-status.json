@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-19",
+  "generatedAt": "2026-07-20",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -27,11 +27,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±15%": 12,
+      "±15%": 10,
       "±3% ✓": 7,
-      "±8%": 9,
-      ">15%": 12,
-      "±5%": 4
+      "±8%": 7,
+      "±5%": 7,
+      ">15%": 14
     }
   },
   "units": {
@@ -116,7 +116,7 @@
       },
       "caveats": [
         "skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)",
-        "skill2: 'Spy Lens at max stacks' ATK +16% now activates as a faithful STEP via hitCount count:10 (2026-07-17, theme 3) — Spy Lens gains 1 stack per full-charge SR hit, so the 10th hit (~16s incl. one reload) reaches max and the buff turns on continuously (permanent, no duration = continuous fire keeps stacks maxed). Replaces the always-on-from-t=0 encoding (over-credited the ~16s onset). NOTE: the hasPierce top-level flag (also Spy-Lens-max-gated) still applies from t=0 — a boolean flag can't be step-gated, a residual structural gap. ⚑ count:10 rests on 1 stack/full-charge + the ⚑ SR cadence.",
+        "skill2: 'Spy Lens at max stacks' ATK +16% now activates as a faithful STEP via hitCount count:10 (2026-07-17, theme 3) — Spy Lens gains 1 stack per full-charge SR hit, so the 10th hit (~16s incl. one reload) reaches max and the buff turns on continuously (permanent, no duration = continuous fire keeps stacks maxed). Replaces the always-on-from-t=0 encoding (over-credited the ~16s onset). [2026-07-20, A4 step-gated pierce] the PIERCE tag is now ALSO step-gated: the top-level hasPierce:true flag is removed and a duration-less `gainPierce` effect rides the same hitCount:10 trigger → pierceUntilFrame → ∞ at the 10th full-charge hit and stays on (continuous fire keeps stacks maxed). This closes the prior residual gap (a boolean flag couldn't be step-gated); her own 18.36+10.13 Pierce-Damage self-feed and teammates' pierce buffs now correctly go live only after Spy Lens maxes (~16s), not from t=0. ⚑ count:10 rests on 1 stack/full-charge + the ⚑ SR cadence.",
         "skill2: team Pierce Damage +18.36% rides the same shotFired full-charge proxy (⚑ unmeasured)",
         "cadence: SR bolt-gap (22f) + chargeFrames 60 + reloadFrames 141 are datamine defaults — verify autofire/rounds-per-minute/reload from video (⚑ unmeasured)"
       ],
@@ -124,12 +124,12 @@
         "records": [
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0007
+            "ratio": 0.9897
           }
         ],
         "n": 1,
-        "mean": 1.0007,
-        "mad": 0.0007,
+        "mean": 0.9897,
+        "mad": 0.0103,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -216,7 +216,7 @@
         "skill1: 'same squad' heal gate modeled as always-satisfied — if it requires a lore-squad teammate (squad membership not in our data, unverified), recovery events over-fire in other teams (affects on-recovery consumers only)",
         "skill1: the 8-tick regen (every 1s for 8s) now emits 8 timed recovery events (heal ticks:8) — on-recovery consumers (Crown-type) stay refreshed across the whole window (engine gap #1 fix, 2026-07-17)",
         "skill1: tier-1 'Potency of HP' is a value-0 placeholder kept only for escalating tier order (heal potency has no engine stat)",
-        "skill2: Hit Rate ▲ 10.13% modeled as hitRatePct (engine-inert); its core-hit-rate lift is unmeasured",
+        "skill2: Hit Rate ▲ 10.13% modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19) for AR/SMG/SG recipients via acrForHR; its in-game core-hit-rate lift is unmeasured",
         "burst: healing Storage (60.19% Max HP overheal buffer) is unmodeled — defensive, no engine vocabulary; deliberately not encoded as a shield event",
         "cadence: pullsPerSec / reloadFrames 141 / bolt-gap-vs-autofire are unverified datamine values (parser baseline)"
       ],
@@ -329,11 +329,11 @@
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9355
+            "ratio": 1.011
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9281
+            "ratio": 1.0015
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -341,9 +341,9 @@
           }
         ],
         "n": 12,
-        "mean": 0.9542,
-        "mad": 0.0542,
-        "band": "±8%",
+        "mean": 0.9666,
+        "mad": 0.0439,
+        "band": "±5%",
         "temp": "COLD ▼"
       }
     },
@@ -428,12 +428,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.1265
+            "ratio": 1.1322
           }
         ],
         "n": 1,
-        "mean": 1.1265,
-        "mad": 0.1265,
+        "mean": 1.1322,
+        "mad": 0.1322,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -660,20 +660,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.225
+            "ratio": 1.2376
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.227
+            "ratio": 1.2339
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.1389
+            "ratio": 1.1088
           }
         ],
         "n": 3,
-        "mean": 1.197,
-        "mad": 0.197,
+        "mean": 1.1934,
+        "mad": 0.1934,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -883,11 +883,27 @@
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
             "ratio": 1.0553
+          },
+          {
+            "comp": "C-SW control (neutral, focus snow-white)",
+            "ratio": 1.0485
+          },
+          {
+            "comp": "C-Helm control (neutral, focus helm)",
+            "ratio": 0.9838
+          },
+          {
+            "comp": "C-LM control (neutral, focus little-mermaid)",
+            "ratio": 1.0387
+          },
+          {
+            "comp": "C-Crown control (neutral, focus crown)",
+            "ratio": 1.0093
           }
         ],
-        "n": 12,
-        "mean": 1.0279,
-        "mad": 0.0499,
+        "n": 16,
+        "mean": 1.026,
+        "mad": 0.0445,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -922,40 +938,36 @@
         ],
         "skill2": [],
         "burst": [
-          "Inflicts Wipe Out on the target for 10 sec.",
-          "■ Activates when allies' normal attack hits a certain area of the target afflicted with Wipe Out. Affects allies.",
-          "Buff takes effect depending on the area hit."
+          "Buff takes effect depending on the area hit — the PARTS branch ('Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s') is unmodeled (TODO: needs destructible-part modeling; core-only proxy for now — see caveats)."
         ]
       },
       "caveats": [
-        "burst: unparsed effect \"Inflicts Wipe Out on the target for 10 sec.\"",
-        "burst: unparsed effect \"Buff takes effect depending on the area hit.\"",
         "burst: unrecognized target \"allies\" — applied to all allies",
         "skill1: Full Burst Pierce Damage ▲13.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
         "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
-        "burst: the Wipe Out area-hit riders are modeled ungated (they fire on this unit's own hits via hitCount 1, not on allies hitting a Wipe Out-afflicted target) — buff uptime is over-credited whenever she is firing outside her 10s post-burst Wipe Out windows",
+        "burst: [FIXED 2026-07-20, A4 Wipe-Out primitive] the body-branch ATK buff (casterAtkPct 12.19%, 'Allies that hit the body') is now GATED on the Wipe Out status: her burst inflicts a wipeOut effect (10s window) and the buff fires at burstCast for that 10s window with requiresWipeOut + requiresCore (core-only proxy). This replaces the prior ungated hitCount:1 model that ran ~permanently (over-credited team ATK outside the 10s windows). Faithful to '≈71% uptime = 10s Wipe Out of a ~14s rotation'; no tuned value (12.19 unchanged). TODO PARTS: the parts branch 'Allies that hit parts → coreDamagePct 16.26%' still needs destructible-part modeling (currently core is the only modelable 'area'); wire it as requiresWipeOut + a parts-hit trigger when parts enter scope.",
         "burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1)."
       ],
       "board": {
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.0305
+            "ratio": 0.9914
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9127
+            "ratio": 0.8846
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0463
+            "ratio": 0.987
           }
         ],
         "n": 3,
-        "mean": 0.9965,
-        "mad": 0.0547,
-        "band": "±8%",
-        "temp": "OK  ·"
+        "mean": 0.9544,
+        "mad": 0.0456,
+        "band": "±5%",
+        "temp": "COLD ▼"
       }
     },
     "delta-ninja-thief": {
@@ -1094,16 +1106,16 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.1731
+            "ratio": 1.1834
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.0572
+            "ratio": 1.0656
           }
         ],
         "n": 2,
-        "mean": 1.1151,
-        "mad": 0.1151,
+        "mean": 1.1245,
+        "mad": 0.1245,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -1137,7 +1149,7 @@
         "burst": []
       },
       "caveats": [
-        "skill1: Hit Rate ▲ 20.09% (TREASURE) is modeled as hitRatePct, which is inert in the engine — the real effect (a core-hit-rate lift) is proven but unmeasured",
+        "skill1: Hit Rate ▲ 20.09% (TREASURE) is modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19): feeds acrForHR core rate for AR/SMG/SG recipients; the in-game magnitude of the core-hit-rate lift is unmeasured",
         "skill1: the TREASURE 'all Shotgun-wielding allies' ATK 63.88 + Max Ammo 50.14 buff hits every SG ally incl. self on FB enter — run /sim-battery before any board claim on SG teams",
         "skill2: both nukes read '10/5 attacks' as trigger PULLS (hitCount 100/50 in pellet-counter semantics), anchored by a same-chassis brid-silent-track measurement but unmeasured for drake — pull-vs-pellet is a 10x cadence lever on each",
         "burst: Max Ammunition Capacity ▲ 72.18%/10s only pays out when a reload lands inside the window (cap raise fills on the next reload; no instant ammo grant assumed)"
@@ -1192,12 +1204,12 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9365
+            "ratio": 0.8997
           }
         ],
         "n": 3,
-        "mean": 0.8054,
-        "mad": 0.1946,
+        "mean": 0.7932,
+        "mad": 0.2068,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1346,20 +1358,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.232
+            "ratio": 1.1709
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.2234
+            "ratio": 1.1623
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.2733
+            "ratio": 1.1972
           }
         ],
         "n": 3,
-        "mean": 1.2429,
-        "mad": 0.2429,
+        "mean": 1.1768,
+        "mad": 0.1768,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -1402,13 +1414,13 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.1469
+            "ratio": 1.0703
           }
         ],
         "n": 1,
-        "mean": 1.1469,
-        "mad": 0.1469,
-        "band": "±15%",
+        "mean": 1.0703,
+        "mad": 0.0703,
+        "band": "±8%",
         "temp": "HOT ▲"
       }
     },
@@ -1501,11 +1513,27 @@
           {
             "comp": "T8 iron-weak (boss Electric)",
             "ratio": 1.0353
+          },
+          {
+            "comp": "C-SW control (neutral, focus snow-white)",
+            "ratio": 1.0168
+          },
+          {
+            "comp": "C-Helm control (neutral, focus helm)",
+            "ratio": 0.9908
+          },
+          {
+            "comp": "C-LM control (neutral, focus little-mermaid)",
+            "ratio": 1.0066
+          },
+          {
+            "comp": "C-Crown control (neutral, focus crown)",
+            "ratio": 1.0483
           }
         ],
-        "n": 5,
-        "mean": 1.0198,
-        "mad": 0.0277,
+        "n": 9,
+        "mean": 1.0179,
+        "mad": 0.0244,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -1618,22 +1646,22 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 0.9795
+            "ratio": 1.0378
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 0.9906
+            "ratio": 1.0371
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.1086
+            "ratio": 1.0492
           }
         ],
         "n": 3,
-        "mean": 1.0262,
-        "mad": 0.0462,
+        "mean": 1.0414,
+        "mad": 0.0414,
         "band": "±5%",
-        "temp": "OK  ·"
+        "temp": "HOT ▲"
       }
     },
     "laplace": {
@@ -1708,7 +1736,7 @@
       },
       "caveats": [
         "skill1: 'Maximum Effective Range ▲ 20%' to shotgun allies is not modeled — the engine has no range stat and shotgun pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model",
-        "skill2: Hit Rate ▲ 20.28% is recorded but inert in the engine (100% accuracy assumed); in reality it raises the core-hit rate by an unmeasured amount",
+        "skill2: Hit Rate ▲ 20.28% is modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19): feeds acrForHR core rate for AR/SMG/SG recipients; the in-game magnitude of the lift is unmeasured",
         "skill2: '+5 pellets' is modeled as Normal Attack +50% to ALL shotgun allies (kit: only the 2 highest-ATK shotgun allies) — over-applies in teams running 3 or more shotguns, including Leona herself",
         "burst: the 21.32% crit-rate line assumes Roar is fully stacked at her burst cast (the stack-count gate is not modeled and may not always hold)"
       ],
@@ -1761,16 +1789,16 @@
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.1872
+            "ratio": 1.1783
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.8884
+            "ratio": 0.8923
           }
         ],
         "n": 4,
-        "mean": 0.9921,
-        "mad": 0.1015,
+        "mean": 0.9908,
+        "mad": 0.0983,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -1847,24 +1875,40 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.0954
+            "ratio": 1.1016
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0606
+            "ratio": 1.0672
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.1374
+            "ratio": 1.1449
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0658
+            "ratio": 1.0731
+          },
+          {
+            "comp": "C-SW control (neutral, focus snow-white)",
+            "ratio": 1.1193
+          },
+          {
+            "comp": "C-Helm control (neutral, focus helm)",
+            "ratio": 1.0848
+          },
+          {
+            "comp": "C-LM control (neutral, focus little-mermaid)",
+            "ratio": 1.1106
+          },
+          {
+            "comp": "C-Crown control (neutral, focus crown)",
+            "ratio": 1.1114
           }
         ],
-        "n": 4,
-        "mean": 1.0898,
-        "mad": 0.0898,
+        "n": 8,
+        "mean": 1.1016,
+        "mad": 0.1016,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2120,7 +2164,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6268
+            "ratio": 0.6467
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -2128,8 +2172,8 @@
           }
         ],
         "n": 2,
-        "mean": 0.9251,
-        "mad": 0.2984,
+        "mean": 0.9351,
+        "mad": 0.2884,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2242,12 +2286,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6811
+            "ratio": 0.6529
           }
         ],
         "n": 1,
-        "mean": 0.6811,
-        "mad": 0.3189,
+        "mean": 0.6529,
+        "mad": 0.3471,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2374,7 +2418,7 @@
       },
       "caveats": [
         "skill1: reload tuple is unverified datamine — reloadFrames 159 + rolling-reload (reload_start_ammo 299); read the reload gap from any focus video (⚑1)",
-        "skill2: Hit Rate ▲ 8.56% is modeled but INERT in the engine — it raises the core-hit rate by an unmeasured magnitude (⚑2)",
+        "skill2: Hit Rate ▲ 8.56% is modeled as hitRatePct — live-wired for AR/SMG/SG since CONE_DELTA (2026-07-19), but modernia is MG and MG/SR/RL keep the flat base table, so it still yields no core lift for her; whether Hit Rate lifts MG core rate in-game is unmeasured (⚑2)",
         "skill2: the ATK ▲ 29.38% 'during increasing Hit Rate status' gate is approximated as in-Full-Burst — exact when Modernia bursts (extended FB ≡ the 15s status), undercounts the 5s status tail on rotations another Burst III unit bursts (⚑3)",
         "burst: Destroy Mode per-hit 2.24% is modeled crit-OFF (hand-authored extraHitDamagePct path); U1 says function additional damage crits — unreconciled finding, and the datamined ChangeWeapon (shot 1026002) fire profile is assumed identical to the base MG (⚑4)"
       ],
@@ -2382,13 +2426,13 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8677
+            "ratio": 0.8338
           }
         ],
         "n": 1,
-        "mean": 0.8677,
-        "mad": 0.1323,
-        "band": "±15%",
+        "mean": 0.8338,
+        "mad": 0.1662,
+        "band": ">15%",
         "temp": "COLD ▼"
       }
     },
@@ -2438,20 +2482,20 @@
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.7288
+            "ratio": 0.6971
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.7739
+            "ratio": 0.7401
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.7153
+            "ratio": 0.6818
           }
         ],
         "n": 3,
-        "mean": 0.7393,
-        "mad": 0.2607,
+        "mean": 0.7063,
+        "mad": 0.2937,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2490,18 +2534,21 @@
           "Affects self. Gains Pierce for 10 sec."
         ]
       },
+      "caveats": [
+        "skill1/burst: shield-gated lines (coreDamagePct 85.17, casterAtkPct 31.02) fire only off REAL shield events/state (owner-ruled default-off 2026-07-20) — uptime inherits the shielder's shield cadence, unmeasured vs in-game (⚑)"
+      ],
       "board": {
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0713
+            "ratio": 1.0263
           }
         ],
         "n": 1,
-        "mean": 1.0713,
-        "mad": 0.0713,
-        "band": "±8%",
-        "temp": "HOT ▲"
+        "mean": 1.0263,
+        "mad": 0.0263,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "nayuta": {
@@ -2543,12 +2590,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8963
+            "ratio": 0.897
           }
         ],
         "n": 1,
-        "mean": 0.8963,
-        "mad": 0.1037,
+        "mean": 0.897,
+        "mad": 0.103,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -2638,24 +2685,24 @@
         "burst": []
       },
       "caveats": [
-        "skill2: Max Ammo +5 rounds is ALL-allies in-kit; modeled self-only as maxAmmoPct 55.56 (engine has no flat per-unit ammo) — teammates' +5 rounds unmodeled (⚑)",
-        "burst: Hit Rate ▲ (13.93% SG-allies /10s, 11.61% allies /30s) modeled as hitRatePct — currently inert in the engine; magnitude unmeasured (⚑)",
-        "burst: the 11.61%/19.36% block requires a same-squad ally (Blanc) on the battlefield — engine has no squad gate, modeled un-gated (effects inert vs the partless boss) (⚑)"
+        "skill2: Max Ammo +5 rounds now modeled kit-literal (maxAmmoFlat 5, ALL allies, 10s — enacted 2026-07-20; a focused-SG-teammate mag-length read remains the nice-to-have confirmation ⚑)",
+        "burst: Hit Rate ▲ (13.93% SG-allies /10s, 11.61% allies /30s) modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19): feeds acrForHR core-hit fraction for AR/SMG/SG recipients (MG/SR/RL keep the flat table); in-game magnitude unmeasured (⚑)",
+        "burst: the 11.61%/19.36% block is gated on a same-squad ally in the team (blanc or rouge — owner-ruled 2026-07-20, teamHas slug gate); inert in comps without one"
       ],
       "board": {
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0975
+            "ratio": 1.1034
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1297
+            "ratio": 1.1276
           }
         ],
         "n": 2,
-        "mean": 1.1136,
-        "mad": 0.1136,
+        "mean": 1.1155,
+        "mad": 0.1155,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2752,19 +2799,19 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.0453
+            "ratio": 1.0227
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.0094
+            "ratio": 0.9875
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9237
+            "ratio": 0.9041
           }
         ],
         "n": 3,
-        "mean": 0.9928,
+        "mean": 0.9714,
         "mad": 0.0437,
         "band": "±5%",
         "temp": "OK  ·"
@@ -2802,23 +2849,23 @@
       "caveats": [
         "skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate — rebuild timing after reloads is approximate (⚑)",
         "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
-        "skill2: Hit Rate stacks modeled as hitRatePct (inert in v1) — magnitude of the core-rate lift unmeasured (⚑)",
+        "skill2: Hit Rate stacks modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19: feeds her SMG core rate via acrForHR); in-game magnitude of the core-rate lift unmeasured (⚑)",
         "all: cadence = datamined 24 pulls/s (SHOT rate = rate_of_fire 1440rpm/60). muzzle_count 2 → 48 bullets/s, but the shot damage SPLITS over the 2 bullets (nAM 10.12 = per-bullet 5.06 × 2 muzzles, already baked in), so throughput = 24 shots × 10.12 is self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (⚑). Her flag-off HOT baseline is the kit (Explore-Route stage-2/3 parallel-build over-credit, ⚑2), not cadence — deferred to the kit audit."
       ],
       "board": {
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.1895
+            "ratio": 1.1806
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.107
+            "ratio": 1.091
           }
         ],
         "n": 2,
-        "mean": 1.1483,
-        "mad": 0.1483,
+        "mean": 1.1358,
+        "mad": 0.1358,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2855,7 +2902,8 @@
           "Attachable Projectile — Max Ammo: 1"
         ],
         "burst": [
-          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)"
+          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)",
+          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)"
         ]
       },
       "board": {
@@ -2878,13 +2926,13 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9906
+            "ratio": 0.9841
           }
         ],
         "n": 5,
-        "mean": 0.9717,
-        "mad": 0.0293,
-        "band": "±3% ✓",
+        "mean": 0.9704,
+        "mad": 0.0306,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -3196,12 +3244,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.2013
+            "ratio": 1.1834
           }
         ],
         "n": 2,
-        "mean": 1.042,
-        "mad": 0.1592,
+        "mean": 1.0331,
+        "mad": 0.1503,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -3213,7 +3261,7 @@
       "class": "Attacker",
       "kitParse": {
         "status": "authored",
-        "provenance": "parser-baseline",
+        "provenance": "hand-authored",
         "date": "2026-07-16",
         "findings": [
           "S2a 144.73% was materialized as passive firing ~1x/fight (inert) -> now shotFired+swapGate (~5x/fight); S2b crit fbGate; burst charge-cannon 4995%/full-charge (1000% of 499.5% base). Pierce swap-scoped (unmodeled, no swap-pierce vocab)"
@@ -3233,16 +3281,40 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [],
-        "burst": [
-          "Additional Effect: Pierce"
-        ]
+        "burst": []
       },
       "caveats": [
-        "skill2: the 144.73% line's trigger is INVENTED (kit text has no 'Activates when…' clause) — modeled as one proc per full-charge shot of the burst weapon swap; unmeasured ⚑",
-        "burst: swap shot economy is an unmeasured estimate — engine yields exactly 1 full-charge shot (4995%) per burst window; a 2nd shot (charge-speed comps) is not expressible (engine zeroes charge speed for swap cadences) ⚑",
-        "burst: 'Additional Effect: Pierce' unmodeled — pierce is swap-scoped and the schema only has always-on hasPierce; potential core+body double-hit on the nuke is missing ⚑"
+        "skill2: the 144.73% damage line fires on a 15s internal cooldown (owner-ruled 2026-07-20); ⚑ first-fire phase (t=15 vs t=0) and whether the line is FB-scoped are unmeasured — recipe: scan sw.MP4 for 144.73%-class popups (appearance outside FB windows falsifies FB-scoping; first-popup time pins the phase)",
+        "burst: full-charge coefficient is 4995% = 499.5 × 10 (chargeMultPct 1000; owner re-ruled ×10 from the sw.MP4 footage 2026-07-20 — charge UI reads '1000%' like an SR's '250%', 6 popups ~630 ATK-multiples reconcile only with ×10). The earlier additive 1499.5% reading is set aside.",
+        "burst: footage shows her AR KEEPS FIRING during the ~5s cannon charge (cannon materializes only for the shot) — inexpressible with weaponSwap, sim loses ~5s AR fire per window; likely her main residual COLD driver (⚑)",
+        "burst: exactly 1 cannon shot per burst then she resumes her AR (owner-ruled maxShots:1); ⚑ the swap-end does not reset ammo so AR resumes at 0 ammo → 111f reload first — recipe: does the AR resume firing immediately post-nuke in sw.MP4?",
+        "burst: swapped shot is Pierce-tagged (weaponSwap.hasPierce; Pierce Damage ▲ feeds the swap shot's Damage-Up bucket); the pierce core+body double-hit stays unmodeled (PIERCE_CORE_DOUBLE=false, multipart-scope only)"
       ],
-      "board": null
+      "board": {
+        "records": [
+          {
+            "comp": "C-SW control (neutral, focus snow-white)",
+            "ratio": 0.7929
+          },
+          {
+            "comp": "C-Helm control (neutral, focus helm)",
+            "ratio": 0.7932
+          },
+          {
+            "comp": "C-LM control (neutral, focus little-mermaid)",
+            "ratio": 0.8812
+          },
+          {
+            "comp": "C-Crown control (neutral, focus crown)",
+            "ratio": 0.8142
+          }
+        ],
+        "n": 4,
+        "mean": 0.8204,
+        "mad": 0.1796,
+        "band": ">15%",
+        "temp": "COLD ▼"
+      }
     },
     "snow-white-heavy-arms": {
       "name": "Snow White: Heavy Arms",
@@ -3275,7 +3347,8 @@
           "■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active."
         ],
         "skill2": [
-          "Gains Pierce for 5 sec."
+          "Gains Pierce for 5 sec.",
+          "Activates at the start of battle. Affects self. Fixes charge time at 1.2 sec continuously."
         ],
         "burst": [
           "Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.",
@@ -3353,12 +3426,12 @@
         "records": [
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.0168
+            "ratio": 1.0208
           }
         ],
         "n": 1,
-        "mean": 1.0168,
-        "mad": 0.0168,
+        "mean": 1.0208,
+        "mad": 0.0208,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -3439,12 +3512,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9879
+            "ratio": 0.9755
           }
         ],
         "n": 1,
-        "mean": 0.9879,
-        "mad": 0.0121,
+        "mean": 0.9755,
+        "mad": 0.0245,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }

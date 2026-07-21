@@ -1,0 +1,459 @@
+{
+  "laplace": {
+    "slug": "laplace",
+    "name": "Laplace (Treasure)",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ez-78/su-56/c79fb8dc9be0331b2e1cffd309ac928f.png",
+    "weapon": "RL",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Iron",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 63.11,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 161,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 34.8,
+    "burstGaugePerShot": 1.45,
+    "treasure": true,
+    "nicknames": [
+      "tlaplace"
+    ],
+    "skills": {
+      "skill1": "■ Activates when attacking with Full Charge. Affects self.\nHero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 15 sec.",
+      "skill2": "■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 132.45% of final ATK as additional damage. \n■ Activates when hitting the target's Parts. Affects the target's body.\nDeals 14.78% of final ATK as additional damage.",
+      "burst": "■ Affects self. \nChanges the weapon in use: \nFirst Damage: 1455.72% of final ATK\nNormal Damage: 22.2% of final ATK\nDuration: 10 sec\nAdditional Effect 1: Gains Pierce.\nAdditional Effect 2: Normal damage is applied as true damage when Hero Vision is at max stacks.\nNote: Unable to take cover while using Burst Skill.\n■ Affects the same enemy unit(s) when Hero Vision is at max stacks.\nDeals 11.9% of final ATK as true damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1010001,
+        "shot_detail": {
+          "id": 1010001,
+          "damage": 6311,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "ProjectileDirect",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 233,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 14500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 300,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 29000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2100101,
+        "skill2_id": 2100201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2100101,
+          "icon": "icn_skill_statexplosion_01",
+          "group_id": 21001,
+          "skill_level": 1,
+          "name_localkey": "Hero Vision",
+          "next_level_id": 2100102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates when attacking with Full Charge. Affects self.\n<color=#00AEFF>Hero Vision: Explosion Radius ▲ {description_value_01}%, stacks up to {description_value_03} time(s) and lasts for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2.11",
+                "2.27",
+                "2.43",
+                "2.6",
+                "2.76",
+                "2.92",
+                "3.08",
+                "3.25",
+                "3.41",
+                "3.57"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2100201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 21002,
+          "skill_level": 1,
+          "name_localkey": "Hero Bomber",
+          "next_level_id": 2100202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates when the last bullet hits the target. Affects the target.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as additional damage.</color> \n■ Activates when hitting the target's Parts. Affects the target.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "48.25",
+                "51.96",
+                "55.68",
+                "59.39",
+                "63.1",
+                "66.81",
+                "70.52",
+                "74.24",
+                "77.95",
+                "81.66"
+              ]
+            },
+            {
+              "description_value": [
+                "8.73",
+                "9.4",
+                "10.08",
+                "10.75",
+                "11.42",
+                "12.09",
+                "12.76",
+                "13.44",
+                "14.11",
+                "14.78"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1100301,
+        "ulti_skill_detail": {
+          "id": 1100301,
+          "icon": "icn_skill_c100_ult",
+          "group_id": 11003,
+          "shake_id": 1,
+          "skill_type": "LaserBeam",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Laplace Buster",
+          "next_level_id": 1100302,
+          "prefer_target": "NearAim",
+          "resource_name": "c100_ulti",
+          "duration_value": 500,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 53040,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 858,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1010002,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1440,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self. \n<color=#00AEFF>Changes the weapon in use: \nFirst Damage: {description_value_01}% of <word_group=10025>final</word_group> ATK\nNormal Damage: {description_value_02}% of <word_group=10025>final</word_group> ATK\nDuration: {description_value_03} sec\nAdditional Effect: Gains Pierce.\nNote: Unable to take cover while using Burst Skill.</color>\n■ Activates when Hero Vision is at max stacks. Affects the same enemy unit(s).\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as true damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "530.4",
+                "571.2",
+                "612",
+                "652.8",
+                "693.6",
+                "734.4",
+                "775.2",
+                "816",
+                "856.8",
+                "897.6"
+              ]
+            },
+            {
+              "description_value": [
+                "8.58",
+                "9.24",
+                "9.9",
+                "10.56",
+                "11.22",
+                "11.88",
+                "12.54",
+                "13.2",
+                "13.86",
+                "14.52"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "7.03",
+                "7.57",
+                "8.11",
+                "8.65",
+                "9.19",
+                "9.73",
+                "10.27",
+                "10.81",
+                "11.36",
+                "11.9"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            110030101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 110002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5105,
+        "stat_enhance_detail": {
+          "id": 5105,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100100,
+        "piece_detail": {
+          "id": 5100100,
+          "class": "Attacker",
+          "order": 10000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 100,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Laplace's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 110001,
+        "class": "Attacker",
+        "order": 10059,
+        "name_code": 1010,
+        "corporation": "MISSILIS",
+        "resource_id": 100,
+        "name_localkey": "Laplace",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 88,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 100
+    }
+  }
+}

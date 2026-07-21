@@ -1,0 +1,470 @@
+{
+  "noise": {
+    "slug": "noise",
+    "name": "Noise",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/jn-24/iy-36/52ec2d882f6e5114d6cfd6f26d8800e9.png",
+    "weapon": "RL",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Supporter",
+    "element": "Electric",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 61.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 16.8,
+    "burstGaugePerShot": 1.4,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when attacked 20 time(s). Affects all allies.\nDamage Taken ▼ 10.66% for 20 sec.",
+      "skill2": "■ Activates when hitting a target with a Full Charge attack. Affects the target.\nTaunts for 2 sec.\n■ Activates when attacking with Full Charge. Affects self.\nMax HP ▲ 24.86% for 1.8 sec.",
+      "burst": "■ Affects all allies.\n Constantly recovers 2.47% of the skill user's final Max HP every 1 sec for 10 sec.\nMax HP ▲ 49.5% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1043001,
+        "shot_detail": {
+          "id": 1043001,
+          "damage": 6130,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 14000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 28000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2430101,
+        "skill2_id": 2430201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2430101,
+          "icon": "icn_skill_defup_01",
+          "group_id": 24301,
+          "skill_level": 1,
+          "name_localkey": "Chorus",
+          "next_level_id": 2430102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when attacked {description_value_01} time(s). Affects all allies.\n<color=#00AEFF>Damage Taken ▼ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "5.86",
+                "6.4",
+                "6.93",
+                "7.46",
+                "8",
+                "8.53",
+                "9.06",
+                "9.59",
+                "10.13",
+                "10.66"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2430201,
+          "icon": "icn_skill_attention_01",
+          "group_id": 24302,
+          "skill_level": 1,
+          "name_localkey": "Sing Together",
+          "next_level_id": 2430202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates when hitting a target with a Full Charge attack. Affects the target.\n<color=#00AEFF>Taunts for {description_value_01} sec.</color>\n■ Activates when attacking with Full Charge. Affects self.\n<color=#00AEFF>Max HP ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "17.54",
+                "18.35",
+                "19.16",
+                "19.98",
+                "20.79",
+                "21.6",
+                "22.42",
+                "23.23",
+                "24.04",
+                "24.86"
+              ]
+            },
+            {
+              "description_value": [
+                "1.8",
+                "1.8",
+                "1.8",
+                "1.8",
+                "1.8",
+                "1.8",
+                "1.8",
+                "1.8",
+                "1.8",
+                "1.8"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1430301,
+        "ulti_skill_detail": {
+          "id": 1430301,
+          "icon": "icn_skill_c430_ult",
+          "group_id": 14303,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Energetic Noise",
+          "next_level_id": 1430302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c430_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all allies.\n <color=#00AEFF>Constantly recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.\nMax HP ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1.36",
+                "1.48",
+                "1.6",
+                "1.73",
+                "1.85",
+                "1.98",
+                "2.1",
+                "2.22",
+                "2.35",
+                "2.47"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "27.22",
+                "29.7",
+                "32.17",
+                "34.65",
+                "37.12",
+                "39.6",
+                "42.07",
+                "44.55",
+                "47.02",
+                "49.5"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            143030102,
+            143030101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 343002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5305,
+        "stat_enhance_detail": {
+          "id": 5305,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100430,
+        "piece_detail": {
+          "id": 5100430,
+          "class": "Supporter",
+          "order": 43000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 430,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Noise's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 343001,
+        "class": "Supporter",
+        "order": 10109,
+        "name_code": 5074,
+        "corporation": "TETRA",
+        "resource_id": 430,
+        "name_localkey": "Noise",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 98,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 430
+    }
+  }
+}

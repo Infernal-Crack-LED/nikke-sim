@@ -1,0 +1,116 @@
+{
+  "slug": "soda-twinkling-bunny",
+  "board": {
+    "ratio": 1.021,
+    "n": 1,
+    "mad": 0.021,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Golden Chip stacks \u25b2 50.",
+        "status": "MODELED_CONFIG",
+        "where": "resources[0]: { name: goldenChip, initial: 50, min: 0, max: 50 }",
+        "note": "Initial 50 stacks set via resource config. ALSO listed in unmodeled.skill1 \u2014 that entry is STALE (predates the 2026-07-17 resource-counter landing). The effect IS faithfully represented."
+      },
+      {
+        "kitLine": "Activates after performing 3 normal attack(s) during Full Burst. Affects self. Golden Chip: Critical Damage \u25b2 1.32% continuously, stacks up to 50 time(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: passive/self/critDamagePct perResource goldenChip\u00d71.32; cap via resources.max=50; chip generation via skill1[1] resource delta +1 (shotFired, fbGate inFb, everyN 3)",
+        "note": "Crit damage is LIVE = goldenChip\u00d71.32 (perResource), not a from-0 ramp. Validated: popup at chips=50 showed crit \u00d72.160 = (150+50\u00d71.32)/100 exactly. The '3 normals during FB' trigger generates +1 chip (skill1[1] resource effect), same trigger as the AD buff."
+      },
+      {
+        "kitLine": "Activates after performing 3 normal attack(s) during Full Burst. Affects self and the 1 ally unit(s) with the highest final ATK (except the skill user). Attack Damage \u25b2 10.51% for 2 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: shotFired/fbGate inFb/everyN 3/self/attackDamagePct 10.51 2s + resource goldenChip +1; skill1[2]: same trigger/alliesTopAtk count 1 excludeSelf:true/attackDamagePct 10.51 2s",
+        "note": "Split into self-block + ally-block. excludeSelf:true fixed 2026-07-17 (alliesTopAtk was silently ignoring it). Board-neutral on soda tb control (grades Soda's own damage, unaffected by the targeting fix)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Burst Stage 3. Affects all allies. Stage 1 (\u226510 chips): Full Burst Duration \u25b2 2 sec. Stage 2 (\u226520 chips): Full Burst Duration \u25b2 3 sec. Each subsequent effect triggers all effects before it (cumulative +2/+5).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: stageEnter stage 3/allies/fullBurstExtend 4s",
+        "note": "APPROXIMATE: flat +4s average instead of chip-gated cumulative (+2s at 10-19 chips, +5s at \u226520). No resourceGate on this block. Caveat documents: late-fight FBs run shorter than modeled (measured last-FB 12.50s at 18-19 chips \u2192 real +2s vs sim +4s)."
+      },
+      {
+        "kitLine": "Activates when performing a normal attack during Full Burst. Affects 1 enemy nearest to crosshair. Stage 1 (TE-I): 52.04% ATK damage. Stage 2 (TE-II): 85.02% ATK damage. Cumulative (TE-II state deals 52.04+85.02=137.06%).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: shotFired/fbGate inFb/enemy/flatDamage atkPct 130",
+        "note": "APPROXIMATE: 130 is recording-derived Time-Ext-II-dominant average. Datamined cumulative is 137.06%. No TE-state gating modeled (single flat value). Note flags \u2691 rider 130 as recording-derived, to refine on a soda-focus recording."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Stage 1: Affects all enemies. Deals 628.7% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast/enemy/flatDamage atkPct 628.7",
+        "note": "Faithful at L10. Target 'enemy' vs kit 'all enemies' \u2014 equivalent in partless-boss scope."
+      },
+      {
+        "kitLine": "Stage 2: Activates when Golden Chip is at 20 or more stacks. Affects self. Hit Rate \u25b2 38.91% for 15 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]; caveats[2]",
+        "note": "Deliberately unmodeled: HR\u2192core is a proven lever but magnitude unmeasured (recon hit_rate_core_test INCONCLUSIVE). Not added despite HRCORE now live, to keep the chip-mechanic change scoped. For SG weapons the core-band interaction is complex."
+      },
+      {
+        "kitLine": "Stage 3: Activates when Golden Chip is at 30 or more stacks. Affects self. ATK \u25b2 65.25% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast/self/resourceGate goldenChip min 30/buff atkPct 65.25 15s",
+        "note": "Gate checks PRE-consume chip count (spend happens in burst[2] after gates). Validated: pre-consume 50/43/38\u2026 all clear \u226530 for all 5 bursts in the control recording."
+      },
+      {
+        "kitLine": "Golden Chip stacks \u25bc 17 after the effect is applied.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2]: burstCast/self/resource goldenChip delta -17",
+        "note": "ALSO listed in unmodeled.burst[0] \u2014 that entry is STALE (predates the resource-counter landing). The \u221217 spend IS faithfully modeled and ordered after the gate checks. Validated vs control.mov drain sequence."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: Full Burst extension modeled as flat +4s; kit is chip-gated cumulative (+5s at \u226520, +2s at 10-19). Late-fight FBs run shorter than modeled (measured last-FB 12.50s at 18-19 chips).",
+      "couldCauseGap": "HOT",
+      "why": "Sim over-extends late FBs by ~2s (gives +4 when reality gives +2 at <20 chips), granting extra in-FB damage time. Directionally consistent with the +2.1% overshoot. Small magnitude (affects only the last 1-2 bursts)."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: Hit Rate \u25b238.91% for 15s (\u226520 chips) unmodeled \u2014 proven core-hit-rate lever, magnitude unmeasured (recon INCONCLUSIVE).",
+      "couldCauseGap": "COLD",
+      "why": "Unmodeled HR would increase real core-hit frequency \u2192 real does MORE damage than sim \u2192 this effect pushes ratio TOWARD 1.0 (masks the overshoot). If modeled, the underlying overshoot from other sources would be revealed as larger than 2.1%."
+    },
+    {
+      "source": "note",
+      "text": "\u2691 rider flatDamage 130 is recording-derived; datamined cumulative TE-II is 137.06% (52.04+85.02).",
+      "couldCauseGap": "COLD",
+      "why": "Sim under-models the per-FB-normal rider by ~7% (130 vs 137.06), reducing sim damage \u2192 opposes the observed overshoot. Partially masks the true overshoot magnitude."
+    },
+    {
+      "source": "note",
+      "text": "SEPARATE ROTATION BUG: sim gives Soda 6 bursts vs recorded 5. Reality's 6th burst would sit at ~20 pre-consume chips (<30, gated out). Suspect B3-alternation cooldown collision or FB-extension-shifted timing.",
+      "couldCauseGap": "HOT",
+      "why": "Extra burst = extra 628.7% ATK damage + extra ATK buff uptime. Directly inflates sim damage. Note says the old 0.887 was 'FLATTERED; true ~0.82'. May still be active post-resource-landing."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: excludeSelf:true fixed 2026-07-17 for alliesTopAtk. Board-neutral on soda tb control (grades Soda's own damage, unaffected).",
+      "couldCauseGap": "neither",
+      "why": "Affects ally targeting, not Soda's own damage. Board-neutral by construction (the board grades Soda's damage only)."
+    },
+    {
+      "source": "caveat",
+      "text": "Dynamic Golden-Chip pool LANDED 2026-07-17 \u2014 replaces flat crit-42 + every-burst-65.25 derivations. Validated vs control.mov within 1-2 chips.",
+      "couldCauseGap": "neither",
+      "why": "Resolved fix, not an open gap. The resource-counter primitive now faithfully tracks the chip economy. Supersedes the note's \u2691 about flat crit-42 being comp-dependent."
+    },
+    {
+      "source": "note",
+      "text": "charFixes.reloadFrames 182 (measured padded animation, KEPT). Datamine says 142.",
+      "couldCauseGap": "neither",
+      "why": "Deliberate measured override of the datamine value. The 182-frame reload is trace-verified against the control recording. Not a confound \u2014 a corrected input."
+    }
+  ],
+  "authorIntentSummary": "The override models Soda: Twinkling Bunny as a Golden-Chip resource economy: start 50 (cap 50), +1 per 3 in-FB normals, \u221217 per burst (post-gate). Crit damage is live perResource (goldenChip\u00d71.32), burst ATK \u25b265.25% is gated at \u226530 pre-consume chips. Two deliberate approximations: skill2 FB-extension is a flat +4s (not chip-gated cumulative +2/+5), and the in-FB rider is 130% (recording-derived, vs 137.06% datamined cumulative). Hit Rate \u25b238.91% (\u226520 chips) is explicitly unmodeled pending HR\u2192core measurement. Two stale unmodeled entries (start-of-battle +50 chips, burst \u221217 spend) predate the 2026-07-17 resource-counter landing and no longer reflect the override's actual state."
+}

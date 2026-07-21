@@ -1,0 +1,53 @@
+{
+  "scarlet-black-shadow": {
+    "name": "Scarlet: Black Shadow",
+    "burst": "III",
+    "weapon": "RL",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "1.049 HOT F2: charge cycle modeled 40f vs measured ~42f -> sim ~4.8% fast ~= the +4.9% HOT (per-unit +2f charFix, re-pinnable from N3/sbs-control footage). F3 in-burst 848% rate cumulative-vs-per-phase SPLIT (queued isolated-burst recording). F5 P0-ADJACENT: coreband-scarlet-ar.json tagged scarlet-black-shadow but records a 20-round AR (likely base scarlet footage misattributed — owner identity re-verify)"
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "714noon: N3 popup localized heat to proc set, cadence hitCount 6->10 swept on N3+T1 -> T1 1.00, N3 1.07",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "burst: unparsed effect \"Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\"",
+      "skill1: phase-threshold semantics are a scalar 3 (outside) / 1 (in-burst) model = the CUMULATIVE '3rd/6th/9th charge' reading of the kit; the per-phase reading ([3,6,9]/[1,2,3], cycle 18/6 charges) tested ~22% cold and own-probe evidence is split (sbs-control: procs ~every charge in burst; N3 re-read: the 848% absent in one window) — isolated-burst recording queued to pin the in-burst 848% count",
+      "burst: the count-requirement line ('Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.') IS modeled — chargeCounter.countInFb gated on HER OWN burst cast for 10s (sim.ts:1745); the previous 'unparsed' caveat and unmodeled.burst entry were stale"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "T1 wind-weak (boss Iron)",
+          "ratio": 0.8828
+        },
+        {
+          "comp": "N3 scarlet/liberalio iron (boss Iron)",
+          "ratio": 1.2013
+        }
+      ],
+      "n": 2,
+      "mean": 1.042,
+      "mad": 0.1592,
+      "band": ">15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

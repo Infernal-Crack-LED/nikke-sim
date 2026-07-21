@@ -1,0 +1,482 @@
+{
+  "quiry": {
+    "slug": "quiry",
+    "name": "Quiry",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ok-70/tn-18/4f4fbf39ad1695f8e280ca80601ddde3.png",
+    "weapon": "RL",
+    "burst": "II",
+    "burstCooldownSec": 60,
+    "class": "Supporter",
+    "element": "Wind",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 61.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 16.8,
+    "burstGaugePerShot": 1.4,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when hitting a target with Full Charge. Affects the target.\nATK ▼ 8.94% of the skill user's ATK for 3 sec.\n■ Activates when attacking with Full Charge. Affects 2 Defender ally unit(s).\nATK ▲ 5.81% of the skill user's ATK for 3 sec.",
+      "skill2": "■ Activates at the start of battle. Affects 2 Defender ally unit(s).\nMax HP ▲ 11.63% continuously.",
+      "burst": "■ Affects all allies.\n Recovers 6.96% of the skill user's final Max HP every 1 sec for 10 sec.\n■ Affects all Defender allies.\nCritical Rate ▲ 19.9% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1003301,
+        "shot_detail": {
+          "id": 1003301,
+          "damage": 6130,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 14000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 28000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2033101,
+        "skill2_id": 2033201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2033101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20331,
+          "skill_level": 1,
+          "name_localkey": "Glance",
+          "next_level_id": 2033102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates when hitting a target with Full Charge. Affects the target.\n<color=#00AEFF>ATK ▼ {description_value_01}% of the skill user's ATK for {description_value_02} sec.</color>\n■ Activates when attacking with Full Charge. Affects {description_value_03} Defender ally unit(s).\n<color=#00AEFF>ATK ▲ {description_value_04}% of the skill user's ATK for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5.28",
+                "5.69",
+                "6.1",
+                "6.5",
+                "6.91",
+                "7.32",
+                "7.72",
+                "8.13",
+                "8.54",
+                "8.94"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "3.43",
+                "3.7",
+                "3.96",
+                "4.23",
+                "4.49",
+                "4.75",
+                "5.02",
+                "5.28",
+                "5.55",
+                "5.81"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2033201,
+          "icon": "icn_skill_stathp_01",
+          "group_id": 20332,
+          "skill_level": 1,
+          "name_localkey": "Scrutiny",
+          "next_level_id": 2033202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates at the start of battle. Affects {description_value_01} Defender ally unit(s).\n<color=#00AEFF>Max HP ▲ {description_value_02}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "6.87",
+                "7.4",
+                "7.93",
+                "8.46",
+                "8.98",
+                "9.51",
+                "10.04",
+                "10.57",
+                "11.1",
+                "11.63"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1033301,
+        "ulti_skill_detail": {
+          "id": 1033301,
+          "icon": "icn_skill_c033_ult",
+          "group_id": 10333,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Penetrating Stare",
+          "next_level_id": 1033302,
+          "prefer_target": "Defender",
+          "resource_name": "c033_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all allies.\n <color=#00AEFF>Recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.</color>\n■ Affects all Defender allies.\n<color=#00AEFF>Critical Rate ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "4.11",
+                "4.43",
+                "4.75",
+                "5.06",
+                "5.38",
+                "5.7",
+                "6.01",
+                "6.33",
+                "6.65",
+                "6.96"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "11.76",
+                "12.66",
+                "13.57",
+                "14.47",
+                "15.38",
+                "16.28",
+                "17.19",
+                "18.09",
+                "19",
+                "19.9"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            103330101
+          ],
+          "after_hurt_function_id_list": [
+            103330102
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 203302,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5305,
+        "stat_enhance_detail": {
+          "id": 5305,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100033,
+        "piece_detail": {
+          "id": 5100033,
+          "class": "Attacker",
+          "order": 3300,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 33,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Quiry's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 203301,
+        "class": "Supporter",
+        "order": 10024,
+        "name_code": 5082,
+        "corporation": "ELYSION",
+        "resource_id": 33,
+        "name_localkey": "Quiry",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 98,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 33
+    }
+  }
+}

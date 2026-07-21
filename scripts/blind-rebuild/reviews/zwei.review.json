@@ -1,0 +1,182 @@
+{
+  "slug": "zwei",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger fullBurstEnter / target allies",
+        "note": "FB-enter team buff trigger."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 20.13% for 1 round(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0] pierceDamagePct 20.13 dur 5",
+        "note": "'for 1 round(s)' approximated as 5s \u2014 no round primitive (\u26914). Coexists additively with the 10.06% line per DBG-verified staged baseline."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 10.06% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[1] pierceDamagePct 10.06 dur 10",
+        "note": "Stated 10s duration; same-stat pair coexists (no same-caster-slot swallow)."
+      },
+      {
+        "kitLine": "Activates when performing a normal attack during Full Burst. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] trigger shotFired + fbGate inFb / target allies",
+        "note": "Per-Zwei-normal-attack-in-FB trigger."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 24.99%, stacks up to 3 time(s), for 1 round(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1].effects[0] pierceDamagePct 24.99 dur 5 maxStacks 3",
+        "note": "x3 stack; round-scoped dur\u21925s (\u26914) chosen to span her ~3s swap-cycle gap so consecutive swap shots chain stacks."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after 5 normal attack(s). Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger shotFired everyN 5 / target allies",
+        "note": "everyN on shotFired = per trigger PULL (correct for 'normal attack(s)'; hitCount 5 would double-count pellets on hitsPerShot 10)."
+      },
+      {
+        "kitLine": "Restores 7.52% of Cover HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[0] {kind:heal}",
+        "note": "Heal is EVENT-ONLY \u2014 the 7.52% cover-HP amount is NOT modeled. Whether cover-HP recovery fires ally on-recovery consumers (e.g. Crown) is unverified HYPOTHESIS \u26916."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger fullBurstEnter / target allies",
+        "note": "FB-enter team buff trigger."
+      },
+      {
+        "kitLine": "Critical Rate \u25b2 18.63% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1].effects[0] critRatePct 18.63 dur 10",
+        "note": "Fully live stat, stated 10s."
+      },
+      {
+        "kitLine": "Activates when performing a normal attack while in Pierce Attacks 101 status. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2] trigger shotFired + fbGate inFb / target allies",
+        "note": "'Pierce Attacks 101 status' gate (her own burst's 10s team buff) has no status-gate primitive \u2192 proxied by in-Full-Burst gate (\u26915). Exact only for a sole-B1 team; multi-B1 teams over-credit."
+      },
+      {
+        "kitLine": "Critical Rate \u25b2 15% for 5 sec, stacks up to 3 time(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2].effects[0] critRatePct 15 dur 5 maxStacks 3",
+        "note": "x3 stack, stated 5s."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] trigger burstCast / target self",
+        "note": "Self weapon-swap block."
+      },
+      {
+        "kitLine": "Changes the weapon in use:",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] {kind:weaponSwap}",
+        "note": "Charge-cannon swap; durationSec 10 is an UNSTATED estimate (\u26913 TOP, RRH-class default)."
+      },
+      {
+        "kitLine": "Charge Time: 1.2 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] chargeTimeSec 1.2",
+        "note": "Verbatim."
+      },
+      {
+        "kitLine": "Damage: 50.69% of final ATK",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] damagePct 50.69",
+        "note": "Verbatim."
+      },
+      {
+        "kitLine": "Full Charge Damage: 300% of damage",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] chargeMultPct 300",
+        "note": "\u2192 152.07%/full shot."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity: 1",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] maxAmmo 1",
+        "note": "Explicit kit text; the analogous invented unlimitedAmmo (\u22488-shot optimistic bound) was deliberately NOT shipped (arcana-fortune-mate precedent)."
+      },
+      {
+        "kitLine": "Additional Effect: Pierce",
+        "status": "MODELED_CONFIG",
+        "where": "hasPierce:true (top-level); also kept verbatim in burst.unmodeled",
+        "note": "Tags the SWAPPED cannon in-kit; no swap-scoped pierce primitive \u2192 unit-wide flag. Line retained verbatim in unmodeled per mari precedent ('a flag is not a block'). Leakage \u22480: SG gets no pierce double-hit (sim.ts 1698); flag only feeds pierceDamagePct, and all her pierce buffs are FB/burst-window-scoped (\u26917)."
+      },
+      {
+        "kitLine": "Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] trigger burstCast / target allies",
+        "note": "Team buff block."
+      },
+      {
+        "kitLine": "Pierce Attacks 101: Pierce Damage \u25b2 25.03% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].effects[0] pierceDamagePct 25.03 dur 10",
+        "note": "The named 'Pierce Attacks 101' status is itself the S2c gate (see \u26915); the stat/duration are modeled verbatim."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "burst: weapon-swap window economy is an unmeasured estimate \u2014 duration 10s (unstated in kit) and ~3 shots/window (charge 1.2s + 1-ammo reload); if footage shows reload-free cadence it is ~8 shots",
+      "couldCauseGap": "HOT",
+      "why": "\u26913 TOP. Directly scales Zwei's personal damage: ~3 vs ~8 shots/window is a ~2.7x swing in her own output. Largest single fidelity risk; no recording to resolve it."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: 'for 1 round(s)' round-scoped buff durations approximated as 5s (no round primitive in the schema)",
+      "couldCauseGap": "COLD",
+      "why": "\u26914. Affects pierceDamagePct uptime on the 20.13% and 24.99%-stack lines, but these are FB-window-scoped (FB=10s) and 5s was chosen to span her ~3s swap-cycle gap; second-order, unlikely to drive a large gap."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: the Crit Rate stack's 'Pierce Attacks 101 status' gate is proxied by an in-Full-Burst gate \u2014 exact only when Zwei is the team's sole Burst I",
+      "couldCauseGap": "HOT",
+      "why": "\u26915. In multi-B1 teams the in-FB proxy over-credits the 15% x3 crit-rate stacks (real window starts ~2-3s earlier, ends ~7s into FB). Team-dependent; could overstate team crit rate / damage in non-sole-B1 comps."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: the every-5-attacks heal recovers COVER HP in-kit; whether that fires teammates' on-recovery triggers is an unverified hypothesis",
+      "couldCauseGap": "HOT",
+      "why": "\u26916. Heal amount is event-only (not modeled). If cover-HP recovery DOES fire ally recovery consumers (e.g. Crown), a real buff source is silently absent \u2192 potential under-credit; if it doesn't, neutral. Unverified either way."
+    },
+    {
+      "source": "caveat",
+      "text": "unit: pierce applies only to the swapped burst cannon in-kit; modeled as unit-wide hasPierce (her pierce buffs are burst-window-scoped, so spillover onto normal shotgun fire is minimal)",
+      "couldCauseGap": "COLD",
+      "why": "\u26917. Leakage \u22480: engine gives SG no pierce double-hit (sim.ts 1698); the flag only feeds pierceDamagePct and every pierce buff in her kit is FB/burst-window-scoped, exactly when she is swapped."
+    },
+    {
+      "source": "note",
+      "text": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). NO recording yet \u2014 every \u2691 is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number.",
+      "couldCauseGap": "HOT",
+      "why": "Open question: the entire override is an unvalidated parser baseline with zero measured/recording backing. Any of the \u2691 estimates (esp. \u26913 swap economy) could be wrong until measured."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1 '\u3010Phase 3\u3011Items \u00d7110', skill2 '\u3010Phase 2\u3011Items \u00d750', burst '\u3010Phase 1\u3011' cost-progression flavor; burst 'Cooldown: 20 s'",
+      "couldCauseGap": "neither",
+      "why": "Inert limit-break/cost flavor lines (no sim effect) plus 'Cooldown: 20 s' which is already burstCooldownSec 20 in char data. Zero hard-rule-class lines in unmodeled; 'Additional Effect: Pierce' is the only burst unmodeled line with a real effect and it is carried by hasPierce config."
+    }
+  ],
+  "authorIntentSummary": "The author modeled Zwei as a Burst I SG Supporter whose value is team pierce-damage and crit-rate buffs plus a self charge-cannon weapon swap: S1 = FB-enter team Pierce Damage (20.13% round-scoped\u21925s + 10.06%/10s, additive) and per-normal-attack-in-FB stacking Pierce Damage 24.99% x3; S2 = every-5-attacks team heal (event-only), FB-enter team Crit Rate 18.63%/10s, and per-normal-attack Crit Rate 15%/5s x3 gated on 'Pierce Attacks 101'; Burst = self weaponSwap (50.69%/shot, 1.2s charge, 300% full-charge, 1 ammo, 10s est) + team Pierce Damage 25.03%/10s, with pierce carried as a unit-wide hasPierce flag. Key approximations: round-scoped durations\u21925s (\u26914), the 'Pierce Attacks 101 status' gate proxied by an in-Full-Burst gate exact only for sole-B1 teams (\u26915), heal amount not modeled with cover-HP\u2192recovery-trigger firing an open hypothesis (\u26916), and the swap shot-economy (~3 vs ~8 shots/window) as the top unmeasured estimate (\u26913). The whole override is an unvalidated parser baseline with no recording yet \u2014 every \u2691 is a HYPOTHESIS pending measurement."
+}

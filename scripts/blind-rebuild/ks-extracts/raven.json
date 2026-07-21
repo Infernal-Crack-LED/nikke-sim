@@ -1,0 +1,41 @@
+{
+  "raven": {
+    "name": "Raven",
+    "burst": "III",
+    "weapon": "RL",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Activates when an ally or self destroys an enemy's part. Affects self if self is not in A.N. Mode status.",
+        "Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.",
+        "Removes Vital Attack."
+      ],
+      "burst": [
+        "A.N. Mode:",
+        "Effect 1: Removes Single Point Attack."
+      ]
+    },
+    "caveats": [
+      "skill1: full-charge DoT cadence (60f charge + 22f bolt gap + 141f reload, autofire unverified) is an unmeasured ⚑ estimate — the DoT is her dominant damage bucket and scales linearly with shot rate",
+      "skill2: Single Point Attack (Sustained damage ▲ 47.32%) keys on destroying an enemy part — it can never fire against the partless scope-lock boss and is not modeled (previously approximated as an always-on passive)",
+      "skill2: Vital Attack (Damage to Parts ▲ 21.12%) is modeled but inert in v1 (no parts on the boss)"
+    ],
+    "board": null
+  }
+}

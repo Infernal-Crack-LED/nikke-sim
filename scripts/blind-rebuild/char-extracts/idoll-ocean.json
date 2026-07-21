@@ -1,0 +1,399 @@
+{
+  "idoll-ocean": {
+    "slug": "idoll-ocean",
+    "name": "iDoll Ocean",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/tj-27/dr-38/f81e3a7e390455066e38962ea14661d7.png",
+    "weapon": "SMG",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Water",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 8.73,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "nicknames": [
+      "io"
+    ],
+    "skills": {
+      "skill1": "■ Activates when the last bullet hits the target. Affects 1 ally unit(s) with the lowest HP percentage. \nRecovers 4.86% of the skill user's final Max HP as HP.",
+      "skill2": "■ Affects 1 ally unit(s) with the lowest HP percentage. \nRecovers 9.69% of the skill user's final Max HP as HP.",
+      "burst": "■ Affects all allies. \nRecovers 29.7% of the skill user's final Max HP as HP."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1030501,
+        "shot_detail": {
+          "id": 1030501,
+          "damage": 873,
+          "max_ammo": 120,
+          "shake_id": 1,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2305101,
+        "skill2_id": 1305201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2305101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 23051,
+          "skill_level": 1,
+          "name_localkey": "Ocean Shower",
+          "next_level_id": 2305102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when the last bullet hits the target. Affects {description_value_01} ally unit(s) with the lowest HP percentage. \n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "1.21",
+                "1.62",
+                "2.02",
+                "2.43",
+                "2.83",
+                "3.24",
+                "3.64",
+                "4.05",
+                "4.45",
+                "4.86"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1305201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 13052,
+          "skill_level": 1,
+          "name_localkey": "Ocean Cleansing",
+          "next_level_id": 1305202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Affects {description_value_01} ally unit(s) with the lowest HP percentage. \n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "2.42",
+                "3.23",
+                "4.03",
+                "4.84",
+                "5.65",
+                "6.46",
+                "7.26",
+                "8.07",
+                "8.88",
+                "9.69"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1305301,
+        "ulti_skill_detail": {
+          "id": 1305301,
+          "icon": "icn_skill_c305_ult",
+          "group_id": 13053,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Ocean Dive",
+          "next_level_id": 1305302,
+          "prefer_target": "LowHP",
+          "resource_name": "c305_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies. \n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP as HP. </color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "7.42",
+                "9.9",
+                "12.37",
+                "14.85",
+                "17.32",
+                "19.8",
+                "22.27",
+                "24.75",
+                "27.22",
+                "29.7"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            130530101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 0,
+        "grade_core_id": 201,
+        "stat_enhance_id": 1303,
+        "stat_enhance_detail": {
+          "id": 1303,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 16,
+          "grade_defence": 80,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 0
+      },
+      "meta": {
+        "id": 330501,
+        "class": "Supporter",
+        "order": 50008,
+        "name_code": 1018,
+        "corporation": "TETRA",
+        "resource_id": 305,
+        "name_localkey": "iDoll Ocean",
+        "original_rare": "R",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 11500,
+      "atk": 400,
+      "def": 69,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 16,
+        "def": 80,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 305
+    }
+  }
+}

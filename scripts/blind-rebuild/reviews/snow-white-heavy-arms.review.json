@@ -1,0 +1,206 @@
+{
+  "slug": "snow-white-heavy-arms",
+  "board": {
+    "ratio": 0.982,
+    "n": 4,
+    "mad": 0.033,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates every 0.2 sec while charging. Lock-On: Designates nearest non-Lock-On enemy as Seven Dwarves target. Max Lock-On targets: 5. Deactivation: normal attack or taking cover.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Single-boss scope: targeting/caps irrelevant. Ammo counts derived from this mechanic ARE baked into flatDamage values (527.95% = 105.59\u00d75 baseline)."
+      },
+      {
+        "kitLine": "Auto Fire Ready \u2014 Effect: DEF \u25b2 42.24% continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Defensive stat; inert for damage sim (hard rule 3 per ks-extracts)."
+      },
+      {
+        "kitLine": "Auto Fire Ready \u2014 Function: Loads Seven Dwarves with ammo. Max ammo: 5. Deactivation: normal attack.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2]",
+        "note": "Loading mechanic itself unmodeled, but the ammo count (5 baseline, 15 in Fully Active) is encoded in the flatDamage atkPct values of skill1[1] and skill1[2]."
+      },
+      {
+        "kitLine": "Activates every 0.2 sec while charging. Affects all Lock-On enemies. Damage Taken \u25b2 4.2% for 4 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] \u2014 passive buff damageTakenPct 4.2",
+        "note": "Modeled as always-on passive (no durationSec). Kit has 4s duration refreshing every 0.2s while charging; passive is equivalent under continuous-charge assumption. Minor overcount if charging pauses >4s."
+      },
+      {
+        "kitLine": "Auto Fire Effect 1: Deals 41.9% of final ATK as damage. Affects all enemies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] \u2014 shotFired flatDamage atkPct 41.9",
+        "note": "Baseline AoE auto-fire per full-charge shot."
+      },
+      {
+        "kitLine": "Auto Fire Effect 2: Deals 105.59% of final ATK as damage \u00d7 loaded ammo (sequential). Baseline 5 ammo = 527.95%.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] \u2014 shotFired flatDamage atkPct 527.95 flavor:sequential",
+        "note": "105.59\u00d75 = 527.95% baseline volley. Sequential flavor enables sequentialDamagePct dilution."
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge while in Seven Dwarves Fully Active. Number of uses \u25bc 1.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 weaponSwap maxShots:2",
+        "note": "Use-count decrement not explicitly modeled, but the 2-use constraint is captured by maxShots:2 on the weaponSwap. Note lists 'use-count bookkeeping' as skipped (sim always full-charges), but practical effect is equivalent."
+      },
+      {
+        "kitLine": "Activates when performing a normal attack while not in Full Burst. Removes Seven Dwarves Fully Active.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[3]",
+        "note": "Sim always full-charges; normal attacks never occur, so this removal path is inert."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at start of battle. Fixes charge time at 1.2 sec continuously.",
+        "status": "MISSING",
+        "where": "note (prose) only \u2014 absent from unmodeled.skill2 array",
+        "note": "\u2691 STRUCTURED-ARRAY GAP: discussed in note ('charge-time fixes at 1.2s/3.2s \u2014 sim uses fixed cadence, main approximation, may overcount ~3 phantom baseline auto-fires during slower Fully Active window') but NOT listed in unmodeled.skill2. Not a silent drop (note covers it), but the structured unmodeled array is incomplete."
+      },
+      {
+        "kitLine": "Activates during Full Charge. Gains Pierce for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Inert vs single partless boss. ks-extracts flags 'hasPierce unset' \u2014 backfilled into unmodeled."
+      },
+      {
+        "kitLine": "Activates during Full Charge. ATK \u25b2 46.84% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 shotFired buff atkPct 46.84 durationSec:5",
+        "note": "Trigger is shotFired (fires every shot); kit says 'during Full Charge'. Equivalent under always-full-charge SR assumption."
+      },
+      {
+        "kitLine": "Activates during Full Charge. Damage to Parts \u25b2 62.64% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 shotFired buff partsDamagePct 62.64 durationSec:5",
+        "note": "Kept for fidelity though inert vs partless boss (note explicitly states this)."
+      },
+      {
+        "kitLine": "Activates when entering Burst Stage 3. ATK \u25b2 73.92% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] \u2014 stageEnter stage:3 buff atkPct 73.92 durationSec:10",
+        "note": "Direct mapping."
+      },
+      {
+        "kitLine": "Activates when at Full Charge only while in Seven Dwarves Fully Active. Charge Damage \u25b2 528% for 1 round(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2] \u2014 burstCast buff chargeDamagePct 528 durationSec:10 whileSwapped:true",
+        "note": "Kit says '1 round' \u00d72 uses; note says 6.5s to cover both swap rounds. Block uses durationSec:10 gated by whileSwapped:true (effective duration = swap window). Additive charge points confirmed by prydwen '778%' quote."
+      },
+      {
+        "kitLine": "Sequential attack damage \u25b2 158.4% for 1 round(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2] \u2014 burstCast buff sequentialDamagePct 158.4 durationSec:10 whileSwapped:true",
+        "note": "PRYDWEN-CONFIRMED as ATK DMG (damage-up bucket) buff, diluted at deal time. Applies only to sequential-flavored hits (527.95 baseline + 1055.9 lump)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Attack Damage \u25b2 84.48% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] \u2014 burstCast buff attackDamagePct 84.48 durationSec:10",
+        "note": "Direct mapping."
+      },
+      {
+        "kitLine": "Seven Dwarves Fully Active \u2014 Function: Increases max Lock-On targets and max ammo, increases Charge Time. Number of uses: 2.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Function description unmodeled as a mechanic, but ALL practical damage effects are captured: charge time 3.2s \u2192 weaponSwap chargeTimeSec:3.2; ammo 5\u219215 \u2192 extra 1055.9% volley in skill1[2]; 2 uses \u2192 weaponSwap maxShots:2. The unmodeled entry is a documentation artifact, not a damage gap."
+      },
+      {
+        "kitLine": "Effect 1: Fixes charge time at 3.2 sec continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 weaponSwap chargeTimeSec:3.2",
+        "note": "Modeled via weaponSwap config rather than a buff block."
+      },
+      {
+        "kitLine": "Effect 2: Max Lock-On targets \u25b2 10 continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Single-boss scope: irrelevant."
+      },
+      {
+        "kitLine": "Effect 3: Max ammo loaded by Auto Fire Ready \u25b2 10 continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] \u2014 shotFired swapGate:'swapped' flatDamage atkPct 1055.9 flavor:sequential",
+        "note": "Extra 10 ammo \u00d7 105.59% = 1055.9% per swap shot. Cross-slot: burst's ammo boost is expressed as damage in skill1's swap-gated block."
+      },
+      {
+        "kitLine": "Deactivation condition: When the number of uses reaches 0.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 weaponSwap maxShots:2",
+        "note": "maxShots:2 ends the swap after 2 shots, equivalent to use-count reaching 0."
+      },
+      {
+        "kitLine": "Affects all destructible projectiles. Deals 41.9% of final ATK as damage.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2]",
+        "note": "No destructible projectiles vs single boss. Inert."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "Charge-time fixes at 1.2s/3.2s not modeled \u2014 sim uses fixed cadence. 'This is the main approximation, may overcount ~3 phantom baseline auto-fires during the slower Fully Active window.'",
+      "couldCauseGap": "HOT",
+      "why": "Overcounting ~3 baseline auto-fires (each 41.9+527.95 = 569.85%) during the 6.5s Fully Active window would inflate sim damage. This is the author's own flagged main approximation."
+    },
+    {
+      "source": "note",
+      "text": "Residual uses-vs-time question logged as H2 in experiment-harness-ai.md \u2014 whether the Fully Active volley is delivered by uses or by time.",
+      "couldCauseGap": "HOT",
+      "why": "Open measurement question. If volleys are time-gated rather than use-gated, a swap shot lost to the 6.5s window also loses its volley (author's current assumption). If uses persist beyond the window, sim undercounts."
+    },
+    {
+      "source": "note",
+      "text": "Q8 CORRECTED (2026-07-17): noBoltRecovery charFixes exemption REMOVED. She is a release-fired SR (input_type='UP') and takes +22f bolt recovery. 'This cools her out-of-burst baseline auto-fire (she was ~1.073 HOT, cadence-\u2691).'",
+      "couldCauseGap": "COLD",
+      "why": "This was a FIX that cooled a prior HOT state. The current board (0.982 OK) confirms the correction landed. Listed as a resolved confound for the judge's awareness."
+    },
+    {
+      "source": "unmodeled",
+      "text": "DEF \u25b2 42.24% (Auto Fire Ready) dropped \u2014 defensive stat, hard rule 3.",
+      "couldCauseGap": "neither",
+      "why": "DEF has no damage-sim impact. Correctly excluded."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Pierce for 5 sec (skill2 Full Charge) \u2014 inert vs single partless boss.",
+      "couldCauseGap": "neither",
+      "why": "No parts to pierce in scope-lock single-boss sim. hasPierce unset is correct."
+    },
+    {
+      "source": "note",
+      "text": "Parts-damage +62.64% kept for fidelity though inert vs partless boss.",
+      "couldCauseGap": "neither",
+      "why": "Modeled but inert \u2014 no parts in the sim target. No gap impact."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Lock-On targeting, Max-Lock-On/ammo caps, normal-attack removal of Fully Active \u2014 single-boss / always-full-charge scope.",
+      "couldCauseGap": "neither",
+      "why": "All inert under the sim's single-boss, always-full-charge assumptions."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Burst 41.9% to destructible projectiles \u2014 none vs single boss.",
+      "couldCauseGap": "neither",
+      "why": "No destructible projectiles in scope-lock single-boss sim."
+    },
+    {
+      "source": "note",
+      "text": "skill2 charge-time fix at 1.2s is discussed in the note but ABSENT from the structured unmodeled.skill2 array.",
+      "couldCauseGap": "HOT",
+      "why": "The 1.2s charge fix (vs datamined 72f \u2248 1.2s base) may be a no-op if the sim already uses 72f, but the note flags the charge-time approximation as the main HOT risk. The structured-array gap means a naive unmodeled scan would miss this confound."
+    }
+  ],
+  "authorIntentSummary": "The override models SWHA as a charge-SR whose Seven Dwarves auto-fire piggybacks every full-charge shot (41.9% AoE + 527.95% sequential baseline volley), with a burst-triggered weaponSwap mode (2 shots at 3.2s charge, 69.04% per shot) that adds an extra 1055.9% sequential volley per swap shot via a swapGate block. The Fully Active era buffs (charge damage +528%, sequential damage +158.4%) are whileSwapped buffs diluted at deal time. The main acknowledged approximation is fixed cadence vs the kit's charge-time fixes (1.2s base / 3.2s Fully Active), which may overcount ~3 phantom baseline auto-fires during the slower Fully Active window; the author flags this as the primary HOT risk and logs the residual uses-vs-time delivery question as an open H2 hypothesis. All other skips (DEF, Pierce, Lock-On targeting, destructible projectiles, normal-attack removal) are documented as inert under the single-boss always-full-charge scope."
+}

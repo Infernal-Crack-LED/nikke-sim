@@ -1,0 +1,535 @@
+{
+  "makima": {
+    "slug": "makima",
+    "name": "Makima",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ge-60/wi-80/6b02bb8ad9670a1a42b5f7484c802a7e.png",
+    "weapon": "SMG",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Defender",
+    "element": "Water",
+    "manufacturer": "Abnormal",
+    "normalAttackMultiplier": 8.73,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when attacked 20 times. Affects all allies.\nReload Speed ▲ 36.96% for 10 sec. \nDEF ▲ 14.78% for 10 sec.",
+      "skill2": "■ Activates after landing 120 normal attack(s). Affects self.\n Attract: Taunt all enemies for 3 sec.\n■ Activates when taking lethal damage. Affects self.\nGain indomitability for 7 sec. Activates 1 time(s) per battle.\nCooldown of Burst Skill ▼ 11.58 sec.",
+      "burst": "■ Affects self.\nGain Pierce for 10 sec.\nRecover 34.02% of attack damage as HP over 10 sec.\n■ Activates during indomitability. Affects self.\nIncoming healing ▲ 41.02% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1080001,
+        "shot_detail": {
+          "id": 1080001,
+          "damage": 873,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2800101,
+        "skill2_id": 2800201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2800101,
+          "icon": "icn_skill_statreloadtime_01",
+          "group_id": 28001,
+          "skill_level": 1,
+          "name_localkey": "Show Me What You Got",
+          "next_level_id": 2800102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when attacked {description_value_01} times. Affects all allies.\n<color=#00AEFF>Reload Speed ▲ {description_value_02}% for {description_value_03} sec. \nDEF ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "20.32",
+                "22.17",
+                "24.02",
+                "25.87",
+                "27.72",
+                "29.56",
+                "31.41",
+                "33.26",
+                "35.11",
+                "36.96"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "8.13",
+                "8.87",
+                "9.6",
+                "10.34",
+                "11.08",
+                "11.82",
+                "12.56",
+                "13.3",
+                "14.04",
+                "14.78"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2800201,
+          "icon": "icn_skill_attention_01",
+          "group_id": 28002,
+          "skill_level": 1,
+          "name_localkey": "Seems I've Been Noticed",
+          "next_level_id": 2800202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s). Affects self.\n<color=#00AEFF> Attract: Taunt all enemies for {description_value_02} sec.</color>\n■ Activates when taking lethal damage. Affects self.\n<color=#00AEFF>Gain <word_group=10006>indomitability</word_group> for {description_value_03} sec. Activates {description_value_04} time(s) per battle.\n<word_group=10031>Cooldown</word_group> of Burst Skill ▼ {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "8.51",
+                "8.85",
+                "9.19",
+                "9.53",
+                "9.87",
+                "10.21",
+                "10.55",
+                "10.89",
+                "11.23",
+                "11.58"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1800301,
+        "ulti_skill_detail": {
+          "id": 1800301,
+          "icon": "icn_skill_c800_ult",
+          "group_id": 18003,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Can You Be Quiet?",
+          "next_level_id": 1800302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c800_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Gain Pierce for {description_value_01} sec.\nRecover {description_value_02}% of attack damage as HP over {description_value_03} sec.</color>\n■ Activates during <word_group=10006>indomitability</word_group>. Affects self.\n<color=#00AEFF>Incoming healing ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "17.82",
+                "19.62",
+                "21.42",
+                "23.22",
+                "25.02",
+                "26.82",
+                "28.62",
+                "30.42",
+                "32.22",
+                "34.02"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "13.46",
+                "16.53",
+                "19.59",
+                "22.65",
+                "25.71",
+                "28.77",
+                "31.83",
+                "34.89",
+                "37.95",
+                "41.02"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            180030101,
+            180030102,
+            180030103
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 580002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5203,
+        "stat_enhance_detail": {
+          "id": 5203,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100800,
+        "piece_detail": {
+          "id": 5100800,
+          "class": "Attacker",
+          "order": 80000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ABNORMAL",
+          "resource_id": 800,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Makima's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 580001,
+        "class": "Defender",
+        "order": 10161,
+        "name_code": 5089,
+        "corporation": "ABNORMAL",
+        "resource_id": 800,
+        "name_localkey": "Makima",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 95,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 800
+    }
+  }
+}

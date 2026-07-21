@@ -1,16 +1,15 @@
 {
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. [kit-parse AUTHOR 2026-07-16, wave 6 — snow-white (BASE unit, AR/Iron/Attacker/B3; NOT snow-white-heavy-arms).] S1: every 30 normal-attack hits → 82.8% rider (crit-on default, no core, FB by timing) + self ATK 8.28% 5s — both kit-literal (hitCount 30; at AR 12 pulls/s ≈ every 2.5s while firing, so the ATK buff is near-permanent during sustained fire). S2a 144.73% 'enemies within range': the kit text gives NO trigger (datamine dropped the 'Activates when…' clause) — ⚑ TOP INVENTED TRIGGER: modeled as firing on each FULL-CHARGE shot of the burst weapon swap (shotFired + swapGate:swapped; all swapped shots are full charges). Rationale: S2b says 'when USING THIS SKILL during Full Burst', so S2 has a discrete activation; her only activation-shaped event is the swapped full-charge shot (AR chargeFrames 0 — she cannot full-charge outside the swap), which makes the whole kit cohere (burst→swap→full-charge shot procs S2a damage + S2b crit). Replaces the materialized single-passive-hit encoding (fired ONCE per fight ≈ inert). S2b: crit +26.1% 10s on the same trigger, fbGate:inFb (kit: 'when using this skill during Full Burst') — the triggering shot itself resolves before the buff lands (buff covers subsequent hits/procs), matching in-game apply-after-hit. BURST: weaponSwap charge cannon — damagePct 499.5, chargeTimeSec 5, chargeMultPct 1000 ('Full Charge Damage 1000% of damage' = 1000% OF the 499.5% base → 4995% per full-charge shot; engine composes chargeMult/100 × damagePct exactly so), maxAmmo 1, durationSec 10 (kit states no duration; standard FB window assumed). Engine economy: 5s charge → shot at ~t+5s, then maxAmmo 1 forces a 111-frame reload, next shot would land ~t+11.85s > window → exactly 1 full-charge shot per burst — ⚑ TOP swap economy (1 vs 2 shots is the unit's single biggest lever; the RRH optimistic bound gives 2 only reload-free AND at the exact 10.0s boundary, and the engine zeroes charge-speed buffs for swap cadences [sim.ts cs=0 for swap chargeFrames], so charge-speed-support comps that realistically enable the 2nd shot cannot be expressed — engine-gap finding). SKIPPED → unmodeled.burst: 'Additional Effect: Pierce' — the pierce is SWAP-SCOPED and the schema has no swap-scoped pierce (top-level hasPierce would wrongly grant her AR normals the PIERCE_CORE_DOUBLE body hit + pierceDamagePct feeds all fight); vs a core-exposed boss the real nuke may double-hit core+body (≈ up to 2× nuke) — ⚑ finding, needs engine vocab or measurement. ⚑ LIST: (1) TOP S2a invented trigger (per swapped full-charge shot; recipe: solo/focus video — match the extra ~144.73%-class popup 1:1 against full-charge shots; any proc outside the burst window falsifies the swap gating); (2) TOP swap shot economy 1/burst (recipe: focus video — count cannon shots per burst window, with and without charge-speed support); (3) MANDATORY cadence tuple — pullsPerSec 12 (AR class default), reloadFrames 111, no rolling-reload assumed (recipe: rounds/min + reload gap from any focus video; 60-ammo mag ≈ 5s at 12/s, no <1s-empty tell, not escalated); (4) swap Pierce unmodeled (recipe: nuke popup count vs core-exposed boss — one popup or two); (5) 'Full Charge Damage 1000% of damage' interpretation = ×10 on 499.5 → 4995% (recipe: read the nuke popup ÷ final ATK). FB on the nuke: swapped shots are category 'normal' → +50% by landing timing (in-FB), NOT the burst-cast pre-FB exemption — the cast only starts the swap; the shot lands ~5s later inside FB.",
+  "note": "OWNER-RULED encoding 2026-07-20 (kit-audit Phase C; replaces the parser-baseline hypothesis). snow-white — BASE unit, AR/Iron/Attacker/B3; NOT snow-white-heavy-arms (SR/Water). She HAS board data: the 4 control-anchor comps (docs/probes/control/{sw,helm,lm,crown}; experiment C-SW/C-Helm/C-LM/C-Crown) — the plan doc's 'no-data' was stale. S1: every 30 normal-attack hits → 82.8% rider (crit-on default, no core, FB by timing) + self ATK 8.28% 5s — both kit-literal (hitCount 30; at AR 12 pulls/s ≈ every 2.5s while firing, so the ATK buff is near-permanent during sustained fire). S2a 144.73% 'enemies within range' → OWNER-RULED: fires on an INTERNAL COOLDOWN of 15s (trigger {kind:'interval', sec:15}); replaces the prior invented per-swap-shot trigger. ~12 procs/180s spread evenly, most OUTSIDE Full Burst (function-class flatDamage, crit-on default, +50% FB by landing timing only when a tick lands in an FB window). ⚑ first-fire phase (engine convention t=15s vs t=0 = ~1 proc) AND possible FB-scoping are both unmeasured — recipe: in sw.MP4 scan for 144.73%-class popups; confirm they appear OUTSIDE FB windows (falsifies FB-scoping) and time the first one (pins the phase). S2b crit +26.1% 10s → OWNER-RULED: gained on FULL-BURST ENTRY (trigger {kind:'fullBurstEnter'}, self); replaces the prior per-swap-shot+fbGate encoding. BURST weaponSwap charge cannon: damagePct 499.5, chargeTimeSec 5, durationSec 10. FULL-CHARGE DAMAGE — FOOTAGE-CONFIRMED ×10 (owner re-ruled 2026-07-20 from the sw.MP4 pass): 'Full Charge Damage 1000% of damage' is the full-charge MULTIPLIER (the in-game charge UI ramps to '1000%', exactly as an SR displays '250%'), so the full-charge coefficient = 499.5% × 10 = 4995% of ATK. Encoded chargeMultPct=1000 (Charge = chargeMult/100 = 10 at base per damage-calc §1d). The prior ADDITIVE reading (1499.5% via chargeMultPct 300.2002) is REFUTED: the six nuke popups sit ~3-4× above anything the 1499.5% class can produce and reconcile only with the ×10 class × FB × core × crit × live buffs. SWAP ECONOMY / CANNON ENCODING — OWNER-RULED: exactly 1 cannon shot per burst, and she KEEPS FIRING HER AR the whole time (footage gap #4). Enacted 2026-07-20 by DROPPING the weaponSwap and modelling the cannon as a single DELAYED full-charge hit: burst flatDamage {atkPct 499.5, charge:true, chargeMultPct:1000 (→ ×10), core:true, pierce:true, rangeOk:true, delaySec:5.5}. Because there is no swap, her AR fires continuously through the ~5s charge (recovering ~5s of AR fire/window that the old swap model lost). New engine primitive (opt-in, default-off, RRH's delayed missile byte-identical): flatDamage.charge/chargeMultPct/pierce/rangeOk + a dealDamage chargeMultPct override, resolved in the pendingHits landing path. delaySec 5.5 matches the footage land time (FB-entry+5.4-5.6s), inside FB → +50% by landing. PIERCE — the cannon is Pierce-tagged (flatDamage pierce → Pierce Damage ▲ feeds its Damage-Up bucket); her AR normals are NOT pierce-tagged (the flag is on the one delayed hit, not a top-level hasPierce). RESIDUAL: the pierce core+body double-hit stays UNMODELED (PIERCE_CORE_DOUBLE=false engine-wide, multipart-scope only) — inert on the partless boss. BOARD (this override): snow-white reads ~0.95–1.06 across the 4 control comps (~408M), up from ~0.81–0.90 (347M) at the swap encoding and ~0.70 (299M) at the pre-fix ×10-only baseline. A/B vs the swap encoding (isolated at ae68b90): cannon flavor byte-identical (major/charge/dmgUp/taken match all 6 shots), FB counts byte-identical (13, rotation neutral), the total gain is the recovered AR fire — which faithfully also lifts her S1 self-ATK uptime (baseAtk 172k→182k at cast) and little-mermaid's teamAmmo-500 skill (+4M, her genuine extra ammo consumption). This override enacts the FAITHFUL kit, NOT a fit to the reals; the reading is recorded, not tuned. ⚑ cadence tuple: pullsPerSec 12 (AR class default), reloadFrames 111 (recipe: rounds/min + reload gap from any focus video). FB on the nuke: the swapped shot is category 'normal' → +50% by landing timing (in-FB), NOT the burst-cast pre-FB exemption (the cast only starts the swap; the shot lands ~5s later inside FB). ⚑⚑ FOOTAGE PASS 2026-07-20 (sw.MP4, 6 cannon windows read — MEASUREMENT, recorded not enacted): (1) the ADDITIVE ruling is CONTRADICTED by this recording on two independent axes — (a) the in-game charge readout ramps 929→966→'1000%' at the shot (the charge UI displays the full-charge MULTIPLIER, as an SR displays 250%), (b) the six nuke popups (50.5M/54.1M/45.1M/59.5M/59.5M/~45.1M, ALL labeled CORE HIT + PIERCE + crit-starburst, two exact repeats) sit at ~630 ATK-multiples vs sheet ATK — reconcilable with the ×10 4995% class × FB × core × crit × live buffs, but ~3-4× ABOVE anything the additive 1499.5% class can produce. RESOLVED 2026-07-20: owner re-ruled ×10 on this footage (chargeMultPct reverted 300.2002→1000); single-recording evidence, so a confirming second recording is still nice-to-have. (2) Swap-economy corroborated: exactly ONE cannon shot in every one of the 6 windows, at FB-entry+5.4-5.6s, then back to the AR ~1.5-2s later (not at window end) — maxShots:1 ✓ owner ruling ✓. (3) PIERCE tag on every cannon popup ✓ (hasPierce swap-scoped ✓). (4) OBSERVED GAP → ENACTED 2026-07-20: she KEEPS FIRING HER AR during the ~5s cannon charge (the cannon materializes only for the shot). The old weaponSwap couldn't fire the base weapon mid-charge (lost ~5s AR/window). FIXED by dropping the swap and modelling the cannon as a delaySec 5.5 charge-bucket hit while the AR fires continuously (see SWAP ECONOMY / CANNON ENCODING above). Owner greenlit; charge-buff composition preserved via the delayed-hit charge bucket (chargeMultPct 1000). (5) Her B3 cadence: bursts every SECOND FB window (6 of 13), alternating with helm — matches the sim's B3 alternation.",
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Additional Effect: Pierce"
-    ]
+    "burst": []
   },
   "caveats": [
-    "skill2: the 144.73% line's trigger is INVENTED (kit text has no 'Activates when…' clause) — modeled as one proc per full-charge shot of the burst weapon swap; unmeasured ⚑",
-    "burst: swap shot economy is an unmeasured estimate — engine yields exactly 1 full-charge shot (4995%) per burst window; a 2nd shot (charge-speed comps) is not expressible (engine zeroes charge speed for swap cadences) ⚑",
-    "burst: 'Additional Effect: Pierce' unmodeled — pierce is swap-scoped and the schema only has always-on hasPierce; potential core+body double-hit on the nuke is missing ⚑"
+    "skill2: the 144.73% damage line fires on a 15s internal cooldown (owner-ruled 2026-07-20); ⚑ first-fire phase (t=15 vs t=0) and whether the line is FB-scoped are unmeasured — recipe: scan sw.MP4 for 144.73%-class popups (appearance outside FB windows falsifies FB-scoping; first-popup time pins the phase)",
+    "burst: the cannon is one DELAYED full-charge hit (flatDamage delaySec 5.5 + charge/chargeMultPct 1000/core/pierce/rangeOk) — NOT a weaponSwap — so her AR keeps firing through the ~5s charge (owner-ruled 2026-07-20; resolves the AR-during-charge gap). Full-charge coefficient 4995% = 499.5 × 10 (charge bucket ×10; footage-confirmed). A/B vs the swap encoding: cannon flavor byte-identical (major/charge/dmgUp/taken match), board 347M→408M / ~0.81-0.90→~0.95-1.06 from the recovered AR fire (which also lifts her S1 self-ATK uptime and little-mermaid's team-ammo skill); FB counts byte-identical.",
+    "burst: FIDELITY GAP (inert at scope) — a delayed flatDamage does NOT receive Normal Attack Damage ▲ (the swap-shot path's normalScale). The cannon is a charge-weapon normal attack in-game and should get it; no control-comp ally grants it and snow-white doesn't self-grant, so it is inert here, but a future comp with a Normal-Attack-Damage buffer would under-credit the cannon under this encoding (⚑)",
+    "burst: cannon is Pierce-tagged (flatDamage pierce → Pierce Damage ▲ feeds its Damage-Up bucket) and takes the +30% range bonus like the swap shot it replaces; the pierce core+body double-hit stays unmodeled (PIERCE_CORE_DOUBLE=false, multipart-scope only)"
   ],
   "skill1": [
     {
@@ -52,9 +51,9 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "shotFired"
+        "kind": "interval",
+        "sec": 15
       },
-      "swapGate": "swapped",
       "target": {
         "kind": "enemy"
       },
@@ -68,10 +67,8 @@
     {
       "slot": "skill2",
       "trigger": {
-        "kind": "shotFired"
+        "kind": "fullBurstEnter"
       },
-      "swapGate": "swapped",
-      "fbGate": "inFb",
       "target": {
         "kind": "self"
       },
@@ -92,16 +89,18 @@
         "kind": "burstCast"
       },
       "target": {
-        "kind": "self"
+        "kind": "enemy"
       },
       "effects": [
         {
-          "kind": "weaponSwap",
-          "damagePct": 499.5,
-          "durationSec": 10,
-          "chargeTimeSec": 5,
+          "kind": "flatDamage",
+          "atkPct": 499.5,
+          "charge": true,
           "chargeMultPct": 1000,
-          "maxAmmo": 1
+          "core": true,
+          "pierce": true,
+          "rangeOk": true,
+          "delaySec": 5.5
         }
       ]
     }

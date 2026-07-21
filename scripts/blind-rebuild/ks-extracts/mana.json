@@ -1,0 +1,43 @@
+{
+  "mana": {
+    "name": "Mana",
+    "burst": "III",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates if the skill user is in Metal γ status when an ally is out of action. Affects 1 incapacitated ally unit(s) with the highest final ATK (except the skill user).",
+        "Resurrect with 96% HP.",
+        "Activates when an ally is out of action. Affects self.",
+        "Removes Metal γ."
+      ],
+      "skill2": [
+        "Removes Metal σ.",
+        "Activates if the skill user has cast Burst Skill before Full Burst ends. Affects self.",
+        "Metal σ: Burst Gauge filling speed ▲ 70.4% continuously."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: FB self buffs (Attack Damage +21.12% / ATK +63.36%) keyed to her OWN burst cast — the Metal σ economy approximation. Exact when she is the sole Burst III; a multi-B3 team's true σ state machine (battle-start grant, remove-on-FB, re-grant-on-her-cast) is phase-shifted vs this encoding.",
+      "skill2: Metal σ burst-gauge +70.4% modeled permanent — overstated in multi-B3 rotations where she skips bursts (σ drops until her next burst).",
+      "skill2: Charge Time ▼0.18 sec ally support approximated as chargeSpeedPct 18 to all allies — magnitude is an unmeasured ⚑ (0.18s ÷ the target's basic charge time) and the 'longest basic Charge Time' single-target selection is not engine-expressible (inert on non-charge allies).",
+      "skill1: hitCount-10 team heal is an event-only synergy hook (Crown-style recovery consumers); it adds no damage alone.",
+      "cadence: pullsPerSec / reloadFrames 121 are unverified datamine (mandatory ⚑)."
+    ],
+    "board": null
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "slug": "drake",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger.fullBurstEnter + target.allies",
+        "note": "fullBurstEnter (not burstCast) per hard rule 6 \u2014 fires on every team FB regardless of who bursted; correct as worded."
+      },
+      {
+        "kitLine": "Hit Rate \u25b2 20.09% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects hitRatePct 20.09/10s",
+        "note": "TREASURE value (11.85\u219220.09). Modeled as hitRatePct which is INERT in engine; real effect is a proven-but-unmeasured core-hit-rate lift (\u26913 / caveat 1)."
+      },
+      {
+        "kitLine": "ATK \u25b2 11.85% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects atkPct 11.85/10s",
+        "note": "All-team FB ATK buff, clean."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies with a Shotgun.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] trigger.fullBurstEnter + target.alliesOfWeapon weapon SG",
+        "note": "TREASURE favorite-item block added 2026-07-17; includes self. Team-wide SG blast radius \u2014 caveat 2 warns to run /sim-battery before SG-team board claims."
+      },
+      {
+        "kitLine": "ATK \u25b2 63.88% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1].effects atkPct 63.88/10s",
+        "note": "Large SG-ally ATK buff, TREASURE reconcile."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity \u25b2 50.14% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1].effects maxAmmoPct 50.14/10s",
+        "note": "SG-ally ammo-cap buff, TREASURE reconcile."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after 10 normal attack(s). Affects 3 enemy unit(s) with the lowest remaining HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger.hitCount count 100 + target.enemy",
+        "note": "'10 attacks' read as 10 trigger PULLS = hitCount 100 (engine counts +hitsPerShot=10 per pull, sim.ts:1727); anchored by same-chassis brid-silent-track pull measurement but unmeasured for drake \u2014 10\u00d7 cadence lever (\u26912 / caveat 3). '3 lowest-HP enemies' collapses to ONE instance on the single partless boss (fidelity note; would triple in multi-enemy content \u2014 nothing droppable)."
+      },
+      {
+        "kitLine": "Deals 98.55% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects flatDamage atkPct 98.55",
+        "note": "Rider crits at sheet rate (engine default crit ON), no core (no core-strike text), FB by timing (noFb NOT set \u2014 \u26915 records the default)."
+      },
+      {
+        "kitLine": "Activates after 5 normal attack(s). Affects 1 enemy unit(s) with the lowest remaining HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger.hitCount count 50 + target.enemy",
+        "note": "TREASURE 2nd nuke added 2026-07-17; '5 attacks' = 5 pulls = hitCount 50, same pull-vs-pellet convention as the 98.55% rider; single boss = 1 target (\u26912 / caveat 3)."
+      },
+      {
+        "kitLine": "Deals 201.6% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1].effects flatDamage atkPct 201.6",
+        "note": "Same rider defaults as the 98.55% nuke."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects enemies within attack range.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] trigger.burstCast + target.enemy",
+        "note": "Single partless boss = the one target in range."
+      },
+      {
+        "kitLine": "Deals 3009.6% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects flatDamage atkPct 3009.6",
+        "note": "TREASURE upgrade 1254\u21923009.6. Burst-cast instant damage is auto-FB-exempt by engine cast-instant rule (noFb never set)."
+      },
+      {
+        "kitLine": "Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] trigger.burstCast + target.self",
+        "note": "Self-buff block."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity \u25b2 72.18% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].effects maxAmmoPct 72.18/10s",
+        "note": "Cap raise is dynamic \u2014 no instant ammo grant assumed; fills to round(9\u00d71.7218)=15 only if a reload lands inside the 10s window, so value rides on reload alignment with burst cast (\u26914 / caveat 4)."
+      },
+      {
+        "kitLine": "Attack Damage \u25b2 31.68% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].effects attackDamagePct 31.68/10s",
+        "note": "TREASURE self AD buff added 2026-07-17. Correctly encoded as attackDamagePct (Attack Damage bucket), distinct from skill1's atkPct (ATK bucket)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: Hit Rate \u25b2 20.09% (TREASURE) modeled as hitRatePct, which is inert in the engine \u2014 real effect (core-hit-rate lift) proven but unmeasured (= note \u26913).",
+      "couldCauseGap": "HOT",
+      "why": "A real, proven damage-relevant buff produces ZERO effect in sim \u2192 drake's number is understated by an unquantified core-hit-rate lift. Genuine fidelity gap source."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: TREASURE 'all Shotgun-wielding allies' ATK 63.88 + Max Ammo 50.14 hits every SG ally incl. self on FB enter \u2014 run /sim-battery before any board claim on SG teams.",
+      "couldCauseGap": "neither",
+      "why": "Fully modeled in skill1[1]; not a drake sim/real fidelity gap. It is a team-attribution/blast-radius warning \u2014 relevant only to team-level battery comparisons, not drake's own number."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: both nukes read '10/5 attacks' as trigger PULLS (hitCount 100/50), anchored by same-chassis brid-silent-track measurement but unmeasured for drake \u2014 pull-vs-pellet is a 10\u00d7 cadence lever on each (= note \u26912).",
+      "couldCauseGap": "HOT",
+      "why": "If 'attacks' means pellets not pulls, both nuke cadences are 10\u00d7 hotter (hitCount 10/5) \u2014 a massive damage swing on two recurring nukes. Largest single lever in the kit."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: Max Ammunition Capacity \u25b2 72.18%/10s only pays out when a reload lands inside the window (cap raise fills on next reload; no instant ammo grant assumed) (= note \u26914).",
+      "couldCauseGap": "HOT",
+      "why": "Extra ~6 shots (9\u219215) in the 10s window are meaningful damage; whether they materialize depends on reload alignment. If the game instantly grants rounds at cast, sim understates; if no reload lands, the line is near-inert. Open measurement, direction uncertain."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u26911 [MANDATORY]: CADENCE TUPLE \u2014 pullsPerSec at SG class default 1.5 + reloadFrames 111 (datamine) + rolling-reload behavior; not escalated (9-round mag at 1.5/s empties ~6s, no <1s tell).",
+      "couldCauseGap": "HOT",
+      "why": "Fire-rate/reload cadence drives total pull count over 180s for an SG attacker; any error scales all of drake's damage (NA, both S2 nukes, burst economy). Datamine-unreliable, unmeasured."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u26915: noFb on the S2 98.55% rider \u2014 default OFF (FB by timing); set noFb:true only with measured FB-OFF popup evidence.",
+      "couldCauseGap": "HOT",
+      "why": "Whether the recurring rider benefits from the Full Burst multiplier is a meaningful damage lever; if the rider is actually FB-exempt and sim treats it as FB-eligible, sim overstates."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u26916: SG per-unit landing \u2014 estimate = class SG_LANDING_BY_BAND default; per-unit landing fraction unmeasured.",
+      "couldCauseGap": "HOT",
+      "why": "Landing fraction gates how many of the 10 pellets actually hit; per-unit deviation from the class default shifts effective damage. Anchored only by class default, not drake-specific."
+    }
+  ],
+  "authorIntentSummary": "Parser-baseline (explicit HYPOTHESIS, not a validated model) merged with a prior partial-hand override, then a 2026-07-17 TREASURE/favorite-item reconcile that added the SG-ally ATK/MaxAmmo block, the second S2 nuke (201.6% at hitCount 50), the burst upgrade 1254\u21923009.6, and the self Attack Damage 31.68 buff. All five kit lines are encoded as blocks and the unmodeled arrays are genuinely empty \u2014 no silent drops. Key approximations: S2 '10/5 attacks' read as trigger pulls (hitCount 100/50) anchored by a same-chassis brid-silent-track measurement; Hit Rate kept as the engine-inert hitRatePct stat because the real core-hit-rate lift is proven but unmeasured; burst Max Ammo assumes no instant ammo grant (pays only on an in-window reload). The unit is MODEL_ONLY and was never fielded (not owned), so every \u2691 is an unmeasured estimate requiring hand-tune + board validation before any number is trusted."
+}

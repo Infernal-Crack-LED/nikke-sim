@@ -1,0 +1,75 @@
+{
+  "cinderella": {
+    "name": "Cinderella",
+    "burst": "III",
+    "weapon": "RL",
+    "class": "Defender",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "HP-scaling + x10 nuke modeled (popup-validated 0.99). F1 (P1): burstSnapshotsPreFb:false contradicts note+engine-comment (either stale or a regression; large term) — decidable from existing footage at both flag values"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Focus session u8-e3 — every per-instance popup verified exact; twin-rocket + own-MaxHP fixes; runs B/E 0.96-1.00",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 5,
+      "within3pct": 2
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Activates at the start of battle. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.",
+        "■ Activates when entering Burst Skill Stage 3. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: Beautiful (Max HP ▲ 1.6% ×12 = +19.2% continuously, from her battle-start Decoy) is now modeled FAITHFULLY (2026-07-17, theme 3), replacing the steady-state bake: a self casterMaxHpPct 19.2 with rampSec 36 (passive Max-HP ramp from t=0) feeds her atkOfMaxHp via effectiveAtk (own-kit Max-HP only — engine wiring 2026-07-17, ally grants still excluded per the cindy e3 rule); atkOfMaxHp reverted to base 2.71; the burst's Beautiful-mirror split off as a rampSec-36 flatDamage 346.8 (nuke base back to 13659.2). Steady state (t≥36s) is byte-identical to the old bake (2.71×1.192=3.23; 13659.2+346.8=14006); pre-36s bursts now correctly credit PARTIAL Beautiful, reproducing the measured e3 early→late FB-proc growth (633.7k→667.0k). VALIDATED: mirror ramps 47.5@t=5s → 346.8@t≥36s; drift board-neutral for all other units.",
+      "skill2: the Decoy avatar itself is not modeled (defensive/aggro summon; v1 boss deals no damage so full decoy uptime — and thus full Beautiful uptime — is assumed)."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "T2 elec-weak (boss Water)",
+          "ratio": 0.945
+        },
+        {
+          "comp": "T7 elec-weak probe (boss Water)",
+          "ratio": 0.9163
+        },
+        {
+          "comp": "PB elec battery (boss Water)",
+          "ratio": 0.9772
+        },
+        {
+          "comp": "PB2 elec battery RERUN w/ video (boss Water)",
+          "ratio": 0.9947
+        },
+        {
+          "comp": "TB2T2 anis-star projExpl probe (boss Water)",
+          "ratio": 0.7541
+        },
+        {
+          "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+          "ratio": 0.9193
+        },
+        {
+          "comp": "PE elec DPS (boss Water)",
+          "ratio": 1.0507
+        }
+      ],
+      "n": 7,
+      "mean": 0.9368,
+      "mad": 0.0777,
+      "band": "±8%",
+      "temp": "COLD ▼"
+    }
+  }
+}

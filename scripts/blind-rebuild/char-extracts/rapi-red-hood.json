@@ -1,0 +1,648 @@
+{
+  "rapi-red-hood": {
+    "slug": "rapi-red-hood",
+    "name": "Rapi: Red Hood",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/eh-57/qq-25/d40646fc55c16832bc2e573d0607c291.png",
+    "weapon": "MG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Elysion Overspec",
+    "normalAttackMultiplier": 5.57,
+    "coreAttackMultiplier": 200,
+    "ammo": 300,
+    "reloadFrames": 171,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 3.55,
+    "burstGaugePerShot": 0.05,
+    "treasure": false,
+    "nicknames": [
+      "rrh",
+      "rapipi"
+    ],
+    "skills": {
+      "skill1": "■ Activates at the start of battle and when Full Burst ends.\nEffect varies according to squad formation. Only one effect is applied.\nAffects self if there are no Burst 1 allies..\nCombat Assist: Changes to Burst Stage 1. This effect is continuous.\nAffects self if there are Burst 1 allies.\nCancels Combat Assist.\n■ Activates when entering Full Burst while in Combat Assist status. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.\nAttack Damage ▲ 8.02% for 10 sec.\n■ Activates when entering Full Burst while not in Combat Assist status. Affects self.\nATK ▲ 95.04% for 10 sec.\nDamage to Interruption Parts ▲ 48% for 10 sec.",
+      "skill2": "■ Activates at the start of battle. Affects self.\nApplies Elemental Advantage damage to Electric Code enemies continuously.\nProjectile Attachment Damage ▲ 150.72% continuously.\nProjectile Explosion Damage ▲ 100.6% continuously.\n■ Activates after 120 normal attack(s). Affects self. \nAttachable Projectiles\nEffect: Launches attachable projectiles that attach to hit locations. When entering Full Burst, the projectiles explode.\nProjectile Attachment Damage: Deals 88.11% of final ATK as damage.\nProjectile Explosion Damage: Deals 88.11% of final ATK as damage.\nMax Ammunition Capacity: 1 round(s).",
+      "burst": "When used in Stage 1: Squad Support Action Style\n■ Affects self.\nCooldown of Burst Skill ▼ 20 sec.\nExplosion Radius ▲ 100.62% for 10 sec.\n■ Affects all allies.\nATK ▲ 18.01% of the skill user's ATK for 10 sec.\nWhen used in Stage 3: High-Mobility Close-Range Combat Weapon\n■ Affects the enemy nearest to the crosshair.\nDeals 2808% of final ATK as additional damage.\n■ Affects self.\nExplosion Radius ▲ 100.62% for 10 sec.\nProjectile Attachment Damage ▲ 421.2% for 10 sec.\nSkill 2's requirement for triggering attachable projectiles ▼ 60 for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1001601,
+        "shot_detail": {
+          "id": 1001601,
+          "damage": 557,
+          "max_ammo": 300,
+          "shake_id": 2,
+          "ShakeType": "Fire_MG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "aim_prefab": "base_aim_reference_c016",
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 250,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "MG",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Machine Gun",
+          "prefer_target": "TargetPS",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 4200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 299,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 150,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 7,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 100,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 150,
+          "rate_of_fire_change_pershot": 100,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 1000,
+          "auto_accuracy_change_pershot": 7,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 55,
+        "bonusrange_min": 35
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2016101,
+        "skill2_id": 2016201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2016101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20161,
+          "skill_level": 1,
+          "name_localkey": "Battlefield Assessment",
+          "next_level_id": 2016102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates at the start of battle and when Full Burst ends.\n<color=#00AEFF>Effect varies according to squad formation. Only one effect is applied.</color>\nAffects self if there are no <word_group=10067>Burst 1 allies.</word_group>.\n<color=#00AEFF>Combat Assist: <word_group=10062>Changes to Burst Stage {description_value_01}</word_group>. This effect is continuous.</color>\nAffects self if there are <word_group=10067>Burst 1 allies.</word_group>\n<color=#00AEFF><word_group=10101>Cancels</word_group> Combat Assist.</color>\n■ Activates when entering Full Burst while in Combat Assist status. Affects all allies.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ {description_value_02} sec.\nAttack Damage ▲ {description_value_07}% for {description_value_08} sec.</color>\n■ Activates when entering Full Burst while not in Combat Assist status. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_03}% for {description_value_04} sec.\n<word_group=10000>Damage to Interruption Parts</word_group> ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "5.34",
+                "5.58",
+                "5.82",
+                "6.05",
+                "6.29",
+                "6.53",
+                "6.77",
+                "7",
+                "7.24",
+                "7.48"
+              ]
+            },
+            {
+              "description_value": [
+                "59.4",
+                "63.36",
+                "67.32",
+                "71.28",
+                "75.24",
+                "79.2",
+                "83.16",
+                "87.12",
+                "91.08",
+                "95.04"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "32",
+                "34",
+                "36",
+                "38",
+                "40",
+                "42",
+                "44",
+                "46",
+                "48"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "5.01",
+                "5.35",
+                "5.68",
+                "6.01",
+                "6.35",
+                "6.68",
+                "7.02",
+                "7.35",
+                "7.69",
+                "8.02"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2016201,
+          "icon": "icn_skill_stickyprojectile_01",
+          "group_id": 20162,
+          "skill_level": 1,
+          "name_localkey": "Attachable Projectiles",
+          "next_level_id": 2016202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10063>Applies Elemental Advantage damage</word_group> to Electric Code enemies continuously.\n<word_group=10065>Projectile Attachment Damage</word_group> ▲ {description_value_05}% continuously.\n<word_group=10066>Projectile Explosion Damage</word_group> ▲ {description_value_06}% continuously.</color>\n■ Activates after {description_value_01} normal attack(s). Affects self. \n<color=#00AEFF>Attachable Projectiles\nEffect: Launches <word_group=10064>attachable projectiles</word_group> that attach to hit locations. When entering Full Burst, the projectiles explode.\n<word_group=10065>Projectile Attachment Damage</word_group>: Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as damage.\n<word_group=10066>Projectile Explosion Damage</word_group>: Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as damage.\nMax Ammunition Capacity: {description_value_04} round(s).</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120",
+                "120"
+              ]
+            },
+            {
+              "description_value": [
+                "49.71",
+                "53.98",
+                "58.25",
+                "62.51",
+                "66.78",
+                "71.05",
+                "75.31",
+                "79.58",
+                "83.85",
+                "88.11"
+              ]
+            },
+            {
+              "description_value": [
+                "49.71",
+                "53.98",
+                "58.25",
+                "62.51",
+                "66.78",
+                "71.05",
+                "75.31",
+                "79.58",
+                "83.85",
+                "88.11"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "94.2",
+                "100.48",
+                "106.76",
+                "113.04",
+                "119.32",
+                "125.6",
+                "131.88",
+                "138.16",
+                "144.44",
+                "150.72"
+              ]
+            },
+            {
+              "description_value": [
+                "59.44",
+                "64.02",
+                "68.59",
+                "73.16",
+                "77.74",
+                "82.31",
+                "86.88",
+                "91.46",
+                "96.03",
+                "100.6"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1016301,
+        "ulti_skill_detail": {
+          "id": 1016301,
+          "icon": "icn_skill_c016_ult",
+          "group_id": 10163,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Power of Inheritance",
+          "next_level_id": 1016302,
+          "prefer_target": "Random",
+          "resource_name": "c016_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "When used in Stage 1: Squad Support Action Style\n■ Affects self.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ 20 sec.\nExplosion Radius ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_03}% of the skill user's ATK for {description_value_04} sec.</color>\nWhen used in Stage 3: High-Mobility Close-Range Combat Weapon\n■ Affects the enemy nearest to the crosshair.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as additional damage.</color>\n■ Affects self.\n<color=#00AEFF>Explosion Radius ▲ {description_value_01}% for {description_value_02} sec.\n<word_group=10065>Projectile Attachment Damage</word_group> ▲ {description_value_06}% for {description_value_07} sec.\nSkill 2's requirement for triggering attachable projectiles ▼ {description_value_08} for {description_value_09} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "62.88",
+                "67.08",
+                "71.27",
+                "75.46",
+                "79.65",
+                "83.85",
+                "88.04",
+                "92.23",
+                "96.42",
+                "100.62"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "11.16",
+                "11.92",
+                "12.68",
+                "13.44",
+                "14.2",
+                "14.96",
+                "15.72",
+                "16.48",
+                "17.24",
+                "18.01"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1512",
+                "1656",
+                "1800",
+                "1944",
+                "2088",
+                "2232",
+                "2376",
+                "2520",
+                "2664",
+                "2808"
+              ]
+            },
+            {
+              "description_value": [
+                "216",
+                "238.8",
+                "261.6",
+                "284.4",
+                "307.2",
+                "330",
+                "352.8",
+                "375.6",
+                "398.4",
+                "421.2"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            101630102,
+            101630105
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            101630103,
+            101630104,
+            101630109,
+            101630106,
+            101630111
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 201602,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5106,
+        "stat_enhance_detail": {
+          "id": 5106,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100016,
+        "piece_detail": {
+          "id": 5100016,
+          "class": "Attacker",
+          "order": 1600,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 16,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Rapi: Red Hood's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 201601,
+        "class": "Attacker",
+        "order": 10031,
+        "name_code": 5129,
+        "corporation": "ELYSION",
+        "resource_id": 16,
+        "name_localkey": "Rapi: Red Hood",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 75,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 16
+    }
+  }
+}

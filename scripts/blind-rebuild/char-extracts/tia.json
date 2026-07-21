@@ -1,0 +1,547 @@
+{
+  "tia": {
+    "slug": "tia",
+    "name": "Tia",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/fk-67/hq-94/5413011c13c76ae2d456fb8ff22173b0.png",
+    "weapon": "RL",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Defender",
+    "element": "Iron",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 61.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 16.8,
+    "burstGaugePerShot": 1.4,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when recovering Cover's HP. Affects self.\nCooldown of Burst Skill ▼ 13 sec, stacks up to 2 time(s) and lasts for 12 sec.\n■ Activates when recovering Cover's HP. Affects all allies.\nAttack damage ▲ 32.11% for 10 sec.",
+      "skill2": "■ Activates after landing 5 normal attack(s). Affects self.\nMax HP of Cover ▲ 32.75% of the skill user's Max HP for 5 sec.\nAttract: Taunts all enemies for 5 sec.\n■ Activates when using Burst Skill. Affects self.\nRestores Cover HP by 21.41% of the skill user's final Max HP.\nRecovers 21.96% of attack damage as HP over 10 sec.",
+      "burst": "■ Affects self.\nGenerates a Shield with 35.07% of the skill user's final Max HP for 10 sec. \n■ Affects all allies (except self).\nGenerates a Shield with 10.21% of the skill user's final Max HP for 10 sec.\n■ Affects all allies.\nRe-enters Burst Stage 1."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1045101,
+        "shot_detail": {
+          "id": 1045101,
+          "damage": 6130,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 14000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 28000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step1"
+      },
+      "skillDetails": {
+        "skill1_id": 2451101,
+        "skill2_id": 2451201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2451101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 24511,
+          "skill_level": 1,
+          "name_localkey": "Reptile Lover",
+          "next_level_id": 2451102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates when <word_group=10034>recovering Cover's HP</word_group>. Affects self.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ {description_value_01} sec, stacks up to {description_value_02} time(s) and lasts for {description_value_03} sec.</color>\n■ Activates when <word_group=10034>recovering Cover's HP</word_group>. Affects all allies.\n<color=#00AEFF>Attack damage ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "7",
+                "7",
+                "7",
+                "10",
+                "10",
+                "10",
+                "13",
+                "13",
+                "13",
+                "13"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12"
+              ]
+            },
+            {
+              "description_value": [
+                "17.46",
+                "19.08",
+                "20.71",
+                "22.34",
+                "23.97",
+                "25.6",
+                "27.23",
+                "28.85",
+                "30.48",
+                "32.11"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2451201,
+          "icon": "icn_skill_attention_01",
+          "group_id": 24512,
+          "skill_level": 1,
+          "name_localkey": "Chameleon Invisibility",
+          "next_level_id": 2451202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s). Affects self.\n<color=#00AEFF><word_group=10033>Max HP of Cover</word_group> ▲ {description_value_02}% of the skill user's Max HP for {description_value_03} sec.\nAttract: Taunts all enemies for {description_value_04} sec.</color>\n■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF><word_group=10017>Restores Cover HP</word_group> by {description_value_05}% of the skill user's <word_group=10025>final</word_group> Max HP.\nRecovers {description_value_06}% of attack damage as HP over {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "19.35",
+                "20.84",
+                "22.33",
+                "23.82",
+                "25.31",
+                "26.79",
+                "28.28",
+                "29.77",
+                "31.26",
+                "32.75"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "10.5",
+                "11.71",
+                "12.92",
+                "14.14",
+                "15.35",
+                "16.56",
+                "17.77",
+                "18.98",
+                "20.2",
+                "21.41"
+              ]
+            },
+            {
+              "description_value": [
+                "18.03",
+                "18.47",
+                "18.91",
+                "19.34",
+                "19.78",
+                "20.22",
+                "20.65",
+                "21.09",
+                "21.53",
+                "21.96"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1451301,
+        "ulti_skill_detail": {
+          "id": 1451301,
+          "icon": "icn_skill_c451_ult",
+          "group_id": 14513,
+          "shake_id": 1,
+          "skill_type": "InstallBarrier",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Lizard's Protection",
+          "next_level_id": 1451302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c451_ulti",
+          "duration_value": 1000,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 2072,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Generates a <word_group=10023>Shield</word_group> with {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_02} sec.</color> \n■ Affects all allies (except self).\n<color=#00AEFF>Generates a <word_group=10023>Shield</word_group> with {description_value_03}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_04} sec.</color>\n■ Affects all allies.\n<color=#00AEFF><word_group=10002>Re-enters Burst</word_group> Stage 1.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "20.72",
+                "22.32",
+                "23.91",
+                "25.5",
+                "27.1",
+                "28.69",
+                "30.29",
+                "31.88",
+                "33.48",
+                "35.07"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "6.03",
+                "6.49",
+                "6.96",
+                "7.42",
+                "7.89",
+                "8.35",
+                "8.81",
+                "9.28",
+                "9.74",
+                "10.21"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            145130101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 145102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5205,
+        "stat_enhance_detail": {
+          "id": 5205,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100451,
+        "piece_detail": {
+          "id": 5100451,
+          "class": "Attacker",
+          "order": 45100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 451,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Tia's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 145101,
+        "class": "Defender",
+        "order": 10072,
+        "name_code": 5100,
+        "corporation": "MISSILIS",
+        "resource_id": 451,
+        "name_localkey": "Tia",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 107,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 451
+    }
+  }
+}

@@ -1,0 +1,674 @@
+{
+  "snow-white-heavy-arms": {
+    "slug": "snow-white-heavy-arms",
+    "name": "Snow White: Heavy Arms",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/yz-00/cu-27/9f0416a9b91635099c0fcca798c37ef8.png",
+    "weapon": "SR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 69.04,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 72,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 67.2,
+    "burstGaugePerShot": 2.8,
+    "treasure": false,
+    "nicknames": [
+      "swha"
+    ],
+    "skills": {
+      "skill1": "■ Activates every 0.2 sec while charging. Affects the enemy unit nearest to the crosshair that is not in Lock-On status.\nLock-On\nFunction: Designates the enemy as a target of Seven Dwarves.\nMax Lock-On targets: 5\nDeactivation condition: Performing a normal attack or taking cover.\n■ Activates every 0.2 sec while charging. Affects self.\nAuto Fire Ready\nFunction: Loads Seven Dwarves with ammo.\nEffect: DEF ▲ 42.24% continuously.\nMax ammo loaded by Auto Fire Ready: 5\nDeactivation condition: Performing a normal attack.\n■ Activates every 0.2 sec while charging. Affects all enemies in Lock-On status.\nDamage Taken ▲ 4.2% for 4 sec.\n■ Activates when attacking with Full Charge.\nAuto Fire\nFunction: Attacks Lock-On targets with Seven Dwarves.\nEffect 1: Deals 41.9% of final ATK as damage. Affects all enemies.\nEffect 2: Deals 105.59% of final ATK as damage. Affects Lock-On targets. Attacks sequentially based on the amount of ammo loaded by Auto Fire Ready.\n■ Activates when attacking with Full Charge while in Seven Dwarves Fully Active status. Affects self.\nNumber of uses of Seven Dwarves Fully Active ▼ 1.\n■ Activates when performing a normal attack while not in Full Burst. Affects self.\nRemoves Seven Dwarves Fully Active.",
+      "skill2": "■ Activates at the start of battle. Affects self.\nFixes charge time at 1.2 sec continuously.\n■ Activates during Full Charge. Affects self.\nGains Pierce for 5 sec.\nATK ▲ 46.84% for 5 sec.\nDamage to Parts ▲ 62.64% for 5 sec.\n■ Activates when entering Burst Stage 3. Affects self.\nATK ▲ 73.92% for 10 sec.\n■ Activates when at Full Charge only while in Seven Dwarves Fully Active status. Affects self.\nCharge Damage ▲ 528% for 1 round(s).\nSequential attack damage ▲ 158.4% for 1 round(s).",
+      "burst": "■ Affects self.\nAttack Damage ▲ 84.48% for 10 sec.\nSeven Dwarves Fully Active\nFunction: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.\nNumber of uses: 2\nEffect 1: Fixes charge time at 3.2 sec continuously.\nEffect 2: Max Lock-On targets ▲ 10 continuously.\nEffect 3: Max ammo loaded by Auto Fire Ready ▲ 10 continuously.\nDeactivation condition: When the number of uses reaches 0.\n■ Affects all destructible projectiles.\nDeals 41.9% of final ATK as damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1047101,
+        "shot_detail": {
+          "id": 1047101,
+          "damage": 6904,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "aim_prefab": "base_aim_reference_c471",
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 120,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 28000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 56000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2471101,
+        "skill2_id": 2471201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2471101,
+          "icon": "icn_skill_damagereductionup_01",
+          "group_id": 24711,
+          "skill_level": 1,
+          "name_localkey": "Seven Dwarves V+VI",
+          "next_level_id": 2471102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates every {description_value_01} sec while charging. Affects the enemy unit nearest to the crosshair that is not in Lock-On status.\n<color=#00AEFF>Lock-On\nFunction: Designates the enemy as a target of Seven Dwarves.\nMax Lock-On targets: {description_value_03}\n<word_group=10097>Deactivation condition</word_group>: Performing a normal attack or <word_group=10095>taking cover</word_group>.</color>\n■ Activates every {description_value_01} sec while charging. Affects self.\n<color=#00AEFF>Auto Fire Ready\nFunction: Loads Seven Dwarves with ammo.\nEffect: DEF ▲ {description_value_04}% continuously.\nMax ammo loaded by Auto Fire Ready: {description_value_05}\n<word_group=10097>Deactivation condition</word_group>: Performing a normal attack.</color>\n■ Activates every {description_value_01} sec while charging. Affects all enemies in Lock-On status.\n<color=#00AEFF>Damage Taken ▲ {description_value_02}% for {description_value_08} sec.</color>\n■ Activates when attacking with Full Charge.\n<color=#00AEFF>Auto Fire\nFunction: Attacks Lock-On targets with Seven Dwarves.\nEffect 1: Deals {description_value_06}% of <word_group=10025>final</word_group> ATK as damage. Affects all enemies.\nEffect 2: Deals {description_value_07}% of <word_group=10025>final</word_group> ATK as damage. Affects Lock-On targets. <word_group=10050>Attacks sequentially</word_group> based on the amount of ammo loaded by Auto Fire Ready.</color>\n■ Activates when attacking with Full Charge while in Seven Dwarves Fully Active status. Affects self.\n<color=#00AEFF>Number of uses of Seven Dwarves Fully Active ▼ 1.</color>\n■ Activates when performing a normal attack while not in Full Burst. Affects self.\n<color=#00AEFF>Removes Seven Dwarves Fully Active.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "0.2",
+                "0.2",
+                "0.2",
+                "0.2",
+                "0.2",
+                "0.2",
+                "0.2",
+                "0.2",
+                "0.2",
+                "0.2"
+              ]
+            },
+            {
+              "description_value": [
+                "2.48",
+                "2.67",
+                "2.86",
+                "3.05",
+                "3.24",
+                "3.43",
+                "3.62",
+                "3.81",
+                "4",
+                "4.2"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "24.96",
+                "26.88",
+                "28.8",
+                "30.72",
+                "32.64",
+                "34.56",
+                "36.48",
+                "38.4",
+                "40.32",
+                "42.24"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "24.76",
+                "26.66",
+                "28.57",
+                "30.47",
+                "32.38",
+                "34.28",
+                "36.19",
+                "38.09",
+                "40",
+                "41.9"
+              ]
+            },
+            {
+              "description_value": [
+                "62.39",
+                "67.19",
+                "71.99",
+                "76.79",
+                "81.59",
+                "86.39",
+                "91.19",
+                "95.99",
+                "100.79",
+                "105.59"
+              ]
+            },
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2471201,
+          "icon": "icn_skill_statpenetration_01",
+          "group_id": 24712,
+          "skill_level": 1,
+          "name_localkey": "Shades of White",
+          "next_level_id": 2471202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Fixes charge time at {description_value_01} sec continuously.</color>\n■ Activates during Full Charge. Affects self.\n<color=#00AEFF>Gains Pierce for {description_value_02} sec.\nATK ▲ {description_value_03}% for {description_value_04} sec.\n<word_group=10011>Damage to Parts</word_group> ▲ {description_value_11}% for {description_value_04} sec.</color>\n■ Activates when entering Burst Stage 3. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_05}% for {description_value_06} sec.</color>\n■ Activates when at Full Charge only while in Seven Dwarves Fully Active status. Affects self.\n<color=#00AEFF>Charge Damage ▲ {description_value_07}% for {description_value_08} round(s).\n<word_group=10050>Sequential attack</word_group> damage ▲ {description_value_09}% for {description_value_10} round(s).</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1.2",
+                "1.2",
+                "1.2",
+                "1.2",
+                "1.2",
+                "1.2",
+                "1.2",
+                "1.2",
+                "1.2",
+                "1.2"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "27.68",
+                "29.81",
+                "31.94",
+                "34.07",
+                "36.2",
+                "38.33",
+                "40.46",
+                "42.58",
+                "44.71",
+                "46.84"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "43.68",
+                "47.04",
+                "50.4",
+                "53.76",
+                "57.12",
+                "60.48",
+                "63.84",
+                "67.2",
+                "70.56",
+                "73.92"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "312",
+                "336",
+                "360",
+                "384",
+                "408",
+                "432",
+                "456",
+                "480",
+                "504",
+                "528"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "93.6",
+                "100.8",
+                "108",
+                "115.2",
+                "122.4",
+                "129.6",
+                "136.8",
+                "144",
+                "151.2",
+                "158.4"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "37.01",
+                "39.86",
+                "42.71",
+                "45.55",
+                "48.4",
+                "51.25",
+                "54.1",
+                "56.94",
+                "59.79",
+                "62.64"
+              ]
+            }
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1471301,
+        "ulti_skill_detail": {
+          "id": 1471301,
+          "icon": "icn_skill_c471_ult",
+          "group_id": 14713,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Seven Dwarves Fully Active",
+          "next_level_id": 1471302,
+          "prefer_target": "Random",
+          "resource_name": "c471_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_03}% for {description_value_04} sec.\nSeven Dwarves Fully Active\nFunction: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.\nNumber of uses: {description_value_05}\nEffect 1: Fixes charge time at {description_value_01} sec continuously.\nEffect 2: Max Lock-On targets ▲ {description_value_02} continuously.\nEffect 3: Max ammo loaded by Auto Fire Ready ▲ {description_value_02} continuously.\n<word_group=10097>Deactivation condition</word_group>: When the number of uses reaches 0.</color>\n■ Affects all <word_group=10096>destructible projectiles</word_group>.\n<color=#00AEFF>Deals {description_value_06}% of <word_group=10025>final</word_group> ATK as damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3.2",
+                "3.2",
+                "3.2",
+                "3.2",
+                "3.2",
+                "3.2",
+                "3.2",
+                "3.2",
+                "3.2",
+                "3.2"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "49.92",
+                "53.76",
+                "57.6",
+                "61.44",
+                "65.28",
+                "69.12",
+                "72.96",
+                "76.8",
+                "80.64",
+                "84.48"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "24.76",
+                "26.66",
+                "28.57",
+                "30.47",
+                "32.38",
+                "34.28",
+                "36.19",
+                "38.09",
+                "40",
+                "41.9"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            147130106,
+            147130107,
+            147130101,
+            147130102,
+            147130103,
+            147130104,
+            147130108
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 447102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5102,
+        "stat_enhance_detail": {
+          "id": 5102,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100471,
+        "piece_detail": {
+          "id": 5100471,
+          "class": "Attacker",
+          "order": 47100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 471,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Snow White: Heavy Arms' Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 447101,
+        "class": "Attacker",
+        "order": 10159,
+        "name_code": 5161,
+        "corporation": "PILGRIM",
+        "resource_id": 471,
+        "name_localkey": "Snow White: Heavy Arms",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 76,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 471
+    }
+  }
+}

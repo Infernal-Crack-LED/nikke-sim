@@ -1,0 +1,412 @@
+{
+  "soldier-eg": {
+    "slug": "soldier-eg",
+    "name": "Soldier EG",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ad-68/kl-92/230acfc7fdc19cb08f4da3b61cbed90f.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Electric",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 14.01,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 91,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "nicknames": [
+      "se"
+    ],
+    "skills": {
+      "skill1": "■ When a normal attack hits, there is a 5% chance of affecting self.\nATK ▲ 7.92% for 5 sec.",
+      "skill2": "■ Affects self.\nMax Ammunition Capacity ▲ 112.77% for 5 sec.",
+      "burst": "■ Affects enemies within attack range. \nDeals 720% of final ATK as damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1030001,
+        "shot_detail": {
+          "id": 1030001,
+          "damage": 1401,
+          "max_ammo": 60,
+          "shake_id": 1,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 117,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2300101,
+        "skill2_id": 1300201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2300101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 23001,
+          "skill_level": 1,
+          "name_localkey": "Eagle Eye",
+          "next_level_id": 2300102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ When a normal attack hits, there is a {description_value_03}% chance of affecting self.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1.98",
+                "2.64",
+                "3.3",
+                "3.96",
+                "4.62",
+                "5.28",
+                "5.94",
+                "6.59",
+                "7.26",
+                "7.92"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1300201,
+          "icon": "icn_skill_statammo_01",
+          "group_id": 13002,
+          "skill_level": 1,
+          "name_localkey": "Eagle's Gambit",
+          "next_level_id": 1300202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Max Ammunition Capacity ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "28.19",
+                "37.59",
+                "46.99",
+                "56.38",
+                "65.78",
+                "75.18",
+                "84.58",
+                "93.98",
+                "103.37",
+                "112.77"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1300301,
+        "ulti_skill_detail": {
+          "id": 1300301,
+          "icon": "icn_skill_c300_ult",
+          "group_id": 13003,
+          "shake_id": 1,
+          "skill_type": "InstantCircle",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Eagle Shot",
+          "next_level_id": 1300302,
+          "prefer_target": "HighDefence",
+          "resource_name": "c300_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 18000,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 700,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects <word_group=10020>enemies within attack range</word_group>. \nDeals <color=#00AEFF>{description_value_02}% of <word_group=10025>final</word_group> ATK as damage. </color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "180",
+                "240",
+                "300",
+                "360",
+                "420",
+                "480",
+                "540",
+                "600",
+                "660",
+                "720"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 0,
+        "grade_core_id": 201,
+        "stat_enhance_id": 1101,
+        "stat_enhance_detail": {
+          "id": 1101,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 16,
+          "grade_defence": 80,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 0
+      },
+      "meta": {
+        "id": 230001,
+        "class": "Attacker",
+        "order": 50001,
+        "name_code": 1013,
+        "corporation": "ELYSION",
+        "resource_id": 300,
+        "name_localkey": "Soldier EG",
+        "original_rare": "R",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 10350,
+      "atk": 480,
+      "def": 72,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 16,
+        "def": 80,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 300
+    }
+  }
+}

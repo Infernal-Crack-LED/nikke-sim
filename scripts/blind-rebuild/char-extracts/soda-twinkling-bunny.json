@@ -1,0 +1,630 @@
+{
+  "soda-twinkling-bunny": {
+    "slug": "soda-twinkling-bunny",
+    "name": "Soda: Twinkling Bunny",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/fk-20/wd-63/8cfca6158ea559a13a553f0ca8ddf837.png",
+    "weapon": "SG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Iron",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 231.6,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 142,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 27,
+    "burstGaugePerShot": 4.5,
+    "treasure": false,
+    "nicknames": [
+      "stb",
+      "bsoda"
+    ],
+    "skills": {
+      "skill1": "■ Activates at the start of battle. Affects self. \nGolden Chip stacks ▲ 50.\n■ Activates after performing 3 normal attack(s) during Full Burst. Affects self.\nGolden Chip: Critical Damage ▲ 1.32% continuously, stacks up to 50 time(s).\n■ Activates after performing 3 normal attack(s) during Full Burst. Affects self and the 1 ally unit(s) with the highest final ATK (except the skill user). \nAttack Damage ▲ 10.51% for 2 sec.",
+      "skill2": "■ Activates when entering Burst Stage 3. Affects all allies.\nEffects vary according to the number of Golden Chip stacks. Each subsequent effect triggers all effects before it:\nStage 1: With 10 or more stacks of Golden Chip,\nTime Extension I: Full Burst Duration▲ 2 sec. Lasts until Full Burst ends.\nStage 2: With 20 or more stacks of Golden Chip,\nTime Extension II: Full Burst Duration▲ 3 sec. Lasts until Full Burst ends.\n■ Activates when performing a normal attack during Full Burst. Affects the 1 enemy unit(s) nearest to the crosshair. \nEffects vary according to the state of Time Extension. Each subsequent effect triggers all effects before it:\nStage 1: When in Time Extension I state,\ndeals 52.04% of final ATK as damage.\nStage 2: When in Time Extension II state,\ndeals 85.02% of final ATK as damage.",
+      "burst": "■ Activates when using Onward, Soda!\nEffects vary according to the number of Golden Chip stacks. Each subsequent effect triggers all effects before it. Golden Chip stacks ▼ 17 after the effect is applied.\nStage 1: Affects all enemies.\nDeals 628.7% of final ATK as Burst Skill damage.\nStage 2: Activates when Golden Chip is at 20 or more stacks. Affects self.\nHit Rate ▲ 38.91% for 15 sec.\nStage 3: Activates when Golden Chip is at 30 or more stacks. Affects self.\nATK ▲ 65.25% for 15 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1031401,
+        "shot_detail": {
+          "id": 1031401,
+          "damage": 23160,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 67,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 3300,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 4500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 9000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2314101,
+        "skill2_id": 2314201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2314101,
+          "icon": "icn_skill_criticaldamage_01",
+          "group_id": 23141,
+          "skill_level": 1,
+          "name_localkey": "Lucky Golden Chip",
+          "next_level_id": 2314102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates at the start of battle. Affects self. \n<color=#00AEFF>Golden Chip stacks ▲ {description_value_01}.</color>\n■ Activates after performing {description_value_02} normal attack(s) during Full Burst. Affects self.\n<color=#00AEFF>Golden Chip: Critical Damage ▲ {description_value_03}% continuously, stacks up to {description_value_04} time(s).</color>\n■ Activates after performing {description_value_02} normal attack(s) during Full Burst. Affects self and the {description_value_07} ally unit(s) with the highest <word_group=10025>final</word_group> ATK (except the skill user). \n<color=#00AEFF>Attack Damage ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "40",
+                "40",
+                "40",
+                "45",
+                "45",
+                "45",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "1.24",
+                "1.25",
+                "1.25",
+                "1.26",
+                "1.27",
+                "1.28",
+                "1.29",
+                "1.3",
+                "1.31",
+                "1.32"
+              ]
+            },
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "7.42",
+                "7.77",
+                "8.11",
+                "8.45",
+                "8.8",
+                "9.14",
+                "9.48",
+                "9.82",
+                "10.17",
+                "10.51"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2314201,
+          "icon": "icn_skill_incburstduration_01",
+          "group_id": 23142,
+          "skill_level": 1,
+          "name_localkey": "Beginner's Rewards",
+          "next_level_id": 2314202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates when entering Burst Stage 3. Affects all allies.\n<color=#00AEFF>Effects vary according to the number of Golden Chip stacks. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:</color>\nStage 1: With {description_value_01} or more stacks of Golden Chip,\n<color=#00AEFF>Time Extension I: Full Burst Duration▲ {description_value_02} sec. Lasts until Full Burst ends.</color>\nStage 2: With {description_value_03} or more stacks of Golden Chip,\n<color=#00AEFF>Time Extension II: Full Burst Duration▲ {description_value_04} sec. Lasts until Full Burst ends.</color>\n■ Activates when performing a normal attack during Full Burst. Affects the {description_value_05} enemy unit(s) nearest to the crosshair. \n<color=#00AEFF>Effects vary according to the state of Time Extension. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:</color>\nStage 1: When in Time Extension I state,\n<color=#00AEFF>deals {description_value_06}% of <word_group=10025>final</word_group> ATK as damage.</color>\nStage 2: When in Time Extension II state,\n<color=#00AEFF>deals {description_value_07}% of <word_group=10025>final</word_group> ATK as damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "27.63",
+                "30.35",
+                "33.06",
+                "35.77",
+                "38.48",
+                "41.19",
+                "43.91",
+                "46.62",
+                "49.33",
+                "52.04"
+              ]
+            },
+            {
+              "description_value": [
+                "45.97",
+                "50.31",
+                "54.64",
+                "58.98",
+                "63.32",
+                "67.66",
+                "72",
+                "76.34",
+                "80.68",
+                "85.02"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1314301,
+        "ulti_skill_detail": {
+          "id": 1314301,
+          "icon": "icn_skill_c314_ult",
+          "group_id": 13143,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Onward, Soda!",
+          "next_level_id": 1314302,
+          "prefer_target": "Random",
+          "resource_name": "c314_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 48484,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Activates when using Onward, Soda!\n<color=#00AEFF>Effects vary according to the number of Golden Chip stacks. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>. Golden Chip stacks ▼ {description_value_01} after the effect is applied.</color>\nStage 1: Affects all enemies.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>\nStage 2: Activates when Golden Chip is at {description_value_03} or more stacks. Affects self.\n<color=#00AEFF>Hit Rate ▲ {description_value_04}% for {description_value_05} sec.</color>\nStage 3: Activates when Golden Chip is at {description_value_06} or more stacks. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_07}% for {description_value_08} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "17",
+                "17",
+                "17",
+                "17",
+                "17",
+                "17",
+                "17",
+                "17",
+                "17",
+                "17"
+              ]
+            },
+            {
+              "description_value": [
+                "484.84",
+                "500.83",
+                "516.81",
+                "532.8",
+                "548.78",
+                "564.76",
+                "580.75",
+                "596.73",
+                "612.72",
+                "628.7"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "12.64",
+                "15.56",
+                "18.48",
+                "21.4",
+                "24.32",
+                "27.24",
+                "30.16",
+                "33.08",
+                "36",
+                "38.91"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "30.23",
+                "34.12",
+                "38.01",
+                "41.9",
+                "45.79",
+                "49.68",
+                "53.58",
+                "57.47",
+                "61.36",
+                "65.25"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            131430101,
+            131430102,
+            131430103
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 331402,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5104,
+        "stat_enhance_detail": {
+          "id": 5104,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100314,
+        "piece_detail": {
+          "id": 5100314,
+          "class": "Attacker",
+          "order": 31400,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 314,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Soda: Twinkling Bunny's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 331401,
+        "class": "Attacker",
+        "order": 10122,
+        "name_code": 5113,
+        "corporation": "TETRA",
+        "resource_id": 314,
+        "name_localkey": "Soda: Twinkling Bunny",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 314
+    }
+  }
+}

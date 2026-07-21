@@ -1,0 +1,592 @@
+{
+  "little-mermaid": {
+    "slug": "little-mermaid",
+    "name": "Little Mermaid",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/yg-98/kg-73/e8e40d40c459df90e32b6061804f8172.png",
+    "weapon": "SMG",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Wind",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 10.12,
+    "coreAttackMultiplier": 250,
+    "ammo": 120,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 6.2,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "nicknames": [
+      "lm",
+      "siren"
+    ],
+    "skills": {
+      "skill1": "■ Activates only when in Focusing status. Affects all allies.\nFocuses fire continuously.\n■ Activates when Full Burst ends. Affects all allies.\nCooldown of Burst Skill ▼ 7.48 sec.\n■ Activates when entering Full Burst. Affects all allies.\nAttack Damage ▲ 4% for 10 sec.\n■ Activates each time the total ammo expended by allies reaches 400. Affects all allies.\nFills Burst Gauge by 37%.",
+      "skill2": "■ Activates when the enemy appears. Affects the target.\nBubble: Damage Taken ▲ 5.05% continuously.\n■ Activates after landing 50 normal attacks. Affects the target if the target is in Bubble status.\nExplosive Bubble: Damage Taken ▲ 5.05% continuously.\nStuns for 3 sec.\nRemoves Bubble.\n■ Activates every 1 sec only during Full Burst. Affects random enemy units.\nDeals 63.36% of final ATK as damage. Attacks sequentially 4 times.\n■ Activates each time the total ammo expended by allies reaches 500. Affects random enemy units.\nBubble Barrage: Deals 85% of final ATK as damage. Attacks sequentially 10 times.",
+      "burst": "■ Affects all allies.\nAttack damage ▲ 10.13% for 10 sec.\nReloads 33.26% magazine(s).\n■ Affects self.\nATK ▲ 17.28% of the skill user's ATK for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1051301,
+        "shot_detail": {
+          "id": 1051301,
+          "damage": 1012,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 25000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2513101,
+        "skill2_id": 2513201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2513101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25131,
+          "skill_level": 1,
+          "name_localkey": "Bubble Order",
+          "next_level_id": 2513102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates only when in <word_group=10080>Focusing</word_group> status. Affects all allies.\n<color=#00AEFF><word_group=10079>Focuses fire</word_group> continuously.</color>\n■ Activates when Full Burst ends. Affects all allies.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ {description_value_01} sec.</color>\n■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF>Attack Damage ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates each time the <word_group=10078>total ammo expended by allies</word_group> reaches {description_value_04}. Affects all allies.\n<color=#00AEFF><word_group=10015>Fills Burst Gauge</word_group> by {description_value_05}%.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5.34",
+                "5.58",
+                "5.82",
+                "6.05",
+                "6.29",
+                "6.53",
+                "6.77",
+                "7",
+                "7.24",
+                "7.48"
+              ]
+            },
+            {
+              "description_value": [
+                "2.5",
+                "2.66",
+                "2.83",
+                "3",
+                "3.17",
+                "3.33",
+                "3.5",
+                "3.67",
+                "3.83",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "400",
+                "400",
+                "400",
+                "400",
+                "400",
+                "400",
+                "400",
+                "400",
+                "400",
+                "400"
+              ]
+            },
+            {
+              "description_value": [
+                "23.12",
+                "24.66",
+                "26.2",
+                "27.75",
+                "29.29",
+                "30.83",
+                "32.37",
+                "33.91",
+                "35.46",
+                "37"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2513201,
+          "icon": "icn_skill_damagereductionup_01",
+          "group_id": 25132,
+          "skill_level": 1,
+          "name_localkey": "Bubble Wave",
+          "next_level_id": 2513202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates when the enemy appears. Affects the target.\n<color=#00AEFF>Bubble: Damage Taken ▲ {description_value_01}% continuously.</color>\n■ Activates after landing {description_value_02} normal attacks. Affects the target if the target is in Bubble status.\n<color=#00AEFF>Explosive Bubble: Damage Taken ▲ {description_value_01}% continuously.\nStuns for {description_value_03} sec.\nRemoves Bubble.</color>\n■ Activates every {description_value_04} sec only during Full Burst. Affects random enemy units.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10050>Attacks sequentially</word_group> {description_value_06} times.</color>\n■ Activates each time the <word_group=10078>total ammo expended by allies</word_group> reaches {description_value_07}. Affects random enemy units.\n<color=#00AEFF>Bubble Barrage: Deals {description_value_08}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10050>Attacks sequentially</word_group> {description_value_09} times.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3.16",
+                "3.37",
+                "3.58",
+                "3.79",
+                "4",
+                "4.21",
+                "4.42",
+                "4.63",
+                "4.84",
+                "5.05"
+              ]
+            },
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "39.6",
+                "42.24",
+                "44.88",
+                "47.52",
+                "50.16",
+                "52.8",
+                "55.44",
+                "58.08",
+                "60.72",
+                "63.36"
+              ]
+            },
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500"
+              ]
+            },
+            {
+              "description_value": [
+                "53.12",
+                "56.66",
+                "60.21",
+                "63.75",
+                "67.29",
+                "70.83",
+                "74.37",
+                "77.92",
+                "81.46",
+                "85"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1513301,
+        "ulti_skill_detail": {
+          "id": 1513301,
+          "icon": "icn_skill_c513_ult",
+          "group_id": 15133,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Siren's Song",
+          "next_level_id": 1513302,
+          "prefer_target": "Random",
+          "resource_name": "c513_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Attack damage ▲ {description_value_01}% for {description_value_02} sec.\nReloads {description_value_03}% magazine(s).</color>\n■ Affects self.\n<color=#00AEFF>ATK ▲ {description_value_04}% of the skill user's ATK for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6.33",
+                "6.75",
+                "7.18",
+                "7.6",
+                "8.02",
+                "8.44",
+                "8.87",
+                "9.29",
+                "9.71",
+                "10.13"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "20.79",
+                "22.17",
+                "23.56",
+                "24.94",
+                "26.33",
+                "27.72",
+                "29.1",
+                "30.49",
+                "31.87",
+                "33.26"
+              ]
+            },
+            {
+              "description_value": [
+                "10.8",
+                "11.52",
+                "12.24",
+                "12.96",
+                "13.68",
+                "14.4",
+                "15.12",
+                "15.84",
+                "16.56",
+                "17.28"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            151330101,
+            151330102,
+            151330103
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 451302,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5303,
+        "stat_enhance_detail": {
+          "id": 5303,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100513,
+        "piece_detail": {
+          "id": 5100513,
+          "class": "Attacker",
+          "order": 51300,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 513,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Little Mermaid's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 451301,
+        "class": "Supporter",
+        "order": 10154,
+        "name_code": 5137,
+        "corporation": "PILGRIM",
+        "resource_id": 513,
+        "name_localkey": "Little Mermaid",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 513
+    }
+  }
+}

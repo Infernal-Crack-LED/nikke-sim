@@ -1,0 +1,443 @@
+{
+  "pascal": {
+    "slug": "pascal",
+    "name": "Pascal",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/so-96/ne-91/f4bf7b6b975244b1a3b6758195c6ce93.png",
+    "weapon": "RL",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Supporter",
+    "element": "Iron",
+    "manufacturer": "Abnormal",
+    "normalAttackMultiplier": 75,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 171,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 27.6,
+    "burstGaugePerShot": 1.15,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after firing 10 time(s). Affects 1 ally unit(s) with the highest final DEF. \nRecovers 6.28% of the skill user's final Max HP as HP.",
+      "skill2": "■ Activates when entering Burst Stage 1. Affects 3 ally unit(s) with the lowest remaining HP.\nIncoming healing ▲ 38.4% for 10 sec.",
+      "burst": "■ Affects 3 ally unit(s) with the lowest remaining HP. \nRecovers 55.29% of the skill user's final Max HP as HP."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1081201,
+        "shot_detail": {
+          "id": 1081201,
+          "damage": 7500,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 250,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 11500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.\nA weapon that cannot cast charged attacks.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 23000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2812101,
+        "skill2_id": 2812201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2812101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 28121,
+          "skill_level": 1,
+          "name_localkey": "Watch Out!",
+          "next_level_id": 2812102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates after firing {description_value_01} time(s). Affects {description_value_02} ally unit(s) with the highest <word_group=10025>final</word_group> DEF. \n<color=#00AEFF>Recovers {description_value_03}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "3.14",
+                "3.49",
+                "3.84",
+                "4.18",
+                "4.53",
+                "4.88",
+                "5.23",
+                "5.58",
+                "5.93",
+                "6.28"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2812201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 28122,
+          "skill_level": 1,
+          "name_localkey": "I'll Do My Best",
+          "next_level_id": 2812202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates when entering Burst Stage 1. Affects {description_value_01} ally unit(s) with the lowest remaining HP.\n<color=#00AEFF>Incoming healing ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "19.2",
+                "21.33",
+                "23.46",
+                "25.6",
+                "27.73",
+                "29.86",
+                "32",
+                "34.13",
+                "36.26",
+                "38.4"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1812301,
+        "ulti_skill_detail": {
+          "id": 1812301,
+          "icon": "icn_skill_c812_ult",
+          "group_id": 18123,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Stay Safe, Everyone!",
+          "next_level_id": 1812302,
+          "prefer_target": "LowHP",
+          "resource_name": "c812_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 3,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects {description_value_01} ally unit(s) with the lowest remaining HP. \n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "27.64",
+                "30.72",
+                "33.79",
+                "36.86",
+                "39.93",
+                "43",
+                "46.08",
+                "49.15",
+                "52.22",
+                "55.29"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            181230101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 581202,
+        "grade_core_id": 101,
+        "stat_enhance_id": 3305,
+        "stat_enhance_detail": {
+          "id": 3305,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 18,
+          "grade_defence": 90,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100812,
+        "piece_detail": {
+          "id": 5100812,
+          "class": "Attacker",
+          "order": 81200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ABNORMAL",
+          "resource_id": 812,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Pascal's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 581201,
+        "class": "Supporter",
+        "order": 30021,
+        "name_code": 5096,
+        "corporation": "ABNORMAL",
+        "resource_id": 812,
+        "name_localkey": "Pascal",
+        "original_rare": "SR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 11500,
+      "atk": 450,
+      "def": 88,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 18,
+        "def": 90,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 812
+    }
+  }
+}

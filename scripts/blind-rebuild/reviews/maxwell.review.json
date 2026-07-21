@@ -1,0 +1,134 @@
+{
+  "slug": "maxwell",
+  "board": {
+    "ratio": 0.925,
+    "n": 2,
+    "mad": 0.298,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger.kind=fullBurstEnter",
+        "note": "Correct trigger; note flags skill1 was auto-filled from offline parser (blablalink prose), NOT hand-verified, but behavior-identical to prior runtime parse."
+      },
+      {
+        "kitLine": "Affects 2 allies with the highest final ATK",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].target kind=alliesTopAtk count=2",
+        "note": "Top-2-by-final-ATK ally selection modeled."
+      },
+      {
+        "kitLine": "Charge Speed \u25b2 4.48% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0] buff chargeSpeedPct=4.48 dur=10",
+        "note": "Lvl-10 value, matches prose."
+      },
+      {
+        "kitLine": "ATK \u25b2 43.1% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[1] buff atkPct=43.1 dur=10",
+        "note": "Lvl-10 value, matches prose."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when there are above 5 enemy unit(s), excluding Nikkes. Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0] + note",
+        "note": "Deliberately inert: in a single-boss solo raid the >5-enemies condition is never met, so the parser correctly drops it. skill2 block array is empty by design, not a silent drop."
+      },
+      {
+        "kitLine": "Critical Rate \u25b2 4.83%",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Folded into the single inert skill2 entry; never fires in single-boss scope."
+      },
+      {
+        "kitLine": "Critical Damage \u25b2 13.91%",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Folded into the single inert skill2 entry; never fires in single-boss scope."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Change the weapon in use (weapon swap)",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (burstCast -> enemy flatDamage) + note",
+        "note": "Weapon-swap framing collapsed by PROBE FIX (run G): burst is ONE railgun shot, single 813.42% flatDamage per cast, replacing the old weaponSwap model that fired ~4 shots over 10s (was 1.93 HOT)."
+      },
+      {
+        "kitLine": "Damage: 813.42% of final ATK",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] flatDamage atkPct=813.42",
+        "note": "Modeled as the UNCHARGED 813.42% base. Kit-literal full-charge would be 2440% (x3 lever) \u2014 see documentedConfounds F1. flatDamage also strips crit+core (F2)."
+      },
+      {
+        "kitLine": "Charge Time: 2 sec",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Subsumed by the single-shot cadence model; note states charge cadence is specified directly so no attackSpeedPct rider is needed."
+      },
+      {
+        "kitLine": "Full Charge Damage: 300% of damage",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "The x3 full-charge lever; not applied to the flatDamage. This is the substance of finding F1 (potential 3x under-model if the real railgun hit is full-charged)."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity: 1 round(s)",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2]",
+        "note": "Consistent with the single-shot model; listed as unmodeled weapon-swap detail."
+      },
+      {
+        "kitLine": "Additional Effect: Pierce",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[3]",
+        "note": "Pierce not expressed; related to finding F2 (flatDamage strips crit+core on the Pierce railgun roll). Partless single-boss scope limits Pierce relevance, but the crit/core strip is a live damage confound."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "open-question",
+      "text": "kit-status F1: burst hit modeled 813.42% (uncharged) vs kit-literal full-charge 2440% (x3 lever). Recipe: popup-read burst hit in run-G footage.",
+      "couldCauseGap": "HOT",
+      "why": "If the real railgun shot is full-charged, burst damage is under-modeled ~3x \u2014 a direct, large driver of the COLD reading. Unresolved measurement."
+    },
+    {
+      "source": "open-question",
+      "text": "kit-status F2: flatDamage strips crit+core from the Pierce railgun rolls.",
+      "couldCauseGap": "HOT",
+      "why": "flatDamage bypasses crit and core multipliers on the burst shot, understating it. Independent under-model channel alongside F1."
+    },
+    {
+      "source": "note",
+      "text": "Burst PROBE FIX (run G, was 1.93 HOT): single 813.42% flatDamage per cast replaces weaponSwap that fired ~4 shots over 10s at 2s charge.",
+      "couldCauseGap": "neither",
+      "why": "Documented intentional correction of shot count; explains the swing from HOT toward COLD but the single-shot value itself is what F1/F2 question."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2 (Crit Rate 4.83% + Crit Damage 13.91%) gated on >5 enemies, deliberately inactive.",
+      "couldCauseGap": "neither",
+      "why": "Condition is never true in single-boss solo raid, so the buff never fires in-game either; dropping it is faithful, not a gap."
+    },
+    {
+      "source": "note",
+      "text": "skill1 auto-filled from offline parser (blablalink prose), NOT hand-verified; behavior-identical to prior runtime parse.",
+      "couldCauseGap": "neither",
+      "why": "Provenance/verification caveat only; no mechanical divergence asserted. Values match the prose (4.48% / 43.1% / 10s)."
+    },
+    {
+      "source": "open-question",
+      "text": "kit-status residual: 'Over-corrected; reads 0.80 (G) but 1.17 (N6) \u2014 unstable, audit candidate.' Board records 0.6268 (PG iron/Electric) vs 1.2235 (N6 wind), MAD 0.298 (>15%).",
+      "couldCauseGap": "HOT",
+      "why": "Large comp-to-comp spread and over-correction indicate the single-shot burst model is not stable across teams; consistent with the unresolved F1/F2 burst modeling."
+    }
+  ],
+  "authorIntentSummary": "The author reviewed the whole kit and deemed the parser faithful for all three slots, so nothing is overridden beyond materializing skill1. Skill1 is a fullBurstEnter buff to the top-2-final-ATK allies (Charge Speed 4.48% + ATK 43.1%, 10s), auto-filled from the offline parser and not hand-verified. Skill2 is deliberately left empty because its >5-enemies gate is never met in single-boss solo raid. The burst was reworked by a run-G PROBE FIX from a multi-shot weaponSwap (~4 shots, 1.93 HOT) into a single 813.42% flatDamage railgun shot per cast. Known-not-faithful spots, all documented and live: the burst uses the uncharged 813.42% rather than the kit-literal 2440% full-charge (F1, x3 lever) and flatDamage strips crit+core from the Pierce roll (F2) \u2014 both plausible drivers of the COLD/unstable board (0.925 mean, 0.63\u20131.22 spread, MAD 0.298)."
+}

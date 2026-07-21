@@ -1,0 +1,507 @@
+{
+  "guilty": {
+    "slug": "guilty",
+    "name": "Guilty",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/bp-87/in-76/b07f2a539d2a41879b7dcbaea26567cd.png",
+    "weapon": "SG",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 231.4,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 181,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after 6 normal attacks. Affects self.\nMind If I Borrow This?: Duplicates 8.81% of the ATK of the ally with the highest ATK. Stacks up to 5 times and lasts for 10 sec.",
+      "skill2": "■ Activates after 12 normal attacks. Affects all Wind Code allies.\nIncreases stack count of stackable buffs by 1.\nATK ▲ 4.13% for 10 sec.",
+      "burst": "■ Affects the 1 enemy unit(s) with the highest final DEF.\nDeals 284.32% of final ATK as Burst Skill damage.\n■ Activates when Mind If I Borrow This? is at max stacks. Affects the same target(s).\nDEF ▼ 20.25% for 5 sec.\nDeals 277.71% of final ATK as additional damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1040001,
+        "shot_detail": {
+          "id": 1040001,
+          "damage": 23140,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 267,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2400101,
+        "skill2_id": 2400201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2400101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 24001,
+          "skill_level": 1,
+          "name_localkey": "Mind If I Borrow This?",
+          "next_level_id": 2400102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates after {description_value_01} normal attacks. Affects self.\n<color=#00AEFF>Mind If I Borrow This?: <word_group=10012>Duplicates {description_value_02}% of the ATK</word_group> of the ally with the highest ATK. Stacks up to {description_value_04} times and lasts for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {
+              "description_value": [
+                "4.4",
+                "4.89",
+                "5.38",
+                "5.87",
+                "6.36",
+                "6.85",
+                "7.34",
+                "7.83",
+                "8.32",
+                "8.81"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2400201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 24002,
+          "skill_level": 1,
+          "name_localkey": "Time to play",
+          "next_level_id": 2400202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates after {description_value_01} normal attacks. Affects all Wind Code allies.\n<color=#00AEFF>Increases <word_group=10001>stack count of stackable buffs</word_group> by {description_value_02}.\nATK ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "2.06",
+                "2.29",
+                "2.52",
+                "2.75",
+                "2.98",
+                "3.21",
+                "3.44",
+                "3.67",
+                "3.9",
+                "4.13"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1400301,
+        "ulti_skill_detail": {
+          "id": 1400301,
+          "icon": "icn_skill_c400_ult",
+          "group_id": 14003,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Gotcha...",
+          "next_level_id": 1400302,
+          "prefer_target": "HighDefence",
+          "resource_name": "c400_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 14216,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects the {description_value_01} enemy unit(s) with the highest <word_group=10025>final</word_group> DEF.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>\n■ Activates when Mind If I Borrow This? is at max stacks. Affects the same target(s).\n<color=#00AEFF>DEF ▼ {description_value_03}% for {description_value_04} sec.\nDeals {description_value_05}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "142.16",
+                "157.95",
+                "173.75",
+                "189.55",
+                "205.34",
+                "221.14",
+                "236.93",
+                "252.73",
+                "268.53",
+                "284.32"
+              ]
+            },
+            {
+              "description_value": [
+                "10.12",
+                "11.25",
+                "12.37",
+                "13.5",
+                "14.62",
+                "15.75",
+                "16.87",
+                "18",
+                "19.12",
+                "20.25"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "138.85",
+                "154.28",
+                "169.71",
+                "185.14",
+                "200.57",
+                "216",
+                "231.42",
+                "246.85",
+                "262.28",
+                "277.71"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            140030101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            140030103
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 140002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5104,
+        "stat_enhance_detail": {
+          "id": 5104,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100400,
+        "piece_detail": {
+          "id": 5100400,
+          "class": "Attacker",
+          "order": 40000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 400,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Guilty's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 140001,
+        "class": "Attacker",
+        "order": 10060,
+        "name_code": 5055,
+        "corporation": "MISSILIS",
+        "resource_id": 400,
+        "name_localkey": "Guilty",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 400
+    }
+  }
+}

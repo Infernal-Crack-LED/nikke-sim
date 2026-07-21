@@ -1,0 +1,51 @@
+{
+  "dorothy-serendipity": {
+    "name": "Dorothy: Serendipity",
+    "burst": "III",
+    "weapon": "SG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "signature pellet-fix-1 consolidation modeled + engine-verified (regression anchor intact); all values verbatim. F3 note first-half STALE (contradicts model). F7 consolidated-shot gauge-gen per-shot-vs-per-pellet ⚑ (rotation-relevant)"
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "SG pellet-falloff calibrated on naga/dorothy/noir triple; run H 0.99",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 1
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Hit 160 pellets: Expands Pierce range 200% 3 rounds",
+        "Hit Rate ▲ 98.18% 3 rounds"
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "PH water B3s (boss Fire)",
+          "ratio": 1.1731
+        },
+        {
+          "comp": "N9 redhood/elegg electric (boss Electric)",
+          "ratio": 1.0572
+        }
+      ],
+      "n": 2,
+      "mean": 1.1151,
+      "mad": 0.1151,
+      "band": "±15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

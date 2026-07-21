@@ -1,0 +1,412 @@
+{
+  "soldier-fa": {
+    "slug": "soldier-fa",
+    "name": "Soldier FA",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/hp-96/hw-72/2ef579c04a639119379cb15a1e0f9b02.png",
+    "weapon": "SG",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Defender",
+    "element": "Iron",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 214.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 141,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": false,
+    "nicknames": [
+      "sf"
+    ],
+    "skills": {
+      "skill1": "■ There is a 10% chance of activating when attacked. Affects self.\nDEF ▲ 9.09% for 10 sec.",
+      "skill2": "■ Affects self.\nRecover 20.19% of attack damage as HP over 8 sec.",
+      "burst": "■ Affects self.\nMax HP ▲ 112.5% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1030101,
+        "shot_detail": {
+          "id": 1030101,
+          "damage": 21430,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2301101,
+        "skill2_id": 1301201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2301101,
+          "icon": "icn_skill_defup_01",
+          "group_id": 23011,
+          "skill_level": 1,
+          "name_localkey": "Falcon Wings",
+          "next_level_id": 2301102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ There is a {description_value_01}% chance of activating when attacked. Affects self.\n<color=#00AEFF>DEF ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "0.9",
+                "1.81",
+                "2.72",
+                "3.63",
+                "4.54",
+                "5.45",
+                "6.36",
+                "7.27",
+                "8.18",
+                "9.09"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1301201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 13012,
+          "skill_level": 1,
+          "name_localkey": "Falcon Nest",
+          "next_level_id": 1301202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Recover {description_value_01}% of attack damage as HP over {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2.01",
+                "4.03",
+                "6.05",
+                "8.07",
+                "10.09",
+                "12.11",
+                "14.13",
+                "16.15",
+                "18.17",
+                "20.19"
+              ]
+            },
+            {
+              "description_value": [
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1301301,
+        "ulti_skill_detail": {
+          "id": 1301301,
+          "icon": "icn_skill_c301_ult",
+          "group_id": 13013,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Energy_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Falcon Boost",
+          "next_level_id": 1301302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c301_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Max HP ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "11.25",
+                "22.5",
+                "33.75",
+                "45",
+                "56.25",
+                "67.5",
+                "78.75",
+                "90",
+                "101.25",
+                "112.5"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            130130101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 0,
+        "grade_core_id": 201,
+        "stat_enhance_id": 1204,
+        "stat_enhance_detail": {
+          "id": 1204,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 16,
+          "grade_defence": 80,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 0
+      },
+      "meta": {
+        "id": 230101,
+        "class": "Defender",
+        "order": 50002,
+        "name_code": 1014,
+        "corporation": "ELYSION",
+        "resource_id": 301,
+        "name_localkey": "Soldier FA",
+        "original_rare": "R",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 12650,
+      "atk": 320,
+      "def": 84,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 16,
+        "def": 80,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 301
+    }
+  }
+}

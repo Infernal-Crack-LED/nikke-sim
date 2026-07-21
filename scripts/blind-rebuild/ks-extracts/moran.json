@@ -1,0 +1,66 @@
+{
+  "moran": {
+    "name": "Moran",
+    "burst": "I",
+    "weapon": "AR",
+    "class": "Defender",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "0.713 COLD top cause F1: burst weapon-swap uses a DIFFERENT weapon spec (shot_id 1028102, rate_of_fire 1440=24 pulls/s = 2x base) the sim never loads -> she fires base 12/s during swap window, ~covers the whole 29% gap (moran/jill AR-burst-window cluster). Checkable from moran control.mov. NOTE moran is a TREASURE unit (helm SSOT-gap family)"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Run B video — firepower/CDR economy verified frame-by-frame; 0.91-0.93",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates at the start of battle. Affects self. DEF ▲ 3.51% continuously for every 1% of HP lost."
+      ],
+      "skill2": [
+        "Activates when firing the final bullet. Affects the 3 enemy unit(s) with the highest final ATK. Taunts for 4 sec.",
+        "Activates when HP falls below 20%. Affects self. Effects vary according to the number of uses. Perseverance: Only one effect is triggered at a time.",
+        "Once: Max HP ▲ 91% for 3 sec. Activates once per battle.",
+        "Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.",
+        "Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle."
+      ],
+      "burst": [
+        "Additional Effect(s):",
+        "Recovers 36.14% of attack damage as HP over 10 sec.",
+        "Attract: Taunts all enemies for 10 sec.",
+        "Note: Unable to take cover while using Burst Skill.",
+        "DEF ▲ 14.85% of the skill user's DEF for 10 sec."
+      ]
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "PB elec battery (boss Water)",
+          "ratio": 0.7288
+        },
+        {
+          "comp": "PB2 elec battery RERUN w/ video (boss Water)",
+          "ratio": 0.7739
+        },
+        {
+          "comp": "N9 redhood/elegg electric (boss Electric)",
+          "ratio": 0.7153
+        }
+      ],
+      "n": 3,
+      "mean": 0.7393,
+      "mad": 0.2607,
+      "band": ">15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

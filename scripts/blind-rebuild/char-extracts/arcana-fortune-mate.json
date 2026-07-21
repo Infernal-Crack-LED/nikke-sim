@@ -1,0 +1,540 @@
+{
+  "arcana-fortune-mate": {
+    "slug": "arcana-fortune-mate",
+    "name": "Arcana: Fortune Mate",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/hr-38/rs-22/75d6b2676d3bdc484d0f92e685733157.png",
+    "weapon": "SG",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 222.8,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 161,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": false,
+    "nicknames": [
+      "afm",
+      "jkana",
+      "arcanafm"
+    ],
+    "skills": {
+      "skill1": "■ Activates when Full Burst ends. Affects all shotgun-wielding allies. \nATK ▲ 13% of the skill user's ATK x stack count of Precious Moments for 15 sec.\n■ Activates when Happy Memories takes effect. Affects self.\nSnapshots of Youth: Normal Attack Damage Multiplier ▲ 10% continuously, stacks up to 3 time(s).\n■ Activates when Full Burst ends. Affects self.\nRemoves Making Memories.\nRemoves Snapshots of Youth.",
+      "skill2": "■ Activates when performing normal attacks while in Making Memories status. Affects self.\nEffect varies according to the number of attacks. Only one effect is triggered at a time. Resets when Making Memories is removed.\nTwo times: Reloads 6 rounds.\nFour times: Happy Memories: Number of pellets ▲ 1 continuously. Stacks up to 3 times.\nSix times: Precious Moments: ATK ▲ 2.49% continuously. Stacks up to 3 times.\n■ Activates when using Burst Skill. Affects all shotgun-wielding allies (except self).\nAttack Damage ▲ 55% for 10 sec.",
+      "burst": "■ Affects self.\nMaking Memories\nFunction: Enhances attack capabilities.\nEffect 1: Critical Rate ▲ 20.09% continuously.\nEffect 2: Reloads 2 round(s).\nEffect 3: Attack Damage ▲ 29.99% continuously.\n■ Affects all enemies.\nDeals 554.4% of final ATK as Burst Skill damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1058301,
+        "shot_detail": {
+          "id": 1058301,
+          "damage": 22280,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 233,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2583101,
+        "skill2_id": 2583201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2583101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25831,
+          "skill_level": 1,
+          "name_localkey": "Keepsake Album",
+          "next_level_id": 2583102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates when Full Burst ends. Affects all shotgun-wielding allies. \n<color=#00AEFF>ATK ▲ {description_value_01}% of the skill user's ATK x stack count of Precious Moments for {description_value_02} sec.</color>\n■ Activates when Happy Memories takes effect. Affects self.\n<color=#00AEFF>Snapshots of Youth: Normal Attack Damage <word_group=10029>Multiplier</word_group> ▲ {description_value_03}% continuously, stacks up to {description_value_04} time(s).</color>\n■ Activates when Full Burst ends. Affects self.\n<color=#00AEFF>Removes Making Memories.\nRemoves Snapshots of Youth.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6.86",
+                "7.54",
+                "8.22",
+                "8.91",
+                "9.59",
+                "10.27",
+                "10.96",
+                "11.64",
+                "12.32",
+                "13"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2583201,
+          "icon": "icn_skill_statshotcount_01",
+          "group_id": 25832,
+          "skill_level": 1,
+          "name_localkey": "Memories and Moments",
+          "next_level_id": 2583202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates when performing normal attacks while in Making Memories status. Affects self.\n<color=#00AEFF>Effect varies according to the number of attacks. Only one effect is triggered at a time. <word_group=10100>Resets</word_group> when Making Memories is removed.\nTwo times: Reloads {description_value_01} rounds.\nFour times: Happy Memories: Number of <word_group=10038>pellets</word_group> ▲ {description_value_02} continuously. Stacks up to {description_value_03} times.\nSix times: Precious Moments: ATK ▲ {description_value_04}% continuously. Stacks up to {description_value_05} times.</color>\n■ Activates when using Burst Skill. Affects all shotgun-wielding allies (except self).\n<color=#00AEFF>Attack Damage ▲ {description_value_06}% for {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "1.47",
+                "1.59",
+                "1.7",
+                "1.81",
+                "1.93",
+                "2.04",
+                "2.15",
+                "2.27",
+                "2.38",
+                "2.49"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "31.12",
+                "33.77",
+                "36.42",
+                "39.08",
+                "41.73",
+                "44.38",
+                "47.04",
+                "49.69",
+                "52.34",
+                "55"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1583301,
+        "ulti_skill_detail": {
+          "id": 1583301,
+          "icon": "icn_skill_c583_ult",
+          "group_id": 15833,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Radiant Youth",
+          "next_level_id": 1583302,
+          "prefer_target": "Random",
+          "resource_name": "c583_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 32760,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Making Memories\nFunction: Enhances attack capabilities.\nEffect 1: Critical Rate ▲ {description_value_01}% continuously.\nEffect 2: Reloads {description_value_02} round(s).\nEffect 3: Attack Damage ▲ {description_value_03}% continuously.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "11.87",
+                "12.78",
+                "13.7",
+                "14.61",
+                "15.52",
+                "16.44",
+                "17.35",
+                "18.27",
+                "19.18",
+                "20.09"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "17.72",
+                "19.08",
+                "20.44",
+                "21.81",
+                "23.17",
+                "24.53",
+                "25.9",
+                "27.26",
+                "28.62",
+                "29.99"
+              ]
+            },
+            {
+              "description_value": [
+                "327.6",
+                "352.8",
+                "378",
+                "403.2",
+                "428.4",
+                "453.6",
+                "478.8",
+                "504",
+                "529.2",
+                "554.4"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            158330101,
+            158330102,
+            158330103
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 258302,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5104,
+        "stat_enhance_detail": {
+          "id": 5104,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100583,
+        "piece_detail": {
+          "id": 5100583,
+          "class": "Attacker",
+          "order": 58300,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 583,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Arcana: Fortune Mate's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 258301,
+        "class": "Attacker",
+        "order": 10046,
+        "name_code": 5167,
+        "corporation": "ELYSION",
+        "resource_id": 583,
+        "name_localkey": "Arcana: Fortune Mate",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 583
+    }
+  }
+}

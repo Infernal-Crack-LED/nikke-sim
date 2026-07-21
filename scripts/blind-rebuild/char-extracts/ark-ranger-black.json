@@ -1,0 +1,580 @@
+{
+  "ark-ranger-black": {
+    "slug": "ark-ranger-black",
+    "name": "Ark Ranger Black",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/jw-15/dl-31/1eb33a72c9b03dde0808fc4ac83a64b9.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 13.65,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "nicknames": [
+      "arb",
+      "ark",
+      "ranger",
+      "black"
+    ],
+    "skills": {
+      "skill1": "■ Activates at the start of battle. Affects self.\nDamage to Parts ▲ 20% continuously.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nCharges battery by 50% continuously, up to 100%. This effect cannot be removed.\n■ Activates when battery reaches 100%. Affects self.\nTransformation\nFunction: Transforms into an Ark Ranger and strengthens herself while depleting her battery.\nEffect 1: Battery ▼ 1% every 0.2 sec continuously. This effect cannot be removed.\nEffect 2: ATK ▲ 156.19% continuously. This effect cannot be removed.\nDeactivation condition: When the battery drops to 0%\n■ Activates after performing 30 normal attack(s). Affects self.\nSustained Damage ▲ 59.6% for 5 sec.",
+      "skill2": "■ Activates when Transformation takes effect and when the enemy appears while Transformation is in effect. Affects all enemies.\nArk Black Collider: Deals 45.87% of final ATK as sustained damage every 1 sec until Transformation is canceled.\n■ Activates when entering Full Burst. Affects all Wind Code allies with assault rifles.\nSustained Damage ▲ 77.5% for 10 sec.",
+      "burst": "■ Activates while in Transformation status. Affects self.\nBattery ▲ 50%\n■ Activates while not in Transformation status. Affects self.\nEmergency Charge Protocol\nFunction: Quickly charges the battery and transforms into an Ark Ranger.\nEffect 1: Battery ▲ 100%\nEffect 2: Battery ▼ 50% after transforming.\n■ Affects the 1 enemy unit(s) with the highest final max HP.\nDeals 266.69% of final ATK as sustained damage every 1 sec for 10 sec.\n■ Affects self.\nSustained Damage ▲ 135.83% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1057001,
+        "shot_detail": {
+          "id": 1057001,
+          "damage": 1365,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2570101,
+        "skill2_id": 2570201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2570101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25701,
+          "skill_level": 1,
+          "name_localkey": "Transform! Ark Ranger Black!",
+          "next_level_id": 2570102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10011>Damage to Parts</word_group> ▲ {description_value_01}% continuously.</color>\n■ Activates when an ally or self <word_group=10052>destroys an enemy's part</word_group>. Affects self.\n<color=#00AEFF>Charges battery by {description_value_02}% continuously, up to 100%. This effect cannot be removed.</color>\n■ Activates when battery reaches 100%. Affects self.\n<color=#00AEFF>Transformation\nFunction: Transforms into an Ark Ranger and strengthens herself while depleting her battery.\nEffect 1: Battery ▼ {description_value_04}% every 0.2 sec continuously. This effect cannot be removed.\nEffect 2: ATK ▲ {description_value_05}% continuously. This effect cannot be removed.\n<word_group=10097>Deactivation condition</word_group>: When the battery drops to 0%</color>\n■ Activates after performing {description_value_07} normal attack(s). Affects self.\n<color=#00AEFF>Sustained Damage ▲ {description_value_08}% for {description_value_09} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "11.81",
+                "12.72",
+                "13.63",
+                "14.54",
+                "15.45",
+                "16.36",
+                "17.27",
+                "18.18",
+                "19.09",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "92.29",
+                "99.39",
+                "106.49",
+                "113.59",
+                "120.69",
+                "127.79",
+                "134.89",
+                "141.99",
+                "149.09",
+                "156.19"
+              ]
+            },
+            {},
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "35.21",
+                "37.92",
+                "40.63",
+                "43.34",
+                "46.05",
+                "48.76",
+                "51.47",
+                "54.18",
+                "56.89",
+                "59.6"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2570201,
+          "icon": "icn_skill_damage_01",
+          "group_id": 25702,
+          "skill_level": 1,
+          "name_localkey": "Tremble! Ark Black Collider!",
+          "next_level_id": 2570202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates when Transformation takes effect and when the enemy appears while Transformation is in effect. Affects all enemies.\n<color=#00AEFF>Ark Black Collider: Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec until Transformation is <word_group=10101>canceled</word_group>.</color>\n■ Activates when entering Full Burst. Affects all Wind Code allies with assault rifles.\n<color=#00AEFF>Sustained Damage ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "27.1",
+                "29.19",
+                "31.28",
+                "33.36",
+                "35.45",
+                "37.53",
+                "39.62",
+                "41.7",
+                "43.79",
+                "45.87"
+              ]
+            },
+            {
+              "description_value": [
+                "45.79",
+                "49.32",
+                "52.84",
+                "56.36",
+                "59.89",
+                "63.41",
+                "66.93",
+                "70.45",
+                "73.98",
+                "77.5"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1570301,
+        "ulti_skill_detail": {
+          "id": 1570301,
+          "icon": "icn_skill_c570_ult",
+          "group_id": 15703,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Ultimate Attack! Ark Black Meteor!",
+          "next_level_id": 1570302,
+          "prefer_target": "HighMaxHP",
+          "resource_name": "c570_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Activates while in Transformation status. Affects self.\n<color=#00AEFF>Battery ▲ {description_value_03}%</color>\n■ Activates while not in Transformation status. Affects self.\n<color=#00AEFF>Emergency Charge Protocol\nFunction: Quickly charges the battery and transforms into an Ark Ranger.\nEffect 1: Battery ▲ 100%\nEffect 2: Battery ▼ {description_value_06}% after transforming.</color>\n■ Affects the {description_value_07} enemy unit(s) with the highest <word_group=10025>final</word_group> max HP.\n<color=#00AEFF>Deals {description_value_08}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec for {description_value_09} sec.</color>\n■ Affects self.\n<color=#00AEFF>Sustained Damage ▲ {description_value_10}% for {description_value_11} sec.</color>",
+          "description_value_list": [
+            {},
+            {},
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {},
+            {},
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "157.59",
+                "169.71",
+                "181.83",
+                "193.95",
+                "206.07",
+                "218.2",
+                "230.32",
+                "242.44",
+                "254.56",
+                "266.69"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "80.26",
+                "86.43",
+                "92.61",
+                "98.78",
+                "104.96",
+                "111.13",
+                "117.3",
+                "123.48",
+                "129.65",
+                "135.83"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            }
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            157030102,
+            157030103,
+            157030107
+          ],
+          "after_hurt_function_id_list": [
+            157030106
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 357002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100570,
+        "piece_detail": {
+          "id": 5100570,
+          "class": "Attacker",
+          "order": 57000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 570,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Ark Ranger Black's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 357001,
+        "class": "Attacker",
+        "order": 10137,
+        "name_code": 5174,
+        "corporation": "TETRA",
+        "resource_id": 570,
+        "name_localkey": "Ark Ranger Black",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 570
+    }
+  }
+}

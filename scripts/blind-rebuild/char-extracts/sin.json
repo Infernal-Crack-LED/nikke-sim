@@ -1,0 +1,533 @@
+{
+  "sin": {
+    "slug": "sin",
+    "name": "Sin",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/se-91/fy-56/b136e1c395c6af47983737e548c6a7f1.png",
+    "weapon": "AR",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Defender",
+    "element": "Electric",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 13.65,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when firing the last bullet. Affects self.\nDuplicate 15.03% Max HP of ally with the highest Max HP, lasts for 5 sec.\nAttract: Taunt all enemies for 5 sec.",
+      "skill2": "■ Activates when Full Burst ends. Affects self.\nBurst Gauge filling speed ▲ 16.17% for 5 sec.\n■ Activates when using Burst Skill. Affects self.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Recover 15.3% of attack damage as HP for 5 sec.\nTwice: Incoming healing ▲ 51% for 5 sec.\nThree times: DEF ▲ 43.2% for 5 sec.",
+      "burst": "■ Activates when enemy unit(s) (excluding Nikkes) are more than 4. Affects all enemies. \nDamage Taken ▲ 12.23% for 5 sec.\n■ Affects enemies within attack range.\nDeals 176.32% of final ATK as damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1040101,
+        "shot_detail": {
+          "id": 1040101,
+          "damage": 1365,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2401101,
+        "skill2_id": 2401201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2401101,
+          "icon": "icn_skill_attention_01",
+          "group_id": 24011,
+          "skill_level": 1,
+          "name_localkey": "Full Stop",
+          "next_level_id": 2401102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when firing the last bullet. Affects self.\n<color=#00AEFF><word_group=10013>Duplicate {description_value_01}% Max HP</word_group> of ally with the highest Max HP, lasts for {description_value_02} sec.\nAttract: Taunt all enemies for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "7.94",
+                "8.72",
+                "9.51",
+                "10.3",
+                "11.09",
+                "11.88",
+                "12.66",
+                "13.45",
+                "14.24",
+                "15.03"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2401201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 24012,
+          "skill_level": 1,
+          "name_localkey": "Hurry Up",
+          "next_level_id": 2401202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates when Full Burst ends. Affects self.\n<color=#00AEFF><word_group=10014>Burst Gauge filling speed</word_group> ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>Effects vary according to the number of times used. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nOnce: Recover {description_value_03}% of attack damage as HP for {description_value_04} sec.\nTwice: Incoming healing ▲ {description_value_05}% for {description_value_06} sec.\nThree times: DEF ▲ {description_value_07}% for {description_value_08} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "8.08",
+                "8.98",
+                "9.88",
+                "10.78",
+                "11.67",
+                "12.57",
+                "13.47",
+                "14.37",
+                "15.27",
+                "16.17"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "7.65",
+                "8.5",
+                "9.35",
+                "10.2",
+                "11.05",
+                "11.9",
+                "12.75",
+                "13.6",
+                "14.45",
+                "15.3"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "25.5",
+                "28.33",
+                "31.16",
+                "34",
+                "36.83",
+                "39.66",
+                "42.5",
+                "45.33",
+                "48.16",
+                "51"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "21.6",
+                "24",
+                "26.4",
+                "28.8",
+                "31.2",
+                "33.6",
+                "36",
+                "38.4",
+                "40.8",
+                "43.2"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1401301,
+        "ulti_skill_detail": {
+          "id": 1401301,
+          "icon": "icn_skill_c401_ult",
+          "group_id": 14013,
+          "shake_id": 1,
+          "skill_type": "InstantCircle",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Words can Kill",
+          "next_level_id": 1401302,
+          "prefer_target": "HighDefence",
+          "resource_name": "c401_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 8816,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 700,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Activates when enemy unit(s) (excluding Nikkes) are more than {description_value_02}. Affects all enemies. \n<color=#00AEFF>Damage Taken ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects <word_group=10020>enemies within attack range</word_group>.\nDeals <color=#00AEFF>{description_value_01}% of <word_group=10025>final</word_group> ATK as damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "88.16",
+                "97.95",
+                "107.75",
+                "117.55",
+                "127.34",
+                "137.14",
+                "146.93",
+                "156.73",
+                "166.53",
+                "176.32"
+              ]
+            },
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "6.11",
+                "6.79",
+                "7.47",
+                "8.15",
+                "8.83",
+                "9.51",
+                "10.19",
+                "10.87",
+                "11.55",
+                "12.23"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            140130101
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 140102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5201,
+        "stat_enhance_detail": {
+          "id": 5201,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100401,
+        "piece_detail": {
+          "id": 5100401,
+          "class": "Defender",
+          "order": 40100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 401,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Sin's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 140101,
+        "class": "Defender",
+        "order": 10061,
+        "name_code": 5059,
+        "corporation": "MISSILIS",
+        "resource_id": 401,
+        "name_localkey": "Sin",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 110,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 401
+    }
+  }
+}

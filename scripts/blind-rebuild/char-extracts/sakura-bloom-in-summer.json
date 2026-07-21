@@ -1,0 +1,510 @@
+{
+  "sakura-bloom-in-summer": {
+    "slug": "sakura-bloom-in-summer",
+    "name": "Sakura: Bloom in Summer",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/eg-64/ou-04/781f8db4a6ff6229822b06b954d29d4b.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 13.65,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 8.4,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "nicknames": [
+      "sbis"
+    ],
+    "skills": {
+      "skill1": "■ Activates at the start of battle. Affects self.\nForcefully uses Skill 2.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nSustained Damage ▲ 5.1% for 30 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.\nDancing Flower Duration ▲ 10.02 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.\nSakura Petals Duration ▲ 10.02 sec.",
+      "skill2": "■ Affects self.\nDancing Flower: Attack Damage ▲ 15.64% for 15 sec.\n■ Affects the enemy with the highest final ATK.\nSakura Petals: Deals 256% of final ATK as sustained damage every 1 sec for 15 sec.",
+      "burst": "■ Affects random enemies.\nDeals 457.14% of final ATK as damage. Attacks sequentially 10 times.\n■ Affects the same targets.\nDeals 35.16% of final ATK as sustained damage every 1 sec, stacks up to 10 times and lasts for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1028401,
+        "shot_detail": {
+          "id": 1028401,
+          "damage": 1365,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2284101,
+        "skill2_id": 1284201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2284101,
+          "icon": "icn_skill_durationvaluechange_01",
+          "group_id": 22841,
+          "skill_level": 1,
+          "name_localkey": "Bloom",
+          "next_level_id": 2284102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Forcefully uses Skill 2.</color>\n■ Activates when an ally or self <word_group=10052>destroys an enemy's part</word_group>. Affects self.\n<color=#00AEFF>Sustained Damage ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates when an ally or self <word_group=10052>destroys an enemy's part</word_group>. Affects self if in Dancing Flower status.\n<color=#00AEFF>Dancing Flower <word_group=10051>Duration ▲ {description_value_01} sec</word_group>.</color>\n■ Activates when an ally or self <word_group=10052>destroys an enemy's part</word_group>. Affects all enemies who are in Sakura Petals status.\n<color=#00AEFF>Sakura Petals <word_group=10051>Duration ▲ {description_value_04} sec</word_group>.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5.92",
+                "6.38",
+                "6.84",
+                "7.28",
+                "7.74",
+                "8.2",
+                "8.66",
+                "9.1",
+                "9.56",
+                "10.02"
+              ]
+            },
+            {
+              "description_value": [
+                "3.01",
+                "3.24",
+                "3.48",
+                "3.71",
+                "3.94",
+                "4.17",
+                "4.4",
+                "4.64",
+                "4.87",
+                "5.1"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "5.92",
+                "6.38",
+                "6.84",
+                "7.28",
+                "7.74",
+                "8.2",
+                "8.66",
+                "9.1",
+                "9.56",
+                "10.02"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1284201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 12842,
+          "skill_level": 1,
+          "name_localkey": "Full Glory",
+          "next_level_id": 1284202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Dancing Flower: Attack Damage ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects the enemy with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Sakura Petals: Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "9.24",
+                "9.95",
+                "10.66",
+                "11.37",
+                "12.08",
+                "12.8",
+                "13.51",
+                "14.22",
+                "14.93",
+                "15.64"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "151.27",
+                "162.9",
+                "174.54",
+                "186.18",
+                "197.81",
+                "209.45",
+                "221.09",
+                "232.72",
+                "244.36",
+                "256"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1284301,
+        "ulti_skill_detail": {
+          "id": 1284301,
+          "icon": "icn_skill_c284_ult",
+          "group_id": 12843,
+          "shake_id": 1,
+          "skill_type": "InstantSequentialAttack",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Ephemeral Splendor",
+          "next_level_id": 1284302,
+          "prefer_target": "Random",
+          "resource_name": "c284_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 27013,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 10,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 20,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects random enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10050>Attacks sequentially</word_group> {description_value_02} times.</color>\n■ Affects the same targets.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec, stacks up to {description_value_04} times and lasts for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "270.13",
+                "290.91",
+                "311.69",
+                "332.47",
+                "353.25",
+                "374.03",
+                "394.8",
+                "415.58",
+                "436.36",
+                "457.14"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "20.77",
+                "22.37",
+                "23.97",
+                "25.57",
+                "27.17",
+                "28.77",
+                "30.36",
+                "31.96",
+                "33.56",
+                "35.16"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            128430101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 328402,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100284,
+        "piece_detail": {
+          "id": 5100284,
+          "class": "Attacker",
+          "order": 28400,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 284,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Sakura: Bloom in Summer's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 328401,
+        "class": "Attacker",
+        "order": 10126,
+        "name_code": 5117,
+        "corporation": "TETRA",
+        "resource_id": 284,
+        "name_localkey": "Sakura: Bloom in Summer",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 284
+    }
+  }
+}

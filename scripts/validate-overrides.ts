@@ -22,6 +22,7 @@ const STATS = new Set([
 const TRIGGERS = new Set([
   'passive', 'burstCast', 'fullBurstEnter', 'fullBurstEnd', 'hitCount', 'teamAmmo',
   'shotFired', 'lastBullet', 'recovery', 'shielded', 'stageEnter', 'bossElement', 'chargeCounter',
+  'interval',
 ]);
 const TARGETS = new Set([
   'self', 'allies', 'enemy', 'burstCasters', 'nonBurstCasters',
@@ -29,7 +30,7 @@ const TARGETS = new Set([
   'alliesLowestHp',
 ]);
 const EFFECTS = new Set([
-  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'burstEligibility', 'burstFirst', 'reenterStage',
+  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'wipeOut', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
   'instantReload', 'consumeAmmo', 'storedHit', 'stun', 'stackedNuke', 'gainPierce', 'resource',
 ]);
@@ -92,6 +93,7 @@ function validate(slug: string): boolean {
       }
       if (!b.trigger?.kind || !TRIGGERS.has(b.trigger.kind)) errors.push(`${p}: bad trigger`);
       if (b.trigger?.kind === 'hitCount' && typeof b.trigger.count !== 'number') errors.push(`${p}: hitCount needs count`);
+      if (b.trigger?.kind === 'interval' && !(typeof b.trigger.sec === 'number' && b.trigger.sec > 0)) errors.push(`${p}: interval needs sec > 0`);
       if (!b.target?.kind || !TARGETS.has(b.target.kind)) errors.push(`${p}: bad target`);
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) errors.push(`${p}: bad formation`);
       if (!Array.isArray(b.effects) || !b.effects.length) errors.push(`${p}: needs effects[]`);

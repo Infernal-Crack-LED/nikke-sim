@@ -1,0 +1,182 @@
+{
+  "slug": "grave",
+  "board": {
+    "ratio": 1.179,
+    "n": 3,
+    "mad": 0.179,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when Prediction status ends. Affects self. Removes 100% of ammo.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Deferred R2. No engine effect can empty a magazine; instantReload only ADDS. Also no Prediction-end trigger exists. Would force ~9-11 extra ~201f reloads/fight in comps (small COLD correction)."
+      },
+      {
+        "kitLine": "Heat Emission: Reload Ratio \u25bc 50%.",
+        "status": "MODELED_CONFIG",
+        "where": "charFixes.reloadFrames = 193",
+        "note": "Measured 2026-07-15 (grave solo.MP4, n=19 clean reloads, 2.85-3.52s, 201f effective). reloadFramesNeeded(193,0)=round(193*0.975)+13=201f. Attribution to 'v50%' is inferred (observationally identical to datamined reloadFrames simply wrong); operative value is measured. Solo 1.277\u21921.005."
+      },
+      {
+        "kitLine": "Removes Heat Emission under certain conditions.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Condition unspecified in kit text. Cannot model without knowing the trigger."
+      },
+      {
+        "kitLine": "Activates only when in Heat Emission status. Affects self. Recovers 2% of the skill user's final Max HP every 1 sec continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2]",
+        "note": "Heal only, no damage. SELF-target: recovery fires on grave who has no on-recovery trigger, so cannot feed a teammate (hard-rule-2 reviewed). No periodic trigger kind exists to encode it. Genuinely inert cross-unit."
+      },
+      {
+        "kitLine": "Activates only when in Heat Emission status. Affects all allies. Burst Gauge filling speed \u25b2 38.96% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: passive \u2192 allies, buff burstGenPct 38.96",
+        "note": "Modeled as always-on passive. Real uptime excludes ~10s Prediction windows (Heat Emission is OFF during Prediction). Slight HOT overcount during those windows."
+      },
+      {
+        "kitLine": "Activates only when in Heat Emission status. Affects all allies. Pierce Damage \u25b2 48.4% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: passive \u2192 allies excludeSelf, buff pierceDamagePct 48.4",
+        "note": "excludeSelf: grave-self can never benefit (she has pierce only in Prediction, when Heat Emission is OFF). Prevents burst-window double-count with burst pierceDamagePct 52.8. Allies still receive it (inert unless pierce-tagged). Same always-on passive approximation as burstGenPct."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after landing 15 normal attacks. Affects self. Overheat I: ATK \u25b2 15.48%.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: hitCount 15 \u2192 self, buff atkPct 15.48",
+        "note": "Approximated as sustained (no durationSec). Ignores the per-reload reset (see next line)."
+      },
+      {
+        "kitLine": "Removed upon reloading to max ammunition.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Absorbed by the sustained hitCount-15 approximation (hand decision). Real Overheat I drops on every reload and must re-stack 15 hits; sim treats it as permanent after first proc."
+      },
+      {
+        "kitLine": "Activates when landing a normal attack after Prediction takes effect. 30 attacks landed: While in Prediction and Overheat I status, Overheat II: ATK \u25b2 20.66% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: burstCast \u2192 self, buff atkPct 20.66 durationSec 10",
+        "note": "burstCast proxies the Prediction trigger. 30-hit build-up approximated as full 10s window uptime (real ramp-in ~2.5s at 12 rounds/s). Slight HOT overcount early in window."
+      },
+      {
+        "kitLine": "60 attacks landed: While in Prediction and Overheat II status, Overheat III: Attack Damage \u25b2 30.8% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: burstCast \u2192 self, buff attackDamagePct 30.8 durationSec 10",
+        "note": "Same burstCast proxy. 60-hit build-up approximated as full 10s window uptime (real ramp-in ~5s at 12 rounds/s). Slight HOT overcount early in window. Co-located in the same block as Overheat II."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Prediction: Current HP \u25bc 1% every 1 sec, lasts for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0] + unmodeled.burst[1]",
+        "note": "HP drain self-cost. Defensive \u2014 no damage impact in the sim's partless-boss scope-lock model."
+      },
+      {
+        "kitLine": "Grants unlimited ammunition for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 self, unlimitedAmmo durationSec 10",
+        "note": "Literal kit text. Solo-validated."
+      },
+      {
+        "kitLine": "Gain Pierce for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 self, gainPierce durationSec 10",
+        "note": "MODELED FAITHFULLY (2026-07-17). Engine gainPierce + pierceUntilFrame window. Enables Pierce Damage \u25b2 Damage-Up to land during Prediction. Moves comps 0.83\u21921.18 HOT ON PURPOSE (real mechanic > fit). Residual HOT is a separate burst-window over-model tracked in U19. Solo unaffected (lone B2 never bursts)."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 52.8% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 self, buff pierceDamagePct 52.8 durationSec 10",
+        "note": "Literal kit text. Self-only. Stacks with team 39.98 = +92.78 total Damage Up during Prediction. S1's 48.4 is excludeSelf'd so no double-count."
+      },
+      {
+        "kitLine": "Critical Rate \u25b2 85.19% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast \u2192 self, buff critRatePct 85.19 durationSec 10",
+        "note": "Literal kit text."
+      },
+      {
+        "kitLine": "Affects all allies. Attack Damage \u25b2 48.2% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast \u2192 allies, buff attackDamagePct 48.2 durationSec 10",
+        "note": "Literal kit text."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 39.98% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast \u2192 allies, buff pierceDamagePct 39.98 durationSec 10",
+        "note": "Literal kit text. Applies to all allies (including grave via the allies target \u2014 she is pierce-tagged during Prediction so it lands)."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity \u25b2 3 round(s) for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast \u2192 allies, buff maxAmmoPct 3 durationSec 10",
+        "note": "Schema is percent-only; flat 3 rounds encoded as maxAmmoPct 3. Inexpressible per-target as flat rounds. Negligible practical effect."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: Heat Emission team buffs (burstGenPct 38.96%, pierceDamagePct 48.4%) modeled as always-on passive \u2014 real uptime excludes the ~10s Prediction windows after her burst.",
+      "couldCauseGap": "HOT",
+      "why": "Overcounts team buff uptime by ~10s per burst cycle. Small per-cycle but accumulates over a 180s fight."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: Prediction-end 'Removes 100% of ammo' not modeled \u2014 one forced ~3.35s reload per burst cycle in comps.",
+      "couldCauseGap": "COLD",
+      "why": "Missing forced reloads means sim fires more shots than reality in comps. ~9-11 forced reloads/fight. Small COLD correction that would reduce her comp damage."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Overheat II/III 30/60-hit build-up approximated as full 10s burst-window uptime (real ramp-in ~2.5s/~5s at 12 rounds/s).",
+      "couldCauseGap": "HOT",
+      "why": "Overcounts ATK and Attack Damage uptime early in the Prediction window. durationSec 7.5/5.0 would match real in-window uptime. Identified as a candidate for the U19 residual fix."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: 'Gain Pierce' (10s) MODELED FAITHFULLY \u2014 moves comps 0.83\u21921.18 HOT ON PURPOSE. Residual HOT is a SEPARATE burst-window over-model tracked in U19.",
+      "couldCauseGap": "HOT",
+      "why": "Deliberate faithful modeling of a real mechanic. The resulting HOT is the dominant board gap (1.179 ratio). The pierce itself is correct; the residual over-model is in Overheat II/III full-window uptime and possibly the unmodeled Prediction-end forced reload."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: team 'Max Ammunition Capacity \u25b2 3 round(s)' encoded as maxAmmoPct 3 \u2014 schema is percent-only, flat rounds inexpressible.",
+      "couldCauseGap": "neither",
+      "why": "3 rounds on a 60-round magazine is ~5% \u2014 negligible damage impact. Encoding imprecision is cosmetic."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1: Heat Emission self-heal 2% Max HP/1s \u2014 heal only, no damage, genuinely inert cross-unit.",
+      "couldCauseGap": "neither",
+      "why": "No damage effect. Grave has no on-recovery trigger so cannot feed teammates. Correctly dropped."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1: 'Removes Heat Emission under certain conditions' \u2014 condition unspecified in kit text.",
+      "couldCauseGap": "neither",
+      "why": "Cannot model without knowing the trigger. Likely a niche conditional (e.g., specific boss mechanic). No evidence of damage impact in scope-lock."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2: Overheat I 'Removed upon reloading to max ammunition' \u2014 absorbed by sustained hitCount-15 approximation.",
+      "couldCauseGap": "neither",
+      "why": "Overheat I is a small ATK buff (15.48%). The sustained approximation slightly overcounts but the per-reload reset and re-stack roughly balance over a 180s fight. Hand decision, documented."
+    },
+    {
+      "source": "note",
+      "text": "charFixes.reloadFrames=193: attribution to 'Heat Emission v50%' is inferred, not isolated. She only ever reloads in Heat Emission, so 'v50%+overhead' and 'datamined reloadFrames simply wrong' are observationally identical.",
+      "couldCauseGap": "neither",
+      "why": "The operative value (201f effective reload) is MEASURED (n=19, tight 2.85-3.52s). The narrative attribution is uncertain but the number is not. Solo validated at 1.005."
+    }
+  ],
+  "authorIntentSummary": "The override models Grave's whole-kit Overheat/Prediction cycle: S1 Heat Emission team buffs (burstGenPct, pierceDamagePct) as always-on passives with excludeSelf on pierce to prevent burst-window double-count; S2 Overheat I as a sustained hitCount-15 ATK buff, Overheat II/III as burstCast-tied 10s buffs approximating the 30/60-hit ramp as full-window uptime; burst slot faithfully parsed from kit text (unlimited ammo, gainPierce, self crit+pierce, team ATK+pierce+maxAmmo). The reload was measured (n=19) and encoded via charFixes.reloadFrames=193, fixing solo from 1.277 to 1.005. The dominant known gap is the deliberate pierce modeling (faithful > fit) which moved comps from ~0.83 COLD to ~1.18 HOT; the residual HOT is a separate burst-window over-model (Overheat II/III full-window uptime + missing Prediction-end forced reload) tracked in open-questions U19."
+}

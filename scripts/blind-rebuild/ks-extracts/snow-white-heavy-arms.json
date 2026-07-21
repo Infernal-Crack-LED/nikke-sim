@@ -1,0 +1,67 @@
+{
+  "snow-white-heavy-arms": {
+    "name": "Snow White: Heavy Arms",
+    "burst": "III",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "Auto-Fire hit count KIT-EXACT (over-count ruled out — burst boosts loaded ammo 5->15). 1.073 HOT = bond warming + cadence ⚑ (sim assumes optimum). F1 DEF 42.24 dropped (hard rule 3); F2 Pierce 5s missing (hasPierce unset). Backfilled"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "probe u7 team-two — seven burst windows observed end-to-end, Fully-Active ends-on-uses measured; run C 0.95",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 3,
+      "within3pct": 1
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.",
+        "Auto Fire Ready — Effect: DEF ▲ 42.24% continuously.",
+        "Auto Fire Ready — Function: Loads Seven Dwarves with ammo. Max ammo loaded by Auto Fire Ready: 5. Deactivation condition: Performing a normal attack.",
+        "■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active."
+      ],
+      "skill2": [
+        "Gains Pierce for 5 sec."
+      ],
+      "burst": [
+        "Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.",
+        "Effect 2: Max Lock-On targets ▲ 10 continuously.",
+        "■ Affects all destructible projectiles. Deals 41.9% of final ATK as damage."
+      ]
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T4 water-weak (boss Fire)",
+          "ratio": 0.9811
+        },
+        {
+          "comp": "T4b water-weak REPLICATE (boss Fire)",
+          "ratio": 0.997
+        },
+        {
+          "comp": "T6 fire-weak (boss Wind)",
+          "ratio": 1.0309
+        },
+        {
+          "comp": "N5 snowwhite-HA fire (boss Fire)",
+          "ratio": 0.9196
+        }
+      ],
+      "n": 4,
+      "mean": 0.9821,
+      "mad": 0.0333,
+      "band": "±5%",
+      "temp": "OK  ·"
+    }
+  }
+}

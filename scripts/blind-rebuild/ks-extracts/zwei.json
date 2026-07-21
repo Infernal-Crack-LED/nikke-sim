@@ -1,0 +1,42 @@
+{
+  "zwei": {
+    "name": "Zwei",
+    "burst": "I",
+    "weapon": "SG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "【Phase 3】Items ×110"
+      ],
+      "skill2": [
+        "【Phase 2】Items ×50"
+      ],
+      "burst": [
+        "【Phase 1】",
+        "Cooldown: 20 s",
+        "Additional Effect: Pierce"
+      ]
+    },
+    "caveats": [
+      "burst: weapon-swap window economy is an unmeasured estimate — duration 10s (unstated in kit) and ~3 shots/window (charge 1.2s + 1-ammo reload); if footage shows reload-free cadence it is ~8 shots",
+      "skill1: 'for 1 round(s)' round-scoped buff durations approximated as 5s (no round primitive in the schema)",
+      "skill2: the Crit Rate stack's 'Pierce Attacks 101 status' gate is proxied by an in-Full-Burst gate — exact only when Zwei is the team's sole Burst I",
+      "skill2: the every-5-attacks heal recovers COVER HP in-kit; whether that fires teammates' on-recovery triggers is an unverified hypothesis",
+      "unit: pierce applies only to the swapped burst cannon in-kit; modeled as unit-wide hasPierce (her pierce buffs are burst-window-scoped, so spillover onto normal shotgun fire is minimal)"
+    ],
+    "board": null
+  }
+}

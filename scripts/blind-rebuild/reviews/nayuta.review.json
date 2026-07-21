@@ -1,0 +1,140 @@
+{
+  "slug": "nayuta",
+  "board": {
+    "ratio": 0.897,
+    "n": 1,
+    "mad": 0.103,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Unchanging Heart: Gain Indomitability for 9 sec. Activates 1 time(s) during battle.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Defensive survival buff; skipped per note (no damage impact)."
+      },
+      {
+        "kitLine": "Damage dealt when attacking core \u25b2 25.15% for 5 sec (when Memory Absorption takes effect, all allies).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] coreDamagePct 25.15",
+        "note": "Fires every 3s, so treated as a permanent passive ally buff (note)."
+      },
+      {
+        "kitLine": "ATK \u25b2 30.16% of the skill user's ATK for 5 sec (all allies).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] casterAtkPct 30.16",
+        "note": "Same every-3s trigger -> permanent passive; casterAtkPct = % of caster ATK."
+      },
+      {
+        "kitLine": "Equally shares HP recovery for 5 sec (all allies).",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Defensive HP-share; skipped per note."
+      },
+      {
+        "kitLine": "Recovers 25% of the skill user's final Max HP as HP (self).",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2]",
+        "note": "Defensive self-heal; skipped per note."
+      },
+      {
+        "kitLine": "Deals 150% of final ATK as damage (Full Charge while in Memory Incineration, all enemies).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] extraHitDamagePct 530.46 / 10s on burstCast",
+        "note": "Only exists during the 10s swap; modeled as per-full-charge rider. 150 folded into 530.46 (=150+380.46) per tier-audit fix."
+      },
+      {
+        "kitLine": "Deals 380.46% of final ATK as additional damage (enemy is the stage target).",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] extraHitDamagePct 530.46 / 10s",
+        "note": "Tier-audit fix: lands on EVERY full charge during SR mode (Prydwen), folded into the per-shot rider (150+380.46). Scope still flagged uncertain in note."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Memory Absorption: Hit Rate \u25b2 1.4%, stacks up to 30, immune to stack-count change, cannot be removed (every 3s, self).",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "The stack gauge itself; Hit Rate is inert for damage in the sim (note). Stack gates are modeled separately in skill2[0]."
+      },
+      {
+        "kitLine": "Stage 1 (\u22652 stacks): ATK \u25b2 15.2% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] atkPct 14.4",
+        "note": "Time-averaged from 15.2 for the >2-stack ramp (note tier-audit fix #2), not full-from-t0."
+      },
+      {
+        "kitLine": "Stage 2 (\u226510 stacks): Attack Damage \u25b2 20.27% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] attackDamagePct 16.8",
+        "note": "Time-averaged from 20.27 for the >10-stack ramp."
+      },
+      {
+        "kitLine": "Stage 3 (\u226530 stacks): damage dealt when attacking core \u25b2 21.05% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] coreDamagePct 10.5",
+        "note": "Time-averaged from 21.05 for the >30-stack ramp (~90s of a 180s fight)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attack Damage \u25b2 35.45% for 15 sec (all allies).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] attackDamagePct 35.45 / 15s",
+        "note": "Direct."
+      },
+      {
+        "kitLine": "Deals 645.33% of final ATK as Burst Skill damage (all enemies).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] flatDamage atkPct 645.33",
+        "note": "Nuke on enemy."
+      },
+      {
+        "kitLine": "Memory Incineration: weapon swap \u2014 Charge time fixed 1.8s, Damage 275.18% of final ATK, Full Charge 250% of Damage, Duration 10s.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2] weaponSwap damagePct 275.18 / chargeTimeSec 2.13 / chargeMultPct 250 / weapon SR / 10s",
+        "note": "SR class-override added 2026-07-17 (was range-banded+core-rated as base SMG). chargeTimeSec held at 2.13 not 1.8: swaps exempt from engine auto SR bolt-recovery, so the +0.5s cycle is folded into charge time (do not double-count)."
+      },
+      {
+        "kitLine": "Unlimited ammunition for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2] unlimitedAmmo / 10s",
+        "note": "Direct."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "380.46% 'additional damage vs stage target' block scope is genuinely ambiguous (one-time vs per-full-charge vs broader per-attack rider). Tier-audit chose per-full-charge (folded into 530.46 rider); earlier one-hit-per-burst reading was conservative and may have under-counted.",
+      "couldCauseGap": "HOT",
+      "why": "Directly scales her swap-shot damage every full charge; a wrong scope reading moves her share materially. Author flags it as not-yet-faithful."
+    },
+    {
+      "source": "note",
+      "text": "chargeTimeSec kept at 2.13 vs measured/prose 1.8s (kit-status finding F2). Cycle folded into charge time because swaps are exempt from engine auto SR bolt-recovery.",
+      "couldCauseGap": "HOT",
+      "why": "Charge cadence sets the number of full-charge hits (each carrying the 530.46 rider) inside the 10s window; a wrong cycle time directly changes swap-shot count."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Memory Absorption Hit Rate \u25b21.4% \u00d730 (42% at cap) dropped (kit-status finding F3).",
+      "couldCauseGap": "COLD",
+      "why": "Hit Rate is inert for damage in this sim's model; dropping it should not shift predicted damage."
+    },
+    {
+      "source": "note",
+      "text": "Memory Absorption stack-gate ramp (>2 @~9s, >10 @~30s, >30 @~90s of 180s) handled as time-averaged buffs (14.4/16.8/10.5) rather than full-from-t0 or a true ramp.",
+      "couldCauseGap": "neither",
+      "why": "A deliberate, documented averaging approximation; could bias either direction slightly but is an explicit author choice, not a silent drop."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Indomitability (9s, 1\u00d7), shared HP recovery (5s), and self 25% Max-HP heal skipped.",
+      "couldCauseGap": "COLD",
+      "why": "Purely defensive/survival effects with no damage contribution in a partless-boss DPS sim."
+    }
+  ],
+  "authorIntentSummary": "The author models Nayuta as a wind Supporter whose S1 ally buffs (core-damage 25.15%, caster-ATK 30.16%) are permanent passives (they refresh every 3s via Memory Absorption), and whose S2 stack gates are time-averaged permanent self buffs (14.4/16.8/10.5) rather than a true ramp. The burst is fully modeled: team Attack Damage 35.45%/15s, a 645.33% nuke, and the Memory Incineration SR weapon swap (275.18% dmg, 250% full-charge, 10s, unlimited ammo, SR class-override added 2026-07-17 to fix a ~2x far/midfar undercount). S1's full-charge riders (150% + 380.46% stage-target) are folded into one extraHitDamagePct 530.46/10s per-full-charge buff. Known-not-yet-faithful spots per the note: the ambiguous scope of the 380.46% block, the chargeTimeSec 2.13-vs-1.8 discrepancy (F2), and the dropped Hit-Rate cap (F3); residual 0.897 COLD is attributed to these and explicitly not re-fudged."
+}

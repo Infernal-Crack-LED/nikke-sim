@@ -1,0 +1,60 @@
+{
+  "red-hood": {
+    "name": "Red Hood",
+    "burst": "Λ",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "Red Wolf swap economy OPTIMISTIC (engine-verified, not cold source); CS->charge-dmg conversion partial (F2a static 90 should be 93.36 small warm; F2b team-CS invisible cold in buffer comps). Top cold F8: base-SR autofire-vs-bolt UNTESTED (~+35% out-of-window if autofire). Backfilled 5 silent drops"
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Red Wolf decoded from game data, +90% CS->charge-dmg conversion (stack ramp averaged); run A 0.86-0.92",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 1
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously."
+      ],
+      "skill2": [
+        "■ Activates during Beast Cage. Affects all allies. DEF ▲ 50.68% of the skill user's DEF for 10 sec.",
+        "■ Activates during The Last Howl. Affects self. Recovers 23.04% of attack damage as HP over 10 sec."
+      ],
+      "burst": [
+        "Step 2 (The Last Howl): Attract: Taunts all enemies for 10 sec.",
+        "Step 2 (The Last Howl): Incoming healing ▲ 74.88% for 10 sec.",
+        "Step 3 (Red Wolf): Expand Pierce range by 100% for 10 sec."
+      ]
+    },
+    "caveats": [
+      "skill1: unparsed effect \"Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously.\""
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PA MiKa (boss Iron)",
+          "ratio": 0.7248
+        },
+        {
+          "comp": "N9 redhood/elegg electric (boss Electric)",
+          "ratio": 1.0094
+        }
+      ],
+      "n": 2,
+      "mean": 0.8671,
+      "mad": 0.1423,
+      "band": "±15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

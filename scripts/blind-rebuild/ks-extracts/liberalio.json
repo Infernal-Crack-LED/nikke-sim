@@ -1,0 +1,63 @@
+{
+  "liberalio": {
+    "name": "Liberalio",
+    "burst": "III",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "matches measured; F2 charge-speed immunity NOT enforced vs external buffs (sim.ts:1522 sums all; only own S1 excludeSelf'd) - dormant engine gap; F7 probe rrh-liberalio element mislabel (prose-only)"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Focus recording — four in-FB proc crit-step pairs read x1.3333 exactly; T1/T5 ~1.0",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 4,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Activates when landing a Full Charge attack against a Rapture that is not the stage target. Affects self. Gentle Current: Fixes charge time at 1 sec continuously. Removes Raging Current.",
+        "Activates at battle start. Affects self. Immunity to Increase/Decrease Charge Speed effects, continuous."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: Gentle Current (charge time fixed at 1 sec vs non-stage-target Raptures) is not modeled — the solo-raid boss is always the stage target, so Raging Current is permanently active and Gentle Current can never fire.",
+      "skill2: her charge-speed immunity is only enforced against her OWN Skill 1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (e.g. Maxwell, Alice) would wrongly speed her up in the sim."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "T1 wind-weak (boss Iron)",
+          "ratio": 0.9565
+        },
+        {
+          "comp": "T5 wind-weak probe (boss Iron)",
+          "ratio": 0.9362
+        },
+        {
+          "comp": "PG iron sweep (boss Electric)",
+          "ratio": 1.1872
+        },
+        {
+          "comp": "N3 scarlet/liberalio iron (boss Iron)",
+          "ratio": 0.8884
+        }
+      ],
+      "n": 4,
+      "mean": 0.9921,
+      "mad": 0.1015,
+      "band": "±15%",
+      "temp": "OK  ·"
+    }
+  }
+}

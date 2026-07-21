@@ -1,0 +1,484 @@
+{
+  "eunhwa-tactical-upgrade": {
+    "slug": "eunhwa-tactical-upgrade",
+    "name": "Eunhwa: Tactical Upgrade",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/zt-89/fy-21/da31a65c62380b4d1089a5bc0e173040.png",
+    "weapon": "SR",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 69.04,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 8.4,
+    "burstGaugePerShot": 2.8,
+    "treasure": false,
+    "nicknames": [
+      "eunwhatu"
+    ],
+    "skills": {
+      "skill1": "■ Activates when using Burst Skill. Affects self.\nCamouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.\n■ Activates when attacking with Full Charge during Full Burst. Affects self.\nCamouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.\n■ Activates only when in Camouflage status. Affects self.\nNormal attacks deal true damage continuously.\nTrue Damage ▲ 42.24% continuously.",
+      "skill2": "■ Activates only when self survives.\nAS Formation\nFunction: Issues a battle-advantageous tactic to target(s).\nEffect 1: Affects all allies from the same squad. Critical Rate ▲ 8.16% continuously.\nEffect 2: Affects all allies. Charge Damage ▲ 41.81% continuously.\nEffect 3: Affects self. ATK ▲ 42.24% continuously.\n\nBonus effects when applying LT Formation to self.\nEffect 1: Affects all allies. Projectile Explosion Damage ▲ 5.11% continuously.\nEffect 2: Affects all allies. True Damage ▲ 30.97% continuously.",
+      "burst": "■ Affects self.\nChanges the weapon in use:\nCharge time: 0.3 sec\nDamage: 105.6% of final ATK as true damage\nFull Charge damage: 300% of damage\nMax Ammunition Capacity: 1 round(s)\nSpecial note: Fires an Exploding Bullet dealing area-of-effect damage. \nAdditional effect:\nTarget: Target(s) hit\nEffect: Explosive Round: Damage Taken ▲ 27.87% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1009501,
+        "shot_detail": {
+          "id": 1009501,
+          "damage": 6904,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 30,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 28000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 56000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2095101,
+        "skill2_id": 2095201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2095101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20951,
+          "skill_level": 1,
+          "name_localkey": "Camouflage Scarf",
+          "next_level_id": 2095102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>Camouflage: <word_group=10004>Prevents being targeted by single-target attacks</word_group> for {description_value_01} sec. This effect is removed upon taking a direct hit.</color>\n■ Activates when attacking with Full Charge during Full Burst. Affects self.\n<color=#00AEFF>Camouflage: <word_group=10004>Prevents being targeted by single-target attacks</word_group> for {description_value_01} sec. This effect is removed upon taking a direct hit.</color>\n■ Activates only when in Camouflage status. Affects self.\n<color=#00AEFF>Normal attacks deal true damage continuously.\nTrue Damage ▲ {description_value_02}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "24.96",
+                "26.88",
+                "28.8",
+                "30.72",
+                "32.64",
+                "34.56",
+                "36.48",
+                "38.4",
+                "40.32",
+                "42.24"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2095201,
+          "icon": "icn_skill_statcritical_01",
+          "group_id": 20952,
+          "skill_level": 1,
+          "name_localkey": "AS Formation",
+          "next_level_id": 2095202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates only when self survives.\n<color=#00AEFF>AS Formation\nFunction: Issues a battle-advantageous tactic to target(s).\nEffect 1: Affects all allies from the same squad. Critical Rate ▲ {description_value_01}% continuously.\nEffect 2: Affects all allies. Charge Damage ▲ {description_value_02}% continuously.\nEffect 3: Affects self. ATK ▲ {description_value_05}% continuously.\n\nBonus effects when applying LT Formation to self.\nEffect 1: Affects all allies. <word_group=10066>Projectile Explosion Damage</word_group> ▲ {description_value_03}% continuously.\nEffect 2: Affects all allies. True Damage ▲ {description_value_04}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "4.82",
+                "5.19",
+                "5.56",
+                "5.93",
+                "6.31",
+                "6.68",
+                "7.05",
+                "7.42",
+                "7.79",
+                "8.16"
+              ]
+            },
+            {
+              "description_value": [
+                "24.71",
+                "26.61",
+                "28.51",
+                "30.41",
+                "32.31",
+                "34.21",
+                "36.11",
+                "38.01",
+                "39.91",
+                "41.81"
+              ]
+            },
+            {
+              "description_value": [
+                "3.02",
+                "3.25",
+                "3.48",
+                "3.71",
+                "3.94",
+                "4.18",
+                "4.41",
+                "4.64",
+                "4.87",
+                "5.11"
+              ]
+            },
+            {
+              "description_value": [
+                "18.3",
+                "19.71",
+                "21.12",
+                "22.52",
+                "23.93",
+                "25.34",
+                "26.75",
+                "28.16",
+                "29.56",
+                "30.97"
+              ]
+            },
+            {
+              "description_value": [
+                "24.96",
+                "26.88",
+                "28.8",
+                "30.72",
+                "32.64",
+                "34.56",
+                "36.48",
+                "38.4",
+                "40.32",
+                "42.24"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1095301,
+        "ulti_skill_detail": {
+          "id": 1095301,
+          "icon": "icn_skill_c095_ult",
+          "group_id": 10953,
+          "shake_id": 1,
+          "skill_type": "ChangeWeapon",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "Shots",
+          "name_localkey": "Explosive Round",
+          "next_level_id": 1095302,
+          "prefer_target": "Random",
+          "resource_name": "c095_ulti",
+          "duration_value": 1,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 6240,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 120,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1009502,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Changes the weapon in use:\nCharge time: 0.3 sec\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK as true damage\nFull Charge damage: 300% of damage\nMax Ammunition Capacity: {description_value_02} round(s)\nSpecial note: Fires an Exploding Bullet dealing area-of-effect damage. \nAdditional effect:\nTarget: Target(s) hit\nEffect: Explosive Round: Damage Taken ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "62.4",
+                "67.2",
+                "72",
+                "76.8",
+                "81.6",
+                "86.4",
+                "91.19",
+                "95.99",
+                "100.8",
+                "105.6"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "16.47",
+                "17.74",
+                "19",
+                "20.27",
+                "21.54",
+                "22.8",
+                "24.07",
+                "25.34",
+                "26.61",
+                "27.87"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            109530101
+          ],
+          "after_hurt_function_id_list": [
+            109530102
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 209502,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5102,
+        "stat_enhance_detail": {
+          "id": 5102,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100095,
+        "piece_detail": {
+          "id": 5100095,
+          "class": "Attacker",
+          "order": 9500,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 95,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Eunhwa: Tactical Upgrade's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 209501,
+        "class": "Attacker",
+        "order": 10039,
+        "name_code": 5149,
+        "corporation": "ELYSION",
+        "resource_id": 95,
+        "name_localkey": "Eunhwa: Tactical Upgrade",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 76,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 95
+    }
+  }
+}

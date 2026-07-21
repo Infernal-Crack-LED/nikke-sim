@@ -1,0 +1,92 @@
+{
+  "crown": {
+    "name": "Crown",
+    "burst": "II",
+    "weapon": "MG",
+    "class": "Defender",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "One For All rebuild AUDIT: prose-faithful, ZERO discrepancies (caster-split disjoint+per-chain, Relax->recovery->AD chain, burst shield all engine-verified)"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": true,
+    "evidence": "Crown SOLO recording — MG range-bands read per popup class (battery 4); 0.89-1.14 across ~10 comps",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 10,
+      "within3pct": 3
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Relax: Incoming healing ▲ 4.06% continuously. Stacks up to 20 times.",
+        "Invulnerable for 5 sec.",
+        "Attract: Taunts all enemies for 5 sec."
+      ],
+      "burst": []
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T1 wind-weak (boss Iron)",
+          "ratio": 0.9678
+        },
+        {
+          "comp": "T3 fire-weak (boss Wind)",
+          "ratio": 0.9879
+        },
+        {
+          "comp": "T4 water-weak (boss Fire)",
+          "ratio": 1.1619
+        },
+        {
+          "comp": "T4b water-weak REPLICATE (boss Fire)",
+          "ratio": 1.1566
+        },
+        {
+          "comp": "T2 elec-weak (boss Water)",
+          "ratio": 1.0094
+        },
+        {
+          "comp": "T6 fire-weak (boss Wind)",
+          "ratio": 1.0042
+        },
+        {
+          "comp": "T7 elec-weak probe (boss Water)",
+          "ratio": 0.9206
+        },
+        {
+          "comp": "T8 iron-weak (boss Electric)",
+          "ratio": 0.992
+        },
+        {
+          "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+          "ratio": 1.0018
+        },
+        {
+          "comp": "PE elec DPS (boss Water)",
+          "ratio": 1.0389
+        },
+        {
+          "comp": "PH water B3s (boss Fire)",
+          "ratio": 1.0388
+        },
+        {
+          "comp": "N9 redhood/elegg electric (boss Electric)",
+          "ratio": 1.0553
+        }
+      ],
+      "n": 12,
+      "mean": 1.0279,
+      "mad": 0.0499,
+      "band": "±5%",
+      "temp": "OK  ·"
+    }
+  }
+}
