@@ -1,0 +1,536 @@
+{
+  "neon-blue-ocean": {
+    "slug": "neon-blue-ocean",
+    "name": "Neon: Blue Ocean",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/lk-42/vu-65/33b79670d123da788d86ffedd2683b40.png",
+    "weapon": "MG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 5.57,
+    "coreAttackMultiplier": 200,
+    "ammo": 300,
+    "reloadFrames": 171,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 3.55,
+    "burstGaugePerShot": 0.05,
+    "treasure": false,
+    "nicknames": [
+      "nbo"
+    ],
+    "skills": {
+      "skill1": "■ Activates when using Burst Skill. Affects self.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Damage to Parts ▲ 12.4% for 20 sec.\nTwice: Damage to Parts ▲ 12.4% for 20 sec.\nThree times: Damage to Parts ▲ 12.4% for 20 sec.",
+      "skill2": "■ Activates when entering Burst Stage 3. Affects self.\nEffects vary according to the number of times entered. Each subsequent effect triggers all effects before it:\nOnce: Elemental Advantage Attack Damage ▲ 20.56% for 10 sec.\nTwice: Elemental Advantage Attack Damage ▲ 20.2% for 10 sec.\nThree times: Elemental Advantage Attack Damage ▲ 20.2% for 10 sec.",
+      "burst": "■ Affects self.\nChanges the weapon in use:\nDamage: 33% of final ATK\nDuration: 7 sec\n■ Activates when attacking a Fire Code target. Affects the target.\nDeals 11% of final ATK as additional damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1001401,
+        "shot_detail": {
+          "id": 1001401,
+          "damage": 557,
+          "max_ammo": 300,
+          "shake_id": 2,
+          "ShakeType": "Fire_MG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 250,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "MG",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Machine Gun",
+          "prefer_target": "TargetPS",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 4200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 299,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 150,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 7,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 100,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 150,
+          "rate_of_fire_change_pershot": 100,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 1000,
+          "auto_accuracy_change_pershot": 7,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 55,
+        "bonusrange_min": 35
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2014101,
+        "skill2_id": 2014201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2014101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20141,
+          "skill_level": 1,
+          "name_localkey": "Upper Wave",
+          "next_level_id": 2014102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>Effects vary according to the number of times used. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nOnce: <word_group=10011>Damage to Parts</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nTwice: <word_group=10011>Damage to Parts</word_group> ▲ {description_value_03}% for {description_value_04} sec.\nThree times: <word_group=10011>Damage to Parts</word_group> ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5.2",
+                "6",
+                "6.8",
+                "7.6",
+                "8.4",
+                "9.2",
+                "10",
+                "10.8",
+                "11.6",
+                "12.4"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "5.2",
+                "6",
+                "6.8",
+                "7.6",
+                "8.4",
+                "9.2",
+                "10",
+                "10.8",
+                "11.6",
+                "12.4"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "5.2",
+                "6",
+                "6.8",
+                "7.6",
+                "8.4",
+                "9.2",
+                "10",
+                "10.8",
+                "11.6",
+                "12.4"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2014201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20142,
+          "skill_level": 1,
+          "name_localkey": "Water Jet",
+          "next_level_id": 2014202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates when entering Burst Stage 3. Affects self.\n<color=#00AEFF>Effects vary according to the number of times entered. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nOnce: <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nTwice: <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_03}% for {description_value_04} sec.\nThree times: <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "8.32",
+                "9.68",
+                "11.04",
+                "12.4",
+                "13.76",
+                "15.12",
+                "16.48",
+                "17.84",
+                "19.2",
+                "20.56"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "8.32",
+                "9.64",
+                "10.96",
+                "12.28",
+                "13.6",
+                "14.92",
+                "16.24",
+                "17.56",
+                "18.88",
+                "20.2"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "8.32",
+                "9.64",
+                "10.96",
+                "12.28",
+                "13.6",
+                "14.92",
+                "16.24",
+                "17.56",
+                "18.88",
+                "20.2"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1014301,
+        "ulti_skill_detail": {
+          "id": 1014301,
+          "icon": "icn_skill_c014_ult",
+          "group_id": 10143,
+          "shake_id": 1,
+          "skill_type": "ChangeWeapon",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Full Hydro Shot",
+          "next_level_id": 1014302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c014_ulti",
+          "duration_value": 700,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 1950,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 90,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1001402,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Changes the weapon in use:\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK\nDuration: {description_value_02} sec</color>\n■ Activates when attacking a Fire Code target. Affects the target.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "19.5",
+                "21",
+                "22.5",
+                "24",
+                "25.5",
+                "27",
+                "28.5",
+                "30",
+                "31.5",
+                "33"
+              ]
+            },
+            {
+              "description_value": [
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7"
+              ]
+            },
+            {
+              "description_value": [
+                "6.5",
+                "7",
+                "7.5",
+                "8",
+                "8.5",
+                "9",
+                "9.5",
+                "10",
+                "10.5",
+                "11"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            101430101
+          ],
+          "before_use_function_id_list": [
+            101430103
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 201402,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5106,
+        "stat_enhance_detail": {
+          "id": 5106,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100014,
+        "piece_detail": {
+          "id": 5100014,
+          "class": "Attacker",
+          "order": 1400,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 14,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Neon: Blue Ocean's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 201401,
+        "class": "Attacker",
+        "order": 10018,
+        "name_code": 5071,
+        "corporation": "ELYSION",
+        "resource_id": 14,
+        "name_localkey": "Neon: Blue Ocean",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 75,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 14
+    }
+  }
+}

@@ -67,6 +67,7 @@
       },
       "target": {
         "kind": "alliesLowestAtk",
+        "byFinalAtk": true,
         "count": 1,
         "burst": "III",
         "excludeSelf": true

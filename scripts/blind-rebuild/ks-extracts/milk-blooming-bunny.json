@@ -1,0 +1,58 @@
+{
+  "milk-blooming-bunny": {
+    "name": "Milk: Blooming Bunny",
+    "burst": "III",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "0.70 COLD: F3 dead block — burst pierceDamagePct 117.64 never fires (no hasPierce; modeled!=working) + auto-mode too pessimistic (real procs Embarrassment partially). Fix hasPierce. F5: the old 'poor auto-play' 0.70 DECISION rationale is DIRECTION-SUSPECT (predates ratio-direction fix — poor auto = HOT sim, but she's COLD)"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Run G + N10 focus: 0.56-0.73",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "~0.7 is an ACCEPTED DECISION (poor auto-play) — validated-by-decision, not tuned to 1.0",
+    "unmodeled": {
+      "skill1": [
+        "■ Activates when performing a Full Charge attack. Affects self.",
+        "Gain Pierce for 6 sec."
+      ],
+      "skill2": [
+        "■ Activates only when in Embarrassment status. Affects self.",
+        "Pierce Damage ▲ 64.7% continuously."
+      ],
+      "burst": [
+        "Overconfident, Huh?!:",
+        "Gains Immunity to Embarrassment for 10 sec."
+      ]
+    },
+    "caveats": [
+      "burst: unparsed effect \"Overconfident, Huh?!:\"",
+      "burst: unparsed effect \"Gains Immunity to Embarrassment for 10 sec.\""
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PG iron sweep (boss Electric)",
+          "ratio": 0.6811
+        }
+      ],
+      "n": 1,
+      "mean": 0.6811,
+      "mad": 0.3189,
+      "band": ">15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

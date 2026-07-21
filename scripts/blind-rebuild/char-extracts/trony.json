@@ -1,0 +1,521 @@
+{
+  "trony": {
+    "slug": "trony",
+    "name": "Trony",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ct-86/ea-40/d05286f69ae99fbc4e17e0a41a1ae600.png",
+    "weapon": "SR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 69.04,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 8.4,
+    "burstGaugePerShot": 2.8,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when hitting a target with Full Charge. Affects 1 enemy unit nearest to the crosshair if there are no enemies in T.Rony Bomber status.\nCumulative Damage Skill active for 5 sec.\nFunction: Accumulates a fraction of the skill user's inflicted damage. Upon reaching the maximum accumulated damage, deals damage to enemies before ending.\nEffect 1: Maximum Accumulated Damage is 1536% of the skill user's final ATK.\nEffect 2: Accumulates 50% of the skill user's ATK damage.\nEffect 3: Deals Distributed Damage to enemies within the attack range when Cumulative Damage Skill explodes.",
+      "skill2": "■ Activates when attacking with Full Charge for 5 time(s). Affects self.\nDistributed Damage ▲ 51.84% for 10 sec.\n■ Activates when hitting the target with Full Charge for 5 time(s). Affects the target.\nDEF ▼ 9.59% for 10 sec.",
+      "burst": "■ Affects self. \nATK ▲ 101.37% for 10 sec.\nAccumulated damage ratio of the Cumulative Damage Skill ▲ 62.83% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1050101,
+        "shot_detail": {
+          "id": 1050101,
+          "damage": 6904,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 30,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 28000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 56000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2501101,
+        "skill2_id": 2501201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2501101,
+          "icon": "icn_skill_damageshareinstant",
+          "group_id": 25011,
+          "skill_level": 1,
+          "name_localkey": "T.Rony Bomber",
+          "next_level_id": 2501102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates when hitting a target with Full Charge. Affects 1 enemy unit nearest to the crosshair if there are no enemies in T.Rony Bomber status.\n<color=#00AEFF><word_group=10049>Cumulative Damage Skill</word_group> active for {description_value_01} sec.\nFunction: Accumulates a fraction of the skill user's inflicted damage. Upon reaching the maximum accumulated damage, deals damage to enemies before ending.\nEffect 1: Maximum Accumulated Damage is {description_value_03}% of the skill user's <word_group=10025>final</word_group> ATK.\nEffect 2: Accumulates {description_value_02}% of the skill user's ATK damage.\nEffect 3: Deals <word_group=10019>Distributed Damage</word_group> to <word_group=10020>enemies within the attack range</word_group> when <word_group=10049>Cumulative Damage Skill</word_group> explodes.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "907.63",
+                "977.45",
+                "1047.27",
+                "1117.09",
+                "1186.9",
+                "1256.72",
+                "1326.54",
+                "1396.36",
+                "1466.18",
+                "1536"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2501201,
+          "icon": "icn_skill_sharedamageincrease",
+          "group_id": 25012,
+          "skill_level": 1,
+          "name_localkey": "Efficiency Increase",
+          "next_level_id": 2501202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates when attacking with Full Charge for {description_value_01} time(s). Affects self.\n<color=#00AEFF><word_group=10019>Distributed Damage</word_group> ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates when hitting the target with Full Charge for {description_value_04} time(s). Affects the target.\n<color=#00AEFF>DEF ▼ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "30.63",
+                "32.98",
+                "35.34",
+                "37.7",
+                "40.05",
+                "42.41",
+                "44.77",
+                "47.12",
+                "49.48",
+                "51.84"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5.67",
+                "6.1",
+                "6.54",
+                "6.98",
+                "7.41",
+                "7.85",
+                "8.29",
+                "8.72",
+                "9.16",
+                "9.59"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1501301,
+        "ulti_skill_detail": {
+          "id": 1501301,
+          "icon": "icn_skill_c501_ult",
+          "group_id": 15013,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Mega T.Rony",
+          "next_level_id": 1501302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c501_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self. \n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color>\n<color=#00AEFF>Accumulated damage ratio of the <word_group=10049>Cumulative Damage Skill</word_group> ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "59.9",
+                "64.51",
+                "69.12",
+                "73.72",
+                "78.33",
+                "82.94",
+                "87.55",
+                "92.16",
+                "96.76",
+                "101.37"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "37.12",
+                "39.98",
+                "42.84",
+                "45.69",
+                "48.55",
+                "51.4",
+                "54.26",
+                "57.12",
+                "59.97",
+                "62.83"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            150130101,
+            150130102
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 150102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5102,
+        "stat_enhance_detail": {
+          "id": 5102,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100501,
+        "piece_detail": {
+          "id": 5100501,
+          "class": "Attacker",
+          "order": 50100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 501,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Trony's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 150101,
+        "class": "Attacker",
+        "order": 10076,
+        "name_code": 5112,
+        "corporation": "MISSILIS",
+        "resource_id": 501,
+        "name_localkey": "Trony",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 76,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 501
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "elegg-boom-and-shock": {
+    "name": "Elegg: Boom and Shock",
+    "burst": "III",
+    "weapon": "MG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "phantom 1100% max-capacity nuke removed (never fires bursting on 40s CD; ghosts cap ~7<13) — board 1.15 HOT was fudge-propped → now 0.819 COLD, needs real hand-tune (crown/helm-style unmask)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — untested, serves pre-patch numbers",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Possession lasts for 6 sec.",
+        "Ability: Find and capture ghosts possessing the enemy.",
+        "Required hit count: 100 time(s) in total, cumulative across all allies.",
+        "Effect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.",
+        "Recurring interval: 6 sec",
+        "Effects vary according to the number of ghosts. Each subsequent effect triggers all effects before it:",
+        "1 or more ghosts:",
+        "4 or more ghosts:"
+      ],
+      "skill2": [],
+      "burst": [
+        "Number of ghosts ▼ 6. Maintains at least 1 ghost.",
+        "Deals 800% of final ATK as damage. Attacks sequentially for 13 time(s).",
+        "Number of ghosts ▼ 9."
+      ]
+    },
+    "caveats": [
+      "skill1: Elemental Advantage Damage ▲35% (4+ ghosts) shipped at 17.5% = derived ~50% uptime in rotation mode — unmeasured ghost-economy estimate",
+      "skill2: the 1100% capture-at-max-capacity nuke fires ONLY in no-burst mode (bursting every ~40s the ghost count never reaches 13); its ~17 procs/180s are a derived estimate",
+      "burst: modeled as the 6-hit branch (800% x 6 = 4800%); the 13-ghost 13-hit branch is unreachable when bursting on cooldown",
+      "cadence: datamined MG fire rate + reloadFrames 171 are unverified (mandatory cadence flag)"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "N9 redhood/elegg electric (boss Electric)",
+          "ratio": 0.8251
+        }
+      ],
+      "n": 1,
+      "mean": 0.8251,
+      "mad": 0.1749,
+      "band": ">15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

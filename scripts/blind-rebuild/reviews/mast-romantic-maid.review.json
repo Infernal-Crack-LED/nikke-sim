@@ -1,0 +1,98 @@
+{
+  "slug": "mast-romantic-maid",
+  "board": {
+    "ratio": 1.023,
+    "n": 2,
+    "mad": 0.023,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Drunken: Hit Rate \u25bc 20% per stack (self, on Burst-stage-1 entry), stacks up to 3 continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] -> buff normalAttackPct -40 on self",
+        "note": "Per-stack hit-rate down is folded into a flat -40% normal-attack damage on self (cycle-avg 2 stacks x 20%). The 3-stack accumulation/reset itself has no dedicated block: it is encoded indirectly via the everyN:3 Hangover gate in skill2[1] plus the note's dynamic-cycle description, while all x-stacks buff magnitudes use the static avg=2. ks F4: this -40% is DAMAGE-ONLY \u2014 burst gauge is NOT reduced for the ~40% missed rounds (gauge over-credit)."
+      },
+      {
+        "kitLine": "Critical Rate \u25b2 20.05% (all allies, only while in Drunken status), continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] -> buff critRatePct 20.05, target allies, passive",
+        "note": "Value byte-exact. Drunken-presence gate is NOT modeled \u2014 buff is permanent. Documented approximation: slight overcount during the ~1 rotation after each Hangover before she re-stacks, and\u5168\u7a0b when she never bursts."
+      },
+      {
+        "kitLine": "ATK \u25b2 35.02% of the skill user's ATK (all allies, only while in Drunken status), continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] -> buff casterAtkPct 35.02, target allies, passive",
+        "note": "Value byte-exact, caster-ATK scaling correct. Same un-modeled Drunken gate as the crit-rate line \u2014 kept permanent (flagged overcount)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Distributed Damage \u25b2 15.03% x number of Drunken stacks for 10 sec (all allies, on entering Burst Stage 3 while Drunken)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] -> buff distributedDamagePct 30.06, durationSec 10, target allies, trigger stageEnter stage 3",
+        "note": "30.06 = 15.03 x 2 (static cycle-average stacks). Stage-3 entry trigger correct; the 'while Drunken' condition is not separately gated. ks: exact for sole-B2 timing."
+      },
+      {
+        "kitLine": "Reload Speed \u25b2 15.04% x number of Drunken stacks for 10 sec (all allies)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] -> buff reloadSpeedPct 30.08, durationSec 10, target allies",
+        "note": "30.08 = 15.04 x 2 (static cycle-average stacks). Shares the stage-3 trigger block with the distributed-damage buff."
+      },
+      {
+        "kitLine": "Hangover: Stunned for 10 sec (self; triggers when Drunken is at max stacks at the end of Full Burst; removes all stacks)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] -> stun durationSec 10, target self, trigger burstCast, everyN 3",
+        "note": "Q5 RECALIBRATED + flagged for manual review: gate moved from prose 'every 3rd Full-Burst-end' to 'every 3rd of HER OWN burst casts'. The 'removes all stacks' reset is represented by this same 3-cycle gate (note's dynamic-cycle description). Her-cast gate validated on bursting Mast (T1); never-bursting Mast (T7) previously over-stunned to 0.84 cold under the FB-end reading."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Critical Damage \u25b2 40.04% for 10 sec (all allies)",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] -> buff critDamagePct 40.04, durationSec 10, target allies, trigger burstCast",
+        "note": "Value byte-exact, unconditional (matches prose 'Affects all allies')."
+      },
+      {
+        "kitLine": "Attack Damage \u25b2 15.04% for 10 sec (all allies)",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] -> buff attackDamagePct 15.04, durationSec 10, target allies",
+        "note": "Value byte-exact, unconditional."
+      },
+      {
+        "kitLine": "ATK \u25b2 (20.06% x Number of Drunken stacks) of the skill user's ATK for 10 sec (all allies, if in Drunken status)",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] -> buff casterAtkPct 40.12, durationSec 10, target allies",
+        "note": "40.12 = 20.06 x 2 (static cycle-average stacks), caster-ATK scaling correct. The 'if in Drunken status' gate is NOT enforced \u2014 kept permanent even when she never bursts (documented approximation)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "S1 'while Drunken' team buffs (Crit Rate 20.05%, 35.02% caster ATK) and the burst's Drunken-gated ATK buff are modeled PERMANENT, not gated on Drunken presence.",
+      "couldCauseGap": "HOT",
+      "why": "Sim keeps these team buffs always on, slightly overpredicting ally damage \u2014 most notably during the ~1 rotation after each Hangover before she re-stacks, and\u5168\u7a0b for a never-bursting Mast. Works in the HOT (overpredict) direction; board is OK so it is a known minor overcount, not a live gap."
+    },
+    {
+      "source": "open-question",
+      "text": "Q5 RECALIBRATED (flagged for manual review): Hangover stun re-gated from prose 'every 3rd Full-Burst-end' to 'every 3rd of HER OWN burst casts'.",
+      "couldCauseGap": "neither",
+      "why": "Interpretation, not literal prose. The old FB-end gate over-stunned never-bursting Mast (T7) to 0.84 COLD; the her-cast gate fixed that and validated on bursting Mast (T1). Residual risk is two-sided but currently reconciled \u2014 flagged so the judge treats any stun-related surprise as KNOWN, not a new finding."
+    },
+    {
+      "source": "note",
+      "text": "F4 miss-model: Drunken hit-rate-down is encoded as normalAttackPct -40 which is DAMAGE-ONLY \u2014 burst gauge is not reduced for the ~40% missed rounds (gauge over-credit).",
+      "couldCauseGap": "HOT",
+      "why": "Sim grants full burst gauge on rounds that 'miss', slightly over-crediting burst frequency and thus damage (HOT direction). Second-order; validated against the user's real sample (149M real vs 140M modeled)."
+    },
+    {
+      "source": "note",
+      "text": "Drunken-stack scaling modeled statically at cycle-average 2 stacks (stacks run 1,2,3 then reset) rather than truly dynamic per-rotation stack count.",
+      "couldCauseGap": "neither",
+      "why": "Averages out over the 3-burst cycle and is exact for sole-B2 timing per ks; only a minor intra-cycle timing error, not a systematic HOT/COLD bias."
+    }
+  ],
+  "authorIntentSummary": "The author modeled Mast: Romantic Maid's Drunken cycle as a 3-stack-then-reset rhythm, folding every per-stack magnitude into static cycle-average (x2) buff values and encoding the reset as an everyN:3 self-stun (Hangover) gate; her own MG hit-rate penalty is a flat -40% normal-attack damage on self (avg 2 stacks x 20%), validated against a real 149M-vs-140M sample. There are NO MODELED_CONFIG fields and NO unmodeled-array entries \u2014 the entire kit lives in blocks plus the note, and no prose line is silently dropped. Known-not-faithful spots, all flagged in the note: the Drunken-gated team buffs (S1 crit/ATK and burst ATK) are kept permanent rather than gated on Drunken presence (slight HOT overcount), the F4 miss model is damage-only and over-credits burst gauge, and the Q5 Hangover trigger is re-gated to her own burst casts (vs prose Full-Burst-end) and flagged for manual review. Board is OK: ratio 1.023, N=2, MAD 0.023."
+}

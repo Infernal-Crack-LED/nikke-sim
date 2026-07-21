@@ -1,0 +1,152 @@
+{
+  "slug": "privaty",
+  "board": {
+    "ratio": 0.971,
+    "n": 3,
+    "mad": 0.044,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger=fullBurstEnter, target=allies",
+        "note": "Trigger + target faithfully encoded."
+      },
+      {
+        "kitLine": "ATK \u25b2 23.61% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0] atkPct 23.61 / 10s",
+        "note": "Exact treasure value."
+      },
+      {
+        "kitLine": "Reload Speed \u25b2 51.16% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[1] reloadSpeedPct 51.16 / 10s",
+        "note": "Exact."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity \u25bc 50.66% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[2] maxAmmoPct -50.66 / 10s",
+        "note": "Exact; per note this accelerates all allies' last-bullet procs (emergent interaction)."
+      },
+      {
+        "kitLine": "Attack Damage \u25b2 20.16% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[3] attackDamagePct 20.16 / 10s",
+        "note": "Present in top-level prose; the skill1_detail description_value_list only carries 3 value groups (ATK/reload/maxAmmo) \u2014 this 4th line is sourced from prose, not the detail table. Flag for hand-verify (auto-filled from offline parser)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when the last bullet hits the target. Affects the target.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].trigger=lastBullet, target=enemy",
+        "note": "Faithful."
+      },
+      {
+        "kitLine": "Damage Taken \u25b2 10.01% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[0] damageTakenPct 10.01 / 10s",
+        "note": "Treasure value (base detail table differs). Exact."
+      },
+      {
+        "kitLine": "Deals 256.17% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[1] flatDamage atkPct 256.17, noRange",
+        "note": "Treasure value (base detail = 85.79%). noRange per Q1 calibration \u2014 exempt from range/FB majors."
+      },
+      {
+        "kitLine": "Activates when the last bullet hits a target in Designated Target status. Affects the target.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1].trigger=burstCast, target=enemy",
+        "note": "PROXY: true gate is last-bullet-on-Designated-Target; modeled as burstCast proxy (Designated applied by her burst every other rotation). Not a faithful trigger \u2014 see confounds."
+      },
+      {
+        "kitLine": "Deals 1687% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1].effects[0] dot atkPct 1687 / 10s, intervalSec 3, noRange, noFb",
+        "note": "PROXY: modeled as DoT ticking ~3s x3 (last-bullet cadence under halved mag), not a discrete last-bullet rider. noFb per confirmed video. Comp/condition-dependent \u2014 standing open item."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].target=self",
+        "note": "Faithful."
+      },
+      {
+        "kitLine": "Elemental Advantage Attack Damage \u25b2 130% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] elemAdvantageDamagePct 130 / 10s",
+        "note": "Encoded in Element bucket (elemAdvantageDamagePct); damage-up only with elemental advantage. Battery-5 evidence 2.8244 in/out window."
+      },
+      {
+        "kitLine": "Affects all enemies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].target=enemy",
+        "note": "Faithful."
+      },
+      {
+        "kitLine": "Deals 1407.64% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].effects[0] flatDamage atkPct 1407.64",
+        "note": "Treasure value (base detail = 457.87%). This is the parser's front nuke, distinct from the 1687% rider."
+      },
+      {
+        "kitLine": "Stuns for 3 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Deliberately dropped: boss never acts in v1, mechanically inert."
+      },
+      {
+        "kitLine": "Designated Target: ATK \u25bc 5.02% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].effects[1] atkPct -5.02 / 10s on enemy",
+        "note": "Modeled despite note calling it irrelevant in v1 (boss never acts / single partless boss). Also this Designated-Target application is the gate the 1687% rider keys off."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "Q1 CALIBRATED: the 256.17% last-bullet proc and the 1687% Designated hits are exempt from the +30% range and +50% full-burst majors (noRange:true). Calibrated vs real T4 runs (1.29->0.97); mechanism unconfirmed (user researching).",
+      "couldCauseGap": "HOT",
+      "why": "A calibrated fudge with unconfirmed mechanism \u2014 if the exemption is wrong/conditional, both riders shift. Flagged in note for manual review."
+    },
+    {
+      "source": "note",
+      "text": "The 1687% nuke is COMP/CONDITION-DEPENDENT: present in T4/T4b calibration comps (real 1140M needs ~40% more than sim produces without it) but ABSENT in a confirmed Privaty-burst Designated window in the u7 focus comp (no ~25-38M popup). Reverted to DoT-noFb baseline pending reconciliation of the Designated-Target gate across comps.",
+      "couldCauseGap": "HOT",
+      "why": "The standing open item. Sim over-predicts in comps where 1687 does not fire (e.g. N5 snowwhite-HA 0.9237 / u7-style), and is the main driver of the spread (MAD 0.044)."
+    },
+    {
+      "source": "note",
+      "text": "1687% modeled as a burstCast-triggered DoT (interval ~3s x3) rather than a true last-bullet-on-Designated-Target rider; arithmetic-consistent proxy, not a faithful trigger/timing model.",
+      "couldCauseGap": "HOT",
+      "why": "Proxy timing/trigger could mis-place damage across the FB window; same root as the open Designated-gate question."
+    },
+    {
+      "source": "note",
+      "text": "noFb AUDIT: the 256.17% last-bullet rider is a normal-attack rider landing during FB -> noFb REMOVED (FB applies by timing). CONFIRMED by video (5,750,750 = 367,714 x ~15.64 FB-inclusive; non-FB 3.83M).",
+      "couldCauseGap": "neither",
+      "why": "Confirmed half \u2014 video-verified, not a live source of gap."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Burst 'Stuns for 3 sec.' dropped.",
+      "couldCauseGap": "COLD",
+      "why": "Single partless boss never acts in v1; stun has no damage pathway."
+    },
+    {
+      "source": "note",
+      "text": "skill1/burst auto-filled from the offline parser (blablalink prose) 2026-07-16 \u2014 behavior-identical to prior runtime parse, NOT hand-verified. skill1 4th line (Attack Damage 20.16%) and treasure multipliers (256.17/1687/1407.64) come from top-level prose, not the *_detail value tables (which carry base values 85.79/1089/457.87 and only 3 skill1 value groups).",
+      "couldCauseGap": "neither",
+      "why": "Provenance caveat; values match the treasure remap and prior runtime behavior, but flagged as not hand-verified."
+    }
+  ],
+  "authorIntentSummary": "The author modeled Privaty's treasure kit (synced via the treasure remap from synergy entry 198): S1 as full FB team buffs including the Max-Ammo -50.66% that accelerates everyone's last-bullet procs; S2 as a parser-faithful 256.17% + Damage-Taken 10.01% last-bullet rider plus the 1687% Designated-Target nuke approximated as a burstCast DoT (~3s x3) with noFb; burst as elemAdvantageDamagePct 130% + 1407.64% nuke + ATK-down, with the 3s stun dropped as inert. Key approximations: both S2 riders are noRange (exempt from range/FB majors, Q1-calibrated vs T4 with unconfirmed mechanism), and the 1687 is a trigger/timing proxy. The known-not-faithful spot is the 1687% Designated-Target gate, which is comp/condition-dependent (fires in T4/T4b but not the u7 comp) and is the standing open item behind the board spread."
+}

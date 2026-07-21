@@ -1,0 +1,38 @@
+{
+  "mari": {
+    "name": "Mari",
+    "burst": "II",
+    "weapon": "SR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates when landing a Full Charge attack. Affects all allies.",
+        "Damage dealt to Shield ▲ 100.09% for 3 sec."
+      ],
+      "skill2": [
+        "Gain Pierce for 5 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: trigger is KIT-SILENT — modeled as refresh-on-shot (near-permanent while firing); an unmeasured ⚑ estimate — if the real trigger is burst-gated this over-credits out-of-Full-Burst uptime",
+      "skill2: 'Gain Pierce for 5 sec' modeled as static hasPierce (no timed-pierce primitive); tied to the same ⚑ trigger estimate",
+      "skill1: 'Damage dealt to Shield ▲ 100.09%' unmodeled — the raid boss is partless and never shields",
+      "cadence: datamined charge/reload tuple + the SR 22-frame bolt-gap default are unmeasured ⚑ estimates (autofire would add ~15–20% shots)"
+    ],
+    "board": null
+  }
+}

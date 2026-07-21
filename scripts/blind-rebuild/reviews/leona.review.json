@@ -1,0 +1,86 @@
+{
+  "slug": "leona",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 5 normal attack(s). Affects all allies. Roar: Critical Rate \u25b2 2.62%, stacks up to 5 time(s) and lasts for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: trigger hitCount count:50, target allies, buff critRatePct 2.62 / durationSec 5 / maxStacks 5",
+        "note": "count:50 = 5 pulls \u00d7 hitsPerShot 10 (engine adds hitsPerShot per pull, sim.ts:1727). Stack ratcheting + shared-expiry refresh is engine-computed from her cadence (applyBuff sim.ts:900-910); no haircut baked. Cadence-sensitivity folded into \u26911."
+      },
+      {
+        "kitLine": "Activates after 15 normal attack(s). Affects all allies with a Shotgun. Maximum Effective Range \u25b2 20% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 (both lines verbatim)",
+        "note": "No effective-range StatKey exists; range bonus universally force-OFF in engine; SG pellet landing is the fixed measured SG_LANDING_BY_BAND table with no range-buff hook. Real under-model (\u26915): should raise far-band landing, changes landing not shots fired (hard-rule-1 OK)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies. Hit Rate \u25b2 20.28% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger fullBurstEnter, target allies, buff hitRatePct 20.28 / durationSec 10",
+        "note": "Recorded but ENGINE-INERT (100% accuracy assumed). Kept per HARD RULE 4 \u2014 Hit Rate provably raises core-hit rate, magnitude unmeasured (\u26912), never deleted."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects 2 ally unit(s) with the highest final ATK and a Shotgun. Number of pellets \u25b2 5 for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: trigger fullBurstEnter, target alliesOfWeapon SG, buff normalAttackPct 50 / durationSec 10",
+        "note": "+5 pellets on base-10 SG spread = +50% normal (arcana-fortune-mate precedent). TWO approximations (\u26913): top-2-ATK cap dropped (no top-ATK-with-weapon TargetDef) \u2192 applies to ALL SG allies incl. Leona herself, over-applies in 3+-SG teams; and +50% assumes extra 5 pellets land at same band fraction as base spread."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Critical Damage \u25b2 34.64% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast, target allies, buff critDamagePct 34.64 / durationSec 10",
+        "note": "No activation clause \u2192 her own burst block on burstCast. Fires only on rotations Leona casts (B2)."
+      },
+      {
+        "kitLine": "Activates when Roar is at max stacks. Affects all allies with shotguns. Critical Rate \u25b2 21.32% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: trigger burstCast, target alliesOfWeapon SG, buff critRatePct 21.32 / durationSec 10",
+        "note": "Target is an exact weapon-typed fit (no approximation). Roar-max-stacks gate NOT expressible (no buff-stack-count gate in Block) \u2192 modeled UNCONDITIONAL, assumed satisfied at cast (\u26914 \u2014 optimistic; reload-straddle stack resets mean gate may not reliably hold at solo cadence)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: 'Maximum Effective Range \u25b2 20%' to shotgun allies is not modeled \u2014 engine has no range stat, SG pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model.",
+      "couldCauseGap": "HOT",
+      "why": "Genuine unmodeled damage effect (\u26915): should raise SG-ally pellet landing at far bands \u2192 override under-predicts SG-team damage. Direction: under-model."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Hit Rate \u25b2 20.28% is recorded but inert in the engine (100% accuracy assumed); in reality it raises the core-hit rate by an unmeasured amount.",
+      "couldCauseGap": "HOT",
+      "why": "\u26912: block exists but does nothing in-engine; real kit adds core/landing rate during her FB window \u2192 under-predicts. Magnitude measured-only, currently zero."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: '+5 pellets' is modeled as Normal Attack +50% to ALL shotgun allies (kit: only the 2 highest-ATK shotgun allies) \u2014 over-applies in teams running 3 or more shotguns, including Leona herself.",
+      "couldCauseGap": "HOT",
+      "why": "\u26913: bounded within-class over-application. In 3+-SG teams the buff reaches units the real kit excludes \u2192 over-predicts. Direction depends on team SG count; neutral in \u22642-SG teams."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the 21.32% crit-rate line assumes Roar is fully stacked at her burst cast (the stack-count gate is not modeled and may not always hold).",
+      "couldCauseGap": "HOT",
+      "why": "\u26914: gate modeled unconditionally (optimistic). If Roar <5 stacks at cast (e.g. post-reload reset) the 21.32% crit buff should NOT apply \u2192 over-predicts crit rate when gate fails."
+    },
+    {
+      "source": "note",
+      "text": "\u26911 CADENCE TUPLE (pullsPerSec ~1.5 / reloadFrames 111 / rolling-reload) shipped unverified; Roar's engine-computed stack level AND the \u26914 burst gate both inherit it. 9-round mag + 111f reload makes the across-reload trigger gap ~5.2s, marginally past the 5s Roar expiry \u2192 stacks can reset across reload straddles.",
+      "couldCauseGap": "HOT",
+      "why": "Steady-state Roar stack count is cadence-sensitive and drives both the S1 crit-rate ratchet and whether the \u26914 burst gate holds. Wrong cadence \u2192 wrong stack level \u2192 gap in either direction."
+    }
+  ],
+  "authorIntentSummary": "PARSER-BASELINE HYPOTHESIS (not yet measured/hand-tuned) for a PURE TEAM BUFFER: Supporter, combat ATK ~98k, no self-damage lines \u2014 all value is crit-rate/crit-dmg/hit-rate/pellet buffs to allies, so correctness is a /sim-battery board diff on SG teams, not a self-sim (no board data yet). Faithfully modeled: S1 Roar crit-rate stack (engine-computed cadence ratchet), S2 hit-rate (recorded but engine-inert), S2 +pellets as +50% normal to SG allies, burst crit-dmg to all + 21.32% crit to SG allies. Known-not-faithful: +pellets over-applies to ALL SG allies instead of top-2-ATK (\u26913), hit-rate does nothing in-engine (\u26912), the Roar-max burst gate is assumed unconditional (\u26914), and the S1 +20% effective-range line is unmodeled as a real far-band landing under-model (\u26915). Every \u2691 is an unmeasured estimate pending footage/focus-video recipes."
+}

@@ -1,0 +1,57 @@
+{
+  "rouge": {
+    "name": "Rouge",
+    "burst": "I",
+    "weapon": "SR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "F1/F2 (P1) burst Max-HP grants DOUBLE-COUNTED (casterMaxHpPct 22 + 22.5 = 44.5% vs kit max 30.02; Double Sword Coin in both skill2+burst) — blast radius = atkOfMaxHpPct consumers (cinderella/maiden), consistent with ~1.060. Backfilled empty unmodeled"
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Positional + Max-HP grant rebuilt from run-E e/e2/e3 videos; coin values timeline-averaged; 1.02",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates after landing 8 Full Charge attack(s): the Max HP granted (5% of caster's Max HP, 5 sec) cannot be restored — the no-restore qualifier is inert (no HP pool / healing modeled); the grant itself IS modeled (as a passive time-averaged 2.3 ⚑)"
+      ],
+      "skill2": [
+        "Activates after landing 30 Full Charge attack(s) while in Sword Coin state: grants self and 2 ally unit(s) on both sides the Shield Coin — Damage Taken ▼ 15.2% continuously (defensive; boss deals no damage in v1)",
+        "Coin state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 Burst uses in Shield Coin) is not tracked as engine state; it is absorbed into ⚑ timeline-averaged values"
+      ],
+      "burst": []
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+          "ratio": 0.9831
+        },
+        {
+          "comp": "PE elec DPS (boss Water)",
+          "ratio": 1.088
+        },
+        {
+          "comp": "N3 scarlet/liberalio iron (boss Iron)",
+          "ratio": 1.0865
+        }
+      ],
+      "n": 3,
+      "mean": 1.0525,
+      "mad": 0.0638,
+      "band": "±8%",
+      "temp": "HOT ▲"
+    }
+  }
+}

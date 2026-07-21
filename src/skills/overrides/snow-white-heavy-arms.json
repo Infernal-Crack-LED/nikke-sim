@@ -8,7 +8,8 @@
       "■ Activates when performing a normal attack while not in Full Burst. Affects self. Removes Seven Dwarves Fully Active."
     ],
     "skill2": [
-      "Gains Pierce for 5 sec."
+      "Gains Pierce for 5 sec.",
+      "Activates at the start of battle. Affects self. Fixes charge time at 1.2 sec continuously."
     ],
     "burst": [
       "Seven Dwarves Fully Active — Function: Increases max number of Lock-On targets and max ammo loaded by Auto Fire Ready, but also increases Charge Time.",

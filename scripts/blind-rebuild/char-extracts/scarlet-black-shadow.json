@@ -1,0 +1,517 @@
+{
+  "scarlet-black-shadow": {
+    "slug": "scarlet-black-shadow",
+    "name": "Scarlet: Black Shadow",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/lm-40/at-86/b7689ebb7d1b09af2779f7fd11a22ba6.png",
+    "weapon": "RL",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 57.29,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 152,
+    "chargeFrames": 18,
+    "chargeMultiplier": 150,
+    "hitsPerShot": 1,
+    "rl3": 13.75,
+    "burstGaugePerShot": 1.25,
+    "treasure": false,
+    "nicknames": [
+      "sbs"
+    ],
+    "skills": {
+      "skill1": "■ Activates when performing a Full Charge attack.\nEffects vary according to the number of attacks. Only one effect is triggered at a time.\nThree times: Affects the 1 enemy unit(s) with the lowest final DEF.\nDeals 283.03% of final ATK as damage.\nSix times: Affects enemies within range.\nDeals 565% of final ATK as Distributed Damage.\nNine times: Affects all enemies.\nDeals 848.03% of final ATK as Distributed Damage.",
+      "skill2": "■ Activates when entering Full Burst. Affects self. \nMax Ammunition Capacity ▲ 60% for 10 sec.\nReload 100% of the magazine(s).",
+      "burst": "■ Affects self.\nChanges Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\nATK ▲ 115.12% for 10 sec.\nCharge Damage ▲ 169.63% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1022501,
+        "shot_detail": {
+          "id": 1022501,
+          "damage": 5729,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "ProjectileDirect",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 30,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 15000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 1,
+          "burst_energy_pershot": 12500,
+          "description_localkey": "■ Affects target(s).\nUnleashes sword energy for an attack of small range. \n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 23,
+          "spot_explosion_range": 50,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 400,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 15000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 25000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2225101,
+        "skill2_id": 2225201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2225101,
+          "icon": "icn_skill_damage_01",
+          "group_id": 22251,
+          "skill_level": 1,
+          "name_localkey": "Fleetly Fading: Breakthrough",
+          "next_level_id": 2225102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates when performing a Full Charge attack.\n<color=#00AEFF>Effects vary according to the number of attacks. Only one effect is triggered at a time.</color>\nThree times: Affects the {description_value_01} enemy unit(s) with the lowest <word_group=10025>final</word_group> DEF.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as damage.</color>\nSix times: Affects <word_group=10020>enemies within range</word_group>.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as <word_group=10019>Distributed Damage</word_group>.</color>\nNine times: Affects all enemies.\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as <word_group=10019>Distributed Damage</word_group>.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "218.46",
+                "225.63",
+                "232.81",
+                "239.98",
+                "247.16",
+                "254.32",
+                "261.5",
+                "268.68",
+                "275.85",
+                "283.03"
+              ]
+            },
+            {
+              "description_value": [
+                "371.28",
+                "392.79",
+                "414.32",
+                "435.85",
+                "457.37",
+                "478.89",
+                "500.42",
+                "521.94",
+                "543.47",
+                "565"
+              ]
+            },
+            {
+              "description_value": [
+                "441.23",
+                "486.43",
+                "531.63",
+                "576.83",
+                "622.03",
+                "667.23",
+                "712.43",
+                "757.63",
+                "802.83",
+                "848.03"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2225201,
+          "icon": "icn_skill_statammo_01",
+          "group_id": 22252,
+          "skill_level": 1,
+          "name_localkey": "Fleetly Fading: Asura",
+          "next_level_id": 2225202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates when entering Full Burst. Affects self. \n<color=#00AEFF>Max Ammunition Capacity ▲ {description_value_01}% for {description_value_02} sec.</color>\n<color=#00AEFF>Reload {description_value_03}% of the magazine(s).</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "40",
+                "42.22",
+                "44.44",
+                "46.66",
+                "48.88",
+                "51.1",
+                "53.32",
+                "55.54",
+                "57.76",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "60",
+                "60",
+                "60",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1225401,
+        "ulti_skill_detail": {
+          "id": 1225401,
+          "icon": "icn_skill_c225_ult",
+          "group_id": 12254,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Fleetly Fading: Strike",
+          "next_level_id": 1225402,
+          "prefer_target": "LowHP",
+          "resource_name": "c225_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for {description_value_01} sec.</color>\n<color=#00AEFF>ATK ▲ {description_value_02}% for {description_value_03} sec.</color>\n<color=#00AEFF>Charge Damage ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "17.28",
+                "28.15",
+                "39.02",
+                "49.89",
+                "60.76",
+                "71.64",
+                "82.51",
+                "93.38",
+                "104.25",
+                "115.12"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "96.41",
+                "104.54",
+                "112.68",
+                "120.81",
+                "128.95",
+                "137.09",
+                "145.22",
+                "153.36",
+                "161.49",
+                "169.63"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            122530101,
+            122530102,
+            122530103,
+            122530104,
+            122530105,
+            122530106
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 422502,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5105,
+        "stat_enhance_detail": {
+          "id": 5105,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100225,
+        "piece_detail": {
+          "id": 5100225,
+          "class": "Attacker",
+          "order": 22500,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 225,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Scarlet: Black Shadow's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 422501,
+        "class": "Attacker",
+        "order": 10149,
+        "name_code": 5105,
+        "corporation": "PILGRIM",
+        "resource_id": 225,
+        "name_localkey": "Scarlet: Black Shadow",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 88,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 225
+    }
+  }
+}

@@ -1,0 +1,468 @@
+{
+  "ether": {
+    "slug": "ether",
+    "name": "Ether",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/jd-49/gh-23/02b69dd133ef18069d77fe914b6e597a.png",
+    "weapon": "SG",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Defender",
+    "element": "Electric",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 214.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 141,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Affects 1 allies with the lowest remaining HP. \nDamage Taken ▼ 52.5% for 5 sec.",
+      "skill2": "■ Affects 3 enemy unit(s) with the highest final DEF.\nDeals 56.32% of final ATK as damage. \n■ Affects the same enemy unit(s). Activates during Full Burst.\nDEF ▼ 9.38% for 6 sec.",
+      "burst": "■ Affects 3 ally unit(s) with the lowest remaining HP.\nCreates a Shield equal to 96% of the the skill user's final Max HP for 5 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1029101,
+        "shot_detail": {
+          "id": 1029101,
+          "damage": 21430,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Bio",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 1291101,
+        "skill2_id": 1291201,
+        "skill1_table": "CharacterSkill",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 1291101,
+          "icon": "icn_skill_defup_01",
+          "group_id": 12911,
+          "skill_level": 1,
+          "name_localkey": "Corrosive Bullets",
+          "next_level_id": 1291102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Affects {description_value_01} allies with the lowest remaining HP. \n<color=#00AEFF>Damage Taken ▼ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "22.96",
+                "26.25",
+                "29.53",
+                "32.81",
+                "36.09",
+                "39.37",
+                "42.65",
+                "45.93",
+                "49.21",
+                "52.5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1291201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 12912,
+          "skill_level": 1,
+          "name_localkey": "Prognostic Response Experiment",
+          "next_level_id": 1291202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Affects {description_value_01} enemy unit(s) with the highest <word_group=10025>final</word_group> DEF.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as damage.</color> \n■ Affects the same enemy unit(s). Activates during Full Burst.\n<color=#00AEFF>DEF ▼ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "24.64",
+                "28.16",
+                "31.68",
+                "35.2",
+                "38.72",
+                "42.24",
+                "45.76",
+                "49.28",
+                "52.8",
+                "56.32"
+              ]
+            },
+            {
+              "description_value": [
+                "4.1",
+                "4.69",
+                "5.28",
+                "5.86",
+                "6.45",
+                "7.04",
+                "7.62",
+                "8.21",
+                "8.8",
+                "9.38"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1291301,
+        "ulti_skill_detail": {
+          "id": 1291301,
+          "icon": "icn_skill_c291_ult",
+          "group_id": 12913,
+          "shake_id": 1,
+          "skill_type": "InstallBarrier",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Colossal Single Cell",
+          "next_level_id": 1291302,
+          "prefer_target": "LowHP",
+          "resource_name": "c291_ulti",
+          "duration_value": 500,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 4200,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 3,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects {description_value_01} ally unit(s) with the lowest remaining HP.\n<color=#00AEFF>Creates a <word_group=10023>Shield</word_group> equal to {description_value_02}% of the the skill user's <word_group=10025>final</word_group> Max HP for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "42",
+                "48",
+                "54",
+                "60",
+                "66",
+                "72",
+                "78",
+                "84",
+                "90",
+                "96"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 129102,
+        "grade_core_id": 101,
+        "stat_enhance_id": 3204,
+        "stat_enhance_detail": {
+          "id": 3204,
+          "core_hp": 200,
+          "grade_hp": 2300,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 18,
+          "grade_defence": 90,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100291,
+        "piece_detail": {
+          "id": 5100291,
+          "class": "Defender",
+          "order": 29100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 291,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Ether's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 129101,
+        "class": "Defender",
+        "order": 30013,
+        "name_code": 3010,
+        "corporation": "MISSILIS",
+        "resource_id": 291,
+        "name_localkey": "Ether",
+        "original_rare": "SR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 12650,
+      "atk": 360,
+      "def": 95,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 2300,
+        "atk": 18,
+        "def": 90,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 291
+    }
+  }
+}

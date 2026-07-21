@@ -1,0 +1,98 @@
+{
+  "slug": "helm",
+  "board": {
+    "ratio": 1.02,
+    "n": 5,
+    "mad": 0.028,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when the last bullet hits the target. Affects all allies. Critical Rate of normal attacks \u25b2 14.64% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: trigger lastBullet \u2192 allies, buff critRatePct 14.64/5s",
+        "note": "'of normal attacks' qualifier not restricted in override; inert for SR auto-play where all damage is normal (charged) attacks"
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge. Affects all allies. Recovers 0.59% of the skill user's final Max HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: trigger shotFired \u2192 allies, heal event",
+        "note": "Modeled as event-only heal (no HP value). Purpose: emit recovery event to drive Crown's 'when recovery takes effect' trigger to near-permanent uptime. 0.59% HP amount is irrelevant to damage sim."
+      },
+      {
+        "kitLine": "Fills Burst Gauge by 14.31%.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]: trigger shotFired \u2192 allies, fillGauge 14.31",
+        "note": "Same block as the heal; fires every full charge (shotFired = every SR pull)"
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects all allies. Damage to Interruption Parts \u25b2 3.08% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger passive \u2192 allies, buff partsDamagePct 3.08",
+        "note": "Inert vs partless boss (sim scope), kept for completeness"
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies. Attack Damage \u25b2 27.87% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: trigger fullBurstEnter \u2192 allies, buff attackDamagePct 27.87/10s",
+        "note": "TREASURE value (base kit was 11.85). Restored 2026-07-17 after DB sync."
+      },
+      {
+        "kitLine": "Activates when hitting a target with Full Charge. Affects the target. Deals 178.98% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2]: trigger shotFired \u2192 enemy, flatDamage atkPct 178.98",
+        "note": "TREASURE addition. Trigger read as shotFired (every SR pull = full charge). Crit-default per engine convention. ~Doubles sustained charged-shot damage."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects the enemy with the highest final ATK. Deals 8236.8% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast \u2192 enemy, flatDamage atkPct 8236.8",
+        "note": "TREASURE nuke value (base kit 1237.5). Target selection (highest ATK) is inert in partless single-boss scope."
+      },
+      {
+        "kitLine": "Affects all allies. Recovers 54.45% of attack damage as HP for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2]: trigger burstCast \u2192 allies, heal event",
+        "note": "Modeled as event-only heal (recovery event emitted). HP recovery amount not numerically tracked; event drives Crown-style consumers. Note describes it as 'faithful-but-near-redundant' since S1 already saturates those triggers."
+      },
+      {
+        "kitLine": "Affects self. Charge Damage Multiplier \u25b2 158.4% for 10 round(s).",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: trigger burstCast \u2192 self, buff chargeDamageMultPct 158.4/durationSec 13",
+        "note": "'10 rounds' approximated as 13s (~8 rounds incl. mid-window reload; 10 rounds \u2248 16-17s). See caveat."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: the 178.98% full-charge additional hit is modeled on shotFired (every SR pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
+      "couldCauseGap": "HOT",
+      "why": "If the 178.98% hit does NOT fire every charged shot, the override over-counts sustained damage by up to ~50%. This is the single largest damage contributor after the burst nuke. Currently validated at 1.020 mean across 5 comps, so empirically it appears correct, but the trigger assumption is unverified by frame data."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the 158.4% Charge Damage 'for 10 round(s)' is approximated as durationSec 13 (~8 rounds incl. the mid-window reload; 10 rounds ~= 16-17s)",
+      "couldCauseGap": "COLD",
+      "why": "durationSec 13 undercounts the true 10-round window (~16-17s) by ~3-4s, meaning ~2 rounds lose the charge buff. This would make the sim slightly COLD on burst-window damage. The 1.020 board read suggests the net effect is small (buff applies to self only, and the nuke already landed)."
+    },
+    {
+      "source": "note",
+      "text": "Heal events (S1 0.59% MaxHP, burst 54.45% attack damage) are event-only \u2014 no HP value tracked",
+      "couldCauseGap": "neither",
+      "why": "HP values are irrelevant to damage output. The events exist solely to trigger Crown-style 'when recovery takes effect' buffs. Omitting them entirely would leave Crown+Helm teams ~15% cold (per note); modeling them as events is the correct abstraction for a damage sim."
+    },
+    {
+      "source": "note",
+      "text": "partsDamagePct 3.08 is inert vs partless boss",
+      "couldCauseGap": "neither",
+      "why": "Sim scope is partless boss. The buff is correctly modeled but never activates. No gap contribution."
+    }
+  ],
+  "authorIntentSummary": "The override models Helm (Treasure)'s full favorite-item kit as reconciled 2026-07-17, after a DB sync restored the treasure prose that had been frozen at the untreasured base values (causing a 0.591 COLD board read). All nine kit lines are represented as blocks with no MISSING entries. The two key approximations are: (1) the 178.98% full-charge additional hit fires on shotFired (every SR pull), which is empirically validated but not frame-confirmed; and (2) the '10 rounds' charge-damage buff is approximated as 13s duration, slightly undercounting the true window. Heal effects are deliberately event-only to drive Crown-style recovery triggers without tracking HP. Board reads 1.020 \u00b12.8% MAD across 5 comps (OK band)."
+}

@@ -61,6 +61,7 @@ export type TriggerDef =
   | { kind: 'lastBullet' }                  // on the owner's last bullet / reload start
   | { kind: 'recovery' }                    // when the owner RECEIVES a heal (a 'heal' effect targets them) — Crown's "when recovery takes effect"
   | { kind: 'shielded' }                    // when the owner RECEIVES a shield (a 'shield' effect targets them) — shield-synergy kits (e.g. naga's shield-gate)
+  | { kind: 'interval'; sec: number }       // fires every `sec` seconds of battle, first at t=sec — kit lines that "just happen" on an internal cooldown with no visible activation clause (snow-white S2a 144.73%, owner-stated 15s CD 2026-07-20). ⚑ first-fire phase (t=sec vs t=0) is a convention; pin from footage when a consumer's cadence is popup-read
   | { kind: 'stageEnter'; stage: 1 | 2 | 3 } // when a stage-N burst is cast by anyone
   | { kind: 'bossElement'; element: string } // permanent, but only if the boss has this element
   | { kind: 'unsupported'; raw: string };
@@ -74,12 +75,16 @@ export type TargetDef =
   | { kind: 'nonBurstCasters' }
   // excludeSelf: "N highest-ATK ally (except the skill user)" — miranda, soda-twinkling-bunny.
   // Applied to the candidate pool BEFORE the count-slice (exclude-then-take-N).
-  | { kind: 'alliesTopAtk'; count: number; excludeSelf?: boolean }
+  // byFinalAtk: rank by LIVE effectiveAtk (buffed) instead of staticAtk (base) — set ONLY when the
+  // kit text literally says "highest/lowest FINAL ATK" (A3, 2026-07-20). Absent = static ranking
+  // (kits that say plain "highest ATK", e.g. naga, keep base-ATK ranking per the owner literal-word rule).
+  | { kind: 'alliesTopAtk'; count: number; excludeSelf?: boolean; byFinalAtk?: boolean }
   | {
       kind: 'alliesLowestAtk'; // "N [Burst X] ally unit(s) with the lowest final ATK"
       count: number;
       burst?: 'I' | 'II' | 'III';
       excludeSelf?: boolean; // e.g. Liberalio is immune to charge-speed buffs
+      byFinalAtk?: boolean;  // rank by live effectiveAtk when the kit says "lowest FINAL ATK" (A3)
     }
   | { kind: 'alliesOfElement'; element: string; excludeSelf?: boolean }
   | { kind: 'alliesOfClass'; cls: string; excludeSelf?: boolean }
@@ -132,6 +137,17 @@ export type EffectDef =
       delaySec?: number; // flighted damage: lands delaySec later, snapshotting buffs/FB at
                          // LANDING (MEASURED 2026-07-14: rapi-red-hood's burst nuke missile
                          // lands ~0.4s post-banner inside her window at the full buff state)
+      // A full-charge cannon shot dealt as a DELAYED hit while the caster keeps firing her base
+      // weapon (snow-white: her AR fires through the ~5s cannon charge; the cannon is one flighted
+      // charge shot, NOT a weaponSwap that halts the base weapon — sw.MP4 2026-07-20). These four
+      // only take effect on the delaySec path; instant flatDamage riders keep charge:false/noRange:true.
+      charge?: boolean;       // route through the charge bucket (§1d) — a real full-charge shot
+      chargeMultPct?: number; // full-charge multiplier for a `charge` hit when no swap sources it
+                              // (base AR chargeMultiplier is 0); only read when charge:true
+      pierce?: boolean;       // Pierce-tagged (Pierce Damage ▲ feeds this hit's Damage-Up bucket),
+                              // independent of the unit-level hasPierce flag — one-shot/swap-scoped pierce
+      rangeOk?: boolean;      // opt this DELAYED hit INTO the +30% range bonus (delayed hits force
+                              // noRange by default; the cannon gets range like the swap shot it replaces)
       requiresPulls?: number; // fires only if the caster has fired >= N shots (MEASURED
                               // 2026-07-14: her nuke needs >=1 sticky charge = 120 shots)
       // per-battle-elapsed ramp: scales this hit's atkPct by min(1, elapsed/rampSec) — for a
@@ -170,6 +186,10 @@ export type EffectDef =
       // eligibility + auto-core rate for swap shots (nayuta: SMG base → SR "Memory Incineration" mode).
       weapon?: string;
       trueNormals?: boolean;    // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
+      hasPierce?: boolean;      // swap shots are Pierce-tagged ("Additional Effect: Pierce" scoped to the
+                                // swapped weapon, snow-white's cannon — owner-ruled 2026-07-20). Feeds the
+                                // per-shot pierce tag only (Pierce Damage ▲ bucket eligibility); never the
+                                // static whole-fight hasPierce flag
       durationSec: number;      // hard time bound (e.g. the 10s burst window)
       maxShots?: number;        // uses-based end: swap terminates right after the Nth swapped
                                 // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
@@ -177,6 +197,7 @@ export type EffectDef =
   | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
   | { kind: 'heal'; ticks?: number; intervalSec?: number }    // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
   | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
+  | { kind: 'wipeOut'; durationSec: number }                  // inflicts a "Wipe Out" status on the boss for durationSec — opens a global window read by the requiresWipeOut block gate (d-killer-wife's burst: her area-hit ATK/core riders are earnable only while the target is Wipe-Out-afflicted). TODO parts: the parts-hit branch (coreDamagePct) needs destructible-part modeling; core-only for now.
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
       atkPct: number;    // per charge, % of caster's final ATK at release time
@@ -199,7 +220,7 @@ export type EffectDef =
   // the belt to 0, forces an immediate reload (fires lastBullet triggers, same as firing dry).
   // The inverse of instantReload. e.g. grave's Prediction-end forced reload, asuka-wille, jill.
   | { kind: 'consumeAmmo'; fraction?: number }
-  | { kind: 'gainPierce'; durationSec: number }               // timed "Gain Pierce for N sec": the target's attacks count as Pierce-tagged for the window, so its (and teammates') Pierce Damage ▲ buffs go live during it — for a kit whose pierce is temporary, not the static per-unit `hasPierce` flag
+  | { kind: 'gainPierce'; durationSec?: number }              // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and teammates') Pierce Damage ▲ buffs go live. durationSec = timed "for N sec" window; ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't step-gate)
   | { kind: 'instantReload'; fraction?: number }              // refill magazine (fraction of max, default full)
   | { kind: 'stun'; durationSec: number }                     // target can't fire/charge/reload (bursting unaffected)
   | {
@@ -233,7 +254,10 @@ export interface Block {
   // team lacking one. The owner itself never counts (same rule as `formation`);
   // burst matches literally (a Λ unit does NOT satisfy burst:'III'). Omit = always
   // active (back-compatible). Burst codes 'I'|'II'|'III'|'Λ'; weapon AR/SMG/SG/SR/RL/MG.
-  teamHas?: { element?: string; class?: string; weapon?: string; burst?: string };
+  // `slugs`: the team contains one of these SPECIFIC units (matches some OTHER ally's exact slug) —
+  // for kit gates keyed to named squad-mates the data has no squad axis for (noir's burst block 3
+  // "an ally from the same squad": owner-ruled 2026-07-20 satisfied by blanc or rouge).
+  teamHas?: { element?: string; class?: string; weapon?: string; burst?: string; slugs?: string[] };
   // mode gate: block active only when the unit's selected mode matches (the
   // override's top-level `modes` array declares the choices; first = default)
   mode?: string;
@@ -255,6 +279,18 @@ export interface Block {
   // Active extra volley rides only her two swapped full-charge shots),
   // 'unswapped' only outside it
   swapGate?: 'swapped' | 'unswapped';
+  // shield-state gate, checked when the trigger fires: the block only activates while the
+  // OWNER currently has a shield set on them (a 'shield' effect targeted them and its
+  // durationSec has not elapsed; no duration = permanent at scope, since boss damage is
+  // unmodeled and nothing breaks shields). For "Activates if a Shield is set in front of
+  // this unit" lines evaluated at cast time (naga's burst 31.02% — owner-ruled default-off
+  // 2026-07-20). Distinct from the `shielded` TRIGGER (fires at shield application).
+  requiresShielded?: boolean;
+  // wipe-out-state gate, checked when the trigger fires: the block only activates while the
+  // boss carries the "Wipe Out" status (a 'wipeOut' effect's window). d-killer-wife's burst
+  // area riders — "when allies hit an area of the Wipe-Out-afflicted target". Composes with
+  // requiresCore (core-only proxy; the parts-hit branch awaits destructible-part modeling).
+  requiresWipeOut?: boolean;
   // boss-element gate, checked when the trigger fires: the block only activates
   // when the fight's boss element matches (e.g. helm-aquamarine's burst "when
   // attacking an Electric Code target → +164.83%"; brid-silent-track's FB-enter

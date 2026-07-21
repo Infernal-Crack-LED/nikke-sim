@@ -1,0 +1,57 @@
+{
+  "mint": {
+    "name": "Mint",
+    "burst": "II",
+    "weapon": "RL",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "0.768 likely a CONFIG BUG not model bug: mode defaults 'solo' (halved values) unless comp fields prika / sets modes.mint; synthetic A/B own-dmg = 0.777 = board. Values exact, cadence measured. F1: Dancing heal (1.8% MaxHP/s) dropped -> crown recovery consumer never procs (hard rule 2)"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Run A; release-latency landed 1.21->0.91; duet mode fix",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec."
+      ],
+      "skill2": [
+        "Activates when entering Burst Stage 3 while not in Sing Along status: Cancels Singing and Dancing."
+      ],
+      "burst": [
+        "Only one Assigned Part is applied according to Mint's current status.",
+        "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.",
+        "Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed."
+      ]
+    },
+    "caveats": [
+      "burst: unparsed effect \"Only one Assigned Part is applied according to Mint's current status.\"",
+      "burst: unparsed effect \"Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.\"",
+      "burst: unparsed effect \"Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed.\""
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PA MiKa (boss Iron)",
+          "ratio": 0.7763
+        }
+      ],
+      "n": 1,
+      "mean": 0.7763,
+      "mad": 0.2237,
+      "band": ">15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

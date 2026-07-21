@@ -1,0 +1,565 @@
+{
+  "rouge": {
+    "slug": "rouge",
+    "name": "Rouge",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/gd-21/io-70/42e634a02bfca9e67c4f7ba00ce47823.png",
+    "weapon": "SR",
+    "burst": "I",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Electric",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 71.07,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 161,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 8.7,
+    "burstGaugePerShot": 2.9,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when attacking with Full Charge for 8 time(s). Affects all allies.\nMax HP ▲ 5% of the skill user's Max HP without restoring HP, lasts for 5 sec.\nCooldown of Burst Skill ▼ 7 sec.",
+      "skill2": "■ Activates when assigned to the back row in battle. Affects self and 2 allies on both sides.\nSword Coin: Attack Damage ▲ 6.65% continuously.\n■ Activates when attacking with Full Charge for 30 time(s). Affects self and 2 allies on both sides when in Sword Coin status.\nShield Coin: Damage Taken ▼15.2% continuously.\n■ Activates when using Burst Skill for 5 time(s). Affects all allies when in Shield Coin status.\nDouble Sword Coin: Max HP ▲ 15.08% of the skill user's Max HP continuously.",
+      "burst": "■ Affects all allies.\nATK ▲ 15.07% of the skill user's ATK for 10 sec.\n■ Activates when in Sword Coin status. Affects all allies.\nMax HP ▲ 10.15% of the skill user's Max HP without restoring HP, lasts for 10 sec.\n■ Activates when in Shield Coin status. Affects all allies.\nMax HP ▲ 20.1% of the skill user's Max HP for 10 sec.\n■ Activates when in Double Sword Coin status. Affects all allies.\nMax HP ▲ 30.02% of the skill user's Max HP without restoring HP, lasts for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1027201,
+        "shot_detail": {
+          "id": 1027201,
+          "damage": 7107,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_SR",
+          "fire_type": "Instant",
+          "zoom_rate": 30,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 233,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SR",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Sniper Rifle",
+          "prefer_target": "Back",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 29000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 58000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 100,
+        "bonusrange_min": 45
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2272101,
+        "skill2_id": 2272201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2272101,
+          "icon": "icn_skill_stathp_01",
+          "group_id": 22721,
+          "skill_level": 1,
+          "name_localkey": "Card Throw",
+          "next_level_id": 2272102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when attacking with Full Charge for {description_value_01} time(s). Affects all allies.\n<color=#00AEFF>Max HP ▲ {description_value_02}% of the skill user's Max HP without restoring HP, lasts for {description_value_03} sec.</color>\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8",
+                "8"
+              ]
+            },
+            {
+              "description_value": [
+                "2.95",
+                "3.18",
+                "3.41",
+                "3.63",
+                "3.86",
+                "4.09",
+                "4.32",
+                "4.54",
+                "4.77",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "4.13",
+                "4.45",
+                "4.77",
+                "5.09",
+                "5.4",
+                "5.72",
+                "6.04",
+                "6.36",
+                "6.68",
+                "7"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2272201,
+          "icon": "icn_skill_stathp_01",
+          "group_id": 22722,
+          "skill_level": 1,
+          "name_localkey": "Coin Flip",
+          "next_level_id": 2272202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates when assigned to the <word_group=10055>back row in battle. Affects self and 2 allies on both sides</word_group>.\n<color=#00AEFF>Sword Coin: Attack Damage ▲ {description_value_01}% continuously.</color>\n■ Activates when attacking with Full Charge for {description_value_02} time(s). Affects self and 2 allies on both sides when in Sword Coin status.\n<color=#00AEFF>Shield Coin: Damage Taken ▼{description_value_03}% continuously.</color>\n■ Activates when using Burst Skill for {description_value_04} time(s). Affects all allies when in Shield Coin status.\n<color=#00AEFF>Double Sword Coin: Max HP ▲ {description_value_05}% of the skill user's Max HP continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3.93",
+                "4.23",
+                "4.54",
+                "4.84",
+                "5.14",
+                "5.44",
+                "5.75",
+                "6.05",
+                "6.35",
+                "6.65"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "8.98",
+                "9.67",
+                "10.36",
+                "11.05",
+                "11.75",
+                "12.44",
+                "13.13",
+                "13.82",
+                "14.51",
+                "15.2"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "8.91",
+                "9.59",
+                "10.28",
+                "10.96",
+                "11.65",
+                "12.34",
+                "13.02",
+                "13.71",
+                "14.39",
+                "15.08"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1272301,
+        "ulti_skill_detail": {
+          "id": 1272301,
+          "icon": "icn_skill_c272_ult",
+          "group_id": 12723,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Game Master",
+          "next_level_id": 1272302,
+          "prefer_target": "LowDefence",
+          "resource_name": "c272_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_01}% of the skill user's ATK for {description_value_02} sec.</color>\n■ Activates when in Sword Coin status. Affects all allies.\n<color=#00AEFF>Max HP ▲ {description_value_03}% of the skill user's Max HP without restoring HP, lasts for {description_value_04} sec.</color>\n■ Activates when in Shield Coin status. Affects all allies.\n<color=#00AEFF>Max HP ▲ {description_value_05}% of the skill user's Max HP for {description_value_06} sec.</color>\n■ Activates when in Double Sword Coin status. Affects all allies.\n<color=#00AEFF>Max HP ▲ {description_value_07}% of the skill user's Max HP without restoring HP, lasts for {description_value_08} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "7.12",
+                "8.01",
+                "8.89",
+                "9.77",
+                "10.66",
+                "11.54",
+                "12.42",
+                "13.31",
+                "14.19",
+                "15.07"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6.46",
+                "6.92",
+                "7.38",
+                "7.85",
+                "8.31",
+                "8.77",
+                "9.23",
+                "9.69",
+                "10.15"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "11.88",
+                "12.79",
+                "13.7",
+                "14.62",
+                "15.53",
+                "16.44",
+                "17.36",
+                "18.27",
+                "19.19",
+                "20.1"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "17.74",
+                "19.1",
+                "20.47",
+                "21.83",
+                "23.19",
+                "24.56",
+                "25.92",
+                "27.29",
+                "28.65",
+                "30.02"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            127230101,
+            127230102,
+            127230103,
+            127230104,
+            127230105,
+            127230106,
+            127230107
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 327202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5302,
+        "stat_enhance_detail": {
+          "id": 5302,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100272,
+        "piece_detail": {
+          "id": 5100272,
+          "class": "Attacker",
+          "order": 27200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 272,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Rouge's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 327201,
+        "class": "Supporter",
+        "order": 10127,
+        "name_code": 5049,
+        "corporation": "TETRA",
+        "resource_id": 272,
+        "name_localkey": "Rouge",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 84,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 272
+    }
+  }
+}

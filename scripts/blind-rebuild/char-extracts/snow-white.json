@@ -1,0 +1,472 @@
+{
+  "snow-white": {
+    "slug": "snow-white",
+    "name": "Snow White",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/uw-13/hn-41/40aa7f12e128aa1a4c506661302085ca.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Iron",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 14.71,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 9.75,
+    "burstGaugePerShot": 0.25,
+    "treasure": false,
+    "nicknames": [
+      "sw"
+    ],
+    "skills": {
+      "skill1": "■ Activates when normal attack hits 30 time(s). Affects the target(s).\nDeals 82.8% of final ATK as additional damage. \n■ Activates when normal attack hits 30 time(s). Affects self.\nATK ▲ 8.28% for 5 sec.",
+      "skill2": "■ Affects enemies within range.\nDeals 144.73% of final ATK as damage. \n■ Activates when using this skill during Full Burst. Affects self.\nCritical Rate ▲ 26.1% for 10 sec.",
+      "burst": "■ Affects self. \nChange the weapon in use: \nCharge Time: 5 sec\nDamage: 499.5% of final ATK \nFull Charge Damage: 1000% of damage \nMax Ammunition Capacity: 1 round(s) \nAdditional Effect: Pierce"
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1022001,
+        "shot_detail": {
+          "id": 1022001,
+          "damage": 1471,
+          "max_ammo": 60,
+          "shake_id": 1,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 5000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2220101,
+        "skill2_id": 1220201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2220101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 22201,
+          "skill_level": 1,
+          "name_localkey": "Determination",
+          "next_level_id": 2220102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates when normal attack hits {description_value_01} time(s). Affects the target(s).\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.</color> \n■ Activates when normal attack hits {description_value_01} time(s). Affects self.\n<color=#00AEFF>ATK ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "51.75",
+                "55.2",
+                "58.65",
+                "62.1",
+                "65.55",
+                "69",
+                "72.45",
+                "75.9",
+                "79.35",
+                "82.8"
+              ]
+            },
+            {
+              "description_value": [
+                "5.17",
+                "5.52",
+                "5.86",
+                "6.21",
+                "6.55",
+                "6.9",
+                "7.24",
+                "7.59",
+                "7.93",
+                "8.28"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1220201,
+          "icon": "icn_skill_statcritical_01",
+          "group_id": 12202,
+          "skill_level": 1,
+          "name_localkey": "Seven Dwarves: V&VI",
+          "next_level_id": 1220202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Affects <word_group=10020>enemies within range</word_group>.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as damage.</color> \n■ Activates when using this skill during Full Burst. Affects self.\n<color=#00AEFF>Critical Rate ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "90.46",
+                "96.49",
+                "102.52",
+                "108.55",
+                "114.58",
+                "120.61",
+                "126.64",
+                "132.67",
+                "138.7",
+                "144.73"
+              ]
+            },
+            {
+              "description_value": [
+                "16.31",
+                "17.4",
+                "18.48",
+                "19.57",
+                "20.66",
+                "21.75",
+                "22.83",
+                "23.92",
+                "25.01",
+                "26.1"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1220301,
+        "ulti_skill_detail": {
+          "id": 1220301,
+          "icon": "icn_skill_c220_ult",
+          "group_id": 12203,
+          "shake_id": 1,
+          "skill_type": "ChangeWeapon",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Energy_Type",
+          "duration_type": "Shots",
+          "name_localkey": "Seven Dwarves: I",
+          "next_level_id": 1220302,
+          "prefer_target": "LowHP",
+          "resource_name": "c220_ulti",
+          "duration_value": 1,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 12487,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 120,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1022002,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self. \n<color=#00AEFF>Change the weapon in use: \nCharge Time: 5 sec\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK \nFull Charge Damage: 1000% of damage \nMax Ammunition Capacity: {description_value_02} round(s) \nAdditional Effect: Pierce</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "124.87",
+                "166.5",
+                "208.12",
+                "249.75",
+                "291.37",
+                "333",
+                "374.62",
+                "416.25",
+                "457.87",
+                "499.5"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 422002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100220,
+        "piece_detail": {
+          "id": 5100220,
+          "class": "Attacker",
+          "order": 22000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 220,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Snow White's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 422001,
+        "class": "Attacker",
+        "order": 10138,
+        "name_code": 5012,
+        "corporation": "PILGRIM",
+        "resource_id": 220,
+        "name_localkey": "Snow White",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 220
+    }
+  }
+}

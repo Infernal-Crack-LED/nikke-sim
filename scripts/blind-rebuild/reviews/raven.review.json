@@ -1,0 +1,134 @@
+{
+  "slug": "raven",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when performing a Full Charge attack. Affects the enemy unit nearest to the crosshair. Deals 68.46% of final ATK as sustained damage every 1 sec, stacks up to 10 times and lasts for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (trigger shotFired \u2192 target enemy \u2192 dot atkPct 68.46, intervalSec 1, durationSec 5, flavor sustained)",
+        "note": "shotFired is the full-charge proxy (every RL pull in-engine is a full-charge shot). The 10-stack cap is NOT encodable on a dot effect but is documented as NON-BINDING at datamined cadence (~2.8 concurrent 5s instances, peak 3.7 < 10). Cadence/stacking is an unmeasured \u2691 \u2014 see confounds."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self. ATK \u25b2 47.52% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (trigger fullBurstEnter \u2192 target self \u2192 buff casterAtkPct 47.52, durationSec 10)",
+        "note": "Literal 'when entering Full Burst' \u2192 fullBurstEnter; 'of the skill user's ATK' \u2192 casterAtkPct. Faithful."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Vital Attack: Damage to Parts \u25b2 21.12% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] (trigger passive \u2192 target self \u2192 buff partsDamagePct 21.12, durationSec 5)",
+        "note": "Battle-start trigger encoded as `passive` (slight approximation of literal 'start of battle'). INERT vs the partless scope-lock boss but kept per hard-rule-3 (never delete a stat buff a future parts consumer could use)."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self. Vital Attack: Damage to Parts \u25b2 21.12% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (trigger fullBurstEnter \u2192 target self \u2192 buff partsDamagePct 21.12, durationSec 5)",
+        "note": "INERT vs partless boss; kept for the same future-consumer reason."
+      },
+      {
+        "kitLine": "Activates when an ally or self destroys an enemy's part. Affects self if self is not in A.N. Mode status.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Part-destroy trigger can never fire on the partless scope-lock boss (genuinely-skippable class: parts); no part-destroy trigger exists in types.ts either."
+      },
+      {
+        "kitLine": "Single Point Attack: Sustained damage \u25b2 47.32% for 15 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Gated behind the part-destroy trigger above, so it never fires vs partless boss. Deliberately REPLACES a prior hand-authored always-on sustainedDamagePct 47.32 passive that assumed destructible parts (contradicted the scope-lock partless basis; was flagged UNCERTAIN/never measured)."
+      },
+      {
+        "kitLine": "Removes Vital Attack.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[2]",
+        "note": "Removal lives on the same never-firing part-destroy branch; no-op vs partless boss."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all enemies (including parts). Deals 492.3% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (trigger burstCast \u2192 target enemy \u2192 flatDamage atkPct 492.3)",
+        "note": "'all enemies (including parts)' collapses to the one boss; auto FB-exempt (noFb never set on burst-cast). Faithful."
+      },
+      {
+        "kitLine": "Affects self. A.N. Mode: (mode header)",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "The A.N. Mode header carries no independent numeric effect; its only children are Effect 1 (removal, a no-op here) and Effect 2 (modeled separately as a stat buff). Mode granted in her OWN burst block \u2192 burstCast per note."
+      },
+      {
+        "kitLine": "A.N. Mode Effect 1: Removes Single Point Attack.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Single Point Attack never exists vs the partless boss, so the removal is a no-op; the old double-count concern with the prior 47.32 passive dissolves with it."
+      },
+      {
+        "kitLine": "A.N. Mode Effect 2: Sustained damage \u25b2 89.44% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] (trigger burstCast \u2192 target self \u2192 buff sustainedDamagePct 89.44, durationSec 10)",
+        "note": "Mode granted in her own burst block \u2192 burstCast (NOT fullBurstEnter) per note. Faithful encoding of the numeric effect."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "PARSER BASELINE banner: entire override is a HYPOTHESIS, never measured/hand-tuned; tier MODEL_ONLY, 'Pure model \u2014 never fielded'. Remove banner only once measured.",
+      "couldCauseGap": "HOT",
+      "why": "No part of this kit has been validated against a real fight; any number could drift. Corroborated by empty board data (no ratio/N/MAD)."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: full-charge DoT cadence (60f charge + 22f bolt gap + 141f reload, autofire unverified) is an unmeasured \u2691 estimate.",
+      "couldCauseGap": "HOT",
+      "why": "The S1 DoT is her DOMINANT damage bucket (~1.9\u00d7ATK/s vs ~0.35\u00d7ATK/s weapon) and scales LINEARLY with shot rate, so a cadence miss moves total damage proportionally. Top-priority \u2691."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u2691(1): cadence tuple \u2014 charge 60f / bolt-gap 22f default ON (autofire NOT set; noBoltRecovery would be a ~15-20% shot swing) / reloadFrames 141 / rolling-reload unknown; estimate ~0.57 shots/s.",
+      "couldCauseGap": "HOT",
+      "why": "Each unverified component (autofire, bolt recovery, rolling reload) directly changes shots/s and thus DoT instances; the autofire/bolt assumption alone is a ~15-20% swing on the dominant bucket."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u2691(2): S1 DoT stacking vs cadence \u2014 confirm per-shot independent 5s instances and that the 10-cap never binds; expect \u22483 \u00d7 68.46% popups/s steady-state.",
+      "couldCauseGap": "HOT",
+      "why": "The faithful repeating-trigger encoding appends an independent instance per shot; if real stacking/cap behavior differs, the dominant bucket is miscounted."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u2691(3): DoT Full-Burst timing \u2014 default FB-by-timing ON (no noFb); verify +50% on in-FB ticks.",
+      "couldCauseGap": "HOT",
+      "why": "A \u00b150% modifier on the dominant DoT bucket during Full Burst windows is a large swing if the default timing assumption is wrong."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u2691(4): RL projectile split \u2014 hitsPerShot 1, single instance assumed; verify via popups.",
+      "couldCauseGap": "HOT",
+      "why": "If the RL shot splits into multiple instances, the shotFired DoT trigger count (dominant bucket) changes."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Single Point Attack (Sustained damage \u25b2 47.32%) keys on destroying an enemy part \u2014 never fires vs the partless scope-lock boss; not modeled (previously approximated as an always-on passive).",
+      "couldCauseGap": "neither",
+      "why": "Genuinely inert under the partless scope-lock basis, so excluding it is correct there; it would only matter on a destructible-parts boss, which is out of the modeled scope. Removing the old always-on passive is a deliberate correction, not a silent drop."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Vital Attack (Damage to Parts \u25b2 21.12%) is modeled but inert in v1 (no parts on the boss).",
+      "couldCauseGap": "neither",
+      "why": "partsDamagePct has no consumer on a partless boss, so the modeled buff contributes zero either way \u2014 kept only for future parts consumers."
+    }
+  ],
+  "authorIntentSummary": "The author produced a PARSER-BASELINE HYPOTHESIS (explicitly not measured/hand-tuned; unit never fielded, no board data). Skill1 is modeled as a stacking sustained DoT (68.46%/s, 5s, one independent instance per full-charge shot via shotFired) \u2014 her dominant damage bucket \u2014 plus a Full-Burst-enter self ATK buff (47.52%, 10s). Skill2 keeps both Vital Attack partsDamagePct 21.12 buffs as inert-but-retained stat buffs, while the part-destroy branch (Single Point Attack sustained \u25b247.32 + 'Removes Vital Attack') is deliberately UNMODELED because it can never fire on the partless scope-lock boss \u2014 a conscious replacement of a prior uncertain always-on passive. Burst is a 492.3% nuke plus self sustained \u25b289.44% (10s) on burstCast, with the A.N. Mode header and Effect-1 removal unmodeled as no-ops. The known-not-faithful spot is the entire DoT cadence/stacking/FB-timing/projectile-split complex (\u2691 list 1-4), flagged as top priority for hand-tuning since it scales the dominant bucket linearly."
+}

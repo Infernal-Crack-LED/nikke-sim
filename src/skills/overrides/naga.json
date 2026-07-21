@@ -1,10 +1,5 @@
 {
-  "note": "Tier audit (Bossing A). Naga's headline buffs are SHIELD-GATED ('when a Shield is set in front of this unit') and the engine has no shield tracking, so the parser skipped them entirely — killing her core identity (she is always run with a shielder: Tia duo, Blanc, or Crown, whose burst creates a team shield every rotation). Modes: 'with shielder' (default; shield refreshed every rotation -> S1 team core-damage 85.17% modeled as fullBurstEnter/10s = full uptime, burst gets BOTH casterAtk lines 16.18+31.02) and 'no shielder' (shield-gated blocks inert; only the 16.18 casterAtk remains). S2 core-damage 40.07%/5s per 5 of her hits (SG ~1.5 pulls/s * 10 pellets... hitCount counts hits; kept parser-faithful) to 2 top-ATK allies. Heals/cover restore skipped. Her SG pellets: hitsPerShot from DB governs hitCount cadence. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
-  "modes": [
-    "auto",
-    "with shielder",
-    "no shielder"
-  ],
+  "note": "Tier audit (Bossing A). Naga's headline buffs are SHIELD-GATED and now ride the REAL shield machinery (owner ruling 2026-07-20: default OFF, require a shielder — replaces the old 'with shielder' default-on mode toggle; kit-audit 2026-07-20 gotchas 1+2). S1 'Activates when a Shield is set in front of this unit' = the {kind:'shielded'} event trigger: fires when ANY ally's 'shield' effect targets naga (emitters today: crown burst 15s, blanc hitCount-120 5s, delta-ninja-thief self-only [never naga], rei-ayanami Fire-allies [naga is Electric — never her]), granting all allies coreDamagePct 85.17 for 10s. Burst 'Activates if a Shield is set in front of this unit' = burstCast + requiresShielded (shield-state window from the emitter's durationSec) → casterAtkPct 31.02 rides her burst only while a shield window covers her; the 16.18 line stays unconditional. No shielder in comp → both blocks inert (the faithful default). ⚑ UPTIME PROXY: S1 uptime now inherits the shielder's shield cadence (crown: burstCast→~full rotation coverage; blanc: every 120 team hits, 5s windows) — unmeasured vs real in-game shield uptime; recipe: naga+crown focus video, compare the 85.17% buff-icon windows to crown's shield icon. S2 core-damage 40.07%/5s per 5 of her hits (SG ~1.5 pulls/s * 10 pellets... hitCount counts hits; kept parser-faithful) to 2 top-ATK allies. Heals/cover restore skipped. Her SG pellets: hitsPerShot from DB governs hitCount cadence. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
   "unmodeled": {
     "skill1": [
       "Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP."
@@ -16,16 +11,18 @@
       "Affects self. Gains Pierce for 10 sec."
     ]
   },
+  "caveats": [
+    "skill1/burst: shield-gated lines (coreDamagePct 85.17, casterAtkPct 31.02) fire only off REAL shield events/state (owner-ruled default-off 2026-07-20) — uptime inherits the shielder's shield cadence, unmeasured vs in-game (⚑)"
+  ],
   "skill1": [
     {
       "slot": "skill1",
       "trigger": {
-        "kind": "fullBurstEnter"
+        "kind": "shielded"
       },
       "target": {
         "kind": "allies"
       },
-      "mode": "with shielder",
       "effects": [
         {
           "kind": "buff",
@@ -83,7 +80,7 @@
       "target": {
         "kind": "allies"
       },
-      "mode": "with shielder",
+      "requiresShielded": true,
       "effects": [
         {
           "kind": "buff",

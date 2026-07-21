@@ -1,0 +1,128 @@
+{
+  "slug": "rouge",
+  "board": {
+    "ratio": 1.052,
+    "n": 3,
+    "mad": 0.064,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when attacking with Full Charge for 8 time(s). Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger hitCount 8, target allies",
+        "note": "SR = 1 hit/pull so hitCount 8 = 8 full-charge attacks. Faithful."
+      },
+      {
+        "kitLine": "Max HP \u25b2 5% of the skill user's Max HP without restoring HP, lasts for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] passive \u2192 allies \u2192 casterMaxHpPct 2.3",
+        "note": "Time-averaged (5% \u00d7 ~45% uptime \u2248 2.3 \u2691). 'Without restoring HP' qualifier is inert (no HP pool/healing modeled); documented in unmodeled. Grant itself is modeled but offensively INERT per 2026-07-17 correction (casterMaxHpPct does not feed ally ATK conversion)."
+      },
+      {
+        "kitLine": "Cooldown of Burst Skill \u25bc 7 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effect burstCdr 7",
+        "note": "Exact value. Fires every 8 full-charge attacks to all allies."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when assigned to the back row in battle. Affects self and 2 allies on both sides.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] target selfAndAdjacent sides:2",
+        "note": "Back-row condition assumed (sim scope: fixed slot). 'Self and 2 allies on both sides' = selfAndAdjacent(2) which in a 5-slot squad = whole team. Positional targeting confirmed by run-E videos."
+      },
+      {
+        "kitLine": "Sword Coin: Attack Damage \u25b2 6.65% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effect attackDamagePct 6.65",
+        "note": "Exact kit value. Permanent passive (Sword Coin is the initial/default coin state). This is Rouge's primary offensive contribution per the 2026-07-17 correction."
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge for 30 time(s). Affects self and 2 allies on both sides when in Sword Coin status. Shield Coin: Damage Taken \u25bc15.2% continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Defensive (Damage Taken reduction); boss deals no damage in v1 sim. Correctly skipped."
+      },
+      {
+        "kitLine": "Activates when using Burst Skill for 5 time(s). Affects all allies when in Shield Coin status. Double Sword Coin: Max HP \u25b2 15.08% of the skill user's Max HP continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] casterMaxHpPct 7.5 (time-averaged: 15.08 \u00d7 ~50% uptime) + burst[2] casterMaxHpPct 8.7 (15.08 \u00d7 ~58% uptime, selfAndAdjacent)",
+        "note": "Coin progression (Sword\u2192Shield@30FC\u2192DoubleSword@5bursts) not tracked as engine state; absorbed into \u2691 timeline averages (documented in unmodeled.skill2[1]). The 15.08% appears in BOTH skill2[1] and burst[2] \u2014 a known double-count flagged in ks-extract F1/F2, but rendered INERT by the 2026-07-17 correction (casterMaxHpPct ally grants do not feed ATK conversion)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. ATK \u25b2 15.07% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effect casterAtkPct 15.07 durationSec 10",
+        "note": "Exact kit value, correct duration. This is the primary offensive burst buff."
+      },
+      {
+        "kitLine": "Activates when in Sword Coin status. Affects all allies. Max HP \u25b2 10.15% of the skill user's Max HP without restoring HP, lasts for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] casterMaxHpPct 22 (10s) + burst[1] casterMaxHpPct 22.5 (10s)",
+        "note": "The 10.15/20.1/30.02 coin-tier ladder is time-averaged into 22 + 22.5 = 44.5% per cast (exceeds kit max 30.02% \u2014 double-count per ks-extract F1/F2). All casterMaxHpPct grants are offensively INERT per 2026-07-17 correction. 'Without restoring HP' qualifier inert (no HP pool)."
+      },
+      {
+        "kitLine": "Activates when in Shield Coin status. Affects all allies. Max HP \u25b2 20.1% of the skill user's Max HP for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]+burst[1] (part of the 22+22.5 time-averaged ladder)",
+        "note": "Same as above \u2014 coin-tier ladder averaged. Inert per correction."
+      },
+      {
+        "kitLine": "Activates when in Double Sword Coin status. Affects all allies. Max HP \u25b2 30.02% of the skill user's Max HP without restoring HP, lasts for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]+burst[1] (part of the 22+22.5 time-averaged ladder) + burst[2] casterMaxHpPct 8.7 (selfAndAdjacent, permanent)",
+        "note": "Same ladder. Additionally burst[2] models the Double Sword Coin permanent portion separately (8.7 = 15.08 \u00d7 58% uptime). Inert per correction."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "2026-07-17 CORRECTION: ally-granted Max HP does NOT feed a consumer's ATK=%-of-Max-HP conversion \u2014 counts OWN Max HP only (cindy e3 video-verified). All casterMaxHpPct ally grants are offensively INERT.",
+      "couldCauseGap": "neither",
+      "why": "This correction neutralizes the double-count and all Max-HP grants. They are kept for kit-completeness but contribute zero damage. The HOT gap is NOT caused by these."
+    },
+    {
+      "source": "note",
+      "text": "Rouge's ~1.05 board-HOT is a SEPARATE unresolved issue (her offensive buffs / possible F1-F2 burst-Max-HP double-count, now moot for damage since the grants are inert), NOT the Max-HP feed.",
+      "couldCauseGap": "HOT",
+      "why": "The author explicitly flags the HOT as unresolved. With casterMaxHpPct inert, the only offensive outputs are Sword Coin attackDamagePct 6.65% and burst casterAtkPct 15.07%. The HOT source is unidentified."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Shield Coin: Damage Taken \u25bc15.2% continuously (defensive; boss deals no damage in v1).",
+      "couldCauseGap": "neither",
+      "why": "Defensive stat; boss deals no damage in the sim. Correctly inert."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Coin state progression (Sword\u2192Shield@30FC\u2192DoubleSword@5bursts) not tracked as engine state; absorbed into \u2691 timeline-averaged values.",
+      "couldCauseGap": "COLD",
+      "why": "Timeline averaging could under/over-estimate depending on actual fight timing, but since all affected grants (casterMaxHpPct) are now inert, this confound is moot for damage."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Skill1 Max HP grant 'without restoring HP' qualifier is inert (no HP pool/healing modeled).",
+      "couldCauseGap": "neither",
+      "why": "No HP pool in sim; the qualifier has no mechanical effect. The grant itself is modeled but inert per correction."
+    },
+    {
+      "source": "note",
+      "text": "All \u2691 values (2.3, 7.5, 22, 22.5, 8.7) are timeline averages of exact kit numbers, not fits to board data.",
+      "couldCauseGap": "neither",
+      "why": "Methodology note. Since all \u2691 casterMaxHpPct values are now inert, their precision is irrelevant to damage output."
+    },
+    {
+      "source": "caveat",
+      "text": "ks-extract F1/F2 (P1): burst Max-HP grants DOUBLE-COUNTED (casterMaxHpPct 22 + 22.5 = 44.5% vs kit max 30.02; Double Sword Coin in both skill2+burst).",
+      "couldCauseGap": "neither",
+      "why": "Real structural issue in the override, but rendered damage-irrelevant by the 2026-07-17 correction (casterMaxHpPct ally grants are inert). Would matter if the engine ever re-enables Max-HP\u2192ATK feeding."
+    }
+  ],
+  "authorIntentSummary": "The override models Rouge as a positional Supporter whose only damage-relevant outputs are Sword Coin Attack Damage \u25b26.65% (selfAndAdjacent, permanent) and burst casterAtkPct 15.07% (all allies, 10s). All Max-HP grants (skill1 5%, skill2 Double Sword 15.08%, burst coin-tier ladder 10.15/20.1/30.02) are present as casterMaxHpPct blocks for kit-completeness but were declared offensively INERT by a 2026-07-17 correction (ally Max-HP grants do not feed ATK=%-of-Max-HP conversions). The burst blocks contain a known double-count (22+22.5=44.5% vs kit max 30.02%) that is now moot. Shield Coin (Damage Taken \u25bc15.2%) and coin-state progression are deliberately unmodeled (defensive / absorbed into timeline averages). The ~1.05 HOT board reading is explicitly flagged as a separate unresolved issue whose cause is unidentified."
+}

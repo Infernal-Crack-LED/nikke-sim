@@ -1,0 +1,152 @@
+{
+  "slug": "neon-vision-eye",
+  "board": {
+    "ratio": 1.083,
+    "n": 3,
+    "mad": 0.083,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "When attacked while not in Healthy Body: Invulnerable 3 sec (5x/battle)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Defensive (invuln); emits no damage/heal event, inert for DPS"
+      },
+      {
+        "kitLine": "When attacked: debuff immunity to \u221e debuffs for 3 sec (5x/battle)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Defensive (immunity); inert for DPS"
+      },
+      {
+        "kitLine": "Healthy Body: Incoming healing \u25b210.26% for 20 sec",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Defensive received-heal amp; emits no heal event, no cross-unit consumer wiring"
+      },
+      {
+        "kitLine": "On Full Charge attack vs stage target \u2014 Firepower Explosion: 437.98% final ATK additional damage",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (trigger shotFired \u2192 enemy, flatDamage atkPct 437.98)",
+        "note": "Modeled on every shotFired (she is a charge RL). Note ruling: full majors \u2014 helm/anis on-hit proc class, NOT Q1-exempt"
+      },
+      {
+        "kitLine": "Super Firepower status additional: 262.79% final ATK additional damage",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (burstCast, everyN 3 / everyNOffset 1 \u2192 self, buff extraHitDamagePct 262.79 / 10s)",
+        "note": "Super window fires on her burst casts 1,4,7. Modeled crit-OFF via extraHitDamagePct (finding F1) vs base crit-ON"
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Start of battle: +100 Firepower Gauge",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Gauge bookkeeping \u2014 steady-state ABSORBED into skill1[1] everyN 3 / everyNOffset 1 (start at 100 \u2192 Super on casts 1,4,7); video-verified Run B"
+      },
+      {
+        "kitLine": "Normal attack during Firepower Charge: +2 Firepower Gauge",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Gauge bookkeeping \u2014 ABSORBED into everyN 3 alternation"
+      },
+      {
+        "kitLine": "When Firepower Charge ends: +45 Firepower Gauge",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Gauge bookkeeping \u2014 ABSORBED into everyN 3 alternation"
+      },
+      {
+        "kitLine": "When Full Burst ends (gauge active): Burst Gauge filling speed \u25b25% x Firepower Gauge charge for 5 sec",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Burst-generation only; video shows it does not consume the Firepower cycle (every-3rd-Super held)"
+      },
+      {
+        "kitLine": "Entering Full Burst \u2014 Maximum Firepower: ATK \u25b280.04% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] (fullBurstEnter \u2192 self, buff atkPct 80.04 / 10s)",
+        "note": "Base FB-enter ATK buff"
+      },
+      {
+        "kitLine": "Maximum Firepower Super-only: ATK \u25b235.05% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (Super window block, buff atkPct 35.05 / 10s)",
+        "note": "Cross-slot consolidation: S2 Super rider encoded in the skill1 Super block, not the skill2 array"
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Gauge < 100: Firepower Charge \u2014 charges gauge for 10 sec (unremovable), +1 gauge",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Gauge bookkeeping \u2014 ABSORBED into everyN 3 alternation"
+      },
+      {
+        "kitLine": "Gauge = 100: Super Firepower \u2014 Attack Damage \u25b245.03% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (Super window block, buff attackDamagePct 45.03 / 10s)",
+        "note": "Cross-slot consolidation: burst Super rider encoded in the skill1 Super block"
+      },
+      {
+        "kitLine": "Gauge = 100: decreases Firepower Gauge charge by 100 (drain)",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Gauge bookkeeping \u2014 ABSORBED into everyN 3 alternation"
+      },
+      {
+        "kitLine": "Explosion Radius \u25b2200% for 10 sec",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2]",
+        "note": "Inert \u2014 single partless boss, no AoE surface"
+      },
+      {
+        "kitLine": "Attack Damage \u25b2110.21% for 10 sec (unconditional)",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (burstCast \u2192 self, buff attackDamagePct 110.21 / 10s)",
+        "note": "Unconditional burst AD"
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "F1: Super +262.79 rider modeled crit-OFF (extraHitDamagePct) vs base crit-ON \u2014 a ~7% cold offset that partially offsets the 1.040 HOT; backfilled",
+      "couldCauseGap": "COLD",
+      "why": "Deliberate tuning lever. If the rider should actually be crit-ON, the sim is currently under-counting the Super hit (cold pull); removing the offset would push the already-HOT 1.083 ratio higher"
+    },
+    {
+      "source": "unmodeled",
+      "text": "Entire Firepower-Gauge cycle (start +100, +2/attack, +45 on end, <100 charge, =100 drain) collapsed into skill1[1] everyN 3 / everyNOffset 1 \u2014 Super on casts 1,4,7",
+      "couldCauseGap": "neither",
+      "why": "Core approximation but video-verified cast-by-cast (Run B, every-3rd-Super confirmed). Known-not-a-surprise; the 10s Super window => ~8% of full-charge shots"
+    },
+    {
+      "source": "note",
+      "text": "Base 437.98% Firepower Explosion ruled full-majors (helm/anis on-hit proc class, NOT Q1-exempt)",
+      "couldCauseGap": "neither",
+      "why": "Settled ruling on how the base hit scales; if the proc-class classification were wrong the base hit magnitude would shift, but it is documented as a deliberate decision"
+    },
+    {
+      "source": "unmodeled",
+      "text": "S2 Full-Burst-end burst-gauge fill (+5% x gauge, 5s) skipped as burst-generation only",
+      "couldCauseGap": "neither",
+      "why": "Rotation-minor; video confirms it does not consume the Firepower cycle. In principle faster bursts could add damage (HOT direction) but documented as verified-negligible"
+    },
+    {
+      "source": "unmodeled",
+      "text": "S1 invuln/debuff-immunity/Healthy-Body heal and burst Explosion Radius +200% skipped",
+      "couldCauseGap": "neither",
+      "why": "Inert for single-partless-boss DPS; no damage surface, no heal event emitted"
+    },
+    {
+      "source": "note",
+      "text": "AUTOFIRE exemption from 22f release latency now resolves from datamined input_type='DOWN_Charge' (engine+web); redundant charFixes.noBoltRecovery flag removed 2026-07-17",
+      "couldCauseGap": "neither",
+      "why": "Resolved \u2014 no current config field; handled at engine level from datamine, corroborates the earlier user test. Not an open gap"
+    }
+  ],
+  "authorIntentSummary": "The override is a TIER AUDIT REWORK (2026-07-13) that models Super Firepower exactly rather than the old hitCount:12 smear. The whole Firepower-Gauge cycle is collapsed into one skill1 Super-window block (burstCast, everyN 3 / everyNOffset 1) so Super fires on her burst casts 1,4,7; that single block carries all three Super riders \u2014 +262.79% extraHitDamagePct (S1), ATK +35.05 (S2), Attack Damage +45.03 (burst). Base kit is the 437.98% Firepower Explosion per full-charge shot (full majors), S2 FB-enter ATK 80.04/10s, and burst unconditional AD 110.21/10s. Key approximation: the 262.79 Super rider is modeled crit-OFF (finding F1) as a deliberate ~7% cold offset against the unit's HOT bias; defensive lines, gauge plumbing, burst-gen smoothing, and explosion radius are documented skips. Board: HOT \u25b2 1.083 (n=3, MAD 0.083, range 1.01\u20131.15). No kit line is silently dropped \u2014 every prose line maps to a block or an unmodeled entry."
+}

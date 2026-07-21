@@ -1,0 +1,170 @@
+{
+  "slug": "guillotine-winter-slayer",
+  "board": {
+    "ratio": 1.07,
+    "n": 1,
+    "mad": 0.07,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates every time EXP stacks 10. Affects self.",
+        "status": "MODELED_CONFIG",
+        "where": "note (MODEL paragraph): '10 EXP = +1 Hero Level, cap 11 (~30 hits/level)'; encoded as hitCount 30 on the reload + heal blocks",
+        "note": "The 10-EXP-per-level trigger is collapsed into hitCount 30 (= 10 EXP \u00d7 3 hits/EXP). No standalone block; the cadence is baked into the two hitCount-30 blocks."
+      },
+      {
+        "kitLine": "Hero Level Up: Reaches a maximum of Level 11.",
+        "status": "MODELED_CONFIG",
+        "where": "note (MODEL paragraph): 'cap 11'; encoded in the level-11 steady-state aura values (1.16\u00d711, 0.91\u00d711) and burst DoT (20.87\u00d711)",
+        "note": "No explicit cap field. The cap is expressed by computing all Hero-Level-scaled values at level 11."
+      },
+      {
+        "kitLine": "Hero Level Up Reward: Reloads 10.26%.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1 block 2: hitCount 30, self, instantReload fraction 0.1026",
+        "note": "Preserved verbatim from partial-hand model. Note says 'level-up rewards KEEP TRIGGERING at max level (review-confirmed)'."
+      },
+      {
+        "kitLine": "Hero Level Up Reward: Recovers 2.44% of the skill user's final Max HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1 block 3: hitCount 30, self, heal event",
+        "note": "NEW additive block (HARD RULE 2). Previously a SILENT DROP; now event-only heal so recovery-consumer teammates (e.g. Crown) see the proc. Zero self-damage impact."
+      },
+      {
+        "kitLine": "Activates when Hero levels up. Affects all Water Code allies.",
+        "status": "MODELED_CONFIG",
+        "where": "note (MODEL paragraph): 'level-11 steady-state auras are passive full-value from t=0'; encoded as passive trigger on skill1 block 1",
+        "note": "The per-level-up ramp is collapsed to a passive at full level-11 value. Measured-accurate per residual (\u26913)."
+      },
+      {
+        "kitLine": "Elemental Advantage Attack Damage \u25b2 1.16% * Hero Level continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1 block 1: passive, alliesOfElement Water, elemAdvantageDamagePct 12.76 (= 1.16 \u00d7 11)",
+        "note": "Preserved verbatim. Level-11 steady state."
+      },
+      {
+        "kitLine": "ATK \u25b2 0.91% of the skill user's ATK * Hero Level continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1 block 1: passive, alliesOfElement Water, casterAtkPct 10.01 (= 0.91 \u00d7 11)",
+        "note": "Preserved verbatim. Level-11 steady state."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after landing 6 normal attack(s) without hitting the core. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 block 1 (hitCount 3) jointly represents both EXP branches; see note \u26912",
+        "note": "Non-core branch (6 hits) never fires at scope-lock 100% core exposure. Represented via the core-branch hitCount-3 block under that assumption. Blend for c<1 is documented \u26912 (unmeasured estimate)."
+      },
+      {
+        "kitLine": "EXP: ATK \u25b2 1.81%, stacks up to 100 time(s) continuously. (non-core branch)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 block 1: hitCount 3, self, atkPct 1.81, maxStacks 100",
+        "note": "Same block as core branch. Value 1.81% and cap 100 are identical across both branches."
+      },
+      {
+        "kitLine": "Activates when hitting the Core for 3 time(s). Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 block 1: trigger hitCount 3",
+        "note": "AUTHORED fix: was previously materialized at hitCount 6 (non-core branch). Corrected to 3 (core branch) for scope-lock consistency."
+      },
+      {
+        "kitLine": "EXP: ATK \u25b2 1.81%, stacks up to 100 time(s) continuously. (core branch)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 block 1: atkPct 1.81, maxStacks 100",
+        "note": "Engine ramps the stack natively; cap at ~32s wall, no haircut needed per note."
+      },
+      {
+        "kitLine": "Activates when Hero Level is 2 or above. Affects self.",
+        "status": "MODELED_CONFIG",
+        "where": "note (MODEL paragraph): 'Hero Level 2 or above \u2192 passive (level 2 at ~3s in; first-3s over-credit negligible)'",
+        "note": "Trigger condition collapsed to passive. Caveat 3 documents the approximation."
+      },
+      {
+        "kitLine": "Elemental Advantage Attack Damage \u25b2 7.46% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 block 2: passive, self, elemAdvantageDamagePct 7.46",
+        "note": "Passive from t=0 instead of gated on Hero Level 2 (~3s). Over-credit negligible per note."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all Water Code allies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst block 1: trigger burstCast, target alliesOfElement Water",
+        "note": "Preserved verbatim."
+      },
+      {
+        "kitLine": "Attack Damage \u25b2 10.14% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst block 1: attackDamagePct 10.14, durationSec 10",
+        "note": "Preserved verbatim. Measured-accurate per residual."
+      },
+      {
+        "kitLine": "Elemental Advantage Attack Damage \u25b2 18.75% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst block 1: elemAdvantageDamagePct 18.75, durationSec 10",
+        "note": "Preserved verbatim. Measured-accurate per residual."
+      },
+      {
+        "kitLine": "Affects 1 enemy unit(s) with the highest final Max HP.",
+        "status": "MODELED_BLOCK",
+        "where": "burst block 2: target enemy",
+        "note": "Scope-lock is partless single boss, so 'highest final Max HP' targeting is trivially the boss. No targeting logic needed."
+      },
+      {
+        "kitLine": "Deals continuous damage equal to 20.87% of the final ATK * Hero Level every sec for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst block 2: dot atkPct 229.57 (= 20.87 \u00d7 11), durationSec 10, intervalSec 1",
+        "note": "Preserved verbatim. Level 11 guaranteed by first burst at 40s CD. Measured-accurate per residual."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1/skill2: normal-fire cadence (12/s, reload 81f) is datamined and measured ~26% hot \u2014 flagged for video measurement, deliberately NOT refit",
+      "couldCauseGap": "HOT",
+      "why": "This is the DOMINANT issue per kit-status findings. Board reads 1.070 HOT. The datamined rate_of_fire 720 (12/s) + 81f reload produces ~26% over-credit in normal-fire DPS. Owner ruling: do NOT refit by fudge; pin via focus video. Arithmetic suspect: 12/1.26 \u2248 9.5/s effective."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: EXP build rate modeled at 3 hits/stack (core branch at scope-lock 100% core exposure); the blend with the 6-hit non-core branch is an unmeasured estimate",
+      "couldCauseGap": "COLD",
+      "why": "At scope-lock (100% core exposure, partless boss), the core branch (3 hits) is the only one that fires. The blend only matters if core fraction < 1, which is out of scope. No gap expected at scope-lock."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Elemental Advantage Attack Damage 7.46% modeled as passive (Hero Level 2 is reached ~3s into the fight)",
+      "couldCauseGap": "COLD",
+      "why": "First-3s over-credit of 7.46% elemAdvantage on a 180s fight is negligible (~0.04% of total fight time). No meaningful gap."
+    },
+    {
+      "source": "note",
+      "text": "\u26911 (TOP, ESCALATED): pullsPerSec 12 + reloadFrames 81 cadence tuple needs video measurement \u2014 same root cause as caveat 1",
+      "couldCauseGap": "HOT",
+      "why": "Duplicate of caveat 1 from the note's \u2691 list. The measured residual already reads ~26% HOT with these values. This is the single largest known source of inaccuracy."
+    },
+    {
+      "source": "note",
+      "text": "\u26912: EXP build blend \u2014 if real core-hit fraction c<1, effective hits/stack \u2208 [3,6]",
+      "couldCauseGap": "COLD",
+      "why": "At scope-lock c=1 (100% core), so effective = 3 hits/stack exactly. Only relevant out-of-scope."
+    },
+    {
+      "source": "note",
+      "text": "\u26913 (low): level-11 steady-state auras are passive full-value from t=0 (no ~25s ramp haircut) \u2014 measured-accurate per residual",
+      "couldCauseGap": "COLD",
+      "why": "Residual confirms burst DoT + Hero-Level auras are measured accurate. The ~25s ramp is a small fraction of 180s and the residual validates the approximation."
+    },
+    {
+      "source": "note",
+      "text": "skill1 heal block is NEW additive (HARD RULE 2) \u2014 previously a SILENT DROP; driver may strip if strict-verbatim wins",
+      "couldCauseGap": "neither",
+      "why": "The heal has zero self-damage impact. It exists only so recovery-consumer teammates see the proc. Stripping it would not change GWS's own damage numbers."
+    }
+  ],
+  "authorIntentSummary": "The override models GWS as a Hero-Level-stacking Water Attacker with three preserved/measured-accurate components (skill1 Water-ally auras at level-11 steady state, skill1 reload-on-level cadence, burst buffs + DoT) and one authored component (skill2 EXP ATK stacks via the corrected core-branch hitCount 3, fixing a prior materialization bug that used the non-core hitCount 6). Every kit line is represented \u2014 no silent drops remain (the 2.44% Max HP heal was a former silent drop, now an event-only block). The single dominant known gap is the normal-fire cadence: datamined rate_of_fire 720 + 81f reload reads ~26% HOT on the board (ratio 1.070), and the owner has explicitly ruled against fudge-refitting \u2014 it awaits video measurement."
+}

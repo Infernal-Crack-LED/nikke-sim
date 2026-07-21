@@ -1,0 +1,56 @@
+{
+  "soda-twinkling-bunny": {
+    "name": "Soda: Twinkling Bunny",
+    "burst": "III",
+    "weapon": "SG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "Golden-Chip gating arithmetically CORRECT (pre-consume ordering honored). F2 engine target bug: top-ATK ally 'except self' but alliesTopAtk includes owner (no excludeSelf) -> if Soda ranks #1 the buff collides to self = ally gets nothing. F3 FB-extension shape wrong (cumulative +2/+5 not flat 4; measured 14.71s impossible under +4). F1 Hit Rate 38.91 dropped"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "N3: 0.77",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 1,
+      "within3pct": 1
+    },
+    "reference": false,
+    "residual": "Chip-economy model, untuned",
+    "unmodeled": {
+      "skill1": [
+        "Activates at the start of battle. Affects self. Golden Chip stacks ▲ 50."
+      ],
+      "skill2": [],
+      "burst": [
+        "Golden Chip stacks ▼ 17 after the effect is applied.",
+        "Stage 2: Activates when Golden Chip is at 20 or more stacks. Affects self. Hit Rate ▲ 38.91% for 15 sec."
+      ]
+    },
+    "caveats": [
+      "skill1/burst: FAITHFUL DYNAMIC Golden-Chip pool LANDED 2026-07-17 (engine resource-counter primitive) — replaces the flat crit-42 + every-burst-65.25 derivations. Pool: start 50 (cap 50), +1 per datamined '3 normal attacks during Full Burst' (the same trigger as the AD +10.51 block), −17 on her burst (spent AFTER the gates). Crit Damage is LIVE = goldenChip×1.32 (perResource); burst ATK ▲65.25 gated at ≥30 chips (pre-spend). VALIDATED vs soda tb control.mov: sim pre-consume 50/43/38… reproduces the measured 50/44/40/38/31 within 1-2 chips (the datamined per-3-normals generation MATCHES the recorded drain, not fit to it); crit major 2.66 at 50 chips = 1+base1.0+50×1.32/100 ✓. Now comp-correct: N3 no-burst comp chips stay 50 → crit 66% → 0.954→0.974 (matches the note's ~0.96 prediction the flat-42 under-credited); burst comps drain as measured. Hit Rate ▲38.91 (≥20 chips) STILL unmodeled (HR→core open item — deliberately not added despite HRCORE now live, to keep this change scoped to the measured chip mechanic).",
+      "skill2: Full Burst extension modeled as a flat +4s average; the kit is chip-gated CUMULATIVE (+5s at ≥20 chips = TE-I+TE-II, +2s at 10–19) — late-fight Full Bursts run shorter than modeled (measured last-FB countdown 12.50s at 18–19 chips)",
+      "burst: Hit Rate ▲38.91% for 15s (≥20 chips) is unmodeled — a PROVEN core-hit-rate lever of unmeasured magnitude (recon hit_rate_core_test INCONCLUSIVE)",
+      "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected)."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "N3 scarlet/liberalio iron (boss Iron)",
+          "ratio": 1.0168
+        }
+      ],
+      "n": 1,
+      "mean": 1.0168,
+      "mad": 0.0168,
+      "band": "±3% ✓",
+      "temp": "OK  ·"
+    }
+  }
+}

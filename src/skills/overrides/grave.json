@@ -22,7 +22,7 @@
     "skill1: Prediction-end 'Removes 100% of ammo' (one forced ~3.35s reload per burst cycle in comps) is not modeled — no engine effect can empty a magazine",
     "skill2: Overheat II/III 30/60-hit build-up approximated as full 10s burst-window uptime (real ramp-in ~2.5s/~5s at the measured 12 rounds/s)",
     "burst: 'Gain Pierce' (10s) is MODELED FAITHFULLY (gainPierce → self, 10s) — its Pierce Damage ▲ +92.78 Damage Up lands during her Prediction window (S1's 48.4 excludeSelf'd, no double-count). This moves her comps ~0.83→1.18 HOT ON PURPOSE (model the real mechanic > fit): the residual HOT is a SEPARATE burst-window over-model, now cleanly isolated and tracked in open-questions U19 (fix with a measurement). Solo unaffected (a lone Burst II never bursts).",
-    "burst: team 'Max Ammunition Capacity ▲ 3 round(s)' encoded as maxAmmoPct 3 — the schema is percent-only, flat rounds are inexpressible per-target"
+    "burst: team 'Max Ammunition Capacity ▲ 3 round(s)' modeled as maxAmmoFlat 3 to ALL allies, 10s (kit-literal flat rounds; enacted 2026-07-20 per the kit-audit ENACT-NOW item — the prior maxAmmoPct 3 percent proxy was near-inert, and the flat-rounds path was already live in maxAmmo(). Materially larger relative buff to small-mag SG/SR teammates in her 10s burst window than the +3% was — faithful>fit; A/B recorded in DECISIONS)"
   ],
   "skill1": [
     {
@@ -156,7 +156,7 @@
         },
         {
           "kind": "buff",
-          "stat": "maxAmmoPct",
+          "stat": "maxAmmoFlat",
           "value": 3,
           "durationSec": 10
         }

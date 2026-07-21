@@ -1,0 +1,140 @@
+{
+  "slug": "trina",
+  "board": {
+    "ratio": 1.151,
+    "n": 4,
+    "mad": 0.151,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after Full Burst ends. Affects all allies. Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]; skill1 block array is empty []",
+        "note": "Heal \u2014 inert vs partless boss. Parser-sourced (blablalink), NOT hand-verified per note."
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge; if HP of 2 lowest-HP allies < 30%, recovers 2.03% of skill user's final Max HP as HP.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "Conditional heal \u2014 inert vs boss; also no recovery events emitted to recovery-trigger consumers."
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge; if HP of 2 lowest-HP allies < 50%, recovers 1.57% of skill user's final Max HP as HP.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2]",
+        "note": "Conditional heal \u2014 inert vs boss."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at start of battle (only if self alive). Affects all Electric Code allies with assault rifles. Max HP \u25b2 44.98% of skill user's Max HP without restoring HP, constantly.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger passive, target alliesOfElementWeapon Electric/AR count 99, buff casterMaxHpPct 44.98",
+        "note": "Start-of-battle constant buff modeled as passive (equivalent). Offensively INERT per THEME-13 caveat \u2014 ally-granted Max HP doesn't feed atkOfMaxHpPct; kit-SSOT completeness only."
+      },
+      {
+        "kitLine": "Activates at start of battle. Affects 1 leftmost Electric Code ally with assault rifles. Invulnerable for 2 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Invulnerability \u2014 inert in damage-only sim (no ally-death modeling)."
+      },
+      {
+        "kitLine": "Activates when using Burst Skill. Affects 1 leftmost Electric Code ally with assault rifles. Attack Damage \u25b2 94.15% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: trigger burstCast, target alliesOfElementWeapon Electric/AR count 1, buff attackDamagePct 94.15 / 10s",
+        "note": "Target now EXACT (leftmost Electric-AR ally) via alliesOfElementWeapon \u2014 the run-B heat fix; old alliesOfElement was feeding +94% AD to RL carries + Trina herself."
+      },
+      {
+        "kitLine": "(same burstCast trigger) Reload Speed \u25b2 50.82% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: buff reloadSpeedPct 50.82 / 10s",
+        "note": "Co-located in the same burstCast block as the 94.15% AD."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Max HP \u25b2 20.14% of skill user's Max HP without restoring HP for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast, target allies, buff casterMaxHpPct 20.14 / 10s",
+        "note": "Offensively INERT per THEME-13 caveat \u2014 no board damage moves; kit-SSOT completeness only."
+      },
+      {
+        "kitLine": "Affects all allies. Attack Damage \u25b2 20.9% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: buff attackDamagePct 20.9 / 10s",
+        "note": "Team-wide AD, all allies."
+      },
+      {
+        "kitLine": "Activates when enemy count aside from Nikkes is 1. Affects all allies. Spread Roots: Burst Skill damage of skills with 'Affects all enemies' \u25b2 435.6% for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "\u2691 FIRES in solo raid (enemy count = 1) and is NOT modeled \u2014 engine has no burst-skill-dmg-amp. Teammate all-enemies B3 nukes within 5s of Trina burst miss a huge amp (teammates read COLD). Documented HOT confound / feature request."
+      },
+      {
+        "kitLine": "Activates when enemy count aside from Nikkes is more than 2. Affects all allies. Changes Spread Roots to Wilted Roots.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Mode-switch rider; irrelevant in solo raid (enemy count = 1, so Spread Roots branch applies, not Wilted)."
+      },
+      {
+        "kitLine": "Wilted Roots: Burst Skill damage of skills with 'Affects all enemies' \u25b2 64.46% for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2]",
+        "note": "Alternate (multi-target) form of the same unexpressible burst-skill-dmg-amp; inert in solo raid."
+      },
+      {
+        "kitLine": "Affects all Electric Code allies with assault rifles. Hit Rate \u25b2 45.3% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[3]",
+        "note": "Skipped deliberately \u2014 no misses vs boss (note: 'Hit Rate 45.3 skipped (no misses vs boss)'). Inert in scope."
+      },
+      {
+        "kitLine": "Affects all Electric Code allies with assault rifles. Max Ammunition Capacity \u25b2 20 round(s) for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: trigger burstCast, target alliesOfElementWeapon Electric/AR count 99, buff maxAmmoPct 33.3 / 10s",
+        "note": "FLAT 20 rounds encoded as +33.3% (engine only supports percent), assuming a 60-round AR base magazine. Scope corrected from parser's all-Electric +20% to Electric-AR allies."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled \u2014 teammate all-enemies B3 burst nukes within 5s of Trina's burst miss a large amp (teammates read COLD in Trina comps).",
+      "couldCauseGap": "HOT",
+      "why": "Real, in-scope amp that the engine cannot express; directly suppresses modeled teammate burst damage in Trina comps \u2014 a known source of COLD teammates / comp-level gap."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: Max Ammunition +20 rounds is encoded as maxAmmoPct 33.3 (assumes a 60-round AR base magazine).",
+      "couldCauseGap": "neither",
+      "why": "Reasonable percent-encoding of a flat value for standard 60-round ARs; only misfires for non-60-round AR magazines. Minor approximation, not a structural gap."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: heals are unmodeled \u2014 recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina.",
+      "couldCauseGap": "COLD",
+      "why": "Heals are inert vs the partless boss; only matters for recovery-trigger teammates, which are out of the damage-scope. Known inert drop, not a damage surprise."
+    },
+    {
+      "source": "caveat",
+      "text": "[THEME-13] The two 'Max HP \u25b2 X% of skill user's Max HP' grants are modeled as casterMaxHpPct (S2 44.98% \u2192 Electric-AR allies passive; burst 20.14% \u2192 all allies 10s). Offensively INERT: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 rule) \u2014 no board damage moves.",
+      "couldCauseGap": "neither",
+      "why": "Explicitly ruled inert for damage; added for kit-SSOT completeness only. Cannot move board numbers by design."
+    },
+    {
+      "source": "note",
+      "text": "skill1 was auto-filled from the offline parser (blablalink prose), behavior-identical to prior runtime parse, NOT hand-verified.",
+      "couldCauseGap": "neither",
+      "why": "Provenance flag on the (inert, unmodeled) heal lines only; no modeled damage effect depends on skill1."
+    },
+    {
+      "source": "open-question",
+      "text": "ks-extract finding: HOT is attributed to the weapon-fire model (cadence tuple / RL core crediting), not the skill kit; hard-rule violations F1/F3/F5/F8 = dropped heals/HP-grants/hit-rate.",
+      "couldCauseGap": "HOT",
+      "why": "The board HOT (ratio 1.151, >15% band) is ascribed to Trina's RL normal-attack/core-crediting model rather than any skill line \u2014 the skill kit's documented gaps (Spread Roots aside) are inert, so residual heat likely lives in the weapon-fire path, outside this skill-override review."
+    }
+  ],
+  "authorIntentSummary": "The override models Trina's offensive support contribution: S2's burstCast +94.15% Attack Damage and +50.82% Reload Speed to the single leftmost Electric-AR ally (now targeted EXACTLY via alliesOfElementWeapon \u2014 the run-B heat fix that stopped feeding RL carries/Trina herself), plus burst's team-wide +20.9% AD and +20 rounds ammo (encoded as +33.3% on a 60-round AR assumption, scoped to Electric-AR allies). Her two Max HP grants are encoded as casterMaxHpPct for kit-SSOT completeness but are ruled offensively INERT (THEME-13). Deliberately unmodeled: all skill1 heals (inert vs boss), S2 invulnerability, burst Hit Rate (no misses vs boss), and the Spread Roots/Wilted Roots burst-skill-damage riders \u2014 the latter FIRES in solo raid and is the one documented HOT skill-kit gap (engine has no burst-skill-dmg-amp; teammates read COLD). Per the ks-extract, the unit's overall HOT board reading is attributed to the RL weapon-fire/core-crediting model rather than these skill lines."
+}

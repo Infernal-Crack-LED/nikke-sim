@@ -1,0 +1,128 @@
+{
+  "slug": "mana",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Metal \u03b3: ATK \u25b2 58.08% continuously. Activates once per battle.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] \u2014 passive \u2192 self, buff atkPct 58.08 (no duration)",
+        "note": "Modeled as a permanent passive. Justified: \u03b3 is granted once at battle start and only removed 'when an ally is out of action', which never occurs under scope-lock (no ally deaths), so it stays up the whole fight."
+      },
+      {
+        "kitLine": "Activates when in Metal \u03b3 status after landing 10 normal attacks. Affects all allies. Recovers 2.04% of the skill user's final Max HP as HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] \u2014 trigger hitCount count:10 \u2192 allies, effect { kind: heal }",
+        "note": "Wired as a heal EVENT (no magnitude encoded) so 'on-recovery' consumers (Crown-style) can proc. Inert alone vs the boss \u2014 adds no damage. The 2.04% final-Max-HP value is intentionally not expressed; only the event hook matters for damage."
+      },
+      {
+        "kitLine": "Activates if the skill user is in Metal \u03b3 status when an ally is out of action. Affects 1 incapacitated ally unit(s) with the highest final ATK (except the skill user). Resurrect with 96% HP.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0] + [1] ('Resurrect with 96% HP.')",
+        "note": "Inert under scope-lock \u2014 no ally ever goes out of action, so the \u03b3-gated resurrect never fires. Correctly skipped."
+      },
+      {
+        "kitLine": "Activates when an ally is out of action. Affects self. Removes Metal \u03b3.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2] + [3] ('Removes Metal \u03b3.')",
+        "note": "Inert under scope-lock (no ally deaths). This skip is exactly WHY the +58.08% ATK can be modeled as permanent \u2014 the only \u03b3-removal trigger never fires."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Metal \u03c3: Burst Gauge filling speed \u25b2 70.4% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 passive \u2192 self, buff burstGenPct 70.4 (no duration)",
+        "note": "Modeled permanent. \u03c3 is removed only at an FB-entry consumed in \u03c3 and re-granted whenever she casts Burst before that FB ends, so as the bursting B3 (or a never-bursting lone B3) \u03c3 is effectively permanent. Overstated in multi-B3 rotations where she skips bursts (see caveat)."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst in Metal \u03c3 status. Affects self. Attack Damage \u25b2 21.12% for 10 sec. ATK \u25b2 63.36% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] \u2014 trigger burstCast \u2192 self, buff attackDamagePct 21.12 dur 10 + buff atkPct 63.36 dur 10",
+        "note": "TRIGGER RE-KEYED from fullBurstEnter (raw parse) to burstCast per note (prior-10 / HARD RULE 6). \u03c3 is maintained only by her own burst casts, so post-first-FB the buff is gated on HER bursting; fullBurstEnter would over-credit every multi-B3 FB. Identical to fullBurstEnter when she is the sole B3 (standard context). Known residual: \u03c3 starts granted, so the true first-FB proc + a one-FB phase offset in multi-B3 is not captured (no \u03c3 state machine in engine)."
+      },
+      {
+        "kitLine": "Removes Metal \u03c3. (tail of the FB-self-buff line)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0] ('Removes Metal \u03c3.')",
+        "note": "Subsumed into the burstCast re-key approximation + the permanent burstGen passive; engine has no \u03c3 state to remove. Documented, not a silent drop."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects 1 ally unit(s) with the longest basic Charge Time. Charge Time \u25bc 0.18 sec for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2] \u2014 trigger fullBurstEnter \u2192 allies, buff chargeSpeedPct 18 dur 10",
+        "note": "Two approximations: (a) magnitude \u2014 0.18s absolute converted to chargeSpeedPct 18 at an assumed ~1.0s basic charge (unmeasured \u2691); (b) target \u2014 'longest basic Charge Time' single-target selection is not engine-expressible, so widened to `allies`. Harmless because chargeSpeedPct is inert on non-charge weapons and control teams carry \u22641 charge unit."
+      },
+      {
+        "kitLine": "Activates if the skill user has cast Burst Skill before Full Burst ends. Affects self. Metal \u03c3: Burst Gauge filling speed \u25b2 70.4% continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1] + [2] ('Metal \u03c3: Burst Gauge filling speed \u25b2 70.4% continuously.')",
+        "note": "The \u03c3 re-grant block. Subsumed into the permanent burstGenPct 70.4 passive (skill2[0]) \u2014 as the bursting B3 \u03c3 is effectively always up, so the re-grant adds nothing beyond the permanent encoding. Documented approximation, not a silent drop."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Sustained Damage \u25b2 52.8% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] \u2014 trigger burstCast \u2192 self, buff sustainedDamagePct 52.8 dur 10",
+        "note": "burstCast dur-10 on a \u226540s burst CD \u2192 no buff-overlap multiplication. Amplifies the sustained DoT bucket below."
+      },
+      {
+        "kitLine": "Affects 1 enemy unit(s) nearest to the crosshair. Deals 396% of final ATK as sustained damage every 1 sec for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 trigger burstCast \u2192 enemy, dot atkPct 396 dur 10 interval 1 flavor sustained",
+        "note": "10 ticks/cast; ~59% of her damage per note (MANIFEST). duration (10s) \u2264 re-trigger interval (\u226540s CD) \u2192 NO DoT-overlap multiplication (prior-3 satisfied; a per-cast DoT, not maintained). Ticks landing inside FB get +50% by timing (prior-2 \u2014 no noFb anywhere). 'nearest to crosshair' single-target \u2192 `enemy` (partless single boss under scope-lock, so target selection is moot)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: FB self buffs (Attack Damage +21.12% / ATK +63.36%) keyed to her OWN burst cast \u2014 the Metal \u03c3 economy approximation. Exact when she is the sole Burst III; a multi-B3 team's true \u03c3 state machine (battle-start grant, remove-on-FB, re-grant-on-her-cast) is phase-shifted vs this encoding.",
+      "couldCauseGap": "neither",
+      "why": "Under scope-lock / standard sole-B3 context burstCast \u2261 fullBurstEnter, so no gap. Only a multi-B3 team would phase-shift it (burstCast under-credits FBs she didn't burst \u2192 would trend COLD there), but that is outside the validated context and there is no board data to compare."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Metal \u03c3 burst-gauge +70.4% modeled permanent \u2014 overstated in multi-B3 rotations where she skips bursts (\u03c3 drops until her next burst).",
+      "couldCauseGap": "HOT",
+      "why": "burstGenPct only accelerates burst gauge fill; if overstated it would make her (and the team) burst more often \u2192 sim over-models burst-cadence-driven damage \u2192 HOT. But effect is indirect and small under scope-lock where she bursts on CD anyway; primarily a multi-B3 risk."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Charge Time \u25bc0.18 sec ally support approximated as chargeSpeedPct 18 to all allies \u2014 magnitude is an unmeasured \u2691 (0.18s \u00f7 the target's basic charge time) and the 'longest basic Charge Time' single-target selection is not engine-expressible (inert on non-charge allies).",
+      "couldCauseGap": "neither",
+      "why": "Affects an ally's charge cadence, not Mana's own damage; inert on non-charge weapons and control teams carry \u22641 charge unit. Magnitude \u2691 could shift a charge ally's damage in either direction but does not move Mana's own ratio directly."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: hitCount-10 team heal is an event-only synergy hook (Crown-style recovery consumers); it adds no damage alone.",
+      "couldCauseGap": "neither",
+      "why": "The heal carries no damage and no encoded magnitude; it exists only to proc on-recovery consumers. In a team with no such consumer it is inert, so it cannot by itself open a sim/real gap on Mana."
+    },
+    {
+      "source": "caveat",
+      "text": "cadence: pullsPerSec / reloadFrames 121 are unverified datamine (mandatory \u2691).",
+      "couldCauseGap": "HOT",
+      "why": "Cadence drives both her own AR normal-attack damage and the hitCount-10 heal/consumer cadence. 60-ammo AR at class rate empties in ~5s with no escalation tell; if reloadFrames/pullsPerSec are wrong her sustained normal-attack + DoT-amp uptime shifts, most plausibly over-modeling fire uptime \u2192 HOT (direction unverified \u2014 flagged as mandatory \u2691)."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u2691(3): \u03c3-economy trigger phase \u2014 verify buff presence on FBs she didn't burst in a multi-B3 recording (burstCast approximation).",
+      "couldCauseGap": "neither",
+      "why": "Same root as the skill2 trigger caveat; only bites in multi-B3 comps outside the validated sole-B3 context. No board data exists to manifest it."
+    },
+    {
+      "source": "open-question",
+      "text": "note \u2691(4): heal/hitCount-10 consumer cadence (synergy-only) is unmeasured.",
+      "couldCauseGap": "neither",
+      "why": "Only relevant to on-recovery consumer uptime on a teammate; adds no damage on Mana herself and is inert without such a consumer."
+    }
+  ],
+  "authorIntentSummary": "The override is an explicit PARSER-BASELINE HYPOTHESIS (banner not yet removed \u2014 unmeasured, not hand-tuned) modeling Mana's whole kit: S1 Metal \u03b3 as a permanent self ATK +58.08% passive (\u03b3 never removed under scope-lock since no ally dies) plus a magnitude-less hitCount-10 team heal wired purely as an on-recovery consumer event hook; S2 Metal \u03c3 as a permanent self burstGenPct +70.4% passive, the FB self Attack-Damage/ATK buffs RE-KEYED from fullBurstEnter to burstCast to match the \u03c3 economy (identical when she is the sole B3), and the Charge-Time ally support approximated as chargeSpeedPct 18 to all allies; and the burst as a self sustainedDamagePct +52.8% buff plus a 396%-final-ATK sustained DoT (10 ticks/cast, no overlap on the 40s CD, ~59% of her damage). Key approximations: the \u03c3 state machine is collapsed into permanent/re-keyed encodings (exact for sole-B3, phase-shifted in multi-B3), the charge-support magnitude/target are unmeasured, and cadence (pullsPerSec/reloadFrames 121) is an unverified datamine \u2691. Known-not-yet-faithful spots are all documented as caveats/unmodeled (resurrect + \u03b3/\u03c3 removal inert under scope-lock; \u03c3 re-grant subsumed into the permanent passive); there are NO silent drops \u2014 every kit line is either a block or a documented unmodeled entry, and the unit has no board accuracy data yet."
+}

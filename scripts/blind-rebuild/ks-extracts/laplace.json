@@ -1,0 +1,46 @@
+{
+  "laplace": {
+    "name": "Laplace (Treasure)",
+    "burst": "III",
+    "weapon": "RL",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "reconciled",
+      "provenance": "parser-baseline",
+      "date": "2026-07-17",
+      "findings": [
+        "burst re-authored to official prose (897.6/14.52/5s weaponSwap, only rider is true dmg) — current file traced to OLD fan text (1455.72/22.2/trueNormals); fbGate over-fire fixed",
+        "✅ RESOLVED 2026-07-17 (favorite-item sync): REVERTED the wave-6 downgrade — the 'old fan text' values were the TREASURE kit. Restored burst First 1455.72/Normal 22.2/10s + weaponSwap trueNormals + the 11.9 rider; S2a lastBullet 81.66 → shotFired full-charge 132.45. DBG-confirmed. Model-only."
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — bare override, never validated",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates when attacking with Full Charge. Affects self. Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5, 15s."
+      ],
+      "skill2": [
+        "Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage."
+      ],
+      "burst": [
+        "Additional Effect 1: Gains Pierce.",
+        "(Note: Unable to take cover.)"
+      ]
+    },
+    "caveats": [
+      "burst: bazooka beam economy is UNMEASURED — 0.25s/tick + reload-free are ⚑ estimates over the 10s window; count beam popups in any focus video",
+      "burst: the swap beam (22.2%, true at max Hero Vision) and the 11.9% true rider both assume Hero Vision is at max stacks for the whole window (⚑ uptime haircut candidate)",
+      "burst: 'Gains Pierce' not modeled — no swap-gated pierce mechanism; inert at scope lock (no pierce-damage buffs in kit, pierce core-double disabled)",
+      "skill2: the 132.45% full-charge additional hit is modeled on shotFired (every RL pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
+      "skill1: Explosion Radius ▲ is inert vs the partless boss; its stacks only gate the burst true damage (assumed maxed)"
+    ],
+    "board": null
+  }
+}

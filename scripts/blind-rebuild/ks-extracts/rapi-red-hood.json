@@ -1,0 +1,67 @@
+{
+  "rapi-red-hood": {
+    "name": "Rapi: Red Hood",
+    "burst": "III",
+    "weapon": "MG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "projectile attach/explode modeled faithful; 150.72/100.6 damage-type buffs correctly routed to attachment/explosion flavors (engine-verified); values exact. F1/F3 skippable partless lines backfilled"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 5,
+      "within3pct": 1
+    },
+    "reference": false,
+    "residual": "Invisible-X residual (44-52% of her damage) deliberately left open",
+    "unmodeled": {
+      "skill1": [
+        "Damage to Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
+      ],
+      "skill2": [
+        "Attachable Projectile — Max Ammo: 1"
+      ],
+      "burst": [
+        "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)"
+      ]
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T3 fire-weak (boss Wind)",
+          "ratio": 0.9909
+        },
+        {
+          "comp": "T6 fire-weak (boss Wind)",
+          "ratio": 0.9921
+        },
+        {
+          "comp": "T7 elec-weak probe (boss Water)",
+          "ratio": 0.8823
+        },
+        {
+          "comp": "T8 iron-weak (boss Electric)",
+          "ratio": 1.0026
+        },
+        {
+          "comp": "N1 rapi/quency wind (boss Wind)",
+          "ratio": 0.9906
+        }
+      ],
+      "n": 5,
+      "mean": 0.9717,
+      "mad": 0.0293,
+      "band": "±3% ✓",
+      "temp": "OK  ·"
+    }
+  }
+}

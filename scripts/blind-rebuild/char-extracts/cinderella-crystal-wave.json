@@ -1,0 +1,605 @@
+{
+  "cinderella-crystal-wave": {
+    "slug": "cinderella-crystal-wave",
+    "name": "Cinderella: Crystal Wave",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/rd-14/lf-79/d8fac53ed45b3a15a3259f5eea21d237.png",
+    "weapon": "MG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Iron",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 5.57,
+    "coreAttackMultiplier": 200,
+    "ammo": 300,
+    "reloadFrames": 171,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 3.55,
+    "burstGaugePerShot": 0.05,
+    "treasure": false,
+    "nicknames": [
+      "ccw",
+      "scindy"
+    ],
+    "skills": {
+      "skill1": "■ Activates upon reloading to max ammunition while in the Preparation for Change state. Affects self.\nChanges the weapon in use: Snipe Mode\nCharge Time: 1 sec\nDamage: 62.13% of final ATK\nFull Charge Damage: 250% of damage\nMax Ammunition Capacity: 15 rounds (max ammunition effect refreshes after reloading)\nAdditional Effect 1: Gains Pierce.\nAdditional Effect 2: Activates when performing a Full Charge attack. Expends ammo. Amount: 40 round(s).\nAdditional Effect 3: Charge time is fixed at 1 sec.\nRemoval Condition: Reloading to max ammunition while in the Preparation for Change state.\n■ Activates at the start of battle. Affects self.\nBeauty-Full: Attack Damage ▲ 24% continuously.\n■ Activates upon reloading to max ammunition. Affects self.\nPreparation for Change: Reload time is fixed at 3 sec for 6 sec. Removed upon firing the last bullet.\n■ Activates every 5 sec. Affects the enemy unit nearest to the crosshair.\nDeals 900% of final ATK as damage.\n■ Activates each time total ammo consumed by allies reaches 200. Affects all allies.\nFills Burst Gauge by 12%.",
+      "skill2": "■ Activates at the start of battle and when using Burst Skill. Affects self.\nDecoy: Creates an avatar with 70.34% of the skill user's final Max HP. This effect is continuous.\n■ Activates at the start of battle. Affects self.\nATK ▲ 29% continuously.\n■ Activates when Snipe Mode takes effect. Affects self.\nDestroy: Damage to Parts ▲ 26.21% continuously.\nRemoves Pinpoint.\n■ Activates at the start of battle and when Snipe Mode is removed. Affects self.\nPinpoint: Damage dealt when attacking core ▲ 26% continuously.\nRemoves Destroy.\n■ Activates when entering Full Burst after this unit uses her Burst Skill.\nEffect varies according to this unit's current mode. Only one effect is applied.\nActivates while in Snipe Mode. Affects all enemies (including parts).\nEffect 1: Deals 1189.66% of final ATK as damage.\nActivates while not in Snipe Mode. Affects all enemies with activated cores.\nEffect 1: Deals 833.79% of final ATK as core strike damage.",
+      "burst": "■ Affects self.\nAttack Damage ▲ 92% for 10 sec.\nATK ▲ 65% for 10 sec.\n■ Affects the enemy with the highest final ATK.\nDeals 6000% of final ATK as Burst Skill damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1051501,
+        "shot_detail": {
+          "id": 1051501,
+          "damage": 557,
+          "max_ammo": 300,
+          "shake_id": 2,
+          "ShakeType": "Fire_MG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "aim_prefab": "base_aim_reference_c515",
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 250,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "MG",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Machine Gun",
+          "prefer_target": "TargetPS",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 4200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 299,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 150,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 7,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 100,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 150,
+          "rate_of_fire_change_pershot": 100,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 1000,
+          "auto_accuracy_change_pershot": 7,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 55,
+        "bonusrange_min": 35
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2515101,
+        "skill2_id": 2515201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2515101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25151,
+          "skill_level": 1,
+          "name_localkey": "Beauty-Full",
+          "next_level_id": 2515102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates upon reloading to max ammunition while in the Preparation for Change state. Affects self.\n<color=#00AEFF>Changes the weapon in use: Snipe Mode\nCharge Time: 1 sec\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK\nFull Charge Damage: 250% of damage\nMax Ammunition Capacity: 15 rounds (max ammunition effect refreshes after reloading)\nAdditional Effect 1: Gains Pierce.\nAdditional Effect 2: Activates when performing a Full Charge attack. <word_group=10099>Expends ammo</word_group>. Amount: {description_value_02} round(s).\nAdditional Effect 3: Charge time is fixed at 1 sec.\nRemoval Condition: Reloading to max ammunition while in the Preparation for Change state.</color>\n■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Beauty-Full: Attack Damage ▲ {description_value_03}% continuously.</color>\n■ Activates upon reloading to max ammunition. Affects self.\n<color=#00AEFF>Preparation for Change: Reload time is fixed at 3 sec for {description_value_04} sec. Removed upon firing the last bullet.</color>\n■ Activates every {description_value_10} sec. Affects the enemy unit nearest to the crosshair.\n<color=#00AEFF>Deals {description_value_07}% of <word_group=10025>final</word_group> ATK as damage.</color>\n■ Activates each time <word_group=10078>total ammo consumed by allies</word_group> reaches {description_value_08}. Affects all allies.\n<color=#00AEFF><word_group=10015>Fills Burst Gauge</word_group> by {description_value_09}%.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "62.13",
+                "62.13",
+                "62.13",
+                "62.13",
+                "62.13",
+                "62.13",
+                "62.13",
+                "62.13",
+                "62.13",
+                "62.13"
+              ]
+            },
+            {
+              "description_value": [
+                "40",
+                "40",
+                "40",
+                "40",
+                "40",
+                "40",
+                "40",
+                "40",
+                "40",
+                "40"
+              ]
+            },
+            {
+              "description_value": [
+                "13.2",
+                "14.4",
+                "15.6",
+                "16.8",
+                "18",
+                "19.2",
+                "20.4",
+                "21.6",
+                "22.8",
+                "24"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {},
+            {},
+            {
+              "description_value": [
+                "450",
+                "500",
+                "550",
+                "600",
+                "650",
+                "700",
+                "750",
+                "800",
+                "850",
+                "900"
+              ]
+            },
+            {
+              "description_value": [
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200",
+                "200"
+              ]
+            },
+            {
+              "description_value": [
+                "7.09",
+                "7.64",
+                "8.19",
+                "8.74",
+                "9.29",
+                "9.84",
+                "10.39",
+                "10.94",
+                "11.49",
+                "12"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2515201,
+          "icon": "icn_skill_coredamage_01",
+          "group_id": 25152,
+          "skill_level": 1,
+          "name_localkey": "Mode Swap",
+          "next_level_id": 2515202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates at the start of battle and when using Burst Skill. Affects self.\n<color=#00AEFF><word_group=10024>Decoy</word_group>: Creates an avatar with {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP. This effect is continuous.</color>\n■ Activates at the start of battle. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_02}% continuously.</color>\n■ Activates when Snipe Mode takes effect. Affects self.\n<color=#00AEFF>Destroy: <word_group=10011>Damage to Parts</word_group> ▲ {description_value_03}% continuously.\nRemoves Pinpoint.</color>\n■ Activates at the start of battle and when Snipe Mode is removed. Affects self.\n<color=#00AEFF>Pinpoint: Damage dealt when attacking core ▲ {description_value_04}% continuously.\nRemoves Destroy.</color>\n■ Activates when entering Full Burst after this unit uses her Burst Skill.\n<color=#00AEFF>Effect varies according to this unit's current mode. Only one effect is applied.</color>\nActivates while in Snipe Mode. Affects all enemies (including parts).\n<color=#00AEFF>Effect 1: Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as damage.</color>\nActivates while not in Snipe Mode. Affects all enemies with activated cores.\n<color=#00AEFF>Effect 1: Deals {description_value_06}% of <word_group=10025>final</word_group> ATK as <word_group=10104>core strike damage</word_group>.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "41.56",
+                "44.76",
+                "47.95",
+                "51.15",
+                "54.35",
+                "57.55",
+                "60.74",
+                "63.94",
+                "67.14",
+                "70.34"
+              ]
+            },
+            {
+              "description_value": [
+                "15.95",
+                "17.4",
+                "18.85",
+                "20.3",
+                "21.75",
+                "23.2",
+                "24.65",
+                "26.1",
+                "27.55",
+                "29"
+              ]
+            },
+            {
+              "description_value": [
+                "13.11",
+                "14.57",
+                "16.03",
+                "17.49",
+                "18.95",
+                "20.41",
+                "21.87",
+                "23.33",
+                "24.79",
+                "26.21"
+              ]
+            },
+            {
+              "description_value": [
+                "13",
+                "14.44",
+                "15.88",
+                "17.32",
+                "18.76",
+                "20.2",
+                "21.64",
+                "23.08",
+                "24.52",
+                "26"
+              ]
+            },
+            {
+              "description_value": [
+                "654.31",
+                "713.79",
+                "773.27",
+                "832.75",
+                "892.23",
+                "951.71",
+                "1011.19",
+                "1070.67",
+                "1130.15",
+                "1189.66"
+              ]
+            },
+            {
+              "description_value": [
+                "458.58",
+                "500.27",
+                "541.96",
+                "583.65",
+                "625.34",
+                "667.03",
+                "708.72",
+                "750.41",
+                "792.1",
+                "833.79"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1515301,
+        "ulti_skill_detail": {
+          "id": 1515301,
+          "icon": "icn_skill_c515_ult",
+          "group_id": 15153,
+          "shake_id": 1,
+          "skill_type": "InstantNumber",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Glass Slippers Full Contact W",
+          "next_level_id": 1515302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c515_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 329997,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_01}% for {description_value_02} sec.\nATK ▲ {description_value_05}% for {description_value_06} sec.</color>\n■ Affects the enemy with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "46",
+                "51.11",
+                "56.22",
+                "61.33",
+                "66.44",
+                "71.55",
+                "76.66",
+                "81.77",
+                "86.88",
+                "92"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "3299.97",
+                "3599.97",
+                "3899.97",
+                "4199.97",
+                "4499.97",
+                "4799.97",
+                "5099.97",
+                "5399.97",
+                "5699.97",
+                "6000"
+              ]
+            },
+            {
+              "description_value": [
+                "35.75",
+                "39",
+                "42.25",
+                "45.5",
+                "48.75",
+                "52",
+                "55.25",
+                "58.5",
+                "61.75",
+                "65"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            251520101,
+            151530103
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            151530101,
+            151530107
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 451502,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5106,
+        "stat_enhance_detail": {
+          "id": 5106,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100515,
+        "piece_detail": {
+          "id": 5100515,
+          "class": "Attacker",
+          "order": 51500,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 515,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Cinderella: Crystal Wave's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 451501,
+        "class": "Attacker",
+        "order": 10160,
+        "name_code": 5175,
+        "corporation": "PILGRIM",
+        "resource_id": 515,
+        "name_localkey": "Cinderella: Crystal Wave",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 75,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 515
+    }
+  }
+}

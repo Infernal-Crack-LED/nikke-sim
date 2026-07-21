@@ -1,0 +1,98 @@
+{
+  "slug": "asuka",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Damage dealt to Shield \u25b2 601.01% continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "No shield-damage StatKey in types.ts; scope-lock partless boss never shields \u2014 inert in all graded scenarios."
+      },
+      {
+        "kitLine": "Activates when recovery takes effect. Affects self. ATK \u25b2 96.98% for 25 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] \u2014 trigger:recovery, target:self, buff atkPct 96.98/25s",
+        "note": "Re-encoded from passive proxy to kit-faithful recovery trigger. Uptime depends on healer presence or own burst lifesteal (see caveats)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self when in Shield status. Elemental Advantage Attack Damage \u25b2 30.02% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 trigger:fullBurstEnter, target:self, buff elemAdvantageDamagePct 30.02/10s",
+        "note": "Shield-status gate NOT modeled (no engine support); fires unconditionally at FB entry. Over-credits shielder-less teams; only relevant with elemental advantage."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all Fire Code allies. Damage dealt when attacking core \u25b2 60.07% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] \u2014 trigger:fullBurstEnter, target:alliesOfElement(Fire), buff coreDamagePct 60.07/10s",
+        "note": "Includes self (she is Fire). Faithful encoding."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Gain Pierce for 25 sec.",
+        "status": "MODELED_CONFIG",
+        "where": "top-level hasPierce:true",
+        "note": "Approximated as permanent (real duration 25s). Pierce is inert in v1 (PIERCE_CORE_DOUBLE off, pierceDamagePct unbuffed, partless boss)."
+      },
+      {
+        "kitLine": "Attack damage \u25b2 150.04% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[0] \u2014 buff attackDamagePct 150.04/10s",
+        "note": "Faithful encoding."
+      },
+      {
+        "kitLine": "Recovers 3.16% of attack damage as HP over 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[1] \u2014 kind:heal (single event at cast)",
+        "note": "Approximated as one recovery event at cast vs real 10s HoT. Fires her own S1 recovery trigger (self-sustaining ATK buff). Verify self-lifesteal procs 'when recovery takes effect'."
+      },
+      {
+        "kitLine": "Hit Rate \u25b2 101.37% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[2] \u2014 buff hitRatePct 101.37/10s",
+        "note": "Inert in current engine (no hit-rate mechanic). Modeled for future-proofing."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: ATK \u25b296.98% is recovery-triggered \u2014 needs a heal landing on her (teammate healer, or her own burst lifesteal); a healer-less team that never Full-Bursts gains it never",
+      "couldCauseGap": "COLD",
+      "why": "If the sim assumes uptime that doesn't materialize in a healer-less comp, ATK buff never fires \u2192 under-models. Conversely if sim always credits it, HOT in healer-less."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Elemental Advantage buff requires Shield status in-game \u2014 no shield-state gate in the engine, modeled as unconditional at Full-Burst entry",
+      "couldCauseGap": "HOT",
+      "why": "Over-credits 30% elemAdvantage damage in shielder-less teams vs elemental-advantage bosses. Only matters when elemental advantage is active."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: 'Gain Pierce for 25 sec' modeled as permanent hasPierce (pierce currently inert vs the v1 boss); lifesteal modeled as one recovery event at cast, real effect ticks over 10s",
+      "couldCauseGap": "neither",
+      "why": "Pierce inert in v1 so no damage impact. Lifesteal timing affects S1 recovery trigger cadence \u2014 single event at cast is earlier than distributed ticks but net recovery count per burst is the same (1 proc)."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: fire cadence is an unmeasured datamine estimate \u2014 20-ammo AR with an 18.76% normal multiplier is unlikely to fire at the AR class default",
+      "couldCauseGap": "HOT",
+      "why": "If real fire-rate is slower than datamine suggests (collab positron rifle), sim over-counts normal hits \u2192 HOT. This is flagged as the biggest unverified lever."
+    },
+    {
+      "source": "note",
+      "text": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number.",
+      "couldCauseGap": "neither",
+      "why": "Global disclaimer \u2014 unit has never been fielded or measured. All values are datamine-parse hypotheses."
+    }
+  ],
+  "authorIntentSummary": "The override is a parser-baseline hypothesis (wave 5, 2026-07-16) encoding Asuka's full kit faithfully except: shield-damage (inert, unmodeled), shield-status gate on S2 (no engine support, unconditional), pierce duration (permanent approx, inert), and lifesteal timing (single event vs HoT). The S1 ATK buff was deliberately re-encoded from a passive proxy to a kit-faithful recovery trigger, making healer presence a hard uptime dependency. The author flags fire cadence (20-ammo AR, 18.76% normalMult) as the biggest unverified lever and the unit has zero board data \u2014 it has never been measured against a real fight."
+}

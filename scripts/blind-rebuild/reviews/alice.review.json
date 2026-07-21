@@ -1,0 +1,104 @@
+{
+  "slug": "alice",
+  "board": {
+    "ratio": 0.924,
+    "n": 1,
+    "mad": 0.076,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger.kind = fullBurstEnter",
+        "note": ""
+      },
+      {
+        "kitLine": "Affects 2 ally unit(s) with the highest final ATK",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].target = { kind: alliesTopAtk, count: 2 }",
+        "note": ""
+      },
+      {
+        "kitLine": "Charge Speed \u25b2 11.67% of the skill user's Charge Speed for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0] = buff chargeSpeedPct 11.67 / 10s",
+        "note": "Caster-relative qualifier ('of the skill user's Charge Speed') unreconciled \u2014 modeled as flat target-own buff. No caster-relative charge-speed StatKey exists. Documented in caveat; low impact at scope lock."
+      },
+      {
+        "kitLine": "Charge Damage \u25b2 7% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[1] = buff chargeDamagePct 7 / 10s",
+        "note": ""
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects self. Activates when above 80% HP. Gain continuous Pierce.",
+        "status": "MODELED_CONFIG",
+        "where": "hasPierce: true (top-level config field)",
+        "note": "Pierce effect IS modeled via hasPierce. The >80% HP gate is UNMODELED but documented in caveat as always-satisfied at scope lock (boss deals no damage to units). Full line also appears in unmodeled.skill2 \u2014 the unmodeled entry covers the gate, not the effect. Caveat: 'Re-encode the gate if incoming damage is ever modeled.'"
+      },
+      {
+        "kitLine": "Affects self. Activates when HP falls below 80%. Continuously recover HP by 8.12% of attack damage.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Lifesteal/HP-recovery is inert at scope lock: no incoming damage means HP never drops below 80%, so this branch never fires. Correctly unmodeled."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].target = { kind: self }",
+        "note": ""
+      },
+      {
+        "kitLine": "Charge Speed \u25b2 80.15% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] = buff chargeSpeedPct 80.15 / 10s",
+        "note": ""
+      },
+      {
+        "kitLine": "ATK \u25b2 55.12% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[1] = buff atkPct 55.12 / 10s",
+        "note": ""
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: Charge Speed 11.67% modeled as flat target-own buff; kit says '11.67% of the skill user's Charge Speed' (caster-relative) \u2014 qualifier unreconciled, no caster-relative StatKey exists.",
+      "couldCauseGap": "COLD",
+      "why": "At scope lock (skill levels 10/10/10, no cube), Alice's own charge speed stat is fixed, so caster-relative vs flat is a constant offset \u2014 low impact. Not the cause of the 0.924 miss."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Pierce modeled UNGATED (hasPierce); kit gates it '>80% HP' \u2014 always satisfied in v1 (boss deals no damage). Re-encode if incoming damage is ever modeled.",
+      "couldCauseGap": "neither",
+      "why": "Gate is always true at scope lock; ungated pierce is behaviorally identical. No gap contribution."
+    },
+    {
+      "source": "note",
+      "text": "Override note claims hasPierce 'enables the pierce double-hit (core + body per shot on a core-exposed boss, community-verified)'. Kit-status findings mark this STALE: PIERCE_CORE_DOUBLE=false; pierce = one popup per shot, no double-hit (A23). hasPierce is still correctly retained.",
+      "couldCauseGap": "neither",
+      "why": "The note's mechanism description is wrong but the config value (hasPierce: true) is correct. The stale prose does not affect sim output."
+    },
+    {
+      "source": "note",
+      "text": "Kit-status findings: '0.91 residual is basis/comp-side (read 1.10-1.12 HOT w/ same model 07-13/14)'. The COLD 0.924 reading is attributed to comp/basis issues, not the model.",
+      "couldCauseGap": "COLD",
+      "why": "Same model read HOT (1.10\u20131.12) on a different comp/date. The single COLD data point (n=1, PA MiKa boss Iron) is flagged as comp-side, not a model defect. MAD 0.076 is within the \u00b18% band."
+    },
+    {
+      "source": "note",
+      "text": "Override note: 'materialized 2026-07-16: skill1/skill2/burst auto-filled from the offline parser (blablalink prose) \u2014 behavior-identical to the prior runtime parse; NOT hand-verified'.",
+      "couldCauseGap": "neither",
+      "why": "Provenance flag only. The parser output matches the prose values exactly (11.67/7/80.15/55.12 all confirmed against char-extract). No behavioral risk."
+    }
+  ],
+  "authorIntentSummary": "The override models Alice as a clean self-burst DPS (burst: chargeSpeed 80.15% + ATK 55.12% for 10s) with a party-support skill1 (top-2-ATK allies get chargeSpeed 11.67% + chargeDamage 7% on Full Burst enter). Skill2's pierce is encoded as hasPierce: true (ungated, correct at scope lock); the HP-conditional lifesteal branch is correctly unmodeled as inert. The one known approximation is the caster-relative charge-speed qualifier in skill1, flattened due to no supporting StatKey \u2014 documented as low-impact. The COLD 0.924 board reading (n=1) is attributed to comp/basis-side issues, not the model; the same model read HOT on a different comp."
+}

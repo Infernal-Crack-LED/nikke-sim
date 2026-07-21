@@ -1,0 +1,487 @@
+{
+  "cinderella": {
+    "slug": "cinderella",
+    "name": "Cinderella",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/rc-90/pk-14/abaa958f123ed4623f84c3883bf3afff.png",
+    "weapon": "RL",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Defender",
+    "element": "Electric",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 32.11,
+    "coreAttackMultiplier": 200,
+    "ammo": 24,
+    "reloadFrames": 141,
+    "chargeFrames": 60,
+    "chargeMultiplier": 200,
+    "hitsPerShot": 1,
+    "rl3": 3.6,
+    "burstGaugePerShot": 0.225,
+    "treasure": false,
+    "nicknames": [
+      "cindy"
+    ],
+    "skills": {
+      "skill1": "■ Activates when entering Burst Stage 3. Affects self.\nATK ▲ 2.71% of the skill user's final Max HP for 10 sec.\n■ Activates when attacking with Full Charge. Affects self.\nCharge Speed ▲ 100%. Removed upon reloading to max ammunition.\n■ Activates when hitting a target with Full Charge. Affects the target.\nDeals 136.6% of final ATK as additional damage.",
+      "skill2": "■ Activates at the start of battle. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.\n■ Activates when entering Burst Skill Stage 3. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.\n■ Activates every 3 sec when a decoy is present. Affects self.\nBeautiful: Max HP ▲ 1.6% continuously, stacks up to 12 times.",
+      "burst": "■ Affects random enemies.\nDeals 1365.92% of final ATK as damage. Attacks sequentially for 10 time(s).\n■ Affects the same target(s) when in Beautiful status.\nDeals 28.9% of final ATK as additional damage.Mirrors the stack count of Beautiful."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1051101,
+        "shot_detail": {
+          "id": 1051101,
+          "damage": 3211,
+          "max_ammo": 24,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "ProjectileCurve",
+          "zoom_rate": 0,
+          "aim_prefab": "base_aim_reference_c511",
+          "input_type": "DOWN_Charge",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 180,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 180,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 23,
+          "full_charge_damage": 20000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2250,
+          "description_localkey": "■ Affects target(s).\nFires a laser to perform a small-range attack.\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 50,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 1500,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 20000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 4500,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2511101,
+        "skill2_id": 2511201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2511101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25111,
+          "skill_level": 1,
+          "name_localkey": "Flawless Glass",
+          "next_level_id": 2511102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when entering Burst Stage 3. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_02} sec.</color>\n■ Activates when attacking with Full Charge. Affects self.\n<color=#00AEFF>Charge Speed ▲ {description_value_03}%. Removed upon reloading to max ammunition.</color>\n■ Activates when hitting a target with Full Charge. Affects the target.\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1.7",
+                "1.8",
+                "1.92",
+                "2.02",
+                "2.13",
+                "2.26",
+                "2.36",
+                "2.49",
+                "2.58",
+                "2.71"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "80.72",
+                "86.94",
+                "93.13",
+                "99.35",
+                "105.55",
+                "111.76",
+                "117.98",
+                "124.19",
+                "130.39",
+                "136.6"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2511201,
+          "icon": "icn_skill_stathp_01",
+          "group_id": 25112,
+          "skill_level": 1,
+          "name_localkey": "Dirt-Resistant Mirror",
+          "next_level_id": 2511202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF><word_group=10024>Decoy</word_group>: Creates an avatar with {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP. This effect is continuous.</color>\n■ Activates when entering Burst Skill Stage 3. Affects self.\n<color=#00AEFF><word_group=10024>Decoy</word_group>: Creates an avatar with {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP. This effect is continuous.</color>\n■ Activates every {description_value_04} sec <word_group=10056>when a decoy is present</word_group>. Affects self.\n<color=#00AEFF>Beautiful: Max HP ▲ {description_value_02}% continuously, stacks up to {description_value_03} times.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "52.8",
+                "57.6",
+                "62.4",
+                "67.2",
+                "72",
+                "76.8",
+                "81.6",
+                "86.4",
+                "91.2",
+                "96"
+              ]
+            },
+            {
+              "description_value": [
+                "0.98",
+                "1.07",
+                "1.13",
+                "1.2",
+                "1.28",
+                "1.33",
+                "1.38",
+                "1.46",
+                "1.54",
+                "1.6"
+              ]
+            },
+            {
+              "description_value": [
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12",
+                "12"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1511301,
+        "ulti_skill_detail": {
+          "id": 1511301,
+          "icon": "icn_skill_c511_ult",
+          "group_id": 15113,
+          "shake_id": 1,
+          "skill_type": "InstantSequentialAttack",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Glass Slippers. Full Contact.",
+          "next_level_id": 1511302,
+          "prefer_target": "Random",
+          "resource_name": "c511_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 85370,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 10,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 20,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects random enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10050>Attacks sequentially</word_group> for {description_value_02} time(s).</color>\n■ Affects the same target(s) when in Beautiful status.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as additional damage.<word_group=10026>Mirrors the stack count</word_group> of Beautiful.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "853.7",
+                "910.62",
+                "967.5",
+                "1024.46",
+                "1081.38",
+                "1138.26",
+                "1195.16",
+                "1252.08",
+                "1309",
+                "1365.92"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "18.07",
+                "19.28",
+                "20.49",
+                "21.68",
+                "22.88",
+                "24.09",
+                "25.3",
+                "26.5",
+                "27.69",
+                "28.9"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            151130101
+          ],
+          "before_use_function_id_list": [
+            151130102
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 451102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5205,
+        "stat_enhance_detail": {
+          "id": 5205,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100511,
+        "piece_detail": {
+          "id": 5100511,
+          "class": "Attacker",
+          "order": 51100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 511,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Cinderella's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 451101,
+        "class": "Defender",
+        "order": 10152,
+        "name_code": 5124,
+        "corporation": "PILGRIM",
+        "resource_id": 511,
+        "name_localkey": "Cinderella",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 107,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 511
+    }
+  }
+}

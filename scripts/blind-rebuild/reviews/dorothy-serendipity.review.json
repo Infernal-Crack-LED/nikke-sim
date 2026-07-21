@@ -1,0 +1,158 @@
+{
+  "slug": "dorothy-serendipity",
+  "board": {
+    "ratio": 1.125,
+    "n": 2,
+    "mad": 0.125,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when hitting the target with 80 pellets",
+        "status": "MODELED_CONFIG",
+        "where": "consolidation.triggerLandedPellets: 80",
+        "note": "Config-driven consolidation block, NOT in the skill1 block array (which is empty). Trigger accrues fired pellets (10/shot on large boss) \u2192 80 = ~8 spray shots/episode."
+      },
+      {
+        "kitLine": "Gains Pierce for 3 round(s)",
+        "status": "MODELED_CONFIG",
+        "where": "consolidation.pierce: true + consolidation.shots: 3",
+        "note": "'3 rounds' = 3 SHOTS/episode (owner-confirmed: ammo counter drops by 3). Pierce on the consolidated bullet. Pierce DOUBLE-hit stays OFF (K=1, counter-confirmed)."
+      },
+      {
+        "kitLine": "Hit Rate \u25b2 98.18% for 3 round(s)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[1]",
+        "note": "UNMODELED (not encoded as a stat). CORRECTED 2026-07-20: the 'hit rate does not affect damage' premise is STALE \u2014 since CONE_DELTA (2026-07-19) hitRatePct feeds SG core rate via acrForHR; the in-mode effect is separately carried by the measured consolidation config. Kept in unmodeled for fidelity documentation."
+      },
+      {
+        "kitLine": "Attack damage \u25b2 72% for 3 round(s)",
+        "status": "MODELED_CONFIG",
+        "where": "consolidation.attackDamagePct: 72",
+        "note": "Applied during the 3 consolidated shots. Verified: full-shot base 237,824 \u00d7 dmgUp(1+0.72+0.5508=2.27) matches measured anchors within +2%."
+      },
+      {
+        "kitLine": "Pellet count is fixed at 1 for 3 round(s)",
+        "status": "MODELED_CONFIG",
+        "where": "consolidation block (pelletFraction: 1, shots: 3)",
+        "note": "Core consolidation mechanic. Single consolidated bullet carries FULL shot damage (pelletFraction 1.0, NOT 0.1 \u2014 earlier '110k' anchor was a DROPPED-DIGIT MISREAD). coreRate 0.9. Engine passes noRange (no effective-range bonus on the bullet). Fires at ALL bands (98% hit lands it even at range)."
+      },
+      {
+        "kitLine": "Activates when hitting the target with 160 pellets",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Pierce range expansion is inert on a single partless boss. Cannot be expressed in engine."
+      },
+      {
+        "kitLine": "Expands Pierce range by 200% for 3 round(s)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Same as above \u2014 pierce range irrelevant on single boss."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger.kind: 'passive'",
+        "note": "Passive trigger = start-of-battle."
+      },
+      {
+        "kitLine": "Pierce damage \u25b2 55.08% continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effects[0]: pierceDamagePct 55.08",
+        "note": "Inert on single boss without active pierce (kept for fidelity). Value verbatim from skill text at level 10."
+      },
+      {
+        "kitLine": "Activates only during Full Burst. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger.kind: 'fullBurstEnter'",
+        "note": "Parser originally dropped this as unsupported trigger; hand-modeled on fullBurstEnter."
+      },
+      {
+        "kitLine": "ATK \u25b2 75.24% continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effects[0]: atkPct 75.24, durationSec 10",
+        "note": "Prose says 'continuously' (during Full Burst); modeled as 10s timed buff (~full-burst length). Known approximation. Value verbatim."
+      },
+      {
+        "kitLine": "Hit Rate \u25b2 40.68% continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effects[1]: hitRatePct 40.68, durationSec 10",
+        "note": "CORRECTED 2026-07-20: LIVE since CONE_DELTA (2026-07-19) \u2014 hitRatePct 40.68 lifts her SG core fraction during the team-FB window (HOT-direction contributor to the 1.115 residual). Kept for fidelity. Same 10s approximation as ATK buff."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attack speed \u25b2 65% for 15 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[0]: attackSpeedPct 65, durationSec 15",
+        "note": "Value verbatim. Note: she is SOLO in probe data \u2014 a lone B3 CANNOT burst (0 bursts in solo). This block fires only in comps."
+      },
+      {
+        "kitLine": "ATK \u25b2 88.12% for 15 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[1]: atkPct 88.12, durationSec 15",
+        "note": "Value verbatim."
+      },
+      {
+        "kitLine": "Number of pellets \u25b2 5 for 15 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effects[2]: normalAttackPct 50, durationSec 15",
+        "note": "Approximation: 5 extra pellets on base 10 = +50% normal-attack output. Ignores interaction with S1 pellet-fixed-at-1 consolidation state. Cannot express actual pellet count change in engine."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "Burst '+5 pellets' approximated as normalAttackPct +50%; ignores interaction with S1 pellet-fixed-at-1 consolidation state",
+      "couldCauseGap": "HOT",
+      "why": "During consolidation episodes (pellet fixed at 1), the +5 pellets buff may not apply the same way. If the sim applies +50% normal attack during consolidation when it shouldn't, that over-models damage \u2192 HOT."
+    },
+    {
+      "source": "note",
+      "text": "S2 'ATK 75.24% continuously' modeled as 10s timed buff on fullBurstEnter; prose says 'continuously' during Full Burst",
+      "couldCauseGap": "neither",
+      "why": "Full Burst window is ~10s, so 10s duration is a close approximation. Minor timing mismatch unlikely to cause systematic bias."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Hit Rate \u25b2 98.18% (S1, unmodeled) and Hit Rate \u25b2 40.68% (S2, encoded) \u2014 CORRECTED 2026-07-20: the S2 40.68 is LIVE via CONE_DELTA (2026-07-19) and lifts SG core rate in the team-FB window; the S1 98.18 moves nothing only because it is not encoded",
+      "couldCauseGap": "HOT",
+      "why": "STALE premise corrected: hitRatePct feeds acrForHR for SG since CONE_DELTA. The live S2 40.68 raises sim damage during team FB \u2014 a HOT-direction contributor to the 1.115 residual."
+    },
+    {
+      "source": "unmodeled",
+      "text": "S1 160-pellet pierce range expansion 200% unmodeled",
+      "couldCauseGap": "neither",
+      "why": "Pierce range is irrelevant on a single partless boss (scope-lock config). No gap impact."
+    },
+    {
+      "source": "note",
+      "text": "Pierce DOUBLE-hit stays OFF (K=1, one number/shot, counter-confirmed)",
+      "couldCauseGap": "neither",
+      "why": "Owner-confirmed K=1. If wrong, would be HOT (extra hit), but counter data confirms single hit."
+    },
+    {
+      "source": "open-question",
+      "text": "F7: consolidated-shot gauge-gen per-shot-vs-per-pellet \u2691 (rotation-relevant)",
+      "couldCauseGap": "HOT",
+      "why": "If the consolidated shot generates burst gauge per-pellet (10x) instead of per-shot (1x), burst cadence in comps would be faster than modeled \u2192 potential HOT in comp ratios. Flagged open in kit-status findings."
+    },
+    {
+      "source": "note",
+      "text": "Note's 'remaining ~0.13 residual = SG spray under-model' narrative is STALE per kit-status findings ('F3 note first-half STALE, contradicts model')",
+      "couldCauseGap": "HOT",
+      "why": "Board now shows HOT (1.07\u20131.18), not COLD. The note's COLD-era residual explanation no longer applies. Current HOT suggests over-modeling somewhere \u2014 possibly the normalAttackPct +50% burst approximation or consolidation damage calibration."
+    },
+    {
+      "source": "note",
+      "text": "consolidation coreRate 0.9 \u2014 90% of consolidated shots hit core",
+      "couldCauseGap": "HOT",
+      "why": "If real core rate during consolidation is lower than 90%, sim over-models consolidated shot damage \u2192 HOT. Calibrated against measured anchors (+2% match) but those were specific probe conditions."
+    }
+  ],
+  "authorIntentSummary": "The override models Dorothy: Serendipity's signature pellet-consolidation mechanic (S1: 80 pellets \u2192 3 shots firing a single bullet carrying full shot damage with pierce + 72% attack damage) via a config-driven `consolidation` block outside the normal block schema \u2014 the skill1 block array is intentionally empty. S2 pierce damage (inert, fidelity) and Full Burst ATK/HitRate buffs are standard blocks; burst ATK/ASPD are verbatim, with '+5 pellets' approximated as normalAttackPct +50%. Known approximations: the +50% normal-attack proxy ignores consolidation-state interaction, S2 'continuously' is a 10s timed buff, and pierce/range/hit-rate effects are inert on a single boss. The unit is currently HOT (mean ratio 1.125, N=2) with an open question on consolidated-shot gauge generation (F7 \u2691)."
+}

@@ -1,0 +1,39 @@
+{
+  "bready": {
+    "name": "Bready",
+    "burst": "III",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates when gaining a buff that increases sustained damage. Affects self.",
+        "Cancels Recommended Taste.",
+        "Activates when gaining a buff that increases distributed damage while not in a state of increased sustained damage. Affects self.",
+        "Cancels Lingering Taste."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: which Taste is active is a user-selected mode (default: sustained = Lingering Taste; distributed = Recommended Taste) — the buff-gain entry triggers are not simulated; a team providing neither a sustained- nor a distributed-damage buff would leave her tasteless (all taste-gated lines inert), which the sim cannot represent",
+      "skill1: the Taste Charge Speed ▼20% debuff is modeled as a permanent charge-time increase (60→72 frames; assumes she is always in a taste); 72 follows the engine's subtractive charge-speed convention — unmeasured (divisive would be 75)",
+      "skill2: the Aftertaste DoT is encoded as repeating per-3-full-charge instances that stack when procs land <5s apart — stack-vs-refresh and overlap depend on the unmeasured charge cadence",
+      "burst: 'Aftertaste Effect ▲349.8%' is modeled as an additive sustained-damage Damage-Up buff; a multiplicative DoT-magnitude reading would be ~41% hotter during her burst window — unmeasured",
+      "skill1/skill2: full cadence tuple (charge time, reload 141f, 22-frame bolt gap vs autofire) is an unmeasured datamine estimate — ~15-20% shot-count swing"
+    ],
+    "board": null
+  }
+}

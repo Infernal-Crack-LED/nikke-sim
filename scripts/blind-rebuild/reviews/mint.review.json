@@ -1,0 +1,170 @@
+{
+  "slug": "mint",
+  "board": {
+    "ratio": 0.776,
+    "n": 1,
+    "mad": 0.224,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when attacking with Full Charge while in Assigned Part: Singing status. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (solo) / skill1[1] (duet), trigger shotFired, target allies",
+        "note": "RL always full-charges in auto-play so shotFired \u2261 Full Charge. Singing-status gate is handled via uptime-halving (solo: 22.51) or full value (duet: 45.02) rather than an explicit state check."
+      },
+      {
+        "kitLine": "Singing Effect: ATK \u25b2 45.02% of the skill user's ATK for 3 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] casterAtkPct 22.51 / skill1[1] casterAtkPct 45.02, durationSec 3",
+        "note": "Solo halves to 22.51 (~50% Singing uptime); duet keeps full 45.02. Values exact at L10."
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge while in Assigned Part: Dancing status. Affects all allies.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 (trigger half of the Dancing heal)",
+        "note": "Dancing half contributes no damage; heal is defensive and skipped per hard rule 2."
+      },
+      {
+        "kitLine": "Dancing Effect: Constantly recovers 1.8% of the skill user's final Max HP every 1 sec for 3 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1",
+        "note": "Heal is defensive-only; dropped per hard rule 2. No damage impact."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Burst Stage 3 while not in Sing Along status. Affects self.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2 (trigger half of the Cancels lines)",
+        "note": "Mode bookkeeping with no damage/buff effect; dropped."
+      },
+      {
+        "kitLine": "Cancels Assigned Part: Singing.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2",
+        "note": "Mode bookkeeping; no damage effect."
+      },
+      {
+        "kitLine": "Cancels Assigned Part: Dancing.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2",
+        "note": "Mode bookkeeping; no damage effect."
+      },
+      {
+        "kitLine": "Activates when entering Burst Stage 3 while in Assigned Part: Singing status. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] (solo) / skill2[1] (duet), trigger stageEnter stage 3, target allies",
+        "note": "Singing-status gate handled via halving (solo) or full value (duet) rather than explicit state check."
+      },
+      {
+        "kitLine": "Critical Rate \u25b2 19.94% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] critRatePct 9.97 / skill2[1] critRatePct 19.94, durationSec 10",
+        "note": "Solo halves to 9.97; duet keeps 19.94. Values exact at L10."
+      },
+      {
+        "kitLine": "Projectile Explosion Damage \u25b2 50% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] projectileExplosionPct 25 / skill2[1] projectileExplosionPct 50, durationSec 10",
+        "note": "Solo halves to 25; duet keeps 50. Values exact at L10."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 32.72% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] pierceDamagePct 16.36 / skill2[1] pierceDamagePct 32.72, durationSec 10",
+        "note": "Solo halves to 16.36; duet keeps 32.72. Note: pierce is inert in v1 engine regardless \u2014 no damage impact."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Only one Assigned Part is applied according to Mint's current status.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0] + caveats[0]",
+        "note": "Mode bookkeeping; no damage/buff effect. Dropped."
+      },
+      {
+        "kitLine": "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1] + caveats[1]",
+        "note": "Mode toggle bookkeeping; the alternation is approximated via the solo/duet mode split instead. No direct damage effect."
+      },
+      {
+        "kitLine": "Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2] + caveats[2]",
+        "note": "Mode toggle bookkeeping; same as Status 1. No direct damage effect."
+      },
+      {
+        "kitLine": "Affects all allies. Sing Along: Attack Damage \u25b2 30.02% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] attackDamagePct 30.02, durationSec 10, target allies",
+        "note": "Unconditional (not Singing-gated); full value kept. Auto-filled from offline parser 2026-07-16, not hand-verified."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity \u25b2 40% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] maxAmmoPct 40, durationSec 10",
+        "note": "Unconditional; full value. Auto-filled from parser."
+      },
+      {
+        "kitLine": "Critical Damage \u25b2 45.05% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] critDamagePct 45.05, durationSec 10",
+        "note": "Unconditional; full value. Auto-filled from parser."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "burst: unparsed effect \"Only one Assigned Part is applied according to Mint's current status.\"",
+      "couldCauseGap": "neither",
+      "why": "Mode bookkeeping with no damage/buff payload. Correctly dropped."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: unparsed effect \"Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing.\"",
+      "couldCauseGap": "neither",
+      "why": "Mode toggle; approximated via solo/duet mode split. No direct damage effect."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: unparsed effect \"Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing.\"",
+      "couldCauseGap": "neither",
+      "why": "Mode toggle; same as Status 1. No direct damage effect."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1: Dancing heal (1.8% MaxHP/s for 3 sec) dropped.",
+      "couldCauseGap": "neither",
+      "why": "Defensive-only; no damage impact. Dropped per hard rule 2."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2: Cancels Singing and Dancing on Burst Stage 3 entry while not in Sing Along.",
+      "couldCauseGap": "neither",
+      "why": "Mode bookkeeping; no damage/buff effect."
+    },
+    {
+      "source": "note",
+      "text": "APPROXIMATION: uptime-averaging assumes teammates' damage is spread evenly across Singing/Dancing cycles; clustering in windows that align or misalign with Singing changes true value.",
+      "couldCauseGap": "HOT",
+      "why": "If the board comp's damage clusters in Singing windows (e.g. burst-aligned DPS), solo-mode halving undercounts Mint's contribution. Direction and magnitude depend on comp timing."
+    },
+    {
+      "source": "note",
+      "text": "Pierce is inert in v1 engine regardless.",
+      "couldCauseGap": "neither",
+      "why": "Pierce damage bucket has no effect in the current engine; the pierceDamagePct buff is a no-op."
+    },
+    {
+      "source": "open-question",
+      "text": "kit-status finding: '0.768 likely a CONFIG BUG not model bug: mode defaults solo (halved values) unless comp fields prika / sets modes.mint; synthetic A/B own-dmg = 0.777 = board.'",
+      "couldCauseGap": "HOT",
+      "why": "Board comp is 'PA MiKa (boss Iron)' \u2014 if 'PA' includes Prika, duet mode should apply (full Singing values) but the sim defaults to solo (halved). Synthetic own-dmg 0.777 \u2248 board 0.776 confirms the sim IS running solo mode. Switching to duet would raise Mint's predicted contribution and close the gap. This is the primary suspect for the COLD rating."
+    }
+  ],
+  "authorIntentSummary": "The override models Mint's Singing-gated buffs (S1 ATK%, S2 crit/projExpl/pierce) via a two-mode system: 'solo' halves values to approximate ~50% Singing uptime (she alternates Singing/Dancing each burst), while 'duet (w/ Prika)' uses full values since Prika's S2 locks Mint into permanent Singing. The burst's Sing Along buffs (attackDamage, maxAmmo, critDamage) are unconditional and kept at full value in a single burst block (auto-filled from the offline parser, not hand-verified). All Assigned Part toggle/cancel lines and the Dancing heal are deliberately dropped as mode bookkeeping or defensive-only. The primary known-not-yet-faithful spot is the mode-default config: the sim defaults to 'solo' unless the comp explicitly fields Prika or sets modes.mint, which likely explains the COLD 0.776 board ratio if the reference comp includes Prika."
+}

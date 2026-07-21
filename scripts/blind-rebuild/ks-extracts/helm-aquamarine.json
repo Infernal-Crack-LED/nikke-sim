@@ -1,0 +1,33 @@
+{
+  "helm-aquamarine": {
+    "name": "Helm: Aquamarine",
+    "burst": "II",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: the 105.58% random-enemy hit has NO kit-stated trigger — modeled on Skill 1's 30-normal-attack cadence as an unmeasured guess",
+      "burst: the extra 164.83% vs Electric Code targets is now modeled (burstCast + bossElementGate 'Electric'); inert vs the non-Electric scope-lock boss, awakes as a second 164.83% burst hit vs an Electric boss",
+      "skill2: the Damage Taken debuff only applies against Electric Code bosses (inert in the scope-lock context)",
+      "cadence: assault-rifle fire rate and reload timing are datamined defaults, not yet measured from video"
+    ],
+    "board": null
+  }
+}

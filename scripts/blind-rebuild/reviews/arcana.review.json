@@ -1,0 +1,122 @@
+{
+  "slug": "arcana",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when Full Burst ends; affects all Burst 3 Electric Code allies who previously cast their Burst Skill if self is in Wheel of Fortune status \u2014 The Magician: Cooldown of Skill 2 \u25bc 75% for 15 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Deliberate skip: engine has no skill-cooldown model and S2 is event-keyed to fullBurstEnd, so a CD reduction has nothing to act on. Residual assumption (per note): if S2 carries an internal CD > ~20s rotation the ungated 7.5% AD line could over-fire \u2014 assumed none."
+      },
+      {
+        "kitLine": "Same gated clause \u2014 Attack damage \u25b2 180% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]",
+        "note": "fullBurstEnd \u2192 target burstCasters stage 3 Electric, attackDamagePct 180/15s. Wheel-of-Fortune gate approximated as everyN 2 / everyNOffset 1 (every 2nd FB-end). 'Previously cast' scope approximated as this-rotation burstCasters."
+      },
+      {
+        "kitLine": "Activates when Full Burst ends; affects all allies \u2014 ATK \u25b2 5% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1]",
+        "note": "fullBurstEnd \u2192 target allies, casterAtkPct 5/10s. Ungated (no everyN) \u2014 matches prose, which carries no Wheel-of-Fortune condition on this line."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when Full Burst ends; affects all Burst 3 Electric Code allies who previously cast if self is in Wheel of Fortune status \u2014 Strength: ATK \u25b2 180% of the skill user's ATK for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]",
+        "note": "fullBurstEnd \u2192 target burstCasters stage 3 Electric, casterAtkPct 180/15s, everyN 2 / offset 1 (WoF gate approx). Same team-conditional + scope approximations as skill1[0]."
+      },
+      {
+        "kitLine": "Activates when Full Burst ends; affects all allies if self is in Wheel of Fortune status \u2014 Death: Cooldown of Burst Skill \u25bc 6 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (burstCdr effect)",
+        "note": "fullBurstEnd \u2192 target allies, burstCdr 6s, gated everyN 2 / offset 1 (WoF gate approx \u2014 prose gates this clause on Wheel of Fortune)."
+      },
+      {
+        "kitLine": "Same gated clause \u2014 ATK \u25b2 50% of the skill user's ATK for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (casterAtkPct effect)",
+        "note": "Same block as Death: casterAtkPct 50/5s, everyN 2 / offset 1."
+      },
+      {
+        "kitLine": "Activates when Full Burst ends; affects all allies \u2014 Attack damage \u25b2 7.5% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[2]",
+        "note": "fullBurstEnd \u2192 target allies, attackDamagePct 7.5/10s. Ungated (no everyN) \u2014 matches prose, no Wheel-of-Fortune condition on this line."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all Electric Code allies \u2014 Wheel of Fortune: Attack damage \u25b2 10% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]",
+        "note": "burstCast \u2192 target alliesOfElement Electric, attackDamagePct 10/10s. This is the Wheel-of-Fortune status that gates S1/S2 (the gate itself is approximated via everyN in S1/S2, not derived from this buff)."
+      },
+      {
+        "kitLine": "Affects all enemies \u2014 Deals 300% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] (flatDamage effect)",
+        "note": "burstCast \u2192 target enemy, flatDamage atkPct 300. Per note: auto Full-Burst-exempt, burst-cast delivery."
+      },
+      {
+        "kitLine": "Affects all enemies \u2014 Judgement: Damage taken \u25b2 10% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] (damageTakenPct effect)",
+        "note": "Same block: damageTakenPct 10/10s on enemy."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: the 180% Attack Damage grant targets Burst 3 Electric allies who cast their Burst Skill this rotation \u2014 inert in teams without one (\u2691 unmeasured team-conditional).",
+      "couldCauseGap": "HOT",
+      "why": "Large 180% buff whose firing is team-dependent and unverified; model mirrors the condition (inert if no B3 Electric caster) but the targeting/'previously cast' scope is unmeasured, so a mismatch with the real firing rule would shift team damage."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: the 180% caster-ATK 'Strength' grant has the same Burst-3-Electric-caster condition \u2014 inert in teams without one (\u2691).",
+      "couldCauseGap": "HOT",
+      "why": "Same class as above \u2014 a dominant caster-ATK grant, team-conditional and unmeasured; primary candidate for a sim-vs-real gap in qualifying teams."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1/skill2: Wheel of Fortune gate approximated as every-2nd-Full-Burst-end (assumes she bursts every other rotation at her 40s cooldown) \u2014 unverified against a recording (\u2691).",
+      "couldCauseGap": "HOT",
+      "why": "The everyN 2 / offset 1 gate controls WHEN the 180/180 grants and Death (burstCdr 6 + 50% casterAtk) fire; if her real burst cadence or the 10s WoF window differs (e.g. multi-B2 teams, Death reducing her own CD to ~34s), the big buffs mis-time or mis-count."
+    },
+    {
+      "source": "caveat",
+      "text": "cadence: RL fire cadence / reloadFrames 171 / 60-frame charge are unmeasured datamine values; bolt-recovery gap shipped ON, autofire unverified (\u2691).",
+      "couldCauseGap": "HOT",
+      "why": "Directly drives normal-attack shot count; note estimates the bolt-recovery assumption alone swings shot count ~15\u201320%. Unmeasured cadence is a direct NA-damage confound."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1: The Magician \u2014 Cooldown of Skill 2 \u25bc 75% for 15 sec.",
+      "couldCauseGap": "COLD",
+      "why": "Documented deliberate skip: engine has no skill-CD model and S2 is event-keyed to fullBurstEnd, so the reduction has nothing to act on; author assumes S2 has no internal CD. Low gap risk unless that assumption is wrong (residual noted in the override note)."
+    },
+    {
+      "source": "note",
+      "text": "\u2691(2) RL bolt-recovery \u2014 default 22f gap SHIPPED ON; verify autofire \u2192 charFixes.noBoltRecovery (~15\u201320% shot count).",
+      "couldCauseGap": "HOT",
+      "why": "No charFixes/config is applied in the override; the default bolt-recovery gap is live and unverified. If real Arcana autofires with no bolt gap, NA shot count (and thus damage) is understated by ~15\u201320%."
+    },
+    {
+      "source": "note",
+      "text": "\u2691(4) 'previously cast their Burst Skill' scope \u2014 modeled as this-rotation burstCasters; persistence across rotations unverified.",
+      "couldCauseGap": "HOT",
+      "why": "Who qualifies for the 180/180 grants depends on whether 'previously cast' persists across rotations or resets; the model assumes this-rotation only. If persistence differs, the set of buffed allies (and total team damage) changes."
+    }
+  ],
+  "authorIntentSummary": "The override is an explicit PARSER BASELINE HYPOTHESIS, not a validated model: skill1/skill2 blocks are preserved verbatim from a 2026-07-13 hand reconciliation while the burst slot was freshly authored in the 2026-07-16 kit-parse rollout (re-deriving identical to the prior parse). The author's core intent was to gate Arcana's big conditional grants \u2014 S1 180% Attack Damage, S2 180% caster-ATK 'Strength', and the 'Death' burstCdr 6 + 50% casterATK \u2014 behind the Wheel-of-Fortune status, approximated as every-2nd-Full-Burst-end (everyN 2 / offset 1) and retargeted from blanket Electric-allies to stage-3 Electric burst casters; the ungated team pieces (S1 5% casterATK, S2 7.5% AD) fire every FB-end, and the burst is Electric-allies 10% AD + 300% enemy flatDamage + 10% damage-taken Judgement. Known-not-yet-faithful spots (all open \u2691): the WoF gate timing, RL cadence/bolt-recovery (no charFixes applied), the team-conditional firing of the 180/180 grants, and the 'previously cast' scope; S1 'The Magician' skill-CD reduction is a deliberate documented unmodeled skip. Base arcana has no board data (the board-read row that matched the grep is the variant arcana-fortune-mate, NOT this unit)."
+}

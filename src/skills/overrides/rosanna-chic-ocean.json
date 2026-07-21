@@ -1,5 +1,5 @@
 {
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. rosanna-chic-ocean (Rosanna: Chic Ocean, AR/Wind/Supporter/B2) — parts-support BUFFER; most of her kit value (both Damage-to-Parts buffs + the part-destroy ATK stacks) is INERT vs the partless scope-lock boss, so she is EXPECTED to look weak here (faithful, not a bug). MODELED: S1a battle-start allies partsDamagePct 24.26 ×15s (inert v1, kept for fidelity/future parts consumer). S2a allies partsDamagePct 24.26 ×15s (inert; kit text gives NO activation clause for skill2 — see ⚑2). S2b maintained sustained DoT on the boss: 70.4% caster ATK/s — encoded per the DoT-overlap hard rule as ONE passive instance dur 999 (continuous steady-state; the printed 15s duration + an unprinted re-activation cadence ⇒ maintained, NOT a stacking per-trigger DoT which would multiply ~overlap-fold). FB on DoT ticks = by timing (default, no noFb). Burst (burstCast): allies sustainedDamagePct 20.32 ×10s (feeds DoT teammates + her own S2 DoT) + boss damageTakenPct 32.23 ×10s (big team lever — blast radius is TEAM-WIDE, sim-battery diff before board claims). SKIPPED→unmodeled: S1b part-destroy ATK stacks (trigger 'destroys an enemy's part' NEVER fires vs the partless boss — genuinely-skippable class; ⚑3 BIG lever vs parts bosses: casterAtkPct 3×5=15 to ALL allies; NOTE this REMOVES the previous override's optimistic permanent 15% casterAtkPct encoding, which its own note flagged as an over-count). ⚑1 cadence tuple: AR pulls/s + reloadFrames 81 + rolling-reload unverified (datamine estimate; no text tell of a special fire mode — 60 ammo empties in ~5s at class rate, plausible). ⚑2 S2 activation/uptime: skill2 has NO 'Activates…' clause in the kit text — the passive-continuous (100% uptime) encoding is an INVENTED trigger; if real activation has gaps (e.g. gated on attacking/charge), the DoT and the S2 parts buff over-count proportionally. ⚑3 part-destroy stacks (above). Prior-2: no noFb anywhere; burst buffs are buffs (no snapshot issue).",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. rosanna-chic-ocean (Rosanna: Chic Ocean, AR/Wind/Supporter/B2) — parts-support BUFFER; most of her kit value (both Damage-to-Parts buffs + the part-destroy ATK stacks) is INERT vs the partless scope-lock boss, so she is EXPECTED to look weak here (faithful, not a bug). MODELED: S1a battle-start allies partsDamagePct 24.26 ×15s (inert v1, kept for fidelity/future parts consumer). S2a allies partsDamagePct 24.26 ×15s (inert; kit text gives NO activation clause for skill2 — see ⚑2). S2b maintained sustained DoT on the boss: 70.4% caster ATK/s — encoded per the DoT-overlap hard rule as ONE passive instance dur 999 (continuous steady-state; the printed 15s duration + an unprinted re-activation cadence ⇒ maintained, NOT a stacking per-trigger DoT which would multiply ~overlap-fold). FB on DoT ticks = by timing (default, no noFb). Burst (burstCast): allies sustainedDamagePct 20.32 ×10s (feeds DoT teammates + her own S2 DoT) + boss damageTakenPct 32.23 ×10s (big team lever — blast radius is TEAM-WIDE, sim-battery diff before board claims). SKIPPED→unmodeled: S1b part-destroy ATK stacks (trigger 'destroys an enemy's part' NEVER fires vs the partless boss — genuinely-skippable class; ⚑3 BIG lever vs parts bosses: casterAtkPct 3×5=15 to ALL allies; NOTE this REMOVES the previous override's optimistic permanent 15% casterAtkPct encoding, which its own note flagged as an over-count). ⚑1 cadence tuple: AR pulls/s + reloadFrames 81 + rolling-reload unverified (datamine estimate; no text tell of a special fire mode — 60 ammo empties in ~5s at class rate, plausible). ⚑2 S2 activation/uptime RESOLVED 2026-07-20 (owner): the datamined skillCooldownsSec.skill2 = 30 is the real re-activation CD → skill2 auto-casts every 30s, each cast a 15s window (interval:30 + dot durationSec:15). S1 does NOT force-cast S2 (no 'Forcefully uses Skill 2' clause, unlike sakura-bloom-in-summer), so first fire waits for the CD = t=30 (owner ruling: force-cast → t=0, else t=CD). This REPLACES the invented passive-continuous (100% uptime) encoding — DoT windows now [30-45]…[150-165] = 5×15 = 75s uptime (was 180s continuous), ~halving her S2. The S2 parts buff moves with it (interval:30) but is INERT vs the partless boss. MODEL_ONLY (no graded comp). ⚑3 part-destroy stacks (above). Prior-2: no noFb anywhere; burst buffs are buffs (no snapshot issue).",
   "unmodeled": {
     "skill1": [
       "■ Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5, 30s."
@@ -9,7 +9,7 @@
   },
   "caveats": [
     "skill1: part-destroy ATK stacks (3% caster ATK ×5 to all allies) are inert vs a partless boss and NOT modeled — big hidden lever on parts bosses",
-    "skill2: sustained DoT modeled as 100%-uptime maintained (one passive instance) — the kit text prints no activation clause; real uptime is unmeasured",
+    "skill2: sustained DoT re-casts on its datamined 30s CD, 15s window each, first fire t=30 (no force-cast) — resolved 2026-07-20 (owner); was an invented 100%-uptime passive-continuous encoding",
     "skill1/skill2: Damage to Parts ▲ 24.26% buffs are inert vs the partless boss (kept for fidelity)"
   ],
   "skill1": [
@@ -25,7 +25,7 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
+      "trigger": { "kind": "interval", "sec": 30 },
       "target": { "kind": "allies" },
       "effects": [
         { "kind": "buff", "stat": "partsDamagePct", "value": 24.26, "durationSec": 15 }
@@ -33,10 +33,10 @@
     },
     {
       "slot": "skill2",
-      "trigger": { "kind": "passive" },
+      "trigger": { "kind": "interval", "sec": 30 },
       "target": { "kind": "enemy" },
       "effects": [
-        { "kind": "dot", "atkPct": 70.4, "durationSec": 999, "intervalSec": 1, "flavor": "sustained" }
+        { "kind": "dot", "atkPct": 70.4, "durationSec": 15, "intervalSec": 1, "flavor": "sustained" }
       ]
     }
   ],

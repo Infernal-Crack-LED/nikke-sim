@@ -1,0 +1,521 @@
+{
+  "scarlet": {
+    "slug": "scarlet",
+    "name": "Scarlet",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ca-21/cj-01/92e64b936e9eab70344e5a50e02e214c.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Electric",
+    "manufacturer": "Pilgrim",
+    "normalAttackMultiplier": 27.08,
+    "coreAttackMultiplier": 200,
+    "ammo": 20,
+    "reloadFrames": 159,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 17.1,
+    "burstGaugePerShot": 0.45,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after landing 10 normal attack(s). Affects self.\nATK ▲ 23.15%, stacks up to 5 time(s) and lasts for 5 sec.\nCurrent HP ▼ 4.01%.",
+      "skill2": "■ There is a 30% chance of activating when attacked.\nDeals 138.24% of final ATK as additional damage. \n■ Activates when HP falls below 60%. Affects self.\nCritical Damage ▲ 6.61% continuously.",
+      "burst": "■ Affects self. Activates when HP falls below 50%.\nCritical Rate ▲ 19.57% for 10 sec. \n■ Affects all enemies.\nDeals 849.15% of final ATK as Burst Skill damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1022201,
+        "shot_detail": {
+          "id": 1022201,
+          "damage": 2708,
+          "max_ammo": 20,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 230,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 19,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 4500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 9000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2222101,
+        "skill2_id": 2222201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2222101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 22221,
+          "skill_level": 1,
+          "name_localkey": "Blood for Blood",
+          "next_level_id": 2222102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s). Affects self.\n<color=#00AEFF>ATK ▲ {description_value_02}%, stacks up to {description_value_04} time(s) and lasts for {description_value_03} sec.\nCurrent HP ▼ {description_value_05}%.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "17.48",
+                "18.11",
+                "18.74",
+                "19.37",
+                "20",
+                "20.63",
+                "21.26",
+                "21.89",
+                "22.52",
+                "23.15"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "4.01",
+                "4.01",
+                "4.01",
+                "4.01",
+                "4.01",
+                "4.01",
+                "4.01",
+                "4.01",
+                "4.01",
+                "4.01"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2222201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 22222,
+          "skill_level": 1,
+          "name_localkey": "Zatoichi",
+          "next_level_id": 2222202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ There is a {description_value_01}% chance of activating when attacked.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.</color> \n■ Activates when HP falls below {description_value_03}%. Affects self.\n<color=#00AEFF>Critical Damage ▲ {description_value_04}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "86.39",
+                "92.15",
+                "97.91",
+                "103.68",
+                "109.44",
+                "115.2",
+                "120.96",
+                "126.72",
+                "132.48",
+                "138.24"
+              ]
+            },
+            {
+              "description_value": [
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "4.13",
+                "4.4",
+                "4.68",
+                "4.95",
+                "5.23",
+                "5.51",
+                "5.78",
+                "6.06",
+                "6.33",
+                "6.61"
+              ]
+            },
+            {
+              "description_value": [
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0",
+                "0"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1222301,
+        "ulti_skill_detail": {
+          "id": 1222301,
+          "icon": "icn_skill_c222_ult",
+          "group_id": 12223,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Scarlet Flash",
+          "next_level_id": 1222302,
+          "prefer_target": "LowHP",
+          "resource_name": "c222_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 53071,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self. Activates when HP falls below {description_value_01}%.\n<color=#00AEFF>Critical Rate ▲ {description_value_02}% for {description_value_03} sec.</color> \n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "12.23",
+                "13.05",
+                "13.86",
+                "14.68",
+                "15.49",
+                "16.31",
+                "17.12",
+                "17.94",
+                "18.75",
+                "19.57"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "530.71",
+                "566.1",
+                "601.48",
+                "636.86",
+                "672.24",
+                "707.62",
+                "743",
+                "778.38",
+                "813.76",
+                "849.15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            122230101
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 422202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100222,
+        "piece_detail": {
+          "id": 5100222,
+          "class": "Attacker",
+          "order": 22200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "PILGRIM",
+          "resource_id": 222,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Scarlet's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "corporation_sub_type": "OVERSPEC",
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 422201,
+        "class": "Attacker",
+        "order": 10141,
+        "name_code": 5041,
+        "corporation": "PILGRIM",
+        "resource_id": 222,
+        "name_localkey": "Scarlet",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 222
+    }
+  }
+}

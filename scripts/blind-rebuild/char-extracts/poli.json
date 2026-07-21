@@ -1,0 +1,481 @@
+{
+  "poli": {
+    "slug": "poli",
+    "name": "Poli",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ob-27/vd-32/ef0e7474c6e08869264020b7bc528c92.png",
+    "weapon": "SG",
+    "burst": "II",
+    "burstCooldownSec": 40,
+    "class": "Defender",
+    "element": "Water",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 201.5,
+    "coreAttackMultiplier": 200,
+    "ammo": 9,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 10,
+    "rl3": 12,
+    "burstGaugePerShot": 2,
+    "treasure": true,
+    "skills": {
+      "skill1": "■ Activates after 5 normal attack(s). Affects all allies.\nATK ▲ 5.46% for 10 sec.\n■ Activates at the start of battle. Affects self.\nPolice Badge: Creates a Shield equal to 100% of the skill user's final Max HP for 10 sec.",
+      "skill2": "■ Affects self and 2 other ally unit(s) with the lowest HP every 20 sec.\nDEF ▲ 23.51% for 10 sec.\nEqually shares damage taken for 10 sec.\n■ Activates when Police Badge ends. Affects self.\nContinuously recovers 5% of the skill user's final Max HP every 1 sec for 5 sec.",
+      "burst": "■ Activates when in Police Badge status. Affects self.\nGains Indomitability for 5 sec. Removes Police Badge.\n■ Affects self.\nCreates a shared Shield equal to 40% of the skill user's final Max HP that protects all allies from damage. Lasts for 10 sec.\n■ Affects all allies.\nATK ▲ 44.55% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1003001,
+        "shot_detail": {
+          "id": 1003001,
+          "damage": 20150,
+          "max_ammo": 9,
+          "shake_id": 2,
+          "ShakeType": "Fire_SG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 10,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 90,
+          "name_localkey": "Shotgun",
+          "prefer_target": "Front",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 90,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 8,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 250,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 250,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 25,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2030101,
+        "skill2_id": 1030201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 2030101,
+          "icon": "icn_skill_atkdown_01",
+          "group_id": 20301,
+          "skill_level": 1,
+          "name_localkey": "Brave Call",
+          "next_level_id": 2030102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates after {description_value_01} normal attacks. Affects all allies. <color=#00AEFF> ATK ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "2.73",
+                "3.03",
+                "3.33",
+                "3.64",
+                "3.94",
+                "4.25",
+                "4.55",
+                "4.85",
+                "5.16",
+                "5.46"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1030201,
+          "icon": "icn_skill_defup_01",
+          "group_id": 10302,
+          "skill_level": 1,
+          "name_localkey": "That's a Good Boy",
+          "next_level_id": 1030202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Affects self and {description_value_01} ally unit(s) with the lowest remaining HP (except the skill user). \n<color=#00AEFF>DEF ▲ {description_value_02}% for {description_value_03} sec. \n<word_group=10044>Equally shares damage taken</word_group> for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "11.75",
+                "13.06",
+                "14.36",
+                "15.67",
+                "16.97",
+                "18.28",
+                "19.59",
+                "20.89",
+                "22.2",
+                "23.51"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1030301,
+        "ulti_skill_detail": {
+          "id": 1030301,
+          "icon": "icn_skill_c030_ult",
+          "group_id": 10303,
+          "shake_id": 1,
+          "skill_type": "InstallBarrier",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Poli's Defense Line",
+          "next_level_id": 1030302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c030_ulti",
+          "duration_value": 1000,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1113,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 100,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Creates a shared <word_group=10023>Shield</word_group> equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP that protects all allies from damage. Lasts for {description_value_02} sec. </color>\n■ Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "11.13",
+                "12.37",
+                "13.61",
+                "14.85",
+                "16.08",
+                "17.32",
+                "18.56",
+                "19.8",
+                "21.03",
+                "22.27"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "22.27",
+                "24.75",
+                "27.22",
+                "29.7",
+                "32.17",
+                "34.65",
+                "37.12",
+                "39.6",
+                "42.07",
+                "44.55"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            103030101
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 203002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5204,
+        "stat_enhance_detail": {
+          "id": 5204,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100030,
+        "piece_detail": {
+          "id": 5100030,
+          "class": "Defender",
+          "order": 3000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 30,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Poli's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 203001,
+        "class": "Defender",
+        "order": 10004,
+        "name_code": 5016,
+        "corporation": "ELYSION",
+        "resource_id": 30,
+        "name_localkey": "Poli",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 106,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 30
+    }
+  }
+}

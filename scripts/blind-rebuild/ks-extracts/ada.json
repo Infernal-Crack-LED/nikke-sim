@@ -1,0 +1,50 @@
+{
+  "ada": {
+    "name": "Ada",
+    "burst": "III",
+    "weapon": "RL",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "Flash Grenade cadence + true-dmg buffs modeled kit-faithful. F3 headline: Special Modification over-fires 2 specials/window vs kit '1 round' (no maxShots) = 45% of her total; kit-literal ~-20% -> board 0.950 may lean on the 2nd shot (measure popups before touching)"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Run E: 0.97-1.08; S1 \"Burst-3 casters\" scope fix from run-E video",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Recovers 10% of the damage dealt as HP for 10 sec. (skipped: lifesteal — no HP pool consumer modeled; see findings F1/F2: targets bursted Burst-3 allies, would fire their 'recovery' triggers if a B3 recovery-consumer comp appears)"
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
+          "ratio": 0.8989
+        },
+        {
+          "comp": "PE elec DPS (boss Water)",
+          "ratio": 0.9055
+        }
+      ],
+      "n": 2,
+      "mean": 0.9022,
+      "mad": 0.0978,
+      "band": "±15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

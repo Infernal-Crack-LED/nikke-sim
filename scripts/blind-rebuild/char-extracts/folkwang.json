@@ -1,0 +1,481 @@
+{
+  "folkwang": {
+    "slug": "folkwang",
+    "name": "Folkwang",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/hi-60/xn-33/87a333dd0014db60e25b50d41d0d6b44.png",
+    "weapon": "AR",
+    "burst": "II",
+    "burstCooldownSec": 40,
+    "class": "Defender",
+    "element": "Water",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 14.29,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 99,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Affects 2 allies with the highest final ATK.\nCreates a Shield equal to 13.71% of the skill user's final Max HP for 10 sec. \nIncoming healing ▲ 45.7% for 10 sec.",
+      "skill2": "■ Affects the enemy with the highest final ATK.\nTaunt for 5 sec. \n■ Affects self.\nMax HP ▲ 44.96% for 10 sec.",
+      "burst": "■ Affects 2 allies with the highest final ATK.\nCreates a Shield equal to 32.9% of the skill user's final Max HP for 10 sec. \nRecovers 65.81% of attack damage as HP over 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1024201,
+        "shot_detail": {
+          "id": 1024201,
+          "damage": 1429,
+          "max_ammo": 60,
+          "shake_id": 1,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 130,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 1242101,
+        "skill2_id": 1242201,
+        "skill1_table": "CharacterSkill",
+        "skill2_table": "CharacterSkill",
+        "skill1_detail": {
+          "id": 1242101,
+          "icon": "icn_skill_barrier_01",
+          "group_id": 12421,
+          "skill_level": 1,
+          "name_localkey": "Starting Whistle",
+          "next_level_id": 1242102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Affects 2 allies with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Creates a <word_group=10023>Shield</word_group> equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_02} sec. \nIncoming healing ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6.85",
+                "7.61",
+                "8.37",
+                "9.14",
+                "9.9",
+                "10.66",
+                "11.42",
+                "12.18",
+                "12.94",
+                "13.71"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "22.85",
+                "25.39",
+                "27.92",
+                "30.46",
+                "33",
+                "35.54",
+                "38.08",
+                "40.62",
+                "43.16",
+                "45.7"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 1242201,
+          "icon": "icn_skill_attention_01",
+          "group_id": 12422,
+          "skill_level": 1,
+          "name_localkey": "Harder, Better, Faster",
+          "next_level_id": 1242202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Affects the enemy with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Taunt for {description_value_01} sec.</color> \n■ Affects self.\n<color=#00AEFF>Max HP ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "22.92",
+                "25.37",
+                "27.82",
+                "30.26",
+                "32.71",
+                "35.16",
+                "37.61",
+                "40.06",
+                "42.51",
+                "44.96"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1242301,
+        "ulti_skill_detail": {
+          "id": 1242301,
+          "icon": "icn_skill_c242_ult",
+          "group_id": 12423,
+          "shake_id": 1,
+          "skill_type": "InstallBarrier",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Sprint",
+          "next_level_id": 1242302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c242_ulti",
+          "duration_value": 1000,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1645,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 2,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects 2 allies with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Creates a <word_group=10023>Shield</word_group> equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_02} sec. \nRecovers {description_value_03}% of attack damage as HP over {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "16.45",
+                "18.28",
+                "20.1",
+                "21.93",
+                "23.76",
+                "25.59",
+                "27.42",
+                "29.25",
+                "31.07",
+                "32.9"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "32.9",
+                "36.56",
+                "40.21",
+                "43.87",
+                "47.53",
+                "51.18",
+                "54.84",
+                "58.5",
+                "62.15",
+                "65.81"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            124230102
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 324202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5201,
+        "stat_enhance_detail": {
+          "id": 5201,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100242,
+        "piece_detail": {
+          "id": 5100242,
+          "class": "Defender",
+          "order": 24200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 242,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Folkwang's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 324201,
+        "class": "Defender",
+        "order": 10101,
+        "name_code": 5039,
+        "corporation": "TETRA",
+        "resource_id": 242,
+        "name_localkey": "Folkwang",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 110,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 242
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "privaty": {
+    "name": "Privaty",
+    "burst": "III",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "clean: 9/10 exact zero drift; 1687% Designated-Target chain modeled (burstCast proxy, arithmetic-consistent); Max-Ammo-down interaction mechanically emergent; 1687 comp-dependence is the standing open item"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Battery-5 focus — in/out-window popup ratio 2.8244 -> elemAdv in Element bucket; 0.77->1.00 on T4",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Stuns for 3 sec."
+      ]
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T4 water-weak (boss Fire)",
+          "ratio": 1.0453
+        },
+        {
+          "comp": "T4b water-weak REPLICATE (boss Fire)",
+          "ratio": 1.0094
+        },
+        {
+          "comp": "N5 snowwhite-HA fire (boss Fire)",
+          "ratio": 0.9237
+        }
+      ],
+      "n": 3,
+      "mean": 0.9928,
+      "mad": 0.0437,
+      "band": "±5%",
+      "temp": "OK  ·"
+    }
+  }
+}

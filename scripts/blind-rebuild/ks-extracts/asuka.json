@@ -1,0 +1,39 @@
+{
+  "asuka": {
+    "name": "Asuka",
+    "burst": "III",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "skill1 ATK+96.98 re-encoded passive-proxy → kit-faithful recovery trigger (fires only w/ a healer); revert path in findings if preserve-verbatim preferred (untested unit)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Damage dealt to Shield ▲ 601.01% continuously."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: ATK ▲96.98% is recovery-triggered — needs a heal landing on her (teammate healer, or her own burst lifesteal); a healer-less team that never Full-Bursts gains it never",
+      "skill2: Elemental Advantage buff requires Shield status in-game — no shield-state gate in the engine, modeled as unconditional at Full-Burst entry (over-credits without a shielder; only matters with elemental advantage)",
+      "burst: 'Gain Pierce for 25 sec' modeled as permanent hasPierce (pierce currently inert vs the v1 boss); lifesteal modeled as one recovery event at cast, real effect ticks over 10s",
+      "burst: fire cadence is an unmeasured datamine estimate — 20-ammo AR with an 18.76% normal multiplier is unlikely to fire at the AR class default"
+    ],
+    "board": null
+  }
+}

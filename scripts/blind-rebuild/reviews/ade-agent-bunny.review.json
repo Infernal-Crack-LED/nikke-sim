@@ -1,0 +1,104 @@
+{
+  "slug": "ade-agent-bunny",
+  "board": {
+    "ratio": 1.001,
+    "n": 1,
+    "mad": 0.001,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when landing Full Charge attacks on targets within the effective range. Affects all allies. ATK \u25b2 15.2% of the skill user's ATK for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: trigger shotFired \u2192 allies casterAtkPct 15.2 dur 5",
+        "note": "shotFired is a PROXY for 'landing Full Charge within effective range' \u2014 no full-charge trigger exists in types.ts; range condition assumed always-true (engine noRange). \u2691 unmeasured."
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge. Affects self. Spy Lens: Minimum Effective Range \u25b2 4.44%, stacks up to 10 time(s) and lasts for 5 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Inert range stat \u2014 engine sets noRange universally, so Min Effective Range changes have no damage channel. Stack COUNT is indirectly represented via skill2[1] hitCount count:10 gate."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when landing a Full Charge attack on a target within the effective range. Affects all allies. Pierce Damage \u25b2 18.36% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: trigger shotFired \u2192 allies pierceDamagePct 18.36 dur 5",
+        "note": "Same shotFired full-charge proxy as S1. pierceDamagePct feeds Damage Up for pierce-tagged attackers; she is one via hasPierce."
+      },
+      {
+        "kitLine": "Activates only if Spy Lens is at max stacks. Affects self. Gains Pierce. This effect is continuous.",
+        "status": "MODELED_CONFIG",
+        "where": "top-level hasPierce: true",
+        "note": "Boolean flag cannot be step-gated \u2014 applies from t=0 instead of after 10 stacks (~16s). Residual structural gap acknowledged in caveats. Overstates pierce tag for first ~16s."
+      },
+      {
+        "kitLine": "ATK \u25b2 16% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1]: trigger hitCount count:10 \u2192 self atkPct 16 (no duration = continuous)",
+        "note": "Faithful step-gate via hitCount count:10 (added 2026-07-17, theme 3). Replaces prior always-on-from-t=0 encoding. count:10 rests on 1 stack/full-charge assumption (\u2691)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Minimum Effective Range \u25b2 55.56% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Inert range stat \u2014 range buffs change the effective-range band, not shots fired; no shot-count channel in engine. Hard-rule-1 check done per note."
+      },
+      {
+        "kitLine": "Affects all allies. Attack Damage \u25b2 55.04% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast \u2192 allies attackDamagePct 55.04 dur 10",
+        "note": "Straightforward B2 cd20 burst buff."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 10.13% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: trigger burstCast \u2192 allies pierceDamagePct 10.13 dur 10",
+        "note": "Second effect in same burst block. Feeds pierce-tagged allies' Damage Up bucket."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1 + skill2: team ATK and Pierce Damage buffs keyed to shotFired proxy for 'landing Full Charge attacks within effective range' \u2014 assumes every trigger pull is a landed full charge",
+      "couldCauseGap": "COLD",
+      "why": "In auto-play SR always fires full charge at a target in range; the proxy is structurally faithful for the sim's scope. No missed-shot or out-of-range channel exists."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: hasPierce top-level flag (Spy-Lens-max-gated) applies from t=0 \u2014 boolean flag can't be step-gated, residual structural gap",
+      "couldCauseGap": "COLD",
+      "why": "Overstates pierce tag for ~16s of a 180s fight (~9%). Pierce tag only matters if pierceDamagePct buffs are active, which also ramp via the same proxy. Net impact small."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: hitCount count:10 rests on 1 stack per full-charge SR hit + \u2691 SR cadence (chargeFrames 60, bolt-gap 22f, reloadFrames 141)",
+      "couldCauseGap": "COLD",
+      "why": "Datamine values for SR cadence; if actual cadence differs the 10-stack onset shifts by seconds, but the ATK 16% buff is continuous once active so only the onset window is affected."
+    },
+    {
+      "source": "caveat",
+      "text": "cadence: SR bolt-gap (22f) + chargeFrames 60 + reloadFrames 141 are datamine defaults \u2014 verify autofire/rounds-per-minute/reload from video",
+      "couldCauseGap": "COLD",
+      "why": "These are weapon-table datamine values shared across all SR units. Unlikely to be wrong, but unverified against video."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Spy Lens: Minimum Effective Range \u25b2 4.44% \u00d7 10 stacks (skill1) and Minimum Effective Range \u25b2 55.56% (burst) \u2014 both inert range stats",
+      "couldCauseGap": "neither",
+      "why": "Engine sets noRange universally; range stats have no damage channel. Correctly excluded. Stack count is indirectly captured via hitCount gate."
+    },
+    {
+      "source": "note",
+      "text": "PARSER BASELINE banner: entire model is HYPOTHESIS, not validated. Every \u2691 is an unmeasured estimate; hand-tune + record against a real fight before trusting any number.",
+      "couldCauseGap": "COLD",
+      "why": "Board shows ratio 1.001 on N=1 team \u2014 consistent with the model being approximately correct, but N=1 is thin evidence. The banner is a process flag, not a known mechanical gap."
+    }
+  ],
+  "authorIntentSummary": "The override models Ade: Agent Bunny as a B2 SR support whose full-charge shots buff team ATK (15.2% caster ATK) and Pierce Damage (18.36%), with a burst adding Attack Damage 55.04% + Pierce Damage 10.13% to all allies. The Spy Lens range stacks are correctly excluded as inert (noRange engine), but their stack count gates the self ATK +16% buff via a faithful hitCount count:10 step. The key approximation is the shotFired proxy for 'landing Full Charge within effective range' (structurally sound for auto-play SR) and the hasPierce boolean applying from t=0 instead of after 10 stacks (~16s onset gap). All kit lines are accounted for \u2014 nothing is silently dropped. The model is flagged as PARSER BASELINE (unvalidated hypothesis), though the single-team board ratio of 1.001 suggests it is approximately correct."
+}

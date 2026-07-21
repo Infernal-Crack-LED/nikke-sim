@@ -1,0 +1,537 @@
+{
+  "alice-wonderland-bunny": {
+    "slug": "alice-wonderland-bunny",
+    "name": "Alice: Wonderland Bunny",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ki-84/ea-05/30cfca3a5594bf53d7ca7b53560f0c7e.png",
+    "weapon": "SMG",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Supporter",
+    "element": "Water",
+    "manufacturer": "Tetra",
+    "normalAttackMultiplier": 10.12,
+    "coreAttackMultiplier": 250,
+    "ammo": 120,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "nicknames": [
+      "awb"
+    ],
+    "skills": {
+      "skill1": "■ Activates after landing 60 normal attack(s). Affects all allies.\nRecovers 7.4% of the skill user's final Max HP as HP.\nCarrot Party: Damage to Interruption Parts ▲2%, stacks up to 5 time(s) and lasts for 5 sec.\n■ Activates after 90 normal attack(s). Affects all Water Code allies.\nStack count of buffs ▲ 1.",
+      "skill2": "■ Activates after Full Burst ends. Affects all allies.\nBurst Gauge filling speed ▲ 10% for 5 sec.\n■ Activates when entering Full Burst. Affects all allies.\nMax Ammunition Capacity ▲ 40% for 15 sec.\nReload 40%.",
+      "burst": "■ Affects all allies.\nRe-enters Burst Stage 1.\nRestores 27% of the skill user's final Max HP as HP.\n■ Activates when Carrot Party is at max stacks. Affects all allies.\nIncoming healing ▲ 150% for 15 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1019501,
+        "shot_detail": {
+          "id": 1019501,
+          "damage": 1012,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 25000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step1"
+      },
+      "skillDetails": {
+        "skill1_id": 2195101,
+        "skill2_id": 2195201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2195101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 21951,
+          "skill_level": 1,
+          "name_localkey": "Carrot and Bunny Party",
+          "next_level_id": 2195102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s). Affects all allies.\n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.\nCarrot Party: <word_group=10000>Damage to Interruption Parts</word_group> ▲{description_value_03}%, stacks up to {description_value_04} time(s) and lasts for {description_value_05} sec.</color>\n■ Activates after {description_value_06} normal attack(s). Affects all Water Code allies.\n<color=#00AEFF><word_group=10001>Stack count of buffs</word_group> ▲ {description_value_07}.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "3.21",
+                "3.67",
+                "4.14",
+                "4.6",
+                "5.07",
+                "5.54",
+                "6",
+                "6.47",
+                "6.93",
+                "7.4"
+              ]
+            },
+            {
+              "description_value": [
+                "0.89",
+                "1.02",
+                "1.14",
+                "1.26",
+                "1.39",
+                "1.51",
+                "1.63",
+                "1.76",
+                "1.88",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2195201,
+          "icon": "icn_skill_statammo_01",
+          "group_id": 21952,
+          "skill_level": 1,
+          "name_localkey": "More Carrots",
+          "next_level_id": 2195202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates after Full Burst ends. Affects all allies.\n<color=#00AEFF><word_group=10014>Burst Gauge filling speed</word_group> ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF>Max Ammunition Capacity ▲ {description_value_03}% for {description_value_04} sec.\nReload {description_value_05}%.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "4.73",
+                "5.32",
+                "5.9",
+                "6.49",
+                "7.07",
+                "7.66",
+                "8.24",
+                "8.83",
+                "9.41",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "10.57",
+                "13.84",
+                "17.11",
+                "20.38",
+                "23.65",
+                "26.92",
+                "30.19",
+                "33.46",
+                "36.73",
+                "40"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "10.57",
+                "13.84",
+                "17.11",
+                "20.38",
+                "23.65",
+                "26.92",
+                "30.19",
+                "33.46",
+                "36.73",
+                "40"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1195301,
+        "ulti_skill_detail": {
+          "id": 1195301,
+          "icon": "icn_skill_c195_ult",
+          "group_id": 11953,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Precious Big Carrot",
+          "next_level_id": 1195302,
+          "prefer_target": "HighAttackLastSelf",
+          "resource_name": "c195_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF><word_group=10002>Re-enters Burst</word_group> Stage 1.\nRestores {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>\n■ Activates when Carrot Party is at max stacks. Affects all allies.\n<color=#00AEFF>Incoming healing ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "12.46",
+                "14.08",
+                "15.69",
+                "17.31",
+                "18.92",
+                "20.54",
+                "22.16",
+                "23.77",
+                "25.39",
+                "27"
+              ]
+            },
+            {
+              "description_value": [
+                "74.2",
+                "82.62",
+                "91.05",
+                "99.47",
+                "107.89",
+                "116.31",
+                "124.73",
+                "133.16",
+                "141.58",
+                "150"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            119530101,
+            119530102
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 319502,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5303,
+        "stat_enhance_detail": {
+          "id": 5303,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100195,
+        "piece_detail": {
+          "id": 5100195,
+          "class": "Attacker",
+          "order": 19500,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "TETRA",
+          "resource_id": 195,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Alice: Wonderland Bunny's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 319501,
+        "class": "Supporter",
+        "order": 10123,
+        "name_code": 5114,
+        "corporation": "TETRA",
+        "resource_id": 195,
+        "name_localkey": "Alice: Wonderland Bunny",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 195
+    }
+  }
+}

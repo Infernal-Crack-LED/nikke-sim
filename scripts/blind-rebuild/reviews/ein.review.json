@@ -1,0 +1,106 @@
+{
+  "slug": "ein",
+  "board": {
+    "ratio": 0.805,
+    "n": 3,
+    "mad": 0.195,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Summons 4 Near Feathers.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Note says 'Feather burst-gen (4 at battle start) skipped as minor.' One-time 4\u00d790.81%=363.24% true damage over the fight \u2014 negligible vs 180s total."
+      },
+      {
+        "kitLine": "Activates when entering Burst Skill Stage 3. Affects self. ATK \u25b2 70.12% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: trigger stageEnter stage 3 \u2192 buff atkPct 70.12 / 10s",
+        "note": "Note confirms Prydwen verifies it lands BEFORE burst cast and buffs burst damage \u2014 matches engine ordering."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when Near Feather is summoned. Affects 1 random enemy. Near Feather Attack: Deals 90.81% of final ATK as true damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (burstCast flatDamage 3087.54 = 34\u00d790.81, true, crit:true, noRange:true) + skill2[2] (fullBurstEnd flatDamage 544.86 = 6\u00d790.81, true, crit:true, noRange:true)",
+        "note": "Per-instance damage folded into two lumps: 34 feathers at burst cast, 6 at each full-burst end. Cadence is Prydwen-sourced, not kit-derivable. crit:true + noRange:true flags motivated engine features per note. Single-boss sim collapses '1 random enemy' targeting."
+      },
+      {
+        "kitLine": "Activates when attacking with Full Charge. Affects self. Charge Damage \u25b2 80% for 1 shot(s).",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0]: passive \u2192 buff chargeDamagePct 80 (no duration = permanent)",
+        "note": "Deliberate approximation: kit says 'for 1 shot' but note explains 'primes every next shot ~= permanent +80' \u2014 since she full-charges every shot, the 1-shot refresh is effectively permanent uptime. Duration dropped."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Summons 6 Near Feathers.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] burstCast lump (34\u00d790.81 includes the 6 burst-summoned feathers)",
+        "note": "No standalone 'summon 6' block; the damage consequence is folded into the 34-feather burst lump in skill2[1]. The 6 are a subset of the 34 total per Prydwen counts."
+      },
+      {
+        "kitLine": "True Damage \u25b2 55.3% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: buff trueDamagePct 55.3 / 10s",
+        "note": "Exact values at skill level 10."
+      },
+      {
+        "kitLine": "Charge Damage \u25b2 140.68% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: buff chargeDamagePct 140.68 / 10s",
+        "note": "Exact values at skill level 10. Stacks with skill2's permanent +80%."
+      },
+      {
+        "kitLine": "Affects 10 enemy unit(s) with the highest final DEF. Deals 300.02% of final ATK as true damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast \u2192 flatDamage 300.02, flavor true",
+        "note": "'10 highest DEF' targeting is irrelevant in single-boss sim. Damage value exact at level 10."
+      }
+    ]
+  },
+  "extraModeledMechanics": [
+    {
+      "kitLine": "ORB GAUGE (not in skill prose \u2014 datamined arena data: special_burst_gauge add_interval_from_start 5.6, interval 170f)",
+      "status": "MODELED_BLOCK",
+      "where": "skill2[3]: passive dot atkPct 0 / 999s / intervalSec 2.83 \u2014 zero-damage tick drives skillGauge (560 energy per tick per note)",
+      "note": "Ein's orb generates 560 burst-gauge energy for the team every ~2.83s. Modeled as a zero-damage permanent dot whose ticks drive skillGauge. Source: nikke-synergy arena datamine, not kit prose."
+    }
+  ],
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: Near Feather cadence (34 per burst, 6 per rotation between bursts) is Prydwen-sourced, not kit-derivable \u2014 needs ein-focused recording (U8).",
+      "couldCauseGap": "HOT",
+      "why": "ks-extracts finding F1: the 34-feather lump is the dominant damage source and its count is an unverified community estimate. If real count differs, all feather damage scales linearly."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: between-burst feather trickle keyed to full-burst COUNT (6 per FB end), not to time \u2014 long rotations under-count, fast rotations over-count.",
+      "couldCauseGap": "HOT",
+      "why": "ks-extracts finding F2: real trickle is time-cadenced, not FB-count-keyed. Comps with non-standard rotation lengths get systematic over/under-credit, driving spread across teams."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: 34-feather lump resolves at cast-instant, BEFORE her own True Damage \u25b2 55.3% buff and teammates' FB-entry auras register (block order).",
+      "couldCauseGap": "HOT",
+      "why": "ks-extracts finding F1: x1.553 under-credit on the lump. Real feathers land inside the 10s window with buffs up. Fix requires delaySec on the lump block. This alone explains the top ~35% of the COLD gap."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1: 4 Near Feathers summoned at battle start skipped as minor.",
+      "couldCauseGap": "COLD",
+      "why": "One-time 4\u00d790.81%=363.24% true damage at t=0 \u2014 negligible fraction of 180s total output. Correctly classified as inert."
+    },
+    {
+      "source": "note",
+      "text": "Charge Damage 80% 'for 1 shot' modeled as permanent passive (no duration).",
+      "couldCauseGap": "neither",
+      "why": "She full-charges every shot cycle, so the 1-shot buff refreshes before it expires. Permanent uptime is a faithful approximation for auto-play SR."
+    }
+  ],
+  "authorIntentSummary": "The override models Ein as a true-damage SR attacker whose core loop is: permanent +80% charge damage (skill2 passive), ATK +70.12% on every burst-stage-3 entry (skill1), and a burst that grants +55.3% true damage / +140.68% charge damage for 10s plus a 300.02% true nuke. Her signature Near Feather mechanic is approximated as two flat-damage lumps (34\u00d790.81% at burst cast, 6\u00d790.81% at each full-burst end) using Prydwen-sourced instance counts, with crit:true and noRange:true flags. The three documented caveats \u2014 unverified feather counts, FB-count-keyed trickle vs real time cadence, and cast-instant lump ordering before the true-damage buff \u2014 are the known drivers of the COLD 0.805 ratio and 0.195 MAD. The orb gauge (560 energy / 2.83s) is modeled as a zero-damage dot driving skillGauge, sourced from arena datamine rather than kit prose."
+}

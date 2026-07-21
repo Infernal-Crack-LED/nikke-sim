@@ -1,0 +1,35 @@
+{
+  "brid-silent-track": {
+    "name": "Brid: Silent Track",
+    "burst": "II",
+    "weapon": "SG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "Wind-Code Damage-Taken debuffs (S1 15.12%, S2 12.12%) unmodeled — bossElement can't compose with fullBurstEnter/hitCount; inert vs non-Wind boss (engine extension: bossElementGate)",
+        "burst ATK+66.52% caster modeled on allies incl. self (kit: except self; no excludeSelf on plain allies) — minor self-inflation in bursting comps"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill1: Wind Code Damage Taken ▲ 15.12% (Full Burst entry, 10s) now modeled via bossElementGate 'Wind' — inert vs a non-Wind (incl. scope-lock) boss; a big team-wide lever if the boss is Wind.",
+      "skill2: Wind Code Damage Taken ▲ 12.12% (every 10 normal attacks = hitCount 100 at 10 pellets/shot, 10s) now modeled via bossElementGate 'Wind' — inert vs a non-Wind boss; stacks with the skill1 debuff vs a Wind boss.",
+      "burst: ATK ▲ 66.52% of caster's ATK on all allies EXCEPT self (kit 'except self') — excludeSelf:true enforced on the `allies` target since 2026-07-17; no longer self-inflates her own SG-capped damage."
+    ],
+    "board": null
+  }
+}

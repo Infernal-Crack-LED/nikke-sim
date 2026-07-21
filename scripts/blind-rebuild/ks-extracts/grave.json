@@ -1,0 +1,69 @@
+{
+  "grave": {
+    "name": "Grave",
+    "burst": "II",
+    "weapon": "AR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "burst 10s-Pierce grant engine-inexpressible (hasPierce static; shipped inert to protect solo anchor 1.005) + Prediction-end forced reload unmodeled = her ~0.835 comp-cold cause; NOTE grave is actually MEASURED (solo-recon n=19) despite tuned=false flag"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "run I: 1.19-1.23",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "Mild B3 heat, untuned",
+    "unmodeled": {
+      "skill1": [
+        "Activates when Prediction status ends. Affects self. Removes 100% of ammo.",
+        "Removes Heat Emission under certain conditions.",
+        "Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously."
+      ],
+      "skill2": [
+        "Removed upon reloading to max ammunition."
+      ],
+      "burst": [
+        "Prediction:",
+        "Current HP ▼ 1% every 1 sec, lasts for 10 sec."
+      ]
+    },
+    "caveats": [
+      "skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst",
+      "skill1: Prediction-end 'Removes 100% of ammo' (one forced ~3.35s reload per burst cycle in comps) is not modeled — no engine effect can empty a magazine",
+      "skill2: Overheat II/III 30/60-hit build-up approximated as full 10s burst-window uptime (real ramp-in ~2.5s/~5s at the measured 12 rounds/s)",
+      "burst: 'Gain Pierce' (10s) is MODELED FAITHFULLY (gainPierce → self, 10s) — its Pierce Damage ▲ +92.78 Damage Up lands during her Prediction window (S1's 48.4 excludeSelf'd, no double-count). This moves her comps ~0.83→1.18 HOT ON PURPOSE (model the real mechanic > fit): the residual HOT is a SEPARATE burst-window over-model, now cleanly isolated and tracked in open-questions U19 (fix with a measurement). Solo unaffected (a lone Burst II never bursts).",
+      "burst: team 'Max Ammunition Capacity ▲ 3 round(s)' encoded as maxAmmoPct 3 — the schema is percent-only, flat rounds are inexpressible per-target"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+          "ratio": 1.232
+        },
+        {
+          "comp": "PI misc B3s (boss Water)",
+          "ratio": 1.2234
+        },
+        {
+          "comp": "N1 rapi/quency wind (boss Wind)",
+          "ratio": 1.2733
+        }
+      ],
+      "n": 3,
+      "mean": 1.2429,
+      "mad": 0.2429,
+      "band": ">15%",
+      "temp": "HOT ▲"
+    }
+  }
+}

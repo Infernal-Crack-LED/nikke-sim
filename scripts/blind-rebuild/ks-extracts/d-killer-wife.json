@@ -1,0 +1,68 @@
+{
+  "d-killer-wife": {
+    "name": "D: Killer Wife",
+    "burst": "I",
+    "weapon": "SR",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "re-materialized",
+      "date": "2026-07-16",
+      "findings": [
+        "F2 Wipe-Out riders fire ~permanently vs ~20s real uptime; F3 parts-branch coreDamagePct 16.26 to all allies is inert in reality (partless) but LIVE in-sim — over-credits comp-mates (owner-triage)"
+      ]
+    },
+    "tier": "VALIDATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "Run G: 0.98-1.11; S2 hitCount parser-bug fix",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 3,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "■ Activates when attacking with Full Charge for 3 time(s). Affects self.",
+        "Gain Pierce for 1 shot."
+      ],
+      "skill2": [],
+      "burst": [
+        "Inflicts Wipe Out on the target for 10 sec.",
+        "■ Activates when allies' normal attack hits a certain area of the target afflicted with Wipe Out. Affects allies.",
+        "Buff takes effect depending on the area hit."
+      ]
+    },
+    "caveats": [
+      "burst: unparsed effect \"Inflicts Wipe Out on the target for 10 sec.\"",
+      "burst: unparsed effect \"Buff takes effect depending on the area hit.\"",
+      "burst: unrecognized target \"allies\" — applied to all allies",
+      "skill1: Full Burst Pierce Damage ▲13.55% is applied to ALL allies; the official kit targets only Sniper Rifle-wielding allies (alliesOfWeapon SR)",
+      "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
+      "burst: the Wipe Out area-hit riders are modeled ungated (they fire on this unit's own hits via hitCount 1, not on allies hitting a Wipe Out-afflicted target) — buff uptime is over-credited whenever she is firing outside her 10s post-burst Wipe Out windows",
+      "burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1)."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PG iron sweep (boss Electric)",
+          "ratio": 1.0305
+        },
+        {
+          "comp": "N1 rapi/quency wind (boss Wind)",
+          "ratio": 0.9127
+        },
+        {
+          "comp": "N2 modernia wind (boss Wind)",
+          "ratio": 1.0463
+        }
+      ],
+      "n": 3,
+      "mean": 0.9965,
+      "mad": 0.0547,
+      "band": "±8%",
+      "temp": "OK  ·"
+    }
+  }
+}

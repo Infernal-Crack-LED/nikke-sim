@@ -1,0 +1,206 @@
+{
+  "slug": "rapi-red-hood",
+  "board": {
+    "ratio": 0.972,
+    "n": 5,
+    "mad": 0.029,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle and when Full Burst ends",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger:passive",
+        "note": "Start-of-battle formation check; FB-end re-evaluation is implicit in the formation gate"
+      },
+      {
+        "kitLine": "Effect varies according to squad formation. Only one effect is applied.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0-2] formation field",
+        "note": "formation:noB1 / formation:hasB1 gates mutual exclusion"
+      },
+      {
+        "kitLine": "Affects self if there are no Burst 1 allies \u2192 Combat Assist: Changes to Burst Stage 1 (continuous)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] formation:noB1, effects:burstEligibility stage:1",
+        "note": "Grants stage-1 eligibility so she can burst in the B1 slot"
+      },
+      {
+        "kitLine": "Affects self if there are Burst 1 allies \u2192 Cancels Combat Assist",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] formation:noB1 (implicit negation)",
+        "note": "With a B1 ally present, block[0] never fires \u2192 no eligibility granted. No explicit cancel block needed."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst while in Combat Assist status. Affects all allies. Cooldown of Burst Skill \u25bc 7.48 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] trigger:fullBurstEnter, formation:noB1, target:allies, effects:burstCdr 7.48",
+        "note": "Team CDR on each FB when she IS the B1"
+      },
+      {
+        "kitLine": "Attack Damage \u25b2 8.02% for 10 sec (all allies, in Combat Assist)",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] effects:buff attackDamagePct 8.02 10s",
+        "note": "Exact value at skill level 10"
+      },
+      {
+        "kitLine": "Activates when entering Full Burst while NOT in Combat Assist status. Affects self. ATK \u25b2 95.04% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[2] trigger:fullBurstEnter, formation:hasB1, target:self, effects:buff atkPct 95.04 10s",
+        "note": "Self ATK buff when a real B1 exists; note confirms this IS live (unlike the +421.2%)"
+      },
+      {
+        "kitLine": "Damage to Interruption Parts \u25b2 48% for 10 sec (self, not in Combat Assist)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Partless single-boss sim \u2192 interruption parts do not exist; inert by scope"
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Applies Elemental Advantage damage to Electric Code enemies continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] trigger:passive, effects:advantageVs Electric",
+        "note": "Grants elemental advantage vs Electric (fire beats electric in the advantage table)"
+      },
+      {
+        "kitLine": "Projectile Attachment Damage \u25b2 150.72% continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effects:buff projectileAttachmentPct 150.72",
+        "note": "Permanent self-buff routing to attachment damage type; engine-verified per kit-status"
+      },
+      {
+        "kitLine": "Projectile Explosion Damage \u25b2 100.6% continuously",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effects:buff projectileExplosionPct 100.6",
+        "note": "Permanent self-buff routing to explosion damage type; engine-verified per kit-status"
+      },
+      {
+        "kitLine": "Activates after 120 normal attack(s). Attachable Projectiles: launches projectile that attaches; explodes on FB entry.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger:hitCount count:120 countInFb:60",
+        "note": "120 threshold out of FB, 60 in FB (models the burst's \u25bc60 reduction). Meter carryover modeled as threshold switch per note."
+      },
+      {
+        "kitLine": "Projectile Attachment Damage: Deals 88.11% of final ATK as damage (immediate on attach)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effects:flatDamage atkPct:88.11 flavor:projectileAttachment",
+        "note": "Immediate hit on rocket attach; scaled by the 150.72% passive buff"
+      },
+      {
+        "kitLine": "Projectile Explosion Damage: Deals 88.11% of final ATK as damage (stored, detonates on FB)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] effects:storedHit atkPct:88.11 flavor:projectileExplosion core:0.33 crit:true instantInFb:true",
+        "note": "Stored until FB; core fraction 0.33 measured (N=9, 0.30-0.45 range); crit:true landed 2026-07-16; instantInFb for in-burst attaches"
+      },
+      {
+        "kitLine": "Max Ammunition Capacity: 1 round(s)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Rocket ammo cap; functionally inert in sim since the hitCount trigger already gates one rocket per threshold crossing"
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Stage 1: Affects self. Cooldown of Burst Skill \u25bc 20 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] trigger:burstCast stage:1, effects:burstCdr 20",
+        "note": "Self CDR when bursting as B1 (Combat Assist mode)"
+      },
+      {
+        "kitLine": "Stage 1: Explosion Radius \u25b2 100.62% for 10 sec (self)",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Partless single-boss sim \u2192 explosion radius has no splash target; inert by scope"
+      },
+      {
+        "kitLine": "Stage 1: Affects all allies. ATK \u25b2 18.01% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] trigger:burstCast stage:1, target:allies, effects:buff casterAtkPct 18.01 10s",
+        "note": "casterAtkPct = percentage of caster's ATK, not target's; exact value at level 10"
+      },
+      {
+        "kitLine": "Stage 3: Affects the enemy nearest to the crosshair. Deals 2808% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2] trigger:burstCast stage:3, target:enemy, effects:flatDamage atkPct:2808 delaySec:0.4 requiresPulls:120",
+        "note": "Flighted missile; delaySec 0.4 measured (landing-time snapshot); requiresPulls 120 charge-gate measured (fire-weak banner-1 at ~68 shots had no nuke)"
+      },
+      {
+        "kitLine": "Stage 3: Affects self. Explosion Radius \u25b2 100.62% for 10 sec.",
+        "status": "MISSING",
+        "where": "\u2014",
+        "note": "NOT in blocks, NOT in unmodeled (unmodeled.burst[0] only cites Stage 1). Functionally inert in partless sim \u2014 same dead stat as Stage 1's radius buff. Silent drop but zero damage impact."
+      },
+      {
+        "kitLine": "Stage 3: Projectile Attachment Damage \u25b2 421.2% for 10 sec (self)",
+        "status": "MISSING",
+        "where": "\u2014",
+        "note": "NOT in blocks or unmodeled array, BUT explicitly documented in the override note as MEASURED-INERT (0.13% precision, 3 comps) and deliberately REMOVED (dead datamine entry 101631006). NOT a silent drop \u2014 intentional exclusion with evidence."
+      },
+      {
+        "kitLine": "Stage 3: Skill 2's requirement for triggering attachable projectiles \u25bc 60 for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] trigger:hitCount countInFb:60",
+        "note": "Modeled as a permanent in-FB threshold switch (120\u219260) rather than a timed 10s debuff. Note documents this approximation: agrees in steady state, differs at FB boundary by O(1) rocket timing."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "+421.2% Projectile Attachment Damage buff (burst Stage 3) measured-inert and removed \u2014 dead datamine entry 101631006",
+      "couldCauseGap": "neither",
+      "why": "Confirmed inert at 0.13% precision across 3 comps; removing it cannot cause a sim/real gap"
+    },
+    {
+      "source": "note",
+      "text": "Explosion core fraction 0.33 is an approximation (measured range 0.30\u20130.45, N=9)",
+      "couldCauseGap": "COLD",
+      "why": "If true fraction is above 0.33 the sim under-models explosion core hits; the note explicitly says 'Do NOT trim the 0.33 fraction or inflate atkPct to zero the residual'"
+    },
+    {
+      "source": "note",
+      "text": "Additive vs multiplicative crit/core bracket unresolved (U15, foundational open item)",
+      "couldCauseGap": "COLD",
+      "why": "The \u00d71.80 core+crit body doesn't cleanly compose under additive constants; bounded ~0.3\u20130.4% of total damage across all 86 readings"
+    },
+    {
+      "source": "note",
+      "text": "Invisible-X residual deliberately left open \u2014 corrected mechanic under-shoots recorded totals (~899.6M solo-class)",
+      "couldCauseGap": "COLD",
+      "why": "Part of the residual is generic MG-cold (board ~0.947) and part is the observed-but-unmodeled explosion crit magnitude; sim under-predicts"
+    },
+    {
+      "source": "note",
+      "text": "Carryover semantics: 2\u00d7 in-FB meter modeled as threshold switch (120\u219260), not a +2-fill-per-hit rate",
+      "couldCauseGap": "neither",
+      "why": "Rocket count conserved to O(1); only cross-boundary timing differs; a future meter-carryover measurement can discriminate"
+    },
+    {
+      "source": "note",
+      "text": "T7 elec-weak probe ratio 0.8823 is the board outlier (other 4 comps 0.99\u20131.00)",
+      "couldCauseGap": "COLD",
+      "why": "Likely MG-cold or element-specific interaction on Water boss; drives the MAD to 0.029 and mean to 0.972"
+    },
+    {
+      "source": "unmodeled",
+      "text": "Damage to Interruption Parts \u25b248% (S1, hasB1 branch) \u2014 partless sim",
+      "couldCauseGap": "neither",
+      "why": "Single partless boss has no interruption parts; zero damage impact by scope"
+    },
+    {
+      "source": "unmodeled",
+      "text": "Explosion Radius \u25b2100.62% (burst Stage 1 + unlisted Stage 3) \u2014 partless sim",
+      "couldCauseGap": "neither",
+      "why": "No splash targets in single-boss sim; zero damage impact by scope"
+    },
+    {
+      "source": "unmodeled",
+      "text": "Attachable Projectile Max Ammo: 1",
+      "couldCauseGap": "neither",
+      "why": "hitCount trigger already gates one rocket per threshold crossing; ammo cap is redundant in the sim's event model"
+    }
+  ],
+  "authorIntentSummary": "The override models Rapi: Red Hood as a whole-kit system where S1 formation-gates her between Combat Assist (B1 fill + team CDR/Attack Damage) and self-ATK modes, S2 provides permanent elemental advantage + projectile damage-type buffs plus a fill-meter rocket (120 out of FB, 60 in FB) with immediate attachment and stored explosion (core 0.33, crit enabled, instant in FB), and burst delivers either a B1 support package (CDR + casterAtkPct team buff) or a B3 flighted 2808% nuke (0.4s delay, charge-gated at 120 pulls). The +421.2% attachment buff was measured-inert and deliberately excluded. Key approximations: the in-FB threshold is a steady-state-equivalent switch rather than a timed debuff, the explosion core fraction is a measured point estimate (0.33) from a 0.30\u20130.45 range, and the additive crit/core bracket is an unresolved foundational question (U15). The sim deliberately under-predicts (mean 0.972, T7 outlier 0.88) with the residual left exposed rather than fit."
+}

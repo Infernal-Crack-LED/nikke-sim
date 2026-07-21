@@ -1,0 +1,533 @@
+{
+  "d": {
+    "slug": "d",
+    "name": "D",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/fa-62/la-37/98b5364175dccda756e3de789c7d0f3c.png",
+    "weapon": "SMG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 8.73,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when entering Full Burst. Affects self.\nElemental Advantage Attack Damage ▲ 46.93% for 15 sec.\nRecovers 3.52% of attack damage as HP, lasts for 15 sec.\n■ Affects self when first activated.\nAdditionally recovers 16.5% of ATK damage as HP, lasts for 15 sec.",
+      "skill2": "■ Activates when the stage target appears. Affects all allies.\nFills Burst Gauge by 98.56%. Activates 1 time(s) per battle.\nGains immunity to Stun for 36.95 sec.\n■ Activates when the stage target appears. Affects self.\nElemental Advantage Attack Damage ▲ 91.09% for 15 sec.",
+      "burst": "■ Affects all enemies.\n Deals 426.24% of final ATK as Burst Skill damage.\n■ Affects all Attacker allies.\nDamage to Parts ▲ 42.38% for 15 sec.\n■ Affects all allies if the skill user has immunity to Stun.\nFull Burst Duration ▲ 5.04 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1004001,
+        "shot_detail": {
+          "id": 1004001,
+          "damage": 873,
+          "max_ammo": 120,
+          "shake_id": 1,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2040101,
+        "skill2_id": 2040201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2040101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20401,
+          "skill_level": 1,
+          "name_localkey": "Vigorous Waves",
+          "next_level_id": 2040102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates when entering Full Burst. Affects self.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nRecovers {description_value_03}% of attack damage as HP, lasts for {description_value_04} sec.</color>\n■ Affects self when first activated.\n<color=#00AEFF>Additionally recovers {description_value_05}% of ATK damage as HP, lasts for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "27.73",
+                "29.86",
+                "32",
+                "34.13",
+                "36.26",
+                "38.4",
+                "40.53",
+                "42.66",
+                "44.8",
+                "46.93"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "2.08",
+                "2.24",
+                "2.4",
+                "2.56",
+                "2.72",
+                "2.88",
+                "3.04",
+                "3.2",
+                "3.36",
+                "3.52"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "9.75",
+                "10.5",
+                "11.25",
+                "12",
+                "12.75",
+                "13.5",
+                "14.25",
+                "15",
+                "15.75",
+                "16.5"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2040201,
+          "icon": "icn_skill_burstgaugespeedup_01",
+          "group_id": 20402,
+          "skill_level": 1,
+          "name_localkey": "Surprise Attack",
+          "next_level_id": 2040202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates when the <word_group=10105>stage target</word_group> appears. Affects all allies.\n<color=#00AEFF><word_group=10015>Fills Burst Gauge</word_group> by {description_value_01}%. Activates {description_value_02} time(s) per battle.\nGains <word_group=10010>immunity to Stun</word_group> for {description_value_03} sec.</color>\n■ Activates when the <word_group=10105>stage target</word_group> appears. Affects self.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "73.21",
+                "76.03",
+                "78.84",
+                "81.66",
+                "84.48",
+                "87.29",
+                "90.11",
+                "92.92",
+                "95.74",
+                "98.56"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "19.44",
+                "21.39",
+                "23.33",
+                "25.28",
+                "27.22",
+                "29.17",
+                "31.11",
+                "33.06",
+                "35",
+                "36.95"
+              ]
+            },
+            {
+              "description_value": [
+                "44.68",
+                "49.84",
+                "55",
+                "60.15",
+                "65.31",
+                "70.46",
+                "75.62",
+                "80.78",
+                "85.93",
+                "91.09"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1040301,
+        "ulti_skill_detail": {
+          "id": 1040301,
+          "icon": "icn_skill_c040_ult",
+          "group_id": 10403,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Chastisement",
+          "next_level_id": 1040302,
+          "prefer_target": "LowHP",
+          "resource_name": "c040_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 13852,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all enemies.\n<color=#00AEFF> Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>\n■ Affects all Attacker allies.\n<color=#00AEFF><word_group=10011>Damage to Parts</word_group> ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Affects all allies if the skill user has <word_group=10010>immunity to Stun</word_group>.\n<color=#00AEFF>Full Burst Duration ▲ {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "138.52",
+                "170.49",
+                "202.46",
+                "234.43",
+                "266.4",
+                "298.36",
+                "330.33",
+                "362.3",
+                "394.27",
+                "426.24"
+              ]
+            },
+            {
+              "description_value": [
+                "16.69",
+                "19.55",
+                "22.4",
+                "25.25",
+                "28.11",
+                "30.96",
+                "33.82",
+                "36.67",
+                "39.52",
+                "42.38"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "5.04",
+                "5.04",
+                "5.04",
+                "5.04",
+                "5.04",
+                "5.04",
+                "5.04",
+                "5.04",
+                "5.04",
+                "5.04"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            104030101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            104030102
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 204002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5103,
+        "stat_enhance_detail": {
+          "id": 5103,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100040,
+        "piece_detail": {
+          "id": 5100040,
+          "class": "Attacker",
+          "order": 4000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 40,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "D's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 204001,
+        "class": "Attacker",
+        "order": 10013,
+        "name_code": 1007,
+        "corporation": "ELYSION",
+        "resource_id": 40,
+        "name_localkey": "D",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 78,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 40
+    }
+  }
+}

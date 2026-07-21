@@ -1,0 +1,54 @@
+{
+  "modernia": {
+    "name": "Modernia",
+    "burst": "III",
+    "weapon": "MG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "S2a hitRatePct restored from unmodeled (hard rule 4) + S2b ATK+29.38 gated inFb (was ungated over-credit) -> board 1.069->1.044 (into +/-5%); F1 Destroy Mode 2.24%/hit rides crit-OFF path but U1 says function-dmg crits (would warm; not pulled)",
+        "0.88 COLD masking-case (2026-07-17): naga's 'auto' no-op default removed her phantom with-shielder team buff (coreDamagePct 85.17 + burst casterAtkPct to all allies) that was propping modernia in N2 — her reading fell 1.0437→0.8807, exposing her own under-model (helm/crown masking pattern). Candidate cause: hitRatePct→core-hit-rate (backlog engine-gap #2); Destroy Mode function damage crit-OFF (theme 12). See docs/engine-modeling-gaps.md."
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "N2: 0.90",
+    "date": "2026-07-14",
+    "graded": {
+      "teams": 1,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "Single read, confounded by that comp FB-count anomaly",
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Destroy Mode: Extends her line of sight and auto-aims at all enemies within range. The stage target is treated as a single enemy regardless of whether it has parts (including interruption parts)."
+      ]
+    },
+    "caveats": [
+      "skill1: reload tuple is unverified datamine — reloadFrames 159 + rolling-reload (reload_start_ammo 299); read the reload gap from any focus video (⚑1)",
+      "skill2: Hit Rate ▲ 8.56% is modeled but INERT in the engine — it raises the core-hit rate by an unmeasured magnitude (⚑2)",
+      "skill2: the ATK ▲ 29.38% 'during increasing Hit Rate status' gate is approximated as in-Full-Burst — exact when Modernia bursts (extended FB ≡ the 15s status), undercounts the 5s status tail on rotations another Burst III unit bursts (⚑3)",
+      "burst: Destroy Mode per-hit 2.24% is modeled crit-OFF (hand-authored extraHitDamagePct path); U1 says function additional damage crits — unreconciled finding, and the datamined ChangeWeapon (shot 1026002) fire profile is assumed identical to the base MG (⚑4)"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "N2 modernia wind (boss Wind)",
+          "ratio": 0.8677
+        }
+      ],
+      "n": 1,
+      "mean": 0.8677,
+      "mad": 0.1323,
+      "band": "±15%",
+      "temp": "COLD ▼"
+    }
+  }
+}

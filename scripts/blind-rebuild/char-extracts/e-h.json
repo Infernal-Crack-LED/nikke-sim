@@ -1,0 +1,526 @@
+{
+  "e-h": {
+    "slug": "e-h",
+    "name": "E.H.",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/fk-33/wl-69/d59935ab0d6b58ec45455c23c81fa2a4.png",
+    "weapon": "SMG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 10.12,
+    "coreAttackMultiplier": 250,
+    "ammo": 120,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "nicknames": [
+      "eh"
+    ],
+    "skills": {
+      "skill1": "■ Activates when obtaining 10 Scrap(s) while having fewer than 4 homemade magazines crafted. Affects self.\nFunction: Crafts magazines out of Scraps and gains a buff.\nEffect 1: Removes Scrap(s).\nEffect 2: Crafts 1 homemade magazine, up to a maximum of 4. This effect is continuous.\nEffect 3: ATK ▲ 7.5% continuously x the number of homemade magazines.",
+      "skill2": "■ Affects self.\nFunction: Gains a buff when obtaining Scraps.\nEffect 1: Activates at the start of battle. Scraps ▲ 10 continuously, up to a maximum of 10.\nEffect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.\nEffect 3: Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.\nEffect 4: Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10.\nEffect 5: Activates when obtaining Scraps. Elemental Advantage Attack Damage ▲ 16.36% for 15 sec.",
+      "burst": "■ Affects self.\nChanges the weapon in use.\nCharge Time: 0.4 sec\nDamage: 61% of final ATK\nFull Charge Damage: 250% of damage\nMax Ammunition Capacity: 1 x the number of homemade magazines\nDuration: 10 sec\nDeactivation condition: When the duration ends or when all rounds have been fired.\nAdditional Effect:\nATK ▲ 430.05% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1011301,
+        "shot_detail": {
+          "id": 1011301,
+          "damage": 1012,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 25000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2113101,
+        "skill2_id": 2113201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2113101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 21131,
+          "skill_level": 1,
+          "name_localkey": "Homemade Magazine",
+          "next_level_id": 2113102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates when obtaining {description_value_01} Scrap(s) while having fewer than {description_value_02} homemade magazines crafted. Affects self.\n<color=#00AEFF>Function: Crafts magazines out of Scraps and gains a buff.\nEffect 1: Removes Scrap(s).\nEffect 2: Crafts 1 homemade magazine, up to a maximum of {description_value_02}. This effect is continuous.\nEffect 3: ATK ▲ {description_value_03}% continuously x the number of homemade magazines.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "4.43",
+                "4.77",
+                "5.11",
+                "5.45",
+                "5.8",
+                "6.14",
+                "6.48",
+                "6.82",
+                "7.16",
+                "7.5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2113201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 21132,
+          "skill_level": 1,
+          "name_localkey": "Scrap Hunt",
+          "next_level_id": 2113202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Function: Gains a buff when obtaining Scraps.\nEffect 1: Activates at the start of battle. Scraps ▲ {description_value_07} continuously, up to a maximum of {description_value_02}.\nEffect 2: Activates when an ally or self destroys a <word_group=10096>destructible projectile</word_group>. Scraps ▲ {description_value_01} continuously, up to a maximum of {description_value_02}.\nEffect 3: Activates when an ally or self <word_group=10052>destroys an enemy's part</word_group>. Scraps ▲ {description_value_03} continuously, up to a maximum of {description_value_02}.\nEffect 4: Activates <word_group=10077>when an enemy is neutralized</word_group>. Scraps ▲ {description_value_04} continuously, up to a maximum of {description_value_02}.\nEffect 5: Activates when obtaining Scraps. <word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "9.67",
+                "10.41",
+                "11.16",
+                "11.9",
+                "12.64",
+                "13.39",
+                "14.13",
+                "14.88",
+                "15.62",
+                "16.36"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1113301,
+        "ulti_skill_detail": {
+          "id": 1113301,
+          "icon": "icn_skill_c113_ult",
+          "group_id": 11133,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Heavenbound",
+          "next_level_id": 1113302,
+          "prefer_target": "Random",
+          "resource_name": "c113_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Changes the weapon in use.\nCharge Time: 0.4 sec\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK\nFull Charge Damage: 250% of damage\nMax Ammunition Capacity: 1 x the number of homemade magazines\nDuration: {description_value_02} sec\n<word_group=10097>Deactivation condition</word_group>: When the duration ends or when all rounds have been fired.\nAdditional Effect:\nATK ▲ {description_value_03}% for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "36.02",
+                "38.8",
+                "41.57",
+                "44.35",
+                "47.12",
+                "49.9",
+                "52.67",
+                "55.45",
+                "58.22",
+                "61"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "254.12",
+                "273.67",
+                "293.22",
+                "312.76",
+                "332.31",
+                "351.86",
+                "371.41",
+                "390.96",
+                "410.5",
+                "430.05"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            111330101,
+            111330102,
+            111330103,
+            111330104
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 211302,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5103,
+        "stat_enhance_detail": {
+          "id": 5103,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100113,
+        "piece_detail": {
+          "id": 5100113,
+          "class": "Attacker",
+          "order": 11300,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 113,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "E.H.'s Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 211301,
+        "class": "Attacker",
+        "order": 10045,
+        "name_code": 5166,
+        "corporation": "ELYSION",
+        "resource_id": 113,
+        "name_localkey": "E.H.",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 78,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 113
+    }
+  }
+}

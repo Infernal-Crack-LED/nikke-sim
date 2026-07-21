@@ -1,0 +1,442 @@
+{
+  "emma": {
+    "slug": "emma",
+    "name": "Emma",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/jd-62/ms-75/c8cd256b1331c907b0c4bbadeefe2356.png",
+    "weapon": "MG",
+    "burst": "I",
+    "burstCooldownSec": 40,
+    "class": "Supporter",
+    "element": "Fire",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 5.57,
+    "coreAttackMultiplier": 200,
+    "ammo": 300,
+    "reloadFrames": 171,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 3.55,
+    "burstGaugePerShot": 0.05,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ There is a 5% chance to activate when attacked. Affects all allies.\nRecovers 10.77% of the skill user's final Max HP as HP.",
+      "skill2": "■ Activates when above 90% HP. Affects all allies.\nIncoming healing ▲ 13.33% continuously.",
+      "burst": "■ Affects all allies.\nRecover HP equal to 39.6% of the skill user's final Max HP.\nRecover 39.6% of attack damage as HP over 5 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1009001,
+        "shot_detail": {
+          "id": 1009001,
+          "damage": 557,
+          "max_ammo": 300,
+          "shake_id": 1,
+          "ShakeType": "Fire_MG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_02",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 250,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "MG",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Machine Gun",
+          "prefer_target": "TargetPS",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 4200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 299,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 150,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 7,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 100,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 150,
+          "rate_of_fire_change_pershot": 100,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 1000,
+          "auto_accuracy_change_pershot": 7,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 55,
+        "bonusrange_min": 35
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step1",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step2"
+      },
+      "skillDetails": {
+        "skill1_id": 2090101,
+        "skill2_id": 2090201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2090101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 20901,
+          "skill_level": 1,
+          "name_localkey": "Cheerleading",
+          "next_level_id": 2090102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ There is a {description_value_02}% chance to activate when attacked. Affects all allies.\n<color=#00AEFF>Recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "5.92",
+                "6.46",
+                "7",
+                "7.54",
+                "8.08",
+                "8.62",
+                "9.15",
+                "9.69",
+                "10.23",
+                "10.77"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2090201,
+          "icon": "icn_skill_heal_01",
+          "group_id": 20902,
+          "skill_level": 1,
+          "name_localkey": "Temptation",
+          "next_level_id": 2090202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates when above {description_value_01}% HP. Affects all allies.\n<color=#00AEFF>Incoming healing ▲ {description_value_02}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90",
+                "90"
+              ]
+            },
+            {
+              "description_value": [
+                "7.33",
+                "8",
+                "8.66",
+                "9.33",
+                "10",
+                "10.66",
+                "11.33",
+                "12",
+                "12.66",
+                "13.33"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1090301,
+        "ulti_skill_detail": {
+          "id": 1090301,
+          "icon": "icn_skill_c090_ult",
+          "group_id": 10903,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Altruism",
+          "next_level_id": 1090302,
+          "prefer_target": "LowHP",
+          "resource_name": "c090_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Recover HP equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP.\nRecover {description_value_02}% of attack damage as HP over {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "21.78",
+                "23.76",
+                "25.74",
+                "27.72",
+                "29.7",
+                "31.68",
+                "33.66",
+                "35.64",
+                "37.62",
+                "39.6"
+              ]
+            },
+            {
+              "description_value": [
+                "21.78",
+                "23.76",
+                "25.74",
+                "27.72",
+                "29.7",
+                "31.68",
+                "33.66",
+                "35.64",
+                "37.62",
+                "39.6"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            109030101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 209002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5306,
+        "stat_enhance_detail": {
+          "id": 5306,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100090,
+        "piece_detail": {
+          "id": 5100090,
+          "class": "Supporter",
+          "order": 9000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 90,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Emma's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 209001,
+        "class": "Supporter",
+        "order": 10001,
+        "name_code": 5005,
+        "corporation": "ELYSION",
+        "resource_id": 90,
+        "name_localkey": "Emma",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 84,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 90
+    }
+  }
+}

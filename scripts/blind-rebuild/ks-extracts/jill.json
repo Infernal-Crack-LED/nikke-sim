@@ -1,0 +1,62 @@
+{
+  "jill": {
+    "name": "Jill",
+    "burst": "III",
+    "weapon": "AR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "compensating errors: F1 burst true-dmg conversion unmodeled -> makes trueDamagePct 34.99 engine-inert (needs weaponSwap trueNormals); F2 Hit-Rate 80.78 unmodeled, measured core 0.20->0.90 (x1.45 window); F4 cadence conflict (sim 2.5/s +18% hot vs probe). Per-hit/DoT measured-exact"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": false,
+    "evidence": "tb2 test-4 focus video — popups 99.7% exact; 1.67 heat was cadence (150rpm) -> 1.02 (A21)",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Reload speed is fixed at a 99.96% increase for 10 sec.",
+        "Removes 100% of ammo.",
+        "Forced Reload",
+        "Normal attacks deal True Damage for 10 sec."
+      ]
+    },
+    "caveats": [
+      "burst: unparsed effect \"Reload speed is fixed at a 99.96% increase for 10 sec.\"",
+      "burst: unparsed effect \"Removes 100% of ammo.\"",
+      "burst: unparsed effect \"Forced Reload\""
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+          "ratio": 0.9795
+        },
+        {
+          "comp": "PI misc B3s (boss Water)",
+          "ratio": 0.9906
+        },
+        {
+          "comp": "N1 rapi/quency wind (boss Wind)",
+          "ratio": 1.1086
+        }
+      ],
+      "n": 3,
+      "mean": 1.0262,
+      "mad": 0.0462,
+      "band": "±5%",
+      "temp": "OK  ·"
+    }
+  }
+}

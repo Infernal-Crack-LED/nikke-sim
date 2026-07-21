@@ -1,0 +1,528 @@
+{
+  "vesti-tactical-upgrade": {
+    "slug": "vesti-tactical-upgrade",
+    "name": "Vesti: Tactical Upgrade",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/je-85/in-41/73bfbda69b65fc459b9e787bb110943c.png",
+    "weapon": "RL",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 22.44,
+    "coreAttackMultiplier": 200,
+    "ammo": 8,
+    "reloadFrames": 142,
+    "chargeFrames": 120,
+    "chargeMultiplier": 200,
+    "hitsPerShot": 1,
+    "rl3": 31.2,
+    "burstGaugePerShot": 0.65,
+    "treasure": false,
+    "nicknames": [
+      "vtu",
+      "vestitu"
+    ],
+    "skills": {
+      "skill1": "■ Activates when performing a Full Charge attack while not in Missile Guide status. Affects self.\nMissile Guide: Charge Speed ▲ 100% for 3 round(s).\nCharge Damage ▲ 58.5% for 3 round(s).\n■ Activates upon reloading to max ammunition. Affects self.\nRemoves Missile Guide.",
+      "skill2": "■ Activates when landing Full Charge attacks. Affects target(s).\nDeals 266.6% of final ATK as true damage. \n■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self.\nATK ▲ 20% for 3 sec. \n■ Activates when landing Full Charge attacks if target(s) is in Explosive Round status. Affects self.\nProjectile Explosion Damage ▲ 20% for 3 sec.",
+      "burst": "■ Affects self.\nExplosion Radius ▲ 100% for 10 sec.\nTrue Damage ▲ 60% for 10 sec.\n■ Affects all enemies (including parts).\nDeals 492.3% of final ATK as Burst Skill true damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1009401,
+        "shot_detail": {
+          "id": 1009401,
+          "damage": 2244,
+          "max_ammo": 8,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "DOWN_Charge",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 200,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 180,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 180,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 7,
+          "full_charge_damage": 20000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 6500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 750,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 20000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 13000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2094101,
+        "skill2_id": 2094201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2094101,
+          "icon": "icn_skill_chargedamage_01",
+          "group_id": 20941,
+          "skill_level": 1,
+          "name_localkey": "Missile Guide",
+          "next_level_id": 2094102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates when performing a Full Charge attack while not in Missile Guide status. Affects self.\n<color=#00AEFF>Missile Guide: Charge Speed ▲ {description_value_01}% for {description_value_02} round(s).</color>\n<color=#00AEFF>Charge Damage ▲ {description_value_03}% for {description_value_04} round(s).</color>\n■ Activates upon reloading to max ammunition. Affects self.\n<color=#00AEFF>Removes Missile Guide.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "34.56",
+                "37.22",
+                "39.88",
+                "42.54",
+                "45.2",
+                "47.86",
+                "50.52",
+                "53.18",
+                "55.84",
+                "58.5"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2094201,
+          "icon": "icn_skill_damage_01",
+          "group_id": 20942,
+          "skill_level": 1,
+          "name_localkey": "Monster Stage",
+          "next_level_id": 2094202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates when landing Full Charge attacks. Affects target(s).\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as true damage.</color> \n■ Activates when landing Full Charge attacks if self is in Battle Formation status. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_02}% for {description_value_03} sec.</color> \n■ Activates when landing Full Charge attacks if target(s) is in Explosive Round status. Affects self.\n<color=#00AEFF><word_group=10066>Projectile Explosion Damage</word_group> ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "157.53",
+                "169.65",
+                "181.76",
+                "193.88",
+                "206",
+                "218.12",
+                "230.24",
+                "242.36",
+                "254.48",
+                "266.6"
+              ]
+            },
+            {
+              "description_value": [
+                "11.82",
+                "12.73",
+                "13.64",
+                "14.54",
+                "15.45",
+                "16.36",
+                "17.27",
+                "18.18",
+                "19.09",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "11.82",
+                "12.73",
+                "13.64",
+                "14.54",
+                "15.45",
+                "16.36",
+                "17.27",
+                "18.18",
+                "19.09",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1094301,
+        "ulti_skill_detail": {
+          "id": 1094301,
+          "icon": "icn_skill_c094_ult",
+          "group_id": 10943,
+          "shake_id": 1,
+          "skill_type": "InstantAllParts",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Missile Container Online",
+          "next_level_id": 1094302,
+          "prefer_target": "Random",
+          "resource_name": "c094_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 29090,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Explosion Radius ▲ {description_value_01}% for {description_value_02} sec.</color>\n<color=#00AEFF>True Damage ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all enemies (including parts).\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as Burst Skill true damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "59.09",
+                "63.63",
+                "68.18",
+                "72.72",
+                "77.27",
+                "81.81",
+                "86.36",
+                "90.91",
+                "95.45",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "35.45",
+                "38.18",
+                "40.91",
+                "43.63",
+                "46.36",
+                "49.09",
+                "51.81",
+                "54.54",
+                "57.27",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "290.9",
+                "313.28",
+                "335.66",
+                "358.04",
+                "380.41",
+                "402.79",
+                "425.17",
+                "447.55",
+                "469.92",
+                "492.3"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "IncludeNoneTargetLast",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            109430101
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            109430102,
+            109430103,
+            109430104,
+            109430105
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 209402,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5105,
+        "stat_enhance_detail": {
+          "id": 5105,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100094,
+        "piece_detail": {
+          "id": 5100094,
+          "class": "Attacker",
+          "order": 9400,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 94,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Vesti: Tactical Upgrade's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 209401,
+        "class": "Attacker",
+        "order": 10038,
+        "name_code": 5148,
+        "corporation": "ELYSION",
+        "resource_id": 94,
+        "name_localkey": "Vesti: Tactical Upgrade",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 88,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 94
+    }
+  }
+}

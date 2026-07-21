@@ -1,0 +1,146 @@
+{
+  "slug": "isabel",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when using Burst Skill. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger:burstCast target:self",
+        "note": "burstCast trigger on self matches 'activates when using Burst Skill, affects self'"
+      },
+      {
+        "kitLine": "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effects[0] kind:escalating",
+        "note": "escalating kind applies steps 1..N on activation N, matching the cumulative 'previous effects repeat' semantics"
+      },
+      {
+        "kitLine": "Once: Marked Target 1 - Critical Rate \u25b2 6.26% for 45 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effects[0].steps[0] buff critRatePct 6.26 / 45s",
+        "note": "exact coefficient and duration"
+      },
+      {
+        "kitLine": "Twice: Marked Target 2 - Critical Damage \u25b2 18.03% for 45 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effects[0].steps[1] buff critDamagePct 18.03 / 45s",
+        "note": "exact coefficient and duration"
+      },
+      {
+        "kitLine": "Three times: Marked Target 3 - ATK \u25b2 17.28% for 45 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] effects[0].steps[2] buff atkPct 17.28 / 45s",
+        "note": "exact coefficient and duration"
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects 5 enemy unit(s) with the highest final DEF.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] target:enemy",
+        "note": "Multi-target selection collapsed to lone boss; documented in caveat as inert vs partless single boss. No functional difference in scope-lock."
+      },
+      {
+        "kitLine": "Deals 170.58% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] effects[0] dot atkPct:170.58 intervalSec:14.7 crit:true",
+        "note": "Coefficient faithful to kit. Trigger is MEASURED time-based ~14.7s (solo probe 2026-07-16), not stated in kit text. crit:true opt-in per measured 3/11 crit fires (2026-07-17). Period unverified in team fights (caveat)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all enemies. Deals 149.85% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] trigger:burstCast target:enemy flatDamage atkPct:149.85",
+        "note": "Base nuke fires every burst regardless of Marked Target phase. FB-exempt auto per P2 prior."
+      },
+      {
+        "kitLine": "Effects vary for each stage of Marked Target. Each subsequent effect triggers all effects before it.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] trigger:burstCast target:enemy effects[0] kind:escalating",
+        "note": "Second burstCast block with escalating steps mirrors S1 cumulative semantics, targeting enemy"
+      },
+      {
+        "kitLine": "Marked Target 1: Damage Taken \u25b2 39.96% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] effects[0].steps[0] buff damageTakenPct 39.96 / 5s",
+        "note": "Boss debuff, exact coefficient and duration"
+      },
+      {
+        "kitLine": "Marked Target 2: Deals 299.7% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] effects[0].steps[1] flatDamage atkPct:299.7",
+        "note": "Exact coefficient"
+      },
+      {
+        "kitLine": "Marked Target 3: Deals 349.65% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] effects[0].steps[2] flatDamage atkPct:349.65",
+        "note": "Exact coefficient"
+      },
+      {
+        "kitLine": "Affects all allies. Full Burst Duration \u25bc 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2] trigger:burstCast target:allies fullBurstExtend seconds:-5",
+        "note": "Shortens FB window. Net rotation effect (shorter window vs faster re-cycle) flagged UNVERIFIED in caveat and note \u2691."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: kit targets 5 enemies with highest final DEF \u2014 modeled as lone boss (multi-target selection inert vs partless single boss)",
+      "couldCauseGap": "neither",
+      "why": "Scope-lock is partless single boss; 5-target selection has zero mechanical effect. Pure simplification, no damage delta."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: ~14.7s period is a solo measurement (2026-07-16); whether the period holds in team fights is unverified",
+      "couldCauseGap": "COLD",
+      "why": "If the period changes in team play the rider tick count shifts, but solo validation (12 ticks/180s) matches. Only relevant for team boards."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: periodic hit crits in-game (MEASURED 3/11 fires, \u00d71.5 exactly) \u2014 modeled via per-DoT crit:true opt-in; global DOT_CRIT default stays OFF",
+      "couldCauseGap": "COLD",
+      "why": "crit:true is already enabled on this DoT. The ~4% solo gap from engine-global DOT_CRIT gating is documented in the note as the residual between sim 50.86M and real 55.28M. Known, quantified."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: Full Burst Duration \u25bc 5 sec \u2014 net rotation effect (shorter window vs faster re-cycle) is an unverified estimate",
+      "couldCauseGap": "HOT",
+      "why": "If the engine's rotation model mis-signs this (net harm instead of net benefit), it could shift burst timing for the whole team. Note explicitly says 'pull if it spuriously net-harms the board'. Needs /sim-battery diff."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1/burst: Marked Target stage modeled as permanent burst-use count \u2014 possible in-game 45s stage reset on expiry not modeled",
+      "couldCauseGap": "COLD",
+      "why": "At 40s burst CD the stage never expires in normal rotation (45s > 40s), so steady-state is correct. Only matters if burst spacing exceeds 45s (unusual in auto-play)."
+    },
+    {
+      "source": "note",
+      "text": "SG cadence tuple (pullsPerSec 1.5, reloadFrames 133, rolling-reload) all datamine-unreliable, ALWAYS-\u2691",
+      "couldCauseGap": "HOT",
+      "why": "SG normal-attack cadence drives the majority of Isabel's damage. Datamine values may not match real fire rate; this is the primary uncertainty for any SG unit."
+    },
+    {
+      "source": "note",
+      "text": "Isabel is HR-CLEAN (no Hit Rate in kit) but shared SG core bands are HR-contaminated from other units (G4)",
+      "couldCauseGap": "COLD",
+      "why": "Solo probe confirmed SG core bands HR-clean at HR=0 (NEAR matched pre-reg within 2%). Residual risk is from other units' contamination of the shared band table, not Isabel's own kit."
+    },
+    {
+      "source": "note",
+      "text": "SG LANDING at range (mid/midfar/far read below engine table); totals stay moderate-confidence until corroborated",
+      "couldCauseGap": "HOT",
+      "why": "Range-dependent damage falloff for SG is not yet fully validated. Could shift normal-attack totals if the engine's range table is wrong for SG."
+    }
+  ],
+  "authorIntentSummary": "The override models Isabel as a Marked-Target escalating kit: S1 is a burstCast-triggered escalating self-buff (critRate/critDmg/ATK, cumulative across burst uses), S2 is a measured time-based periodic rider (14.7s interval, 170.58% coefficient, crit-enabled per probe data), and burst is a three-block structure (base 149.85% nuke + escalating MT riders with damageTaken debuff and two flat-damage steps + fullBurstExtend:-5 for the FB shortening). All 8 kit lines are implemented; zero silent drops. The key approximations are: S2's trigger/period is inferred from solo measurement (not in kit text), the Marked-Target stage is a monotonic burst counter with no 45s reset, and fullBurstExtend:-5's net rotation sign is unverified. The author flags SG cadence and range-landing as the dominant remaining uncertainties."
+}

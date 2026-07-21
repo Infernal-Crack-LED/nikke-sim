@@ -1,0 +1,104 @@
+{
+  "slug": "naga",
+  "board": {
+    "ratio": 1.08,
+    "n": 1,
+    "mad": 0.08,
+    "tag": "HOT"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 12 normal attack(s). Affects all allies. Restores 14.57% of Cover HP.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Cover HP restore \u2014 inert for damage dealt; deliberately skipped per note ('Heals/cover restore skipped')."
+      },
+      {
+        "kitLine": "Activates when a Shield is set in front of this unit. Affects all allies. Damage dealt when attacking core \u25b2 85.17% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (trigger fullBurstEnter, target allies, mode 'with shielder', buff coreDamagePct 85.17 / 10s)",
+        "note": "Shield-gate is NOT a literal shield-set event: approximated as mode 'with shielder' (default) + fullBurstEnter trigger = assumed full uptime every rotation. Engine has no shield tracking."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after 5 normal attack(s). Affects 2 ally unit(s) with the highest ATK. Damage dealt when attacking core \u25b2 40.07% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] (trigger hitCount count 5, target alliesTopAtk count 2, buff coreDamagePct 40.07 / 5s)",
+        "note": "Trigger is hitCount=5 counting pellet hits (SG 10 pellets/shot) \u2192 near-full uptime; 'kept parser-faithful', auto-filled from offline parser, NOT hand-verified."
+      },
+      {
+        "kitLine": "Activates after 5 normal attack(s). Affects 2 ally unit(s) with the lowest HP percentage. Recovers 9.58% of the skill user's final Max HP as HP.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Heal \u2014 inert for Naga's own damage. ks-extract flags omission violates hard rule 2 (should be a Crown burst-gauge consumer), could affect burst cadence in Crown comps."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Gains Pierce for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Self-Pierce \u2014 inert vs partless single boss (scope). ks-extract notes this line was backfilled into unmodeled (previously dropped)."
+      },
+      {
+        "kitLine": "Affects all allies. ATK \u25b2 16.18% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (trigger burstCast, target allies, buff casterAtkPct 16.18 / 10s)",
+        "note": "Unconditional ATK buff, fires in all modes."
+      },
+      {
+        "kitLine": "Activates if a Shield is set in front of this unit. Affects all allies. ATK \u25b2 31.02% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] (trigger burstCast, target allies, mode 'with shielder', buff casterAtkPct 31.02 / 10s)",
+        "note": "Shield-gate approximated as mode 'with shielder' (default) \u2014 fires UNCONDITIONALLY unless comp set to 'no shielder'; opposite of the kit's shield-presence gate."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "Shield-gated buffs (S1 core-dmg 85.17, burst casterAtk 31.02) are encoded as a MODE defaulting to 'with shielder' that fires UNCONDITIONALLY unless the comp is set to 'no shielder' \u2014 the opposite of the kit's shield-presence gate.",
+      "couldCauseGap": "HOT",
+      "why": "ks-extract identifies this as the 1.175 HOT cause: shield-gated buffs apply by default regardless of actual shield state, overstating damage when no shielder / assuming full uptime."
+    },
+    {
+      "source": "note",
+      "text": "S1 core-damage 85.17% trigger is approximated as fullBurstEnter/10s = full uptime, not a literal 'shield set' event.",
+      "couldCauseGap": "HOT",
+      "why": "Assumes 100% shield uptime every rotation; if real shield uptime is lower, the core-damage buff is overstated."
+    },
+    {
+      "source": "unmodeled",
+      "text": "S2 heal \u2014 Recovers 9.58% of skill user's final Max HP to 2 lowest-HP allies \u2014 is unmodeled.",
+      "couldCauseGap": "neither",
+      "why": "Inert for Naga's own damage; but ks-extract flags it should be a Crown burst-gauge consumer (hard rule 2), so it could shift burst cadence in Crown comps indirectly."
+    },
+    {
+      "source": "unmodeled",
+      "text": "S1 cover HP restore (14.57% of Cover HP to all allies) is unmodeled.",
+      "couldCauseGap": "neither",
+      "why": "Cover HP does not affect damage dealt; damage-inert."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Burst self-Pierce (10s) is unmodeled.",
+      "couldCauseGap": "neither",
+      "why": "Inert against the partless single-boss scope; Pierce only matters across multiple targetable parts."
+    },
+    {
+      "source": "note",
+      "text": "S2 core-damage trigger uses hitCount=5 counting pellet hits (SG ~1.5 pulls/s \u00d7 10 pellets), giving near-full uptime; 'kept parser-faithful'.",
+      "couldCauseGap": "neither",
+      "why": "Documented cadence approximation of 'after 5 normal attacks'; differs from literal shot-count but explicitly noted as parser-faithful."
+    },
+    {
+      "source": "note",
+      "text": "skill2 was auto-filled from the offline parser (blablalink prose) and is NOT hand-verified (materialized 2026-07-16).",
+      "couldCauseGap": "neither",
+      "why": "Provenance caveat \u2014 behavior-identical to prior runtime parse but lacks hand verification."
+    }
+  ],
+  "authorIntentSummary": "The author modeled Naga's two core-damage buffs (S1 85.17% team core-dmg, S2 40.07% to 2 top-ATK allies) and her two burst ATK buffs (16.18% unconditional + 31.02% shield-gated casterAtk). Because the engine has no shield tracking, the shield-gated lines are encoded behind a 'with shielder' mode that fires by default (fullBurstEnter/10s as a full-uptime proxy for the S1 shield-set trigger), on the rationale that she is always run with a shielder. Heals (S2 HP recover, S1 cover restore) and self-Pierce are deliberately unmodeled as damage-inert. Known-not-faithful spots per the note: the shield-gate is a mode toggle firing unconditionally (opposite of the kit) \u2014 flagged in ks-extract as the HOT cause \u2014 and the omitted S2 heal should be a Crown burst-gauge consumer."
+}

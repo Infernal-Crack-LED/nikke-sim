@@ -8,6 +8,181 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) Grave: team "Max Ammunition Capacity ▲ 3 round(s)" is a FLAT grant → `maxAmmoFlat 3`
+  — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED 4-of-4).** Base `grave` (AR/Fire/B2,
+  Supporter). Her burst's team ammo buff was the schema-forced fudge `maxAmmoPct 3` (+3 PERCENT ≈ inert);
+  the kit line is "▲ 3 round(s)" (flat). Re-encoded `maxAmmoFlat 3` to ALL allies, 10s (the flat-rounds
+  path was already live in `maxAmmo()` — the noir 2026-07-20 precedent). **The plan's "negligible on a
+  60-round AR mag" premise was WRONG** — it only weighed grave herself; the buff goes to the whole team,
+  and because she is a frequent B2 (~13 bursts/fight = 10s window at ~72% uptime) it is near-permanent for
+  small-mag SG/SR teammates. **Isolated board A/B (faithful>fit, mixed as expected):** improves the COLD
+  units it feeds — d-killer-wife 0.954→0.969, anis-star 0.967→0.979 — and worsens the separately-tracked
+  HOT ones — **noir 1.116→1.150** (+3.83% in her PI/PI2 totals; her 9-round SG gains most relative to a
+  +3-round grant), jill 1.041→1.051; grave/chisato/quency ~flat. The noir/jill worsening is the faithful
+  consequence of a real buff amplifying THEIR own over-models (both are open HOT gotchas), not a reason to
+  suppress the kit mechanic. No tuned value (3 is kit-literal). Regression: all full-burst/measured-truth
+  asserts byte-identical (rotation neutral); only per-comp totals drift (snapshot updated). Trail:
+  `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §grave gotcha 3, grave override caveat.
+
+- **(2026-07-20) Datamined skill CDs → sim: audit done, `helm-aquamarine` skill2 landed on `interval:4`;
+  no cooldown-gate primitive needed.** Consuming the new `skillCooldownsSec` field (bakery-bot, per
+  `docs/handoffs/2026-07-20-skill-cooldowns-to-sim.md`). Audit of all 8 units with a non-null skill-1/2
+  CD found **no genuine class-3** (event + rate-limit): the damage lines carrying event-proxy triggers
+  have no "Activates when…" clause in the kit text, so they are class-1 pure timers. The unbuilt
+  per-block cooldown-gate mechanism therefore has no consumer — left unbuilt (no dead schema).
+  - **`helm-aquamarine` (AR/Iron/B2, NOT base `helm`) — LANDED.** skill2 105.58% random-enemy hit had an
+    INVENTED `hitCount:30` proxy (the override note's own flagged ⚑TOP, borrowed from skill1's genuine
+    30-normal trigger; skill2 has no such clause). Re-encoded `{interval, sec:4}` from the datamined CD.
+    Solo total 51.499M→50.142M (−2.6%; over-firing proxy at ~2.5s → true 4s). **MODEL_ONLY** — she is in
+    no graded comp, regression byte-identical. ⚑ first-fire phase (t=4 vs t=0) unpinned.
+  - **`isabel` — RE-ENCODED (owner-corrected).** Datamine confirms S2 "Pointed Feather" is a SINGLE hit
+    on the 15s CD — NOT a DoT (her only "45 sec" values are S1's three Marked-Target BUFFs: crit rate /
+    crit dmg / ATK, gated on burst). The override had modeled it as a `dot intervalSec:14.7` device (each
+    "tick" = one activation). Re-encoded faithfully as `passive flatDamage 170.58` (t=0 battle-start hit)
+    + `interval:15 flatDamage 170.58` (recurrences t=15…165) = 12 hits/180s. **Behavior-identical** (solo
+    A/B byte-for-byte at crit-off: 2.4610M, 12 hits, same per-hit), just correctly labeled as a CD-gated
+    single hit. Note the first-fire phase is load-bearing for the count: `interval:15` alone (first at
+    t=15) gives 11 (the 12th lands at t=180.000, the excluded final frame); the t=0 battle-start hit is
+    what reproduces the measured 12. MODEL_ONLY.
+  - **No change:** `snow-white` (already `interval:15`), `prika` (CD 0), `liter` (heal, damage-inert),
+    `takina` (continuous `passive` buffs, no lapse).
+  - **`rosanna-chic-ocean` — LANDED (owner ruled the 30s CD is real).** S2 sustained DoT was ONE
+    `passive` `durationSec:999` (continuous, a deliberate but note-flagged-⚑2 "invented 100%-uptime"
+    encoding). Re-encoded `{interval, sec:30}` + `dot durationSec:15`. No force-cast in S1 → first fire
+    waits for the CD = **t=30** (owner ruling: force-cast → t=0, else t=CD). DoT windows [30-45]…[150-165]
+    = 5×15 = 75s (was 180s). Solo 41.763M→34.472M (−17.5%). MODEL_ONLY, regression byte-identical.
+  - **`sakura-bloom-in-summer` — LANDED (owner ruled the 30s CD is real; supersedes her note's earlier
+    "datamine has NO S2 CD" claim).** S1 "Forcefully uses Skill 2" → S2 first-fires at **t=0**, then
+    re-casts every 30s = 6×15s windows (90s uptime). Sakura Petals DoT = passive dur15 (t=0) + interval:30
+    dur15 (re-casts). Dancing Flower AD self-buff (engine passive buffs are always-on so it stays
+    time-averaged) 1.30→7.82 (15.64×90/180). Solo 40.165M→67.494M (+68%). MODEL_ONLY, regression
+    byte-identical. **Owner clarification (first-fire convention):** a "force-cast" skill fires at t=0; a
+    normal CD skill waits its first CD (t=CD).
+  - **Burst-CD cross-check (roster sweep):** only 2 divergences of `skillCooldownsSec.burst` vs
+    `burstCooldownSec` (both already modeled via `burstCooldownSec`; `.burst` unconsumed → no double-model):
+    **`bready`** `.burst=20` vs `40` — owner: 40s correct, `.burst=20` is the wrong source; no change.
+    **`quiry`** `.burst=40` vs `60` — owner: **40s is correct**, `burstCooldownSec=60` is wrong → flagged
+    for a data-source fix at bakery-bot/sync (would change her rotation; not hand-patched here).
+
+- **(2026-07-20) Snow White `snow-white`'s burst cannon fires as a DELAYED charge hit, not a weaponSwap
+  — LANDED (owner-ruled from the sw.MP4 footage).** Base `snow-white` (AR/Iron/B3, NOT
+  `snow-white-heavy-arms`) keeps firing her AR through the ~5s cannon charge in-game; the cannon
+  materializes only for its one shot. The old `weaponSwap` model halted her AR for the whole charge
+  (~5s × 6 bursts ≈ 30s of lost fire — her main residual COLD driver). Re-encoded as a single delayed
+  full-charge `flatDamage` `{atkPct 499.5, charge, chargeMultPct 1000 (×10), core, pierce, rangeOk,
+  delaySec 5.5}`, so the AR fires continuously. **New engine primitive (opt-in, default-off):** a
+  `flatDamage` hit may carry `charge`/`chargeMultPct`/`pierce`/`rangeOk`, threaded through the
+  `pendingHits` landing path (+ a `dealDamage` `chargeMultPct` override) — every existing `delaySec`
+  user (`rapi-red-hood`'s missile) is byte-identical (regression green). A/B (isolated at ae68b90,
+  expected-value): cannon flavor BYTE-IDENTICAL (major/charge/dmgUp/taken across all 6 shots), FB counts
+  byte-identical (rotation neutral), `helm`/`crown` byte-identical; `snow-white` 347M→408M
+  (~0.81-0.90 → ~0.95-1.06 across the 4 control comps) from the recovered AR fire — which faithfully
+  also lifts her S1 self-ATK uptime and `little-mermaid`'s teamAmmo-500 skill (+4M, genuine extra ammo
+  consumption the swap model under-fed). Fable pre-op APPROVED-WITH-CONDITIONS (normalAttackPct
+  divergence on a delayed hit documented as inert-at-scope; rotation verified; flavor opts additively
+  preserved). Reading recorded, NOT tuned. Trail: `snow-white` override note/caveats, commits (engine
+  160cee3, override 9cc9d7a), `damage-calculation.md` §1d.
+
+- **(2026-07-20) Step-gated pierce (ade-agent-bunny) — LANDED (kit-audit Phase A4 primitive).** The
+  `gainPierce` effect's `durationSec` is now OPTIONAL — absent = continuous/permanent (`pierceUntilFrame`
+  → ∞), mirroring the `shield` effect's optional-duration convention. This lets pierce turn on at a STACK
+  THRESHOLD and stay on, which a boolean `hasPierce` flag can't express. ade-agent-bunny's kit gains Pierce
+  continuously "only if Spy Lens is at max stacks" (10 full-charge hits ≈ 16s): her top-level
+  `hasPierce:true` (applied from t=0) is replaced by a duration-less `gainPierce` riding the SAME
+  `hitCount:10` trigger her ATK ▲16% already used — closing the documented residual gap (over-credited the
+  first ~16s ≈ 9% of the fight, where her 18.36+10.13 Pierce-Damage self-feed and teammates' pierce buffs
+  fired before Spy Lens maxed). No tuned value; faithful onset. Board: ade-agent-bunny only, 1.001→~0.990
+  (isolated regression drift 1.10% down, her own damage; no comp-mate moved — the pierce TAG is per-unit).
+  verify.sh green. Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A4 (swap-scoped /
+  step-gated pierce), ade-agent-bunny override caveat.
+
+- **(2026-07-20) Wipe-Out area-hit ATK buff (d-killer-wife) is GATED on the Wipe Out status + core —
+  LANDED (kit-audit Phase A4 primitive, owner ruling).** New engine vocabulary: a `wipeOut` effect
+  opens a global boss-status window (like `fbEndFrame`) and a `requiresWipeOut` block gate reads it
+  (mirrors the `shield`/`requiresShielded` pattern). d-killer-wife's burst now inflicts Wipe Out (10s)
+  and her body-branch ATK buff (`casterAtkPct` 12.19%, "Allies that hit the body") fires at burstCast
+  for that 10s window with `requiresWipeOut` + `requiresCore` — replacing the prior ungated `hitCount:1`
+  model that ran ~permanently (documented over-credit, old caveat: "buff uptime over-credited whenever
+  she is firing outside her 10s Wipe Out windows"). **No tuned value** — the datamined 12.19 is unchanged;
+  only its uptime is corrected to ~71% (10s Wipe Out of a ~14s rotation). **Owner ruling:** model the
+  Wipe-Out area-hit as CORE-only for now (core is the only modelable "area" on the partless boss); the
+  **parts branch** ("Allies that hit parts → coreDamagePct 16.26%") stays a documented **TODO — needs
+  destructible-part modeling** (wire as `requiresWipeOut` + a parts-hit trigger when parts enter scope).
+  **Board (isolated A/B, faithful>fit, mixed as expected — removing an over-credit cools HOT recipients
+  and unmasks COLD ones):** cools naga 1.080→1.026, chisato 1.141→1.109, d-killer-wife 1.046→0.987 /
+  1.030→0.991, jill/grave/quency-escape-queen slightly; nudges the already-COLD modernia 0.868→0.834, ein 0.936→0.900,
+  maxwell colder (their true coldness was masked by the spurious team-ATK boost). Regression footprint
+  confined to her 3 comps; snapshot updated, verify.sh green. Trail:
+  `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A4 (Wipe-Out primitive), d-killer-wife override caveat.
+
+- **(2026-07-20) Naga's shield-gated lines are DEFAULT-OFF and ride the REAL shield machinery — LANDED
+  (kit-audit Phase C, owner ruling).** The old encoding was a user-selected "with shielder"/"no shielder"
+  mode (and the later "auto" modes[0] default was a no-op string that silently left the shield blocks
+  inactive — a phantom toggle either way). **Owner ruling: default off, require a shielder.** Enacted:
+  Skill 1's "Activates **when** a Shield is set in front of this unit" (85.17% team core-damage, 10s) is now
+  a `{kind:'shielded'}` EVENT-trigger block — it fires only when an ally's `shield` effect actually targets
+  naga (emitters today: `crown` burst 15s, `blanc` per-120-team-hits 5s; `delta-ninja-thief` self-only and
+  `rei-ayanami` Fire-allies can never hit her). The burst's "Activates **if** a Shield is set" (31.02%
+  casterAtk) is `burstCast` + the new `requiresShielded` STATE gate (`shieldedUntilFrame`, opened by each
+  shield's durationSec). The modes array is gone. No shielder in comp = both lines inert — the faithful
+  default. Board: N2 (the only graded naga comp, no shielder) byte-identical. ⚑ WATCH: shield-line uptime
+  now inherits the shielder's shield cadence (unmeasured vs in-game shield uptime) — recipe: naga+crown
+  focus video, 85.17% buff-icon windows vs crown's shield icon.
+
+- **(2026-07-20) Red Hood's base SR is BOLT-ACTION outside Red Wolf — owner-confirmed (kit-audit Phase C
+  gotcha closed, no behavior change).** The blind-rebuild audit's open question ("autofire vs bolt-action
+  outside the Red Wolf window is untested"; the autofire hypothesis would have added ~2.2 rounds/s) is
+  closed by owner testimony: **base SR has bolt recovery** — the engine's +22f SR default was already the
+  model, so nothing changes. Consequence: `red-hood`'s COLD 0.867 residual must live elsewhere; prime
+  suspect is the S1 excess-Charge-Speed→Charge-Damage conversion still modeled as a static
+  chargeDamagePct 90 average (gotcha 2, MEASUREMENT-gated).
+
+- **(2026-07-20) Noir: +5-rounds is a TEAM flat grant, and the burst same-squad gate is REAL (blanc/rouge)
+  — LANDED (kit-audit Phase C, ENACT-NOW + owner ruling).** (1) S2 "Max Ammunition Capacity ▲ 5 round(s)"
+  re-encoded from the self-only `maxAmmoPct 55.56` proxy to `maxAmmoFlat 5` → ALL allies, 10s (the flat
+  path was already live in `maxAmmo()`; noir's own 9→14 is numerically identical, proven byte-identical
+  on her own totals). (2) Burst block 3 (Hit Rate ▲11.61% + Parts ▲19.36%, 30s) is now gated
+  `teamHas:{slugs:['blanc','rouge']}` — **owner-confirmed the "ally from the same squad" gate is real**
+  (the buff does not appear without one), enacted via the new `teamHas.slugs` facet ("still on the
+  battlefield" is scope-trivial). A/B PI/PI2: rotation identical (13×100%); noir cools 1.134→1.127 /
+  1.103→1.102; the faithful ammo grant warms teammates — `anis-star` (RL, small mag) 0.935→1.010 and
+  0.927→1.001 (lands ON the board), grave +0.3%, jill +1.2%, chisato +0.6%. Snapshot regenerated with
+  the change.
+
+- **(2026-07-20) Base `snow-white` IS board-graded — the control-anchor runs are her data (owner
+  correction).** The kit-audit plan's "board no-data" for `snow-white` was wrong: the 4
+  `docs/probes/control` recordings ({sw,helm,lm,crown}) are 4 independent 3:00 runs of the 4-unit
+  control comp [`little-mermaid`, `helm`, `crown`, `snow-white`] (slot 5 empty). Wired as graded comps
+  C-SW/C-Helm/C-LM/C-Crown: boss NEUTRAL (owner-confirmed "record neutral" control design → boss:null),
+  focus = the filename unit — independently corroborated by the battle-records slot orders (the focused
+  unit sits in middle slot 3 in ALL FOUR runs, matching the middle-slot focus default). Totals read from
+  the four screenshots this session.
+
+- **(2026-07-20) "Highest/lowest FINAL ATK" ally-selectors rank by LIVE effectiveAtk — LANDED (kit-audit
+  Phase A3, 4 of 5 units).** The `alliesTopAtk`/`alliesLowestAtk` selectors ranked candidates by base
+  `staticAtk`, but several kits' PRIMARY game text says "highest/lowest **final** ATK" (final = live
+  buffed ATK). **Owner ruling:** implement, keyed strictly on the literal word "final" — selectors that
+  say "final ATK" rank by live `effectiveAtk` at the apply frame; `casterAtkPct` ("% of the skill user's
+  ATK", ~30 units incl. moran) AND plain "highest ATK" (no "final", e.g. `naga`) stay on static.
+  Encoded as an optional per-selector `byFinalAtk` flag (absent = static; byte-identical fallback proven
+  by a no-flag board-read == baseline). **Landed on the 4 board-neutral units** whose text says "final":
+  `alice`, `liberalio`, `miranda` (×2 selectors), `soda-twinkling-bunny`. Board net 7/11/21/23 unchanged;
+  the only drifts are `liberalio` correctly moving her "lowest final ATK B3" charge-speed from `milk-blooming-bunny`
+  (high final ATK) to `maxwell` (lowest, and never exceeds milk — stable idx tie-break), all full-burst
+  counts byte-identical. **`maxwell` HELD** (her `byFinalAtk` NOT set): faithful in principle but her
+  sole graded comp ("PG iron sweep") is a **transient-snapshot artifact** — her fullBurstEnter atkPct 43.1
+  top-2 pick lands on `takina` (Burst II, structurally proven the sole cause) only because at that instant
+  `milk-blooming-bunny`'s 446k ATK peak is transiently at base; entangled with milk's known COLD (0.681)
+  under-model, so it swings takina 0.988→1.280 with no way to validate the real recipient. HELD pending a
+  focus-video of who actually receives maxwell's buff (LOG outcome, evidence-proportionality). Also OUT of
+  scope: `guilty`'s "highest ATK" (no "final") duplicate-ATK line correctly stays static, but its basis bug
+  (sizes off the caster's OWN ATK, not the highest ally) is a separate `highestAllyAtkPct`-source fix.
+  **Scientific-method:** Fable pre-op APPROVED-WITH-REVISIONS (full-roster "final" sweep affirmed — only 6
+  simSupported units use the ranking selector; R1 flip-conditioned rotation invariant; R2 12 call sites),
+  post-op ACCEPT/HIGH, 2-of-2. verify.sh green. WATCH (non-blocking): `soda-twinkling-bunny`'s per-3-shot
+  re-rank can now oscillate the recipient mid-FB (same-caster-slot overwrite becomes load-bearing;
+  board-neutral today). Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A3, open-questions U21.
+
 - **(2026-07-19) Core-hit for accuracy-circle weapons is a δ-offset ("Rician") cone — LANDED LIVE
   (`CONE_DELTA`, default on).** Replaces the two confirmed bugs of the prior path — the flat
   `CORE_AUTOAIM = 0.55` cap (over-credits low-HR far, under-credits high-HR near) and the fractional

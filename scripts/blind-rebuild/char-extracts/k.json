@@ -1,0 +1,534 @@
+{
+  "k": {
+    "slug": "k",
+    "name": "K",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/vp-66/il-17/aa60d678a738d1c9cae2f2e05aaf8009.png",
+    "weapon": "SMG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Electric",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 9.1,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 129,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 2,
+    "rl3": 11.4,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when firing the last bullet. Affects self.\nTilted Scale: Critical Rate ▲ 0.75% continuously, stacks up to 100 times.\nTilted Scale stacks ▲ 29.\n■ Activates when pellets land a critical hit 4 time(s). Affects the target.\nDeals 23.9% of final ATK as additional damage.\n■ Activates when Full Burst ends. Affects self.\nRemoves Tilted Scale.",
+      "skill2": "■ Activates when gaining Tilted Scale. Affects all allies.\nFulfillment of Righteousness\nFunction: Reduces max ammunition capacity but increases attack damage.\nEffect 1: Max ammunition capacity ▼ 51.13% for 10 sec. (Similar effects cannot be stacked.)\nEffect 2: Attack damage ▲ 10.62% for 10 sec.\n■ Activates when Full Burst ends. Affects all allies.\nRemoves Fulfillment of Righteousness.",
+      "burst": "■ Affects self.\nChange the weapon in use:\nDamage: 92.5% of the final ATK\nPelletcount: 10\nAttack speed: ▼ 90% \nDuration: 10 sec\nAdditional Effects:\nATK ▲ 63.36% of the skill user's ATK for 10 sec.\nAttack damage ▲ 21.12% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1004101,
+        "shot_detail": {
+          "id": 1004101,
+          "damage": 455,
+          "max_ammo": 120,
+          "shake_id": 1,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Energy",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 180,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 2,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Energy_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2041101,
+        "skill2_id": 2041201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2041101,
+          "icon": "icn_skill_damage_01",
+          "group_id": 20411,
+          "skill_level": 1,
+          "name_localkey": "Scale of Righteousness",
+          "next_level_id": 2041102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates when firing the last bullet. Affects self.\n<color=#00AEFF>Tilted Scale: Critical Rate ▲ {description_value_01}% continuously, stacks up to {description_value_02} times.\nTilted Scale stacks ▲ {description_value_03}.</color>\n■ Activates when <word_group=10083>pellets land a critical hit</word_group> {description_value_04} time(s). Affects the target.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as additional damage.</color>\n■ Activates when Full Burst ends. Affects self.\n<color=#00AEFF>Removes Tilted Scale.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "0.44",
+                "0.47",
+                "0.51",
+                "0.54",
+                "0.58",
+                "0.61",
+                "0.64",
+                "0.68",
+                "0.71",
+                "0.75"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "9",
+                "9",
+                "9",
+                "19",
+                "19",
+                "19",
+                "29",
+                "29",
+                "29",
+                "29"
+              ]
+            },
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "14.12",
+                "15.21",
+                "16.3",
+                "17.38",
+                "18.47",
+                "19.56",
+                "20.64",
+                "21.73",
+                "22.82",
+                "23.9"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2041201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 20412,
+          "skill_level": 1,
+          "name_localkey": "Execution of Righteousness",
+          "next_level_id": 2041202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates when gaining Tilted Scale. Affects all allies.\n<color=#00AEFF>Fulfillment of Righteousness\nFunction: Reduces max ammunition capacity but increases attack damage.\nEffect 1: Max ammunition capacity ▼ {description_value_01}% for {description_value_02} sec. (<word_group=10081>Similar effects cannot be stacked.</word_group>)\nEffect 2: Attack damage ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates when Full Burst ends. Affects all allies.\n<color=#00AEFF>Removes Fulfillment of Righteousness.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "30.21",
+                "32.54",
+                "34.86",
+                "37.19",
+                "39.51",
+                "41.84",
+                "44.16",
+                "46.49",
+                "48.81",
+                "51.13"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "6.27",
+                "6.76",
+                "7.24",
+                "7.72",
+                "8.21",
+                "8.69",
+                "9.17",
+                "9.66",
+                "10.14",
+                "10.62"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1041301,
+        "ulti_skill_detail": {
+          "id": 1041301,
+          "icon": "icn_skill_c041_ult",
+          "group_id": 10413,
+          "shake_id": 1,
+          "skill_type": "ChangeWeapon",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Means of Righteousness",
+          "next_level_id": 1041302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c041_ulti",
+          "duration_value": 1000,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 5466,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 144,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1004102,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Change the weapon in use:\nDamage: {description_value_01}% of the <word_group=10025>final</word_group> ATK\n<word_group=10038>Pellet</word_group>count: 10\nAttack speed: ▼ 90% \nDuration: {description_value_02} sec\nAdditional Effects:\nATK ▲ {description_value_03}% of the skill user's ATK for {description_value_04} sec.\nAttack damage ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "54.66",
+                "58.86",
+                "63.07",
+                "67.27",
+                "71.48",
+                "75.68",
+                "79.89",
+                "84.09",
+                "88.3",
+                "92.5"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "37.44",
+                "40.32",
+                "43.2",
+                "46.08",
+                "48.96",
+                "51.84",
+                "54.72",
+                "57.6",
+                "60.48",
+                "63.36"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "12.48",
+                "13.44",
+                "14.4",
+                "15.36",
+                "16.32",
+                "17.28",
+                "18.24",
+                "19.2",
+                "20.16",
+                "21.12"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            0
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            104130101,
+            104130102
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 204102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5103,
+        "stat_enhance_detail": {
+          "id": 5103,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100041,
+        "piece_detail": {
+          "id": 5100041,
+          "class": "Attacker",
+          "order": 4100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 41,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "K's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 204101,
+        "class": "Attacker",
+        "order": 10035,
+        "name_code": 5141,
+        "corporation": "ELYSION",
+        "resource_id": 41,
+        "name_localkey": "K",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 78,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 41
+    }
+  }
+}

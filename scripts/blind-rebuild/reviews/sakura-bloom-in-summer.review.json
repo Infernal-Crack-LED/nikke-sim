@@ -1,0 +1,98 @@
+{
+  "slug": "sakura-bloom-in-summer",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Forcefully uses Skill 2.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 blocks (both passive-trigger blocks fire at t0 as the force-cast)",
+        "note": "S1a is not a block in the skill1 array (skill1: []); it is implemented as the t0 passive activation of both skill2 blocks. Note explicitly states this is IMPLEMENTED, hence not in unmodeled."
+      },
+      {
+        "kitLine": "Activates when an ally or self destroys an enemy's part. Affects self. Sustained Damage \u25b2 5.1% for 30 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0..1]",
+        "note": "Part-destroy trigger can never fire on the partless scope-lock boss \u2014 genuinely-skippable class."
+      },
+      {
+        "kitLine": "Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status. Dancing Flower Duration \u25b2 10.02 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[2..3]",
+        "note": "Part-destroy trigger inert vs partless boss \u2014 genuinely-skippable class."
+      },
+      {
+        "kitLine": "Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status. Sakura Petals Duration \u25b2 10.02 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[4..5]",
+        "note": "Part-destroy trigger inert vs partless boss \u2014 genuinely-skippable class."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects self. Dancing Flower: Attack Damage \u25b2 15.64% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 passive/self buff attackDamagePct 1.3",
+        "note": "Time-averaged: 15.64\u00d715/180 = 1.30 permanent (engine passive buffs ignore durationSec / alwaysOn). Approximation \u26913; rises to ~15.64 permanent if S2 re-cast is real (\u26912)."
+      },
+      {
+        "kitLine": "Affects the enemy with the highest final ATK. Sakura Petals: Deals 256% of final ATK as sustained damage every 1 sec for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] \u2014 passive/enemy dot atkPct 256, durationSec 15, intervalSec 1, flavor sustained",
+        "note": "Kit-literal single 15s window at t=0. Target 'enemy' vs single boss is equivalent to 'highest final ATK enemy'. No re-cast/extension channel fires vs partless boss. \u26912 flags whether periodic re-cast exists."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects random enemies. Deals 457.14% of final ATK as damage. Attacks sequentially 10 times.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] \u2014 burstCast/enemy, 10\u00d7 flatDamage atkPct 457.14 flavor sequential",
+        "note": "10 instances kept (not consolidated to 4571.4) so skillGauge fires per hit. Same-frame landing vs real ~1-2s spread is negligible. Sequential flavor tag lets teammates' Sequential Damage \u25b2 buffs scale it (\u26915)."
+      },
+      {
+        "kitLine": "Affects the same targets. Deals 35.16% of final ATK as sustained damage every 1 sec, stacks up to 10 times and lasts for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 burstCast/enemy dot atkPct 351.6, durationSec 10, intervalSec 1, flavor sustained",
+        "note": "351.6 = 35.16\u00d710 stacks, assumes all 10 stacks apply per cast (hit-applied full stacks from tick 1). dur 10 < burst interval 40s \u2192 no overlap. \u26914 flags alternative per-second ramp reading (\u00d70.55 of shipped)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill2: force-cast ONCE at battle start (S1) \u2014 Sakura Petals 256%/s + Dancing Flower modeled as a single 15s window (t=0\u201315); the part-destroy duration extensions never fire vs the partless boss, so she is a plain AR after ~t=15 until her bursts \u2691",
+      "couldCauseGap": "HOT",
+      "why": "If S2 has a periodic re-cast (no cooldown in datamine, but no cooldown \u2260 no re-cast), sustained damage and AD uptime are massively undermodeled for the remaining 165s. This is the single largest potential gap."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: Dancing Flower Attack Damage \u25b2 15.64%/15s is time-averaged to a permanent 1.30% (engine passive buffs cannot carry a duration) \u2691",
+      "couldCauseGap": "HOT",
+      "why": "Coupled to \u26912: if S2 uptime is higher than 15/180, the AD buff is undermodeled. Even at kit-literal 15s the time-average is an engine-limitation approximation, not exact."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: 457.14% \u00d710 sequential attacks modeled as 10 same-frame hits vs the single boss; the stacking DoT assumes all 10 stacks apply per cast (351.6%/s \u00d710s) \u2691",
+      "couldCauseGap": "COLD",
+      "why": "Same-frame vs ~1-2s spread is negligible for total damage. Stack-application reading (\u26914) could reduce DoT to \u00d70.55 if per-second ramp, but that is a secondary effect on a 10s window every 40s."
+    },
+    {
+      "source": "caveat",
+      "text": "cadence: datamined 12 pulls/s + 81-frame reload are unverified estimates \u2691",
+      "couldCauseGap": "HOT",
+      "why": "Cadence directly scales all normal-attack damage (the dominant source after t\u224815). Unverified rate_of_fire / reload could shift NA DPS materially."
+    },
+    {
+      "source": "note",
+      "text": "\u26915 (low) sequential flavor tag on the nuke means teammates' Sequential Damage \u25b2 buffs scale it \u2014 text-derived.",
+      "couldCauseGap": "neither",
+      "why": "Interaction-correctness note, not a gap in this unit's own damage. Only relevant in teams with Sequential Damage \u25b2 buffers."
+    }
+  ],
+  "authorIntentSummary": "Parser-baseline HYPOTHESIS (not validated). The author models Sakura: Bloom in Summer as a one-shot S2 force-cast at t=0 (Sakura Petals 256%/s DoT for 15s + Dancing Flower AD time-averaged to 1.30% permanent) plus a burst nuke (457.14%\u00d710 same-frame sequential hits) and a stacking burst DoT (351.6%/s\u00d710s, all 10 stacks hit-applied per cast). All three part-destroy S1 triggers are deliberately skipped as inert vs the partless scope-lock boss. The top open question (\u26912) is whether S2 has any periodic re-cast \u2014 if so, both the DoT and the AD buff are massively undermodeled for the ~165s after the initial 15s window. Cadence (\u26911) and burst DoT stack timing (\u26914) are secondary unverified estimates. No board data exists (never fielded)."
+}

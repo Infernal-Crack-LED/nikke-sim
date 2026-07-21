@@ -1,0 +1,554 @@
+{
+  "elegg-boom-and-shock": {
+    "slug": "elegg-boom-and-shock",
+    "name": "Elegg: Boom and Shock",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/ti-90/ho-66/effadcebf8450bb502d77927573d63c2.png",
+    "weapon": "MG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 5.57,
+    "coreAttackMultiplier": 200,
+    "ammo": 300,
+    "reloadFrames": 171,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 3.55,
+    "burstGaugePerShot": 0.05,
+    "treasure": false,
+    "nicknames": [
+      "ebas",
+      "selegg",
+      "segg"
+    ],
+    "skills": {
+      "skill1": "■ Activates at the start of battle. Affects 1 random enemy.\nPossession lasts for 6 sec.\nAbility: Find and capture ghosts possessing the enemy.\nRequired hit count: 100 time(s) in total, cumulative across all allies.\nEffect: Captures 1 ghost when the required hit count reaches 100%. A maximum of 13 ghost(s) can be captured.\nRecurring interval: 6 sec\n■ Affects all Water Code allies.\nEffects vary according to the number of ghosts. Each subsequent effect triggers all effects before it:\n1 or more ghosts:\nATK ▲ 16.2% of the skill user's ATK continuously.\n4 or more ghosts:\nElemental Advantage Attack Damage ▲ 35% continuously.",
+      "skill2": "■ Activates when using Burst Skill. Affects self.\nATK ▲ 40% for 10 sec.\n■ Activates when a ghost is captured while at maximum ghost capacity. Affects all enemies.\nDeals 1100% of final ATK as damage.",
+      "burst": "■ Affects random enemy units if the number of ghosts is not 13.\nDeals 800% of final ATK as damage. Attacks sequentially for 6 time(s).\nNumber of ghosts ▼ 6. Maintains at least 1 ghost.\n■ Affects random enemy units if the number of ghosts is 13.\nDeals 800% of final ATK as damage. Attacks sequentially for 13 time(s).\nNumber of ghosts ▼ 9."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1050201,
+        "shot_detail": {
+          "id": 1050201,
+          "damage": 557,
+          "max_ammo": 300,
+          "shake_id": 2,
+          "ShakeType": "Fire_MG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 250,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "MG",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Machine Gun",
+          "prefer_target": "TargetPS",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 4200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 299,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 150,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 7,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 100,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 150,
+          "rate_of_fire_change_pershot": 100,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 1000,
+          "auto_accuracy_change_pershot": 7,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 55,
+        "bonusrange_min": 35
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2502101,
+        "skill2_id": 2502201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2502101,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25021,
+          "skill_level": 1,
+          "name_localkey": "Hello Ghost",
+          "next_level_id": 2502102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates at the start of battle. Affects 1 random enemy.\n<color=#00AEFF>Possession lasts for {description_value_03} sec.\nAbility: Find and capture ghosts possessing the enemy.\nRequired hit count: {description_value_02} time(s) in total, cumulative across all allies.\nEffect: Captures 1 ghost when the required hit count reaches 100%. A maximum of {description_value_04} ghost(s) can be captured.\n<word_group=10085>Recurring interval</word_group>: {description_value_01} sec</color>\n■ Affects all Water Code allies.\n<color=#00AEFF>Effects vary according to the number of ghosts. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:</color>\n1 or more ghosts:\n<color=#00AEFF>ATK ▲ {description_value_05}% of the skill user's ATK continuously.</color>\n{description_value_06} or more ghosts:\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_07}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {
+              "description_value": [
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13"
+              ]
+            },
+            {
+              "description_value": [
+                "9.57",
+                "10.3",
+                "11.04",
+                "11.78",
+                "12.51",
+                "13.25",
+                "13.99",
+                "14.72",
+                "15.46",
+                "16.2"
+              ]
+            },
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "20.68",
+                "22.27",
+                "23.86",
+                "25.45",
+                "27.04",
+                "28.64",
+                "30.23",
+                "31.82",
+                "33.41",
+                "35"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2502201,
+          "icon": "icn_skill_damage_01",
+          "group_id": 25022,
+          "skill_level": 1,
+          "name_localkey": "Ghostbuster",
+          "next_level_id": 2502202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when a ghost is captured while at maximum ghost capacity. Affects all enemies.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "23.63",
+                "25.45",
+                "27.27",
+                "29.09",
+                "30.91",
+                "32.72",
+                "34.54",
+                "36.36",
+                "38.18",
+                "40"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "650",
+                "700",
+                "750",
+                "800",
+                "850",
+                "900",
+                "950",
+                "1000",
+                "1050",
+                "1100"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1502301,
+        "ulti_skill_detail": {
+          "id": 1502301,
+          "icon": "icn_skill_c502_ult",
+          "group_id": 15023,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Water",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "13 Ghosts",
+          "next_level_id": 1502302,
+          "prefer_target": "Random",
+          "resource_name": "c502_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects random enemy units if the number of ghosts is not 13.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10050>Attacks sequentially</word_group> for {description_value_02} time(s).\nNumber of ghosts ▼ {description_value_03}. Maintains at least 1 ghost.</color>\n■ Affects random enemy units if the number of ghosts is 13.\n<color=#00AEFF>Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10050>Attacks sequentially</word_group> for {description_value_05} time(s).\nNumber of ghosts ▼ {description_value_06}.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "472.72",
+                "509.09",
+                "545.45",
+                "581.81",
+                "618.18",
+                "654.54",
+                "690.9",
+                "727.27",
+                "763.63",
+                "800"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {
+              "description_value": [
+                "472.72",
+                "509.09",
+                "545.45",
+                "581.81",
+                "618.18",
+                "654.54",
+                "690.9",
+                "727.27",
+                "763.63",
+                "800"
+              ]
+            },
+            {
+              "description_value": [
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13"
+              ]
+            },
+            {
+              "description_value": [
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            150230101,
+            150230102,
+            150230103,
+            150230104
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 150202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5106,
+        "stat_enhance_detail": {
+          "id": 5106,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100502,
+        "piece_detail": {
+          "id": 5100502,
+          "class": "Attacker",
+          "order": 50200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 502,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Elegg: Boom and Shock's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 150201,
+        "class": "Attacker",
+        "order": 10084,
+        "name_code": 5146,
+        "corporation": "MISSILIS",
+        "resource_id": 502,
+        "name_localkey": "Elegg: Boom and Shock",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 75,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 502
+    }
+  }
+}

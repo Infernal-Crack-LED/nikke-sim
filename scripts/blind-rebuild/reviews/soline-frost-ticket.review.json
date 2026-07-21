@@ -1,0 +1,92 @@
+{
+  "slug": "soline-frost-ticket",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle and when using Burst Skill. Affects all allies. Issues 1 ticket, up to a maximum of 2. This effect is continuous. Ticket effect: Max HP \u25b2 number of tickets * 10% of the skill user's Max HP.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] \u2014 passive / allies / buff casterMaxHpPct 20",
+        "note": "Modeled at derived steady-state cap: 2 tickets \u00d7 10% = 20%. Starts at 1 ticket (10%), reaches 2 after first Burst cast; only consume is S2 emergency heal which never fires under scope-lock. \u26913: in a team that never Full Bursts she stays at 1 ticket (10%)."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies. Cooldown of Burst Skill \u25bc 7.48 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] \u2014 fullBurstEnter / allies / burstCdr 7.48",
+        "note": "Trigger read literally as team-FB entry (regardless of who bursted). 40s burst CD \u2192 ~32.5s effective team cadence."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects all allies. Removes First Train Discount.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Pure ticket-economy bookkeeping (toggles whether S2 emergency heal consumes a ticket). No damage, no stat, no modeled consumer; inert under scope-lock because the consuming heal never fires anyway."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets. Recovers 12.27% of the skill user's final Max HP as HP. Ticket count \u25bc 1.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0-2]",
+        "note": "Emergency heal: schema has no HP-threshold TriggerDef and sim models no incoming boss damage, so the trigger condition never exists in-sim. Wiring it to any available trigger would FABRICATE recovery events (measured > fudge). Recovery-consumer synergy is served by the Burst heal which fires reliably every rotation."
+      },
+      {
+        "kitLine": "Activates at the start of battle. Affects all allies. First Train Discount for 6 sec. Function: The effects of I'll Help You Board the Train! will not consume tickets.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[3-5]",
+        "note": "Ticket-consumption bookkeeping gating the S2 emergency heal that never fires under scope-lock. No damage path."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Recovers 32.26% of the skill user's final Max HP as HP.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] \u2014 burstCast / allies / heal",
+        "note": "Fires every rotation she bursts (B1 opener). Drives any teammate 'when recovery takes effect' consumer (Crown-style). HP amount is event-only by engine design."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: ticket Max-HP grant modeled at steady-state cap (2 tickets = 20%); starts at 1 ticket (10%), reaches 2 only after first Burst \u2014 in a team that never Full Bursts it stays 10% (\u26913)",
+      "couldCauseGap": "COLD",
+      "why": "Ally-granted Max HP is currently inert for damage (atkOfMaxHpPct counts a unit's OWN Max HP only). No HP-scaling consumer exists in-sim, so the 10% vs 20% difference produces zero damage delta. Kept for future consumer fidelity."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: cadence tuple (SG rate of fire, reloadFrames 111) is the unverified datamine (\u26911)",
+      "couldCauseGap": "HOT",
+      "why": "Her only damage is base SG spray. If the real fire rate or reload gap differs from datamine, every normal-attack damage tick shifts. No charFixes applied \u2014 raw datamine shipped."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: per-unit SG pellet landing is unmeasured; class SG_LANDING_BY_BAND table is the shipped default (\u26912)",
+      "couldCauseGap": "HOT",
+      "why": "SG landing is per-unit in the engine. If her pellet distribution differs from the class default band table, hit-count and thus total damage changes. Directly affects the only damage source."
+    },
+    {
+      "source": "caveat",
+      "text": "skill2: emergency heal (squad HP < 15%, consumes ticket) is unmodeled \u2014 sim models no incoming boss damage, schema has no HP-threshold trigger",
+      "couldCauseGap": "COLD",
+      "why": "No incoming damage in scope-lock sim \u2192 trigger never fires. Recovery-consumer synergy is served by the Burst heal which fires every rotation. No damage line is lost."
+    },
+    {
+      "source": "note",
+      "text": "BURST-ELIGIBILITY: as a lone/enabler-less unit she makes ZERO full bursts \u2014 S1 blk2 (burstCdr), the burst heal, and the 2nd ticket all never happen; solo damage is unchanged (no FB-gated damage lines)",
+      "couldCauseGap": "neither",
+      "why": "Correctly documents that FB-gated effects are inert in solo play. No damage lines are FB-gated, so solo DPS is unaffected. Relevant only for team-context interpretation."
+    },
+    {
+      "source": "note",
+      "text": "PARSER BASELINE banner: every \u2691 is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number",
+      "couldCauseGap": "HOT",
+      "why": "The entire override is explicitly a hypothesis, not a validated model. All numeric values (cadence, landing, steady-state) are unverified against gameplay."
+    }
+  ],
+  "authorIntentSummary": "The author modeled Soline: Frost Ticket as a zero-damage-kit Burst-I Supporter whose only DPS is base SG spray (normalMult 201.5, hitsPerShot 10, ammo 9). Two skill1 blocks are modeled: a passive casterMaxHpPct 20 buff (steady-state 2-ticket cap, currently inert for damage) and a fullBurstEnter burstCdr 7.48 team cadence lever. The burst heal is modeled as a recovery event to drive teammate consumers. The entire S2 (emergency HP-threshold heal + First Train Discount bookkeeping) and S1's 'Removes First Train Discount' are deliberately unmodeled as inert under scope-lock (no incoming damage, no HP-threshold trigger in schema). The override is explicitly a PARSER BASELINE hypothesis \u2014 all cadence, landing, and ticket-trajectory values are unmeasured datamine/derived estimates flagged with \u2691."
+}

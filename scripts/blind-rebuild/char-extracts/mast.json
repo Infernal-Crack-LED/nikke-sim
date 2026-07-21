@@ -1,0 +1,560 @@
+{
+  "mast": {
+    "slug": "mast",
+    "name": "Mast",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/eg-68/qq-62/bd52b93a392a1d4b035f858a5ce1abbf.png",
+    "weapon": "SMG",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Electric",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 8.73,
+    "coreAttackMultiplier": 200,
+    "ammo": 120,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 5.7,
+    "burstGaugePerShot": 0.1,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after landing 2 critical hit(s) with normal attacks. Affects the target(s).\nSea Breeze: DEF ▼ 1.9% of the skill user's DEF, stacks up to 50 time(s) and lasts for 3 sec.\n■ Activates when HP falls below 70%. Affects self and 2 other ally unit(s) with the highest final ATK (except the skill user).\nCritical Damage ▲ 50.94% continuously.",
+      "skill2": "■ Activates at the start of battle. Affects self and 2 ally unit(s) with the highest final ATK (except the skill user).\nCritical Rate ▲ 23.56% for 30 sec.",
+      "burst": "■ Affects self and 2 ally unit(s) with the highest final ATK (except the skill user).\nMax HP ▲ 86.2% of the skill user's Max HP without restoring HP, lasts for 7 sec.\nCritical Damage ▲ 25.19% for 7 sec.\n■ Affects the target(s) afflicted with Sea Breeze.\nStorm: Deals 4.52% of final ATK as damage. Mirrors the stack count of Sea Breeze every 1 sec for 7 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1035001,
+        "shot_detail": {
+          "id": 1035001,
+          "damage": 873,
+          "max_ammo": 120,
+          "shake_id": 2,
+          "ShakeType": "Fire_SMG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "SMG",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 1440,
+          "name_localkey": "Submachine Gun",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 1440,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 119,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 1000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 110,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 110,
+          "target_burst_energy_pershot": 2000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 110,
+          "auto_start_accuracy_circle_scale": 110
+        },
+        "bonusrange_max": 35,
+        "bonusrange_min": 15
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2350101,
+        "skill2_id": 2350201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2350101,
+          "icon": "icn_skill_criticaldamage_01",
+          "group_id": 23501,
+          "skill_level": 1,
+          "name_localkey": "Pirate's Grit",
+          "next_level_id": 2350102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates after landing {description_value_01} critical hit(s) with normal attacks. Affects the target(s).\n<color=#00AEFF>Sea Breeze: DEF ▼ {description_value_02}% of the skill user's DEF, stacks up to {description_value_03} time(s) and lasts for {description_value_04} sec.</color>\n■ Activates when HP falls below {description_value_05}%. Affects self and {description_value_06} other ally unit(s) with the highest <word_group=10025>final</word_group> ATK (except the skill user).\n<color=#00AEFF>Critical Damage ▲ {description_value_07}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "1.12",
+                "1.2",
+                "1.29",
+                "1.38",
+                "1.46",
+                "1.55",
+                "1.64",
+                "1.72",
+                "1.81",
+                "1.9"
+              ]
+            },
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "70",
+                "70",
+                "70",
+                "70",
+                "70",
+                "70",
+                "70",
+                "70",
+                "70",
+                "70"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "30.1",
+                "32.42",
+                "34.73",
+                "37.05",
+                "39.36",
+                "41.68",
+                "43.99",
+                "46.31",
+                "48.63",
+                "50.94"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2350201,
+          "icon": "icn_skill_statcritical_01",
+          "group_id": 23502,
+          "skill_level": 1,
+          "name_localkey": "Pirate's Sight",
+          "next_level_id": 2350202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates at the start of battle. Affects self and {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK (except the skill user).\n<color=#00AEFF>Critical Rate ▲ {description_value_02}% for {description_value_03} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "13.92",
+                "14.99",
+                "16.06",
+                "17.14",
+                "18.21",
+                "19.28",
+                "20.35",
+                "21.42",
+                "22.49",
+                "23.56"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1350301,
+        "ulti_skill_detail": {
+          "id": 1350301,
+          "icon": "icn_skill_c350_ult",
+          "group_id": 13503,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Sail Through the Tempest!",
+          "next_level_id": 1350302,
+          "prefer_target": "HighAttackFirstSelf",
+          "resource_name": "c350_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 3,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects self and {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK (except the skill user).\n<color=#00AEFF>Max HP ▲ {description_value_02}% of the skill user's Max HP without restoring HP, lasts for {description_value_03} sec.\nCritical Damage ▲ {description_value_04}% for {description_value_05} sec.</color>\n■ Affects the target(s) afflicted with Sea Breeze.\n<color=#00AEFF>Storm: Deals {description_value_06}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10026>Mirrors the stack count</word_group> of Sea Breeze every 1 sec for {description_value_07} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "50.93",
+                "54.85",
+                "58.77",
+                "62.69",
+                "66.61",
+                "70.53",
+                "74.44",
+                "78.36",
+                "82.28",
+                "86.2"
+              ]
+            },
+            {
+              "description_value": [
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7"
+              ]
+            },
+            {
+              "description_value": [
+                "14.88",
+                "16.03",
+                "17.17",
+                "18.32",
+                "19.46",
+                "20.61",
+                "21.75",
+                "22.9",
+                "24.04",
+                "25.19"
+              ]
+            },
+            {
+              "description_value": [
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7"
+              ]
+            },
+            {
+              "description_value": [
+                "2.67",
+                "2.88",
+                "3.08",
+                "3.29",
+                "3.49",
+                "3.7",
+                "3.9",
+                "4.11",
+                "4.32",
+                "4.52"
+              ]
+            },
+            {
+              "description_value": [
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            135030103
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            135030101,
+            135030102
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 235002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5303,
+        "stat_enhance_detail": {
+          "id": 5303,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100350,
+        "piece_detail": {
+          "id": 5100350,
+          "class": "Attacker",
+          "order": 35000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 350,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Mast's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 235001,
+        "class": "Supporter",
+        "order": 10019,
+        "name_code": 5079,
+        "corporation": "ELYSION",
+        "resource_id": 350,
+        "name_localkey": "Mast",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 86,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 350
+    }
+  }
+}

@@ -228,7 +228,6 @@ export const COMPS: Comp[] = [
     slugs: ['d-killer-wife', 'naga', 'modernia', 'chisato', 'ein'],
     boss: 'Wind',
     focus: 'modernia',
-    modes: { naga: 'no shielder' },
     real: { 'd-killer-wife': 59_028_536, naga: 67_268_906, modernia: 285_422_521, chisato: 273_624_248, ein: 121_442_400 },
   },
   {
@@ -258,6 +257,41 @@ export const COMPS: Comp[] = [
     boss: 'Electric',
     focus: 'red-hood',
     real: { moran: 233_850_467, crown: 180_136_219, 'red-hood': 484_593_983, 'elegg-boom-and-shock': 398_602_210, 'dorothy-serendipity': 328_194_874 },
+  },
+
+  // ── control-anchor runs (docs/probes/control/{sw,helm,lm,crown}.{jpg,MP4/mov}) — 4 independent
+  // 3:00 runs of the SAME 4-unit comp (slot 5 empty), wired 2026-07-20 (owner: base snow-white IS
+  // board-graded — these are her data). Boss NEUTRAL (owner-confirmed; "record neutral" control
+  // design — no unit advantaged) → boss:null. Focus rotates per run = the filename unit, which the
+  // battle-records slot orders independently corroborate: the focused unit sits in slot 3 (the
+  // middle-slot focus default) in ALL FOUR runs. Slot orders + totals read from the screenshots.
+  {
+    name: 'C-SW control (neutral, focus snow-white)',
+    slugs: ['little-mermaid', 'helm', 'snow-white', 'crown'],
+    boss: null,
+    focus: 'snow-white',
+    real: { 'little-mermaid': 419_657_149, helm: 480_348_772, 'snow-white': 429_208_642, crown: 203_439_943 },
+  },
+  {
+    name: 'C-Helm control (neutral, focus helm)',
+    slugs: ['little-mermaid', 'crown', 'helm', 'snow-white'],
+    boss: null,
+    focus: 'helm',
+    real: { 'little-mermaid': 433_010_990, crown: 216_571_026, helm: 493_410_128, 'snow-white': 426_977_085 },
+  },
+  {
+    name: 'C-LM control (neutral, focus little-mermaid)',
+    slugs: ['crown', 'helm', 'little-mermaid', 'snow-white'],
+    boss: null,
+    focus: 'little-mermaid',
+    real: { crown: 205_347_049, helm: 485_380_357, 'little-mermaid': 423_101_501, 'snow-white': 385_133_855 },
+  },
+  {
+    name: 'C-Crown control (neutral, focus crown)',
+    slugs: ['little-mermaid', 'helm', 'crown', 'snow-white'],
+    boss: null,
+    focus: 'crown',
+    real: { 'little-mermaid': 422_689_413, helm: 465_898_154, crown: 211_350_127, 'snow-white': 416_836_443 },
   },
 ];
 

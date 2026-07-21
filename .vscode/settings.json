@@ -1,0 +1,12 @@
+{
+  "files.watcherExclude": {
+    "**/docs/probes/**": true,
+    "**/node_modules/**": true,
+    "**/.git/objects/**": true,
+    "**/.git-private/objects/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/web/node_modules": true
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "ludmilla-winter-owner": {
+    "name": "Ludmilla: Winter Owner",
+    "burst": "III",
+    "weapon": "MG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "Pure model — never fielded (not owned)",
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: the '60 core hits' proc is proxied as every 63 normal hits (engine MG core rate 0.95) — unmeasured estimate",
+      "skill1: MG cadence tuple (fire rate / wind-up / reloadFrames 201) is datamined, unverified"
+    ],
+    "board": null
+  }
+}

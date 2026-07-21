@@ -1,0 +1,40 @@
+{
+  "delta-ninja-thief": {
+    "name": "Delta: Ninja Thief",
+    "burst": "II",
+    "weapon": "MG",
+    "class": "Defender",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Effect 2: Attract: Taunt all enemies continuously.",
+        "Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+        "Ninjutsu IFAK lasts for 4 sec.",
+        "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK."
+      ],
+      "burst": [
+        "Next shield's HP ▲ 20.13% for 10 sec.",
+        "Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
+      ]
+    },
+    "caveats": [
+      "skill2: Defender-count formation branch is user-selected via modes ('solo defender' default) — not auto-detected from the squad; pick 'with defender ally' when another Defender is present",
+      "skill2: IFAK all-ally heal cadence is a hitCount-200 proxy for 'every 4 sec' (unmeasured estimate)",
+      "skill2/burst: shields and heals are event-only (no HP pools) — the shield-size and IFAK-accumulation ▲20.13% riders therefore have no modeled effect"
+    ],
+    "board": null
+  }
+}

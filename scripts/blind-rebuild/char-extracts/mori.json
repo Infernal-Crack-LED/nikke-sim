@@ -1,0 +1,548 @@
+{
+  "mori": {
+    "slug": "mori",
+    "name": "Mori",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/dl-47/yp-63/a32a0fed97d9fbdc41c3ca90ea0bcfc7.png",
+    "weapon": "AR",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Wind",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 13.65,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates at the start of battle. Affects self.\nStruggle: Creates a Shield equal to 40.12% of the final Max HP continuously.\n■ Activates when using Burst Skill. Affects self if not in Struggle status.\nStruggle: Creates a Shield equal to 40.12% of the final Max HP continuously.\n■ Activates when Struggle status ends. Affects self.\nMax HP ▲ 5.06% continuously, stacks up to 5 time(s).",
+      "skill2": "■ Activates after landing 60 normal attack(s) when self is in Struggle status. Affects the target.\nTaunts for 4 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects all allies.\nSustained damage ▲ 2.03%, stacks up to 5 time(s) and lasts for 15 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects 1 enemy unit(s) with the highest ATK.\nDeals 23.23% of final ATK as sustained damage every 1 sec for 15 sec.",
+      "burst": "■ Activates when self is in Struggle status. Affects self.\nRecovers Shield HP equal to 15.04% of the skill user's final Max HP.\n■ Activates when self is not in Struggle status. Affects self.\nMax HP ▲ 10.09% for 10 sec.\n■ Affects all allies.\nSustained damage ▲ 10.16% for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1016201,
+        "shot_detail": {
+          "id": 1016201,
+          "damage": 1365,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2590101,
+        "skill2_id": 2590201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2590101,
+          "icon": "icn_skill_barrier_01",
+          "group_id": 25901,
+          "skill_level": 1,
+          "name_localkey": "Mole in Hiding",
+          "next_level_id": 2590102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Struggle: Creates a <word_group=10023>Shield</word_group> equal to {description_value_01}% of the <word_group=10025>final</word_group> Max HP continuously.</color>\n■ Activates when using Burst Skill. Affects self if not in Struggle status.\n<color=#00AEFF>Struggle: Creates a <word_group=10023>Shield</word_group> equal to {description_value_01}% of the <word_group=10025>final</word_group> Max HP continuously.</color>\n■ Activates when Struggle status ends. Affects self.\n<color=#00AEFF>Max HP ▲ {description_value_02}% continuously, stacks up to {description_value_03} time(s).</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "23.71",
+                "25.53",
+                "27.36",
+                "29.18",
+                "31",
+                "32.83",
+                "34.65",
+                "36.48",
+                "38.3",
+                "40.12"
+              ]
+            },
+            {
+              "description_value": [
+                "2.99",
+                "3.22",
+                "3.45",
+                "3.68",
+                "3.91",
+                "4.14",
+                "4.37",
+                "4.6",
+                "4.83",
+                "5.06"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2590201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 25902,
+          "skill_level": 1,
+          "name_localkey": "All-Out Support",
+          "next_level_id": 2590202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s) when self is in Struggle status. Affects the target.\n<color=#00AEFF>Taunts for {description_value_02} sec.</color>\n■ Activates when an ally or self <word_group=10052>destroys an enemy's part</word_group>. Affects all allies.\n<color=#00AEFF>Sustained damage ▲ {description_value_03}%, stacks up to {description_value_04} time(s) and lasts for {description_value_05} sec.</color>\n■ Activates when an ally or self <word_group=10052>destroys an enemy's part</word_group>. Affects {description_value_06} enemy unit(s) with the highest ATK.\n<color=#00AEFF>Deals {description_value_07}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec for {description_value_08} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60",
+                "60"
+              ]
+            },
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "1.2",
+                "1.29",
+                "1.38",
+                "1.47",
+                "1.57",
+                "1.66",
+                "1.75",
+                "1.84",
+                "1.94",
+                "2.03"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "13.72",
+                "14.78",
+                "15.84",
+                "16.89",
+                "17.95",
+                "19",
+                "20.06",
+                "21.12",
+                "22.17",
+                "23.23"
+              ]
+            },
+            {
+              "description_value": [
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15",
+                "15"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1590301,
+        "ulti_skill_detail": {
+          "id": 1590301,
+          "icon": "icn_skill_c590_ult",
+          "group_id": 15903,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Survival Tactics of the Weak",
+          "next_level_id": 1590302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c590_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Activates when self is in Struggle status. Affects self.\n<color=#00AEFF><word_group=10048>Recovers Shield HP</word_group> equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP.</color>\n■ Activates when self is not in Struggle status. Affects self.\n<color=#00AEFF>Max HP ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Affects all allies.\n<color=#00AEFF>Sustained damage ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "8.89",
+                "9.57",
+                "10.26",
+                "10.94",
+                "11.62",
+                "12.31",
+                "12.99",
+                "13.68",
+                "14.36",
+                "15.04"
+              ]
+            },
+            {
+              "description_value": [
+                "5.96",
+                "6.42",
+                "6.88",
+                "7.34",
+                "7.8",
+                "8.26",
+                "8.72",
+                "9.18",
+                "9.63",
+                "10.09"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6.46",
+                "6.93",
+                "7.39",
+                "7.85",
+                "8.31",
+                "8.77",
+                "9.23",
+                "9.7",
+                "10.16"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            159030101,
+            159030102,
+            159030103
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 159002,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5201,
+        "stat_enhance_detail": {
+          "id": 5201,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          300001
+        ],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100590,
+        "piece_detail": {
+          "id": 5100590,
+          "class": "Attacker",
+          "order": 59000,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 590,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Mori's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 159001,
+        "class": "Defender",
+        "order": 10083,
+        "name_code": 5139,
+        "corporation": "MISSILIS",
+        "resource_id": 590,
+        "name_localkey": "Mori",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 16500,
+      "atk": 400,
+      "def": 110,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 590
+    }
+  }
+}

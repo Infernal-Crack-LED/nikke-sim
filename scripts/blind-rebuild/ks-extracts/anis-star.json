@@ -1,0 +1,96 @@
+{
+  "anis-star": {
+    "name": "Anis: Star",
+    "burst": "I",
+    "weapon": "RL",
+    "class": "Defender",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "hand-authored",
+      "date": "2026-07-16",
+      "findings": [
+        "REFERENCE-GRADE holds: zero drift on My-Own-Star side (all values exact, triggers correct). Findings all hasB1-gated (cannot move sole-B1 comps): dropped Everyone's-Star heal (F1 crown consumer) + DEF (F2) + Max-HP grant (F3 HP-scaler consumer). Backfilled empty unmodeled"
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": true,
+    "evidence": "Solo gauge recording — standard-launcher row confirmed (A25/A3); run A 0.94",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 10,
+      "within3pct": 6
+    },
+    "reference": true,
+    "unmodeled": {
+      "skill1": [
+        "If there are no other Burst 1 allies: Effect 1: Affects self. Cancels Everyone's Star.",
+        "If there are any other Burst 1 allies: Effect 1: Affects self. Cancels My Own Star."
+      ],
+      "skill2": [
+        "■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.\nRestores 1.26% of the skill user's final Max HP as HP."
+      ],
+      "burst": [
+        "Explosion Radius ▲ 100% for 10 sec.",
+        "DEF ▲ 55.01% for 10 sec."
+      ]
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "T1 wind-weak (boss Iron)",
+          "ratio": 0.9996
+        },
+        {
+          "comp": "T4 water-weak (boss Fire)",
+          "ratio": 1.0029
+        },
+        {
+          "comp": "T4b water-weak REPLICATE (boss Fire)",
+          "ratio": 1.0117
+        },
+        {
+          "comp": "T2 elec-weak (boss Water)",
+          "ratio": 0.9846
+        },
+        {
+          "comp": "T5 wind-weak probe (boss Iron)",
+          "ratio": 0.9946
+        },
+        {
+          "comp": "T7 elec-weak probe (boss Water)",
+          "ratio": 0.9682
+        },
+        {
+          "comp": "T8 iron-weak (boss Electric)",
+          "ratio": 1.0362
+        },
+        {
+          "comp": "PA MiKa (boss Iron)",
+          "ratio": 0.804
+        },
+        {
+          "comp": "TB2T2 anis-star projExpl probe (boss Water)",
+          "ratio": 0.868
+        },
+        {
+          "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+          "ratio": 0.9355
+        },
+        {
+          "comp": "PI misc B3s (boss Water)",
+          "ratio": 0.9281
+        },
+        {
+          "comp": "N5 snowwhite-HA fire (boss Fire)",
+          "ratio": 0.9172
+        }
+      ],
+      "n": 12,
+      "mean": 0.9542,
+      "mad": 0.0542,
+      "band": "±8%",
+      "temp": "COLD ▼"
+    }
+  }
+}

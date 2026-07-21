@@ -1,0 +1,140 @@
+{
+  "slug": "red-hood",
+  "board": {
+    "ratio": 0.867,
+    "n": 2,
+    "mad": 0.142,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when performing a normal attack. Affects self. Charge Speed \u25b2 3.81%, stacks up to 10 time(s) and lasts for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0]: hitCount trigger (count 1), self, buff chargeSpeedPct 3.81, 5s, maxStacks 10",
+        "note": "Exact values, exact stacking/duration."
+      },
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage \u25b2 240% of the excess value continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]; caveat[0]; partially approximated as chargeDamagePct 90 in burst[3] (stage 3 Red Wolf block) \u2691",
+        "note": "Listed in unmodeled + caveat as unparsed. Note explains: at 100.8 swap CS + 3.81\u00d710 stacks, excess ~39 \u2192 +93.6%; modeled as flat chargeDamagePct 90 during Red Wolf only (stack ramp averaged, \u2691). The continuous passive conversion outside Red Wolf is not modeled. ks-extracts flags: static 90 should be 93.36 (small warm); team-CS from buffers is invisible (cold in buffer comps)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Gain Pierce continuously.",
+        "status": "MODELED_CONFIG",
+        "where": "hasPierce: true (top-level config field)",
+        "note": "Pierce is a boolean flag enabling Pierce Damage buffs (e.g. Mint 32.72%). Not a block \u2014 a naive block-array scan would miss it."
+      },
+      {
+        "kitLine": "Activates during Beast Cage. Affects all allies. DEF \u25b2 50.68% of the skill user's DEF for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "DEF buff is defensive/survivability \u2014 irrelevant to damage sim on a partless boss. Inert for DPS."
+      },
+      {
+        "kitLine": "Activates during The Last Howl. Affects self. Recovers 23.04% of attack damage as HP over 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "HP recovery is survivability \u2014 irrelevant to damage sim. Inert for DPS."
+      },
+      {
+        "kitLine": "Activates when casting Red Wolf. Affects self. ATK \u25b2 71.42% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[3] (stage 3): buff atkPct 71.42, 10s",
+        "note": "S2 rider encoded inside the burst stage-3 block rather than in skill2[] (which is empty). Correct value and duration."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Step 1 (Beast Cage): Affects all allies. ATK \u25b2 77.55% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0]: burstCast stage 1, allies, buff casterAtkPct 77.55, 10s",
+        "note": "casterAtkPct correctly uses caster's ATK as base. Exact value."
+      },
+      {
+        "kitLine": "Step 1 (Beast Cage): Affects self. Cooldown of Burst Skill \u25bc 40 sec. Activates once per battle.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1]: burstCast stage 1, self, burstCdr 40s, oncePerBattle true",
+        "note": "Exact."
+      },
+      {
+        "kitLine": "Step 2 (The Last Howl): Affects self. Attract: Taunts all enemies for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Taunt/attract is irrelevant to damage sim (single partless boss, no targeting mechanics). Inert for DPS."
+      },
+      {
+        "kitLine": "Step 2 (The Last Howl): Incoming healing \u25b2 74.88% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[1]",
+        "note": "Healing amplification is survivability \u2014 irrelevant to damage sim. Inert for DPS."
+      },
+      {
+        "kitLine": "Step 2 (The Last Howl): Cooldown of Burst Skill \u25bc 40 sec. Activates once per battle.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[2]: burstCast stage 2, self, burstCdr 40s, oncePerBattle true",
+        "note": "Exact."
+      },
+      {
+        "kitLine": "Step 3 (Red Wolf): Changes the weapon in use: Damage 51.46% of final ATK, Full Charge Damage 250% of damage, Duration 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[3]: weaponSwap damagePct 51.46, chargeMultPct 250, durationSec 10, chargeTimeSec 0.3",
+        "note": "Decoded from game data (skill 1470610 + weapon 1047002). chargeTimeSec 0.3 = 1 shot/18 frames at 200rpm fire-rate gate. ~33 shots/window. Infinite ammo via unlimitedAmmo effect (max_ammo 99 in data). Ammo resets to max on swap expiry (engine behavior)."
+      },
+      {
+        "kitLine": "Step 3 (Red Wolf): Expand Pierce range by 100% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[2]",
+        "note": "Pierce range expansion is irrelevant vs single partless boss (no adds to pierce through). Inert for DPS."
+      },
+      {
+        "kitLine": "Step 3 (Red Wolf): Charge Speed \u25b2 100.8% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[3]: absorbed into weaponSwap chargeTimeSec 0.3",
+        "note": "Per note: +100.8% CS makes charge instant; cadence is fire-rate-gated at 200rpm \u2192 1 shot/18 frames (0.3s). The CS buff's mechanical effect is fully captured by chargeTimeSec 0.3 in the weaponSwap. No separate CS block needed."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: unparsed effect \"Convert excess value over 100% of Charge Speed to Charge Damage. Charge Damage \u25b2 240% of the excess value continuously.\"",
+      "couldCauseGap": "HOT",
+      "why": "The conversion is approximated as flat chargeDamagePct 90 during Red Wolf only. True value with full stacks is ~93.36 (small warm underestimate). Outside Red Wolf, any team CS buffers pushing CS over 100% would generate charge damage that is completely invisible (cold in buffer comps). This is the primary suspect for the COLD board reading."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill1: CS\u2192Charge Damage conversion listed in unmodeled.skill1[0] despite partial chargeDamagePct 90 approximation in burst[3]",
+      "couldCauseGap": "HOT",
+      "why": "The \u2691 approximation uses static 90 vs true ~93.36 at full stacks (warm). More critically, the conversion is only active during Red Wolf in the model; any CS over 100% from team buffers outside Red Wolf is unmodeled (cold). ks-extracts explicitly flags both F2a and F2b."
+    },
+    {
+      "source": "note",
+      "text": "Red Wolf swap economy OPTIMISTIC (engine-verified, not cold source)",
+      "couldCauseGap": "HOT",
+      "why": "ks-extracts finding: the swap economy (infinite ammo, no reloads, ~33 shots/window) is engine-verified but not validated against a cold external source. If the real swap cadence or shot count differs, the entire Red Wolf damage window shifts."
+    },
+    {
+      "source": "open-question",
+      "text": "F8: base-SR autofire-vs-bolt UNTESTED (~+35% out-of-window if autofire)",
+      "couldCauseGap": "HOT",
+      "why": "ks-extracts top cold finding. If Red Hood's base SR fires as autofire (not bolt-action) outside Red Wolf, she gets ~35% more damage in the 170s outside the 10s Red Wolf window. This is untested and could explain a large chunk of the COLD gap (0.867 ratio)."
+    },
+    {
+      "source": "unmodeled",
+      "text": "skill2: DEF \u25b2 50.68% (Beast Cage) and HP recovery 23.04% (The Last Howl)",
+      "couldCauseGap": "neither",
+      "why": "Purely defensive/survivability effects. Zero impact on damage output in a partless-boss DPS sim."
+    },
+    {
+      "source": "unmodeled",
+      "text": "burst Step 2: Taunt, Incoming healing \u25b2 74.88%; Step 3: Pierce range +100%",
+      "couldCauseGap": "neither",
+      "why": "Taunt and healing amp are survivability (inert). Pierce range expansion is irrelevant vs single partless boss. All correctly excluded from a damage sim."
+    }
+  ],
+  "authorIntentSummary": "The override models Red Hood's three-stage Lambda burst cycle with high fidelity: Step 1 team ATK buff + CD refund, Step 2 CD refund, Step 3 Red Wolf weapon swap (decoded from game data: 51.46%/shot, 250% charge, 0.3s fire-rate-gated cadence, infinite ammo, ~33 shots/window). S1's CS stacking is exact; the CS\u2192Charge Damage conversion is approximated as flat chargeDamagePct 90 during Red Wolf (\u2691, true value ~93.36). Key known gaps: the conversion is invisible outside Red Wolf (cold in buffer comps), the base-SR autofire-vs-bolt question is untested (top cold suspect for the 0.867 COLD ratio), and the swap economy is engine-verified but not cold-sourced. All defensive/survivability effects (DEF, HP recovery, taunt, healing amp, pierce range) are deliberately unmodeled as inert for DPS."
+}

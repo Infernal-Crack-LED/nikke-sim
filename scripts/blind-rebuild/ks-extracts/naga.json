@@ -1,0 +1,50 @@
+{
+  "naga": {
+    "name": "Naga",
+    "burst": "II",
+    "weapon": "SG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "audited",
+      "provenance": "partial-hand",
+      "date": "2026-07-16",
+      "findings": [
+        "1.175 HOT cause: shield-gated buffs (S1 core-dmg 85.17, burst casterAtk 31.02) gated by a MODE defaulting to 'with shielder' -> fire UNCONDITIONALLY unless comp set no-shielder (opposite of kit). Fix: {kind:shielded} event gate (primitive exists). F4 S2 heal in unmodeled violates hard rule 2 (crown consumer). Backfilled dropped Pierce line"
+      ]
+    },
+    "tier": "CALIBRATED",
+    "tuned": true,
+    "control": false,
+    "evidence": "SG falloff + \"with shielder\" mode calibration; run C 1.06",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 1,
+      "within3pct": 1
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [
+        "Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP."
+      ],
+      "skill2": [
+        "Activates after landing 5 normal attack(s). Affects 2 ally unit(s) with the lowest HP percentage. Recovers 9.58% of the skill user's final Max HP as HP."
+      ],
+      "burst": [
+        "Affects self. Gains Pierce for 10 sec."
+      ]
+    },
+    "board": {
+      "records": [
+        {
+          "comp": "N2 modernia wind (boss Wind)",
+          "ratio": 1.0713
+        }
+      ],
+      "n": 1,
+      "mean": 1.0713,
+      "mad": 0.0713,
+      "band": "±8%",
+      "temp": "HOT ▲"
+    }
+  }
+}

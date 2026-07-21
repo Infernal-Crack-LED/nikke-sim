@@ -1,0 +1,524 @@
+{
+  "rei-ayanami": {
+    "slug": "rei-ayanami",
+    "name": "Rei Ayanami",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/vo-25/kx-44/5b4a12cde2db59c1084408ca737d21b5.png",
+    "weapon": "MG",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Fire",
+    "manufacturer": "Abnormal",
+    "normalAttackMultiplier": 5.57,
+    "coreAttackMultiplier": 200,
+    "ammo": 300,
+    "reloadFrames": 171,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 3.55,
+    "burstGaugePerShot": 0.05,
+    "treasure": false,
+    "nicknames": [
+      "ra"
+    ],
+    "skills": {
+      "skill1": "■ Activates after 100 normal attack(s). Affects self.\nElemental Advantage Attack Damage ▲ 30.23% for 3 sec.\n■ Activates after landing 100 normal attack(s). Affects the enemy within attack range nearest to the crosshair.\nDeals 112.37% of final ATK as damage.",
+      "skill2": "■ Activates at the start of battle. Affects self. \nDamage dealt to Shield ▲ 700.5% continuously.\n■ Activates when entering Burst stage 3. Affects all Fire Code allies.\nATK ▲ 25.03% of the skill user's ATK for 10 sec.",
+      "burst": "■ Affects all Fire Code allies.\nCreates a Shield equal to 13.44% of the skill user's final Max HP for 10 sec.\nAttack damage ▲ 48.02% for 10 sec.\n■ Affects all enemies.\nDeals 990.2% of final ATK as damage."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1083101,
+        "shot_detail": {
+          "id": 1083101,
+          "damage": 557,
+          "max_ammo": 300,
+          "shake_id": 2,
+          "ShakeType": "Fire_MG",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 250,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "MG",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "name_localkey": "Machine Gun",
+          "prefer_target": "TargetPS",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 4200,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 299,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 150,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 7,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 100,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 150,
+          "rate_of_fire_change_pershot": 100,
+          "start_accuracy_circle_scale": 250,
+          "target_burst_energy_pershot": 1000,
+          "auto_accuracy_change_pershot": 7,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 250
+        },
+        "bonusrange_max": 55,
+        "bonusrange_min": 35
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2831101,
+        "skill2_id": 2831201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2831101,
+          "icon": "icn_skill_damage_01",
+          "group_id": 28311,
+          "skill_level": 1,
+          "name_localkey": "Preemptive Subdual",
+          "next_level_id": 2831102,
+          "level_up_cost_id": 10102,
+          "description_localkey": "■ Activates after {description_value_01} normal attack(s). Affects self.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates after landing {description_value_04} normal attack(s). Affects the <word_group=10020>enemy within attack range</word_group> nearest to the crosshair.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "22.91",
+                "23.72",
+                "24.54",
+                "25.35",
+                "26.16",
+                "26.98",
+                "27.79",
+                "28.61",
+                "29.42",
+                "30.23"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "73.32",
+                "77.66",
+                "82",
+                "86.34",
+                "90.68",
+                "95.02",
+                "99.36",
+                "103.7",
+                "108.04",
+                "112.37"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2831201,
+          "icon": "icn_skill_barrierdamage_01",
+          "group_id": 28312,
+          "skill_level": 1,
+          "name_localkey": "Attack Support",
+          "next_level_id": 2831202,
+          "level_up_cost_id": 10202,
+          "description_localkey": "■ Activates at the start of battle. Affects self. \n<color=#00AEFF><word_group=10054>Damage dealt to Shield</word_group> ▲ {description_value_01}% continuously.</color>\n■ Activates when entering Burst stage {description_value_02}. Affects all Fire Code allies.\n<color=#00AEFF>ATK ▲ {description_value_03}% of the skill user's ATK for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "472.72",
+                "498.03",
+                "523.34",
+                "548.65",
+                "573.96",
+                "599.27",
+                "624.58",
+                "649.89",
+                "675.2",
+                "700.5"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "16.97",
+                "17.86",
+                "18.76",
+                "19.66",
+                "20.55",
+                "21.45",
+                "22.34",
+                "23.24",
+                "24.14",
+                "25.03"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1831301,
+        "ulti_skill_detail": {
+          "id": 1831301,
+          "icon": "icn_skill_c831_ult",
+          "group_id": 18313,
+          "shake_id": 1,
+          "skill_type": "InstallBarrier",
+          "attack_type": "Fire",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Annihilation: High Explosives",
+          "next_level_id": 1831302,
+          "prefer_target": "Fire",
+          "resource_name": "c831_ulti",
+          "duration_value": 1000,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 10302,
+          "skill_value_data": [
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 998,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects all Fire Code allies.\n<color=#00AEFF>Creates a <word_group=10023>Shield</word_group> equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_02} sec.\nAttack damage ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "9.98",
+                "10.36",
+                "10.75",
+                "11.13",
+                "11.52",
+                "11.9",
+                "12.28",
+                "12.67",
+                "13.05",
+                "13.44"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "29.81",
+                "31.84",
+                "33.86",
+                "35.88",
+                "37.9",
+                "39.93",
+                "41.95",
+                "43.97",
+                "45.99",
+                "48.02"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "654.54",
+                "691.84",
+                "729.13",
+                "766.43",
+                "803.72",
+                "841.02",
+                "878.32",
+                "915.61",
+                "952.91",
+                "990.2"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            183130101,
+            183130102
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 583102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5106,
+        "stat_enhance_detail": {
+          "id": 5106,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          100001
+        ],
+        "element_details": [
+          {
+            "id": 100001,
+            "element": "Fire",
+            "group_id": 5000001,
+            "element_icon": "icn_element_fire",
+            "weak_element_id": 200001,
+            "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Fire",
+            "element_code_name_localekey": "Code: H.S.T.A."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100831,
+        "piece_detail": {
+          "id": 5100831,
+          "class": "Attacker",
+          "order": 83100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ABNORMAL",
+          "resource_id": 831,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Rei's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 583101,
+        "class": "Attacker",
+        "order": 10168,
+        "name_code": 5119,
+        "corporation": "ABNORMAL",
+        "resource_id": 831,
+        "name_localkey": "Rei",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 75,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 831
+    }
+  }
+}

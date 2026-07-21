@@ -1,0 +1,33 @@
+{
+  "anis-sparkling-summer": {
+    "name": "Anis: Sparkling Summer",
+    "burst": "III",
+    "weapon": "SG",
+    "class": "Supporter",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": []
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "graded": {
+      "teams": 0,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: the 382.42% last-bullet proc count (especially inside her 10s burst window with ~1-round magazines) is an unmeasured cadence-derived estimate",
+      "burst: Max Ammo ▼73.92% is modeled as ~1-round magazines for 10s — the shot/reload/proc economy of that window is unverified against footage",
+      "burst: Elemental Advantage Attack Damage ▲42.24% only applies when the boss is Electric-disadvantaged",
+      "cadence: SG fire rate + reloadFrames 141 are datamined, unverified (⚑ cadence tuple)"
+    ],
+    "board": null
+  }
+}

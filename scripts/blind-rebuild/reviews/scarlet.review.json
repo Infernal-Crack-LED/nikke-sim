@@ -1,0 +1,116 @@
+{
+  "slug": "scarlet",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after landing 10 normal attack(s). Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger {kind:hitCount,count:10} + target {kind:self}",
+        "note": "Faithful trigger encoding; stack level derived natively by engine from cadence (no haircut knob \u2014 see \u26912)."
+      },
+      {
+        "kitLine": "ATK \u25b2 23.15%, stacks up to 5 time(s) and lasts for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0] buff atkPct 23.15, durationSec 5, maxStacks 5",
+        "note": "Value/stacks/duration match L10 datamine exactly."
+      },
+      {
+        "kitLine": "Current HP \u25bc 4.01%.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Engine has no HP-drain mechanic and it is not a heal/HP-buff hard-rule class. Documented as her design ENABLER: geometric self-drain (\u00d70.9599/proc) justifies treating the HP-gated crit buffs as assumed-active (\u26913). Does no damage itself."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "There is a 30% chance of activating when attacked.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "'When this unit is hit' is the sanctioned skip class \u2014 v1 sim models no incoming boss attacks, so the trigger never fires in-sim. Note records that an older materialized file misparsed this as a passive flatDamage with an invented trigger; that was removed."
+      },
+      {
+        "kitLine": "Deals 138.24% of final ATK as additional damage.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[1]",
+        "note": "Payload of the attacked-proc above; unmodeled for the same reason. Real-fight contribution \u26914-flagged (~0-3% of real solo total)."
+      },
+      {
+        "kitLine": "Activates when HP falls below 60%. Affects self.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].trigger {kind:passive} (HP<60% gate folded into passive assumption)",
+        "note": "Engine has no HP trigger; gate assumed permanently satisfied via S1 self-drain arithmetic (\u26913). Over-credits roughly the first ~28s before the drain crosses 60%."
+      },
+      {
+        "kitLine": "Critical Damage \u25b2 6.61% continuously.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[0] buff critDamagePct 6.61 (no duration = continuous)",
+        "note": "Value matches L10; 'continuously' encoded as duration-less passive self buff."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Activates when HP falls below 50%.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].trigger {kind:burstCast} + target {kind:self} (HP<50% gate assumed)",
+        "note": "HP gate assumed satisfied at cast (\u26913). Her first burst (~15-25s) may really precede the threshold \u2014 flagged as a known over-credit on the first cast."
+      },
+      {
+        "kitLine": "Critical Rate \u25b2 19.57% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] buff critRatePct 19.57, durationSec 10",
+        "note": "Value/duration match L10 datamine."
+      },
+      {
+        "kitLine": "Affects all enemies.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].target {kind:enemy}",
+        "note": "'All enemies' collapses to the single partless boss in scope."
+      },
+      {
+        "kitLine": "Deals 849.15% of final ATK as Burst Skill damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].effects[0] flatDamage atkPct 849.15",
+        "note": "Value matches L10. Burst-cast damage, auto FB-exempt; no noFb set. No element buff (clean \u00d71.10 default), no pierce, hitsPerShot 1."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "note",
+      "text": "\u26911 CADENCE TUPLE (escalated to likely-wrong): 20-ammo AR with normalMult 27.08 (~3\u00d7 usual AR per-shot) + melee-slash flavor = non-class fire-mode tell; datamined pullsPerSec + reloadFrames 159 (~2.65s) unverified, rolling-reload unknown.",
+      "couldCauseGap": "HOT",
+      "why": "Fire-rate/reload is the dominant DPS driver for an AR; if the datamined cadence is wrong the whole damage estimate moves. Direction uncertain but highest-leverage input."
+    },
+    {
+      "source": "note",
+      "text": "\u26912 S1 STACK STEADY-STATE: at datamined cadence ATK stacks sit near-permanent ~5/5 (5s dur spans the 2.65s reload); if real fire rate is slower the stack level drops. Entirely cadence-driven, moves with \u26911.",
+      "couldCauseGap": "HOT",
+      "why": "S1 ATK% stack uptime directly scales all damage; a slower real cadence would lower uptime and thus sim-vs-real, but as modeled it assumes near-full uptime."
+    },
+    {
+      "source": "caveat",
+      "text": "\u26913 HP-THRESHOLD GATES: S2b (HP<60% crit-dmg) and burst (HP<50% crit-rate) modeled assumed-active per S1 self-drain arithmetic; over-credits S2b for the first ~28s and the burst crit-rate may miss her first cast.",
+      "couldCauseGap": "HOT",
+      "why": "Assuming the gates always-satisfied over-credits crit stats during early ramp, biasing sim high vs a real fight where the thresholds are not yet crossed \u2014 a known, bounded over-estimate."
+    },
+    {
+      "source": "unmodeled",
+      "text": "\u26914 S2a ATTACKED-PROC: 30%-when-attacked \u2192 138.24% additional damage is unmodeled; est 0 in-sim / ~0-3% of real solo total.",
+      "couldCauseGap": "COLD",
+      "why": "Sim omits damage that occurs in real fights (a handful of boss hits \u00d7 30% \u00d7 138.24%), so sim runs slightly low vs real \u2014 a small under-credit, opposite sign to \u26913."
+    },
+    {
+      "source": "note",
+      "text": "PARSER BASELINE banner: entire file is HYPOTHESIS, not a validated/measured model; every \u2691 is an unmeasured estimate pending hand-tune against a real focus video.",
+      "couldCauseGap": "HOT",
+      "why": "Meta-confound \u2014 no part of the model has been measured against real gameplay, so any of the above estimates could be materially off. Consistent with the unit having no board data (ungraded, MODEL_ONLY)."
+    }
+  ],
+  "authorIntentSummary": "The author modeled base Scarlet (slug `scarlet`, AR/Electric/Attacker/B3 \u2014 explicitly NOT scarlet-black-shadow) as a parser-baseline HYPOTHESIS, not a validated model. Faithfully encoded: S1 self ATK\u25b223.15% on hitCount:10 (5 stacks/5s), S2b passive crit-dmg\u25b26.61%, and burst crit-rate\u25b219.57%/10s + 849.15% burst flatDamage vs the single boss. The two HP-gated buffs are modeled ASSUMED-ACTIVE because the S1 'Current HP \u25bc4.01%' self-drain (itself unmodeled \u2014 no HP mechanic in engine) arithmetically pushes her below 60%/50% within ~28s/~37s; this over-credits early ramp (\u26913). The S2 30%-when-attacked 138.24% proc is deliberately skipped to unmodeled (no incoming boss attacks in-sim, \u26914 ~0-3% real). Known-not-yet-faithful: the cadence tuple is escalated to likely-wrong (\u26911) and drives the S1 stack steady-state (\u26912); the unit has no board data and is ungraded MODEL_ONLY."
+}

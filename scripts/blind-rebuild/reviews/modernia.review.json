@@ -1,0 +1,110 @@
+{
+  "slug": "modernia",
+  "board": {
+    "ratio": 0.868,
+    "n": 1,
+    "mad": 0.132,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates when normal attack hits. Affects the target(s). Deals 3.05% of final ATK as additional damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] \u2014 trigger hitCount count:1, target enemy, effect flatDamage atkPct 3.05",
+        "note": "Encoded as a per-hit flatDamage rider (count:1 = fires 2x/pull = per HIT at hitsPerShot 2), NOT extraHitDamagePct, deliberately to preserve the U1 crit-ON default and the skillGauge-per-proc gauge economy. Crit-ON by engine default."
+      },
+      {
+        "kitLine": "Activates when normal attack hits 200 time(s). Affects self. Critical Damage \u25b2 14.25%, stacks up to 5 time(s) and lasts for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] \u2014 trigger hitCount count:200, target self, effect buff critDamagePct 14.25 dur 10 maxStacks 5",
+        "note": "Kit-verbatim. 200 hits = 100 pulls."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity \u25bc 5.04%, stacks up to 5 time(s) and lasts for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] \u2014 same block, effect buff maxAmmoPct -5.04 dur 10 maxStacks 5",
+        "note": "Kit-verbatim. Ammo DOWN = shorter mags = more reloads = fewer shots; engine clips live via maxAmmo() (5 stacks: 300\u2192~224)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects all allies. Activates when entering Full Burst. Hit Rate \u25b2 8.56% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 trigger fullBurstEnter, target allies, effect buff hitRatePct 8.56 dur 15",
+        "note": "MODELED but INERT in the engine today (\u26912). Encoded so the stat exists for a future core-rate consumer and so S2b's gate is visible. Hard rule 4: Hit Rate raises core-hit rate, magnitude measured-only."
+      },
+      {
+        "kitLine": "Affects self. Activates when normal attack hits 200 time(s) during increasing Hit Rate status. ATK \u25b2 29.38% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] \u2014 trigger hitCount count:200, target self, fbGate inFb, effect buff atkPct 29.38 dur 10",
+        "note": "'during increasing Hit Rate status' gate approximated as fbGate:'inFb' (\u26913) \u2014 engine has no while-buff-active gate. Exact when Modernia bursts (extended FB \u2261 15s status); undercounts 5s tail when another B3 bursts; hit counter accrues ungated (kit counts only in-status hits) \u2192 net small over-accrual. Prior materialized file was UNGATED (near-permanent over-credit); gate is text-driven, not a board-cooling fudge."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies. Full Burst Duration \u25b2 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] \u2014 trigger burstCast, target allies, effect fullBurstExtend seconds 5",
+        "note": "burstCast trigger is hard-rule-6 correct: fires only when SHE bursts. Hand-authored slot, preserved verbatim."
+      },
+      {
+        "kitLine": "Affects self. Unlimited ammunition for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 trigger burstCast, target self, effect unlimitedAmmo durationSec 15",
+        "note": "Hand-authored."
+      },
+      {
+        "kitLine": "Destroy Mode: Extends her line of sight and auto-aims at all enemies within range. The stage target is treated as a single enemy regardless of whether it has parts (including interruption parts).",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst[0]",
+        "note": "Inert vs the single partless scope-lock boss \u2014 auto-aim/line-of-sight/parts-consolidation clause has no effect in scope-lock. Documented skip, not a silent drop."
+      },
+      {
+        "kitLine": "Deals 2.24% of final ATK as damage for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 same block, effect buff extraHitDamagePct 2.24 dur 15",
+        "note": "Hand-authored Destroy Mode fix: per-hit +2.24% final ATK for 15s via extraHitDamagePct (old parser read it as a 1/s DoT, massively undercounting at MG hit rates). Rides the crit:false path \u2014 U1 says function additional damage crits (\u26914, unreconciled)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "\u26911 skill1: reload tuple is unverified datamine \u2014 reloadFrames 159 + rolling-reload (reload_start_ammo 299); raw shot_detail says reload_time 230 in its own units.",
+      "couldCauseGap": "neither",
+      "why": "Open measurement on a shared engine cadence constant, not a Modernia-specific modeling choice with a known directional bias. Affects shot count symmetrically; flagged unverified, not known-wrong. Needs a focus-video reload gap read."
+    },
+    {
+      "source": "caveat",
+      "text": "\u26912 skill2: Hit Rate \u25b2 8.56% is modeled but INERT in the engine \u2014 it raises the core-hit rate by an unmeasured magnitude (hard rule 4).",
+      "couldCauseGap": "HOT",
+      "why": "If/when hitRatePct lifts core-hit rate, Modernia gains core hits she is not currently credited for \u2192 warms the reading. The ks-extract 0.88 masking-case finding explicitly names 'hitRatePct\u2192core-hit-rate (backlog engine-gap #2)' as a candidate cause of her COLD reading. Currently a pure under-credit."
+    },
+    {
+      "source": "caveat",
+      "text": "\u26913 skill2: ATK \u25b2 29.38% 'during increasing Hit Rate status' gate approximated as in-Full-Burst; counter accrues ungated.",
+      "couldCauseGap": "neither",
+      "why": "Second-order and mixed: exact when Modernia herself bursts (the graded comp), undercounts the 5s post-FB tail when another B3 bursts (under-credit) while ungated counter accrual slightly over-credits activations. Net described as small over-accrual; roughly neutral on her own burst rotations."
+    },
+    {
+      "source": "caveat",
+      "text": "\u26914 burst: Destroy Mode per-hit 2.24% modeled crit-OFF (extraHitDamagePct); U1 says function additional damage crits. Also datamined ChangeWeapon (shot 1026002) fire profile assumed identical to base MG.",
+      "couldCauseGap": "HOT",
+      "why": "If the 2.24% stream should crit at caster rate, she is under-credited by ~critRate\u00d7critDmg on that stream \u2192 warms the reading (ks-extract: 'would warm; not pulled'). Swapped-weapon cadence/multiplier deltas are an additional unverified unknown folded into the same finding."
+    },
+    {
+      "source": "unmodeled",
+      "text": "burst: Destroy Mode auto-aim / line-of-sight / parts-consolidation clause.",
+      "couldCauseGap": "neither",
+      "why": "Inert against the single partless scope-lock boss by construction \u2014 no damage-path effect in scope-lock. Documented inert skip."
+    },
+    {
+      "source": "open-question",
+      "text": "Board COLD reading (0.868, n=1) is confounded by comp: the 2026-07-17 0.88 masking-case traced part of the drop to naga's removed phantom with-shielder team buff (coreDamagePct 85.17 + burst casterAtkPct to all allies) that had been propping Modernia in N2 (1.0437\u21920.8807), exposing her own under-model (helm/crown masking pattern).",
+      "couldCauseGap": "HOT",
+      "why": "The single board point is a residual confounded by a teammate's removed buff plus the FB-count anomaly, not a clean isolated read. The direction of the exposed under-model (missing core-rate lift \u26912 + crit-OFF Destroy Mode \u26914) is HOT; the number itself should not be over-interpreted at n=1."
+    }
+  ],
+  "authorIntentSummary": "The override is a PARSER BASELINE (HYPOTHESIS, not validated): skill1/skill2 were machine-authored (wave 6, 2026-07-16) while the burst slot is HAND-AUTHORED and preserved verbatim \u2014 its key fix re-models Destroy Mode's 2.24% as a per-hit extraHitDamagePct rider (the parser had misread it as a 1/s DoT, catastrophic at MG hit rates) plus unlimitedAmmo 15s and a team fullBurstExtend +5s on a hard-rule-6 burstCast trigger. S1's 3.05% rider is deliberately a crit-ON flatDamage block (not extraHitDamagePct) to keep the U1 crit and gauge economy; S2b's 'during increasing Hit Rate status' gate is approximated as fbGate:'inFb' (text-driven, fixing a prior ungated near-permanent over-credit). Known-not-yet-faithful spots: Hit Rate is modeled but INERT (\u26912, would warm), Destroy Mode rides crit-OFF against U1's crits finding (\u26914, would warm), the reload tuple is unverified datamine (\u26911), and the auto-aim/parts clause is an inert documented skip \u2014 the two HOT gaps line up with the confounded COLD 0.868 n=1 board read."
+}

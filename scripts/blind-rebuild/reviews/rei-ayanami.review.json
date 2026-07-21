@@ -1,0 +1,86 @@
+{
+  "slug": "rei-ayanami",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 100 normal attack(s). Affects self. Elemental Advantage Attack Damage \u25b2 30.23% for 3 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] \u2014 trigger hitCount 100, target self, buff elemAdvantageDamagePct 30.23 dur 3",
+        "note": "Damage-Up-bucket entry; active ONLY with elemental advantage (Fire vs Fire-weak boss). Inert on the neutral/partless scope-lock boss (\u26911). Value 30.23 = L10."
+      },
+      {
+        "kitLine": "Activates after landing 100 normal attack(s). Affects the enemy within attack range nearest to the crosshair. Deals 112.37% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] \u2014 trigger hitCount 100, target enemy, flatDamage atkPct 112.37",
+        "note": "Function-type skill damage: crit at caster rate (engine default), never core, noRange automatic for flatDamage, FB by landing timing. Proc cadence depends on MG fire rate; reloadFrames 171 unverified datamine (\u26912). Value 112.37 = L10."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates at the start of battle. Affects self. Damage dealt to Shield \u25b2 700.5% continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "No shield-damage StatKey in the override schema; scope-lock boss is partless (no shield), so this buff moves no damage (inert). Documented skip, not a silent drop. Value 700.5 = L10."
+      },
+      {
+        "kitLine": "Activates when entering Burst stage 3. Affects all Fire Code allies. ATK \u25b2 25.03% of the skill user's ATK for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] \u2014 trigger stageEnter stage 3, target alliesOfElement Fire, buff casterAtkPct 25.03 dur 10",
+        "note": "Flat caster-static-ATK add via casterAtkPct (scales off caster's ATK at cast time, not snapshot of current ATK). Value 25.03 = L10."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all Fire Code allies. Creates a Shield equal to 13.44% of the skill user's final Max HP for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effect[0] \u2014 trigger burstCast, target alliesOfElement Fire, shield maxHpPct 13.44 dur 10",
+        "note": "Event-only: no HP pool modeled in v1; fires shielded triggers only (\u26913). Shield itself deals no damage. Value 13.44 = L10."
+      },
+      {
+        "kitLine": "Attack damage \u25b2 48.02% for 10 sec. (all Fire Code allies, same burst cast)",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] effect[1] \u2014 buff attackDamagePct 48.02 dur 10",
+        "note": "Damage-Up bucket; applies to all Fire Code allies for 10s on burst cast. Value 48.02 = L10."
+      },
+      {
+        "kitLine": "Affects all enemies. Deals 990.2% of final ATK as damage.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] \u2014 trigger burstCast, target enemy, flatDamage atkPct 990.2",
+        "note": "Burst nuke: crit at caster rate, never core, noRange, FB-exempt by cast-instant timing (lands before Full Burst window begins). Value 990.2 = L10."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "skill1: Elemental Advantage Attack Damage \u25b2 30.23% is active only with elemental advantage (Fire vs a Fire-weak boss); inert on a non-advantaged/neutral boss (\u26911)",
+      "couldCauseGap": "COLD",
+      "why": "Scope-lock boss is partless/neutral \u2014 no elemental advantage applies, so this buff contributes zero damage in the graded scenario. It is correctly modeled but inert by context, not a missing mechanic."
+    },
+    {
+      "source": "caveat",
+      "text": "skill1: the 112.37% proc cadence (hitCount 100) depends on MG fire rate; reloadFrames 171 is unverified datamine (\u26912)",
+      "couldCauseGap": "HOT",
+      "why": "If reloadFrames 171 is wrong, the time-to-100-hits shifts, directly changing how many S1 procs (both the elemAdvantage buff and the 112.37% nuke) land in a 180s fight. This is a direct damage-input uncertainty that could move the ratio."
+    },
+    {
+      "source": "caveat",
+      "text": "burst: the 13.44% caster-Max-HP shield is event-only (no HP pool modeled in v1); fires shielded triggers only (\u26913)",
+      "couldCauseGap": "COLD",
+      "why": "The shield deals no damage and the scope-lock boss has no shield-break or shielded-trigger mechanics that would interact with it. Absence of an HP pool does not affect any damage calculation in the graded scenario."
+    },
+    {
+      "source": "note",
+      "text": "HAND-AUTHORED from kit prose (NOT measured/hand-tuned against a real fight). Every \u2691 is an UNMEASURED estimate; record against a real fight before trusting any number.",
+      "couldCauseGap": "HOT",
+      "why": "No measured validation exists for this unit. All timing assumptions (hitCount cadence, FB-exempt cast-instant nuke, stageEnter trigger alignment) are prose-derived hypotheses, not confirmed against observed fight data."
+    }
+  ],
+  "authorIntentSummary": "The override is hand-authored directly from kit prose with no measured fight validation. All five damage-relevant kit lines are modeled as blocks: S1 elemAdvantage self-buff (inert on neutral boss), S1 flat-damage proc at hitCount 100, S2 casterAtkPct team buff on B3 entry, burst attackDamagePct team buff, and burst flat-damage nuke (FB-exempt by cast-instant timing). S2's shield-damage buff is documented-unmodeled as inert (no shield on scope-lock boss). The primary open risk is \u26912: reloadFrames 171 is unverified datamine and directly controls S1 proc cadence, making it the most likely source of a ratio gap if wrong."
+}

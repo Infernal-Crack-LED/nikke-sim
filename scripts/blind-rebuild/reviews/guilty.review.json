@@ -1,0 +1,152 @@
+{
+  "slug": "guilty",
+  "board": {
+    "ratio": null,
+    "n": null,
+    "mad": null,
+    "tag": "no-data"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 6 normal attacks",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].trigger hitCount:60",
+        "note": "6 shots \u00d7 10 pellets/shot = 60 hits, per engine's +hitsPerShot counter convention"
+      },
+      {
+        "kitLine": "Affects self",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].target kind:self",
+        "note": ""
+      },
+      {
+        "kitLine": "Duplicates 8.81% of the ATK of the ally with the highest ATK",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0] casterAtkPct 8.81",
+        "note": "Proxy: %-of-CASTER's-ATK (engine line 947). Exact solo / when Guilty is top-ATK ally; cold when a buffed teammate outranks her (\u26914/caveat 1)."
+      },
+      {
+        "kitLine": "Stacks up to 5 times",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0].maxStacks 5",
+        "note": ""
+      },
+      {
+        "kitLine": "lasts for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0].effects[0].durationSec 10",
+        "note": ""
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after 12 normal attacks",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].trigger hitCount:120",
+        "note": "12 shots \u00d7 10 pellets/shot = 120 hits"
+      },
+      {
+        "kitLine": "Affects all Wind Code allies",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].target kind:alliesOfElement element:Wind",
+        "note": "Includes self"
+      },
+      {
+        "kitLine": "Increases stack count of stackable buffs by 1",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "No schema support for cross-buff stack-count amplifier. Measured REAL solo (bumps S1 ramp to cap one trigger early); allies' stackable buffs also not amplified in teams. Flagged \u26915."
+      },
+      {
+        "kitLine": "ATK \u25b2 4.13% for 10 sec",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0].effects[0] buff atkPct 4.13 dur 10",
+        "note": "Near-permanent at this cadence"
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects the 1 enemy unit(s) with the highest final DEF",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].target kind:enemy",
+        "note": "Single-boss scope-lock makes targeting moot"
+      },
+      {
+        "kitLine": "Deals 284.32% of final ATK as Burst Skill damage",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0].effects[0] flatDamage atkPct 284.32",
+        "note": "Auto FB-exempt (engine snapshots burst-cast pre-FB)"
+      },
+      {
+        "kitLine": "Activates when Mind If I Borrow This? is at max stacks",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] (always-on, no gate)",
+        "note": "Engine has no full-stack gate; modeled always-on. True for every burst after ~20-30s ramp; first burst's riders slightly over-credited (\u26912/caveat 3)."
+      },
+      {
+        "kitLine": "DEF \u25bc 20.25% for 5 sec",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].effects[0] buff defPct -20.25 dur 5",
+        "note": "Recognized-INERT: engine uses boss DEF\u22480/140 so reduction is negligible at scope-lock. Kept visible per stat-line fidelity (engine line 943)."
+      },
+      {
+        "kitLine": "Deals 277.71% of final ATK as additional damage",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1].effects[1] flatDamage atkPct 277.71",
+        "note": "Auto FB-exempt; gated on max-stacks condition (always-on approximation)"
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "S1 'highest ATK ally' modeled as casterAtkPct (self-ATK proxy) \u2014 cold when a buffed teammate outranks Guilty",
+      "couldCauseGap": "COLD",
+      "why": "In teams where another ally has higher ATK, the 8.81% is computed off a smaller base. Solo it is exact."
+    },
+    {
+      "source": "caveat",
+      "text": "S2 'Increases stack count of stackable buffs by 1' unmodeled \u2014 no schema support",
+      "couldCauseGap": "COLD",
+      "why": "Measured real solo: bumps S1 ramp to cap one trigger early (~0.6% hotter). Also amplifies allies' stackable buffs in teams. Omission under-credits damage."
+    },
+    {
+      "source": "caveat",
+      "text": "Burst 'at max stacks' gate on DEF\u25bc + 277.71% riders modeled always-on",
+      "couldCauseGap": "HOT",
+      "why": "First burst (before S1 ramp completes ~20-30s) is over-credited the 277.71% additional damage. Small magnitude: one burst out of ~9 in 180s."
+    },
+    {
+      "source": "note",
+      "text": "\u26911 CADENCE TUPLE: pullsPerSec est=1.5, reloadFrames est=181 (~3.0s), rolling-reload unknown \u2014 datamine-unreliable",
+      "couldCauseGap": "neither",
+      "why": "Drives stack ramp timing; if cadence is wrong, steady-state stack level shifts. Solo-validated at 0.981 so current estimate is close."
+    },
+    {
+      "source": "note",
+      "text": "\u26912 S1 STACK STEADY-STATE: engine-derived \u22485 held after ramp; first-burst additional-damage assumes full stacks",
+      "couldCauseGap": "HOT",
+      "why": "Same as caveat 3 \u2014 first burst over-credited if stacks aren't at 5 yet."
+    },
+    {
+      "source": "note",
+      "text": "\u26913 SG PELLET LANDING + CORE-BAND MAGNITUDE: HR-contaminated bands \u2192 per-shot magnitude low-confidence",
+      "couldCauseGap": "neither",
+      "why": "Affects all SG units equally; open backlog item. Note says old cap is DEAD and bands are HR-CLEAN per isabel read."
+    },
+    {
+      "source": "note",
+      "text": "\u26914 'HIGHEST-ATK ally' basis: casterAtkPct proxies off Guilty's own ATK",
+      "couldCauseGap": "COLD",
+      "why": "Same as caveat 1 \u2014 exact solo, cold in teams with a higher-ATK ally."
+    },
+    {
+      "source": "note",
+      "text": "\u26915 S2 'stack count of buffs +1': unexpressible in schema, shipped as 0-effect",
+      "couldCauseGap": "COLD",
+      "why": "Same as caveat 2 \u2014 under-credits ~0.6% solo + team amplification."
+    }
+  ],
+  "authorIntentSummary": "The override models Guilty as a self-stacking B2 Attacker: S1 grants up to 5 stacks of 8.81% ATK (proxied off her own ATK via casterAtkPct since no 'highest ally' schema exists), S2 gives a Wind-team ATK buff, and burst fires two damage instances plus an inert DEF debuff. Key approximations: the 'highest ATK ally' source is a caster-ATK proxy (exact solo, cold in teams), the S2 stack-count amplifier is unexpressible and shipped as zero-effect (measured ~0.6% real), and the burst's max-stacks gate is always-on (over-credits the first burst by one 277.71% hit). Solo-validated at 0.981 ratio; no board data yet."
+}

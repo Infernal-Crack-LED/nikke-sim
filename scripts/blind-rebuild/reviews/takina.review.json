@@ -1,0 +1,104 @@
+{
+  "slug": "takina",
+  "board": {
+    "ratio": 0.988,
+    "n": 1,
+    "mad": 0.012,
+    "tag": "OK"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "Activates at the start of battle and when Full Burst ends. Affects self. ATK \u25b2 80.04% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] (trigger fullBurstEnd, buff atkPct 80.04/5s)",
+        "note": "Only the Full-Burst-end activation is modeled. The battle-start activation of the same line is UNMODELED (see unmodeled.skill1[0]) \u2014 engine has no battleStart trigger and passive-trigger buffs ignore durationSec (sim.ts:983-993)."
+      },
+      {
+        "kitLine": "Activates at the start of battle: ATK \u25b2 80.04% for 5 sec (battle-start activation only).",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1[0]",
+        "note": "Not override-expressible today: engine lacks a battleStart trigger; passive-trigger buffs ignore durationSec. Single 5s window at t=0 over 180s fight \u2014 negligible DPS impact."
+      },
+      {
+        "kitLine": "Activates when entering Full Burst. Affects self. True Damage \u25b2 35.05% for 15 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[1] (trigger fullBurstEnter, buff trueDamagePct 35.05/15s)",
+        "note": "Exact values. trueDamagePct is flavor-gated so it only applies to swap-window true-damage normals."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Affects all enemies. Damage Taken \u25b2 10.09% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[0] (trigger passive, target enemy, buff damageTakenPct 3.36)",
+        "note": "S2 is a 15s-cooldown pulse (cooldown absent from DB text; Prydwen confirms 15s). Modeled as uptime-averaged permanent: 10.09 \u00d7 5/15 = 3.36. Approximation smooths pulse timing."
+      },
+      {
+        "kitLine": "Stuns for 2 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2[0]",
+        "note": "Boss-inert: the sim's partless boss does not fire/charge/reload, so a stun changes nothing. Genuinely-skippable class."
+      },
+      {
+        "kitLine": "Affects all allies. True Damage \u25b2 140.49% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2[1] (trigger passive, target allies, buff trueDamagePct 93.66)",
+        "note": "Uptime-averaged permanent: 140.49 \u00d7 10/15 = 93.66. Same 15s-cooldown pulse approximation as the enemy debuff."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects self. Changes the weapon in use. Damage: 200.64% of final ATK. Duration: 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (trigger burstCast, weaponSwap damagePct 200.64, durationSec 10)",
+        "note": "Exact multiplier and duration."
+      },
+      {
+        "kitLine": "Additional Effects \u2014 Affects self: Normal attacks deal true damage for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[0] (trueNormals: true on the weaponSwap effect)",
+        "note": "Engine-flavored: trueNormals stamps trueFlavor on swap shots so self 35.05 + team 93.66 True Damage buffs apply (trueDamagePct is flavor-gated). Verified firing per ks-extracts findings."
+      },
+      {
+        "kitLine": "Affects targets hit: Damage Taken \u25b2 6.04% for 5 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "burst[1] (trigger shotFired, target enemy, fbGate inFb, buff damageTakenPct 6.04/5s)",
+        "note": "Gated fbGate:inFb \u2014 swap window \u2248 FB window for a bursting B2. Applies per shot fired during the swap."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "unmodeled",
+      "text": "Battle-start ATK \u25b2 80.04%/5s activation not expressible (no battleStart trigger in engine).",
+      "couldCauseGap": "COLD",
+      "why": "Single 5s window at t=0 in a 180s fight; ~2.8% of fight time with one buff active. Negligible DPS contribution."
+    },
+    {
+      "source": "unmodeled",
+      "text": "Stun 2s on all enemies skipped (boss-inert).",
+      "couldCauseGap": "neither",
+      "why": "Partless boss does not fire/charge/reload; stun changes zero damage events."
+    },
+    {
+      "source": "note",
+      "text": "S2 15s cooldown absent from DB text; Prydwen-sourced. Both S2 effects modeled as uptime-averaged permanents rather than timed pulses.",
+      "couldCauseGap": "COLD",
+      "why": "Averaging is first-order correct for a support buff/debuff over many cycles. Board ratio 0.988 (within \u00b13%) confirms no material gap from this approximation."
+    },
+    {
+      "source": "note",
+      "text": "Swap-window shot economy unmeasured (~1.044 HOT per ks-extracts finding F6).",
+      "couldCauseGap": "HOT",
+      "why": "The number of SR shots that fit in the 10s swap window is not independently verified. If the sim fires too many or too few swap shots, true-damage DPS scales linearly. The ~1.044 figure suggests a ~4.4% overprediction in the swap window that partially offsets the overall 0.988 underprediction."
+    },
+    {
+      "source": "note",
+      "text": "Override materialized 2026-07-16 from offline parser (blablalink prose); NOT hand-verified.",
+      "couldCauseGap": "neither",
+      "why": "Provenance caveat, not a mechanical gap. Values match char-extracts exactly; ks-extracts confirms true-damage buffs verified firing with exact values."
+    }
+  ],
+  "authorIntentSummary": "The override models Takina as a B2 support whose kit revolves around a 10s weapon-swap burst window dealing true damage, amplified by self (35.05%) and team-wide (140.49%, uptime-averaged to 93.66%) True Damage buffs that are flavor-gated to swap shots only. S2's 15s-cooldown pulse (DB text omits the cooldown; Prydwen-sourced) is approximated as uptime-averaged permanents for both the enemy Damage Taken debuff and the ally True Damage buff. The one known-not-yet-faithful spot is the swap-window shot economy (~1.044 HOT): the exact number of SR shots landing in the 10s window is unmeasured, and the battle-start ATK buff activation is unexpressible in the current engine."
+}

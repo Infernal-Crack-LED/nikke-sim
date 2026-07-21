@@ -1,0 +1,158 @@
+{
+  "slug": "prika",
+  "board": {
+    "ratio": 0.691,
+    "n": 1,
+    "mad": 0.309,
+    "tag": "COLD"
+  },
+  "kitMap": {
+    "skill1": [
+      {
+        "kitLine": "\u25a0 Activates when performing a Full Charge attack. Affects all allies.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] trigger shotFired / target allies",
+        "note": "Trigger approximated as shotFired rather than explicit full-charge; faithful for an SR in auto-play where every shot is a full charge. Block materialized from the offline parser (blablalink prose), NOT hand-verified per note."
+      },
+      {
+        "kitLine": "Projectile Explosion Damage \u25b2 20% for 3 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] buff projectileExplosionPct 20 / 3s",
+        "note": "Faithful value + duration."
+      },
+      {
+        "kitLine": "Pierce Damage \u25b2 13.09% for 3 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] buff pierceDamagePct 13.09 / 3s",
+        "note": "Value/duration faithful, but Prika herself cannot benefit (no hasPierce config \u2014 see caveat 2 / F1)."
+      },
+      {
+        "kitLine": "ATK \u25b2 20% of the skill user's ATK for 3 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill1[0] buff casterAtkPct 20 / 3s",
+        "note": "casterAtkPct = 'skill user's ATK' framing per re-materialized parser; faithful."
+      },
+      {
+        "kitLine": "\u25a0 Activates only while in Performance status. Affects self. (Performance sub-block trigger)",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 (whole Performance sub-block)",
+        "note": "Skipped per note: sub-block is heal-potency + Gains Pierce, both defensive/inert. Performance status itself is untracked."
+      },
+      {
+        "kitLine": "Outgoing healing \u25b2 49.92% continuously.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1",
+        "note": "Heal-potency buff; inert for DPS, skipped as defensive."
+      },
+      {
+        "kitLine": "Gains Pierce. This effect is continuous.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill1 (+ absent hasPierce config)",
+        "note": "Listed unmodeled AND no hasPierce tag carried \u2014 root of caveat 2 / F1 (strongest COLD hypothesis)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "\u25a0 Activates when entering Full Burst. Affects self. Max HP \u25b2 19.98% for 10 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2",
+        "note": "Defensive HP buff, skipped per note."
+      },
+      {
+        "kitLine": "\u25a0 Activates when Sing Along takes effect while Prika is in Performance status. (Encore trigger)",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 solo trigger fullBurstEnter; duet trigger burstCast",
+        "note": "Sing Along/Performance is an untracked partner mechanic, proxied to fire once per Full Burst entry (solo) / per burstCast (duet). Documented approximation \u2014 see caveat 1 and note UNCERTAIN."
+      },
+      {
+        "kitLine": "Encore \u2014 Function: Extends the duration of Performance for Prika and strengthens allies.",
+        "status": "MODELED_BLOCK",
+        "where": "operational 'strengthens allies' half = Effect 3 block(s) below",
+        "note": "The 'strengthens allies' half is Effect 3 (modeled). The 'extends Performance duration' half is Effect 2 (UNMODELED). Performance state itself represented via modes config (see burst header)."
+      },
+      {
+        "kitLine": "Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. continuous and cannot be removed.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2",
+        "note": "Part assignment is inert for DPS, skipped."
+      },
+      {
+        "kitLine": "Effect 2: Affects all allies. Performance duration \u25b2 21 sec.",
+        "status": "UNMODELED",
+        "where": "unmodeled.skill2 (+ caveat 4)",
+        "note": "Performance is an untracked status. Under-credits Charge Damage uptime in solo (25s vs ~46s) \u2014 F5, COLD."
+      },
+      {
+        "kitLine": "Effect 3: Affects all allies. Attack Damage \u25b2 25.01% for 10 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 solo fullBurstEnter attackDamagePct 25.01/10s; duet burstCast attackDamagePct 25.01/9999",
+        "note": "Value faithful; duet makes it permanent. Solo cadence is the proxied Sing Along approximation (caveat 1)."
+      },
+      {
+        "kitLine": "Effect 4: Affects self. Cooldown of Burst Skill \u25b2 21 sec.",
+        "status": "MODELED_BLOCK",
+        "where": "skill2 solo burstCast burstCdr -21; duet burstCast burstCdr -9999",
+        "note": "Note documents intent as a +21s cooldown INCREASE (the penalty for Performance extension); block encodes burstCdr -21. Sign convention not independently verified here; F3 flags possible solo over-penalty (COLD)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "\u25a0 Affects all allies. Performance \u2014 Function: Strengthens allies and restores HP.",
+        "status": "MODELED_CONFIG",
+        "where": "modes ['solo','duet (w/ Mint)']",
+        "note": "The Performance status (untracked mechanic) is represented indirectly via the solo/duet mode split + burstFirst ordering. 'Strengthens allies' = Effect 2 (modeled block); 'restores HP' = Effect 1 (UNMODELED)."
+      },
+      {
+        "kitLine": "Effect 1: Restores 3.04% of the skill user's final max HP as HP every 1 sec for 25 sec. cannot be removed.",
+        "status": "UNMODELED",
+        "where": "unmodeled.burst (+ caveat 3)",
+        "note": "Heal not emitted as recovery events; inert for Prika DPS but blocks 'when recovery takes effect' consumer procs (Crown-type)."
+      },
+      {
+        "kitLine": "Effect 2: Charge Damage \u25b2 25% for 25 sec. cannot be removed.",
+        "status": "MODELED_BLOCK",
+        "where": "burst solo burstCast chargeDamagePct 25/25s; duet burstCast chargeDamagePct 25/9999",
+        "note": "Value/duration faithful; duet makes it permanent. Solo uptime under-credited when Encore would extend Performance (caveat 4 / F5)."
+      }
+    ]
+  },
+  "documentedConfounds": [
+    {
+      "source": "caveat",
+      "text": "Encore proxy: solo mode fires Encore on EVERY Full Burst entry even with no Sing Along caster, over-crediting ally Attack Damage \u25b2 25.01% AND over-applying self Burst-cooldown \u25b2 21s.",
+      "couldCauseGap": "HOT",
+      "why": "Over-crediting the team Attack Damage buff pushes sim HIGH (HOT). The coupled CD over-penalty is a COLD counter-force (see F3). Net documented direction is HOT over-credit, which would MASK the observed COLD board (0.691) \u2014 i.e. the true COLD shortfall is larger than it appears."
+    },
+    {
+      "source": "caveat",
+      "text": "No hasPierce tag: Prika's continuous Performance Pierce is absent, so her own Pierce Damage \u25b2 13.09% and partner Pierce buffs do not land on her (held pending popup measurement, probe-runs 2026-07-14).",
+      "couldCauseGap": "COLD",
+      "why": "Missing Pierce under-credits her damage \u2192 sim too low. This is finding F1, the STRONGEST COLD hypothesis (alice precedent +16-33%), and directly matches the 0.691 COLD board."
+    },
+    {
+      "source": "caveat",
+      "text": "Burst Performance heal (3.04% caster max HP/s, 25s) not emitted as recovery events \u2014 'when recovery takes effect' consumers (Crown-type) won't proc off Prika.",
+      "couldCauseGap": "neither",
+      "why": "Inert for Prika's own DPS. Only a team-level COLD risk in comps with recovery consumers; the board comp (PA MiKa, boss Iron) has none, so it does not explain this record."
+    },
+    {
+      "source": "caveat",
+      "text": "Encore 'Performance duration \u25b2 21 sec' unmodeled \u2014 solo Charge Damage \u25b2 25% (and heal) run 25s instead of an extended ~46s when Encore fires.",
+      "couldCauseGap": "COLD",
+      "why": "Under-credited Charge Damage buff uptime \u2192 sim too low. Finding F5 (Performance-duration under-credit), consistent with the COLD board."
+    },
+    {
+      "source": "open-question",
+      "text": "F3: solo-Encore CD over-penalty \u2014 the self Burst-cooldown \u25b2 21s (burstCdr -21) may over-penalize her burst cadence in solo.",
+      "couldCauseGap": "COLD",
+      "why": "If the +21s cooldown increase is over-applied, Prika bursts less often \u2192 under-prediction (COLD). Sign/cadence of burstCdr -21 not independently verified here; a candidate contributor to the COLD gap alongside F1/F5."
+    },
+    {
+      "source": "note",
+      "text": "UNCERTAIN: the once-per-full-burst cadence for the team Attack Damage buff is an approximation of the real Sing Along trigger.",
+      "couldCauseGap": "HOT",
+      "why": "Same root as caveat 1 \u2014 in non-Sing-Along teams the proxy over-fires the Attack Damage buff (HOT). Folded here as the note's explicit open measurement; does not explain the COLD board."
+    }
+  ],
+  "authorIntentSummary": "The author modeled only Prika's damage-relevant buffs: S1 full-charge team Projectile Explosion 20% / Pierce Damage 13.09% / ATK 20%-of-caster for 3s (materialized from the offline parser, not hand-verified), S2 Encore's ally Attack Damage 25.01%/10s (proxied onto Full Burst entry in solo, permanent in duet) plus the self Burst-cooldown +21s penalty, and the burst Charge Damage 25%/25s (permanent in duet). Defensive/inert effects \u2014 heal potency, Gains Pierce, Max HP, the burst HP regen, Singing part assignment, and the Performance-duration extension \u2014 are deliberately listed unmodeled, and two modes (solo / duet w/ Mint) plus a burstFirst block handle the untracked Sing Along\u2194Performance interaction. Known-not-faithful spots per the note and caveats: the missing hasPierce tag (strongest COLD hypothesis, F1), the Sing Along trigger proxy that over-credits in non-Sing-Along teams, the unmodeled Performance-duration extension that under-credits Charge Damage uptime (F5), and the unverified CD-penalty sign/cadence (F3)."
+}

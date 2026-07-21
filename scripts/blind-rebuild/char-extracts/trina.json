@@ -1,0 +1,669 @@
+{
+  "trina": {
+    "slug": "trina",
+    "name": "Trina",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/xc-00/ot-10/6e13c6d49d326974971e749c203ae9f5.png",
+    "weapon": "RL",
+    "burst": "II",
+    "burstCooldownSec": 20,
+    "class": "Supporter",
+    "element": "Electric",
+    "manufacturer": "Missilis",
+    "normalAttackMultiplier": 68.59,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 170,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 43.2,
+    "burstGaugePerShot": 3.6,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates after Full Burst ends. Affects all allies.\nContinuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.\n■ Activates when attacking with Full Charge. Affects the target(s) if the HP of 2 ally unit(s) with the lowest HP percentage is lower than 30%.\nRecovers 2.03% of the skill user's final Max HP as HP.\n■ Activates when attacking with Full Charge. Affects the target(s) if the HP of 2 ally unit(s) with the lowest HP percentage is lower than 50%.\nRecovers 1.57% of the skill user's final Max HP as HP.",
+      "skill2": "■ Activates at the start of battle, only if self is alive. Affects all Electric Code allies with assault rifles.\nMax HP ▲ 44.98% of the skill user's Max HP without restoring HP constantly.\n■ Activates at the start of battle. Affects the 1 leftmost Electric Code ally unit(s) with assault rifles.\nInvulnerable for 2 sec.\n■ Activates when using Burst Skill. Affects the 1 leftmost Electric Code ally unit(s) with assault rifles.\nAttack Damage ▲ 94.15% for 10 sec.\nReload Speed ▲ 50.82% for 10 sec.",
+      "burst": "■ Affects all allies.\nMax HP ▲ 20.14% of the skill user's Max HP without restoring HP for 10 sec.\nAttack Damage ▲ 20.9% for 10 sec.\n■ Activates when enemy count aside from Nikkes is 1. Affects all allies.\n Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.\n■ Activates when enemy count aside from Nikkes is more than 2. Affects all allies.\nChanges Spread Roots to Wilted Roots.\nWilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec.\n■ Affects all Electric Code allies with assault rifles.\nHit Rate ▲ 45.3% for 10 sec.\nMax Ammunition Capacity ▲ 20 round(s) for 10 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1041201,
+        "shot_detail": {
+          "id": 1041201,
+          "damage": 6859,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 83,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 3300,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 36000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 72000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step2",
+        "burst_apply_delay": 1,
+        "change_burst_step": "Step3"
+      },
+      "skillDetails": {
+        "skill1_id": 2412101,
+        "skill2_id": 2412201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2412101,
+          "icon": "icn_skill_heal_01",
+          "group_id": 24121,
+          "skill_level": 1,
+          "name_localkey": "Nature's Grace",
+          "next_level_id": 2412102,
+          "level_up_cost_id": 40102,
+          "description_localkey": "■ Activates after Full Burst ends. Affects all allies.\n<color=#00AEFF>Continuously recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.</color>\n■ Activates when attacking with Full Charge. Affects the target(s) if the HP of {description_value_04} ally unit(s) with the lowest HP percentage is lower than {description_value_03}%.\n<color=#00AEFF>Recovers {description_value_05}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>\n■ Activates when attacking with Full Charge. Affects the target(s) if the HP of {description_value_07} ally unit(s) with the lowest HP percentage is lower than {description_value_06}%.\n<color=#00AEFF>Recovers {description_value_08}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "2.4",
+                "2.58",
+                "2.77",
+                "2.95",
+                "3.14",
+                "3.32",
+                "3.51",
+                "3.69",
+                "3.88",
+                "4.06"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30",
+                "30"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "1.2",
+                "1.29",
+                "1.38",
+                "1.48",
+                "1.57",
+                "1.66",
+                "1.75",
+                "1.85",
+                "1.94",
+                "2.03"
+              ]
+            },
+            {
+              "description_value": [
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50",
+                "50"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {
+              "description_value": [
+                "1.03",
+                "1.09",
+                "1.15",
+                "1.21",
+                "1.27",
+                "1.33",
+                "1.39",
+                "1.45",
+                "1.51",
+                "1.57"
+              ]
+            },
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2412201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 24122,
+          "skill_level": 1,
+          "name_localkey": "Peaceful Tree",
+          "next_level_id": 2412202,
+          "level_up_cost_id": 40202,
+          "description_localkey": "■ Activates at the start of battle, only if self is alive. Affects all Electric Code allies with assault rifles.\n<color=#00AEFF>Max HP ▲ {description_value_01}% of the skill user's Max HP without restoring HP constantly.</color>\n■ Activates at the start of battle. Affects the {description_value_06} leftmost Electric Code ally unit(s) with assault rifles.\n<color=#00AEFF>Invulnerable for {description_value_07} sec.</color>\n■ Activates when using Burst Skill. Affects the {description_value_06} leftmost Electric Code ally unit(s) with assault rifles.\n<color=#00AEFF>Attack Damage ▲ {description_value_02}% for {description_value_03} sec.\nReload Speed ▲ {description_value_04}% for {description_value_05} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "26.57",
+                "28.62",
+                "30.66",
+                "32.71",
+                "34.75",
+                "36.8",
+                "38.84",
+                "40.89",
+                "42.93",
+                "44.98"
+              ]
+            },
+            {
+              "description_value": [
+                "55.64",
+                "59.92",
+                "64.2",
+                "68.48",
+                "72.76",
+                "77.04",
+                "81.32",
+                "85.6",
+                "89.87",
+                "94.15"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "30.03",
+                "32.34",
+                "34.65",
+                "36.96",
+                "39.27",
+                "41.58",
+                "43.89",
+                "46.2",
+                "48.51",
+                "50.82"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2",
+                "2"
+              ]
+            },
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1412301,
+        "ulti_skill_detail": {
+          "id": 1412301,
+          "icon": "icn_skill_c412_ult",
+          "group_id": 14123,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Electronic",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Mother Forest",
+          "next_level_id": 1412302,
+          "prefer_target": "HighAttack",
+          "resource_name": "c412_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 2000,
+          "level_up_cost_id": 40302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 5,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10000,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000,
+            2000
+          ],
+          "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Max HP ▲ {description_value_01}% of the skill user's Max HP without restoring HP for {description_value_02} sec.\nAttack Damage ▲ {description_value_08}% for {description_value_09} sec.</color>\n■ Activates when enemy count aside from Nikkes is 1. Affects all allies.\n<color=#00AEFF> Spread Roots: <word_group=10070>Burst Skill damage of skills with \"Affects all enemies\"</word_group> ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates when enemy count aside from Nikkes is more than 2. Affects all allies.\n<color=#00AEFF>Changes Spread Roots to Wilted Roots.\nWilted Roots: <word_group=10070>Burst Skill damage of skills with \"Affects all enemies\"</word_group> ▲ {description_value_10}% for {description_value_04} sec.</color>\n■ Affects all Electric Code allies with assault rifles.\n<color=#00AEFF>Hit Rate ▲ {description_value_05}% for {description_value_06} sec.\nMax Ammunition Capacity ▲ {description_value_07} round(s) for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "11.9",
+                "12.82",
+                "13.73",
+                "14.65",
+                "15.56",
+                "16.48",
+                "17.4",
+                "18.31",
+                "19.23",
+                "20.14"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "257.4",
+                "277.2",
+                "297",
+                "316.8",
+                "336.6",
+                "356.4",
+                "376.2",
+                "396",
+                "415.8",
+                "435.6"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "26.76",
+                "28.82",
+                "30.88",
+                "32.94",
+                "35",
+                "37.06",
+                "39.12",
+                "41.18",
+                "43.24",
+                "45.3"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "12.35",
+                "13.3",
+                "14.25",
+                "15.2",
+                "16.15",
+                "17.1",
+                "18.05",
+                "19",
+                "19.95",
+                "20.9"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "38.09",
+                "41.02",
+                "43.95",
+                "46.88",
+                "49.81",
+                "52.74",
+                "55.67",
+                "58.6",
+                "61.53",
+                "64.46"
+              ]
+            },
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            141230101,
+            141230106,
+            141230102,
+            141230107,
+            141230104,
+            141230105
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 141202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5305,
+        "stat_enhance_detail": {
+          "id": 5305,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          400001
+        ],
+        "element_details": [
+          {
+            "id": 400001,
+            "element": "Electronic",
+            "group_id": 5000004,
+            "element_icon": "icn_element_elect",
+            "weak_element_id": 500001,
+            "element_desc_localekey": "Injects Code: Z.E.U.S. to all water-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Electric",
+            "element_code_name_localekey": "Code: Z.E.U.S."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100412,
+        "piece_detail": {
+          "id": 5100412,
+          "class": "Attacker",
+          "order": 41200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "MISSILIS",
+          "resource_id": 412,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Trina's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 141201,
+        "class": "Supporter",
+        "order": 10081,
+        "name_code": 5134,
+        "corporation": "MISSILIS",
+        "resource_id": 412,
+        "name_localkey": "Trina",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": true,
+    "simSupported": true,
+    "baseStats": {
+      "hp": 15000,
+      "atk": 500,
+      "def": 98,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 412
+    }
+  }
+}

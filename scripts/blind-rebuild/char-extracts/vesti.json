@@ -1,0 +1,497 @@
+{
+  "vesti": {
+    "slug": "vesti",
+    "name": "Vesti",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/zs-66/kd-55/c315ea400cc4de32aa2892c205885ffe.png",
+    "weapon": "RL",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Water",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 61.3,
+    "coreAttackMultiplier": 200,
+    "ammo": 6,
+    "reloadFrames": 142,
+    "chargeFrames": 60,
+    "chargeMultiplier": 250,
+    "hitsPerShot": 1,
+    "rl3": 16.8,
+    "burstGaugePerShot": 1.4,
+    "treasure": false,
+    "skills": {
+      "skill1": "■ Activates when performing a Full Charge attack. Affects self.\nExplosion Radius ▲ 15.01% for 10 sec.",
+      "skill2": "■ Activates when using Burst Skill. Affects self.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Survival Instinct 1 - ATK ▲ 5.35% for 45 sec.\nTwice: Survival Instinct 2 - Critical Damage ▲ 22.34% for 45 sec.\nThree times: Survival Instinct 3 - Critical Rate ▲ 15.51% for 45 sec.",
+      "burst": "■ Affects self.\nDeploys two Missile Containers that deal 15.56% of final ATK as damage to the enemy with the lowest remaining HP every 1 sec for 18 sec.\n■ Affects all enemies.\nEffects vary for each stage of Survival Instinct. Each subsequent effect triggers all effects before it:\nSurvival Instinct 1: Deals 210.62% of final ATK as additional damage.\nSurvival Instinct 2: Deals 247.25% of final ATK as additional damage.\nSurvival Instinct 3: Deals 302.19% of final ATK as additional damage.\n■ Affects all allies.\nFull Burst Duration ▼ 5 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1009101,
+        "shot_detail": {
+          "id": 1009101,
+          "damage": 6130,
+          "max_ammo": 6,
+          "shake_id": 2,
+          "ShakeType": "Fire_RL",
+          "fire_type": "HomingProjectile",
+          "zoom_rate": 0,
+          "input_type": "UP",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 100,
+          "penetration": 0,
+          "reload_time": 200,
+          "shot_timing": "Concurrence",
+          "spot_radius": 50,
+          "weapon_type": "RL",
+          "is_targeting": false,
+          "muzzle_count": 1,
+          "rate_of_fire": 60,
+          "homing_script": "lv1",
+          "name_localkey": "Rocket Launcher",
+          "prefer_target": "TargetGL",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 60,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 5,
+          "full_charge_damage": 25000,
+          "multi_target_count": 0,
+          "spot_radius_object": 2,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 14000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 500,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 100,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 25000,
+          "end_accuracy_circle_scale": 10,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 10,
+          "target_burst_energy_pershot": 28000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 10,
+          "auto_start_accuracy_circle_scale": 10
+        },
+        "bonusrange_max": 0,
+        "bonusrange_min": 0
+      },
+      "burstMeta": {
+        "burst_duration": 500,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2091101,
+        "skill2_id": 2091201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2091101,
+          "icon": "icn_skill_statexplosion_01",
+          "group_id": 20911,
+          "skill_level": 1,
+          "name_localkey": "Dreams Do Come True",
+          "next_level_id": 2091102,
+          "level_up_cost_id": 20102,
+          "description_localkey": "■ Activates when performing a Full Charge attack. Affects self.\n<color=#00AEFF>Explosion Radius ▲ {description_value_01}% for {description_value_02} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "8.87",
+                "9.55",
+                "10.23",
+                "10.92",
+                "11.6",
+                "12.28",
+                "12.96",
+                "13.65",
+                "14.33",
+                "15.01"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2091201,
+          "icon": "icn_skill_criticaldamage_01",
+          "group_id": 20912,
+          "skill_level": 1,
+          "name_localkey": "Survival Instinct",
+          "next_level_id": 2091202,
+          "level_up_cost_id": 20202,
+          "description_localkey": "■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>Effects vary according to the number of times used. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nOnce: Survival Instinct 1 - ATK ▲ {description_value_01}% for {description_value_02} sec.\nTwice: Survival Instinct 2 - Critical Damage ▲ {description_value_03}% for {description_value_04} sec.\nThree times: Survival Instinct 3 - Critical Rate ▲ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "3.16",
+                "3.4",
+                "3.64",
+                "3.89",
+                "4.13",
+                "4.37",
+                "4.62",
+                "4.86",
+                "5.1",
+                "5.35"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {
+              "description_value": [
+                "13.2",
+                "14.21",
+                "15.23",
+                "16.24",
+                "17.26",
+                "18.27",
+                "19.29",
+                "20.31",
+                "21.32",
+                "22.34"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {
+              "description_value": [
+                "9.17",
+                "9.87",
+                "10.58",
+                "11.28",
+                "11.99",
+                "12.69",
+                "13.4",
+                "14.1",
+                "14.81",
+                "15.51"
+              ]
+            },
+            {
+              "description_value": [
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45",
+                "45"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1091301,
+        "ulti_skill_detail": {
+          "id": 1091301,
+          "icon": "icn_skill_c091_ult",
+          "group_id": 10913,
+          "shake_id": 1,
+          "skill_type": "LaunchWeapon",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Justifiable Defense",
+          "next_level_id": 1091302,
+          "prefer_target": "LowHP",
+          "resource_name": "c091_ulti",
+          "duration_value": 500,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 20302,
+          "skill_value_data": [
+            {
+              "skill_value": 919,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 60,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 1009102,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 2,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 25,
+              "skill_value_type": "Integer"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Deploys two Missile Containers that deal {description_value_01}% of <word_group=10025>final</word_group> ATK as damage to the enemy with the lowest remaining HP every 1 sec for 18 sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Effects vary for each stage of Survival Instinct. <word_group=10028>Each subsequent effect triggers all effects before it</word_group>:\nSurvival Instinct 1: Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.\nSurvival Instinct 2: Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as additional damage.\nSurvival Instinct 3: Deals {description_value_04}% of <word_group=10025>final</word_group> ATK as additional damage.</color>\n■ Affects all allies.\n<color=#00AEFF>Full Burst Duration ▼ 5 sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "9.19",
+                "9.9",
+                "10.61",
+                "11.32",
+                "12.02",
+                "12.73",
+                "13.44",
+                "14.15",
+                "14.86",
+                "15.56"
+              ]
+            },
+            {
+              "description_value": [
+                "124.45",
+                "134.03",
+                "143.6",
+                "153.18",
+                "162.75",
+                "172.32",
+                "181.9",
+                "191.47",
+                "201.04",
+                "210.62"
+              ]
+            },
+            {
+              "description_value": [
+                "146.1",
+                "157.34",
+                "168.58",
+                "179.82",
+                "191.05",
+                "202.29",
+                "213.53",
+                "224.77",
+                "236.01",
+                "247.25"
+              ]
+            },
+            {
+              "description_value": [
+                "178.57",
+                "192.3",
+                "206.04",
+                "219.78",
+                "233.51",
+                "247.25",
+                "260.98",
+                "274.72",
+                "288.46",
+                "302.19"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            109130101,
+            109130102,
+            109130103
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            0
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 209102,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5105,
+        "stat_enhance_detail": {
+          "id": 5105,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          200001
+        ],
+        "element_details": [
+          {
+            "id": 200001,
+            "element": "Water",
+            "group_id": 5000002,
+            "element_icon": "icn_element_water",
+            "weak_element_id": 400001,
+            "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Water",
+            "element_code_name_localekey": "Code: P.S.I.D."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100091,
+        "piece_detail": {
+          "id": 5100091,
+          "class": "Attacker",
+          "order": 9100,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 91,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Vesti's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 209101,
+        "class": "Attacker",
+        "order": 10009,
+        "name_code": 5022,
+        "corporation": "ELYSION",
+        "resource_id": 91,
+        "name_localkey": "Vesti",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 88,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 91
+    }
+  }
+}

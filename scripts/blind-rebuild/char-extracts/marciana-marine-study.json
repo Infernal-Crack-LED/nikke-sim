@@ -1,0 +1,641 @@
+{
+  "marciana-marine-study": {
+    "slug": "marciana-marine-study",
+    "name": "Marciana: Marine Study",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/dm-40/al-84/95a67e6f9923062b464c98bc947ddcdd.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Iron",
+    "manufacturer": "Elysion",
+    "normalAttackMultiplier": 13.65,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 81,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 7.6,
+    "burstGaugePerShot": 0.2,
+    "treasure": false,
+    "nicknames": [
+      "mms"
+    ],
+    "skills": {
+      "skill1": "■ Activates when entering Full Burst after this unit uses her Burst Skill. Affects the 1 enemy unit(s) with the highest final Max HP.\nFlagged Target Designation\nEffect 1: Deals 3789.25% of final ATK as additional damage.\nEffect 2: Activates when the target is alive.\nFlagged Target: ATK ▼ 10.56% for 10 sec.\n■ Activates when an enemy is neutralized if the target is in the Flagged Target state. Affects 1 random enemy unit(s).\nFlagged Target Designation\nEffect 1: Deals 3789.25% of final ATK as additional damage.\nEffect 2: Activates when the target is alive.\nFlagged Target: ATK ▼ 10.56% for 10 sec.\n■ Activates when landing 20 normal attacks against a target in the High-Risk Target state. Affects the target.\nDeals 152.68% of final ATK as additional damage.",
+      "skill2": "■ Activates at the start of battle. Affects self.\nWhistle: ATK ▲ 32.73% continuously. Stacks up to 5 times.\nWhistle stacks ▲ 4.\n■ Activates every time there are 3 or fewer Raptures present for a period of 5 sec. Affects self.\nWhistle: ATK ▲ 32.73% continuously. Stacks up to 5 times.\n■ Activates every time there are 6 or more Raptures present for a period of 1 sec.\nPenguin Emergency Dispatch\nFunction: Expends Whistle stacks to attack Raptures when there are 6 or more present.\nEffect 1: Affects all enemies. Deals 214.36% of final ATK as additional damage.\nEffect 2: Affects self. Whistle stacks ▼ 1.\n■ Only activates when a Rapture appears or is neutralized while there are 5 or fewer Raptures. Affects self.\nElemental Advantage Attack Damage ▲ 20.41% continuously.",
+      "burst": "■ Affects self.\nElemental Advantage Attack Damage ▲ 30.97% for 10 sec.\nAttack Damage ▲ 27.45% for 10 sec.\n■ Affects all Electric Code enemies.\nHigh-Risk Target: DEF ▼ 10.56% for 20 sec."
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1032201,
+        "shot_detail": {
+          "id": 1032201,
+          "damage": 1365,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 100,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2000,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [
+            0
+          ],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [
+            0
+          ],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 4000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2322101,
+        "skill2_id": 2322201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2322101,
+          "icon": "icn_skill_damage_01",
+          "group_id": 23221,
+          "skill_level": 1,
+          "name_localkey": "Emergency Whistle",
+          "next_level_id": 2322102,
+          "level_up_cost_id": 50102,
+          "description_localkey": "■ Activates when entering Full Burst after this unit uses her Burst Skill. Affects the {description_value_01} enemy unit(s) with the highest <word_group=10025>final</word_group> Max HP.\n<color=#00AEFF>Flagged Target Designation\nEffect 1: Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.\nEffect 2: Activates when the target is alive.\nFlagged Target: ATK ▼ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates <word_group=10077>when an enemy is neutralized</word_group> if the target is in the Flagged Target state. Affects {description_value_01} random enemy unit(s).\n<color=#00AEFF>Flagged Target Designation\nEffect 1: Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.\nEffect 2: Activates when the target is alive.\nFlagged Target: ATK ▼ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates when landing {description_value_08} normal attacks against a target in the High-Risk Target state. Affects the target.\n<color=#00AEFF>Deals {description_value_09}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "2239.1",
+                "2411.34",
+                "2583.57",
+                "2755.81",
+                "2928.05",
+                "3100.29",
+                "3272.53",
+                "3444.77",
+                "3617.01",
+                "3789.25"
+              ]
+            },
+            {
+              "description_value": [
+                "6.24",
+                "6.72",
+                "7.2",
+                "7.68",
+                "8.16",
+                "8.64",
+                "9.12",
+                "9.59",
+                "10.08",
+                "10.56"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {
+              "description_value": [
+                "96.82",
+                "103.03",
+                "109.24",
+                "115.44",
+                "121.65",
+                "127.86",
+                "134.06",
+                "140.27",
+                "146.48",
+                "152.68"
+              ]
+            },
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2322201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 23222,
+          "skill_level": 1,
+          "name_localkey": "Penguin Emergency Dispatch",
+          "next_level_id": 2322202,
+          "level_up_cost_id": 50202,
+          "description_localkey": "■ Activates at the start of battle. Affects self.\n<color=#00AEFF>Whistle: ATK ▲ {description_value_01}% continuously. Stacks up to {description_value_02} times.\nWhistle stacks ▲ {description_value_03}.</color>\n■ Activates every time there are {description_value_04} or fewer Raptures present for a period of {description_value_05} sec. Affects self.\n<color=#00AEFF>Whistle: ATK ▲ {description_value_01}% continuously. Stacks up to {description_value_02} times.</color>\n■ Activates every time there are {description_value_06} or more Raptures present for a period of {description_value_07} sec.\n<color=#00AEFF>Penguin Emergency Dispatch\nFunction: Expends Whistle stacks to attack Raptures when there are {description_value_06} or more present.\nEffect 1: Affects all enemies. Deals {description_value_08}% of <word_group=10025>final</word_group> ATK as additional damage.\nEffect 2: Affects self. Whistle stacks ▼ {description_value_09}.</color>\n■ Only activates when a Rapture appears or is neutralized while there are {description_value_10} or fewer Raptures. Affects self.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_11}% continuously.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "19.34",
+                "20.83",
+                "22.32",
+                "23.8",
+                "25.29",
+                "26.78",
+                "28.27",
+                "29.76",
+                "31.24",
+                "32.73"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4",
+                "4"
+              ]
+            },
+            {
+              "description_value": [
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3",
+                "3"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6",
+                "6"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "126.67",
+                "136.41",
+                "146.16",
+                "155.9",
+                "165.64",
+                "175.39",
+                "185.13",
+                "194.88",
+                "204.62",
+                "214.36"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5",
+                "5"
+              ]
+            },
+            {
+              "description_value": [
+                "12.06",
+                "12.99",
+                "13.92",
+                "14.84",
+                "15.77",
+                "16.7",
+                "17.63",
+                "18.56",
+                "19.48",
+                "20.41"
+              ]
+            }
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1322301,
+        "ulti_skill_detail": {
+          "id": 1322301,
+          "icon": "icn_skill_c322_ult",
+          "group_id": 13223,
+          "shake_id": 1,
+          "skill_type": "SetBuff",
+          "attack_type": "Iron",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "None",
+          "name_localkey": "Penguin Spiral",
+          "next_level_id": 1322302,
+          "prefer_target": "HighMaxHP",
+          "resource_name": "c322_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 50302,
+          "skill_value_data": [
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 1,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 10,
+              "skill_value_type": "Integer"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000,
+            4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nAttack Damage ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all Electric Code enemies.\n<color=#00AEFF>High-Risk Target: DEF ▼ {description_value_05}% for {description_value_06} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "18.3",
+                "19.71",
+                "21.12",
+                "22.52",
+                "23.93",
+                "25.34",
+                "26.75",
+                "28.16",
+                "29.56",
+                "30.97"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "16.22",
+                "17.47",
+                "18.72",
+                "19.96",
+                "21.21",
+                "22.46",
+                "23.71",
+                "24.96",
+                "26.2",
+                "27.45"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "6.24",
+                "6.72",
+                "7.2",
+                "7.68",
+                "8.16",
+                "8.64",
+                "9.12",
+                "9.59",
+                "10.08",
+                "10.56"
+              ]
+            },
+            {
+              "description_value": [
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20",
+                "20"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [
+            132230104
+          ],
+          "after_hurt_function_id_list": [
+            0
+          ],
+          "before_use_function_id_list": [
+            132230101,
+            132230105
+          ],
+          "before_hurt_function_id_list": [
+            0
+          ]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 232202,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [
+          500001
+        ],
+        "element_details": [
+          {
+            "id": 500001,
+            "element": "Iron",
+            "group_id": 5000005,
+            "element_icon": "icn_element_iron",
+            "weak_element_id": 300001,
+            "element_desc_localekey": "Injects Code: D.M.T.R. to all electric-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Iron",
+            "element_code_name_localekey": "Code: D.M.T.R."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100322,
+        "piece_detail": {
+          "id": 5100322,
+          "class": "Attacker",
+          "order": 32200,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ELYSION",
+          "resource_id": 322,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Marciana: Marine Study's Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": [
+            "etc"
+          ],
+          "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+        }
+      },
+      "meta": {
+        "id": 232201,
+        "class": "Attacker",
+        "order": 10048,
+        "name_code": 5176,
+        "corporation": "ELYSION",
+        "resource_id": 322,
+        "name_localkey": "Marciana: Marine Study",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1200,
+      "critDamage": 150,
+      "resourceId": 322
+    }
+  }
+}

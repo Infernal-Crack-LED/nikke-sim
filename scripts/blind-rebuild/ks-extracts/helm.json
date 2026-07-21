@@ -1,0 +1,65 @@
+{
+  "helm": {
+    "name": "Helm (Treasure)",
+    "burst": "III",
+    "weapon": "SR",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "reconciled",
+      "provenance": "hand-authored",
+      "date": "2026-07-17",
+      "findings": [
+        "*** ROSTER-WIDE SSOT GAP *** 0.591 COLD root cause: blablalink sync carries NO treasure-phase prose; materialize froze the UNTREASURED base kit. Dropped: S2 '178.98% full-charge bonus hit' (~doubles sustained fire) + S2 FB attack-damage 11.85->27.87. The 2026-07-14 validated 0.99 state INCLUDED both via the old runtime parser (model never drifted, source text did). Affects ALL (Treasure) units (helm, laplace...). HIGH PRIORITY owner reconciliation",
+        "✅ RESOLVED 2026-07-17 (favorite-item sync + reconcile): DB now carries treasure prose. Enacted S2 FB attack-damage 11.85→27.87 (all allies) + S2 178.98% full-charge hit (shotFired, every charged shot) + burst 54.45% recovery as heal event. Board 0.591 COLD → 1.014 ±3%✓ (5 comps 0.98-1.05); teammates warmed by the restored 27.87 team buff (crown 1.029/privaty 0.977/anis-star 0.952/SWHA 1.11). noir anchor +0.0000%; FB asserts all green."
+      ]
+    },
+    "tier": "MEASURED",
+    "tuned": true,
+    "control": true,
+    "evidence": "Helm SR frame recording — 1.37s cycle + 22f bolt recovery measured; 0.93-1.19",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 4,
+      "within3pct": 0
+    },
+    "reference": false,
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "skill2: the 178.98% full-charge additional hit is modeled on shotFired (every SR pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
+      "burst: the 158.4% Charge Damage 'for 10 round(s)' is approximated as durationSec 13 (~8 rounds incl. the mid-window reload; 10 rounds ~= 16-17s)"
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "T3 fire-weak (boss Wind)",
+          "ratio": 1.0584
+        },
+        {
+          "comp": "T4 water-weak (boss Fire)",
+          "ratio": 0.9802
+        },
+        {
+          "comp": "T4b water-weak REPLICATE (boss Fire)",
+          "ratio": 1.0016
+        },
+        {
+          "comp": "T6 fire-weak (boss Wind)",
+          "ratio": 1.0234
+        },
+        {
+          "comp": "T8 iron-weak (boss Electric)",
+          "ratio": 1.0353
+        }
+      ],
+      "n": 5,
+      "mean": 1.0198,
+      "mad": 0.0277,
+      "band": "±3% ✓",
+      "temp": "OK  ·"
+    }
+  }
+}

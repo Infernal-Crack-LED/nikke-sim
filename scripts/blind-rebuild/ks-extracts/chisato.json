@@ -1,0 +1,63 @@
+{
+  "chisato": {
+    "name": "Chisato",
+    "burst": "III",
+    "weapon": "SMG",
+    "class": "Attacker",
+    "kitParse": {
+      "status": "authored",
+      "provenance": "parser-baseline",
+      "date": "2026-07-16",
+      "findings": [
+        "S2 'normal attacks deal true damage' modeled via weaponSwap trueNormals (takina precedent) → board 0.95→1.025 (into +/-5%)"
+      ]
+    },
+    "tier": "MODEL_ONLY",
+    "tuned": false,
+    "control": false,
+    "evidence": "run I stable comp: 1.21-1.26",
+    "date": "2026-07-13",
+    "graded": {
+      "teams": 2,
+      "within3pct": 0
+    },
+    "reference": false,
+    "residual": "Real modeling error, untuned",
+    "unmodeled": {
+      "skill1": [
+        "Activates at the start of battle. Affects self. Charges Extrasensory to 100%, up to 100%. Continuous, cannot be removed.",
+        "Only at 100%: Dodging Bullets: Invulnerable 2 sec.",
+        "Affects self every 2 sec. Extrasensory ▼ 1%."
+      ],
+      "skill2": [],
+      "burst": [
+        "Charges Extrasensory to 100%."
+      ]
+    },
+    "caveats": [
+      "skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).",
+      "skill2: 'Normal attacks deal true damage for 10 sec' is encoded as a same-weapon swap (trueNormals) so the S1 True Damage ▲ 48.62% applies to normals only inside the window — the swap grants an instant mag refill at cast and at window end (engine artifact, mild shot-count optimism), and core/crit are retained on true normals (takina precedent, unverified in-game)."
+    ],
+    "board": {
+      "records": [
+        {
+          "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
+          "ratio": 1.225
+        },
+        {
+          "comp": "PI misc B3s (boss Water)",
+          "ratio": 1.227
+        },
+        {
+          "comp": "N2 modernia wind (boss Wind)",
+          "ratio": 1.1389
+        }
+      ],
+      "n": 3,
+      "mean": 1.197,
+      "mad": 0.197,
+      "band": ">15%",
+      "temp": "HOT ▲"
+    }
+  }
+}
