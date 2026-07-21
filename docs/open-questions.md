@@ -8,6 +8,22 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U23 — milk-blooming-bunny's burst-window over-model, exposed by the (faithful) Gain-Pierce landing (2026-07-20)
+Enacting the kit-literal S1 "Gain Pierce for 6 sec" (`gainPierce` on `shotFired`; kit-audit Phase C
+ENACT-NOW, DECISIONS 2026-07-20) lit `milk-blooming-bunny`'s previously-dead Pierce package — her burst
+`pierceDamagePct +117.64%` now applies to her burst-window damage. Isolated A/B: **PG 0.653 COLD → 1.301
+HOT** (total ~×2). The pierce value is datamined (not tuned) and the mechanism is verified faithful (debug:
+`dmgUp` 1.00→2.31 during her ~10s burst window, correctly ending at t≈13.17 — the same unit-tagged pierce
+Damage-Up model grave uses). So the residual **+0.30 HOT is a SEPARATE over-model**, not the pierce. Two
+candidate drivers, both measurement-gated: **(1)** her 2nd audit gotcha — the Embarrassment mode-split: in
+the default auto-mode the burst `atkPct 220` + S2 DoT `447.7% ×5` magnitudes and the whole
+Embarrassment-off cadence are an unmeasured parser baseline (plan §milk-blooming-bunny gotcha 2, MEASUREMENT);
+**(2)** the pierce-window DPS share is unmeasured — a milk-blooming-bunny-FOCUS recording is needed to
+confirm how much of her damage really lands inside the +117.64% window. Do NOT re-fudge 117.64 to cool her.
+Recipe: milk-blooming-bunny-focus video, read burst-window vs out-of-window DPS split + confirm the pierce
+buff-icon window. Trail: `src/skills/overrides/milk-blooming-bunny.json` caveat, DECISIONS 2026-07-20, plan
+§milk-blooming-bunny.
+
 ### U22 — Snow White (`snow-white`) "Full Charge Damage: 1000% of damage": ADDITIVE (owner ruling) vs ×10 MULTIPLICATIVE (footage) — CONTESTED 2026-07-20
 The owner ruled the 1000% ADDITIVE ("part of the normal charge damage bucket" → full-charge coefficient
 499.5 + 1000 = 1499.5% of ATK; encoded as the derived chargeMultPct 300.2002, landed). The SAME-DAY

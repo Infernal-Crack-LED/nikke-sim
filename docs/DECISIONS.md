@@ -8,6 +8,24 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-20) milk-blooming-bunny: S1 "Gain Pierce for 6 sec" is MODELED → her Pierce package goes live
+  — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED; grave-pierce precedent).**
+  `milk-blooming-bunny` (SR/Iron/B3, Attacker; the variant, not base `milk` SR/Water). Her S1 full-charge
+  "Gain Pierce for 6 sec" sat in `unmodeled.skill1`, so she was NEVER Pierce-tagged and her whole Pierce
+  package (burst `pierceDamagePct +117.64%`, 10s) was INERT — a prime suspect for her COLD 0.653. Enacted a
+  `{shotFired → self, gainPierce durationSec:6}` block (SR auto-full-charges every shot → the 6s window
+  refreshes continuously → permanent tag; the ade-agent-bunny/grave `gainPierce` precedent). **DELIBERATE
+  overshoot, faithful>fit (exactly the grave 2026-07-17 pierce precedent):** isolated A/B **PG 0.653 COLD →
+  1.301 HOT** (total ~254M→506M, ~×2). Mechanism verified by debug: during her ~10s burst window her pierce
+  Damage-Up (`dmgUp` 1.00→2.31, the +117.64 + d-killer-wife's SR +13.55) roughly doubles her already-large
+  burst-window damage (atkPct-220 + FB normals: 5M/shot vs 0.47M outside); the buff correctly ends at
+  t≈13.17. **No tuned value** (117.64 is datamined). The residual +0.30 HOT is now cleanly isolated to
+  milk-blooming-bunny's SEPARATE, measurement-gated over-models — her 2nd gotcha (the Embarrassment
+  mode-split: auto-mode faithfulness of the burst atkPct-220 / S2 DoT-447.7 magnitudes) + an unmeasured
+  pierce-window DPS share — NOT the pierce mechanic. Tracked → open-questions **U23**. Regression: her PG
+  total is the only drift (+99.22%); all full-burst asserts byte-identical (self-only tag). Trail: plan
+  §milk-blooming-bunny gotcha 1, override caveat.
+
 - **(2026-07-20) d-killer-wife: S1 FB Pierce Damage ▲13.55% targets SR allies only → `alliesOfWeapon SR`
   — LANDED (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED).** `d-killer-wife` (SR/Fire/B1, Supporter;
   the variant, not base `d` SMG/Wind). Her S1 FB-enter Pierce Damage ▲13.55% (10s) targeted ALL allies; the
