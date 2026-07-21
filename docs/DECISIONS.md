@@ -8,6 +8,19 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) Same-weapon flavor swaps (`trueNormals`) no longer grant free mag-refills — LANDED
+  (kit-audit chisato #2; owner-ruled faithful fix).** The engine's generic `weaponSwap` refilled the mag to
+  full on BOTH swap entry (sim.ts) and exit — correct for a REAL weapon swap (snow-white-heavy-arms cannon,
+  moran unlimited-ammo, nayuta SR-mode: a fresh weapon), but WRONG for a same-weapon `trueNormals` flavor
+  swap (`chisato`/`takina`/`laplace` — the gun never changes, only normals become true-flavored), which the
+  kit grants no reload for. Guarded both refill sites on `!trueNormals`. **Board (isolated A/B, faithful>fit):**
+  cools the over-modeled HOT **chisato 1.192→1.160**; drops **takina 0.975→0.936** (OK→COLD — her 0.975 was
+  FLATTERED by the spurious ~2 free reloads/cycle on her 6-round SR mag; her kit also grants no reload, verified
+  — so 0.936 is her faithful board and the COLD is now a separate under-model to chase). laplace no-data. Real
+  swaps (snow-white-heavy-arms/crown) byte-identical; small teammate cascades in chisato/takina comps; all 12
+  full-burst asserts green. No tuned value. Owner ruling: land the faithful fix. Trail: plan §chisato gotcha 2,
+  sim.ts swap entry/exit guards.
+
 - **(2026-07-21) Reload-triggered buff removal — new engine primitive `removeOnReload`, LANDED INERT;
   cinderella CS-toggle wiring HELD (awaiting owner + a gated CS-formula pass).** Built the capability the
   kit-audit plan (§cinderella gotcha #2) named: a `buff` effect may set `removeOnReload:true`, tagging the

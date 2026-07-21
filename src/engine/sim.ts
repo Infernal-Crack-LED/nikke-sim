@@ -1670,7 +1670,10 @@ export function runSim(
           owner.chargeProgress = 0;
           owner.reloading = false;
           owner.reloadProgress = 0;
-          owner.ammo = maxAmmo(owner, frame);
+          // A same-weapon flavor swap (trueNormals — the gun never changes, only normals become true
+          // damage: chisato/takina/laplace) does NOT reload the mag; only a real weapon swap picks up a
+          // fresh magazine. (kit-audit chisato #2 — the kit grants no reload here.)
+          if (!e.trueNormals) owner.ammo = maxAmmo(owner, frame);
           break;
         case 'fillGauge':
           // gauge is locked during full burst — fills landing then are wasted
@@ -2121,8 +2124,9 @@ export function runSim(
       if (u.burstCdFrames > 0) u.burstCdFrames--;
 
       if (u.swap && frame >= u.swap.untilFrame) {
+        const wasFlavorSwap = u.swap.trueNormals; // same-weapon flavor swap → no free reload on exit either
         u.swap = null;
-        u.ammo = maxAmmo(u, frame);
+        if (!wasFlavorSwap) u.ammo = maxAmmo(u, frame);
         u.chargeProgress = 0;
       }
 
