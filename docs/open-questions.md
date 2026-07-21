@@ -394,6 +394,13 @@ Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
     Rotation-log diagnosis: the sim double-casts Sakura at full-bursts 3 (41.6s) and 4 (67.6s) — a leftmost-
     tiebreak when both Burst-IIIs are ready. This is a Burst-III **selection** question (the count is fine), and
     touches Cinderella, who IS board-graded — so an engine tiebreak change has real blast radius.
+    - **[2026-07-21] in-FB burst-CDR hypothesis REFUTED — the source is elsewhere.** One theory for the Sakura
+      double-cast was that Rouge's S1 "Burst CD ▼ 7s" was being applied *during* Full Burst (shaving Sakura's
+      40s cooldown so she came off CD early at Cinderella's turn). A prototype that suppressed in-FB skill CDR
+      was built + verified faithful but REGRESSED three measured FB-count comps, and the owner then re-watched
+      the footage and confirmed the CDR proc DOES apply during Full Burst (DECISIONS 2026-07-21). So in-FB CDR
+      is real and is NOT the cause. The Burst-III **leftmost-tiebreak selection** (above) remains the leading
+      candidate for the 6-cast-vs-5 over-allocation — to be opened fresh. (No engine change on `main`.)
   - **Ludmilla: Winter Owner comp** and **Rosanna: Chic Ocean comp**: both read **12 real full bursts vs the
     sim's 13** (sim over-generates by one). The Rosanna reviewer pinned the mechanism: the sim opens its first
     full burst at ~3.4s vs the footage's ~7s (optimal-start vs human startup lag) plus a slightly tighter cadence,

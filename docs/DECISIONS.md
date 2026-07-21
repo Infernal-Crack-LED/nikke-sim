@@ -8,6 +8,26 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) Skill-granted burst-cooldown REDUCTION DOES apply during Full Burst — the "suppress in-FB burst-CDR" change is REFUTED / abandoned.**
+  A proposed game rule ("burst-CDR does not apply during the 10s Full Burst window; only the FB-entry instant
+  is exempt") was prototyped on an isolated worktree: a gate in the engine's `case 'burstCdr'` keyed on a new
+  `fbStartFrame`/`fbEndFrame` marker that no-ops any mid-FB skill CDR proc (the natural 10s cooldown tick during
+  FB was always kept — that is just time elapsing). The gate was verified FAITHFUL to the proposed rule (per-proc
+  trace: a "Burst CD ▼ 7s" proc whose 8th-full-charge shot lands mid-FB → no-op; landing in the post-FB gap →
+  applies). But it dropped THREE measured comps below their video-counted full-burst pins — elec DPS (run E)
+  11→10, iron sweep (run G) 13→12, N1 rapi/quency wind 13→12 — because in those comps the sim reaches its
+  measured FB count VIA that in-FB CDR (rouge's + d-killer-wife's 8-full-charge → −7s procs). The residual traced
+  to proc PHASE: the sim's charged-shot cadence is deterministic (the MC seed jitters SG pellets, not the SR
+  charge counter), so the early procs land on a fixed unlucky phase just inside the FB window (iron sweep's first
+  proc lands 0.35s inside FB-end) and no-op, while the real fights land them in the gap. **RESOLUTION (owner,
+  2026-07-21): re-watched the source footage and observed the CDR proc APPLYING during Full Burst — so the
+  premise was wrong. In-FB skill burst-CDR is REAL; the measured FB pins already encode it; the change is
+  incorrect.** The engine was never modified on `main` (the prototype lived only on the removed
+  `burstcdr-no-fb` worktree). The Sakura: Bloom in Summer 6-cast-vs-5 Burst-III over-allocation that originally
+  motivated this has a DIFFERENT source (NOT in-FB CDR) → tracked in [open-questions.md](open-questions.md) U16
+  (leftmost-tiebreak Burst-III selection candidate), to be opened in a fresh session. Trail: the now-closed
+  handoff `docs/handoffs/closed/2026-07-21-burstcdr-no-fb-change-pulled.md`.
+
 - **(2026-07-21) cinderella (RL/Electric, "cindy") RL fire pattern = WHOLE-MAG DUMP + single-rocket magnitude — LANDED.**
   Isolated cinderella-solo footage (`docs/probes/720-kit-audit/cindy solo neutral.MP4`, ammo-counter frame
   read + owner ruling + Fable pre-op APPROVED-WITH-REVISIONS) settles her unique cadence. She charges ONCE
