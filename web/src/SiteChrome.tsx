@@ -50,8 +50,33 @@ export function SiteNav({
   onLogout: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [betaToastOpen, setBetaToastOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const betaToastRef = useRef<HTMLDivElement>(null);
   const mobile = useMediaQuery('(max-width: 640px)'); // page nav → focused dropdown
+
+  // The beta toast dismisses on Escape or a click anywhere outside it (the
+  // Okay button is the third exit) — same pattern as the hamburger menu.
+  useEffect(() => {
+    if (!betaToastOpen) return;
+    const onDocDown = (e: globalThis.MouseEvent) => {
+      if (
+        betaToastRef.current &&
+        !betaToastRef.current.contains(e.target as Node)
+      ) {
+        setBetaToastOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setBetaToastOpen(false);
+    };
+    document.addEventListener('mousedown', onDocDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDocDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [betaToastOpen]);
 
   // Close the menu on an outside click or Escape.
   useEffect(() => {
@@ -105,6 +130,19 @@ export function SiteNav({
               </a>
             ))
           )}
+          {/* Beta flag — sits inline after Mechanics on every breakpoint and
+              pops the status toast instead of navigating anywhere. */}
+          <button
+            type='button'
+            className='nav-beta-chip'
+            onClick={() => setBetaToastOpen(true)}
+            aria-haspopup='dialog'
+          >
+            <span className='nav-beta-sign' aria-hidden='true'>
+              ⚠
+            </span>
+            Beta
+          </button>
         </div>
         <div className='site-nav-right'>
           {/* Discord auth stays visible — team saving and roster sync depend
@@ -196,6 +234,30 @@ export function SiteNav({
           </div>
         </div>
       </div>
+      {betaToastOpen && (
+        <div
+          className='beta-toast'
+          role='alertdialog'
+          aria-label='Beta status'
+          ref={betaToastRef}
+        >
+          <span className='beta-toast-sign' aria-hidden='true'>
+            ⚠
+          </span>
+          <p className='beta-toast-msg'>
+            Exact sim calculations and character kits are still under
+            development
+          </p>
+          <button
+            type='button'
+            className='beta-toast-ok'
+            autoFocus
+            onClick={() => setBetaToastOpen(false)}
+          >
+            Okay
+          </button>
+        </div>
+      )}
     </nav>
   );
 }

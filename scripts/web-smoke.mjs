@@ -94,6 +94,21 @@ await new Promise((r) => setTimeout(r, 50));
 const menuText =
   sim.window.document.querySelector('.nav-menu-panel')?.textContent ?? '';
 
+// The Beta chip sits inline in the page nav; clicking it pops the status toast,
+// and a mousedown anywhere outside the toast dismisses it again.
+const betaChip = sim.window.document.querySelector('.nav-beta-chip');
+betaChip?.dispatchEvent(
+  new sim.window.MouseEvent('click', { bubbles: true, button: 0 }),
+);
+await new Promise((r) => setTimeout(r, 50));
+const betaToastText =
+  sim.window.document.querySelector('.beta-toast')?.textContent ?? '';
+sim.window.document.body.dispatchEvent(
+  new sim.window.MouseEvent('mousedown', { bubbles: true, button: 0 }),
+);
+await new Promise((r) => setTimeout(r, 50));
+const betaToastDismissed = !sim.window.document.querySelector('.beta-toast');
+
 // ---- Team Builder tab -----------------------------------------------------
 // SPA-navigate the mounted app to /teambuilder the way a user would (the top
 // nav does pushState + popstate) — this also exercises the lazy route chunk.
@@ -118,6 +133,11 @@ const checks = {
   'share % rendered': /%/.test(text),
   'full bursts reported': /full\s*bursts/.test(text),
   'site nav renders': text.includes('Mechanics') && text.includes('Sim'),
+  'beta chip opens status toast':
+    !!betaChip &&
+    betaChip.textContent.includes('Beta') &&
+    betaToastText.includes('still under development') &&
+    betaToastDismissed,
   'discord login stays visible': text.includes('Log in with Discord'),
   'hamburger menu renders':
     menuText.includes('Testing Requested') &&

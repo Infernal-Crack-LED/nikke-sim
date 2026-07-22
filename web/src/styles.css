@@ -1408,6 +1408,106 @@ footer {
   background: var(--panel2);
   box-shadow: 0 0 0 1px var(--accent) inset;
 }
+/* Beta flag — small caution chip inline after Mechanics. Deliberately loud
+   (the one warm color in the nav) so the in-development status isn't missed;
+   the slow glow pulse keeps it alive without demanding attention. */
+.nav-beta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 4px;
+  background: var(--warn);
+  color: #0b1220;
+  border: 0;
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  animation: beta-chip-pulse 2.6s ease-in-out infinite;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+.nav-beta-chip:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+.nav-beta-chip:active {
+  transform: translateY(0);
+}
+.nav-beta-sign {
+  font-size: 12px;
+  line-height: 1;
+}
+@keyframes beta-chip-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(224, 176, 75, 0);
+  }
+  50% {
+    box-shadow: 0 0 10px 1px rgba(224, 176, 75, 0.45);
+  }
+}
+/* Beta status toast — fixed top-center, above modals (z 50). Dismisses on
+   Okay, Escape, or any click outside it (handler in SiteChrome). */
+.beta-toast {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: min(560px, calc(100vw - 32px));
+  background: var(--panel);
+  border: 1px solid var(--warn);
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  animation: beta-toast-in 0.25s ease-out;
+}
+@keyframes beta-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -14px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+.beta-toast-sign {
+  color: var(--warn);
+  font-size: 20px;
+  line-height: 1;
+}
+.beta-toast-msg {
+  margin: 0;
+  flex: 1;
+  font-size: 13px;
+  color: var(--text);
+}
+.beta-toast-ok {
+  background: var(--warn);
+  color: #0b1220;
+  border: 0;
+  border-radius: 8px;
+  padding: 6px 16px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  transition: filter 0.15s ease;
+}
+.beta-toast-ok:hover {
+  filter: brightness(1.1);
+}
 /* right-side page/action buttons (reuse the share-btn look) */
 .nav-btn {
   background: var(--panel2);
