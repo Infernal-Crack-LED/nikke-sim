@@ -29,7 +29,8 @@
     "The 8-cell band assignments of soda-tb-sg-core-hr-windows.json are CONFIRMED correct (owner hand-measured) - candidate (d) band-misassignment is DEAD.",
     "Boss on-screen size at a given band is the same across recordings at the same resolution; only limb animation varies, and the traced frames were chosen near a neutral pose.",
     "Pellet impacts are visually weighted toward the OUTER EDGE of the grey circle, arriving in groups of 2-3 along the rim - not center-clustered (owner observation from footage). The formal fit honors this WITHOUT an extra edge exponent: per-area-uniform already puts 75% of pellets beyond half the circle radius; what the observation genuinely rules out is the center-clustered Gaussian.",
-    "Boss shape: four legs, two large shoulders/arms, narrow hourglass waist, core at the waist center - so as the boss shrinks with range, MORE wide hittable structure enters the fixed circle, holding coverage roughly flat."
+    "Boss shape: four legs, two large shoulders/arms, narrow hourglass waist, core at the waist center - so as the boss shrinks with range, MORE wide hittable structure enters the fixed circle, holding coverage roughly flat.",
+    "The grey circle is the SAME across all shotgun users at every Hit Rate (owner, already tested elsewhere) - the cross-unit HR contrast (brid-silent-track HR0 vs soda-twinkling-bunny HR38.91) is therefore clean, and the same-unit re-trace strengthener is RETIRED."
   ],
   "extracted": {
     "aimCircle_hr0_px": { "r_inner": 79.3, "r_mean": 85.7, "r_std": 4.1, "unit": "brid-silent-track (SG)", "band": "near" },
@@ -60,10 +61,10 @@
     "resolvedPuzzles": "This dissolves the flat-landing anomaly of the 2026-07-22 SG geometry handoff section 6 (the non-convex silhouette keeps filling the fixed circle), and the mid-cell core rate sits at z=-1.4 (unremarkable). The one residual outlier is the MIDFAR ON core cell (z=+2.76) - open item."
   },
   "openItems": [
-    "MIDFAR ON core outlier (z=+2.76, 11 cores where ~5 expected) - the one cell the winning model misses; candidates: fluctuation (16 cells, multiplicity), a band-window edge effect, or a real mechanism (e.g. aim-offset shrinking with range). Burst 4 window recount would check it.",
-    "Nice-to-have strengthener: trace soda-twinkling-bunny's own grey circle in an HR-off gap of the same fight -> same-unit same-weapon HR contrast (current contrast is weapon-matched but cross-unit).",
+    "MIDFAR ON core outlier (z=+2.76, 11 cores where ~5 expected) - the one cell the winning model misses. Owner will count a midfar Hit-Rate-ON window from a DIFFERENT video (independent sample beats a recount). Pre-registered predictions for that count: core/landed ~0.035 if the model is right vs ~0.08 if the outlier is real; landing ~0.73-0.78. Needs: SG unit, midfar band, HR buff ON in-window, ideally >=10 shots, section-2 counting rule of the handoff.",
     "eps~0.96 landing loss not yet attributed (loose outline vs aim wander vs popup dropout).",
     "Burst 2 near-ON window (video 47-62) recount stays open as a pure reproducibility backstop.",
+    "Optional independent check of the radial distribution: pellet-flash radial histogram (bright-spot detection pilot).",
     "Any engine change from this is a gated /scientific-method pass - not this session."
   ]
 }
