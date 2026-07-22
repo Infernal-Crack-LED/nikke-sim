@@ -68,6 +68,19 @@ const XINSTEXPL = envSlugSet(ENV.XINSTEXPL);
 // regressing units carry separate documented over-credits). Fable APPROVE. `DOTCRIT=off` disables
 // (A/B revert switch). Per-dot explicit `crit` fields still override this default either way.
 const DOT_CRIT = ENV.DOTCRIT !== 'off';
+// RIDERCRIT: the per-normal-hit `extraHitDamagePct` function-rider path (dealDamage ~2611) rolls
+// crit. This is the half of U13/A29 that DOTCRIT explicitly left out of scope: the rider path was
+// hard-coded `crit: false`, contradicting the SSOT — damage-calculation.md §2b line 309 and the
+// datamined FunctionTable rule (nikke-damage-formula.md §3) BOTH say function "additional damage"
+// CRITs at the caster's rate and NEVER cores. `core: false` there is correct and stays; FB is
+// already correct (no `noFb` passed ⇒ FB by landing time, sim.ts:1235). Only crit was wrong.
+// Population is exactly 3 overrides (field-form grep): modernia (Destroy Mode 2.24%, her own
+// caveat ⚑4 names this defect), nayuta (Memory Incineration 530.46%), neon-vision-eye (Super
+// Firepower 262.79%) — all three coefficients are kit-verbatim/datamined, NONE calibrated-absorbed,
+// so the U13 ÷1.075 de-crit trap does not apply here (provenance audit 2026-07-22).
+// Note the true-damage carve-out (§2c owner ruling 2026-07-21: true damage cannot crit) is plumbed
+// below even though no rider is `flavor:"true"` today — the guard, not a live behavior change.
+const RIDER_CRIT = ENV.RIDERCRIT !== 'off';
 // FBRULE (2026-07-14): candidate HEURISTICS for when SKILL/rider/DoT damage gets the +50% Full Burst
 // major. (Range is settled — skills never get the +30% range bonus; noRange is universal.) The
 // default 'perkit' uses the calibrated per-unit noFb flags; other rules replace them with a GENERAL
@@ -2607,8 +2620,16 @@ export function runSim(
 
     const extraPerHit = stat(u, 'extraHitDamagePct', frame);
     if (extraPerHit > 0) {
+      // Function "additional damage" CRITs at the caster's rate and NEVER cores (SSOT
+      // damage-calculation.md §2b; datamined FunctionTable, nikke-damage-formula.md §3). `core`
+      // and `noRange` stay as they were; FB is by landing time (no noFb passed). See RIDER_CRIT.
+      // LIMITATION: `extraHitDamagePct` is a SUMMED buff stat, so an individual rider's flavor is
+      // not representable here — a true-damage rider (§2c: true damage cannot crit, owner ruling
+      // 2026-07-21) could not be exempted without promoting the stat to a per-source list. No
+      // override carries a true-flavored rider today (all 3 are plain "additional damage"), so
+      // nothing is mis-modeled; authoring one would require that refactor first.
       dealDamage(u, extraPerHit * u.char.hitsPerShot, frame, {
-        crit: false, core: false, charge: false, category: 'burst', noRange: true,
+        crit: RIDER_CRIT, core: false, charge: false, category: 'burst', noRange: true,
       });
     }
 
