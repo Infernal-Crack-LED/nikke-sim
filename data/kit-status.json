@@ -29,10 +29,10 @@
     },
     "band": {
       "±3% ✓": 7,
-      "±15%": 14,
-      "±8%": 8,
+      "±15%": 13,
+      "±8%": 10,
       ">15%": 11,
-      "±5%": 5
+      "±5%": 4
     }
   },
   "units": {
@@ -902,12 +902,16 @@
           {
             "comp": "C-Crown control (neutral, focus crown)",
             "ratio": 0.9737
+          },
+          {
+            "comp": "soda-tb control (boss Electric, focus soda-twinkling-bunny)",
+            "ratio": 1.1702
           }
         ],
-        "n": 16,
-        "mean": 1.001,
-        "mad": 0.0477,
-        "band": "±5%",
+        "n": 17,
+        "mean": 1.011,
+        "mad": 0.0549,
+        "band": "±8%",
         "temp": "OK  ·"
       }
     },
@@ -1532,11 +1536,15 @@
           {
             "comp": "C-Crown control (neutral, focus crown)",
             "ratio": 0.9633
+          },
+          {
+            "comp": "soda-tb control (boss Electric, focus soda-twinkling-bunny)",
+            "ratio": 0.9025
           }
         ],
-        "n": 9,
-        "mean": 0.9682,
-        "mad": 0.0378,
+        "n": 10,
+        "mean": 0.9616,
+        "mad": 0.0438,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1909,12 +1917,16 @@
           {
             "comp": "C-Crown control (neutral, focus crown)",
             "ratio": 1.0888
+          },
+          {
+            "comp": "soda-tb control (boss Electric, focus soda-twinkling-bunny)",
+            "ratio": 0.9584
           }
         ],
-        "n": 8,
-        "mean": 1.0819,
-        "mad": 0.0819,
-        "band": "±15%",
+        "n": 9,
+        "mean": 1.0682,
+        "mad": 0.0775,
+        "band": "±8%",
         "temp": "HOT ▲"
       }
     },
@@ -3447,9 +3459,9 @@
         ]
       },
       "caveats": [
-        "skill1/burst: FAITHFUL DYNAMIC Golden-Chip pool LANDED 2026-07-17 (engine resource-counter primitive) — replaces the flat crit-42 + every-burst-65.25 derivations. Pool: start 50 (cap 50), +1 per datamined '3 normal attacks during Full Burst' (the same trigger as the AD +10.51 block), −17 on her burst (spent AFTER the gates). Crit Damage is LIVE = goldenChip×1.32 (perResource); burst ATK ▲65.25 gated at ≥30 chips (pre-spend). VALIDATED vs soda tb control.mov: sim pre-consume 50/43/38… reproduces the measured 50/44/40/38/31 within 1-2 chips (the datamined per-3-normals generation MATCHES the recorded drain, not fit to it); crit major 2.66 at 50 chips = 1+base1.0+50×1.32/100 ✓. Now comp-correct: N3 no-burst comp chips stay 50 → crit 66% → 0.954→0.974 (matches the note's ~0.96 prediction the flat-42 under-credited); burst comps drain as measured. Hit Rate ▲38.91 (≥20 chips) STILL unmodeled (HR→core open item — deliberately not added despite HRCORE now live, to keep this change scoped to the measured chip mechanic).",
+        "skill1/burst: FAITHFUL DYNAMIC Golden-Chip pool LANDED 2026-07-17 (engine resource-counter primitive) — replaces the flat crit-42 + every-burst-65.25 derivations. Pool: start 50 (cap 50), +1 per datamined '3 normal attacks during Full Burst' (the same trigger as the AD +10.51 block), −17 on her burst (spent AFTER the gates). Crit Damage is LIVE = goldenChip×1.32 (perResource); burst ATK ▲65.25 gated at ≥30 chips (pre-spend). VALIDATED vs soda tb control.mov: sim pre-consume 50/43/38… reproduces the measured 50/44/40/38/31 within 1-2 chips (the datamined per-3-normals generation MATCHES the recorded drain, not fit to it); crit major 2.66 at 50 chips = 1+base1.0+50×1.32/100 ✓. Now comp-correct: N3 no-burst comp chips stay 50 → crit 66% → 0.954→0.974 (matches the note's ~0.96 prediction the flat-42 under-credited); burst comps drain as measured.",
         "skill2: Full Burst extension is the datamined chip-gated CUMULATIVE ladder — Time Extension I +2s at >=10 Golden Chips, Time Extension II +3s more at >=20, so +5s at >=20 and +2s at 10-19 (two resourceGate blocks on stageEnter:3). It fires on EVERY Burst-Stage-3 cast, hers or an ally's, and reads HER chip count at that instant, so late-fight Full Bursts shorten as the pool drains.",
-        "burst: Hit Rate ▲38.91% for 15s is LIVE, gated at >=20 Golden Chips pre-consume (burstCast + resourceGate, ordered before the -17 spend like the ATK gate). It reaches core-hit rate through acrForHR on her SG. ⚑ The in-game magnitude of its effect on core rate is NOT confirmed: an owner hand-count of this fight reads her HR-on core fraction BELOW what the cone predicts at every band except midfar (near .074 vs .160), so the cone and this block are a coupled pair - see docs/probe-data/soda-tb-sg-core-hr-windows.json.",
+        "burst: Hit Rate ▲38.91% for 15s is LIVE, gated at >=20 Golden Chips pre-consume (burstCast + resourceGate, ordered before the -17 spend like the ATK gate). It drives TWO channels, not one: core-hit rate via acrForHR, AND pellet LANDING via coneSigmaFor -> pelletLandFrac (sim.ts ~1266 and ~2539). ⚑ BOTH are over-credited against the owner hand-count of this fight (docs/probe-data/soda-tb-sg-core-hr-windows.json). Core: measured HR-on .074/.029/.079/.022 (near/mid/midfar/far) vs the cone's .160/.133/.077/.051. Landing is the LARGER error: measured HR-on .931/.916/.778/.711 vs the model's .998/.995/.992/.971 — the sim reads near-total landing where the count says far tops out at .711. The cone's sigma is the shared cause (measured 38.6-41.6px at HR0 vs the frozen 32.0, shrinking 9-25% vs the frozen 35%). This block is faithful to the KIT; its two downstream layers are not yet faithful to the MEASUREMENT, and they are a coupled set to be re-fit together, never singly.",
         "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected)."
       ],
       "board": {
@@ -3457,11 +3469,15 @@
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
             "ratio": 0.9726
+          },
+          {
+            "comp": "soda-tb control (boss Electric, focus soda-twinkling-bunny)",
+            "ratio": 0.986
           }
         ],
-        "n": 1,
-        "mean": 0.9726,
-        "mad": 0.0274,
+        "n": 2,
+        "mean": 0.9793,
+        "mad": 0.0207,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }

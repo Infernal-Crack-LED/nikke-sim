@@ -159,6 +159,24 @@ const COMPS: Comp[] = [
     boss: 'Electric', focus: 'red-hood',
     realFullBursts: 12, // video: 12/12
   },
+  {
+    name: 'soda-tb control (boss Electric, focus soda-twinkling-bunny)',
+    slugs: ['little-mermaid', 'crown', 'soda-twinkling-bunny', 'helm'],
+    boss: 'Electric', focus: 'soda-twinkling-bunny',
+    // KNOWN MISMATCH — real = 10 Full Bursts, sim = 9. DELIBERATELY UNPINNED, same treatment as T4/T7
+    // above: pinning a count the sim cannot currently hit would just paint the gate red without adding
+    // information. The comp is still graded on damage + snapshot.
+    //   Measured 10 counted 2026-07-22 off the on-screen Full-Burst countdown (it ticks 1.00/s, verified
+    //   across 8 consecutive reads), NOT from the 2026-07-15 recon's approximate start times: 13.29 left
+    //   at video 164.2 pins her cast-162 window to exactly 15.0s, and 10.28 left at 182.5 pins a further
+    //   window a 15.0s duration could not fit (the previous ran to 177.5) — 12.0s puts its start at
+    //   180.8 with the chip counter reading 19, i.e. the +2s tier. Both ladder tiers, directly measured.
+    //   The sim's shortfall is the open inter-Full-Burst overhead thread (N3 is the chip-free probe:
+    //   15.0s window + 4.4s overhead = 19.4s cycle, where ten 15.0s windows in 180s need <=3.0s).
+    //   RE-PIN TO 10 when that lands. Do NOT close it by shrinking the extension back toward +4 — the
+    //   +2/+5 ladder is measurement-confirmed at both tiers.
+    // ⚑ Boss element inferred, not confirmed — see the comp comment in scripts/experiment.ts.
+  },
 ];
 
 function run(comp: Comp, seed?: number) {
