@@ -164,7 +164,7 @@ current but not a contract.
 | `stackedNuke` | Hits once per FB the unit sat out since its last burst | maiden-ice-rose |
 | `wipeOut` / `gainPierce` | Inflicts Wipe-Out status / timed "Gain Pierce" window | d-killer-wife / ade-agent-bunny, grave, milk-blooming-bunny |
 | `burstEligibility` / `burstFirst` / `reenterStage` | Unit may also burst at a stage / takes first eligible / holds stage for another | anis-star, rapi-red-hood / prika / anis-star |
-| `advantageVs` | Counts as elementally advantaged vs a boss element | rapi-red-hood |
+| `advantageVs` | Counts as elementally advantaged vs a boss element (also derived into `countsAsElements` for the UI — see below) | rapi-red-hood |
 | `burstCdr` | Reduces targets' burst cooldowns | ~14 units (anis-star, arcana, blanc, liter, red-hood, rouge, …) |
 | `escalating` | Liter-style Once/Twice: Nth activation applies steps 1..N | anchor-innocent-maid, isabel, helm-aquamarine, liter, volume |
 | `fullBurstExtend` | Extends Full Burst duration | isabel, modernia, soda-twinkling-bunny |
@@ -197,6 +197,16 @@ current but not a contract.
 | `magDumpRof` | Whole-magazine dump after a priming charge | cinderella |
 | `hitsPerShot` | Base SG/MG pellet/belt-round count per pull | ~20 units |
 | `pullsPerSec` | Per-unit measured fire-cadence override | ~26 units |
+
+**Counts-as elements (`countsAsElements`).** A unit counts as EVERY element it can be elementally
+advantaged as: its own code plus one per `advantageVs` effect in its override, mapped back through the
+element wheel (advantage vs an Electric-code boss = counting as Iron). Today the only such unit is
+`rapi-red-hood` — Fire + Iron. The engine never reads the field (it resolves advantage from the effect
+directly, which is why sim damage was always right); it exists so the UI/tooling agree with the engine
+about which elements a unit belongs to (roster element filter, DPS-chart element view + compare
+grouping, share-card ▲ marker). DERIVED, never hand-tagged: `src/elements.ts` owns the wheel +
+derivation, `src/data/sync.ts` recomputes it into `data/characters.json` on every sync, and it is
+omitted for the ordinary single-code unit. → DECISIONS 2026-07-22.
 
 Recognized but **not set by any override** (boss/env config): `coreband` (boss-band core table),
 `bossPelletProfile` (boss-size SG spread). Baseline triggers `passive` / `burstCast` /

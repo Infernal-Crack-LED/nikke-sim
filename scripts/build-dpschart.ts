@@ -11,6 +11,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
+import { unitElements } from '../src/elements.js';
 import type { OverrideFile } from '../src/skills/index.js';
 import type {
   CubesFile,
@@ -67,6 +68,9 @@ interface UnitMeta {
   slug: string;
   name: string;
   element: Element;
+  // every element the unit counts as (own code + any its kit grants — src/elements.ts); the
+  // element filter/grouping on the chart matches against this, not the bare `element`
+  elements: Element[];
   weapon: string;
   tier: string;
   chartPop: boolean;
@@ -85,6 +89,7 @@ for (const [slug, c] of Object.entries(data.characters)) {
     slug,
     name: c.name,
     element: c.element as Element,
+    elements: unitElements(c),
     weapon: c.weapon,
     tier,
     chartPop: CHART_TIERS.has(tier),
@@ -138,6 +143,7 @@ const artifact = {
       {
         name: u.name,
         element: u.element,
+        elements: u.elements,
         weapon: u.weapon,
         tier: u.tier,
         chartPop: u.chartPop,

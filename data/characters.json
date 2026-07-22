@@ -73573,6 +73573,10 @@
    "burstCooldownSec": 40,
    "class": "Attacker",
    "element": "Fire",
+   "countsAsElements": [
+    "Fire",
+    "Iron"
+   ],
    "manufacturer": "Elysion Overspec",
    "normalAttackMultiplier": 5.57,
    "coreAttackMultiplier": 200,

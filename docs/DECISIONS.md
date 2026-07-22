@@ -1795,3 +1795,23 @@ lives. Newest first within each section.
   SG-landing-anchor guard: solo total moves >0.5% → owner sign-off), and the wave log live in
   docs/handoffs/closed/2026-07-16-kit-parse-rollout.md. Done-when: all 74 units authored/audited/reconciled with
   findings triaged; board improvement expected but NOT a gate (faithful > fit).
+- **(2026-07-22) COUNTS-AS ELEMENTS — a kit-granted second element is DERIVED from `advantageVs`, not
+  hand-tagged.** `rapi-red-hood`'s Skill 2 ("Applies Elemental Advantage damage to Electric Code enemies
+  continuously") means that on an Iron-weak raid — an Electric-code boss — she behaves exactly like an Iron
+  nikke. The ENGINE already had this right: the `advantageVs` effect feeds `UnitState.advantageVs`, and
+  `advantaged()` ORs it with the native wheel, so her damage bucket and her result-level `advantaged` flag
+  were correct at `bossElement: 'Electric'` (verified: solo 85.0M neutral → 93.5M at both Wind and Electric).
+  The gap was everything OUTSIDE the engine, which compared `c.element` for equality: the Browse-Nikkes
+  roster element filter, the DPS-chart element view + compare-dropdown grouping, and the unsimmed-team
+  share card's ▲ marker all treated her as Fire-only. RULING: a unit counts as EVERY element it can be
+  advantaged as, and that set is DERIVED from its override — `src/elements.ts` owns the element wheel, its
+  inverse, and `countsAsElements(element, override)`; `src/data/sync.ts` recomputes the tag into
+  `data/characters.json` (`CharacterData.countsAsElements`, omitted for the ordinary single-code unit, so
+  the field is self-maintaining across syncs instead of being clobbered by the rebuild). Every UI surface
+  now matches on the derived set via `unitElements()`/`unitHasElement()`, and her Browse-Nikkes card shows
+  both code icons (the second titled with the boss code the kit names). WHY DERIVED, not a hand tag: the
+  override is the kit source-of-truth, sync.ts rebuilds characters.json from scratch every time, and the
+  derivation generalizes to any future `advantageVs` unit for free. NOT an engine change and NOT a
+  mechanics change — zero movement in any sim number (verify.sh green, snapshots untouched); this is
+  strictly the UI/tooling catching up to what the engine already modeled. Today `rapi-red-hood` is the only
+  unit with an `advantageVs` effect, so she is the only multi-element unit.

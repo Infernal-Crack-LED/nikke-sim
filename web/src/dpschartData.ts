@@ -8,6 +8,9 @@ import { cellId, type Cell } from '../../src/dpschart/matrix';
 export interface DpsUnitMeta {
   name: string;
   element: string;
+  // every element the unit counts as (own code + any its kit grants — src/elements.ts). Absent in
+  // an artifact built before the field existed; fall back to the single `element` there.
+  elements?: string[];
   weapon: string;
   tier: string;
   chartPop: boolean; // SSS/SS → shown as ranked bars; else selector-only
@@ -34,6 +37,7 @@ export interface BarEntry {
   slug: string;
   name: string;
   element: string;
+  elements: string[];
   weapon: string;
   tier: string;
   dps: number;
@@ -50,6 +54,7 @@ export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
       slug,
       name: m?.name ?? slug,
       element: m?.element ?? '',
+      elements: m?.elements ?? (m?.element ? [m.element] : []),
       weapon: m?.weapon ?? '',
       tier: m?.tier ?? '?',
       dps,
@@ -61,7 +66,8 @@ export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
 
 // the charted top-N for the bars. Unfiltered = the SSS/SS chart population; an
 // element filter instead ranks ALL B3s of that element (a single element has only
-// a couple of charted units, so the element view digs into the lower tiers).
+// a couple of charted units, so the element view digs into the lower tiers). A unit
+// whose kit grants a second code's advantage appears under BOTH elements.
 export function chartBars(
   art: DpsArtifact,
   cell: Cell,
@@ -69,7 +75,7 @@ export function chartBars(
   topN = 10,
 ): BarEntry[] {
   const pop = element
-    ? rankedFor(art, cell).filter((e) => e.element === element)
+    ? rankedFor(art, cell).filter((e) => e.elements.includes(element))
     : rankedFor(art, cell).filter((e) => art.units[e.slug]?.chartPop);
   return pop.slice(0, topN);
 }
@@ -86,7 +92,7 @@ export function compareIn(
   let ranked = rankedFor(art, cell);
   if (element)
     ranked = ranked
-      .filter((x) => x.element === element)
+      .filter((x) => x.elements.includes(element))
       .map((x, i) => ({ ...x, rank: i + 1 }));
   const e = ranked.find((x) => x.slug === slug);
   return e ? { ...e, total: ranked.length } : null;
@@ -95,13 +101,14 @@ export function compareIn(
 // every B3 in the artifact, for the compare dropdown (name-sorted)
 export function allUnits(
   art: DpsArtifact,
-): { slug: string; name: string; tier: string; element: string }[] {
+): { slug: string; name: string; tier: string; element: string; elements: string[] }[] {
   return Object.entries(art.units)
     .map(([slug, m]) => ({
       slug,
       name: m.name,
       tier: m.tier,
       element: m.element,
+      elements: m.elements ?? [m.element],
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }

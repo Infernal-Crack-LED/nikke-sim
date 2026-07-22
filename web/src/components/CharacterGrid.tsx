@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import charactersJson from '../../../data/characters.json';
 import archetypeTagsJson from '../../../data/archetype-tags.json';
 import type { DataFile } from '../../../src/types';
+import { BEATS, unitElements } from '../../../src/elements';
 import { useIconThumbs } from '../useIconThumbs';
 import { usePortraitThumbs } from '../usePortraitThumbs';
 
@@ -273,8 +274,13 @@ export function CharacterGrid({
         return false;
       // Class filter
       if (classFilter.size > 0 && !classFilter.has(c.class)) return false;
-      // Element filter
-      if (elementFilter.size > 0 && !elementFilter.has(c.element)) return false;
+      // Element filter — matches EVERY element the unit counts as, so a kit that grants a second
+      // code's advantage (Rapi: Red Hood is Fire + Iron) shows under both filters. See src/elements.ts.
+      if (
+        elementFilter.size > 0 &&
+        !unitElements(c).some((e) => elementFilter.has(e))
+      )
+        return false;
       // Manufacturer filter — use the match function if present, else exact match
       if (manufacturerFilter.size > 0) {
         const matched = MANUFACTURER_OPTIONS.some(
@@ -454,7 +460,8 @@ export function CharacterGrid({
       <div className='teambuilder-grid'>
         {characters.map((c) => {
           const weaponSrc = `/nikke-icons/weapon_${c.weapon.toLowerCase()}.png`;
-          const elementSrc = `/nikke-icons/code_${c.element.toLowerCase()}.svg`;
+          // one code icon per element the unit counts as (its own, then any its kit grants)
+          const elements = unitElements(c);
           const burstSrc = `/nikke-icons/burst_${c.burst === 'I' ? '1' : c.burst === 'II' ? '2' : '3'}.svg`;
           // Class icon: 'Supporter' → 'class_support.webp' (file named without 'er')
           const classFile =
@@ -497,12 +504,19 @@ export function CharacterGrid({
                     title={c.weapon}
                     className='teambuilder-mini-icon'
                   />
-                  <img
-                    src={elementSrc}
-                    alt={c.element}
-                    title={c.element}
-                    className='teambuilder-mini-icon'
-                  />
+                  {elements.map((e) => (
+                    <img
+                      key={e}
+                      src={`/nikke-icons/code_${e.toLowerCase()}.svg`}
+                      alt={e}
+                      title={
+                        e === c.element
+                          ? e
+                          : `counts as ${e} — this kit grants elemental advantage against ${BEATS[e]} Code enemies`
+                      }
+                      className='teambuilder-mini-icon'
+                    />
+                  ))}
                   <img
                     src={burstSrc}
                     alt={`Burst ${c.burst}`}

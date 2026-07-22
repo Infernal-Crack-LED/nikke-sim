@@ -6,6 +6,8 @@ import 'dotenv/config';
 import pg from 'pg';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import type { CharacterData, DataFile } from '../types.js';
+import type { OverrideFile } from '../skills/index.js';
+import { countsAsElements } from '../elements.js';
 import { deriveNicknames } from './nicknames.js';
 import { deriveWeaponFields, type WeaponShotDetail } from './weapon-fields.js';
 
@@ -63,7 +65,17 @@ function loadSupportPolicy() {
       .filter((f) => f.endsWith('.json'))
       .map((f) => f.replace(/\.json$/, ''))
   );
-  return { proven, overrideSlugs };
+  // slug → parsed override, so the second stage can DERIVE the counts-as elements from the kit
+  // (an `advantageVs` effect) rather than carrying a hand-tag that this rebuild would clobber.
+  const overrides = new Map<string, OverrideFile>();
+  for (const slug of overrideSlugs)
+    overrides.set(
+      slug,
+      JSON.parse(
+        readFileSync(new URL(`../skills/overrides/${slug}.json`, import.meta.url), 'utf8')
+      ) as OverrideFile
+    );
+  return { proven, overrideSlugs, overrides };
 }
 
 async function main() {
@@ -226,13 +238,19 @@ async function main() {
   }
 
   // Second stage: TAG (never drop) with the two support booleans.
-  const { proven, overrideSlugs } = loadSupportPolicy();
+  const { proven, overrideSlugs, overrides } = loadSupportPolicy();
   let generatorCount = 0;
   let simCount = 0;
   const unsupported: string[] = [];
+  const multiElement: string[] = [];
   for (const [slug, c] of Object.entries(characters)) {
     c.generatorSupported = proven.has(normalizeName(c.name));
     c.simSupported = overrideSlugs.has(slug);
+    // counts-as elements: only tagged when the kit grants advantage against a SECOND boss code
+    // (an `advantageVs` effect) — the plain single-code case stays untagged, see CharacterData.
+    const counts = countsAsElements(c.element, overrides.get(slug));
+    if (counts.length > 1) { c.countsAsElements = counts; multiElement.push(`${slug} (${counts.join('+')})`); }
+    else delete c.countsAsElements;
     if (c.generatorSupported) generatorCount++;
     if (c.simSupported) simCount++;
     if (!c.generatorSupported && !c.simSupported) unsupported.push(slug);
@@ -263,6 +281,7 @@ async function main() {
   const noApi = rows.filter((r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id)).length;
   console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API)`);
   console.log(`support tags: ${generatorCount} generatorSupported, ${simCount} simSupported, ${unsupported.length} unsupported (Team Builder only)`);
+  console.log(`counts-as elements: ${multiElement.length ? multiElement.join(', ') : 'none'}`);
   const nickKept = Object.values(characters).filter((c) => c.nicknames?.length).length;
   console.log(`nicknames: ${nickKept} units with approved nicknames; ${nick.dropped.length} aliases dropped as unsafe:`);
   for (const d of nick.dropped) console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);

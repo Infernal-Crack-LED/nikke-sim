@@ -37,6 +37,12 @@ export interface CharacterData {
   burstCooldownSec: number;
   class: NikkeClass;
   element: Element;
+  // Every element this unit counts as for ELEMENTAL ADVANTAGE — its own code plus any granted by
+  // its kit (Rapi: Red Hood's Skill 2 gives Electric-code advantage, i.e. she also counts as Iron).
+  // Derived from the override's `advantageVs` effects by src/data/sync.ts; OMITTED for the normal
+  // case of a unit that only counts as its own code. Read it via unitElements() (src/elements.ts),
+  // never bare — the engine resolves advantage from the effect itself and ignores this field.
+  countsAsElements?: Element[];
   manufacturer: string | null;    // Elysion/Missilis/Tetra/Pilgrim/Abnormal — drives the relationship
                                    // (bond) ATK bonus, which is a class×manufacturer stat (Pilgrims cap higher)
   normalAttackMultiplier: number; // % of ATK per trigger pull (all pellets/hits included)

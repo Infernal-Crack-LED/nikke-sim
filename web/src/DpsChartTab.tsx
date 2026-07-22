@@ -229,7 +229,9 @@ export function DpsChartTab() {
           <option value=''>— none —</option>
           {(['Fire', 'Water', 'Wind', 'Electric', 'Iron'] as const).map(
             (ele) => {
-              const group = units.filter((u) => u.element === ele);
+              // a unit whose kit grants a second code's advantage (Rapi: Red Hood is
+              // Fire + Iron) is listed under both of its elements
+              const group = units.filter((u) => u.elements.includes(ele));
               if (!group.length) return null;
               return (
                 <optgroup key={ele} label={ele}>
