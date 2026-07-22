@@ -10,6 +10,112 @@
 > **Ratio direction (see docs/CONVENTIONS.md):** board = `sim/real`. **HOT ▲ = sim over-credits**
 > (ratio > 1); **COLD ▼ = sim under-credits** (ratio < 1).
 
+## Primitive enactment census — GENERATED, do not hand-edit
+
+> **This block is the single source of truth for "which units use primitive X".** Regenerate with
+> `npx tsx scripts/doc-drift.ts --update`; `scripts/verify.sh` fails if it is stale. Derived by
+> structural match against `src/skills/overrides/*.json` — **prose mentions in `note`/`caveats`/
+> `unmodeled` deliberately do NOT count**, since a unit whose note merely *discusses* a primitive is
+> not a user. Do not restate these counts in prose elsewhere; link here instead. Primitive list is
+> taken from `docs/STATE.md` §5, so adding a row there enrolls it automatically.
+
+<!-- BEGIN GENERATED: primitive-census (npx tsx scripts/doc-drift.ts --update) -->
+
+| Primitive | Users | Enacted on |
+| --- | --- | --- |
+| `advantageVs` | 1 | rapi-red-hood |
+| `alliesLowestAtk` | 1 | liberalio |
+| `alliesLowestHp` | 1 | blanc |
+| `alliesOfClass` | 0 | _none_ |
+| `alliesOfElement` | 8 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, guillotine-winter-slayer, guilty, maiden-ice-rose, rei-ayanami |
+| `alliesOfElementWeapon` | 1 | trina |
+| `alliesOfWeapon` | 6 | arcana-fortune-mate, d-killer-wife, drake, leona, noir, tove |
+| `alliesTopAtk` | 5 | alice, maxwell, miranda, naga, soda-twinkling-bunny |
+| `atkOfMaxHpPct` | 2 | cinderella, maiden-ice-rose |
+| `bossElement` | 2 | eve, helm-aquamarine |
+| `bossElementGate` | 3 | brid-silent-track, eve, helm-aquamarine |
+| `burstCasters` | 3 | ada, arcana, crown |
+| `burstCdr` | 14 | anis-star, arcana, blanc, d-killer-wife, helm-aquamarine, liter, little-mermaid, moran, … |
+| `burstEligibility` | 1 | rapi-red-hood |
+| `burstFirst` | 1 | prika |
+| `burstSnapshotsPreFb` | 1 | cinderella |
+| `byFinalAtk` | 4 | alice, liberalio, miranda, soda-twinkling-bunny |
+| `cast` | 1 | cinderella-crystal-wave |
+| `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
+| `charge` | 1 | snow-white |
+| `chargeCounter` | 1 | scarlet-black-shadow |
+| `chargeMultPct` | 6 | ada, cinderella-crystal-wave, nayuta, red-hood, snow-white, zwei |
+| `consolidation` | 1 | dorothy-serendipity |
+| `consumeAmmo` | 0 | _none_ |
+| `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
+| `delaySec` | 2 | rapi-red-hood, snow-white |
+| `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
+| `everyN` | 5 | arcana, mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
+| `everyNOffset` | 2 | arcana, neon-vision-eye |
+| `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
+| `fbGate` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
+| `flatDamage` | 46 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
+| `formation` | 2 | anis-star, rapi-red-hood |
+| `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
+| `gainPierce` | 3 | ade-agent-bunny, grave, milk-blooming-bunny |
+| `hasB1` | 2 | anis-star, rapi-red-hood |
+| `hasPierce` | 5 | alice, asuka, mari, red-hood, zwei |
+| `highestAllyAtkPct` | 1 | guilty |
+| `hitCount` | 31 | ade-agent-bunny, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, d-killer-wife, … |
+| `hitRatePct` | 10 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
+| `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
+| `inFb` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
+| `instantInFb` | 1 | rapi-red-hood |
+| `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
+| `interval` | 5 | helm-aquamarine, isabel, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
+| `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
+| `magDumpRof` | 1 | cinderella |
+| `maxAmmoFlat` | 3 | grave, noir, tove |
+| `maxShots` | 1 | snow-white-heavy-arms |
+| `mode` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny, mint, prika |
+| `modes` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny, mint, prika |
+| `noB1` | 2 | anis-star, rapi-red-hood |
+| `nonBurstCasters` | 1 | crown |
+| `normalAttackPct` | 5 | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
+| `notCast` | 0 | _none_ |
+| `outFb` | 1 | velvet |
+| `ownBurstGate` | 1 | cinderella-crystal-wave |
+| `pelletCountFlat` | 2 | arcana-fortune-mate, dorothy-serendipity |
+| `perResource` | 1 | soda-twinkling-bunny |
+| `pierceModes` | 1 | cinderella-crystal-wave |
+| `pullsPerSec` | 1 | jill |
+| `rampSec` | 2 | arcana-fortune-mate, cinderella |
+| `recovery` | 2 | asuka, crown |
+| `reenterStage` | 1 | anis-star |
+| `removeOnReload` | 0 | _none_ |
+| `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
+| `requiresPulls` | 1 | rapi-red-hood |
+| `requiresShielded` | 1 | naga |
+| `requiresWipeOut` | 1 | d-killer-wife |
+| `resourceGate` | 1 | soda-twinkling-bunny |
+| `selfAndAdjacent` | 1 | rouge |
+| `sequentialMultPct` | 1 | eve |
+| `shielded` | 1 | naga |
+| `shotFired` | 21 | ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, helm, laplace, … |
+| `stackedNuke` | 1 | maiden-ice-rose |
+| `stageEnter` | 8 | cinderella, ein, mast-romantic-maid, mihara-bonding-chain, mint, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
+| `storedHit` | 1 | rapi-red-hood |
+| `stun` | 1 | mast-romantic-maid |
+| `swapGate` | 2 | laplace, snow-white-heavy-arms |
+| `swapped` | 2 | laplace, snow-white-heavy-arms |
+| `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
+| `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
+| `teamHas` | 1 | noir |
+| `trueNormals` | 3 | chisato, laplace, takina |
+| `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
+| `unswapped` | 0 | _none_ |
+| `weapon` | 8 | arcana-fortune-mate, d-killer-wife, drake, leona, nayuta, noir, tove, trina |
+| `weaponSwap` | 11 | ada, chisato, cinderella-crystal-wave, laplace, moran, nayuta, red-hood, snow-white-heavy-arms, … |
+| `whileSwapped` | 1 | snow-white-heavy-arms |
+| `wipeOut` | 1 | d-killer-wife |
+
+<!-- END GENERATED: primitive-census -->
+
 ## Status dashboard — at a glance
 
 > Every theme bucketed by implementation state (verified against the live tree 2026-07-17). Jump to the

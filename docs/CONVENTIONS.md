@@ -125,6 +125,14 @@ logs from poisoning agent context with stale-but-retained narration.
   backlog/ledger docs, and **the prose fields of every override** — `src/skills/overrides/*.json`
   `note` / `caveats` / `unmodeled`.
 
+**Enforced by `scripts/doc-drift.ts`** (in `verify.sh`, so drift fails the gate rather than being
+nudged about): it (a) LINTS `docs/STATE.md` §5 for **false members** — a slug listed under a primitive
+its override no longer structurally references — and for exact `N units` counts that no longer match;
+(b) GENERATES the primitive enactment census in `docs/engine-modeling-gaps.md` (`--update`), which is
+the single source for "which units use primitive X" — don't restate those counts in prose, link it;
+and (c) LINTS `open-questions.md` for a **resolved question still filed under UNANSWERED**. Matching is
+structural — prose mentions in `note`/`caveats`/`unmodeled` deliberately don't count as usage.
+
 **Override prose is current-state — it describes the unit AS MODELED TODAY, nothing else** (owner
 ruling 2026-07-22). An override's `note`/`caveats` record what is implemented, what is deliberately
 unmodeled, what is measurement-gated, and the evidence tier behind each live value. They carry **no

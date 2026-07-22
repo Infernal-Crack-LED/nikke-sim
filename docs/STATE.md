@@ -141,15 +141,15 @@ current but not a contract.
 | `ownBurstGate` (`cast`/`notCast`) | Gated on whether owner cast own burst into this FB | cinderella-crystal-wave |
 | `resourceGate` | Fires only when a named resource pool is within [min,max] | soda-twinkling-bunny |
 | `everyN` / `everyNOffset` | Effects land on every Nth activation (offset phases it) | arcana, mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
-| `formation` (`noB1`/`hasB1`) | Static squad-formation gate | anis-star, delta-ninja-thief, rapi-red-hood |
+| `formation` (`noB1`/`hasB1`) | Static squad-formation gate | anis-star, rapi-red-hood |
 | `teamHas` (+`.slugs`) | Static team-composition gate (element/class/weapon/burst/named slugs) | noir |
-| `mode` / `modes` | Block active only in the unit's selected kit mode | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, mint, milk-blooming-bunny, prika, mana, zwei |
+| `mode` / `modes` | Block active only in the unit's selected kit mode | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, mint, milk-blooming-bunny, prika |
 
 ### Targeting selectors (`block.target`)
 | Primitive | Meaning | Users |
 | --- | --- | --- |
-| `burstCasters` / `nonBurstCasters` | Allies who did / didn't burst this rotation | ada, arcana, crown, d-killer-wife, little-mermaid, prika / crown |
-| `alliesTopAtk` / `alliesLowestAtk` / `alliesLowestHp` | N highest / lowest ATK / lowest HP allies | alice, leona, maxwell, miranda, naga, soda-twinkling-bunny / liberalio / blanc |
+| `burstCasters` / `nonBurstCasters` | Allies who did / didn't burst this rotation | ada, arcana, crown / crown |
+| `alliesTopAtk` / `alliesLowestAtk` / `alliesLowestHp` | N highest / lowest ATK / lowest HP allies | alice, maxwell, miranda, naga, soda-twinkling-bunny / liberalio / blanc |
 | `alliesOfElement` / `alliesOfClass` / `alliesOfWeapon` / `alliesOfElementWeapon` | All allies of an element / class / weapon / element+weapon | (element) 8 units; arcana-fortune-mate; (weapon) arcana-fortune-mate, d-killer-wife, drake, leona, noir, tove; trina |
 | `selfAndAdjacent` | Self + N allies each side (positional) | rouge |
 | `excludeSelf` | Drops owner from the pool before slicing | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
@@ -162,13 +162,13 @@ current but not a contract.
 | `storedHit` (+`instantInFb`) | Charges that release at FB start; `instantInFb` detonates in-FB | rapi-red-hood |
 | `stackedNuke` | Hits once per FB the unit sat out since its last burst | maiden-ice-rose |
 | `wipeOut` / `gainPierce` | Inflicts Wipe-Out status / timed "Gain Pierce" window | d-killer-wife / ade-agent-bunny, grave, milk-blooming-bunny |
-| `burstEligibility` / `burstFirst` / `reenterStage` | Unit may also burst at a stage / takes first eligible / holds stage for another | anis-star, rapi-red-hood / prika / anis-star, chisato |
+| `burstEligibility` / `burstFirst` / `reenterStage` | Unit may also burst at a stage / takes first eligible / holds stage for another | anis-star, rapi-red-hood / prika / anis-star |
 | `advantageVs` | Counts as elementally advantaged vs a boss element | rapi-red-hood |
 | `burstCdr` | Reduces targets' burst cooldowns | ~14 units (anis-star, arcana, blanc, liter, red-hood, rouge, …) |
 | `escalating` | Liter-style Once/Twice: Nth activation applies steps 1..N | anchor-innocent-maid, isabel, helm-aquamarine, liter, volume |
 | `fullBurstExtend` | Extends Full Burst duration | isabel, modernia, soda-twinkling-bunny |
-| `unlimitedAmmo` | Infinite-ammo window | grave, modernia, moran, nayuta, red-hood, zwei |
-| `instantReload` / `consumeAmmo` | Refill magazine / empty it (forces reload) | 8 units (asuka-wille, grave, eve, noir, …) / (none) |
+| `unlimitedAmmo` | Infinite-ammo window | grave, modernia, moran, nayuta, red-hood |
+| `instantReload` / `consumeAmmo` | Refill magazine / empty it (forces reload) | 7 units (asuka-wille, eve, noir, …) / (none) |
 | `stun` | Target can't fire/charge/reload | mast-romantic-maid |
 | `flatDamage` (+`delaySec`/`charge`/`chargeMultPct`/`requiresPulls`) | Flat hit (flighted-and-snapshotted / charge-bucket / pull-gated) | asuka-wille, rapi-red-hood, snow-white, cinderella-crystal-wave, nayuta, red-hood, ada, zwei |
 | `rampSec` | Linearly ramps a buff/flatDamage contribution 0→full over rampSec | arcana-fortune-mate, cinderella |
@@ -181,18 +181,18 @@ current but not a contract.
 | --- | --- | --- |
 | `sequentialMultPct` | True multiplier on sequential-flavored damage (own bucket) | eve |
 | `highestAllyAtkPct` | Flat ATK = % of the highest ally's (static) ATK | guilty |
-| `normalAttackPct` | Scales the normal-attack multiplier | arcana-fortune-mate, asuka-wille, cinderella, dorothy-serendipity, jill, leona, mast-romantic-maid |
+| `normalAttackPct` | Scales the normal-attack multiplier | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
 | `pelletCountFlat` | Flat effective SG pellet-count add for a window | arcana-fortune-mate, dorothy-serendipity |
 | `maxAmmoFlat` | Flat round-count added on top of `maxAmmoPct` | grave, noir, tove |
-| `hitRatePct` | Core-hit lift via `hrCoreMult` (HRCORE-gated; AR/SMG/SG only) | ~14 units (jill, noir, modernia, soda-twinkling-bunny, …) |
+| `hitRatePct` | Core-hit lift via `hrCoreMult` (HRCORE-gated; AR/SMG/SG only) | ~14 units (jill, noir, modernia, …) |
 | `atkOfMaxHpPct` / `casterMaxHpPct` / `targetMaxHpPct` | Flat ATK = % own Max HP / grant Max HP = % caster's / target's Max HP | anis-star, blanc, cinderella, rouge, trina, maiden-ice-rose, … |
 
 ### Unit-level / char-static flags (`charFixes` etc.)
 | Primitive | Meaning | Users |
 | --- | --- | --- |
-| `hasPierce` / `pierceModes` | Permanently Pierce-tagged / Pierce only in named modes | alice, ade-agent-bunny, asuka, laplace, mari, red-hood, prika, zwei / cinderella-crystal-wave, zwei |
+| `hasPierce` / `pierceModes` | Permanently Pierce-tagged / Pierce only in named modes | alice, asuka, mari, red-hood, zwei / cinderella-crystal-wave, zwei |
 | `burstSnapshotsPreFb` | Burst damage resolves pre-FB/pre-stage | cinderella |
-| `consolidation` | Pellet-consolidation single-bullet mode | dorothy-serendipity, modernia, sakura-bloom-in-summer |
+| `consolidation` | Pellet-consolidation single-bullet mode | dorothy-serendipity |
 | `magDumpRof` | Whole-magazine dump after a priming charge | cinderella |
 | `hitsPerShot` | Base SG/MG pellet/belt-round count per pull | ~20 units |
 | `pullsPerSec` | Per-unit measured fire-cadence override | ~26 units |
