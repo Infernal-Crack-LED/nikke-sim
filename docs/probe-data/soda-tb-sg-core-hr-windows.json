@@ -1,0 +1,96 @@
+{
+  "measurement": "SG per-pellet core-hit fraction inside soda-twinkling-bunny's Hit Rate ▲38.91% windows vs matched HR-off windows in the SAME fight — the pre-registered CONE_DELTA post-flip holdout",
+  "status": "INTERIM — near band only, n too small to score. Not a verdict. See openItems.",
+  "unit": "soda-twinkling-bunny",
+  "weapon": "SG",
+  "hitsPerShot": 10,
+  "video": "docs/probes/control + carry/soda tb control.mov",
+  "screenshot": "docs/probes/control + carry/soda tb control.jpg",
+  "probeDir": "docs/probes/control + carry",
+  "date": "2026-07-22",
+  "priorRecon": "docs/probe-data/soda-tb-control-recon.json (2026-07-15; its hit_rate_core_test was INCONCLUSIVE — this is the first actual count)",
+  "params": {
+    "basis": "scope-lock base5",
+    "sync": 400,
+    "skillLevels": "10/10/10",
+    "gear": "base5",
+    "cube": "none",
+    "coreLevel": 7,
+    "treasure": true,
+    "bossPartless": true,
+    "durationSec": 180,
+    "focusReason": "middle slot — popups render focus-only (soda-twinkling-bunny)",
+    "comp": ["little-mermaid", "crown", "soda-twinkling-bunny", "helm"],
+    "boss": "Electric (inferred)"
+  },
+  "clock": {
+    "method": "top-right countdown; fightClock = 180 - countdown",
+    "anchor": { "videoSec": 20.0, "countdown": "02:45", "fightClock": 15 },
+    "offsetSec": 5,
+    "caveat": "single anchor — the skill's hardened rule wants >=4 anchors across the fight; game-clock drift vs video (~2s) is NOT yet corrected here"
+  },
+  "design": {
+    "why": "Her Hit Rate ▲38.91% (>=20 Golden Chips) is a BURST-slot effect, so every HR window sits inside a Full Burst. But the boss band script (docs/data/range-data.md) puts each of her 5 burst windows cleanly inside exactly ONE band, and the gaps between them give an HR-OFF control in the same band, same fight, same unit.",
+    "hrWindowsVideoSec": [
+      { "burst": 1, "window": [12, 27], "band": "mid" },
+      { "burst": 2, "window": [48, 63], "band": "near" },
+      { "burst": 3, "window": [84, 99], "band": "far" },
+      { "burst": 4, "window": [126, 141], "band": "midfar" },
+      { "burst": 5, "window": [162, 177], "band": "near" }
+    ],
+    "gateCheck": "all 5 bursts clear the >=20-chip gate on the PRE-consume count (50/44/40/38/31 per the 2026-07-15 chip trace), so the HR buff fires on every one",
+    "bandScript": "fightClock: mid 0-33, near 33-70, far 70-106, midfar 106-144, near 144-176, midfar 176-180"
+  },
+  "countingRule": {
+    "core": "RED numerals with 'CORE HIT' above (crit+core = red + crit icon)",
+    "crit": "ORANGE numerals + crit icon",
+    "plain": "WHITE numerals",
+    "denominator": "every distinguishable popup numeral in the crosshair region of the sampled frame",
+    "sampling": "1 frame every 1.2 s (popup persistence ~0.4-0.5 s, so no popup is counted twice)",
+    "excluded": "red VFX blooms with no numerals, the red low-ammo counter box, red laser sights, blue/cyan shield hits, the FB countdown"
+  },
+  "results": {
+    "near_HR38.91_ON": {
+      "framesRead": 6,
+      "framesWithNoPopups": 1,
+      "corePopups": 3,
+      "totalPopups": 49,
+      "coreFraction": 0.061,
+      "wilson95": [0.021, 0.165],
+      "coreFrames": ["166.6s (357129 red CORE HIT)", "167.8s (crit+core, value obscured)", "172.6s ('CORE HIT' text, value obscured)"],
+      "windowVideoSec": [163.0, 176.2]
+    },
+    "near_HR0_OFF": {
+      "framesRead": 4,
+      "corePopups": 0,
+      "totalPopups": 29,
+      "coreFraction": 0.0,
+      "wilson95": [0.0, 0.117],
+      "windowVideoSec": [149.5, 161.5],
+      "note": "immediately BEFORE her 5th burst — same band, same fight phase; partly inside helm's Full Burst, which matches FB state without granting her Hit Rate"
+    }
+  },
+  "modelComparison": {
+    "note": "predictions recomputed from src/engine/sg-geometry.ts at the shipped frozen params",
+    "cone_SG_near": { "hr0": 0.073, "hr38.91": 0.160 },
+    "fallback_CONE_DELTA_0_SG_near": { "hr0": 0.048, "hr38.91": 0.07 },
+    "preRegisteredTolerance": "+-0.12 spawn (Fable, 2026-07-19)",
+    "interimRead": "ON 0.061 misses the cone's 0.160 by 0.099 — INSIDE the +-0.12 tolerance, so the holdout does NOT fire its STOP trigger on this count — and sits 0.009 from the fallback's 0.070. The 95% CI [0.021, 0.165] covers BOTH models, so this does not discriminate them yet."
+  },
+  "confounds": [
+    "DENOMINATOR UNCERTAINTY is the dominant error: popups overlap into stacks (the same value printed 5-7x on top of itself). Counts of distinguishable instances carry roughly +-30%; at 3/40 the fraction is 0.075, at 3/60 it is 0.050.",
+    "Value attribution is NOT clean: several popups in the ON window exceed the per-pellet band (e.g. 1029147, 1836099) and are plausibly her skill/rider hits, not pellets. They inflate the denominator; the numerator (cores) is unaffected unless a skill hit itself cored.",
+    "The ON window is inside her own Full Burst by construction (the HR buff is burst-gated), so ON frames carry heavy gold VFX while some OFF frames do not. If gold VFX hides red numerals, ON is biased LOW — i.e. the direction that would make the cone look worse. Not quantified.",
+    "The in-combat damage counter is TEAM TOTAL, so the per-shot lattice method (the SG gold standard on solo footage) is unavailable here — popup counting is the only route on this recording."
+  ],
+  "observations": [
+    "Buff-state value tiers move fast in the ON window (white 218079 -> 229583 -> 218495) and the crit/plain ratio reads 1.373-1.377 in FB but 1.483-1.878 outside it — worth a separate look, not chased here.",
+    "One clean core popup gave core/plain = 357129/229583 = 1.5556 while crit/plain = 316027/229583 = 1.3765 in the same frame. Under a purely additive major bracket with base M those imply inconsistent M (1.328 from crit, ~0.74 core bonus from core). Recorded as an OBSERVATION against the 2026-07-22 additive crit/core ruling — single frame, values partly overlapped, NOT a challenge to it."
+  ],
+  "openItems": [
+    "Extend the near-band count to n>=100 per arm (roughly 12 more frames per arm) before scoring.",
+    "Count the other three bands: mid (burst 1, video 12-27), far (burst 3, 84-99), midfar (burst 4, 126-141), each against its adjacent HR-off gap.",
+    "Re-anchor the clock on >=4 timer reads across the fight (the hardened rule) before the band edges are trusted to the second.",
+    "Second recording available for replication: docs/probes/720-kit-audit/soda tb.MP4 (2026-07-21, liter/crown/soda-twinkling-bunny/helm)."
+  ]
+}
