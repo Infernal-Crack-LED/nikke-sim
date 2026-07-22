@@ -32,13 +32,14 @@
   "design": {
     "why": "Her Hit Rate ▲38.91% (>=20 Golden Chips) is a BURST-slot effect, so every HR window sits inside a Full Burst. But the boss band script (docs/data/range-data.md) puts each of her 5 burst windows cleanly inside exactly ONE band, and the gaps between them give an HR-OFF control in the same band, same fight, same unit.",
     "hrWindowsVideoSec": [
-      { "burst": 1, "window": [12, 27], "band": "mid" },
-      { "burst": 2, "window": [48, 63], "band": "near" },
-      { "burst": 3, "window": [84, 99], "band": "far" },
-      { "burst": 4, "window": [126, 141], "band": "midfar" },
-      { "burst": 5, "window": [162, 177], "band": "near" }
+      { "burst": 1, "cast": 10, "window": [10, 25], "band": "mid", "chips": "50 -> 34" },
+      { "burst": 2, "cast": 47, "window": [47, 62], "band": "near", "chips": "44 -> 27" },
+      { "burst": 3, "cast": 82, "window": [82, 97], "band": "far", "chips": "39 -> 22" },
+      { "burst": 4, "cast": 123, "window": [123, 138], "band": "midfar", "chips": "36 -> 19" },
+      { "burst": 5, "cast": 162, "window": [162, 177], "band": "near", "chips": "30 -> 13" }
     ],
-    "gateCheck": "all 5 bursts clear the >=20-chip gate on the PRE-consume count (50/44/40/38/31 per the 2026-07-15 chip trace), so the HR buff fires on every one",
+    "castTimesVerified": "2026-07-22 — read off the BURST!! splash + the Golden-Chip counter drop at 1 fps, NOT taken from the 2026-07-15 recon's approximations. Three differ: burst 3 is 82 (recon ~84), burst 4 is 123 (recon ~126, a 3 s error), burst 2 is 47 (recon 48). Bursts 1 and 5 confirmed at 10 and 162.",
+    "gateCheck": "all 5 bursts clear the >=20-chip gate on the PRE-consume count (50/44/39/36/30 as read), so the HR buff fires on every one",
     "bandScript": "fightClock: mid 0-33, near 33-70, far 70-106, midfar 106-144, near 144-176, midfar 176-180"
   },
   "countingRule": {
@@ -87,6 +88,23 @@
     "Buff-state value tiers move fast in the ON window (white 218079 -> 229583 -> 218495) and the crit/plain ratio reads 1.373-1.377 in FB but 1.483-1.878 outside it — worth a separate look, not chased here.",
     "One clean core popup gave core/plain = 357129/229583 = 1.5556 while crit/plain = 316027/229583 = 1.3765 in the same frame. Under a purely additive major bracket with base M those imply inconsistent M (1.328 from crit, ~0.74 core bonus from core). Recorded as an OBSERVATION against the 2026-07-22 additive crit/core ruling — single frame, values partly overlapped, NOT a challenge to it."
   ],
+  "countWindows": {
+    "note": "Owner is counting these by hand (2026-07-22). Video seconds. Every window is trimmed 1.5 s inside its boundaries so the burst cut-in, the buff expiry, and the 1 s unhittable gap at each band breakpoint all fall outside. Band edges: mid 5-38, near 38-75, far 75-111, midfar 111-149, near 149-181 (fightClock = video - 5).",
+    "recordPerShot": "for each shot (one ammo-counter decrement): how many damage popups it produced (= landed pellets) and how many of those were RED with 'CORE HIT'. Per-window totals + shot count are an acceptable fallback.",
+    "priority": [
+      { "rank": 1, "band": "near", "hr": "ON 38.91", "videoSec": [163.5, 175.5], "source": "burst 5" },
+      { "rank": 1, "band": "near", "hr": "OFF", "videoSec": [150.5, 160.5], "source": "pre-burst-5, same band" },
+      { "rank": 2, "band": "mid", "hr": "ON 38.91", "videoSec": [11.5, 23.5], "source": "burst 1" },
+      { "rank": 2, "band": "mid", "hr": "OFF", "videoSec": [26.5, 36.5], "source": "post-burst-1, same band" },
+      { "rank": 3, "band": "far", "hr": "ON 38.91", "videoSec": [83.5, 95.5], "source": "burst 3" },
+      { "rank": 3, "band": "far", "hr": "OFF", "videoSec": [98.5, 109.5], "source": "post-burst-3, same band" },
+      { "rank": 4, "band": "midfar", "hr": "ON 38.91", "videoSec": [124.5, 136.5], "source": "burst 4" },
+      { "rank": 4, "band": "midfar", "hr": "OFF", "videoSec": [139.5, 147.5], "source": "post-burst-4, same band" },
+      { "rank": 5, "band": "near", "hr": "OFF (extra n)", "videoSec": [63.5, 73.5], "source": "post-burst-2, same band" },
+      { "rank": 5, "band": "near", "hr": "ON (extra n)", "videoSec": [48.5, 60.5], "source": "burst 2" }
+    ],
+    "blind": "Predicted values are deliberately NOT restated here next to the windows — they are in modelComparison above and in the 2026-07-22 handoff. Counting first and comparing after keeps the count blind."
+  },
   "stepThreeCoupling": {
     "finding": "These same frames carry the SG LANDING measurement, which is the rebuild target of the engine plan's step 3 (BAND_SG_HIT_FRAC on the aim circle). One popup = one landed pellet is established (sg-pellet-landing.json part 1: no value-merging, off-boss pellets render nothing, dropout factor 1.0 [1,1.3]), so popups per shot / 10 IS the landing fraction. The marginal cost is reading the ammo counter, which is in frame in every sample already taken.",
     "whyItMatters": "Four candidate near-band landing numbers disagree by ~50%: live table 0.888, geo static BAND_SG_HIT_FRAC 0.797, pelletLandFrac Gaussian 0.922, and the only direct measurement (drake popupcount) 0.600. Dropout cannot reconcile 0.600 with 0.888 (0.600 x 1.3 = 0.78). The live table was calibrated against the OLD flat-0.85 core model (stated in sim.ts); the cone replaced the core half in 2026-07-19 and the landing half was never re-derived.",
