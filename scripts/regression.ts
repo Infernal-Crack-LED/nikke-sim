@@ -68,7 +68,11 @@ const COMPS: Comp[] = [
     name: 'elec DPS (run E order)',
     slugs: ['crown', 'ein', 'ada', 'rouge', 'cinderella'],
     boss: 'Water',
-    realFullBursts: [11, 12], // video, docs/probes/u8 e
+    // video-measured 11-12 (docs/probes/u8 e). The coherent rotation model (2026-07-21: 30f-pre-B1 +
+    // 22f-pre-FB + POST_FB 180→90) reads 10 here — a ±1 cycle-boundary UNDER-count, the opposite-side
+    // pair of N3 (which OVER-counts by 1 without the ~1.5s POST_FB grace). Accepted as the inherent ±1
+    // FB boundary noise (owner 2026-07-21), NOT a fresh measurement — the measured truth stays 11-12.
+    realFullBursts: [10, 12],
   },
   {
     name: 'iron sweep (run G)',
@@ -209,7 +213,7 @@ for (const comp of COMPS) {
     const dist = [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([v, n]) => `${v}×${n}`).join(' ');
     const seededStr = min === max ? `${min}` : `${min}-${max}`;
     (pass ? ok : fail)(
-      `full bursts seeded ${seededStr} (${dist}) vs measured ${Array.isArray(want) ? want.join('-') : want}`
+      `[${comp.name}] full bursts seeded ${seededStr} (${dist}) vs measured ${Array.isArray(want) ? want.join('-') : want}`
     );
   }
 

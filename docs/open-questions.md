@@ -387,6 +387,12 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 >   FB4; supersedes the "leftmost-tiebreak selection" framing).
 > - **ludmilla-winter-owner / rosanna-chic-ocean 13-vs-12 → recorder startup-lag artifact** (sim first-FB 3.4s
 >   optimal vs footage ~7s; clean 14s cadence; MC-unanimous 13). Unchanged by the fix; not an engine defect.
+>   **⚠ FRAMING CORRECTED 2026-07-21 (owner ruling; see probe-processing skill + [[fb-timing-anchor-not-startup-lag]]):**
+>   the "~7s footage first-FB / startup-lag" here was NOT measured from the 3:00-timer-start — the pre-timer video is
+>   a LOAD SCREEN, not "human startup lag." This 13-vs-12 (and the chisato-comp 13-vs-~11) needs RE-ANCHORING to the
+>   exact 03:00→02:59 frame before it can be called a confound; a first-FB/cadence residual that survives clean
+>   anchoring is a REAL signal, not player slop. Conclusion (not-an-engine-defect) is NOT overturned here — it is
+>   re-opened pending a properly-anchored re-measure.
 >
 > **⚠ FIT-EXPOSURE LEDGER (open — footage-gated re-tune, do NOT re-fudge in-place).** The corrected rotation
 > exposes per-cast over-credits in overrides that were fit to the OLD (sometimes under-counted) rotation. Seeded
@@ -395,6 +401,45 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 > ein 0.795→0.812, d-killer-wife 0.964→0.975; **fit-exposed (need re-validation)** — chisato 1.154→1.209,
 > naga 1.026→1.066, soda-twinkling-bunny 1.021→1.048, rouge 1.062→1.074, trina 1.177→1.180. These are the fix
 > revealing old over-credits, not the fix being wrong; re-tune each against footage in a separate gated pass.
+>
+> **⇒ UPDATE 2026-07-21 (fresh-session re-derivation, worktree `fit-exposure-retune`; owner-directed) — the
+> "fit-to-rotation" framing DOESN'T HOLD. These are pre-existing UNIT-LEVEL over-models, NOT rotation-fit
+> artifacts; the window fix merely ADDED to them.** Per-comp ratio decomposition (ROT=1 seeded board) shows each
+> unit's hotness is rotation-INDEPENDENT:
+> - **chisato — uniform ~1.19–1.24 at EVERY FB count.** PI2 1.193 (13 FBs), PI 1.195 (13 FBs), N2 1.236 (10 FBs).
+>   PI/PI2 are measured-exact at 13 FBs and were UNTOUCHED by the window fix, yet she's ~1.19 there → her over-credit
+>   is unit-level, not the N2 8→10 exposure (that only added ~+0.05 on top). The "clean fit-to-8-now-10" reading is
+>   wrong: de-fitting per-cast to fix N2 would leave PI/PI2 hot. Suspect levers (ALL ⚑, from her override note):
+>   true-normal core retention on SMG coreMult 250, swap mag-refill optimism (~2 free reloads/cycle), cadence,
+>   hitCount-48 flatDamage 472.18%. NOTE: the true-normal-CRIT lever is NOT in play — owner ruled 2026-07-21 that the
+>   `crit && !trueFlavor` guard (DECISIONS 2026-07-21 line 113) is not meant to exist (crit re-determined); the
+>   engine has no such guard on `main` and it was left as-is (that DECISIONS entry now reads stale — flag only, not
+>   edited). **Footage EXISTS**: `docs/probes/ar-sg-smg/chisato smg.MP4` + `docs/probes/720-kit-audit/chisato.mov`
+>   — a focused /probe-processing read of the true-damage window (core-popup presence + swap-window shot count) can
+>   localize, then a separate gated enactment pass.
+> - **trina — INVERSELY correlated with FB count** (hottest where FBs are FEWEST): PB/PB2 1.124/1.139 (12 FBs),
+>   TB2T2 1.188 (5 FBs), N3 1.228 (10 FBs). A per-FB BURST over-credit would trend the OTHER way; her over-credit is
+>   in her NON-burst footprint (Electric-AR normals / a passive), diluted by burst share in high-FB comps. She barely
+>   moved with the fix (1.177→1.180) — hot before AND after, so the window fix is a red herring for her. Small
+>   absolute error (~7M on ~51M; she's a buffer). No isolated footage → a trina-focus recording is needed (LOW prio).
+> - **rouge — mostly REAL run-to-run variance, not a model error.** PE and PE2 are the SAME team recorded twice;
+>   real rouge 106.7M (PE) vs 114.96M (PE2) = +7.7% real spread → sim ~constant → ratio swings 1.011↔1.111. Central
+>   ~1.07 is a mild unit-level residual her own note already flags (offensive-buff / F1–F2 burst-Max-HP double-count
+>   suspicion). Small-damage support (56–119M). No isolated footage.
+> - **naga — n=1 (N2, 1.065).** Shield-gated support; N2 has NO shielder so both headline blocks are inert (her note)
+>   → the reading is just her SG normals + S2. Mild SG-spray residual. n=1 = hypothesis-strength, NOT enactable. No
+>   isolated footage.
+> - **soda-twinkling-bunny — n=1 (N3, 1.047).** Her own note PREDICTED N3 ~0.974 (no-burst → chips stay 50); the drift
+>   to 1.047 came from later engine changes (CONE_DELTA SG core + the window fix), NOT rotation-fit. Her Hit Rate ▲38.91
+>   is unmodeled (would make her COLDER). **Footage EXISTS**: `docs/probes/control + carry/soda tb control.mov` +
+>   `docs/probes/720-kit-audit/soda tb.MP4`. n=1 → not enactable without a fresh graded read.
+>
+> **Net:** de-fitting these per-cast values to cancel the window fix would FUDGE unit-level modeling errors (violates
+> the accuracy-to-observed-mechanics invariant). Each needs footage-gated per-unit localization, NOT a rotation
+> de-fit. chisato + soda have isolated footage already (unblocked for a focused /probe-processing + gated pass);
+> naga/trina/rouge need new recordings (→ /testing-requests, LOW prio — small magnitudes / n=1). The original
+> ledger's pre/post board deltas above stay as the measured trail; the "fit-to-rotation" INTERPRETATION is SUPERSEDED
+> by this decomposition. (Nothing enacted this session — engine untouched, findings-only per batch-and-stop.)
 >
 > **Two open sub-questions filed (Fable pre-op revisions):**
 > - **(a) leftmost-vs-first-ready selection → RESOLVED 2026-07-21: switched to FIRST-READY (DECISIONS 2026-07-21,
@@ -413,6 +458,50 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 >   a SEPARATE wait-tolerance that must clear the ~1.6s natural chain span with margin (90f under, 120f over).
 >   No engine change (the gap stays 30f); DECISIONS 2026-07-21 corrected accordingly.
 > - **Dynamic chip-state (below) is UNAFFECTED — still open engine work.**
+>
+> **⇒ FIRST-BURST / BURST-GEN TIMING — measured corrections (2026-07-21, chisato.mov Liter/Crown/Chisato/Helm
+> Fire; owner frame-by-frame). LANDED so far: fight-delay + bolt-split (DECISIONS 2026-07-21). STILL OPEN as a
+> coherent burst-chain-timing + gauge REWORK (the pieces interact — don't land piecemeal):**
+> - **Measured chain-timing spec:** `gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB countdown (10000ms)`.
+>   The engine had B1 fire the instant gauge fills (no 30f) and FB start at the B3 cast (no 22f). The 30f between
+>   stages was already correct (`STAGE_CAST_GAP_FRAMES`).
+> - **Implemented ENV-gated, default OFF** (commit 3d7f6a3, regression byte-identical): `PREB1GAP=1` (30f before B1)
+>   and `PREFB=1` (22f before FB; defers fbEndFrame + fullBurstEnter + stored-hit release via `emitFbEnter`, gates
+>   the cast/expire checks off the 22f gap). **Each shifts FB 13→12 alone** on this comp — the OVERSHOOT: today's
+>   B1=3.5s match rides a slightly-too-fast gauge, so adding a delay without re-tuning the gauge pushes B1 late.
+>   → they can only become defaults TOGETHER WITH the gauge fix, tuned to reproduce the full measured timeline.
+> - **Gauge composition (measured 2026-07-21):** with this team ~90% of burst gen should come from Helm's SR (the
+>   gauge is ~90% full when her **3rd** shot tips it to 100 → B1). The sim currently reads **Helm 64% / chisato-SMG
+>   15% / liter-SMG 15% / crown 6%, B1 on Helm's 2nd shot** — the two SMGs OVER-contribute (~30% vs ~10%). Leading
+>   hypothesis: SMG fire-rate too high (rof 1440 ≈ 24/s) — which would ALSO cool chisato's damage hotness (one root
+>   cause). NOT changed (validated gauge-v4 datamine, board-wide blast radius; needs a measured SMG shot-count).
+> - **INVESTIGATION ITEM (owner):** the 22f pre-FB gap is likely WHY instant burst-cast attacks miss the +50% FB
+>   (they land before FB begins) — today modeled per-unit via `noFb`/`burstSnapshotsPreFb`. Verify PREFB reproduces
+>   that generally, and whether the per-unit flags then become redundant.
+> - **NEXT (the timeline pass):** a focused frame-by-frame read of chisato.mov's first burst window — Helm's exact
+>   shot frames, the burst-bar %-fill over time, and the B1/B2/B3/FB frames — as the target, then tune all knobs
+>   (fight-delay ✓, bolt ✓, +30f, +22f, gauge/SMG) TOGETHER to reproduce it and flip the defaults with a full A/B.
+>
+> **⇒ RESOLVED 2026-07-21 (owner frame-perfect data — supersedes the SMG/helm-90% hypotheses above).** The frame
+> read (t0 = first 2:59 frame = video 08.585; elapsed = video − 8.585) gave the exact timeline: first bullet
+> 0.133s · Helm SR shots 1.117 / 2.483 / 3.850s (82f cycle = 60 charge + 22 END bolt) · **gauge full ON Helm's
+> 3rd shot (3.850s)** · B1 4.317 · B2 4.783 · B3 5.283 · FB 5.650. Findings:
+> - **FIGHTDELAY=1 was WRONG** (framing confound) — real startup ≈ **8f (0.133s)**, not 1s. **BOLTSTART (11f-start)
+>   was WRONG** — the data fits **22f-at-END** + the 8f startup (shot1 68f). Both LANDED defaults are superseded and
+>   must revert as part of the coherent flip.
+> - **SMG is CORRECT at 0.2** (targetPerTrigger 20, the ×2-boss column — owner confirmed). The over-generation was
+>   NOT the SMG. The "helm ~90%" was an over-read; the real split is ~Helm 55% / non-Helm (SMG+Crown-MG) 45%.
+> - **THE BUG: Helm double-counts her S2 per-shot gauge (14.31).** `skill1 fillGauge 14.31` DUPLICATED the gauge
+>   table's `flatPerTrigger 1431`. Helm should be base(5.60)+skill(14.31)=**19.91/shot, not 34.22**. FIXED — removed
+>   the override fillGauge (commit 12a4585; byte-identical on graded / cooldown-bound comps).
+> - **THE 30f WAS DOUBLE-COUNTED with `POST_FB_CHAIN_DELAY`** (the measured 3s post-FB gap already included the
+>   gauge-full→B1 delay). Compensate: **180→150f** (`POSTFB` env, default 180). Without it the coherent model
+>   under-counts 6 graded comps by 1; with it, only 1 (elec-DPS run-E, 10 vs 11-12 boundary).
+> - **THE COMPLETE COHERENT MODEL** (reproduces the video first chain to ~0.1s AND keeps 11/12 graded FB, board ±3%
+>   6→7): **Helm de-dup ✓ · startup ~8f (FIGHTDELAY 1→~0.13) · 22f-END bolt (BOLTSTART off) · PREB1GAP 30f on ·
+>   PREFB 22f on · POST_FB 180→150.** Helm de-dup already committed (inert at current defaults). The rest is a
+>   pending COHERENT DEFAULT FLIP (reverts the fight-delay/bolt-split DECISIONS, enables 30f/22f, retunes POST_FB,
+>   snapshot regen) — owner sign-off + full A/B; the run-E residual (boundary −1) to accept or chase.
 
 Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
 - **Rotation over-generation [RESOLVED 2026-07-21 — see banner above; STALE claim retained for the trail]:**
