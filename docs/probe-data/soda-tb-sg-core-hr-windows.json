@@ -26,7 +26,7 @@
       "soda-twinkling-bunny",
       "helm"
     ],
-    "boss": "Electric (inferred)"
+    "boss": "NEUTRAL (owner 2026-07-22) — the control videos were recorded against a boss that advantages nobody on the team. Team is Wind/Iron/Iron/Water, so neutral requires boss Fire or Wind. Modelled as boss:null, same as the four C-* control comps."
   },
   "clock": {
     "method": "top-right countdown; fightClock = 180 - countdown",
