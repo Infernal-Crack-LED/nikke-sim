@@ -50,6 +50,53 @@
     "sampling": "1 frame every 1.2 s (popup persistence ~0.4-0.5 s, so no popup is counted twice)",
     "excluded": "red VFX blooms with no numerals, the red low-ammo counter box, red laser sights, blue/cyan shield hits, the FB countdown"
   },
+  "ownerCount": {
+    "countedBy": "owner, by hand, 2026-07-22 — the count of record. Supersedes the partial agent-sampled read below (kept for provenance only).",
+    "format": "per shot: [landed pellet popups, of which RED 'CORE HIT']",
+    "windowsCounted": "priority ranks 1-4 (all four bands, ON + OFF). Ranks 5 (extra near n) not counted.",
+    "shots": {
+      "near_ON": [[9,0],[10,0],[9,1],[9,3],[10,0],[10,2],[10,1],[9,0],[9,0],[9,1],[9,1],[9,1],[8,0],[10,0],[9,1],[10,0]],
+      "near_OFF": [[7,0],[7,0],[9,0],[7,0],[9,0]],
+      "mid_ON": [[10,1],[9,0],[10,0],[9,1],[9,0],[10,0],[9,1],[9,0],[9,1],[9,0],[9,0],[10,0],[9,0],[9,0],[8,0],[9,0],[8,0],[9,0],[10,1]],
+      "mid_OFF": [[10,0],[7,0],[7,0],[7,1]],
+      "far_ON": [[6,0],[8,0],[8,0],[5,0],[9,1],[7,0],[6,0],[9,0],[7,0],[8,2],[6,0],[6,0],[7,0],[7,0],[5,0],[7,0],[9,0],[6,0],[9,0]],
+      "far_OFF": [[7,0],[5,0],[6,0],[6,0],[8,0]],
+      "midfar_ON": [[7,0],[9,0],[8,1],[10,1],[9,1],[7,1],[7,1],[7,1],[9,0],[7,0],[9,1],[9,1],[6,1],[7,1],[8,0],[6,1],[6,0],[9,0]],
+      "midfar_OFF": [[8,0],[8,0],[6,0],[6,0]]
+    },
+    "ownerObservation": "NO PELLET EVER LEFT HER GREY HIT CIRCLE — every pellet that missed the boss missed INSIDE the drawn accuracy circle. (Owner's sentence was truncated mid-thought; the consequence they were drawing has been asked for, not assumed.) Direct consequence either way: pellets flying outside the drawn circle is NOT a loss channel, so landing = the boss body's coverage of the AIM CIRCLE — which is exactly the basis step 3's BAND_SG_HIT_FRAC rebuild is meant to move to.",
+    "coreFraction": {
+      "unit": "cores / landed pellets",
+      "near": { "ON": { "k": 11, "n": 149, "f": 0.0738, "wilson95": [0.042, 0.127] }, "OFF": { "k": 0, "n": 39, "f": 0.0, "wilson95": [0.0, 0.09] } },
+      "mid": { "ON": { "k": 5, "n": 174, "f": 0.0287, "wilson95": [0.012, 0.065] }, "OFF": { "k": 1, "n": 31, "f": 0.0323, "wilson95": [0.006, 0.162] } },
+      "midfar": { "ON": { "k": 11, "n": 140, "f": 0.0786, "wilson95": [0.044, 0.135] }, "OFF": { "k": 0, "n": 28, "f": 0.0, "wilson95": [0.0, 0.121] } },
+      "far": { "ON": { "k": 3, "n": 135, "f": 0.0222, "wilson95": [0.008, 0.063] }, "OFF": { "k": 0, "n": 32, "f": 0.0, "wilson95": [0.0, 0.107] } },
+      "pooled": { "ON": "30/598 = 0.0502", "OFF": "1/130 = 0.0077", "hrLiftFisherP": 0.0287 }
+    },
+    "landingFraction": {
+      "unit": "landed pellets / (10 x shots)",
+      "near": { "ON": 0.931, "OFF": 0.78 },
+      "mid": { "ON": 0.916, "OFF": 0.775 },
+      "midfar": { "ON": 0.778, "OFF": 0.7 },
+      "far": { "ON": 0.711, "OFF": 0.64 },
+      "pooled": { "ON": 0.831, "OFF": 0.722, "lift": 0.108, "fisherP": 0.00142 }
+    },
+    "verdicts": {
+      "preRegisteredHoldout": "near ON measured 0.074 vs cone 0.160 -> miss 0.087, INSIDE the +-0.12 tolerance. The holdout does NOT fire its STOP trigger. But it misses in a consistent direction, and near ON lands on the cone's HR0 value (0.073) and the fallback's ON value (0.070).",
+      "coneCoreOverPrediction": "the cone over-predicts core in 3 of 4 bands ON (near 0.074 vs 0.160; mid 0.029 vs 0.133; far 0.022 vs 0.051) and is near-exact at midfar (0.079 vs 0.077). Pooled ON 0.050 vs 0.108 expected (~2.2x over). Pooled OFF 0.008 vs 0.049 expected: 1 core observed where ~6.4 were expected, P(<=1) ~ 0.011.",
+      "fallbackUnderPrediction": "the CONE_DELTA=0 fallback predicts pooled ON 0.019 vs measured 0.050 (~2.7x under), and predicts exactly ZERO at mid/far where cores were observed (5 and 3). Neither model is right; measured sits between them.",
+      "hrDoesRaiseCore": "CONFIRMED in direction: pooled ON 0.050 vs OFF 0.008, fisher p = 0.029. The magnitude of the lift is larger than the cone's ~2.2x, but the OFF arm is only 130 pellets.",
+      "bandOrderingInversion": "midfar (0.079) > mid (0.029) in the ON arm — the registered ordering near>mid>midfar>far is VIOLATED in the data at fisher p = 0.068. NOT significant at 0.05, so this is a flag, not a fired trigger. It is strange on its face: at midfar FEWER pellets land (0.778 vs 0.916) yet MORE of them core.",
+      "landingIsHrDependent": "the live engine models SG landing as a fixed per-band table with NO Hit-Rate term. Measured lift is +0.108 pooled (p = 0.0014), +0.151 at near (p = 0.006), +0.141 at mid (p = 0.021); midfar/far lifts are positive but not individually significant. This is a real modeling gap in the shipped engine.",
+      "landingShapeVsModels": "measured HR0 landing (near 0.780 / mid 0.775 / midfar 0.700 / far 0.640) contradicts ALL four candidates: the live table is too high and mis-shaped (it says mid 0.986 > near 0.888; measured says near ~ mid), geoStatic matches at near (0.797 vs 0.780) but is too low elsewhere, geoGauss is too high everywhere, and the drake popupcount table (0.60/0.60/0.55/0.45) is ~0.15-0.19 too low in every band.",
+      "geoGaussShapeWrong": "the Gaussian sigma-shrink form gets the DIRECTION of the HR lift right and the SHAPE wrong: it predicts the largest lift at far (+0.196) and the smallest at near (+0.076); measured is the reverse (near +0.151, far +0.071).",
+      "drakeReconciliation": "HYPOTHESIS, testable: the drake popupcount landing (0.60 near) was measured by pooling popups from frames sampled at <=2 fps, which systematically UNDERCOUNTS pellets per shot because popup persistence (~0.45 s) is shorter than the sampling interval. This owner count is per-shot and reads 0.78 at the same band on the same boss with no Hit Rate. If that is the explanation, SGLANDING=popupcount is biased low and the live table biased high, with the truth between them."
+    },
+    "openQuestions": [
+      "METHOD, load-bearing: were ALL shots in each window counted, or only cleanly readable ones? The ON arm has 72 shots over 48 s (1.50/s) and the OFF arm 18 over ~39.5 s (0.46/s) — a 3.3x difference. If that is real fire-rate (FB uptime vs reload cycles) the landing comparison stands; if OFF shots were selected for readability, the landing lift needs a bias check.",
+      "The owner's grey-hit-circle sentence was truncated — the conclusion they were drawing is not recorded."
+    ]
+  },
   "results": {
     "near_HR38.91_ON": {
       "framesRead": 6,
