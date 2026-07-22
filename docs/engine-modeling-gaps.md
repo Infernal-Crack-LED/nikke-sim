@@ -1,14 +1,11 @@
 # Engine modeling gaps — cross-unit thread inventory
 
-> **Status: OPEN INVESTIGATION** (opened 2026-07-17). AI-facing catalog.
-> Derived by reading every unit's `unmodeled` + `caveats` in `data/kit-status.json` (74 units) and
-> grouping the recurring gaps. This is NOT a decision log — it is a triage map of where the same
-> modeling limitation recurs across many units, so a single engine fix can move a whole cluster at
-> once instead of chasing per-unit residuals.
->
-> Source of truth for any individual unit stays `data/kit-status.json` (findings/unmodeled/caveats)
-> and its override. Settled WHY lives in `docs/DECISIONS.md`; genuinely-unresolved research lives in
-> `docs/open-questions.md`. This doc is the connective tissue: "these N units share one root cause."
+> **AI-facing cross-unit triage map (CURRENT-STATE class — pruned as clusters resolve).** Derived by
+> reading every unit's `unmodeled` + `caveats` in `data/kit-status.json` and grouping the recurring
+> gaps, so a single engine fix can move a whole cluster instead of chasing per-unit residuals. NOT a
+> decision log — the capability-build WHY lives in `docs/DECISIONS.md`, the live flag/primitive state
+> in `docs/STATE.md` §1/§5, and the per-unit SSOT in `data/kit-status.json`. This doc = "these N units
+> share one root cause" + which built primitives are still un-enacted per unit.
 >
 > **Ratio direction (see docs/CONVENTIONS.md):** board = `sim/real`. **HOT ▲ = sim over-credits**
 > (ratio > 1); **COLD ▼ = sim under-credits** (ratio < 1).
@@ -102,95 +99,30 @@
 
 ## Highest-leverage engine fixes (ranked by blast radius)
 
-These are systematic limitations, not per-unit fudge. Each would correct many units at once.
+Systematic limitations, not per-unit fudge — each corrects many units at once. Capability-build detail
++ board deltas are in DECISIONS (dates below); live flag/primitive state in `docs/STATE.md`. Compact:
 
-1. **Per-tick recovery-event emitter** (theme 2b) — ✅ **CAPABILITY LANDED 2026-07-17.** The `heal`
-   effect now carries optional `ticks` + `intervalSec` (default `ticks:1` = instant, back-compatible):
-   a per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets `ticks:N` so the engine emits
-   the first recovery event immediately and schedules the remaining N-1 on a `recoveryEmitters` queue,
-   keeping Crown-type "when recovery takes effect" consumers refreshed across the whole window instead of
-   one proc per activation (sim.ts `fireRecovery` + the heal-over-time loop). **Opted in per kit prose:**
-   anchor-innocent-maid S1 (`ticks:8`, "every 1 sec for 8 sec"), blanc S2 (`ticks:5`) + burst (`ticks:8`).
-   Inert across all graded comps (no graded comp pairs a recovery consumer with a HoT emitter — Crown+Helm
-   in T4 already refreshes every full-charge shot), so the gate stayed green with snapshots stable.
-   Independently verified end-to-end on a Crown + anchor-innocent-maid team: team damage 766.97M →
-   790.32M (+3.0%, every unit lifts) when the anchor HoT went 1→8 ticks — the expected COLD correction.
-   **Still UNMODELED (heals currently not `heal` blocks): prika (burst 25-tick HoT), trina (S1 5-tick),
-   mint (3-tick — no heal block yet); naga/mana heals are instant (not HoTs); anis-star heals dropped.**
-   Fill these in the `unmodeled` backfill when each unit is touched.
-2. **Honor `excludeSelf` on all typed-ally targets** (theme 11) — ✅ **LANDED 2026-07-17.** The
-   "arcana-fortune-mate bug family": `alliesOfClass`/`alliesOfElement`/`alliesTopAtk`/`allies`
-   silently ignored `excludeSelf` → self inflation. Engine now honors `excludeSelf` on all four
-   kinds (applied to the candidate pool BEFORE any top-N slice); the four affected overrides opted
-   in per verified kit prose ("except self"). Result: **maiden-ice-rose** T2 elec-weak comp
-   1.55 HOT → 1.03, board MAD 0.253 → 0.098 (the map's "1.13 HOT" was the mean of 0.81/1.03/1.55;
-   the 1.55 was pure elemAdvantage self-inflation on the Electric-advantaged Water boss). brid-silent-track
-   / miranda / soda-twinkling-bunny: faithful but currently board-neutral (brid/miranda not
-   board-measured; soda's self-block already covers her + she isn't top-ATK in N3). Residual maiden
-   0.76 on the Wind comp is her SEPARATE documented burst Max-HP under-model, deliberately NOT masked.
-3. **`hitRatePct` → core-hit-rate lift** (theme 8) — ✅ **LIVE BY DEFAULT 2026-07-17** (`HRCORE`,
-   sim.ts:830 — `ENV.HRCORE=0/off` disables for A/B). The Hit-Rate line is no longer inert: a live
-   Hit Rate shrinks the reticle → higher core fraction (⚑ derived slope; jill measured a ×1.45 core
-   window). OPEN refinements only: asuka's saturation bracket, quency-escape-queen's cadence + the
-   +1.04 overshoot, and a measurement (e.g. `soda-tb-control`) to validate the derived slope.
-4. **Own-burst-gated FB trigger** (theme 9) — ✅ **LANDED 2026-07-17.** A block gate
-   `ownBurstGate: 'cast' | 'notCast'` (types.ts Block; evaluated in sim.ts `applyBlock`
-   against `rotationCasters`) COMPOSES with a `fullBurstEnter` trigger to express "Entering
-   Full Burst AFTER this unit uses her own Burst" (`'cast'`) vs "…WITHOUT using own Burst"
-   (`'notCast'`) — the plain team `fullBurstEnter` over-fired the rider on FBs a DIFFERENT B3
-   completed. Unlike re-keying to `burstCast` (fires PRE-FB, loses the +50% FB major + FB
-   auras), the gate keeps the block AT FB-entry. **Opted in: cinderella-crystal-wave** (both
-   FB-enter core-strike riders → `'cast'`; kit text is explicit). The kit-status finding's
-   "sole-B3 → graded movement ZERO" premise was WRONG — she alternates stage-3 with a co-B3 in
-   BOTH graded comps (Liberalio in T5, Rapi:RH in T8), so the gate is board-MOVING and it
-   **IMPROVES fit**: T8 iron-weak 1.062 HOT → 1.001 (the over-fire was masking a multi-B3
-   over-credit), T5 wind-weak 1.009 → 0.978 (both now within ±3%; board MAD 0.036 → 0.012).
-   Regression snapshot updated for the T5 ccw total (understood). The other theme-9 units are
-   already correct as-is: arcana-fortune-mate / mana / asuka-wille use `burstCast` for their
-   duration self-buffs (the pre-FB shift is acceptable there — no FB-entry instant to preserve),
-   mihara-bonding-chain is a benign sole-B3, chisato has no FB-enter own-burst line. The inverse
-   COLD case **diesel-winter-sweets** (`'notCast'`, Highlight sustained) is now EXPRESSIBLE but
-   stays owner-deferred (document-only, CLAUDE.md web-TODO — her full Highlight state machine +
-   no-op-B3-drives-FB path is the larger unmodeled piece).
-5. **Load the swap weapon's own datamine spec during burst swaps** (theme 7) — ✅ **CAPABILITY LANDED
-   2026-07-17** (`weaponSwap.weapon` + `pullsPerSec`; `effWeapon = swap.weapon ?? char.weapon`, sim.ts:1075).
-   **nayuta FIXED** (0.637 → 0.894 — swap re-classed base SMG → SR "Memory Incineration", MAD 0.342→0.106).
-   **moran** swap-ROF 24/s was REFUTED by the board then MEASURED at base ~12/s — her residual coldness is a
-   THROUGHPUT follow-up needing isolated footage, NOT a per-shot fix (see theme 7). Others (chisato/takina/
-   velvet/…) still HOT-unaddressed.
-6. **`bossElementGate` block gate** (theme 10) — ✅ **LANDED 2026-07-17.** A block-level gate
-   (`bossElementGate: <element>`, evaluated in sim.ts `applyBlock` alongside fbGate/swapGate) that
-   COMPOSES element-gating with any real trigger — the schema previously could only express a _permanent_
-   element-gated passive (`bossElement` TRIGGER), never "when entering FB / after N hits / on burst cast
-   **against a [element] boss**." Inert vs a non-matching (incl. the neutral scope-lock) boss, so it never
-   disturbs graded comps. **Opted in per verified prose:** helm-aquamarine burst "when attacking an Electric
-   Code target → +164.83% additional" (burstCast + Electric gate; was UNMODELED) and brid-silent-track's two
-   Wind-Code team debuffs (S1 fullBurstEnter + Wind → enemy DamageTaken ▲15.12%; S2 hitCount 100 + Wind →
-   ▲12.12%; were SKIPPED-CONDITIONAL). Verified: both inert on neutral (identical to pre-change); on the
-   matched boss the gate ALONE adds brid +32.2M (Wind team-wide debuff, isolated from ×1.1) / helm-aquamarine
-   +4.9M (Electric burst rider). **NOT needed for the element-advantage BUFFS** (anis-sparkling-summer,
-   guillotine-winter-slayer, elegg-boom-and-shock, asuka): `elemAdvantageDamagePct` is already auto-gated by
-   `advantaged(u)` in the damage math (sim.ts:899/942), so those lines are correctly inert on non-matched
-   bosses without any gate — their remaining gaps (asuka's shield-status gate, etc.) are separate themes.
-   eve's element-coded lines already use the permanent `bossElement` trigger (fine as-is).
-7. **Timed / swap-scoped pierce primitive** (theme 5) — ✅ **CAPABILITY LANDED 2026-07-17** (engine
-   `gainPierce` effect + per-unit `pierceUntilFrame` window; the damage formula's pierce gate is now
-   `hasPierce || pierceUntilFrame > frame || opts.pierceActive`). A timed "Gain Pierce for N sec" sets
-   the window on the block's target(s), so its (and teammates') Pierce Damage ▲ buffs go live only
-   during it — no more static-`hasPierce`-or-nothing. **Pierce Damage ▲ is a real Damage-Up-bucket entry
-   that DOES apply on the partless boss** (owner-confirmed 2026-07-17 — it applies to any pierce-damage-type
-   unit; only the separate pierce CORE+BODY DOUBLE-HIT is multipart-only, `PIERCE_CORE_DOUBLE=false` — do
-   not conflate the two). **grave is OPTED IN (enabled):** burst → self `gainPierce` 10s, the faithful
-   +92.78 pierce Damage Up (S1's 48.4 excludeSelf'd), which moves her three comps 0.836/0.831/0.800 COLD →
-   **1.178/1.171/1.219 HOT** — kept ON PURPOSE (faithful > fit). Because the pierce is genuinely real, the
-   overshoot is diagnostic: grave's 0.836 COLD was a **NET of two errors** — the missing pierce (COLD) was
-   _masking_ a compensating over-model in her burst window (HOT = her documented "AR-carry burst-window
-   residual"). Modeling the mechanic isolates that single residual (tracked as open-questions **U19**:
-   trim the burst-window over-model with a measurement) instead of leaving pierce off (a fit-fudge) + a
-   forgettable TODO. Snapshot regenerated grave-only (teammates verified stable). milk-blooming-bunny
-   (0.70, mode confounds) / prika (measurement-held) stay deferred.
-8. **Cadence-tuple measurement** (theme 1) — the largest population (~22 units) but a _measurement_
-   backlog, not an engine change; owned by the full-sweep video plan.
+1. **Per-tick recovery-event emitter** (theme 2b) — ✅ CAPABILITY LANDED 2026-07-17 (`heal.ticks`/
+   `intervalSec` + `recoveryEmitters` queue; opted in anchor-innocent-maid, blanc). Open HoT backfill:
+   prika/trina/mint (no `heal` block yet); naga/mana instant; anis-star dropped.
+2. **`excludeSelf` on typed-ally targets** (theme 11) — ✅ LANDED 2026-07-17 (maiden-ice-rose 1.55→1.03;
+   brid-silent-track/miranda/soda-twinkling-bunny faithful, board-neutral).
+3. **`hitRatePct` → core-hit lift** (theme 8) — ✅ LIVE BY DEFAULT 2026-07-17 (`HRCORE`). Open refinements:
+   asuka saturation bracket; quency-escape-queen cadence + the +1.04 overshoot; slope validation.
+4. **Own-burst-gated FB** (theme 9) — ✅ LANDED 2026-07-17 (`ownBurstGate:'cast'/'notCast'`; opted in
+   cinderella-crystal-wave T8 1.062→1.001, T5 1.009→0.978). diesel-winter-sweets `'notCast'` expressible,
+   owner-deferred.
+5. **Swap weapon datamine spec** (theme 7) — ✅ CAPABILITY LANDED 2026-07-17 (`weaponSwap.weapon`/
+   `pullsPerSec`; nayuta 0.637→0.894). moran throughput footage-blocked; chisato/takina/velvet HOT-unaddressed.
+6. **`bossElementGate` block gate** (theme 10) — ✅ LANDED 2026-07-17 (helm-aquamarine Electric rider,
+   brid-silent-track Wind debuffs; inert vs the neutral scope-lock boss). Advantage BUFFS never needed it
+   (`elemAdvantageDamagePct` is already advantage-gated in the damage math).
+7. **Timed / swap-scoped pierce** (theme 5) — ✅ CAPABILITY LANDED 2026-07-17 (`gainPierce` +
+   `pierceUntilFrame`; grave enabled 0.83→1.18 HOT kept on purpose, faithful>fit, residual → U19).
+   milk-blooming-bunny/prika deferred. (Pierce Damage ▲ applies on the partless boss; only the pierce
+   CORE+BODY double-hit is multipart-only — don't conflate.)
+8. **Cadence-tuple measurement** (theme 1) — largest population (~22 units), a measurement backlog owned
+   by the full-sweep video plan, not an engine change.
 
 ## Full theme catalog (ranked by unit count)
 
