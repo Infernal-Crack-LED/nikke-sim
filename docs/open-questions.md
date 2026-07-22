@@ -481,6 +481,27 @@ the pre-registration in the session archive, DECISIONS 2026-07-16.
 > - **NEXT (the timeline pass):** a focused frame-by-frame read of chisato.mov's first burst window — Helm's exact
 >   shot frames, the burst-bar %-fill over time, and the B1/B2/B3/FB frames — as the target, then tune all knobs
 >   (fight-delay ✓, bolt ✓, +30f, +22f, gauge/SMG) TOGETHER to reproduce it and flip the defaults with a full A/B.
+>
+> **⇒ RESOLVED 2026-07-21 (owner frame-perfect data — supersedes the SMG/helm-90% hypotheses above).** The frame
+> read (t0 = first 2:59 frame = video 08.585; elapsed = video − 8.585) gave the exact timeline: first bullet
+> 0.133s · Helm SR shots 1.117 / 2.483 / 3.850s (82f cycle = 60 charge + 22 END bolt) · **gauge full ON Helm's
+> 3rd shot (3.850s)** · B1 4.317 · B2 4.783 · B3 5.283 · FB 5.650. Findings:
+> - **FIGHTDELAY=1 was WRONG** (framing confound) — real startup ≈ **8f (0.133s)**, not 1s. **BOLTSTART (11f-start)
+>   was WRONG** — the data fits **22f-at-END** + the 8f startup (shot1 68f). Both LANDED defaults are superseded and
+>   must revert as part of the coherent flip.
+> - **SMG is CORRECT at 0.2** (targetPerTrigger 20, the ×2-boss column — owner confirmed). The over-generation was
+>   NOT the SMG. The "helm ~90%" was an over-read; the real split is ~Helm 55% / non-Helm (SMG+Crown-MG) 45%.
+> - **THE BUG: Helm double-counts her S2 per-shot gauge (14.31).** `skill1 fillGauge 14.31` DUPLICATED the gauge
+>   table's `flatPerTrigger 1431`. Helm should be base(5.60)+skill(14.31)=**19.91/shot, not 34.22**. FIXED — removed
+>   the override fillGauge (commit 12a4585; byte-identical on graded / cooldown-bound comps).
+> - **THE 30f WAS DOUBLE-COUNTED with `POST_FB_CHAIN_DELAY`** (the measured 3s post-FB gap already included the
+>   gauge-full→B1 delay). Compensate: **180→150f** (`POSTFB` env, default 180). Without it the coherent model
+>   under-counts 6 graded comps by 1; with it, only 1 (elec-DPS run-E, 10 vs 11-12 boundary).
+> - **THE COMPLETE COHERENT MODEL** (reproduces the video first chain to ~0.1s AND keeps 11/12 graded FB, board ±3%
+>   6→7): **Helm de-dup ✓ · startup ~8f (FIGHTDELAY 1→~0.13) · 22f-END bolt (BOLTSTART off) · PREB1GAP 30f on ·
+>   PREFB 22f on · POST_FB 180→150.** Helm de-dup already committed (inert at current defaults). The rest is a
+>   pending COHERENT DEFAULT FLIP (reverts the fight-delay/bolt-split DECISIONS, enables 30f/22f, retunes POST_FB,
+>   snapshot regen) — owner sign-off + full A/B; the run-E residual (boundary −1) to accept or chase.
 
 Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
 - **Rotation over-generation [RESOLVED 2026-07-21 — see banner above; STALE claim retained for the trail]:**

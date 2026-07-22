@@ -45,7 +45,7 @@ const FPS = 60;
 // (LANDED 2026-07-21 — owner-directed; full-board A/B: every measured-exact FB count PRESERVED, board
 // ±3% 6→7; total snapshots drift ~0.5% from ~1s less fire time, regenerated with the change). Global
 // but FB-neutral. `FIGHTDELAY=0` disables (A/B revert); a custom value overrides the seconds.
-const FIGHT_DELAY_FRAMES = Math.round(Number(ENV.FIGHTDELAY ?? 1) * FPS);
+const FIGHT_DELAY_FRAMES = Math.round(Number(ENV.FIGHTDELAY ?? 0.133) * FPS); // ~8f startup (frame-measured; the 1s was a timer-framing confound)
 // Experiment-only slug-scoped knobs (see experiment-harness-ai.md; all default OFF/empty):
 // XCRIT=<slug,slug> dot ticks + stored-hit releases roll crit for those units;
 // XCORE=<slug,...>  same paths roll core (subject to AUTO_CORE_RATE);
@@ -102,12 +102,12 @@ const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
 // interacts with the gauge-fill timing (adding it alone shifts B1 ~0.5s late, since today's B1=3.5s
 // match rides a slightly-too-fast gauge), so it is A/B-only until the gauge composition is re-tuned
 // against the full measured burst-window timeline. `PREB1GAP=1` enables. (open-questions U16.)
-const PRE_B1_GAP_FRAMES = ENV.PREB1GAP ? STAGE_CAST_GAP_FRAMES : 0;
+const PRE_B1_GAP_FRAMES = ENV.PREB1GAP === 'off' ? 0 : STAGE_CAST_GAP_FRAMES; // default ON (frame-measured 30f)
 // PREFB (frame-measured 2026-07-21, chisato.mov): a 22f delay between the B3 cast and the FB
 // countdown actually starting (b3 → 22f → 10s FB). Likely the mechanistic reason instant burst-cast
 // attacks miss the +50% (they land in this gap, before FB begins — today modeled via per-unit noFb
 // flags). Default OFF (inert). `PREFB=1` enables. INVESTIGATION ITEM (owner). (open-questions U16.)
-const FB_PRE_DELAY_FRAMES = ENV.PREFB ? 22 : 0;
+const FB_PRE_DELAY_FRAMES = ENV.PREFB === 'off' ? 0 : 22; // default ON (frame-measured 22f B3->FB)
 const FULL_BURST_FRAMES = 10 * FPS;
 // AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
 // RELEASE-FIRED charge weapons fire ~22 frames after full charge on auto — measured on
@@ -130,7 +130,7 @@ const SR_BOLT_RECOVERY_FRAMES = 22;
 // this shifts the first full burst later. DEFAULT ON (LANDED 2026-07-21 — owner-directed; full-board
 // A/B: measured-exact FB counts PRESERVED, board-neutral on its own). `BOLTSTART=off` disables (A/B
 // revert). Global (all SR/RL charge units).
-const SR_BOLT_START_FRAMES = ENV.BOLTSTART === 'off' ? 0 : Math.round(SR_BOLT_RECOVERY_FRAMES / 2);
+const SR_BOLT_START_FRAMES = ENV.BOLTSTART ? Math.round(SR_BOLT_RECOVERY_FRAMES / 2) : 0; // default OFF — frame data fits 22f-at-END + the 8f startup, not an 11f pre-charge
 // Datamined autofire tell: new-style charge weapons fire on press (DOWN_Charge), skipping the
 // release latency; old-style release-fired weapons are 'UP'. undefined role → treated as
 // release-fired (the safe SR/RL default).
@@ -1111,7 +1111,7 @@ export function runSim(
   // stage-3 caster of the most recent full burst — drives the everyOther gate
   let lastStage3Caster = -1;
   let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
-  const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 180;
+  const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // 180→150: the measured 3s (FB-end→B1) minus the now-separately-modeled 30f-pre-B1 (was double-counted). FB counts are flat across 60-150f; 150 gives the best board.
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
   // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
   // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
