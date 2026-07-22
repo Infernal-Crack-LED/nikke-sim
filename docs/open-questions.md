@@ -10,18 +10,27 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ### U28 — `extraHitDamagePct` vs `flatDamage` are not interchangeable: gauge + flavor asymmetry (split out of U13, 2026-07-22)
 A32 closed the crit divergence between the two encodings of function "additional damage". Two
-divergences remain at the same call site, both **inert today** but both live modeling hazards:
+divergences remain at the same call site. **They are not the same kind of open:**
 
-1. **Burst gauge.** A `flatDamage` proc calls `skillGauge` (one target-base HIT of generation:
-   `targetPerTrigger / hitsPerShot`, no `flatPerTrigger`, no charge/focus ×2.5). `extraHitDamagePct`
-   generates **nothing**. This is not cosmetic: `modernia`'s S1 rider fires 2×/pull at `per/2` each,
-   contributing ~+50% on top of her weapon's own generation — her override keeps the `flatDamage`
-   encoding specifically to preserve that economy, and her rotation is measured-exact with it. So
-   re-encoding a unit from one primitive to the other silently changes its rotation.
-2. **Flavor.** `extraHitDamagePct` is a SUMMED buff stat, so an individual rider has no `flavor`. A
-   true-damage rider therefore could not be exempted from crit (§2c owner ruling: true damage cannot
-   crit) without promoting the stat to a per-source list. No override carries a true-flavored rider
-   today, so nothing is currently mis-modeled — but authoring one would require that refactor FIRST.
+1. **Burst gauge — LIVE ON ALL THREE CARRIERS RIGHT NOW, not inert.** A `flatDamage` proc calls
+   `skillGauge` (one target-base HIT of generation: `targetPerTrigger / hitsPerShot`, no
+   `flatPerTrigger`, no charge/focus ×2.5). `extraHitDamagePct` generates **nothing**. So `modernia`,
+   `nayuta` and `neon-vision-eye` each generate less burst gauge today than the same kit line would
+   under the other encoding — an active difference in their gauge totals, and therefore potentially in
+   their rotations. Whether it is an ERROR is what is unmeasured, but the direction is not neutral:
+   the one MEASURED function rider (`maiden-ice-rose`, `burst-gauge.md`:145) **does** generate gauge —
+   a visible second bar sub-step per pull. That is positive evidence these three riders SHOULD be
+   generating something and are not, i.e. a probable live UNDER-generation pending the measurement,
+   not merely an unproven hypothetical.
+   Scale of the thing being lost: `modernia`'s S1 rider (which IS `flatDamage`) fires 2×/pull at
+   `per/2` each, ~+50% on top of her weapon's own generation — her override keeps that encoding
+   specifically to preserve the economy her measured-exact rotation depends on. So re-encoding a unit
+   between the two primitives silently changes its rotation.
+2. **Flavor — genuinely inert.** `extraHitDamagePct` is a SUMMED buff stat, so an individual rider has
+   no `flavor`. A true-damage rider therefore could not be exempted from crit (§2c owner ruling: true
+   damage cannot crit) without promoting the stat to a per-source list. No override carries a
+   true-flavored rider today, so this capability gap currently mis-models nothing — but authoring one
+   would require that refactor FIRST.
 
 **Also unmeasured (the reason this is a question, not just a TODO):** whether function additional
 damage *should* generate burst gauge at high hit rates. The `skillGauge` constant is anchored on ONE

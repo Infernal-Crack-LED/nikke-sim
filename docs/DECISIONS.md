@@ -31,12 +31,18 @@ lives. Newest first within each section.
   +5.05%, and `modernia` +12.13% predicted from her Critical Damage ▲ 14.25%×5 stacks vs +12.00%
   observed. Board: `modernia` 0.83→0.84, `nayuta` 0.85→0.86 (both COLD, improve); `neon-vision-eye`
   1.07→1.08 / 1.17→1.18 (HOT, slightly worse) — faithful>fit, her heat routes to a per-unit retune.
-  **Known residual at the same call site (not crit, both inert today):** `extraHitDamagePct` generates
-  NO burst gauge where an equivalent `flatDamage` proc emits `skillGauge` per proc, and being a summed
-  stat it cannot carry a per-rider `flavor`, so a true-damage rider could not be exempted from crit
-  (§2c) without promoting the stat to a per-source list. No true-flavored rider exists. Consequence:
-  the two encodings are NOT interchangeable — swapping one for the other silently changes gauge
-  economy. → open-questions A32 (U13); live flag `docs/STATE.md` §1.
+  **Two residuals at the same call site (neither is crit) — they are NOT the same kind of open:**
+  (a) **burst gauge, LIVE on all three carriers:** `extraHitDamagePct` generates NO gauge where an
+  equivalent `flatDamage` proc emits `skillGauge` per proc, so all three units generate less gauge
+  today than the same kit line would under the other encoding. The one MEASURED function rider
+  (`maiden-ice-rose`) DOES generate gauge, so this is a probable live UNDER-generation pending
+  measurement, not a neutral unknown. (b) **flavor, genuinely inert:** being a summed stat it cannot
+  carry a per-rider `flavor`, so a true-damage rider could not be exempted from crit (§2c) without
+  promoting the stat to a per-source list — no true-flavored rider exists, so nothing is mis-modeled
+  by it today. Consequence: the two encodings are NOT interchangeable — swapping one for the other
+  silently changes gauge economy. → open-questions **U28**; A32 (U13); live flag `docs/STATE.md` §1.
+  *(Corrected 2026-07-22, same session as authoring: the first draft called both residuals "inert
+  today", which was true only of (b) and would have caused a reader to under-prioritise (a).)*
 
 - **(2026-07-22) ACCURACY-CIRCLE GEOMETRY — the four open rulings RESOLVED; workstreams A + B RETIRED as
   superseded-by-the-cone, C is the only live thread.** The `docs/data/sg-calc/IMPLEMENTATION-PLAN.md` open

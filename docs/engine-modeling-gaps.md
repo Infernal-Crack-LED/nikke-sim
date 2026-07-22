@@ -185,8 +185,11 @@
   DECISIONS 2026-07-22. **Residual gap at the same call site (NOT crit):** `extraHitDamagePct` generates
   no burst gauge while an equivalent `flatDamage` proc emits `skillGauge` per proc, and it is a summed
   stat so a per-rider `flavor` (e.g. a true-damage rider, which must not crit) cannot be represented.
-  Both are inert today — no true-flavored rider exists — but they mean the two encodings are not
-  interchangeable; swapping one for the other on a unit silently changes its gauge economy.
+  The gauge half is **LIVE on all three carriers today** (they generate less gauge than the same kit
+  line would under `flatDamage`, and the one measured function rider DOES generate gauge — so it is a
+  probable under-generation, not a neutral unknown); the flavor half is genuinely inert (no
+  true-flavored rider exists). Either way the two encodings are not interchangeable; swapping one for
+  the other on a unit silently changes its gauge economy. → U28.
 - **Theme 13 (ally-granted Max HP inert, e3):** audit re-confirmed ally-granted `casterMaxHpPct`/
   `targetMaxHpPct` do not feed a teammate's `atkOfMaxHpPct` (rouge/noir/trina), neutralizing the
   Max-HP double-counts as damage-irrelevant.
