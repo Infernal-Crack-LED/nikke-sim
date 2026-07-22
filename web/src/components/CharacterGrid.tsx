@@ -192,10 +192,10 @@ function emptySet(): Set<string> {
 // Sim / Roster Sim) and the Team Builder page. Clicking a card calls onToggle:
 // the caller owns the team and decides what add/remove mean. Units in `exclude`
 // are already placed and disappear from the list entirely. Units the sim
-// doesn't model yet stay visible (browsable); they're disabled everywhere
-// except the Team Builder page (allowUnsupported), which lets them be picked
-// and warns at copy time. Class names keep their `teambuilder-` prefix from
-// the page this was extracted from.
+// doesn't model yet ("Not In Sim") only appear on the Team Builder page
+// (allowUnsupported), which lets them be picked and warns at copy time; the
+// Browse/Include/Exclude modals hide them from the grid entirely. Class names
+// keep their `teambuilder-` prefix from the page this was extracted from.
 export function CharacterGrid({
   exclude,
   onToggle,
@@ -248,7 +248,11 @@ export function CharacterGrid({
 
   const characters = useMemo(() => {
     const all = Object.values(data.characters).filter(
-      (c) => !restrict || restrict.has(c.slug),
+      (c) =>
+        (!restrict || restrict.has(c.slug)) &&
+        // "Not In Sim" units only appear on the Team Builder page; hide them
+        // from the Browse/Include/Exclude modals entirely
+        (allowUnsupported || c.simSupported),
     );
     const q = search.toLowerCase();
     return all.filter((c) => {
@@ -294,6 +298,7 @@ export function CharacterGrid({
   }, [
     exclude,
     restrict,
+    allowUnsupported,
     search,
     weaponFilter,
     burstFilter,
@@ -315,9 +320,11 @@ export function CharacterGrid({
   );
   const portraitThumbs = usePortraitThumbs(allPortraitUrls, 120);
 
-  const total = restrict
-    ? [...restrict].filter((s) => data.characters[s]).length
-    : Object.values(data.characters).length;
+  const total = Object.values(data.characters).filter(
+    (c) =>
+      (!restrict || restrict.has(c.slug)) &&
+      (allowUnsupported || c.simSupported),
+  ).length;
   const showing = characters.length;
   const anyActive =
     search !== '' ||
@@ -457,15 +464,12 @@ export function CharacterGrid({
             <button
               key={c.slug}
               type='button'
-              disabled={!c.simSupported && !allowUnsupported}
               className={`teambuilder-card${c.simSupported ? '' : ' unsupported'}`}
               onClick={() => onToggle(c.slug)}
               title={
                 c.simSupported
                   ? `${c.name} — click to add to team`
-                  : allowUnsupported
-                    ? `${c.name} — not in the sim yet (can be placed, but not simmed)`
-                    : `${c.name} — not in the sim yet`
+                  : `${c.name} — not in the sim yet (can be placed, but not simmed)`
               }
             >
               <div className='teambuilder-portrait'>

@@ -577,13 +577,13 @@ const CORE_PRESETS = [
 ] as const;
 
 // Support-tag pools (src/types.ts CharacterData.generatorSupported/.simSupported — set by
-// src/data/sync.ts). "Unsupported" (neither tag) only ever appears in the Browse Nikkes
-// picker (CharacterGrid), which reads data.characters directly and unfiltered. `simChars`
-// backs every picker that runs the live sim engine on a chosen unit (Team Sim, Roster Sim,
-// Optimize Overload, Overload Breakpoints); `generatorChars` backs the DPS-chart-adjacent
-// tools that rank/search across the whole roster (Unit Comparison, the Team/Roster
-// generators) — gated on BOTH tags since a generator candidate also needs a real kit
-// override to produce a meaningful damage number.
+// src/data/sync.ts). "Unsupported" (neither tag) only ever appears on the Team Builder
+// page, where CharacterGrid is passed `allowUnsupported`; the Browse/Include/Exclude
+// modals hide them. `simChars` backs every picker that runs the live sim engine on a
+// chosen unit (Team Sim, Roster Sim, Optimize Overload, Overload Breakpoints);
+// `generatorChars` backs the DPS-chart-adjacent tools that rank/search across the whole
+// roster (Unit Comparison, the Team/Roster generators) — gated on BOTH tags since a
+// generator candidate also needs a real kit override to produce a meaningful damage number.
 const simChars = Object.values(data.characters)
   .filter((c) => c.simSupported)
   .sort((a, b) => a.name.localeCompare(b.name));
