@@ -113,6 +113,18 @@ const TAB_META = {
   },
 };
 
+// ---- analytics (Umami, self-hosted) -----------------------------------------
+// Injected server-side so the URL/ID can change without a rebuild.
+// Set UMAMI_URL + UMAMI_WEBSITE_ID in Railway; omit to disable (e.g. dev).
+const UMAMI_URL = process.env.UMAMI_URL;
+const UMAMI_WEBSITE_ID = process.env.UMAMI_WEBSITE_ID;
+
+function injectUmami(html) {
+  if (!UMAMI_URL || !UMAMI_WEBSITE_ID) return html;
+  const tag = `<script defer src="${UMAMI_URL}/script.js" data-website-id="${UMAMI_WEBSITE_ID}"></script>`;
+  return html.replace('</head>', `  ${tag}\n  </head>`);
+}
+
 const escapeAttr = (s) =>
   s
     .replace(/&/g, '&amp;')
@@ -150,9 +162,8 @@ function injectMeta(html, reqUrl) {
 }
 
 async function sendIndex(res, reqUrl) {
-  const html = injectMeta(
-    await readFile(join(DIST, 'index.html'), 'utf8'),
-    reqUrl,
+  const html = injectUmami(
+    injectMeta(await readFile(join(DIST, 'index.html'), 'utf8'), reqUrl),
   );
   res.writeHead(200, {
     'content-type': MIME['.html'],

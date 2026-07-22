@@ -1224,3 +1224,7 @@ so `RANGE_ELIGIBLE` stands; the datamined ring only re-states the superseded hyp
 - Collection-item / Helm-burst charge buffs multiply BASE charge damage (chargeDamageMultPct).
 - Scope-lock validation basis: no cube, no doll, OL0, 3★ core 7, sync 400, 10/10/10, treasure
   on, partless boss, 100% core exposure, full auto.
+  **SUPERSEDED (2026-07-22) — disregard the gear tier in this line.** The basis is **Base 5**, not
+  OL0, per DECISIONS 2026-07-14 (owner in-game measurement; live code path `scripts/lib/scope-lock.ts`
+  `ol: 'base5'`). This line was written 2026-07-12, two days before the correction, and is retained as
+  provenance only. Every other term in it still stands.

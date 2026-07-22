@@ -227,7 +227,7 @@ hard reset, which is what §4's captures at 0% buff measured).
 ### 7.3 Consequences
 
 - The middle band (roughly +70–100% reload speed) is where MGs partially keep their spin —
-  rare under scope lock (no cubes, OL0) but reachable with kit reload buffs, which is why
+  rare under scope lock (no cubes, Base 5 gear) but reachable with kit reload buffs, which is why
   neither original measurement sampled it.
 - Because the decay retraces the ladder, retention benefit is nonlinear in idle time: the
   cheap 2-frame-interval top of the ladder drains first (little loss per idle frame), the

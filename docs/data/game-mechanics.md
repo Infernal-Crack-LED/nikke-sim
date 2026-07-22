@@ -225,6 +225,14 @@ Details: **[auto-play.md](auto-play.md)**.
 
 ## 8. Burst rotation rules
 
+**What Full Burst itself does (owner ruling 2026-07-22): the +50% damage multiplier, and nothing
+else.** Full Burst carries no inherent change to accuracy, aim, spread, cover behaviour or fire
+rhythm — any such effect in a fight comes from a unit's kit firing on Full-Burst entry, never from
+the state itself. **How to apply when reading footage:** an in-Full-Burst vs out-of-Full-Burst
+comparison of a geometry quantity (pellet landing, core-hit fraction, hit rate) is NOT confounded by
+the Full Burst state, so such a split may be used directly as a control for whatever kit buff is
+being isolated. Only damage magnitudes need the +50% removed.
+
 Full Burst = 10s; rotation = FB + chain + gauge refill, gated by burst cooldowns. A
 Burst-1/2 cast opens the next stage for 10 seconds (DATAMINED `burst_duration`; 5s/15s/
 20s variants exist — the same column encodes short-Full-Burst units); if the window
