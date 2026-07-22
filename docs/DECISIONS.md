@@ -1199,6 +1199,33 @@ lives. Newest first within each section.
 
 ## Engine/data-architecture decisions
 
+- **(2026-07-21) Documentation architecture — split changelog from current-state; add `docs/STATE.md`;
+  two-class doc hygiene (owner-approved).** DECISIONS.md had grown to 1,659 lines and was doing two jobs
+  with opposite hygiene needs: the append-only WHY-trail (changelog) AND the slot-1 authority for "what
+  is current." The never-silently-delete rule that keeps the trail honest was poisoning the authority
+  role — current truth of burst-rotation / DoT-crit / cinderella required reading 2–3 mutually-superseding
+  entries with no index; open-questions held resolved items (U13/U16/U18/U25) still filed UNANSWERED;
+  CLAUDE.md NEXT INCREMENT was ~55–65% landed-history narration. **Resolution (owner AskUserQuestion,
+  2026-07-21):** (1) new **`docs/STATE.md`** — the landed-state registry (live flags/constants, rotation
+  model, geometry, opt-in kit-primitive inventory, standing rulings), each entry a short current-truth +
+  `→ DECISIONS date` pointer; a DERIVED index (on conflict, live code + latest DECISIONS entry win). It
+  is now authority slot 1 (default first read); DECISIONS drops to slot 2 (why/when) and stays
+  **pure append-only, no rewrite** (owner chose no history-collapse, no anchor reformat). (2) **Two-class
+  doc hygiene** (CONVENTIONS.md → Doc hygiene): CHANGELOG class = append-only, SUPERSEDED-in-place, never
+  delete (DECISIONS, open-questions ANSWERED, probe-runs, patch-notes, sources.json, closed/ archives);
+  CURRENT-STATE class = freely rewritten, stale content DELETED with a capture-first rule (STATE.md,
+  data/*.md, CONVENTIONS, modeling-priors, engine-modeling-gaps, CLAUDE.md, open handoffs, open-questions
+  UNANSWERED, backlogs). The never-silently-delete rule now scopes to CHANGELOG class only. (3) **Hard
+  purge** of the current-state surfaces: CLAUDE.md 446→305 lines (NEXT INCREMENT ~245→~65, pointer-style,
+  removed a stale coherent-first-burst parenthetical — "~8f fight-start / gauge-full→30f→B1 / POST_FB
+  180→150 / Helm double-count" — that CONTRADICTED live code; the true rotation model is STATE.md §3);
+  open-questions −319 lines (U18/U25/U13 → ANSWERED A27/A28/A29, U16 trimmed to its open worklist);
+  kit-parse-reconciliation-backlog false "every item UN-ENACTED" header fixed; engine-modeling-gaps
+  reframed + ranked-fixes narration compressed; experiment-harness-ai.md CLOSED → handoffs/closed/.
+  mechanics-doc-upkeep + skill-maintenance now route landed flag/constant/primitive changes to STATE.md.
+  Hook follow-ups (guard-locked, owner-gated): `docs/handoffs/2026-07-21-doc-architecture-hook-proposals.md`.
+  Docs-only — verify green, regression byte-identical.
+
 - **(2026-07-16) DPS Rankings element filter — an element-filtered chart ranks ALL B3s of that element,
   not just the SSS/SS chart population.** The rankings page grew an element filter (All / Fire / Water /
   Wind / Electric / Iron, same pill UI as the boss-weakness picker; "All" = the prior behavior). Ruling:
