@@ -722,7 +722,28 @@
       "corroboration": "measured landing exceeds the uniform-disc area fraction by +0.065 / +0.066 / +0.175 at mid / midfar / far and matches at near (-0.017). That excess IS the centre-weighting, and it is why the flat BAND_SG_HIT_FRAC table under-reads at range while being right at near."
     },
     "nextStep": "resolve the mid cell before re-fitting anything: (1) count the two uncounted near windows (burst 2 ON video 48.5-60.5, near OFF 63.5-73.5) to test whether the near cell reproduces; (2) check the boss's apparent size during the mid window directly against the near window, since its landing contradicts the range script's band label.",
-    "status": "MEASUREMENT + ANALYSIS ONLY. Nothing refit, no flag moved. The sigma result is strong enough to be the basis of a re-fit, but that is a separate gated pass."
+    "status": "MEASUREMENT + ANALYSIS ONLY. Nothing refit, no flag moved. The sigma result is strong enough to be the basis of a re-fit, but that is a separate gated pass.",
+    "nonLinearityCheck": {
+      "ownerHypothesis": "2026-07-22: core-hit should NOT be linear in Hit Rate. The core and the boss are static sizes; the grey circle shrinks. So the core's SHARE of the circle goes as the AREA ratio (Dcore/Dcircle)^2 — halving the circle diameter quadruples the core share (owner's illustration: 30px core in a 160px circle = 7/200 of the area; in an 80px circle = 7/50).",
+      "verdict": "CORRECT, and already implemented — in the cone, not in the fallback.",
+      "detail": [
+        "The delta-cone uses the Rician CDF, which for a small core reduces to ~R^2/(2*sigma^2) — exactly the area ratio, i.e. QUADRATIC in the circle shrink. So the cone already embodies the hypothesis.",
+        "The CONE_DELTA=0 fallback (hrCoreMult) is the nearly-LINEAR one: its SG exponent is p = ln(0.048)/ln(10/250) = 0.943, so core scales as (1/shrink)^0.94. Under the owner's reasoning that layer is too shallow by roughly a squaring.",
+        "What the measurement adds is not the exponent but the INPUT: the circle shrinks only 9-25% at HR 38.91, where the cone assumes 35%, and its HR0 sigma is 32.0 against a measured 38.6-41.6. A quadratic law SQUARES that error — (40/32)^2 = 1.56x at HR0 and (33/20.8)^2 = 2.52x at HR 38.91. The measured over-prediction on the ON arm is 2.16x, so the sigma error alone accounts for it. The exponent is not the defect; the sigma is."
+      ],
+      "whereThePureAreaLawStillFails": {
+        "test": "the circle is ONE number (it is her weapon's accuracy circle, not a function of range), so solving each band for the circle diameter the area law implies must give the same answer four times.",
+        "impliedCircleDiameterPx": {
+          "near": 118,
+          "mid": 173,
+          "midfar": 85,
+          "far": 135
+        },
+        "reading": "a 2x spread where it must be constant, and mid + midfar are the offenders — the same two cells that break every other model on this data. The pure area law does not fail because it is the wrong shape; it fails on the same anomaly."
+      },
+      "boundedVsGaussianTension": "Also unresolved: the measured landing implies sigma ~40, whose 2.53-sigma envelope is ~195-210px — WIDER than the drawn 162px circle. But no pellet ever leaves that circle (owner). Both hold only if the distribution is bounded at the circle AND centre-weighted but FLATTER than a Gaussian — between uniform and Gaussian. Neither live arm has that shape: the fallback is a flat per-band table, the cone is an unbounded Gaussian.",
+      "status": "ANALYSIS. The re-fit this points to — bounded centre-weighted distribution, sigma from landing, exponent left quadratic — is a gated pass, and it is blocked on the mid cell."
+    }
   },
   "fullBurstWindowsMeasured": {
     "why": "The FB-extension ladder and the sim's rotation phase both hinge on the real Full Burst durations and gaps. Measured 2026-07-22 by reading the on-screen FB countdown directly (it ticks 1.00/s — verified across 8 consecutive reads), NOT from the 2026-07-15 recon's approximate start times.",
