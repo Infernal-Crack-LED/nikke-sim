@@ -176,11 +176,17 @@ Details: **[auto-play.md](auto-play.md)**.
   interruptions) — auto effectively always full-charges, and full-charge-gated proc counters
   fire on essentially every shot. Maiden:IR's former ×0.68 proc factor is RESOLVED as her
   release-latency cadence, video-measured (open-questions A12; [auto-play.md](auto-play.md) §2a).
-- **Burst-chain timing** (MEASURED 2026-07-13): gauge-full → Full Burst start is ~0.9s
-  median (0.4–1.4s) across a recorded fight; the engine uses 0.5s per stage cast
-  (`STAGE_CAST_GAP_FRAMES`). After Full Burst ends, **the next chain cannot open for ~3
-  seconds** (`POST_FB_CHAIN_DELAY_FRAMES`, measured from chain-glow timing) — this
-  post-full-burst window, not gauge refill, is what paces high-generation teams.
+- **Burst-chain timing** (frame-perfect MEASURED 2026-07-21, chisato.mov; DECISIONS 2026-07-21
+  coherent rotation model): the chain runs **`gauge-full → 30f → B1 → 30f → B2 → 30f → B3 → 22f →
+  FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old ~0.9s. Constants:
+  a **30f delay before B1** (`PRE_B1_GAP_FRAMES`), **30f between stages** (`STAGE_CAST_GAP_FRAMES`,
+  0.5s), and a **22f delay between the B3 cast and the FB countdown** (`FB_PRE_DELAY_FRAMES`) — that
+  gap is why instant burst-cast attacks land before Full Burst begins (no +50%). After FB ends, the
+  next chain can't open for **~2.5s** (`POST_FB_CHAIN_DELAY_FRAMES` = **150f**; the earlier 180f/~3s
+  double-counted the now-separately-modeled 30f-pre-B1). **Fight start:** ~8f (`FIGHT_DELAY_FRAMES`
+  0.133s) before the first bullet (bullet lands at 0.133s; the earlier 1s was a timer-framing confound —
+  the 3:00 timer reads 2:59:999 at elapsed 0). This post-full-burst window + the chain timing, not
+  gauge refill, pace high-generation teams.
 - **Casts are blocked while the boss is off-screen** during a range transition (~1s,
   owner-confirmed) — the only genuine source of run-to-run full-burst-count variance
   (a transition colliding with a chain). Everywhere else, **full-burst counts are
