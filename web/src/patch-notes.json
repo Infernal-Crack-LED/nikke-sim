@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-07-21",
+    "title": "Generator Nikke picking — include/exclude units and save your lists",
+    "notes": [
+      "New: tell the Team and Roster Generators who to field. Each now has Include Nikkes and Exclude Nikkes pickers (the filterable Browse Nikkes modal). Included units are guaranteed to make the generated teams; excluded units never appear.",
+      "In the Roster Generator you can require a unit two ways: drop it on a specific team row to pin it there, or into the Use these Nikkes box to let the generator place it wherever fits best. Click a card to add it to the box; drag portraits between the box and a team to pin or unpin.",
+      "Your included and excluded units now appear as portrait grids under each Calculate button — remove one with the × on its portrait, or clear the whole list at once.",
+      "New: save your Include and Exclude lists. Logged-in users can save a named list and bring it back from the Saved dropdown (each entry has its own delete). Include lists reload into the Use these Nikkes box.",
+      "Union Raid Roster Sim now has a Save roster button — a saved union roster reloads with all three teams and their per-team boss options.",
+      "Polish: picker filters now collapse (open by default), naming a save uses an inline field instead of a pop-up, copy-link buttons flash Copied with a fallback link if your browser blocks the clipboard, and save buttons grey out when there is nothing to save."
+    ]
+  },
+  {
+    "date": "2026-07-21",
     "title": "Engine accuracy pass — burst rotation & kit fixes",
     "notes": [
       "Full Burst rotation timing is more accurate: a Full Burst now fires the moment the next Burst unit actually comes off cooldown, so two Burst III units with the same cooldown alternate cleanly instead of one monopolizing them — and the sim no longer squeezes in Full Bursts a real fight wouldn't reach.",

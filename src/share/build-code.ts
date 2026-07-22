@@ -44,7 +44,19 @@ export interface Build {
   g: GlobalsBuild;
   s: SlotBuild[]; // exactly 5
   blocked?: string[]; // don't-own / excluded slugs (Team/Roster generator link)
-  roster?: (string | null)[][]; // Roster Sim: 5 teams × 5 slugs (shared loadout in `s`)
+  roster?: (string | null)[][]; // Roster Sim: teams × 5 slugs (shared loadout in `s`)
+  rosterMode?: 'solo' | 'union'; // which Roster Sim grid `roster` is (default solo)
+  unionBoss?: UnionBossBuild[]; // per-team boss options when rosterMode = 'union'
+}
+
+// Per-team boss options for a saved Union Raid roster (mirrors the sim's
+// UnionBossOpts). Only present when rosterMode = 'union'.
+export interface UnionBossBuild {
+  weakness: string | null;
+  bossDef: string;
+  core: number;
+  coreCustom: boolean;
+  coreCustomVal: string;
 }
 
 export const BUILD_VERSION = 1;
@@ -66,7 +78,10 @@ function b64ToBytes(b64: string): Uint8Array {
 }
 function b64urlEncode(str: string): string {
   const bytes = new TextEncoder().encode(str);
-  return bytesToB64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return bytesToB64(bytes)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 function b64urlDecode(code: string): string {
   const b64 = code.replace(/-/g, '+').replace(/_/g, '/');
