@@ -20,23 +20,77 @@
     "bossPartless": true,
     "durationSec": 180,
     "focusReason": "middle slot — popups render focus-only (soda-twinkling-bunny)",
-    "comp": ["little-mermaid", "crown", "soda-twinkling-bunny", "helm"],
+    "comp": [
+      "little-mermaid",
+      "crown",
+      "soda-twinkling-bunny",
+      "helm"
+    ],
     "boss": "Electric (inferred)"
   },
   "clock": {
     "method": "top-right countdown; fightClock = 180 - countdown",
-    "anchor": { "videoSec": 20.0, "countdown": "02:45", "fightClock": 15 },
+    "anchor": {
+      "videoSec": 20.0,
+      "countdown": "02:45",
+      "fightClock": 15
+    },
     "offsetSec": 5,
     "caveat": "single anchor — the skill's hardened rule wants >=4 anchors across the fight; game-clock drift vs video (~2s) is NOT yet corrected here"
   },
   "design": {
     "why": "Her Hit Rate ▲38.91% (>=20 Golden Chips) is a BURST-slot effect, so every HR window sits inside a Full Burst. But the boss band script (docs/data/range-data.md) puts each of her 5 burst windows cleanly inside exactly ONE band, and the gaps between them give an HR-OFF control in the same band, same fight, same unit.",
     "hrWindowsVideoSec": [
-      { "burst": 1, "cast": 10, "window": [10, 25], "band": "mid", "chips": "50 -> 34" },
-      { "burst": 2, "cast": 47, "window": [47, 62], "band": "near", "chips": "44 -> 27" },
-      { "burst": 3, "cast": 82, "window": [82, 97], "band": "far", "chips": "39 -> 22" },
-      { "burst": 4, "cast": 123, "window": [123, 138], "band": "midfar", "chips": "36 -> 19" },
-      { "burst": 5, "cast": 162, "window": [162, 177], "band": "near", "chips": "30 -> 13" }
+      {
+        "burst": 1,
+        "cast": 10,
+        "window": [
+          10,
+          25
+        ],
+        "band": "mid",
+        "chips": "50 -> 34"
+      },
+      {
+        "burst": 2,
+        "cast": 47,
+        "window": [
+          47,
+          62
+        ],
+        "band": "near",
+        "chips": "44 -> 27"
+      },
+      {
+        "burst": 3,
+        "cast": 82,
+        "window": [
+          82,
+          97
+        ],
+        "band": "far",
+        "chips": "39 -> 22"
+      },
+      {
+        "burst": 4,
+        "cast": 123,
+        "window": [
+          123,
+          138
+        ],
+        "band": "midfar",
+        "chips": "36 -> 19"
+      },
+      {
+        "burst": 5,
+        "cast": 162,
+        "window": [
+          162,
+          177
+        ],
+        "band": "near",
+        "chips": "30 -> 13"
+      }
     ],
     "castTimesVerified": "2026-07-22 — read off the BURST!! splash + the Golden-Chip counter drop at 1 fps, NOT taken from the 2026-07-15 recon's approximations. Three differ: burst 3 is 82 (recon ~84), burst 4 is 123 (recon ~126, a 3 s error), burst 2 is 47 (recon 48). Bursts 1 and 5 confirmed at 10 and 162.",
     "gateCheck": "all 5 bursts clear the >=20-chip gate on the PRE-consume count (50/44/39/36/30 as read), so the HR buff fires on every one",
@@ -55,31 +109,496 @@
     "format": "per shot: [landed pellet popups, of which RED 'CORE HIT']",
     "windowsCounted": "priority ranks 1-4 (all four bands, ON + OFF). Ranks 5 (extra near n) not counted.",
     "shots": {
-      "near_ON": [[9,0],[10,0],[9,1],[9,3],[10,0],[10,2],[10,1],[9,0],[9,0],[9,1],[9,1],[9,1],[8,0],[10,0],[9,1],[10,0]],
-      "near_OFF": [[7,0],[7,0],[9,0],[7,0],[9,0]],
-      "mid_ON": [[10,1],[9,0],[10,0],[9,1],[9,0],[10,0],[9,1],[9,0],[9,1],[9,0],[9,0],[10,0],[9,0],[9,0],[8,0],[9,0],[8,0],[9,0],[10,1]],
-      "mid_OFF": [[10,0],[7,0],[7,0],[7,1]],
-      "far_ON": [[6,0],[8,0],[8,0],[5,0],[9,1],[7,0],[6,0],[9,0],[7,0],[8,2],[6,0],[6,0],[7,0],[7,0],[5,0],[7,0],[9,0],[6,0],[9,0]],
-      "far_OFF": [[7,0],[5,0],[6,0],[6,0],[8,0]],
-      "midfar_ON": [[7,0],[9,0],[8,1],[10,1],[9,1],[7,1],[7,1],[7,1],[9,0],[7,0],[9,1],[9,1],[6,1],[7,1],[8,0],[6,1],[6,0],[9,0]],
-      "midfar_OFF": [[8,0],[8,0],[6,0],[6,0]]
+      "near_ON": [
+        [
+          9,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          2
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          10,
+          0
+        ]
+      ],
+      "near_OFF": [
+        [
+          7,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          0
+        ]
+      ],
+      "mid_ON": [
+        [
+          10,
+          1
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          10,
+          1
+        ]
+      ],
+      "mid_OFF": [
+        [
+          10,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          7,
+          1
+        ]
+      ],
+      "far_ON": [
+        [
+          6,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          8,
+          2
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          9,
+          0
+        ]
+      ],
+      "far_OFF": [
+        [
+          7,
+          0
+        ],
+        [
+          5,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          8,
+          0
+        ]
+      ],
+      "midfar_ON": [
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          8,
+          1
+        ],
+        [
+          10,
+          1
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          9,
+          0
+        ],
+        [
+          7,
+          0
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          9,
+          0
+        ]
+      ],
+      "midfar_OFF": [
+        [
+          8,
+          0
+        ],
+        [
+          8,
+          0
+        ],
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          0
+        ]
+      ]
     },
     "ownerObservation": "NO PELLET EVER LEFT HER GREY HIT CIRCLE — every pellet that missed the boss missed INSIDE the drawn accuracy circle. (Owner's sentence was truncated mid-thought; the consequence they were drawing has been asked for, not assumed.) Direct consequence either way: pellets flying outside the drawn circle is NOT a loss channel, so landing = the boss body's coverage of the AIM CIRCLE — which is exactly the basis step 3's BAND_SG_HIT_FRAC rebuild is meant to move to.",
     "coreFraction": {
       "unit": "cores / landed pellets",
-      "near": { "ON": { "k": 11, "n": 149, "f": 0.0738, "wilson95": [0.042, 0.127] }, "OFF": { "k": 0, "n": 39, "f": 0.0, "wilson95": [0.0, 0.09] } },
-      "mid": { "ON": { "k": 5, "n": 174, "f": 0.0287, "wilson95": [0.012, 0.065] }, "OFF": { "k": 1, "n": 31, "f": 0.0323, "wilson95": [0.006, 0.162] } },
-      "midfar": { "ON": { "k": 11, "n": 140, "f": 0.0786, "wilson95": [0.044, 0.135] }, "OFF": { "k": 0, "n": 28, "f": 0.0, "wilson95": [0.0, 0.121] } },
-      "far": { "ON": { "k": 3, "n": 135, "f": 0.0222, "wilson95": [0.008, 0.063] }, "OFF": { "k": 0, "n": 32, "f": 0.0, "wilson95": [0.0, 0.107] } },
-      "pooled": { "ON": "30/598 = 0.0502", "OFF": "1/130 = 0.0077", "hrLiftFisherP": 0.0287 }
+      "near": {
+        "ON": {
+          "k": 11,
+          "n": 149,
+          "f": 0.0738,
+          "wilson95": [
+            0.042,
+            0.127
+          ]
+        },
+        "OFF": {
+          "k": 0,
+          "n": 39,
+          "f": 0.0,
+          "wilson95": [
+            0.0,
+            0.09
+          ]
+        }
+      },
+      "mid": {
+        "ON": {
+          "k": 5,
+          "n": 174,
+          "f": 0.0287,
+          "wilson95": [
+            0.012,
+            0.065
+          ]
+        },
+        "OFF": {
+          "k": 1,
+          "n": 31,
+          "f": 0.0323,
+          "wilson95": [
+            0.006,
+            0.162
+          ]
+        }
+      },
+      "midfar": {
+        "ON": {
+          "k": 11,
+          "n": 140,
+          "f": 0.0786,
+          "wilson95": [
+            0.044,
+            0.135
+          ]
+        },
+        "OFF": {
+          "k": 0,
+          "n": 28,
+          "f": 0.0,
+          "wilson95": [
+            0.0,
+            0.121
+          ]
+        }
+      },
+      "far": {
+        "ON": {
+          "k": 3,
+          "n": 135,
+          "f": 0.0222,
+          "wilson95": [
+            0.008,
+            0.063
+          ]
+        },
+        "OFF": {
+          "k": 0,
+          "n": 32,
+          "f": 0.0,
+          "wilson95": [
+            0.0,
+            0.107
+          ]
+        }
+      },
+      "pooled": {
+        "ON": "30/598 = 0.0502",
+        "OFF": "1/130 = 0.0077",
+        "hrLiftFisherP": 0.0287
+      }
     },
     "landingFraction": {
       "unit": "landed pellets / (10 x shots)",
-      "near": { "ON": 0.931, "OFF": 0.78 },
-      "mid": { "ON": 0.916, "OFF": 0.775 },
-      "midfar": { "ON": 0.778, "OFF": 0.7 },
-      "far": { "ON": 0.711, "OFF": 0.64 },
-      "pooled": { "ON": 0.831, "OFF": 0.722, "lift": 0.108, "fisherP": 0.00142 }
+      "near": {
+        "ON": 0.931,
+        "OFF": 0.78
+      },
+      "mid": {
+        "ON": 0.916,
+        "OFF": 0.775
+      },
+      "midfar": {
+        "ON": 0.778,
+        "OFF": 0.7
+      },
+      "far": {
+        "ON": 0.711,
+        "OFF": 0.64
+      },
+      "pooled": {
+        "ON": 0.831,
+        "OFF": 0.722,
+        "lift": 0.108,
+        "fisherP": 0.00142
+      }
     },
     "verdicts": {
       "preRegisteredHoldout": "near ON measured 0.074 vs cone 0.160 -> miss 0.087, INSIDE the +-0.12 tolerance. The holdout does NOT fire its STOP trigger. But it misses in a consistent direction, and near ON lands on the cone's HR0 value (0.073) and the fallback's ON value (0.070).",
@@ -102,17 +621,51 @@
       "hrOnShareOfHerShots": "45% — her HR is on 75 s (5 x 15 s), helm's full bursts cover ~70 s more, leaving ~35 s of out-of-full-burst gaps (~5-6 s each, matching the owner's account). At ~1.33 shots/s inside a full burst and ~0.85 outside, that is ~100 HR-on shots of ~223.",
       "core": {
         "note": "measured ON / measured OFF / fight-average at the 45% split / what the sim applies",
-        "near": { "on": 0.074, "off": 0.0, "fightAvg": 0.033, "sim": 0.073, "simOver": "2.19x" },
-        "mid": { "on": 0.029, "off": 0.032, "fightAvg": 0.031, "sim": 0.06, "simOver": "1.96x" },
-        "midfar": { "on": 0.079, "off": 0.0, "fightAvg": 0.035, "sim": 0.034, "simOver": "0.96x" },
-        "far": { "on": 0.022, "off": 0.0, "fightAvg": 0.01, "sim": 0.022, "simOver": "2.24x" },
+        "near": {
+          "on": 0.074,
+          "off": 0.0,
+          "fightAvg": 0.033,
+          "sim": 0.073,
+          "simOver": "2.19x"
+        },
+        "mid": {
+          "on": 0.029,
+          "off": 0.032,
+          "fightAvg": 0.031,
+          "sim": 0.06,
+          "simOver": "1.96x"
+        },
+        "midfar": {
+          "on": 0.079,
+          "off": 0.0,
+          "fightAvg": 0.035,
+          "sim": 0.034,
+          "simOver": "0.96x"
+        },
+        "far": {
+          "on": 0.022,
+          "off": 0.0,
+          "fightAvg": 0.01,
+          "sim": 0.022,
+          "simOver": "2.24x"
+        },
         "strength": "the OFF arm is thin per band (0 cores in 28-39 pellets), but POOLED the sim expects ~6.4 cores across the 130 OFF pellets and 1 was seen: P(<=1) ~ 0.011. So the over-credit in the HR-off state — which is 55% of her shots — is supported."
       },
       "compensatingErrorFinding": "MODELLING HER HIT RATE FAITHFULLY WOULD MAKE THE SIM WORSE IN EVERY BAND. Fight-average measured vs sim-today vs sim-with-HR: near 0.033 / 0.073 / 0.113; mid 0.031 / 0.060 / 0.093; midfar 0.035 / 0.034 / 0.053; far 0.010 / 0.022 / 0.035. The unmodelled HR block is currently masking the cone's over-prediction. Adding it — the obviously 'faithful' fix, and an open item in her override note — would roughly double the error. This is a compensating-error pair and neither half should be touched alone.",
       "landing": {
         "note": "sim table vs measured. The ON arm is a complete census (ammo-trace verified), so the ON column alone is a lower bound on the sim's error.",
-        "vsCompleteCensusOnArm": { "near": "sim 0.888 vs 0.931 = 0.95x (sim LOW)", "mid": "sim 0.986 vs 0.916 = 1.08x", "midfar": "sim 0.888 vs 0.778 = 1.14x", "far": "sim 0.740 vs 0.711 = 1.04x" },
-        "vsFightAverage": { "near": "1.05x", "mid": "1.18x", "midfar": "1.21x", "far": "1.10x" },
+        "vsCompleteCensusOnArm": {
+          "near": "sim 0.888 vs 0.931 = 0.95x (sim LOW)",
+          "mid": "sim 0.986 vs 0.916 = 1.08x",
+          "midfar": "sim 0.888 vs 0.778 = 1.14x",
+          "far": "sim 0.740 vs 0.711 = 1.04x"
+        },
+        "vsFightAverage": {
+          "near": "1.05x",
+          "mid": "1.18x",
+          "midfar": "1.21x",
+          "far": "1.10x"
+        },
         "shapeError": "ROBUST, independent of the OFF-arm counting question: the sim's table says mid (0.986) > near (0.888); the measurement says mid ~ near in both arms (ON 0.916 vs 0.931, OFF 0.775 vs 0.780). The mid cell is the worst in the table."
       },
       "combinedOnHerSgNormals": "landing x (1 + core): sim over-credits by 8.7% near, 20.9% mid, 20.6% midfar, 11.5% far — ~15% mean. Sign and size are consistent with her sitting HOT, though note her only GRADED comp is N3 (boss Iron, reading ~1.015); the control comp this count comes from is ungraded, so that cross-check is indicative rather than direct."
@@ -122,17 +675,38 @@
       "near_ON_163.5_175.5": "AMMO TRACE MATCHES THE COUNT EXACTLY. Readings 007(163.5) -> 000(167.8) = 7 shots, reload, 009(169.0) -> 000(~174.4) = 9 shots, total ~16 = the 16 shots counted. The ON arm is a complete census.",
       "near_OFF_150.5_160.5": "AMMO TRACE DOES NOT MATCH. Sampled at 2 fps: 006(150.0) 005 004 004, a reload, then an unambiguous 009(153.0) 008 007 006 006 005 004 003 003 002 001 000(158.5) — that stretch ALONE is 9 shots in 5.5 s, plus 1-2 before the reload, so ~10-11 shots in the window against 5 counted. The window also contains TWO reloads (~152 and ~159), not one.",
       "consequence": "The core-fraction results are essentially unaffected — cores/pellets is a ratio over counted pellets and shot selection would have to correlate with coring to bias it. The LANDING comparison is affected asymmetrically: the ON arm is complete (16/16) while the OFF arm is ~5 of ~11 shots. If the uncounted OFF shots were passed over because they landed few or no pellets (a low-landing shot renders few popups and is easy to miss), then OFF landing 0.780 is an UPPER bound and the true HR lift is LARGER than +0.151, not smaller. The finding's direction survives either way; its magnitude is a lower bound pending reconciliation.",
-      "status": "OPEN — needs the owner to reconcile (different sub-window? shots deliberately skipped as unreadable?) before the landing magnitudes are used for anything."
+      "status": "RESOLVED 2026-07-22 — see confoundResolved_fullBurst. Not a selection effect; the OFF windows are out-of-Full-Burst stretches and the shot counts match their duration."
+    },
+    "confoundResolved_fullBurst": {
+      "ruling": "owner 2026-07-22: Full Burst itself provides only the +50% damage multiplier — no inherent accuracy, aim, spread, cover or fire-rhythm change (recorded in docs/data/game-mechanics.md §8).",
+      "consequence": "the ON arm being inside Full Burst and the OFF arm outside it does NOT confound a geometry measurement. The ON/OFF split is a CLEAN Hit-Rate contrast, so the measured landing lift (+0.108 pooled, p=0.0014) and the core-rate lift are Hit-Rate effects. No third (FB-on/HR-off) arm is needed.",
+      "shotCountReconciled": "the OFF counts are the out-of-Full-Burst stretches of those windows: 3.6s / 3.0s / 4.5s / 2.4s of real out-of-FB time for near / mid / far / midfar, against 5 / 4 / 5 / 4 shots at her ~1.2-1.7 shots per second. Every shot was counted; the earlier 'half the shots are missing' reading was an agent error from timing the whole window instead of its out-of-FB part."
     }
   },
   "unifiedPelletModel": {
     "question": "owner 2026-07-22: 'what about range <-> hit/miss <-> hit rate for pellets?' — i.e. derive core-hit from the SAME geometry as landing instead of modelling it separately.",
     "whyItIsNowTestable": "the count measured LANDING and CORE from the same shots, so landing pins the spread with NO free parameter and core has nothing left to fit. sigma solves out of L = 1 - exp(-R_boss^2 / 2*sigma^2) with R_boss from the hand-outlined silhouette.",
     "sigmaFromLanding_px": {
-      "near": { "hr0": 41.6, "hr38.91": 31.3, "shrink": "25%" },
-      "mid": { "hr0": 39.5, "hr38.91": 30.7, "shrink": "22%" },
-      "midfar": { "hr0": 41.6, "hr38.91": 37.2, "shrink": "11%" },
-      "far": { "hr0": 38.6, "hr38.91": 35.1, "shrink": "9%" },
+      "near": {
+        "hr0": 41.6,
+        "hr38.91": 31.3,
+        "shrink": "25%"
+      },
+      "mid": {
+        "hr0": 39.5,
+        "hr38.91": 30.7,
+        "shrink": "22%"
+      },
+      "midfar": {
+        "hr0": 41.6,
+        "hr38.91": 37.2,
+        "shrink": "11%"
+      },
+      "far": {
+        "hr0": 38.6,
+        "hr38.91": 35.1,
+        "shrink": "9%"
+      },
       "readAcross": "sigma(HR0) lands in 38.6-41.6 px across four INDEPENDENT bands — a tight agreement that supports the one-distribution frame."
     },
     "vsTheLiveCone": "the live cone uses sigma_SG(0) = 32.0 px — about 25% TIGHTER than measured — and shrinks it to 20.8 px at HR 38.91, where the measured shrink is only 9-25%. Both errors push core-hit UP, which is the direction and roughly the size of the ~2x over-credit in the count.",
@@ -152,7 +726,22 @@
   },
   "fullBurstWindowsMeasured": {
     "why": "The FB-extension ladder and the sim's rotation phase both hinge on the real Full Burst durations and gaps. Measured 2026-07-22 by reading the on-screen FB countdown directly (it ticks 1.00/s — verified across 8 consecutive reads), NOT from the 2026-07-15 recon's approximate start times.",
-    "countdownReads": { "149.5": 7.43, "163.0": 13.26, "164.2": 13.29, "166.6": 10.87, "167.8": 9.66, "169.0": 8.46, "170.2": 7.25, "171.4": 6.04, "172.6": 4.82, "173.8": 3.61, "178.0": 0.0, "182.5": 10.28, "184.0": 8.76, "185.5": 7.27 },
+    "countdownReads": {
+      "149.5": 7.43,
+      "163.0": 13.26,
+      "164.2": 13.29,
+      "166.6": 10.87,
+      "167.8": 9.66,
+      "169.0": 8.46,
+      "170.2": 7.25,
+      "171.4": 6.04,
+      "172.6": 4.82,
+      "173.8": 3.61,
+      "178.0": 0.0,
+      "182.5": 10.28,
+      "184.0": 8.76,
+      "185.5": 7.27
+    },
     "derived": {
       "fb_helm_cast142": "7.43 left at 149.5 → ends 156.93; a 15.0s duration puts its start at 141.93, matching helm's cast",
       "fb_soda_cast162": "13.29 left at 164.2 → ends 177.49; 3.61 at 173.8 → ends 177.41. DURATION EXACTLY 15.0s (start 162.49 vs her chip-verified 162 cast)",
@@ -173,24 +762,46 @@
       "corePopups": 3,
       "totalPopups": 49,
       "coreFraction": 0.061,
-      "wilson95": [0.021, 0.165],
-      "coreFrames": ["166.6s (357129 red CORE HIT)", "167.8s (crit+core, value obscured)", "172.6s ('CORE HIT' text, value obscured)"],
-      "windowVideoSec": [163.0, 176.2]
+      "wilson95": [
+        0.021,
+        0.165
+      ],
+      "coreFrames": [
+        "166.6s (357129 red CORE HIT)",
+        "167.8s (crit+core, value obscured)",
+        "172.6s ('CORE HIT' text, value obscured)"
+      ],
+      "windowVideoSec": [
+        163.0,
+        176.2
+      ]
     },
     "near_HR0_OFF": {
       "framesRead": 4,
       "corePopups": 0,
       "totalPopups": 29,
       "coreFraction": 0.0,
-      "wilson95": [0.0, 0.117],
-      "windowVideoSec": [149.5, 161.5],
+      "wilson95": [
+        0.0,
+        0.117
+      ],
+      "windowVideoSec": [
+        149.5,
+        161.5
+      ],
       "note": "immediately BEFORE her 5th burst — same band, same fight phase; partly inside helm's Full Burst, which matches FB state without granting her Hit Rate"
     }
   },
   "modelComparison": {
     "note": "predictions recomputed from src/engine/sg-geometry.ts at the shipped frozen params",
-    "cone_SG_near": { "hr0": 0.073, "hr38.91": 0.160 },
-    "fallback_CONE_DELTA_0_SG_near": { "hr0": 0.048, "hr38.91": 0.07 },
+    "cone_SG_near": {
+      "hr0": 0.073,
+      "hr38.91": 0.16
+    },
+    "fallback_CONE_DELTA_0_SG_near": {
+      "hr0": 0.048,
+      "hr38.91": 0.07
+    },
     "preRegisteredTolerance": "+-0.12 spawn (Fable, 2026-07-19)",
     "interimRead": "ON 0.061 misses the cone's 0.160 by 0.099 — INSIDE the +-0.12 tolerance, so the holdout does NOT fire its STOP trigger on this count — and sits 0.009 from the fallback's 0.070. The 95% CI [0.021, 0.165] covers BOTH models, so this does not discriminate them yet."
   },
@@ -208,16 +819,106 @@
     "note": "Owner is counting these by hand (2026-07-22). Video seconds. Every window is trimmed 1.5 s inside its boundaries so the burst cut-in, the buff expiry, and the 1 s unhittable gap at each band breakpoint all fall outside. Band edges: mid 5-38, near 38-75, far 75-111, midfar 111-149, near 149-181 (fightClock = video - 5).",
     "recordPerShot": "for each shot (one ammo-counter decrement): how many damage popups it produced (= landed pellets) and how many of those were RED with 'CORE HIT'. Per-window totals + shot count are an acceptable fallback.",
     "priority": [
-      { "rank": 1, "band": "near", "hr": "ON 38.91", "videoSec": [163.5, 175.5], "source": "burst 5" },
-      { "rank": 1, "band": "near", "hr": "OFF", "videoSec": [150.5, 160.5], "source": "pre-burst-5, same band" },
-      { "rank": 2, "band": "mid", "hr": "ON 38.91", "videoSec": [11.5, 23.5], "source": "burst 1" },
-      { "rank": 2, "band": "mid", "hr": "OFF", "videoSec": [26.5, 36.5], "source": "post-burst-1, same band" },
-      { "rank": 3, "band": "far", "hr": "ON 38.91", "videoSec": [83.5, 95.5], "source": "burst 3" },
-      { "rank": 3, "band": "far", "hr": "OFF", "videoSec": [98.5, 109.5], "source": "post-burst-3, same band" },
-      { "rank": 4, "band": "midfar", "hr": "ON 38.91", "videoSec": [124.5, 136.5], "source": "burst 4" },
-      { "rank": 4, "band": "midfar", "hr": "OFF", "videoSec": [139.5, 147.5], "source": "post-burst-4, same band" },
-      { "rank": 5, "band": "near", "hr": "OFF (extra n)", "videoSec": [63.5, 73.5], "source": "post-burst-2, same band" },
-      { "rank": 5, "band": "near", "hr": "ON (extra n)", "videoSec": [48.5, 60.5], "source": "burst 2" }
+      {
+        "rank": 1,
+        "band": "near",
+        "hr": "ON 38.91",
+        "videoSec": [
+          163.5,
+          175.5
+        ],
+        "source": "burst 5"
+      },
+      {
+        "rank": 1,
+        "band": "near",
+        "hr": "OFF",
+        "videoSec": [
+          150.5,
+          160.5
+        ],
+        "source": "pre-burst-5, same band"
+      },
+      {
+        "rank": 2,
+        "band": "mid",
+        "hr": "ON 38.91",
+        "videoSec": [
+          11.5,
+          23.5
+        ],
+        "source": "burst 1"
+      },
+      {
+        "rank": 2,
+        "band": "mid",
+        "hr": "OFF",
+        "videoSec": [
+          26.5,
+          36.5
+        ],
+        "source": "post-burst-1, same band"
+      },
+      {
+        "rank": 3,
+        "band": "far",
+        "hr": "ON 38.91",
+        "videoSec": [
+          83.5,
+          95.5
+        ],
+        "source": "burst 3"
+      },
+      {
+        "rank": 3,
+        "band": "far",
+        "hr": "OFF",
+        "videoSec": [
+          98.5,
+          109.5
+        ],
+        "source": "post-burst-3, same band"
+      },
+      {
+        "rank": 4,
+        "band": "midfar",
+        "hr": "ON 38.91",
+        "videoSec": [
+          124.5,
+          136.5
+        ],
+        "source": "burst 4"
+      },
+      {
+        "rank": 4,
+        "band": "midfar",
+        "hr": "OFF",
+        "videoSec": [
+          139.5,
+          147.5
+        ],
+        "source": "post-burst-4, same band"
+      },
+      {
+        "rank": 5,
+        "band": "near",
+        "hr": "OFF (extra n)",
+        "videoSec": [
+          63.5,
+          73.5
+        ],
+        "source": "post-burst-2, same band"
+      },
+      {
+        "rank": 5,
+        "band": "near",
+        "hr": "ON (extra n)",
+        "videoSec": [
+          48.5,
+          60.5
+        ],
+        "source": "burst 2"
+      }
     ],
     "blind": "Predicted values are deliberately NOT restated here next to the windows — they are in modelComparison above and in the 2026-07-22 handoff. Counting first and comparing after keeps the count blind."
   },
