@@ -106,14 +106,35 @@ without flipping it. (Root case 2026-07-16: the SG model pass read board `arcana
 3. **Staged-external** — community-bound docs (open-questions is planned for release) → review
    before publishing; keep the human-facing rules above.
 
-## Doc hygiene
+## Doc hygiene — two classes (hygiene attaches to the class, not the doc)
 
-- Outdated content is marked **`SUPERSEDED (date) — disregard`** or struck through in place,
-  never silently deleted — the ANSWERED section of open-questions and the probe-runs history are
-  the provenance trail.
-- Source-of-truth docs for mechanics: `docs/data/game-mechanics.md` (what the game does) and
-  `docs/data/damage-calculation.md` (the exact math the sim computes). The stop-doc-drift hook
-  nudges when engine/data changes don't touch them; `/mechanics-doc-upkeep` is the runbook.
+Every doc is exactly one class. This is what keeps `docs/STATE.md` current and stops the changelog
+logs from poisoning agent context with stale-but-retained narration.
+
+- **CHANGELOG class — append-only, immutable, never delete.** Outdated content is marked
+  **`SUPERSEDED (date) — disregard`** or struck through IN PLACE — this is the provenance trail.
+  Members: `docs/DECISIONS.md`, the **ANSWERED** section of `docs/open-questions.md`,
+  `docs/probe-runs.md`, `web/src/patch-notes.json` (prepend-only), `data/sources.json` (cumulative
+  accreditation), and the `docs/handoffs/closed/` + `docs/closed/` archives.
+- **CURRENT-STATE class — freely rewritten; stale content is DELETED, not marked.** History lives in
+  the changelog class, so deletion loses nothing. **Capture-first rule:** before deleting a
+  still-true-but-resolved block, confirm the fact is in a changelog doc (DECISIONS / ANSWERED); if
+  not, append it there first, then delete. Members: `docs/STATE.md`, `docs/data/*.md` (incl.
+  sg-calc), `docs/CONVENTIONS.md`, `docs/modeling-priors.md`, `docs/engine-modeling-gaps.md`,
+  `CLAUDE.md`, open `docs/handoffs/*`, the **UNANSWERED** section of `docs/open-questions.md`, and the
+  backlog/ledger docs.
+
+**Current-state index:** `docs/STATE.md` is the landed-state registry — the default first read for
+"what does the sim do right now" (flags, constants, rotation, geometry, kit primitives). It is a
+*derived* index: on conflict, live engine code and the latest DECISIONS entry win, and STATE.md is the
+bug. Update it whenever a ruling lands (skill-maintenance / mechanics-doc-upkeep drive this). Full
+authority order: CLAUDE.md → "Docs authority order".
+
+**Source-of-truth docs for mechanics:** `docs/data/game-mechanics.md` (what the game does) and
+`docs/data/damage-calculation.md` (the exact math the sim computes) — current-state class. The
+stop-doc-drift hook nudges when engine/data changes don't touch them; `/mechanics-doc-upkeep` is the
+runbook. A reversed ruling's history goes to DECISIONS; the mechanics docs keep only the current truth
+(an inline strikethrough is fine for an instructive correction, but not required).
 
 ## Commit style
 
