@@ -28,11 +28,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±3% ✓": 7,
+      "±3% ✓": 6,
       "±15%": 13,
       "±8%": 10,
       ">15%": 11,
-      "±5%": 4
+      "±5%": 5
     }
   },
   "units": {
@@ -904,14 +904,14 @@
             "ratio": 0.9737
           },
           {
-            "comp": "soda-tb control (boss Electric, focus soda-twinkling-bunny)",
-            "ratio": 1.1702
+            "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
+            "ratio": 1.0639
           }
         ],
         "n": 17,
-        "mean": 1.011,
-        "mad": 0.0549,
-        "band": "±8%",
+        "mean": 1.0047,
+        "mad": 0.0486,
+        "band": "±5%",
         "temp": "OK  ·"
       }
     },
@@ -1538,7 +1538,7 @@
             "ratio": 0.9633
           },
           {
-            "comp": "soda-tb control (boss Electric, focus soda-twinkling-bunny)",
+            "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
             "ratio": 0.9025
           }
         ],
@@ -1919,7 +1919,7 @@
             "ratio": 1.0888
           },
           {
-            "comp": "soda-tb control (boss Electric, focus soda-twinkling-bunny)",
+            "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
             "ratio": 0.9584
           }
         ],
@@ -3471,15 +3471,15 @@
             "ratio": 0.9726
           },
           {
-            "comp": "soda-tb control (boss Electric, focus soda-twinkling-bunny)",
-            "ratio": 0.986
+            "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
+            "ratio": 0.8964
           }
         ],
         "n": 2,
-        "mean": 0.9793,
-        "mad": 0.0207,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 0.9345,
+        "mad": 0.0655,
+        "band": "±8%",
+        "temp": "COLD ▼"
       }
     },
     "soline-frost-ticket": {

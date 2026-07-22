@@ -299,14 +299,16 @@ export const COMPS: Comp[] = [
   // exposure. Here she bursts 5× (chip-drop verified at video 10/47/82/123/162) and the pool drains
   // 50→44→39→36→30 pre-consume, so the chip ladder, the ≥30 ATK gate and the ≥20 Hit-Rate gate all fire.
   // Slot order + per-unit totals read off the Battle Records screenshot; focus = middle slot.
-  // ⚑ BOSS ELEMENT IS INFERRED, NOT CONFIRMED — the recon could not see the boss element icon and
-  //   inferred Electric from soda-twinkling-bunny (Iron) having advantage. Element advantage is worth
-  //   ~10%, so this is load-bearing for all four ratios: OWNER CONFIRMATION WANTED before these numbers
-  //   tune anything. (docs/probe-data/soda-tb-control-recon.json → boss.element_inferred)
+  // BOSS IS NEUTRAL (owner 2026-07-22): the control videos were deliberately recorded against a boss
+  //   that advantages NOBODY on the team. Team is Wind / Iron / Iron / Water, so a neutral fight needs
+  //   boss Fire or Wind — the same design as the four C-* control comps above, hence boss: null.
+  //   This CORRECTS the 2026-07-15 recon, which could not see the boss element icon and inferred
+  //   Electric from soda-twinkling-bunny (Iron) "having advantage". Electric would have handed BOTH
+  //   Iron units a ~10% advantage they never had.
   {
-    name: 'soda-tb control (boss Electric, focus soda-twinkling-bunny)',
+    name: 'soda-tb control (neutral, focus soda-twinkling-bunny)',
     slugs: ['little-mermaid', 'crown', 'soda-twinkling-bunny', 'helm'],
-    boss: 'Electric',
+    boss: null,
     focus: 'soda-twinkling-bunny',
     real: {
       'little-mermaid': 403_522_768,
