@@ -125,6 +125,22 @@
       "status": "OPEN — needs the owner to reconcile (different sub-window? shots deliberately skipped as unreadable?) before the landing magnitudes are used for anything."
     }
   },
+  "fullBurstWindowsMeasured": {
+    "why": "The FB-extension ladder and the sim's rotation phase both hinge on the real Full Burst durations and gaps. Measured 2026-07-22 by reading the on-screen FB countdown directly (it ticks 1.00/s — verified across 8 consecutive reads), NOT from the 2026-07-15 recon's approximate start times.",
+    "countdownReads": { "149.5": 7.43, "163.0": 13.26, "164.2": 13.29, "166.6": 10.87, "167.8": 9.66, "169.0": 8.46, "170.2": 7.25, "171.4": 6.04, "172.6": 4.82, "173.8": 3.61, "178.0": 0.0, "182.5": 10.28, "184.0": 8.76, "185.5": 7.27 },
+    "derived": {
+      "fb_helm_cast142": "7.43 left at 149.5 → ends 156.93; a 15.0s duration puts its start at 141.93, matching helm's cast",
+      "fb_soda_cast162": "13.29 left at 164.2 → ends 177.49; 3.61 at 173.8 → ends 177.41. DURATION EXACTLY 15.0s (start 162.49 vs her chip-verified 162 cast)",
+      "gapBetweenThem": "5.56s",
+      "fb10": "EXISTS — 10.28 left at 182.5, ends 192.78. A 15.0s duration would need a 177.78 start, impossible while FB9 ran to 177.5. A 12.0s duration puts the start at 180.78, and the chip trace reads 19 chips at t=180."
+    },
+    "conclusions": [
+      "The +5s tier is DIRECTLY CONFIRMED: a Full Burst measured at exactly 15.0s while she held ≥20 chips. The old flat +4 (14.0s) is REFUTED by this — a 14.0s window cannot display 14.71 (the recon's own peak), let alone 13.29 remaining 2.2s after its start.",
+      "The +2s tier is DIRECTLY CONFIRMED TOO: the 10th Full Burst runs ~12.0s and the chip counter reads 19 at that moment — below the ≥20 threshold, exactly where the ladder predicts the drop.",
+      "CORRECTION of an agent claim made earlier this session: 'reality's inter-FB gap is ~3-5s' was WRONG. It was inferred from the recon's approximate start times. Measured, the FB9→FB10 chain gap is 5.56s, matching the owner's read of the video. Gaps VARY (~3-6s across the fight); the sim's 4.3-7.0s spread is not out of line, and the 'sim's gap is 1.2s too long' diagnosis does not survive.",
+      "Real Full Burst count is 10, and the sim on the fbext branch produces 9. The shortfall is NOT the gap: reality's 10th Full Burst is short (12s) BECAUSE her chip pool had drained below 20 by t=180, whereas the sim still held 28 pre-consume at her last cast (165.88). The open question is the CHIP TRAJECTORY late-fight — sim rebuild too fast, or her cast cadence drifting — not the inter-FB gap."
+    ]
+  },
   "results": {
     "near_HR38.91_ON": {
       "framesRead": 6,
