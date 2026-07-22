@@ -125,6 +125,31 @@
       "status": "OPEN — needs the owner to reconcile (different sub-window? shots deliberately skipped as unreadable?) before the landing magnitudes are used for anything."
     }
   },
+  "unifiedPelletModel": {
+    "question": "owner 2026-07-22: 'what about range <-> hit/miss <-> hit rate for pellets?' — i.e. derive core-hit from the SAME geometry as landing instead of modelling it separately.",
+    "whyItIsNowTestable": "the count measured LANDING and CORE from the same shots, so landing pins the spread with NO free parameter and core has nothing left to fit. sigma solves out of L = 1 - exp(-R_boss^2 / 2*sigma^2) with R_boss from the hand-outlined silhouette.",
+    "sigmaFromLanding_px": {
+      "near": { "hr0": 41.6, "hr38.91": 31.3, "shrink": "25%" },
+      "mid": { "hr0": 39.5, "hr38.91": 30.7, "shrink": "22%" },
+      "midfar": { "hr0": 41.6, "hr38.91": 37.2, "shrink": "11%" },
+      "far": { "hr0": 38.6, "hr38.91": 35.1, "shrink": "9%" },
+      "readAcross": "sigma(HR0) lands in 38.6-41.6 px across four INDEPENDENT bands — a tight agreement that supports the one-distribution frame."
+    },
+    "vsTheLiveCone": "the live cone uses sigma_SG(0) = 32.0 px — about 25% TIGHTER than measured — and shrinks it to 20.8 px at HR 38.91, where the measured shrink is only 9-25%. Both errors push core-hit UP, which is the direction and roughly the size of the ~2x over-credit in the count.",
+    "coreDoesNotFollow": {
+      "centredPrediction": "with sigma pinned by landing and delta=0, predicted core/landed is near .124 / mid .108 / midfar .050 / far .041 against measured .074 / .029 / .079 / .022 — over by 1.7-3.8x at near, mid, far and UNDER at midfar.",
+      "impliedDelta": "solving for the off-centre offset with sigma fixed gives delta = 32.9 px (near), 51.2 (mid), 38.9 (far) and UNREACHABLE at midfar — the midfar count exceeds what a perfectly centred cone can produce. No single delta(HR) law fits.",
+      "verdict": "the cone FAMILY cannot fit landing and core simultaneously on this data. The frame is right; the core layer is still wrong."
+    },
+    "bandPatternIsTheBlocker": "measured core/landed is near .074 ~ midfar .079 >> mid .029 ~ far .022 — NOT monotone in range. mid is the outlier: it has the second-highest landing (.916, boss nearly near-sized) yet nearly the lowest core rate, which no smooth geometry produces. mid is burst 1 (fight start, video 11.5-23.5), where the band assignment is least trustworthy — its landing says 'near-sized' while the range script says mid.",
+    "boundedNotGaussian": {
+      "ownerObservation": "no pellet ever leaves the drawn grey circle (R = 81 px).",
+      "consequence": "a Gaussian at the measured sigma (~40 px) would put ~13% of pellets OUTSIDE 81 px. Zero were seen. So the real distribution is centre-weighted AND TRUNCATED at the aim circle — both current arms (the delta-cone and pelletLandFrac) assume an UNBOUNDED Gaussian.",
+      "corroboration": "measured landing exceeds the uniform-disc area fraction by +0.065 / +0.066 / +0.175 at mid / midfar / far and matches at near (-0.017). That excess IS the centre-weighting, and it is why the flat BAND_SG_HIT_FRAC table under-reads at range while being right at near."
+    },
+    "nextStep": "resolve the mid cell before re-fitting anything: (1) count the two uncounted near windows (burst 2 ON video 48.5-60.5, near OFF 63.5-73.5) to test whether the near cell reproduces; (2) check the boss's apparent size during the mid window directly against the near window, since its landing contradicts the range script's band label.",
+    "status": "MEASUREMENT + ANALYSIS ONLY. Nothing refit, no flag moved. The sigma result is strong enough to be the basis of a re-fit, but that is a separate gated pass."
+  },
   "fullBurstWindowsMeasured": {
     "why": "The FB-extension ladder and the sim's rotation phase both hinge on the real Full Burst durations and gaps. Measured 2026-07-22 by reading the on-screen FB countdown directly (it ticks 1.00/s — verified across 8 consecutive reads), NOT from the 2026-07-15 recon's approximate start times.",
     "countdownReads": { "149.5": 7.43, "163.0": 13.26, "164.2": 13.29, "166.6": 10.87, "167.8": 9.66, "169.0": 8.46, "170.2": 7.25, "171.4": 6.04, "172.6": 4.82, "173.8": 3.61, "178.0": 0.0, "182.5": 10.28, "184.0": 8.76, "185.5": 7.27 },
