@@ -7,6 +7,7 @@ import {
   type AuthUser,
   type SavedProfile,
 } from '../auth';
+import { InlineNameField } from './InlineNameField';
 
 // Reusable save/load control backed by the kind-tagged saved-profiles store
 // (bakery-bot /api/profiles). Payload-agnostic: the caller supplies the current
@@ -33,6 +34,8 @@ export function SaveProfileControl({
   const [profiles, setProfiles] = useState<SavedProfile[] | null>(null);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [naming, setNaming] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const refresh = () =>
@@ -75,15 +78,21 @@ export function SaveProfileControl({
     );
   }
 
-  const onSave = async () => {
+  // Save the current payload under `name`. On success the name field closes and
+  // the Save chip flashes "✓ Saved"; on failure it stays open for a retry.
+  const doSave = async (name: string) => {
     const code = getCode();
-    if (!code) return;
-    const name = window.prompt(`Save ${noun} as:`, suggestName());
-    if (!name?.trim()) return;
+    if (!code) {
+      setNaming(false);
+      return;
+    }
     setBusy(true);
     try {
-      await saveProfile(kind, name.trim(), code);
-      if (open) refresh();
+      await saveProfile(kind, name, code);
+      setNaming(false);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 1400);
+      refresh(); // pick up the new count (reveals the dropdown on first save)
     } catch (e) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     } finally {
@@ -108,17 +117,31 @@ export function SaveProfileControl({
   };
 
   const count = profiles?.length ?? 0;
+  const hasContent = getCode() !== null;
 
   return (
     <div className='saveprofile' ref={wrapRef}>
-      <button
-        className='chip saveprofile-save'
-        onClick={onSave}
-        disabled={busy}
-        title={`Save the current ${noun}`}
-      >
-        💾 Save
-      </button>
+      {naming ? (
+        <InlineNameField
+          initial={suggestName()}
+          placeholder={`${noun} name`}
+          onCommit={doSave}
+          onCancel={() => setNaming(false)}
+        />
+      ) : (
+        <button
+          className='chip saveprofile-save'
+          onClick={() => setNaming(true)}
+          disabled={!hasContent || busy}
+          title={
+            hasContent
+              ? `Save the current ${noun}`
+              : `nothing to save — add Nikkes first`
+          }
+        >
+          {justSaved ? '✓ Saved' : '💾 Save'}
+        </button>
+      )}
       {count > 0 && (
         <button
           className='chip saveprofile-load'

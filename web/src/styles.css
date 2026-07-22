@@ -218,9 +218,19 @@ header h1 {
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 }
 .share-btn:hover:not(:disabled) {
   background: var(--accent);
+  color: #0b1220;
+}
+/* "Copied" flash — fills with the accent blue while the ✓ Copied label shows */
+.share-btn.copied {
+  background: var(--accent);
+  border-color: var(--accent);
   color: #0b1220;
 }
 .share-btn:disabled {
@@ -2546,14 +2556,26 @@ footer {
   font-size: 12.5px;
   text-align: center;
 }
+/* Collapsible filter panel — same native <details> pattern as the DPS chart's
+   "Control frameworks". The panel chrome lives on the <details>; the inner
+   .teambuilder-filters keeps just the two-column filter grid. */
+.teambuilder-filters-details {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.teambuilder-filters-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
 .teambuilder-filters {
   display: grid;
   grid-template-columns: minmax(0, auto) minmax(0, 1fr);
   gap: 10px 20px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
+  margin-top: 10px;
 }
 /* Left column — the stat-axis icon rows (weapon/burst/class/element/maker).
    One shared grid (label | icons) instead of stacked flex rows: the label
@@ -2862,21 +2884,21 @@ footer {
   opacity: 0.45;
   cursor: default;
 }
-/* ---- Roster Generator lock picker (Browse Nikkes + "use these" box) ---- */
-/* The filterable grid and the "Use these Nikkes" box sit side by side; the grid
-   shrinks to make room for the fixed-width box on the right. */
-.rostergen-body {
-  display: flex;
-  align-items: flex-start;
+/* ---- Roster Generator picker: team rows + "Use these Nikkes" box ---- */
+/* The picker's .roster-input becomes a two-column layout: the team rows (natural
+   width) on the left, the "Use these Nikkes" box filling the whole right side. */
+.rostergen-input {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   gap: 16px;
+  align-items: stretch;
 }
-.rostergen-body > .teambuilder-picker {
-  flex: 1 1 auto;
-  min-width: 0;
+.rostergen-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .rostergen-box {
-  flex: 0 0 190px;
-  width: 190px;
   background: var(--panel2);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -2884,8 +2906,7 @@ footer {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 520px;
-  overflow-y: auto;
+  min-height: 0; /* let the grid row be sized by the team rows, not the box */
 }
 .rostergen-box-head {
   display: flex;
@@ -2902,15 +2923,31 @@ footer {
 .rostergen-box-sub {
   font-size: 11px;
 }
-.rostergen-box-slots {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+/* scrollable chip area filling the box — the hint sits below the chips and is
+   displaced off-screen as the box fills */
+.rostergen-box-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
-/* empty box slots read as drop targets (dashed) until a portrait fills them */
+.rostergen-box-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-content: flex-start;
+}
+/* chips match the team-row slot size ((380px − 4·6px gaps) / 5 ≈ 71px) */
+.rostergen-box-slot {
+  width: 71px;
+  flex: 0 0 auto;
+}
+/* empty box slots (only rendered mid-drag) read as dashed drop targets */
 .rostergen-box-slot:not(.active) {
   border-style: dashed;
-  opacity: 0.55;
+  opacity: 0.5;
 }
 .rostergen-box-hint {
   margin: 0;
@@ -2922,6 +2959,109 @@ footer {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+}
+/* Include + Exclude panels side by side (Include first) on the generator tabs */
+.genpanels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .genpanels {
+    grid-template-columns: 1fr;
+  }
+}
+/* At-a-glance include/exclude portrait grids under each Calculate button — one
+   grid per list, labelled with a count. */
+.gen-portraits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 480px; /* match the .field panels in the include/exclude area above */
+}
+/* header row: "Included/Excluded N" + clear-all, aligned like the picker panels */
+.gen-portraits-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.gen-portraits-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.gen-portraits-count {
+  color: var(--accent);
+}
+.gen-portraits-clear {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.12s;
+}
+.gen-portraits-clear:hover {
+  color: var(--warn);
+}
+.gen-portraits-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gen-portrait-wrap {
+  position: relative;
+}
+.gen-portrait {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  object-position: center var(--portrait-crop-top);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition:
+    border-color 0.12s,
+    transform 0.12s;
+}
+.gen-portrait-wrap:hover .gen-portrait {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+/* per-portrait remove, top-right */
+.gen-portrait-x {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.72);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.8;
+  transition:
+    opacity 0.12s,
+    background 0.12s,
+    color 0.12s;
+}
+.gen-portrait-x:hover {
+  opacity: 1;
+  background: var(--warn);
+  color: #0b1220;
 }
 /* Exclude picker: wrapping strip of excluded portraits above the grid */
 .exclude-strip {
@@ -2999,17 +3139,82 @@ footer {
 .saveprofile-del:hover {
   opacity: 1;
 }
+/* ---- InlineNameField — in-place replacement for window.prompt() ---- */
+.inline-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  animation: inline-name-in 0.14s ease-out;
+}
+.inline-name input {
+  width: 170px;
+  min-width: 0;
+  background: var(--panel2);
+  border: 1px solid var(--accent);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 13px;
+  outline: none;
+}
+.inline-name-ok,
+.inline-name-x {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+.inline-name-ok:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.inline-name-x:hover {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+@keyframes inline-name-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Last-resort share link (clipboard fully blocked) — read-only, pre-selected */
+.link-fallback {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  animation: inline-name-in 0.14s ease-out;
+}
+.link-fallback input {
+  width: 260px;
+  max-width: 60vw;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 5px 9px;
+  font-size: 12px;
+  outline: none;
+}
 @media (max-width: 640px) {
-  .rostergen-body {
-    flex-direction: column;
-  }
-  .rostergen-box {
-    flex: 1 1 auto;
-    width: 100%;
-    max-height: none;
-  }
-  .rostergen-box-slots {
-    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  .rostergen-input {
+    grid-template-columns: 1fr;
   }
 }
 .teambuilder-warning {
