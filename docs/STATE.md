@@ -47,11 +47,14 @@ jitter, range-transition ±2s, stage-cast-gap ±9f) is inert in the unseeded gat
 | Constant | Value | Meaning | `sim.ts` |
 | --- | --- | --- | --- |
 | `FPS` | 60 | Tick rate (all sec→frame conversions) | :41 |
-| `STAGE_CAST_GAP_FRAMES` | 30 (0.5s) | Gap between chain stage casts (B1→B2→B3); measured-correct | :91 |
-| `FULL_BURST_FRAMES` | 600 (10s) | Full Burst duration | :92 |
-| `POST_FB_CHAIN_DELAY_FRAMES` | **180 (3s)** | Next chain can't open until FB-end + 3s | :1077 |
-| `STAGE_WINDOW_FRAMES` | 120 (2s) | Stage-2/3 chain window deadline (stage 1 never expires) | :1088 |
-| `SR_BOLT_RECOVERY_FRAMES` | 22 | Release latency for release-fired charge weapons (SR + RL); autofire exempt | :104 |
+| `FIGHT_DELAY_FRAMES` | ~8 (0.133s) | Fight-start deploy delay — no firing/charging/reloading/gauge until then (`FIGHTDELAY` seconds overrides) | :48 |
+| `STAGE_CAST_GAP_FRAMES` | 30 (0.5s) | Gap between chain stage casts (B1→B2→B3); measured-correct | :98 |
+| `PRE_B1_GAP_FRAMES` | 30 (0.5s) | Gap between gauge-full and the B1 cast (default ON; `PREB1GAP=off` reverts) | :105 |
+| `FB_PRE_DELAY_FRAMES` | 22 | Gap between the B3 cast and the FB countdown starting (default ON; `PREFB=off` reverts) | :110 |
+| `FULL_BURST_FRAMES` | 600 (10s) | Full Burst duration | :111 |
+| `SR_BOLT_RECOVERY_FRAMES` | 22 | Release latency for release-fired charge weapons (SR + RL); autofire exempt | :123 |
+| `STAGE_WINDOW_FRAMES` | 120 (2s) | Stage-2/3 chain window deadline (stage 1 never expires) | :1125 |
+| `POST_FB_CHAIN_DELAY_FRAMES` | **150 (~2.5s)** | Next chain can't open until FB-end + 150f (`POSTFB` overrides; the earlier 180f double-counted the now-separate 30f-pre-B1) | :1114 |
 | `PULLS_PER_SEC` | AR 12 · SMG 24 · SG 1.5 · MG 60 · Pistol 4 | Class fire cadence (MG uses the ladder) | :127 |
 | `MG_RAMP_INTERVALS` | 35-step ladder → 1/frame | MG wind-up frame gaps; first 18 rounds don't core; wind-down grace 16f | :134 |
 | `RELOAD_TAIL_FRAMES` | 13 (0.21s) | Additive reload tail: `round(base·0.975·(1−buff)) + 13` | :163 |
@@ -62,17 +65,23 @@ jitter, range-transition ±2s, stage-cast-gap ±9f) is inert in the unseeded gat
 
 ## 3. Burst rotation model (the live chain)
 
-Verified against the rotation loop (`sim.ts:1978–2156`). The sim starts at **frame 0 with full mags**;
-passives apply at frame 0; there is **no named fight-start offset constant**. On auto:
+The **coherent first-burst rotation model** (frame-measured from chisato.mov, LANDED 2026-07-21). The
+fight opens with a **~8f deploy delay** (`FIGHT_DELAY_FRAMES`) during which no unit fires, charges,
+reloads, or generates gauge; mags start full. On auto the chain is:
 
-- Gauge fills → at gauge ≥ 100 the gauge is zeroed and **B1 casts the same frame** (no gap before B1).
-- **B1 → 30f → B2 → 30f → B3** (the only inter-cast gaps are the two 30f `STAGE_CAST_GAP_FRAMES`).
-- **Full Burst starts immediately at the B3 cast**, runs 600f, then the chain is blocked for a further
-  180f (`POST_FB_CHAIN_DELAY_FRAMES`). Burst-gauge generation is LOCKED during Full Burst.
-- A stage-2/3 filler is the **earliest-ready unit (tie → leftmost)**; the chain waits for a
-  not-yet-ready filler only within the 120f `STAGE_WINDOW_FRAMES` grace, else it collapses to refill.
-  A 3rd same-cooldown B3 that can't fit the short window never casts (bench-B3 exclusion, by design).
-- SR/RL release-fired charge weapons carry the 22f bolt/release latency (autofire exempt).
+**`fight-start (~8f) → gauge-full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB countdown (10s)`**
+
+- The inter-cast gaps: **30f before B1** (`PRE_B1_GAP_FRAMES`, default ON), **30f between stages**
+  (`STAGE_CAST_GAP_FRAMES`), and **22f between the B3 cast and the FB countdown** (`FB_PRE_DELAY_FRAMES`,
+  default ON — instant burst-cast attacks land in this gap, before FB begins, which is why they miss the
+  +50%). So gauge-full → FB-start ≈ **112f (~1.87s)**.
+- Full Burst runs 600f; burst-gauge generation is LOCKED during it; then the chain is blocked a further
+  **150f** (`POST_FB_CHAIN_DELAY_FRAMES`, ~2.5s — the earlier 180f double-counted the now-separate 30f-pre-B1).
+- A stage-2/3 filler is the **earliest-ready unit (tie → leftmost)**; the chain waits for a not-yet-ready
+  filler only within the 120f `STAGE_WINDOW_FRAMES` grace, else it collapses to refill. A 3rd same-cooldown
+  B3 that can't fit the short window never casts (bench-B3 exclusion, by design).
+- SR/RL release-fired charge weapons carry the 22f bolt/release latency (autofire exempt; +11f start
+  recovery at fight-start).
 
 Standing rotation facts: focus-unit charge weapons make ×2.5 gauge (focus-only; middle slot by
 default). Burst-cast damage lands **before** Full Burst — it misses the +50% FB major and FB-entry

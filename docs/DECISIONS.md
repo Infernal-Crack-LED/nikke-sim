@@ -1220,6 +1220,9 @@ lives. Newest first within each section.
   removed a stale coherent-first-burst parenthetical — "~8f fight-start / gauge-full→30f→B1 / POST_FB
   180→150 / Helm double-count" — that CONTRADICTED live code; the true rotation model is STATE.md §3);
   open-questions −319 lines (U18/U25/U13 → ANSWERED A27/A28/A29, U16 trimmed to its open worklist);
+  the landed coherent-first-burst rotation narration moved out of NEXT INCREMENT into STATE.md §3 (the
+  code-true model: ~8f fight-start, gauge-full→30f→B1→30f→B2→30f→B3→22f→FB, POST_FB 150 — verified vs
+  live sim.ts, which had advanced via a mid-session merge of the coherent-rotation feature);
   kit-parse-reconciliation-backlog false "every item UN-ENACTED" header fixed; engine-modeling-gaps
   reframed + ranked-fixes narration compressed; experiment-harness-ai.md CLOSED → handoffs/closed/.
   mechanics-doc-upkeep + skill-maintenance now route landed flag/constant/primitive changes to STATE.md.
