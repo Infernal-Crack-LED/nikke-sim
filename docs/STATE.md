@@ -121,7 +121,7 @@ current but not a contract.
 | `interval` | Fires every `sec` seconds (internal-cooldown skill) | helm-aquamarine, isabel, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
 | `hitCount` / `countInFb` | Every N cumulative owner hits; `countInFb` swaps the threshold in FB | ~30 units (hitCount); rapi-red-hood, scarlet-black-shadow (countInFb) |
 | `chargeCounter` | Cycling per-full-charge phase counter | scarlet-black-shadow |
-| `teamAmmo` | Fires when total ally ammo consumed crosses N | cinderella-crystal-wave, little-mermaid, snow-white |
+| `teamAmmo` | Fires when total ally ammo consumed crosses N | cinderella-crystal-wave, little-mermaid |
 | `shotFired` | Every owner trigger pull | ~21 units (cinderella, soda-twinkling-bunny, prika, milk-blooming-bunny, …) |
 | `lastBullet` | On owner's last bullet / reload start | anis-sparkling-summer, helm, privaty |
 | `recovery` / `shielded` | When owner receives a heal / shield event | asuka, crown / naga |
@@ -132,7 +132,7 @@ current but not a contract.
 | Primitive | Meaning | Users |
 | --- | --- | --- |
 | `requiresCore` | Inert when the fight has no core exposure | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
-| `fbGate` (`inFb`/`outFb`) | Only inside / outside Full Burst | moran, modernia, snow-white, takina, soda-twinkling-bunny, zwei, velvet |
+| `fbGate` (`inFb`/`outFb`) | Only inside / outside Full Burst | moran, modernia, takina, soda-twinkling-bunny, zwei, velvet |
 | `swapGate` (`swapped`/`unswapped`) | Only while owner's weaponSwap is live / not | laplace, snow-white-heavy-arms |
 | `requiresShielded` | Only while owner carries a shield | naga |
 | `requiresWipeOut` | Only while boss carries the Wipe-Out status | d-killer-wife |
@@ -157,7 +157,7 @@ current but not a contract.
 ### Effect kinds & flags
 | Primitive | Meaning | Users |
 | --- | --- | --- |
-| `weaponSwap` (+`pullsPerSec`/`weapon`/`trueNormals`/`hasPierce`/`maxShots`) | Temporary weapon override (cadence/class/flavor/pierce/uses-based end) | ada, chisato, cinderella-crystal-wave, laplace, maxwell, nayuta, moran, red-hood, snow-white(-heavy-arms), takina, velvet, zwei |
+| `weaponSwap` (+`pullsPerSec`/`weapon`/`trueNormals`/`hasPierce`/`maxShots`) | Temporary weapon override (cadence/class/flavor/pierce/uses-based end) | ada, chisato, cinderella-crystal-wave, laplace, maxwell, nayuta, moran, red-hood, snow-white-heavy-arms, takina, velvet, zwei |
 | `storedHit` (+`instantInFb`) | Charges that release at FB start; `instantInFb` detonates in-FB | rapi-red-hood |
 | `stackedNuke` | Hits once per FB the unit sat out since its last burst | maiden-ice-rose |
 | `wipeOut` / `gainPierce` | Inflicts Wipe-Out status / timed "Gain Pierce" window | d-killer-wife / ade-agent-bunny, grave, milk-blooming-bunny |
@@ -189,7 +189,7 @@ current but not a contract.
 ### Unit-level / char-static flags (`charFixes` etc.)
 | Primitive | Meaning | Users |
 | --- | --- | --- |
-| `hasPierce` / `pierceModes` | Permanently Pierce-tagged / Pierce only in named modes | alice, ade-agent-bunny, asuka, laplace, mari, red-hood, prika, snow-white, zwei / cinderella-crystal-wave, zwei |
+| `hasPierce` / `pierceModes` | Permanently Pierce-tagged / Pierce only in named modes | alice, ade-agent-bunny, asuka, laplace, mari, red-hood, prika, zwei / cinderella-crystal-wave, zwei |
 | `burstSnapshotsPreFb` | Burst damage resolves pre-FB/pre-stage | cinderella |
 | `consolidation` | Pellet-consolidation single-bullet mode | dorothy-serendipity, modernia, sakura-bloom-in-summer |
 | `magDumpRof` | Whole-magazine dump after a priming charge | cinderella |

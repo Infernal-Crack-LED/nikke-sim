@@ -78,7 +78,12 @@ via her S2 447.7% dot now critting — a FAITHFUL mechanic, not new over-model. 
 finally taken, ~0.03 of her heat is now correctly attributed to dot-crit; do not re-chase it as part of the
 Embarrassment/pierce-window over-model.
 
-### U22 — Snow White (`snow-white`) "Full Charge Damage: 1000% of damage": ADDITIVE (owner ruling) vs ×10 MULTIPLICATIVE (footage) — CONTESTED 2026-07-20
+### ~~U22~~ — MOVED TO ANSWERED as **A30** (resolved 2026-07-20, re-filed 2026-07-22)
+> The text below was left filed as CONTESTED after the owner re-ruled ×10 the same day, so it went stale
+> and mis-reported the live engine. Resolution + the code verification: **A30** in ANSWERED. Retained here
+> only as the trail of the contested period; **do not read the "left standing" language below as current.**
+
+### U22 (SUPERSEDED — see A30) — Snow White (`snow-white`) "Full Charge Damage: 1000% of damage": ADDITIVE (owner ruling) vs ×10 MULTIPLICATIVE (footage) — CONTESTED 2026-07-20
 The owner ruled the 1000% ADDITIVE ("part of the normal charge damage bucket" → full-charge coefficient
 499.5 + 1000 = 1499.5% of ATK; encoded as the derived chargeMultPct 300.2002, landed). The SAME-DAY
 control-footage pass (sw.MP4, all 6 of her cannon windows read) contradicts additive on two independent
@@ -434,6 +439,37 @@ retired. → `docs/handoffs/2026-07-22-engine-work-plan.md` §Step 6f.
 ---
 
 ## ANSWERED
+
+### A30 (U22) — Snow White (`snow-white`, AR/Iron) "Full Charge Damage: 1000%" is ×10 MULTIPLICATIVE — owner re-ruled ON THE FOOTAGE 2026-07-20 (re-filed here 2026-07-22)
+**The owner overruled their own ADDITIVE ruling in favour of the control-footage measurement, the same day
+it was taken.** U22 sat in UNANSWERED describing additive as "left standing pending an owner re-rule" — that
+was stale from 2026-07-20 onward and mis-reported the live engine for two days. Both halves shipped then:
+- **Encoding:** `snow-white.json` `burst[0].effects[0]` = `atkPct 499.5, charge:true, chargeMultPct:1000`
+  (→ ×10 = **4995% of ATK**). Her note: *"RESOLVED 2026-07-20: owner re-ruled ×10 on this footage
+  (chargeMultPct reverted 300.2002→1000)"*; *"The prior ADDITIVE reading (1499.5% via chargeMultPct
+  300.2002) is REFUTED"*. Commit `ae68b90`.
+- **The AR-fires-during-cannon-charge gap** (the sim silently dropping ~5s of AR fire per burst window,
+  ~30s/fight) is FIXED by exactly the re-encode U22 proposed: the `weaponSwap` was DROPPED — no
+  `weaponSwap`/`maxShots`/`hasPierce` field survives in her override, `charFixes` is `{}` — and the cannon
+  is now a `delaySec: 5.5` charge-bucket `flatDamage` (`core`/`pierce`/`rangeOk`) resolving through the
+  `pendingHits` path while the AR keeps firing. Commit `9cc9d7a`. Charge-buff composition is preserved via
+  the delayed-hit charge bucket.
+
+**Evidence that earned the re-rule** (three independent axes from `sw.MP4`, all 6 cannon windows): (a) the
+in-game charge readout ramps 929→966→**"1000%"** at the shot — the charge UI displays the full-charge
+MULTIPLIER, exactly as an SR displays 250%; (b) the six nuke popups (50.5M / 54.1M / 45.1M / 59.5M ×2 /
+~45.1M, every one CORE HIT + PIERCE + crit-starburst, two exact value-repeats) sit at ~630 sheet-ATK-multiples
+— reconcilable with the ×10 4995% class × FB × core × crit × live buffs, but ~3–4× above anything the
+additive 1499.5% class can produce; (c) control-board A/B: additive reads **0.452–0.503 COLD** (sim ~194M vs
+real 385–429M) across all four control runs, versus 0.696–0.777 under ×10.
+
+**Fourth, independent corroboration (arithmetic, not footage):** the two halves only cohere under ×10. A
+~2× deficit (additive) cannot be closed by ~30s of lost AR fire in a 180s fight; a 0.70–0.78 deficit (×10)
+is the right magnitude for exactly that gap. The encoding and the concurrency bug cross-check each other.
+
+**Standing caveat (unchanged):** single-recording evidence. A confirming second `snow-white` recording
+remains nice-to-have, and she stays COLD post-landing — that residual is a per-unit retune, not this
+question. → DECISIONS 2026-07-20; `src/skills/overrides/snow-white.json` note.
 
 ### A27 (U25) — Charge Speed formula + cinderella's RL cadence — RESOLVED 2026-07-21
 Charge Speed is **ADDITIVE** (subtractive on charge time); the divisive-formula hypothesis is REJECTED —
