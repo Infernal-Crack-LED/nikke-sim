@@ -9,6 +9,17 @@ mid far ~0:04
 at each breakpoint, boss becomes unhittable for 1s
 during that 1s, nikkes attempt to reload - if their reload time is 1s or under, they reload, if not, their mag size stays the same
 
+## the test boss has NO PARTS (owner, 2026-07-22)
+
+The scope-lock test boss is partless, and **where on the boss a shot lands does not change the damage
+value** — the only distinction that changes a hit's value is **core vs non-core**. There are no armoured
+areas, no reduced-damage plates, and no per-region damage tiers.
+
+How to apply when reading footage: a popup value that differs from the surrounding ones is NOT explained
+by "it hit a different part of the boss". Look to buff state, crit, core, or a different damage source
+(a skill/burst payload) instead — and if none of those account for it, record the value tier as
+unexplained rather than attributing it to hit location.
+
 Weapon
 Effective range
 SG — Shotgun 0–25
