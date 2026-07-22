@@ -1026,6 +1026,13 @@ input.num {
   font-size: 22px;
   color: var(--muted);
 }
+/* drop indicator while dragging (commit-on-drop): the slot the dragged unit
+   will swap into if released now — dashed to distinguish it from the solid
+   .active targeting ring */
+.roster-slot.droptarget {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
 .roster-slot .chip-x {
   position: absolute;
   top: 1px;

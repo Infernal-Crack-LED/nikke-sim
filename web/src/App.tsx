@@ -919,6 +919,42 @@ function loadStoredTeam(): SlotState[] | null {
   }
 }
 
+// remember the last rosters across refreshes — solo 5×5, union 3×5, and which
+// mode was active (so a union raid doesn't reopen on the solo grid)
+const ROSTER_STORAGE_KEY = 'nikke-sim.roster.v1';
+const UNION_ROSTER_STORAGE_KEY = 'nikke-sim.roster-union.v1';
+const ROSTER_MODE_STORAGE_KEY = 'nikke-sim.roster-mode.v1';
+
+// restore a rows×5 roster grid, dropping any slug no longer present in the data
+function loadStoredRoster(
+  key: string,
+  rows: number,
+): (string | null)[][] | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return null;
+    return Array.from({ length: rows }, (_, i) =>
+      Array.from({ length: 5 }, (_, j) => {
+        const s = arr[i]?.[j];
+        return typeof s === 'string' && data.characters[s] ? s : null;
+      }),
+    );
+  } catch {
+    return null;
+  }
+}
+
+function loadStoredRosterMode(): 'solo' | 'union' | null {
+  try {
+    const m = localStorage.getItem(ROSTER_MODE_STORAGE_KEY);
+    return m === 'solo' || m === 'union' ? m : null;
+  } catch {
+    return null;
+  }
+}
+
 const ELEMENT_SET = new Set(['Fire', 'Water', 'Wind', 'Electric', 'Iron']);
 const coerceWeakness = (w: unknown): Element | null =>
   typeof w === 'string' && ELEMENT_SET.has(w) ? (w as Element) : null;
@@ -1380,13 +1416,18 @@ export function App({ user }: { user: AuthUser | null }) {
     // shareable prefill: /rostersim?roster=a,b,c,… (25 slugs row-major, blanks
     // allowed) — produced by the Team Builder's roster-mode Generate link
     const param = new URLSearchParams(window.location.search).get('roster');
-    const slugs = param
-      ? param
-          .split(',')
-          .map((s) => (data.characters[s.trim()] ? s.trim() : null))
-      : [];
-    return Array.from({ length: 5 }, (_, t) =>
-      Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null),
+    if (param) {
+      const slugs = param
+        .split(',')
+        .map((s) => (data.characters[s.trim()] ? s.trim() : null));
+      return Array.from({ length: 5 }, (_, t) =>
+        Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null),
+      );
+    }
+    // otherwise restore the last solo roster from a previous session
+    return (
+      loadStoredRoster(ROSTER_STORAGE_KEY, 5) ??
+      Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => null))
     );
   });
   const [rosterActive, setRosterActive] = useState<[number, number] | null>(
@@ -1397,25 +1438,30 @@ export function App({ user }: { user: AuthUser | null }) {
   );
   // Roster Sim mode pill: Solo Raid (5×5) vs Union Raid (3×5)
   const [rosterSimMode, setRosterSimMode] = useState<'solo' | 'union'>(() => {
-    const p = new URLSearchParams(window.location.search);
-    return p.get('mode') === 'union' ? 'union' : 'solo';
+    const m = new URLSearchParams(window.location.search).get('mode');
+    if (m === 'union' || m === 'solo') return m;
+    // no mode in the URL — reopen whichever raid was last active
+    return loadStoredRosterMode() ?? 'solo';
   });
   // Union Raid: 3 teams × 5 slugs, per-team boss options, active slot, results
   const [unionRosterSim, setUnionRosterSim] = useState<(string | null)[][]>(
     () => {
       const p = new URLSearchParams(window.location.search);
-      if (p.get('mode') !== 'union')
-        return Array.from({ length: 3 }, () =>
-          Array.from({ length: 5 }, () => null),
+      if (p.get('mode') === 'union') {
+        const param = p.get('roster');
+        const slugs = param
+          ? param
+              .split(',')
+              .map((s) => (data.characters[s.trim()] ? s.trim() : null))
+          : [];
+        return Array.from({ length: 3 }, (_, t) =>
+          Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null),
         );
-      const param = p.get('roster');
-      const slugs = param
-        ? param
-            .split(',')
-            .map((s) => (data.characters[s.trim()] ? s.trim() : null))
-        : [];
-      return Array.from({ length: 3 }, (_, t) =>
-        Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null),
+      }
+      // otherwise restore the last union roster from a previous session
+      return (
+        loadStoredRoster(UNION_ROSTER_STORAGE_KEY, 3) ??
+        Array.from({ length: 3 }, () => Array.from({ length: 5 }, () => null))
       );
     },
   );
@@ -2049,6 +2095,32 @@ export function App({ user }: { user: AuthUser | null }) {
       /* storage unavailable (private mode / quota) — skip persistence */
     }
   }, [slots]);
+
+  // persist the rosters + active mode so a refresh reopens what was on screen
+  useEffect(() => {
+    try {
+      localStorage.setItem(ROSTER_STORAGE_KEY, JSON.stringify(rosterSim));
+    } catch {
+      /* storage unavailable (private mode / quota) — skip persistence */
+    }
+  }, [rosterSim]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        UNION_ROSTER_STORAGE_KEY,
+        JSON.stringify(unionRosterSim),
+      );
+    } catch {
+      /* storage unavailable (private mode / quota) — skip persistence */
+    }
+  }, [unionRosterSim]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(ROSTER_MODE_STORAGE_KEY, rosterSimMode);
+    } catch {
+      /* storage unavailable (private mode / quota) — skip persistence */
+    }
+  }, [rosterSimMode]);
 
   // Snapshot of everything the live Team-Sim result depends on. Memoized so its
   // identity changes ONLY when an input changes (preserves useDeferredValue's
@@ -3042,7 +3114,7 @@ export function App({ user }: { user: AuthUser | null }) {
         cur && cur[0] === t && cur[1] === u ? null : [t, u],
       );
     },
-    { ignoreFrom: '.chip-x' },
+    { ignoreFrom: '.chip-x', commitOnDrop: true },
   );
   const toTeamResult = (r: SimResult): TeamResult => ({
     slugs: r.units.map((u) => u.slug),
@@ -3161,7 +3233,7 @@ export function App({ user }: { user: AuthUser | null }) {
         cur && cur[0] === t && cur[1] === u ? null : [t, u],
       );
     },
-    { ignoreFrom: '.chip-x' },
+    { ignoreFrom: '.chip-x', commitOnDrop: true },
   );
   const setUnionBossOpt = (ti: number, patch: Partial<UnionBossOpts>) =>
     setUnionBossOpts((prev) =>
@@ -3604,7 +3676,8 @@ export function App({ user }: { user: AuthUser | null }) {
                   className={
                     'team-chip roster-slot' +
                     (active ? ' active' : '') +
-                    (rosterPageReorder.dragIndex === i ? ' dragging' : '')
+                    (rosterPageReorder.dragIndex === i ? ' dragging' : '') +
+                    (rosterPageReorder.overIndex === i ? ' droptarget' : '')
                   }
                   title={c?.name ?? `team ${ti + 1} · slot ${ui + 1}`}
                   {...rosterPageReorder.handleProps(i)}
@@ -3741,7 +3814,8 @@ export function App({ user }: { user: AuthUser | null }) {
                     className={
                       'team-chip roster-slot' +
                       (active ? ' active' : '') +
-                      (unionPageReorder.dragIndex === i ? ' dragging' : '')
+                      (unionPageReorder.dragIndex === i ? ' dragging' : '') +
+                      (unionPageReorder.overIndex === i ? ' droptarget' : '')
                     }
                     title={c?.name ?? `team ${ti + 1} · slot ${ui + 1}`}
                     {...unionPageReorder.handleProps(i)}

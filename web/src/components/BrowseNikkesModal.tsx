@@ -218,7 +218,7 @@ export function BrowseRosterNikkesModal({
       const u = i % 5;
       setActive((cur) => (cur && cur[0] === t && cur[1] === u ? null : [t, u]));
     },
-    { ignoreFrom: '.chip-x' },
+    { ignoreFrom: '.chip-x', commitOnDrop: true },
   );
 
   return (
@@ -241,7 +241,7 @@ export function BrowseRosterNikkesModal({
                       key={u}
                       type='button'
                       ref={reorder.register(i)}
-                      className={`team-chip roster-slot${isActive ? ' active' : ''}${reorder.dragIndex === i ? ' dragging' : ''}`}
+                      className={`team-chip roster-slot${isActive ? ' active' : ''}${reorder.dragIndex === i ? ' dragging' : ''}${reorder.overIndex === i ? ' droptarget' : ''}`}
                       title={c?.name ?? `team ${t + 1} · slot ${u + 1}`}
                       {...reorder.handleProps(i)}
                     >

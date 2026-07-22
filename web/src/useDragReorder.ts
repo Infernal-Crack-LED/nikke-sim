@@ -14,10 +14,16 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 // tracking entirely — otherwise the pointer capture set on the item would
 // retarget the follow-up click onto the item and swallow the sub-element's
 // onClick.
+//
+// opts.commitOnDrop: nothing is displaced while dragging — the grid stays put
+// and `overIndex` tracks the slot the item would land on (render it as a drop
+// indicator). The move is committed with a single onMove only on release, at
+// the final drop point. Without it, onMove fires live as the pointer crosses
+// items (the classic make-room reorder).
 export function useDragReorder(
   onMove: (from: number, to: number) => void,
   onTap?: (i: number) => void,
-  opts?: { ignoreFrom?: string },
+  opts?: { ignoreFrom?: string; commitOnDrop?: boolean },
 ) {
   const items = useRef(new Map<number, HTMLElement>());
   const drag = useRef<{
@@ -28,6 +34,8 @@ export function useDragReorder(
     moved: boolean;
   } | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  // commitOnDrop only: the slot the dragged item would land on if released now
+  const [overIndex, setOverIndex] = useState<number | null>(null);
 
   const register = (i: number) => (el: HTMLElement | null) => {
     if (el) items.current.set(i, el);
@@ -85,6 +93,11 @@ export function useDragReorder(
         setDragIndex(st.index);
       }
       const target = nearest(e.clientX, e.clientY);
+      if (opts?.commitOnDrop) {
+        // no live reorder — just track where the item would land
+        setOverIndex(target >= 0 && target !== st.index ? target : null);
+        return;
+      }
       if (target >= 0 && target !== st.index) {
         onMove(st.index, target);
         st.index = target;
@@ -97,15 +110,21 @@ export function useDragReorder(
       if (!st.moved) {
         if (onItemTap) onItemTap(st.index, e);
         else if (onTap) onTap(st.index);
+      } else if (opts?.commitOnDrop) {
+        // displace only at the final drop point
+        const target = nearest(e.clientX, e.clientY);
+        if (target >= 0 && target !== st.index) onMove(st.index, target);
       }
       drag.current = null;
       setDragIndex(null);
+      setOverIndex(null);
     },
     onPointerCancel: () => {
       drag.current = null;
       setDragIndex(null);
+      setOverIndex(null);
     },
   });
 
-  return { register, handleProps, dragIndex };
+  return { register, handleProps, dragIndex, overIndex };
 }
