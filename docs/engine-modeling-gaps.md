@@ -50,7 +50,7 @@
 | 2. Defensive/heal/shield (~25 units)     | no HP pool in v1 (immortal boss) → inert by design  |
 | 17. User-selected modes (8 units)        | config/owner-review, not a primitive                |
 | 18. Kill-gated effects (~4 units)        | inherent (immortal solo boss)                       |
-| 19. SG pull-vs-pellet + per-unit landing | measurement/calibration (open-questions U17)        |
+| 19. SG pull-vs-pellet `hitCount` 10× lever | measurement/calibration; per-unit landing CLOSED (A31/U17), open tail = U27 |
 | 12-tail. eve Mk2 sequential-doubling     | open sub-caveat, no primitive yet                   |
 
 ---
@@ -414,4 +414,6 @@ moran.
 
 "After N attacks" ambiguous between pulls and pellets (10× proc-cadence swing); per-unit pellet
 landing not captured by the class table. Units: drake (explicit 10× lever), soline-frost-ticket, noir,
-arcana-fortune-mate, isabel (per-unit SG landing residuals). See open-questions U17.
+arcana-fortune-mate, isabel (per-unit SG landing residuals). Per-unit landing is CLOSED by owner override
+(open-questions **A31 (U17)** — the class table stands, class-wide far 0.66 rejected); the open tail is
+isabel's mid/midfar clock-drift re-derive (**U27**). The pull-vs-pellet 10× lever stays open.

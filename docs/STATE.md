@@ -105,8 +105,9 @@ table (AR/SMG/SG) × `HRCORE`. MG/SR/RL use a flat 0.95 core rate (no band table
 (the bonded table; base values ×0.9863 bond recalibration). Under a seeded run each spray draws a whole
 landed-pellet count via a mean-preserving normal jitter. The class-table *shape* is HELD (a far-0.66
 candidate is staged ⚑, gated on a third clean anchor); the per-unit refit was REJECTED on a pre-registered
-split. SG core rate is separately ~0.048 near. → DECISIONS 2026-07-15/16. Open: per-unit SG landing
-(open-questions U17). Full geometry math: [data/sg-calc/](data/sg-calc/).
+split. SG core rate is separately ~0.048 near. → DECISIONS 2026-07-15/16. Per-unit landing is CLOSED
+(owner override 2026-07-17 — the class table stands; open-questions **A31 (U17)**); the one open tail is
+isabel's mid/midfar clock-drift re-derive (**U27**). Full geometry math: [data/sg-calc/](data/sg-calc/).
 
 ## 5. Opt-in kit primitives inventory
 

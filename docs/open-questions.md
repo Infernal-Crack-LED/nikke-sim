@@ -8,6 +8,24 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)
+**The one SG-landing thread still open.** The rest of the per-unit-landing investigation was CLOSED by owner
+override on 2026-07-17 — see **A31 (U17)** in ANSWERED: landing is per-unit, the class `SG_LANDING_BY_BAND`
+table STANDS as the shipped compromise, a class-wide far 0.66 is REJECTED, and the seeded pellet-count jitter
++ `bossPelletProfile` landed instead. What remains: isabel's **mid** and **midfar** band reads rest on a
+SINGLE anchor whose measurement PREDATES the clock-drift discovery, so those two cells are not trustworthy at
+the precision the rest of the table now carries.
+
+**Scope — deliberately narrow.** This is a re-derive of two existing cells from EXISTING footage. It is NOT
+new footage, and NOT a per-unit landing profile (that is precisely the part the owner closed). isabel's near
+and far cells are unaffected: far is already resolved as per-unit (her r0.87 sits low alongside
+brid-silent-track r0.88, versus guilty r0.93 and noir r0.99 at/near table).
+
+**Do NOT re-open the closed part from this.** The per-unit `sgFarScale≈0.88` candidate for isabel +
+brid-silent-track stays DOCUMENTED-but-UNENCODED — both are sim-LOW for rider/term reasons, so a <1 landing
+factor drags them further down. Trail: A31, `docs/probe-data/` isabel/guilty/brid-silent-track sg-band files
++ `noir-solo-recon.json`, DECISIONS 2026-07-16/17.
+
 ### U26 — "All-or-nothing" crit on sequential attacks + an Eve carve-out (2026-07-21)
 **Surfaced while modeling cinderella's burst** (a 10-hit "1365.92% × 10 sequential" nuke the engine
 represents as one flatDamage instance). The engine rolls crit ONCE per damage instance
@@ -78,32 +96,6 @@ via her S2 447.7% dot now critting — a FAITHFUL mechanic, not new over-model. 
 finally taken, ~0.03 of her heat is now correctly attributed to dot-crit; do not re-chase it as part of the
 Embarrassment/pierce-window over-model.
 
-### ~~U22~~ — MOVED TO ANSWERED as **A30** (resolved 2026-07-20, re-filed 2026-07-22)
-> The text below was left filed as CONTESTED after the owner re-ruled ×10 the same day, so it went stale
-> and mis-reported the live engine. Resolution + the code verification: **A30** in ANSWERED. Retained here
-> only as the trail of the contested period; **do not read the "left standing" language below as current.**
-
-### U22 (SUPERSEDED — see A30) — Snow White (`snow-white`) "Full Charge Damage: 1000% of damage": ADDITIVE (owner ruling) vs ×10 MULTIPLICATIVE (footage) — CONTESTED 2026-07-20
-The owner ruled the 1000% ADDITIVE ("part of the normal charge damage bucket" → full-charge coefficient
-499.5 + 1000 = 1499.5% of ATK; encoded as the derived chargeMultPct 300.2002, landed). The SAME-DAY
-control-footage pass (sw.MP4, all 6 of her cannon windows read) contradicts additive on two independent
-axes: (a) the in-game charge readout ramps 929→966→**"1000%"** at the shot — the charge UI displays the
-full-charge MULTIPLIER, exactly as an SR displays 250%; (b) the six nuke popups (50.5M / 54.1M / 45.1M /
-59.5M ×2 / ~45.1M — every one labeled CORE HIT + PIERCE + crit-starburst, two exact value-repeats) sit at
-~630 sheet-ATK-multiples, reconcilable with the ×10 4995% class × FB × core × crit × live buffs but ~3-4×
-above anything the additive class can produce. Third corroboration: the control-board A/B — additive
-encoding reads **0.452–0.503 COLD** (sim ~194M vs real 385–429M) across all four control runs; the old ×10
-encoding read 0.696–0.777. Single-recording evidence, so the landed additive encoding was LEFT STANDING
-per evidence-proportionality — **OWNER TO RE-RULE**. Related NEW observed gap (same footage): she KEEPS
-FIRING HER AR during the ~5s cannon charge (the cannon materializes only for the shot; the cast animation
-precedes the FB banner by ~1-2s) — the engine's weaponSwap cannot fire the base weapon while a swap charge
-runs, so the sim silently loses ~5s of AR fire per burst window (~30s/fight; her plausible residual COLD
-driver even under ×10). Candidate faithful re-encode: drop the weaponSwap, model the cannon as a
-delaySec≈5.5 charge-bucket hit while the AR keeps firing — needs an owner ruling on charge-buff
-composition. Trail: `src/skills/overrides/snow-white.json` note (footage-pass appendix),
-`docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §snow-white, DECISIONS 2026-07-20
-(control comps wired).
-
 ### U20 — Does a unit's OWN same-cast self-buff apply to its OWN cast-instant burst damage? (Phase A A2, DEFERRED 2026-07-20)
 **Owner ruling 2026-07-20: DEFER A2 entirely — blocked on an isolating measurement.** The kit-audit plan
 (§A2) proposed a "same-cast self-buff guard": exclude a unit's own same-`burstCast` self-buff from its own
@@ -164,87 +156,6 @@ burst-window fire-rate/crit stack. **Method:** a focused grave burst-window reco
 the 10s Prediction window + a Pierce-Damage-on/off popup to pin the real pierce magnitude; then trim the
 burst-window over-model (grave should land back near 1.0 with pierce ON). Links: grave override ⚑1,
 engine-modeling-gaps theme 5 / fix #7, damage-calculation.md dmgUp bucket.
-
-### U17 — SG landing is per-unit (and per-position within the near band) — the class table is a compromise (2026-07-16)
-> **CLOSED — OWNER OVERRIDE (2026-07-17).** The owner rules the shotgun pellet-landing investigation
-> (A26 → this U17 per-unit continuation) closed WITHOUT pursuing per-unit landing profiles or a third
-> far anchor. Resolution: model landing as (a) a per-band seeded pellet-count JITTER — each SG spray
-> shot draws a whole landed-pellet count, bell-curve weighted toward the band mean (near/mid {8,9,10}
-> ≈ 68% mid / 16% each outer, midfar {7,8,9}, far {6,7,8}; mean-preserving vs the class table), and
-> (b) a backend `SimConfig.bossPelletProfile` = small (default = the ranges as-is) / medium (drawn +1,
-> clamped, near/mid → 84% full) / large (every band lands full pellets), scaling by boss silhouette
-> size. This is an owner MODELING RULING, not a new measurement — the per-unit far/near residuals are
-> accepted, not fudged away. Scope caveat: BOTH mechanisms are SEEDED-ONLY (inert in the default
-> expected-value product, which still uses the fixed `SG_LANDING_BY_BAND` table — see the seeded-by-
-> default question), and the medium/large profile magnitudes are ⚑ UNVERIFIED (new low-prio action
-> item to verify boss profiles; dorothy PH vs N9 already disagree on which profile fits). Engine:
-> `sgLandedPellets` + `SG_LANDING_JITTER` in `src/engine/sim.ts`; see DECISIONS 2026-07-17. The
-> analysis below stands as the record of why per-unit landing was NOT encoded.
-
-Outcome of the pre-registered SG range-landing corroboration campaign (guilty + Brid: Silent Track
-solo reads vs the isabel hypothesis; scientific-method 2-of-2 decision = **LOG, no engine change** —
-the pre-registered SPLIT branch fired):
-- **Far band, two clean anchors agree:** Isabel implied landing ~0.656, Brid: Silent Track ~0.649
-  (her far M 0.709 vs the isabel-hypothesis prediction 0.710 — a 0.1% hit). The staged candidate
-  **far 0.75 → ~0.66** (⚑ calibrated-with-measured-support) is parked pending either a third clean
-  anchor or a resolution of Guilty's contrary shape. Note noir's 2026-07-15 counter reconciliation
-  (which SET the current table) reconciled at far 0.75 for noir — a third data point FOR per-unit.
-- **Guilty reads as the CURRENT table shape × a flat ~0.91 unit factor** (near landing measured
-  directly at ~0.81 by pellet-lattice decomposition, popup-confirmed; her far/near ratio 0.634 ≈ the
-  engine's 0.629). She refutes the class-wide reading of the far deficit.
-- **Near landing is not a constant even within one fight:** Brid: Silent Track's two near windows
-  measured 8.52 vs 9.41 landed pellets/10 tracking visible boss proximity; across units near spans
-  ~0.81 (Guilty) → ~0.90 (Isabel) → 0.85–0.94 (Brid). A single global near value cannot deliver ±3%
-  per SG unit.
-- All nine range-band reads across the three units sit BELOW the current table's predictions
-  (sign-unanimous, magnitude-inconsistent) — the table is, if anything, generous at range, but by a
-  per-unit amount.
-**CONSOLIDATION 2026-07-16 (all measured SG units) → decision = HOLD, no per-unit landing overrides
-this pass.** Per-unit landing ratios-to-table (term-independent), from every SG read in the repo:
-noir near/mid/far/midfar r0.99/1.00/0.99/0.98 (it SET the table); isabel r1.01/0.94/0.87/0.95;
-guilty r0.89/0.92/0.93/0.97 (flat ~0.91, far her LEAST-deficient band); brid-silent-track
-r1.01/0.92/0.88/0.89; dorothy-serendipity landing not separable (consolidation confound);
-soda-twinkling-bunny no isolable data (its footage counter is a TEAM total). Cross-unit spread:
-near 12.9% / far 12.2% / mid 9.0% / midfar 9.0% — every cell ≤ the class table, but by a PER-UNIT
-amount, with NO datamined-stat correlate (far/near ratios non-monotonic vs normalMult & reloadFrames;
-class/element give no split). **Why HOLD:** encoding per-unit landing now improves ZERO measured units
-and REGRESSES two — the sim-LOW units (isabel real/sim 1.086; guilty 1.35) are low for OTHER reasons
-(isabel rider + the U18 term; guilty's unmodeled S1-duplicate/S2-stack self-buffs + term), and every
-landing factor is ≤1 so applying it drags them further down. noir/dorothy already sit on the table.
-FIX ORDER: (a) promote the SG baselines to engine-loaded overrides (guilty/isabel/brid-silent-track
-live only in overrides-baselines/ → any loadOverride harness falls back to the bare parser, which
-over-fires brid's riders to ~4.9× — a harness artifact, NOT a model bug; her baseline reconciles at
-0.94); (b) resolve U18 (the ~+1.6% term); (c) THEN revisit landing. The one durable staged candidate
-is a per-unit `sgFarScale≈0.88` for isabel+brid ONLY (far ~0.66), NOT a class-wide far cut; cleanest
-engine shape if ever built = per-unit `sgLandingScale` (guilty) + optional `sgFarScale` (isabel/brid),
-unlisted units keep the class table. Consolidation memo + machine table: session archive u17-work/.
-**2026-07-16 FAR-BAND RESOLVED (per-unit; class-wide 0.66 REJECTED).** Two developments closed
-open item (1) "a third ATK-clean solo SG read":
-- The "datamined per-unit accuracy/spread stat" alternative is a DEAD END — the synergy-API
-  characters.json carries NO per-unit accuracy/spread/reticle field (full per-unit field set is
-  enumerable: ammo, baseStats, burst, burstCooldownSec, burstGaugePerShot, chargeFrames,
-  chargeMultiplier, class, coreAttackMultiplier, element, hitsPerShot, manufacturer, name,
-  normalAttackMultiplier, reloadFrames, rl3, skills, slug, treasure, weapon — no spread correlate).
-  The structureSearch above already tested every field we hold; there is no stat to correlate the
-  far split against.
-- **noir is the third clean anchor** (owner-confirmed 2026-07-16). She is the CLEANEST possible SG
-  read: treasure=false (no ATK confound), SOLO Burst-III so she can NEVER enter Full Burst (zero
-  riders/FB/burst-skill damage — the entire 64.87M real total is pure base-hit-rate spray), and the
-  running DAMAGE-counter per-mag delta is an overlap-immune per-shot instrument
-  (docs/probe-data/noir-solo-recon.json). noir far impliedRealLanding ~0.74 (ratio-to-table 0.99),
-  i.e. AT the table. So the four clean solo far reads split 2-vs-2: isabel (r0.87, ~0.66) + brid
-  (r0.88, ~0.66) LOW vs guilty (r0.93, ~0.70) + noir (r0.99, ~0.74) at/near table. **This falsifies a
-  class-wide far = 0.66.** Far is per-unit; the class table far STANDS (correct for noir/guilty).
-  CIRCULARITY CAVEAT: noir SET the table's far=0.74, so she cannot independently re-confirm that
-  absolute value — but she independently establishes noir-far >> isabel/brid-far, and THAT spread
-  (term-independent) is the valid falsifier of class-wide-0.66.
-**Consequence:** the staged far ~0.66 (`sgFarScale≈0.88`) survives ONLY as an isabel/brid-specific
-per-unit candidate, NOT a class-wide value; it stays DOCUMENTED-but-UNENCODED (HOLD rationale
-unchanged: isabel/brid are sim-LOW for rider/term reasons, so a <1 landing factor drags them
-further down). No new footage needed. STILL OPEN: (2) re-derive isabel's mid/midfar with clock-drift
-correction (her single-anchor read predates that discovery). Full record:
-docs/probe-data/guilty-sg-band.json + brid-silent-track-sg-band.json (+ -events) + noir-solo-recon.json,
-the pre-registration in the session archive, DECISIONS 2026-07-16.
 
 ### U16 — Per-unit rotation re-tune worklist (2026-07-16; over-generation RESOLVED 2026-07-21)
 The rotation over-generation / mis-allocation that spawned this item is RESOLVED (`STAGE_WINDOW_FRAMES`
@@ -439,6 +350,92 @@ retired. → `docs/handoffs/2026-07-22-engine-work-plan.md` §Step 6f.
 ---
 
 ## ANSWERED
+
+### A31 (U17) — SG pellet landing is PER-UNIT; the class table STANDS as the shipped compromise — CLOSED by owner override 2026-07-17 (re-filed here 2026-07-22)
+> **Re-filed to ANSWERED 2026-07-22** — this entry had been left sitting in UNANSWERED while its
+> header said CLOSED, so greps for open work kept surfacing it. The single genuinely-open thread was
+> split out to **U27**; everything below is the settled record.
+>
+> **CLOSED — OWNER OVERRIDE (2026-07-17).** The owner rules the shotgun pellet-landing investigation
+> (A26 → this U17 per-unit continuation) closed WITHOUT pursuing per-unit landing profiles or a third
+> far anchor. Resolution: model landing as (a) a per-band seeded pellet-count JITTER — each SG spray
+> shot draws a whole landed-pellet count, bell-curve weighted toward the band mean (near/mid {8,9,10}
+> ≈ 68% mid / 16% each outer, midfar {7,8,9}, far {6,7,8}; mean-preserving vs the class table), and
+> (b) a backend `SimConfig.bossPelletProfile` = small (default = the ranges as-is) / medium (drawn +1,
+> clamped, near/mid → 84% full) / large (every band lands full pellets), scaling by boss silhouette
+> size. This is an owner MODELING RULING, not a new measurement — the per-unit far/near residuals are
+> accepted, not fudged away. Scope caveat: BOTH mechanisms are SEEDED-ONLY (inert in the default
+> expected-value product, which still uses the fixed `SG_LANDING_BY_BAND` table — see the seeded-by-
+> default question), and the medium/large profile magnitudes are ⚑ UNVERIFIED (new low-prio action
+> item to verify boss profiles; dorothy PH vs N9 already disagree on which profile fits). Engine:
+> `sgLandedPellets` + `SG_LANDING_JITTER` in `src/engine/sim.ts`; see DECISIONS 2026-07-17. The
+> analysis below stands as the record of why per-unit landing was NOT encoded.
+
+Outcome of the pre-registered SG range-landing corroboration campaign (guilty + Brid: Silent Track
+solo reads vs the isabel hypothesis; scientific-method 2-of-2 decision = **LOG, no engine change** —
+the pre-registered SPLIT branch fired):
+- **Far band, two clean anchors agree:** Isabel implied landing ~0.656, Brid: Silent Track ~0.649
+  (her far M 0.709 vs the isabel-hypothesis prediction 0.710 — a 0.1% hit). The staged candidate
+  **far 0.75 → ~0.66** (⚑ calibrated-with-measured-support) is parked pending either a third clean
+  anchor or a resolution of Guilty's contrary shape. Note noir's 2026-07-15 counter reconciliation
+  (which SET the current table) reconciled at far 0.75 for noir — a third data point FOR per-unit.
+- **Guilty reads as the CURRENT table shape × a flat ~0.91 unit factor** (near landing measured
+  directly at ~0.81 by pellet-lattice decomposition, popup-confirmed; her far/near ratio 0.634 ≈ the
+  engine's 0.629). She refutes the class-wide reading of the far deficit.
+- **Near landing is not a constant even within one fight:** Brid: Silent Track's two near windows
+  measured 8.52 vs 9.41 landed pellets/10 tracking visible boss proximity; across units near spans
+  ~0.81 (Guilty) → ~0.90 (Isabel) → 0.85–0.94 (Brid). A single global near value cannot deliver ±3%
+  per SG unit.
+- All nine range-band reads across the three units sit BELOW the current table's predictions
+  (sign-unanimous, magnitude-inconsistent) — the table is, if anything, generous at range, but by a
+  per-unit amount.
+**CONSOLIDATION 2026-07-16 (all measured SG units) → decision = HOLD, no per-unit landing overrides
+this pass.** Per-unit landing ratios-to-table (term-independent), from every SG read in the repo:
+noir near/mid/far/midfar r0.99/1.00/0.99/0.98 (it SET the table); isabel r1.01/0.94/0.87/0.95;
+guilty r0.89/0.92/0.93/0.97 (flat ~0.91, far her LEAST-deficient band); brid-silent-track
+r1.01/0.92/0.88/0.89; dorothy-serendipity landing not separable (consolidation confound);
+soda-twinkling-bunny no isolable data (its footage counter is a TEAM total). Cross-unit spread:
+near 12.9% / far 12.2% / mid 9.0% / midfar 9.0% — every cell ≤ the class table, but by a PER-UNIT
+amount, with NO datamined-stat correlate (far/near ratios non-monotonic vs normalMult & reloadFrames;
+class/element give no split). **Why HOLD:** encoding per-unit landing now improves ZERO measured units
+and REGRESSES two — the sim-LOW units (isabel real/sim 1.086; guilty 1.35) are low for OTHER reasons
+(isabel rider + the U18 term; guilty's unmodeled S1-duplicate/S2-stack self-buffs + term), and every
+landing factor is ≤1 so applying it drags them further down. noir/dorothy already sit on the table.
+FIX ORDER: (a) promote the SG baselines to engine-loaded overrides (guilty/isabel/brid-silent-track
+live only in overrides-baselines/ → any loadOverride harness falls back to the bare parser, which
+over-fires brid's riders to ~4.9× — a harness artifact, NOT a model bug; her baseline reconciles at
+0.94); (b) resolve U18 (the ~+1.6% term); (c) THEN revisit landing. The one durable staged candidate
+is a per-unit `sgFarScale≈0.88` for isabel+brid ONLY (far ~0.66), NOT a class-wide far cut; cleanest
+engine shape if ever built = per-unit `sgLandingScale` (guilty) + optional `sgFarScale` (isabel/brid),
+unlisted units keep the class table. Consolidation memo + machine table: session archive u17-work/.
+**2026-07-16 FAR-BAND RESOLVED (per-unit; class-wide 0.66 REJECTED).** Two developments closed
+open item (1) "a third ATK-clean solo SG read":
+- The "datamined per-unit accuracy/spread stat" alternative is a DEAD END — the synergy-API
+  characters.json carries NO per-unit accuracy/spread/reticle field (full per-unit field set is
+  enumerable: ammo, baseStats, burst, burstCooldownSec, burstGaugePerShot, chargeFrames,
+  chargeMultiplier, class, coreAttackMultiplier, element, hitsPerShot, manufacturer, name,
+  normalAttackMultiplier, reloadFrames, rl3, skills, slug, treasure, weapon — no spread correlate).
+  The structureSearch above already tested every field we hold; there is no stat to correlate the
+  far split against.
+- **noir is the third clean anchor** (owner-confirmed 2026-07-16). She is the CLEANEST possible SG
+  read: treasure=false (no ATK confound), SOLO Burst-III so she can NEVER enter Full Burst (zero
+  riders/FB/burst-skill damage — the entire 64.87M real total is pure base-hit-rate spray), and the
+  running DAMAGE-counter per-mag delta is an overlap-immune per-shot instrument
+  (docs/probe-data/noir-solo-recon.json). noir far impliedRealLanding ~0.74 (ratio-to-table 0.99),
+  i.e. AT the table. So the four clean solo far reads split 2-vs-2: isabel (r0.87, ~0.66) + brid
+  (r0.88, ~0.66) LOW vs guilty (r0.93, ~0.70) + noir (r0.99, ~0.74) at/near table. **This falsifies a
+  class-wide far = 0.66.** Far is per-unit; the class table far STANDS (correct for noir/guilty).
+  CIRCULARITY CAVEAT: noir SET the table's far=0.74, so she cannot independently re-confirm that
+  absolute value — but she independently establishes noir-far >> isabel/brid-far, and THAT spread
+  (term-independent) is the valid falsifier of class-wide-0.66.
+**Consequence:** the staged far ~0.66 (`sgFarScale≈0.88`) survives ONLY as an isabel/brid-specific
+per-unit candidate, NOT a class-wide value; it stays DOCUMENTED-but-UNENCODED (HOLD rationale
+unchanged: isabel/brid are sim-LOW for rider/term reasons, so a <1 landing factor drags them
+further down). No new footage needed. The ONE thread that did not close with this — re-deriving isabel's
+mid/midfar with clock-drift correction — is carried forward as **U27** in UNANSWERED.
+Full record:
+docs/probe-data/guilty-sg-band.json + brid-silent-track-sg-band.json (+ -events) + noir-solo-recon.json,
+the pre-registration in the session archive, DECISIONS 2026-07-16.
 
 ### A30 (U22) — Snow White (`snow-white`, AR/Iron) "Full Charge Damage: 1000%" is ×10 MULTIPLICATIVE — owner re-ruled ON THE FOOTAGE 2026-07-20 (re-filed here 2026-07-22)
 **The owner overruled their own ADDITIVE ruling in favour of the control-footage measurement, the same day
