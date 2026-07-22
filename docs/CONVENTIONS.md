@@ -42,7 +42,7 @@ outside source, APPEND it there** (stable `id`, `name`, `url`, `category`, `used
 harnesses that must do this:
 - **probe-processing** — a recording/tool that pulls an external value or method → add/extend its source.
 - **mechanics-doc-upkeep** — any doc claim that cites an outside URL/author → its source belongs here.
-- **research subagents / scientific-method harness** — a research pass (like the SG-core sweep) that
+- **research subagents / `/scientific-method`** — a research pass (like the SG-core sweep) that
   cites JP/KR/EN sources → register each before landing the finding.
 If a DECISIONS/open-questions/probe-data claim cites an outside link, that link must resolve to an entry
 here. Accreditation is CUMULATIVE — never delete an entry when its claim is superseded (we still used it).
