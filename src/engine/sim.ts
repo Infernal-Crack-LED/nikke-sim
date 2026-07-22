@@ -39,6 +39,13 @@ const ENV: Record<string, string | undefined> =
 import type { Block, ConsolidationConfig, EffectDef, StatKey, TargetDef } from '../skills/types.js';
 
 const FPS = 60;
+// FIGHTDELAY (measured 2026-07-21): a fight-start deploy delay in SECONDS during which no unit fires,
+// charges, reloads, or generates burst gauge — the chisato.mov recording shows the first bullet only
+// LANDS at 2:59, i.e. ~1s after the 3:00 timer starts ticking (units deploy/aim first). DEFAULT 1s
+// (LANDED 2026-07-21 — owner-directed; full-board A/B: every measured-exact FB count PRESERVED, board
+// ±3% 6→7; total snapshots drift ~0.5% from ~1s less fire time, regenerated with the change). Global
+// but FB-neutral. `FIGHTDELAY=0` disables (A/B revert); a custom value overrides the seconds.
+const FIGHT_DELAY_FRAMES = Math.round(Number(ENV.FIGHTDELAY ?? 0.133) * FPS); // ~8f startup (frame-measured; the 1s was a timer-framing confound)
 // Experiment-only slug-scoped knobs (see experiment-harness-ai.md; all default OFF/empty):
 // XCRIT=<slug,slug> dot ticks + stored-hit releases roll crit for those units;
 // XCORE=<slug,...>  same paths roll core (subject to AUTO_CORE_RATE);
@@ -89,6 +96,18 @@ function skillNoFb(perKitNoFb: boolean, isBurstCast: boolean, flavor: string | u
   }
 }
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
+// PREB1GAP (frame-measured 2026-07-21, chisato.mov): the burst chain has a 30f delay BETWEEN
+// gauge-full and the B1 cast (gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB), same as the
+// inter-stage gap — the sim currently fires B1 the instant the gauge fills. Default OFF (inert): this
+// interacts with the gauge-fill timing (adding it alone shifts B1 ~0.5s late, since today's B1=3.5s
+// match rides a slightly-too-fast gauge), so it is A/B-only until the gauge composition is re-tuned
+// against the full measured burst-window timeline. `PREB1GAP=1` enables. (open-questions U16.)
+const PRE_B1_GAP_FRAMES = ENV.PREB1GAP === 'off' ? 0 : STAGE_CAST_GAP_FRAMES; // default ON (frame-measured 30f)
+// PREFB (frame-measured 2026-07-21, chisato.mov): a 22f delay between the B3 cast and the FB
+// countdown actually starting (b3 → 22f → 10s FB). Likely the mechanistic reason instant burst-cast
+// attacks miss the +50% (they land in this gap, before FB begins — today modeled via per-unit noFb
+// flags). Default OFF (inert). `PREFB=1` enables. INVESTIGATION ITEM (owner). (open-questions U16.)
+const FB_PRE_DELAY_FRAMES = ENV.PREFB === 'off' ? 0 : 22; // default ON (frame-measured 22f B3->FB)
 const FULL_BURST_FRAMES = 10 * FPS;
 // AUTO RELEASE LATENCY (2026-07-13 reframe; docs/data/charge-weapons.md §2): "old-style"
 // RELEASE-FIRED charge weapons fire ~22 frames after full charge on auto — measured on
@@ -102,6 +121,16 @@ const FULL_BURST_FRAMES = 10 * FPS;
 // exempt too. charFixes.noBoltRecovery survives as a dormant manual hand-tune hook (no active
 // override sets it; baselines cite it as the "if measured autofire, set this" recipe).
 const SR_BOLT_RECOVERY_FRAMES = 22;
+// BOLTSTART (frame-measured 2026-07-21, chisato.mov/helm SR): the 22f bolt-cycle recovery is really
+// +11f at the START of a shot (before charge) + 11f at the END (after fire). The 22f post-fire value
+// above already models the between-shots 11-end+11-start (they're contiguous), so the ONLY missing
+// piece is the FIRST shot's 11f START recovery — without it shot1 fires at 60f instead of the measured
+// 71f (and every subsequent SR shot is 11f early). BOLTSTART=1 seeds that initial 11f for eligible
+// SR/RL bolt-recovery units. Since Helm's SR is nearly all of a Liter/Crown team's burst-gauge gen,
+// this shifts the first full burst later. DEFAULT ON (LANDED 2026-07-21 — owner-directed; full-board
+// A/B: measured-exact FB counts PRESERVED, board-neutral on its own). `BOLTSTART=off` disables (A/B
+// revert). Global (all SR/RL charge units).
+const SR_BOLT_START_FRAMES = ENV.BOLTSTART ? Math.round(SR_BOLT_RECOVERY_FRAMES / 2) : 0; // default OFF — frame data fits 22f-at-END + the 8f startup, not an 11f pre-charge
 // Datamined autofire tell: new-style charge weapons fire on press (DOWN_Charge), skipping the
 // release latency; old-style release-fired weapons are 'UP'. undefined role → treated as
 // release-fired (the safe SR/RL default).
@@ -653,7 +682,15 @@ export function runSim(
       advantageVs: new Set(),
       ammo: char.ammo,
       fireAcc: 0,
-      boltRecoveryFrames: 0,
+      // Fight-start: eligible SR/RL bolt-recovery units begin with the +11f START recovery before
+      // their first charge (BOLTSTART; measured — shot1 fires at 71f not 60f). Default off → 0.
+      boltRecoveryFrames:
+        SR_BOLT_START_FRAMES > 0 &&
+        (char.weapon === 'SR' || char.weapon === 'RL') &&
+        !(prepared?.[idx]?.noBoltRecovery ?? false) &&
+        !isAutofireCharge(char)
+          ? SR_BOLT_START_FRAMES
+          : 0,
       noBoltRecovery: prepared?.[idx]?.noBoltRecovery ?? false,
       pullsPerSec: prepared?.[idx]?.pullsPerSec,
       magDumpRof: prepared?.[idx]?.magDumpRof ?? false,
@@ -1074,7 +1111,7 @@ export function runSim(
   // stage-3 caster of the most recent full burst — drives the everyOther gate
   let lastStage3Caster = -1;
   let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
-  const POST_FB_CHAIN_DELAY_FRAMES = 180;
+  const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 150; // 180→150: the measured 3s (FB-end→B1) minus the now-separately-modeled 30f-pre-B1 (was double-counted). FB counts are flat across 60-150f; 150 gives the best board.
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
   // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
   // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
@@ -1087,6 +1124,11 @@ export function runSim(
   // 90f craters measured cadence — the 0.5s gap is pinned. DECISIONS 2026-07-21. STAGE_WINDOW=600 reverts.
   const STAGE_WINDOW_FRAMES = ENV.STAGE_WINDOW ? Number(ENV.STAGE_WINDOW) : 120;
   let fbEndFrame = -1;
+  // PREFB (default off): when the B3 cast should defer the FB start by FB_PRE_DELAY_FRAMES, the
+  // fbEndFrame set + fullBurstEnter + stored-hit release are scheduled here and fired that many
+  // frames later (during the gap fbEndFrame stays old, so "in FB" is correctly false).
+  let pendingFbStartFrame = -1;
+  let pendingFbStartExtendSec = 0;
   // "Wipe Out" status window on the boss (0/-1 = none): opened by a 'wipeOut' effect
   // (d-killer-wife's burst) and read by the requiresWipeOut block gate. One global boss →
   // one window (like fbEndFrame), not a per-unit status.
@@ -1938,7 +1980,51 @@ export function runSim(
 
   const romanStage: Record<number, string> = { 1: 'I', 2: 'II', 3: 'III' };
 
+  // FB-entry emission (fullBurstEnter triggers + stored-hit releases + log) — extracted so it can
+  // fire inline at the B3 cast (default) OR be deferred by FB_PRE_DELAY_FRAMES (PREFB). fbEndFrame
+  // must already be set when this runs (the log reads it).
+  const emitFbEnter = (atFrame: number) => {
+    units.forEach((u) => fireTriggered(u, 'fullBurstEnter', atFrame));
+    // release stored hits (e.g. Rapi:RH's attached projectiles exploding) AFTER enter-buffs so FB
+    // auras apply to them; charges added this frame (from the stage-3 cast itself) wait for next FB
+    for (const u of units) {
+      for (const entry of u.storedHits.values()) {
+        if (entry.freshFrame < atFrame) {
+          entry.releasable += entry.fresh;
+          entry.fresh = 0;
+          entry.freshFrame = atFrame;
+        }
+        if (entry.releasable > 0) {
+          dealDamage(u, entry.atkPct * entry.releasable, atFrame, {
+            crit: entry.critRoll || DOT_CRIT || XCRIT.has(u.char.slug),
+            core: entry.coreRate != null || XCORE.has(u.char.slug),
+            coreOverride: entry.coreRate,
+            charge: false,
+            category: entry.category,
+            distributed: entry.distributed,
+            sustained: entry.sustained,
+            sequential: entry.sequential,
+            trueFlavor: entry.trueFlavor,
+            noRange: true,
+            projFlavor: entry.projFlavor,
+          });
+          entry.releasable = 0;
+        }
+      }
+    }
+    rotationLog.push(`${(atFrame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
+  };
+
   for (let frame = 0; frame < totalFrames; frame++) {
+    // PREFB: a deferred full-burst start fires here, FB_PRE_DELAY_FRAMES after the B3 cast (default
+    // off → pendingFbStartFrame stays -1, so this is inert/byte-identical).
+    if (pendingFbStartFrame >= 0 && frame >= pendingFbStartFrame) {
+      fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbStartExtendSec * FPS);
+      pendingFbStartExtendSec = 0;
+      fullBursts++;
+      emitFbEnter(frame);
+      pendingFbStartFrame = -1;
+    }
     const fbActive = fbEndFrame > frame;
     if (fbActive) fbFrames++;
 
@@ -1979,8 +2065,9 @@ export function runSim(
       gauge = 0; // the chain consumes the gauge (refill required if it collapses)
       stage = 1;
       stageExpireFrame = Infinity;
+      stageGapFrames = PRE_B1_GAP_FRAMES; // measured 30f between gauge-full and B1 (default 0 = fire immediately)
     }
-    if (!fbActive && stage >= 2 && frame >= stageExpireFrame) {
+    if (!fbActive && pendingFbStartFrame < 0 && stage >= 2 && frame >= stageExpireFrame) {
       rotationLog.push(`${(frame / FPS).toFixed(1)}s  CHAIN EXPIRED at stage ${stage} (refill)`);
       stage = 0;
       stageExpireFrame = Infinity;
@@ -1990,7 +2077,7 @@ export function runSim(
     // ~1s unhittable window. This is the real source of knife-edge full-burst-count
     // variance between otherwise identical runs — a chain-vs-transition collision
     // depends on the boss's timing jitter. The stage window keeps ticking while blocked.
-    if (!fbActive && stage >= 1 && stageGapFrames === 0 && !bossUnhittable(frame)) {
+    if (!fbActive && pendingFbStartFrame < 0 && stage >= 1 && stageGapFrames === 0 && !bossUnhittable(frame)) {
       const want = romanStage[stage];
       const fillsStage = (u: UnitState) => {
         if (u.char.burst === 'Λ') {
@@ -2071,12 +2158,19 @@ export function runSim(
           });
         }
         if (stage === 3) {
-          fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
-          pendingFbExtendSec = 0;
           gauge = 0;
-          fullBursts++;
           lastStage3Caster = cand.idx;
           if (cand.idx === focusIdx) focusBurstCount++;
+          if (FB_PRE_DELAY_FRAMES > 0) {
+            // defer FB start by 22f (PREFB): schedule; fbEndFrame/fullBursts/enter fire later
+            pendingFbStartFrame = frame + FB_PRE_DELAY_FRAMES;
+            pendingFbStartExtendSec = pendingFbExtendSec;
+            pendingFbExtendSec = 0;
+          } else {
+            fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
+            pendingFbExtendSec = 0;
+            fullBursts++;
+          }
         }
         units.forEach((u) =>
           u.blocks.forEach((b, bi) => {
@@ -2099,39 +2193,10 @@ export function runSim(
             applyBlock(cand.idx, b, bi, frame);
           }
         });
-        if (castStage === 3) {
-          units.forEach((u) => fireTriggered(u, 'fullBurstEnter', frame));
-          // release stored hits (e.g. Rapi:RH's attached projectiles exploding)
-          // AFTER enter-buffs so FB auras apply to them; charges added this
-          // frame (from the stage-3 cast itself) wait for the next full burst
-          for (const u of units) {
-            for (const entry of u.storedHits.values()) {
-              if (entry.freshFrame < frame) {
-                entry.releasable += entry.fresh;
-                entry.fresh = 0;
-                entry.freshFrame = frame;
-              }
-              if (entry.releasable > 0) {
-                dealDamage(u, entry.atkPct * entry.releasable, frame, {
-                  crit: entry.critRoll || DOT_CRIT || XCRIT.has(u.char.slug),
-                  // per-entry core RATE (RRH explosions ~1/3) via the coreOverride path —
-                  // aim/range-independent; falls back to the env XCORE gate when unset
-                  core: entry.coreRate != null || XCORE.has(u.char.slug),
-                  coreOverride: entry.coreRate,
-                  charge: false,
-                  category: entry.category,
-                  distributed: entry.distributed,
-                  sustained: entry.sustained,
-                  sequential: entry.sequential,
-                  trueFlavor: entry.trueFlavor,
-                  noRange: true,
-                  projFlavor: entry.projFlavor,
-                });
-                entry.releasable = 0;
-              }
-            }
-          }
-          rotationLog.push(`${(frame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
+        // FB entry fires inline at the B3 cast (default). With PREFB it is deferred — the scheduled
+        // block in the frame loop calls emitFbEnter() FB_PRE_DELAY_FRAMES later instead.
+        if (castStage === 3 && FB_PRE_DELAY_FRAMES === 0) {
+          emitFbEnter(frame);
         }
         cand.fbMissedSinceBurst = 0; // MP spent (blocks above already read it)
         if (castStage !== 3) {
@@ -2175,6 +2240,10 @@ export function runSim(
 
     // ---- per-unit weapon FSM ----
     for (const u of units) {
+      // Fight-start deploy delay: no firing/charging/reloading/gauge for the first FIGHT_DELAY_FRAMES
+      // (measured — first bullet lands ~1s after the 3:00 timer). MG spin stays at rest (idle). Default
+      // 0 → this never triggers. burstCd/gauge are 0 at fight start, so gating the whole body is safe.
+      if (frame < FIGHT_DELAY_FRAMES) { u.mgIdleFrames++; continue; }
       if (u.burstCdFrames > 0) u.burstCdFrames--;
 
       if (u.swap && frame >= u.swap.untilFrame) {

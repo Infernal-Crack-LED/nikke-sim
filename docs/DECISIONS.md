@@ -8,6 +8,32 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-21) COHERENT FIRST-BURST ROTATION MODEL — LANDED (owner frame-perfect, chisato.mov Liter/Crown/Chisato/Helm Fire).**
+  A frame-by-frame read (t0 = first `2:59` frame; the timer starts at 2:59:999 = elapsed 0, NOT 2:59:000 — see
+  [[fb-timing-anchor-not-startup-lag]]) gave the exact timeline: first bullet 0.133s · Helm SR shots 1.117/2.483/
+  3.850s (82f cycle = 60f charge + **22f-at-END** bolt) · **gauge full ON Helm's 3rd shot** · B1 4.317 · B2 4.783 ·
+  B3 5.283 · FB 5.650. Five coupled corrections reproduce it to ~0.1s at every stage:
+  (1) **`FIGHT_DELAY_FRAMES` 1s → ~8f (0.133s)** — the first bullet is at 0.133s, not 1s; the 1s was a timer-framing
+  confound (SUPERSEDES the entry below). (2) **`SR_BOLT_START_FRAMES` → 0 (BOLTSTART off)** — the data fits 22f-at-END
+  + the 8f startup (shot1 at ~67f), NOT an 11f pre-charge split (that entry SUPERSEDED). (3) **`PREB1GAP` 30f
+  (default on)** — a 30f delay between gauge-full and B1 (`gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB`).
+  (4) **`FB_PRE_DELAY_FRAMES` 22f (PREFB default on)** — the FB countdown starts 22f AFTER the B3 cast (the
+  mechanistic reason instant burst-cast attacks miss +50%; implemented by deferring `emitFbEnter`). (5) **`POST_FB_
+  CHAIN_DELAY_FRAMES` 180 → 150** — the measured 3s FB-end→B1 grace already INCLUDED the now-separately-modeled
+  30f-pre-B1 (double-counted); removing the 30f gives 150f. **The over-generation bug was Helm's**: `skill1
+  fillGauge 14.31` DUPLICATED her gauge-table `flatPerTrigger 1431` (both = her S2 per-shot gen) → Helm read 34.22/
+  shot not the true base(5.60)+skill(14.31)=19.91; removing the override fillGauge fixed it (SMG stays 0.2, the
+  ×2-boss column — CORRECT). **Full-board A/B:** all graded FB counts hold (11/12 exact; run-E reads 10 vs measured
+  11-12, a ±1 cycle-boundary UNDER-count paired with N3's opposite-side over-count — accepted as boundary noise,
+  measured truth kept in the assert comment); board ±3% 6→7 (tail slightly worse); snapshot regenerated; verify.sh
+  green. Each knob has an env A/B-revert. Trail: `sim.ts` FIGHTDELAY/BOLTSTART/PREB1GAP/PREFB/POSTFB comments,
+  `helm.json`, open-questions U16.
+
+- **(2026-07-21) ~~FIGHT-START DELAY (1s) + SR BOLT-RECOVERY SPLIT (11f/11f)~~ — SUPERSEDED 2026-07-21 by the coherent
+  rotation model above (owner frame-perfect data, ≥ same tier).** The 1s fight-delay was a timer-framing confound
+  (real ~8f); the 11f bolt-split was wrong (real 22f-at-END). Both were mis-framed compensating fixes for what is
+  actually Helm's fillGauge double-count + the missing 30f/22f chain timing. Retained for the trail.
+
 - **(2026-07-21) B3/B2 in-window stage selection: strict-leftmost → FIRST-READY (earliest-ready, tie→leftmost) — LANDED.**
   Real auto casts whichever burst comes up first, so the timed-window stage-2/3 pick is the stage-filler whose
   cooldown ends SOONEST, not the strictly-leftmost one (owner ruling 2026-07-21). For equal-CD B3s this

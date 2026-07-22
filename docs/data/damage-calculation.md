@@ -365,11 +365,14 @@ datamined target value ([burst-gauge.md](burst-gauge.md) §2), ×2.5 if it is th
 unit with a charge weapon (focus-only, MEASURED both ways); skill hits and dot ticks contribute
 the flat target value; per-unit kit quirks add on top (helm, liberalio, ein, jill — MEASURED via
 the rl3 cross-validation). Generation is locked during Full Burst and during the chain. When the
-gauge fills, the chain opens (consuming the gauge): Burst 1 → Burst 2 → Burst 3 casts, each
-opening a 10-second window for the next stage (DATAMINED `burst_duration`); selection is leftmost
-slot order with waiting; an expired window collapses the chain back to a full refill. The Burst-3
-cast starts the 10-second Full Burst. After it ends, the next chain cannot open for ~3 seconds
-(MEASURED). Casts are blocked while the boss is off-screen in a range transition — the one real
+gauge fills, the chain opens (consuming the gauge): **gauge-full → 30f → Burst 1 → 30f → Burst 2 →
+30f → Burst 3 → 22f → Full Burst** (frame-perfect MEASURED 2026-07-21; DECISIONS). Each stage opens a
+10-second window for the next (DATAMINED `burst_duration`); in-window selection is FIRST-READY (the
+stage-filler whose cooldown ends soonest, tie→leftmost — owner ruling 2026-07-21); an expired window
+collapses the chain back to a full refill. The Full Burst countdown starts 22f AFTER the Burst-3 cast
+(so instant burst-cast attacks land before it — no +50%). After it ends, the next chain cannot open for
+**~2.5s** (`POST_FB_CHAIN_DELAY_FRAMES` 150f — the earlier ~3s double-counted the 30f-pre-B1). Casts are
+blocked while the boss is off-screen in a range transition — the one real
 source of run-to-run full-burst-count variance. Everything else is cooldown arithmetic, which is
 why full-burst counts are deterministic and pinned as regression asserts.
 
