@@ -8,6 +8,36 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-22) `extraHitDamagePct` FUNCTION-RIDER CRIT — `RIDERCRIT` default ON.** The per-normal-hit
+  function-rider path (`sim.ts` `firePull`) dealt its hit with `crit: false`, contradicting the SSOT:
+  `damage-calculation.md` §2b and the datamined FunctionTable rule (`nikke-damage-formula.md` §3)
+  BOTH state that function "additional damage" crits at the caster's rate and never cores. Two
+  independent documentary sources; no measurement was required or claimed. `core: false` was already
+  correct and is unchanged, and Full Burst was already correct (no `noFb` passed ⇒ FB by landing time)
+  — **only crit was wrong.** This closes the half of U13/A29 that the `DOTCRIT` flip explicitly left
+  out of scope. Owner ruling: default ON. `RIDERCRIT=off` reverts and is byte-identical to the prior
+  engine (verified by full board-read diff).
+  **Population = exactly three overrides** (field-form grep, not the audit's three confirmations):
+  `modernia`, `nayuta`, `neon-vision-eye`. **Provenance audit** (the trap that killed the U13 ÷1.075
+  de-crit sweep): all three coefficients are kit-verbatim/datamined — `modernia` 2.24 hand-authored
+  verbatim (her caveat ⚑4 already named this defect), `nayuta` 150+380.46 Prydwen-verbatim,
+  `neon-vision-eye` 262.79 "verbatim from skill text" with a video-confirmed `everyN` cadence. None
+  calibrated-absorbed ⇒ no de-credit applied.
+  **A/B method note:** MC-seeded runs are UNUSABLE for this change — the rider's extra Bernoulli draw
+  shifts the shared per-comp RNG stream and moves full-burst counts on unrelated comps (it showed a
+  phantom `nayuta` shot-count change and a PB-battery FB shift). Judged on `SEEDS=0`: footprint is
+  exactly the three units, shot counts unchanged, only the burst bucket moves. Magnitudes are coherent
+  with the crit arithmetic — predicted in-FB +5.00% vs observed `nayuta` +4.55% / `neon-vision-eye`
+  +5.05%, and `modernia` +12.13% predicted from her Critical Damage ▲ 14.25%×5 stacks vs +12.00%
+  observed. Board: `modernia` 0.83→0.84, `nayuta` 0.85→0.86 (both COLD, improve); `neon-vision-eye`
+  1.07→1.08 / 1.17→1.18 (HOT, slightly worse) — faithful>fit, her heat routes to a per-unit retune.
+  **Known residual at the same call site (not crit, both inert today):** `extraHitDamagePct` generates
+  NO burst gauge where an equivalent `flatDamage` proc emits `skillGauge` per proc, and being a summed
+  stat it cannot carry a per-rider `flavor`, so a true-damage rider could not be exempted from crit
+  (§2c) without promoting the stat to a per-source list. No true-flavored rider exists. Consequence:
+  the two encodings are NOT interchangeable — swapping one for the other silently changes gauge
+  economy. → open-questions A32 (U13); live flag `docs/STATE.md` §1.
+
 - **(2026-07-22) ACCURACY-CIRCLE GEOMETRY — the four open rulings RESOLVED; workstreams A + B RETIRED as
   superseded-by-the-cone, C is the only live thread.** The `docs/data/sg-calc/IMPLEMENTATION-PLAN.md` open
   rulings were written 2026-07-17, two days BEFORE the δ-offset cone landed as the live default

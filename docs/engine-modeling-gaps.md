@@ -178,11 +178,15 @@
   `miranda`, `modernia`, `nayuta`, `noir`, `quency-escape-queen`, `soda-twinkling-bunny`, `trina`
   (each review's "inert in the engine" note is now wrong; the stat is live for AR/SMG/SG; MG/SR/RL keep
   the flat base table). Documentation-only fix; no engine change.
-- **Theme 12 / U13 (function-rider crit):** audit independently confirmed `extraHitDamagePct` riders are
-  dealt crit-OFF while SSOT §2b says function "additional damage" crits at caster rate — on `modernia`
-  (Destroy Mode 2.24%, her ⚑4), `nayuta`, `neon-vision-eye`. Already tracked under theme 12 (modernia
-  bullet) + open-questions U13 (the function-rider half of the DoT/rider no-crit gap); the audit adds
-  nayuta/neon as further confirmations.
+- **Theme 12 / U13 (function-rider crit): CLOSED 2026-07-22 — `RIDERCRIT` default ON.** The
+  `extraHitDamagePct` path now crits at caster rate per SSOT §2b (never cores; FB by landing time was
+  already correct). Population was exactly three overrides — `modernia`, `nayuta`, `neon-vision-eye` —
+  all kit-verbatim coefficients, none calibrated-absorbed, so no de-credit was applied. → A32 (U13),
+  DECISIONS 2026-07-22. **Residual gap at the same call site (NOT crit):** `extraHitDamagePct` generates
+  no burst gauge while an equivalent `flatDamage` proc emits `skillGauge` per proc, and it is a summed
+  stat so a per-rider `flavor` (e.g. a true-damage rider, which must not crit) cannot be represented.
+  Both are inert today — no true-flavored rider exists — but they mean the two encodings are not
+  interchangeable; swapping one for the other on a unit silently changes its gauge economy.
 - **Theme 13 (ally-granted Max HP inert, e3):** audit re-confirmed ally-granted `casterMaxHpPct`/
   `targetMaxHpPct` do not feed a teammate's `atkOfMaxHpPct` (rouge/noir/trina), neutralizing the
   Max-HP double-counts as damage-irrelevant.
@@ -435,9 +439,10 @@ falls back to the still-OFF global DOT_CRIT gate when unset) — enabled ONLY wh
   field leaves every other unit byte-identical). DECISIONS 2026-07-17.
 - **neon-vision-eye** — the "~7% cold" claim is STALE: she reads +8% HOT on the current board and is
   UNAFFECTED by DOT_CRIT (no critting DoT in her kit). NOT a theme-12 unit; her heat belongs elsewhere.
-- **modernia** — her cold is NOT DoT-crit: her S1 flatDamage rider already crits (U13), and the open
-  piece is the burst Destroy-Mode `extraHitDamagePct` rider modeled crit-OFF (her override ⚑4 finding),
-  not a DoT tick. Route to that finding, not here.
+- **modernia** — her cold is NOT DoT-crit: both her S1 `flatDamage` rider and her burst Destroy-Mode
+  `extraHitDamagePct` rider crit (the latter since `RIDERCRIT`, 2026-07-22 — worth ~+12% on that term
+  via her Critical Damage ▲ 14.25%×5 stacks, which moved her 0.83→0.84). She remains COLD; the residual
+  is elsewhere and is not a DoT tick.
 - eve Mk2 sequential-doubling caveat still open (separate).
 
 ### 13. Max-HP-scaling grants with no stat key / no lowest-HP targeting — ~6 units ✅ LANDED 2026-07-17

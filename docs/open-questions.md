@@ -8,6 +8,35 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U28 — `extraHitDamagePct` vs `flatDamage` are not interchangeable: gauge + flavor asymmetry (split out of U13, 2026-07-22)
+A32 closed the crit divergence between the two encodings of function "additional damage". Two
+divergences remain at the same call site, both **inert today** but both live modeling hazards:
+
+1. **Burst gauge.** A `flatDamage` proc calls `skillGauge` (one target-base HIT of generation:
+   `targetPerTrigger / hitsPerShot`, no `flatPerTrigger`, no charge/focus ×2.5). `extraHitDamagePct`
+   generates **nothing**. This is not cosmetic: `modernia`'s S1 rider fires 2×/pull at `per/2` each,
+   contributing ~+50% on top of her weapon's own generation — her override keeps the `flatDamage`
+   encoding specifically to preserve that economy, and her rotation is measured-exact with it. So
+   re-encoding a unit from one primitive to the other silently changes its rotation.
+2. **Flavor.** `extraHitDamagePct` is a SUMMED buff stat, so an individual rider has no `flavor`. A
+   true-damage rider therefore could not be exempted from crit (§2c owner ruling: true damage cannot
+   crit) without promoting the stat to a per-source list. No override carries a true-flavored rider
+   today, so nothing is currently mis-modeled — but authoring one would require that refactor FIRST.
+
+**Also unmeasured (the reason this is a question, not just a TODO):** whether function additional
+damage *should* generate burst gauge at high hit rates. The `skillGauge` constant is anchored on ONE
+measurement — `maiden-ice-rose`, RL, `hitsPerShot` 1, where "one hit" and "one trigger" coincide
+(`burst-gauge.md`:145, two visible bar sub-steps per pull: +9.1% weapon then +3.45% rider). The
+`/hitsPerShot` divisor — and the hardcoded `/10` for SG — generalizes from that single case and is
+UNVERIFIED for `hitsPerShot > 1`; every unit where the divisor actually bites (`modernia` at 2, any SG
+carrier at 10) rides extrapolation. Note also the measured rider sub-step reads 3.45% vs the modeled
+3.64%, a small unexplained residual on the exact constant the whole path is anchored to.
+
+**Gate:** a focus recording with a readable gauge bar on an `extraHitDamagePct` carrier
+(`modernia` Destroy Mode is the natural probe — MG hit rates make any per-hit generation obvious),
+plus a `hitsPerShot > 1` bar read to pin the divisor. Until then: do NOT re-encode a unit between the
+two primitives, and do NOT author a true-flavored rider. → A32 (U13), DECISIONS 2026-07-22.
+
 ### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)
 **The one SG-landing thread still open.** The rest of the per-unit-landing investigation was CLOSED by owner
 override on 2026-07-17 — see **A31 (U17)** in ANSWERED: landing is per-unit, the class `SG_LANDING_BY_BAND`
@@ -487,6 +516,21 @@ matched to the in-game bond table exactly at the manufacturer max. IMPLEMENTED: 
 RESOLVED the same day: `SG_LANDING_BY_BAND` recalibrated by a uniform ×0.9863 (the +1.39% uplift) so SG
 board units cancel the bond warming while the shape holds (U17). The base5-vs-OL0 gear basis was NOT
 reopened — the term is bond, not gear. → DECISIONS 2026-07-16.
+
+### A32 (U13) — the `extraHitDamagePct` function-rider half — RESOLVED 2026-07-22 (`RIDERCRIT` ON)
+A29 resolved the DoT/stored-hit half of U13 and explicitly left the `extraHitDamagePct` function-rider
+path out of scope. That half is now closed. The path dealt its hit `crit: false`, contradicting BOTH
+the damage-calculation SSOT §2b and the datamined FunctionTable rule (nikke-damage-formula.md §3),
+which agree that function "additional damage" crits at the caster's rate and never cores. `core: false`
+was already correct; Full Burst was already correct (FB by landing time). Only crit was wrong — a
+documentary-conformance fix, no measurement claimed. Owner ruled the default ON 2026-07-22;
+`RIDERCRIT=off` reverts byte-identically. Population was exactly three overrides — `modernia`,
+`nayuta`, `neon-vision-eye` — all kit-verbatim coefficients, none calibrated-absorbed, so no de-credit
+was applied (the U13 ÷1.075 trap did not recur). Judged on `SEEDS=0`: MC-seeded runs are unusable here
+because the extra Bernoulli shifts the shared RNG stream and moves full-burst counts on unrelated
+comps. → DECISIONS 2026-07-22; live flag `docs/STATE.md` §1.
+
+**Open remainder split out — see U28** (the gauge/flavor asymmetry at the same call site).
 
 ### A29 (U13) — DoT / function-rider ticks crit — RESOLVED 2026-07-21 (`DOT_CRIT` flipped ON)
 `DOT_CRIT` default flipped OFF→ON: DoT ticks + stored-hit releases now roll crit universally (core stays

@@ -26,6 +26,7 @@ browser always runs these defaults**. Env overrides are for A/B testing only.
 | Flag | Live default | What it does | Revert with | Provenance |
 | --- | --- | --- | --- | --- |
 | `DOTCRIT` | **ON** | DoT ticks + stored-hit releases roll crit universally (per-dot `crit` field still overrides; core stays OFF) | `DOTCRIT=off` | → DECISIONS 2026-07-21 |
+| `RIDERCRIT` | **ON** | `extraHitDamagePct` function-rider hits roll crit at caster rate (core stays OFF; FB by landing time). Carriers: `modernia`, `nayuta`, `neon-vision-eye` | `RIDERCRIT=off` | → DECISIONS 2026-07-22 |
 | `CONE_DELTA` | **ON** | δ-offset ("Rician") core-hit cone for AR/SMG/SG; pre-empts the older tables | `CONE_DELTA=0` | → DECISIONS 2026-07-19 |
 | `HRCORE` | **ON** | Live Hit Rate shrinks the reticle → higher core fraction (AR/SMG/SG) | `HRCORE=0` | → DECISIONS 2026-07-17 |
 | `PELLET_GAUSS` | **ON** | Center-weighted Gaussian pellet cone (core-hit + SG landing); the `CONE_DELTA=0` fallback layer | `PELLET_GAUSS=0` | → DECISIONS 2026-07-15/19 |
