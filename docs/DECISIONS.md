@@ -8,6 +8,42 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-22) ACCURACY-CIRCLE GEOMETRY — the four open rulings RESOLVED; workstreams A + B RETIRED as
+  superseded-by-the-cone, C is the only live thread.** The `docs/data/sg-calc/IMPLEMENTATION-PLAN.md` open
+  rulings were written 2026-07-17, two days BEFORE the δ-offset cone landed as the live default
+  (2026-07-19) — which silently mooted two of them. Code-verified: `acrForHR`
+  ([sim.ts:997–1011](../src/engine/sim.ts#L997-L1011)) returns early via `offsetCoreProb` whenever
+  `CONE_DELTA` is on, so **AR/SMG/SG never reach `acrFor` (workstream A / `ACR_GEO`) or `hrCoreMultGeo`
+  (workstream B / `HRCORE_GEO`)**; and `ACCURACY_CIRCLE_SCALE` covers only `{AR, SMG, SG}`, so MG/SR/RL
+  no-op through the geometry as well. Both arms are therefore UNREACHABLE under the shipped default.
+  - **(1) Workstreams A + B → RETIRED as SUPERSEDED.** Marked superseded-by-cone in the plan; the code
+    stays ONLY as part of the `CONE_DELTA=0` fallback layer and is no longer a promote-candidate. B's
+    premise was independently removed anyway — the geometry campaign proved the drawn reticle DECORATIVE
+    (RESOLUTION-REDERIVATION.md CLOSED-BY 2026-07-19), and B exists purely to ground the reticle-shrink
+    `SAT`. Note the pre-cone A/B numbers in the plan's STATUS block (A improving SMG, B over-lifting
+    quency-escape-queen to 1.322) are STALE regardless: the baseline has moved twice since (cone 07-19,
+    coherent rotation 07-21).
+  - **(2) Range model → KEEP DISCRETE BANDS.** The live cone consumes `BAND_CORE_PX` (near 31 / mid 28 /
+    midfar 21 / far 17 px, hand-measured from `noir-sg-bands.json`). Continuous range via `k/(r+c)` is NOT
+    adopted — it would make the live model depend on an unvalidated pair, and the boss range script is
+    already band-based. The "keep bands but re-derive the 4 px from the curve" variant was also rejected:
+    it would overwrite measured cells with derived ones (hard-constraint #3).
+  - **(3) Pin `k,c` with a hard range measurement → THE MEASUREMENT DOES NOT EXIST (owner domain ruling).**
+    There is **no in-game readout of an enemy's absolute 0–100 range**; range can only be INFERRED from
+    weapon effective-range behaviour, which the derivation has already done. So the four implied ranges
+    are the CEILING of available evidence, not a way-station to a better one — `core_D_px ≈ 2100/(range+47)`
+    (R²=0.93) stays a documented approximation and is closed to further validation. Consequence is nil:
+    `coreDpx`/`rangeFromCoreDpx` are used ONLY in `scripts/sg-geometry-regression.ts` self-consistency
+    checks and appear NOWHERE in `sim.ts` live math, so with ruling (2) keeping bands, k,c is not
+    load-bearing. **Do not re-open this as an action item** — it is unobtainable, not merely undone.
+  - **(4) Workstream C (SG landing from geometry) → FIX THE METHOD, then re-A/B.** `SGLANDING=geo`
+    regresses the calibrated SG board (noir 1.048→0.861, dorothy-serendipity 1.018→0.941), and the cause is
+    diagnosed, not mysterious: hit fraction is computed as an area-fraction of the **D=162 spread disc**
+    rather than the tighter **aim circle** pellets actually fill (KR/JP pellet research, cited in the plan).
+    That is a method bug, not evidence against geometric landing. C is also the ONLY workstream the cone
+    does not pre-empt. Rebuild the hit fraction on the aim circle, then re-run the arm. Measured landings
+    still win where they exist; geometry supplies band shape + unmeasured bosses.
+
 - **(2026-07-22) THE CRIT/CORE MAJOR BRACKET IS ADDITIVE — owner ruling; U15's foundational sub-item CLOSED,
   no engine change.** The engine composes the major bracket additively: `major = 1 + (FB 0.5) + (range 0.3)`,
   then `major += critRate × critBonus` and `major += coreRate × coreBonus`

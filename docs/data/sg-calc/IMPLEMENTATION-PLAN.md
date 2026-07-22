@@ -1,5 +1,14 @@
 # Implementation plan — accuracy-circle geometry → engine
 
+> **⇒ STATUS 2026-07-22 (READ THIS FIRST — it overrides the 2026-07-17 block below).** The δ-offset cone
+> landed as the live default on 2026-07-19, AFTER everything below was written. Owner rulings 2026-07-22:
+> **workstreams A + B are RETIRED as superseded-by-cone** (code-verified unreachable under the shipped
+> default — `acrForHR` returns early via `offsetCoreProb`), **discrete bands are KEPT**, and the `k,c` hard
+> range measurement is **CLOSED as unobtainable** (no in-game absolute-range readout exists). **Workstream C
+> — with its aim-circle method fix — is the only live thread.** See §Owner rulings + §THE ONLY LIVE WORK.
+> Everything in the 2026-07-17 block below is retained as the record of how the arms were built and A/B'd;
+> **its per-arm board numbers are STALE** (baseline moved at the cone 07-19 and the rotation model 07-21).
+
 > **STATUS 2026-07-17 — SCAFFOLDING LANDED, all arms default-OFF, NONE promoted.**
 > - **Shared module `src/engine/sg-geometry.ts`** (`circleDpx`, `coreDpx`, `rangeFromCoreDpx`,
 >   `coreFracGeo`, `circleDpxAtHr` + the calibration constants / `BAND_CORE_PX` / `BAND_SG_HIT_FRAC`).
@@ -143,10 +152,39 @@ All three workstreams produce **expected values**; the run-to-run spread is alre
 4. Workstream C (SG landing means) vs `sg-pellet-landing.json` → A/B board.
 5. Promote whichever workstreams help the board to default-on; record in DECISIONS.
 
-## Open owner rulings
+## Owner rulings — ALL RESOLVED 2026-07-22 (→ DECISIONS 2026-07-22)
 
-- A: geometry replaces vs fills `CORE_BY_WEAPON_BAND` (recommend fills + shape only).
-- Range→band: engine currently uses discrete bands; do we move to continuous range via
-  `core_D_px → range`, or keep bands and use geometry only to set per-band values? (Recommend
-  keep bands for now; continuous later.)
-- Whether to pin `k,c` with one hard range measurement before landing B/C.
+> These were written 2026-07-17, **two days before the δ-offset cone landed as the live default**
+> (2026-07-19), which silently mooted two of them. Resolved with that context in hand.
+
+- **A + B → RETIRED as SUPERSEDED-BY-CONE.** Code-verified: `acrForHR` (sim.ts:997–1011) returns early
+  via `offsetCoreProb` whenever `CONE_DELTA` is on, so AR/SMG/SG **never reach** `acrFor` (A / `ACR_GEO`)
+  or `hrCoreMultGeo` (B / `HRCORE_GEO`); and `ACCURACY_CIRCLE_SCALE` covers only `{AR, SMG, SG}`, so
+  MG/SR/RL no-op through the geometry too. **Both arms are unreachable under the shipped default.** They
+  remain in the tree ONLY as part of the `CONE_DELTA=0` fallback layer and are no longer promote-candidates.
+  B's premise was independently removed: the geometry campaign proved the drawn reticle **decorative**
+  (RESOLUTION-REDERIVATION.md, CLOSED-BY 2026-07-19), and B exists solely to ground the reticle-shrink `SAT`.
+  ⚠ **The STATUS block's A/B numbers up top are STALE as decision inputs** — the baseline has moved twice
+  since they were taken (cone 2026-07-19, coherent rotation 2026-07-21).
+- **Range model → KEEP DISCRETE BANDS.** The live cone consumes `BAND_CORE_PX` (near 31 / mid 28 /
+  midfar 21 / far 17 px, hand-measured). Continuous range via `k/(r+c)` is NOT adopted. The "keep bands but
+  re-derive the four px from the curve" variant was also rejected — it overwrites measured cells with
+  derived ones (hard-constraint #3).
+- **`k,c` hard range measurement → DOES NOT EXIST; CLOSED, do not re-open.** Owner domain ruling: there is
+  **no in-game readout of an enemy's absolute 0–100 range**. Range is only ever INFERRED from weapon
+  effective-range behaviour — which this derivation already did. The four implied ranges are the CEILING of
+  available evidence, not a step toward better evidence. `core_D_px ≈ 2100/(range+47)` (R²=0.93) stays a
+  documented approximation, permanently. **Consequence is nil:** `coreDpx`/`rangeFromCoreDpx` appear ONLY in
+  `scripts/sg-geometry-regression.ts` self-consistency checks and NOWHERE in `sim.ts` live math, so with
+  bands retained, k,c is not load-bearing.
+- **Workstream C → FIX THE METHOD, then re-A/B.** The one live thread; see §Workstream C.
+
+## ⇒ THE ONLY LIVE WORK HERE: Workstream C, method fix
+
+`SGLANDING=geo` regresses the calibrated SG board (noir 1.048→0.861, dorothy-serendipity 1.018→0.941). The
+cause is **diagnosed, not mysterious**: hit fraction is computed as an area-fraction of the **D=162 spread
+disc** rather than the tighter **aim circle** the pellets actually fill (the KR/JP pellet research cited
+above). That is a method bug, not evidence against geometric landing — and C is the ONLY workstream the cone
+does not pre-empt. Rebuild `BAND_SG_HIT_FRAC` on the aim circle, then re-run the arm against a CURRENT
+baseline. Measured landings still win where they exist (hard-constraint #3); geometry supplies the band
+*shape* and unmeasured bosses (feeding the ⚑ `bossPelletProfile` magnitudes, still owner-chosen).
