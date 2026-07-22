@@ -102,6 +102,15 @@ Fallback (`CONE_DELTA=0`) restores the prior engine byte-identically: the measur
 table (AR/SMG/SG) × `HRCORE`. MG/SR/RL use a flat 0.95 core rate (no band table). → DECISIONS 2026-07-19
 (cone LANDED), 2026-07-18 (geometry is ground truth — outranks damage-back-derived core rates).
 
+**Post-flip validation status (2026-07-22):** re-checked on a fresh board baseline (138 datapoints /
+45 units) — **no registered revert trigger fires** (largest SMG/SG move is `naga` +0.010, far under the
+>0.03 trigger; band-ordering holds; SMG comps read HOT, not LOW). The cone is **not confirmed
+out-of-sample either**: the only scorable holdout (`soda-twinkling-bunny` SG ▲38.91, predicted
+**.160/.133/.077/.051** ±0.12 spawn) has **never been counted** — footage exists, no measurement.
+On today's baseline the ON/OFF board delta is a wash (mean|ratio−1| 0.0967 OFF → 0.0972 ON; within-±3%
+MAD 6 → 7), so the cone rests on its geometry/measured cells and per-unit at-range corrections, not on
+a net board gain. Full record: [handoffs/2026-07-22-cone-holdout-scoring.md](handoffs/2026-07-22-cone-holdout-scoring.md).
+
 **SG pellet-landing** = per-band expected fraction **near 0.888 / mid 0.986 / far 0.74 / midfar 0.888**
 (the bonded table; base values ×0.9863 bond recalibration). Under a seeded run each spray draws a whole
 landed-pellet count via a mean-preserving normal jitter. The class-table *shape* is HELD (a far-0.66
