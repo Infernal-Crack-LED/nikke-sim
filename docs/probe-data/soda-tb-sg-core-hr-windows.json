@@ -743,6 +743,15 @@
       },
       "boundedVsGaussianTension": "Also unresolved: the measured landing implies sigma ~40, whose 2.53-sigma envelope is ~195-210px — WIDER than the drawn 162px circle. But no pellet ever leaves that circle (owner). Both hold only if the distribution is bounded at the circle AND centre-weighted but FLATTER than a Gaussian — between uniform and Gaussian. Neither live arm has that shape: the fallback is a flat per-band table, the cone is an unbounded Gaussian.",
       "status": "ANALYSIS. The re-fit this points to — bounded centre-weighted distribution, sigma from landing, exponent left quadratic — is a gated pass, and it is blocked on the mid cell."
+    },
+    "uniformInTheCircleTest": {
+      "hypothesis": "owner 2026-07-22: what if pellets are simply RANDOM (uniform) within the grey circle?",
+      "directTest": "under uniform, landing = the boss's area share of the circle. near 0.780 measured vs 0.797 predicted (near-exact); mid 0.775 vs 0.710; midfar 0.700 vs 0.634; far 0.640 vs 0.465. Fits at near, under-predicts increasingly with range.",
+      "whyItFails_notTheObviousReason": "Uniform can only match the measured landing if the boss body barely shrinks — solving for it gives radii 71.5 / 71.3 / 67.8 / 64.8 px, i.e. 9% smaller at far than at near. But the boss's OWN core shrinks 45% over the same span (31 -> 17 px), and the footage plainly shows the silhouette shrinking by roughly half. Same object, same distance: body and core must shrink together.",
+      "theDeeperFinding": "A GAUSSIAN fails the same way. Scale the body by its own core (a rigid object) and the landing a fixed screen-space spread should give is 0.797 / 0.650 / 0.366 / 0.240 — against a measured 0.780 / 0.775 / 0.700 / 0.640. Measured landing barely falls with range where any fixed-spread-meets-shrinking-target model says it should collapse. **The suspect is not the distribution SHAPE — it is the premise that landing is 'fixed screen-space spread intersected with a shrinking silhouette'.** Something keeps pellets on the boss at range: candidates are a hitbox larger than the drawn silhouette, or target-tracking in the spray (auto-aim), neither of which the geometry models.",
+      "theExistingTableIsAlreadyIncoherent": "Independent of the measurement: the hand-outlined body radius divided by the measured core radius should be CONSTANT for a rigid boss. It reads 4.67 / 4.88 / 6.14 / 6.50 near->far, growing 39%. So BAND_SG_HIT_FRAC and BAND_CORE_PX cannot both be describing the same rigid object at four distances — one of them is range-distorted, most likely the body outline at range where the boss is small and smoke-obscured.",
+      "consequence": "This subsumes the mid/midfar anomaly hunt. Do not re-fit sigma, delta or an exponent on top of a body-size model that is internally inconsistent. The next measurement is the boss's on-screen SIZE per band, read directly off the footage, checked against its own core.",
+      "status": "ANALYSIS — nothing enacted."
     }
   },
   "fullBurstWindowsMeasured": {
