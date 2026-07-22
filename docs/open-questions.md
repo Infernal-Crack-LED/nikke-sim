@@ -259,13 +259,12 @@ T8 0.84→0.90, N1 0.92→0.98) but left it EXPOSED as a prediction rather than 
   hit already crits additively at her sheet rate; only the stored-hit release was crit-OFF, an artifact), NOT
   by the ×1.5 magnitude (which is confounded by overlapping sub-hit coefficients). T7 0.81→0.83, uniform
   +0.01–0.02, residual preserved. See DECISIONS 2026-07-16.
-- **FOUNDATIONAL (open, NOT blocking): is the crit/core bracket additive or multiplicative?** The sim models
-  crit and core as ADDITIVE terms in the major bracket (`major += critRate×critBonus + coreRate×coreBonus`).
-  The measured RRH core+crit body (7,948,092 = base ×1.80) does NOT compose cleanly under additive constants
-  (critBonus 0.5 + core step would predict a different ratio) — it fits either multiplicative crit, or a
-  distinct explosion core bonus, or popup mis-association. This property applies to ALL 86 readings, not just
-  RRH, so it's a foundational audit, not an RRH fix; bounded consequence on RRH ~0.3–0.4% of total. Would need
-  a clean isolated-popup recording (readable crit-damage stat + FB state) to resolve.
+- **~~FOUNDATIONAL: is the crit/core bracket additive or multiplicative?~~ — RESOLVED 2026-07-22 (owner ruling:
+  ADDITIVE).** The shipped additive bracket (`major += critRate×critBonus + coreRate×coreBonus`) is CORRECT and
+  stays; no engine change. The measured RRH core+crit body (7,948,092 = base ×1.80) that raised this is now
+  re-attributed to RRH-LOCAL causes — a distinct explosion core bonus or popup mis-association — NOT the shared
+  bracket. Bounded consequence ~0.3–0.4% of her total; folded into the explosion residual below. → DECISIONS
+  2026-07-22.
 - **Does the rocket ATTACH actually generate burst gauge in-game?** The engine treats every skill-damage
   hit as gauge-generating (pre-existing blanket rule), so her attach cadence shifts FB timing. Not
   introduced by the reopen, but now load-bearing — worth a targeted check (meter/gauge co-read).
@@ -413,6 +412,24 @@ jill/eve/scarlet have no focused footage). So the correct retune needs NEW per-u
 read the skill/DoT popup IN-FB vs OUT-FB (ratio = the FB factor, ×1.5 raw) to see whether it's the
 coefficient application, the cadence, or the noFb itself that's off. Until then `perkit` stays the
 shipped default (board stable at MAE 0.1298); `FBRULE=timing` is the documented correct-mechanism knob.
+
+**STATE CORRECTION 2026-07-22 (code-verified; the paragraphs above are STALE on scope).** The "6 relic
+`noFb` flags" are no longer live — **5 of the 6 were REMOVED on 2026-07-15** by the same-day
+autonomous-invariant-audit, each unit's override note recording it verbatim ("noFb RELIC REMOVED
+(2026-07-15, autonomous-invariant-audit)"): `little-mermaid` (FB DoT 253.44%/s + barrage),
+`jill` (192%/s acid), `maiden-ice-rose` (547.62% full-charge rider), `eve` (720% Unstable-Energy proc),
+and `scarlet-black-shadow` (whose `hitCount:10` + `noFb` approximation was retired as "an unobserved
+fudge"). **`scarlet` (AR/Electric) never had one** — her burst-cast flatDamage is auto-FB-exempt as a
+burst-cast, no flag set. ⚠ NAME FIX: the "scarlet 283/565/848% post-patch" above is
+**`scarlet-black-shadow`** (RL/Wind), NOT `scarlet` — and "maiden 547.62%" is **`maiden-ice-rose`**
+(RL/Electric), NOT `maiden`. Verified two ways: a field-form grep (`"noFb":`) across every file in
+`src/skills/overrides/` returns **exactly one hit**, and each named unit's note states the removal.
+**So the live scope of this question is ONE unit — `privaty`**, whose designated-DoT block still carries
+`"noFb": true` (`privaty.json`, the `durationSec 10`/`intervalSec 3` dot). U14's blast radius is therefore
+1 unit (board OK 0.971), not 6; it is no longer a rule-level blocker. The MECHANISM half of U14 is
+unchanged and still correct: `FBRULE=timing` remains the documented correct-mechanism knob, `perkit` stays
+the shipped default, and the per-unit in-FB-vs-out-FB recipe above is still how `privaty`'s last flag gets
+retired. → `docs/handoffs/2026-07-22-engine-work-plan.md` §Step 6f.
 
 ---
 

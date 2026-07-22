@@ -8,6 +8,22 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-22) THE CRIT/CORE MAJOR BRACKET IS ADDITIVE — owner ruling; U15's foundational sub-item CLOSED,
+  no engine change.** The engine composes the major bracket additively: `major = 1 + (FB 0.5) + (range 0.3)`,
+  then `major += critRate × critBonus` and `major += coreRate × coreBonus`
+  ([`sim.ts` dealDamage, :1235–1257](../src/engine/sim.ts#L1235-L1257)). U15 had flagged this as an open
+  FOUNDATIONAL audit — the measured Rapi: Red Hood core+crit body hit (7,948,092 = base ×1.80) does not
+  compose cleanly under the additive constants, which admitted three readings: multiplicative crit, a
+  distinct explosion core bonus, or popup mis-association. **RULING: ADDITIVE. The shipped model is correct
+  and stays.** Independent corroboration already in-tree: little-mermaid's DoT 450,314 = 337,736 × 1.333
+  cross-corroborates the additive bucket ([`sim.ts`:58–61](../src/engine/sim.ts#L58-L61)). **Consequence:**
+  the RRH ×1.80 anomaly is re-attributed to RRH-LOCAL causes (explosion core bonus / popup association —
+  both already named in U15), NOT to the shared bracket; its bounded consequence stays ~0.3–0.4% of her
+  total and rides with the rest of her explosion residual (U15 stays open on its other four bullets). This
+  retires the one FORMULA-level unknown that sat underneath all 86 board readings — per-unit retunes no
+  longer risk calibrating against a possibly-wrong shared bracket, which is what gated the engine-work
+  ordering. Trail: open-questions U15, `docs/handoffs/2026-07-22-engine-work-plan.md` §P0.
+
 - **(2026-07-21) COHERENT FIRST-BURST ROTATION MODEL — LANDED (owner frame-perfect, chisato.mov Liter/Crown/Chisato/Helm Fire).**
   A frame-by-frame read (t0 = first `2:59` frame; the timer starts at 2:59:999 = elapsed 0, NOT 2:59:000 — see
   [[fb-timing-anchor-not-startup-lag]]) gave the exact timeline: first bullet 0.133s · Helm SR shots 1.117/2.483/
