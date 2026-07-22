@@ -4,6 +4,7 @@ import type { DataFile, Element } from '../../src/types';
 import { usePortraitThumbs } from './usePortraitThumbs';
 import { useDragReorder } from './useDragReorder';
 import { CharacterGrid } from './components/CharacterGrid';
+import { InlineNameField } from './components/InlineNameField';
 import type { AuthUser } from './auth';
 
 const data = charactersJson as unknown as DataFile;
@@ -44,7 +45,7 @@ export type RosterMode = 'team' | 'solo' | 'union';
 
 export interface TeamBuilderProps {
   user: AuthUser | null;
-  onSaveTeam: (slugs: (string | null)[]) => Promise<void>;
+  onSaveTeam: (slugs: (string | null)[], name: string) => Promise<void>;
   // Write the built team into the Team Sim's slots and switch to it; returns a
   // warning message (and does NOT switch) when the team holds a unit the sim
   // doesn't model yet.
@@ -80,6 +81,7 @@ export function TeamBuilderPage({
   onTeamChange,
 }: TeamBuilderProps) {
   const [savedFlash, setSavedFlash] = useState(false);
+  const [namingTb, setNamingTb] = useState(false);
   const [copyWarning, setCopyWarning] = useState<string | null>(null);
   // 'team' = one team of 5; 'solo' = full 5×5 roster; 'union' = 3×5 union raid
   const [rosterMode, setRosterMode] = useState<RosterMode>('team');
@@ -198,16 +200,19 @@ export function TeamBuilderPage({
 
   const hasTeam = teamSlots.some((s) => s !== null);
 
-  const handleSaveTeam = async () => {
-    if (!hasTeam) return;
+  const suggestedTeamName = () => {
     const names = teamSlots
       .filter(Boolean)
       .map((s) => data.characters[s!].name);
-    const defaultName = names.slice(0, 2).join(' / ') || 'My team';
-    const name = window.prompt('Save team as:', defaultName);
-    if (!name?.trim()) return;
+    return names.slice(0, 2).join(' / ') || 'My team';
+  };
+  // The name comes from the inline field (no window.prompt); the App-side
+  // onSaveTeam no longer prompts either — the old flow prompted twice.
+  const doSaveTeamBuilder = async (name: string) => {
+    if (!hasTeam) return;
     try {
-      await onSaveTeam(teamSlots);
+      await onSaveTeam(teamSlots, name);
+      setNamingTb(false);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
     } catch (e) {
@@ -429,25 +434,48 @@ export function TeamBuilderPage({
           team-mode action (the 5-portrait strip); Copy to Roster Sim appears
           when expanded to a roster grid. Generate link + Copy image live in the
           page header (App) and switch implementations with the mode. */}
-      {hasTeam && (
+      {(hasTeam || user) && (
         <div className='teambuilder-actions'>
-          <button className='teambuilder-clear' onClick={clearTeam}>
-            Clear team
-          </button>
-          {user && (
-            <button className='teambuilder-action' onClick={handleSaveTeam}>
-              {savedFlash ? '✓ Saved' : '💾 Save team'}
+          {hasTeam && (
+            <button className='teambuilder-clear' onClick={clearTeam}>
+              Clear team
             </button>
           )}
-          {rosterMode !== 'team' ? (
-            <button className='teambuilder-action' onClick={handleCopyToRoster}>
-              ✎ Copy to Roster Sim
-            </button>
-          ) : (
-            <button className='teambuilder-action' onClick={handleCopyToSim}>
-              ✎ Copy to Sim
-            </button>
-          )}
+          {user &&
+            (namingTb ? (
+              <InlineNameField
+                initial={suggestedTeamName()}
+                placeholder='team name'
+                onCommit={doSaveTeamBuilder}
+                onCancel={() => setNamingTb(false)}
+              />
+            ) : (
+              <button
+                className='teambuilder-action'
+                onClick={() => setNamingTb(true)}
+                disabled={!hasTeam}
+                title={
+                  hasTeam
+                    ? 'save this team to your account'
+                    : 'add Nikkes to the team to save it'
+                }
+              >
+                {savedFlash ? '✓ Saved' : '💾 Save team'}
+              </button>
+            ))}
+          {hasTeam &&
+            (rosterMode !== 'team' ? (
+              <button
+                className='teambuilder-action'
+                onClick={handleCopyToRoster}
+              >
+                ✎ Copy to Roster Sim
+              </button>
+            ) : (
+              <button className='teambuilder-action' onClick={handleCopyToSim}>
+                ✎ Copy to Sim
+              </button>
+            ))}
         </div>
       )}
 

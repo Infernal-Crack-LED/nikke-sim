@@ -200,10 +200,14 @@ export function CharacterGrid({
   exclude,
   onToggle,
   allowUnsupported = false,
+  restrict,
 }: {
   exclude: Set<string>;
   onToggle: (slug: string) => void;
   allowUnsupported?: boolean;
+  // when set, only these slugs are browsable (the generator modals restrict the
+  // pool to the units the generator can actually field); omit = every unit
+  restrict?: Set<string>;
 }) {
   const [search, setSearch] = useState('');
   const [weaponFilter, setWeaponFilter] = useState<Set<string>>(emptySet);
@@ -243,7 +247,9 @@ export function CharacterGrid({
   };
 
   const characters = useMemo(() => {
-    const all = Object.values(data.characters);
+    const all = Object.values(data.characters).filter(
+      (c) => !restrict || restrict.has(c.slug),
+    );
     const q = search.toLowerCase();
     return all.filter((c) => {
       // Already placed — removed from the list entirely
@@ -287,6 +293,7 @@ export function CharacterGrid({
     });
   }, [
     exclude,
+    restrict,
     search,
     weaponFilter,
     burstFilter,
@@ -308,7 +315,9 @@ export function CharacterGrid({
   );
   const portraitThumbs = usePortraitThumbs(allPortraitUrls, 120);
 
-  const total = Object.values(data.characters).length;
+  const total = restrict
+    ? [...restrict].filter((s) => data.characters[s]).length
+    : Object.values(data.characters).length;
   const showing = characters.length;
   const anyActive =
     search !== '' ||
@@ -321,76 +330,81 @@ export function CharacterGrid({
 
   return (
     <div className='teambuilder-picker'>
-      <div className='teambuilder-filters'>
-        {/* Left — the stat-axis icon rows */}
-        <div className='teambuilder-filters-stat'>
-          <FilterRow
-            label='Weapon'
-            options={WEAPON_OPTIONS}
-            selected={weaponFilter}
-            onToggle={toggle(weaponFilter, setWeaponFilter)}
-            thumbs={filterThumbs}
-          />
-          <FilterRow
-            label='Burst'
-            options={BURST_OPTIONS}
-            selected={burstFilter}
-            onToggle={toggle(burstFilter, setBurstFilter)}
-            thumbs={filterThumbs}
-          />
-          <FilterRow
-            label='Class'
-            options={CLASS_OPTIONS}
-            selected={classFilter}
-            onToggle={toggle(classFilter, setClassFilter)}
-            thumbs={filterThumbs}
-          />
-          <FilterRow
-            label='Element'
-            options={ELEMENT_OPTIONS}
-            selected={elementFilter}
-            onToggle={toggle(elementFilter, setElementFilter)}
-            thumbs={filterThumbs}
-          />
-          <FilterRow
-            label='Manufacturer'
-            options={MANUFACTURER_OPTIONS}
-            selected={manufacturerFilter}
-            onToggle={toggle(manufacturerFilter, setManufacturerFilter)}
-            thumbs={filterThumbs}
-          />
-        </div>
+      <details className='teambuilder-filters-details' open>
+        <summary>Filters</summary>
+        <div className='teambuilder-filters'>
+          {/* Left — the stat-axis icon rows */}
+          <div className='teambuilder-filters-stat'>
+            <FilterRow
+              label='Weapon'
+              options={WEAPON_OPTIONS}
+              selected={weaponFilter}
+              onToggle={toggle(weaponFilter, setWeaponFilter)}
+              thumbs={filterThumbs}
+            />
+            <FilterRow
+              label='Burst'
+              options={BURST_OPTIONS}
+              selected={burstFilter}
+              onToggle={toggle(burstFilter, setBurstFilter)}
+              thumbs={filterThumbs}
+            />
+            <FilterRow
+              label='Class'
+              options={CLASS_OPTIONS}
+              selected={classFilter}
+              onToggle={toggle(classFilter, setClassFilter)}
+              thumbs={filterThumbs}
+            />
+            <FilterRow
+              label='Element'
+              options={ELEMENT_OPTIONS}
+              selected={elementFilter}
+              onToggle={toggle(elementFilter, setElementFilter)}
+              thumbs={filterThumbs}
+            />
+            <FilterRow
+              label='Manufacturer'
+              options={MANUFACTURER_OPTIONS}
+              selected={manufacturerFilter}
+              onToggle={toggle(manufacturerFilter, setManufacturerFilter)}
+              thumbs={filterThumbs}
+            />
+          </div>
 
-        {/* Right — kit-role archetype pills (fill the space beside the icon
+          {/* Right — kit-role archetype pills (fill the space beside the icon
             rows), bucketed into groups. Labels + blurbs + group names all come
             from the generated vocabulary; nothing is hardcoded here. */}
-        <div className='teambuilder-archetypes'>
-          {ARCHETYPE_GROUPS.map(({ group, options }) => (
-            <div className='teambuilder-archetype-group' key={group}>
-              <span className='teambuilder-archetype-group-label'>{group}</span>
-              <div className='teambuilder-archetype-pills'>
-                {options.map((opt) => {
-                  const active = archetypeFilter.has(opt.id);
-                  return (
-                    <button
-                      key={opt.id}
-                      type='button'
-                      className={'teambuilder-pill' + (active ? ' on' : '')}
-                      onClick={() =>
-                        toggle(archetypeFilter, setArchetypeFilter)(opt.id)
-                      }
-                      title={opt.blurb}
-                      aria-pressed={active}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
+          <div className='teambuilder-archetypes'>
+            {ARCHETYPE_GROUPS.map(({ group, options }) => (
+              <div className='teambuilder-archetype-group' key={group}>
+                <span className='teambuilder-archetype-group-label'>
+                  {group}
+                </span>
+                <div className='teambuilder-archetype-pills'>
+                  {options.map((opt) => {
+                    const active = archetypeFilter.has(opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        type='button'
+                        className={'teambuilder-pill' + (active ? ' on' : '')}
+                        onClick={() =>
+                          toggle(archetypeFilter, setArchetypeFilter)(opt.id)
+                        }
+                        title={opt.blurb}
+                        aria-pressed={active}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      </details>
 
       <div className='teambuilder-search'>
         <input

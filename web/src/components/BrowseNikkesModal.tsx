@@ -52,11 +52,15 @@ export function BrowseNikkesModal({
   onStagedChange,
   actions,
   onClose,
+  hint = 'Click a card to fill the next open slot, drag portraits to reorder, click × to remove. Placed units leave the list. Nothing is applied to the page until you press Save Team.',
+  restrict,
 }: {
   staged: (string | null)[];
   onStagedChange: (next: (string | null)[]) => void;
   actions: ReactNode;
   onClose: () => void;
+  hint?: string;
+  restrict?: Set<string>;
 }) {
   const stagedUrls = staged.filter(Boolean) as string[];
   const stripThumbs = usePortraitThumbs(stagedUrls, 124);
@@ -87,7 +91,7 @@ export function BrowseNikkesModal({
 
   return (
     <PickerShell
-      hint='Click a card to fill the next open slot, drag portraits to reorder, click × to remove. Placed units leave the list. Nothing is applied to the page until you press Save Team.'
+      hint={hint}
       actions={actions}
       onClose={onClose}
       portraits={
@@ -137,7 +141,11 @@ export function BrowseNikkesModal({
         </div>
       }
     >
-      <CharacterGrid exclude={new Set(stagedUrls)} onToggle={place} />
+      <CharacterGrid
+        exclude={new Set(stagedUrls)}
+        onToggle={place}
+        restrict={restrict}
+      />
     </PickerShell>
   );
 }
@@ -264,6 +272,283 @@ export function BrowseRosterNikkesModal({
       }
     >
       <CharacterGrid exclude={new Set(stagedUrls)} onToggle={place} />
+    </PickerShell>
+  );
+}
+
+// Generator "Exclude" picker — replaces the old Blocked-characters text entry.
+// A flat, unbounded list of Nikkes to keep out of the search: click a card to
+// exclude it (it moves up into the strip and leaves the grid); click × on a
+// portrait to keep it again. Same click-to-add / ×-to-remove interaction as the
+// Include pickers, just without any team/slot structure.
+export function BrowseExcludeModal({
+  staged,
+  onStagedChange,
+  actions,
+  onClose,
+  restrict,
+  hint = 'Click a card to exclude it from the search — excluded Nikkes move up here and leave the list. Click × to keep one again. Changes apply the next time you calculate.',
+}: {
+  staged: string[];
+  onStagedChange: (next: string[]) => void;
+  actions: ReactNode;
+  onClose: () => void;
+  restrict?: Set<string>;
+  hint?: string;
+}) {
+  const thumbs = usePortraitThumbs(staged, 72);
+  const add = (slug: string) => {
+    if (staged.includes(slug)) return;
+    onStagedChange([...staged, slug]);
+  };
+  const remove = (slug: string) =>
+    onStagedChange(staged.filter((s) => s !== slug));
+
+  return (
+    <PickerShell
+      hint={hint}
+      actions={actions}
+      onClose={onClose}
+      portraits={
+        staged.length > 0 ? (
+          <div className='exclude-strip'>
+            {staged.map((slug) => {
+              const c = data.characters[slug];
+              return (
+                <div
+                  key={slug}
+                  className='team-chip exclude-chip active'
+                  title={c?.name ?? slug}
+                >
+                  {c?.imageUrl ? (
+                    <img
+                      src={thumbs[c.imageUrl] ?? c.imageUrl}
+                      alt={c?.name ?? slug}
+                      draggable={false}
+                    />
+                  ) : (
+                    <span className='chip-empty'>?</span>
+                  )}
+                  <span
+                    className='chip-x'
+                    role='button'
+                    aria-label='remove'
+                    onClick={() => remove(slug)}
+                  >
+                    ×
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className='muted exclude-empty'>
+            No Nikkes excluded yet — click cards below to exclude them from the
+            search.
+          </p>
+        )
+      }
+    >
+      <CharacterGrid
+        exclude={new Set(staged)}
+        onToggle={add}
+        restrict={restrict}
+      />
+    </PickerShell>
+  );
+}
+
+// Roster GENERATOR's picker (5 teams for solo raid, 3 for union raid). Two kinds
+// of lock, mirroring the two ways a unit can be required:
+//   - the team rows — "use these Nikkes on THESE teams" (pinned to a team)
+//   - the side box — "use these Nikkes" (the generator picks their team)
+// Clicking a card adds it to the box; dragging a portrait between the box and a
+// team row pins/unpins it. Team + box slots share one flat drag field so a chip
+// can move anywhere.
+export function BrowseRosterGenModal({
+  staged,
+  onStagedChange,
+  generic,
+  onGenericChange,
+  actions,
+  onClose,
+  restrict,
+}: {
+  staged: (string | null)[][];
+  onStagedChange: (next: (string | null)[][]) => void;
+  generic: (string | null)[];
+  onGenericChange: (next: (string | null)[]) => void;
+  actions: ReactNode;
+  onClose: () => void;
+  restrict?: Set<string>;
+}) {
+  const rows = staged.length;
+  const teamLen = rows * 5;
+  const stagedUrls = [...staged.flat(), ...generic].filter(Boolean) as string[];
+  const chipThumbs = usePortraitThumbs(stagedUrls, 72);
+
+  // a clicked grid card lands in the next open box slot ("use these Nikkes")
+  const place = (slug: string) => {
+    const empty = generic.indexOf(null);
+    if (empty < 0) return; // box full — remove one to add another
+    const next = [...generic];
+    next[empty] = slug;
+    onGenericChange(next);
+  };
+  const clearAt = (t: number, u: number) => {
+    const next = staged.map((row) => [...row]);
+    next[t][u] = null;
+    onStagedChange(next);
+  };
+  const removeGeneric = (i: number) => {
+    const next = [...generic];
+    next[i] = null;
+    onGenericChange(next);
+  };
+
+  // one flat drag field over [team slots…, box slots…] — dragging a chip onto a
+  // team row pins it to that team, dragging it back onto the box unpins it
+  const reorder = useDragReorder(
+    (from, to) => {
+      const flat = [...staged.flat(), ...generic];
+      const [item] = flat.splice(from, 1);
+      flat.splice(to, 0, item);
+      onStagedChange(
+        Array.from({ length: rows }, (_, t) => flat.slice(t * 5, t * 5 + 5)),
+      );
+      onGenericChange(flat.slice(teamLen));
+    },
+    undefined,
+    { ignoreFrom: '.chip-x' },
+  );
+
+  const dragging = reorder.dragIndex !== null;
+
+  return (
+    <PickerShell
+      hint='Click a card to drop it into the “Use these Nikkes” box — the generator fields each one on whichever team fits best. Drag a portrait onto a team row to pin it to that exact team; drag it back into the box to unpin. Every included Nikke is guaranteed to make the generated teams.'
+      actions={actions}
+      onClose={onClose}
+      portraits={
+        <div className='roster-input rostergen-input'>
+          <div className='rostergen-teams'>
+            {staged.map((row, t) => (
+              <div className='roster-input-row' key={t}>
+                <span className='rg-label muted'>team {t + 1}</span>
+                <div className='roster-slots'>
+                  {row.map((slug, u) => {
+                    const c = slug ? data.characters[slug] : null;
+                    const i = t * 5 + u;
+                    return (
+                      <button
+                        key={u}
+                        type='button'
+                        ref={reorder.register(i)}
+                        className={
+                          'team-chip roster-slot' +
+                          (reorder.dragIndex === i ? ' dragging' : '')
+                        }
+                        title={c?.name ?? `team ${t + 1} · slot ${u + 1}`}
+                        {...reorder.handleProps(i)}
+                      >
+                        {c?.imageUrl ? (
+                          <img
+                            src={chipThumbs[c.imageUrl] ?? c.imageUrl}
+                            alt={c.name}
+                            draggable={false}
+                          />
+                        ) : (
+                          <span className='chip-empty'>+</span>
+                        )}
+                        {slug && (
+                          <span
+                            className='chip-x'
+                            role='button'
+                            aria-label='remove'
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              clearAt(t, u);
+                            }}
+                          >
+                            ×
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          <aside className='rostergen-box'>
+            <div className='rostergen-box-head'>
+              <span className='rostergen-box-label'>Use these Nikkes</span>
+              <span className='muted rostergen-box-sub'>
+                the generator picks their teams
+              </span>
+            </div>
+            <div className='rostergen-box-scroll'>
+              <div className='rostergen-box-slots'>
+                {generic.map((slug, i) => {
+                  const c = slug ? data.characters[slug] : null;
+                  const flatIndex = teamLen + i;
+                  // Empty slots only materialise mid-drag, as drop targets — the
+                  // box otherwise shows just the Nikkes you've added (no
+                  // placeholder grid).
+                  if (!slug && !dragging) return null;
+                  return (
+                    <button
+                      key={i}
+                      type='button'
+                      ref={reorder.register(flatIndex)}
+                      className={
+                        'team-chip roster-slot rostergen-box-slot' +
+                        (slug ? ' active' : '') +
+                        (reorder.dragIndex === flatIndex ? ' dragging' : '')
+                      }
+                      title={c?.name ?? 'drop here to unpin'}
+                      {...(slug ? reorder.handleProps(flatIndex) : {})}
+                    >
+                      {c?.imageUrl ? (
+                        <img
+                          src={chipThumbs[c.imageUrl] ?? c.imageUrl}
+                          alt={c.name}
+                          draggable={false}
+                        />
+                      ) : (
+                        <span className='chip-empty'>+</span>
+                      )}
+                      {slug && (
+                        <span
+                          className='chip-x'
+                          role='button'
+                          aria-label='remove'
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeGeneric(i);
+                          }}
+                        >
+                          ×
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className='muted rostergen-box-hint'>
+                Click a card to add it here. Drag a portrait onto a team row to
+                pin it to that team — drag it back to unpin.
+              </p>
+            </div>
+          </aside>
+        </div>
+      }
+    >
+      <CharacterGrid
+        exclude={new Set(stagedUrls)}
+        onToggle={place}
+        restrict={restrict}
+      />
     </PickerShell>
   );
 }
