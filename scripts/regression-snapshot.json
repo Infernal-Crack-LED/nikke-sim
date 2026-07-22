@@ -103,11 +103,11 @@
   "jill": 262491359
  },
  "N3 scarlet/liberalio iron": {
-  "rouge": 55778221,
-  "trina": 50343317,
-  "scarlet-black-shadow": 501905303,
-  "liberalio": 503714400,
-  "soda-twinkling-bunny": 133178966
+  "rouge": 54598028,
+  "trina": 49240642,
+  "scarlet-black-shadow": 481945308,
+  "liberalio": 476970400,
+  "soda-twinkling-bunny": 128624358
  },
  "N6 mihara/maiden wind": {
   "little-mermaid": 249564894,
@@ -136,5 +136,17 @@
   "milk-blooming-bunny": 245218498,
   "helm": 103050909,
   "phantom": 162847021
+ },
+ "soda-tb control (boss Electric, focus soda-twinkling-bunny)": {
+  "little-mermaid": 385891532,
+  "crown": 200622298,
+  "soda-twinkling-bunny": 419690213,
+  "helm": 348802390
+ },
+ "soda-tb control (neutral, focus soda-twinkling-bunny)": {
+  "little-mermaid": 385891532,
+  "crown": 182383907,
+  "soda-twinkling-bunny": 381536557,
+  "helm": 348802390
  }
 }

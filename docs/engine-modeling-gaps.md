@@ -62,7 +62,7 @@
 | `hasPierce` | 5 | alice, asuka, mari, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
 | `hitCount` | 31 | ade-agent-bunny, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, d-killer-wife, … |
-| `hitRatePct` | 10 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
+| `hitRatePct` | 11 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |

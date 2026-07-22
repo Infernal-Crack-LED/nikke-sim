@@ -293,6 +293,30 @@ export const COMPS: Comp[] = [
     focus: 'crown',
     real: { 'little-mermaid': 422_689_413, helm: 465_898_154, crown: 211_350_127, 'snow-white': 416_836_443 },
   },
+  // soda-twinkling-bunny control (docs/probes/control + carry/soda tb control.mov + .jpg). Added to the
+  // GRADED set 2026-07-22 (owner) to give her burst-gated mechanics board coverage: she is otherwise only
+  // in N3, where she never casts B3 — so her Hit Rate ▲38.91 and her Golden-Chip drain had ZERO graded
+  // exposure. Here she bursts 5× (chip-drop verified at video 10/47/82/123/162) and the pool drains
+  // 50→44→39→36→30 pre-consume, so the chip ladder, the ≥30 ATK gate and the ≥20 Hit-Rate gate all fire.
+  // Slot order + per-unit totals read off the Battle Records screenshot; focus = middle slot.
+  // BOSS IS NEUTRAL (owner 2026-07-22): the control videos were deliberately recorded against a boss
+  //   that advantages NOBODY on the team. Team is Wind / Iron / Iron / Water, so a neutral fight needs
+  //   boss Fire or Wind — the same design as the four C-* control comps above, hence boss: null.
+  //   This CORRECTS the 2026-07-15 recon, which could not see the boss element icon and inferred
+  //   Electric from soda-twinkling-bunny (Iron) "having advantage". Electric would have handed BOTH
+  //   Iron units a ~10% advantage they never had.
+  {
+    name: 'soda-tb control (neutral, focus soda-twinkling-bunny)',
+    slugs: ['little-mermaid', 'crown', 'soda-twinkling-bunny', 'helm'],
+    boss: null,
+    focus: 'soda-twinkling-bunny',
+    real: {
+      'little-mermaid': 403_522_768,
+      crown: 170_865_948,
+      'soda-twinkling-bunny': 416_375_537,
+      helm: 385_716_037,
+    },
+  },
 ];
 
 // deep-clone an override and let the variant mutate it; return undefined = drop unit's override

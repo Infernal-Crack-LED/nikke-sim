@@ -2175,10 +2175,9 @@ export function runSim(
           lastStage3Caster = cand.idx;
           if (cand.idx === focusIdx) focusBurstCount++;
           if (FB_PRE_DELAY_FRAMES > 0) {
-            // defer FB start by 22f (PREFB): schedule; fbEndFrame/fullBursts/enter fire later
+            // defer FB start by 22f (PREFB): schedule; fbEndFrame/fullBursts/enter fire later.
+            // The extension snapshot is taken BELOW, after this cast's own blocks have run.
             pendingFbStartFrame = frame + FB_PRE_DELAY_FRAMES;
-            pendingFbStartExtendSec = pendingFbExtendSec;
-            pendingFbExtendSec = 0;
           } else {
             fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
             pendingFbExtendSec = 0;
@@ -2206,6 +2205,20 @@ export function runSim(
             applyBlock(cand.idx, b, bi, frame);
           }
         });
+        // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageEnter/burstCast
+        // blocks have contributed (2026-07-22). A "Full Burst Duration ▲ N sec" granted by the very
+        // cast that opens the window belongs to THAT window; taking the snapshot before the blocks
+        // ran pushed every extension onto the NEXT full burst, so the first FB of a fight ran the
+        // bare 10s and each later one carried the previous cast's value. Invisible while the grant
+        // is a constant, but a per-FB error once it is state-gated (soda-twinkling-bunny's datamined
+        // ladder: +2s at ≥10 Golden Chips, +5s cumulative at ≥20). Also corrects modernia (+5) and
+        // isabel (−5), where landing on the wrong window is actively wrong.
+        // The non-PREFB branch above needs no equivalent: it sets fbEndFrame first, so the
+        // fullBurstExtend handler's `fbEndFrame > frame` path already extends the live window.
+        if (castStage === 3 && FB_PRE_DELAY_FRAMES > 0) {
+          pendingFbStartExtendSec = pendingFbExtendSec;
+          pendingFbExtendSec = 0;
+        }
         // FB entry fires inline at the B3 cast (default). With PREFB it is deferred — the scheduled
         // block in the frame loop calls emitFbEnter() FB_PRE_DELAY_FRAMES later instead.
         if (castStage === 3 && FB_PRE_DELAY_FRAMES === 0) {
