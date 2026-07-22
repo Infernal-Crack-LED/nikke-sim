@@ -209,7 +209,7 @@ for (const comp of COMPS) {
     const dist = [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([v, n]) => `${v}×${n}`).join(' ');
     const seededStr = min === max ? `${min}` : `${min}-${max}`;
     (pass ? ok : fail)(
-      `full bursts seeded ${seededStr} (${dist}) vs measured ${Array.isArray(want) ? want.join('-') : want}`
+      `[${comp.name}] full bursts seeded ${seededStr} (${dist}) vs measured ${Array.isArray(want) ? want.join('-') : want}`
     );
   }
 

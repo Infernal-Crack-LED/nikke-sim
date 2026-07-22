@@ -33,10 +33,6 @@
       },
       "effects": [
         {
-          "kind": "fillGauge",
-          "pct": 14.31
-        },
-        {
           "kind": "heal"
         }
       ]

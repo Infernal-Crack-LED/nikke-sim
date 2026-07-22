@@ -1111,7 +1111,7 @@ export function runSim(
   // stage-3 caster of the most recent full burst — drives the everyOther gate
   let lastStage3Caster = -1;
   let chainBlockedUntil = 0; // post-full-burst chain-open block (measured ~3s)
-  const POST_FB_CHAIN_DELAY_FRAMES = 180;
+  const POST_FB_CHAIN_DELAY_FRAMES = ENV.POSTFB ? Number(ENV.POSTFB) : 180;
   let stageExpireFrame = Infinity; // stage-2/3 window deadline (stage 1 never expires)
   // Reserve/grace window: how long a filled chain WAITS at stage 2/3 for a stage-filler to come
   // off cooldown. This is the auto's inter-activation grace (owner 2026-07-21: auto casts B1→~1s→
