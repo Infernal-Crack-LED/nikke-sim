@@ -13,6 +13,7 @@ import { runSimMean, type SimResult } from '../../src/engine/sim';
 import { useDragReorder } from './useDragReorder';
 import { prepareTeam, type UnitOptions } from '../../src/prepare';
 import { maxBondLevel } from '../../src/relationship';
+import { unitHasElement } from '../../src/elements';
 import type { OverrideFile } from '../../src/skills/index';
 import type {
   DataFile,
@@ -30,6 +31,7 @@ import {
   BrowseExcludeModal,
 } from './components/BrowseNikkesModal';
 import { SaveProfileControl } from './components/SaveProfileControl';
+import { SavedRostersDropdown } from './components/SavedRostersDropdown';
 import { InlineNameField } from './components/InlineNameField';
 import { useIconThumbs } from './useIconThumbs';
 import { manifestThumbUrl } from './portraitManifest';
@@ -1933,12 +1935,26 @@ export function App({ user }: { user: AuthUser | null }) {
   // inline name fields (replace the old window.prompt dialogs) — team + roster
   const [namingTeam, setNamingTeam] = useState(false);
   const [namingRoster, setNamingRoster] = useState(false);
+  // bumped on every successful roster save so SavedRostersDropdown re-fetches
+  // and reveals its "▾ Saved (n)" chip without a tab switch
+  const [rosterSaves, setRosterSaves] = useState(0);
+  // name of the last loaded (or saved) team / roster per surface — seeds the
+  // save-name field so a re-save upserts the same entry ("replace my team").
+  // Tracked per surface because a load only replaces one of the three states.
+  const [loadedTeamName, setLoadedTeamName] = useState<string | null>(null);
+  const [loadedRosterName, setLoadedRosterName] = useState<string | null>(null);
+  const [loadedUnionRosterName, setLoadedUnionRosterName] = useState<
+    string | null
+  >(null);
 
   // when the header logs out (user → null), drop any loaded teams + close modal
   useEffect(() => {
     if (!user) {
       setTeams([]);
       setShowTeams(false);
+      setLoadedTeamName(null);
+      setLoadedRosterName(null);
+      setLoadedUnionRosterName(null);
     }
   }, [user]);
 
@@ -1952,6 +1968,7 @@ export function App({ user }: { user: AuthUser | null }) {
     refreshTeams();
   };
   const suggestedName = () => {
+    if (loadedTeamName) return loadedTeamName;
     const names = slots
       .map((s) => (s.slug ? data.characters[s.slug].name : null))
       .filter(Boolean) as string[];
@@ -1961,6 +1978,7 @@ export function App({ user }: { user: AuthUser | null }) {
     try {
       await saveTeam(name, encodeBuild(buildFromState()));
       setNamingTeam(false);
+      setLoadedTeamName(name);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
       if (showTeams) refreshTeams();
@@ -1971,6 +1989,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // Save a Roster Sim roster (25 units + shared loadout + boss options) to the same
   // saved-teams store, tagged by the `roster` field in the build code.
   const rosterSuggestedName = () => {
+    if (loadedRosterName) return loadedRosterName;
     const first = rosterSim.flat().find(Boolean);
     return first
       ? `${data.characters[first]?.name ?? first} roster`
@@ -1983,6 +2002,8 @@ export function App({ user }: { user: AuthUser | null }) {
         encodeBuild({ ...buildFromState(), roster: rosterSim }),
       );
       setNamingRoster(false);
+      setLoadedRosterName(name);
+      setRosterSaves((n) => n + 1);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
       if (showTeams) refreshTeams();
@@ -1993,6 +2014,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // Save a Union Raid roster (3 teams + per-team boss options) — same store,
   // tagged rosterMode:'union' so loading restores the union grid, not solo.
   const unionRosterSuggestedName = () => {
+    if (loadedUnionRosterName) return loadedUnionRosterName;
     const first = unionRosterSim.flat().find(Boolean);
     return first
       ? `${data.characters[first]?.name ?? first} union raid`
@@ -2016,6 +2038,8 @@ export function App({ user }: { user: AuthUser | null }) {
         }),
       );
       setNamingRoster(false);
+      setLoadedUnionRosterName(name);
+      setRosterSaves((n) => n + 1);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
       if (showTeams) refreshTeams();
@@ -2033,6 +2057,7 @@ export function App({ user }: { user: AuthUser | null }) {
     setShowTeams(false);
     if (b.roster) {
       if (b.rosterMode === 'union') {
+        setLoadedUnionRosterName(t.name);
         setUnionRosterSim(normalizeUnionRoster(b.roster));
         if (b.unionBoss?.length) {
           setUnionBossOpts(
@@ -2055,12 +2080,15 @@ export function App({ user }: { user: AuthUser | null }) {
         setUnionRosterSimResults(null);
         setUnionRosterActive(null);
       } else {
+        setLoadedRosterName(t.name);
         setRosterSim(normalizeRoster(b.roster));
         setRosterSimMode('solo');
         setRosterSimResults(null);
         setRosterActive(null);
       }
       selectTab('rostersim');
+    } else {
+      setLoadedTeamName(t.name);
     }
   };
   const onDeleteTeam = async (t: SavedTeam) => {
@@ -2553,7 +2581,9 @@ export function App({ user }: { user: AuthUser | null }) {
                       burst: c.burst,
                       weapon: c.weapon,
                       element: c.element,
-                      advantaged: weakness ? c.element === weakness : false,
+                      // every element the unit counts as (a kit can grant a second code's
+                      // advantage — src/elements.ts), matching what the engine resolves
+                      advantaged: weakness ? unitHasElement(c, weakness) : false,
                       share: 0,
                       totalDamage: 0,
                     };
@@ -4527,6 +4557,11 @@ export function App({ user }: { user: AuthUser | null }) {
                       {savedFlash ? '✓ Saved' : '💾 Save roster'}
                     </button>
                   ))}
+                <SavedRostersDropdown
+                  user={user}
+                  onLoad={onLoadTeam}
+                  refreshKey={rosterSaves}
+                />
                 {rosterSlugsPlaced.length > 0 && (
                   <button
                     className='share-btn'
@@ -4538,6 +4573,7 @@ export function App({ user }: { user: AuthUser | null }) {
                       );
                       setRosterActive(null);
                       setRosterSimResults(null);
+                      setLoadedRosterName(null);
                     }}
                     title='clear all slots'
                   >
@@ -4586,6 +4622,11 @@ export function App({ user }: { user: AuthUser | null }) {
                       {savedFlash ? '✓ Saved' : '💾 Save roster'}
                     </button>
                   ))}
+                <SavedRostersDropdown
+                  user={user}
+                  onLoad={onLoadTeam}
+                  refreshKey={rosterSaves}
+                />
                 {unionSlugsPlaced.length > 0 && (
                   <button
                     className='share-btn'
@@ -4597,6 +4638,7 @@ export function App({ user }: { user: AuthUser | null }) {
                       );
                       setUnionRosterActive(null);
                       setUnionRosterSimResults(null);
+                      setLoadedUnionRosterName(null);
                     }}
                     title='clear all slots'
                   >
@@ -4745,17 +4787,23 @@ export function App({ user }: { user: AuthUser | null }) {
                   <DpsBarChart
                     title='Variable groups'
                     subtitle='ranked by group damage · 180s'
-                    bars={dpsResults.map((res, i) => ({
-                      slug: String(i),
-                      name: res.varUnits.map((u) => u.name).join(' + '),
-                      element:
+                    bars={dpsResults.map((res, i) => {
+                      // synthetic rows (a variable GROUP, not one unit): the element is the
+                      // lead unit's, carried only for the bar colour — never filtered on.
+                      const element =
                         data.characters[res.varUnits[0]?.slug ?? '']?.element ??
-                        '',
-                      weapon: '',
-                      tier: '',
-                      dps: res.varDamage,
-                      rank: i + 1,
-                    }))}
+                        '';
+                      return {
+                        slug: String(i),
+                        name: res.varUnits.map((u) => u.name).join(' + '),
+                        element,
+                        elements: element ? [element] : [],
+                        weapon: '',
+                        tier: '',
+                        dps: res.varDamage,
+                        rank: i + 1,
+                      };
+                    })}
                     onShareImage={() =>
                       void copyDpsChartImage({
                         title: 'Unit Comparison — variable groups',
