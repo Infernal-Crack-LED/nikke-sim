@@ -121,8 +121,20 @@ logs from poisoning agent context with stale-but-retained narration.
   still-true-but-resolved block, confirm the fact is in a changelog doc (DECISIONS / ANSWERED); if
   not, append it there first, then delete. Members: `docs/STATE.md`, `docs/data/*.md` (incl.
   sg-calc), `docs/CONVENTIONS.md`, `docs/modeling-priors.md`, `docs/engine-modeling-gaps.md`,
-  `CLAUDE.md`, open `docs/handoffs/*`, the **UNANSWERED** section of `docs/open-questions.md`, and the
-  backlog/ledger docs.
+  `CLAUDE.md`, open `docs/handoffs/*`, the **UNANSWERED** section of `docs/open-questions.md`, the
+  backlog/ledger docs, and **the prose fields of every override** — `src/skills/overrides/*.json`
+  `note` / `caveats` / `unmodeled`.
+
+**Override prose is current-state — it describes the unit AS MODELED TODAY, nothing else** (owner
+ruling 2026-07-22). An override's `note`/`caveats` record what is implemented, what is deliberately
+unmodeled, what is measurement-gated, and the evidence tier behind each live value. They carry **no
+history**: no "the old premise was X, now STALE", no "previously believed inert", no
+"REFUTED/reverted on <date>" trail, no superseded values. **Delete that wording on sight**, capture-first
+— the WHY belongs in `docs/DECISIONS.md`. Rationale: retained superseded narration reads as a live claim
+to every future agent and to any grep scanning for open gaps, manufacturing phantom findings that each
+cost a verification pass. (Worked example: six overrides carrying corrected-but-retained "hitRatePct was
+inert" narration were flagged as stale caveats by a 2026-07-22 sweep and had to be individually re-read
+to establish they were already correct.)
 
 **Current-state index:** `docs/STATE.md` is the landed-state registry — the default first read for
 "what does the sim do right now" (flags, constants, rotation, geometry, kit primitives). It is a
