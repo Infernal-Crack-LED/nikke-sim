@@ -1,6 +1,6 @@
 {
   "measurement": "SG aim-circle, core, and boss-silhouette screen geometry, extracted from owner-drawn overlays on full-resolution frames (2026-07-22)",
-  "status": "HYPOTHESIS-SUPPORTING MEASUREMENT - the model form it implies (screen-fixed aim circle + screen-fixed core hitbox + edge-weighted pellet ring + world-scaled silhouette) passes a no-free-parameter landing check against all 8 landing cells of soda-tb-sg-core-hr-windows.json; formal 16-cell fit PENDING; NOTHING ENACTED.",
+  "status": "HYPOTHESIS-SUPPORTING MEASUREMENT + FORMAL FIT - winning model (see formalFit_16cell): pellets UNIFORM per area in a screen-fixed aim circle that shrinks ~39% at Hit Rate 38.91, landing = silhouette coverage x ~0.96, core = range-scaled core disc area ratio. Passes a no-free-parameter landing check and the 16-cell fit with one outlier cell (midfar ON core). NOTHING ENACTED.",
   "date": "2026-07-22",
   "method": {
     "summary": "The owner draws overlays on native-resolution (2622x1206) screenshots (magenta outline = boss silhouette, cyan circle = core / grey aim circle); the session extracts them by color-threshold, flood-fills the silhouette, and circle-fits the rings. This is the method of record for boss/circle geometry: direct segmentation of the un-annotated frames was tried earlier and is INFEASIBLE (dark mech on grey fog).",
@@ -28,7 +28,7 @@
   "ownerRulingsThisSession": [
     "The 8-cell band assignments of soda-tb-sg-core-hr-windows.json are CONFIRMED correct (owner hand-measured) - candidate (d) band-misassignment is DEAD.",
     "Boss on-screen size at a given band is the same across recordings at the same resolution; only limb animation varies, and the traced frames were chosen near a neutral pose.",
-    "Pellet impacts are visually weighted toward the OUTER EDGE of the grey circle, arriving in groups of 2-3 along the rim - not center-clustered (owner observation from footage; independently supported quantitatively by the core rates below).",
+    "Pellet impacts are visually weighted toward the OUTER EDGE of the grey circle, arriving in groups of 2-3 along the rim - not center-clustered (owner observation from footage). The formal fit honors this WITHOUT an extra edge exponent: per-area-uniform already puts 75% of pellets beyond half the circle radius; what the observation genuinely rules out is the center-clustered Gaussian.",
     "Boss shape: four legs, two large shoulders/arms, narrow hourglass waist, core at the waist center - so as the boss shrinks with range, MORE wide hittable structure enters the fixed circle, holding coverage roughly flat."
   ],
   "extracted": {
@@ -49,13 +49,20 @@
       },
       "verdict": "6 of 8 cells within ~0.03 with ZERO fitted parameters; the 'impossibly flat' landing column is reproduced. The near band over-predicts in both arms (candidates: loose outline, aim wander, popup dropout)."
     },
-    "coreCheck": "With radial pellet density p(r) ~ r^k inside the circle: k=1 (uniform) over-predicts near-HR39 core 2-3x; k~2 gives 0.037-0.046 vs pooled measured 0.050, and at HR0 predicts 0.008 vs measured 0.008. The four ON-arm core cells (.074/.029/.079/.022, 3-11 cores each) are statistically consistent with a FLAT ~0.05 - i.e. the core HITBOX may be screen-fixed like the circle, with only the silhouette scaling. Formal fit pending.",
-    "resolvedPuzzles": "This dissolves BOTH open anomalies of the 2026-07-22 SG geometry handoff section 6: the flat landing column (non-convex silhouette keeps filling the fixed circle) and the non-monotone mid-cell core rate (binomial noise around a flat screen-space core rate)."
+    "formalFit_16cell": {
+      "date": "2026-07-22",
+      "model": "radial pellet density ~ r^k in the HR-state circle; landing = density-weighted silhouette coverage x efficiency eps; core = (r_core/R)^(k+1) conditional on landing; core hitbox screen-fixed vs range-scaled compared by AIC; binomial likelihood over 8 landing + 8 core cells",
+      "winner": { "coreHitbox": "range-scaled", "k": 1.04, "eps": 0.96, "logL": -38.55, "AIC": 81.1 },
+      "runnerUp": { "coreHitbox": "screen-fixed", "k": 1.76, "eps": 0.965, "AIC": 91.6, "note": "the interim 'screen-fixed core / k~2 ring' reading from the first pass does NOT survive the formal fit (deltaAIC 10.5)" },
+      "reading": "k~1 = UNIFORM per area in the circle. The owner's 'pellets grouped along the outer edge' is exactly what per-area-uniform looks like radially (75% of a disc's area lies beyond half its radius) - no extra edge exponent needed. eps~0.96 = ~4% landing loss (dropout / aim wander).",
+      "cellQuality": "all 8 landing cells |z|<1.9; core cells fine except ONE outlier: midfar ON measured 0.0786 vs predicted 0.0354 (z=+2.76, 11 cores where ~5 expected). Deviance 24.8 on 14 dof (GOF p~0.04, marginal - traced-radius pen slop is not in the error model, and the midfar ON core cell alone contributes ~7.6)."
+    },
+    "resolvedPuzzles": "This dissolves the flat-landing anomaly of the 2026-07-22 SG geometry handoff section 6 (the non-convex silhouette keeps filling the fixed circle), and the mid-cell core rate sits at z=-1.4 (unremarkable). The one residual outlier is the MIDFAR ON core cell (z=+2.76) - open item."
   },
   "openItems": [
-    "Formal 16-cell likelihood fit (ring exponent k, screen-fixed vs scaling core hitbox, landing efficiency factor) with binomial CIs - pending.",
+    "MIDFAR ON core outlier (z=+2.76, 11 cores where ~5 expected) - the one cell the winning model misses; candidates: fluctuation (16 cells, multiplicity), a band-window edge effect, or a real mechanism (e.g. aim-offset shrinking with range). Burst 4 window recount would check it.",
     "Nice-to-have strengthener: trace soda-twinkling-bunny's own grey circle in an HR-off gap of the same fight -> same-unit same-weapon HR contrast (current contrast is weapon-matched but cross-unit).",
-    "Near-band over-prediction (0.86 vs 0.78 / 1.00 vs 0.93) unexplained - loose outline vs aim wander vs popup dropout not yet separated.",
+    "eps~0.96 landing loss not yet attributed (loose outline vs aim wander vs popup dropout).",
     "Burst 2 near-ON window (video 47-62) recount stays open as a pure reproducibility backstop.",
     "Any engine change from this is a gated /scientific-method pass - not this session."
   ]
