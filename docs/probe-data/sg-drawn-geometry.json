@@ -1,0 +1,62 @@
+{
+  "measurement": "SG aim-circle, core, and boss-silhouette screen geometry, extracted from owner-drawn overlays on full-resolution frames (2026-07-22)",
+  "status": "HYPOTHESIS-SUPPORTING MEASUREMENT - the model form it implies (screen-fixed aim circle + screen-fixed core hitbox + edge-weighted pellet ring + world-scaled silhouette) passes a no-free-parameter landing check against all 8 landing cells of soda-tb-sg-core-hr-windows.json; formal 16-cell fit PENDING; NOTHING ENACTED.",
+  "date": "2026-07-22",
+  "method": {
+    "summary": "The owner draws overlays on native-resolution (2622x1206) screenshots (magenta outline = boss silhouette, cyan circle = core / grey aim circle); the session extracts them by color-threshold, flood-fills the silhouette, and circle-fits the rings. This is the method of record for boss/circle geometry: direct segmentation of the un-annotated frames was tried earlier and is INFEASIBLE (dark mech on grey fog).",
+    "semantics": "Owner: 'everything inside the pink line is the boss (not including the line)'; 'inside and not including the blue circle' for core and grey-circle tracings. Radii therefore use the stroke's INNER edge (5th-percentile radial distance); ring-fit pen slop is ~6 px.",
+    "script": "docs/probes/drawn-geometry/extract_drawn_geometry.py (cv2; debug overlays verified visually before any number was trusted)"
+  },
+  "inputs": [
+    {
+      "file": "docs/probes/drawn-geometry/blanc solo 40% hit-0001.png",
+      "role": "clean frame, near band (clock 02:16), boss in owner-chosen near-neutral pose"
+    },
+    {
+      "file": "docs/probes/drawn-geometry/blanc solo 40% hit-0003.png",
+      "role": "SAME frame + magenta boss outline + cyan core circle"
+    },
+    {
+      "file": "docs/probes/drawn-geometry/brid solo sg-0001.png",
+      "role": "brid-silent-track (SG) solo, near band (clock 02:06): cyan tracing of the grey aim circle at Hit Rate 0"
+    },
+    {
+      "file": "docs/probes/drawn-geometry/soda tb control-0001.png",
+      "role": "soda-twinkling-bunny (SG) control fight, near band in a Full Burst window (clock 02:14): cyan tracing of the grey aim circle at Hit Rate 38.91"
+    }
+  ],
+  "ownerRulingsThisSession": [
+    "The 8-cell band assignments of soda-tb-sg-core-hr-windows.json are CONFIRMED correct (owner hand-measured) - candidate (d) band-misassignment is DEAD.",
+    "Boss on-screen size at a given band is the same across recordings at the same resolution; only limb animation varies, and the traced frames were chosen near a neutral pose.",
+    "Pellet impacts are visually weighted toward the OUTER EDGE of the grey circle, arriving in groups of 2-3 along the rim - not center-clustered (owner observation from footage; independently supported quantitatively by the core rates below).",
+    "Boss shape: four legs, two large shoulders/arms, narrow hourglass waist, core at the waist center - so as the boss shrinks with range, MORE wide hittable structure enters the fixed circle, holding coverage roughly flat."
+  ],
+  "extracted": {
+    "aimCircle_hr0_px": { "r_inner": 79.3, "r_mean": 85.7, "r_std": 4.1, "unit": "brid-silent-track (SG)", "band": "near" },
+    "aimCircle_hr3891_px": { "r_inner": 48.2, "r_mean": 54.8, "r_std": 4.1, "unit": "soda-twinkling-bunny (SG)", "band": "near" },
+    "core_px": { "r_inner": 16.1, "r_mean": 22.7, "center": [1678, 545], "band": "near", "note": "diameter ~32 px matches the older near-band '31 px' core figure, implying the old 31->17 px core-size series were DIAMETERS" },
+    "silhouette_near": { "area_px": 114267, "bbox": [1452, 334, 516, 501], "note": "flood-filled from the outline incl. pen-crossing pockets (~5k px)" }
+  },
+  "derived": {
+    "circleShrinkAtHr3891": "79.3 -> 48.2 px = 39% shrink, weapon-matched (both SG). The live cone's SG sigma-shrink (0.009/HR => 35% at 38.91) is essentially the CIRCLE shrink applied to the wrong object; the earlier '9-25% measured' figure was an artifact of the now-dead centered-Gaussian premise.",
+    "landingCheck_noFreeParameters": {
+      "model": "landing = coverage of the HR-state circle by the traced silhouette scaled per band by px ~ 1/distance (band distances 20.7/30.7/40.7/50.7 from the effective-range readout), circle centered on the core",
+      "cells_pred_vs_measured": {
+        "near": { "hr0": [0.861, 0.78], "hr3891": [1.0, 0.931] },
+        "mid": { "hr0": [0.742, 0.775], "hr3891": [0.921, 0.916] },
+        "midfar": { "hr0": [0.688, 0.7], "hr3891": [0.764, 0.778] },
+        "far": { "hr0": [0.638, 0.64], "hr3891": [0.743, 0.711] }
+      },
+      "verdict": "6 of 8 cells within ~0.03 with ZERO fitted parameters; the 'impossibly flat' landing column is reproduced. The near band over-predicts in both arms (candidates: loose outline, aim wander, popup dropout)."
+    },
+    "coreCheck": "With radial pellet density p(r) ~ r^k inside the circle: k=1 (uniform) over-predicts near-HR39 core 2-3x; k~2 gives 0.037-0.046 vs pooled measured 0.050, and at HR0 predicts 0.008 vs measured 0.008. The four ON-arm core cells (.074/.029/.079/.022, 3-11 cores each) are statistically consistent with a FLAT ~0.05 - i.e. the core HITBOX may be screen-fixed like the circle, with only the silhouette scaling. Formal fit pending.",
+    "resolvedPuzzles": "This dissolves BOTH open anomalies of the 2026-07-22 SG geometry handoff section 6: the flat landing column (non-convex silhouette keeps filling the fixed circle) and the non-monotone mid-cell core rate (binomial noise around a flat screen-space core rate)."
+  },
+  "openItems": [
+    "Formal 16-cell likelihood fit (ring exponent k, screen-fixed vs scaling core hitbox, landing efficiency factor) with binomial CIs - pending.",
+    "Nice-to-have strengthener: trace soda-twinkling-bunny's own grey circle in an HR-off gap of the same fight -> same-unit same-weapon HR contrast (current contrast is weapon-matched but cross-unit).",
+    "Near-band over-prediction (0.86 vs 0.78 / 1.00 vs 0.93) unexplained - loose outline vs aim wander vs popup dropout not yet separated.",
+    "Burst 2 near-ON window (video 47-62) recount stays open as a pure reproducibility backstop.",
+    "Any engine change from this is a gated /scientific-method pass - not this session."
+  ]
+}
