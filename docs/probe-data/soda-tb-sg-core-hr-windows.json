@@ -92,10 +92,18 @@
       "geoGaussShapeWrong": "the Gaussian sigma-shrink form gets the DIRECTION of the HR lift right and the SHAPE wrong: it predicts the largest lift at far (+0.196) and the smallest at near (+0.076); measured is the reverse (near +0.151, far +0.071).",
       "drakeReconciliation": "HYPOTHESIS, testable: the drake popupcount landing (0.60 near) was measured by pooling popups from frames sampled at <=2 fps, which systematically UNDERCOUNTS pellets per shot because popup persistence (~0.45 s) is shorter than the sampling interval. This owner count is per-shot and reads 0.78 at the same band on the same boss with no Hit Rate. If that is the explanation, SGLANDING=popupcount is biased low and the live table biased high, with the truth between them."
     },
-    "openQuestions": [
-      "METHOD, load-bearing: were ALL shots in each window counted, or only cleanly readable ones? The ON arm has 72 shots over 48 s (1.50/s) and the OFF arm 18 over ~39.5 s (0.46/s) — a 3.3x difference. If that is real fire-rate (FB uptime vs reload cycles) the landing comparison stands; if OFF shots were selected for readability, the landing lift needs a bias check.",
-      "The owner's grey-hit-circle sentence was truncated — the conclusion they were drawing is not recorded."
-    ]
+    "ownerRulingOnModelForm": {
+      "ruling": "2026-07-22 — no pellet ever leaves the drawn grey hit circle, which establishes that the AIM CIRCLE + BAND_SG_HIT_FRAC formulation is the ACCURATE MODEL FORM for SG landing. The current hit-fraction VALUES may not be exact, but they are 'as close as we're probably getting'.",
+      "whatThisSettles": "the FORM question inside step 3 — landing is the boss body's coverage of the aim circle, not a spread disc pellets can escape. It is not a licence to freeze the values: see the measured-vs-table gap below.",
+      "measuredVsCurrentTable": "the owner's own HR-off count is a direct measurement of that same quantity and matches BAND_SG_HIT_FRAC at near (0.780 vs 0.797) but not elsewhere: mid 0.775 vs 0.710, midfar 0.700 vs 0.634, far 0.640 vs 0.465 (a 0.175 gap, 38% relative). So the form is validated and the values are measurably improvable, far most of all — worth re-raising before step 3 freezes them."
+    },
+    "shotCountReconciliation": {
+      "why": "The ON/OFF shot-rate gap (1.50/s vs 0.46/s) was checked against the ammo counter rather than accepted, because the landing comparison rests on the OFF arm being a complete sample. Owner's account: every window had exactly 1 reload, and the reload eats a larger share of the shorter OFF window.",
+      "near_ON_163.5_175.5": "AMMO TRACE MATCHES THE COUNT EXACTLY. Readings 007(163.5) -> 000(167.8) = 7 shots, reload, 009(169.0) -> 000(~174.4) = 9 shots, total ~16 = the 16 shots counted. The ON arm is a complete census.",
+      "near_OFF_150.5_160.5": "AMMO TRACE DOES NOT MATCH. Sampled at 2 fps: 006(150.0) 005 004 004, a reload, then an unambiguous 009(153.0) 008 007 006 006 005 004 003 003 002 001 000(158.5) — that stretch ALONE is 9 shots in 5.5 s, plus 1-2 before the reload, so ~10-11 shots in the window against 5 counted. The window also contains TWO reloads (~152 and ~159), not one.",
+      "consequence": "The core-fraction results are essentially unaffected — cores/pellets is a ratio over counted pellets and shot selection would have to correlate with coring to bias it. The LANDING comparison is affected asymmetrically: the ON arm is complete (16/16) while the OFF arm is ~5 of ~11 shots. If the uncounted OFF shots were passed over because they landed few or no pellets (a low-landing shot renders few popups and is easy to miss), then OFF landing 0.780 is an UPPER bound and the true HR lift is LARGER than +0.151, not smaller. The finding's direction survives either way; its magnitude is a lower bound pending reconciliation.",
+      "status": "OPEN — needs the owner to reconcile (different sub-window? shots deliberately skipped as unreadable?) before the landing magnitudes are used for anything."
+    }
   },
   "results": {
     "near_HR38.91_ON": {
