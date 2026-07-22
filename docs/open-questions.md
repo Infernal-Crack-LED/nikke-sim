@@ -37,69 +37,6 @@ Eve is currently **ungraded** (no board data, no focused Eve footage in the cata
 model-correctness note to settle when Eve footage is captured — do not fudge her to close it. Related:
 [[full-kit-audit-requirement]], sequential/`sequentialMultPct` bucket (Phase A4), U13 (DoT/rider crit).
 
-### U25 — Charge Speed formula + cinderella's unique RL cadence (2026-07-21)
-**OWNER RULING 2026-07-21 — Charge Speed is ADDITIVE (subtractive on charge time); the DIVISIVE hypothesis
-is REJECTED. Do NOT change the global CS formula.** The divisive model only *appeared* to fit because it was
-being asked to explain cinderella's cadence via CS — but cinderella's ~315 is NOT a CS effect. Her RL is a
-UNIQUE weapon (`role.weapon` shot_id 1051101): `charge_time 100` (1.0s), `rate_of_fire 180` (3 rockets/s),
-`max_ammo 24`, `reload_time 200` (2.0s), `input_type DOWN_Charge`. Her REAL mechanism = **charge once (1s),
-then fire the mag at ROF 180 (3/s), reload, recharge** — and her in-game kit text ("Charge Speed ▲100%,
-removed on reload") is an UNFAITHFUL description of that rapid-fire behavior (a known issue with some unique
-weapons). So the faithful cinderella model is a per-unit FIRE-PATTERN off her datamine (ROF 180 + 1s initial
-charge + `removeOnReload`), NOT a CS-buff on charge time and NOT a global-formula change. Building it as a
-follow-up (targeting her popup-measured ~315 cadence). The CS-formula question below is now CLOSED (additive);
-the cinderella cadence question moves to her fire-pattern build. ORIGINAL FINDING (kept for the record, now
-superseded by the ruling above):
-
-
-The engine models Charge Speed as SUBTRACTIVE on charge time — `needed = max(1, round(chargeFrames ×
-(1 − ΣCS/100)))`, capped at CS 100 (`sim.ts` charge loop) — decoded-data + einkk basis, and every
-calibrated CS value on the board (e.g. cinderella's +45 proxy) was fit UNDER that formula. Building the
-faithful `cinderella` (RL/Electric, aka "cindy") S1 toggle — "Charge Speed ▲ 100%. Activates when
-attacking with Full Charge. Removed upon reloading to max ammunition." — surfaced a discriminating test.
-Under SUBTRACTIVE, CS 100 → charge floored to 1 frame → she fires ~1 rocket/frame between reloads
-→ ~1536 pulls/180s (measured on the wired toggle; board 0.937 COLD → 4.834 HOT). But her MEASURED
-cadence (override note, u8-e3 popup pairs) is **~315 pulls/180s**. The **DIVISIVE** model
-(`needed = round(chargeFrames / (1 + ΣCS/100))`, the standard community/Prydwen form) gives CS 100 →
-charge HALVED (60f→30f): magazine cycle = 60 (shot 1, CS off) + 23×30 (shots 2-24) + 83 (reload) = 833f
-/24 shots → **~311 pulls/180s — a 1.2% match with ZERO free parameters**, closer than the calibrated +45
-subtractive proxy (~296) which itself sits at her COLD board direction. A rate-of-fire floor (rockets
-gated at the datamined 180 rpm = 20f even at instant charge) was CONSIDERED and REFUTED — it predicts
-~430 pulls, overshooting the measured 315. **Hypothesis (n=1-arithmetic-derived, HYPOTHESIS-strength,
-NOT enacted): NIKKE charge speed is DIVISIVE, not subtractive.** This is engine-wide — it re-scales
-EVERY charge unit (alice/red-hood/the SR/RL roster) and invalidates every CS value calibrated under
-subtractive (incl. cinderella's +45; the divisive re-derivation of her old proxy is 60/1.45 ≈ 41.4f ≠ the
-calibrated 33f). Enactment requires a separate GATED pass: fresh context + Fable pre-reg + full-board A/B
-+ owner sign-off, never the session that found it. Independent confirmation wanted: a second charge unit's
-popup-read cadence at a known CS%, and/or the isolated-cinderella footage that pins her buffed-shot
-cadence + reload timing directly. See DECISIONS 2026-07-21 (removeOnReload primitive) + the pre-reg
-`scratchpad/prereg-cinderella-cs-toggle.md`.
-
-**FOLLOW-UP BUILD RESULT — the datamine whole-mag-dump-at-3/s fire-pattern is NOT SUPPORTED by the popup
-measurement (built + full-board A/B, 2026-07-21; NO enactment — held).** The owner-directed follow-up (model
-her cadence off the datamine fire-pattern instead of a Charge-Speed buff) was BUILT and MEASURED: an opt-in
-engine primitive `charFixes.magDumpRof` (charge ONCE per mag → rapid-fire the whole magazine at the datamined
-rate_of_fire → reload → re-charge; every rocket a full-charge shot), wired to `cinderella` at rof/60 = **3.0
-rockets/s** (the confirmed scale — jill rof 150 → her measured 2.5/s charFix; scarlet(AR) rof 720 → 12/s).
-Board-exact A/B (7 graded comps, MC-mean): the literal 3/s dump fires **420 pulls/180s solo (420–449 in-comp)**
-and moves her board **0.93 COLD → 1.29 HOT** (ratios up to 1.57) — vs her popup-MEASURED **~287 pulls (862
-popups / 3-per-pull) ≈ ~315/180s**. So the datamined rate_of_fire 180 is her nominal/**in-burst** rocket rate,
-NOT her **sustained** cadence: her measured ~1.75 rockets/s is roughly HALF a clean 24-at-3/s dump. Comp downtime
-does NOT close the gap — solo≈in-comp in BOTH models (288≈288–306 baseline; 420≈420–449 dump), i.e. she fires
-essentially continuously; there is no ~25% rotation downtime to pull 420 down to 315. And no faithful whole-mag
-variant reaches 315: even the fully-datamined 2.0s reload gives ~405; hitting 315 would need a ~5s reload,
-contradicting her measured ~1.2s. Her measured 1.75/s sits BETWEEN the two datamine-literal readings — the
-per-rocket-charge literal (1s each, no CS → ~1/s ≈ 160 pulls, far too COLD) and the whole-mag-dump literal (3/s
-→ 420, too HOT) — the signature of an **INTERMEDIATE mechanism** (she likely re-charges MID-mag / fires K < 24
-rockets per prime, not one prime per full magazine). **ENACTMENT: none** — the engine primitive was reverted
-(regression-proven byte-identical/opt-in inert, but no valid consumer since its only intended consumer
-overshoots). `cinderella` KEEPS her `+45 chargeSpeedPct` proxy, which is MEASUREMENT-ANCHORED (validated vs real
-T2/T7 + the e3 popup pass; steady-state ~0.55s/shot ≈ 1.8/s ≈ measured 1.75/s) and already reproduces ~288
-pulls ≈ the measured 287 — retained as status-quo, NOT to be mistaken for validated mechanism. **NEEDS-MEASUREMENT
-(the actual unknown):** isolated `cinderella`-solo footage to pin (a) rockets-per-prime K + whether she
-re-charges mid-magazine, (b) her real reload, and (c) a re-confirm of the "3 popups/pull" divisor the whole 315
-rests on. Fable pre-op APPROVED the hold; harness pre-reg `scratchpad/prereg-cindy-firepattern.md`.
-
 ### U24 — Do TRUE-flavored normal attacks retain CORE hits? (chisato/jill shared; footage says YES, but jill enactment gated) (2026-07-20)
 The kit-audit flagged (chisato gotcha 1, jill gotcha 1) that whether true-damage normal attacks forfeit
 core is unverified — a large lever, because `coreMult` is big. **Direct-observation finding (kit-audit
@@ -223,74 +160,6 @@ the 10s Prediction window + a Pierce-Damage-on/off popup to pin the real pierce 
 burst-window over-model (grave should land back near 1.0 with pierce ON). Links: grave override ⚑1,
 engine-modeling-gaps theme 5 / fix #7, damage-calculation.md dmgUp bucket.
 
-### U18 — Sim ATK term ~+1.63% low = the unmodeled RELATIONSHIP (bond) bonus — RESOLVED + IMPLEMENTED 2026-07-16 (owner-identified)
-**CAUSE (owner, 2026-07-16): the relationship (bond) ATK bonus was unmodeled.** It is a flat
-class×MANUFACTURER stat present in every recording: the manufacturer sets the max bond level
-(Pilgrim/Overspec cap 40, Elysion/Missilis/Tetra/Abnormal cap 30) and the class picks the stat.
-The owner's per-unit numbers matched the in-game bond table EXACTLY at the manufacturer max level —
-e.g. L40 Attacker ATK 2340 (Pilgrim isabel + scarlet [`scarlet`, AR]), L40 Supporter 1950 (Pilgrim nayuta), L30
-Attacker 1640 (Tetra noir), L30 Defender ATK 1094 + HP 45097 (maiden, both confirmed). This is why
-the elevation looked "uniform" (most units are 30-cap ⇒ +1640/+1.39%) yet isabel/scarlet (Pilgrim
-40-cap ⇒ +2340/+1.98%) read higher — NOT core, NOT gear tier (those hypotheses were desk-eliminated;
-core maxes at 7 and core-7 ×1.14 is validated by the 2026-07-13 120,143 read; base5 gear is confirmed).
-The residual ~0.25% over the flats is measurement-basis slack (bossDef ±0.12% + coefficient noise).
-**IMPLEMENTED:** `src/relationship.ts` (data helper) + `data/relationship-bonus.json` (max levels +
-per-level per-class stats, from the in-game bond table) + engine applies it in the unit build
-(staticAtk + maxHp, sim.ts) driven by `SimConfig.relationshipLevel` / `PreparedUnit.relationshipLevel`,
-defaulting to the manufacturer MAX (= the scope-lock basis + the web default). `manufacturer` is now
-synced into characters.json (sync.ts, from the DB attributes blob; Overspec units get " Overspec"
-appended → the 40-cap bucket). Regression snapshot regenerated (all-green): the board warms ~+1.4-2%;
-notable faithful side-effect — the D:KW/takina/milk/maxwell/liberalio comp's "2 highest-ATK allies"
-buff (maxwell S1) correctly retargets from maxwell to liberalio (Pilgrim, now genuinely top-ATK; was
-a degenerate 118,027 tie) → maxwell −21% / liberalio +31%, an ATK-ordering flip, not a bug.
-FOLLOW-UP: the SG landing table + other ⚑ values were calibrated at the OLD (no-relationship)
-term, so they over-shot (noir solo 1.006→1.020). **RESOLVED 2026-07-16 (DECISIONS): `SG_LANDING_BY_BAND`
-recalibrated by a UNIFORM ×0.9863 (= base5/bond ATK, the measured +1.39% uplift) → near 0.888/mid 0.986/
-far 0.74/midfar 0.888; noir solo restored to its pre-bond point 1.006 (verified in-sim), the SHAPE
-preserved (U17 HOLD). SG board units cool ~0.8–1.6% to cancel the bond warming, non-SG keep the +1.39%.**
-DONE 2026-07-16: isabel/brid-silent-track staging baselines
-reverted to kit coefficients (isabel rider 174.49→170.58; brid stays 675% — term now correct via
-relationship). The four Overspec units are final (mihara-bonding-chain/rapi-red-hood/anis-star/
-neon-vision-eye); "UC" was an owner typo, dropped.
---- ORIGINAL DIAGNOSIS (superseded by the owner's identification above; kept for the evidence trail) ---
-Diagnosed at the desk from EXISTING reads (no new video). The sim's scope-lock static ATK
-(Attacker 118,027 / Supporter 98,367 / Defender 78,707, base5 gear) reads ~+1.63% below the in-fight
-term measured in FIVE reads spanning THREE weapon classes and ALL THREE unit classes — so it is GLOBAL:
-- jill (AR Attacker) → term 119,800, double-derived (normal + DoT, agree to 0.02%); +1.62% (HIGH).
-- guilty (SG Attacker) → 119,827 via popup-verified pellet step; +1.65%.
-- brid-silent-track (SG Supporter) → 99,826 via pellet grid AND rider (rider = EXACTLY 675.00% at
-  that term); +1.63%.
-- maiden-ice-rose (RL Defender) → 79,853, double-confirmed (rider 547.62% AND normal-core), +1.64%;
-  its own probe-runs note recorded "uniform 1.0146" at the time and dismissed it as noise.
-- isabel (SG Attacker) → ~+2.3% (roughest read; consistent in sign).
-The four clean reads agree to ~0.03% at ~+1.63%. **The measured term matches the OL0 numbers
-(Attacker 120,143 / Supporter 100,130 / Defender 80,118) to ~0.17% — NOT base5.**
-**IT IS A GEAR-TIER QUESTION, NOT CORE.** (A first pass entertained a "core 8" fit — base5+core8
-= 119,943 matches to 0.002% — but core MAXES at 7 (owner-confirmed; the docs/handoffs/closed/base-stats-handoff.md:71
-"core can exceed 7" line was WRONG, now corrected), so that was a coincidence. Core-7 ×1.14 is itself
-VALIDATED — the 2026-07-13 video-verified combat ATK 120,143 = core-7 ×1.14 + OL0 gear. So the
-elevation is gear, not core.) This DIRECTLY re-opens **DECISIONS 2026-07-14 (base5 switch)**, which
-itself flagged the contradiction: the 2026-07-13 combat ATK was "video-verified twice" at the OL0
-numbers, yet the sim was switched to base5 (118,027) after an in-game gear-set measurement, with the
-note that the video verifications "either weren't precise to that margin or need re-checking." The
-five new in-fight DAMAGE reads are the re-check — they side with the OL0 video, not base5.
-Board impact (measured, +1.63% ATK injection): warms every unit ~+1.6% toward 1.0 (board runs cold);
-but noir/dorothy-serendipity — which CALIBRATED the SG landing table at the low base5 term — then
-over-read, so a basis bump must drop the SG landing table ~1.6% in the SAME change (the U17 coupling).
-Orthogonal to the far-band SHAPE deficit (a uniform scalar can't make far -12%).
-DISPOSITION: **LOG — owner-gated** (reverses the owner's own 2026-07-14 base5 ruling; reprices the
-whole board + recalibrates landing; only the owner knows their recorded units' actual gear). OWNER
-ARBITRATION: are the recorded scope-lock units on plain base5 gear or OL0-equivalent (overloaded)?
-The damage + the 2026-07-13 video both say OL0. If OL0 → revert the scope-lock gear basis base5→OL0
-(120,143) + drop SG landing ~1.6% + re-run board/regression. If genuinely base5 → the +1.63% is an
-omitted stat source (bond/affinity/collection) to hunt. WHY the 2026-07-14 base5 measurement and the
-damage disagree is the piece to reconcile (did the recorded units carry better gear than the base5
-set that was measured?). Full memo: session archive docs/handoffs/closed/2026-07-16-u18-atk-term-diagnosis.md; Fable check
-SOUND-WITH-CAVEATS/HIGH. Fixed en route: the stale "treasure-inclusive" comment in scope-lock.ts (the
-120,143 figure is OL0 GEAR, not treasure) and the docs/handoffs/closed/base-stats-handoff.md:71 "core >7" error.
-Isabel/brid-silent-track baseline notes encode the measured term per-unit; revert to kit coefficients
-IF the basis is corrected globally.
-
 ### U17 — SG landing is per-unit (and per-position within the near band) — the class table is a compromise (2026-07-16)
 > **CLOSED — OWNER OVERRIDE (2026-07-17).** The owner rules the shotgun pellet-landing investigation
 > (A26 → this U17 per-unit continuation) closed WITHOUT pursuing per-unit landing profiles or a third
@@ -372,175 +241,16 @@ correction (her single-anchor read predates that discovery). Full record:
 docs/probe-data/guilty-sg-band.json + brid-silent-track-sg-band.json (+ -events) + noir-solo-recon.json,
 the pre-registration in the session archive, DECISIONS 2026-07-16.
 
-### U16 — Soda burst over-generation + dynamic chip-state (2026-07-16, from the re-tune)
-
-> **⇒ ROTATION OVER-GENERATION LARGELY RESOLVED 2026-07-21 (DECISIONS 2026-07-21, `STAGE_WINDOW_FRAMES`
-> 600→120; commit c8e1511).** The whole "does the engine over-generate / mis-allocate bursts?" family traced
-> to ONE mis-sourced constant: the burst-chain reserve/grace window was set to the 10s Full-Burst STATE
-> duration instead of the auto's ~1s inter-activation grace, so a stage-filler up to ~8s out of cooldown got
-> reserved and waited for. Fixed → the items below are resolved/reclassified:
-> - **soda-twinkling-bunny 6-vs-5 → STALE, already resolved before the window fix** (post-2026-07-16 FB-extension/
->   cadence work): current engine gives a clean 5/5 (soda-twinkling-bunny at 3.4/39.4/75.4/111.4/147.4s in the
->   LM/Crown/soda-twinkling-bunny/Helm control comp). The U16 soda bullet below is obsolete.
-> - **sakura-bloom-in-summer 6/4 → FIXED** (5/5, matching the burst-color footage) — it was the reserve-window
->   bug, NOT a genuine leftmost-tiebreak (with a realistic window cinderella is the *unique* ready candidate at
->   FB4; supersedes the "leftmost-tiebreak selection" framing).
-> - **ludmilla-winter-owner / rosanna-chic-ocean 13-vs-12 → recorder startup-lag artifact** (sim first-FB 3.4s
->   optimal vs footage ~7s; clean 14s cadence; MC-unanimous 13). Unchanged by the fix; not an engine defect.
->   **⚠ FRAMING CORRECTED 2026-07-21 (owner ruling; see probe-processing skill + [[fb-timing-anchor-not-startup-lag]]):**
->   the "~7s footage first-FB / startup-lag" here was NOT measured from the 3:00-timer-start — the pre-timer video is
->   a LOAD SCREEN, not "human startup lag." This 13-vs-12 (and the chisato-comp 13-vs-~11) needs RE-ANCHORING to the
->   exact 03:00→02:59 frame before it can be called a confound; a first-FB/cadence residual that survives clean
->   anchoring is a REAL signal, not player slop. Conclusion (not-an-engine-defect) is NOT overturned here — it is
->   re-opened pending a properly-anchored re-measure.
->
-> **⚠ FIT-EXPOSURE LEDGER (open — footage-gated re-tune, do NOT re-fudge in-place).** The corrected rotation
-> exposes per-cast over-credits in overrides that were fit to the OLD (sometimes under-counted) rotation. Seeded
-> board-read pre→post the window fix (sim/real; N2's chisato is the clean case: fit to the buggy 8 FBs, now reads
-> hot at the correct 10): **toward** — scarlet-black-shadow 1.036→1.001, ada 0.954→0.984, liberalio 0.991→1.001,
-> ein 0.795→0.812, d-killer-wife 0.964→0.975; **fit-exposed (need re-validation)** — chisato 1.154→1.209,
-> naga 1.026→1.066, soda-twinkling-bunny 1.021→1.048, rouge 1.062→1.074, trina 1.177→1.180. These are the fix
-> revealing old over-credits, not the fix being wrong; re-tune each against footage in a separate gated pass.
->
-> **⇒ UPDATE 2026-07-21 (fresh-session re-derivation, worktree `fit-exposure-retune`; owner-directed) — the
-> "fit-to-rotation" framing DOESN'T HOLD. These are pre-existing UNIT-LEVEL over-models, NOT rotation-fit
-> artifacts; the window fix merely ADDED to them.** Per-comp ratio decomposition (ROT=1 seeded board) shows each
-> unit's hotness is rotation-INDEPENDENT:
-> - **chisato — uniform ~1.19–1.24 at EVERY FB count.** PI2 1.193 (13 FBs), PI 1.195 (13 FBs), N2 1.236 (10 FBs).
->   PI/PI2 are measured-exact at 13 FBs and were UNTOUCHED by the window fix, yet she's ~1.19 there → her over-credit
->   is unit-level, not the N2 8→10 exposure (that only added ~+0.05 on top). The "clean fit-to-8-now-10" reading is
->   wrong: de-fitting per-cast to fix N2 would leave PI/PI2 hot. Suspect levers (ALL ⚑, from her override note):
->   true-normal core retention on SMG coreMult 250, swap mag-refill optimism (~2 free reloads/cycle), cadence,
->   hitCount-48 flatDamage 472.18%. NOTE: the true-normal-CRIT lever is NOT in play — owner ruled 2026-07-21 that the
->   `crit && !trueFlavor` guard (DECISIONS 2026-07-21 line 113) is not meant to exist (crit re-determined); the
->   engine has no such guard on `main` and it was left as-is (that DECISIONS entry now reads stale — flag only, not
->   edited). **Footage EXISTS**: `docs/probes/ar-sg-smg/chisato smg.MP4` + `docs/probes/720-kit-audit/chisato.mov`
->   — a focused /probe-processing read of the true-damage window (core-popup presence + swap-window shot count) can
->   localize, then a separate gated enactment pass.
-> - **trina — INVERSELY correlated with FB count** (hottest where FBs are FEWEST): PB/PB2 1.124/1.139 (12 FBs),
->   TB2T2 1.188 (5 FBs), N3 1.228 (10 FBs). A per-FB BURST over-credit would trend the OTHER way; her over-credit is
->   in her NON-burst footprint (Electric-AR normals / a passive), diluted by burst share in high-FB comps. She barely
->   moved with the fix (1.177→1.180) — hot before AND after, so the window fix is a red herring for her. Small
->   absolute error (~7M on ~51M; she's a buffer). No isolated footage → a trina-focus recording is needed (LOW prio).
-> - **rouge — mostly REAL run-to-run variance, not a model error.** PE and PE2 are the SAME team recorded twice;
->   real rouge 106.7M (PE) vs 114.96M (PE2) = +7.7% real spread → sim ~constant → ratio swings 1.011↔1.111. Central
->   ~1.07 is a mild unit-level residual her own note already flags (offensive-buff / F1–F2 burst-Max-HP double-count
->   suspicion). Small-damage support (56–119M). No isolated footage.
-> - **naga — n=1 (N2, 1.065).** Shield-gated support; N2 has NO shielder so both headline blocks are inert (her note)
->   → the reading is just her SG normals + S2. Mild SG-spray residual. n=1 = hypothesis-strength, NOT enactable. No
->   isolated footage.
-> - **soda-twinkling-bunny — n=1 (N3, 1.047).** Her own note PREDICTED N3 ~0.974 (no-burst → chips stay 50); the drift
->   to 1.047 came from later engine changes (CONE_DELTA SG core + the window fix), NOT rotation-fit. Her Hit Rate ▲38.91
->   is unmodeled (would make her COLDER). **Footage EXISTS**: `docs/probes/control + carry/soda tb control.mov` +
->   `docs/probes/720-kit-audit/soda tb.MP4`. n=1 → not enactable without a fresh graded read.
->
-> **Net:** de-fitting these per-cast values to cancel the window fix would FUDGE unit-level modeling errors (violates
-> the accuracy-to-observed-mechanics invariant). Each needs footage-gated per-unit localization, NOT a rotation
-> de-fit. chisato + soda have isolated footage already (unblocked for a focused /probe-processing + gated pass);
-> naga/trina/rouge need new recordings (→ /testing-requests, LOW prio — small magnitudes / n=1). The original
-> ledger's pre/post board deltas above stay as the measured trail; the "fit-to-rotation" INTERPRETATION is SUPERSEDED
-> by this decomposition. (Nothing enacted this session — engine untouched, findings-only per batch-and-stop.)
->
-> **Two open sub-questions filed (Fable pre-op revisions):**
-> - **(a) leftmost-vs-first-ready selection → RESOLVED 2026-07-21: switched to FIRST-READY (DECISIONS 2026-07-21,
->   commit 533bf88).** Real auto casts whichever burst comes up first, and for equal-CD B3s first-ready guarantees
->   clean alternation (round-robin) while strict-leftmost let the leftmost slot monopolize. Graded-board-neutral
->   (regression byte-identical); moves only ungraded comps and every diff is first-ready correcting a leftmost
->   monopoly/skip (traced random 9 cinderella ×6 → cinderella/bready 3/3; random 10 diesel-winter-sweets excluded →
->   startup burst). `B3_LEFTMOST` env reverts. (Owner premise "they never conflict at current CDR" was slightly
->   off — ~1/3 of random teams differ — but first-ready is the more faithful pick in every conflict, so the
->   change stands.)
-> - **(b) owner ~1s activation delay vs the sim's 0.5s `STAGE_CAST_GAP` → RESOLVED 2026-07-21: the 0.5s gap is
->   MEASURED-CORRECT; the owner's ~1s was hand-wavey.** Two independent lines: (1) auto-play.md §3 (nikke-synergy
->   arena guide) measures B1→B2 / B2→B3 ≈ 0.533s each (gauge→B1 ≈ 0.433s); (2) an isolated gap sweep at
->   window=120 keeps all 12 measured-FB asserts clean across 26–45f (0.43–0.75s) and BREAKS at 60f/1s (6 comps
->   under-count) — the FB counts themselves reject a 1s gap. So the gap is NOT the 120-vs-90 lever; the window is
->   a SEPARATE wait-tolerance that must clear the ~1.6s natural chain span with margin (90f under, 120f over).
->   No engine change (the gap stays 30f); DECISIONS 2026-07-21 corrected accordingly.
-> - **Dynamic chip-state (below) is UNAFFECTED — still open engine work.**
->
-> **⇒ FIRST-BURST / BURST-GEN TIMING — measured corrections (2026-07-21, chisato.mov Liter/Crown/Chisato/Helm
-> Fire; owner frame-by-frame). LANDED so far: fight-delay + bolt-split (DECISIONS 2026-07-21). STILL OPEN as a
-> coherent burst-chain-timing + gauge REWORK (the pieces interact — don't land piecemeal):**
-> - **Measured chain-timing spec:** `gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB countdown (10000ms)`.
->   The engine had B1 fire the instant gauge fills (no 30f) and FB start at the B3 cast (no 22f). The 30f between
->   stages was already correct (`STAGE_CAST_GAP_FRAMES`).
-> - **Implemented ENV-gated, default OFF** (commit 3d7f6a3, regression byte-identical): `PREB1GAP=1` (30f before B1)
->   and `PREFB=1` (22f before FB; defers fbEndFrame + fullBurstEnter + stored-hit release via `emitFbEnter`, gates
->   the cast/expire checks off the 22f gap). **Each shifts FB 13→12 alone** on this comp — the OVERSHOOT: today's
->   B1=3.5s match rides a slightly-too-fast gauge, so adding a delay without re-tuning the gauge pushes B1 late.
->   → they can only become defaults TOGETHER WITH the gauge fix, tuned to reproduce the full measured timeline.
-> - **Gauge composition (measured 2026-07-21):** with this team ~90% of burst gen should come from Helm's SR (the
->   gauge is ~90% full when her **3rd** shot tips it to 100 → B1). The sim currently reads **Helm 64% / chisato-SMG
->   15% / liter-SMG 15% / crown 6%, B1 on Helm's 2nd shot** — the two SMGs OVER-contribute (~30% vs ~10%). Leading
->   hypothesis: SMG fire-rate too high (rof 1440 ≈ 24/s) — which would ALSO cool chisato's damage hotness (one root
->   cause). NOT changed (validated gauge-v4 datamine, board-wide blast radius; needs a measured SMG shot-count).
-> - **INVESTIGATION ITEM (owner):** the 22f pre-FB gap is likely WHY instant burst-cast attacks miss the +50% FB
->   (they land before FB begins) — today modeled per-unit via `noFb`/`burstSnapshotsPreFb`. Verify PREFB reproduces
->   that generally, and whether the per-unit flags then become redundant.
-> - **NEXT (the timeline pass):** a focused frame-by-frame read of chisato.mov's first burst window — Helm's exact
->   shot frames, the burst-bar %-fill over time, and the B1/B2/B3/FB frames — as the target, then tune all knobs
->   (fight-delay ✓, bolt ✓, +30f, +22f, gauge/SMG) TOGETHER to reproduce it and flip the defaults with a full A/B.
->
-> **⇒ RESOLVED 2026-07-21 (owner frame-perfect data — supersedes the SMG/helm-90% hypotheses above).** The frame
-> read (t0 = first 2:59 frame = video 08.585; elapsed = video − 8.585) gave the exact timeline: first bullet
-> 0.133s · Helm SR shots 1.117 / 2.483 / 3.850s (82f cycle = 60 charge + 22 END bolt) · **gauge full ON Helm's
-> 3rd shot (3.850s)** · B1 4.317 · B2 4.783 · B3 5.283 · FB 5.650. Findings:
-> - **FIGHTDELAY=1 was WRONG** (framing confound) — real startup ≈ **8f (0.133s)**, not 1s. **BOLTSTART (11f-start)
->   was WRONG** — the data fits **22f-at-END** + the 8f startup (shot1 68f). Both LANDED defaults are superseded and
->   must revert as part of the coherent flip.
-> - **SMG is CORRECT at 0.2** (targetPerTrigger 20, the ×2-boss column — owner confirmed). The over-generation was
->   NOT the SMG. The "helm ~90%" was an over-read; the real split is ~Helm 55% / non-Helm (SMG+Crown-MG) 45%.
-> - **THE BUG: Helm double-counts her S2 per-shot gauge (14.31).** `skill1 fillGauge 14.31` DUPLICATED the gauge
->   table's `flatPerTrigger 1431`. Helm should be base(5.60)+skill(14.31)=**19.91/shot, not 34.22**. FIXED — removed
->   the override fillGauge (commit 12a4585; byte-identical on graded / cooldown-bound comps).
-> - **THE 30f WAS DOUBLE-COUNTED with `POST_FB_CHAIN_DELAY`** (the measured 3s post-FB gap already included the
->   gauge-full→B1 delay). Compensate: **180→150f** (`POSTFB` env, default 180). Without it the coherent model
->   under-counts 6 graded comps by 1; with it, only 1 (elec-DPS run-E, 10 vs 11-12 boundary).
-> - **THE COMPLETE COHERENT MODEL** (reproduces the video first chain to ~0.1s AND keeps 11/12 graded FB, board ±3%
->   6→7): **Helm de-dup ✓ · startup ~8f (FIGHTDELAY 1→~0.13) · 22f-END bolt (BOLTSTART off) · PREB1GAP 30f on ·
->   PREFB 22f on · POST_FB 180→150.** Helm de-dup already committed (inert at current defaults). The rest is a
->   pending COHERENT DEFAULT FLIP (reverts the fight-delay/bolt-split DECISIONS, enables 30f/22f, retunes POST_FB,
->   snapshot regen) — owner sign-off + full A/B; the run-E residual (boundary −1) to accept or chase.
-
-Two open items surfaced landing the Soda re-tune (DECISIONS 2026-07-16):
-- **Rotation over-generation [RESOLVED 2026-07-21 — see banner above; STALE claim retained for the trail]:**
-  the sim gives Soda **6 bursts vs the recorded 5** in the soda-control comp
-  (LM/Crown/Soda/Helm). Reality's 6th burst would sit at ~20 pre-consume chips (<30) and wouldn't clear her
-  own ATK gate anyway — so the sim over-credits a nuke + a 65.25% ATK window. Suspect the Soda/Helm B3-
-  alternation cooldown collision or FB-extension-shifted timing (her +4s FB-extend). This FLATTERS her
-  vs-real 0.887 (true ~0.82). Recipe: trace the burst-cast frames of both B3s over 180s vs the recording's
-  5 Soda-burst timestamps (t≈10/48/84/124/162).
-- **Dynamic chip-state (DEFERRED, engine work):** her `critDamagePct` is modeled as a FLAT passive 42 (the
-  control-comp chip time-average). But a NO-burst comp (N3 — she never casts, chips never drain) reads
-  effective ~50 and grades 0.96 with flat-42 under-crediting ~3%. The faithful model is dynamic Golden-Chip
-  tracking (crit-damage = 1.32 × live chip count), which needs an engine currency-state feature. Until then
-  the flat passive is comp-dependent-approximate (right-ish for burst-cycling comps, low for no-burst).
-- **Community-footage corroboration (2026-07-21, submission-review session — OBSERVATIONS ONLY, not enacted):**
-  three more recordings independently show the same rotation over-generation family (all n=1, gear-confounded):
-  - **Sakura: Bloom in Summer comp** (Rouge, Ade: Agent Bunny, Sakura: Bloom in Summer, Cinderella, Mihara:
-    Bonding Chain): the total full-burst count is right (10 = 10), but the two-Burst-III **allocation is wrong** —
-    the sim gives Sakura: Bloom in Summer 6 bursts / Cinderella 4, while the footage shows strict 5/5 alternation
-    (Sakura on full-bursts 1,3,5,7,9; Cinderella on 2,4,6,8,10, verified by burst-color signature on all 10).
-    Rotation-log diagnosis: the sim double-casts Sakura at full-bursts 3 (41.6s) and 4 (67.6s) — a leftmost-
-    tiebreak when both Burst-IIIs are ready. This is a Burst-III **selection** question (the count is fine), and
-    touches Cinderella, who IS board-graded — so an engine tiebreak change has real blast radius.
-    - **[2026-07-21] in-FB burst-CDR hypothesis REFUTED — the source is elsewhere.** One theory for the Sakura
-      double-cast was that Rouge's S1 "Burst CD ▼ 7s" was being applied *during* Full Burst (shaving Sakura's
-      40s cooldown so she came off CD early at Cinderella's turn). A prototype that suppressed in-FB skill CDR
-      was built + verified faithful but REGRESSED three measured FB-count comps, and the owner then re-watched
-      the footage and confirmed the CDR proc DOES apply during Full Burst (DECISIONS 2026-07-21). So in-FB CDR
-      is real and is NOT the cause. The Burst-III **leftmost-tiebreak selection** (above) remains the leading
-      candidate for the 6-cast-vs-5 over-allocation — to be opened fresh. (No engine change on `main`.)
-  - **Ludmilla: Winter Owner comp** and **Rosanna: Chic Ocean comp**: both read **12 real full bursts vs the
-    sim's 13** (sim over-generates by one). The Rosanna reviewer pinned the mechanism: the sim opens its first
-    full burst at ~3.4s vs the footage's ~7s (optimal-start vs human startup lag) plus a slightly tighter cadence,
-    squeezing one extra full burst into the 180s. Since the sim's rotation is measured-exact on the owner's graded
-    scope-lock comps and first-full-burst timing is a measured constant (never refit), this 13-vs-12 gap is most
-    likely a recorder startup-lag + gear confound, NOT an engine defect.
-  Net: these strengthen "does the engine over-generate / mis-allocate bursts?" as an open thread, but none are
-  enactable from community footage (n=1, gear-confounded, engine-wide blast radius, measured-constant domain).
-  Full record: docs/handoffs/closed/2026-07-21-submission-review-session.md.
+### U16 — Per-unit rotation re-tune worklist (2026-07-16; over-generation RESOLVED 2026-07-21)
+The rotation over-generation / mis-allocation that spawned this item is RESOLVED (`STAGE_WINDOW_FRAMES`
+600→120 + first-ready stage selection; the live rotation model is `docs/STATE.md` §3, → DECISIONS 2026-07-21).
+What remains OPEN is the fit-exposure worklist: the corrected rotation exposed per-cast over-credits in
+overrides that were fit to the OLD (sometimes under-counted) rotation. **REFRAMED 2026-07-21: the "fit to the
+old rotation" premise does NOT hold** — the residual over-credits are rotation-INDEPENDENT unit-level
+over-models (chisato uniform ~1.2 across 13/13/10-FB comps; trina inversely correlated), so de-fitting
+per-cast would fudge. Each needs footage-gated per-unit localization, NOT a rotation de-fit. chisato's #1
+suspect is RESOLVED (her true-damage-window normals RETAIN core+crit — MEASURED, faithful, not the lever).
+Worklist units: chisato, trina, naga, soda-twinkling-bunny et al. — footage-gated per-unit re-tunes.
 
 ### U15 — Rapi: Red Hood explosion residual (after the 2026-07-16 reopen)
 The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,
@@ -651,66 +361,6 @@ iron-weak fight (T8, elemental advantage) and the wind-weak fight (T5, no advant
 gained less from elemental advantage in reality than the sim's x1.1 — do function-damage riders
 skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
 
-### U13 — DoT / function-rider ticks do not crit in the engine (systematic under-credit)
-**ANSWERED / LANDED 2026-07-21 — `DOT_CRIT` flipped default OFF→ON (DoT ticks + stored-hit releases
-now roll crit universally; core stays off; `DOTCRIT=off` = revert switch; per-dot explicit `crit`
-still overrides). Owner-directed; full-board A/B + ONE consolidated Fable review APPROVE; faithful>fit,
-board-NEUTRAL (weighted mean|ratio−1| 0.0710→0.0712, ±3% count 6→7). The ÷1.075 "de-crit the calibrated
-base" prep step was DROPPED — a provenance audit found ~15/17 dot bases are kit-datamined true multipliers
-(NOT crit-absorbed), so ÷1.075 would have net-degraded the board. Full ruling + evidence + queued
-follow-ups (mihara-bonding-chain suspected tuned-base double-count; function-rider path still separate) →
-DECISIONS 2026-07-21. **ada follow-up RESOLVED same day (owner ruling): TRUE DAMAGE CANNOT CRIT — her
-`flavor:"true"` grenade DoT is crit-exempt via a new engine `crit && !trueFlavor` guard (her U13-flip gain
-was spurious, reverted 0.933→0.903); the guard also fixed a pre-existing true-crit bug on ein/laplace/chisato
-true flatDamage + trueNormals windows, board-confirmed chisato 1.154→1.119. DECISIONS 2026-07-21.** Everything below is the PRE-LANDING trail;
-the DECISION-HELD and PHASE-A-RULING blocks are SUPERSEDED by the flip.**
-
-The engine gates DoT/rider crit/core behind env-only `XCRIT`/`XCORE` sets (empty by default), so
-**those hits never crit in normal runs**. But they DO crit — the MECHANIC is confirmed empirically by **ginmy.net/nikke_dot_test**: DoT
-observed ~47% crit with elem-advantage+crit vs ~10% elem-only; DoT takes ATK/element/Full-Burst/
-**crit**, subtracts DEF, but NOT distance (engine's `noRange:true` already right).
-
-OUR-FOOTAGE confirmation — **RIDER crit CONFIRMED** (maiden solo, 2026-07-14, docs/probe-data/
-maiden-solo.json): fielded alone (no FB, no buffs) her 547.62% damage rider reads a CLEAN
-non-crit/crit pair — 437296 (white) / 655945 (orange + crit icon) = **exactly ×1.5**. So her damage
-rider crits. (First attempts on LM + liberalio were INCONCLUSIVE — value-band entanglement, caught by
-`scripts/probe/hit-values.ts`: LM's 64733 is her SMG NORMAL band 14-68k not her DoT ~156-220k;
-liberalio's proc 1.13-7.73M fully overlaps her normal charge. Maiden solo was the clean subject.)
-Rider ≈ function damage; a true-DoT tick (LM-style) is the same matrix cell (crit yes, core no) and
-ginmy's dot_test confirms the DoT case directly, so the mechanic is settled: **DoT/rider damage
-crits.** Colour convention owner-confirmed (crit = orange + crit-icon; core = red "CORE HIT"; damage
-at crosshair, heals over the character).
-
-ENGINE STATUS (2026-07-14): flatDamage PROCS already crit by default (dealDamage ~920, "U1" note —
-so maiden's/liberalio's riders were already correct; the footage validated existing behavior). Only
-the **dot-tick path (sim.ts ~1479)** and **stored-hit release (~1259)** were XCRIT-gated off (15
-`kind:dot` units: LM, anis-star, privaty, mihara, jill, ada, rapi-RH, milk, guillotine, cinderella-CW,
-elegg, ein, dorothy, sakura-BiS, ark-ranger). Implemented as a `DOTCRIT=on` knob and measured:
-blast radius is small (+0.02-0.08) and MIXED — helps under-credited cold units (rapi/milk/ada/
-cinderella-CW) but pushes hot units hotter (privaty/LM/jill) and **DOUBLE-COUNTS measured-dot units**
-(guillotine's DoT is popup-measured at ~114M ≈ real; adding crit overshoots it). Board MAE is
-NET-NEUTRAL (0.1331→0.1327). **DECISION: HELD default-off** — a blanket flip destabilizes a
-well-calibrated board and refits measured values (constraint 3). The correct landing is a per-unit
-recalibration: for each dot unit, de-crit the calibrated base (÷~1.075, net-zero expected) so the
-mechanism is right AND the graded fit holds — worth it mainly for crit-BUFF interactions + variance,
-which no current recording isolates. Knob stays for that future increment.
-
-**PHASE A RULING (2026-07-20, owner) — LEAVE IN PLACE (reaffirms HELD-default-off).** The kit-audit
-implementation plan (`docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A1) routed every
-DoT/rider crit-OFF gotcha here rather than flipping the engine. Owner ruling on A1: **leave the XCRIT/
-DOTCRIT gate default-off**; this stays a tracked future increment, NOT enacted in the Phase A pass. The
-gate is the shared cause of a cluster of kit-audit findings — two sub-populations to recalibrate together
-when the increment is finally taken:
-- **DoT-tick crit-OFF** (dominant-damage DoT units read under-credited): `ada` (grenade DoT), `mana`,
-  `raven`, `rosanna-chic-ocean` (all FRESH from the 2026-07-20 audit) plus the previously-tracked
-  `kind:dot` roster; interacting magnitude/delivery questions on `bready`, `elegg-boom-and-shock`, `privaty`.
-- **`extraHitDamagePct` function-rider crit-OFF** (hard-coded `crit:false` in the rider path): `modernia`
-  (Destroy Mode 2.24%), `nayuta` (Memory Incineration 530.46%), `neon-vision-eye` (Super Firepower 262.79%).
-Enactment remains gated on: (1) a focus-video crit-signature confirmation per rider (the maiden-solo
-×1.5 read is the template), AND (2) the DoT-roster de-crit recalibration (÷~1.075) so measured-DoT units
-(e.g. guillotine, popup-measured) are not double-counted. High blast radius ⇒ a dedicated increment in a
-fresh session, never a per-unit edit inside another pass.
-
 ### U14 — When do +50% Full Burst / +30% range apply to SKILL damage? (test framework built)
 Range is SETTLED: skill/rider/DoT damage NEVER gets the +30% range bonus (`noRange` universal; ein's
 feathers "get FB but not range"). The open question is FB (+50%). Current model = per-kit `noFb` flags
@@ -767,6 +417,37 @@ shipped default (board stable at MAE 0.1298); `FBRULE=timing` is the documented 
 ---
 
 ## ANSWERED
+
+### A27 (U25) — Charge Speed formula + cinderella's RL cadence — RESOLVED 2026-07-21
+Charge Speed is **ADDITIVE** (subtractive on charge time); the divisive-formula hypothesis is REJECTED —
+do not change the global CS formula. cinderella's (`cinderella`, RL/Electric) cadence is NOT a CS effect:
+her real fire pattern is a **whole-magazine dump** (charge once ~1.0s → autofire all 24 rockets at datamine
+rate-of-fire 180 = 3/s → ~2.1s reload → recharge; ~390 pulls/180s), now modeled directly via the opt-in
+`charFixes.magDumpRof` primitive. The old `+45 chargeSpeedPct` proxy + the twin-instance `normalAttackPct
++100` are REMOVED (per pull = one rocket + the 136.6% S1 rider, popup-verified). This retires both the
+subtractive-vs-divisive CS question and the earlier intermediate "reverted, keeps proxy" state. Live cadence
+model: `docs/STATE.md` §5 (magDumpRof). → DECISIONS 2026-07-21; `src/skills/overrides/cinderella.json` note.
+
+### A28 (U18) — Sim ATK term ~+1.63% low = the unmodeled RELATIONSHIP (bond) bonus — RESOLVED + IMPLEMENTED 2026-07-16
+The residual was the unmodeled relationship (bond) ATK bonus — a flat class×MANUFACTURER stat present in
+every recording (manufacturer sets the bond cap: Pilgrim/Overspec 40, others 30; class picks the stat),
+matched to the in-game bond table exactly at the manufacturer max. IMPLEMENTED: `src/relationship.ts` +
+`data/relationship-bonus.json`, applied in the unit build (staticAtk + maxHp), default = manufacturer max
+(= the scope-lock basis + the web default); `manufacturer` synced into characters.json. Coupled follow-up
+RESOLVED the same day: `SG_LANDING_BY_BAND` recalibrated by a uniform ×0.9863 (the +1.39% uplift) so SG
+board units cancel the bond warming while the shape holds (U17). The base5-vs-OL0 gear basis was NOT
+reopened — the term is bond, not gear. → DECISIONS 2026-07-16.
+
+### A29 (U13) — DoT / function-rider ticks crit — RESOLVED 2026-07-21 (`DOT_CRIT` flipped ON)
+`DOT_CRIT` default flipped OFF→ON: DoT ticks + stored-hit releases now roll crit universally (core stays
+OFF; `DOTCRIT=off` reverts; per-dot explicit `crit` still overrides). Owner-directed; full-board A/B + Fable
+APPROVE; faithful>fit, board-neutral. The ÷1.075 "de-crit the calibrated base" prep step was DROPPED (a
+provenance audit found ~15/17 dot bases are kit-datamined true multipliers, not crit-absorbed). **Carve-out:
+TRUE DAMAGE CANNOT CRIT** — a new `crit && !trueFlavor` engine guard exempts every true-flavored hit (ada's
+grenade DoT, ein/laplace/chisato true flatDamage + trueNormals windows). Open follow-ups (footage-gated):
+mihara-bonding-chain suspected tuned-base double-count; the `extraHitDamagePct` function-rider path
+(modernia/nayuta/neon-vision-eye) stays separate/out-of-scope. Live flag: `docs/STATE.md` §1. → DECISIONS 2026-07-21.
+
 
 ### A26 — Scope-lock boss DEF is negligible — MEASURED/BOUNDED 2026-07-14
 NIKKE enemy DEF is a small FLAT subtractive value (min-1 floor), applied inside the base before the
