@@ -2962,9 +2962,19 @@ footer {
   gap: 8px;
 }
 /* inside the Browse Nikkes modal the actions sit between the staged portraits
-   and the filter grid — give them breathing room on both sides */
+   and the filter grid — give them breathing room on both sides. Sticky so the
+   Save button stays pinned to the top of the modal scroll once you've scrolled
+   past it. Only the button rides along: the bar behind it stays transparent and
+   click-through, so the grid scrolling underneath remains visible and clickable. */
 .modal-wide .teambuilder-actions {
   margin: 12px 0 14px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+.modal-wide .teambuilder-actions .teambuilder-action {
+  pointer-events: auto;
 }
 .teambuilder-action {
   background: var(--panel2);
@@ -2975,10 +2985,31 @@ footer {
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s,
+    filter 0.15s;
 }
 .teambuilder-action:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
+}
+/* primary commit action (Save Team / Save Roster) — accent blue when enabled */
+.teambuilder-action.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1220;
+}
+.teambuilder-action.primary:hover:not(:disabled) {
+  color: #0b1220;
+  filter: brightness(1.12);
+}
+/* a disabled primary falls back to the same greyed-out look as the others */
+.teambuilder-action.primary:disabled {
+  background: var(--panel2);
+  border-color: var(--border);
+  color: var(--text);
 }
 .teambuilder-action:disabled {
   opacity: 0.45;

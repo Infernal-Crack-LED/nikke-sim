@@ -201,9 +201,14 @@ export function BrowseRosterNikkesModal({
   const rows = staged.length;
   const reorder = useDragReorder(
     (from, to) => {
+      // absolute placement: the dragged unit lands exactly on the target slot
+      // and swaps with whatever was there. A splice here shifted every unit
+      // between source and target, so dragging one portrait re-ordered the
+      // whole row behind it.
       const flat = staged.flat();
-      const [item] = flat.splice(from, 1);
-      flat.splice(to, 0, item);
+      const tmp = flat[from];
+      flat[from] = flat[to];
+      flat[to] = tmp;
       onStagedChange(
         Array.from({ length: rows }, (_, t) => flat.slice(t * 5, t * 5 + 5)),
       );

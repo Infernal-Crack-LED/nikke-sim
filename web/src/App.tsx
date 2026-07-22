@@ -3019,6 +3019,31 @@ export function App({ user }: { user: AuthUser | null }) {
     }
     setRosterActive(n);
   };
+  // drag-to-reorder on the grid itself (mirrors the Browse Nikkes modal): a drag
+  // swaps the two slots (absolute placement, no row-shifting); a press without
+  // movement toggles the slot's picker targeting, same as a click.
+  const rosterPageReorder = useDragReorder(
+    (from, to) => {
+      setRosterSim((r) => {
+        const flat = r.flat();
+        const tmp = flat[from];
+        flat[from] = flat[to];
+        flat[to] = tmp;
+        return Array.from({ length: r.length }, (_, t) =>
+          flat.slice(t * 5, t * 5 + 5),
+        );
+      });
+      setRosterSimResults(null);
+    },
+    (i) => {
+      const t = Math.floor(i / 5);
+      const u = i % 5;
+      setRosterActive((cur) =>
+        cur && cur[0] === t && cur[1] === u ? null : [t, u],
+      );
+    },
+    { ignoreFrom: '.chip-x' },
+  );
   const toTeamResult = (r: SimResult): TeamResult => ({
     slugs: r.units.map((u) => u.slug),
     teamDamage: r.teamDamage,
@@ -3115,6 +3140,29 @@ export function App({ user }: { user: AuthUser | null }) {
     }
     setUnionRosterActive(n);
   };
+  // drag-to-reorder on the union grid (3×5) — same swap/tap behaviour as solo
+  const unionPageReorder = useDragReorder(
+    (from, to) => {
+      setUnionRosterSim((r) => {
+        const flat = r.flat();
+        const tmp = flat[from];
+        flat[from] = flat[to];
+        flat[to] = tmp;
+        return Array.from({ length: r.length }, (_, t) =>
+          flat.slice(t * 5, t * 5 + 5),
+        );
+      });
+      setUnionRosterSimResults(null);
+    },
+    (i) => {
+      const t = Math.floor(i / 5);
+      const u = i % 5;
+      setUnionRosterActive((cur) =>
+        cur && cur[0] === t && cur[1] === u ? null : [t, u],
+      );
+    },
+    { ignoreFrom: '.chip-x' },
+  );
   const setUnionBossOpt = (ti: number, patch: Partial<UnionBossOpts>) =>
     setUnionBossOpts((prev) =>
       prev.map((o, i) => (i === ti ? { ...o, ...patch } : o)),
@@ -3547,13 +3595,19 @@ export function App({ user }: { user: AuthUser | null }) {
               const c = slug ? data.characters[slug] : null;
               const active =
                 rosterActive?.[0] === ti && rosterActive?.[1] === ui;
+              const i = ti * 5 + ui;
               return (
                 <button
                   key={ui}
                   type='button'
-                  className={`team-chip roster-slot${active ? ' active' : ''}`}
+                  ref={rosterPageReorder.register(i)}
+                  className={
+                    'team-chip roster-slot' +
+                    (active ? ' active' : '') +
+                    (rosterPageReorder.dragIndex === i ? ' dragging' : '')
+                  }
                   title={c?.name ?? `team ${ti + 1} · slot ${ui + 1}`}
-                  onClick={() => setRosterActive(active ? null : [ti, ui])}
+                  {...rosterPageReorder.handleProps(i)}
                 >
                   {c?.imageUrl ? (
                     <img
@@ -3678,15 +3732,19 @@ export function App({ user }: { user: AuthUser | null }) {
                 const active =
                   unionRosterActive?.[0] === ti &&
                   unionRosterActive?.[1] === ui;
+                const i = ti * 5 + ui;
                 return (
                   <button
                     key={ui}
                     type='button'
-                    className={`team-chip roster-slot${active ? ' active' : ''}`}
-                    title={c?.name ?? `team ${ti + 1} · slot ${ui + 1}`}
-                    onClick={() =>
-                      setUnionRosterActive(active ? null : [ti, ui])
+                    ref={unionPageReorder.register(i)}
+                    className={
+                      'team-chip roster-slot' +
+                      (active ? ' active' : '') +
+                      (unionPageReorder.dragIndex === i ? ' dragging' : '')
                     }
+                    title={c?.name ?? `team ${ti + 1} · slot ${ui + 1}`}
+                    {...unionPageReorder.handleProps(i)}
                   >
                     {c?.imageUrl ? (
                       <img
@@ -7168,7 +7226,7 @@ export function App({ user }: { user: AuthUser | null }) {
           onClose={() => setShowPicker(false)}
           actions={
             <button
-              className='teambuilder-action'
+              className='teambuilder-action primary'
               disabled={!pickerStaged.some(Boolean)}
               title='apply this team to the five slots on the page'
               onClick={savePickerToSim}
@@ -7186,7 +7244,7 @@ export function App({ user }: { user: AuthUser | null }) {
           onClose={() => setShowRosterPicker(false)}
           actions={
             <button
-              className='teambuilder-action'
+              className='teambuilder-action primary'
               disabled={!rosterPickerStaged.flat().some(Boolean)}
               title='apply this roster to the page'
               onClick={savePickerToRoster}
@@ -7204,7 +7262,7 @@ export function App({ user }: { user: AuthUser | null }) {
           onClose={() => setShowUnionRosterPicker(false)}
           actions={
             <button
-              className='teambuilder-action'
+              className='teambuilder-action primary'
               disabled={!unionRosterPickerStaged.flat().some(Boolean)}
               title='apply this roster to the page'
               onClick={saveUnionPickerToRoster}
