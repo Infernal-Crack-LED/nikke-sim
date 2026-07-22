@@ -97,6 +97,26 @@
       "whatThisSettles": "the FORM question inside step 3 — landing is the boss body's coverage of the aim circle, not a spread disc pellets can escape. It is not a licence to freeze the values: see the measured-vs-table gap below.",
       "measuredVsCurrentTable": "the owner's own HR-off count is a direct measurement of that same quantity and matches BAND_SG_HIT_FRAC at near (0.780 vs 0.797) but not elsewhere: mid 0.775 vs 0.710, midfar 0.700 vs 0.634, far 0.640 vs 0.465 (a 0.175 gap, 38% relative). So the form is validated and the values are measurably improvable, far most of all — worth re-raising before step 3 freezes them."
     },
+    "vsTheSim": {
+      "premise": "VERIFIED — soda-twinkling-bunny's Hit Rate ▲38.91 is UNMODELED (her override mentions it in prose only, no hitRatePct block; none of little-mermaid / crown / helm grants Hit Rate either). So the sim runs her at hr=0 for the whole fight and has NO ON/OFF arms: one core value and one landing value per band, applied to every shot.",
+      "hrOnShareOfHerShots": "45% — her HR is on 75 s (5 x 15 s), helm's full bursts cover ~70 s more, leaving ~35 s of out-of-full-burst gaps (~5-6 s each, matching the owner's account). At ~1.33 shots/s inside a full burst and ~0.85 outside, that is ~100 HR-on shots of ~223.",
+      "core": {
+        "note": "measured ON / measured OFF / fight-average at the 45% split / what the sim applies",
+        "near": { "on": 0.074, "off": 0.0, "fightAvg": 0.033, "sim": 0.073, "simOver": "2.19x" },
+        "mid": { "on": 0.029, "off": 0.032, "fightAvg": 0.031, "sim": 0.06, "simOver": "1.96x" },
+        "midfar": { "on": 0.079, "off": 0.0, "fightAvg": 0.035, "sim": 0.034, "simOver": "0.96x" },
+        "far": { "on": 0.022, "off": 0.0, "fightAvg": 0.01, "sim": 0.022, "simOver": "2.24x" },
+        "strength": "the OFF arm is thin per band (0 cores in 28-39 pellets), but POOLED the sim expects ~6.4 cores across the 130 OFF pellets and 1 was seen: P(<=1) ~ 0.011. So the over-credit in the HR-off state — which is 55% of her shots — is supported."
+      },
+      "compensatingErrorFinding": "MODELLING HER HIT RATE FAITHFULLY WOULD MAKE THE SIM WORSE IN EVERY BAND. Fight-average measured vs sim-today vs sim-with-HR: near 0.033 / 0.073 / 0.113; mid 0.031 / 0.060 / 0.093; midfar 0.035 / 0.034 / 0.053; far 0.010 / 0.022 / 0.035. The unmodelled HR block is currently masking the cone's over-prediction. Adding it — the obviously 'faithful' fix, and an open item in her override note — would roughly double the error. This is a compensating-error pair and neither half should be touched alone.",
+      "landing": {
+        "note": "sim table vs measured. The ON arm is a complete census (ammo-trace verified), so the ON column alone is a lower bound on the sim's error.",
+        "vsCompleteCensusOnArm": { "near": "sim 0.888 vs 0.931 = 0.95x (sim LOW)", "mid": "sim 0.986 vs 0.916 = 1.08x", "midfar": "sim 0.888 vs 0.778 = 1.14x", "far": "sim 0.740 vs 0.711 = 1.04x" },
+        "vsFightAverage": { "near": "1.05x", "mid": "1.18x", "midfar": "1.21x", "far": "1.10x" },
+        "shapeError": "ROBUST, independent of the OFF-arm counting question: the sim's table says mid (0.986) > near (0.888); the measurement says mid ~ near in both arms (ON 0.916 vs 0.931, OFF 0.775 vs 0.780). The mid cell is the worst in the table."
+      },
+      "combinedOnHerSgNormals": "landing x (1 + core): sim over-credits by 8.7% near, 20.9% mid, 20.6% midfar, 11.5% far — ~15% mean. Sign and size are consistent with her sitting HOT, though note her only GRADED comp is N3 (boss Iron, reading ~1.015); the control comp this count comes from is ungraded, so that cross-check is indicative rather than direct."
+    },
     "shotCountReconciliation": {
       "why": "The ON/OFF shot-rate gap (1.50/s vs 0.46/s) was checked against the ammo counter rather than accepted, because the landing comparison rests on the OFF arm being a complete sample. Owner's account: every window had exactly 1 reload, and the reload eats a larger share of the shorter OFF window.",
       "near_ON_163.5_175.5": "AMMO TRACE MATCHES THE COUNT EXACTLY. Readings 007(163.5) -> 000(167.8) = 7 shots, reload, 009(169.0) -> 000(~174.4) = 9 shots, total ~16 = the 16 shots counted. The ON arm is a complete census.",
