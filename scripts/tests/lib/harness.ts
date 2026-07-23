@@ -151,24 +151,28 @@ export function bareWeaponOverride(slug: string): OverrideFile {
 export const CLEAN_WEAPON_BOSS_ELEMENT: Element = 'Iron';
 
 /**
- * Two teams of three (owner constraint: the six cannot be fielded as one team), split by
- * BURST STAGE so that team A cannot burst at all — it has no Burst I unit, so the chain
- * never opens and zero bursts are cast. Team B is all Burst I: its bursts DO cast, but
- * with an empty burst block that is provably free (no cast lock in the fire loop —
- * pinned by the `burst casting is uptime-inert` assertion).
+ * Two teams of three — the owner cannot field the six as one team.
  *
- * Each team fields three DISTINCT weapon classes, so the two runs together cover all six.
+ * The split is by BURST STAGE so the two teams disagree about bursting for a SECOND,
+ * independent reason: team A has no Burst I unit, so its chain could never open even if
+ * bursting were left on. `cfg.disableBursts` already guarantees zero casts for BOTH teams,
+ * which makes team A a redundant structural check on that flag rather than the thing holding
+ * the basis up. Each team fields three DISTINCT weapon classes; together they cover all six.
  */
 export const CLEAN_WEAPON_TEAMS = {
-  /** Burst II — structurally zero burst casts. AR / SG / SR. */
+  /** Burst II — also structurally unable to open a chain. AR / SG / SR. */
   a: ['folkwang', 'marciana', 'snow-crane'],
-  /** Burst I — bursts cast but are inert. MG / RL / SMG. */
+  /** Burst I — would cast if bursting were on, which is what makes it the real test. MG / RL / SMG. */
   b: ['emma', 'claire', 'idoll-ocean'],
 } as const;
 
 export const CLEAN_WEAPON_SLUGS = [...CLEAN_WEAPON_TEAMS.a, ...CLEAN_WEAPON_TEAMS.b];
 
-/** A bare-weapon comp: every slug's kit zeroed, on the neutral-for-all boss. */
+/**
+ * A bare-weapon comp: every slug's kit zeroed, bursting turned OFF, on the neutral-for-all
+ * boss. `disableBursts` matches how the owner records these fights (bursting is off in game),
+ * so the sim models that directly rather than relying on the units' burst blocks being empty.
+ */
 export const bareWeaponComp = (
   slugs: readonly string[],
   extra: Partial<CompOptions> = {},
@@ -177,6 +181,7 @@ export const bareWeaponComp = (
   bossElement: CLEAN_WEAPON_BOSS_ELEMENT,
   overrides: Object.fromEntries(slugs.map((s) => [s, bareWeaponOverride(s)])),
   ...extra,
+  cfg: { disableBursts: true, ...extra.cfg },
 });
 
 // ---- generator-suite pool ------------------------------------------------------------

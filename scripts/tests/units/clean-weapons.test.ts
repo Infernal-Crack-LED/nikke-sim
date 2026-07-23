@@ -45,13 +45,22 @@ import {
   unitOf,
 } from '../lib/harness.js';
 
-/** Collect the structured event log alongside the result. */
-function runWithEvents(slugs: readonly string[], bossElement: Element | null = CLEAN_WEAPON_BOSS_ELEMENT) {
+/**
+ * Collect the structured event log alongside the result. `bursting` re-enables bursts for the
+ * counterfactual runs that have to show the flag is what suppresses them — note it must be
+ * merged INTO cfg, since replacing cfg wholesale would silently drop `disableBursts`.
+ */
+function runWithEvents(
+  slugs: readonly string[],
+  bossElement: Element | null = CLEAN_WEAPON_BOSS_ELEMENT,
+  bursting = false,
+) {
   const events: SimEvent[] = [];
+  const base = bareWeaponComp(slugs);
   const res = runComp({
-    ...bareWeaponComp(slugs),
+    ...base,
     bossElement,
-    cfg: { onEvent: (ev: SimEvent) => events.push(ev) },
+    cfg: { ...base.cfg, disableBursts: !bursting, onEvent: (ev: SimEvent) => events.push(ev) },
   });
   return { res, events };
 }
@@ -122,46 +131,49 @@ describe('CW1 — the clean-weapon six are damage-inert (premise pinned)', () =>
 // CW2 — P2a: bursts are disabled
 // ---------------------------------------------------------------------------------------
 describe('CW2 — bursts are disabled', () => {
-  it('team A (all Burst II) casts ZERO bursts — no Burst I unit ever opens the chain', () => {
-    const { events, res } = runWithEvents(CLEAN_WEAPON_TEAMS.a);
-    expect(countKind(events, 'burstCast')).toBe(0);
-    for (const u of res.units) expect(u.burstCasts, u.slug).toBe(0);
-  });
+  it.each(Object.entries(CLEAN_WEAPON_TEAMS))(
+    'team %s casts ZERO bursts and never reaches Full Burst',
+    (_label, slugs) => {
+      const { events, res } = runWithEvents(slugs);
+      expect(countKind(events, 'burstCast')).toBe(0);
+      expect(countKind(events, 'fullBurstStart')).toBe(0);
+      for (const u of res.units) expect(u.burstCasts, u.slug).toBe(0);
+    },
+  );
 
-  it('neither team ever reaches Full Burst — no Burst III unit exists in either', () => {
-    for (const [label, slugs] of Object.entries(CLEAN_WEAPON_TEAMS)) {
-      const { events } = runWithEvents(slugs);
-      expect(countKind(events, 'fullBurstStart'), `team ${label}`).toBe(0);
-    }
-  });
-
-  it('team B (all Burst I) DOES cast — which is why CW3 has to prove casting is free', () => {
-    // Discrimination: if this were 0, CW3 would pass vacuously and the "casts are inert"
-    // claim would never actually be exercised.
-    const { events } = runWithEvents(CLEAN_WEAPON_TEAMS.b);
+  it('team B WOULD cast with bursting on — so the flag is what suppresses it', () => {
+    // Discrimination, and the reason team B is the real test of the flag: it is all Burst I,
+    // so its chain opens unaided. Without this, CW2 could pass on a comp that never had a
+    // castable burst in the first place — which is exactly team A's situation.
+    const { events } = runWithEvents(CLEAN_WEAPON_TEAMS.b, CLEAN_WEAPON_BOSS_ELEMENT, true);
     expect(countKind(events, 'burstCast')).toBeGreaterThan(0);
+  });
+
+  it('team A could not open a chain even with bursting on — a second, independent guarantee', () => {
+    // Not made redundant by the flag: team A's baselines are bare-weapon under EITHER
+    // mechanism, so a future regression in `disableBursts` cannot silently corrupt them.
+    const { events } = runWithEvents(CLEAN_WEAPON_TEAMS.a, CLEAN_WEAPON_BOSS_ELEMENT, true);
+    expect(countKind(events, 'burstCast')).toBe(0);
   });
 });
 
 // ---------------------------------------------------------------------------------------
-// CW3 — P2b: casting a no-op burst costs NOTHING
+// CW3 — P2b: turning bursting off does not itself move the numbers
 // ---------------------------------------------------------------------------------------
-// The one place "bursts disabled" could leak into the numbers: if the engine charged weapon
-// uptime for a burst cast (an animation lock), then a unit that casts would fire fewer shots
-// than the same unit that never casts, and team B's baselines would not be bare-weapon.
-// It does not — there is no cast lock in the fire loop — and this pins that.
-describe('CW3 — a no-op burst cast is uptime-inert', () => {
-  it('marciana is byte-identical whether she casts 0 bursts or several', () => {
-    // Same unit, same config, only the TEAMMATES differ: alongside Burst I units the chain
-    // opens and she casts; in team A it never does.
-    const neverCasts = runComp(bareWeaponComp(CLEAN_WEAPON_TEAMS.a));
-    const doesCast = runComp(bareWeaponComp(['marciana', ...CLEAN_WEAPON_TEAMS.b]));
+// `disableBursts` must SUPPRESS bursts and do nothing else. If it leaked into weapon uptime —
+// or if a no-op burst cast had ever cost uptime (an animation lock) — the flag would change
+// bare-weapon damage and the CW5 baselines would depend on it. Neither is true, and this pins
+// both at once: team B casts 15 bursts with the flag off and 0 with it on, for identical damage.
+describe('CW3 — disabling bursts suppresses casts and nothing else', () => {
+  it('team B is byte-identical with bursting on and off', () => {
+    const off = runWithEvents(CLEAN_WEAPON_TEAMS.b, CLEAN_WEAPON_BOSS_ELEMENT, false);
+    const on = runWithEvents(CLEAN_WEAPON_TEAMS.b, CLEAN_WEAPON_BOSS_ELEMENT, true);
 
-    expect(unitOf(neverCasts, 'marciana').burstCasts).toBe(0);
-    expect(unitOf(doesCast, 'marciana').burstCasts).toBeGreaterThan(0);
-    // Byte-identical, not "close": a cast costs exactly zero weapon uptime.
-    expect(unitOf(doesCast, 'marciana').totalDamage)
-      .toBe(unitOf(neverCasts, 'marciana').totalDamage);
+    // The runs really do differ in burst behaviour — otherwise the equality below is vacuous.
+    expect(countKind(off.events, 'burstCast')).toBe(0);
+    expect(countKind(on.events, 'burstCast')).toBeGreaterThan(0);
+    // Byte-identical, not "close".
+    expect(totals(off.res)).toEqual(totals(on.res));
   });
 
   it('every unit is identical solo and in its team — the six never interact', () => {
