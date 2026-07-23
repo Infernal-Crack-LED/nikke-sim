@@ -70,6 +70,17 @@ export interface CompOptions {
   overrides?: Record<string, OverrideFile | undefined>;
   /** Extra SimConfig fields (still on the scope-lock basis). */
   cfg?: Partial<SimConfig>;
+  /**
+   * Per-unit Limit Break stars (0–3) / Core enhancement (0–7), by slug. Overrides the
+   * scope-lock `copies: 10` (⇒ 3★ + core 7) for that unit only.
+   *
+   * Needed because scope lock encodes an SSR ceiling: a non-SSR unit CANNOT reach 3★/core 7,
+   * so running one on the plain basis hands it stats it can never have in game (owner,
+   * 2026-07-23). Damage is very nearly linear in ATK (boss DEF is subtracted per hit, so not
+   * exactly), which makes the error a near-pure scalar — invisible in the shape of a fight,
+   * fatal to any sim-vs-real ratio.
+   */
+  unitLimits?: Record<string, { stars?: number; core?: number }>;
 }
 
 /** Run a scope-lock comp. Deterministic (no seed) unless `cfg.seed` is passed. */
@@ -83,7 +94,7 @@ export function runComp(o: CompOptions): SimResult {
   });
   const prepared = prepareTeam(
     chars,
-    o.slugs.map(() => ({ doll: false, ol: 'base5' as const })),
+    o.slugs.map((s) => ({ doll: false, ol: 'base5' as const, ...o.unitLimits?.[s] })),
     { overrides, ...deps },
   );
   const cfg = scopeLockCfg(
@@ -169,9 +180,32 @@ export const CLEAN_WEAPON_TEAMS = {
 export const CLEAN_WEAPON_SLUGS = [...CLEAN_WEAPON_TEAMS.a, ...CLEAN_WEAPON_TEAMS.b];
 
 /**
- * A bare-weapon comp: every slug's kit zeroed, bursting turned OFF, on the neutral-for-all
- * boss. `disableBursts` matches how the owner records these fights (bursting is off in game),
- * so the sim models that directly rather than relying on the units' burst blocks being empty.
+ * RARITY CEILINGS (owner, 2026-07-23). Scope lock's `copies: 10` encodes an SSR ceiling —
+ * 3★ + core 7 — which a non-SSR unit can never reach. Two of the six are not SSR, so running
+ * them on the plain basis would credit them stats they cannot have in game:
+ *
+ *   idoll-ocean  0★ / core 0   (no dupes at all)    ATK 68,928 vs 81,530 on plain scope lock
+ *   claire       2★ / core 0   (2 dupes, no cores)  ATK 79,200 vs 90,632 on plain scope lock
+ *
+ * Uncapped they would deal 15.5% / 12.6% more damage than they can. Damage is very nearly
+ * linear in ATK for a bare weapon (boss DEF is subtracted per hit, so not exactly), making
+ * each error a near-pure scalar: it would not distort the SHAPE of a fight, but it makes the
+ * sim-vs-real ratio meaningless — which is the entire output of this basis. The other four
+ * are SSR and take the plain scope-lock ceiling.
+ *
+ * ⚠ `data/characters.json` carries NO unit-rarity field (the only `rarity` in the repo is doll
+ * rarity), so nothing derives or enforces these — they are owner-supplied and hand-maintained.
+ */
+export const CLEAN_WEAPON_LIMITS: Record<string, { stars: number; core: number }> = {
+  'idoll-ocean': { stars: 0, core: 0 },
+  claire: { stars: 2, core: 0 },
+};
+
+/**
+ * A bare-weapon comp: every slug's kit zeroed, bursting turned OFF, rarity ceilings applied,
+ * on the neutral-for-all boss. `disableBursts` matches how the owner records these fights
+ * (bursting is off in game), so the sim models that directly rather than relying on the units'
+ * burst blocks being empty.
  */
 export const bareWeaponComp = (
   slugs: readonly string[],
@@ -180,6 +214,7 @@ export const bareWeaponComp = (
   slugs: [...slugs],
   bossElement: CLEAN_WEAPON_BOSS_ELEMENT,
   overrides: Object.fromEntries(slugs.map((s) => [s, bareWeaponOverride(s)])),
+  unitLimits: CLEAN_WEAPON_LIMITS,
   ...extra,
   cfg: { disableBursts: true, ...extra.cfg },
 });

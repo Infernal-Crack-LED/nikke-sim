@@ -8,11 +8,19 @@
 // so a recording of them measures the weapon model with no kit encoding in the way. The pinned
 // totals in CW5 are the sim side of that comparison.
 //
-// THE THREE PREMISES this suite exists to hold, each pinned by its own group (a premise that
+// THE FOUR PREMISES this suite exists to hold, each pinned by its own group (a premise that
 // isn't asserted is a premise that silently rots):
 //   P1  the six kits really are damage-inert           → CW1
 //   P2  bursts are disabled, and that is FREE          → CW2, CW3
 //   P3  the boss element is neutral for all six        → CW4
+//   P4  each unit sims at stats it can actually reach  → CW5
+//
+// P4: scope lock's `copies: 10` encodes an SSR ceiling (3★ + core 7). Two of the six are not
+// SSR — idoll-ocean can hold no dupes at all and claire 2 dupes with no cores — so the plain
+// basis credits them ATK they can never have, worth 15.5% / 12.6% of their damage.
+// `CLEAN_WEAPON_LIMITS` caps them. Damage is very nearly linear in ATK for a bare weapon (boss
+// DEF is subtracted per hit, so not exactly), making the error a near-pure scalar: harmless to
+// the SHAPE of a fight, fatal to the sim-vs-real ratio that is this basis's only output.
 //
 // P1 IS THE FRAGILE ONE and it is NOT fully machine-checkable — it rests on a human read of the
 // kit prose (all six are heal / shield / Max HP / incoming-healing / DEF / taunt only). CW1
@@ -36,6 +44,7 @@ import { describe, expect, it } from 'vitest';
 import type { Element, SimEvent } from '../../../src/types.js';
 import {
   CLEAN_WEAPON_BOSS_ELEMENT,
+  CLEAN_WEAPON_LIMITS,
   CLEAN_WEAPON_SLUGS,
   CLEAN_WEAPON_TEAMS,
   bareWeaponComp,
@@ -229,8 +238,10 @@ describe('CW4 — boss element Iron is neutral for all six', () => {
 // ---------------------------------------------------------------------------------------
 // CW5 — the baselines themselves
 // ---------------------------------------------------------------------------------------
-// Scope lock (sync 400, Base-5 gear, 10/10/10, no cube/doll, core 7, boss DEF 140,
-// coreHitRate 1 = "core 100", range bonus on, 180 s), boss Iron, bursts disabled.
+// Scope lock (sync 400, Base-5 gear, 10/10/10, no cube/doll, boss DEF 140, coreHitRate 1 =
+// "core 100", range bonus on, 180 s), boss Iron, bursts disabled — with the CLEAN_WEAPON_LIMITS
+// rarity ceilings applied, so idoll-ocean runs 0★/core 0 and claire 2★/core 0 rather than
+// scope lock's SSR 3★/core 7.
 //
 // THIS IS THE SIM SIDE OF THE FAITHFULNESS TEST. Each row is one weapon class's predicted
 // 180-second output with no kit whatsoever, so a recorded fight scores the weapon model
@@ -240,8 +251,8 @@ const BASELINE: Record<string, number> = {
   marciana:      35163154.4909,
   'snow-crane':  29018295.6903,
   emma:          58117326.0183,
-  claire:        27520845.5655,
-  'idoll-ocean': 27897286.3181,
+  claire:        24044092.8525,
+  'idoll-ocean': 23577817.0691,
 };
 
 describe('CW5 — bare-weapon baselines (scope lock, boss Iron, core 100, no bursts)', () => {
@@ -249,6 +260,22 @@ describe('CW5 — bare-weapon baselines (scope lock, boss Iron, core 100, no bur
     const got = totals(runComp(bareWeaponComp(slugs)));
     for (const slug of slugs) {
       expect(got[slug], slug).toBeCloseTo(BASELINE[slug], 4);
+    }
+  });
+
+  it('the rarity ceilings are actually applied — not silently ignored', () => {
+    // Discrimination: without this, a fixture that dropped `unitLimits` would still pass CW5
+    // as soon as someone re-pinned the baselines, and the over-credited SSR stats would be back
+    // with nothing to catch them. Asserted on staticAtk, which is where the ceiling acts.
+    const EXPECTED_ATK: Record<string, { capped: number; ssr: number }> = {
+      'idoll-ocean': { capped: 68928, ssr: 81530 }, // 0★/core 0 — plain scope lock over-credits 18.3%
+      claire: { capped: 79200, ssr: 90632 },        // 2★/core 0 — plain scope lock over-credits 14.4%
+    };
+    for (const slug of Object.keys(CLEAN_WEAPON_LIMITS)) {
+      const capped = unitOf(runComp(bareWeaponComp([slug])), slug);
+      const ssr = unitOf(runComp(bareWeaponComp([slug], { unitLimits: {} })), slug);
+      expect(capped.staticAtk, slug).toBe(EXPECTED_ATK[slug].capped);
+      expect(ssr.staticAtk, `${slug} without the ceiling`).toBe(EXPECTED_ATK[slug].ssr);
     }
   });
 

@@ -10,22 +10,46 @@ Ruling + rationale: `docs/DECISIONS.md` (2026-07-23).
 
 ## The six
 
-Fielded as **two teams of three** (they cannot be fielded as one team), split by burst stage so
-that team A cannot burst at all. Boss element **Iron** — the only element neutral for all six.
+Fielded as **two teams of three** (they cannot be fielded as one team). Boss element **Iron** —
+the only element neutral for all six.
 
-| team | unit | weapon | element | burst | notes |
-|---|---|---|---|---|---|
-| A | `folkwang` | AR | Water | II | shields / taunt / Max HP only |
-| A | `marciana` | SG | Iron | II | heals / DEF only |
-| A | `snow-crane` | SR | Water | II | ⚠ burst grants **Pierce** — "never burst" is load-bearing here |
-| B | `emma` | MG | Fire | I | heals only |
-| B | `claire` | RL | Electric | I | heals / shield only |
-| B | `idoll-ocean` | SMG | Water | I | heals only |
+| team | unit | weapon | element | burst | ★/core | notes |
+|---|---|---|---|---|---|---|
+| A | `folkwang` | AR | Water | II | 3★/7 | shields / taunt / Max HP only |
+| A | `marciana` | SG | Iron | II | 3★/7 | heals / DEF only |
+| A | `snow-crane` | SR | Water | II | 3★/7 | ⚠ burst grants **Pierce** — "never burst" is load-bearing here |
+| B | `emma` | MG | Fire | I | 3★/7 | heals only |
+| B | `claire` | RL | Electric | I | **2★/0** | heals / shield only; not SSR |
+| B | `idoll-ocean` | SMG | Water | I | **0★/0** | heals only; not SSR |
 
-**Team A is all Burst II**, so no Burst I unit ever opens the chain and it casts **zero** bursts.
-**Team B is all Burst I** and does cast, but a no-op burst is uptime-inert (there is no
-cast-animation lock in the fire loop), so its numbers are bare-weapon too. Neither team reaches
-Full Burst — there is no Burst III unit in either.
+## Bursts are off
+
+The sim models this directly via **`cfg.disableBursts`**, matching the in-game setting — the
+burst chain never opens, so nothing is cast, no stage advances, and Full Burst never happens.
+The gauge still fills and sits pinned at 100. It does not touch damage: team B casts 15 bursts
+with the flag off and 0 with it on, for byte-identical damage.
+
+Team A is additionally all Burst II, so it could not open a chain even with bursting on — a
+second, independent guarantee kept so a regression in the flag cannot silently corrupt its
+baselines. Neither team has a Burst III unit, so neither could reach Full Burst regardless.
+
+## Rarity ceilings
+
+Scope lock's `copies: 10` encodes an **SSR** ceiling (3★ + core 7). Two of the six are not SSR
+and cannot reach it, so the fixture caps them per-unit (`CLEAN_WEAPON_LIMITS`):
+
+| unit | can reach | ATK capped | ATK on plain scope lock | damage over-credit if uncapped |
+|---|---|---|---|---|
+| `idoll-ocean` | 0★ / core 0 | 68,928 | 81,530 | **15.5%** |
+| `claire` | 2★ / core 0 | 79,200 | 90,632 | **12.6%** |
+
+Damage is very nearly linear in ATK for a bare weapon (boss DEF is subtracted per hit, so not
+exactly), so the error is a near-pure scalar — harmless to the *shape* of a fight, fatal to the
+sim-vs-real ratio that is this basis's only output.
+
+⚠ **`data/characters.json` carries no unit-rarity field** (the only `rarity` in the repo is doll
+rarity), so nothing derives or enforces these — they are owner-supplied and hand-maintained.
+This is latent for any non-SSR unit anywhere in the sim, not just these two.
 
 ## Boss element
 
@@ -51,6 +75,19 @@ during Full Burst"*), but S1 block 1 does not:
 That fires off a normal-attack counter with no burst dependency — 261.2% ATK per proc every 36
 shots, against a 13.65% normal multiplier. She is not a bare weapon. `folkwang` is the only AR
 with zero damage-touching lines including her burst.
+
+## Why the SMG slot has no alternative
+
+`idoll-ocean` is not SSR, but she is the **only** viable SMG. Of 30 SMG units, exactly three have
+no damage-raising line in skill 1 + skill 2 (the burst is irrelevant — bursts are off):
+
+- `idoll-ocean` — heals only. ✅
+- `rei` (SMG/Water, *not* `rei-ayanami`) — clean, but **not owned**.
+- `mica-snow-buddy` — **not clean**: *"Max Ammunition Capacity ▲ 40% continuously"* raises fire
+  uptime, and so raises damage.
+
+Every other SMG carries an explicit offensive line (ATK ▲, Critical, Hit Rate, Reload Speed,
+Attack Speed, direct damage, or an enemy `DEF ▼` / `Damage Taken ▲`).
 
 ## Fixture note
 
