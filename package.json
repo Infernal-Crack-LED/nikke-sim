@@ -19,6 +19,8 @@
     "start": "node scripts/serve.mjs",
     "typecheck": "tsc -p web/tsconfig.json --noEmit && tsc -p tsconfig.json --noEmit",
     "test": "npm run web:build && node scripts/web-smoke.mjs",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "test:dpschart": "npm run dpschart && npm run build && node scripts/web-smoke-dpschart.mjs"
   },
   "dependencies": {
@@ -37,6 +39,7 @@
     "jsdom": "^29.1.1",
     "playwright": "^1.61.1",
     "tsx": "^4.19.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^4.1.10"
   }
 }

@@ -16,7 +16,7 @@ Anything in this file is **findings-only until separately gated**. Nothing here 
 ## 1. `durationShots` — round-count buff duration (primitive)
 
 **Status: LANDED for `helm` ONLY** 2026-07-23 (owner scope ruling → DECISIONS; live model
-`docs/STATE.md` §5; functional test `scripts/tests/duration-shots.test.ts` in verify.sh). Every other
+`docs/STATE.md` §5; functional test `scripts/tests/engine/duration-shots.test.ts` in verify.sh). Every other
 carrier below is UNTOUCHED and unaudited — the primitive now exists, so wiring one is cheap, but each
 still needs its own look before it moves a board number.
 

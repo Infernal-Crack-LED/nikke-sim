@@ -40,14 +40,11 @@ npx tsx scripts/regression.ts
 say "control regression (720-kit-audit liter/crown/helm support-core suite — damage snapshots)"
 npx tsx scripts/control-regression.ts | tail -1
 
-say "engine primitive tests (reload-triggered buff removal)"
-npx tsx scripts/tests/reload-buff-removal.test.ts | tail -1
-
-say "engine primitive tests (durationShots round-count buff duration — spans a reload, holder-scoped)"
-npx tsx scripts/tests/duration-shots.test.ts | tail -1
-
-say "engine primitive tests (named target-status gate — name-keying + multi-status isolation)"
-npx tsx scripts/tests/target-status-gate.test.ts | tail -1
+say "unit tests (vitest: engine primitives + per-unit kit specs + generator logic)"
+# ONE step by design: the glob in vitest.config.ts (scripts/tests/**/*.test.ts) wires in every
+# test file by existing. Naming files individually here is what left 6 of the 9 bespoke tests
+# orphaned/unwatched before the 2026-07-23 TDD transition.
+npx vitest run
 
 say "overload roll-cost regression (model invariants + analytic/MC + determinism)"
 npx tsx scripts/overload-regression.ts
