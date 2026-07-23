@@ -40,6 +40,18 @@ const FLAVORS = new Set(['distributed', 'sustained', 'sequential', 'true', 'proj
 const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
 const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
 
+// Every effect kind in a block, including kinds nested inside `escalating.steps` — the engine
+// dispatches those through the same applyEffect, so block-level authoring rules must see them too.
+function collectEffectKinds(effects: any, out = new Set<string>()): Set<string> {
+  if (!Array.isArray(effects)) return out;
+  for (const e of effects) {
+    if (!e || typeof e !== 'object') continue;
+    out.add(e.kind);
+    if (e.kind === 'escalating') collectEffectKinds(e.steps, out);
+  }
+  return out;
+}
+
 function checkEffect(e: any, path: string, errors: string[]) {
   if (e.kind === 'ignored' || e.kind === 'unsupported') {
     // offline-parser-only kinds — the engine has no branch for them; the kit
@@ -107,8 +119,10 @@ function validate(slug: string): boolean {
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) errors.push(`${p}: bad formation`);
       // `targetStatus` lands on the BOSS and the engine ignores block.target (there is no enemy
       // entity — see sim.ts). Require the authoring block to say so explicitly, so a real carrier
-      // can never silently look owner- or ally-scoped.
-      if (Array.isArray(b.effects) && b.effects.some((e: any) => e?.kind === 'targetStatus') && b.target?.kind !== 'enemy') {
+      // can never silently look owner- or ally-scoped. Collected RECURSIVELY: the engine runs
+      // `escalating` steps through the same applyEffect, so a targetStatus nested in a step would
+      // otherwise work at runtime while dodging this rule.
+      if (collectEffectKinds(b.effects).has('targetStatus') && b.target?.kind !== 'enemy') {
         errors.push(`${p}: a targetStatus effect must sit on a block with target "enemy" (the status is inflicted on the boss)`);
       }
       // gate is a bare status name; a typo'd name would silently never open

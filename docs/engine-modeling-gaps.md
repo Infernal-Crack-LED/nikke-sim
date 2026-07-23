@@ -259,6 +259,39 @@ bready, elegg-boom-and-shock, guillotine-winter-slayer, helm-aquamarine, laplace
 ludmilla-winter-owner, mana, mari, modernia, quency-escape-queen, raven, sakura-bloom-in-summer,
 scarlet, soline-frost-ticket, volume.
 
+### 1a. Named target-status registry — BUILT 2026-07-23, 0 carriers — the open edges
+
+The `targetStatus` effect + `requiresTargetStatus` gate landed as a capability (DECISIONS 2026-07-23,
+`docs/STATE.md` §5). It is INERT — no override opts in — so the regression's byte-identity proves it is
+**unreached**, not that it is correct. **The first override to opt in is the real integration test and
+must land with its own A/B, never as a rider on an inert change.** Edges found by the step-7 review and
+deliberately left open:
+
+- **`chargeCounter`-triggered blocks bypass EVERY block gate.** `sim.ts` dispatches them straight to
+  `applyEffect`, skipping `applyBlock` — so `requiresCore` / `fbGate` / `requiresWipeOut` /
+  `bossElementGate` / `resourceGate` **and** `requiresTargetStatus` are all silently ignored there.
+  **Pre-existing, not introduced by the registry**, but a future carrier sitting on a `chargeCounter`
+  trigger would get an un-gated block with no error and no warning.
+- **A typo'd status name fails SILENTLY** — matching is exact and case/whitespace-sensitive, and the
+  failure mode is a block that never fires (a silent under-model, the exact bug class this primitive
+  exists to prevent). A producer/consumer census across all overrides would catch it, but
+  `validate-overrides.ts` is invoked per-slug, so a cross-slug census needs a design decision about
+  single-slug runs (warn, not error, so a deliberately-future-gated consumer stays authorable).
+- **The validator's `target: enemy` rule has no test.** Closing it needs the validator's structural
+  checks extracted into an importable pure function — today `validate()` loads from disk and runs a sim,
+  and a test must never write to `src/skills/overrides/`. The engine half IS tested (P7).
+- **Same-frame cross-unit ordering is unspecified.** The gate reads at trigger time, the effect writes at
+  apply time; if unit A applies a status and unit B consumes it on the same frame, the outcome depends on
+  team-slot iteration order. `wipeOut` has the identical property, so this is convention-consistent, not
+  a defect — but the first `prika`-style cross-unit carrier will hit it. `privaty`'s own case is
+  same-unit and unaffected.
+- **Multi-status concurrency and multi-producer refresh are untested.** No arm holds two differently
+  named statuses live at once, and the `Math.max` extend path is exercised only by self-refresh. The
+  `Map` makes collision structurally impossible; that is an argument, not a test.
+- **Cosmetic:** the "must be authored `target: enemy`" rule is enforced for `targetStatus` but not for
+  its sibling `wipeOut` (whose sole carrier `d-killer-wife` already complies), so extending it would be
+  a free no-op consistency win.
+
 ### 1b. "is fixed at" stat LOCKS — no engine vocabulary — 8 units
 
 Kit lines of the form *"X is **fixed at** V"* CLAMP a stat for a window (owner ruling 2026-07-22): the

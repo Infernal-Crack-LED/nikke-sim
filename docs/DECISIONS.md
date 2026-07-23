@@ -16,9 +16,12 @@ lives. Newest first within each section.
   `d-killer-wife` / `naga` rather than express its own status. `resources` is named and multiple but
   untimed and owner-write-only; `mode` is fixed at setup (non-matching blocks are deleted from the
   unit's block list), so it cannot model a state entered and exited mid-fight. There is no enemy entity
-  at all (`resolveTargets({kind:'enemy'})` → `[]`), so the registry is module-scoped like
-  `wipeOutUntilFrame` and the effect ignores `block.target` — while the validator requires the authoring
-  block to carry `target: enemy`, so a carrier cannot silently mis-scope it.
+  at all (`resolveTargets({kind:'enemy'})` → `[]`), so the registry is **one global boss-scoped table per
+  `runSim` call** (declared in `runSim` scope exactly like `wipeOutUntilFrame`, so it resets per run — it
+  is NOT module-scoped, and must not be hoisted to module scope: that would leak status windows across
+  `SEEDS=N` Monte-Carlo runs and across repeated web-side sims) and the effect ignores `block.target` —
+  while the validator requires the authoring block to carry `target: enemy`, so a carrier cannot silently
+  mis-scope it.
   **Inert:** no override opts in; regression byte-identical WITHOUT `--update`; `doc-drift.ts`'s
   structural census independently derives 0 users. Mechanism proven by
   `scripts/tests/target-status-gate.test.ts`, whose load-bearing assertions are DISCRIMINATING rather
