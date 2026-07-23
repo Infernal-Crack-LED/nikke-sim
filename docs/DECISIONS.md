@@ -8,7 +8,28 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-07-23, latest) `helm` — "for 10 round(s)" is now a REAL ROUND COUNT (`durationShots`
+- **(2026-07-23, latest) `helm` — her burst's "Recovers 54.45% of attack damage as HP for 10 sec" is a
+  TEN-SECOND RECOVERY WINDOW, not a single instant event** (`heal` `ticks: 10` / `intervalSec: 1`).
+  Owner ruling during the first `/kit-tdd` per-unit test-first session. Evidence tier: **kit prose
+  (blablalink SSOT)** — the same tier that authorized the two 2026-07-23 helm fixes; no measurement and
+  no fitted value is involved (`ticks: 10` is the kit's own "10 sec").
+  **Why it matters even though no HP pool is modeled:** a `heal` is an *event*, not an amount — it fires
+  the target's `recovery`-triggered blocks (crown's *"when recovery takes effect → all allies Attack
+  Damage ▲20.99%"*). Collapsing a 10-second window to one instant understates how long a recovery
+  consumer stays refreshed. The primitive already existed and has prior art (`blanc` `ticks: 8` on the
+  same `burstCast`→`allies` shape); this is an encoding fix, not a new mechanic.
+  **BOARD-NEUTRAL, verified by direct A/B** (`board-read` byte-identical with and without the change;
+  control-regression snapshots stable, helm 1.042 / liter 1.208 unmoved). Her S1 full-charge heal
+  already fires every ~1.5s and saturates crown-style consumers, so the extra ticks buy no new
+  activation in any graded comp — the change is pure faithfulness at zero fit cost. **The window is
+  therefore invisible to the board and to the regression snapshot**, and is gated only by the unit
+  spec `scripts/tests/units/helm.test.ts` (H8), which isolates S1's heal out of the fixture so the
+  burst window becomes the fight's only recovery source. This is precisely the faithfulness-vs-fit gap
+  the TDD transition exists to close: nothing else in the repo could have caught or can now protect it.
+  **⚑ RETAINED:** the 1-second TICK CADENCE is an approximation — the real mechanic is attack-driven
+  lifesteal, so only the window LENGTH and the consumer-refresh behaviour are kit-literal.
+
+- **(2026-07-23) `helm` — "for 10 round(s)" is now a REAL ROUND COUNT (`durationShots`
   primitive), replacing a `durationSec 13` approximation.** Owner directive during the helm kit review.
   Her burst grants *Charge Damage Multiplier ▲158.4% for 10 round(s)*. A round count is not a timed
   window and cannot be expressed as one: her **magazine is 6**, so the ten rounds span a reload (~6
