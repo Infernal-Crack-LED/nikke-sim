@@ -319,3 +319,109 @@ and the full multiplier decomposition. Tests live in `scripts/tests/units/<slug>
 ## 9. Open questions
 
 - (none yet — will be populated as the live run surfaces them; high-priority ones go to the webhook.)
+
+---
+
+# PART II — THE OPERATIONAL METHODOLOGY (the hardened gauntlet)
+
+The reusable form of Part II lives in `.claude/skills/kit-autonomy/SKILL.md` (Phase 2); the full agent
+prompts live there too. Part II here records the DESIGN + the decisions behind it.
+
+## 10. Stage protocol (S1–S7)
+
+Five distinct agent **roles**; blindness is enforced by what each role is handed (mirroring
+`build-packet.ts`'s leak assertion). "Blind" = blind to the driver's _implementation + reasoning_, never
+to the kit prose (every role reads `characters.json`).
+
+| Stage                                                            | Role                                     | Sees                                                                                                                                                           | Blind to                                                                                    | Output                                                                                                                                                                                                        | Gate to proceed                                                                                                                                     |
+| ---------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **S1** Read + slug gate                                          | driver (sighted)                         | `characters.json` entry; shipped override (full); `kit-status` row; `engine-modeling-gaps` hits; board reading                                                 | —                                                                                           | line inventory (■ = trigger+target, each sentence = one effect line) + current model + tier + board                                                                                                           | exact slug stated (lint-slug-disambiguation); every line enumerated                                                                                 |
+| **S2a** Write tests FIRST                                        | driver                                   | S1 + harness + schema + disposition vocab + §5 lessons                                                                                                         | —                                                                                           | `scripts/tests/units/<slug>.test.ts` **RED vs the shipped override**: one discriminating assertion per FAITHFUL/FIX/MISSING line + inertness assertions; header carries the evidence                          | every line has a disposition; every assertion FAILS under the nearest-wrong model; tests confirmed RED                                              |
+| **S2b** Independent test-faithfulness review                     | reviewer subagent                        | kit prose + harness + schema + disposition vocab + 4 per-line questions + §5                                                                                   | the driver's tests, dispositions, reasoning                                                 | its OWN line-by-line spec table + the discriminating assertions each line demands + evidence-tier tags                                                                                                        | (feeds S2c)                                                                                                                                         |
+| **S2c** Reconcile specs → green-light                            | driver                                   | its spec + the reviewer's spec                                                                                                                                 | —                                                                                           | converged spec; divergences resolved **toward the prose-faithful reading** (not toward the shipped override) + recorded                                                                                       | the two specs converge on dispositions + load-bearing assertions, OR divergences are resolved+recorded                                              |
+| **S3** Faithful override                                         | driver                                   | converged spec + tests                                                                                                                                         | —                                                                                           | minimum `src/skills/overrides/<slug>.json` change to turn tests GREEN; `validate-overrides` passes; skipped lines VERBATIM in `unmodeled`; ⚑ on anything outside the input domain; prose = current-state only | tests GREEN; validator passes; no `ignored` blocks; no fudge                                                                                        |
+| **S4** Engine updates (only if a primitive is genuinely missing) | driver in **isolated worktree**          | the GAP test + engine                                                                                                                                          | —                                                                                           | engine primitive / event-payload extension; `/scientific-method` step-7 review; `verify.sh` there; merge back to branch; GAP entry in `engine-modeling-gaps.md`                                               | the GAP test un-skips + goes green; whole-board A/B byte-identical except the intended change; engine serves faithfulness, never simplifies the kit |
+| **S5** Blind post-op test-writer                                 | blind subagent                           | kit prose + harness + schema + disposition vocab + §5                                                                                                          | driver's tests / override / reasoning; truth file                                           | its OWN `<slug>.test.ts` from the prose alone + its spec table                                                                                                                                                | (feeds S7)                                                                                                                                          |
+| **S6** Blind post-op override-writer                             | blind subagent (`kit-parse` BLIND-STUDY) | kit prose + `types.ts` schema + `modeling-priors` + kit-parse hard rules + ALWAYS-⚑ + a DIFFERENT unit's override as style                                     | this unit's override; driver's tests/reasoning; DECISIONS/handoffs/probe-data/git history   | its OWN override JSON + per-line audit table + ⚑ list                                                                                                                                                         | (feeds S7)                                                                                                                                          |
+| **S7** Reconciling judge → go/no-go                              | judge subagent                           | kit prose; S2b pre-op review; S5 blind tests; S6 blind override; driver's tests + override + engine change; `docs/data/damage-calculation.md` + mechanics pack | the driver's chain-of-thought/reasoning (adjudicates ARTIFACTS vs ground truth, not intent) | ranked gotchas + `kitDescription` + verdict **GO / NO-GO(faithfulness) / NO-GO(engine-core)**                                                                                                                 | verdict is BINDING (§11)                                                                                                                            |
+
+**Per-line disposition vocabulary** (`kit-tdd`): FAITHFUL · FIX · MISSING · GAP · UNMODELED ·
+MEASUREMENT-GATED. **The 4 questions per line** (the errors calibration hides): (1) scope (normal-attacks
+vs charge vs crit-only); (2) duration semantics (seconds vs ROUNDS vs stacks vs until-reload); (3) trigger
+identity (`lastBullet`/`shotFired`/`hitCount`/`interval`/`fullBurstEnter`/`burstCast`, on-cast vs on-hit,
+gates); (4) target set (self / allies / all-including-self / enemy / caster-slot overwrite).
+
+## 11. The go/no-go rubric (S7)
+
+The judge classifies every divergence between the driver's implementation and (prose + blind
+re-derivations + damage formula):
+
+- **FAITHFUL** — encoding matches prose + formula. (no action)
+- **DOCUMENTED-GAP** — deliberately `unmodeled` (with reason in `note`), a `GAP` (missing primitive,
+  `it.skip` + reason), or a `⚑` (estimate + recipe, tier-tagged). (acceptable; the decision is recorded)
+- **REAL-GOTCHA** — encoding/engine/fidelity/silent-drop divergence from the prose+formula that is NOT
+  documented. Ranked SILENT_DROP → ENGINE/FIDELITY → ENCODING. (blocks GO)
+
+**GO requires ALL of:**
+
+1. Every kit line accounted for — FAITHFUL or a documented UNMODELED/GAP/⚑ (no silent drops; the audit
+   table's SKIPPED rows ↔ the `unmodeled` field 1:1).
+2. No REAL-GOTCHA: the driver's encoding does not diverge from prose+formula on any load-bearing line.
+3. **Independent convergence:** the blind re-derivations (S5 tests, S6 override) agree with the driver's
+   implementation on the load-bearing lines. A divergence the blind agents caught and the driver did NOT
+   document, confirmed against the formula, is the payload → NO-GO.
+4. Every ⚑ has an initial estimate + a measurement recipe + an evidence tier; no value outside the input
+   domain was shipped silently.
+5. The tests DISCRIMINATE — each fails under the nearest-wrong model (rounds-vs-seconds, scoped-vs-generic,
+   burstCast-vs-fullBurstEnter, gated-vs-ungated, FB-by-timing-vs-noFb) and the inertness assertions hold.
+
+**Verdict types:** `GO` · `NO-GO(faithfulness)` (a REAL-GOTCHA or a failed convergence — fixable by the
+driver) · `NO-GO(engine-core/irreversible)` (the fix needs an engine change with broad blast radius, or an
+irreversible decision — escalates to the owner).
+
+## 12. Autonomy safeguards — how the gauntlet replaces the owner-driven spec
+
+`kit-tdd` insists the owner disposition every line because "a test written from a wrong reading passes
+wrongly and certifies the misread forever," and forbids autonomous override/engine edits. This gauntlet is
+the autonomous, editing-authorized form; it substitutes the owner gate with:
+
+1. **Independent re-derivation at two altitudes.** S2b (prose→spec, blind to driver reasoning), S5
+   (prose→tests, blind), S6 (prose→override, blind). When independent agents, given only the kit text,
+   converge on the same dispositions AND the same discriminating assertions, the reading is _forced by the
+   text_ — not a plausible misread. This is the direct answer to the same-altitude trap (§2/§5.5b): test
+   derivation (prose→assertion) is a different altitude than override authoring (prose→JSON), and the test
+   is the forcing function.
+2. **Tests are the gate; triangulation is the sampler.** The binding instrument is the unit test
+   (stat/footage-independent); the blind/sighted/judge triangulation (S5/S6/S7) is a secondary code sampler,
+   subordinated so a prose→JSON agreement can never override a test disagreement.
+3. **Anti-fudge invariants enforced at every stage:** faithful > fit, measured > fudge; no weakening an
+   assertion or re-adding an unfaithful encoding to reach GO (the kit-tdd anti-pattern); ⚑ for anything
+   outside the input domain; a board move away from 1.0 after a faithful fix is fit-exposure (a separate
+   localization thread), never a reason to revert.
+4. **Evidence-tier tagging** on every assertion and every override value, so a `CALIBRATED ⚑` is never
+   mistaken for `MEASURED` (§5.1).
+5. **Bounded loop + escalation:** on NO-GO(faithfulness) the driver fixes the cited divergence and re-runs
+   from the earliest affected stage, **≤2 retries**; on NO-GO(engine-core/irreversible) or 2 failed retries
+   it stops and pings the owner via the `autonomous_session_webhook` (`.env`) with the judge's cited
+   divergences + its recommendation. The driver never makes an irreversible/engine-core decision alone.
+6. **Blindness boundaries are load-bearing** and enforced by construction (what each subagent is handed);
+   if a blind role ever sees the driver's tests/override/reasoning or the truth file, that stage is void.
+
+## 13. Hardening deltas vs the existing skills
+
+- **vs `kit-tdd`:** kit-tdd is owner-driven + autonomous-no-edit (append-to-queue). This gauntlet is
+  autonomous + editing-authorized (on the branch), replacing the owner spec gate with independent
+  re-derivation (S2b/S5) + a binding judge (S7). It inherits kit-tdd's test-writing discipline verbatim
+  (shipped-override assertions vs `withPatchedOverride` counterfactuals, event-log over totals,
+  discriminating + inertness assertions, protected-path routing for the fix).
+- **vs `audit-kit`:** audit-kit's blind/sighted/judge triangulation is RE-PURPOSED from post-validation
+  sampling into the build path's secondary check (S5/S6/S7) — but SUBORDINATED to the test gate (S2) so the
+  same-altitude trap cannot decide faithfulness.
+- **vs `kit-parse`:** kit-parse's blind override authoring becomes S6 (the blind post-op override-writer),
+  hard rules + ALWAYS-⚑ taxonomy intact.
+- **NEW roles:** the test-faithfulness reviewer (S2b) and the blind test-writer (S5) — test-_derivation_
+  agents that did not exist before; they are the autonomous substitute for the owner's line-by-line spec
+  review. NEW: the binding go/no-go judge with the faithful>fit invariants + bounded loop + webhook escalation.
+- **Fold-back (Phase 4):** once validated on privaty, the reusable lessons land in the skills themselves
+  (`/skill-maintenance`): the test-derivation roles + the go/no-go rubric become a documented autonomous
+  path alongside kit-tdd's owner-driven path.
