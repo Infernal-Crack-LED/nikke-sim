@@ -485,6 +485,16 @@ skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair 
 > rider, not a DoT, and must be rewritten before footage is requested. Constraint 3 protects her
 > coefficients, NOT the DoT encoding. Full record + the three encoding options:
 > `docs/handoffs/2026-07-22-engine-work-plan.md` §5f.
+> **⇒ STATE 2026-07-23: THE `noFb` RELIC SET IS NOW EMPTY — the retune mission this question gated is
+> COMPLETE.** `privaty` was the last carrier, and her flag went with the Designated-Target re-encode
+> (DECISIONS 2026-07-23). A field-form grep for `"noFb"` across `src/skills/overrides/` now returns
+> **ZERO** hits. Consequence: `skillNoFb`'s shipped `'perkit'` branch returns `perKitNoFb`, which is
+> false for every unit, so **`FBRULE=perkit` and `FBRULE=timing` are now behaviourally IDENTICAL** for
+> the whole roster (burst-cast damage stays FB-exempt under both, U10). The condition `sim.ts` names in
+> place for flipping the default — *"once all 6 are green the default flips to 'timing' with zero
+> further drift"* — is therefore met, and the flip is provably a no-op (verifiable by regression
+> byte-identity). **NOT FLIPPED — engine default, owner-gated.** Queued as a zero-drift cleanup.
+
 Range is SETTLED: skill/rider/DoT damage NEVER gets the +30% range bonus (`noRange` universal; ein's
 feathers "get FB but not range"). The open question is FB (+50%). Current model = per-kit `noFb` flags
 (calibrated). A **test framework is built** (`scripts/probe/fb-range-lab.ts` + the `FBRULE` engine knob:
