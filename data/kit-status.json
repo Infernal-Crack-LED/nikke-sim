@@ -2789,7 +2789,7 @@
         "provenance": "partial-hand",
         "date": "2026-07-16",
         "findings": [
-          "clean: 9/10 exact zero drift; 1687% Designated-Target chain modeled (burstCast proxy, arithmetic-consistent); Max-Ammo-down interaction mechanically emergent; 1687 comp-dependence is the standing open item"
+          "clean: 9/10 exact zero drift; the 1687% Designated-Target rider is now modeled FAITHFULLY — a lastBullet block gated requiresTargetStatus 'Designated Target', the status applied by her burst (2026-07-23, DECISIONS); the old burstCast-DoT proxy and its noFb are gone, and the '1687 comp-dependence' item is CLOSED (it fired in both comps; the earlier check missed an occluded popup). Max-Ammo-down interaction mechanically emergent. Open: she reads HOT post-enactment (mean ~1.12) — fit-exposure from the removed noFb calibration, needs per-unit localization, and the targetStatus durationSec 10 is INFERRED (recipe in her override note)."
         ]
       },
       "tier": "MEASURED",

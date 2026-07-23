@@ -29,10 +29,15 @@ lives. Newest first within each section.
   an occluded popup sitting inside its own search band.
   **The HOT move is FIT-EXPOSURE, not a defect of this encoding.** The `noFb` flags removed here were
   themselves the calibration knob that had pulled her 1.29 → 0.97, so the overshoot is the pre-existing
-  over-model they were hiding. The proc rate was sanity-checked and NOT fitted: the rider lands on ~47%
-  of her last bullets against ~44% expected from window arithmetic (10 s status × 5 bursts ≈ 28% of the
-  fight, at ~2× last-bullet density because her own S1 halves the magazine during Full Burst via
-  `maxAmmoPct −50.66`). Exactly one snapshot entry moved (+23.72%, hers); every measured-truth
+  over-model they were hiding. The proc rate was sanity-checked and NOT fitted, **measured by count**:
+  the rider fires on **38.8%** of her last bullets in T4 (19 of 49) and 36.6% in N5 (15 of 41), against
+  **~38.6%** predicted from ~34% of fight-time in status × ~1.25 in-window last-bullet density — 3 procs
+  per window (4 in the opening one), in-window spacing 2.78 s ≈ a 30-round magazine ÷ 12 rps plus reload.
+  (An earlier draft of this entry quoted *"~47% vs ~44%, 5 bursts, ~2× density"*; all three inputs were
+  wrong — 47% was damage-weighted rather than a count, she casts **7** times in T4 not 5, and
+  `maxAmmoPct −50.66` is a `fullBurstEnter`→allies buff so it halves magazines in EVERY Full Burst,
+  leaving her Designated windows no ammo advantage over the others. The corrected arithmetic reproduces
+  more tightly, not less.) Exactly one snapshot entry moved (+23.72%, hers); every measured-truth
   full-burst-count assert stayed green; no coefficient was touched (1687 / 256.17 / 1407.64 all
   datamined). **Do NOT re-add `noFb` or shave the coefficients to close the residual** — it is a per-unit
   localization thread. Precedent: grave pierce 0.83→1.18 kept on purpose (DECISIONS 2026-07-17). She is

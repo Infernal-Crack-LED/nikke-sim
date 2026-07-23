@@ -475,9 +475,10 @@ skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair 
 >
 > reproduces the original defect. The faithful fix needs a TARGET-STATUS gate — **BUILT 2026-07-23**
 > (`targetStatus` effect + `requiresTargetStatus` block gate; DECISIONS 2026-07-23, `docs/STATE.md` §5),
-> so the primitive is no longer the blocker. **`privaty` is still NOT enacted:** rewiring her block onto
-> the gate needs the measurement that explains why the 1687% appears in T4/T4b and not in the u7 focus
-> video, and it must be DRIVEN by the `lastBullet` trigger. ⚠ The old claim that this is *"the same
+> so the primitive is no longer the blocker. **`privaty` IS NOW ENACTED (2026-07-23, DECISIONS):** her burst
+> applies `targetStatus 'Designated Target'` (10 s) and the rider is a `lastBullet` block gated on it —
+> trigger-driven, no hardcoded hit count, `noFb` gone. The measurement that was being waited on arrived
+> and dissolved the question it posed (an occluded popup, not comp-dependence). ⚠ The old claim that this is *"the same
 > machinery `prika`/`mint`/`milk-blooming-bunny` need"* is **REFUTED** (premise gate, kit text, 4-of-4
 > census): the registry is necessary for all four but SUFFICIENT only for `privaty`, whose status is
 > enemy-carried. The other three each need different machinery — see
