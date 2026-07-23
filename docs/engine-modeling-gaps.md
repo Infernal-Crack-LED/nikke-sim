@@ -48,7 +48,9 @@
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 1 | jill |
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
+| `critRateNormalPct` | 1 | helm |
 | `delaySec` | 2 | rapi-red-hood, snow-white |
+| `durationShots` | 1 | helm |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
 | `everyN` | 5 | arcana, mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
 | `everyNOffset` | 2 | arcana, neon-vision-eye |
