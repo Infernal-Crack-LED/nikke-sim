@@ -97,6 +97,141 @@ export interface DataFile {
   characters: Record<string, CharacterData & { baseStats: BaseStats | null }>;
 }
 
+// ---- structured event log (test instrumentation) ----
+//
+// `SimConfig.onEvent` turns the engine's internal timeline into ASSERTABLE data. The board gates
+// FIT (does the number match the recording); unit tests gate FAITHFULNESS (does the kit line fire
+// on the right trigger, at the right target, in the right scope) — and total-damage deltas can
+// only test faithfulness indirectly. The DBG_* env taps already PRINT most of this; the hook makes
+// it structured instead of grep-able. See docs/handoffs/2026-07-23-tdd-transition-plan.md §1d.
+//
+// CONTRACT:
+//   - PURE OBSERVATION. The engine never reads back from a handler, and a handler must never mutate
+//     the objects it is handed (they are the engine's live state, not copies). Throwing from a
+//     handler propagates out of runSim.
+//   - ZERO-COST WHEN UNSET. Every emit site is guarded by `if (onEvent)`, so an unset hook costs one
+//     truthiness check and allocates nothing. Sim output is byte-identical either way — the
+//     regression snapshot is the control.
+//   - `frame` is the 60fps frame index; `sec` is frame/60, provided so tests read in kit units.
+//
+// DELIBERATE SCOPE (what is NOT emitted, and why):
+//   - There is no `buffExpire` for TIME or ROUND-COUNT expiry. Buff lapse is LAZY in this engine —
+//     `stat()` skips lapsed entries at read time, and nothing ever sweeps the list — so there is no
+//     moment to emit. `buffApply` carries `expiresFrame`/`durationShots`, which is the assertable
+//     contract; `buffRemove` fires only for a genuine REMOVAL from the list (today: removeOnReload).
+//   - There is no separate `hit` event. `damage` is one event per damage INSTANCE — the granularity
+//     `dealDamage` works at, which every source funnels through (normal fire, skill/burst riders,
+//     DoT ticks, flighted hits, stored-hit releases). That is NOT one event per game-side hit: an MG
+//     pull covers `hitsPerShot` belt rounds and an SG pull covers the whole pellet spray (landing
+//     folded into the coefficient), each as ONE instance. Per-bucket totals are a fold over it.
+//     A `hitCount`-triggered kit line counts HITS, not instances — read `hitsPerShot` for that.
+//   - Only `applyBuff` grants are logged. Cube/OL permanent stats are pushed onto the buff list
+//     directly at setup, so a unit's live buff set cannot be reconstructed from events alone.
+//   - `onEvent` is a function, so a SimConfig carrying one cannot cross a worker boundary
+//     (structuredClone throws on functions). Today no web caller sets it.
+export type SimEventBase = { frame: number; sec: number };
+
+export type SimEvent =
+  /** One trigger pull. Emitted after the shot's damage and block dispatch have resolved. */
+  | (SimEventBase & {
+      kind: 'shot';
+      unitIdx: number;
+      slug: string;
+      charged: boolean;
+      /** Magazine ordinal = how many `reload` events this unit has had (0 on the first magazine).
+       *  It counts RELOAD-TO-MAX only — an `instantReload` skill refill, a weapon-swap entry/exit
+       *  refill and a per-shot ammo refund all top the magazine up WITHOUT advancing it, exactly as
+       *  they do not fire `removeOnReload`. On a unit with those, this is not "the Nth clip". */
+      magIndex: number;
+      /** Rounds left after this pull (unchanged when the shot was unlimited-ammo). */
+      ammoAfter: number;
+      unlimitedAmmo: boolean;
+    })
+  /** One damage instance, at the single choke point every source passes through. */
+  | (SimEventBase & {
+      kind: 'damage';
+      unitIdx: number;
+      slug: string;
+      bucket: 'normal' | 'skill' | 'burst';
+      /** WHICH KIT LINE produced this instance: the owning skill slot, 'normal' for weapon fire,
+       *  or null where the engine genuinely has no single source (`extraHitDamagePct` is a SUMMED
+       *  buff stat, so its rider cannot name one). `bucket` is the damage CATEGORY and does not
+       *  distinguish skill1 from skill2 — this does, which is what a per-kit-line spec asserts on. */
+      srcSlot: 'normal' | 'skill1' | 'skill2' | 'burst' | null;
+      amount: number;
+      atkPct: number;
+      /** ATK after the flat boss-DEF subtraction — the value `amount` is built from. */
+      baseAtk: number;
+      /** Whether this instance was ELIGIBLE to crit / core (not whether a roll landed). */
+      critEligible: boolean;
+      coreEligible: boolean;
+      /** Resolved rates actually used, 0..1 (0 when not eligible). `critRate` is the reason a
+       *  normal-attack-scoped buff like critRateNormalPct is directly assertable per bucket. */
+      critRate: number;
+      coreRate: number;
+      inFullBurst: boolean;   // an FB window was live at this frame
+      fbMajorApplied: boolean; // ...and this instance actually took the +50% (noFb units/lines do not)
+      rangeApplied: boolean;
+      /** The multiplier decomposition, exactly as the damage formula composes it
+       *  (docs/data/damage-calculation.md). amount = baseAtk × atkPct/100 × the product of these. */
+      mult: {
+        major: number;
+        elem: number;
+        charge: number;
+        dmgUp: number;
+        seqMult: number;
+        projFactor: number;
+        taken: number;
+        distributed: number;
+      };
+    })
+  /** A buff/debuff applied or refreshed. `key` encodes caster slot + skill slot + stat + value. */
+  | (SimEventBase & {
+      kind: 'buffApply';
+      key: string;
+      stat: string;
+      value: number;
+      stacks: number;
+      maxStacks: number;
+      /** Slot index of the caster; null when the engine did not attribute one. */
+      casterIdx: number | null;
+      /** Slot index of the holder; null = the BOSS (an enemy debuff). */
+      targetIdx: number | null;
+      targetSlug: string | null;
+      refresh: boolean;             // true = refreshed/re-stacked an existing entry
+      expiresFrame: number | null;  // null = no wall-clock expiry
+      durationShots: number | null; // round-count budget ("for N round(s)"), null = none
+    })
+  /** A buff genuinely REMOVED from a unit's list (see the no-buffExpire note above). */
+  | (SimEventBase & {
+      kind: 'buffRemove';
+      unitIdx: number;
+      slug: string;
+      key: string;
+      stat: string;
+      cause: 'reload';
+    })
+  /** Reload to MAX ammunition — the event `removeOnReload` keys off. */
+  | (SimEventBase & {
+      kind: 'reload';
+      unitIdx: number;
+      slug: string;
+      /** 'magazine' = the weapon's own reload completed; 'transitionSnap' = the fast-reloader
+       *  snap-refill at a boss range transition (both are genuine reload-to-max events). */
+      cause: 'magazine' | 'transitionSnap';
+      magIndex: number;
+    })
+  /** A burst skill cast, at the stage it filled. */
+  | (SimEventBase & {
+      kind: 'burstCast';
+      unitIdx: number;
+      slug: string;
+      stage: number;
+    })
+  /** Full Burst window boundaries. */
+  | (SimEventBase & { kind: 'fullBurstStart'; endFrame: number })
+  | (SimEventBase & { kind: 'fullBurstEnd' });
+
 // ---- sim configuration ----
 
 // Gear set level. 'base5' = scope-lock base gear (default validation basis); 0/5 =
@@ -138,4 +273,9 @@ export interface SimConfig {
   //   'large'  = every band lands the full pellet count (a big boss the whole spray hits)
   // Inert in expected-value (unseeded) runs — those use the fixed SG_LANDING_BY_BAND table. ⚑ UNVERIFIED.
   bossPelletProfile?: 'small' | 'medium' | 'large';
+  // Structured event log for tests/tooling. Unset (the default everywhere in production) = the
+  // engine emits nothing and behaves byte-identically. See the SimEvent contract above.
+  // NB it is a function, so JSON.stringify drops it — snapshots that serialize `result.config`
+  // are unaffected.
+  onEvent?: (ev: SimEvent) => void;
 }
