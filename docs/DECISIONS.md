@@ -15,7 +15,11 @@ lives. Newest first within each section.
   **Designated Target status**. Deals 1687% of final ATK as additional damage"*, with `durationSec 10`
   borrowed from the Designated-Target debuff window and `intervalSec 3` from her burst's unrelated
   3-second stun. **Now:** her burst applies `targetStatus {name:'Designated Target', durationSec:10}` on
-  the same kit line as the ATK ▼5.02%, and the rider is a `lastBullet` block carrying
+  the burst's *"Designated Target: ATK ▼5.02% for 10 sec"* line — that line IS the status, so its 10 s
+  is the status's own DATAMINED window, not an inferred one borrowed from a neighbouring effect (there
+  is no separate ATK-down for it to bind to; the ATK-down is the status's content, inert in v1 because
+  the boss never attacks and the engine drops non-`damageTaken` enemy buffs outright, so it now sits in
+  `unmodeled.burst` instead of as a dead effect). The rider is a `lastBullet` block carrying
   `requiresTargetStatus:'Designated Target'` + `flatDamage atkPct 1687` (`noRange`) — **no `noFb`, and no
   hardcoded hit count** (the count is whatever her cadence produces).
   **What settled it** — frame read, u7 focus video @ 15.503 s (`docs/probe-runs.md` 2026-07-23): one
