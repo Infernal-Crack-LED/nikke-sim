@@ -55,7 +55,7 @@ Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinem
 | Weapon | Cadence                 | Notes                     |
 | ------ | ----------------------- | ------------------------- |
 | AR     | 12/s                    |                           |
-| SMG    | 20/s                    |                           |
+| SMG    | 24/s                    |                           |
 | SG     | 1.5/s                   | 10 pellets/shot           |
 | MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
 | Pistol | 4/s                     |                           |
@@ -63,7 +63,7 @@ Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinem
 | RL     | charge cycle            | no bolt recovery          |
 
 Base rates: [ore-game measured rates](https://ore-game.com/nikke/post/verify-memo/)
-(AR ~11.79/s, SMG ~20.01/s, SG ~1.50/s at 60fps) + decoded shot tables
+(AR ~11.79/s, SMG ~24/s, SG ~1.50/s at 60fps) + decoded shot tables
 ([rcasdzxc/SD](https://github.com/rcasdzxc/SD)). The class rate is a DEFAULT — the
 datamined `rate_of_fire` column is per-unit and some units deviate wildly (Jill: 150 rpm
 = 2.5/s on an "AR", video-confirmed; engine `charFixes.pullsPerSec`). **CHUNKED (multi-part)
@@ -157,7 +157,7 @@ nothing. No auto-play efficiency factor exists (the old 0.7 ⚑ compensated for 
 mechanics, now modeled directly). Full model + sources + the two solo measurements:
 **[burst-gauge.md](burst-gauge.md)**. Engine: `gaugePerShot`/`addGauge`/`skillGauge`.
 
-## 7. Full-auto behaviors
+## 7. Auto behaviors
 
 All of §7 exists because scope-lock runs are full auto — manual play changes these numbers.
 Details: **[auto-play.md](auto-play.md)**.
@@ -191,7 +191,7 @@ Details: **[auto-play.md](auto-play.md)**.
   release-latency cadence, video-measured (open-questions A12; [auto-play.md](auto-play.md) §2a).
 - **Burst-chain timing** (frame-perfect MEASURED 2026-07-21, chisato.mov; DECISIONS 2026-07-21
   coherent rotation model): the chain runs **`gauge-full → 30f → B1 → 30f → B2 → 30f → B3 → 22f →
-  FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old ~0.9s. Constants:
+FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old ~0.9s. Constants:
   a **30f delay before B1** (`PRE_B1_GAP_FRAMES`), **30f between stages** (`STAGE_CAST_GAP_FRAMES`,
   0.5s), and a **22f delay between the B3 cast and the FB countdown** (`FB_PRE_DELAY_FRAMES`) — that
   gap is why instant burst-cast attacks land before Full Burst begins (no +50%). After FB ends, the

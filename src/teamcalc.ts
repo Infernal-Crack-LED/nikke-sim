@@ -3,7 +3,9 @@
 // engine (runSim/prepareTeam) — never modifies it.
 //
 // Team legality mirrors the site's rule: 1×Burst I, 1×Burst II, 2×Burst III +
-// 1 flex, with Λ acting as a wildcard for any burst slot.
+// 1 flex, with Λ acting as a wildcard for any burst slot. The B1/B2 casters must
+// also sustain the rotation: a ≤20s unit solo, or a ≤40s pair alternating — a
+// lone 40s/60s B1 or B2 can't burst every Full Burst cycle (see stageCovered).
 //
 // The search is a heuristic (team optimisation is a big space): rough-score
 // every candidate solo to prune the DPS pool, build a legal seed team by role,
@@ -11,7 +13,12 @@
 // guaranteed globally optimal — good and fast.
 import { runSim } from './engine/sim.js';
 import { prepareTeam, type PrepareDeps, type UnitOptions } from './prepare.js';
-import type { CharacterData, LevelMultiplier, SimConfig } from './types.js';
+import type {
+  CharacterData,
+  Element,
+  LevelMultiplier,
+  SimConfig,
+} from './types.js';
 
 type Char = CharacterData & { baseStats: any };
 
@@ -50,6 +57,9 @@ export interface TeamCalcInput {
   rounds?: number;
   /** Meta-popularity bias for the active boss weakness (omit = pure damage). */
   meta?: MetaScoring;
+  /** Boss weakness selected in the UI: every team must field ≥1 unit of this
+   *  element (an advantaged unit). null/omit → no element requirement. */
+  requireElement?: Element | null;
   /** Element-agnostic prydwen bossing-tier meta score per unit (e.g. SSS=5…≤C=0,
    *  from data/bossing-tiers.json). Used only to seed the solo roster generator's
    *  downward-sloped team spread (see topTeams `spreadTargets`); it does NOT change
@@ -101,12 +111,41 @@ function deficits(counts: Record<string, number>): number {
   );
 }
 
-/** 5 distinct units that can cover 1×BI, 1×BII, 2×BIII with Λ as wildcards. */
+// Burst cooldowns gate the rotation: a burst stage (B1/B2) must be castable
+// every Full Burst cycle (~20s cadence). A ≤20s caster covers every cycle alone;
+// a 40s caster only every other cycle, so a lone 40s (or 60s) unit leaves the
+// chain gapped unless a second ≤40s caster of the same stage alternates with it.
+// Generalizes the Red-Hood "40s cooldown binds the whole rotation" ruling to
+// every B1/B2. Λ units never count here — the only Λ (Red Hood) is forced to B3.
+const CD_SHORT = 20; // a single caster at/below this covers the stage solo
+const CD_PAIR = 40; // two casters at/below this alternate to cover the stage
+function stageCovered(
+  slugs: string[],
+  chars: Record<string, Char>,
+  stage: 'I' | 'II',
+): boolean {
+  let short = 0;
+  let pair = 0;
+  for (const s of slugs) {
+    if (effBurst(s, chars) !== stage) continue;
+    const cd = chars[s].burstCooldownSec;
+    if (cd <= CD_SHORT) short++;
+    else if (cd <= CD_PAIR) pair++;
+  }
+  return short >= 1 || short + pair >= 2;
+}
+
+/**
+ * 5 distinct units that can cover 1×BI, 1×BII, 2×BIII with Λ as wildcards, AND
+ * whose B1/B2 casters can actually sustain the rotation (stageCovered) — a lone
+ * 40s/60s B1 or B2 is illegal because it can't burst every Full Burst cycle.
+ */
 function isLegal(slugs: string[], chars: Record<string, Char>): boolean {
   if (slugs.length !== 5 || new Set(slugs).size !== 5) return false;
   const c: Record<string, number> = { I: 0, II: 0, III: 0, Λ: 0 };
   for (const s of slugs) c[effBurst(s, chars)]++;
-  return (c['Λ'] ?? 0) >= deficits(c);
+  if ((c['Λ'] ?? 0) < deficits(c)) return false;
+  return stageCovered(slugs, chars, 'I') && stageCovered(slugs, chars, 'II');
 }
 
 /**
@@ -307,6 +346,16 @@ export function makeCalc(input: TeamCalcInput) {
   const closeness = (sum: number, target: number): number =>
     Math.exp(-((sum - target) ** 2) / (2 * SPREAD_SIGMA * SPREAD_SIGMA));
 
+  // Boss-weakness rule: when an elemental weakness is selected, a team must
+  // field ≥1 advantaged (weakness-element) unit. Folded into `legal` so the seed
+  // gate, refine swaps, and injected meta comps all enforce it alongside the
+  // burst-class + cooldown rules.
+  const reqEl = input.requireElement ?? null;
+  const elementOk = (slugs: string[]): boolean =>
+    !reqEl || slugs.some((s) => chars[s].element === reqEl);
+  const legal = (slugs: string[]): boolean =>
+    isLegal(slugs, chars) && elementOk(slugs);
+
   // Meta prior for a team in [0,1]: mean unit popularity, plus an exact-comp
   // bonus when the 5-unit set matches a popular ranker comp. 0 when no meta.
   const metaPrior = (slugs: string[]): number => {
@@ -390,12 +439,16 @@ export function makeCalc(input: TeamCalcInput) {
     return [...topB3, ...byBurst('I'), ...byBurst('II'), ...byBurst('Λ')];
   };
 
-  // legal seed by role: fill 2×B3, 1×B1, 1×B2 (Λ substitutes), then best flex.
-  // With locked units (mustInclude), pin them first and fill the outstanding
-  // burst needs + flex around them instead.
+  // legal seed by role: fill 2×B3 (Λ substitutes), then satisfy the B1 and B2
+  // cooldown rule (stageCovered), then best flex. With locked units
+  // (mustInclude), pin them first and fill the outstanding needs around them.
+  // The B1/B2 fill is cooldown-aware: a ≤20s caster is taken solo, otherwise a
+  // ≤40s pair is fielded to alternate — so the seed never emits a team with a
+  // lone 40s/60s B1 or B2 that isLegal would reject (gapped rotation).
   const seedTeam = (
     pool: string[],
     mustInclude?: string[],
+    flexStage?: 'I' | 'II',
     target?: number,
   ): string[] => {
     const score = new Map(pool.map((s) => [s, soloScore(s)]));
@@ -403,14 +456,14 @@ export function makeCalc(input: TeamCalcInput) {
       (a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0),
     );
     const team: string[] = [];
-    const take = (pred: (s: string) => boolean) => {
-      // No spread target → unchanged: highest solo damage matching the role.
+    const take = (pred: (s: string) => boolean): string | undefined => {
+      // No spread target → unchanged: highest solo score matching the role.
       if (target === undefined || !prydwenScore) {
         const s = ranked.find((x) => !team.includes(x) && pred(x));
         if (s) team.push(s);
-        return;
+        return s;
       }
-      // Spread-biased pick: solo damage weighted by closeness of the resulting
+      // Spread-biased pick: solo score weighted by closeness of the resulting
       // team meta sum to this team's target (soft — damage still leads).
       let bestS: string | undefined;
       let bestK = -Infinity;
@@ -424,40 +477,71 @@ export function makeCalc(input: TeamCalcInput) {
         }
       }
       if (bestS) team.push(bestS);
+      return bestS;
     };
     const isB = (b: string) => (s: string) => eb(s) === b || eb(s) === 'Λ';
+    const countStage = (stage: 'I' | 'II' | 'III') =>
+      team.filter((s) => eb(s) === stage).length;
+    // Fill one burst stage's cooldown need from pool units not yet on the team.
+    // Prefers a ≤20s solo caster (leaves the flex free); else a ≤40s pair. When
+    // no full cover fits the remaining slots, takes a best-effort single caster
+    // and lets isLegal reject the seed rather than emit a gapped rotation.
+    const coverStage = (stage: 'I' | 'II') => {
+      if (team.length >= 5 || stageCovered(team, chars, stage)) return;
+      const cands = ranked.filter((s) => !team.includes(s) && eb(s) === stage);
+      const short = cands.filter((s) => chars[s].burstCooldownSec <= CD_SHORT);
+      const pair = cands.filter((s) => chars[s].burstCooldownSec <= CD_PAIR);
+      if (short.length) team.push(short[0]);
+      else if (pair.length >= 2 && team.length + 2 <= 5)
+        team.push(pair[0], pair[1]);
+      else if (pair.length && team.length + 1 <= 5) team.push(pair[0]);
+      else if (cands.length && team.length + 1 <= 5) team.push(cands[0]);
+    };
     const locked = (mustInclude ?? []).filter(
       (s, i, a) => chars[s] && a.indexOf(s) === i,
     );
-    if (locked.length === 0) {
-      // Unchanged seed for the no-lock case — keeps generator output identical.
-      take(isB('III'));
-      take(isB('III'));
-      take(isB('I'));
-      take(isB('II'));
-      take(() => true); // flex
-      return team.slice(0, 5);
-    }
     for (const s of locked) team.push(s);
-    // burst needs still open after the pinned units (Λ acts as flex — isLegal
-    // counts it as a wildcard, so don't spend a need on it here)
-    const needBursts = (): ('I' | 'II' | 'III')[] => {
-      const c: Record<string, number> = { I: 0, II: 0, III: 0 };
-      for (const s of team) {
-        const b = eb(s);
-        if (b === 'I' || b === 'II' || b === 'III') c[b]++;
-      }
-      const out: ('I' | 'II' | 'III')[] = [];
-      for (let k = c.I; k < NEED.I; k++) out.push('I');
-      for (let k = c.II; k < NEED.II; k++) out.push('II');
-      for (let k = c.III; k < NEED.III; k++) out.push('III');
-      return out;
-    };
-    for (const need of needBursts()) {
-      if (team.length >= 5) break;
-      take(isB(need));
+    while (countStage('III') < NEED.III && team.length < 5) {
+      if (!take(isB('III'))) break;
     }
-    while (team.length < 5) take(() => true);
+    coverStage('I');
+    coverStage('II');
+    // Optional double-support flex: seed the flex as an extra B1/B2 so shapes
+    // like B1+B2+B2+B3+B3 get explored — the solo-scored flex below rarely picks
+    // a support, and refine is role-restricted so it can't promote a B3 flex.
+    if (flexStage && team.length < 5) take((s) => eb(s) === flexStage);
+    while (team.length < 5) {
+      if (!take(() => true)) break; // flex
+    }
+    // Boss-weakness rule: if no advantaged (weakness-element) unit made the team,
+    // swap the least-critical non-locked slot (flex first) for an advantaged unit
+    // that keeps burst coverage legal — so the seed meets the element requirement
+    // whenever the pool allows it (else bestTeam rejects it rather than emit a
+    // team with no advantaged unit). Each slot tries the advantaged candidates in
+    // score order: trying only the single best unit can fail when its burst class
+    // fits no open slot (dense always-combo pins can leave only e.g. a B1 and a B3
+    // slot open while the best advantaged unit is a B3 — a lower-scored advantaged
+    // B1 then fits the B1 slot), so search candidates per slot rather than give up.
+    if (reqEl && !team.some((s) => chars[s].element === reqEl)) {
+      const want = ranked.filter(
+        (s) => !team.includes(s) && chars[s].element === reqEl,
+      );
+      if (want.length) {
+        let swapped = false;
+        for (let i = team.length - 1; i >= 0 && !swapped; i--) {
+          if (locked.includes(team[i])) continue;
+          const orig = team[i];
+          for (const w of want) {
+            team[i] = w;
+            if (isLegal(team, chars)) {
+              swapped = true;
+              break;
+            }
+          }
+          if (!swapped) team[i] = orig;
+        }
+      }
+    }
     return team.slice(0, 5);
   };
 
@@ -488,7 +572,7 @@ export function makeCalc(input: TeamCalcInput) {
             continue;
           const cand = team.slice();
           cand[i] = alt;
-          if (!isLegal(cand, chars)) continue;
+          if (!legal(cand)) continue;
           const r = simTeam(cand);
           const sc = score(r);
           if (sc > bestScore) {
@@ -539,11 +623,28 @@ export function makeCalc(input: TeamCalcInput) {
       (s, i, a) => chars[s] && !exclude.has(s) && a.indexOf(s) === i,
     );
     const pool = buildPool(exclude);
-    const seed = seedTeam(pool, mustInclude, opts?.seedTarget);
-    if (!isLegal(seed, chars)) return null; // e.g. everything useful blocked
+    const seed = seedTeam(pool, mustInclude, undefined, opts?.seedTarget);
+    if (!legal(seed)) return null; // e.g. everything useful blocked
     const locked = new Set(mustInclude);
     let best = refine(seed, pool, locked, score);
     let bestScore = score(best);
+    // Double-B2 shapes (B1+B2+B2+2×B3) are common optimal teams, but the
+    // solo-scored flex rarely picks a support and refine is role-restricted (it
+    // can't turn a B3 flex into a B2). Re-seed with the flex biased to an extra
+    // B2 so those shapes compete on score. Burst I is deliberately NOT biased
+    // here: it's the scarcest required role, so letting one team hoard a second
+    // B1 would starve the rest of a disjoint roster (topTeams-role-bound.test.ts
+    // pins that team count tracks the Burst-I count). Double-B1 teams remain
+    // reachable via locked units and injected meta comps.
+    const b2Seed = seedTeam(pool, mustInclude, 'II', opts?.seedTarget);
+    if (legal(b2Seed)) {
+      const r = refine(b2Seed, pool, locked, score);
+      const sc = score(r);
+      if (sc > bestScore) {
+        best = r;
+        bestScore = sc;
+      }
+    }
     // full-team match: evaluate the popular ranker comps directly so a real meta
     // team can win on score even if the local search never assembled it.
     if (meta) {
@@ -552,7 +653,7 @@ export function makeCalc(input: TeamCalcInput) {
           comp.length !== 5 ||
           comp.some((s) => !chars[s] || blocked.has(s) || exclude.has(s)) ||
           mustInclude.some((s) => !comp.includes(s)) ||
-          !isLegal(comp, chars)
+          !legal(comp)
         )
           continue;
         const r = toResult(simTeam(comp));

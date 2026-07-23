@@ -3004,6 +3004,7 @@ export function App({ user }: { user: AuthUser | null }) {
         : blocked
       ).filter((s) => !unblock?.has(s)),
       meta: metaScoringFor(weakness),
+      requireElement: weakness,
       prydwenScore: prydwenScoreOf,
     });
 
@@ -3118,6 +3119,7 @@ export function App({ user }: { user: AuthUser | null }) {
         : blocked
       ).filter((s) => !unblock?.has(s)),
       meta: metaScoringFor(weak),
+      requireElement: weak,
     });
   // Union Raid generator: 3 teams, each built against its own boss; no unit is
   // reused across the three teams (greedy-sequential over the shared pool).
@@ -3206,8 +3208,12 @@ export function App({ user }: { user: AuthUser | null }) {
   // Generator control shown only once a roster is synced: the pool becomes the
   // user's owned units (each simmed with its real build); non-OL-geared units are
   // disregarded by default, or included as zero-gear candidates.
+  // Count only units the generator can actually field: eligible (owned + the OL
+  // rule) AND sim-supported (generatorCharacters). A synced roster may include
+  // kits the sim doesn't support — those are never candidates, so they mustn't
+  // inflate the "Generating from N of your owned units" count below.
   const genPoolSize = genSynced
-    ? [...genSynced.keys()].filter(genEligible).length
+    ? Object.keys(generatorCharacters).filter(genEligible).length
     : 0;
   const syncedGenPanel = genSynced ? (
     <div className='field'>
