@@ -1391,3 +1391,40 @@ Three new measurements landed, all owner-sourced, all recorded in `docs/probe-da
 These fed the gated `/scientific-method` UNIGEO pass (uniform-in-circle geometry rework) — decision
 **LOG** (see `docs/handoffs/scientific-method-harness.md` 2026-07-22): model record accepted by both
 judges, no engine change, cone stays live, follow-ups recorded.
+
+## `privaty` u7 focus video — the 1687% rider IS present, and it takes Full Burst (2026-07-23)
+
+**Owner-sourced frame read**, `docs/probes/probe u7/priv focus vid.MP4` @ **15.503 s** (video clock;
+game clock 02:49, so ~11 s into the fight). One popup stack on the same frame:
+
+| popup | colour | identification |
+|---|---|---|
+| 571,999 | red "CORE HIT" | normal-attack core hit |
+| 367,714 | white | normal attack |
+| **37,871,391** | white | **the 1687% Designated-Target rider** |
+| 5,750,750 | white | the 256.17% last-bullet rider |
+
+**Digit provenance:** first read as `37,071,391`; the `8` is occluded in this frame by an overlapping
+marker. Owner re-read it as **37,871,391** on a cleaner frame, and the arithmetic is independently
+decisive — `37,871,391 / 5,750,750 × 256.17 = 1687.00`, i.e. exactly the datamined coefficient, where
+the `0` reading would imply a non-kit 1651.36.
+
+**What it establishes** (all three from this one stack):
+1. **The rider FIRES in the u7 comp.** `privaty.json`'s note records it as *"ABSENT in a confirmed
+   Privaty-burst Designated window (whole-screen check, no ~25-38M popup)"*. That whole-screen check
+   MISSED it — 37.87M is inside the very band it searched, but occluded. **The "1687 is
+   COMP/CONDITION-DEPENDENT (T4 yes / u7 no)" puzzle therefore has no mechanism behind it**: it fires
+   in both, and the open question "what makes the 1687 fire in T4 but not the u7 comp?" is answered by
+   a missed popup, not by a Designated-Target gate difference across comps.
+2. **It takes the +50% Full Burst major.** The 256.17% rider's FB-inclusive 5,750,750 is 1.5015× its
+   recorded non-FB value (3.83 M), so this frame is inside a Full Burst; the 1687 popup is 6.58547× it
+   against a kit ratio of 1687/256.17 = 6.58547 (5 dp). Same frame, same multiplier state ⇒ the 1687
+   received every major the 256.17 did. **The shipped `noFb: true` on that block is refuted.**
+3. **It is not a DoT.** It lands in the SAME frame as the last-bullet 256.17 rider and shares its exact
+   buff snapshot — consistent with the kit text (*"Activates when the last bullet hits a target in
+   Designated Target status"*), inconsistent with the shipped `intervalSec 3` DoT encoding.
+
+**NOT ENACTED.** n=1 frame; this records the observation only. The re-encode (burst-cast `dot` → a
+`lastBullet`-triggered `flatDamage 1687` gated on `requiresTargetStatus: 'Designated Target'`, with her
+burst applying the status, and `noFb` dropped) is board-moving on a graded unit (0.971) and needs its
+own gated pass. The primitive it needs now exists (DECISIONS 2026-07-23).
