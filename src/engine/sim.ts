@@ -2243,7 +2243,12 @@ export function runSim(
     // the gauge only builds OUTSIDE full burst; during FB it is locked
     // gauge accrues via shotGauge() on each pull (see firePull)
     if (stageGapFrames > 0) stageGapFrames--;
-    if (!fbActive && stage === 0 && gauge >= 100 && frame >= chainBlockedUntil) {
+    // cfg.disableBursts — the fight is played with bursting turned OFF. Guarding the CHAIN
+    // OPENER (rather than the cast site) is what keeps this to a single condition: stage never
+    // leaves 0, so every downstream burst path — cast selection, stage advance, Full Burst — is
+    // unreachable by construction. The gauge keeps filling and clamps at 100 (addGauge), sitting
+    // pinned exactly as it does in a real fight where the player never presses.
+    if (!fbActive && stage === 0 && gauge >= 100 && frame >= chainBlockedUntil && !cfg.disableBursts) {
       gauge = 0; // the chain consumes the gauge (refill required if it collapses)
       stage = 1;
       stageExpireFrame = Infinity;

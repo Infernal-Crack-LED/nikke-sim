@@ -278,4 +278,14 @@ export interface SimConfig {
   // NB it is a function, so JSON.stringify drops it — snapshots that serialize `result.config`
   // are unaffected.
   onEvent?: (ev: SimEvent) => void;
+  // Never cast a burst — the fight is played with bursting turned OFF, which the owner can do
+  // in game. The burst CHAIN never opens, so no burst is cast, no stage advances and Full Burst
+  // never happens; the gauge still fills and simply sits pinned at 100, exactly as it does in a
+  // real fight where the player never presses. Unset (the default everywhere in production) =
+  // current behaviour, byte-identical.
+  //
+  // Added for the BASE-WEAPON faithfulness basis (docs/data/clean-weapons.md): the six
+  // clean-weapon units are recorded with bursting off, so the sim must model that directly
+  // rather than relying on their burst blocks happening to be empty.
+  disableBursts?: boolean;
 }
