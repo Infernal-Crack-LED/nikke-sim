@@ -229,9 +229,11 @@ export interface AlwaysCombos {
 }
 
 export interface AlwaysComboAssignment {
-  /** the caller's pins augmented with same-team combo groups (pairs + resolved oneOf) */
+  /** the caller's pins augmented with the combo groups AND singles, placed so the
+   *  always-included B1s and B2 groups fan out onto distinct teams */
   pinnedByTeam: string[][];
-  /** combo singles to merge into the caller's mustUse (spread across teams) */
+  /** combo singles that fit nowhere when placed burst-aware — the caller spreads
+   *  these as a last resort via assignMustUse (empty in practice for the curated sets) */
   singles: string[];
   /** combo groups dropped (a required unit was unavailable, pins conflicted, or
    *  the group fit nowhere) — diagnostic only, never surfaced to the user */
@@ -240,11 +242,16 @@ export interface AlwaysComboAssignment {
 
 /**
  * Fold an AlwaysCombos set onto `teamCount` teams, honoring the user's own pins.
- * Same-team groups (pairs + resolved oneOf) are PINNED together to a team; singles
- * are returned for the caller to spread via assignMustUse. User pins win over
- * combos: a group split across the user's pinned teams is an unresolvable conflict
- * and relaxes. `available` gates which units the search can field (defaults to
- * "modeled in chars"); the caller layers blocked/excluded/synced-eligibility on top.
+ * Same-team groups (pairs + resolved oneOf) AND singles are PINNED to a team.
+ * Burst roles are spread: the always-included B1s land on distinct teams and the
+ * always-included B2 groups land on distinct teams (a B2 pair counts as ONE B2
+ * group), so the curated supports never stack a burst stage onto one team — e.g.
+ * the 4 solo B1s take 4 teams and the 4 solo B2 groups take 4 teams. Placement
+ * PREFERS a non-conflicting team but relaxes to any feasible team if needed, so
+ * generation always completes. User pins win over combos: a group split across
+ * the user's pinned teams is an unresolvable conflict and relaxes. `available`
+ * gates which units the search can field (defaults to "modeled in chars"); the
+ * caller layers blocked/excluded/synced-eligibility on top.
  */
 export function assignAlwaysCombos(
   combos: AlwaysCombos,
@@ -260,6 +267,62 @@ export function assignAlwaysCombos(
   const dropped: string[][] = [];
   const avail = (s: string): boolean => available(s) && !!chars[s];
 
+  // Per-team occupancy of always-included burst classes (B1/B2 only — B3/Λ place
+  // freely). Drives the burst-spread so two always-B1s (or two always-B2 groups)
+  // never share a team.
+  const occ: { I: boolean; II: boolean }[] = Array.from(
+    { length: teamCount },
+    () => ({ I: false, II: false }),
+  );
+  const classesOf = (slugs: string[]): ('I' | 'II')[] => {
+    const set = new Set<'I' | 'II'>();
+    for (const s of slugs) {
+      const b = effBurst(s, chars);
+      if (b === 'I' || b === 'II') set.add(b);
+    }
+    return [...set];
+  };
+  const conflicts = (t: number, classes: ('I' | 'II')[]): boolean =>
+    classes.some((c) => occ[t][c]);
+  const mark = (t: number, classes: ('I' | 'II')[]): void => {
+    for (const c of classes) occ[t][c] = true;
+  };
+  // Most-room feasible team, preferring one with no burst-class conflict; falls
+  // back to a conflicting team if that's all that fits (relax, never fail).
+  const pickTeam = (
+    classes: ('I' | 'II')[],
+    feasible: (t: number) => boolean,
+  ): number => {
+    let best = -1;
+    for (const allowConflict of [false, true]) {
+      let bestRoom = -1;
+      for (let t = 0; t < teamCount; t++) {
+        if (!feasible(t)) continue;
+        if (!allowConflict && conflicts(t, classes)) continue;
+        const room = 5 - pinned[t].length;
+        if (room > bestRoom) {
+          bestRoom = room;
+          best = t;
+        }
+      }
+      if (best >= 0) return best;
+    }
+    return best;
+  };
+
+  // Seed occupancy from always-units the USER already pinned, so auto-placed
+  // supports avoid a burst stage the user pinned to a team.
+  const userPinnedAlways = [
+    ...(combos.pairs ?? []).flat(),
+    ...(combos.oneOf ?? []).flatMap((o) => [o.anchor, ...o.choices]),
+    ...(combos.singles ?? []),
+  ];
+  for (const s of userPinnedAlways) {
+    if (!avail(s)) continue;
+    const t = pinned.findIndex((team) => team.includes(s));
+    if (t >= 0) mark(t, classesOf([s]));
+  }
+
   // Place a same-team group. If any of its units is already pinned, the rest join
   // it on that team (when feasible); pins split across teams relax the group.
   const placeGroup = (group: string[]): void => {
@@ -268,6 +331,7 @@ export function assignAlwaysCombos(
       dropped.push(group); // a required unit is unavailable → relax
       return;
     }
+    const classes = classesOf(uniq);
     const homes = new Set<number>();
     uniq.forEach((s) =>
       pinned.forEach((team, t) => {
@@ -281,25 +345,22 @@ export function assignAlwaysCombos(
     if (homes.size === 1) {
       const t = [...homes][0];
       const merged = [...new Set([...pinned[t], ...uniq])];
-      if (merged.length <= 5 && locksFeasible(merged, chars))
+      if (merged.length <= 5 && locksFeasible(merged, chars)) {
         pinned[t] = merged;
-      else dropped.push(group);
+        mark(t, classes);
+      } else dropped.push(group);
       return;
     }
-    // not pinned yet: the feasible team with the most free room (fans groups out)
-    let bestT = -1;
-    let bestRoom = -1;
-    for (let t = 0; t < teamCount; t++) {
+    // not pinned yet: most-room feasible team, preferring no burst-class conflict
+    const t = pickTeam(classes, (t) => {
       const merged = [...new Set([...pinned[t], ...uniq])];
-      if (merged.length > 5 || !locksFeasible(merged, chars)) continue;
-      const room = 5 - pinned[t].length;
-      if (room > bestRoom) {
-        bestRoom = room;
-        bestT = t;
-      }
+      return merged.length <= 5 && locksFeasible(merged, chars);
+    });
+    if (t < 0) dropped.push(group);
+    else {
+      pinned[t] = [...new Set([...pinned[t], ...uniq])];
+      mark(t, classes);
     }
-    if (bestT < 0) dropped.push(group);
-    else pinned[bestT] = [...new Set([...pinned[bestT], ...uniq])];
   };
 
   for (const pair of combos.pairs ?? []) placeGroup(pair);
@@ -311,13 +372,30 @@ export function assignAlwaysCombos(
     }
     placeGroup([anchor, partner]);
   }
+  // Singles are placed here (burst-aware) rather than returned for blind spreading,
+  // so the always-B1s / always-B2s fan out onto distinct teams. A single that fits
+  // nowhere is returned in `singles` for the caller to spread as a last resort.
   for (const s of combos.singles ?? []) {
     if (!avail(s)) {
       dropped.push([s]);
       continue;
     }
-    const alreadyPinned = pinned.some((team) => team.includes(s));
-    if (!alreadyPinned && !singles.includes(s)) singles.push(s);
+    const classes = classesOf([s]);
+    const homeT = pinned.findIndex((team) => team.includes(s));
+    if (homeT >= 0) {
+      mark(homeT, classes); // user-pinned single: occupy its team's burst slot
+      continue;
+    }
+    if (singles.includes(s)) continue;
+    const t = pickTeam(
+      classes,
+      (t) => pinned[t].length < 5 && locksFeasible([...pinned[t], s], chars),
+    );
+    if (t < 0) singles.push(s);
+    else {
+      pinned[t] = [...pinned[t], s];
+      mark(t, classes);
+    }
   }
   return { pinnedByTeam: pinned, singles, dropped };
 }

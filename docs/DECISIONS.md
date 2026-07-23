@@ -10,22 +10,22 @@ lives. Newest first within each section.
 
 - **(2026-07-22) `jill` — REAL RELOAD + BURST FORCED RELOAD; `charFixes.reloadFrames: 0` REMOVED.**
   Owner enactment, on kit text, no measurement required or claimed. Her override carried a whole-fight
-  `reloadFrames: 0` justified as *"ROLLING RELOAD (datamined shot row): reload_start_ammo=8 — she begins
-  reloading at 8/9 ammo and tops up concurrently while firing."* **All three grounds are void:**
+  `reloadFrames: 0` justified as _"ROLLING RELOAD (datamined shot row): reload_start_ammo=8 — she begins
+  reloading at 8/9 ammo and tops up concurrently while firing."_ **All three grounds are void:**
   (1) `reload_start_ammo` is `max_ammo − 1` for **192 of 192** shot rows in `data/characters.json` — a
   complete census, so it identifies nobody (→ U30); (2) `reload_bullet 10000` makes her a single-chunk
   reloader with no partial-reload mechanic; (3) the burst line read as the source of her zero-downtime
-  firing, *"Reload speed is **fixed at** a 99.96% increase for 10 sec"*, is a stat **LOCK** at ~normal
+  firing, _"Reload speed is **fixed at** a 99.96% increase for 10 sec"_, is a stat **LOCK** at ~normal
   speed — **owner ruling: "is fixed at" clamps a stat at that level, it is not a delta applied on top**
-  — so it grants her nothing. Corroborated across the corpus: the same construction appears as *"fixed
-  at a 50% **reduction**"* (`milk-blooming-bunny`) and as plain set-tos everywhere else (*"Pellet count
-  is fixed at 1"* — `dorothy-serendipity`, which this repo already models that way as her
-  `consolidation`; *"Charge time is fixed at 0.7 sec"* — `anis-star`).
-  **Modelled:** her burst's kit-verbatim *"Removes 100% of ammo. Forced Reload."* via the existing
+  — so it grants her nothing. Corroborated across the corpus: the same construction appears as _"fixed
+  at a 50% **reduction**"_ (`milk-blooming-bunny`) and as plain set-tos everywhere else (_"Pellet count
+  is fixed at 1"_ — `dorothy-serendipity`, which this repo already models that way as her
+  `consolidation`; _"Charge time is fixed at 0.7 sec"_ — `anis-star`).
+  **Modelled:** her burst's kit-verbatim _"Removes 100% of ammo. Forced Reload."_ via the existing
   `consumeAmmo { fraction: 1 }` (`sim.ts:1955` — whose comment already named her). **No engine change,
   no fitted value:** `fraction 1` is the kit's literal 100%, `reloadFrames 81` is the synced datamine.
-  Its kit PURPOSE — re-triggering Magnum Ammo and Acid Ammo, which both key on *"upon reloading to Max
-  Ammunition"* — is already carried by modelling those two as permanent, so this adds the COST without
+  Its kit PURPOSE — re-triggering Magnum Ammo and Acid Ammo, which both key on _"upon reloading to Max
+  Ammunition"_ — is already carried by modelling those two as permanent, so this adds the COST without
   double-counting the benefit. The reload-speed LOCK is left **unmodelled** (the engine has no clamp
   vocabulary; a cross-cutting gap over 8 units and 3 stat families → `engine-modeling-gaps.md` §1b).
   **PER-ARM ISOLATION** (board-read + regression per arm): forced reload ONLY (keeping `reloadFrames 0`)
@@ -1319,6 +1319,21 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   attribution across units is forbidden — it burned us twice. — u8 processing; owner corrections.
 
 ## Engine/data-architecture decisions
+
+- **(2026-07-22) Roster always-combos BURST SPREAD — the curated supports don't stack a burst stage
+  onto one team (owner ruling; extends the always-combos ruling below).** `assignAlwaysCombos` now
+  places the always-included supports burst-aware: the always **B1s fan out onto distinct teams** and
+  the always **B2 groups fan out onto distinct teams** (a B2 PAIR counts as ONE B2 group). Concretely
+  in Solo the 4 B1s (`moran`, `anis: star`, `liter`, `little mermaid`) take 4 teams and the 4 B2 groups
+  (`{mint,prika}`, `{Mast,Anchor}`, `{crown+healer}`, `{nayuta}`) take 4 teams — so `crown` (B2) and
+  `nayuta` (B2) never share a team, nor do `little mermaid` (B1) and `anis: star` (B1). Union applies the
+  same rule to its 2 B1s (`anis: star`, `little mermaid`) and 2 B2 groups (`{crown+healer}`,
+  `{Mast: Romantic Maid}`). B3 supports (`privaty`, `helm`) place freely. **Mechanism:** singles are now
+  placed inside `assignAlwaysCombos` (previously returned for blind spreading), tracking per-team B1/B2
+  occupancy seeded from the user's own pins; placement PREFERS a non-conflicting team but RELAXES to any
+  feasible team if needed, so generation always completes (the always-units stay pinned, so the search
+  keeps them on their assigned teams). Pairs/oneOf still share a team. Off-by-default callers unchanged.
+  Pinned by `scripts/tests/always-combos-burst.test.ts` (manual, like the other team-gen tests).
 
 - **(2026-07-22) Roster generators — curated "always-combo" meta supports (Solo & Union) + a prydwen
   meta-score SOFT SPREAD (Solo only) (owner ruling).** Two independent additions to the web generators,

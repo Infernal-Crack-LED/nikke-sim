@@ -597,14 +597,22 @@ const prydwenScoreOf = (slug: string): number =>
 // 2026-07-22). Applied to EVERY generation with no toggle. A combo whose unit is
 // unavailable (excluded, not owned in a synced roster, or not modeled) RELAXES
 // silently rather than failing the generation. Same-team groups are pinned
-// together; singles are spread across teams (teamcalc.assignAlwaysCombos).
+// together; singles are placed burst-aware (teamcalc.assignAlwaysCombos).
+//
+// BURST SPREAD (owner ruling 2026-07-22): the always-included supports don't stack
+// a burst stage onto one team — the always B1s fan out onto distinct teams and the
+// always B2 groups fan out onto distinct teams (a B2 pair counts as ONE B2 group).
+// In Solo the 4 B1s take 4 teams and the 4 B2 groups take 4 teams; e.g. crown (B2)
+// and nayuta (B2) never share a team, nor do little mermaid (B1) and anis: star (B1).
 //
 // SOLO RAID (5 teams):
-//   • mint + prika                                    (same team)
-//   • Mast: Romantic Maid + Anchor: Innocent Maid     (same team)
-//   • crown + (helm OR naga)                          (same team; if naga is the
-//       partner, helm must appear on another team — enforced in runTopTeams)
-//   • moran, anis: star, liter, little mermaid, nayuta, privaty   (somewhere)
+//   • mint + prika                                    (same team; B2 pair)
+//   • Mast: Romantic Maid + Anchor: Innocent Maid     (same team; B2 pair)
+//   • crown + (helm OR naga)                          (same team; crown is B2; if
+//       naga is the partner, helm must appear on another team — runTopTeams)
+//   • moran, anis: star, liter, little mermaid         (B1s — one per team)
+//   • nayuta                                          (B2 — its own team)
+//   • privaty                                         (B3 — anywhere)
 const SOLO_ALWAYS_COMBOS: AlwaysCombos = {
   pairs: [
     ['mint', 'prika'],
@@ -621,12 +629,12 @@ const SOLO_ALWAYS_COMBOS: AlwaysCombos = {
   ],
 };
 
-// UNION RAID (3 teams) — a relaxed set:
-//   • anis: star, little mermaid                      (somewhere)
-//   • Mast: Romantic Maid                             (free single — may pair with
-//       ANY B2 in UR, not forced to Anchor: Innocent Maid)
-//   • crown + (helm OR naga)                          ("crown + healer"; the UR
-//       healers are helm and naga)
+// UNION RAID (3 teams) — a relaxed set (same BURST SPREAD rule as Solo):
+//   • anis: star, little mermaid                      (B1s — one per team)
+//   • Mast: Romantic Maid                             (B2 free single — its own team;
+//       may pair with ANY B2 in UR, not forced to Anchor: Innocent Maid)
+//   • crown + (helm OR naga)                          ("crown + healer"; crown is B2;
+//       the UR healers are helm and naga)
 //   • if mint appears at all, prika must be with her  (mint+prika NOT required as a
 //       whole, unlike SR — enforced in runUnionTopTeams)
 const UNION_ALWAYS_COMBOS: AlwaysCombos = {
