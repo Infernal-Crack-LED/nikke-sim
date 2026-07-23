@@ -1437,6 +1437,27 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-07-23) BOARD-DASHBOARD BUG: `collectBoardReadings` dropped each comp's `focus` / `modes` /
+  `lambda`, misreporting ~45% of the graded board.** `scripts/lib/board-readings.ts` called
+  `runOnce(w, { name: c.name, slugs: c.slugs }, …)`, passing only two of the comp's fields — even though
+  `runOnce` already supports all of them and `scripts/experiment.ts` (the grading harness) sets them.
+  So `scripts/board-read.ts` and `data/kit-status.json`'s AUTO board block — the numbers every session
+  reads to decide what to work on — were computed with the wrong per-comp configuration.
+  **Blast radius: 14 of 31 graded comps.** 13 declare `focus` (the ×2.5 charge-weapon gauge bonus →
+  burst gauge → full-burst counts → every unit's total in that comp); `PA MiKa` declares `modes` +
+  `lambda`. **The `modes` half is the instructive one:** with modes dropped, `prika` and `mint` ran in
+  SOLO mode, so `prika`'s duet-gated `burstFirst` + `burstCdr −9999` never fired and the measured duet
+  rotation — *prika takes the first burst, mint takes every burst after* (owner) — was simply absent.
+  Both units then read exactly as cold as you would expect a missing rotation to make them.
+  **Corrections:** `mint` 0.755 COLD → **1.015 OK** (board rank 41 → 3); `prika` 0.676 → **0.890**;
+  `anis-star` 0.946 → 0.965. Board-wide within-±3% 5 → 6, ±5% 9 → 12, ±8% 17 → 19, worse 28 → 26 — the
+  board was consistently HEALTHIER than the dashboard claimed.
+  **Consequence for the record:** any board number recorded before 2026-07-23 that came from
+  `board-read`/`kit-status` rather than `experiment.ts` is suspect, and notes calling `mint`/`prika`
+  "very COLD" were reading an artifact. `experiment.ts` is the reference if the two ever disagree again.
+  Found while writing the 5e runbook: the dashboard and the harness disagreed on the same comp, which is
+  a contradiction that should never be tolerated between two tools that claim to measure one thing.
+
 - **(2026-07-23) Generators prefer LIKE-TAGS — a dealer paired with its matching damage buffer scores
   a soft bonus; new `projectile` dealer archetype tag (owner ruling).** Two coupled additions.
   **(1) Like-tag synergy bias** — the team/roster generators now nudge a team toward fielding a damage

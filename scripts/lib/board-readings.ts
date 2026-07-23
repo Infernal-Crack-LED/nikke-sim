@@ -45,8 +45,19 @@ export function collectBoardReadings(): Record<string, BoardReading[]> {
     // runs, matching the real-fight variance sources. runOnce sets cfg.seed → the SG pellet jitter +
     // crit/core/boss-timing jitter all sample. meanSimResults averages them. (dpschart + regression
     // stay EV — they call runSim directly.)
+    // Pass the comp's FULL config, not just name+slugs. Dropping `focus` / `modes` / `lambda` made
+    // the board dashboard disagree with scripts/experiment.ts (the grading harness) on the same
+    // comps: 13 of 31 comps declare `focus` (the ×2.5 charge-weapon gauge bonus → burst counts →
+    // every unit's total), and PA MiKa declares `modes` + `lambda`. With modes dropped, `prika` and
+    // `mint` ran SOLO there, so prika's duet-only `burstFirst` + `burstCdr −9999` never fired and the
+    // measured duet order (prika takes burst 1, mint every burst after) was absent — reading them
+    // artificially COLD (prika 0.676 / mint 0.755 here vs 0.889 / 1.015 in experiment.ts).
     const runs = Array.from({ length: DEFAULT_MC_SEEDS }, (_, i) =>
-      runOnce(w, { name: c.name, slugs: c.slugs }, c.boss, 1, MC_SEED_BASE + i)
+      runOnce(
+        w,
+        { name: c.name, slugs: c.slugs, focus: c.focus, modes: c.modes, lambda: c.lambda },
+        c.boss, 1, MC_SEED_BASE + i
+      )
     );
     const r = meanSimResults(runs);
     for (const u of r.units) {

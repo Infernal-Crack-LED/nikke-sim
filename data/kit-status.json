@@ -28,11 +28,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±3% ✓": 5,
+      "±3% ✓": 6,
       "±15%": 14,
-      "±8%": 8,
-      ">15%": 14,
-      "±5%": 4
+      "±5%": 6,
+      ">15%": 12,
+      "±8%": 7
     }
   },
   "units": {
@@ -174,14 +174,14 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.8659
+            "ratio": 1.1011
           }
         ],
         "n": 1,
-        "mean": 0.8659,
-        "mad": 0.1341,
+        "mean": 1.1011,
+        "mad": 0.1011,
         "band": "±15%",
-        "temp": "COLD ▼"
+        "temp": "HOT ▲"
       }
     },
     "anchor-innocent-maid": {
@@ -322,7 +322,7 @@
           },
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.7977
+            "ratio": 1.0371
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
@@ -342,9 +342,9 @@
           }
         ],
         "n": 12,
-        "mean": 0.9455,
-        "mad": 0.0623,
-        "band": "±8%",
+        "mean": 0.9654,
+        "mad": 0.0486,
+        "band": "±5%",
         "temp": "COLD ▼"
       }
     },
@@ -732,7 +732,7 @@
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.9444
+            "ratio": 0.9275
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
@@ -748,8 +748,8 @@
           }
         ],
         "n": 7,
-        "mean": 0.891,
-        "mad": 0.1116,
+        "mean": 0.8886,
+        "mad": 0.1141,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -2353,14 +2353,14 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.7553
+            "ratio": 1.0154
           }
         ],
         "n": 1,
-        "mean": 0.7553,
-        "mad": 0.2447,
-        "band": ">15%",
-        "temp": "COLD ▼"
+        "mean": 1.0154,
+        "mad": 0.0154,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "miranda": {
@@ -2500,7 +2500,7 @@
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.6946
+            "ratio": 0.6626
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
@@ -2508,8 +2508,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.6716,
-        "mad": 0.3284,
+        "mean": 0.6609,
+        "mad": 0.3391,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2663,12 +2663,12 @@
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.0601
+            "ratio": 1.0443
           }
         ],
         "n": 3,
-        "mean": 1.0298,
-        "mad": 0.1044,
+        "mean": 1.0245,
+        "mad": 0.0992,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -2769,13 +2769,13 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.6765
+            "ratio": 0.8901
           }
         ],
         "n": 1,
-        "mean": 0.6765,
-        "mad": 0.3235,
-        "band": ">15%",
+        "mean": 0.8901,
+        "mad": 0.1099,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },
@@ -3034,7 +3034,7 @@
         "records": [
           {
             "comp": "PA MiKa (boss Iron)",
-            "ratio": 0.7174
+            "ratio": 0.9269
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
@@ -3042,9 +3042,9 @@
           }
         ],
         "n": 2,
-        "mean": 0.8634,
-        "mad": 0.146,
-        "band": "±15%",
+        "mean": 0.9682,
+        "mad": 0.0413,
+        "band": "±5%",
         "temp": "COLD ▼"
       }
     },
@@ -3650,7 +3650,7 @@
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 1.1133
+            "ratio": 1.1273
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
@@ -3662,8 +3662,8 @@
           }
         ],
         "n": 4,
-        "mean": 1.1511,
-        "mad": 0.1511,
+        "mean": 1.1546,
+        "mad": 0.1546,
         "band": ">15%",
         "temp": "HOT ▲"
       }
