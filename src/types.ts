@@ -119,9 +119,16 @@ export interface DataFile {
 //     `stat()` skips lapsed entries at read time, and nothing ever sweeps the list — so there is no
 //     moment to emit. `buffApply` carries `expiresFrame`/`durationShots`, which is the assertable
 //     contract; `buffRemove` fires only for a genuine REMOVAL from the list (today: removeOnReload).
-//   - There is no separate `hit` event. In this engine every hit IS one `dealDamage` call — normal
-//     shots, skill/burst riders, DoT ticks and flighted hits all funnel through it — so `damage` is
-//     the per-instance event, and per-bucket totals are a trivial fold over it.
+//   - There is no separate `hit` event. `damage` is one event per damage INSTANCE — the granularity
+//     `dealDamage` works at, which every source funnels through (normal fire, skill/burst riders,
+//     DoT ticks, flighted hits, stored-hit releases). That is NOT one event per game-side hit: an MG
+//     pull covers `hitsPerShot` belt rounds and an SG pull covers the whole pellet spray (landing
+//     folded into the coefficient), each as ONE instance. Per-bucket totals are a fold over it.
+//     A `hitCount`-triggered kit line counts HITS, not instances — read `hitsPerShot` for that.
+//   - Only `applyBuff` grants are logged. Cube/OL permanent stats are pushed onto the buff list
+//     directly at setup, so a unit's live buff set cannot be reconstructed from events alone.
+//   - `onEvent` is a function, so a SimConfig carrying one cannot cross a worker boundary
+//     (structuredClone throws on functions). Today no web caller sets it.
 export type SimEventBase = { frame: number; sec: number };
 
 export type SimEvent =
@@ -131,7 +138,10 @@ export type SimEvent =
       unitIdx: number;
       slug: string;
       charged: boolean;
-      /** 0-based magazine ordinal: how many reload-to-max events this unit has had. */
+      /** Magazine ordinal = how many `reload` events this unit has had (0 on the first magazine).
+       *  It counts RELOAD-TO-MAX only — an `instantReload` skill refill, a weapon-swap entry/exit
+       *  refill and a per-shot ammo refund all top the magazine up WITHOUT advancing it, exactly as
+       *  they do not fire `removeOnReload`. On a unit with those, this is not "the Nth clip". */
       magIndex: number;
       /** Rounds left after this pull (unchanged when the shot was unlimited-ammo). */
       ammoAfter: number;
@@ -143,6 +153,11 @@ export type SimEvent =
       unitIdx: number;
       slug: string;
       bucket: 'normal' | 'skill' | 'burst';
+      /** WHICH KIT LINE produced this instance: the owning skill slot, 'normal' for weapon fire,
+       *  or null where the engine genuinely has no single source (`extraHitDamagePct` is a SUMMED
+       *  buff stat, so its rider cannot name one). `bucket` is the damage CATEGORY and does not
+       *  distinguish skill1 from skill2 — this does, which is what a per-kit-line spec asserts on. */
+      srcSlot: 'normal' | 'skill1' | 'skill2' | 'burst' | null;
       amount: number;
       atkPct: number;
       /** ATK after the flat boss-DEF subtraction — the value `amount` is built from. */

@@ -37,7 +37,7 @@ import { unigeoSgLanding, unigeoSgCorePerLanded, unigeoSingleCoreProb } from './
 // Debug taps read env vars only under Node; in the browser bundle this is an empty object.
 const ENV: Record<string, string | undefined> =
   (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
-import type { Block, ConsolidationConfig, EffectDef, StatKey, TargetDef } from '../skills/types.js';
+import type { Block, ConsolidationConfig, EffectDef, SkillSlot, StatKey, TargetDef } from '../skills/types.js';
 
 const FPS = 60;
 // FIGHTDELAY (measured 2026-07-21): a fight-start deploy delay in SECONDS during which no unit fires,
@@ -363,6 +363,7 @@ interface BuffInstance {
 
 interface Dot {
   ownerIdx: number;
+  srcSlot: SkillSlot; // owning kit line, carried for the cfg.onEvent log only
   atkPct: number;
   endFrame: number;
   nextTickFrame: number;
@@ -460,6 +461,7 @@ interface UnitState {
     {
       atkPct: number;
       category: 'skill' | 'burst';
+      srcSlot: SkillSlot; // owning kit line, carried for the cfg.onEvent log only
       distributed?: boolean;
       sustained?: boolean;
       sequential?: boolean;
@@ -795,6 +797,7 @@ export function runSim(
   // no-FB rule covers cast-instant damage only, landing-timed damage follows actual timing)
   const pendingHits: Array<{
     ownerIdx: number;
+    srcSlot: SkillSlot; // owning kit line, carried for the cfg.onEvent log only
     atkPct: number;
     resolveFrame: number;
     crit: boolean;
@@ -1270,6 +1273,9 @@ export function runSim(
       coreOverride?: number;   // per-shot core rate override (pellet-consolidation single bullet) — bypasses acrFor
       extraDmgUpPct?: number;  // per-shot Damage-Up addition (consolidation's window-only Attack Damage ▲%)
       pierceActive?: boolean;  // per-shot Pierce-tag (consolidation bullet) → pierceDamagePct goes live (dmg only, no double-hit)
+      // Owning kit line, for the cfg.onEvent 'damage' log ONLY — never read by any engine path.
+      // Omitted where the engine has no single source (the summed extraHitDamagePct rider).
+      srcSlot?: SkillSlot | 'normal';
       chargeMultPct?: number;  // full-charge multiplier override when there is no swap to source it (delayed charge hit — snow-white's cannon); only read when charge:true
     }
   ) {
@@ -1442,6 +1448,7 @@ export function runSim(
         unitIdx: u.idx,
         slug: u.char.slug,
         bucket: opts.category,
+        srcSlot: opts.srcSlot ?? null,
         amount: dmg,
         atkPct,
         baseAtk,
@@ -1829,6 +1836,7 @@ export function runSim(
           if (e.delaySec != null) {
             pendingHits.push({
               ownerIdx,
+              srcSlot: block.slot,
               atkPct: fdAtkPct,
               resolveFrame: frame + Math.round(e.delaySec * FPS),
               ...flavorOpts,
@@ -1853,6 +1861,7 @@ export function runSim(
           // (set crit:false only for verified non-critting sources).
           dealDamage(owner, fdAtkPct, frame, {
             ...flavorOpts,
+            srcSlot: block.slot,
             charge: false,
             noRange: true, // riders never get the +30% range bonus (user rule, 2026-07-13)
             noFb: skillNoFb(e.noFb === true, block.slot === 'burst' && block.trigger.kind === 'burstCast', e.flavor),
@@ -1863,6 +1872,7 @@ export function runSim(
           const intervalFrames = Math.round((e.intervalSec ?? 1) * FPS);
           dots.push({
             ownerIdx,
+            srcSlot: block.slot,
             atkPct: e.atkPct,
             endFrame: frame + Math.round(e.durationSec * FPS),
             nextTickFrame: frame + intervalFrames,
@@ -1972,6 +1982,7 @@ export function runSim(
           const entry = owner.storedHits.get(key) ?? {
             atkPct: e.atkPct,
             category,
+            srcSlot: block.slot,
             distributed: e.flavor === 'distributed',
             sustained: e.flavor === 'sustained',
             sequential: e.flavor === 'sequential',
@@ -2054,6 +2065,7 @@ export function runSim(
             dealDamage(owner, (e.atkPct + hpEquivPct) * stacks, frame, {
               crit: false, core: false, charge: false, category,
             noRange: true,
+            srcSlot: block.slot,
             });
           }
           break;
@@ -2145,6 +2157,13 @@ export function runSim(
   // fire inline at the B3 cast (default) OR be deferred by FB_PRE_DELAY_FRAMES (PREFB). fbEndFrame
   // must already be set when this runs (the log reads it).
   const emitFbEnter = (atFrame: number) => {
+    // LEADING marker, symmetric with 'fullBurstEnd': emitted BEFORE the fullBurstEnter triggers and
+    // the stored-hit releases below, so a consumer partitioning the stream on [start, end) captures
+    // the FB-entry damage (stored projectile releases) that belongs to this window. fbEndFrame is
+    // already set by both callers (see the note above).
+    if (onEvent) {
+      onEvent({ kind: 'fullBurstStart', frame: atFrame, sec: atFrame / FPS, endFrame: fbEndFrame });
+    }
     units.forEach((u) => fireTriggered(u, 'fullBurstEnter', atFrame));
     // release stored hits (e.g. Rapi:RH's attached projectiles exploding) AFTER enter-buffs so FB
     // auras apply to them; charges added this frame (from the stage-3 cast itself) wait for next FB
@@ -2162,6 +2181,7 @@ export function runSim(
             coreOverride: entry.coreRate,
             charge: false,
             category: entry.category,
+            srcSlot: entry.srcSlot,
             distributed: entry.distributed,
             sustained: entry.sustained,
             sequential: entry.sequential,
@@ -2174,9 +2194,6 @@ export function runSim(
       }
     }
     rotationLog.push(`${(atFrame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
-    if (onEvent) {
-      onEvent({ kind: 'fullBurstStart', frame: atFrame, sec: atFrame / FPS, endFrame: fbEndFrame });
-    }
   };
 
   for (let frame = 0; frame < totalFrames; frame++) {
@@ -2603,6 +2620,7 @@ export function runSim(
               coreOverride: entry.coreRate,
               charge: false,
               category: entry.category,
+              srcSlot: entry.srcSlot,
               distributed: entry.distributed,
               sustained: entry.sustained,
               sequential: entry.sequential,
@@ -2631,6 +2649,7 @@ export function runSim(
           pierceActive: p.pierce === true || undefined,
           noRange: !p.rangeOk,
           category: p.category,
+          srcSlot: p.srcSlot,
           distributed: p.distributed,
           sustained: p.sustained,
           sequential: p.sequential,
@@ -2652,7 +2671,7 @@ export function runSim(
         dealDamage(units[d.ownerIdx], tickAtkPct, frame, {
           crit: d.crit ?? (DOT_CRIT || XCRIT.has(units[d.ownerIdx].char.slug)),
           core: XCORE.has(units[d.ownerIdx].char.slug),
-          charge: false, category: d.category,
+          charge: false, category: d.category, srcSlot: d.srcSlot,
           distributed: d.distributed, sustained: d.sustained, sequential: d.sequential,
           trueFlavor: d.trueFlavor, noRange: true, noFb: d.noFb,
           projFlavor: d.projFlavor,
@@ -2796,6 +2815,7 @@ export function runSim(
       core: !(isMg && u.mgRampRound < MG_NO_CORE_RAMP_ROUNDS),
       charge: charged,
       category: 'normal',
+      srcSlot: 'normal',
       trueFlavor: !!u.swap?.trueNormals,
       // The consolidation single bullet is one ALIGNED 98%-hit bullet, NOT spray — so it keeps its
       // measured reliable-core value (consol.coreRate) under the δ-cone too, treated like a regular
@@ -2821,6 +2841,7 @@ export function runSim(
         core: false,
         charge: charged,
         category: 'normal',
+        srcSlot: 'normal',
         trueFlavor: !!u.swap?.trueNormals,
       });
     }

@@ -146,24 +146,93 @@ describe('cfg.onEvent structured event log', () => {
     ).toEqual([]);
     expect(
       sawBoost,
-      'no normal hit ever saw an elevated crit rate — helm never cast, or the buff is inert (this ' +
-        'assertion is vacuous without it, so treat a failure here as a broken fixture)',
+      'no normal hit ever saw an elevated crit rate. Two very different causes: the fixture is ' +
+        'broken (helm never cast, so the buff was never live and the leak arm above is vacuous), ' +
+        'OR the buff is applied at 100% uptime — in which case `base` IS the boosted rate, nothing ' +
+        'reads as elevated, and the leak arm went silent on a genuinely unscoped implementation. ' +
+        'Check whether the buff is live at all before assuming the first.',
     ).toBe(true);
   });
 
   it('attributes buffs to caster and holder, with enemy debuffs held by the boss', () => {
-    const applies = of('buffApply');
+    // DELIBERATELY NOT the control comp: it applies 960 buffs and ZERO of them are boss-held, so the
+    // enemy-debuff arm would be vacuous there (`.every()` over an empty set). blanc carries a
+    // Damage Taken ▲ debuff, which is the only way to reach applyBuff's `units.find(...)` MISS
+    // branch — the branch that decides a buff is held by the boss rather than by a unit.
+    const events: SimEvent[] = [];
+    runComp({
+      slugs: ['liter', 'blanc', 'ada', 'helm'],
+      bossElement: 'Fire',
+      focusSlug: 'ada',
+      cfg: { onEvent: (ev) => events.push(ev) },
+    });
+    const applies = events.filter((e): e is Extract<SimEvent, { kind: 'buffApply' }> => e.kind === 'buffApply');
     expect(applies.length, 'no buff was ever applied').toBeGreaterThan(0);
-    // ally buffs name a holder; enemy debuffs (damageTakenPct etc.) report targetIdx null = the boss
+
     const allyHeld = applies.filter((e) => e.targetIdx !== null);
     expect(allyHeld.length, 'no ally-held buff was logged').toBeGreaterThan(0);
     expect(
       allyHeld.every((e) => e.targetSlug !== null && e.targetIdx! >= 0 && e.targetIdx! < 4),
       'an ally-held buff reported a holder outside the 4-unit comp',
     ).toBe(true);
+
+    const bossHeld = applies.filter((e) => e.targetIdx === null);
     expect(
-      applies.filter((e) => e.targetIdx === null).every((e) => e.targetSlug === null),
+      bossHeld.length,
+      'no boss-held debuff in this fixture — the enemy branch is untested; pick a comp with a ' +
+        'Damage Taken ▲ debuffer rather than weakening this assertion',
+    ).toBeGreaterThan(0);
+    expect(
+      bossHeld.every((e) => e.targetSlug === null),
       'a boss-held debuff reported a unit slug',
     ).toBe(true);
+  });
+
+  it('brackets the Full Burst window — every in-FB instance falls inside a start/end pair', () => {
+    // Both boundaries are LEADING markers, so partitioning the stream on [start, end) has to agree
+    // with each instance's own inFullBurst flag. The failure this pins is specific: FB-entry
+    // stored-hit releases (rapi-red-hood's attached projectiles, srcSlot skill2) resolve INSIDE
+    // emitFbEnter, so a trailing fullBurstStart emits after them and a consumer splitting on the
+    // marker silently drops them. Measured in this fixture: 27 in-FB instances land on an FB-start
+    // frame, 37.7M damage, so the assertion is not vacuous.
+    const events: SimEvent[] = [];
+    runComp({
+      slugs: ['liter', 'crown', 'rapi-red-hood', 'helm'],
+      bossElement: 'Fire',
+      focusSlug: 'rapi-red-hood',
+      cfg: { onEvent: (ev) => events.push(ev) },
+    });
+    let open = false;
+    let seen = 0;
+    const orphans: string[] = [];
+    for (const e of events) {
+      if (e.kind === 'fullBurstStart') open = true;
+      else if (e.kind === 'fullBurstEnd') open = false;
+      else if (e.kind === 'damage' && e.inFullBurst) {
+        seen++;
+        if (!open) orphans.push(`${e.slug}/${e.srcSlot}@${e.sec.toFixed(2)}s`);
+      }
+    }
+    expect(seen, 'no in-FB damage at all — the fixture never reached a Full Burst').toBeGreaterThan(0);
+    expect(
+      orphans.slice(0, 3),
+      `${orphans.length} in-FB damage instance(s) fall outside a start/end pair in stream order`,
+    ).toEqual([]);
+  });
+
+  it('names the SOURCE KIT LINE of every damage instance', () => {
+    // `bucket` is the damage CATEGORY — it cannot tell skill1 from skill2, which is what a per-kit-
+    // line spec asserts on. Normal fire must say 'normal' and never a skill slot, and vice versa.
+    const dmg = of('damage');
+    const mismatched = dmg.filter(
+      (e) => (e.bucket === 'normal') !== (e.srcSlot === 'normal'),
+    );
+    expect(
+      mismatched.slice(0, 3).map((e) => `${e.slug} bucket=${e.bucket} srcSlot=${e.srcSlot}`),
+      'damage instance(s) whose source slot contradicts their bucket',
+    ).toEqual([]);
+    // null is reserved for the genuinely unattributable (the summed extraHitDamagePct rider);
+    // this fixture carries none, so every instance here must name its line.
+    expect(dmg.filter((e) => e.srcSlot === null), 'unattributed damage in a fixture with no summed rider').toEqual([]);
   });
 });
