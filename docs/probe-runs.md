@@ -1365,3 +1365,29 @@ cannot serve every shotgun unit to ±3%. The engine table stands; a far 0.75 →
 staged pending a third clean anchor. Live continuations: open-questions U17 (per-unit landing) and
 U18 (all three reads measured the in-fight attack term ~+1.6% above the scope-lock static value —
 same direction, two unit classes, confirmed two independent ways on Brid: Silent Track).
+
+## Shotgun accuracy-circle geometry campaign (2026-07-22) — drawn-geometry tracings, pellet markers, replication
+
+Three new measurements landed, all owner-sourced, all recorded in `docs/probe-data/`:
+- **Drawn-geometry tracings** (`sg-drawn-geometry.json`): the owner traced, on native-resolution
+  frames, the boss silhouette + core (blanc solo recording, near band) and the grey aim circle at
+  Hit Rate 0 (Brid: Silent Track solo) and Hit Rate 38.91 (Soda: Twinkling Bunny control) — circle
+  radius 79.3 px → 48.2 px, a 39% shrink, weapon-matched shotgun pair. Cross-validated three ways
+  (machine Hough fit of the disc edge 48.5–48.6 px; the engine's bloom-peak calibration 81 px; the
+  old near-core 31 px figure matching the fresh 32.2 px diameter). Pins the circle law
+  R(hr) = R₀·(1 − hr/100).
+- **Machine-read pellet markers** (`sg-pellet-marker-radial.json`): the aim-disc pellet markers
+  (owner ruling: white circle = pellet hit, red = pellet core hit, one per landed pellet) machine-read
+  across the burst-2 near window of the Soda: Twinkling Bunny control video — 101 per-pellet radial
+  positions. The live centered-Gaussian pellet distribution is refuted directly (KS 0.376 vs critical
+  0.135); uniform-per-area sits at the acceptance boundary. Machine per-shot counts reproduced the
+  owner's hand-count structure (the unique 3-core shot in position), which also settled that the
+  counted near window was burst 2.
+- **Mid-far replication window** (`soda-tb-midfar-replication.json`): owner hand-count of an
+  independent mid-far Hit-Rate-ON window (18 shots, 720-kit-audit video) scored against
+  pre-registered predictions — core 0.0296 vs predicted 0.0354, landing 0.750 inside the predicted
+  band. The former mid-far outlier did not reproduce.
+
+These fed the gated `/scientific-method` UNIGEO pass (uniform-in-circle geometry rework) — decision
+**LOG** (see `docs/handoffs/scientific-method-harness.md` 2026-07-22): model record accepted by both
+judges, no engine change, cone stays live, follow-ups recorded.
