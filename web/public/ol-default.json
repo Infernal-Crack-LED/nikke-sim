@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-07-23T16:50:50.947Z",
+  "config": {
+    "lines": [
+      "Elem DMG T11",
+      "ATK T11"
+    ],
+    "pieces": 4,
+    "trials": 20000
+  },
+  "perPiece": [
+    {
+      "expRolls": 36.2,
+      "p50": 32,
+      "p95": 81,
+      "phase1": 11.8,
+      "phase2": 24.5,
+      "modules": 66,
+      "modulesP95": 150
+    },
+    {
+      "expRolls": 36.6,
+      "p50": 32,
+      "p95": 82,
+      "phase1": 11.7,
+      "phase2": 24.9,
+      "modules": 66,
+      "modulesP95": 150
+    },
+    {
+      "expRolls": 36.5,
+      "p50": 32,
+      "p95": 82,
+      "phase1": 11.8,
+      "phase2": 24.8,
+      "modules": 66,
+      "modulesP95": 150
+    },
+    {
+      "expRolls": 36.2,
+      "p50": 32,
+      "p95": 81,
+      "phase1": 11.8,
+      "phase2": 24.4,
+      "modules": 66,
+      "modulesP95": 148
+    }
+  ],
+  "total": {
+    "expRolls": 145.5,
+    "p50": 140,
+    "p95": 230,
+    "phase1": 47,
+    "phase2": 98.5,
+    "modules": 263,
+    "modulesP95": 420
+  }
+}
