@@ -1003,15 +1003,17 @@ export function runSim(
   // per-weapon σ-shrink decouples SG-▲98 saturation from SMG mid-HR. Flipped LIVE after the full-board
   // A/B (net board mean|ratio−1| 0.0972→0.0964) + owner sign-off. CONE_DELTA=0 restores the prior engine.
   const CONE_DELTA = ENV.CONE_DELTA !== '0' && ENV.CONE_DELTA !== 'off';
-  // ── UNIGEO (ENV.UNIGEO; ⚑ EXPERIMENT ARM, DEFAULT OFF — 2026-07-22 pre-op packet) ──
-  // 'sg': SG landing = ε·coverage(band, R(hr)) (adds the Hit-Rate term the live SG_LANDING_BY_BAND
-  //       table lacks) + SG core-per-landed = area-ratio ÷ coverage — replaces the SG branches of
-  //       the cone. 'all': additionally AR/SMG core-per-hit = uniform-disc/core lens overlap.
-  // 'off' (default) leaves every path byte-identical. MG/SR/RL untouched in all modes. The
-  // coverage tables are the SCOPE-LOCK boss silhouette — a medium/large bossPelletProfile fight
-  // falls through to the cone path (per-boss coverage unmeasured; packet declared limit).
+  // ── UNIGEO (ENV.UNIGEO; DEFAULT 'all' — owner-enacted 2026-07-22, DECISIONS) ──
+  // 'sg': SG landing = ε·coverage(band, R(hr)) (adds the Hit-Rate term the old SG_LANDING_BY_BAND
+  //       table lacked) + SG core-per-landed = area-ratio ÷ coverage — replaces the SG branches of
+  //       the cone. 'all' (DEFAULT): additionally AR/SMG core-per-hit = uniform-disc/core lens
+  //       overlap. 'off' reverts byte-identical to the pre-UNIGEO cone engine (the A/B arm).
+  // MG/SR/RL untouched in all modes. The coverage tables are the SCOPE-LOCK boss silhouette — a
+  // medium/large bossPelletProfile fight falls through to the cone path (per-boss coverage
+  // unmeasured; declared limit). Landed with a known fit-exposure: SG overrides were calibrated
+  // against the old inflated landing and await their re-tune pass (DECISIONS 2026-07-22).
   const UNIGEO: 'off' | 'sg' | 'all' =
-    ENV.UNIGEO === 'sg' || ENV.UNIGEO === 'all' ? ENV.UNIGEO : 'off';
+    ENV.UNIGEO === 'off' || ENV.UNIGEO === 'sg' ? ENV.UNIGEO : 'all';
   const coneSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
