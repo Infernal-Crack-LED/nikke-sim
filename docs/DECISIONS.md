@@ -8,7 +8,36 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-07-23, latest) BASE-WEAPON FAITHFULNESS BASIS — `folkwang` replaces `kurumi` as the AR
+- **(2026-07-23, latest) BASE-WEAPON BASIS, two follow-on owner rulings: `cfg.disableBursts`, and
+  RARITY CEILINGS for non-SSR units.** Both refine the base-weapon basis entry below.
+  **(1) Bursting is turned OFF in the sim, not merely made harmless.** The owner can disable
+  bursting in game, so the sim models that directly rather than relying on the clean-weapon units'
+  burst blocks happening to be empty. `cfg.disableBursts` guards the CHAIN OPENER, which keeps it to
+  one condition: stage never leaves 0, so cast selection, stage advance and Full Burst are
+  unreachable by construction; the gauge fills and clamps at 100, pinned exactly as in a real fight
+  where the player never presses. Additive, default-off, **byte-identical unset** (whole-board
+  `board-read.ts` A/B clean, verify.sh green, full vitest). It does not move damage either: team B
+  casts 15 bursts with it off and 0 with it on for byte-identical totals, so the baselines do not
+  depend on it. Engine edit made on an isolated worktree per the standing rule.
+  **(2) Scope lock encodes an SSR ceiling that two of the six cannot reach.** `copies: 10` ⇒ 3★ +
+  core 7. `idoll-ocean` can hold no dupes at all (0★/core 0) and `claire` 2 dupes with no cores
+  (2★/core 0), so the plain basis credited them ATK they can never have — 68,928 vs 81,530 and
+  79,200 vs 90,632, worth **15.5% / 12.6%** of their damage. Damage is very nearly linear in ATK for
+  a bare weapon (boss DEF is subtracted per hit, so not exactly), making the error a near-pure
+  scalar: harmless to the SHAPE of a fight, fatal to the sim-vs-real ratio that is this basis's only
+  output. Fixed with per-unit `stars`/`core` (`CompOptions.unitLimits` → the support `prepare.ts`
+  already had); inert for every other suite. ⚠ **`data/characters.json` carries NO unit-rarity
+  field** (the only `rarity` in the repo is doll rarity), so nothing derives or enforces these —
+  they are owner-supplied and hand-maintained, and the gap is latent for any non-SSR unit anywhere
+  in the sim, not just these two.
+  **`idoll-ocean` stays despite not being SSR — the SMG slot has no alternative.** Of 30 SMG units
+  exactly three have no damage-raising line in skill 1 + skill 2 (bursts being off makes the burst
+  slot irrelevant): `idoll-ocean`; `rei` (SMG/Water — NOT `rei-ayanami`), clean but not owned; and
+  `mica-snow-buddy` (SMG/Iron — NOT `mica`, RL/Wind), which is NOT clean because *"Max Ammunition
+  Capacity ▲ 40% continuously"* raises fire uptime and therefore damage. Every other SMG carries an
+  explicit offensive line.
+
+- **(2026-07-23) BASE-WEAPON FAITHFULNESS BASIS — `folkwang` replaces `kurumi` as the AR
   "clean weapon" cell; boss element **Iron**; the six run as two teams of three.** The clean-weapon
   set (`docs/data/clean-weapons.md`) exists to test the engine's BARE WEAPON model — fire cadence,
   ammo/reload, charge + release latency, pellet landing, core/crit, range bands — using the only

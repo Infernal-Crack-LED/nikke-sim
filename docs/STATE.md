@@ -53,6 +53,14 @@ what makes a SCOPING claim (e.g. `critRateNormalPct` on normal attacks only) ass
 contract + the deliberate gaps (no `buffExpire` — lapse is lazy; no per-hit event — MG/SG pulls
 aggregate) on `SimEvent` in `src/types.ts`; pinned by `scripts/tests/engine/event-log.test.ts`.
 
+Bursting off: `cfg.disableBursts` (config, not env — landed 2026-07-23) plays the fight with
+bursting turned OFF, as the owner can in game. It guards the CHAIN OPENER, so stage never leaves 0
+and cast selection / stage advance / Full Burst are all unreachable by construction; the gauge still
+fills and clamps at 100, pinned as it is in a real fight where the player never presses. Default-off
+and byte-identical unset (proven by a whole-board `board-read.ts` A/B). Built for the BASE-WEAPON
+faithfulness basis ([data/clean-weapons.md](data/clean-weapons.md)); pinned by
+`scripts/tests/units/clean-weapons.test.ts`. → DECISIONS 2026-07-23.
+
 ## 2. Named timing / cadence / stat constants
 
 | Constant | Value | Meaning | `sim.ts` |
