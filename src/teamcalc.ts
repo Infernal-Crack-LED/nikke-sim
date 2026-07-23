@@ -65,6 +65,20 @@ export interface TeamCalcInput {
    *  downward-sloped team spread (see topTeams `spreadTargets`); it does NOT change
    *  the damage×enikk ranking score. Omit → no spread shaping. */
   prydwenScore?: (slug: string) => number;
+  /** Soft like-tag synergy bias for the ranking score (owner ruling 2026-07-23).
+   *  Rewards a team for pairing a damage dealer with its matching damage buffer —
+   *  e.g. a Pierce dealer with a Pierce ▲ buffer, a Projectile dealer with a
+   *  Projectile ▲ buffer (archetype tags from data/archetype-tags.json). Multiplies
+   *  the ranking score by (1 + weight × satisfied pairs); see countSynergyPairs.
+   *  Soft — simulated damage and the meta blend still lead. Omit → no synergy. */
+  synergy?: {
+    /** archetype tags by slug (data/archetype-tags.json `tags`) */
+    tags: Record<string, string[]>;
+    /** [dealerTag, bufferTag] pairs to reward (e.g. ['pierce','pierce-buffer']) */
+    pairs: [string, string][];
+    /** score bonus per satisfied pair (e.g. 0.08 → +8% per pair) */
+    weight: number;
+  };
 }
 
 export interface TeamUnit {
@@ -400,6 +414,36 @@ export function assignAlwaysCombos(
   return { pinnedByTeam: pinned, singles, dropped };
 }
 
+/**
+ * Count the like-tag synergy pairs a team satisfies (owner ruling 2026-07-23).
+ * A pair [dealerTag, bufferTag] is satisfied when the team fields ≥1 unit carrying
+ * the dealer tag AND ≥1 (other or same) unit carrying the buffer tag — e.g. a
+ * Pierce dealer plus a Pierce ▲ buffer, or a Projectile dealer plus a Projectile ▲
+ * buffer. A single unit that carries BOTH halves (rapi-red-hood deals AND self-buffs
+ * projectile explosion damage) satisfies the pair on its own. Pure over the tag map;
+ * the generator folds the count into the ranking score as a soft (1 + weight·pairs)
+ * multiplier so simulated damage still leads. Tags come from data/archetype-tags.json.
+ */
+export function countSynergyPairs(
+  slugs: string[],
+  tags: Record<string, string[]>,
+  pairs: [string, string][],
+): number {
+  let n = 0;
+  for (const [dealer, buffer] of pairs) {
+    let hasDealer = false;
+    let hasBuffer = false;
+    for (const s of slugs) {
+      const t = tags[s];
+      if (!t) continue;
+      if (t.includes(dealer)) hasDealer = true;
+      if (t.includes(buffer)) hasBuffer = true;
+    }
+    if (hasDealer && hasBuffer) n++;
+  }
+  return n;
+}
+
 export function makeCalc(input: TeamCalcInput) {
   const { chars, mult, deps } = input;
   const loadout = input.loadout ?? {};
@@ -409,6 +453,17 @@ export function makeCalc(input: TeamCalcInput) {
   const meta = input.meta;
   const META_W = meta?.weight ?? 0;
   const prydwenScore = input.prydwenScore;
+  // Soft like-tag synergy (owner ruling 2026-07-23): a team that pairs a damage
+  // dealer with its matching damage buffer (pierce↔pierce ▲, projectile↔projectile ▲)
+  // gets a small multiplicative bonus on the ranking score. Folds into scoreOf so
+  // every search path (seed refine, injected meta comps, the solo spread) sees it.
+  // Inert when no synergy config is supplied.
+  const synergy = input.synergy;
+  const synergyFactor = (slugs: string[]): number =>
+    synergy
+      ? 1 +
+        synergy.weight * countSynergyPairs(slugs, synergy.tags, synergy.pairs)
+      : 1;
 
   // Soft team-spread helpers (solo roster generator). A team's prydwen meta sum
   // and a gentle closeness-to-target factor (1 at the target, falling off with σ).
@@ -444,13 +499,18 @@ export function makeCalc(input: TeamCalcInput) {
     const combo = meta.compPop[[...slugs].sort().join('|')] ?? 0;
     return Math.min(1, unitComp + meta.comboWeight * combo);
   };
-  // Ranking score: strong co-equal blend of simulated damage and meta prior.
-  // Reduces to raw teamDamage when no meta is supplied (backwards-compatible).
+  // Ranking score: strong co-equal blend of simulated damage and meta prior, with
+  // a soft like-tag synergy multiplier on top. Reduces to raw teamDamage when no
+  // meta and no synergy are supplied (backwards-compatible).
   const scoreOf = (r: {
     teamDamage: number;
     units: { slug: string }[];
-  }): number =>
-    r.teamDamage * (1 + META_W * metaPrior(r.units.map((u) => u.slug)));
+  }): number => {
+    const slugs = r.units.map((u) => u.slug);
+    return (
+      r.teamDamage * (1 + META_W * metaPrior(slugs)) * synergyFactor(slugs)
+    );
+  };
 
   // effective burst class for selection (pins Red Hood → B3; see FORCED_BURST)
   const eb = (s: string) => effBurst(s, chars);

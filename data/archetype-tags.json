@@ -1,5 +1,5 @@
 {
- "updated": "2026-07-20",
+ "updated": "2026-07-23",
  "generated": "scripts/build-archetype-tags.ts",
  "source": "data/characters.json — skill prose only (skills.skill1/skill2/burst); role.* datamine ignored",
  "policy": "Archetype tags for Team Builder filtering. Derived deterministically from kit prose by scripts/build-archetype-tags.ts (re-run as a sweep with --write). The prose is split on the \"■\" block marker and each block's \"Affects …\" target is read, so an ally ATK ▲ tags `buffer` while an enemy ATK ▼ tags `debuffer`. Stat/damage buffer-family tags match a buff on self OR allies (a self-only buffer still carries the tag); burst-support, ally-filter and role tags stay ally-facing. Each tag carries a `group` for the UI filter panel. Manual edits are allowed for edge cases but will be overwritten by the next --write sweep; to make a change stick, adjust the rule in build-archetype-tags.ts. See docs/data/archetype-tags.md.",
@@ -202,6 +202,11 @@
   "pierce": {
    "label": "Pierce",
    "blurb": "Own attacks penetrate (ignore DEF / shield-pierce).",
+   "group": "Role"
+  },
+  "projectile": {
+   "label": "Projectile",
+   "blurb": "Deals projectile explosion damage (RL / SR projectile kits).",
    "group": "Role"
   }
  },
@@ -1102,7 +1107,8 @@
    "attack-buffer",
    "projectile-buffer",
    "parts-buffer",
-   "burst-cdr"
+   "burst-cdr",
+   "projectile"
   ],
   "rapunzel": [
    "buffer",

@@ -10,8 +10,8 @@ lives. Newest first within each section.
 
 - **(2026-07-23, later) `wipeOut`/`requiresWipeOut` DELETED — the named registry is now the SOLE
   enemy-status channel; `d-killer-wife` migrated.** Owner ruling, superseding the "deliberately NOT
-  unified" clause of the entry below: *"just delete the old wipeout and set the new one live, faithful >
-  fit… leaving an incorrect implementation just because it passes a regression test is always wrong."*
+  unified" clause of the entry below: _"just delete the old wipeout and set the new one live, faithful >
+  fit… leaving an incorrect implementation just because it passes a regression test is always wrong."_
   The old pair was not merely redundant — it could express exactly **one** status name for the entire
   roster, so the moment a second unit needed an enemy status it would have satisfied `d-killer-wife`'s
   gate and she would have satisfied its. Passing the board was an artifact of having exactly one
@@ -34,7 +34,7 @@ lives. Newest first within each section.
 
 - **(2026-07-23) NAMED TARGET-STATUS REGISTRY BUILT (`targetStatus` effect + `requiresTargetStatus`
   block gate) — capability only, ZERO enactments.** The 5e action item's buildable core. The engine had
-  no way to express *"Activates when … hits a target in \<Name\> status"*: its only apply-then-gate
+  no way to express _"Activates when … hits a target in \<Name\> status"_: its only apply-then-gate
   channels were `wipeOut`/`requiresWipeOut` (global, enemy) and `shield`/`requiresShielded` (per-unit),
   each a **single hardcoded-name boolean**, so a second character reusing either would COLLIDE with
   `d-killer-wife` / `naga` rather than express its own status. `resources` is named and multiple but
@@ -1379,6 +1379,34 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   attribution across units is forbidden — it burned us twice. — u8 processing; owner corrections.
 
 ## Engine/data-architecture decisions
+
+- **(2026-07-23) Generators prefer LIKE-TAGS — a dealer paired with its matching damage buffer scores
+  a soft bonus; new `projectile` dealer archetype tag (owner ruling).** Two coupled additions.
+  **(1) Like-tag synergy bias** — the team/roster generators now nudge a team toward fielding a damage
+  DEALER alongside its matching damage BUFFER. `src/teamcalc.ts` gains an exported pure helper
+  `countSynergyPairs(slugs, tags, pairs)` and an OPTIONAL `synergy` input (`{ tags, pairs, weight }`);
+  the ranking score folds in a multiplier `(1 + weight × satisfiedPairs)` inside `scoreOf`, so every
+  search path sees it (seed refine, injected meta comps, the solo prydwen spread, best-team, character
+  analysis, union). A pair `[dealerTag, bufferTag]` is satisfied when the team fields ≥1 unit with the
+  dealer tag AND ≥1 unit with the buffer tag (one unit carrying BOTH halves — rapi-red-hood deals AND
+  self-buffs projectile explosion damage — satisfies it alone). The web generators wire
+  `SYNERGY_PAIRS = [['pierce','pierce-buffer'], ['projectile','projectile-buffer']]` at
+  `SYNERGY_WEIGHT = 0.08` (+8% per satisfied pair, max +16%). The bias is SOFT on purpose — simulated
+  damage and the meta blend still lead; it only breaks otherwise-close choices (e.g. picking a Pierce ▲
+  buffer over a generic buffer of the same burst class when a pierce dealer is already on the team).
+  Tags come from `data/archetype-tags.json`. Inert when no `synergy` is supplied, so CLI/battery callers
+  stay byte-unchanged. **(2) `projectile` dealer tag** — the damage-profile counterpart to the existing
+  `projectile-buffer` (Projectile ▲), mirroring the `pierce` (dealer) / `pierce-buffer` split. Keyed off
+  the datamined damage-instance line "Projectile Explosion Damage: Deals N% of final ATK as damage" — NOT
+  the "Projectile Explosion Damage ▲" buff — so a pure projectile buffer (prika, mint, anis:star) does
+  NOT tag `projectile`. Net `projectile` ×1 (rapi-red-hood). anis:star's projectile damage is prose-hidden
+  (Shooting Stars read as a generic "Damage: 40%… + Explosion Radius ▲"), so she does not tag — a
+  prose-derivation limit per the high-recall-heuristic policy; no slug special-case was added. Pinned by
+  `scripts/tests/like-tag-synergy.test.ts` (manual, like the other team-gen tests). — `src/teamcalc.ts`
+  (`synergy` input, `countSynergyPairs`, `scoreOf`); `scripts/build-archetype-tags.ts` (`projectile`
+  TagDef + `PROJECTILE_DEAL`); `data/archetype-tags.json` (regenerated, 40→41 tags); `web/src/App.tsx`
+  (`archetypeTags`, `SYNERGY_PAIRS`/`SYNERGY_WEIGHT`, wired into both generator calcs);
+  `docs/data/archetype-tags.md` (vocabulary + provenance).
 
 - **(2026-07-22) Roster always-combos BURST SPREAD — the curated supports don't stack a burst stage
   onto one team (owner ruling; extends the always-combos ruling below).** `assignAlwaysCombos` now

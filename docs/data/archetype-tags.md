@@ -141,6 +141,7 @@ the pattern.
 | `sustained-damage`   | Sustained Damage   | Deals or enables sustained single-target damage.         |
 | `distributed-damage` | Distributed Damage | Deals or enables distributed damage (split across wave). |
 | `pierce`             | Pierce             | Own attacks penetrate (ignore DEF / shield-pierce).      |
+| `projectile`         | Projectile         | Deals projectile explosion damage (RL / SR kits).        |
 
 The set is **extensible**: to add a tag, append a `TagDef`
 (id/label/blurb/group/test) in `scripts/build-archetype-tags.ts` and re-run the
@@ -322,3 +323,17 @@ enemies`). `buffer` now matches the generic `Attack Damage ▲` buff (was only a
   must now name the target of a non-`Affects self` clause that itself names
   ally/allies. Net: `defender-buffer` 1 → 2 (biscuit added; quiry kept;
   delta-ninja-thief correctly excluded); all seven other matcher counts unchanged.
+- 2026-07-23 — `projectile` dealer tag (owner-directed; re-swept 192/192 tagged,
+  40 → 41 tags). Added the damage-profile counterpart to `projectile-buffer`
+  (Projectile ▲), mirroring the existing `pierce` (dealer) / `pierce-buffer`
+  split: `projectile` marks a kit that DEALS projectile explosion damage, keyed
+  off the datamined damage-instance line "Projectile Explosion Damage: Deals N%
+  of final ATK as damage" — NOT the "Projectile Explosion Damage ▲" buff (which
+  stays `projectile-buffer`), so a pure projectile buffer (prika, mint) does not
+  tag `projectile`. Net: `projectile` ×1 (rapi-red-hood, who both deals and
+  self-buffs it). anis:star's projectile damage is prose-hidden (her Shooting
+  Stars read as a generic "Damage: 40%… + Explosion Radius ▲" with no projectile
+  damage-type label), so she does not tag — a prose-derivation limit consistent
+  with the high-recall-heuristic policy; no slug special-case was added. Motivated
+  by the generators' new like-tag synergy bias (teamcalc `countSynergyPairs` /
+  App.tsx `SYNERGY_PAIRS`), which pairs a dealer with its matching buffer.

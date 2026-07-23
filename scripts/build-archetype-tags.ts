@@ -153,6 +153,14 @@ const ELEMENT_DMG =
 // tags pierce-buffer when it lands on allies.
 const PIERCE_GRANT =
   /\bGains? (?:continuous )?Pierce\b|\bAdditional Effect: ?Pierce\b|Expands? Pierce range|Piercing Radius/i;
+// "Projectile Explosion Damage" dealt as a damage TYPE on one of the kit's OWN
+// hits — the datamine writes a projectile's damage line as "Projectile Explosion
+// Damage: Deals N% of final ATK as damage" (a typed damage instance). This is the
+// DEALER signal, distinct from the "Projectile Explosion Damage ▲" buff, which is
+// a damage buff that tags projectile-buffer. Mirrors pierce (dealer) vs
+// pierce-buffer: a pure projectile buffer (prika, mint) carries only the ▲ and
+// must NOT tag projectile.
+const PROJECTILE_DEAL = /Projectile Explosion Damage: Deals/i;
 
 const TAG_DEFS: TagDef[] = [
   // ---- Stat Buffs (▲ to core stats; self or ally) -------------------------
@@ -507,6 +515,17 @@ const TAG_DEFS: TagDef[] = [
     // a self block) — not an enemy-affecting block. "Pierce Damage ▲" is a damage
     // buff and is handled by pierce-buffer, not here.
     test: (b) => b.some((blk) => PIERCE_GRANT.test(blk.text)),
+  },
+  {
+    id: 'projectile',
+    label: 'Projectile',
+    blurb: 'Deals projectile explosion damage (RL / SR projectile kits).',
+    group: G.role,
+    // Projectile explosion damage dealt as a damage TYPE on the kit's own hit
+    // ("Projectile Explosion Damage: Deals N% of final ATK as damage") — the
+    // dealer signal. Distinct from the "Projectile Explosion Damage ▲" buff, which
+    // tags projectile-buffer (mirrors pierce dealer vs pierce-buffer).
+    test: (b) => b.some((blk) => PROJECTILE_DEAL.test(blk.text)),
   },
 ];
 
