@@ -30,7 +30,7 @@ const TARGETS = new Set([
   'alliesLowestHp',
 ]);
 const EFFECTS = new Set([
-  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'wipeOut', 'burstEligibility', 'burstFirst', 'reenterStage',
+  'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
   'instantReload', 'consumeAmmo', 'storedHit', 'stun', 'stackedNuke', 'gainPierce', 'resource',
   'targetStatus',

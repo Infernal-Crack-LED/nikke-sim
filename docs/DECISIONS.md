@@ -8,6 +8,30 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-23, later) `wipeOut`/`requiresWipeOut` DELETED — the named registry is now the SOLE
+  enemy-status channel; `d-killer-wife` migrated.** Owner ruling, superseding the "deliberately NOT
+  unified" clause of the entry below: *"just delete the old wipeout and set the new one live, faithful >
+  fit… leaving an incorrect implementation just because it passes a regression test is always wrong."*
+  The old pair was not merely redundant — it could express exactly **one** status name for the entire
+  roster, so the moment a second unit needed an enemy status it would have satisfied `d-killer-wife`'s
+  gate and she would have satisfied its. Passing the board was an artifact of having exactly one
+  carrier, not evidence of correctness.
+  **The migration is behaviour-preserving and the board did NOT move**: her burst now inflicts
+  `targetStatus { name: 'Wipe Out', durationSec: 10 }` and her body-branch ATK buff is gated
+  `requiresTargetStatus: 'Wipe Out'` (+ `requiresCore`, unchanged). Identical semantics — max-extend
+  window, same position among the abort gates, expiry checked at read — so `scripts/regression.ts`
+  passes with **no snapshot change and no `--update`**. The 12.19% kit value is untouched; no measured
+  constant refit. Primitive count 92 → 90.
+  **Load-bearing detail, now recorded in her override note:** her status-inflicting block precedes her
+  gated block in the `burst` array and both fire on the same `burstCast` frame, so the gate reads a
+  status written earlier that same frame. Reordering that array would silently disable the buff for one
+  window. → `docs/engine-modeling-gaps.md` §1a for the edges one carrier does NOT reach (`chargeCounter`
+  blocks bypass all gates; typo'd names fail silently; cross-unit same-frame ordering; multi-producer
+  refresh).
+  The mechanism test replaced its `wipeOut` non-collision arms with a property the deleted pair could
+  never have satisfied: **two differently-named statuses live simultaneously**, gated three ways (each
+  fires on its own name; an unapplied third name reads exactly zero).
+
 - **(2026-07-23) NAMED TARGET-STATUS REGISTRY BUILT (`targetStatus` effect + `requiresTargetStatus`
   block gate) — capability only, ZERO enactments.** The 5e action item's buildable core. The engine had
   no way to express *"Activates when … hits a target in \<Name\> status"*: its only apply-then-gate

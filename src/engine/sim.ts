@@ -1163,17 +1163,14 @@ export function runSim(
   // frames later (during the gap fbEndFrame stays old, so "in FB" is correctly false).
   let pendingFbStartFrame = -1;
   let pendingFbStartExtendSec = 0;
-  // "Wipe Out" status window on the boss (0/-1 = none): opened by a 'wipeOut' effect
-  // (d-killer-wife's burst) and read by the requiresWipeOut block gate. One global boss →
-  // one window (like fbEndFrame), not a per-unit status.
-  let wipeOutUntilFrame = -1;
   // Kit-NAMED status windows on the boss (status name → expiry frame): opened by a 'targetStatus'
-  // effect and read by the requiresTargetStatus block gate. The name-keyed generalization of
-  // wipeOutUntilFrame above — still one global boss, but keyed by name, so two characters'
-  // unrelated statuses never satisfy each other's gate (which is exactly what reusing the single
-  // 'wipeOut' boolean would do). Declared in runSim scope, so it resets per run like every other
-  // window here. Entries are never pruned — expiry is checked at READ, same as fbEndFrame /
-  // wipeOutUntilFrame / shieldedUntilFrame. NO CURRENT USER (inert; see types.ts 'targetStatus').
+  // effect and read by the requiresTargetStatus block gate. One global boss, but keyed by NAME, so
+  // two characters' unrelated statuses never satisfy each other's gate. This REPLACED a single
+  // hardcoded `wipeOutUntilFrame` boolean window (deleted 2026-07-23) that could hold exactly one
+  // status for the whole roster. Declared in runSim scope, so it resets per run like every other
+  // window here — do NOT hoist to module scope, that would leak windows across SEEDS=N Monte-Carlo
+  // runs and repeated web-side sims. Entries are never pruned; expiry is checked at READ, same as
+  // fbEndFrame / shieldedUntilFrame. Users: d-killer-wife ("Wipe Out", 10 s).
   const targetStatuses = new Map<string, number>();
   let pendingFbExtendSec = 0;
   let rotationCasters: number[] = [];
@@ -1561,15 +1558,11 @@ export function runSim(
     // 31.02%; owner-ruled default-off/requires-a-shielder 2026-07-20). No shielder in the
     // comp → no shield events → the block never fires.
     if (block.requiresShielded && owner.shieldedUntilFrame <= frame) return;
-    // wipe-out-state gate: "when allies hit an area of the Wipe-Out-afflicted target"
-    // (d-killer-wife's burst area riders) fires only while the boss carries the Wipe Out
-    // status. Composes with requiresCore (core-only proxy until destructible parts exist).
-    if (block.requiresWipeOut && wipeOutUntilFrame <= frame) return;
     // named target-status gate: "Activates when … hits a target in <Name> status" — the block only
     // activates while the boss currently carries THAT named status (a 'targetStatus' effect's
-    // window). e.g. privaty's skill-2 last-bullet rider, gated on the "Designated Target" status
-    // her own burst applies. Name-keyed and therefore INDEPENDENT of requiresWipeOut: a Wipe Out
-    // window never opens a named gate, and a named status never satisfies requiresWipeOut.
+    // window). Name-keyed, so an unrelated kit's status never opens it. Composes with requiresCore.
+    // e.g. d-killer-wife's burst body-branch ATK buff, gated on 'Wipe Out' — "when allies hit an
+    // area of the Wipe-Out-afflicted target" (core-only proxy until destructible parts exist).
     if (
       block.requiresTargetStatus &&
       (targetStatuses.get(block.requiresTargetStatus) ?? -1) <= frame
@@ -1856,23 +1849,18 @@ export function runSim(
             });
           }
           break;
-        case 'wipeOut':
-          // inflict "Wipe Out" on the boss: open the global window read by requiresWipeOut.
-          // One boss → one window (max-extends like the shield window). Target is implicitly
-          // the enemy; no per-part state (core-only proxy until destructible parts exist).
-          wipeOutUntilFrame = Math.max(wipeOutUntilFrame, frame + Math.round(e.durationSec * FPS));
-          break;
         case 'targetStatus':
           // inflict a kit-NAMED status on the boss: open/extend the window read by the
           // requiresTargetStatus gate. Target is IMPLICITLY the enemy — there is no enemy entity
           // (resolveTargets({kind:'enemy'}) returns []), so block.target is deliberately IGNORED
-          // here, the same convention as 'wipeOut' above and unlike 'resource' (owner-scoped).
-          // validate-overrides.ts still requires the authoring block to carry target `enemy`.
+          // here (unlike 'resource', which is owner-scoped). validate-overrides.ts still requires
+          // the authoring block to carry target `enemy`.
           // ⚠ DO NOT "fix" this to route through resolveTargets(block.target): that returns [] for
           // {kind:'enemy'}, so every carrier would silently stop applying its status. The validator
           // rule and this ignore-the-target behaviour are two halves of one convention, not a bug.
-          // Max-extends per NAME (like the shield / wipe-out windows), so a re-application refreshes
-          // its own status and never touches another kit's.
+          // Max-extends per NAME (like the shield window), so a re-application refreshes its own
+          // status and never touches another kit's. No per-part state (core-only proxy until
+          // destructible parts exist).
           targetStatuses.set(
             e.name,
             Math.max(targetStatuses.get(e.name) ?? -1, frame + Math.round(e.durationSec * FPS))

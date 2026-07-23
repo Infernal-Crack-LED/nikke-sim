@@ -91,8 +91,7 @@
 | `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 1 | naga |
-| `requiresTargetStatus` | 0 | _none_ |
-| `requiresWipeOut` | 1 | d-killer-wife |
+| `requiresTargetStatus` | 1 | d-killer-wife |
 | `resourceGate` | 1 | soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
 | `sequentialMultPct` | 1 | eve |
@@ -105,7 +104,7 @@
 | `swapGate` | 2 | laplace, snow-white-heavy-arms |
 | `swapped` | 2 | laplace, snow-white-heavy-arms |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
-| `targetStatus` | 0 | _none_ |
+| `targetStatus` | 1 | d-killer-wife |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |
@@ -114,7 +113,6 @@
 | `weapon` | 8 | arcana-fortune-mate, d-killer-wife, drake, leona, nayuta, noir, tove, trina |
 | `weaponSwap` | 11 | ada, chisato, cinderella-crystal-wave, laplace, moran, nayuta, red-hood, snow-white-heavy-arms, … |
 | `whileSwapped` | 1 | snow-white-heavy-arms |
-| `wipeOut` | 1 | d-killer-wife |
 
 <!-- END GENERATED: primitive-census -->
 
@@ -259,38 +257,43 @@ bready, elegg-boom-and-shock, guillotine-winter-slayer, helm-aquamarine, laplace
 ludmilla-winter-owner, mana, mari, modernia, quency-escape-queen, raven, sakura-bloom-in-summer,
 scarlet, soline-frost-ticket, volume.
 
-### 1a. Named target-status registry — BUILT 2026-07-23, 0 carriers — the open edges
+### 1a. Named target-status registry — the SOLE enemy-status channel — 1 carrier
 
-The `targetStatus` effect + `requiresTargetStatus` gate landed as a capability (DECISIONS 2026-07-23,
-`docs/STATE.md` §5). It is INERT — no override opts in — so the regression's byte-identity proves it is
-**unreached**, not that it is correct. **The first override to opt in is the real integration test and
-must land with its own A/B, never as a rider on an inert change.** Edges found by the step-7 review and
-deliberately left open:
+`targetStatus` effect + `requiresTargetStatus` gate (DECISIONS 2026-07-23, `docs/STATE.md` §5). It
+**replaced** the hardcoded `wipeOut`/`requiresWipeOut` pair, which was deleted outright rather than kept
+alongside: that pair could express exactly ONE status name for the whole roster, so any second carrier
+would have silently satisfied `d-killer-wife`'s gate and vice versa. Owner ruling 2026-07-23 —
+faithful > fit; an incorrect model is not made correct by passing a regression test.
+
+`d-killer-wife` is migrated (`'Wipe Out'`, 10 s) and the migration is **behaviour-preserving** — the
+regression snapshot did not move, because the new path has identical semantics (max-extend window,
+same gate position, expiry checked at read). So the registry now IS exercised by a graded comp, but only
+in its single-status, same-unit, same-frame form. Everything below is what that carrier does NOT reach:
 
 - **`chargeCounter`-triggered blocks bypass EVERY block gate.** `sim.ts` dispatches them straight to
-  `applyEffect`, skipping `applyBlock` — so `requiresCore` / `fbGate` / `requiresWipeOut` /
-  `bossElementGate` / `resourceGate` **and** `requiresTargetStatus` are all silently ignored there.
-  **Pre-existing, not introduced by the registry**, but a future carrier sitting on a `chargeCounter`
-  trigger would get an un-gated block with no error and no warning.
+  `applyEffect`, skipping `applyBlock` — so `requiresCore` / `fbGate` / `bossElementGate` /
+  `resourceGate` **and** `requiresTargetStatus` are all silently ignored there. **Pre-existing and
+  wider than this primitive**, but a future carrier sitting on a `chargeCounter` trigger would get an
+  un-gated block with no error and no warning.
 - **A typo'd status name fails SILENTLY** — matching is exact and case/whitespace-sensitive, and the
   failure mode is a block that never fires (a silent under-model, the exact bug class this primitive
-  exists to prevent). A producer/consumer census across all overrides would catch it, but
+  exists to prevent). Note `d-killer-wife` now depends on two string literals agreeing across two
+  blocks. A producer/consumer census across all overrides would catch a mismatch, but
   `validate-overrides.ts` is invoked per-slug, so a cross-slug census needs a design decision about
   single-slug runs (warn, not error, so a deliberately-future-gated consumer stays authorable).
 - **The validator's `target: enemy` rule has no test.** Closing it needs the validator's structural
   checks extracted into an importable pure function — today `validate()` loads from disk and runs a sim,
   and a test must never write to `src/skills/overrides/`. The engine half IS tested (P7).
-- **Same-frame cross-unit ordering is unspecified.** The gate reads at trigger time, the effect writes at
-  apply time; if unit A applies a status and unit B consumes it on the same frame, the outcome depends on
-  team-slot iteration order. `wipeOut` has the identical property, so this is convention-consistent, not
-  a defect — but the first `prika`-style cross-unit carrier will hit it. `privaty`'s own case is
-  same-unit and unaffected.
-- **Multi-status concurrency and multi-producer refresh are untested.** No arm holds two differently
-  named statuses live at once, and the `Math.max` extend path is exercised only by self-refresh. The
-  `Map` makes collision structurally impossible; that is an argument, not a test.
-- **Cosmetic:** the "must be authored `target: enemy`" rule is enforced for `targetStatus` but not for
-  its sibling `wipeOut` (whose sole carrier `d-killer-wife` already complies), so extending it would be
-  a free no-op consistency win.
+- **Same-frame ordering is load-bearing and unspecified beyond array order.** The gate reads at trigger
+  time, the effect writes at apply time. `d-killer-wife` relies on this INTRA-unit: her status-inflicting
+  block precedes her gated block in the burst array and both fire on the same `burstCast` frame, so
+  reordering that array would silently disable her buff for one window. CROSS-unit (unit A applies, unit
+  B consumes, same frame) additionally depends on team-slot iteration order and has no carrier yet — the
+  first `prika`-style cross-unit case will hit it.
+- **Multi-producer refresh is untested.** Two units applying the SAME status name exercise a `Math.max`
+  extend path that only self-refresh reaches today. (Multi-status concurrency IS now tested — two
+  differently-named statuses held live simultaneously, gated three ways: `target-status-gate.test.ts`
+  P4a/P4b/P4c.)
 
 ### 1b. "is fixed at" stat LOCKS — no engine vocabulary — 8 units
 
