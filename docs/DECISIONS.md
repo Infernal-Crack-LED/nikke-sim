@@ -8,7 +8,43 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
-- **(2026-07-23, latest) `helm` — her burst's "Recovers 54.45% of attack damage as HP for 10 sec" is a
+- **(2026-07-23, latest) BASE-WEAPON FAITHFULNESS BASIS — `folkwang` replaces `kurumi` as the AR
+  "clean weapon" cell; boss element **Iron**; the six run as two teams of three.** The clean-weapon
+  set (`docs/data/clean-weapons.md`) exists to test the engine's BARE WEAPON model — fire cadence,
+  ammo/reload, charge + release latency, pellet landing, core/crit, range bands — using the only
+  units whose kits contribute nothing to damage, so no kit encoding sits between sim and recording.
+  Evidence tier: **kit prose (blablalink SSOT)**, a complete read of all three skill slots per unit;
+  no measurement and no fitted value is involved.
+  **Why `kurumi` was rejected:** the owner's constraint was "never bursts", and her two *other*
+  damage lines do obey it (S1 block 2 is *"Activates when using Burst Skill"*, S2 is *"Activates
+  during Full Burst"*). But S1 block 1 — *"Activates after landing 36 normal attack(s) … Hacked:
+  Deals 52.24% of final ATK as sustained damage every 1 sec for 5 sec"* — fires off a NORMAL-ATTACK
+  COUNTER with no burst dependency at all, so she is not bare-weapon even under the constraint. At
+  261.2% ATK per proc per 36 shots against a 13.65% normal multiplier it is not a rounding error.
+  `folkwang` (AR/Water/B2) is the only AR with zero damage-touching lines *including* her burst.
+  The other five were confirmed clean: every non-burst line is heal / shield / Max HP /
+  incoming-healing / DEF / taunt. ⚠ `snow-crane`'s BURST grants **Pierce for 10 sec** — she is the
+  one unit for whom "never burst" is load-bearing rather than incidental.
+  **Boss element Iron** is the unique element neutral for all six (the other four each hand at least
+  one of them the ×1.1 elemental major); `bossElement: null` is neutral by construction. Proved
+  through the engine, not read off the wheel.
+  **Two teams of three** (owner constraint: the six cannot be fielded as one team), split by burst
+  stage so team A is all Burst II and therefore **cannot burst at all** — no Burst I unit ever opens
+  the chain, zero casts. Team B is all Burst I and does cast, but a no-op burst is **uptime-inert**:
+  `marciana` is byte-identical at 0 casts vs 8 (there is no cast-animation lock in the fire loop), so
+  team B's numbers are bare-weapon too. Neither team reaches Full Burst (no Burst III). Each team
+  fields three distinct weapon classes, covering all six.
+  **No override files were authored.** The six are `simSupported: false` with no override on disk, and
+  `resolveSkills` throws for a unit with prose and no override — so the fixture SYNTHESIZES an empty
+  kit (`bareWeaponOverride`, `scripts/tests/lib/harness.ts`). This keeps the basis out of
+  `src/skills/overrides/` entirely: there is no committed encoding that could drift away from "bare
+  weapon", and no protected-path approval to grant. Pinned by `scripts/tests/units/clean-weapons.test.ts`
+  (25 assertions: kit-prose digests so a synergy sync that rebalances any of them fails loudly rather
+  than silently invalidating the basis; the zero-burst and cast-inertness premises; the Iron-neutrality
+  proof plus its ×1.1 discrimination; and the six per-unit 180 s baselines). Board-inert by
+  construction — none of the six appears in any graded comp.
+
+- **(2026-07-23) `helm` — her burst's "Recovers 54.45% of attack damage as HP for 10 sec" is a
   TEN-SECOND RECOVERY WINDOW, not a single instant event** (`heal` `ticks: 10` / `intervalSec: 1`).
   Owner ruling during the first `/kit-tdd` per-unit test-first session. Evidence tier: **kit prose
   (blablalink SSOT)** — the same tier that authorized the two 2026-07-23 helm fixes; no measurement and

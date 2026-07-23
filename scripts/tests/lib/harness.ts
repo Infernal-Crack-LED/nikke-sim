@@ -122,6 +122,63 @@ export const controlComp = (carry: string, helm = true): CompOptions => ({
   focusSlug: carry,
 });
 
+// ---- clean-weapon (bare-weapon) fixtures ---------------------------------------------
+// The BASE WEAPON faithfulness basis (owner, 2026-07-23; candidates ruled in
+// docs/data/clean-weapons.md). Six units — one per weapon class — whose kits contribute
+// NOTHING to damage, so a recording of them measures the engine's weapon model alone,
+// with no kit encoding in the way.
+
+/**
+ * A synthetic EMPTY kit. All three slots are present-but-empty, which is exactly what
+ * `resolveSkills` requires of an override, so the unit prepares cleanly and contributes
+ * nothing but its weapon.
+ *
+ * These six units have NO override on disk (`simSupported: false`), and `resolveSkills`
+ * THROWS for a unit that has prose but no override — so the fixture must supply one.
+ * Synthesizing it here (rather than authoring six override files) keeps the base-weapon
+ * basis out of `src/skills/overrides/` entirely: there is no committed encoding that
+ * could drift away from "bare weapon", and no protected-path edit to approve.
+ */
+export function bareWeaponOverride(slug: string): OverrideFile {
+  return { slug, skill1: [], skill2: [], burst: [] } as unknown as OverrideFile;
+}
+
+/**
+ * The ONLY boss element neutral for all six (proved through the engine in
+ * clean-weapons.test.ts, not just read off the wheel): Iron. Every other element hands
+ * at least one of them the ×1.1 elemental major. `null` is also neutral, by construction.
+ */
+export const CLEAN_WEAPON_BOSS_ELEMENT: Element = 'Iron';
+
+/**
+ * Two teams of three (owner constraint: the six cannot be fielded as one team), split by
+ * BURST STAGE so that team A cannot burst at all — it has no Burst I unit, so the chain
+ * never opens and zero bursts are cast. Team B is all Burst I: its bursts DO cast, but
+ * with an empty burst block that is provably free (no cast lock in the fire loop —
+ * pinned by the `burst casting is uptime-inert` assertion).
+ *
+ * Each team fields three DISTINCT weapon classes, so the two runs together cover all six.
+ */
+export const CLEAN_WEAPON_TEAMS = {
+  /** Burst II — structurally zero burst casts. AR / SG / SR. */
+  a: ['folkwang', 'marciana', 'snow-crane'],
+  /** Burst I — bursts cast but are inert. MG / RL / SMG. */
+  b: ['emma', 'claire', 'idoll-ocean'],
+} as const;
+
+export const CLEAN_WEAPON_SLUGS = [...CLEAN_WEAPON_TEAMS.a, ...CLEAN_WEAPON_TEAMS.b];
+
+/** A bare-weapon comp: every slug's kit zeroed, on the neutral-for-all boss. */
+export const bareWeaponComp = (
+  slugs: readonly string[],
+  extra: Partial<CompOptions> = {},
+): CompOptions => ({
+  slugs: [...slugs],
+  bossElement: CLEAN_WEAPON_BOSS_ELEMENT,
+  overrides: Object.fromEntries(slugs.map((s) => [s, bareWeaponOverride(s)])),
+  ...extra,
+});
+
 // ---- generator-suite pool ------------------------------------------------------------
 // The roster/team generators run over `generatorSupported && simSupported` units — the
 // same pool the web app builds. Kept here so the six generator suites agree on it.
