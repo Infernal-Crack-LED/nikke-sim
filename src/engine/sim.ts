@@ -484,6 +484,9 @@ interface UnitState {
   damage: { normal: number; skill: number; burst: number };
   pulls: number;
   burstCasts: number;
+  // 0-based magazine ordinal, bumped on every reload-to-max. Read ONLY by the cfg.onEvent log
+  // (SimEvent 'shot'/'reload'); no engine path branches on it, so it moves no damage.
+  magIndex: number;
 }
 
 export interface UnitResult {
@@ -583,6 +586,10 @@ export function runSim(
   prepared?: PreparedUnit[]
 ): SimResult {
   const fallback = copiesToGradeCore(cfg.copies);
+  // Structured event log (src/types.ts SimEvent). Hoisted once so every emit site is a single
+  // truthiness check; undefined in every production caller, so the engine emits nothing and the
+  // regression snapshot is byte-identical. PURE OBSERVATION — nothing here is ever read back.
+  const onEvent = cfg.onEvent;
 
   const units: UnitState[] = chars.map((rawChar, idx) => {
     // charFixes: hand-measured weapon-data corrections (e.g. true SR fire cycle)
@@ -738,6 +745,7 @@ export function runSim(
       damage: { normal: 0, skill: 0, burst: 0 },
       pulls: 0,
       burstCasts: 0,
+      magIndex: 0,
     };
     // cube / OL-line stats become permanent buffs
     for (const e of extra) {
@@ -1279,6 +1287,10 @@ export function runSim(
         ? MG_RANGE_MODE === 'always'
         : RANGE_ELIGIBLE[bandAt(frame)].has(effWeapon));
     let major = 1 + (fb && !opts.noFb ? 0.5 : 0) + (inRange ? 0.3 : 0);
+    // Resolved roll rates, recorded for the cfg.onEvent 'damage' log only (0 = not eligible).
+    // Nothing branches on them — they are the same values `major` already consumed below.
+    let critRateUsed = 0;
+    let coreRateUsed = 0;
     if (opts.crit) {
       // 'critRateNormalPct' is Critical Rate scoped to NORMAL ATTACKS ONLY ("Critical Rate of
       // normal attacks ▲x%" — helm S1). It joins the roll only on normal-attack hits; skill procs
@@ -1293,6 +1305,7 @@ export function runSim(
             (opts.category === 'normal' ? stat(u, 'critRateNormalPct', frame) : 0)) / 100
         )
       );
+      critRateUsed = critRate;
       const critBonus = (u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100;
       // seeded: Bernoulli roll, full bonus or nothing (mean is identical; the roll
       // reproduces real-run variance and any future on-crit trigger coupling)
@@ -1313,6 +1326,7 @@ export function runSim(
           ? stat(u, 'hitRatePct', frame)
           : 0;
       const acr = opts.coreOverride ?? acrForHR(effWeapon, bandAt(frame), hr);
+      coreRateUsed = cfg.coreHitRate * acr;
       major += rng
         ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
         : cfg.coreHitRate * acr * coreBonus;
@@ -1417,6 +1431,30 @@ export function runSim(
       } else (u as any).__dbgN = -1;
     }
     u.damage[opts.category] += dmg;
+    if (onEvent) {
+      // The single choke point every damage source passes through (normal shots, skill/burst
+      // riders, DoT ticks, flighted hits) — so one event covers them all, and per-bucket totals
+      // are a fold over it.
+      onEvent({
+        kind: 'damage',
+        frame,
+        sec: frame / FPS,
+        unitIdx: u.idx,
+        slug: u.char.slug,
+        bucket: opts.category,
+        amount: dmg,
+        atkPct,
+        baseAtk,
+        critEligible: opts.crit,
+        coreEligible: opts.core && cfg.coreHitRate > 0,
+        critRate: critRateUsed,
+        coreRate: coreRateUsed,
+        inFullBurst: fb,
+        fbMajorApplied: fb && !opts.noFb,
+        rangeApplied: inRange,
+        mult: { major, elem, charge, dmgUp, seqMult, projFactor, taken, distributed },
+      });
+    }
   }
 
   function resolveTargets(t: TargetDef, ownerIdx: number, frame: number): UnitState[] {
@@ -1504,6 +1542,7 @@ export function runSim(
   ) {
     const expiresFrame = durationSec != null ? frame + Math.round(durationSec * FPS) : null;
     const existing = list.find((b) => b.key === key);
+    const refresh = existing !== undefined;
     if (existing) {
       // "fully lapsed" = time ran out OR the round budget did — both restart the ramp clock
       if (
@@ -1534,6 +1573,27 @@ export function runSim(
         shotsLeft: durationShots,
       });
     }
+    if (onEvent) {
+      // The holder is identified by which buff list this is — `enemyBuffs` (the boss) has no unit.
+      const target = units.find((u) => u.buffs === list);
+      const entry = existing ?? list[list.length - 1];
+      onEvent({
+        kind: 'buffApply',
+        frame,
+        sec: frame / FPS,
+        key,
+        stat,
+        value: entry.value,
+        stacks: entry.stacks,
+        maxStacks,
+        casterIdx: casterIdx ?? null,
+        targetIdx: target?.idx ?? null,
+        targetSlug: target?.char.slug ?? null,
+        refresh,
+        expiresFrame,
+        durationShots: durationShots ?? null,
+      });
+    }
   }
 
   // Reload-triggered buff removal (primitive): drop every buff on `u` flagged removeOnReload.
@@ -1542,10 +1602,24 @@ export function runSim(
   // instantReload skill refills, or per-shot ammoRefund top-ups, none of which are the weapon's own
   // "reload to max" the kit line ("…Removed upon reloading to max ammunition") refers to. INERT for
   // every unit: no override sets removeOnReload today, so the filter is a no-op (regression-proven).
-  function stripReloadBuffs(u: UnitState) {
+  function stripReloadBuffs(u: UnitState, frame: number) {
     if (u.buffs.length === 0) return;
     for (let i = u.buffs.length - 1; i >= 0; i--) {
-      if (u.buffs[i].removeOnReload) u.buffs.splice(i, 1);
+      if (u.buffs[i].removeOnReload) {
+        const [gone] = u.buffs.splice(i, 1);
+        if (onEvent) {
+          onEvent({
+            kind: 'buffRemove',
+            frame,
+            sec: frame / FPS,
+            unitIdx: u.idx,
+            slug: u.char.slug,
+            key: gone.key,
+            stat: gone.stat,
+            cause: 'reload',
+          });
+        }
+      }
     }
   }
 
@@ -2100,6 +2174,9 @@ export function runSim(
       }
     }
     rotationLog.push(`${(atFrame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
+    if (onEvent) {
+      onEvent({ kind: 'fullBurstStart', frame: atFrame, sec: atFrame / FPS, endFrame: fbEndFrame });
+    }
   };
 
   for (let frame = 0; frame < totalFrames; frame++) {
@@ -2125,6 +2202,7 @@ export function runSim(
 
     // ---- full burst end ----
     if (fbEndFrame === frame) {
+      if (onEvent) onEvent({ kind: 'fullBurstEnd', frame, sec: frame / FPS });
       units.forEach((u) => fireTriggered(u, 'fullBurstEnd', frame));
       // units that sat this rotation out accrue a missed-burst stack (MP)
       units.forEach((u) => {
@@ -2231,6 +2309,12 @@ export function runSim(
         cand.burstCdFrames = Math.round(cand.char.burstCooldownSec * FPS);
         rotationCasters.push(cand.idx);
         rotationLog.push(`${(frame / FPS).toFixed(1)}s  B${want} ${cand.char.name}`);
+        if (onEvent) {
+          onEvent({
+            kind: 'burstCast', frame, sec: frame / FPS,
+            unitIdx: cand.idx, slug: cand.char.slug, stage,
+          });
+        }
         const castStage = stage;
         // PER-UNIT BURST TIMING (video-measured 2026-07-13, U10): most nukes land with
         // FB active (frame-0 rule: +50% FB, entry auras, same-cast stage buffs — e.g.
@@ -2332,7 +2416,14 @@ export function runSim(
         const effReload = reloadFramesNeeded(u.char.reloadFrames ?? 0, stat(u, 'reloadSpeedPct', frame));
         if (effReload <= FPS && !u.reloading) {
           u.ammo = maxAmmo(u, frame);
-          stripReloadBuffs(u); // transition snap-refill is a reload-to-max (downtime reload fiction)
+          u.magIndex++;
+          if (onEvent) {
+            onEvent({
+              kind: 'reload', frame, sec: frame / FPS, unitIdx: u.idx, slug: u.char.slug,
+              cause: 'transitionSnap', magIndex: u.magIndex,
+            });
+          }
+          stripReloadBuffs(u, frame); // transition snap-refill is a reload-to-max (downtime reload fiction)
           u.primed = false; // snap-refill is a reload-to-max → re-charge before the next dump
         }
       }
@@ -2366,7 +2457,14 @@ export function runSim(
           u.reloading = false;
           u.reloadProgress = 0;
           u.ammo = maxAmmo(u, frame);
-          stripReloadBuffs(u); // reload-to-max: drop removeOnReload buffs (cinderella's CS toggle)
+          u.magIndex++;
+          if (onEvent) {
+            onEvent({
+              kind: 'reload', frame, sec: frame / FPS, unitIdx: u.idx, slug: u.char.slug,
+              cause: 'magazine', magIndex: u.magIndex,
+            });
+          }
+          stripReloadBuffs(u, frame); // reload-to-max: drop removeOnReload buffs (cinderella's CS toggle)
           u.primed = false; // reloaded to max → next mag re-charges before the dump (magDumpRof)
         }
         continue;
@@ -2837,6 +2935,21 @@ export function runSim(
         u.reloading = true;
         u.reloadProgress = 0;
       }
+    }
+    if (onEvent) {
+      // Emitted LAST, so the event describes the fully-resolved pull: its damage, its block
+      // dispatch, its round-count decrements and its ammo spend have all already happened.
+      onEvent({
+        kind: 'shot',
+        frame,
+        sec: frame / FPS,
+        unitIdx: u.idx,
+        slug: u.char.slug,
+        charged,
+        magIndex: u.magIndex,
+        ammoAfter: u.ammo,
+        unlimitedAmmo: unlimited,
+      });
     }
   }
 

@@ -97,6 +97,126 @@ export interface DataFile {
   characters: Record<string, CharacterData & { baseStats: BaseStats | null }>;
 }
 
+// ---- structured event log (test instrumentation) ----
+//
+// `SimConfig.onEvent` turns the engine's internal timeline into ASSERTABLE data. The board gates
+// FIT (does the number match the recording); unit tests gate FAITHFULNESS (does the kit line fire
+// on the right trigger, at the right target, in the right scope) — and total-damage deltas can
+// only test faithfulness indirectly. The DBG_* env taps already PRINT most of this; the hook makes
+// it structured instead of grep-able. See docs/handoffs/2026-07-23-tdd-transition-plan.md §1d.
+//
+// CONTRACT:
+//   - PURE OBSERVATION. The engine never reads back from a handler, and a handler must never mutate
+//     the objects it is handed (they are the engine's live state, not copies). Throwing from a
+//     handler propagates out of runSim.
+//   - ZERO-COST WHEN UNSET. Every emit site is guarded by `if (onEvent)`, so an unset hook costs one
+//     truthiness check and allocates nothing. Sim output is byte-identical either way — the
+//     regression snapshot is the control.
+//   - `frame` is the 60fps frame index; `sec` is frame/60, provided so tests read in kit units.
+//
+// DELIBERATE SCOPE (what is NOT emitted, and why):
+//   - There is no `buffExpire` for TIME or ROUND-COUNT expiry. Buff lapse is LAZY in this engine —
+//     `stat()` skips lapsed entries at read time, and nothing ever sweeps the list — so there is no
+//     moment to emit. `buffApply` carries `expiresFrame`/`durationShots`, which is the assertable
+//     contract; `buffRemove` fires only for a genuine REMOVAL from the list (today: removeOnReload).
+//   - There is no separate `hit` event. In this engine every hit IS one `dealDamage` call — normal
+//     shots, skill/burst riders, DoT ticks and flighted hits all funnel through it — so `damage` is
+//     the per-instance event, and per-bucket totals are a trivial fold over it.
+export type SimEventBase = { frame: number; sec: number };
+
+export type SimEvent =
+  /** One trigger pull. Emitted after the shot's damage and block dispatch have resolved. */
+  | (SimEventBase & {
+      kind: 'shot';
+      unitIdx: number;
+      slug: string;
+      charged: boolean;
+      /** 0-based magazine ordinal: how many reload-to-max events this unit has had. */
+      magIndex: number;
+      /** Rounds left after this pull (unchanged when the shot was unlimited-ammo). */
+      ammoAfter: number;
+      unlimitedAmmo: boolean;
+    })
+  /** One damage instance, at the single choke point every source passes through. */
+  | (SimEventBase & {
+      kind: 'damage';
+      unitIdx: number;
+      slug: string;
+      bucket: 'normal' | 'skill' | 'burst';
+      amount: number;
+      atkPct: number;
+      /** ATK after the flat boss-DEF subtraction — the value `amount` is built from. */
+      baseAtk: number;
+      /** Whether this instance was ELIGIBLE to crit / core (not whether a roll landed). */
+      critEligible: boolean;
+      coreEligible: boolean;
+      /** Resolved rates actually used, 0..1 (0 when not eligible). `critRate` is the reason a
+       *  normal-attack-scoped buff like critRateNormalPct is directly assertable per bucket. */
+      critRate: number;
+      coreRate: number;
+      inFullBurst: boolean;   // an FB window was live at this frame
+      fbMajorApplied: boolean; // ...and this instance actually took the +50% (noFb units/lines do not)
+      rangeApplied: boolean;
+      /** The multiplier decomposition, exactly as the damage formula composes it
+       *  (docs/data/damage-calculation.md). amount = baseAtk × atkPct/100 × the product of these. */
+      mult: {
+        major: number;
+        elem: number;
+        charge: number;
+        dmgUp: number;
+        seqMult: number;
+        projFactor: number;
+        taken: number;
+        distributed: number;
+      };
+    })
+  /** A buff/debuff applied or refreshed. `key` encodes caster slot + skill slot + stat + value. */
+  | (SimEventBase & {
+      kind: 'buffApply';
+      key: string;
+      stat: string;
+      value: number;
+      stacks: number;
+      maxStacks: number;
+      /** Slot index of the caster; null when the engine did not attribute one. */
+      casterIdx: number | null;
+      /** Slot index of the holder; null = the BOSS (an enemy debuff). */
+      targetIdx: number | null;
+      targetSlug: string | null;
+      refresh: boolean;             // true = refreshed/re-stacked an existing entry
+      expiresFrame: number | null;  // null = no wall-clock expiry
+      durationShots: number | null; // round-count budget ("for N round(s)"), null = none
+    })
+  /** A buff genuinely REMOVED from a unit's list (see the no-buffExpire note above). */
+  | (SimEventBase & {
+      kind: 'buffRemove';
+      unitIdx: number;
+      slug: string;
+      key: string;
+      stat: string;
+      cause: 'reload';
+    })
+  /** Reload to MAX ammunition — the event `removeOnReload` keys off. */
+  | (SimEventBase & {
+      kind: 'reload';
+      unitIdx: number;
+      slug: string;
+      /** 'magazine' = the weapon's own reload completed; 'transitionSnap' = the fast-reloader
+       *  snap-refill at a boss range transition (both are genuine reload-to-max events). */
+      cause: 'magazine' | 'transitionSnap';
+      magIndex: number;
+    })
+  /** A burst skill cast, at the stage it filled. */
+  | (SimEventBase & {
+      kind: 'burstCast';
+      unitIdx: number;
+      slug: string;
+      stage: number;
+    })
+  /** Full Burst window boundaries. */
+  | (SimEventBase & { kind: 'fullBurstStart'; endFrame: number })
+  | (SimEventBase & { kind: 'fullBurstEnd' });
+
 // ---- sim configuration ----
 
 // Gear set level. 'base5' = scope-lock base gear (default validation basis); 0/5 =
@@ -138,4 +258,9 @@ export interface SimConfig {
   //   'large'  = every band lands the full pellet count (a big boss the whole spray hits)
   // Inert in expected-value (unseeded) runs — those use the fixed SG_LANDING_BY_BAND table. ⚑ UNVERIFIED.
   bossPelletProfile?: 'small' | 'medium' | 'large';
+  // Structured event log for tests/tooling. Unset (the default everywhere in production) = the
+  // engine emits nothing and behaves byte-identically. See the SimEvent contract above.
+  // NB it is a function, so JSON.stringify drops it — snapshots that serialize `result.config`
+  // are unaffected.
+  onEvent?: (ev: SimEvent) => void;
 }
