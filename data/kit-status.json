@@ -28,11 +28,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±3% ✓": 6,
+      "±3% ✓": 5,
       "±15%": 14,
-      "±5%": 6,
+      "±8%": 9,
       ">15%": 12,
-      "±8%": 7
+      "±5%": 5
     }
   },
   "units": {
@@ -298,11 +298,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9684
+            "ratio": 0.9482
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9769
+            "ratio": 0.9565
           },
           {
             "comp": "T2 elec-weak (boss Water)",
@@ -318,7 +318,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9867
+            "ratio": 0.9745
           },
           {
             "comp": "PA MiKa (boss Iron)",
@@ -342,9 +342,9 @@
           }
         ],
         "n": 12,
-        "mean": 0.9654,
-        "mad": 0.0486,
-        "band": "±5%",
+        "mean": 0.961,
+        "mad": 0.053,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -795,14 +795,14 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9926
+            "ratio": 0.9764
           }
         ],
         "n": 2,
-        "mean": 0.9744,
-        "mad": 0.0256,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 0.9663,
+        "mad": 0.0337,
+        "band": "±5%",
+        "temp": "COLD ▼"
       }
     },
     "crown": {
@@ -1477,7 +1477,9 @@
         "date": "2026-07-17",
         "findings": [
           "*** ROSTER-WIDE SSOT GAP *** 0.591 COLD root cause: blablalink sync carries NO treasure-phase prose; materialize froze the UNTREASURED base kit. Dropped: S2 '178.98% full-charge bonus hit' (~doubles sustained fire) + S2 FB attack-damage 11.85->27.87. The 2026-07-14 validated 0.99 state INCLUDED both via the old runtime parser (model never drifted, source text did). Affects ALL (Treasure) units (helm, laplace...). HIGH PRIORITY owner reconciliation",
-          "✅ RESOLVED 2026-07-17 (favorite-item sync + reconcile): DB now carries treasure prose. Enacted S2 FB attack-damage 11.85→27.87 (all allies) + S2 178.98% full-charge hit (shotFired, every charged shot) + burst 54.45% recovery as heal event. Board 0.591 COLD → 1.014 ±3%✓ (5 comps 0.98-1.05); teammates warmed by the restored 27.87 team buff (crown 1.029/privaty 0.977/anis-star 0.952/SWHA 1.11). noir anchor +0.0000%; FB asserts all green."
+          "✅ RESOLVED 2026-07-17 (favorite-item sync + reconcile): DB now carries treasure prose. Enacted S2 FB attack-damage 11.85→27.87 (all allies) + S2 178.98% full-charge hit (shotFired, every charged shot) + burst 54.45% recovery as heal event. Board 0.591 COLD → 1.014 ±3%✓ (5 comps 0.98-1.05); teammates warmed by the restored 27.87 team buff (crown 1.029/privaty 0.977/anis-star 0.952/SWHA 1.11). noir anchor +0.0000%; FB asserts all green.",
+          "REVIEW 2026-07-23 (owner-directed kit review, both ENACTED → DECISIONS ×2): (1) her S1 \"Critical Rate of normal attacks ▲14.64%\" was modeled as unscoped critRatePct, so — because the buff targets ALL ALLIES — the sim inflated crit on the whole team's skill procs and burst nukes, an over-credit that grew when RIDERCRIT landed ON 2026-07-22. Fixed with the new normal-only StatKey critRateNormalPct (dealDamage already carried category). She is the ONLY simSupported carrier of this kit line. Board: 10 of 45 units moved, all helm comp-mates, all cold-direction, max −0.019 (privaty); helm 0.961→0.953. MAD buckets ±3% 6→5 / ±5% 12→9 = fit-exposure in the comp-mates' overrides, NOT a fix error → per-unit re-tune worklist in docs/control-regression-followups.md §2. (2) her burst's \"Charge Damage Multiplier ▲158.4% for 10 round(s)\" was approximated as durationSec 13; her MAGAZINE IS 6, so the 10 rounds necessarily span a reload (~17.5s) and no duration could express it. Built the durationShots round-count primitive (holder-scoped, spent after block dispatch so the Nth shot benefits); helm 0.953→0.973 and NO other unit moved. Functional test scripts/tests/duration-shots.test.ts in verify.sh.",
+          "OPEN after the 2026-07-23 review: she is carry-SPREAD on the control suite, not flat-offset — 0.972 (soda-twinkling-bunny) … 1.093 (scarlet-black-shadow) across the four 720-kit-audit comps, mean 1.042. NEITHER landed fix addressed the spread (one changed her level team-wide, the other only her own charge window). Do NOT tune her to the mean before the spread is explained — a flat kit retune cannot fix an interaction. Also still ⚑: the S2 178.98% full-charge hit is modeled on shotFired (every SR pull = one full charge), unverified against a helm-focus video."
         ]
       },
       "tier": "MEASURED",
@@ -1497,56 +1499,56 @@
       },
       "caveats": [
         "skill2: the 178.98% full-charge additional hit is modeled on shotFired (every SR pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
-        "burst: the 158.4% Charge Damage 'for 10 round(s)' is approximated as durationSec 13 (~8 rounds incl. the mid-window reload; 10 rounds ~= 16-17s)"
+        "burst: the 158.4% Charge Damage window is the kit's literal 10 rounds (durationShots), so it stretches across her reload — it is NOT a fixed-length timed window and will shorten if she is ever given attack-speed support"
       ],
       "board": {
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.027
+            "ratio": 1.0223
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9587
+            "ratio": 0.9469
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9797
+            "ratio": 0.9676
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.996
+            "ratio": 0.991
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9968
+            "ratio": 0.9908
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 0.9343
+            "ratio": 0.9667
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.9278
+            "ratio": 0.9666
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 0.9222
+            "ratio": 0.9546
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.9633
+            "ratio": 0.9967
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.904
+            "ratio": 0.9306
           }
         ],
         "n": 10,
-        "mean": 0.961,
-        "mad": 0.0444,
+        "mean": 0.9734,
+        "mad": 0.0311,
         "band": "±5%",
-        "temp": "COLD ▼"
+        "temp": "OK  ·"
       }
     },
     "helm-aquamarine": {
@@ -1885,11 +1887,11 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.0515
+            "ratio": 1.0382
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0293
+            "ratio": 1.0162
           },
           {
             "comp": "PH water B3s (boss Fire)",
@@ -1901,28 +1903,28 @@
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 1.0818
+            "ratio": 1.0672
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 1.0546
+            "ratio": 1.0417
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 1.0722
+            "ratio": 1.0576
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 1.0741
+            "ratio": 1.0595
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.9352
+            "ratio": 0.9238
           }
         ],
         "n": 9,
-        "mean": 1.0522,
-        "mad": 0.0666,
+        "mean": 1.0417,
+        "mad": 0.0586,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -2240,7 +2242,7 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.997
+            "ratio": 0.981
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -2248,8 +2250,8 @@
           }
         ],
         "n": 2,
-        "mean": 1.0613,
-        "mad": 0.0643,
+        "mean": 1.0533,
+        "mad": 0.0723,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -2814,11 +2816,11 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.2171
+            "ratio": 1.188
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.1753
+            "ratio": 1.1472
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -2826,8 +2828,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.1182,
-        "mad": 0.1434,
+        "mean": 1.0991,
+        "mad": 0.1243,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -2925,11 +2927,11 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 0.9613
+            "ratio": 0.9512
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 0.9691
+            "ratio": 0.9598
           },
           {
             "comp": "T7 elec-weak probe (boss Water)",
@@ -2937,7 +2939,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9632
+            "ratio": 0.9551
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -2945,8 +2947,8 @@
           }
         ],
         "n": 5,
-        "mean": 0.9347,
-        "mad": 0.0653,
+        "mean": 0.9292,
+        "mad": 0.0708,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -3335,24 +3337,24 @@
         "records": [
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 0.9229
+            "ratio": 0.9062
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.923
+            "ratio": 0.9075
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 1.0284
+            "ratio": 1.0099
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.9502
+            "ratio": 0.9331
           }
         ],
         "n": 4,
-        "mean": 0.9562,
-        "mad": 0.0581,
+        "mean": 0.9392,
+        "mad": 0.0658,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -3401,15 +3403,15 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9542
+            "ratio": 0.93
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9697
+            "ratio": 0.9451
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0058
+            "ratio": 0.9878
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
@@ -3417,9 +3419,9 @@
           }
         ],
         "n": 4,
-        "mean": 0.9601,
-        "mad": 0.0428,
-        "band": "±5%",
+        "mean": 0.9434,
+        "mad": 0.0566,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -3470,12 +3472,12 @@
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.7843
+            "ratio": 0.7732
           }
         ],
         "n": 2,
-        "mean": 0.8158,
-        "mad": 0.1842,
+        "mean": 0.8102,
+        "mad": 0.1898,
         "band": ">15%",
         "temp": "COLD ▼"
       }

@@ -190,6 +190,15 @@ if (mode === '--refresh') {
       if (provenance(o.note ?? '') !== u.kitParse?.provenance) {
         errors.push(`${slug}: provenance stale (run --refresh)`);
       }
+      // caveats mirror (2026-07-23): the AUTO caveats copy silently went stale whenever an override's
+      // caveat was rewritten without a --refresh — helm's still claimed her burst window was
+      // "approximated as durationSec 13" hours after that approximation was replaced by a real round
+      // count, and verify.sh stayed green because only `unmodeled` was compared. kit-status.json is the
+      // per-unit review LOG (and the corpus /tuning-priors mines), so a stale mirror there reads as a
+      // live claim to every future session. Same cheap string compare as `unmodeled`, no sims.
+      if (JSON.stringify(u.caveats ?? null) !== JSON.stringify(o.caveats ?? null)) {
+        errors.push(`${slug}: caveats mirror stale (run --refresh)`);
+      }
     }
   }
   if (errors.length) {
