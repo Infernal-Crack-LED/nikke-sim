@@ -101,6 +101,15 @@ No single model fits both. Per-chunk tail would also make all 9 chunked SGs ~40%
 its own thread: `noir`'s shipped reload (73 f) already over-predicts her measured 36–54 f**, before any
 chunk change. Settling this needs a frame-count of one chunked unit's reload broken into parts.
 
+**LOW-PRIORITY ACTION ITEM — `grave`'s data value is HELD AT 81 (owner decision 2026-07-22).** She is not
+corrected to the convention's 141. Two reasons: the composition question above is unsettled, and the
+correction would change nothing today anyway — her MEASURED `charFixes.reloadFrames 193` (3.35 s gap,
+n=19) overrides the data value before it reaches the engine. She is now **pinned** in
+`scripts/check-reload-chunks.ts` rather than skipped, so the gate still fires if her 81 ever drifts.
+**Do NOT "resolve" this by deleting her `charFixes` so the 81 takes effect** — 81 → 92 f effective
+against a measured 201 f, and the 193 is measured truth (constraint 3). Revisit when the composition
+question is settled.
+
 **What remains open:** (1) `grave`'s true chunk count, 2 vs 3, and whether *"Reload Ratio ▼50%"* is the
 multiplier — one focus read of her reload split into visible chunks settles it; (2) whether the ×3 on
 the 14 should be made explicit in the sync (derive `reloadFrames` from `reload_time × 10000 ÷
@@ -448,6 +457,12 @@ skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair 
 > Target debuff window, `intervalSec 3` from the burst's *"Stuns for 3 sec"*. Her burst's 1407.64% IS
 > instantaneous and already correct, and the two 10 s markers are the self buff + enemy debuff, also
 > already correct. So the U14 footage recipe ("read the DoT popup in vs out of Full Burst") measures a
+>  **The rider hits ONCE per trigger event** (owner 2026-07-22) — *"Activates when the last bullet hits a
+> target in Designated Target status"*, like every trigger in her kit. **The only "3" in her kit is that
+> 3-second stun.** So any re-encoding must be DRIVEN by the `lastBullet` trigger; a fixed hit count
+> reproduces the original defect. The faithful fix needs a TARGET-STATUS gate, which the engine lacks —
+> now an action item under the state-machine build (plan step 5e), since a kit-defined per-character
+> status that gates behaviour is the same machinery `prika`/`mint`/`milk-blooming-bunny` need.
 > rider, not a DoT, and must be rewritten before footage is requested. Constraint 3 protects her
 > coefficients, NOT the DoT encoding. Full record + the three encoding options:
 > `docs/handoffs/2026-07-22-engine-work-plan.md` §5f.

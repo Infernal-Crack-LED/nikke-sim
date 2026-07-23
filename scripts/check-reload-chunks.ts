@@ -76,18 +76,28 @@ for (const u of units) {
   });
 }
 
-// KNOWN, RECORDED exceptions — present when this check was written (2026-07-22). They are
-// tolerated so the gate catches NEW regressions; each is tracked, none is silenced.
-//   grave  — the one real chunked-reload gap: sole 2-part unit, shipped ×1 (81 vs 141). Masked
-//            today by a MEASURED charFixes.reloadFrames 193 (3.35 s, n=19), so board-inert.
-//            Removing that stopgap needs the composition question settled first → U30.
+// PINNED exceptions — accepted values that do NOT satisfy the convention (2026-07-22). Pinned, not
+// skipped: the shipped value must still equal the pin, so drift in an exception re-flags rather than
+// hiding behind the allowlist.
+//   grave — the one real chunked-reload gap: sole 2-part unit shipped at the ×1 value. HELD AT 81
+//           by owner decision 2026-07-22 ("for now", low priority) rather than corrected to 141,
+//           because the composition question is unsettled (→ U30) and correcting the data alone
+//           would change nothing anyway: her MEASURED charFixes.reloadFrames 193 (3.35 s gap, n=19)
+//           overrides it. Do NOT remove that charFixes to "use" the 81 — it is measured truth
+//           (constraint 3) and 81 → 92 f effective against a measured 201 f.
 //   asuka / scarlet-black-shadow — single-part units a few frames off the ×1 formula (+3, +11),
-//            unrelated to chunking; upstream table values, never investigated.
-const KNOWN_EXCEPTIONS = new Set(['grave', 'asuka', 'scarlet-black-shadow']);
+//           unrelated to chunking; upstream table values, never investigated.
+const PINNED: Record<string, { frames: number; why: string }> = {
+  grave: { frames: 81, why: 'held at the ×1 value by owner decision 2026-07-22 (low priority → U30); masked by measured charFixes 193' },
+  asuka: { frames: 84, why: 'single-part, +3 f off the ×1 formula; uninvestigated' },
+  'scarlet-black-shadow': { frames: 152, why: 'single-part, +11 f off the ×1 formula; uninvestigated' },
+};
 
 const chunked = rows.filter(r => r.chunks > 1);
 const bad = rows.filter(r => !r.ok);
-const unexpected = bad.filter(r => !KNOWN_EXCEPTIONS.has(r.slug));
+// A pinned unit is tolerated ONLY while its shipped value still equals the pin.
+const pinnedOk = (r: typeof rows[number]) => PINNED[r.slug]?.frames === r.have;
+const unexpected = bad.filter(r => !pinnedOk(r));
 // Units whose shipped value matches the ×1 formula while `reload_bullet` says they chunk: the
 // silent-regression class this check exists to catch.
 const unmultiplied = bad.filter(r => Math.abs(expectedReloadFrames(r.rt, 1) - r.have) <= 1);
@@ -112,10 +122,10 @@ const describe = (r: typeof rows[number]) =>
   `${r.slug}: reloadFrames ${r.have}, expected ${r.want} — ` +
   (unmultiplied.includes(r) ? `SHIPPED UN-MULTIPLIED (×1 of a ${r.chunks}-part reload)` : 'off-convention');
 
-for (const r of bad.filter(r => KNOWN_EXCEPTIONS.has(r.slug))) console.log(`  known exception — ${describe(r)}`);
+for (const r of bad.filter(pinnedOk)) console.log(`  pinned — ${r.slug}: reloadFrames ${r.have} (convention says ${r.want}) — ${PINNED[r.slug].why}`);
 
 if (!unexpected.length) {
-  console.log('reload chunks: all reloadFrames match reload_time × chunks × 0.6 + 21 (known exceptions aside)');
+  console.log('reload chunks: all reloadFrames match reload_time × chunks × 0.6 + 21 (pinned exceptions aside)');
   process.exit(0);
 }
 
@@ -123,7 +133,8 @@ console.log(`\nreload chunks: ${unexpected.length} NEW unexplained unit(s):`);
 for (const r of unexpected) console.log(`  ✗ ${describe(r)}`);
 console.log(
   '\nA UN-MULTIPLIED unit reloads chunks× too fast unless a charFixes override masks it — which is\n' +
-  'the silent upstream regression this gate exists to catch. Investigate before adding to\n' +
-  'KNOWN_EXCEPTIONS; do NOT paper over it with a hand-fitted charFixes.',
+  'the silent upstream regression this gate exists to catch. A pinned unit whose value DRIFTS also\n' +
+  'lands here. Investigate before adding to\n' +
+  'PINNED; do NOT paper over it with a hand-fitted charFixes.',
 );
 process.exit(1);
