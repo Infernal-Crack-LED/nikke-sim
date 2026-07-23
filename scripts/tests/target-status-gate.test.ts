@@ -36,8 +36,7 @@ type Opts = {
   applied?: string;        // status name the fixture INFLICTS (omit = inflict nothing)
   gated?: string;          // status name the rider REQUIRES (omit = ungated rider)
   durationSec?: number;    // status window length
-  applyWipeOut?: boolean;  // inflict the legacy hardcoded Wipe Out window instead/as well
-  requireWipeOut?: boolean; // gate the rider on the legacy requiresWipeOut instead
+  applied2?: string;       // inflict a SECOND, differently-named status concurrently
   statusTarget?: 'enemy' | 'allies'; // authoring target of the status block (engine must ignore it)
   // Trigger that INFLICTS the status. Default `shotFired` keeps the status continuously live, which
   // is what P2/P3/P4/P7 want. P5 must NOT use it: `shotFired` dispatches on the very frame the
@@ -56,7 +55,7 @@ function run(o: Opts): { skill: number; total: number } {
 
   const applyEffects: any[] = [];
   if (o.applied) applyEffects.push({ kind: 'targetStatus', name: o.applied, durationSec: o.durationSec ?? 10 });
-  if (o.applyWipeOut) applyEffects.push({ kind: 'wipeOut', durationSec: o.durationSec ?? 10 });
+  if (o.applied2) applyEffects.push({ kind: 'targetStatus', name: o.applied2, durationSec: o.durationSec ?? 10 });
 
   ov.skill1 = applyEffects.length
     ? [{
@@ -74,7 +73,6 @@ function run(o: Opts): { skill: number; total: number } {
     effects: [{ kind: 'flatDamage', atkPct: 500, noRange: true }],
   };
   if (o.gated) riderBlock.requiresTargetStatus = o.gated;
-  if (o.requireWipeOut) riderBlock.requiresWipeOut = true;
   ov.skill2 = [riderBlock];
   ov.burst = [];
 
@@ -110,13 +108,20 @@ else fail(`P3a FAILED (implementation is a global boolean): B-gated rider fired 
 if (matched.skill > mismatched.skill) ok(`P3b same fixture gated on the APPLIED name → strictly more (${(matched.skill / 1e6).toFixed(1)}M > 0M)`);
 else fail('P3b FAILED: gating on the applied name did not exceed the mismatched arm');
 
-// --- P4 (DISCRIMINATING): non-collision with the legacy hardcoded channel, both directions.
-const wipeOutVsNamed = run({ applyWipeOut: true, gated: 'Designated Target' });
-if (wipeOutVsNamed.skill === 0) ok('P4a a Wipe Out window does NOT open a named target-status gate');
-else fail(`P4a FAILED: requiresTargetStatus opened on a wipeOut window (${(wipeOutVsNamed.skill / 1e6).toFixed(1)}M)`);
-const namedVsWipeOut = run({ applied: 'Designated Target', requireWipeOut: true });
-if (namedVsWipeOut.skill === 0) ok('P4b a named status does NOT satisfy requiresWipeOut');
-else fail(`P4b FAILED: requiresWipeOut opened on a named status (${(namedVsWipeOut.skill / 1e6).toFixed(1)}M)`);
+// --- P4 (DISCRIMINATING): MULTI-STATUS CONCURRENCY. Two differently-named statuses held live at the
+// same time must not cross-satisfy, and a third unapplied name must still read zero. This is the
+// property that made the registry worth building: the deleted `wipeOut` boolean could hold exactly
+// ONE status roster-wide, so a second carrier would have satisfied d-killer-wife's gate and vice
+// versa. With two live statuses, a single-boolean implementation passes P4a/P4b and fails P4c.
+const bothA = run({ applied: 'Wipe Out', applied2: 'Designated Target', gated: 'Wipe Out' });
+const bothB = run({ applied: 'Wipe Out', applied2: 'Designated Target', gated: 'Designated Target' });
+const bothC = run({ applied: 'Wipe Out', applied2: 'Designated Target', gated: 'Some Third Status' });
+if (bothA.skill > 0) ok(`P4a two statuses live, gate on the 1st → fires (${(bothA.skill / 1e6).toFixed(1)}M)`);
+else fail('P4a FAILED: gate on a live status did not fire while a second status was also live');
+if (bothB.skill > 0) ok(`P4b two statuses live, gate on the 2nd → fires (${(bothB.skill / 1e6).toFixed(1)}M)`);
+else fail('P4b FAILED: the second concurrent status did not open its own gate');
+if (bothC.skill === 0) ok('P4c two statuses live, gate on an unapplied 3rd name → EXACTLY zero');
+else fail(`P4c FAILED (statuses are not name-isolated): ${(bothC.skill / 1e6).toFixed(1)}M leaked through`);
 
 // --- P5: the window is honoured. Long vs short status duration, same names throughout, with the
 // status inflicted on a SPARSE trigger (every 100 hits) so last-bullet events fall both inside and
@@ -147,11 +152,11 @@ if (shortWin.skill < longWin.skill) ok(`P5 window honoured (0.05s ${(shortWin.sk
 else fail(`P5 FAILED: shrinking the status window did not reduce rider hits (${shortWin.skill} vs ${longWin.skill})`);
 
 // --- P7: target semantics. The engine ignores block.target for `targetStatus` (implicit enemy),
-// exactly like `wipeOut`. Authoring it on an `allies`-targeted block still writes the boss registry.
+// (no enemy entity exists). Authoring it on an `allies`-targeted block still writes the boss registry.
 // (validate-overrides.ts separately REJECTS that authoring; this fixture bypasses the validator on
 // purpose, to pin the ENGINE's behaviour rather than the authoring rule.)
 const alliesTargeted = run({ applied: 'Designated Target', gated: 'Designated Target', statusTarget: 'allies' });
-if (alliesTargeted.skill === matched.skill) ok('P7 engine ignores block.target for targetStatus (implicit enemy, same as wipeOut)');
+if (alliesTargeted.skill === matched.skill) ok('P7 engine ignores block.target for targetStatus (implicit enemy)');
 else fail(`P7 FAILED: block.target changed the status registry (${alliesTargeted.skill} vs ${matched.skill})`);
 
 // --- P6: determinism.

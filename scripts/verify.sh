@@ -40,7 +40,7 @@ npx tsx scripts/regression.ts
 say "engine primitive tests (reload-triggered buff removal)"
 npx tsx scripts/tests/reload-buff-removal.test.ts | tail -1
 
-say "engine primitive tests (named target-status gate — name-keying + non-collision with wipeOut)"
+say "engine primitive tests (named target-status gate — name-keying + multi-status isolation)"
 npx tsx scripts/tests/target-status-gate.test.ts | tail -1
 
 say "overload roll-cost regression (model invariants + analytic/MC + determinism)"
