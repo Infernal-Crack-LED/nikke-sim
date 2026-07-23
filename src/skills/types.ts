@@ -9,6 +9,14 @@ export type StatKey =
   | 'highestAllyAtkPct' // ATK ▲ x% of the HIGHEST ally's ATK (flat add — guilty "Mind If I Borrow This?"). Resolves to (value/100)×max(all units' staticAtk) at apply time; feeds the same flat-ATK path as casterAtkPct. Solo (self is the max) == casterAtkPct.
   | 'atkOfMaxHpPct'     // ATK ▲ x% of the unit's own final Max HP (flat add — Cinderella, Maiden:IR)
   | 'critRatePct'
+  | 'critRateNormalPct' // "Critical Rate of normal attacks ▲x%" — Critical Rate that applies ONLY to
+  //                       normal-attack hits, never to skill procs or burst damage. Distinct mechanic
+  //                       from the unscoped critRatePct above: dealDamage adds it to the crit roll only
+  //                       when category === 'normal'. Opt-in; inert (0) for every unit that lacks the
+  //                       kit line, so it can never change a non-carrier. Carriers: helm (S1, allies —
+  //                       an unscoped model over-credited the whole TEAM's skill/burst crit, which grew
+  //                       when RIDERCRIT made flat-damage riders crit-eligible). `biscuit` also carries
+  //                       the line but is not simSupported.
   | 'critDamagePct'
   | 'coreDamagePct'
   | 'elementDamagePct'
@@ -114,6 +122,19 @@ export type TargetDef =
 
 export type EffectDef =
   | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number;
+      // ROUND-COUNT duration: kit lines that last "for N round(s)" expire after the HOLDER fires N
+      // rounds, not after a wall-clock window — so the window stretches across reloads and shrinks
+      // when the unit fires faster. A round is one bullet: 1 per trigger pull, hitsPerShot for an MG
+      // (the same count the ammo economy spends). Decremented right after the shot's blocks dispatch,
+      // so the Nth shot still benefits, then the buff drops at 0 — the same "ends right after its Nth
+      // shot" shape as weaponSwap.maxShots (MEASURED 2026-07-14).
+      // Combine with durationSec to model "N rounds OR t seconds, whichever ends first"; alone (the
+      // usual case) the buff has no time expiry at all. Omit = time-only, back-compatible.
+      // Carrier: helm's burst Charge Damage Multiplier 158.4% "for 10 round(s)" — her magazine is 6,
+      // so the window genuinely spans a reload and a durationSec could not express it.
+      // NOT for "reload speed is FIXED at x for N rounds" lines (asuka-wille) — those are stat CLAMPS,
+      // a different primitive (docs/engine-modeling-gaps.md §1b).
+      durationShots?: number;
       // buff counts only while the caster's weaponSwap is live — for "held per swap round"
       // kit lines (MEASURED 2026-07-14, SWHA Fully Active charge/sequential buffs)
       whileSwapped?: boolean;
