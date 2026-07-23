@@ -1,5 +1,16 @@
 [
   {
+    "date": "2026-07-22",
+    "title": "Shotgun & rifle accuracy rework — aim-circle geometry measured from real fights",
+    "notes": [
+      "Shotgun pellets are now modeled the way the game actually places them: spread evenly inside the on-screen aim circle, which shrinks as Hit Rate rises. Both pellet landing and core-hit rates now respond to Hit Rate buffs — built from 728 hand-counted pellets across every range band, and verified against per-pellet hit markers read straight from footage.",
+      "Assault rifles and submachine guns use the same measured circle geometry for their core-hit rates, which also explains long-standing behaviors like all-shots-core at very high Hit Rate.",
+      "Known interim effect: shotgun units read lower than before while their per-unit tuning is redone against the corrected (previously over-generous) pellet landing — a shotgun re-tune pass is next.",
+      "Full Burst extension effects had their magnitude and ordering fixed, and Soda: Twinkling Bunny's Hit Rate buff is now modeled.",
+      "Rapi: Red Hood now shows both elements she can be advantaged as (her kit grants a second one)."
+    ]
+  },
+  {
     "date": "2026-07-21",
     "title": "Generator Nikke picking — include/exclude units and save your lists",
     "notes": [

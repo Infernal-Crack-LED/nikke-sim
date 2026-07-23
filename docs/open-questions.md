@@ -8,6 +8,30 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U29 — the Snow White: Heavy Arms fire team makes 12 Full Bursts in reality; the sim generates 10 (opened 2026-07-22)
+
+The graded comp internally labeled "N5" — Anis: Star, Arcana: Fortune Mate, Privaty,
+Snow White: Heavy Arms, Diesel: Winter Sweets, boss Fire, focus Privaty; recording
+`docs/probes/714 noon/5.mp4` (+ `5.JPEG`) — has a **manually re-verified real Full Burst count of
+12** (owner recount 2026-07-22, confirming what the original probe log always said:
+`docs/probes/714 noon/probe.md:17` recorded "measured 12 / sim 11 ✗" at grading time).
+
+**The sim has never matched it, and the pinned "11" was never a measurement** — it matched the OLD
+sim's output, so this comp was wrongly counted among the "full-burst counts measured-exact" set.
+Current state: 11 under the pre-UNIGEO engine, **10 under the shipped UNIGEO default** (the −1 from
+11→10 is the shotgun-landing→burst-gauge coupling — isolated cleanly by the W6 gauge-decoupling run,
+worktree deliverable addendum; decoupling restores 11 but the REAL count is 12, so both variants
+under-generate and the coupling is not the root cause).
+
+**What to investigate:** a burst-generation shortfall of ~2 Full Bursts on this comp — likely
+family: the burst-cycle timing thread (same family as the open "re-pin the PH-water fire comp's FB
+to 12 when the burst-cycle fix lands" item in the role-audit follow-ups), gauge under-generation on
+one of the five kits, or a chain/cooldown collision unique to this comp. The per-pellet vs per-shot
+question for shotgun gauge generation rides along: Anis: Star is RL, but Snow White: Heavy Arms'
+weapon-swap kit and the comp's gauge economy need a real read against the footage's actual FB
+timestamps. First measurement: pull the 12 real FB timestamps from `5.mp4` (03:00-anchored) and diff
+against the sim's chain log to see WHERE the two missing chains fail to open.
+
 ### U28 — `extraHitDamagePct` vs `flatDamage` are not interchangeable: gauge + flavor asymmetry (split out of U13, 2026-07-22)
 A32 closed the crit divergence between the two encodings of function "additional damage". Two
 divergences remain at the same call site. **They are not the same kind of open:**

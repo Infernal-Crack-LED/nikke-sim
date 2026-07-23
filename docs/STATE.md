@@ -93,31 +93,36 @@ first-ready selection, coherent first-burst model). Detail: [data/game-mechanics
 
 ## 4. Core-hit & SG-landing geometry (live model)
 
-**Core-hit for accuracy-circle weapons (AR/SMG/SG)** = the δ-offset ("Rician") cone (`CONE_DELTA` ON):
-a shot lands on a 2D Gaussian of spread σ_w(hr) centered δ_w(hr) px off the true core, and cores iff
-inside the band core radius (`offsetCoreProb`, `sg-geometry.ts`). Frozen params: **δ0 = AR 18 / SMG 16
-/ SG 30 px**; **H = 120** (HR at which the offset reaches 0); **per-weapon σ-shrink = AR .009 / SMG .004
-/ SG .009**; **S_FLOOR = 0.10**. The drawn crosshair/reticle is **decorative** (Hit-Rate-independent).
-Fallback (`CONE_DELTA=0`) restores the prior engine byte-identically: the measured `CORE_BY_WEAPON_BAND`
-table (AR/SMG/SG) × `HRCORE`. MG/SR/RL use a flat 0.95 core rate (no band table). → DECISIONS 2026-07-19
-(cone LANDED), 2026-07-18 (geometry is ground truth — outranks damage-back-derived core rates).
+**UNIGEO (default `'all'`, shipped 2026-07-22)** — accuracy-circle weapons (AR/SMG/SG) on the
+scope-lock boss profile use the **uniform-in-circle** model (`src/engine/unigeo.ts` +
+`unigeo-coverage.ts`, wired in `sim.ts`): shots/pellets land uniform per area inside the aim circle,
+whose radius is **R(hr) = (0.648 × datamined `start_accuracy_circle_scale` / 2) · (1 − hr/100) px**
+— linear to zero at Hit Rate 100 (measured: owner tracings 79.3 px @ HR 0 / 48.2 px @ HR 38.91,
+weapon-matched SG pair, three-way cross-validated).
+- **SG landing** = **0.96 × coverage(band, R(hr))** — the circle's coverage by the owner-traced boss
+  silhouette, range-scaled px ∝ 1/d (band distances 20.7/30.7/40.7/50.7). Landing is now
+  **Hit-Rate-dependent** (the old table had no HR term). ε = 0.96 is the measured tracking-wander
+  loss (owner-ruled real). Seeded runs draw whole pellet counts as before.
+- **SG core-per-landed** = (r_core(band)/R(hr))² ÷ coverage, clamped.
+- **AR/SMG core-per-hit** = uniform-disc ∩ core lens overlap with per-class centering offset
+  **δ(hr) = δ0·(1−hr/120)** (⚑ δ0 = AR 15.9 / SMG 17.9 px) and effective-circle fraction
+  **f_bloom** (⚑ AR 0.578 / SMG 0.728 — the SMG pair is a SATURATED 2-cell calibration, active
+  red flag on little-mermaid long bands).
+- **⚑ Core diameters mid/midfar/far = fit-selected series C (31/20.9/15.8/12.7 px)** — near 31 is
+  measured; the long bands are contested (pro-B range-data argument vs anti-B counted cells,
+  unresolved) and an owner re-trace supersedes them.
+- **MG/SR/RL**: flat 0.95 core rate, untouched. **Medium/large `bossPelletProfile`** fights fall
+  through to the δ-cone path (coverage tables are the scope-lock silhouette only).
+- **Revert arm:** `UNIGEO=off` restores the pre-UNIGEO cone engine byte-identically (cone params
+  frozen in `sg-geometry.ts`; the old `SG_LANDING_BY_BAND` bonded table lives on that path only).
+→ DECISIONS 2026-07-22 (UNIGEO SHIPPED — evidence stack, fit-exposure note, ⚑ inventory); full
+gated record `handoffs/scientific-method-harness.md` 2026-07-22 + `handoffs/2026-07-22-sg-geometry-handoff.md`.
 
-**Post-flip validation status (2026-07-22):** re-checked on a fresh board baseline (138 datapoints /
-45 units) — **no registered revert trigger fires** (largest SMG/SG move is `naga` +0.010, far under the
->0.03 trigger; band-ordering holds; SMG comps read HOT, not LOW). The cone is **not confirmed
-out-of-sample either**: the only scorable holdout (`soda-twinkling-bunny` SG ▲38.91, predicted
-**.160/.133/.077/.051** ±0.12 spawn) has **never been counted** — footage exists, no measurement.
-On today's baseline the ON/OFF board delta is a wash (mean|ratio−1| 0.0967 OFF → 0.0972 ON; within-±3%
-MAD 6 → 7), so the cone rests on its geometry/measured cells and per-unit at-range corrections, not on
-a net board gain. Full record: [handoffs/2026-07-22-cone-holdout-scoring.md](handoffs/2026-07-22-cone-holdout-scoring.md).
-
-**SG pellet-landing** = per-band expected fraction **near 0.888 / mid 0.986 / far 0.74 / midfar 0.888**
-(the bonded table; base values ×0.9863 bond recalibration). Under a seeded run each spray draws a whole
-landed-pellet count via a mean-preserving normal jitter. The class-table *shape* is HELD (a far-0.66
-candidate is staged ⚑, gated on a third clean anchor); the per-unit refit was REJECTED on a pre-registered
-split. SG core rate is separately ~0.048 near. → DECISIONS 2026-07-15/16. Per-unit landing is CLOSED
-(owner override 2026-07-17 — the class table stands; open-questions **A31 (U17)**); the one open tail is
-isabel's mid/midfar clock-drift re-derive (**U27**). Full geometry math: [data/sg-calc/](data/sg-calc/).
+**KNOWN INTERIM STATE — SG override calibration debt:** the old landing sat 12–24% above the
+measured landing, so SG-unit board readings regressed (mean |ratio−1| 0.084 → 0.131) until the
+**SG override re-tune** follow-up pass lands. The N5 fire comp's Full-Burst shortfall (real 12 vs
+sim 10) is **open-questions U29** (pre-existing burst-generation question, not a UNIGEO regression).
+The isabel mid/midfar clock-drift re-derive stays open (**U27**).
 
 ## 5. Opt-in kit primitives inventory
 

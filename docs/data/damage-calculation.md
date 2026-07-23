@@ -124,31 +124,32 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
       | coreBonus or 0, Bernoulli(coreExposure × ACR)   (Monte Carlo mode)
         coreExposure = cfg.coreHitRate (1.0 on the scope-lock boss)
         ACR = acrForHR(weapon, band, hitRatePct) — the auto-aim core-hit fraction.
-        LIVE MODEL (CONE_DELTA default on, 2026-07-19; DECISIONS): for accuracy-circle weapons
-              (AR/SMG/SG) a δ-offset ("Rician") cone. A shot lands ~N((δ_w(hr), 0), σ_w(hr)²·I) px
-              and cores iff it falls within the band core radius R_band ⇒
-                ACR = offsetCoreProb(R_band, σ_w(hr), δ_w(hr))            (Rician CDF; δ=0 ⇒ Rayleigh)
-                σ_w(hr) = (CIRCLE_PX_K·scale_w)/2/K_SIGMA · max(S_FLOOR, 1 − s_w·hr)
-                δ_w(hr) = δ0_w · max(0, 1 − hr/H)
-              Frozen (refit + Fable-approved; scripts/cone-refit.ts, sg-geometry.ts): δ0 = AR 18 /
-              SMG 16 / SG 30 px; H = 120; S_FLOOR = 0.10; s = {AR .009, SMG .004, SG .009}; held
-              K_SIGMA 2.53, CIRCLE_PX_K 0.648, scale {AR 75, SMG 110, SG 250}, R_band = BAND_CORE_PX/2
-              {near 31, mid 28, midfar 21, far 17}. Band-dependent (near≫far ∝ core size), rises with
-              Hit Rate (near-saturates by ▲80–98). Replaces the structurally-wrong flat CORE_AUTOAIM=0.55
-              cap + fractional reticle floor; the drawn reticle is DECORATIVE. MG/SR/RL → base table.
-              Engine: acrForHR → offsetCoreProb (src/engine/sg-geometry.ts).
-        FALLBACK MODEL (CONE_DELTA=0, restores the prior engine): measured per-band
-              CORE_BY_WEAPON_BAND × the HRCORE/PELLET_GAUSS Hit-Rate lift (solo recordings, Wilson CIs
-              in docs/probe-data/coreband2-*.json; NEVER refit):
-                        near    mid     midfar   far
-                AR      0.40    0.30    0.03     0.00
-                SMG     0.28    0.244   0.076    0.059
-                SG      0.072   0.00    0.0045   0.00
-              MG/SR/RL keep flat 0.95 (not measured per-band; core ~near-100% once warmed —
-              MG gated by its wind-up ramp). Engine: acrFor(weapon, band) + CORE_BY_WEAPON_BAND.
-              Knobs: CONE_DELTA=0 → this fallback; ACR=flat override; CORERATE=flat → old flat 0.85.
-              SG near 0.072 CORROBORATED (ore-game ~6% front row); AR near 0.40 CONFIRMED (Scarlet +
-              Moran, two methods). open-questions A15 / DECISIONS.
+        LIVE MODEL — UNIGEO uniform-in-circle (default 'all', 2026-07-22; DECISIONS 2026-07-22),
+              scope-lock (small) boss profile, accuracy-circle weapons (AR/SMG/SG):
+                R(hr)   = (CIRCLE_PX_K · scale_w)/2 · (1 − hr/100) px      (linear to ZERO at HR 100;
+                          CIRCLE_PX_K 0.648 measured, scale_w = datamined start_accuracy_circle_scale
+                          {AR 75, SMG 110, SG 250}; MEASURED at 79.3/48.2 px for SG @ HR 0/38.91)
+                SG:     ACR = min(1, (r_core(band)/R(hr))²) ÷ coverage(band, R(hr))   (per landed pellet)
+                AR/SMG: ACR = lensOverlap(disc R_eff = f_bloom_w·R(hr), offset δ_w(hr), core r_core)
+                              ÷ disc area                                              (per hit)
+                        δ_w(hr) = δ0_w · max(0, 1 − hr/120)
+              Pellet/shot placement inside the circle is UNIFORM PER AREA — MEASURED directly
+              (101 machine-read pellet-marker positions; the previous centered Gaussian is refuted
+              at KS 0.376 vs crit 0.135). r_core diameters: near 31 px MEASURED; mid/midfar/far
+              20.9/15.8/12.7 px ⚑ FIT-SELECTED (UNIGEO_CORE_PX; an owner re-trace supersedes).
+              ⚑ CALIBRATED per class: δ0 = AR 15.9 / SMG 17.9 px; f_bloom = AR 0.578 / SMG 0.728
+              (SMG pair is a saturated 2-cell fit — flagged, see DECISIONS 2026-07-22). Rises
+              steeply with Hit Rate; AR ≥▲80 is all-core geometrically (circle inside the core).
+              MG/SR/RL → flat 0.95 (no accuracy circle; MG gated by its wind-up ramp).
+              Engine: acrForHR → unigeoSgCorePerLanded / unigeoSingleCoreProb (src/engine/unigeo.ts).
+        REVERT / FALLBACK ARMS: UNIGEO=off restores the pre-2026-07-22 engine byte-identically —
+              the δ-offset ("Rician") Gaussian cone (offsetCoreProb, frozen params in sg-geometry.ts:
+              δ0 = AR 18 / SMG 16 / SG 30 px, H 120, S_FLOOR 0.10, σ-shrink {AR .009, SMG .004,
+              SG .009}, K_SIGMA 2.53), which itself falls back at CONE_DELTA=0 to the measured
+              CORE_BY_WEAPON_BAND table × HRCORE lift (NEVER refit; Wilson CIs in
+              docs/probe-data/coreband2-*.json). The cone also remains the LIVE path for
+              medium/large bossPelletProfile fights (UNIGEO coverage tables are the scope-lock
+              boss silhouette only).
               PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
               OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
               and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,
@@ -430,8 +431,9 @@ visible sub-step. Full in ~8 pulls including one reload pause.
 ## 6. Known open items that bound this doc's precision
 
 The board's standing residuals and every CALIBRATED ⚑ value are tracked in
-[../open-questions.md](../open-questions.md) — headline items: the range-dependent AUTO_CORE_RATE ⚑
-table (per weapon/band; A15), the ~7%
+[../open-questions.md](../open-questions.md) — headline items: the UNIGEO ⚑ set (fit-selected long-band
+core diameters; the saturated SMG δ0/f_bloom pair) and the SG-override calibration debt awaiting the
+re-tune pass (DECISIONS 2026-07-22), the N5 fire comp's real-12-vs-sim-10 Full Burst shortfall (U29), the ~7%
 uniform damage-side deficit under the corrected rotation model, per-unit kit-generation quirks
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).

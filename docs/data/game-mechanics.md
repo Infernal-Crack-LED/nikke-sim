@@ -156,22 +156,29 @@ mechanics, now modeled directly). Full model + sources + the two solo measuremen
 All of §7 exists because scope-lock runs are full auto — manual play changes these numbers.
 Details: **[auto-play.md](auto-play.md)**.
 
-- **Core rate for accuracy-circle weapons (AR/SMG/SG) = a δ-offset ("Rician") cone** (LANDED LIVE
-  2026-07-19, `CONE_DELTA` default on; DECISIONS 2026-07-19). A shot's landing point is an isotropic
-  2D Gaussian of spread σ_w(hr) CENTERED δ_w(hr) px off the true core (auto-aim never nails the ~1px
-  centre); it cores iff it lands within the band's core radius ⇒ the Rician CDF `offsetCoreProb`.
-  σ_w(hr) comes from the datamined accuracy circle (K_SIGMA=2.53 envelope) with a per-weapon Hit-Rate
-  shrink; δ_w(hr) is a per-weapon centering offset that shrinks to 0 by H=120. Frozen params (refit +
-  Fable-approved): δ0 = AR 18 / SMG 16 / SG 30 px, S_FLOOR 0.10, per-weapon σ-shrink s = {AR .009,
-  SMG .004, SG .009}. This REPLACES the two confirmed bugs of the prior model — the flat
-  `CORE_AUTOAIM=0.55` cap and the fractional reticle floor — and the **drawn reticle is DECORATIVE**
-  (Hit-Rate-independent, measured). Effect is band-dependent (near≫far ∝ core size) and rises with
-  Hit Rate (near-saturates by ▲80–98). MG/SR/RL keep the flat base table. **Prior model (kept as the
-  `CONE_DELTA=0` fallback, never refit):** the measured per-band `CORE_BY_WEAPON_BAND` table (AR
-  0.40/0.30/0.03/0.00, SMG 0.28/0.244/0.076/0.059, SG 0.072/0.00/0.0045/0.00; MG/SR/RL 0.95) × the
-  `HRCORE`/`PELLET_GAUSS` Hit-Rate lift. Evidence: the 2026-07-18/19 geometry campaign (counted core
-  cells at 3–4 Hit-Rate levels × 3 weapons, cross-recording) + full-board A/B. See
-  `docs/handoffs/closed/2026-07-19-geometry-campaign-findings.md`, `docs/data/sg-calc/`.
+- **Core rate for accuracy-circle weapons (AR/SMG/SG) = UNIFORM-IN-CIRCLE geometry ("UNIGEO",
+  LIVE default `'all'` 2026-07-22; DECISIONS 2026-07-22).** Shots/pellets land **uniform per area**
+  inside the aim circle, whose on-screen radius is **R(hr) = (0.648 × the unit's datamined
+  `start_accuracy_circle_scale` ÷ 2) · (1 − Hit Rate/100) px** — the circle shrinks LINEARLY to zero
+  at Hit Rate 100 (MEASURED: two owner-traced native-resolution frames, 79.3 px at HR 0 / 48.2 px at
+  HR 38.91, weapon-matched shotgun pair; cross-validated by machine circle-fits and the bloom-peak
+  px calibration). A hit cores iff it falls in the boss-core disc:
+  **SG** core-per-landed-pellet = (r_core(band)/R(hr))² ÷ coverage; **AR/SMG** core-per-hit =
+  the lens overlap of a uniform disc of radius f_bloom·R(hr), centered δ(hr) = δ0·(1−hr/120) px off
+  the core, with the core disc (⚑ CALIBRATED per class: δ0 = AR 15.9 / SMG 17.9 px, f_bloom =
+  AR 0.578 / SMG 0.728 — the SMG pair is a saturated 2-cell fit, flagged). Core diameters: near
+  31 px MEASURED; mid/midfar/far = 20.9/15.8/12.7 px **⚑ FIT-SELECTED** (owner re-trace supersedes).
+  The uniform distribution is MEASURED directly — 101 machine-read per-pellet marker positions
+  refute the previous Gaussian at KS 0.376 (crit 0.135) — and the drawn reticle remains decorative.
+  Effect rises steeply with Hit Rate (the shrinking circle concentrates onto the core; AR at ▲80 is
+  all-core geometrically because the circle fits inside the core). **MG/SR/RL keep the flat 0.95
+  base rate** (no accuracy circle). **The prior δ-offset ("Rician") Gaussian cone survives on two
+  paths only** — `UNIGEO=off` (byte-identical revert arm) and medium/large `bossPelletProfile`
+  fights (the coverage tables are the scope-lock boss silhouette) — with its frozen params in
+  `sg-geometry.ts`, never refit. Evidence: the owner's 728-pellet hand count (18 cells, 4 bands ×
+  Hit-Rate on/off) reproduced by the engine untuned; a pre-registered replication; the marker-position
+  read. Engine: `src/engine/unigeo.ts` (+ `unigeo-coverage.ts`); full record
+  `docs/handoffs/2026-07-22-sg-geometry-handoff.md` + DECISIONS 2026-07-22.
 - **Early charge releases are rare (~2% of shots**, user-observed ~3/fight from boss
   interruptions) — auto effectively always full-charges, and full-charge-gated proc counters
   fire on essentially every shot. Maiden:IR's former ×0.68 proc factor is RESOLVED as her
@@ -192,18 +199,21 @@ FB countdown (10s)`**. So gauge-full → FB-start ≈ 112f (~1.87s), not the old
   (a transition colliding with a chain). Everywhere else, **full-burst counts are
   cooldown/chain arithmetic and deterministic run-to-run** — the graded comps are pinned
   as exact asserts in `scripts/regression.ts`.
-- **SG pellet landing per band = near 0.888 / mid 0.986 / far 0.74 / midfar 0.888** (MEASURED 2026-07-15 via
-  noir's running-damage-counter reconciliation — the arbiter over two visual reads that both under-counted a
-  dense cluster of ~10 overlapping identical pellet numbers as ~6; BOND-TERM RECALIBRATED 2026-07-16). ~all 10
-  pellets land close on the large boss; the fall-off is only at far. `SG_LANDING_BY_BAND` scales SG shot damage
-  - gauge. Both clean SG solos reconcile (noir/dorothy ratio 1.01). Single-boss (large hitbox) — do not
-    generalize to small-hitbox bosses. **2026-07-16 recalibration:** the noir reconciliation that SET this table
-    used a sim WITHOUT the relationship (bond) bonus; adding bond raised noir's ATK +1.39% and the base5-calibrated
-    table over-shot by the same amount (noir solo 1.006→1.020). Corrected by a UNIFORM ×0.9863 (= base5/bond ATK)
-    on every band — the table SHAPE is unchanged (U17 HOLD: the class table stands). Was 0.90/1.0/0.75/0.90.
-    NB an earlier "0.60 per-band, flash-count-validated" read was SUPERSEDED (visual cluster under-read). The SG
-    CORE rate (0.072) is a popup RATIO over the same clusters and is likely INFLATED (whites under-read, cores
-    spared) → re-derive from the counter. open-questions A26; DECISIONS (FINAL entry).
+- **SG pellet landing = 0.96 × coverage(band, R(hr))** (LIVE with UNIGEO, 2026-07-22) — the fraction
+  of the Hit-Rate-state aim circle covered by the boss silhouette (owner-traced, range-scaled
+  px ∝ 1/distance at band distances 20.7/30.7/40.7/50.7), times a MEASURED 0.96 tracking-wander
+  loss (the auto-aim circle sits slightly off the moving boss at times — owner-ruled real).
+  **Landing is Hit-Rate-dependent** (the shrinking circle pulls pellets onto the body): at HR 0 ≈
+  near .813 / mid .712 / midfar .657 / far .607; at ▲38.91 ≈ .960/.873/.725/.710 — matching the
+  owner's 728-pellet hand count (near-OFF measured 0.780, near-ON 0.931, etc.). Landing scales SG
+  shot damage AND per-pellet burst-gauge generation (`unigeoSgLanding` → the gauge feed); seeded
+  runs draw whole landed-pellet counts as before. The boss silhouette is non-convex (hourglass +
+  wide shoulders), which is why coverage stays nearly flat with range while the core shrinks 45% —
+  the old "flat per-band table" (near 0.888 / mid 0.986 / far 0.74 / midfar 0.888, HR-blind,
+  counter-reconciled against the old flat-core model) sat 12–24% ABOVE the directly-counted landing
+  and survives only on the `UNIGEO=off` revert path. Scope-lock boss only — medium/large
+  `bossPelletProfile` fights fall through to the cone path. → DECISIONS 2026-07-22;
+  `docs/probe-data/soda-tb-sg-core-hr-windows.json` (the count of record).
 - Auto burst priority is **leftmost slot order, with waiting**: inside a timed stage
   window the chain waits for the leftmost stage-filling unit whose cooldown ends before
   the window closes rather than handing the cast to a lower-priority ready unit
