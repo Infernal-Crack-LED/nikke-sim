@@ -62,6 +62,30 @@ event; leave the reload-speed lock unmodelled until the LOCK primitive exists (i
 reload-support-free comps). Board-moving on a graded unit, so it wants a `board-read` A/B + FB-count
 preservation check, not a drive-by edit. Her per-hit values are video-confirmed at 99.7% and must not move.
 
+**BUILT + ISOLATED 2026-07-22, HELD ON BRANCH `jill-forced-reload` (not merged).** Owner enacted the
+change; no engine work was needed (`consumeAmmo fraction 1` already exists at `sim.ts:1955` and its
+comment already named `jill`), and no value is fitted (`fraction 1` = the kit's literal 100%,
+`reloadFrames 81` = the synced datamine). Per-arm result:
+
+| arm | `jill` board | N1 FB assert |
+|---|---|---|
+| baseline | 1.031 HOT ▲ | ✓ green (12×24 13×1 vs measured 13) |
+| forced reload ONLY (`reloadFrames 0` kept) | 1.030 | ✓ green |
+| real reload ONLY (no forced reload) | **0.923 COLD ▼** | ✗ **12×25 vs measured 13** |
+| both | **0.919 COLD ▼** | ✗ **12×25** |
+
+Two things fall out. **(a) The forced reload is ~free** — with a 0-frame reload it costs nothing, so
+the kit line the owner named is currently a no-op and the whole effect lives in the `reloadFrames`
+constant. **(b) Dropping `reloadFrames 0` breaks a measured Full-Burst count**: the N1 comp
+(`d-killer-wife`/`grave`/`rapi-red-hood`/`quency-escape-queen`/`jill`) loses its last passing seed
+against a video-measured 13. That is measured truth (constraints 3/5 — never updated without a new
+measurement), so it is an **owner call, not a snapshot `--update`**. Note N1 was ALREADY 24 of 25
+seeds at 12, so the change **unmasks** a pre-existing burst-generation shortfall rather than creating
+one — same family as **U29**, and as the N2/N4/N5 comps `regression.ts:133-137` already omits for
+exactly this reason. Options: (1) land both and un-pin N1 into the open burst-cycle increment
+(precedent exists); (2) land the forced reload alone (green, board-neutral, but nearly inert) and
+leave `reloadFrames 0` standing as an acknowledged unsupported constant; (3) hold everything.
+
 **Still unmodelled on the same block:** *"Normal attacks deal True Damage for 10 sec"* (her note:
 *"the sim cannot yet model that conversion"*).
 
