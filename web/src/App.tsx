@@ -106,11 +106,14 @@ import {
 import {
   makeCalc,
   assignMustUse,
+  assignAlwaysCombos,
   type TeamResult,
   type MetaScoring,
+  type AlwaysCombos,
 } from '../../src/teamcalc';
 import { META_WEIGHTS } from './metaWeights';
 import charactersJson from '../../data/characters.json';
+import bossingTiersJson from '../../data/bossing-tiers.json';
 import cubesJson from '../../data/cubes.json';
 import multJson from '../../data/level-multiplier.json';
 import skillLevelsJson from '../../data/skill-levels.json';
@@ -568,6 +571,69 @@ function metaScoringFor(weakness: Element | null): MetaScoring | undefined {
     comboWeight: META_WEIGHTS.comboWeight,
   };
 }
+
+// Prydwen bossing-tier meta score (owner ruling 2026-07-22): an element-agnostic
+// per-unit score from data/bossing-tiers.json (SSS=5 … B=1, ≤C=0). The solo roster
+// generator uses it to SEED a gently downward-sloped spread of team meta scores
+// (e.g. 19/18/17/17/15). It does NOT replace the damage×enikk ranking blend — it
+// only guides where each team's search starts (see teamcalc topTeams `spreadTargets`).
+const PRYDWEN_TIER_SCORE: Record<string, number> = {
+  SSS: 5,
+  SS: 4,
+  S: 3,
+  A: 2,
+  B: 1,
+  C: 0,
+  D: 0,
+  E: 0,
+  F: 0,
+};
+const PRYDWEN_TIERS = (bossingTiersJson as { tiers: Record<string, string> })
+  .tiers;
+const prydwenScoreOf = (slug: string): number =>
+  PRYDWEN_TIER_SCORE[PRYDWEN_TIERS[slug] ?? ''] ?? 0;
+
+// "Always include" meta supports for the roster generators (owner ruling
+// 2026-07-22). Applied to EVERY generation with no toggle. A combo whose unit is
+// unavailable (excluded, not owned in a synced roster, or not modeled) RELAXES
+// silently rather than failing the generation. Same-team groups are pinned
+// together; singles are spread across teams (teamcalc.assignAlwaysCombos).
+//
+// SOLO RAID (5 teams):
+//   • mint + prika                                    (same team)
+//   • Mast: Romantic Maid + Anchor: Innocent Maid     (same team)
+//   • crown + (helm OR naga)                          (same team; if naga is the
+//       partner, helm must appear on another team — enforced in runTopTeams)
+//   • moran, anis: star, liter, little mermaid, nayuta, privaty   (somewhere)
+const SOLO_ALWAYS_COMBOS: AlwaysCombos = {
+  pairs: [
+    ['mint', 'prika'],
+    ['mast-romantic-maid', 'anchor-innocent-maid'],
+  ],
+  oneOf: [{ anchor: 'crown', choices: ['helm', 'naga'] }],
+  singles: [
+    'moran',
+    'anis-star',
+    'liter',
+    'little-mermaid',
+    'nayuta',
+    'privaty',
+  ],
+};
+
+// UNION RAID (3 teams) — a relaxed set:
+//   • anis: star, little mermaid                      (somewhere)
+//   • Mast: Romantic Maid                             (free single — may pair with
+//       ANY B2 in UR, not forced to Anchor: Innocent Maid)
+//   • crown + (helm OR naga)                          ("crown + healer"; the UR
+//       healers are helm and naga)
+//   • if mint appears at all, prika must be with her  (mint+prika NOT required as a
+//       whole, unlike SR — enforced in runUnionTopTeams)
+const UNION_ALWAYS_COMBOS: AlwaysCombos = {
+  oneOf: [{ anchor: 'crown', choices: ['helm', 'naga'] }],
+  singles: ['anis-star', 'little-mermaid', 'mast-romantic-maid'],
+};
+
 const CUBE_IDS = ['resilience', 'bastion', 'other'] as const;
 const CUBE_LEVELS = [7, 10, 15] as const;
 const CORE_PRESETS = [
@@ -2583,7 +2649,9 @@ export function App({ user }: { user: AuthUser | null }) {
                       element: c.element,
                       // every element the unit counts as (a kit can grant a second code's
                       // advantage — src/elements.ts), matching what the engine resolves
-                      advantaged: weakness ? unitHasElement(c, weakness) : false,
+                      advantaged: weakness
+                        ? unitHasElement(c, weakness)
+                        : false,
                       share: 0,
                       totalDamage: 0,
                     };
@@ -2936,7 +3004,29 @@ export function App({ user }: { user: AuthUser | null }) {
         : blocked
       ).filter((s) => !unblock?.has(s)),
       meta: metaScoringFor(weakness),
+      prydwenScore: prydwenScoreOf,
     });
+
+  // Whether a unit can be fielded by the generator right now (in the pool, not
+  // excluded, and — with a synced roster — owned/eligible). Used to decide which
+  // always-combos apply (unavailable combos relax silently).
+  const genAvailable = (slug: string): boolean => {
+    if (!generatorCharacters[slug]) return false;
+    if (blocked.includes(slug)) return false;
+    return genSynced ? genEligible(slug) : true;
+  };
+  // Soft downward-sloped prydwen meta-sum targets for the 5 solo teams (owner
+  // ruling 2026-07-22). M = mean meta sum of the top-25 available units / 5; the
+  // slope +2/+1/0/0/−2 yields the "1-2 top, 2 mid, 1 under" shape (e.g. 19/18/17/17/15).
+  const soloSpreadTargets = (): number[] => {
+    const scores = Object.keys(generatorCharacters)
+      .filter(genAvailable)
+      .map(prydwenScoreOf)
+      .sort((a, b) => b - a)
+      .slice(0, 25);
+    const M = scores.length ? scores.reduce((s, v) => s + v, 0) / 5 : 0;
+    return [M + 2, M + 1, M, M, M - 2];
+  };
 
   // run a (blocking) calc off the paint frame so the "calculating…" state shows
   const runCalc = async (fn: () => void) => {
@@ -2956,14 +3046,43 @@ export function App({ user }: { user: AuthUser | null }) {
     });
   const runTopTeams = () =>
     runCalc(() => {
-      const pinned = rosterGenPinned.map((row) =>
+      const userPinned = rosterGenPinned.map((row) =>
         row.filter((s): s is string => !!s),
       );
-      const mustUse = rosterGenGeneric.filter((s): s is string => !!s);
-      const locks = new Set([...pinned.flat(), ...mustUse]);
+      const userMustUse = rosterGenGeneric.filter((s): s is string => !!s);
+      // Always-combos (owner ruling 2026-07-22): fold the curated meta supports
+      // onto the 5 teams. Same-team groups pin together; singles spread (via
+      // assignMustUse inside topTeams). Combos with unavailable units relax
+      // silently (genAvailable gates them).
+      const ac = assignAlwaysCombos(
+        SOLO_ALWAYS_COMBOS,
+        userPinned,
+        generatorCharacters as any,
+        5,
+        genAvailable,
+      );
+      // Solo conditional: crown paired with naga (not helm) → helm must appear on
+      // another team. The oneOf picks helm first when available, so this mainly
+      // fires when the user pins crown+naga while helm is still free.
+      const crownTeam = ac.pinnedByTeam.find((t) => t.includes('crown'));
+      const placed = new Set([...ac.pinnedByTeam.flat(), ...ac.singles]);
+      if (
+        crownTeam?.includes('naga') &&
+        !crownTeam.includes('helm') &&
+        genAvailable('helm') &&
+        !placed.has('helm')
+      ) {
+        ac.singles.push('helm');
+      }
+      const mustUse = [...userMustUse, ...ac.singles];
+      const locks = new Set([...ac.pinnedByTeam.flat(), ...mustUse]);
       setTeamResult(null);
       setRosterResults(
-        newCalc(locks).topTeams(5, { pinnedByTeam: pinned, mustUse }),
+        newCalc(locks).topTeams(5, {
+          pinnedByTeam: ac.pinnedByTeam,
+          mustUse,
+          spreadTargets: soloSpreadTargets(),
+        }),
       );
     });
   // A calc bound to explicit boss options + weakness (union raid generator —
@@ -3008,19 +3127,30 @@ export function App({ user }: { user: AuthUser | null }) {
     runCalc(() => {
       setTeamResult(null);
       setRosterResults(null);
-      const pinned = unionGenPinned.map((row) =>
+      const userPinned = unionGenPinned.map((row) =>
         row.filter((s): s is string => !!s),
       );
-      const mustUse = unionGenGeneric.filter((s): s is string => !!s);
-      const locks = new Set([...pinned.flat(), ...mustUse]);
+      const userMustUse = unionGenGeneric.filter((s): s is string => !!s);
+      // Relaxed always-combos (owner ruling 2026-07-22): anis:star / little
+      // mermaid / Mast:Romantic Maid (free singles) + crown+(helm|naga). Combos
+      // with unavailable units relax silently (genAvailable gates them).
+      const ac = assignAlwaysCombos(
+        UNION_ALWAYS_COMBOS,
+        userPinned,
+        generatorCharacters as any,
+        3,
+        genAvailable,
+      );
+      const mustUse = [...userMustUse, ...ac.singles];
+      const locks = new Set([...ac.pinnedByTeam.flat(), ...mustUse]);
       const assigned = assignMustUse(
         mustUse,
-        pinned,
+        ac.pinnedByTeam,
         generatorCharacters as any,
         3,
       );
       const reserved = Array.from({ length: 3 }, (_, i) => [
-        ...pinned[i],
+        ...ac.pinnedByTeam[i],
         ...assigned.assigned[i],
       ]);
       const used = new Set<string>();
@@ -3036,6 +3166,29 @@ export function App({ user }: { user: AuthUser | null }) {
         if (!t) break;
         for (const s of t.slugs) used.add(s);
         out.push(t);
+      }
+      // mint → prika output invariant (UR): if mint is fielded at all, prika must
+      // be on her team. mint+prika is NOT required as a whole (unlike SR) — this
+      // only fires when the search/user included mint. If prika is unavailable or
+      // already on another team, relax silently.
+      const mintTi = out.findIndex((t) => t.slugs.includes('mint'));
+      if (mintTi >= 0 && !out[mintTi].slugs.includes('prika')) {
+        const prikaElsewhere = out.some(
+          (t, i) => i !== mintTi && t.slugs.includes('prika'),
+        );
+        if (genAvailable('prika') && !prikaElsewhere) {
+          const opts = unionGenBossOpts[mintTi] ?? defaultUnionBossOpts();
+          const calc = newCalcWith(unionCalcCfg(opts), opts.weakness, locks);
+          const exclude = new Set<string>();
+          out.forEach((t, i) => {
+            if (i !== mintTi) t.slugs.forEach((s) => exclude.add(s));
+          });
+          const rebuilt = calc.bestTeam({
+            exclude,
+            mustInclude: [...new Set([...reserved[mintTi], 'mint', 'prika'])],
+          });
+          if (rebuilt) out[mintTi] = rebuilt;
+        }
       }
       setUnionGenResults(out);
     });
@@ -3624,12 +3777,24 @@ export function App({ user }: { user: AuthUser | null }) {
   const rosterView = (teams: TeamResult[]) => {
     const rosterTotal = teams.reduce((sum, t) => sum + t.teamDamage, 0);
     const maxTeam = Math.max(...teams.map((t) => t.teamDamage), 1);
+    // team prydwen meta score = sum of its units' tier scores (SSS=5…≤C=0). The
+    // solo generator slopes these gently downward (e.g. 19/18/17/17/15).
+    const metaSum = (t: TeamResult): number =>
+      t.slugs.reduce((s, slug) => s + prydwenScoreOf(slug), 0);
     return (
       <div className='roster-result'>
         <div className='roster-grid'>
           {teams.map((t, i) => (
             <div className='roster-grid-row' key={`g${i}`}>
-              <span className='rg-label muted'>team {i + 1}</span>
+              <span className='rg-label muted'>
+                team {i + 1}{' '}
+                <span
+                  className='rg-meta'
+                  title='team meta score — sum of unit prydwen tiers (SSS=5 … ≤C=0)'
+                >
+                  ◆{metaSum(t)}
+                </span>
+              </span>
               <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
               <div className='rg-bar'>
                 <span style={{ width: `${(t.teamDamage / maxTeam) * 100}%` }} />
@@ -3652,7 +3817,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 return (
                   <div className='roster-card' key={`c${i}`}>
                     <div className='card-group-label'>
-                      team {i + 1} · {fmt(t.teamDamage)}
+                      team {i + 1} · {fmt(t.teamDamage)} · ◆{metaSum(t)}
                     </div>
                     <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
                     <table className='roster-card-table'>

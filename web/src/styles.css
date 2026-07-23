@@ -896,6 +896,12 @@ input.num {
   min-width: 74px;
   font-size: 12px;
 }
+/* per-team prydwen meta score (◆N) tucked beside the team label */
+.roster-grid-row .rg-meta {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  opacity: 0.75;
+}
 .roster-grid-row .team-portraits {
   flex: 0 0 auto;
   margin-bottom: 0;

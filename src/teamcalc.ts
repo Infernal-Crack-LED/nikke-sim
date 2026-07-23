@@ -50,6 +50,11 @@ export interface TeamCalcInput {
   rounds?: number;
   /** Meta-popularity bias for the active boss weakness (omit = pure damage). */
   meta?: MetaScoring;
+  /** Element-agnostic prydwen bossing-tier meta score per unit (e.g. SSS=5…≤C=0,
+   *  from data/bossing-tiers.json). Used only to seed the solo roster generator's
+   *  downward-sloped team spread (see topTeams `spreadTargets`); it does NOT change
+   *  the damage×enikk ranking score. Omit → no spread shaping. */
+  prydwenScore?: (slug: string) => number;
 }
 
 export interface TeamUnit {
@@ -167,6 +172,117 @@ export function assignMustUse(
   return { assigned, unplaced };
 }
 
+/**
+ * Declarative "always include" combo set for the roster generators (the curated
+ * meta supports every roster should field — see SOLO_ALWAYS_COMBOS /
+ * UNION_ALWAYS_COMBOS in web/src/App.tsx). A combo whose required unit is
+ * unavailable to the search (blocked / excluded / not modeled) RELAXES — it is
+ * silently dropped rather than failing the whole generation.
+ */
+export interface AlwaysCombos {
+  /** groups that must all share ONE team (e.g. mint+prika) */
+  pairs?: string[][];
+  /** anchor + first AVAILABLE of `choices` (preference-ordered) share the
+   *  anchor's team (e.g. crown + [helm, naga]) */
+  oneOf?: { anchor: string; choices: string[] }[];
+  /** units that must appear somewhere in the roster (spread across teams) */
+  singles?: string[];
+}
+
+export interface AlwaysComboAssignment {
+  /** the caller's pins augmented with same-team combo groups (pairs + resolved oneOf) */
+  pinnedByTeam: string[][];
+  /** combo singles to merge into the caller's mustUse (spread across teams) */
+  singles: string[];
+  /** combo groups dropped (a required unit was unavailable, pins conflicted, or
+   *  the group fit nowhere) — diagnostic only, never surfaced to the user */
+  dropped: string[][];
+}
+
+/**
+ * Fold an AlwaysCombos set onto `teamCount` teams, honoring the user's own pins.
+ * Same-team groups (pairs + resolved oneOf) are PINNED together to a team; singles
+ * are returned for the caller to spread via assignMustUse. User pins win over
+ * combos: a group split across the user's pinned teams is an unresolvable conflict
+ * and relaxes. `available` gates which units the search can field (defaults to
+ * "modeled in chars"); the caller layers blocked/excluded/synced-eligibility on top.
+ */
+export function assignAlwaysCombos(
+  combos: AlwaysCombos,
+  pinnedByTeam: string[][],
+  chars: Record<string, Char>,
+  teamCount: number,
+  available: (slug: string) => boolean = (s) => !!chars[s],
+): AlwaysComboAssignment {
+  const pinned: string[][] = Array.from({ length: teamCount }, (_, t) => [
+    ...(pinnedByTeam[t] ?? []),
+  ]);
+  const singles: string[] = [];
+  const dropped: string[][] = [];
+  const avail = (s: string): boolean => available(s) && !!chars[s];
+
+  // Place a same-team group. If any of its units is already pinned, the rest join
+  // it on that team (when feasible); pins split across teams relax the group.
+  const placeGroup = (group: string[]): void => {
+    const uniq = [...new Set(group)];
+    if (!uniq.every(avail)) {
+      dropped.push(group); // a required unit is unavailable → relax
+      return;
+    }
+    const homes = new Set<number>();
+    uniq.forEach((s) =>
+      pinned.forEach((team, t) => {
+        if (team.includes(s)) homes.add(t);
+      }),
+    );
+    if (homes.size > 1) {
+      dropped.push(group); // user pins split the group → relax
+      return;
+    }
+    if (homes.size === 1) {
+      const t = [...homes][0];
+      const merged = [...new Set([...pinned[t], ...uniq])];
+      if (merged.length <= 5 && locksFeasible(merged, chars))
+        pinned[t] = merged;
+      else dropped.push(group);
+      return;
+    }
+    // not pinned yet: the feasible team with the most free room (fans groups out)
+    let bestT = -1;
+    let bestRoom = -1;
+    for (let t = 0; t < teamCount; t++) {
+      const merged = [...new Set([...pinned[t], ...uniq])];
+      if (merged.length > 5 || !locksFeasible(merged, chars)) continue;
+      const room = 5 - pinned[t].length;
+      if (room > bestRoom) {
+        bestRoom = room;
+        bestT = t;
+      }
+    }
+    if (bestT < 0) dropped.push(group);
+    else pinned[bestT] = [...new Set([...pinned[bestT], ...uniq])];
+  };
+
+  for (const pair of combos.pairs ?? []) placeGroup(pair);
+  for (const { anchor, choices } of combos.oneOf ?? []) {
+    const partner = choices.find(avail);
+    if (!avail(anchor) || partner === undefined) {
+      dropped.push([anchor, ...choices]);
+      continue;
+    }
+    placeGroup([anchor, partner]);
+  }
+  for (const s of combos.singles ?? []) {
+    if (!avail(s)) {
+      dropped.push([s]);
+      continue;
+    }
+    const alreadyPinned = pinned.some((team) => team.includes(s));
+    if (!alreadyPinned && !singles.includes(s)) singles.push(s);
+  }
+  return { pinnedByTeam: pinned, singles, dropped };
+}
+
 export function makeCalc(input: TeamCalcInput) {
   const { chars, mult, deps } = input;
   const loadout = input.loadout ?? {};
@@ -175,6 +291,21 @@ export function makeCalc(input: TeamCalcInput) {
   const rounds = input.rounds ?? 3;
   const meta = input.meta;
   const META_W = meta?.weight ?? 0;
+  const prydwenScore = input.prydwenScore;
+
+  // Soft team-spread helpers (solo roster generator). A team's prydwen meta sum
+  // and a gentle closeness-to-target factor (1 at the target, falling off with σ).
+  // These only SEED/bias each team toward its intended meta score — the ranking
+  // score (scoreOf) is untouched. Inert when no prydwenScore is supplied.
+  const SPREAD_SIGMA = 3;
+  const teamMetaSum = (slugs: string[]): number => {
+    if (!prydwenScore) return 0;
+    let s = 0;
+    for (const u of slugs) s += prydwenScore(u);
+    return s;
+  };
+  const closeness = (sum: number, target: number): number =>
+    Math.exp(-((sum - target) ** 2) / (2 * SPREAD_SIGMA * SPREAD_SIGMA));
 
   // Meta prior for a team in [0,1]: mean unit popularity, plus an exact-comp
   // bonus when the 5-unit set matches a popular ranker comp. 0 when no meta.
@@ -262,15 +393,37 @@ export function makeCalc(input: TeamCalcInput) {
   // legal seed by role: fill 2×B3, 1×B1, 1×B2 (Λ substitutes), then best flex.
   // With locked units (mustInclude), pin them first and fill the outstanding
   // burst needs + flex around them instead.
-  const seedTeam = (pool: string[], mustInclude?: string[]): string[] => {
+  const seedTeam = (
+    pool: string[],
+    mustInclude?: string[],
+    target?: number,
+  ): string[] => {
     const score = new Map(pool.map((s) => [s, soloScore(s)]));
     const ranked = [...pool].sort(
       (a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0),
     );
     const team: string[] = [];
     const take = (pred: (s: string) => boolean) => {
-      const s = ranked.find((x) => !team.includes(x) && pred(x));
-      if (s) team.push(s);
+      // No spread target → unchanged: highest solo damage matching the role.
+      if (target === undefined || !prydwenScore) {
+        const s = ranked.find((x) => !team.includes(x) && pred(x));
+        if (s) team.push(s);
+        return;
+      }
+      // Spread-biased pick: solo damage weighted by closeness of the resulting
+      // team meta sum to this team's target (soft — damage still leads).
+      let bestS: string | undefined;
+      let bestK = -Infinity;
+      for (const x of pool) {
+        if (team.includes(x) || !pred(x)) continue;
+        const k =
+          (score.get(x) ?? 0) * closeness(teamMetaSum([...team, x]), target);
+        if (k > bestK) {
+          bestK = k;
+          bestS = x;
+        }
+      }
+      if (bestS) team.push(bestS);
     };
     const isB = (b: string) => (s: string) => eb(s) === b || eb(s) === 'Λ';
     const locked = (mustInclude ?? []).filter(
@@ -308,15 +461,19 @@ export function makeCalc(input: TeamCalcInput) {
     return team.slice(0, 5);
   };
 
-  // local search: swap each slot for a pool alternative, keep improvements
+  // local search: swap each slot for a pool alternative, keep improvements.
+  // `scoreFn` overrides the ranking score (the solo spread passes a target-biased
+  // score); defaults to scoreOf so other callers are unchanged.
   const refine = (
     start: string[],
     pool: string[],
     locked: Set<string>,
+    scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number,
   ): TeamResult => {
+    const score = scoreFn ?? scoreOf;
     let team = start;
     let best = simTeam(team);
-    let bestScore = scoreOf(best);
+    let bestScore = score(best);
     for (let round = 0; round < rounds; round++) {
       let improved = false;
       for (let i = 0; i < 5; i++) {
@@ -333,7 +490,7 @@ export function makeCalc(input: TeamCalcInput) {
           cand[i] = alt;
           if (!isLegal(cand, chars)) continue;
           const r = simTeam(cand);
-          const sc = scoreOf(r);
+          const sc = score(r);
           if (sc > bestScore) {
             best = r;
             bestScore = sc;
@@ -368,8 +525,13 @@ export function makeCalc(input: TeamCalcInput) {
   const bestTeam = (opts?: {
     exclude?: Set<string>;
     mustInclude?: string[];
+    /** ranking-score override (solo spread passes a target-biased score) */
+    scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number;
+    /** soft prydwen meta-sum target the seed biases toward (solo spread) */
+    seedTarget?: number;
   }): TeamResult | null => {
     const exclude = opts?.exclude ?? new Set<string>();
+    const score = opts?.scoreFn ?? scoreOf;
     // Locked units override the blocked list (an explicit lock wins over a
     // don't-own exclusion), but a unit already used by another team (exclude)
     // can't be locked again. Dedupe + drop unknowns.
@@ -377,11 +539,11 @@ export function makeCalc(input: TeamCalcInput) {
       (s, i, a) => chars[s] && !exclude.has(s) && a.indexOf(s) === i,
     );
     const pool = buildPool(exclude);
-    const seed = seedTeam(pool, mustInclude);
+    const seed = seedTeam(pool, mustInclude, opts?.seedTarget);
     if (!isLegal(seed, chars)) return null; // e.g. everything useful blocked
     const locked = new Set(mustInclude);
-    let best = refine(seed, pool, locked);
-    let bestScore = scoreOf(best);
+    let best = refine(seed, pool, locked, score);
+    let bestScore = score(best);
     // full-team match: evaluate the popular ranker comps directly so a real meta
     // team can win on score even if the local search never assembled it.
     if (meta) {
@@ -394,7 +556,7 @@ export function makeCalc(input: TeamCalcInput) {
         )
           continue;
         const r = toResult(simTeam(comp));
-        const sc = scoreOf(r);
+        const sc = score(r);
         if (sc > bestScore) {
           best = r;
           bestScore = sc;
@@ -412,10 +574,20 @@ export function makeCalc(input: TeamCalcInput) {
      * require generic "must-use" units somewhere (`mustUse`, spread across teams
      * by assignMustUse). Units reserved for a later team are excluded from the
      * earlier teams' pools so team 1 can't consume a unit team 3 pinned.
+     *
+     * `spreadTargets` (solo roster generator, needs `prydwenScore` on the input):
+     * a soft prydwen meta-sum target per team slot. Team i's seed + local search
+     * bias toward `spreadTargets[i]` so the roster slopes gently downward (e.g.
+     * 19/18/17/17/15) instead of stacking. Soft — damage, legality and pinned
+     * locks outrank the target. Omit → unchanged greedy (no shaping).
      */
     topTeams: (
       n: number,
-      opts?: { pinnedByTeam?: string[][]; mustUse?: string[] },
+      opts?: {
+        pinnedByTeam?: string[][];
+        mustUse?: string[];
+        spreadTargets?: number[];
+      },
     ): TeamResult[] => {
       const pinned = opts?.pinnedByTeam ?? [];
       const assigned = assignMustUse(opts?.mustUse ?? [], pinned, chars, n);
@@ -423,13 +595,26 @@ export function makeCalc(input: TeamCalcInput) {
         ...(pinned[i] ?? []),
         ...assigned.assigned[i],
       ]);
+      const targets = opts?.spreadTargets;
       const used = new Set<string>();
       const out: TeamResult[] = [];
       for (let i = 0; i < n; i++) {
         const exclude = new Set(used);
         for (let j = i + 1; j < n; j++)
           for (const s of reserved[j]) exclude.add(s);
-        const t = bestTeam({ exclude, mustInclude: reserved[i] });
+        const target = targets?.[i];
+        const shaped = target !== undefined && prydwenScore;
+        const scoreFn = shaped
+          ? (r: { teamDamage: number; units: { slug: string }[] }) =>
+              scoreOf(r) *
+              closeness(teamMetaSum(r.units.map((u) => u.slug)), target)
+          : undefined;
+        const t = bestTeam({
+          exclude,
+          mustInclude: reserved[i],
+          scoreFn,
+          seedTarget: shaped ? target : undefined,
+        });
         if (!t) break;
         out.push(t);
         t.slugs.forEach((s) => used.add(s));

@@ -41,8 +41,8 @@ lives. Newest first within each section.
   promoting the stat to a per-source list — no true-flavored rider exists, so nothing is mis-modeled
   by it today. Consequence: the two encodings are NOT interchangeable — swapping one for the other
   silently changes gauge economy. → open-questions **U28**; A32 (U13); live flag `docs/STATE.md` §1.
-  *(Corrected 2026-07-22, same session as authoring: the first draft called both residuals "inert
-  today", which was true only of (b) and would have caused a reader to under-prioritise (a).)*
+  _(Corrected 2026-07-22, same session as authoring: the first draft called both residuals "inert
+  today", which was true only of (b) and would have caused a reader to under-prioritise (a).)_
 
 - **(2026-07-22) ACCURACY-CIRCLE GEOMETRY — the four open rulings RESOLVED; workstreams A + B RETIRED as
   superseded-by-the-cone, C is the only live thread.** The `docs/data/sg-calc/IMPLEMENTATION-PLAN.md` open
@@ -103,19 +103,19 @@ lives. Newest first within each section.
   B3 5.283 · FB 5.650. Five coupled corrections reproduce it to ~0.1s at every stage:
   (1) **`FIGHT_DELAY_FRAMES` 1s → ~8f (0.133s)** — the first bullet is at 0.133s, not 1s; the 1s was a timer-framing
   confound (SUPERSEDES the entry below). (2) **`SR_BOLT_START_FRAMES` → 0 (BOLTSTART off)** — the data fits 22f-at-END
-  + the 8f startup (shot1 at ~67f), NOT an 11f pre-charge split (that entry SUPERSEDED). (3) **`PREB1GAP` 30f
-  (default on)** — a 30f delay between gauge-full and B1 (`gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB`).
-  (4) **`FB_PRE_DELAY_FRAMES` 22f (PREFB default on)** — the FB countdown starts 22f AFTER the B3 cast (the
-  mechanistic reason instant burst-cast attacks miss +50%; implemented by deferring `emitFbEnter`). (5) **`POST_FB_
-  CHAIN_DELAY_FRAMES` 180 → 150** — the measured 3s FB-end→B1 grace already INCLUDED the now-separately-modeled
-  30f-pre-B1 (double-counted); removing the 30f gives 150f. **The over-generation bug was Helm's**: `skill1
-  fillGauge 14.31` DUPLICATED her gauge-table `flatPerTrigger 1431` (both = her S2 per-shot gen) → Helm read 34.22/
-  shot not the true base(5.60)+skill(14.31)=19.91; removing the override fillGauge fixed it (SMG stays 0.2, the
-  ×2-boss column — CORRECT). **Full-board A/B:** all graded FB counts hold (11/12 exact; run-E reads 10 vs measured
-  11-12, a ±1 cycle-boundary UNDER-count paired with N3's opposite-side over-count — accepted as boundary noise,
-  measured truth kept in the assert comment); board ±3% 6→7 (tail slightly worse); snapshot regenerated; verify.sh
-  green. Each knob has an env A/B-revert. Trail: `sim.ts` FIGHTDELAY/BOLTSTART/PREB1GAP/PREFB/POSTFB comments,
-  `helm.json`, open-questions U16.
+  - the 8f startup (shot1 at ~67f), NOT an 11f pre-charge split (that entry SUPERSEDED). (3) **`PREB1GAP` 30f
+    (default on)** — a 30f delay between gauge-full and B1 (`gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB`).
+    (4) **`FB_PRE_DELAY_FRAMES` 22f (PREFB default on)** — the FB countdown starts 22f AFTER the B3 cast (the
+    mechanistic reason instant burst-cast attacks miss +50%; implemented by deferring `emitFbEnter`). (5) **`POST_FB_
+CHAIN_DELAY_FRAMES` 180 → 150** — the measured 3s FB-end→B1 grace already INCLUDED the now-separately-modeled
+    30f-pre-B1 (double-counted); removing the 30f gives 150f. **The over-generation bug was Helm's**: `skill1
+fillGauge 14.31` DUPLICATED her gauge-table `flatPerTrigger 1431` (both = her S2 per-shot gen) → Helm read 34.22/
+    shot not the true base(5.60)+skill(14.31)=19.91; removing the override fillGauge fixed it (SMG stays 0.2, the
+    ×2-boss column — CORRECT). **Full-board A/B:** all graded FB counts hold (11/12 exact; run-E reads 10 vs measured
+    11-12, a ±1 cycle-boundary UNDER-count paired with N3's opposite-side over-count — accepted as boundary noise,
+    measured truth kept in the assert comment); board ±3% 6→7 (tail slightly worse); snapshot regenerated; verify.sh
+    green. Each knob has an env A/B-revert. Trail: `sim.ts` FIGHTDELAY/BOLTSTART/PREB1GAP/PREFB/POSTFB comments,
+    `helm.json`, open-questions U16.
 
 - **(2026-07-21) ~~FIGHT-START DELAY (1s) + SR BOLT-RECOVERY SPLIT (11f/11f)~~ — SUPERSEDED 2026-07-21 by the coherent
   rotation model above (owner frame-perfect data, ≥ same tier).** The 1s fight-delay was a timer-framing confound
@@ -128,7 +128,7 @@ lives. Newest first within each section.
   GUARANTEES clean alternation — "earliest-ready" is always the longest-waiting unit, a natural round-robin —
   whereas strict-leftmost let the leftmost slot MONOPOLIZE (a 40s B3 that fits the window every cycle casts all
   of them; the equal-CD unit beside it never bursts). This is the correct resolution of the U16
-  sakura-bloom-in-summer over-allocation *family* at the selection layer (the `STAGE_WINDOW` 600→120 fix, same
+  sakura-bloom-in-summer over-allocation _family_ at the selection layer (the `STAGE_WINDOW` 600→120 fix, same
   date, already resolved the graded cases by removing the false contention; first-ready generalizes it).
   **GRADED-BOARD-NEUTRAL:** regression byte-identical, board-read ratios unchanged to 3 decimals — at the ~2s
   window with current game CDR the two rules coincide on every graded comp. It moves only UNGRADED comps, and
@@ -151,7 +151,7 @@ lives. Newest first within each section.
   and waits — so with two alternating 40s-CD B3s (sakura-bloom-in-summer slot 3 / cinderella slot 4) it
   double-casts the leftmost (sakura-bloom-in-summer 6/4 vs the footage's burst-color-verified 5/5); the same
   applies at stage 2 for a slow leftmost B2. This is NOT a genuine tiebreak — with a realistic window the
-  earlier-ready unit is the *unique* candidate (supersedes the "leftmost-tiebreak Burst-III selection" framing
+  earlier-ready unit is the _unique_ candidate (supersedes the "leftmost-tiebreak Burst-III selection" framing
   the prior 2026-07-21 in-FB-CDR entry pointed to for U16). **Corrected to 120f (2s).** The window is the auto's
   wait-tolerance for a not-yet-ready stage-filler — a SEPARATE quantity from the inter-stage cast gap
   (`STAGE_CAST_GAP` = 30f/0.5s), which is MEASURED-CORRECT and unchanged: auto cast timing is B1→B2 / B2→B3 ≈
@@ -167,7 +167,7 @@ lives. Newest first within each section.
   Rotation moves TOWARD measured wherever it moves: sakura-bloom-in-summer 6/4→5/5, N2 8→10 (real ≥10), PE
   10→11 (real 11-12); PH stays 13 (its separate open burst-cycle over-by-1, untouched). Blast radius (40-team
   random battery, @600 vs @120): one UNGRADED team (moran/arcana/eve/soda-twinkling-bunny/modernia) drops 6→5
-  FBs — ROBUST across 120–450f, via a stage-2 expiry on its single 40s-CD B2 (arcana) — a *correction* of the
+  FBs — ROBUST across 120–450f, via a stage-2 expiry on its single 40s-CD B2 (arcana) — a _correction_ of the
   same long-window over-generation, not a regression; no graded comp affected. Evidence: owner mechanic +
   measured-FB calibration; Fable pre-op **APPROVE-WITH-REVISIONS** (all 5 revisions cleared: plateau swept,
   90-rejection rests on pinned-comp bimodality, confounded units ledgered, open-questions filed, blast-radius
@@ -444,11 +444,11 @@ lives. Newest first within each section.
     on the 15s CD — NOT a DoT (her only "45 sec" values are S1's three Marked-Target BUFFs: crit rate /
     crit dmg / ATK, gated on burst). The override had modeled it as a `dot intervalSec:14.7` device (each
     "tick" = one activation). Re-encoded faithfully as `passive flatDamage 170.58` (t=0 battle-start hit)
-    + `interval:15 flatDamage 170.58` (recurrences t=15…165) = 12 hits/180s. **Behavior-identical** (solo
-    A/B byte-for-byte at crit-off: 2.4610M, 12 hits, same per-hit), just correctly labeled as a CD-gated
-    single hit. Note the first-fire phase is load-bearing for the count: `interval:15` alone (first at
-    t=15) gives 11 (the 12th lands at t=180.000, the excluded final frame); the t=0 battle-start hit is
-    what reproduces the measured 12. MODEL_ONLY.
+    - `interval:15 flatDamage 170.58` (recurrences t=15…165) = 12 hits/180s. **Behavior-identical** (solo
+      A/B byte-for-byte at crit-off: 2.4610M, 12 hits, same per-hit), just correctly labeled as a CD-gated
+      single hit. Note the first-fire phase is load-bearing for the count: `interval:15` alone (first at
+      t=15) gives 11 (the 12th lands at t=180.000, the excluded final frame); the t=0 battle-start hit is
+      what reproduces the measured 12. MODEL_ONLY.
   - **No change:** `snow-white` (already `interval:15`), `prika` (CD 0), `liter` (heal, damage-inert),
     `takina` (continuous `passive` buffs, no lapse).
   - **`rosanna-chic-ocean` — LANDED (owner ruled the 30s CD is real).** S2 sustained DoT was ONE
@@ -475,7 +475,7 @@ lives. Newest first within each section.
   materializes only for its one shot. The old `weaponSwap` model halted her AR for the whole charge
   (~5s × 6 bursts ≈ 30s of lost fire — her main residual COLD driver). Re-encoded as a single delayed
   full-charge `flatDamage` `{atkPct 499.5, charge, chargeMultPct 1000 (×10), core, pierce, rangeOk,
-  delaySec 5.5}`, so the AR fires continuously. **New engine primitive (opt-in, default-off):** a
+delaySec 5.5}`, so the AR fires continuously. **New engine primitive (opt-in, default-off):** a
   `flatDamage` hit may carry `charge`/`chargeMultPct`/`pierce`/`rangeOk`, threaded through the
   `pendingHits` landing path (+ a `dealDamage` `chargeMultPct` override) — every existing `delaySec`
   user (`rapi-red-hood`'s missile) is byte-identical (regression green). A/B (isolated at ae68b90,
@@ -603,7 +603,7 @@ lives. Newest first within each section.
   SMG mid-HR cone; SG/AR need aggressive shrink for their high-HR saturation cells while **no board SMG
   unit reaches high HR** (so its low s is "no saturation regime," not a free knob). The extra param is
   evidence-forced, not overfit. **Evidence:** the geometry campaign (`docs/handoffs/2026-07-19-geometry-
-  campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-freeze-prereg.md`, APPROVED
+campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-freeze-prereg.md`, APPROVED
   round 2), and the full-board A/B — CONE_DELTA=1 vs 0 net board mean|ratio−1| **0.0972→0.0964**, AR/SMG
   at-range over-credit cooled (guillotine-winter-slayer −0.077, grave −0.064), no unit regresses,
   rotation/full-burst counts byte-identical. SG ▲98 saturation (0.99) is independently corroborated by
@@ -637,7 +637,7 @@ lives. Newest first within each section.
   back-derived core rate. **This supersedes the audit-kit judge's 2026-07-17 call** that consolidation
   `coreRate 0.9` should outrank the HR slope (that call predates this ruling; the 0.9 is itself a
   back-derivation). **Falsifiable, not permanent** ("until proven otherwise"): an overturn needs a
-  *direct in-game measurement of the mechanic* that contradicts the geometry (per the scientific-method
+  _direct in-game measurement of the mechanic_ that contradicts the geometry (per the scientific-method
   gate), NOT a board-fit residual or another damage-calc back-derivation. Consistent with the
   faithful>fit / accuracy-to-observed-mechanics invariant — this promotes a directly-measured mechanic
   model over a fit, and is not a license to fudge. Cross-session pointer: memory `accuracy-geometry-is-ground-truth`.
@@ -646,7 +646,7 @@ lives. Newest first within each section.
   The engine gains a per-DoT `crit:true` opt-in (`types.ts` dot effect + `Dot.crit`; the dot-tick
   dealDamage falls back to the still-default-OFF global `DOT_CRIT` gate when the field is unset, so all
   other DoTs are byte-identical). A **universal DOT_CRIT default-on was measured-REFUTED**: a board sweep
-  (DOTCRIT off→on) is a wash (±3% MAD count 8→8) and it *breaks* units whose DoTs are validated non-crit
+  (DOTCRIT off→on) is a wash (±3% MAD count 8→8) and it _breaks_ units whose DoTs are validated non-crit
   — jill's acid tick is video-confirmed at 99.7% NON-crit, mihara-bonding-chain's Ensnaring is validated
   at 1.03 non-crit, little-mermaid's FB dot/barrage carry no crit evidence (and go hot under the flip).
   The two other units theme 12 cited don't support it either: neon-vision-eye is +8% HOT and has no
@@ -671,15 +671,15 @@ lives. Newest first within each section.
   self "Max HP ▲6.34% ×10 stacks, every 6 full charges" (previously omitted as "unsupportable") is the
   ONE offensively-live grant: self-granted (casterIdx===self) so it feeds her own S2 burst `atkOfMaxHpPct`
   3.2% conversion. Modeled as `targetMaxHpPct` 6.34 on self, hitCount 6, maxStacks 10, 15s. Effect is small
-  + correct-direction: her N6 Wind comp **0.76 → 0.85** (partial close of her documented under-model, NOT a
-  full fix — her burst's separate dropped "10% of Max HP per MP" portion is UNCHANGED, still ATK-only, open).
-  Snapshot updated maiden-N6 only (+11.6% her total; understood, single-unit). **anis-star** (hasB1 burst
-  15.02% all-allies), **trina** (S2 44.98% Electric-AR allies passive + burst 20.14% all-allies), **blanc**
-  (burst 31.68% lowest-HP ally, own-% basis) — all ally-facing, modeled for kit-SSOT completeness, INERT.
-  **rouge** already carried casterMaxHpPct grants. **moran**'s Perseverance Max-HP lines are HP<20%-gated
-  (theme 18 — never fire on the immortal boss), intentionally left as skips. All values kit-measured, no
-  fudge. Engine: sim.ts `resolveTargets` (alliesLowestHp), apply-loop per-target `targetMaxHpPct` conversion;
-  validator + web STAT_LABELS/targetLabel updated. Full inventory: engine-modeling-gaps.md theme 13.
+  - correct-direction: her N6 Wind comp **0.76 → 0.85** (partial close of her documented under-model, NOT a
+    full fix — her burst's separate dropped "10% of Max HP per MP" portion is UNCHANGED, still ATK-only, open).
+    Snapshot updated maiden-N6 only (+11.6% her total; understood, single-unit). **anis-star** (hasB1 burst
+    15.02% all-allies), **trina** (S2 44.98% Electric-AR allies passive + burst 20.14% all-allies), **blanc**
+    (burst 31.68% lowest-HP ally, own-% basis) — all ally-facing, modeled for kit-SSOT completeness, INERT.
+    **rouge** already carried casterMaxHpPct grants. **moran**'s Perseverance Max-HP lines are HP<20%-gated
+    (theme 18 — never fire on the immortal boss), intentionally left as skips. All values kit-measured, no
+    fudge. Engine: sim.ts `resolveTargets` (alliesLowestHp), apply-loop per-target `targetMaxHpPct` conversion;
+    validator + web STAT_LABELS/targetLabel updated. Full inventory: engine-modeling-gaps.md theme 13.
 
 - **(2026-07-17) Own-burst-gated Full-Burst trigger (`ownBurstGate: 'cast' | 'notCast'`) — LANDED,
   ENACTED on cinderella-crystal-wave (faithful; net board improvement).** Kits that read "Activates
@@ -736,7 +736,7 @@ lives. Newest first within each section.
   `hasPierce || pierceUntilFrame > frame || opts.pierceActive`. **MECHANISM (owner-confirmed 2026-07-17):**
   Pierce Damage ▲ is a real **Damage-Up-bucket** entry (see damage-calculation.md) that applies to ANY
   pierce-damage-type unit — static or during a timed window — and **DOES apply on the partless scope-lock
-  boss.** Only the *separate* pierce **core+body double-hit** is multipart-only (`PIERCE_CORE_DOUBLE=false`);
+  boss.** Only the _separate_ pierce **core+body double-hit** is multipart-only (`PIERCE_CORE_DOUBLE=false`);
   do not conflate the two. **grave is the flagship opt-in and is ENABLED:** burst → self `gainPierce` 10s, so
   during her Prediction window her Pierce Damage ▲ lands (self pierceDamagePct 52.8 + team 39.98 = +92.78
   Damage Up; S1's 48.4 `excludeSelf`'d so it does not double-count — Heat Emission is OFF during Prediction,
@@ -753,9 +753,9 @@ lives. Newest first within each section.
 
 - **(2026-07-17) `bossElementGate` block gate — element-coded triggered lines now compose with any
   trigger (theme 10 / engine-modeling-gaps fix #6).** The schema previously had only a `bossElement`
-  TRIGGER (a *permanent* element-gated passive) — it could not express "when entering Full Burst / after
+  TRIGGER (a _permanent_ element-gated passive) — it could not express "when entering Full Burst / after
   N hits / on burst cast **against a [element]-Code boss**." Added a block-level gate `bossElementGate:
-  <element>` evaluated in sim.ts `applyBlock` next to fbGate/swapGate: the block fires on its real
+<element>` evaluated in sim.ts `applyBlock` next to fbGate/swapGate: the block fires on its real
   trigger only when `cfg.bossElement` matches. Inert vs any non-matching boss (incl. the neutral
   scope-lock boss), so it never disturbs graded comps. **Opted in per verified characters.json prose:**
   helm-aquamarine burst "when attacking an Electric Code target → +164.83% additional damage" (a second
@@ -825,8 +825,8 @@ lives. Newest first within each section.
     from the comp recording (bloom/occlusion/overlap; the recon hit the same wall). Needs an isolated
     moran-solo recording or the swap weapon's `shot_count` datamine. A textbook premise-gate catch: an
     unlabeled datamine integer, reused second-hand as a "fact," refuted by the board and then measurement.
-  Regression snapshot updated (nayuta T5 +36.4%, understood); verify.sh green. Trail:
-  `docs/engine-modeling-gaps.md` theme 7 / fix #5.
+    Regression snapshot updated (nayuta T5 +36.4%, understood); verify.sh green. Trail:
+    `docs/engine-modeling-gaps.md` theme 7 / fix #5.
 
 - **(2026-07-17) d-killer-wife's Wipe-Out PARTS branch (all-ally `coreDamagePct 16.26`) removed as
   SKIPPED-CONDITIONAL — it was a live HOT over-credit on the partless v1 boss (theme 6, engine-modeling-gaps).**
@@ -932,9 +932,9 @@ lives. Newest first within each section.
     ~1.58× tighter (~37% less MC noise), ~14s board — helps most on the FB-bimodal comps. DONE: board-read
     prints a `seedSD` column (mean per-comp sd/mean; ⚠ ≥2%) via `BoardReading.seedCv` + `BoardStats.meanCv`,
     flagging high-variance comps (soda-twinkling-bunny ±3.1%, mast-romantic-maid ±2.3%) that need multi-run reals.
-  Effect on the board (25-seed vs old EV): small shifts from crit/core Bernoulli + boss-timing + SG-jitter
-  sampling (dorothy 1.023→0.997, naga 1.026→0.975, chisato 0.992→0.977). verify.sh green (EV path byte-identical).
-  NOT committed.
+    Effect on the board (25-seed vs old EV): small shifts from crit/core Bernoulli + boss-timing + SG-jitter
+    sampling (dorothy 1.023→0.997, naga 1.026→0.975, chisato 0.992→0.977). verify.sh green (EV path byte-identical).
+    NOT committed.
   - This is a MODELING RULING, not a fit to close a residual — per-unit far/near deficits (U17) are accepted,
     not fudged. open-questions U17 header carries the CLOSED — OWNER OVERRIDE note.
 
@@ -965,9 +965,9 @@ lives. Newest first within each section.
     1254 → 3009.6 + self AD 31.68. All blocks DBG-confirmed firing.
   - **miranda — CONFIRMED already correct**: her override (built from the 2026-07-13 owner screenshot)
     matches the newly-synced treasure prose line-for-line; documentation-only note. Unowned/model-only.
-  Basis: the owner's ruling that blablalink/DB prose is the objective SSOT still holds — the SSOT source
-  itself was corrected with the treasure data, so restoring the higher values is not re-litigating the
-  Wave-6 entry, it is the SSOT being made complete. Nothing committed/pushed (standing rule).
+    Basis: the owner's ruling that blablalink/DB prose is the objective SSOT still holds — the SSOT source
+    itself was corrected with the treasure data, so restoring the higher values is not re-litigating the
+    Wave-6 entry, it is the SSOT being made complete. Nothing committed/pushed (standing rule).
 
 - **(2026-07-16) Soda & Cinderella: Crystal Wave re-tuned against recordings — the kit-parse blind parser
   out-predicted both trusted hand-tunes (Use-B discrepancy detector working), and the fixes are adopted.**
@@ -984,7 +984,7 @@ lives. Newest first within each section.
     trace inference; the new evidence is exact popup arithmetic on a focused recording (strictly higher tier).
     0.887 is an honest MISS vs the pre-registered [0.90,1.05], NOT fit to 1.0 — the datamine-max fit
     (crit 50 → ~0.955) was rejected as trace-contradicted (the pool demonstrably drains); residual = SG spray
-    + a separate rotation over-generation bug (6 sim bursts vs 5 real, open-questions).
+    - a separate rotation over-generation bug (6 sim bursts vs 5 real, open-questions).
   - **Cinderella: Crystal Wave — core-strike rider restored, ~0.87 → 0.99/1.02 vs real** (T5/T8). Her FB-enter
     proc text = "Deals X% … as CORE STRIKE damage" and "activates when entering Full Burst"; the prior HT set
     `trigger:burstCast` (fires PRE-FB → loses the +50%) AND dropped `core:true`. Restored to text-faithful
@@ -1059,11 +1059,11 @@ lives. Newest first within each section.
   only by "never remove an override-backed unit"; the owner chose to stop serving/supporting them (site clutter,
   no further dev). Mechanism: their overrides moved to `src/skills/overrides-legacy/` (historical record — NOT
   loaded; the sync prune only protects `src/skills/overrides/`), and they were deleted from `data/characters.json`
-  + the 5 graded comps that used them (PC, PD, N4, N8, N10) in `experiment.ts` + `regression.ts`. **Cost paid:
-  24/146 comp-rows (~16% of the validation board).** Collateral meta units mostly survive via other comps;
-  snow-white also has control-group recordings; laplace/eve/arcana may lose their only main-board anchor (check
-  control recordings if they need grading). Do NOT restore these units without owner say-so. (NB `dorothy-serendipity`,
-  the SG attacker, is a DIFFERENT unit and is KEPT.) — owner ruling; see `src/skills/overrides-legacy/README.md`.
+  - the 5 graded comps that used them (PC, PD, N4, N8, N10) in `experiment.ts` + `regression.ts`. **Cost paid:
+    24/146 comp-rows (~16% of the validation board).** Collateral meta units mostly survive via other comps;
+    snow-white also has control-group recordings; laplace/eve/arcana may lose their only main-board anchor (check
+    control recordings if they need grading). Do NOT restore these units without owner say-so. (NB `dorothy-serendipity`,
+    the SG attacker, is a DIFFERENT unit and is KEPT.) — owner ruling; see `src/skills/overrides-legacy/README.md`.
 - **(2026-07-14) Supported roster = the enikk top-100 audit list, plus every hand-tuned override
   we already have** — the units the sim supports are defined by the `/enikk-audit` method (the
   deduped team compositions of the top 100 rankers across the tracked solo raids; see
@@ -1083,9 +1083,9 @@ lives. Newest first within each section.
 - **(2026-07-14) The DPS-chart matrix defines a standardized 72-cell comparison grid** —
   4 control frameworks × 2 elements (neutral / tested-unit-weak) × 3 core-exposure rates
   (0 / 50 / 100%, the engine applies the 0.85 auto floor on top) × 3 investment tiers
-  (scope-lock / 8-of-12 / 12-of-12 overload lines). Frameworks: *Standard* = Little Mermaid
-  (Burst 1) + Crown + Helm + tested carry (four units, no Mast); *Hyper Carry* adds Mast:
-  Romantic Maid (Burst 2) as a fifth unit that bursts in sync with the tested carry; *Anis*
+  (scope-lock / 8-of-12 / 12-of-12 overload lines). Frameworks: _Standard_ = Little Mermaid
+  (Burst 1) + Crown + Helm + tested carry (four units, no Mast); _Hyper Carry_ adds Mast:
+  Romantic Maid (Burst 2) as a fifth unit that bursts in sync with the tested carry; _Anis_
   variants swap Anis: Star in for Little Mermaid. The tested carry sits leftmost and Helm
   anchors the second Burst 3; **the two alternate the Burst-3 cast** (Burst-3 cooldown ≈ two
   full-burst cycles), so the tested carry bursts ~7 of ~13 full bursts and Helm the rest — it
@@ -1213,8 +1213,8 @@ lives. Newest first within each section.
   `scripts/battery/boss-def.ts` sweeps DEF and confirms the board only shifts materially above
   ~2000–5000, which is ruled out. Setting `bossDef` to 140 is "more correct" but changes every
   snapshot by <0.2% (below noise) and is deferred to the owner. — ginmy def test + our popup bounds
-  + boss-def battery; engine DEF placement (baseAtk subtraction) confirmed correct by ginmy
-  atkbuff/atkdamagebuff tests (+ATK inside the paren, charge & skill mult outside).
+  - boss-def battery; engine DEF placement (baseAtk subtraction) confirmed correct by ginmy
+    atkbuff/atkdamagebuff tests (+ATK inside the paren, charge & skill mult outside).
 - **(2026-07-13) Generation is LOCKED during Full Burst.** An in-FB-generation interpretation was
   briefly adopted from bar-anatomy curves and corrected by the owner the same day: the fast post-FB
   refill is charge units releasing held full charges right after the boundary + normal team rates.
@@ -1287,6 +1287,46 @@ lives. Newest first within each section.
 
 ## Engine/data-architecture decisions
 
+- **(2026-07-22) Roster generators — curated "always-combo" meta supports (Solo & Union) + a prydwen
+  meta-score SOFT SPREAD (Solo only) (owner ruling).** Two independent additions to the web generators,
+  both applied to EVERY generation with no toggle, both gated behind OPTIONAL params so CLI/battery
+  callers (which pass neither combos nor a `prydwenScore`) stay byte-unchanged.
+  **(1) Always-combos** — `src/teamcalc.ts` gains a declarative `AlwaysCombos` spec (`pairs` / `oneOf` /
+  `singles`) and `assignAlwaysCombos`, which folds a curated set of meta supports onto the teams. Same-team
+  groups (pairs + a resolved oneOf) are PINNED together to one team; singles are spread across teams (folded
+  into the existing `assignMustUse`). Merge precedence: user explicit pins > always-combos > user generic
+  include-box. **SOLO** (`SOLO_ALWAYS_COMBOS`, 5 teams): pairs `mint+prika` and `Mast: Romantic Maid +
+Anchor: Innocent Maid`; oneOf `crown + (helm | naga)` — preference-ordered, helm first (also the
+  higher-meta partner); singles `moran, anis: star, liter, little mermaid, nayuta, privaty`; plus a
+  conditional enforced post-hoc in `runTopTeams` — if crown ends up paired with naga (not helm) and helm is
+  still free, helm is forced onto another team. **UNION** (`UNION_ALWAYS_COMBOS`, 3 teams — a relaxed set):
+  oneOf `crown + (helm | naga)` (the "crown + healer" combo; the UR healers are helm and naga); singles
+  `anis: star, little mermaid, Mast: Romantic Maid` (Mast is a FREE single here — may pair with any B2, NOT
+  forced to Anchor: Innocent Maid as in Solo); plus a mint→prika OUTPUT invariant enforced post-hoc in
+  `runUnionTopTeams` — if mint is fielded at all, prika must be on her team (mint+prika is NOT required as a
+  whole, unlike Solo; if prika is unavailable or already on another team it relaxes).
+  **(2) Silent relax (both sets).** A combo whose required unit is UNAVAILABLE to the search — blocked,
+  excluded, not owned in a synced roster, or not modeled — is SILENTLY dropped: no warning, no UI. A oneOf
+  with no available partner drops; user pins that split a same-team group drop it. Generation always
+  completes. (`assignAlwaysCombos` returns a diagnostic `dropped` list that is never surfaced to the user.)
+  **(3) Solo prydwen meta-score SOFT SPREAD** (Solo only; UR ranking is unchanged). A NEW element-agnostic
+  per-unit score `prydwenScoreOf` read from `data/bossing-tiers.json` — **SSS=5 / SS=4 / S=3 / A=2 / B=1 /
+  ≤C=0** — is used ONLY to SEED a gently downward-sloped spread of team meta scores. This is a SECOND,
+  DISTINCT use of the same tier file: the 2026-07-15 ruling uses it as a _popularity prior INSIDE the ranking
+  score_ (SSS→1.0…F→0, fallback for too-new units); this one uses it as a _spread seed OUTSIDE the score_.
+  A team's meta = sum of its 5 prydwen scores. The 5 sloped targets are auto-derived from the pool: M = (sum
+  of the top-25 available units' prydwen scores) ÷ 5 — i.e. the average per-team meta sum if the top 25 were
+  dealt evenly across the 5 teams — and the targets are `[M+2, M+1, M, M, M−2]` (the ~19/18/17/17/15 "1–2
+  top, 2 mid, 1 under" shape). Each team's seed + local search bias toward its target via a Gaussian
+  closeness factor (σ=3) multiplied onto the score during that team's search only. The bias is SOFT — the
+  damage×enikk ranking formula (`scoreOf`) is unchanged, and damage, legality and pinned locks all still
+  outrank the target (a big damage gap wins over closeness). Inert when no `prydwenScore` is supplied.
+  **(4) Legibility.** `rosterView` shows a small per-team **◆N** badge (the team's prydwen meta sum) beside
+  the team damage so the solo slope is visible/verifiable. — `src/teamcalc.ts` (`prydwenScore` input,
+  `AlwaysCombos`/`assignAlwaysCombos`, `topTeams` `spreadTargets` seeding); `web/src/App.tsx`
+  (`prydwenScoreOf`, `SOLO_ALWAYS_COMBOS`/`UNION_ALWAYS_COMBOS`, `runTopTeams`/`runUnionTopTeams` wiring
+  incl. conditional-helm + mint→prika, `rosterView` badge); `web/src/styles.css` (`.rg-meta`).
+
 - **(2026-07-21) Documentation architecture — split changelog from current-state; add `docs/STATE.md`;
   two-class doc hygiene (owner-approved).** DECISIONS.md had grown to 1,659 lines and was doing two jobs
   with opposite hygiene needs: the append-only WHY-trail (changelog) AND the slot-1 authority for "what
@@ -1302,7 +1342,7 @@ lives. Newest first within each section.
   doc hygiene** (CONVENTIONS.md → Doc hygiene): CHANGELOG class = append-only, SUPERSEDED-in-place, never
   delete (DECISIONS, open-questions ANSWERED, probe-runs, patch-notes, sources.json, closed/ archives);
   CURRENT-STATE class = freely rewritten, stale content DELETED with a capture-first rule (STATE.md,
-  data/*.md, CONVENTIONS, modeling-priors, engine-modeling-gaps, CLAUDE.md, open handoffs, open-questions
+  data/\*.md, CONVENTIONS, modeling-priors, engine-modeling-gaps, CLAUDE.md, open handoffs, open-questions
   UNANSWERED, backlogs). The never-silently-delete rule now scopes to CHANGELOG class only. (3) **Hard
   purge** of the current-state surfaces: CLAUDE.md 446→305 lines (NEXT INCREMENT ~245→~65, pointer-style,
   removed a stale coherent-first-burst parenthetical — "~8f fight-start / gauge-full→30f→B1 / POST_FB
@@ -1328,7 +1368,7 @@ lives. Newest first within each section.
   in that ranking). Share links carry the filter (`ele` URL param) and share-image titles get an
   "· <Element> only" suffix so the exported chart is self-describing. Implementation note: the
   balanced-wrap pill grid moved out of the sim app into a shared component (`web/src/components/
-  PillGrid.tsx`) so other pages can use it without a circular import.
+PillGrid.tsx`) so other pages can use it without a circular import.
 - **(2026-07-15) Pellet-consolidation mode — a config-driven range-gated firing state (dorothy-S; STEP 2 of
   the sequenced SG fix).** New generic engine mechanic: a `ConsolidationConfig` on the override
   (`triggerLandedPellets`/`shots`/`coreRate`/`pelletFraction`/`attackDamagePct`/`pierce`) → after N
@@ -1368,7 +1408,7 @@ lives. Newest first within each section.
   method harness.
 - **(2026-07-15) SG core rate near 0.072 → 0.048 (counter-rederived; the popup-ratio value was ~1.5× inflated).**
   Follow-up to the landing fix above (Fable's catch, now resolved). The old SG core rate was `red-core-popups /
-  visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–10), so the ratio's denominator
+visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–10), so the ratio's denominator
   was too small → inflated. Re-derived popup-count-free as **cores-per-shot / TRUE-pellets-per-shot** (true
   pellets from the noir landing): near 0.435 cores/shot ÷ ~9 = **~0.048** (was 0.072); midfar ~0.003 (was
   0.0045, immaterial); mid/far stay 0 (zero numerator — the denominator fix can't change zero). Damage-arithmetic
@@ -1421,8 +1461,8 @@ lives. Newest first within each section.
   phase step) that JUMPS to the next checkpoint (5/10/15) with XP reset and the toolbox spent —
   otherwise the EXP is added (R doll 1000 EXP/level, SR doll 3000). Dolls are R or SR, phases 0–15;
   a maxed R15 doll upgrades to SR5 but still CONSUMES an SR doll (so laundering only saves the SR
-  0→5 grind). **OBJECTIVE ruling:** "best method" is a resource-balancing problem — *level the most
-  SR dolls 0→15 per kit-box*, NOT minimize per-doll EXP (which wrongly hoards). Kit usage-weights
+  0→5 grind). **OBJECTIVE ruling:** "best method" is a resource-balancing problem — _level the most
+  SR dolls 0→15 per kit-box_, NOT minimize per-doll EXP (which wrongly hoards). Kit usage-weights
   are the SHADOW PRICES that make the optimal policy consume kits in the box's supply ratio, derived
   from the owner's drop rates (the all-tiers box only: 70% 5R / 20% 2SR / 10% 2SSR → 3.5 / 0.4 / 0.2
   kits per box; the R-only box excluded per the owner's observed year of drops). **Method:** since a
@@ -1469,9 +1509,8 @@ lives. Newest first within each section.
   **RULING — `smart` phase-1 locking is the default, an ENGINE-TESTED optimum.** "Should you lock a
   line before the others land?" was resolved by making the policy configurable and simulating
   (`monteCarloBuild` sweep over greedy / lazy / lazyRare / smart): for a from-scratch **12/12**
-  build, holding a lock on a *low* Line 1 through the grind for Lines 2 & 3 wastes modules —
-  lock-everything-greedily ≈ 635 modules, leaving a low Line 1 unlocked ≈ 584, never-lock-Line-1 ≈
-  557. For **8/12** it is a wash (greedy 272 ≈ smart 263). But "never lock Line 1" is wrong when
+  build, holding a lock on a _low_ Line 1 through the grind for Lines 2 & 3 wastes modules —
+  lock-everything-greedily ≈ 635 modules, leaving a low Line 1 unlocked ≈ 584, never-lock-Line-1 ≈ 557. For **8/12** it is a wash (greedy 272 ≈ smart 263). But "never lock Line 1" is wrong when
   you already HOLD a good Line 1 (e.g. a T15) — it would throw the black line away. `smart` gets
   both: it locks Line 1 only when it already meets its tier target, and locks the rarer Lines 2/3
   on stat-match. Locking Line 2 before vs after the rare Line 3 (30% slot) is negligible (~2
@@ -1487,8 +1526,8 @@ lives. Newest first within each section.
 
 - **(2026-07-15) Calc-tab taxonomy rename + two new calculators (shipped `a4374d8`; backfilled
   here — the last deploy landed these without a DECISIONS/patch note).** Renamed the calc tabs for
-  clarity: *DPS Chart* → **DPS Rankings**, *DPS Test* → **Custom DPS Rankings**, *Team Calc* →
-  **Optimal Team**, *Roster Calc* → **Solo-Raid Roster Generator**. Added the **Optimize Overload**
+  clarity: _DPS Chart_ → **DPS Rankings**, _DPS Test_ → **Custom DPS Rankings**, _Team Calc_ →
+  **Optimal Team**, _Roster Calc_ → **Solo-Raid Roster Generator**. Added the **Optimize Overload**
   tab (`src/olconfigs.ts` `rankFreeLineConfigs`): for a carry sitting in a fixed 8/12 team (the
   floor 4× Elemental DMG + 4× ATK held constant), it ranks every way to spend the four FREE
   overload lines, scoring each candidate loadout by the carry's own sim damage vs the plain-8/12
@@ -1564,7 +1603,7 @@ lives. Newest first within each section.
   form were re-expressed, not reverted. — charge-weapons.md; jill verification.
 - **(2026-07-13) Release latency (22 frames) applies to snipers AND launchers by default**;
   autofire is the sparse exception list (`charFixes.noBoltRecovery`). Classified by owner testing
-  + the maiden/helm measurements; only tia remains unclassified. — charge-weapons.md §2.
+  - the maiden/helm measurements; only tia remains unclassified. — charge-weapons.md §2.
 - **(2026-07-13) Function-type additional damage crits at the caster's rate, never cores, never
   gets range** (datamined FunctionTable + Prydwen + JP). Crit-on-procs is default ON; dot tick
   crit unverified and kept OFF. — nikke-damage-formula.md §3.
