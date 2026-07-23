@@ -1282,7 +1282,10 @@ export function runSim(
         (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
       // ⚑ HRCORE: live Hit Rate shrinks the reticle → higher core fraction (derived; LIVE by default, HRCORE=0 off).
       // stat() already sums the unit's live hitRatePct buffs; additive-in-pp composition is UNVALIDATED (R8).
-      const hr = HRCORE || PELLET_GAUSS || CONE_DELTA ? stat(u, 'hitRatePct', frame) : 0;
+      const hr =
+        HRCORE || PELLET_GAUSS || CONE_DELTA || UNIGEO !== 'off'
+          ? stat(u, 'hitRatePct', frame)
+          : 0;
       const acr = opts.coreOverride ?? acrForHR(effWeapon, bandAt(frame), hr);
       major += rng
         ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
