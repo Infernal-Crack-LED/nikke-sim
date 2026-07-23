@@ -11,9 +11,12 @@ export interface MechSection {
 }
 
 export const tierLegend: Record<Tier, string> = {
-  Measured: 'Frame-counted from our own recorded fights under a fixed test preset.',
-  Datamined: 'Decoded from the game’s own data tables or a frame-accurate reference sim.',
-  Community: 'Independently verified by multiple community testers (JP / KR / EN).',
+  Measured:
+    'Frame-counted from our own recorded fights under a fixed test preset.',
+  Datamined:
+    'Decoded from the game’s own data tables or a frame-accurate reference sim.',
+  Community:
+    'Independently verified by multiple community testers (JP / KR / EN).',
   Calibrated:
     'Mechanism is known, but the exact number is fitted against our validated fights.',
 };
@@ -35,7 +38,7 @@ export const sections: MechSection[] = [
     title: 'Weapon fire cadence',
     tiers: ['Community', 'Measured', 'Datamined'],
     bullets: [
-      'Base rates: AR ~12/s, SMG ~20/s, Shotgun 1.5/s (10 pellets), Pistol 4/s, MG up to 60/s after wind-up.',
+      'Base rates: AR ~12/s, SMG ~24/s, Shotgun 1.5/s (10 pellets), MG up to 60/s after wind-up.',
       'The class rate is only a default — per-unit data overrides it (e.g. Jill’s “AR” fires at 2.5/s), and some units reload while still firing.',
       'Reload speed is subtractive: buffs past 100% only remove the scaled part of the reload, never the fixed tail.',
     ],
@@ -55,7 +58,6 @@ export const sections: MechSection[] = [
     bullets: [
       'Charge Speed is subtractive on charge time (capped at +100%), not a simple divide.',
       'Snipers add a 22-frame bolt cycle after each shot; auto play always full-charges.',
-      'Full-charge multipliers are per-unit (snipers ~250%, Alice 350%); some kits convert wasted charge speed into charge damage.',
     ],
   },
   {
@@ -77,11 +79,10 @@ export const sections: MechSection[] = [
     ],
   },
   {
-    title: 'Full-auto behaviors',
+    title: 'Auto behaviors',
     tiers: ['Measured', 'Community', 'Calibrated'],
     bullets: [
       'Auto-aim never fully centers, so core-hit rate is scaled down a little versus perfect play.',
-      'After Full Burst ends, the next chain cannot open for ~3 seconds — this delay, not gauge refill, paces high-generation teams.',
       'Auto burst priority is leftmost slot order, with waiting: the chain waits for the leftmost ready unit of the needed stage rather than handing off.',
       'Casts are blocked while the boss is off-screen during a range transition — the only real source of run-to-run burst-count variance.',
     ],
