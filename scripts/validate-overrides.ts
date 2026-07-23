@@ -33,11 +33,24 @@ const EFFECTS = new Set([
   'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'wipeOut', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
   'instantReload', 'consumeAmmo', 'storedHit', 'stun', 'stackedNuke', 'gainPierce', 'resource',
+  'targetStatus',
 ]);
 const FLAVORS = new Set(['distributed', 'sustained', 'sequential', 'true', 'projectileAttachment', 'projectileExplosion']);
 
 const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
 const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
+
+// Every effect kind in a block, including kinds nested inside `escalating.steps` — the engine
+// dispatches those through the same applyEffect, so block-level authoring rules must see them too.
+function collectEffectKinds(effects: any, out = new Set<string>()): Set<string> {
+  if (!Array.isArray(effects)) return out;
+  for (const e of effects) {
+    if (!e || typeof e !== 'object') continue;
+    out.add(e.kind);
+    if (e.kind === 'escalating') collectEffectKinds(e.steps, out);
+  }
+  return out;
+}
 
 function checkEffect(e: any, path: string, errors: string[]) {
   if (e.kind === 'ignored' || e.kind === 'unsupported') {
@@ -63,6 +76,14 @@ function checkEffect(e: any, path: string, errors: string[]) {
   if (e.kind === 'storedHit') {
     if (typeof e.atkPct !== 'number') errors.push(`${path}: storedHit needs atkPct`);
     if (e.flavor && !FLAVORS.has(e.flavor)) errors.push(`${path}: unknown flavor "${e.flavor}"`);
+  }
+  if (e.kind === 'targetStatus') {
+    if (typeof e.name !== 'string' || !e.name.trim()) {
+      errors.push(`${path}: targetStatus needs a non-empty "name" (the kit's status name)`);
+    }
+    if (typeof e.durationSec !== 'number' || !(e.durationSec > 0)) {
+      errors.push(`${path}: targetStatus needs durationSec > 0`);
+    }
   }
   if (e.kind === 'escalating') {
     if (!Array.isArray(e.steps)) errors.push(`${path}: escalating needs steps[]`);
@@ -96,6 +117,18 @@ function validate(slug: string): boolean {
       if (b.trigger?.kind === 'interval' && !(typeof b.trigger.sec === 'number' && b.trigger.sec > 0)) errors.push(`${p}: interval needs sec > 0`);
       if (!b.target?.kind || !TARGETS.has(b.target.kind)) errors.push(`${p}: bad target`);
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) errors.push(`${p}: bad formation`);
+      // `targetStatus` lands on the BOSS and the engine ignores block.target (there is no enemy
+      // entity — see sim.ts). Require the authoring block to say so explicitly, so a real carrier
+      // can never silently look owner- or ally-scoped. Collected RECURSIVELY: the engine runs
+      // `escalating` steps through the same applyEffect, so a targetStatus nested in a step would
+      // otherwise work at runtime while dodging this rule.
+      if (collectEffectKinds(b.effects).has('targetStatus') && b.target?.kind !== 'enemy') {
+        errors.push(`${p}: a targetStatus effect must sit on a block with target "enemy" (the status is inflicted on the boss)`);
+      }
+      // gate is a bare status name; a typo'd name would silently never open
+      if (b.requiresTargetStatus !== undefined && (typeof b.requiresTargetStatus !== 'string' || !b.requiresTargetStatus.trim())) {
+        errors.push(`${p}: requiresTargetStatus must be a non-empty status name`);
+      }
       if (!Array.isArray(b.effects) || !b.effects.length) errors.push(`${p}: needs effects[]`);
       else b.effects.forEach((e: any, ei: number) => checkEffect(e, `${p}.effects[${ei}]`, errors));
     });

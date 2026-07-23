@@ -8,6 +8,42 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-23) NAMED TARGET-STATUS REGISTRY BUILT (`targetStatus` effect + `requiresTargetStatus`
+  block gate) — capability only, ZERO enactments.** The 5e action item's buildable core. The engine had
+  no way to express *"Activates when … hits a target in \<Name\> status"*: its only apply-then-gate
+  channels were `wipeOut`/`requiresWipeOut` (global, enemy) and `shield`/`requiresShielded` (per-unit),
+  each a **single hardcoded-name boolean**, so a second character reusing either would COLLIDE with
+  `d-killer-wife` / `naga` rather than express its own status. `resources` is named and multiple but
+  untimed and owner-write-only; `mode` is fixed at setup (non-matching blocks are deleted from the
+  unit's block list), so it cannot model a state entered and exited mid-fight. There is no enemy entity
+  at all (`resolveTargets({kind:'enemy'})` → `[]`), so the registry is **one global boss-scoped table per
+  `runSim` call** (declared in `runSim` scope exactly like `wipeOutUntilFrame`, so it resets per run — it
+  is NOT module-scoped, and must not be hoisted to module scope: that would leak status windows across
+  `SEEDS=N` Monte-Carlo runs and across repeated web-side sims) and the effect ignores `block.target` —
+  while the validator requires the authoring block to carry `target: enemy`, so a carrier cannot silently
+  mis-scope it.
+  **Inert:** no override opts in; regression byte-identical WITHOUT `--update`; `doc-drift.ts`'s
+  structural census independently derives 0 users. Mechanism proven by
+  `scripts/tests/target-status-gate.test.ts`, whose load-bearing assertions are DISCRIMINATING rather
+  than confirmatory: with status A genuinely live, a block gated on B deals **exactly zero** (a global
+  boolean would fire it), and `wipeOut` ↔ named statuses do not satisfy each other in either direction.
+  **⚠ SCOPE NARROWED BY A PREMISE REFUTE — record this so it is not re-attempted:** the plan's premise
+  that this one vocabulary makes `privaty`, `prika`, `mint` and `milk-blooming-bunny` all expressible is
+  **false**. A registry is NECESSARY for all four but SUFFICIENT only for `privaty` (whose status is
+  enemy-carried with a clean predicate read). `mint` additionally needs a memoryful XOR toggle whose
+  transition reads its own prior value and which has no timer; `prika`'s Performance is **team**-carried,
+  extended in-flight (+21 s), and entered on **another unit's** status landing; `milk-blooming-bunny`
+  needs a stat **clamp scoped by reload count**, status-suppresses-status, and a player-input entry, and
+  its kit text never states Embarrassment's exit condition. Do NOT try to complete those three on this
+  registry and then read the failure as a gate bug. → `docs/handoffs/2026-07-22-engine-work-plan.md` 5e.
+  **`privaty` (Privaty, AR/Water) is NOT enacted.** Her `skill2` still carries the fabricated `dot`
+  (`atkPct 1687 / durationSec 10 / intervalSec 3`); rewiring it onto this gate is a separate gated pass,
+  still blocked on why the 1687% is present in T4/T4b and absent in the u7 focus video. `wipeOut` is now
+  strictly redundant with this primitive but is deliberately NOT unified onto it — that would move
+  `d-killer-wife`, the one graded carrier, and so cannot ride an inert landing.
+  Harness: `/scientific-method` — premise gate (1 CONFIRM w/ scope correction, 1 REFUTE → narrowed),
+  Fable pre-op APPROVED-WITH-REVISIONS (3 revisions, all folded in), 2-of-2 ACCEPT at HIGH+HIGH.
+
 - **(2026-07-22) `jill` — REAL RELOAD + BURST FORCED RELOAD; `charFixes.reloadFrames: 0` REMOVED.**
   Owner enactment, on kit text, no measurement required or claimed. Her override carried a whole-fight
   `reloadFrames: 0` justified as *"ROLLING RELOAD (datamined shot row): reload_start_ammo=8 — she begins

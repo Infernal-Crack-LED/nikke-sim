@@ -1167,6 +1167,14 @@ export function runSim(
   // (d-killer-wife's burst) and read by the requiresWipeOut block gate. One global boss →
   // one window (like fbEndFrame), not a per-unit status.
   let wipeOutUntilFrame = -1;
+  // Kit-NAMED status windows on the boss (status name → expiry frame): opened by a 'targetStatus'
+  // effect and read by the requiresTargetStatus block gate. The name-keyed generalization of
+  // wipeOutUntilFrame above — still one global boss, but keyed by name, so two characters'
+  // unrelated statuses never satisfy each other's gate (which is exactly what reusing the single
+  // 'wipeOut' boolean would do). Declared in runSim scope, so it resets per run like every other
+  // window here. Entries are never pruned — expiry is checked at READ, same as fbEndFrame /
+  // wipeOutUntilFrame / shieldedUntilFrame. NO CURRENT USER (inert; see types.ts 'targetStatus').
+  const targetStatuses = new Map<string, number>();
   let pendingFbExtendSec = 0;
   let rotationCasters: number[] = [];
   let fullBursts = 0;
@@ -1557,6 +1565,16 @@ export function runSim(
     // (d-killer-wife's burst area riders) fires only while the boss carries the Wipe Out
     // status. Composes with requiresCore (core-only proxy until destructible parts exist).
     if (block.requiresWipeOut && wipeOutUntilFrame <= frame) return;
+    // named target-status gate: "Activates when … hits a target in <Name> status" — the block only
+    // activates while the boss currently carries THAT named status (a 'targetStatus' effect's
+    // window). e.g. privaty's skill-2 last-bullet rider, gated on the "Designated Target" status
+    // her own burst applies. Name-keyed and therefore INDEPENDENT of requiresWipeOut: a Wipe Out
+    // window never opens a named gate, and a named status never satisfies requiresWipeOut.
+    if (
+      block.requiresTargetStatus &&
+      (targetStatuses.get(block.requiresTargetStatus) ?? -1) <= frame
+    )
+      return;
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
@@ -1843,6 +1861,22 @@ export function runSim(
           // One boss → one window (max-extends like the shield window). Target is implicitly
           // the enemy; no per-part state (core-only proxy until destructible parts exist).
           wipeOutUntilFrame = Math.max(wipeOutUntilFrame, frame + Math.round(e.durationSec * FPS));
+          break;
+        case 'targetStatus':
+          // inflict a kit-NAMED status on the boss: open/extend the window read by the
+          // requiresTargetStatus gate. Target is IMPLICITLY the enemy — there is no enemy entity
+          // (resolveTargets({kind:'enemy'}) returns []), so block.target is deliberately IGNORED
+          // here, the same convention as 'wipeOut' above and unlike 'resource' (owner-scoped).
+          // validate-overrides.ts still requires the authoring block to carry target `enemy`.
+          // ⚠ DO NOT "fix" this to route through resolveTargets(block.target): that returns [] for
+          // {kind:'enemy'}, so every carrier would silently stop applying its status. The validator
+          // rule and this ignore-the-target behaviour are two halves of one convention, not a bug.
+          // Max-extends per NAME (like the shield / wipe-out windows), so a re-application refreshes
+          // its own status and never touches another kit's.
+          targetStatuses.set(
+            e.name,
+            Math.max(targetStatuses.get(e.name) ?? -1, frame + Math.round(e.durationSec * FPS))
+          );
           break;
         case 'storedHit': {
           const entry = owner.storedHits.get(key) ?? {
