@@ -66,12 +66,15 @@ Base rates: [ore-game measured rates](https://ore-game.com/nikke/post/verify-mem
 (AR ~11.79/s, SMG ~20.01/s, SG ~1.50/s at 60fps) + decoded shot tables
 ([rcasdzxc/SD](https://github.com/rcasdzxc/SD)). The class rate is a DEFAULT — the
 datamined `rate_of_fire` column is per-unit and some units deviate wildly (Jill: 150 rpm
-= 2.5/s on an "AR", video-confirmed; engine `charFixes.pullsPerSec`). ROLLING RELOADS
-(top up while firing — Jill's zero-downtime reload, video-confirmed) are real but have
-**NO datamine tell**: `reload_start_ammo` is `max_ammo − 1` for all 192 shot rows, so it
-identifies nobody, and `reload_bullet` (the field that does vary) is measured-refuted as
-a restored-fraction at two of its three values — see open-questions **U30** before using
-either as evidence. Only footage identifies a carrier. Reload durations are per-unit DB values
+= 2.5/s on an "AR", video-confirmed; engine `charFixes.pullsPerSec`). **CHUNKED (multi-part)
+RELOADS:** some units empty the magazine and then refill it **in parts**, so the reload
+takes N× as long — the datamined `reload_bullet` is `1/chunks` (`10000` = whole mag, 177
+units; `3300` = 3 chunks, 14 units — 9 SGs + 5 RLs; `5000` = 2 chunks, `grave`), and
+`reload_time` is the PER-CHUNK duration. This is already live: shipped `reloadFrames`
+equals `reload_time × chunks × 0.6 + 21` for 190 of 192 units. Firing does NOT resume
+between chunks (measured on `grave` and `noir`). `reload_start_ammo` is NOT this signal —
+it is `max_ammo − 1` on all 192 rows and identifies nobody. `grave` is the one carrier
+shipped un-multiplied → open-questions **U30**. Reload durations are per-unit DB values
 (`reloadFrames`). Reload duration is SUBTRACTIVE like charge speed
 (IMPLEMENTED 2026-07-13): actual reload = displayed × 0.975 × (1−buff) + 0.21s tail —
 buffs past 100% only remove the scaled part

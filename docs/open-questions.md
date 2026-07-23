@@ -8,49 +8,77 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
-### U30 — rolling reload has NO datamine tell; both candidate fields are refuted (opened 2026-07-22)
+### U30 — chunked (multi-part) reloads: `reload_bullet` IS the tell, already honored for 14 of 15 units; `grave` is the lone gap (opened 2026-07-22)
 
-The engine-work-plan's step 5d ("rolling reload — `modernia`, `volume`") rested on the datamined
-`reload_start_ammo` field marking which units top up their magazine while firing. **That premise is
-refuted, and so is the obvious replacement.**
+**The mechanic (owner correction, 2026-07-22 — the framing this entry opened with was wrong).** A
+chunked-reload unit does **not** top up mid-magazine while firing. She empties the magazine
+completely, then **refills it in parts** — `grave` and `soda-twinkling-bunny` are the owner-named
+examples. The engine-visible consequence is therefore **reload DURATION** (N chunks take N× as long),
+not any fire-during-reload behavior.
 
-1. **`reload_start_ammo` carries ZERO per-unit information.** It equals `max_ammo − 1` for **192 of
-   192** shot rows in `data/characters.json` — no exceptions, every weapon class, every unit. So
-   Modernia's 299 and Volume's 119 are simply their 300- and 120-round magazines minus one, exactly
-   like everyone else's. The field cannot identify anybody as anything. (Re-derive:
-   `reload_start_ammo != max_ammo - 1` over every shot row returns the empty set.)
-2. **`reload_bullet` — the natural replacement — has measured counter-examples.** It is the one
-   reload field that genuinely varies: `10000` (177 units), `3300` (14 — nine SGs + five RLs, and it
-   discriminates *within* a class: Noir 3300 vs Dorothy: Serendipity 10000, both 9-ammo SGs), `5000`
-   (1 — Grave). Read as "fraction of the magazine restored per reload," it would mean partial/chunked
-   reloads. **Two of its three values are already measured to produce full-magazine, no-fire-during-
-   reload behavior:**
-   - **Grave (5000)** — `src/skills/overrides/grave.json`, measured 2026-07-15 from `grave solo.MP4`:
-     *"reload-AMOUNT-halved (partial mag) refuted by 61.5 shots/gap = full 60-round mags"* (n=19 clean
-     reload gaps).
-   - **Noir (3300)** — `docs/probe-data/noir-solo-recon.json`: the per-magazine method reads the
-     damage counter at consecutive `009` → `009` mag-start frames for *"EXACTLY one 9-shot mag,"* and
-     *"counter identical at t53.0 and t53.8 → confirmed no firing during the preceding reload."* Full
-     mag, one continuous ~0.6–0.9 s gap.
+**`reload_bullet` encodes it exactly, as `1 / chunks`:**
 
-**Consequence.** The only unit in the roster observed to roll its reload is **Jill**, and that rests
-entirely on **footage** (*"the video shows no reload gaps"*, DECISIONS 2026-07-13) — her datamine row
-is indistinguishable from everyone's (`reload_start_ammo 8 = 9−1`, `reload_bullet 10000`). The
-`reload_start_ammo 8` clause quoted in her DECISIONS entry and in `jill.json` as the tell for the
-mechanic is **non-discriminating** and should not be reused as one; her *model* is unaffected (it was
-measured, not inferred). ⇒ Step 5d has an **empty identified population** and is footage-gated like
-5e/5f, not the "small, self-contained, low risk" build the plan describes. Do not build the primitive
-until a carrier is identified.
+| value | chunks | n | who |
+|---|---|---|---|
+| `10000` | 1 (whole mag) | 177 | everyone else |
+| `3300` | 3 | 14 | 9 SGs (9 ammo → 3 shells/chunk): `drake`, `maiden`, `neon`, `noir`, `pepper`, `product-23`, `soda-twinkling-bunny`, `sugar`, `viper` · 5 RLs (6 ammo → 2): `anis`, `centi`, `jackal`, `rumani`, `trina` |
+| `5000` | 2 | 1 | `grave` (60 ammo → 30/chunk) |
 
-**What would answer it:** (a) what `reload_bullet` actually controls — if not restored-fraction, then
-plausibly reload *animation* chunking with no ammo-economy effect, which is why neither measurement
-sees it; (b) whether any 3300 unit shows the ammo counter refilling in steps of 3 with fire resuming
-mid-reload. Owner already holds usable footage for three of the fifteen — `noir`, `drake`
-(`docs/probe-data/coreband-drake-sg.json`) and `soda-twinkling-bunny` (`soda-tb-control-recon.json`,
-`soda-tb-sg-core-hr-windows.json`). Noir's read above is the strongest single data point and it says
-no. A negative sweep across the 3300 group would close this and retire step 5d entirely. (NB
-`docs/probe-data/maiden-solo.json` is **maiden-ice-rose** (RL/Electric), NOT `maiden` (SG/Electric,
-the unit in the 3300 group) — it is not evidence here.)
+**The datamined `reload_time` is PER CHUNK, and the shipped `reloadFrames` already multiplies it.**
+Two independent confirmations:
+
+1. **Bimodal split within one weapon class.** Chunked SGs carry `reload_time` 23–67; single-chunk SGs
+   carry 150–267. Exactly ~3× apart, and they interleave nowhere. (`drake` 50 × 3 = 150 = exactly
+   `dorothy-serendipity`/`brid-silent-track`/`naga`/`leona`'s single-chunk value.)
+2. **The sync formula is exact.** `reloadFrames == reload_time × chunks × 0.6 + 21` holds to ±1 frame
+   for **190 of 192** units — `× 1` for the 176 single-chunk units and **`× 3` for all 14 chunked
+   ones**, with no tuning. (Two unrelated outliers: `asuka` 84 vs 81, `scarlet-black-shadow` 152 vs
+   141 — small, separate.) The multiplier arrives via the upstream weapon-frames table
+   (`src/data/sync.ts:178`, `wf?.reloadFrames`), so it is already live in the engine without anyone
+   here having modeled it as chunking.
+
+⇒ **No primitive is needed and none should be built.** The duration effect is modeled for 14 of the
+15 carriers today.
+
+**The one real gap — `grave`.** She is the sole `5000` unit and the sole carrier shipped on the
+**× 1** formula: `reloadFrames 81` where × 2 chunks gives **141**. She is also the only carrier with a
+measured reload — 3.35 s / **201 f** (n=19 clean gaps, range 2.85–3.52 s = 171–211 f, from
+`grave solo.MP4`, 2026-07-15). Effective frames (`round(f × 0.975) + 13`):
+
+| source | stored | effective | vs measured 201 f |
+|---|---|---|---|
+| shipped (× 1) | 81 | 92 f | −109 f, far too fast |
+| × 2 (what `5000` implies) | 141 | 150 f | −51 f, still below her measured floor (171 f) |
+| × 3 | 201 | 209 f | **inside the measured range** |
+| her hand-fit `charFixes.reloadFrames` | 193 | 201 f | = measured (fitted to it) |
+
+So the chunk multiplier explains most of the gap her override currently papers over with a
+hand-calibrated constant — but her measurement favours **3** chunks where `reload_bullet 5000` says
+**2**. Candidate explanation: her kit's *"Heat Emission: Reload Ratio ▼50%"*, whose attribution her
+own note already flags as *"inferred, not isolated."* **Board-inert today** (the measured `charFixes`
+masks the data value), so this is a data-provenance correction, not a damage fix.
+
+**Firing does NOT resume between chunks — measured twice.** `grave`: 61.5 shots per gap on a 60-round
+mag (n=19) — if she resumed at the halfway chunk the shots-per-gap would average ~30–45. `noir`:
+consecutive `009` → `009` mag-start frames bound *"EXACTLY one 9-shot mag,"* and the damage counter is
+*"identical at t53.0 and t53.8 → confirmed no firing during the preceding reload"*
+(`docs/probe-data/noir-solo-recon.json`). Duration-only, on both a 2-chunk and a 3-chunk unit.
+
+**`reload_start_ammo` remains useless and is not this field.** It equals `max_ammo − 1` for **192 of
+192** shot rows — no exceptions, every class. It never identified anyone, and step 5d's named targets
+`modernia` (299) and `volume` (119) are both `reload_bullet 10000`, i.e. single-chunk units that never
+had the mechanic at all. The `reload_start_ammo 8` clause cited as the tell in DECISIONS 2026-07-13
+and in `jill.json` is non-discriminating (`jill` is `reload_bullet 10000`); her *model* is unaffected —
+it was video-measured — but the clause must not be reused as evidence.
+
+**What remains open:** (1) `grave`'s true chunk count, 2 vs 3, and whether *"Reload Ratio ▼50%"* is the
+multiplier — one focus read of her reload split into visible chunks settles it; (2) whether the ×3 on
+the 14 should be made explicit in the sync (derive `reloadFrames` from `reload_time × 10000 ÷
+reload_bullet`) rather than inherited silently from the upstream table, which would fix `grave` as a
+side effect; (3) the two formula outliers (`asuka`, `scarlet-black-shadow`). Confirmatory footage for
+the 3300 group already exists if wanted — `noir`, `drake` (`docs/probe-data/coreband-drake-sg.json`),
+`soda-twinkling-bunny` (`soda-tb-control-recon.json`). (NB `docs/probe-data/maiden-solo.json` is
+**maiden-ice-rose** (RL/Electric), NOT `maiden` (SG/Electric, the unit in the 3300 group).)
 
 ### U29 — the Snow White: Heavy Arms fire team makes 12 Full Bursts in reality; the sim generates 10 (opened 2026-07-22)
 

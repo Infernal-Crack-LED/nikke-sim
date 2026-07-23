@@ -245,10 +245,13 @@ Class-default fire rate / `reloadFrames` / charge frames / SR-RL 22-frame bolt-g
 unverified on every non-focus-recorded unit ("⚑ cadence tuple"). Direction unknown per unit but
 empirically large: guillotine-winter-slayer ~26% HOT on normal fire; jill 1.67→1.02 was pure
 cadence. Sub-flags: SR/SMG autofire-vs-bolt-gap unknown (ade-agent-bunny, mari, red-hood, velvet);
-rolling reload is unmodeled and, as of 2026-07-22, **unassignable** — `reload_start_ammo` is
-`max_ammo − 1` on all 192 shot rows (it never flagged modernia or volume, or anyone) and the
-varying field `reload_bullet` is measured-refuted as a restored-fraction (grave, noir). Footage
-is the only identifier; jill is the sole known carrier → open-questions **U30**.
+chunked (multi-part) reloads are **already modelled** for 14 of their 15 carriers, as of the
+2026-07-22 re-derive: `reload_bullet` = `1/chunks`, `reload_time` is per-chunk, and shipped
+`reloadFrames` = `reload_time × chunks × 0.6 + 21` for 190 of 192 units. `grave` is the sole
+carrier shipped un-multiplied (×1 where `5000` implies ×2) — board-inert today behind her measured
+`charFixes`. `modernia` and `volume` were never carriers (`reload_bullet 10000`); the field that
+named them, `reload_start_ammo`, is `max_ammo − 1` on all 192 rows and identifies nobody →
+open-questions **U30**.
 Units: ade-agent-bunny, anchor-innocent-maid, anis-sparkling-summer, arcana, asuka, asuka-wille,
 bready, elegg-boom-and-shock, guillotine-winter-slayer, helm-aquamarine, laplace, liter,
 ludmilla-winter-owner, mana, mari, modernia, quency-escape-queen, raven, sakura-bloom-in-summer,
