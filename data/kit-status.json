@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-22",
+  "generatedAt": "2026-07-23",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -28,11 +28,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±3% ✓": 6,
-      "±15%": 13,
-      "±8%": 10,
-      ">15%": 11,
-      "±5%": 5
+      "±3% ✓": 5,
+      "±15%": 14,
+      "±8%": 8,
+      ">15%": 14,
+      "±5%": 4
     }
   },
   "units": {
@@ -298,11 +298,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9676
+            "ratio": 0.9684
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9762
+            "ratio": 0.9769
           },
           {
             "comp": "T2 elec-weak (boss Water)",
@@ -330,20 +330,20 @@
           },
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0332
+            "ratio": 1.0288
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0278
+            "ratio": 1.018
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.8657
+            "ratio": 0.8573
           }
         ],
         "n": 12,
-        "mean": 0.9472,
-        "mad": 0.0629,
+        "mean": 0.9455,
+        "mad": 0.0623,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -429,14 +429,14 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 1.1004
+            "ratio": 0.8977
           }
         ],
         "n": 1,
-        "mean": 1.1004,
-        "mad": 0.1004,
+        "mean": 0.8977,
+        "mad": 0.1023,
         "band": "±15%",
-        "temp": "HOT ▲"
+        "temp": "COLD ▼"
       }
     },
     "asuka": {
@@ -661,20 +661,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.1651
+            "ratio": 1.1534
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.1508
+            "ratio": 1.1324
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.1877
+            "ratio": 1.1768
           }
         ],
         "n": 3,
-        "mean": 1.1679,
-        "mad": 0.1679,
+        "mean": 1.1542,
+        "mad": 0.1542,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -849,11 +849,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.1638
+            "ratio": 1.1614
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 1.1585
+            "ratio": 1.156
           },
           {
             "comp": "T2 elec-weak (boss Water)",
@@ -885,7 +885,7 @@
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.0194
+            "ratio": 1.018
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
@@ -905,12 +905,12 @@
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 1.0639
+            "ratio": 1.0417
           }
         ],
         "n": 17,
-        "mean": 1.0047,
-        "mad": 0.0486,
+        "mean": 1.0031,
+        "mad": 0.047,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -952,7 +952,7 @@
         "burst: unrecognized target \"allies\" — applied to all allies",
         "skill1: Full Burst Pierce Damage ▲13.55% now targets alliesOfWeapon SR (fixed 2026-07-20, kit-audit Phase C ENACT-NOW — kit targets only Sniper-Rifle-wielding allies). d-killer-wife is herself SR so keeps it; the only board effect was removing the spurious buff from grave (AR, Pierce-tagged during her Prediction window in comp N1), cooling that over-modeled HOT unit grave 1.179→1.162. Fable pre-op APPROVED.",
         "skill1: the self 'Gain Pierce for 1 shot' (every 3 full charges) is unmodeled — on a partless single-target boss the Pierce tag adds no targets, but a tagged shot would become eligible for the Pierce Damage ▲13.55% Damage-Up during Full Burst (small own-damage undercount)",
-        "burst: [FIXED 2026-07-20, A4 Wipe-Out primitive] the body-branch ATK buff (casterAtkPct 12.19%, 'Allies that hit the body') is now GATED on the Wipe Out status: her burst inflicts a wipeOut effect (10s window) and the buff fires at burstCast for that 10s window with requiresWipeOut + requiresCore (core-only proxy). This replaces the prior ungated hitCount:1 model that ran ~permanently (over-credited team ATK outside the 10s windows). Faithful to '≈71% uptime = 10s Wipe Out of a ~14s rotation'; no tuned value (12.19 unchanged). TODO PARTS: the parts branch 'Allies that hit parts → coreDamagePct 16.26%' still needs destructible-part modeling (currently core is the only modelable 'area'); wire it as requiresWipeOut + a parts-hit trigger when parts enter scope.",
+        "burst: the body-branch ATK buff (casterAtkPct 12.19%, 'Allies that hit the body') is GATED on the Wipe Out status: her burst inflicts targetStatus 'Wipe Out' (10s window) and the buff fires at burstCast for that window with requiresTargetStatus 'Wipe Out' + requiresCore (core-only proxy). Faithful to '≈71% uptime = 10s Wipe Out of a ~14s rotation'; 12.19 is the kit value, not tuned. Block order matters and is load-bearing: the status-inflicting block precedes the gated block in the burst array, and both fire on the same burstCast frame, so the gate reads a status written earlier that same frame. TODO PARTS: the parts branch 'Allies that hit parts → coreDamagePct 16.26%' still needs destructible-part modeling (currently core is the only modelable 'area'); wire it as requiresTargetStatus 'Wipe Out' + a parts-hit trigger when parts enter scope.",
         "burst: [SKIPPED-CONDITIONAL, fixed 2026-07-17] the parts branch 'Allies that hit parts: Damage dealt when attacking core ▲16.26%/10s' is parts-gated — on the partless v1 scope-lock boss no ally can hit parts, so it can never be earned. It was previously modeled as an ungated all-ally coreDamagePct buff, which over-credited every ally's core bucket (core hits DO exist on a partless boss's core). Now REMOVED from the effects array (repo convention for v1-partless-inert lines, cf. brid's Wind-Code debuffs); the body branch 'Allies that hit the body: ATK ▲12.19% of skill user's ATK' (casterAtkPct, always active on the partless body) is KEPT. Re-enable the parts branch (as a parts-hit-gated coreDamagePct) only for a boss with destructible parts (OUT OF SCOPE for v1)."
       ],
       "board": {
@@ -963,16 +963,16 @@
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 0.9021
+            "ratio": 0.8979
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9902
+            "ratio": 0.9882
           }
         ],
         "n": 3,
-        "mean": 0.957,
-        "mad": 0.043,
+        "mean": 0.9549,
+        "mad": 0.0451,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1068,12 +1068,12 @@
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.7908
+            "ratio": 0.7934
           }
         ],
         "n": 1,
-        "mean": 0.7908,
-        "mad": 0.2092,
+        "mean": 0.7934,
+        "mad": 0.2066,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1113,18 +1113,18 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.1431
+            "ratio": 0.982
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.005
+            "ratio": 0.8676
           }
         ],
         "n": 2,
-        "mean": 1.0741,
-        "mad": 0.0741,
+        "mean": 0.9248,
+        "mad": 0.0752,
         "band": "±8%",
-        "temp": "HOT ▲"
+        "temp": "COLD ▼"
       }
     },
     "drake": {
@@ -1211,7 +1211,7 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9025
+            "ratio": 0.9024
           }
         ],
         "n": 3,
@@ -1271,12 +1271,12 @@
         "records": [
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.7977
+            "ratio": 0.8008
           }
         ],
         "n": 1,
-        "mean": 0.7977,
-        "mad": 0.2023,
+        "mean": 0.8008,
+        "mad": 0.1992,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1365,20 +1365,20 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.099
+            "ratio": 1.1125
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0931
+            "ratio": 1.1038
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.086
+            "ratio": 1.0931
           }
         ],
         "n": 3,
-        "mean": 1.0927,
-        "mad": 0.0927,
+        "mean": 1.1031,
+        "mad": 0.1031,
         "band": "±15%",
         "temp": "HOT ▲"
       }
@@ -1421,12 +1421,12 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0592
+            "ratio": 1.0699
           }
         ],
         "n": 1,
-        "mean": 1.0592,
-        "mad": 0.0592,
+        "mean": 1.0699,
+        "mad": 0.0699,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -1507,11 +1507,11 @@
           },
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9625
+            "ratio": 0.9587
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9836
+            "ratio": 0.9797
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -1539,12 +1539,12 @@
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.9025
+            "ratio": 0.904
           }
         ],
         "n": 10,
-        "mean": 0.9616,
-        "mad": 0.0438,
+        "mean": 0.961,
+        "mad": 0.0444,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1654,22 +1654,22 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0015
+            "ratio": 0.8983
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.0282
+            "ratio": 0.9295
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.0567
+            "ratio": 0.9297
           }
         ],
         "n": 3,
-        "mean": 1.0288,
-        "mad": 0.0288,
-        "band": "±3% ✓",
-        "temp": "OK  ·"
+        "mean": 0.9192,
+        "mad": 0.0808,
+        "band": "±15%",
+        "temp": "COLD ▼"
       }
     },
     "laplace": {
@@ -1801,12 +1801,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.9011
+            "ratio": 0.8995
           }
         ],
         "n": 4,
-        "mean": 0.9785,
-        "mad": 0.1007,
+        "mean": 0.9781,
+        "mad": 0.1011,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -1885,44 +1885,44 @@
         "records": [
           {
             "comp": "T3 fire-weak (boss Wind)",
-            "ratio": 1.064
+            "ratio": 1.0515
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
-            "ratio": 1.0425
+            "ratio": 1.0293
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.1163
+            "ratio": 1.0952
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
-            "ratio": 1.0912
+            "ratio": 1.076
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 1.0965
+            "ratio": 1.0818
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 1.0694
+            "ratio": 1.0546
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 1.0867
+            "ratio": 1.0722
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 1.0888
+            "ratio": 1.0741
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.9584
+            "ratio": 0.9352
           }
         ],
         "n": 9,
-        "mean": 1.0682,
-        "mad": 0.0775,
+        "mean": 1.0522,
+        "mad": 0.0666,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -2438,12 +2438,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8367
+            "ratio": 0.8398
           }
         ],
         "n": 1,
-        "mean": 0.8367,
-        "mad": 0.1633,
+        "mean": 0.8398,
+        "mad": 0.1602,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2496,20 +2496,20 @@
         "records": [
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.6524
+            "ratio": 0.6576
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.69
+            "ratio": 0.6946
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.661
+            "ratio": 0.6625
           }
         ],
         "n": 3,
-        "mean": 0.6678,
-        "mad": 0.3322,
+        "mean": 0.6716,
+        "mad": 0.3284,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2555,14 +2555,14 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 1.0403
+            "ratio": 0.8483
           }
         ],
         "n": 1,
-        "mean": 1.0403,
-        "mad": 0.0403,
-        "band": "±5%",
-        "temp": "HOT ▲"
+        "mean": 0.8483,
+        "mad": 0.1517,
+        "band": ">15%",
+        "temp": "COLD ▼"
       }
     },
     "nayuta": {
@@ -2604,12 +2604,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.8629
+            "ratio": 0.8611
           }
         ],
         "n": 1,
-        "mean": 0.8629,
-        "mad": 0.1371,
+        "mean": 0.8611,
+        "mad": 0.1389,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -2707,18 +2707,18 @@
         "records": [
           {
             "comp": "PI2 misc B3s RERUN w/ video (boss Water)",
-            "ratio": 1.0947
+            "ratio": 0.884
           },
           {
             "comp": "PI misc B3s (boss Water)",
-            "ratio": 1.113
+            "ratio": 0.9
           }
         ],
         "n": 2,
-        "mean": 1.1038,
-        "mad": 0.1038,
+        "mean": 0.892,
+        "mad": 0.108,
         "band": "±15%",
-        "temp": "HOT ▲"
+        "temp": "COLD ▼"
       }
     },
     "prika": {
@@ -2789,7 +2789,7 @@
         "provenance": "partial-hand",
         "date": "2026-07-16",
         "findings": [
-          "clean: 9/10 exact zero drift; the 1687% Designated-Target rider is now modeled FAITHFULLY — a lastBullet block gated requiresTargetStatus 'Designated Target', the status applied by her burst (2026-07-23, DECISIONS); the old burstCast-DoT proxy and its noFb are gone, and the '1687 comp-dependence' item is CLOSED (it fired in both comps; the earlier check missed an occluded popup). Max-Ammo-down interaction mechanically emergent. Open: she reads HOT post-enactment (mean ~1.12) — fit-exposure from the removed noFb calibration, needs per-unit localization, and the targetStatus durationSec 10 is INFERRED (recipe in her override note)."
+          "clean: 9/10 exact zero drift; the 1687% Designated-Target rider is now modeled FAITHFULLY — a lastBullet block gated requiresTargetStatus 'Designated Target', the status applied by her burst (2026-07-23, DECISIONS); the old burstCast-DoT proxy and its noFb are gone, and the '1687 comp-dependence' item is CLOSED (it fired in both comps; the earlier check missed an occluded popup). Max-Ammo-down interaction mechanically emergent. Open: she reads HOT post-enactment (mean ~1.12) — fit-exposure from the removed noFb calibration, needs per-unit localization. The targetStatus durationSec 10 is DATAMINED (the burst's \"Designated Target: ATK 5.02% down for 10 sec\" line IS the status line); its ATK-down content is v1-inert and sits in unmodeled.burst."
         ]
       },
       "tier": "MEASURED",
@@ -2806,29 +2806,30 @@
         "skill1": [],
         "skill2": [],
         "burst": [
-          "Stuns for 3 sec."
+          "Stuns for 3 sec.",
+          "Designated Target: ATK ▼ 5.02% for 10 sec. (the STATUS is modeled via targetStatus; its ATK-down content is inert in v1 — the boss never attacks)"
         ]
       },
       "board": {
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 1.0039
+            "ratio": 1.2171
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.9694
+            "ratio": 1.1753
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.8367
+            "ratio": 0.9622
           }
         ],
         "n": 3,
-        "mean": 0.9366,
-        "mad": 0.0659,
-        "band": "±8%",
-        "temp": "COLD ▼"
+        "mean": 1.1182,
+        "mad": 0.1434,
+        "band": "±15%",
+        "temp": "HOT ▲"
       }
     },
     "quency-escape-queen": {
@@ -2870,17 +2871,17 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.1143
+            "ratio": 1.1908
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
-            "ratio": 1.08
+            "ratio": 1.1569
           }
         ],
         "n": 2,
-        "mean": 1.0971,
-        "mad": 0.0971,
-        "band": "±15%",
+        "mean": 1.1739,
+        "mad": 0.1739,
+        "band": ">15%",
         "temp": "HOT ▲"
       }
     },
@@ -3037,12 +3038,12 @@
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.016
+            "ratio": 1.0094
           }
         ],
         "n": 2,
-        "mean": 0.8667,
-        "mad": 0.1493,
+        "mean": 0.8634,
+        "mad": 0.146,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -3155,12 +3156,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.07
+            "ratio": 1.0688
           }
         ],
         "n": 3,
-        "mean": 1.0346,
-        "mad": 0.0601,
+        "mean": 1.0343,
+        "mad": 0.0598,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -3289,8 +3290,8 @@
           }
         ],
         "n": 2,
-        "mean": 0.9497,
-        "mad": 0.1296,
+        "mean": 0.9498,
+        "mad": 0.1297,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -3334,24 +3335,24 @@
         "records": [
           {
             "comp": "C-SW control (neutral, focus snow-white)",
-            "ratio": 0.9091
+            "ratio": 0.9229
           },
           {
             "comp": "C-Helm control (neutral, focus helm)",
-            "ratio": 0.9162
+            "ratio": 0.923
           },
           {
             "comp": "C-LM control (neutral, focus little-mermaid)",
-            "ratio": 1.0129
+            "ratio": 1.0284
           },
           {
             "comp": "C-Crown control (neutral, focus crown)",
-            "ratio": 0.9359
+            "ratio": 0.9502
           }
         ],
         "n": 4,
-        "mean": 0.9435,
-        "mad": 0.0629,
+        "mean": 0.9562,
+        "mad": 0.0581,
         "band": "±8%",
         "temp": "COLD ▼"
       }
@@ -3400,11 +3401,11 @@
         "records": [
           {
             "comp": "T4 water-weak (boss Fire)",
-            "ratio": 0.9555
+            "ratio": 0.9542
           },
           {
             "comp": "T4b water-weak REPLICATE (boss Fire)",
-            "ratio": 0.971
+            "ratio": 0.9697
           },
           {
             "comp": "T6 fire-weak (boss Wind)",
@@ -3412,12 +3413,12 @@
           },
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.9117
+            "ratio": 0.9107
           }
         ],
         "n": 4,
-        "mean": 0.961,
-        "mad": 0.0419,
+        "mean": 0.9601,
+        "mad": 0.0428,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -3465,17 +3466,17 @@
         "records": [
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 0.9726
+            "ratio": 0.8472
           },
           {
             "comp": "soda-tb control (neutral, focus soda-twinkling-bunny)",
-            "ratio": 0.8964
+            "ratio": 0.7843
           }
         ],
         "n": 2,
-        "mean": 0.9345,
-        "mad": 0.0655,
-        "band": "±8%",
+        "mean": 0.8158,
+        "mad": 0.1842,
+        "band": ">15%",
         "temp": "COLD ▼"
       }
     },
@@ -3657,12 +3658,12 @@
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
-            "ratio": 1.2113
+            "ratio": 1.2103
           }
         ],
         "n": 4,
-        "mean": 1.1514,
-        "mad": 0.1514,
+        "mean": 1.1511,
+        "mad": 0.1511,
         "band": ">15%",
         "temp": "HOT ▲"
       }
