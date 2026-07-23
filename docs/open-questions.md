@@ -494,6 +494,16 @@ gained less from elemental advantage in reality than the sim's x1.1 — do funct
 skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
 
 ### U14 — When do +50% Full Burst / +30% range apply to SKILL damage? (test framework built)
+
+> **STATE CORRECTION 2026-07-22 (owner kit read) — the last live `noFb` carrier is a FABRICATED block.**
+> `privaty`'s `skill2` `dot atkPct 1687 durationSec 10 intervalSec 3 noFb` is not in her kit. The 1687% is
+> a **last-bullet rider gated on Designated Target status**; `durationSec 10` came from the Designated
+> Target debuff window, `intervalSec 3` from the burst's *"Stuns for 3 sec"*. Her burst's 1407.64% IS
+> instantaneous and already correct, and the two 10 s markers are the self buff + enemy debuff, also
+> already correct. So the U14 footage recipe ("read the DoT popup in vs out of Full Burst") measures a
+> rider, not a DoT, and must be rewritten before footage is requested. Constraint 3 protects her
+> coefficients, NOT the DoT encoding. Full record + the three encoding options:
+> `docs/handoffs/2026-07-22-engine-work-plan.md` §5f.
 Range is SETTLED: skill/rider/DoT damage NEVER gets the +30% range bonus (`noRange` universal; ein's
 feathers "get FB but not range"). The open question is FB (+50%). Current model = per-kit `noFb` flags
 (calibrated). A **test framework is built** (`scripts/probe/fb-range-lab.ts` + the `FBRULE` engine knob:
