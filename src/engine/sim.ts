@@ -337,6 +337,10 @@ interface BuffInstance {
   stacks: number;
   maxStacks: number;
   expiresFrame: number | null;
+  // ROUND-COUNT expiry ("for N round(s)"): rounds of the HOLDER's own fire remaining. Decremented
+  // in firePull after the shot's blocks dispatch (so the Nth shot still benefits) and treated as
+  // expired at 0. undefined = no round limit (time-only), which is every buff but the carriers.
+  shotsLeft?: number;
   // buff counts only while this unit's weaponSwap is live (MEASURED 2026-07-14: SWHA's
   // Fully Active charge/sequential buffs are held per swap round, not for a duration)
   whileSwappedIdx?: number;
@@ -1185,6 +1189,7 @@ export function runSim(
       if (
         b.stat !== stat ||
         (b.expiresFrame !== null && b.expiresFrame <= frame) ||
+        (b.shotsLeft !== undefined && b.shotsLeft <= 0) ||
         (b.whileSwappedIdx !== undefined && units[b.whileSwappedIdx].swap == null)
       )
         return s;
@@ -1494,12 +1499,17 @@ export function runSim(
     rampFrames?: number,
     casterIdx?: number,
     perResource?: { name: string; mult: number },
-    removeOnReload?: boolean
+    removeOnReload?: boolean,
+    durationShots?: number
   ) {
     const expiresFrame = durationSec != null ? frame + Math.round(durationSec * FPS) : null;
     const existing = list.find((b) => b.key === key);
     if (existing) {
-      if (existing.expiresFrame !== null && existing.expiresFrame <= frame) {
+      // "fully lapsed" = time ran out OR the round budget did — both restart the ramp clock
+      if (
+        (existing.expiresFrame !== null && existing.expiresFrame <= frame) ||
+        (existing.shotsLeft !== undefined && existing.shotsLeft <= 0)
+      ) {
         existing.stacks = 0;
         // a buff that FULLY lapsed and re-triggers restarts its ramp clock (per-window stack
         // ramps: arcana-fortune-mate's Making Memories rebuild 2/4/6 hits fresh each FB window).
@@ -1515,10 +1525,13 @@ export function runSim(
       existing.casterIdx = casterIdx;
       existing.perResource = perResource;
       existing.removeOnReload = removeOnReload;
+      // a re-cast refills the round budget, exactly as it refreshes expiresFrame
+      existing.shotsLeft = durationShots;
     } else {
       list.push({
         key, stat, value, stacks: 1, maxStacks, expiresFrame, whileSwappedIdx,
         rampFrames, startFrame: frame, casterIdx, perResource, removeOnReload,
+        shotsLeft: durationShots,
       });
     }
   }
@@ -1688,7 +1701,8 @@ export function runSim(
               e.rampSec != null ? Math.round(e.rampSec * FPS) : undefined,
               ownerIdx,
               e.perResource,
-              e.removeOnReload
+              e.removeOnReload,
+              e.durationShots
             );
             // Max Ammo ▼ clips the CURRENT belt when it lands (user-confirmed);
             // increases never clip. Stacking stays additive inside maxAmmo().
@@ -2781,6 +2795,18 @@ export function runSim(
     if (u.swap?.maxShots != null) {
       u.swap.shotsFired = (u.swap.shotsFired ?? 0) + 1;
       if (u.swap.shotsFired >= u.swap.maxShots) u.swap = null;
+    }
+
+    // ROUND-COUNT buff expiry ("for N round(s)"): spend this shot's rounds from every round-scoped
+    // buff the unit HOLDS. Checked here — after block dispatch, alongside the swap's uses-based
+    // termination — so the Nth shot still carries the buff and the buff dies right after it.
+    // A round is one bullet, the same count the ammo economy spends (MG burns hitsPerShot per pull),
+    // but counted whether or not ammo was actually deducted: an unlimited-ammo shot still fires a
+    // round. Inert for every unit with no round-scoped buff.
+    for (const b of u.buffs) {
+      if (b.shotsLeft !== undefined && b.shotsLeft > 0) {
+        b.shotsLeft -= u.char.weapon === 'MG' ? u.char.hitsPerShot : 1;
+      }
     }
 
     if (!unlimited) {

@@ -62,6 +62,10 @@ function checkEffect(e: any, path: string, errors: string[]) {
   if (e.kind === 'buff') {
     if (!STATS.has(e.stat)) errors.push(`${path}: unknown stat "${e.stat}"`);
     if (typeof e.value !== 'number') errors.push(`${path}: buff needs numeric value`);
+    // "for N round(s)" — a whole positive number of the holder's own rounds
+    if (e.durationShots !== undefined && !(Number.isInteger(e.durationShots) && e.durationShots > 0)) {
+      errors.push(`${path}: durationShots must be a positive integer (rounds fired), got ${e.durationShots}`);
+    }
   }
   if (e.kind === 'flatDamage') {
     if (typeof e.atkPct !== 'number') errors.push(`${path}: flatDamage needs atkPct`);

@@ -43,6 +43,9 @@ npx tsx scripts/control-regression.ts | tail -1
 say "engine primitive tests (reload-triggered buff removal)"
 npx tsx scripts/tests/reload-buff-removal.test.ts | tail -1
 
+say "engine primitive tests (durationShots round-count buff duration — spans a reload, holder-scoped)"
+npx tsx scripts/tests/duration-shots.test.ts | tail -1
+
 say "engine primitive tests (named target-status gate — name-keying + multi-status isolation)"
 npx tsx scripts/tests/target-status-gate.test.ts | tail -1
 

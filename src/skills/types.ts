@@ -122,6 +122,19 @@ export type TargetDef =
 
 export type EffectDef =
   | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number;
+      // ROUND-COUNT duration: kit lines that last "for N round(s)" expire after the HOLDER fires N
+      // rounds, not after a wall-clock window — so the window stretches across reloads and shrinks
+      // when the unit fires faster. A round is one bullet: 1 per trigger pull, hitsPerShot for an MG
+      // (the same count the ammo economy spends). Decremented right after the shot's blocks dispatch,
+      // so the Nth shot still benefits, then the buff drops at 0 — the same "ends right after its Nth
+      // shot" shape as weaponSwap.maxShots (MEASURED 2026-07-14).
+      // Combine with durationSec to model "N rounds OR t seconds, whichever ends first"; alone (the
+      // usual case) the buff has no time expiry at all. Omit = time-only, back-compatible.
+      // Carrier: helm's burst Charge Damage Multiplier 158.4% "for 10 round(s)" — her magazine is 6,
+      // so the window genuinely spans a reload and a durationSec could not express it.
+      // NOT for "reload speed is FIXED at x for N rounds" lines (asuka-wille) — those are stat CLAMPS,
+      // a different primitive (docs/engine-modeling-gaps.md §1b).
+      durationShots?: number;
       // buff counts only while the caster's weaponSwap is live — for "held per swap round"
       // kit lines (MEASURED 2026-07-14, SWHA Fully Active charge/sequential buffs)
       whileSwapped?: boolean;
