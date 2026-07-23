@@ -280,3 +280,56 @@ sides of the −0.10..−0.23 SG shift.
 6. Nothing was enacted: `UNIGEO` defaults off, the live cone remains the shipping model, no
    snapshot was regenerated, no DECISIONS entry was touched, and `verify.sh` is green with the
    flag off.
+
+---
+
+## ADDENDUM (2026-07-22, coordinator follow-up) — W6 gauge-decoupling isolation run
+
+**Knob.** `UNIGEO_GAUGE` (worktree-only, default `'unigeo'` = coupled behaviour; read ONLY inside
+the `UNIGEO=sg/all` SG-landing branch, so `UNIGEO=off` is untouched). `'legacy'`: DAMAGE pellets
+keep the UNIGEO landing exactly as wired; the burst-gauge feed uses the LIVE engine's landing
+value for the band — implemented as the cone-path landing mean under the default `CONE_DELTA`
+(falling back to `SG_LANDING_BY_BAND` if the cone is disabled), because that IS the value the
+`UNIGEO=off` baseline feeds to gauge; the literal legacy table would NOT reproduce baseline
+rotation. Off-mode after the edit: `tsc` clean, `scripts/regression.ts` (no --update) all passed,
+`bash scripts/verify.sh` all passed. Script: `scripts/unigeo/w6-gauge-isolation.ts`.
+
+**FB counts (off | coupled sg | decoupled sg).** All 31 graded comps identical at decoupled-sg
+vs off — including **N5 snowwhite-HA: 11 | 10 | 11**. The N5 FB-count change is localized
+ENTIRELY to the SG-landing→gauge coupling; the geometry (damage) side changes no FB count.
+
+**Rotation logs vs baseline at decoupled-sg.** 29/31 comps byte-identical (vs 8 differing when
+coupled). Two comps still differ: **PH water B3s and N9 redhood/elegg — both dorothy-serendipity
+comps.** Residual mechanism (code-traced, not conjecture): her pellet-consolidation trigger
+accrues LANDED pellets (`u.landedAcc += bandSg.dmg × sgBase`, sim.ts) and consolidation shots
+feed gauge at `pelletFraction 1.0` instead of the landing value — so changing the DAMAGE landing
+shifts her episode timing and thereby the gauge trajectory even with the plain landing→gauge
+feed reverted. A second-order coupling specific to the consolidation machine; FB counts still
+match baseline in both comps.
+
+**Non-SG movers >0.1% at decoupled-sg:** 2 (vs 27 coupled) — PH little-mermaid −0.26%,
+PH quency-escape-queen +0.25% — both inside the PH residual above. Every other non-SG graded
+unit is ≤0.1% (the N9 residual moves nobody past 0.1%).
+
+**Graded SG readings — pure landing/core vs rotation-mediated split** (Δ vs off; coupled Δ =
+decoupled Δ + rotation-mediated part):
+
+| comp / unit | off | decoupled (pure geometry Δ) | coupled Δ | rotation-mediated part |
+|---|---|---|---|---|
+| PI2 / noir | 1.0946 | 0.8891 (−0.2055) | −0.2030 | +0.0025 |
+| PI / noir | 1.1153 | 0.9057 (−0.2096) | −0.2099 | −0.0002 |
+| PH / dorothy-serendipity | 1.1582 | 1.0177 (−0.1405) | −0.1994 | **−0.0589** |
+| N9 / dorothy-serendipity | 0.9732 | 0.8618 (−0.1114) | −0.1031 | +0.0082 |
+| N2 / naga | 1.0276 | 0.8348 (−0.1928) | −0.1922 | +0.0005 |
+| N3 / soda-twinkling-bunny | 0.9411 | 0.8200 (−0.1212) | −0.1172 | +0.0039 |
+| soda-tb control / soda-twinkling-bunny | 0.9163 | 0.8063 (−0.1100) | −0.1576 | **−0.0475** |
+| N5 / arcana-fortune-mate | 1.1043 | 0.9105 (−0.1938) | −0.1978 | −0.0041 |
+
+Reading: in 6 of 8 SG readings the movement is ≥96% pure landing/core (rotation part |≤0.008|).
+Two readings carry a material rotation-mediated component: dorothy-serendipity PH (−0.059 of her
+−0.199) and soda-twinkling-bunny control (−0.048 of her −0.158) — the two units whose damage is
+most burst-window/consolidation timing-sensitive. Consequently, at decoupled-sg the earlier
+trigger picture changes: the non-SG >0.1% trigger and the FB-count control are SILENT (up to the
+2 PH residual movers), while the SG-worsening revert trigger still FIRES on the same 4 readings
+(their pure-geometry deltas alone exceed 0.03 worsening: naga 0.028→0.165, soda-twinkling-bunny
+N3 0.059→0.180 and control 0.084→0.194, dorothy-serendipity N9 0.027→0.138).

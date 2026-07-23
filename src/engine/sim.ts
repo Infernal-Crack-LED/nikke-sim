@@ -2556,7 +2556,27 @@ export function runSim(
         ? UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small'
           ? // UNIGEO SG landing: ε × silhouette coverage of the HR-state aim circle (adds the
             // Hit-Rate landing term the live table lacks). Bernoulli per pellet under a seed.
-            sgLandFromMean(unigeoSgLanding(band, stat(u, 'hitRatePct', frame)))
+            // UNIGEO_GAUGE=legacy (isolation knob, worktree A/B only): DAMAGE keeps the UNIGEO
+            // landing, but the burst-gauge feed reverts to the LIVE engine's landing value (the
+            // cone-path mean under the default CONE_DELTA; the deep-fallback table otherwise) so
+            // gauge generation — and therefore rotation — behaves exactly as the UNIGEO=off
+            // baseline. Localizes rotation drift to the landing→gauge coupling. Under a seed the
+            // legacy gauge uses the expected mean directly (no extra rng draws).
+            (() => {
+              const hr = stat(u, 'hitRatePct', frame);
+              const r = sgLandFromMean(unigeoSgLanding(band, hr));
+              if (ENV.UNIGEO_GAUGE === 'legacy') {
+                const sig = coneSigmaFor('SG', hr);
+                const prof =
+                  cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
+                const liveMean =
+                  CONE_DELTA && sig !== null
+                    ? pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+                    : SG_LANDING_BY_BAND[band];
+                return { dmg: r.dmg, gauge: liveMean };
+              }
+              return r;
+            })()
           : CONE_DELTA
           ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
             // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
