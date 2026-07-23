@@ -8,6 +8,54 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U31 — `jill`'s `reloadFrames: 0` is a burst-window mechanic generalized to the whole fight (opened 2026-07-22)
+
+**Not a chunked-reload unit** (`reload_bullet 10000`, single chunk — see U30). Her zero-downtime firing
+comes from her BURST, and the kit says so verbatim (skill level 10, the scope-lock basis):
+
+> ■ Affects self. **Reload speed is fixed at a 99.96% increase for 10 sec. Removes 100% of ammo. Forced
+> Reload.** Hit Rate ▲80.78% for 10 sec. Attack Damage ▲75% for 10 sec. Normal attacks deal True Damage
+> for 10 sec.
+
+Owner statement (2026-07-22): *she is FORCED to reload to full after casting her burst, even if already
+full.* The kit's mechanism is the ammo dump — 100% removed, then a Forced Reload — and its **purpose** is
+that BOTH her damage passives key on it: S1 Magnum Ammo and S2 Acid Ammo each read *"Activates at the
+start of battle and upon reloading to Max Ammunition."* Her burst is a buff-refresh pump, not a reload.
+
+**Why reload becomes free during it:** reload duration is subtractive
+(`displayed × 0.975 × (1−buff) + 0.21 s tail`), so a **+99.96%** fixed increase — the kit is built to sit
+exactly at the +100% cap — zeroes the scaled part and leaves only the ~13-frame tail. Near-instant, for
+10 s per cast.
+
+**The modeling problem:** she carries `charFixes.reloadFrames: 0` as a **whole-fight** constant, justified
+in her note by *"ROLLING RELOAD (datamined shot row): reload_start_ammo=8 … she begins reloading at 8/9
+ammo and tops up concurrently while firing."* All three grounds for that are now void — the mechanic is a
+burst buff, not a rolling reload; `reload_start_ammo 8` is `max_ammo − 1` like all 192 units; and
+`reload_bullet 10000` says single-chunk. What remains is the video observation itself
+(*"the video shows no reload gaps"*), which the burst window explains **inside** the window and does not
+explain outside it.
+
+**Arithmetic, and why this can NOT simply be "fixed":** out of burst she should pay `reloadFrames 81` →
+92 f effective (1.53 s) every 9 rounds, i.e. 3.6 s of firing at her measured 2.5/s. Effective rate
+9 ÷ (3.6 + 1.53) = **1.75/s** against the modeled **2.5/s** — she would fire **~1.43× too many shots**
+outside burst windows today. But her cadence fix graded her at 1.02 *with* `reloadFrames 0` live, so
+naively restoring the reload would drop her to roughly **0.71 COLD**. That is the compensating-errors
+signature ([[compensating-errors-measure-full-timeline]]): `reloadFrames 0` is load-bearing in her current
+fit, so it is absorbing either a real mechanism not yet identified or an over-read of the footage. **Do
+not remove it without the measurement**, and do not treat her ~1.07–1.34 HOT as explained by this until
+the timeline is read.
+
+**Discriminating measurement (cheap, footage may already exist):** in her focus video, count reload gaps
+**outside** any 10 s post-burst-cast window. Gaps present ⇒ `reloadFrames 0` is wrong as a whole-fight
+constant and the correct model is a burst-scoped `reloadSpeedPct 99.96` (10 s) + a per-cast forced reload;
+no gaps anywhere ⇒ there is an unidentified mechanism and the constant stays until it is found.
+
+**Also unmodeled on the same burst block:** the 100%-ammo removal + Forced Reload as an event (her note
+already warns *"Burst forced-reload economy unsupported"*) — which in a faithful model is both a COST (a
+reload per cast) and a BENEFIT (an on-demand Magnum/Acid Ammo re-trigger) — and *"normal attacks deal True
+Damage for 10 sec"* (her note: *"the sim cannot yet model that conversion"*). Enacting any of this is
+gated on the measurement above; her per-hit values are video-confirmed at 99.7% and must not move.
+
 ### U30 — chunked (multi-part) reloads: `reload_bullet` IS the tell, already honored for 14 of 15 units; `grave` is the lone gap (opened 2026-07-22)
 
 **The mechanic (owner correction, 2026-07-22 — the framing this entry opened with was wrong).** A
@@ -68,8 +116,9 @@ consecutive `009` → `009` mag-start frames bound *"EXACTLY one 9-shot mag,"* a
 192** shot rows — no exceptions, every class. It never identified anyone, and step 5d's named targets
 `modernia` (299) and `volume` (119) are both `reload_bullet 10000`, i.e. single-chunk units that never
 had the mechanic at all. The `reload_start_ammo 8` clause cited as the tell in DECISIONS 2026-07-13
-and in `jill.json` is non-discriminating (`jill` is `reload_bullet 10000`); her *model* is unaffected —
-it was video-measured — but the clause must not be reused as evidence.
+and in `jill.json` is non-discriminating (`jill` is `reload_bullet 10000`). Her real mechanic is a
+BURST buff — 100% ammo dump + Forced Reload + reload speed fixed at +99.96% for 10 s — which is its own
+thread: **U31**.
 
 **What remains open:** (1) `grave`'s true chunk count, 2 vs 3, and whether *"Reload Ratio ▼50%"* is the
 multiplier — one focus read of her reload split into visible chunks settles it; (2) whether the ×3 on
