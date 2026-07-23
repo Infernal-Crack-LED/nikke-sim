@@ -1428,3 +1428,43 @@ the `0` reading would imply a non-kit 1651.36.
 `lastBullet`-triggered `flatDamage 1687` gated on `requiresTargetStatus: 'Designated Target'`, with her
 burst applying the status, and `noFb` dropped) is board-moving on a graded unit (0.971) and needs its
 own gated pass. The primitive it needs now exists (DECISIONS 2026-07-23).
+
+## BASE-WEAPON BASIS — first scoring (2026-07-23, `docs/probes/clean-weapons/`)
+
+The clean-weapon six recorded as two teams of three, scope lock, **boss Iron** (owner-confirmed —
+the only element neutral for all six), core 100, **bursting turned off in game**, per-unit rarity
+ceilings (`idoll-ocean` 0★/core 0, `claire` 2★/core 0 — they are not SSR). Basis + rationale:
+`docs/data/clean-weapons.md`; sim side pinned in `scripts/tests/units/clean-weapons.test.ts` (CW5).
+
+Sources: `marciana-folkwang-snowcrane.jpg` / `emma-claire-idollocean.jpg` (+ the two MP4s, not yet
+processed). Damage = the Battle Records damage row; the ⚔ column is Combat Power, NOT ATK.
+
+| unit | wpn | sim | real | sim/real | \|err\| | board mean for the class |
+|---|---|---|---|---|---|---|
+| `snow-crane` | SR | 29,018,296 | 29,430,776 | 0.986 ▼ | 1.4% | 0.973 |
+| `emma` | MG | 58,117,326 | 59,498,961 | 0.977 ▼ | 2.3% | 0.942 |
+| `claire` | RL | 24,044,093 | 23,474,178 | 1.024 ▲ | 2.4% | 0.967 |
+| `folkwang` | AR | 23,911,667 | 25,017,504 | 0.956 ▼ | 4.4% | 0.965 |
+| `marciana` | SG | 35,163,154 | 41,724,144 | **0.843 ▼** | **15.7%** | 0.875 |
+| `idoll-ocean` | SMG | 23,577,817 | 20,217,421 | **1.166 ▲** | **16.6%** | 1.058 |
+
+3/6 inside ±3%; median |ratio−1| 4.4%. Every reading matches the DIRECTION of its weapon class's
+board mean, which is the whole-picture check on the basis itself.
+
+**WHAT THIS LOCALIZES — the reason the basis exists.** None of the six has an override and their
+kits contribute zero damage, so neither outlier can be override calibration debt. Both sit in the
+WEAPON MODEL:
+1. **SG.** The SG re-tune thread attributes the SG gap to overrides calibrated against the pre-UNIGEO
+   landing table. `marciana` carries no override and is still 15.7% COLD, inside the documented
+   12–24% landing-debt band ⇒ a large share of that gap is the LANDING MODEL, not override debt.
+2. **SMG.** The `liter` 1.208 thread inferred an SMG weapon-model error from kit-carrying units
+   (`chisato` 1.15, `quency-escape-queen` 1.17). `idoll-ocean` reproduces it at **1.166 with no kit
+   at all** — the independent-method confirmation that thread lacked.
+
+**NOT ENACTED — n=1 per unit, one run per team.** Single-run repeatability is 0.5–3.5%/unit, so the
+three green readings are within noise of exact and `folkwang`'s 4.4% is marginal; only the two 15%+
+signals are unambiguously outside noise. Nothing here changes a constant, a default or a board value.
+Element confound is excluded by construction (an unmodeled advantage only ever INFLATES real, so it
+cannot produce a HOT reading) and by the owner's Iron confirmation. Next step to isolate WHICH part
+of the SG/SMG models is off: `/probe-processing` on the two MP4s (cadence, reload timing, per-popup
+values) — the totals establish that the models are wrong, not where.
