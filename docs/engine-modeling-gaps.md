@@ -91,7 +91,7 @@
 | `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 1 | naga |
-| `requiresTargetStatus` | 1 | d-killer-wife |
+| `requiresTargetStatus` | 2 | d-killer-wife, privaty |
 | `resourceGate` | 1 | soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
 | `sequentialMultPct` | 1 | eve |
@@ -104,7 +104,7 @@
 | `swapGate` | 2 | laplace, snow-white-heavy-arms |
 | `swapped` | 2 | laplace, snow-white-heavy-arms |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
-| `targetStatus` | 1 | d-killer-wife |
+| `targetStatus` | 2 | d-killer-wife, privaty |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |
@@ -290,6 +290,14 @@ in its single-status, same-unit, same-frame form. Everything below is what that 
   reordering that array would silently disable her buff for one window. CROSS-unit (unit A applies, unit
   B consumes, same frame) additionally depends on team-slot iteration order and has no carrier yet — the
   first `prika`-style cross-unit case will hit it.
+- **The `privaty` enactment is NOT rotation-neutral under seeded runs (recorded so it is not
+  rediscovered as unexplained drift).** `flatDamage` and `dot` ticks both emit `skillGauge`, so
+  converting her block changed both the COUNT (18 dot ticks → 19 procs in T4) and the TIMING
+  (cast+3/6/9 s → last-bullet-aligned) of her skill-gauge grants. The unseeded EV run is byte-identical
+  for all four teammates — which is why the snapshot shows exactly one moved entry — but seeded means
+  shift ≤0.4% and one seed flips T4's full-burst count 13→12 (distribution 12×32%/13×68% → 12×36%/13×64%).
+  T4 is deliberately unpinned (known real = 14 vs sim 13) so nothing is gated, and she appears in no
+  other snapshot comp. Note it moves T4 marginally FURTHER from the measured 14.
 - **Multi-producer refresh is untested.** Two units applying the SAME status name exercise a `Math.max`
   extend path that only self-refresh reaches today. (Multi-status concurrency IS now tested — two
   differently-named statuses held live simultaneously, gated three ways: `target-status-gate.test.ts`
