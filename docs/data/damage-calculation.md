@@ -118,7 +118,11 @@ Range = 0.3   if the weapon is in its effective band vs the boss's current posit
               skill/proc instances never (noRange)
 Crit  = critRate × critBonus         (expected-value mode)
       | critBonus or 0, Bernoulli(critRate)      (Monte Carlo mode, cfg.seed set)
-        critRate  = (base crit rate + Crit Rate ▲ %) / 100, clamped 0..1   (base 15%)
+        critRate  = (base crit rate + Crit Rate ▲ % + normal-only Crit Rate ▲ %) / 100,
+                    clamped 0..1   (base 15%)
+                    the normal-only term (`critRateNormalPct`) joins ONLY on normal-attack
+                    instances — kit lines reading "Critical Rate of normal attacks ▲x%"
+                    (helm S1). Skill procs and burst damage see the unscoped term alone.
         critBonus = (critDamage − 100)/100 + Crit Damage ▲ %/100           (base +50%)
 Core  = coreExposure × ACR × coreBonus    (expected-value mode)
       | coreBonus or 0, Bernoulli(coreExposure × ACR)   (Monte Carlo mode)

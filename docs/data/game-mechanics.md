@@ -329,6 +329,17 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   88.7%. (Namu confirms her kit actually targets disjoint groups — burst casters vs
   non-casters — so no unit legitimately receives both lines; the dedupe matches real kit
   structure.)
+- Buff windows come in TWO kinds and they are not interchangeable. Most are **timed** (a
+  seconds duration). Kit lines reading "**for N round(s)**" are **round-scoped**: they end
+  after the holder fires N bullets, so the window stretches across a reload and shrinks if the
+  unit is given attack-speed support. IMPLEMENTED 2026-07-23 as `durationShots` (a round = one
+  bullet, `hitsPerShot` for an MG, spent right after the shot so the Nth shot still benefits).
+  A round count can be genuinely inexpressible as a duration — helm's burst runs 10 rounds on a
+  6-round magazine, so it necessarily spans a reload. NB a "reload speed is **fixed at** x for N
+  rounds" line is a stat CLAMP, a different mechanic, still unmodeled.
+- A Critical Rate buff may be scoped to **normal attacks only** ("Critical Rate of normal
+  attacks ▲x%", helm S1) — it never lifts crit on skill procs or burst damage, even when the
+  buff targets the whole team. Distinct from an unscoped "Critical Rate ▲x%".
 - "ATK ▲ X% of caster's ATK" adds the CASTER's final ATK × X as a flat term (strong from
   high-ATK buffers); plain ATK ▲ dilutes into the (1+ATK%) sum
   ([nikke.gg damage formula](https://nikke.gg/damage-formula/)).

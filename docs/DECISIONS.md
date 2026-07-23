@@ -8,6 +8,62 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-23, latest) `helm` — "for 10 round(s)" is now a REAL ROUND COUNT (`durationShots`
+  primitive), replacing a `durationSec 13` approximation.** Owner directive during the helm kit review.
+  Her burst grants *Charge Damage Multiplier ▲158.4% for 10 round(s)*. A round count is not a timed
+  window and cannot be expressed as one: her **magazine is 6**, so the ten rounds span a reload (~6
+  charged shots → reload → ~4 more, ≈17.5s at her measured 90-frame bolt cycle), and the 13s stand-in
+  truncated it at roughly the 7th round. The override's own caveat had admitted the gap since it was
+  authored.
+  **Prior art was not reusable, which is why this is a new primitive.** `dorothy-serendipity` does carry
+  a real round count (`consolidation.shots: 3` → `consolShotsLeft`) but it is a field of her bespoke
+  pellet-consolidation state machine, reachable by nothing else; `jill`'s *"for 9 round(s)"* is modeled
+  as a permanent passive, which is **correct for her and must not be "fixed"** — her magazine is exactly
+  9 and the buff re-triggers on every reload-to-max, so 9 rounds IS permanent. `BuffInstance` otherwise
+  expired only on `expiresFrame`, its sole non-time scope being `whileSwappedIdx`.
+  **Mechanism:** `EffectDef.buff.durationShots` → `BuffInstance.shotsLeft`, decremented in `firePull`
+  after the shot's blocks dispatch — deliberately the same "ends right after its Nth shot" shape as
+  `weaponSwap.maxShots` (MEASURED 2026-07-14) — so the Nth shot still benefits. A round is one bullet
+  (`hitsPerShot` for an MG, matching the ammo economy) counted whether or not ammo was deducted, since
+  an unlimited-ammo shot still fires a round. Opt-in: omit the field and a buff is time-only and
+  byte-identical.
+  **Scope: `helm` ONLY** (owner ruling). The other simSupported carriers are inventoried in
+  `docs/control-regression-followups.md` §1 and deliberately untouched — note `snow-white-heavy-arms`'
+  two "1 round" lines are ALREADY round-scoped via `whileSwapped`, and `asuka-wille`'s *"reload speed is
+  FIXED at…for 1 rounds"* is a stat CLAMP, a different primitive (`engine-modeling-gaps.md` §1b).
+  **Evidence tier: DATAMINED kit text** (structural, not empirical) + a functional test that proves the
+  mechanism instead of inferring it from a ratio: `scripts/tests/duration-shots.test.ts` (in verify.sh)
+  asserts strict monotonicity across N=1..10 (per-round decrement, not a time proxy), that 10 rounds
+  beats the `durationSec 13` model by 2.9% (it survives the reload — the discriminating assertion), and
+  that teammates are byte-identical across every N (holder-scoped budget).
+  **A/B:** all measured full-burst truths UNCHANGED; `helm` is the ONLY unit that moves anywhere —
+  control suite 1.009 → 1.042, board 0.953 → 0.973 (1 of 45 units, MAD bucket ±5%: 9 → 10).
+  → `docs/STATE.md` §5, `docs/control-regression-followups.md`.
+
+- **(2026-07-23) `helm` — Critical Rate is NORMAL-ATTACK-SCOPED (`critRateNormalPct` primitive).**
+  Owner directive during the helm kit review: *"the crit rate pct isn't a true crit rate pct buff, it
+  only buffs crit on normal attack damage (meaning not skills)"*. Her S1 reads *"Critical Rate of
+  **normal attacks** ▲14.64% for 5 sec"* and targets **all allies**, but the override used the unscoped
+  `critRatePct`, which `dealDamage` folds into the crit roll for every crit-eligible hit. So the sim was
+  inflating crit on the **whole team's** skill procs and burst nukes, not just normals — an over-credit
+  that grew when `RIDERCRIT` landed ON (2026-07-22) and flat-damage riders became crit-eligible.
+  The scoping information was already in the damage path (`dealDamage` takes
+  `category: 'normal' | 'skill' | 'burst'`), so the fix is a new StatKey joining the crit rate only when
+  `category === 'normal'`. Opt-in and inert (sums to 0) for every non-carrier. **`helm` is the only
+  simSupported carrier** of this kit line (`biscuit` carries it but is not simSupported).
+  Also corrected: the override's `note` asserted a `shotFired → allies fillGauge 14.31` block the file
+  never contained. The *"Fills Burst Gauge by 14.31%"* line is real but lives in
+  `data/gauge-per-shot.json` (`helm.flatPerTrigger 1431`, datamined with two independent confirmations),
+  added per trigger pull in `gaugePerShot()` as a flat term the focus charge multiplier deliberately
+  does not scale.
+  **Evidence tier: DATAMINED kit text.** **A/B:** measured full-burst truths UNCHANGED (crit does not
+  touch gauge). 10 of 45 board units move, every one a `helm` comp-mate, all cold-direction, max −0.019
+  (`privaty`); `liter` (1.208) and `crown` (1.051) are EXACTLY unchanged, since SMG/MG damage is almost
+  entirely normal attacks. **This is a fit REGRESSION** — MAD buckets ±3%: 6 → 5, ±5%: 12 → 9 — and an
+  expected one: those overrides were partly calibrated against the inflated crit (fit-exposure, the same
+  pattern as a rotation fix). **Faithful > fit; re-tune the exposed units separately, never re-fudge
+  this back.** → `docs/STATE.md` §5, `docs/control-regression-followups.md`.
+
 - **(2026-07-23, final) `FBRULE` DEFAULT FLIPPED `perkit` → `timing` — the end-state Full-Burst rule is
   now shipped, as a VERIFIED NO-OP.** Owner ruling. Full Burst is a TIMING/snapshot gate: any
   non-burst-cast skill/rider/DoT landing inside the FB window takes the +50% (JP+KR research, empirical

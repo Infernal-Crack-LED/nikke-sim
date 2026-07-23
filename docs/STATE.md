@@ -190,6 +190,7 @@ current but not a contract.
 | `rampSec` | Linearly ramps a buff/flatDamage contribution 0→full over rampSec | arcana-fortune-mate, cinderella |
 | `whileSwapped` | Buff counts only while owner's weaponSwap is live | snow-white-heavy-arms |
 | `removeOnReload` | Buff stripped on reload-to-max (filter is inert today — no user) | (none) |
+| `durationShots` | ROUND-COUNT buff expiry: the buff ends after the HOLDER fires N rounds, not after a wall-clock window, so it stretches across reloads. A round = one bullet (`hitsPerShot` for an MG), decremented in `firePull` after block dispatch so the Nth shot still benefits — the `weaponSwap.maxShots` shape. Combine with `durationSec` for "N rounds OR t sec, whichever first"; omit = time-only | helm (burst Charge Damage Multiplier, 10 rounds) |
 | `perResource` / `resource(s)` | Buff/DoT value = live resource pool × mult / declare-adjust a pool | soda-twinkling-bunny |
 
 ### Special StatKeys (opt-in buckets)
@@ -199,6 +200,7 @@ current but not a contract.
 | `highestAllyAtkPct` | Flat ATK = % of the highest ally's (static) ATK | guilty |
 | `normalAttackPct` | Scales the normal-attack multiplier | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
 | `pelletCountFlat` | Flat effective SG pellet-count add for a window | arcana-fortune-mate, dorothy-serendipity |
+| `critRateNormalPct` | Critical Rate that applies ONLY to normal-attack hits ("Critical Rate of normal attacks ▲x%") — never to skill procs or burst damage. Distinct from the unscoped `critRatePct`; `dealDamage` adds it only when `category === 'normal'` | helm (S1, allies) |
 | `maxAmmoFlat` | Flat round-count added on top of `maxAmmoPct` | grave, noir, tove |
 | `hitRatePct` | Core-hit lift via `hrCoreMult` (HRCORE-gated; AR/SMG/SG only) | ~14 units (jill, noir, modernia, …) |
 | `atkOfMaxHpPct` / `casterMaxHpPct` / `targetMaxHpPct` | Flat ATK = % own Max HP / grant Max HP = % caster's / target's Max HP | anis-star, blanc, cinderella, rouge, trina, maiden-ice-rose, … |

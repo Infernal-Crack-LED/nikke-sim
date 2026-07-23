@@ -15,8 +15,10 @@ Anything in this file is **findings-only until separately gated**. Nothing here 
 
 ## 1. `durationShots` — round-count buff duration (primitive)
 
-**Status:** primitive being built for `helm` ONLY (owner scope ruling 2026-07-23). Every other carrier
-below is UNTOUCHED and unaudited.
+**Status: LANDED for `helm` ONLY** 2026-07-23 (owner scope ruling → DECISIONS; live model
+`docs/STATE.md` §5; functional test `scripts/tests/duration-shots.test.ts` in verify.sh). Every other
+carrier below is UNTOUCHED and unaudited — the primitive now exists, so wiring one is cheap, but each
+still needs its own look before it moves a board number.
 
 Kit lines reading *"for N round(s)"* are currently approximated as `durationSec`, or modeled as
 permanent, or expressed through a bespoke per-unit state machine. Before this build the engine had **no
@@ -52,7 +54,7 @@ Not simSupported, listed for completeness when the roster expands: `emilia`, `eu
 
 ## 2. `critRateNormalPct` — normal-attack-scoped Critical Rate
 
-**Status:** being built for `helm` (owner directive 2026-07-23).
+**Status: LANDED** 2026-07-23 (owner directive → DECISIONS; live model `docs/STATE.md` §5).
 
 Roster census of *"Critical Rate of normal attack(s)"* kit lines: **`helm` is the only simSupported
 carrier.** The only other is `biscuit`, which is not simSupported — wire her when she is.
@@ -60,8 +62,30 @@ carrier.** The only other is `biscuit`, which is not simSupported — wire her w
 Board-wide note: helm's is an **allies** buff, so before the fix it was lifting crit on the whole team's
 skill procs and burst nukes, not just normals. That over-credit grew when `RIDERCRIT` landed ON
 (2026-07-22) and flat-damage riders became crit-eligible. Any unit sharing a comp with `helm` therefore
-carries some of this error — expect a broad, small, COLD-direction board move when it lands, not a
-helm-local one.
+carried some of this error.
+
+### ⇒ FIT-EXPOSURE RE-TUNE WORKLIST (open)
+
+Landing it moved **10 of 45 board units**, every one a `helm` comp-mate, all cold-direction. Those
+overrides were partly calibrated against the inflated crit, so this is fit-exposure, not a fix error —
+**re-tune them individually; never re-fudge the crit scoping back.** MAD buckets went ±3%: 6 → 5,
+±5%: 12 → 9. Deltas (board mean, before → after):
+
+| unit | n | before | after | Δ |
+|---|---|---|---|---|
+| `privaty` | 3 | 1.118 | 1.099 | −0.019 |
+| `snow-white-heavy-arms` | 4 | 0.960 | 0.943 | −0.017 |
+| `snow-white` | 4 | 0.956 | 0.939 | −0.017 |
+| `little-mermaid` | 9 | 1.052 | 1.042 | −0.010 |
+| `cinderella-crystal-wave` | 2 | 0.974 | 0.966 | −0.008 |
+| `mihara-bonding-chain` | 2 | 1.061 | 1.053 | −0.008 |
+| `rapi-red-hood` | 5 | 0.935 | 0.929 | −0.006 |
+| `soda-twinkling-bunny` | 2 | 0.816 | 0.810 | −0.006 |
+| `anis-star` | 12 | 0.965 | 0.961 | −0.004 |
+| `helm` | 10 | 0.961 | 0.953 | −0.008 (then → 0.973 with `durationShots`) |
+
+`privaty` and `little-mermaid` moved TOWARD 1.0 (they were hot); the rest moved away. `snow-white` and
+`snow-white-heavy-arms` are the two worst-affected and the natural first re-tunes.
 
 ## 3. Override prose drift found during the audit
 
