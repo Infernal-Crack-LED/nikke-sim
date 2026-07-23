@@ -1468,3 +1468,57 @@ Element confound is excluded by construction (an unmodeled advantage only ever I
 cannot produce a HOT reading) and by the owner's Iron confirmation. Next step to isolate WHICH part
 of the SG/SMG models is off: `/probe-processing` on the two MP4s (cadence, reload timing, per-popup
 values) — the totals establish that the models are wrong, not where.
+
+### SMG CADENCE — measured 20 rounds/s, not 24 (2026-07-23, same recording)
+
+Isolating WHICH term of the SMG weapon model is wrong, from `idoll-ocean`'s 1.166 HOT above.
+
+**MEASURED.** Ammo counter (the designated shot clock), `idoll-ocean` focused:
+
+| window | band | ammo readings | rounds | rate |
+|---|---|---|---|---|
+| t=60.0→62.0 | mid | 076 → 066 → 056 → 046 → 036 | 10 per 0.5 s | 20.0/s |
+| t=145.0→145.5 | far | 020 → 010 | 10 per 0.5 s | 20.0/s |
+
+Dead linear, two separate range bands. **The sim uses 24/s.**
+
+**MECHANISM — why 20 and not 24.** 1440 rpm = 24/s = **2.5 frames/shot at 60 fps**, and a full census
+of the datamined `rate_of_fire` shows **SMG is the ONLY weapon in the roster that is not a whole
+number of frames**: AR 720→5f and 150→24f (`jill`), MG 3600→1f, RL 60/90/120/180/300→60/40/30/20/12f,
+SG 90→40f, SR 60/200→60/18f. Quantizing 2.5 up to 3 frames gives **exactly 20.0/s** — the measured
+value. The datamine is authoritative for the NOMINAL rate; the gun still fires on frame boundaries.
+This is why SMG is the only weapon class whose board mean sits above 1.0.
+
+**A/B (`SMGQUANT=1`, isolated worktree).** Confirmed on five further units the measurement never saw:
+
+| unit | 24/s | 20/s |
+|---|---|---|
+| `idoll-ocean` (the measured unit — no override, no damage kit) | 1.166 | **1.018** |
+| `chisato` | 1.154 | **0.975** |
+| `quency-escape-queen` | 1.174 | **1.046** |
+| `little-mermaid` | 1.042 | **0.967** |
+| `nayuta` (kit-dominated ⇒ cadence barely matters) | 0.861 | 0.854 |
+| `liter` (control suite, Tier-0) | **1.208** | **1.031** |
+| `helm` (control suite) | 1.042 | 1.017 |
+
+`liter`'s per-comp spread tightens [1.222 1.183 1.252 1.174] → [1.039 1.000 1.067 1.019];
+board-read ±5% 10→13, "worse" 26→25. **All 11 measured full-burst assertions pass in BOTH arms.**
+
+**This retires the 2026-07-17 premise.** That adoption (role-audit D.2, owner decision a) took 20→24
+because 24 "holds every SMG measured-FB comp". Under the current rotation model FB counts no longer
+discriminate 20 from 24 at all — that session had only FB counts as an instrument, and FB counts
+measure gauge/SECOND while the ammo counter measures shots/SECOND. A joint arm scaling SMG gauge by
+24/20 was built and proved UNNECESSARY (FB counts hold without it), so it was dropped rather than
+shipped as a dead knob.
+
+**NOT ENACTED — shipped `SMGQUANT=1` opt-in, default unchanged and byte-identical.** Flipping the
+default turns 6 unit tests red. Five are FB-count DISCRIMINATION assertions whose vehicle is `liter`
+(an SMG): at 20/s the two arms of each tie, so the fixture stops discriminating — fixture rebuilding,
+not an engine fault. **The sixth is NOT understood:** `modernia` (MG) begins showing a 10-round ammo
+spend per pull in `hits-per-shot.test.ts`. The likely cause is `liter`'s *"Max Ammunition Capacity
+▲45.17%"* proc retiming so its refill lands inside a measured pull-pair window and slips past that
+test's `d <= 20` exclusion filter — **hypothesis, not a verified explanation.**
+
+⇒ **THE GATED PASS MUST EXPLAIN THE `modernia` MG SPEND FIRST**, then rebuild the five `liter`-vehicle
+discriminations on a non-SMG vehicle, then flip the default with regenerated snapshots. Regenerating
+snapshots around an unexplained failure is exactly what the verify discipline forbids.
