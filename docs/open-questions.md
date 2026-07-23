@@ -460,9 +460,15 @@ skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair 
 >  **The rider hits ONCE per trigger event** (owner 2026-07-22) — *"Activates when the last bullet hits a
 > target in Designated Target status"*, like every trigger in her kit. **The only "3" in her kit is that
 > 3-second stun.** So any re-encoding must be DRIVEN by the `lastBullet` trigger; a fixed hit count
-> reproduces the original defect. The faithful fix needs a TARGET-STATUS gate, which the engine lacks —
-> now an action item under the state-machine build (plan step 5e), since a kit-defined per-character
-> status that gates behaviour is the same machinery `prika`/`mint`/`milk-blooming-bunny` need.
+> reproduces the original defect. The faithful fix needs a TARGET-STATUS gate — **BUILT 2026-07-23**
+> (`targetStatus` effect + `requiresTargetStatus` block gate; DECISIONS 2026-07-23, `docs/STATE.md` §5),
+> so the primitive is no longer the blocker. **`privaty` is still NOT enacted:** rewiring her block onto
+> the gate needs the measurement that explains why the 1687% appears in T4/T4b and not in the u7 focus
+> video, and it must be DRIVEN by the `lastBullet` trigger. ⚠ The old claim that this is *"the same
+> machinery `prika`/`mint`/`milk-blooming-bunny` need"* is **REFUTED** (premise gate, kit text, 4-of-4
+> census): the registry is necessary for all four but SUFFICIENT only for `privaty`, whose status is
+> enemy-carried. The other three each need different machinery — see
+> `docs/handoffs/2026-07-22-engine-work-plan.md` §5e.
 > rider, not a DoT, and must be rewritten before footage is requested. Constraint 3 protects her
 > coefficients, NOT the DoT encoding. Full record + the three encoding options:
 > `docs/handoffs/2026-07-22-engine-work-plan.md` §5f.
