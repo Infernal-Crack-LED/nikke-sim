@@ -460,6 +460,19 @@ skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair 
 >  **The rider hits ONCE per trigger event** (owner 2026-07-22) — *"Activates when the last bullet hits a
 > target in Designated Target status"*, like every trigger in her kit. **The only "3" in her kit is that
 > 3-second stun.** So any re-encoding must be DRIVEN by the `lastBullet` trigger; a fixed hit count
+> **MEASURED 2026-07-23 — the "1687 is absent in the u7 comp" premise is FALSE, and the block's `noFb`
+> is refuted.** u7 focus video @ 15.503 s: one popup stack carries 571,999 (red CORE HIT), 367,714
+> (white normal), **37,871,391** and 5,750,750. The 37,871,391 IS the 1687 rider —
+> `37,871,391 / 5,750,750 × 256.17 = 1687.00`, the datamined coefficient exactly (the digit was
+> occluded and first misread as 37,0…; owner re-read it on a cleaner frame, and the arithmetic is an
+> independent second method). ⇒ **the standing question "what makes the 1687 fire in T4 but not the u7
+> comp?" is ANSWERED by a missed popup, not a mechanic** — there is no comp-dependence to reconcile.
+> ⇒ **`noFb: true` is refuted**: the 256.17 rider's 5,750,750 is 1.5015× its non-FB 3.83 M so the frame
+> is inside a Full Burst, and the 1687 popup is 6.58547× it against a kit ratio of 6.58547 — it took
+> every major the 256.17 took. ⇒ **it is not a DoT**: same frame as the last-bullet rider, sharing its
+> exact buff snapshot. Record: `docs/probe-runs.md` (2026-07-23). **NOT ENACTED** — the re-encode is
+> board-moving on a graded unit (0.971) and needs its own gated pass.
+>
 > reproduces the original defect. The faithful fix needs a TARGET-STATUS gate — **BUILT 2026-07-23**
 > (`targetStatus` effect + `requiresTargetStatus` block gate; DECISIONS 2026-07-23, `docs/STATE.md` §5),
 > so the primitive is no longer the blocker. **`privaty` is still NOT enacted:** rewiring her block onto
