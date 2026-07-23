@@ -91,6 +91,7 @@
 | `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 1 | naga |
+| `requiresTargetStatus` | 0 | _none_ |
 | `requiresWipeOut` | 1 | d-killer-wife |
 | `resourceGate` | 1 | soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
@@ -104,6 +105,7 @@
 | `swapGate` | 2 | laplace, snow-white-heavy-arms |
 | `swapped` | 2 | laplace, snow-white-heavy-arms |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
+| `targetStatus` | 0 | _none_ |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |

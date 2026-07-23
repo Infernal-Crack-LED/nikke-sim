@@ -33,6 +33,7 @@ const EFFECTS = new Set([
   'buff', 'flatDamage', 'dot', 'weaponSwap', 'fillGauge', 'heal', 'shield', 'wipeOut', 'burstEligibility', 'burstFirst', 'reenterStage',
   'advantageVs', 'burstCdr', 'escalating', 'fullBurstExtend', 'unlimitedAmmo',
   'instantReload', 'consumeAmmo', 'storedHit', 'stun', 'stackedNuke', 'gainPierce', 'resource',
+  'targetStatus',
 ]);
 const FLAVORS = new Set(['distributed', 'sustained', 'sequential', 'true', 'projectileAttachment', 'projectileExplosion']);
 
@@ -63,6 +64,14 @@ function checkEffect(e: any, path: string, errors: string[]) {
   if (e.kind === 'storedHit') {
     if (typeof e.atkPct !== 'number') errors.push(`${path}: storedHit needs atkPct`);
     if (e.flavor && !FLAVORS.has(e.flavor)) errors.push(`${path}: unknown flavor "${e.flavor}"`);
+  }
+  if (e.kind === 'targetStatus') {
+    if (typeof e.name !== 'string' || !e.name.trim()) {
+      errors.push(`${path}: targetStatus needs a non-empty "name" (the kit's status name)`);
+    }
+    if (typeof e.durationSec !== 'number' || !(e.durationSec > 0)) {
+      errors.push(`${path}: targetStatus needs durationSec > 0`);
+    }
   }
   if (e.kind === 'escalating') {
     if (!Array.isArray(e.steps)) errors.push(`${path}: escalating needs steps[]`);
@@ -96,6 +105,16 @@ function validate(slug: string): boolean {
       if (b.trigger?.kind === 'interval' && !(typeof b.trigger.sec === 'number' && b.trigger.sec > 0)) errors.push(`${p}: interval needs sec > 0`);
       if (!b.target?.kind || !TARGETS.has(b.target.kind)) errors.push(`${p}: bad target`);
       if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) errors.push(`${p}: bad formation`);
+      // `targetStatus` lands on the BOSS and the engine ignores block.target (there is no enemy
+      // entity — see sim.ts). Require the authoring block to say so explicitly, so a real carrier
+      // can never silently look owner- or ally-scoped.
+      if (Array.isArray(b.effects) && b.effects.some((e: any) => e?.kind === 'targetStatus') && b.target?.kind !== 'enemy') {
+        errors.push(`${p}: a targetStatus effect must sit on a block with target "enemy" (the status is inflicted on the boss)`);
+      }
+      // gate is a bare status name; a typo'd name would silently never open
+      if (b.requiresTargetStatus !== undefined && (typeof b.requiresTargetStatus !== 'string' || !b.requiresTargetStatus.trim())) {
+        errors.push(`${p}: requiresTargetStatus must be a non-empty status name`);
+      }
       if (!Array.isArray(b.effects) || !b.effects.length) errors.push(`${p}: needs effects[]`);
       else b.effects.forEach((e: any, ei: number) => checkEffect(e, `${p}.effects[${ei}]`, errors));
     });

@@ -152,6 +152,7 @@ current but not a contract.
 | `swapGate` (`swapped`/`unswapped`) | Only while owner's weaponSwap is live / not | laplace, snow-white-heavy-arms |
 | `requiresShielded` | Only while owner carries a shield | naga |
 | `requiresWipeOut` | Only while boss carries the Wipe-Out status | d-killer-wife |
+| `requiresTargetStatus` | Only while the boss carries the NAMED status opened by a `targetStatus` effect. The name-keyed generalization of `requiresWipeOut`; the two are independent in both directions | _none_ |
 | `bossElementGate` | Only when boss element matches (composes with any trigger) | brid-silent-track, eve, helm-aquamarine |
 | `ownBurstGate` (`cast`/`notCast`) | Gated on whether owner cast own burst into this FB | cinderella-crystal-wave |
 | `resourceGate` | Fires only when a named resource pool is within [min,max] | soda-twinkling-bunny |
@@ -177,6 +178,7 @@ current but not a contract.
 | `storedHit` (+`instantInFb`) | Charges that release at FB start; `instantInFb` detonates in-FB | rapi-red-hood |
 | `stackedNuke` | Hits once per FB the unit sat out since its last burst | maiden-ice-rose |
 | `wipeOut` / `gainPierce` | Inflicts Wipe-Out status / timed "Gain Pierce" window | d-killer-wife / ade-agent-bunny, grave, milk-blooming-bunny |
+| `targetStatus` | Inflicts a kit-NAMED status on the boss for `durationSec` (name → expiry window, max-extends). Target is implicitly the enemy — the engine ignores `block.target`, though the validator requires the block to be authored `target: enemy` | _none_ |
 | `burstEligibility` / `burstFirst` / `reenterStage` | Unit may also burst at a stage / takes first eligible / holds stage for another | anis-star, rapi-red-hood / prika / anis-star |
 | `advantageVs` | Counts as elementally advantaged vs a boss element (also derived into `countsAsElements` for the UI — see below) | rapi-red-hood |
 | `burstCdr` | Reduces targets' burst cooldowns | ~14 units (anis-star, arcana, blanc, liter, red-hood, rouge, …) |

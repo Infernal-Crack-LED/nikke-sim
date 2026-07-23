@@ -214,6 +214,20 @@ export type EffectDef =
   | { kind: 'heal'; ticks?: number; intervalSec?: number }    // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
   | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
   | { kind: 'wipeOut'; durationSec: number }                  // inflicts a "Wipe Out" status on the boss for durationSec — opens a global window read by the requiresWipeOut block gate (d-killer-wife's burst: her area-hit ATK/core riders are earnable only while the target is Wipe-Out-afflicted). TODO parts: the parts-hit branch (coreDamagePct) needs destructible-part modeling; core-only for now.
+  // inflicts a kit-NAMED status on the boss for durationSec — the name-keyed generalization of
+  // 'wipeOut' above. Opens/extends the window read by the `requiresTargetStatus` block gate.
+  // Windows are keyed per NAME, so two characters' unrelated statuses never satisfy each other
+  // (the reason this exists rather than reusing 'wipeOut', which is a single hardcoded-name
+  // boolean already owned by d-killer-wife).
+  // TARGET IS IMPLICITLY THE ENEMY — there is no enemy entity in the sim
+  // (resolveTargets({kind:'enemy'}) returns []), so the engine IGNORES block.target here, exactly
+  // as 'wipeOut' does and unlike 'resource' (which is owner-scoped). validate-overrides.ts
+  // nonetheless REQUIRES the carrying block to be authored with target `enemy`, so a real override
+  // cannot silently mis-scope it.
+  // e.g. privaty's burst: "■ Affects all enemies. Designated Target: ATK ▼5.02% for 10 sec" — the
+  // status her skill-2 rider ("when the last bullet hits a target in Designated Target status")
+  // is gated on. NO CURRENT USER: inert until an override opts in.
+  | { kind: 'targetStatus'; name: string; durationSec: number }
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
       atkPct: number;    // per charge, % of caster's final ATK at release time
@@ -307,6 +321,14 @@ export interface Block {
   // area riders — "when allies hit an area of the Wipe-Out-afflicted target". Composes with
   // requiresCore (core-only proxy; the parts-hit branch awaits destructible-part modeling).
   requiresWipeOut?: boolean;
+  // named target-status gate, checked when the trigger fires: the block only activates while the
+  // boss currently carries the status of THIS NAME (opened by a `targetStatus` effect). The
+  // name-keyed generalization of requiresWipeOut — e.g. privaty's skill-2 rider, "Activates when
+  // the last bullet hits a target in Designated Target status". Composes with any real trigger.
+  // INDEPENDENT of requiresWipeOut in both directions: a Wipe Out window never opens a named gate,
+  // and a named status never satisfies requiresWipeOut. Omit = no status requirement
+  // (back-compatible). NO CURRENT USER — inert until an override opts in.
+  requiresTargetStatus?: string;
   // boss-element gate, checked when the trigger fires: the block only activates
   // when the fight's boss element matches (e.g. helm-aquamarine's burst "when
   // attacking an Electric Code target → +164.83%"; brid-silent-track's FB-enter
