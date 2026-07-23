@@ -50,7 +50,17 @@ if [ "${1:-}" = "full" ]; then
   say "web build + smoke"
   npm run web:build
   node scripts/web-smoke.mjs
-  node scripts/web-smoke-dpschart.mjs
+  # NOTE: the DPS-chart smoke is deliberately NOT here. It needs dist/dpschart.json, which comes
+  # from web/public/dpschart.json — a gitignored BUILD OUTPUT that build-dpschart.ts itself
+  # documents as "regenerated on every build/deploy, gitignored, and NOT part of verify.sh".
+  # A fresh git worktree has no such file, so running it here failed every isolated engine
+  # worktree (CLAUDE.md constraint 8) until a multi-minute `npx tsx scripts/build-dpschart.ts`
+  # was run first. Coverage is unchanged and available on demand:
+  #     npm run test:dpschart     # dpschart -> build -> smoke, the whole chain
+  # and the deploy path still regenerates it (`npm run build:deploy`). Committing the artifact
+  # instead was rejected: it is derived, changes with every engine/roster change (diff noise +
+  # conflicts across concurrent sessions), and a stale committed copy would let the smoke assert
+  # against an OLDER engine's output while still reporting green.
 fi
 
 say "verify: all checks passed"
