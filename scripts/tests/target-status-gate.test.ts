@@ -122,6 +122,21 @@ else fail(`P4b FAILED: requiresWipeOut opened on a named status (${(namedVsWipeO
 // status inflicted on a SPARSE trigger (every 100 hits) so last-bullet events fall both inside and
 // outside the window. The always-live `shotFired` application used above cannot test this: it
 // re-applies the status on the same frame the magazine empties, so any window reads as live.
+// The short arm lands a NONZERO amount, and that value is fully accounted for rather than noise.
+// In THIS FIXTURE privaty's magazine is her base 60 rounds (AR, hitsPerShot 1). Note that is NOT
+// her usual in-comp magazine: her real skill1 carries maxAmmoPct −50.66 (≈30 rounds), but that is
+// a `fullBurstEnter` 10s buff, and here it is doubly absent — the fixture REPLACES skill1 with the
+// status-application block, and a solo lone-Burst-III privaty makes ZERO Full Bursts, so an
+// FB-gated buff could never fire anyway. Cross-check on 60: 27 mags × 60 = 1620 rounds, 27 reloads
+// × 81f ≈ 36.5s, leaving ~143s of fire ⇒ ~11.3 rounds/s vs the AR ~12/s baseline. ✓
+// So last bullets fall on cumulative hits 60/120/180/…, while the status is applied on hits
+// 100/200/300/…. lcm(60,100)/60 = 5, so exactly
+// EVERY 5th last bullet coincides with a status application and survives even a 3-frame window.
+// Measured today: 27 rider hits ungated, 5 of them in the 0.05s arm (5/27 = 0.1852 observed) and
+// 26 in the 10s arm (26/27 = 0.9630) — the single 10s miss being the first last bullet at hit 60,
+// which precedes the first application at hit 100. Those integer counts depend on privaty's
+// cadence/ammo, so treat a future change in them as a cadence change, not a gate regression; the
+// assertions below deliberately test the INEQUALITY, which is cadence-independent.
 const P5_EVERY = 100;
 const longWin = run({ applied: 'Designated Target', gated: 'Designated Target', durationSec: 10, applyEvery: P5_EVERY });
 const shortWin = run({ applied: 'Designated Target', gated: 'Designated Target', durationSec: 0.05, applyEvery: P5_EVERY });

@@ -1868,6 +1868,9 @@ export function runSim(
           // (resolveTargets({kind:'enemy'}) returns []), so block.target is deliberately IGNORED
           // here, the same convention as 'wipeOut' above and unlike 'resource' (owner-scoped).
           // validate-overrides.ts still requires the authoring block to carry target `enemy`.
+          // ⚠ DO NOT "fix" this to route through resolveTargets(block.target): that returns [] for
+          // {kind:'enemy'}, so every carrier would silently stop applying its status. The validator
+          // rule and this ignore-the-target behaviour are two halves of one convention, not a bug.
           // Max-extends per NAME (like the shield / wipe-out windows), so a re-application refreshes
           // its own status and never touches another kit's.
           targetStatuses.set(
