@@ -46,21 +46,34 @@ npx tsx scripts/overload-regression.ts
 say "doll leveling regression (model invariants + DP monotonicity + throughput + determinism)"
 npx tsx scripts/doll-regression.ts
 
-if [ "${1:-}" = "full" ]; then
+# Tiers:
+#   verify.sh          fast  — typecheck + validation + regressions. The everyday gate.
+#   verify.sh full     +web  — adds the web build + client smoke. Use this LOCALLY.
+#   verify.sh deploy   +DPS  — adds the DPS-chart artifact build + chart-tab smoke. CI/deploy only.
+#
+# Why the DPS-chart smoke sits in `deploy` and not in `full`: it needs dist/dpschart.json, which
+# comes from web/public/dpschart.json — a gitignored BUILD OUTPUT that build-dpschart.ts documents
+# in place as "regenerated on every build/deploy, gitignored, and NOT part of verify.sh". A fresh
+# git worktree has no such file, so having it in `full` failed every isolated engine worktree
+# (CLAUDE.md constraint 8) until a multi-minute build-dpschart run. The deploy box regenerates the
+# artifact anyway, so there the smoke is nearly free.
+# Committing the artifact instead was rejected: it is derived, changes with every engine/roster
+# change (diff noise + conflicts across the concurrent sessions this repo runs), and a stale
+# committed copy would let the smoke assert against an OLDER engine's output while reporting green.
+MODE="${1:-}"
+if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ]; then
+  # the artifact must exist BEFORE vite build, which copies publicDir -> dist
+  if [ "$MODE" = "deploy" ]; then
+    say "DPS-chart artifact (gitignored build output — deploy tier only)"
+    npm run dpschart
+  fi
   say "web build + smoke"
   npm run web:build
   node scripts/web-smoke.mjs
-  # NOTE: the DPS-chart smoke is deliberately NOT here. It needs dist/dpschart.json, which comes
-  # from web/public/dpschart.json — a gitignored BUILD OUTPUT that build-dpschart.ts itself
-  # documents as "regenerated on every build/deploy, gitignored, and NOT part of verify.sh".
-  # A fresh git worktree has no such file, so running it here failed every isolated engine
-  # worktree (CLAUDE.md constraint 8) until a multi-minute `npx tsx scripts/build-dpschart.ts`
-  # was run first. Coverage is unchanged and available on demand:
-  #     npm run test:dpschart     # dpschart -> build -> smoke, the whole chain
-  # and the deploy path still regenerates it (`npm run build:deploy`). Committing the artifact
-  # instead was rejected: it is derived, changes with every engine/roster change (diff noise +
-  # conflicts across concurrent sessions), and a stale committed copy would let the smoke assert
-  # against an OLDER engine's output while still reporting green.
+  if [ "$MODE" = "deploy" ]; then
+    say "DPS-chart tab smoke (headliners, bars, matrix, compare)"
+    node scripts/web-smoke-dpschart.mjs
+  fi
 fi
 
 say "verify: all checks passed"
