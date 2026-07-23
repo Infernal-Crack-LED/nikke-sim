@@ -74,8 +74,10 @@ trap of §2. `build-packet.ts`'s leak assertion is the model for what "blind" mu
   or re-introduce an unfaithful encoding to reach GO (the kit-tdd anti-pattern).
 - After 2 failed retries, OR on **NO-GO (engine-core/irreversible)**: **stop and escalate** via the
   `autonomous_session_webhook` (`.env`), with the judge's cited divergences + the driver's recommendation.
-- A clean GO from a _blind_ gauntlet is **real evidence** of faithfulness (not the author agreeing with
-  themselves) — that is the deliverable's value claim.
+- A clean GO from the gauntlet is **evidence against idiosyncratic error + a forcing-function check that
+  every line was read precisely — NOT proof of faithfulness** (the same-model limit, §14.1: systematic
+  shared-prior errors can survive a clean GO and require a different model or the owner). Value-claim
+  downgraded per the red-team review (D9); §14 is authoritative.
 
 ## 5. Lessons learned (to harden into the workflow)
 
@@ -220,6 +222,11 @@ perResource).
 
 ### 6b. Discriminating-assertion plan (each must FAIL under the nearest-wrong model)
 
+> **⚠ Corrected by §14.6:** D3 (noRange) is reclassified to an engine-invariant SANITY CHECK (a tautology —
+> the engine force-sets noRange on all riders); D4 discriminates for the **256.17 rider only** (the 1687
+> rider has no out-of-FB baseline); D2 needs the **non-vacuity guard** and reconstructs its window from
+> `burstCast`. Honest net: ~2.5 sharp discriminators + 1 sanity check, not "four sharp."
+
 - **D1 — lastBullet cadence:** the 256.17% rider lands **once per magazine/reload cycle** → count of
   `lastBullet`-sourced `flatDamage` instances ≈ number of reloads. Fails under "never fires", "fires per
   shot", "fires per hit". (Event-log over totals.)
@@ -357,10 +364,29 @@ and the full multiplier decomposition. Tests live in `scripts/tests/units/<slug>
   `lastBullet`, `targetStatus`/`requiresTargetStatus`, `flatDamage.noRange`, and FB-by-timing all already
   exist and are observable from the event log. All four discriminating assertions (D1–D4) are expressible
   with the current payload; no engine primitive or event-payload extension is needed for this unit.
+- **2026-07-23 · D9 ·** **Red-team revisions adopted (§14, AUTHORITATIVE).** An independent red-team
+  subagent found the methodology "structurally sound but NOT enactable as-is." Adopted must-fixes: **R2**
+  de-contaminate the blind packet + automated leak assertion; **R3** FAITHFUL lines are GREEN-vs-shipped
+  pins (RED-vs-shipped is for FIX/MISSING only); **R4** an independent execution gate verifies
+  GREEN-vs-shipped + RED-vs-counterfactual (no self-reported RED); **R1/R6** same-model convergence ≠
+  correctness — GO-claim downgraded, blind agents made adversarial, model diversity noted as UNAVAILABLE
+  here (no `model` param on the Qwen agent tool); **R5/R7** convergence operationalized (run S5 blind tests
+  vs the shipped override; GREEN = convergence); **R8** D3 reclassified to a sanity check; **R9–R13**
+  magnitude out of scope, fire-rate check added, ⚑-before-board, board A/B stage, judge reframed. The skill
+  (Phase 2) is written from §14.
 
-## 9. Open questions
+## 9. Open questions / residual risks
 
-- (none yet — will be populated as the live run surfaces them; high-priority ones go to the webhook.)
+- **Same-model shared-prior risk (R1, residual).** All reviewing agents are the same Qwen model; a clean GO
+  does NOT rule out a systematic misread the model's prior favors (scope / duration / trigger-identity —
+  the §5.2 #2/#3/#4 classes). Mitigations: adversarial blind agents, de-contaminated packets, the
+  independent execution gate, the judge's formula check. **Owner spot-check is recommended** for those
+  systematic-prior-prone lines before trusting a GO. Model diversity (a different model for the blind roles)
+  is the real fix but is **unavailable in this environment** (no `model` param on the agent tool).
+- **Magnitude faithfulness is out of scope (R9).** The autonomous gate certifies structure, not numbers; a
+  plausible-wrong magnitude would GO cleanly. Moot for privaty (all MEASURED); real for future units.
+- **D2 window is reconstructed from `burstCast`** (no `targetStatus` event, §5.4) — works for privaty
+  (probe-confirmed) but a future unit whose status window ≠ burst+Ns would need an S4 event-payload extension.
 
 ---
 
@@ -374,6 +400,12 @@ prompts live there too. Part II here records the DESIGN + the decisions behind i
 Five distinct agent **roles**; blindness is enforced by what each role is handed (mirroring
 `build-packet.ts`'s leak assertion). "Blind" = blind to the driver's _implementation + reasoning_, never
 to the kit prose (every role reads `characters.json`).
+
+> **⚠ The S2 protocol below is corrected by §14.3** (read it with the table): for a FAITHFUL line on an
+> already-faithful override the test is a **GREEN-vs-shipped pin that is RED-vs-counterfactual** — "RED vs
+> the shipped override" applies ONLY to FIX/MISSING lines. S2b is **adversarial** and receives a **redacted**
+> packet (§14.2); **S2d** is an independent execution gate (no self-reported RED). Blind roles also propose
+> the nearest-wrong model + the load-bearing set, and convergence is mechanical (§14.4).
 
 | Stage                                                            | Role                                     | Sees                                                                                                                                                           | Blind to                                                                                    | Output                                                                                                                                                                                                        | Gate to proceed                                                                                                                                     |
 | ---------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -467,3 +499,111 @@ the autonomous, editing-authorized form; it substitutes the owner gate with:
 - **Fold-back (Phase 4):** once validated on privaty, the reusable lessons land in the skills themselves
   (`/skill-maintenance`): the test-derivation roles + the go/no-go rubric become a documented autonomous
   path alongside kit-tdd's owner-driven path.
+
+## 14. Red-team revisions (2026-07-23) — AUTHORITATIVE; supersedes conflicting text above
+
+An independent red-team subagent stress-tested Part II (full report: `/tmp/kit-autonomy-methodology-review.md`).
+Verdict: "structurally sound, but NOT enactable as-is." The must-fix items below are adopted and
+**supersede** the conflicting parts of §2/§6b/§10/§11/§12. The skill (Phase 2) is written from §14.
+
+### 14.1 The same-model limit (R1 + R6) — the central value-claim, downgraded honestly
+
+Independent re-derivation by the blind agents decorrelates **idiosyncratic** (random) error but does
+**NOT** remove **shared-prior** bias: every reviewing agent here is the _same underlying model_ (the Qwen
+`agent` tool has **no `model` parameter**, so audit-kit's Opus-pinning is unavailable in this environment).
+A plausible-but-wrong reading the model's prior _favors_ — and the repo's taxonomy says the dominant errors
+are exactly these SYSTEMATIC ones: scope-collapse, duration-semantics, trigger-identity (§5.2 #2/#3/#4) —
+will be produced identically by driver and blind agent; they converge, and the convergence is **false
+confidence**. **Therefore the GO-claim is downgraded:** a clean gauntlet GO is _evidence against
+idiosyncratic error + a forcing-function check that every line was read precisely_, **NOT** proof of
+faithfulness; systematic shared-prior errors require a **different model or the owner**. Mitigations baked
+into the protocol: (a) **adversarial** blind agents that generate the nearest-wrong reading, not just
+re-derive (§14.3 S2b); (b) true information asymmetry (blindness-by-construction, de-contaminated per
+§14.2); (c) the **independent execution gate** (§14.3 S2d) — even a same-model misread must produce a test
+that _provably discriminates_; (d) the judge's independent formula check; (e) **owner spot-check
+recommended** for the systematic-prior-prone lines (scope / duration / trigger-identity).
+
+### 14.2 Blind-packet de-contamination (R2) — enforced before dispatching S2b/S5/S6 for unit X
+
+The blind roles read the **kit prose** (legitimate input — it names the mechanic; that is what is being
+derived) and the **schema vocabulary** (`types.ts` — the language). They must NOT receive any methodology
+text that _states X's answer_. Before dispatch, build a **REDACTED methodology packet**: strip X's
+name/slug, its trigger/gate/magnitudes, and any worked example naming X — concretely, for privaty, redact
+§5.2#4 ("privaty = lastBullet + targetStatus gate"), §5.6 ("…first pin from privaty"), and kit-parse
+hard-rule #5's "Privaty S2 … 256.17% … last bullet" example (substitute a _different_ unit's example if one
+is needed). **Automated leak assertion (mirrors `build-packet.ts`):** grep the assembled blind prompt for
+X's slug + key magnitudes (`256.17` / `1687` / `1407.64`) + answer tokens (`Designated Target`) **outside
+the prose block**; fail loudly if any appear. The new test-writer roles previously had no such guard — the
+"mirrors build-packet.ts" claim (§10) is now actually honored.
+
+### 14.3 Corrected test-first protocol (supersedes §10 S2a–S2c; adds S2d)
+
+- **S2a (driver):** for each line, disposition + the 4 questions, and name the **nearest-wrong
+  counterfactual** explicitly. **For a FAITHFUL line on an already-faithful override** (privaty's case):
+  write a PIN assertion that is **GREEN vs the shipped override AND RED vs the named counterfactual**
+  (`withPatchedOverride`). **"RED vs the shipped override" applies ONLY to FIX/MISSING lines on an
+  unfaithful override** (then implemented to green in S3). This fixes R3 (the old "RED vs shipped" gate
+  contradicted D4 for a faithful override).
+- **S2b (independent test-faithfulness reviewer — ADVERSARIAL):** handed the **redacted** packet (§14.2) +
+  kit prose + harness + schema + disposition vocab + the 4 questions. Blind to the driver's
+  tests/dispositions/reasoning. Task: independently re-derive the spec table AND, **for each line, generate
+  the NEAREST-WONG reading + the assertion that distinguishes it** (adversarial — surfaces the shared prior
+  per R1/R5); propose the **load-bearing set** objectively (every FAITHFUL/FIX/MISSING line that is not
+  UNMODELED). Returns spec + per-line nearest-wrong + distinguishing assertion + load-bearing set + tier tags.
+- **S2c (reconcile):** driver compares its spec / counterfactuals / load-bearing set against S2b's.
+  Convergence = green-light. **A divergence on the nearest-wrong model OR on load-bearing-ness is itself a
+  divergence**, resolved toward the prose-faithful reading + recorded; unresolved ones go to the judge (R5).
+- **S2d (INDEPENDENT VERIFICATION GATE — R4):** a **separate** subagent (or an automated `vitest` run the
+  driver does not author) executes the S2a tests against (i) the **unmodified shipped override** — expect
+  GREEN for every FAITHFUL pin — and (ii) **each named counterfactual** — expect RED, and records the full
+  pass/fail matrix as an artifact. **Self-reported discrimination is not acceptable.** A test that is GREEN
+  under BOTH shipped and counterfactual (asserts nothing) FAILS this gate. This is the autonomous form of
+  kit-tdd's "confirm RED before implementing."
+
+### 14.4 Operationalized S7 rubric amendments (R5/R7/R9/R10/R13)
+
+- **Convergence (GO #3) is mechanical (R7):** run the **S5 blind tests, UNMODIFIED, against the driver's
+  shipped override. GREEN = convergence; any RED = a divergence the judge classifies.** (A divergence the
+  blind caught is the real signal; mere same-model agreement is weak — §14.1.)
+- The blind agents' independently-proposed **nearest-wrong models + load-bearing set** are judge inputs;
+  driver↔blind divergence on either is reconciled (R5).
+- **Magnitude faithfulness is OUT OF SCOPE for the autonomous gate (R9):** tests are stat-independent by
+  design, so the pipeline certifies **STRUCTURE** (trigger / scope / duration / target / gating), not
+  numbers. Every magnitude carries its evidence tier; a plausible-wrong magnitude would GO cleanly and that
+  is a declared limitation (moot for privaty — all MEASURED).
+- **Fire-rate / "modeled≠working" check added (R10):** each FAITHFUL block's fire count over the 180s fight
+  must match the prose-implied cadence, confirmed from the event log (the DBG side-effect check), not just
+  structural presence.
+- **S7 is NOT "blind to reasoning" (R13):** it sees the driver's artifacts (which embody the reasoning).
+  Reframe: the judge **grades ARTIFACTS vs ground truth** (prose + formula + blind re-derivations) and does
+  **not trust the author's self-report**.
+- **Non-gating BOARD A/B report stage added (R13):** run `board-read | grep <slug>` before/after, report
+  both numbers + classify movement (toward 1.0 = the misencoding was the error; away = fit-exposure, a
+  separate localization thread, never a reason to revert). Unit tests pin _faithful_; the board pins
+  _accurate_; report both.
+
+### 14.5 ⚑-before-board (R11, general pipeline)
+
+Commit ⚑ estimates **before** consulting the board reading (or have a blind agent re-derive each estimate
+and compare), so estimates cannot be back-fit. Moot for privaty (no ⚑ — all MEASURED).
+
+### 14.6 Corrected privaty assertions (R8 + R12; supersedes §6b D1–D4 wording)
+
+- **D1 (lastBullet cadence) — discriminates:** ≈reloads (39≈43) vs `shotFired` (≈shots, far more). Note:
+  "fires per hit" is **degenerate** for privaty (`hitsPerShot 1` ⇒ shot==hit) — not a distinct nearest-wrong.
+  Attribution is **by magnitude** (256.17 is distinct) — works for privaty, fragile generally (state the reliance).
+- **D2 (targetStatus-gated 1687) — discriminates; window from `burstCast`:** the Designated-Target window is
+  reconstructed from privaty's `burstCast` frames + 10s (the probe confirmed this; **no S4 event extension
+  needed** despite §5.4 having no `targetStatus` event). **Non-vacuity precondition:** assert ≥1 last bullet
+  IN-window (1687 fires) AND ≥1 last bullet OUT-of-window (1687 does NOT fire) — the probe shows 12 in-window
+  / 27 out-of-window last bullets, satisfied. Counterfactual: remove `requiresTargetStatus` → 1687 fires on
+  every last bullet (≈ the 256.17 count, many out-of-window).
+- **D3 (noRange) — RECLESSED to an ENGINE-INVARIANT SANITY CHECK:** the engine force-sets `noRange` on all
+  riders (§5.2#12), so it holds for ANY override — it discriminates nothing about privaty. Still asserted
+  (`rangeApplied === false` on S2 riders) but **not counted as a faithfulness discriminator**.
+- **D4 (FB-major-by-landing) — discriminates for the 256.17 rider ONLY:** it has in-FB (27) and out-of-FB
+  (12) instances; in-FB `mult` ≈ 1.5× out-of-FB; a `noFb:true` counterfactual yields ZERO `fbMajorApplied`
+  riders. The **1687 rider fires only in-window/in-FB → no out-of-FB baseline → its FB-major is NOT
+  independently discriminable.** The "both riders" claim is withdrawn.
+- **Honest net:** privaty has **2 clean discriminators (D1, D4-for-256.17) + D2 (discriminates, window-from
+  -burstCast, non-vacuity guard) + D3 (sanity check)** — "~2.5 sharp + 1 tautology," not "four sharp."
