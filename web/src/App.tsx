@@ -1765,6 +1765,11 @@ export function App({ user }: { user: AuthUser | null }) {
       )
     );
   };
+  // does a slot carry the bare 8/12 floor (no remainder lines)?
+  const isOl8of12 = (s: SlotState): boolean =>
+    s.olElem === OL_8_12_ELEM &&
+    s.olAtk === OL_8_12_ATK &&
+    s.olExtra.length === 0;
 
   // "scope lock" preset: no cubes, no doll, Base 5 gear, 3★/7 core, 400 synchro.
   // relationshipLevel '' → engine uses each unit's manufacturer max (scope-lock basis).
@@ -7127,16 +7132,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     none
                   </button>
                   <button
-                    className={
-                      allHave(
-                        (s) =>
-                          s.olElem === OL_8_12_ELEM &&
-                          s.olAtk === OL_8_12_ATK &&
-                          s.olExtra.length === 0,
-                      )
-                        ? 'on'
-                        : ''
-                    }
+                    className={allHave(isOl8of12) ? 'on' : ''}
                     onClick={() =>
                       setAll({
                         olElem: OL_8_12_ELEM,
@@ -7148,7 +7144,9 @@ export function App({ user }: { user: AuthUser | null }) {
                     8/12
                   </button>
                   <button
-                    className={allHave(isOl12of12) ? 'on' : ''}
+                    className={
+                      allHave(isOl12of12) && !allHave(isOl8of12) ? 'on' : ''
+                    }
                     title='8/12 floor + each unit’s damage-optimal 4 remainder lines (precomputed, Solo framework)'
                     onClick={applyOl12of12}
                   >
