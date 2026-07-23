@@ -6503,16 +6503,15 @@ export function App({ user }: { user: AuthUser | null }) {
           {dollFaq(
             'What is the overall strategy for leveling dolls?',
             <>
-              Use <b>all</b> your kits — don&rsquo;t hoard. Blue kits are the
-              workhorse; spend Purple and Gold to relieve the Blue crunch, and
-              put <b>Gold on the phase 10→15 push</b>. Done right that&rsquo;s
-              about <b>{mixed} SR dolls per 1000 kit-boxes</b>.
+              Use all your kits — don&rsquo;t hoard Gold kits. Blue kits are the
+              workhorse; spend Purple once the super success chances are higher,
+              and put Gold on the phase 10→15 push.
             </>,
             <>
               Kits come mostly Blue with a little Purple and Gold, and the
               fastest plan spends <i>every</i> kit — leaving Purple/Gold in your
               bag just wastes them. The simplest version (one tier per phase)
-              still gets ~<b>{pure}</b> dolls per 1000 boxes: mostly Blue,
+              still gets ~<b>{+pure / +mixed} %</b> efficiency: mostly Blue,
               Purple through the mid-phases, Gold for the final 10→15 climb.
               Splitting some phases between two tiers recovers the last ~20%,
               but the simple rule is close and much easier to follow.
@@ -6522,7 +6521,7 @@ export function App({ user }: { user: AuthUser | null }) {
             'Better to level rare (R) dolls 0→15 first, or combine them?',
             <>
               <b>Combine (trade) them.</b> Four spare R dolls traded are worth
-              far more than leveling one to 15 to launder.
+              far more than leveling one to 15 to upgrade to SR 5.
             </>,
             <>
               Leveling an R doll to 15 to launder it into an SR nets only about{' '}
