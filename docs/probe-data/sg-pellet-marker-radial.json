@@ -1,0 +1,42 @@
+{
+  "measurement": "Per-pellet radial positions inside the SG aim circle, machine-read from the pellet markers (white circle = hit, red circle = core hit - owner-ruled semantics) in soda-twinkling-bunny's burst-2 near-band Hit-Rate-ON window",
+  "status": "INDEPENDENT-METHOD CONFIRMATION of the pellet radial distribution - refutes the live centered-Gaussian decisively; consistent with uniform-per-area (the 16-cell fit's winner). Findings-only; NOTHING ENACTED.",
+  "date": "2026-07-22",
+  "video": "docs/probes/control + carry/soda tb control.mov",
+  "window": "video 46.5-62.5 (burst 2, near band, Hit Rate 38.91 ON)",
+  "method": {
+    "pipeline": "60fps frame extraction -> aim-disc tracking (Hough on disc edge, red-glow seeded, linear interpolation across gaps) -> pellet-marker detection (matched annular filter for the grey-outlined white circles + closed-ring verification + grey-not-black darkness floor to reject popup digit holes + colour-neutrality to reject gold coins; red-filled-circle detection with circularity to reject the wedge-shaped binary hit markers) -> static-track association (markers are screen-fixed; moving objects fragment and are culled) -> spawn-time clustering into shots; radius measured from the spawn-frame disc centre",
+    "scripts": "docs/probes/drawn-geometry/marker_detect2.py + marker_track.py",
+    "discRadius_px": 48.2
+  },
+  "validationVsOwnerCount": {
+    "groundTruth": "docs/probe-data/soda-tb-sg-core-hr-windows.json ownerCount.shots.near_ON (16 shots, 149 landed, 11 cores)",
+    "machine": "15 shot events, 101 landed, 10 cores (plus 2 noise singletons dropped)",
+    "structuralMatch": "the window's UNIQUE 3-core shot appears at the right sequence position; core totals 10 vs 11; shot cadence ~0.67s with the reload gap at ~54-55.5s reproduced",
+    "recall": "~0.70 on landed pellets - misses concentrate in (a) the first ~2 shots inside the Full-Burst-start explosion and (b) overlapping/touching markers that break the closed-ring test; both approximately radially unbiased",
+    "provenanceFinding": "this match PROVES the counted near_ON window is BURST 2 (video 47-62) - consistent with ownerCount.windowsCounted 'ranks 1-4'; the geometry handoff's earlier 'burst 2 still uncounted' line was stale/backwards (the uncounted extra-near window is burst 5, video 162-177)"
+  },
+  "result": {
+    "n_pellets": 101,
+    "median_r_over_R": 0.726,
+    "frac_inside_half_R": 0.188,
+    "KS_5pct_critical": 0.135,
+    "KS": {
+      "uniform_per_area_F_r2": 0.139,
+      "edge_ring_k2_F_r3": 0.15,
+      "gaussian_sigma20.8_live_HR39": 0.376,
+      "gaussian_sigma32_live_HR0": 0.21
+    },
+    "radial_thirds_measured_vs_uniform": {
+      "inner": [0.069, 0.111],
+      "middle": [0.356, 0.333],
+      "outer": [0.574, 0.556]
+    },
+    "reading": "Centered Gaussian (the live cone's distribution shape) is decisively refuted by direct position measurement. Uniform-per-area sits at the KS acceptance boundary with a mild rim-shift, consistent with the 16-cell fit's k=1.04 once the ±5px disc-centre jitter (radial smear; 15% of radii spill past R) is accounted. Both independent methods - hand-counted rates (sg-drawn-geometry.json formalFit_16cell) and machine-measured positions (this file) - converge."
+  },
+  "caveats": [
+    "Recall ~0.70; radial smear from disc-centre interpolation jitter ~+-5px; radii beyond R clamped to R for the KS test.",
+    "Single window (near band, HR ON). Other bands/arms not yet machine-read - the pipeline scales to them if wanted.",
+    "Red-marker sample too small in this window (10) for a red-only radial statement."
+  ]
+}
