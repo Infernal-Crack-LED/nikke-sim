@@ -242,6 +242,40 @@ privaty — the chain completes so privaty actually casts (a lone B3 makes ZERO 
 verify elemental advantage for the B1 `elemAdvantageDamagePct` line; if inert in this comp, test B1
 separately (adjust boss element). The core lastBullet/targetStatus mechanics (D1–D4) are element-independent.
 
+### 6c. Fixture probe — empirical validation (2026-07-23, read-only sim)
+
+Probed `controlComp('privaty', helm)` with `cfg.onEvent` (run from the main checkout, which has
+`node_modules`; worktree code is byte-identical, branched off clean main). Damage events carry:
+`frame, sec, slug, bucket, srcSlot, amount, atkPct, baseAtk, critEligible, coreEligible, critRate,
+coreRate, inFullBurst, fbMajorApplied, rangeApplied, mult`.
+
+| signal                       | helm=true   | helm=false |
+| ---------------------------- | ----------- | ---------- |
+| privaty burstCasts           | 6           | 5          |
+| reloads                      | 43          | 30         |
+| 256.17 riders (S2a)          | 39          | 29         |
+| 1687 riders (S2b)            | 12          | 8          |
+| 256.17 with `fbMajorApplied` | 27 / 39     | 8 / 29     |
+| 1687 inside burst+10s window | **12 / 12** | **8 / 8**  |
+
+**Conclusions (de-risk the test design):**
+
+- **D1 observable:** 256.17 fires ~once per magazine (39 ≈ 43 reloads, far below the ~hundreds of shots) —
+  assert count ≈ reloads and ≪ shot count; a `shotFired`/`hitCount:1` counterfactual fires far more.
+- **D2 observable + sharp:** ALL 12 (resp. 8) 1687 riders fall inside a privaty burst+10s window — assert
+  every 1687 is in-window AND count(1687) < count(256.17); removing `requiresTargetStatus` (counterfactual)
+  fires 1687 on every last bullet (≈ the 256.17 count, many out-of-window).
+- **D3 observable:** `rangeApplied` is a damage field — assert all S2 riders have `rangeApplied === false`.
+- **D4 observable:** both FB populations exist (27 in-FB / 12 out-of-FB at helm=true) — assert in-FB riders
+  carry `fbMajorApplied === true` (≈1.5× the out-of-FB `mult`) and a `noFb:true` counterfactual yields ZERO
+  `fbMajorApplied` riders. Certifies the faithful FB-by-timing model against the removed `noFb` fudge.
+- **S4 (engine) expected NO-OP for privaty:** `lastBullet`, `targetStatus`/`requiresTargetStatus`,
+  `flatDamage.noRange`, and FB-by-timing all already exist AND are observable from the event log — no
+  engine primitive or payload extension is needed. The gauntlet's step 4 should not fire for this unit.
+- **Fixture choice:** `controlComp('privaty', true)` is primary (richer signals: 6 bursts, 27/39 in-FB
+  riders for D4); `helm=false` is a sensitivity check. privaty shares the B3 slot with helm, but her own
+  `burstCast` events (`slug==='privaty'`) cleanly mark her casts + Designated-Target windows.
+
 ## 7. Structural contracts (override / characters.json / harness)
 
 **`OverrideFile`** (`src/skills/index.ts`): `{ slug?, skill1: Block[], skill2: Block[], burst: Block[],
@@ -315,6 +349,14 @@ and the full multiplier decomposition. Tests live in `scripts/tests/units/<slug>
   progressive `offset/limit` (never re-read a path from line 0); subagents get only small files
   (char-extracts, not the 97K `characters.json`) and a one-read-per-path rule. Background agents write
   full findings to `/tmp` (the foreground parallel path returned no model-visible output).
+- **2026-07-23 · D7 ·** The worktree has no `node_modules` (gitignored, not copied). Phase-3 test runs
+  need `ln -s /Users/maxwellsutton/nikke-sim/node_modules <worktree>/node_modules` before `npx vitest` in
+  the worktree (the symlink is gitignored → no commit pollution). The §6c probe sims ran from the main
+  checkout (byte-identical code) to avoid this for read-only exploration.
+- **2026-07-23 · D8 ·** **S4 (engine) is expected to be a NO-OP for privaty** — the §6c probe confirmed
+  `lastBullet`, `targetStatus`/`requiresTargetStatus`, `flatDamage.noRange`, and FB-by-timing all already
+  exist and are observable from the event log. All four discriminating assertions (D1–D4) are expressible
+  with the current payload; no engine primitive or event-payload extension is needed for this unit.
 
 ## 9. Open questions
 
