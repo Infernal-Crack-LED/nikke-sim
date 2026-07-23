@@ -8,6 +8,50 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U30 — rolling reload has NO datamine tell; both candidate fields are refuted (opened 2026-07-22)
+
+The engine-work-plan's step 5d ("rolling reload — `modernia`, `volume`") rested on the datamined
+`reload_start_ammo` field marking which units top up their magazine while firing. **That premise is
+refuted, and so is the obvious replacement.**
+
+1. **`reload_start_ammo` carries ZERO per-unit information.** It equals `max_ammo − 1` for **192 of
+   192** shot rows in `data/characters.json` — no exceptions, every weapon class, every unit. So
+   Modernia's 299 and Volume's 119 are simply their 300- and 120-round magazines minus one, exactly
+   like everyone else's. The field cannot identify anybody as anything. (Re-derive:
+   `reload_start_ammo != max_ammo - 1` over every shot row returns the empty set.)
+2. **`reload_bullet` — the natural replacement — has measured counter-examples.** It is the one
+   reload field that genuinely varies: `10000` (177 units), `3300` (14 — nine SGs + five RLs, and it
+   discriminates *within* a class: Noir 3300 vs Dorothy: Serendipity 10000, both 9-ammo SGs), `5000`
+   (1 — Grave). Read as "fraction of the magazine restored per reload," it would mean partial/chunked
+   reloads. **Two of its three values are already measured to produce full-magazine, no-fire-during-
+   reload behavior:**
+   - **Grave (5000)** — `src/skills/overrides/grave.json`, measured 2026-07-15 from `grave solo.MP4`:
+     *"reload-AMOUNT-halved (partial mag) refuted by 61.5 shots/gap = full 60-round mags"* (n=19 clean
+     reload gaps).
+   - **Noir (3300)** — `docs/probe-data/noir-solo-recon.json`: the per-magazine method reads the
+     damage counter at consecutive `009` → `009` mag-start frames for *"EXACTLY one 9-shot mag,"* and
+     *"counter identical at t53.0 and t53.8 → confirmed no firing during the preceding reload."* Full
+     mag, one continuous ~0.6–0.9 s gap.
+
+**Consequence.** The only unit in the roster observed to roll its reload is **Jill**, and that rests
+entirely on **footage** (*"the video shows no reload gaps"*, DECISIONS 2026-07-13) — her datamine row
+is indistinguishable from everyone's (`reload_start_ammo 8 = 9−1`, `reload_bullet 10000`). The
+`reload_start_ammo 8` clause quoted in her DECISIONS entry and in `jill.json` as the tell for the
+mechanic is **non-discriminating** and should not be reused as one; her *model* is unaffected (it was
+measured, not inferred). ⇒ Step 5d has an **empty identified population** and is footage-gated like
+5e/5f, not the "small, self-contained, low risk" build the plan describes. Do not build the primitive
+until a carrier is identified.
+
+**What would answer it:** (a) what `reload_bullet` actually controls — if not restored-fraction, then
+plausibly reload *animation* chunking with no ammo-economy effect, which is why neither measurement
+sees it; (b) whether any 3300 unit shows the ammo counter refilling in steps of 3 with fire resuming
+mid-reload. Owner already holds usable footage for three of the fifteen — `noir`, `drake`
+(`docs/probe-data/coreband-drake-sg.json`) and `soda-twinkling-bunny` (`soda-tb-control-recon.json`,
+`soda-tb-sg-core-hr-windows.json`). Noir's read above is the strongest single data point and it says
+no. A negative sweep across the 3300 group would close this and retire step 5d entirely. (NB
+`docs/probe-data/maiden-solo.json` is **maiden-ice-rose** (RL/Electric), NOT `maiden` (SG/Electric,
+the unit in the 3300 group) — it is not evidence here.)
+
 ### U29 — the Snow White: Heavy Arms fire team makes 12 Full Bursts in reality; the sim generates 10 (opened 2026-07-22)
 
 The graded comp internally labeled "N5" — Anis: Star, Arcana: Fortune Mate, Privaty,

@@ -66,9 +66,12 @@ Base rates: [ore-game measured rates](https://ore-game.com/nikke/post/verify-mem
 (AR ~11.79/s, SMG ~20.01/s, SG ~1.50/s at 60fps) + decoded shot tables
 ([rcasdzxc/SD](https://github.com/rcasdzxc/SD)). The class rate is a DEFAULT — the
 datamined `rate_of_fire` column is per-unit and some units deviate wildly (Jill: 150 rpm
-= 2.5/s on an "AR", video-confirmed; engine `charFixes.pullsPerSec`). The shot table
-also encodes ROLLING RELOADS via `reload_start_ammo` (Jill reloads from 8/9 ammo while
-still firing — zero downtime). Reload durations are per-unit DB values
+= 2.5/s on an "AR", video-confirmed; engine `charFixes.pullsPerSec`). ROLLING RELOADS
+(top up while firing — Jill's zero-downtime reload, video-confirmed) are real but have
+**NO datamine tell**: `reload_start_ammo` is `max_ammo − 1` for all 192 shot rows, so it
+identifies nobody, and `reload_bullet` (the field that does vary) is measured-refuted as
+a restored-fraction at two of its three values — see open-questions **U30** before using
+either as evidence. Only footage identifies a carrier. Reload durations are per-unit DB values
 (`reloadFrames`). Reload duration is SUBTRACTIVE like charge speed
 (IMPLEMENTED 2026-07-13): actual reload = displayed × 0.975 × (1−buff) + 0.21s tail —
 buffs past 100% only remove the scaled part

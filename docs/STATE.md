@@ -209,8 +209,8 @@ current but not a contract.
 | `burstSnapshotsPreFb` | Burst damage resolves pre-FB/pre-stage | cinderella |
 | `consolidation` | Pellet-consolidation single-bullet mode | dorothy-serendipity |
 | `magDumpRof` | Whole-magazine dump after a priming charge | cinderella |
-| `hitsPerShot` | Base SG/MG pellet/belt-round count per pull | ~20 units |
-| `pullsPerSec` | Per-unit measured fire-cadence override | ~26 units |
+| `hitsPerShot` | Base SG/MG pellet/belt-round count per pull | **34 units** — char-static from `data/characters.json` (sync: `shot_count × muzzle_count`, with `modernia`/`anis-star` carve-outs): 26 × 10 (every SG), 8 × 2. **No override sets it**; it is not a `charFixes` field. |
+| `pullsPerSec` | Per-unit measured fire-cadence override | **1 unit** — `jill` (2.5/s, video-measured). `weaponSwap.pullsPerSec` is a live capability (`sim.ts:2426`) with **zero** current users. |
 
 **Counts-as elements (`countsAsElements`).** A unit counts as EVERY element it can be elementally
 advantaged as: its own code plus one per `advantageVs` effect in its override, mapped back through the
