@@ -257,6 +257,22 @@ bready, elegg-boom-and-shock, guillotine-winter-slayer, helm-aquamarine, laplace
 ludmilla-winter-owner, mana, mari, modernia, quency-escape-queen, raven, sakura-bloom-in-summer,
 scarlet, soline-frost-ticket, volume.
 
+### 1b. "is fixed at" stat LOCKS — no engine vocabulary — 8 units
+
+Kit lines of the form *"X is **fixed at** V"* CLAMP a stat for a window (owner ruling 2026-07-22): the
+value is the locked level and it cannot be modified further — not a delta applied on top. Sign varies
+(`milk-blooming-bunny` reads *"fixed at a 50% **reduction**"*, `jill` *"a 99.96% increase"*). The engine
+has stat buffs but no clamp, so all of these are approximated, ignored, or hand-carved:
+
+| locked stat | units |
+|---|---|
+| reload speed | `jill`, `exia`, `asuka-wille`, `milk-blooming-bunny` |
+| charge time | `anis-star`, `nayuta`, `cinderella-crystal-wave` (also *"reload time is fixed at 3 sec"*) |
+| pellet count | `dorothy-serendipity` — the only one modelled, via her bespoke `consolidation` block |
+
+Impact is comp-dependent (a reload-speed lock only bites when a teammate would otherwise buff reload).
+→ open-questions **U31**, which also carries the `jill` `reloadFrames: 0` consequence.
+
 ### 2. Defensive / heal / shield with no engine vocabulary — ~25 units
 
 No HP pool → lifesteal, shields, overheal buffers, taunt, invuln, Indomitability are inert/dropped.
