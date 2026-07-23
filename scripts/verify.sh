@@ -37,6 +37,9 @@ npx tsx scripts/sg-geometry-regression.ts | tail -1
 say "engine regression (measured truths + snapshots + seeded determinism)"
 npx tsx scripts/regression.ts
 
+say "control regression (720-kit-audit liter/crown/helm support-core suite — damage snapshots)"
+npx tsx scripts/control-regression.ts | tail -1
+
 say "engine primitive tests (reload-triggered buff removal)"
 npx tsx scripts/tests/reload-buff-removal.test.ts | tail -1
 
