@@ -449,7 +449,29 @@ iron-weak fight (T8, elemental advantage) and the wind-weak fight (T5, no advant
 gained less from elemental advantage in reality than the sim's x1.1 — do function-damage riders
 skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
 
-### U14 — When do +50% Full Burst / +30% range apply to SKILL damage? (test framework built)
+## ANSWERED
+
+### A34 (U14) — +50% Full Burst on SKILL damage is a TIMING gate; `FBRULE` default flipped to `timing` 2026-07-23 (range was already settled)
+
+**ANSWERED 2026-07-23 (owner ruling; shipped as a verified no-op).** Both halves are settled and live:
+- **RANGE:** skill/rider/DoT damage NEVER takes the +30% range major (`noRange` universal) — settled
+  long before this entry, unchanged.
+- **FULL BURST:** it is a TIMING/snapshot gate. Any NON-burst-cast skill/rider/DoT landing inside the
+  FB window takes the +50%; burst-cast/instant damage never does (it snapshots at use time, U10). The
+  MECHANISM was established 2026-07-14 — what remained was purely a MIGRATION, because six units
+  carried calibration-relic `noFb` flags masking cadence over-models and flipping early would have made
+  them run hot. Five went 2026-07-15; the last (`privaty`) went with her Designated-Target re-encode on
+  2026-07-23, at which point `perkit` and `timing` were already identical for every unit. So the default
+  flip was provably a no-op, and was verified as one: regression byte-identical under BOTH arms.
+- **Guard:** `noFb` is now REJECTED by `validate-overrides.ts`. Inert-but-accepted is exactly how a
+  relic creeps back; a kit that genuinely needs FB suppressed is a NEW mechanism finding, not a flag.
+
+**What this does NOT settle:** the per-unit residuals the relics were hiding. `privaty` reads 1.118 HOT
+after her relic came off — fit-exposure, tracked as a per-unit localization thread, NOT a reason to
+re-add `noFb`. → DECISIONS 2026-07-23, `docs/STATE.md` §1.
+
+**Original question + evidence trail retained below.**
+
 
 > **STATE CORRECTION 2026-07-22 (owner kit read) — the last live `noFb` carrier is a FABRICATED block.**
 > `privaty`'s `skill2` `dot atkPct 1687 durationSec 10 intervalSec 3 noFb` is not in her kit. The 1687% is
@@ -568,7 +590,6 @@ retired. → `docs/handoffs/2026-07-22-engine-work-plan.md` §Step 6f.
 
 ---
 
-## ANSWERED
 
 ### A31 (U17) — SG pellet landing is PER-UNIT; the class table STANDS as the shipped compromise — CLOSED by owner override 2026-07-17 (re-filed here 2026-07-22)
 > **Re-filed to ANSWERED 2026-07-22** — this entry had been left sitting in UNANSWERED while its

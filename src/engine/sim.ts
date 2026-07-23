@@ -88,25 +88,27 @@ const RIDER_CRIT = ENV.RIDERCRIT !== 'off';
 // rule so `scripts/probe/fb-range-lab.ts` can A/B-grade which rule best fits the measured ground truth
 // (ein feathers = FB-ON, liberalio proc = FB-ON, scarlet procs = FB-OFF, burst-cast nukes = FB-OFF).
 // Burst-cast damage is ALWAYS FB-exempt (U10, measured), regardless of rule.
-// DEFAULT = 'perkit' (2026-07-15, temporary): FB is a TIMING/snapshot gate — any non-burst-cast
-// skill/rider/DoT landing during the FB window SHOULD get the +50% (JP+KR research, empirical both
-// sides; see DECISIONS + open-questions U14). The end-state default is 'timing'. But the old per-kit
-// `noFb` flags were calibration RELICS masking cadence over-models on rider-dominant units; flipping
-// the global default to 'timing' before those 6 units are retuned makes them run hot. So the default
-// stays 'perkit' during the per-unit retune (autonomous-invariant-audit mission); each retuned unit
-// gets its `noFb` flag REMOVED (so perkit==timing for it), and once all 6 are green the default flips
-// to 'timing' with zero further drift. ENV.FBRULE:
-//   timing    : force FB-by-timing for all skills (mission target / A-B)
+// DEFAULT = 'timing' (2026-07-23). FB is a TIMING/snapshot gate: any non-burst-cast skill/rider/DoT
+// landing during the FB window gets the +50% (JP+KR research, empirical both sides; DECISIONS +
+// open-questions U14). The default was temporarily 'perkit' from 2026-07-15 while six units still
+// carried calibration-RELIC `noFb` flags that masked cadence over-models — flipping early would have
+// made them run hot. That migration is COMPLETE: the last relic went with privaty's
+// Designated-Target re-encode (2026-07-23), so NO override carries `noFb` and this flip was a
+// verified NO-OP (regression byte-identical).
+// ⇒ Consequence: `noFb` in an override is now INERT under the default. validate-overrides.ts REJECTS
+// it, so a future author gets a loud error instead of a silently-ignored flag.
+// ENV.FBRULE (experiment arms only — `perkit`/`dotfb` are vestigial now that no carrier exists):
+//   perkit    : legacy per-kit relic flags (revert arm; identical to 'timing' with zero carriers)
 //   dotfb / seqoff / noskillfb : experiment arms (see fb-range-lab.ts)
 // Burst-cast (instant) damage is ALWAYS FB-exempt (snapshots at use-time, before FB flips on).
 function skillNoFb(perKitNoFb: boolean, isBurstCast: boolean, flavor: string | undefined): boolean {
   if (isBurstCast) return true; // burst-cast/instant damage lands before FB begins → never +50%
   switch (ENV.FBRULE) {
-    case 'timing': return false; // FB by landing timing (mission target; flip default here once all 6 noFb relics are retuned)
+    case 'perkit': return perKitNoFb; // legacy calibrated relics — no carrier remains (revert arm)
     case 'dotfb': return flavor === 'dot' || flavor === 'sustained' ? false : perKitNoFb;
     case 'seqoff': return flavor === 'sequential';
     case 'noskillfb': return true;
-    default: return perKitNoFb; // 'perkit' — calibrated per-kit relics; temporary stable baseline during the per-unit retune
+    default: return false; // 'timing' — FB by landing time. DEFAULT since 2026-07-23.
   }
 }
 const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
