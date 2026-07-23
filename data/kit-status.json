@@ -1824,7 +1824,9 @@
         "status": "authored",
         "provenance": "parser-baseline",
         "date": "2026-07-16",
-        "findings": []
+        "findings": [
+          "TDD step-3 spec test LANDED 2026-07-23 (scripts/tests/units/liter.test.ts, 11 assertions across her 4 kit lines). NO fix enacted -- the owner-driven line-by-line review found the shipped model faithful on all four lines, so these are regression PINS. L1 (the team burst-CDR ladder) is pinned END-TO-END per owner ruling: exact arithmetic on the fight's one cooldown-bound interval (baseCD - tier1 2.34s) plus dose-response against three counterfactual ladders (no CDR / flat 2.34 / flat 3.17 non-cumulative / flat 8.21 saturated). This is the high-blast-radius line: it sets the WHOLE team's rotation and nothing else gates it. L3 pins the 2026-07-21 cover-HP ruling by proving no recovery consumer fires with liter as the only possible source. HER 1.208 HOT IS NOT A KIT-ENCODING ERROR: her kit has zero self-damage lines, so her own damage is pure SMG weapon fire. SMG is the only weapon class with a board mean above 1.0 (1.058; chisato 1.15 / quency-escape-queen 1.17 / little-mermaid 1.04 / nayuta 0.86) -- corroborates the existing SMG geometry/cadence threads. Batch-and-stop: surfaced to the owner, nothing enacted."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
