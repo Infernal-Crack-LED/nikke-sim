@@ -25,6 +25,9 @@ npx tsx scripts/kit-status.ts --check
 say "approved-nickname validation (characters.json nicknames unambiguous)"
 npx tsx scripts/validate-nicknames.ts
 
+say "chunked-reload convention (reloadFrames == reload_time × chunks × 0.6 + 21, chunks from reload_bullet)"
+npx tsx scripts/check-reload-chunks.ts
+
 say "doc drift (STATE.md §5 false members + exact counts; generated primitive census; resolved-but-UNANSWERED)"
 npx tsx scripts/doc-drift.ts
 

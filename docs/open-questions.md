@@ -73,6 +73,34 @@ and in `jill.json` is non-discriminating (`jill` is `reload_bullet 10000`). Her 
 BURST buff — 100% ammo dump + Forced Reload + reload speed fixed at +99.96% for 10 s — which is its own
 thread: **U31**.
 
+**BUILT 2026-07-22 — the chunk COUNT is now derived and gated** (`scripts/check-reload-chunks.ts`, wired
+into `verify.sh`). `chunks = 10000 / reload_bullet`, asserted against
+`reloadFrames == reload_time × chunks × 0.6 + 21`. Census: **192 units — 15 chunked (14× 3-part, 1×
+2-part), 177 single-part.** Zero behaviour change; it makes the previously-undocumented upstream
+convention explicit and fails loudly if `sync.ts`'s `wf?.reloadFrames ?? api?.reload_time ?? …` fallback
+ever drops the multiplier. Three tolerated known exceptions, each recorded in the file: `grave` (the real
+gap — shipped ×1 of a 2-part reload, masked by her measured `charFixes 193`), `asuka` (+3 f) and
+`scarlet-black-shadow` (+11 f), both single-part and unrelated to chunking.
+
+**`grave`'s "Reload Ratio ▼50%" is EXPLAINED (owner 2026-07-22):** she reloads only half her bullets per
+part, so a full magazine costs two parts and her effective reload time doubles. That is exactly
+`reload_bullet 5000`, and it reconciles with her measurement — 61.5 shots per gap (a FULL 60-round mag
+between gaps) with a gap ~2× a single part.
+
+**⚠ THE COMPOSITION IS NOT DETERMINED — do not guess it.** How N parts compose into a duration is
+contradicted by the only two units with measured reloads:
+
+| model | `grave` (measured **201 f**, range 171–211, n=19) | `noir` (measured **~36–54 f**) |
+|---|---|---|
+| shipped (one gap, tail once) | 92 f — far too fast | 73 f — already too SLOW |
+| chunk-derived, tail once | 150 f — 51 f short | 73 f — too slow |
+| per-chunk tail | **184 f — inside range ✓** | 141 f — wildly too slow |
+
+No single model fits both. Per-chunk tail would also make all 9 chunked SGs ~40% slower
+(`soda-twinkling-bunny` 151 → 216 f), a large board move on calibrated units. **Independent finding worth
+its own thread: `noir`'s shipped reload (73 f) already over-predicts her measured 36–54 f**, before any
+chunk change. Settling this needs a frame-count of one chunked unit's reload broken into parts.
+
 **What remains open:** (1) `grave`'s true chunk count, 2 vs 3, and whether *"Reload Ratio ▼50%"* is the
 multiplier — one focus read of her reload split into visible chunks settles it; (2) whether the ×3 on
 the 14 should be made explicit in the sync (derive `reloadFrames` from `reload_time × 10000 ÷
