@@ -1643,15 +1643,12 @@
         "skill2": [],
         "burst": [
           "Reload speed is fixed at a 99.96% increase for 10 sec.",
-          "Removes 100% of ammo.",
-          "Forced Reload",
           "Normal attacks deal True Damage for 10 sec."
         ]
       },
       "caveats": [
-        "burst: unparsed effect \"Reload speed is fixed at a 99.96% increase for 10 sec.\"",
-        "burst: unparsed effect \"Removes 100% of ammo.\"",
-        "burst: unparsed effect \"Forced Reload\""
+        "burst: \"Reload speed is fixed at a 99.96% increase for 10 sec.\" is a stat LOCK (clamps reload speed at ~normal and blocks reload-speed support for 10s), not a +99.96% boost — the engine has no clamp vocabulary, so it is unmodeled and inert without reload-speed support on the team (open-questions U31)",
+        "burst: \"Normal attacks deal True Damage for 10 sec\" (damage-type conversion) is unmodeled"
       ],
       "board": {
         "records": [

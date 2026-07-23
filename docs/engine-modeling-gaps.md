@@ -46,7 +46,7 @@
 | `chargeCounter` | 1 | scarlet-black-shadow |
 | `chargeMultPct` | 6 | ada, cinderella-crystal-wave, nayuta, red-hood, snow-white, zwei |
 | `consolidation` | 1 | dorothy-serendipity |
-| `consumeAmmo` | 0 | _none_ |
+| `consumeAmmo` | 1 | jill |
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
 | `delaySec` | 2 | rapi-red-hood, snow-white |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
