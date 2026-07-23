@@ -35,7 +35,7 @@ browser always runs these defaults**. Env overrides are for A/B testing only.
 | `ROTMODEL` | **`floor`** | Fixed post-FB chain block active; `=refill` opens the chain on gauge-full instead | `ROTMODEL=refill` | → DECISIONS 2026-07-13 |
 | `SGLANDING` | **bonded table** | SG pellet-landing table selector (`legacy`/`popupcount`/`prebond`/`geo`) | `SGLANDING=<arm>` | → DECISIONS 2026-07-15/16 |
 | `CORERATE` / `CORERATEBAND` / `ACR` | measured band table | Core-rate A/B knobs (`CORERATE=flat` → old 0.85; `CORERATEBAND=off` → flat per-weapon; `ACR=<n>` → hard override) | (as noted) | → DECISIONS 2026-07-15 |
-| `FBRULE` | **`perkit`** | Which skill/rider/DoT damage gets the +50% FB major (arms: `timing`/`dotfb`/`seqoff`/`noskillfb`) | `FBRULE=<arm>` | → DECISIONS 2026-07-13/14 |
+| `FBRULE` | **`timing`** | Which skill/rider/DoT damage gets the +50% FB major. Default flipped `perkit`→`timing` 2026-07-23 as a VERIFIED NO-OP (zero `noFb` carriers remain, so both arms were already identical); the validator now REJECTS `noFb` so it can't come back as a silently-dead flag. Burst-cast damage stays FB-exempt under every arm. Arms: `perkit` (revert, vestigial)/`dotfb`/`seqoff`/`noskillfb` | `FBRULE=<arm>` | → DECISIONS 2026-07-13/14, 2026-07-23 |
 | `XCRIT` / `XCORE` / `XINSTEXPL` | empty | Per-slug opt-in lists (dot-crit / dot-core / in-FB stored-hit release) for experiments | (slug list) | — |
 | `DBG_UNIT` / `DBG_GAUGE` / `DBG_CD` (+`DBG_N`/`DBG_BUFFS`) | OFF | Debug taps (per-instance buckets / gauge / burst-CD decisions) | (as set) | — |
 

@@ -8,6 +8,24 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-23, final) `FBRULE` DEFAULT FLIPPED `perkit` → `timing` — the end-state Full-Burst rule is
+  now shipped, as a VERIFIED NO-OP.** Owner ruling. Full Burst is a TIMING/snapshot gate: any
+  non-burst-cast skill/rider/DoT landing inside the FB window takes the +50% (JP+KR research, empirical
+  both sides). That was established 2026-07-14, but the default was held at `perkit` because six units
+  still carried calibration-RELIC `noFb` flags masking cadence over-models — flipping early would have
+  made them run hot. `sim.ts` stated the exit condition in place: *"once all 6 are green the default
+  flips to 'timing' with zero further drift."*
+  **That condition is now met.** Five relics went 2026-07-15; the last (`privaty`) went with her
+  Designated-Target re-encode earlier today. With zero carriers, `skillNoFb`'s `perkit` branch returns
+  `perKitNoFb` = false for every unit, so the two arms were already identical — the flip is provably a
+  no-op and was verified as one: `scripts/regression.ts` passes with **no snapshot change** under BOTH
+  the new default and `FBRULE=perkit`. Burst-cast damage remains FB-exempt under every arm (U10).
+  **Companion guard:** `noFb` in an override is now INERT, which is exactly how a relic creeps back —
+  so `validate-overrides.ts` REJECTS the field outright rather than ignoring it. A kit that genuinely
+  needs FB suppressed is a mechanism finding for open-questions U14, not an override flag. The
+  `perkit`/`dotfb` arms survive only as vestigial revert/experiment paths (no carrier can exist).
+  → open-questions **A34 (U14)**, `docs/STATE.md` §1.
+
 - **(2026-07-23, latest) `privaty` — the 1687% rider RE-ENCODED as a Designated-Target-gated last-bullet
   hit; the fabricated DoT and its `noFb` are GONE. Owner ruling, faithful > fit; DELIBERATE board cost
   0.937 COLD ▼ → 1.118 HOT ▲.** Her `skill2` carried `dot atkPct 1687 durationSec 10 intervalSec 3 noFb`,

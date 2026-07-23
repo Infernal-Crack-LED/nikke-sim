@@ -77,6 +77,14 @@ function checkEffect(e: any, path: string, errors: string[]) {
     if (typeof e.atkPct !== 'number') errors.push(`${path}: storedHit needs atkPct`);
     if (e.flavor && !FLAVORS.has(e.flavor)) errors.push(`${path}: unknown flavor "${e.flavor}"`);
   }
+  // `noFb` is INERT under the shipped FBRULE default ('timing', 2026-07-23): Full Burst is a timing
+  // gate, so a non-burst-cast rider/DoT landing inside the window always takes the +50%. Reject the
+  // field rather than ignore it — the last six carriers were calibration relics, and a silently-dead
+  // flag is exactly how one creeps back. If a kit genuinely must suppress FB, that is a mechanism
+  // finding for open-questions U14, not an override flag.
+  if (e && typeof e === 'object' && 'noFb' in e) {
+    errors.push(`${path}: "noFb" is inert under the shipped FBRULE=timing default — remove it; Full Burst applies by landing time (open-questions U14)`);
+  }
   if (e.kind === 'targetStatus') {
     if (typeof e.name !== 'string' || !e.name.trim()) {
       errors.push(`${path}: targetStatus needs a non-empty "name" (the kit's status name)`);
