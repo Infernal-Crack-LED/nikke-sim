@@ -8,6 +8,39 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-22) `jill` — REAL RELOAD + BURST FORCED RELOAD; `charFixes.reloadFrames: 0` REMOVED.**
+  Owner enactment, on kit text, no measurement required or claimed. Her override carried a whole-fight
+  `reloadFrames: 0` justified as *"ROLLING RELOAD (datamined shot row): reload_start_ammo=8 — she begins
+  reloading at 8/9 ammo and tops up concurrently while firing."* **All three grounds are void:**
+  (1) `reload_start_ammo` is `max_ammo − 1` for **192 of 192** shot rows in `data/characters.json` — a
+  complete census, so it identifies nobody (→ U30); (2) `reload_bullet 10000` makes her a single-chunk
+  reloader with no partial-reload mechanic; (3) the burst line read as the source of her zero-downtime
+  firing, *"Reload speed is **fixed at** a 99.96% increase for 10 sec"*, is a stat **LOCK** at ~normal
+  speed — **owner ruling: "is fixed at" clamps a stat at that level, it is not a delta applied on top**
+  — so it grants her nothing. Corroborated across the corpus: the same construction appears as *"fixed
+  at a 50% **reduction**"* (`milk-blooming-bunny`) and as plain set-tos everywhere else (*"Pellet count
+  is fixed at 1"* — `dorothy-serendipity`, which this repo already models that way as her
+  `consolidation`; *"Charge time is fixed at 0.7 sec"* — `anis-star`).
+  **Modelled:** her burst's kit-verbatim *"Removes 100% of ammo. Forced Reload."* via the existing
+  `consumeAmmo { fraction: 1 }` (`sim.ts:1955` — whose comment already named her). **No engine change,
+  no fitted value:** `fraction 1` is the kit's literal 100%, `reloadFrames 81` is the synced datamine.
+  Its kit PURPOSE — re-triggering Magnum Ammo and Acid Ammo, which both key on *"upon reloading to Max
+  Ammunition"* — is already carried by modelling those two as permanent, so this adds the COST without
+  double-counting the benefit. The reload-speed LOCK is left **unmodelled** (the engine has no clamp
+  vocabulary; a cross-cutting gap over 8 units and 3 stat families → `engine-modeling-gaps.md` §1b).
+  **PER-ARM ISOLATION** (board-read + regression per arm): forced reload ONLY (keeping `reloadFrames 0`)
+  → 1.031→1.030, all asserts green — i.e. **with a 0-frame reload the forced reload costs nothing**;
+  real reload ONLY → 0.923; both → **0.919 COLD ▼** (from 1.031 HOT ▲). The `reloadFrames` constant
+  carries the entire effect. Footprint verified clean: only her two comps moved.
+  **N1 UNPINNED, and this is the cost of the ruling.** `N1 rapi/quency wind` loses its Full-Burst
+  assert (sim 12 vs video-measured **13**, which is UNCHANGED and preserved in-comment at
+  `scripts/regression.ts`). It joins N2/N4/N5 in the open burst-cycle timing increment. It was ALREADY
+  12×24 / 13×1 across seeds — passing on one marginal seed — so removing her phantom fire time
+  **unmasks** a pre-existing burst-generation shortfall (same family as **U29**) rather than creating
+  one. **Do not "fix" it by restoring her fire rate.** Owner accepted the board break in advance
+  ("it's 100% going to break her board since it was previously unmodeled"): faithful > fit, and `jill`
+  becomes a re-tune candidate at 0.919. → open-questions **U31**.
+
 - **(2026-07-22) `extraHitDamagePct` FUNCTION-RIDER CRIT — `RIDERCRIT` default ON.** The per-normal-hit
   function-rider path (`sim.ts` `firePull`) dealt its hit with `crit: false`, contradicting the SSOT:
   `damage-calculation.md` §2b and the datamined FunctionTable rule (`nikke-damage-formula.md` §3)

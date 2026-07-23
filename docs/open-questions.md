@@ -8,63 +8,6 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
-### U31 — "is fixed at" is a LOCK the engine has no vocabulary for; `jill`'s `reloadFrames: 0` has no kit support (opened 2026-07-22)
-
-**Semantics — owner ruling 2026-07-22.** *"Reload speed is **fixed at** a 99.96% increase"* does NOT mean
-"+99.96% faster." It means her reload speed is **pinned at ~100% of normal and cannot be modified** —
-no reload-speed buff can make it faster for the duration. The construction is a SET-TO / LOCK, and every
-other `is fixed at` line in the game reads the same way: *"Pellet count is fixed at 1"*
-(`dorothy-serendipity` — already modelled as her consolidation, i.e. the repo has always read this
-construction as a lock), *"Charge time is fixed at 0.7 sec"* (`anis-star`), *"Charge time: Fixed at
-1.8 sec"* (`nayuta`), *"Reload time is fixed at 3 sec"* (`cinderella-crystal-wave`). The sign varies —
-`milk-blooming-bunny` carries *"Reload speed is fixed at a 50% **reduction**"* — confirming the number is
-the locked level, not a delta applied on top.
-
-**This is a cross-cutting primitive gap: 8 units, 3 stat families, no engine vocabulary.**
-
-| locked stat | units |
-|---|---|
-| reload speed | `jill` (99.96% incr.), `exia` (95% incr.), `asuka-wille` (60% incr., 1 round), `milk-blooming-bunny` (50% redu.) |
-| charge time | `anis-star` (0.7 s), `nayuta` (1.8 s), `cinderella-crystal-wave` (1 s / reload time 3 s) |
-| pellet count | `dorothy-serendipity` (fixed at 1) — the ONLY one modelled, via her bespoke `consolidation` block |
-
-The engine has stat *buffs* but no notion of a stat being **clamped** for a window, so today every one of
-these is either approximated, ignored, or hand-carved per unit. Whether the lock matters depends on
-whether anything would otherwise move that stat in-window — `nayuta`/`anis-star` charge locks are live
-mode-changes, the reload locks mostly matter in teams carrying reload-speed support.
-
-**`jill` specifically — her burst does NOT make reloads free.** Her burst block, verbatim at SL10:
-*"Reload speed is fixed at a 99.96% increase for 10 sec. **Removes 100% of ammo. Forced Reload.**
-Hit Rate ▲80.78% for 10 sec. Attack Damage ▲75% for 10 sec. Normal attacks deal True Damage for 10 sec."*
-Owner: she is forced to reload to full on every burst cast even when already full — and this needs **no
-measurement**, it is a kit line that fires deterministically. Its *purpose* is the buff pump: both damage
-passives key on *"upon reloading to Max Ammunition"* (S1 Magnum Ammo, S2 Acid Ammo), so the ammo dump
-re-triggers them on demand.
-
-⇒ **Her `charFixes.reloadFrames: 0` has no support left.** Its stated justification is
-*"ROLLING RELOAD (datamined shot row): reload_start_ammo=8 … tops up concurrently while firing"* — but
-`reload_start_ammo 8` is `max_ammo − 1` like all 192 units (U30), `reload_bullet 10000` says single-chunk,
-and the burst line is a lock at normal speed, not a boost. What remains is one video observation
-(*"the video shows no reload gaps"*), against a kit that says she reloads at normal speed and is
-additionally forced to reload once per burst cast.
-
-**Direction, and why the naive estimate overstates it.** Restoring her real reload (`reloadFrames 81` →
-92 f effective every 9 rounds at her measured 2.5/s) drops her sustained fire from 2.5/s to
-9 ÷ (3.6 + 1.53) = **1.75/s**. But that scales only her **normal-attack bucket** — her dominant Acid Ammo
-output is a 192%/s sustained DoT modelled as permanent, which is time-based and does not shrink with shot
-count. So the board move is materially smaller than the 1.43× shot ratio implies, and it points **COLD**,
-which is the right direction for a unit currently reading **~1.07–1.34 HOT**. (An earlier estimate here of
-"~0.71 COLD" wrongly scaled her whole output by the shot ratio — disregard it.)
-
-**Proposed change (kit-faithful, owner sign-off + full A/B before landing):** drop
-`charFixes.reloadFrames: 0`; add the burst-cast forced reload (100% ammo removal → reload) as a real
-event; leave the reload-speed lock unmodelled until the LOCK primitive exists (inert for her in
-reload-support-free comps). Board-moving on a graded unit, so it wants a `board-read` A/B + FB-count
-preservation check, not a drive-by edit. Her per-hit values are video-confirmed at 99.7% and must not move.
-
-**Still unmodelled on the same block:** *"Normal attacks deal True Damage for 10 sec"* (her note:
-*"the sim cannot yet model that conversion"*).
-
 ### U30 — chunked (multi-part) reloads: `reload_bullet` IS the tell, already honored for 14 of 15 units; `grave` is the lone gap (opened 2026-07-22)
 
 **The mechanic (owner correction, 2026-07-22 — the framing this entry opened with was wrong).** A
@@ -129,6 +72,34 @@ had the mechanic at all. The `reload_start_ammo 8` clause cited as the tell in D
 and in `jill.json` is non-discriminating (`jill` is `reload_bullet 10000`). Her real mechanic is a
 BURST buff — 100% ammo dump + Forced Reload + reload speed fixed at +99.96% for 10 s — which is its own
 thread: **U31**.
+
+**BUILT 2026-07-22 — the chunk COUNT is now derived and gated** (`scripts/check-reload-chunks.ts`, wired
+into `verify.sh`). `chunks = 10000 / reload_bullet`, asserted against
+`reloadFrames == reload_time × chunks × 0.6 + 21`. Census: **192 units — 15 chunked (14× 3-part, 1×
+2-part), 177 single-part.** Zero behaviour change; it makes the previously-undocumented upstream
+convention explicit and fails loudly if `sync.ts`'s `wf?.reloadFrames ?? api?.reload_time ?? …` fallback
+ever drops the multiplier. Three tolerated known exceptions, each recorded in the file: `grave` (the real
+gap — shipped ×1 of a 2-part reload, masked by her measured `charFixes 193`), `asuka` (+3 f) and
+`scarlet-black-shadow` (+11 f), both single-part and unrelated to chunking.
+
+**`grave`'s "Reload Ratio ▼50%" is EXPLAINED (owner 2026-07-22):** she reloads only half her bullets per
+part, so a full magazine costs two parts and her effective reload time doubles. That is exactly
+`reload_bullet 5000`, and it reconciles with her measurement — 61.5 shots per gap (a FULL 60-round mag
+between gaps) with a gap ~2× a single part.
+
+**⚠ THE COMPOSITION IS NOT DETERMINED — do not guess it.** How N parts compose into a duration is
+contradicted by the only two units with measured reloads:
+
+| model | `grave` (measured **201 f**, range 171–211, n=19) | `noir` (measured **~36–54 f**) |
+|---|---|---|
+| shipped (one gap, tail once) | 92 f — far too fast | 73 f — already too SLOW |
+| chunk-derived, tail once | 150 f — 51 f short | 73 f — too slow |
+| per-chunk tail | **184 f — inside range ✓** | 141 f — wildly too slow |
+
+No single model fits both. Per-chunk tail would also make all 9 chunked SGs ~40% slower
+(`soda-twinkling-bunny` 151 → 216 f), a large board move on calibrated units. **Independent finding worth
+its own thread: `noir`'s shipped reload (73 f) already over-predicts her measured 36–54 f**, before any
+chunk change. Settling this needs a frame-count of one chunked unit's reload broken into parts.
 
 **What remains open:** (1) `grave`'s true chunk count, 2 vs 3, and whether *"Reload Ratio ▼50%"* is the
 multiplier — one focus read of her reload split into visible chunks settles it; (2) whether the ×3 on
@@ -470,6 +441,16 @@ gained less from elemental advantage in reality than the sim's x1.1 — do funct
 skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
 
 ### U14 — When do +50% Full Burst / +30% range apply to SKILL damage? (test framework built)
+
+> **STATE CORRECTION 2026-07-22 (owner kit read) — the last live `noFb` carrier is a FABRICATED block.**
+> `privaty`'s `skill2` `dot atkPct 1687 durationSec 10 intervalSec 3 noFb` is not in her kit. The 1687% is
+> a **last-bullet rider gated on Designated Target status**; `durationSec 10` came from the Designated
+> Target debuff window, `intervalSec 3` from the burst's *"Stuns for 3 sec"*. Her burst's 1407.64% IS
+> instantaneous and already correct, and the two 10 s markers are the self buff + enemy debuff, also
+> already correct. So the U14 footage recipe ("read the DoT popup in vs out of Full Burst") measures a
+> rider, not a DoT, and must be rewritten before footage is requested. Constraint 3 protects her
+> coefficients, NOT the DoT encoding. Full record + the three encoding options:
+> `docs/handoffs/2026-07-22-engine-work-plan.md` §5f.
 Range is SETTLED: skill/rider/DoT damage NEVER gets the +30% range bonus (`noRange` universal; ein's
 feathers "get FB but not range"). The open question is FB (+50%). Current model = per-kit `noFb` flags
 (calibrated). A **test framework is built** (`scripts/probe/fb-range-lab.ts` + the `FBRULE` engine knob:
@@ -680,6 +661,34 @@ matched to the in-game bond table exactly at the manufacturer max. IMPLEMENTED: 
 RESOLVED the same day: `SG_LANDING_BY_BAND` recalibrated by a uniform ×0.9863 (the +1.39% uplift) so SG
 board units cancel the bond warming while the shape holds (U17). The base5-vs-OL0 gear basis was NOT
 reopened — the term is bond, not gear. → DECISIONS 2026-07-16.
+
+### A33 (U31) — `jill`'s `reloadFrames: 0` REMOVED + burst forced reload modelled; "is fixed at" = stat LOCK — owner enactment 2026-07-22
+
+**RESOLVED and LANDED** → `docs/DECISIONS.md` (2026-07-22). Kept here because the *"is fixed at"*
+semantics ruling is reusable across the roster.
+
+- **Ruling: `"X is fixed at V"` CLAMPS the stat at V.** It is not a delta applied on top. Corroborated
+  across the corpus — the same construction appears as *"fixed at a 50% **reduction**"*
+  (`milk-blooming-bunny`) and as plain set-tos elsewhere (*"Pellet count is fixed at 1"* —
+  `dorothy-serendipity`, already modelled that way as her `consolidation`; *"Charge time is fixed at
+  0.7 sec"* — `anis-star`; *"Reload time is fixed at 3 sec"* — `cinderella-crystal-wave`).
+- **Consequence for `jill`:** her burst's *"Reload speed is fixed at a 99.96% increase for 10 sec"*
+  grants her nothing, so `charFixes.reloadFrames: 0` had no support (its other two grounds —
+  `reload_start_ammo 8` and a rolling-reload reading — are void per **U30**). Dropped; her burst's
+  *"Removes 100% of ammo. Forced Reload."* modelled via the existing `consumeAmmo { fraction: 1 }`.
+  Board **1.031 HOT ▲ → 0.919 COLD ▼**; per-arm isolation proved the `reloadFrames` constant carried
+  the whole effect (forced reload alone moved her 0.001). Owner accepted the break in advance —
+  faithful > fit.
+- **N1 unpinned** (sim 12 vs video-measured 13, measured value preserved in-comment); it joins
+  N2/N4/N5 in the open burst-cycle increment. Pre-existing shortfall UNMASKED, not created.
+
+**Open remainder (do not treat as closed):**
+1. **The LOCK primitive itself is unbuilt** — 8 units, 3 stat families, no clamp vocabulary in the
+   engine → `docs/engine-modeling-gaps.md` §1b. Inert for `jill` only while her comps carry no
+   reload-speed support.
+2. **`jill` is now a re-tune candidate at 0.919 COLD**, and *"Normal attacks deal True Damage for
+   10 sec"* remains unmodelled on the same burst block.
+3. **N1's 12-vs-13 shortfall** is now visible and unexplained → same family as **U29**.
 
 ### A32 (U13) — the `extraHitDamagePct` function-rider half — RESOLVED 2026-07-22 (`RIDERCRIT` ON)
 A29 resolved the DoT/stored-hit half of U13 and explicitly left the `extraHitDamagePct` function-rider

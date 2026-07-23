@@ -139,7 +139,15 @@ const COMPS: Comp[] = [
     name: 'N1 rapi/quency wind',
     slugs: ['d-killer-wife', 'grave', 'rapi-red-hood', 'quency-escape-queen', 'jill'],
     boss: 'Wind', focus: 'rapi-red-hood',
-    realFullBursts: 13, // video: 13/13, uniform ~14s cadence
+    // UNPINNED 2026-07-22 (owner enactment) — the measured truth is UNCHANGED at 13/13,
+    // uniform ~14s cadence (video). It joins N2/N4/N5 in the open burst-cycle timing
+    // increment: the sim reads 12. This comp was ALREADY 12×24 / 13×1 across seeds — it
+    // passed on a single marginal seed — and jill's kit-faithful reload (charFixes
+    // reloadFrames 0 dropped + her burst's forced reload modelled, 2026-07-22) removed that
+    // last seed by costing her the fire time that was propping up the team's burst gauge.
+    // So this UNMASKS the pre-existing shortfall rather than creating one; do NOT "fix" it by
+    // restoring her phantom fire rate. → open-questions U31 + U29 (same family).
+    // realFullBursts: 13,
   },
   {
     name: 'N3 scarlet/liberalio iron',
