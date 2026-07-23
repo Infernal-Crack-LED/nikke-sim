@@ -8,6 +8,36 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-23, latest) `privaty` — the 1687% rider RE-ENCODED as a Designated-Target-gated last-bullet
+  hit; the fabricated DoT and its `noFb` are GONE. Owner ruling, faithful > fit; DELIBERATE board cost
+  0.937 COLD ▼ → 1.118 HOT ▲.** Her `skill2` carried `dot atkPct 1687 durationSec 10 intervalSec 3 noFb`,
+  an encoding with no kit support: the kit line is *"Activates when the last bullet hits a target in
+  **Designated Target status**. Deals 1687% of final ATK as additional damage"*, with `durationSec 10`
+  borrowed from the Designated-Target debuff window and `intervalSec 3` from her burst's unrelated
+  3-second stun. **Now:** her burst applies `targetStatus {name:'Designated Target', durationSec:10}` on
+  the same kit line as the ATK ▼5.02%, and the rider is a `lastBullet` block carrying
+  `requiresTargetStatus:'Designated Target'` + `flatDamage atkPct 1687` (`noRange`) — **no `noFb`, and no
+  hardcoded hit count** (the count is whatever her cadence produces).
+  **What settled it** — frame read, u7 focus video @ 15.503 s (`docs/probe-runs.md` 2026-07-23): one
+  popup stack carries 571,999 (red CORE HIT), 367,714 (white normal), **37,871,391** and 5,750,750.
+  `37,871,391 / 5,750,750 × 256.17 = 1687.00` identifies the rider exactly — an independent method from
+  the visual read, whose `8` was occluded. It lands in the SAME frame as the 256.17 last-bullet rider
+  sharing its buff snapshot ⇒ **not a DoT**; and the frame is inside a Full Burst (the 256.17 reads
+  1.5015× its recorded non-FB value) with the 1687 at 6.58547× it against a kit ratio of 6.58547 ⇒ **it
+  takes the +50% FB major**, refuting `noFb`. This also dissolved the standing "fires in T4 but not u7,
+  therefore comp/condition-dependent" puzzle: it fires in both — the earlier whole-screen check missed
+  an occluded popup sitting inside its own search band.
+  **The HOT move is FIT-EXPOSURE, not a defect of this encoding.** The `noFb` flags removed here were
+  themselves the calibration knob that had pulled her 1.29 → 0.97, so the overshoot is the pre-existing
+  over-model they were hiding. The proc rate was sanity-checked and NOT fitted: the rider lands on ~47%
+  of her last bullets against ~44% expected from window arithmetic (10 s status × 5 bursts ≈ 28% of the
+  fight, at ~2× last-bullet density because her own S1 halves the magazine during Full Burst via
+  `maxAmmoPct −50.66`). Exactly one snapshot entry moved (+23.72%, hers); every measured-truth
+  full-burst-count assert stayed green; no coefficient was touched (1687 / 256.17 / 1407.64 all
+  datamined). **Do NOT re-add `noFb` or shave the coefficients to close the residual** — it is a per-unit
+  localization thread. Precedent: grave pierce 0.83→1.18 kept on purpose (DECISIONS 2026-07-17). She is
+  the first kit-motivated carrier of the `targetStatus` primitive built earlier the same day.
+
 - **(2026-07-23, later) `wipeOut`/`requiresWipeOut` DELETED — the named registry is now the SOLE
   enemy-status channel; `d-killer-wife` migrated.** Owner ruling, superseding the "deliberately NOT
   unified" clause of the entry below: *"just delete the old wipeout and set the new one live, faithful >
