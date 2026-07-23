@@ -79,8 +79,101 @@ trap of §2. `build-packet.ts`'s leak assertion is the model for what "blind" mu
 
 ## 5. Lessons learned (to harden into the workflow)
 
-> _TODO — populated from the docs survey (`/tmp/kit-autonomy-lessons.md`): the recurring failure-mode
-> taxonomy, evidence tiers, primitive census, ALWAYS-⚑ taxonomy, and open gaps._
+_Synthesized by the main agent from the four skills (`kit-tdd`/`kit-parse`/`audit-kit`/`tuning-priors`),
+the TDD transition plan, `docs/CONVENTIONS.md`, and `docs/modeling-priors.md` (the docs-survey subagent
+died with `LOOP_DETECTED`, D6)._
+
+### 5.1 Evidence tiers — how every claim/assertion/value is graded (`CONVENTIONS.md`)
+
+`MEASURED > DATAMINED > COMMUNITY > CALIBRATED ⚑`. A claim's tier determines what it takes to change it;
+`CALIBRATED ⚑` values are standing refit candidates (listed in `open-questions.md`). **The gauntlet must
+tag each assertion and each override value with its tier.** **Ratio direction (do NOT conflate):** board
+tools (`board-read`/`experiment`) report `sim/real` — `>1` = HOT ▲ (over-model, REMOVE damage); solo
+probe-data reports `realOverSim = real/sim` (the inverse). A HOT unit read as COLD gets "fixed" by adding
+damage and worsens (boolean-inversion bug; the arcana/naga root case).
+
+### 5.2 Recurring failure-mode taxonomy (class → root cause → fix/prior → example)
+
+1. **Cadence / rate-of-fire** — the #1 cause of uniform heat; datamined `rate_of_fire` is wrong, the value
+   is right and the frequency is wrong. Fix: ALWAYS ⚑ the cadence+reload tuple when authoring blind;
+   escalate on text tells (low-ammo mag empties <1s at class rate; "Magnum"/"per-N-round" flavor). Jill 2.2× over-fire.
+2. **Scope (normal-attacks-only vs generic)** — a generic crit buff shipped for a "Critical Rate _of normal
+   attacks_" line. Fix: scoped `critRateNormalPct`; assert charge/burst damage UNMOVED while normals move. (helm S1)
+3. **Duration semantics (seconds vs ROUNDS vs stacks vs until-reload)** — "for 10 round(s)" faked as
+   `durationSec 13`. Fix: `durationShots`; assert the round count _beats_ `durationSec` because it survives
+   the reload. (helm burst)
+4. **Trigger identity** (`burstCast` vs `fullBurstEnter` vs `lastBullet` vs `hitCount` vs `shotFired` vs
+   `interval`) — a boolean-inversion trap; they coincide only when the unit is the sole burster of its tier.
+   Fix: read the activation text literally; `burstCast` fires only on rotations THIS unit bursts. (arcana MM
+   keyed to `fullBurstEnter` over-credited multi-B2 teams; **privaty** = `lastBullet` + `targetStatus` gate.)
+5. **Tandem / cross-unit effects** — a heal inert alone drives a teammate's "on recovery" damage buff. Fix:
+   wire the `heal` event + `recovery` trigger; never skip heal/shield/DEF/HP/lifesteal/gauge lines. (Helm
+   heal → Crown ATK 20.99% near-permanent; dropping it left teams ~15% cold.)
+6. **DoT encoding (append-not-refresh)** — the engine appends an independent DoT per fire and never dedups;
+   a dur-60 DoT on a ~16s trigger ≈ 3.7× over. Fix: a continuous/maintained DoT = ONE `passive` instance with
+   `durationSec` ≥ fight length; repeating-trigger encoding only if the kit says it genuinely STACKS. (Mihara)
+7. **Weapon-state modifiers ARE damage** — reload/ammo/fire-rate/charge-speed gate shot count. Fix: model
+   them (`charFixes.reloadFrames` etc.); ask "does this change shots fired?" before ever writing "defensive."
+   (Grave reload-ratio dropped → ~30% over-fire.)
+8. **Weapon-swap shot economy** — in-burst swap windows run fire-rate-gated, effectively reload-free, and
+   instant-charge at ≥100% charge speed; the blind default under-counts 2-3× and this class DOMINATES the
+   unit. ⚑ TOP, estimate optimistically. (Red Hood)
+9. **HP/DEF scalers** — HP-scaling counts the unit's OWN Max HP only; ally grants don't feed the conversion.
+   Keep the stat buff even where the engine treats it inert (a future consumer/scaler). (Cinderella)
+10. **Hit-Rate → core-rate** — proven, magnitude unknown. Model `hitRatePct` + ⚑ the core-lift recipe; never delete.
+11. **Multi-projectile split vs merge** — per-unit, video-verify. (Cinderella twins split, Maiden merge.)
+12. **noFb / range / core exemptions** — function-damage riders take Full Burst by TIMING (default ON; set
+    `noFb` only with measured FB-OFF evidence); the +30% range bonus is UNIVERSALLY off (`noRange` is
+    auto-set, redundant to write); burst-cast/instant damage is always FB-exempt; riders CRIT at caster rate
+    but get NO core unless the text literally says "core strike damage" (text-fidelity). The old `noFb`
+    default was a calibration relic masking cadence over-models. (privaty, Ein, Liberalio, CCW)
+13. **Base-stat / gear basis** — Base 5 gear (not OL0); non-SSR units need rarity ceilings (scope lock encodes an SSR ceiling).
+14. **Stack / currency → steady-state + ramp haircut** — derivable-currency: when start+consume+rebuild are
+    kit-stated, DERIVE the trajectory (continuous level-scaling = time-average respecting the stated START,
+    never a ramp-from-0; threshold-gated = check the PRE-consume count; sawtooth = ~cap/2). (Soda, Mihara)
+
+### 5.3 The ALWAYS-⚑ taxonomy (`kit-parse`) — fields outside the input domain, never shipped silently
+
+A value not literally in the kit text, OR from a known-unreliable datamine field (`rate_of_fire`,
+`reloadFrames`), MUST be a ⚑ with an initial estimate + a measurement recipe. The seven: **(1)** cadence
+tuple (datamine-unreliable); **(2)** a damage line the text gives NO trigger for (invented trigger+cadence —
+Snow White S2 144.73%); **(3)** weapon-swap shot economy (kit-silent; estimate optimistically); **(4)**
+stack/currency steady-state + ramp haircut (derive if stated); **(5)** multi-projectile split-vs-merge
+(kit-silent — read popups); **(6)** `noFb` per-kit (default OFF; measured-only); **(7)** Hit-Rate→core
+magnitude (measured-only). A blind parser that honestly flags what it can't know is CORRECT; one that
+guesses a precise ⚑ value is WRONG.
+
+### 5.4 Primitive census (`engine-modeling-gaps.md`, generated; blast-radius order)
+
+`flatDamage 46 · hitsPerShot 34 · hitCount 31 · burstCdr 14 · hitRatePct 11 · …` **Backfilled WITH tests
+(step-2):** flat-damage, hit-count-trigger, hits-per-shot, burst-cdr, buff-application/overwrite,
+block-gates (`fbGate`/`everyN`/`requiresCore`/`bossElementGate`). **NOT yet backfilled:** `hitRatePct`,
+`instantReload`/`consumeAmmo`, the trigger-kind matrix (`lastBullet`/`shotFired`/`interval`/`stageEnter`/
+`fullBurstEnter`/`End`), `weaponSwap`/`swapGate`, `escalating`, `mode`/`modes`, gauge suppression.
+**Event-log payload gaps:** `buffApply` can't express `perResource`/`rampFrames`/`whileSwappedIdx`; no
+weapon-swap / `targetStatus` / resource / stack events; `shot` carries no hit count; cube/OL permanent
+stats bypass `applyBuff`. (A spec that needs one of these extends the emit via the isolated-worktree flow.)
+
+### 5.5 The three meta-lessons (the WHY behind the gauntlet design)
+
+- **(a) "Modeled ≠ working" + offsetting errors.** A unit graded ~1.0 can still be wrong — its value
+  calibrated to _absorb_ a missing shared buff. Run-validate that each block FIRES at the right rate; DBG can
+  lie (a `DBG_N` cap hides late procs; `fillGauge` logs no line) — count the WHOLE fight and confirm the
+  side-effect (gauge/damage), not just a log line. ⇒ the gauntlet's step-2 tests assert **events**, not just totals.
+- **(b) The same-altitude trap** (TDD plan, §2). prose→JSON triangulation cannot catch a plausible misread;
+  the unit test is the forcing function. ⇒ **test-centric** gauntlet; blind/sighted/judge triangulation is the
+  secondary sampler.
+- **(c) Faithful > fit, measured > fudge.** Never fabricate a value to hit a number. A board move AWAY from
+  1.0 after a faithful fix is **fit-exposure** (the old wrong encoding was absorbing a calibration) — a
+  separate per-unit localization thread, **never** a reason to weaken the assertion or restore the unfaithful
+  encoding. ⇒ the no-go policy (§4) forbids the driver from re-adding `noFb` or shaving datamined coefficients to reach GO.
+
+### 5.6 Open gaps the workflow must respect
+
+- `hitRatePct` core-lift geometry has no fixture reaching the HR→core path yet.
+- The gauge pipeline emits no events → gauge-suppression lines are untestable from the log (a GAP, `it.skip` + reason).
+- `lastBullet` / `targetStatus` interaction gets its first pin from **privaty** in this run.
+- **MEASUREMENT-GATED** lines go to `open-questions.md` UNANSWERED — never a guessed number in a test.
 
 ## 6. Target unit — `privaty` (Privaty, AR/Water/Attacker/Burst III)
 
