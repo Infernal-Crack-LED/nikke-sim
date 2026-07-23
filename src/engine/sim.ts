@@ -1275,7 +1275,19 @@ export function runSim(
         : RANGE_ELIGIBLE[bandAt(frame)].has(effWeapon));
     let major = 1 + (fb && !opts.noFb ? 0.5 : 0) + (inRange ? 0.3 : 0);
     if (opts.crit) {
-      const critRate = Math.min(1, Math.max(0, (u.critRate + stat(u, 'critRatePct', frame)) / 100));
+      // 'critRateNormalPct' is Critical Rate scoped to NORMAL ATTACKS ONLY ("Critical Rate of
+      // normal attacks ▲x%" — helm S1). It joins the roll only on normal-attack hits; skill procs
+      // and burst damage see the unscoped critRatePct alone. Inert (sums to 0) for every unit
+      // without the kit line, so non-carriers are byte-identical.
+      const critRate = Math.min(
+        1,
+        Math.max(
+          0,
+          (u.critRate +
+            stat(u, 'critRatePct', frame) +
+            (opts.category === 'normal' ? stat(u, 'critRateNormalPct', frame) : 0)) / 100
+        )
+      );
       const critBonus = (u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100;
       // seeded: Bernoulli roll, full bonus or nothing (mean is identical; the roll
       // reproduces real-run variance and any future on-crit trigger coupling)

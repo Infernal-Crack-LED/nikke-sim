@@ -9,6 +9,14 @@ export type StatKey =
   | 'highestAllyAtkPct' // ATK ▲ x% of the HIGHEST ally's ATK (flat add — guilty "Mind If I Borrow This?"). Resolves to (value/100)×max(all units' staticAtk) at apply time; feeds the same flat-ATK path as casterAtkPct. Solo (self is the max) == casterAtkPct.
   | 'atkOfMaxHpPct'     // ATK ▲ x% of the unit's own final Max HP (flat add — Cinderella, Maiden:IR)
   | 'critRatePct'
+  | 'critRateNormalPct' // "Critical Rate of normal attacks ▲x%" — Critical Rate that applies ONLY to
+  //                       normal-attack hits, never to skill procs or burst damage. Distinct mechanic
+  //                       from the unscoped critRatePct above: dealDamage adds it to the crit roll only
+  //                       when category === 'normal'. Opt-in; inert (0) for every unit that lacks the
+  //                       kit line, so it can never change a non-carrier. Carriers: helm (S1, allies —
+  //                       an unscoped model over-credited the whole TEAM's skill/burst crit, which grew
+  //                       when RIDERCRIT made flat-damage riders crit-eligible). `biscuit` also carries
+  //                       the line but is not simSupported.
   | 'critDamagePct'
   | 'coreDamagePct'
   | 'elementDamagePct'
