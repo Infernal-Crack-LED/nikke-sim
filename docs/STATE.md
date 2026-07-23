@@ -43,6 +43,16 @@ Seeding: `cfg.seed` (config, not env) switches the sim from expected-value to a 
 run; `SEEDS=N` runs the MC wrapper (`DEFAULT_MC_SEEDS=25`, base 1000). Seeded-only scatter (SG landing
 jitter, range-transition ±2s, stage-cast-gap ±9f) is inert in the unseeded gate.
 
+Event log: `cfg.onEvent` (config, not env — landed 2026-07-23) is the engine's structured timeline for
+tests and tooling: `shot` / `damage` / `buffApply` / `buffRemove` / `reload` / `burstCast` /
+`fullBurstStart` / `fullBurstEnd`. PURE OBSERVATION — every emit is guarded, so an unset hook emits
+nothing and output is byte-identical (proven by a whole-board `experiment.ts` A/B, not just the
+snapshots). `damage` comes from `dealDamage`, the one choke point every source funnels through, and
+carries bucket + source slot + resolved crit/core rates + the full multiplier decomposition, which is
+what makes a SCOPING claim (e.g. `critRateNormalPct` on normal attacks only) assertable at all. Full
+contract + the deliberate gaps (no `buffExpire` — lapse is lazy; no per-hit event — MG/SG pulls
+aggregate) on `SimEvent` in `src/types.ts`; pinned by `scripts/tests/engine/event-log.test.ts`.
+
 ## 2. Named timing / cadence / stat constants
 
 | Constant | Value | Meaning | `sim.ts` |
