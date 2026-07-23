@@ -32,6 +32,7 @@ import {
   pelletLandFrac,
   pelletSigma,
 } from './sg-geometry.js';
+import { unigeoSgLanding, unigeoSgCorePerLanded, unigeoSingleCoreProb } from './unigeo.js';
 
 // Debug taps read env vars only under Node; in the browser bundle this is an empty object.
 const ENV: Record<string, string | undefined> =
@@ -1002,12 +1003,32 @@ export function runSim(
   // per-weapon σ-shrink decouples SG-▲98 saturation from SMG mid-HR. Flipped LIVE after the full-board
   // A/B (net board mean|ratio−1| 0.0972→0.0964) + owner sign-off. CONE_DELTA=0 restores the prior engine.
   const CONE_DELTA = ENV.CONE_DELTA !== '0' && ENV.CONE_DELTA !== 'off';
+  // ── UNIGEO (ENV.UNIGEO; DEFAULT 'all' — owner-enacted 2026-07-22, DECISIONS) ──
+  // 'sg': SG landing = ε·coverage(band, R(hr)) (adds the Hit-Rate term the old SG_LANDING_BY_BAND
+  //       table lacked) + SG core-per-landed = area-ratio ÷ coverage — replaces the SG branches of
+  //       the cone. 'all' (DEFAULT): additionally AR/SMG core-per-hit = uniform-disc/core lens
+  //       overlap. 'off' reverts byte-identical to the pre-UNIGEO cone engine (the A/B arm).
+  // MG/SR/RL untouched in all modes. The coverage tables are the SCOPE-LOCK boss silhouette — a
+  // medium/large bossPelletProfile fight falls through to the cone path (per-boss coverage
+  // unmeasured; declared limit). Landed with a known fit-exposure: SG overrides were calibrated
+  // against the old inflated landing and await their re-tune pass (DECISIONS 2026-07-22).
+  const UNIGEO: 'off' | 'sg' | 'all' =
+    ENV.UNIGEO === 'off' || ENV.UNIGEO === 'sg' ? ENV.UNIGEO : 'all';
   const coneSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
     return coneSigma(scale, hr, CONE_SIGMA_SHRINK[weapon] ?? 0.009);
   };
   const acrForHR = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far', hr: number): number => {
+    if (UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small') {
+      // UNIGEO core paths: SG in both modes; AR/SMG only in 'all'. MG/SR/RL return null → fall
+      // through to the live chain unchanged.
+      if (weapon === 'SG') return unigeoSgCorePerLanded(band, hr);
+      if (UNIGEO === 'all') {
+        const p = unigeoSingleCoreProb(weapon, band, hr);
+        if (p !== null) return p;
+      }
+    }
     if (CONE_DELTA) {
       const sig = coneSigmaFor(weapon, hr);
       if (sig !== null)
@@ -1263,7 +1284,10 @@ export function runSim(
         (stat(u, 'coreDamagePct', frame) + (u.doll.coreDamagePct ?? 0)) / 100;
       // ⚑ HRCORE: live Hit Rate shrinks the reticle → higher core fraction (derived; LIVE by default, HRCORE=0 off).
       // stat() already sums the unit's live hitRatePct buffs; additive-in-pp composition is UNVALIDATED (R8).
-      const hr = HRCORE || PELLET_GAUSS || CONE_DELTA ? stat(u, 'hitRatePct', frame) : 0;
+      const hr =
+        HRCORE || PELLET_GAUSS || CONE_DELTA || UNIGEO !== 'off'
+          ? stat(u, 'hitRatePct', frame)
+          : 0;
       const acr = opts.coreOverride ?? acrForHR(effWeapon, bandAt(frame), hr);
       major += rng
         ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
@@ -2531,7 +2555,31 @@ export function runSim(
     };
     const bandSg: { dmg: number; gauge: number } =
       u.char.weapon === 'SG' && !u.swap
-        ? CONE_DELTA
+        ? UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small'
+          ? // UNIGEO SG landing: ε × silhouette coverage of the HR-state aim circle (adds the
+            // Hit-Rate landing term the live table lacks). Bernoulli per pellet under a seed.
+            // UNIGEO_GAUGE=legacy (isolation knob, worktree A/B only): DAMAGE keeps the UNIGEO
+            // landing, but the burst-gauge feed reverts to the LIVE engine's landing value (the
+            // cone-path mean under the default CONE_DELTA; the deep-fallback table otherwise) so
+            // gauge generation — and therefore rotation — behaves exactly as the UNIGEO=off
+            // baseline. Localizes rotation drift to the landing→gauge coupling. Under a seed the
+            // legacy gauge uses the expected mean directly (no extra rng draws).
+            (() => {
+              const hr = stat(u, 'hitRatePct', frame);
+              const r = sgLandFromMean(unigeoSgLanding(band, hr));
+              if (ENV.UNIGEO_GAUGE === 'legacy') {
+                const sig = coneSigmaFor('SG', hr);
+                const prof =
+                  cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
+                const liveMean =
+                  CONE_DELTA && sig !== null
+                    ? pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+                    : SG_LANDING_BY_BAND[band];
+                return { dmg: r.dmg, gauge: liveMean };
+              }
+              return r;
+            })()
+          : CONE_DELTA
           ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
             // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
             // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
