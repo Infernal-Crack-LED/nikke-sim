@@ -1821,3 +1821,45 @@ lives. Newest first within each section.
   mechanics change — zero movement in any sim number (verify.sh green, snapshots untouched); this is
   strictly the UI/tooling catching up to what the engine already modeled. Today `rapi-red-hood` is the only
   unit with an `advantageVs` effect, so she is the only multi-element unit.
+
+- **2026-07-22 — UNIGEO SHIPPED (default `'all'`): SG/AR/SMG accuracy-circle geometry is now uniform-in-circle, replacing the Gaussian δ-cone on the scope-lock boss profile — owner enactment of a judge-LOG'd /scientific-method pass.**
+  THE MODEL: shots/pellets land UNIFORM PER AREA in the aim circle; circle radius R(hr) =
+  (0.648 × datamined `start_accuracy_circle_scale` / 2) · (1 − hr/100) px — linear to ZERO at Hit
+  Rate 100, pinned by the owner's two weapon-matched SG tracings (79.3 px at HR 0, 48.2 px at
+  HR 38.91; brid-silent-track + soda-twinkling-bunny) and cross-validated by machine Hough fits and
+  the engine's own bloom-peak calibration. SG landing = 0.96 · coverage(band, R(hr)) — coverage of
+  the circle by the owner-traced boss silhouette, range-scaled px ∝ 1/d — which adds the Hit-Rate
+  landing term the old table structurally lacked; SG core-per-landed = (r_core/R(hr))² ÷ coverage;
+  AR/SMG core-per-hit = uniform-disc/core lens overlap with per-class δ0 (AR 15.9 / SMG 17.9 px,
+  shrinking to 0 at HR 120) and effective-circle fraction f_bloom (AR 0.578 / SMG 0.728).
+  EVIDENCE: the owner's 728-pellet hand count (18 cells, 4 bands × HR on/off) reproduced by the
+  engine untuned (deviance 25.45 vs the analysis fit's 25.4); the Gaussian REFUTED by direct
+  machine-read pellet-marker positions (n=101, KS 0.376 vs crit 0.135; markers owner-ruled white =
+  pellet hit / red = core hit); a PRE-REGISTERED midfar replication scored in the model's favor
+  (z −0.36); all 8 graded SG readings moved in the pre-registered direction AND magnitude band;
+  uniform-lens beats the frozen cone on the 6 clean AR cells (deviance 2.13 vs 16.33). Full gated
+  record: `docs/handoffs/scientific-method-harness.md` 2026-07-22 (judges 2-of-2 ACCEPT, driver
+  HIGH / blind Fable MEDIUM → LOG) + the step-7 implementation review (FIX applied: the default
+  flip co-commits the regenerated snapshot). WHY THE OWNER SHIPPED A LOG: the blind judge's
+  headline reservation — the N5 comp's FB count "breaking" 11→10 — DISSOLVED when the owner's
+  manual recount found the REAL count is 12 (the pinned 11 matched the old sim, never the footage;
+  `docs/probes/714 noon/probe.md:17` said "measured 12 / sim 11 ✗" all along). Both engine variants
+  under-generate there → pre-existing burst-generation question, re-filed as **open-questions U29**,
+  not a UNIGEO regression (the W6 gauge-decoupling isolation localized the 11→10 delta to the
+  landing→gauge coupling and showed 6/8 SG readings are ≥96% pure geometry).
+  KNOWN FIT-EXPOSURE, SHIPPED DELIBERATELY: the old landing sat 12–24% above the owner's measured
+  landing, so SG overrides carry calibration debt — SG-unit mean |ratio−1| 0.084 → 0.131 until the
+  SG OVERRIDE RE-TUNE follow-up pass lands (the board A/B could not validate this change precisely
+  because its instrument embeds the old landing; the owner accepted the interim regression, web
+  included). ⚑ RETAINED (calibrated, not measured): core diameters mid/midfar/far = fit-selected
+  series C (31/20.9/15.8/12.7 px — the pro-B range-data argument vs the anti-B counted cells stands
+  unresolved; an owner re-trace supersedes); the SMG (δ0, f_bloom) pair (SATURATED 2-cell fit that
+  over-predicts little-mermaid long bands — active red flag); f_bloom's bloom-phase mechanism
+  (fitted scalar, no independent observation). REVERT ARM: `UNIGEO=off` restores the cone engine
+  byte-identically; the cone also remains the live path for medium/large `bossPelletProfile`
+  fights. Supersedes: `SG_LANDING_BY_BAND` + its SGLANDING arms and the `SGLANDING=geo` /
+  `BAND_SG_HIT_FRAC` rebuild workstream (engine-work-plan steps 1+3 closed); the 2026-07-15/16
+  class landing table (overturned by same-tier-plus evidence: direct counts + positions + a scored
+  pre-registration); the cone as the SG distribution (KS-refuted). NOT touched: `BAND_CORE_PX`
+  (measured file values intact; the ⚑ UNIGEO series is a separate constant), all measured timing/
+  gauge constants, MG/SR/RL (flat 0.95 core, no accuracy circle).
