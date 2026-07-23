@@ -1,0 +1,25 @@
+{
+  "measurement": "Mid-far Hit-Rate-ON replication window for soda-twinkling-bunny - owner hand count from a SECOND video, scored against the PRE-REGISTERED predictions of the drawn-geometry model (sg-drawn-geometry.json)",
+  "status": "REPLICATION SCORED - the model's pre-registered prediction WINS on both observables; the original mid-far ON core outlier does NOT reproduce. Findings-only; NOTHING ENACTED.",
+  "date": "2026-07-22",
+  "video": "docs/probes/720-kit-audit/soda tb.MP4",
+  "band": "midfar",
+  "arm": "Hit Rate 38.91 ON (burst window)",
+  "countedBy": "owner, same counting rule as soda-tb-sg-core-hr-windows.json section 2",
+  "shots_landed_cores": [[6,0],[8,0],[8,0],[7,0],[7,1],[4,0],[6,0],[8,1],[7,0],[6,0],[8,0],[9,1],[8,0],[7,0],[9,1],[8,0],[10,0],[9,0]],
+  "totals": { "shots": 18, "thrown": 180, "landed": 135, "cores": 4 },
+  "observed": { "landing": 0.75, "corePerLanded": 0.0296 },
+  "preRegistered": {
+    "source": "sg-drawn-geometry.json openItems (written before this count existed)",
+    "coreIfModelHolds": "~0.035",
+    "coreIfOutlierReal": "~0.08",
+    "landing": "0.73-0.78"
+  },
+  "verdict": {
+    "core": "0.0296 vs model 0.0354 -> z = -0.36. The model's prediction wins decisively over the outlier hypothesis (~0.08).",
+    "landing": "0.750 vs model 0.728 -> z = +0.65, inside the pre-registered band.",
+    "originalOutlier": "the first window's 0.0786 (11/140) does not reproduce; the two windows differ at ~1.8 sigma; POOLED mid-far ON core = 15/275 = 0.0545 vs model 0.0354 -> z = 1.71, unremarkable across 18 cells.",
+    "fitUpdate": "re-fit with both replication cells added: k = 1.04, eps = 0.960 - IDENTICAL to the 16-cell fit; deviance 25.4 on 16 dof (GOF p ~ 0.064). No cell exceeds 2 sigma except the original mid-far window's core, now explained as a fluctuation."
+  },
+  "modelStateAfterThis": "The uniform-in-circle model (sg-drawn-geometry.json formalFit_16cell) stands with NO unexplained cells: pellets uniform per area in the screen-fixed aim circle (R 79.3 px -> 48.2 px at Hit Rate 38.91), landing = range-scaled silhouette coverage x eps 0.96, core = range-scaled core disc share. Evidence: (1) zero-fitted-parameter landing check, (2) 18-cell likelihood fit, (3) machine-read per-pellet positions (sg-pellet-marker-radial.json), (4) this pre-registered replication."
+}
