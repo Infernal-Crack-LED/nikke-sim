@@ -457,6 +457,12 @@ skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair 
 > Target debuff window, `intervalSec 3` from the burst's *"Stuns for 3 sec"*. Her burst's 1407.64% IS
 > instantaneous and already correct, and the two 10 s markers are the self buff + enemy debuff, also
 > already correct. So the U14 footage recipe ("read the DoT popup in vs out of Full Burst") measures a
+>  **The rider hits ONCE per trigger event** (owner 2026-07-22) — *"Activates when the last bullet hits a
+> target in Designated Target status"*, like every trigger in her kit. **The only "3" in her kit is that
+> 3-second stun.** So any re-encoding must be DRIVEN by the `lastBullet` trigger; a fixed hit count
+> reproduces the original defect. The faithful fix needs a TARGET-STATUS gate, which the engine lacks —
+> now an action item under the state-machine build (plan step 5e), since a kit-defined per-character
+> status that gates behaviour is the same machinery `prika`/`mint`/`milk-blooming-bunny` need.
 > rider, not a DoT, and must be rewritten before footage is requested. Constraint 3 protects her
 > coefficients, NOT the DoT encoding. Full record + the three encoding options:
 > `docs/handoffs/2026-07-22-engine-work-plan.md` §5f.
