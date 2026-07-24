@@ -408,6 +408,19 @@ and the full multiplier decomposition. Tests live in `scripts/tests/units/<slug>
   comments from the SCHEMA handed to blind roles (not just the methodology excerpt), and the leak assertion
   must scan every FILE the blind role reads (schema included) for the target's slug + answer tokens — not just
   the assembled prompt. (Stale-comment fix is out of scope this session; noted for `/doc-drift`.)
+- **2026-07-23 · D13 ·** **S7 verdict: GO (faithfulnessScore 1.0, 0 REAL-GOTCHA) — Phase 4 complete.** The
+  reconciling judge (a loop-safe retry after the first judge LOOP*DETECTED on the large multi-file read) ruled
+  **GO**: 9 FAITHFUL + 2 DOCUMENTED_GAP (3s stun; boss ATK▼5.02 — the load-bearing Designated-Target \_status* IS
+  modeled via `targetStatus`). The 1 mechanical RED (S5 P5) = **RECON_ERROR** — the `casterIdx=null` trap,
+  **empirically confirmed** (the `damageTakenPct 10.01` boss debuff emits `casterIdx=null` AND `targetIdx=null`,
+  count 39 ≈ reloads, 10s). S6 blind-override diff = **no functional divergence** (`crit:true`/`noRange`
+  redundant; inert ATK▼ stat vs `unmodeled`). **Board A/B (non-gating):** privaty reads **HOT** (mean 1.099,
+  N=3, range 0.96–1.19, ±15% band, seedSD ±3.2%⚠) — **fit-exposure, NOT encoding** (the over-model the removed
+  `noFb` calibration had been hiding, per the override note); faithful>fit ⇒ do NOT revert; a separate per-unit
+  localization thread. **verify.sh GREEN** (175 passed | 1 skipped). The gauntlet's value claim held within the
+  same-model limit (§14.1): both blind re-derivations converged leak-free and the one mechanical RED was a test
+  artifact, not a misread. **Owner spot-check recommended** for the 1687 gate + Max-Ammo▼ tandem (highest-risk
+  same-model reads) and the measurement-gated magnitudes.
 
 ## 9. Open questions / residual risks
 
@@ -641,3 +654,52 @@ and compare), so estimates cannot be back-fit. Moot for privaty (no ⚑ — all 
   independently discriminable.** The "both riders" claim is withdrawn.
 - **Honest net:** privaty has **2 clean discriminators (D1, D4-for-256.17) + D2 (discriminates, window-from
   -burstCast, non-vacuity guard) + D3 (sanity check)** — "~2.5 sharp + 1 tautology," not "four sharp."
+
+---
+
+# PART III — THE LIVE RUN: `privaty` (2026-07-23)
+
+## 15. Result
+
+**Verdict: GO** · faithfulnessScore **1.0** (11/11 lines FAITHFUL or DOCUMENTED_GAP) · **0 REAL-GOTCHA**.
+
+| Stage | Output                                                  | Result                                                         |
+| ----- | ------------------------------------------------------- | -------------------------------------------------------------- |
+| S1    | line inventory (11 lines) + tier MEASURED               | done                                                           |
+| S2a   | `scripts/tests/units/privaty.test.ts` (17 assertions)   | GREEN vs shipped                                               |
+| S2b   | `reviews/privaty.test-review.json` (adversarial, blind) | converged 9/11; 1687→FAITHFUL (leak-influenced label resolved) |
+| S2c   | reconcile                                               | adopted P5b (Max-Ammo tandem) + P5c (fullBurstEnter cadence)   |
+| S2d   | `reviews/privaty.verify.txt`                            | 17/17 GREEN (objective matrix)                                 |
+| S3    | override                                                | NO CHANGE (already faithful; validates clean)                  |
+| S4    | engine                                                  | NO-OP (all primitives exist + are observable)                  |
+| S5    | `blind/privaty.test.ts` (independent, no leak)          | 24/27 GREEN vs shipped (1 RECON_ERROR, 2 skipped)              |
+| S6    | `blind/privaty.override.json` (independent, no leak)    | no functional divergence; the gate converged from prose        |
+| S7    | `results/privaty.json` (binding judge)                  | **GO**, score 1.0, 0 gotchas                                   |
+
+## 16. What the gauntlet caught / confirmed
+
+- **Confirmed faithful (independently):** S1 `fullBurstEnter` team buffs; S2 `lastBullet` 256.17 cadence; the
+  1687 `requiresTargetStatus` gate (**converged from the prose, leak-free**); `damageTakenPct` boss debuff;
+  `elemAdvantageDamagePct 130` self/`burstCast`; 1407.64 FB-exempt nuke; stun/ATK▼ unmodeled.
+- **Engine findings surfaced by the test-first gate:** `noFb` is INERT under FB-by-timing + rejected by
+  `validate-overrides` (D10); boss debuffs emit `casterIdx=null` AND `targetIdx=null` (empirically confirmed);
+  the `damageTakenPct` debuff makes S2 team-relevant (not team-inert).
+- **Methodology findings:** the `types.ts` schema leaked privaty's answer via a stale comment (D12) → redaction
+  must strip per-unit comments from the schema + scan every file the blind role reads; the same-model limit (R1)
+  means a clean GO is evidence against idiosyncratic error, not proof of faithfulness.
+
+## 17. Board A/B (non-gating) + honest residual
+
+privaty reads **HOT** (mean 1.099, N=3, range 0.96–1.19, MAD 0.124, ±15% band, seedSD ±3.2%⚠). This is
+**fit-exposure, not encoding** — the override is faithful (GO, 1.0); the HOT is the over-model the removed
+`noFb` calibration had been hiding (override note). Faithful>fit ⇒ the encoding is NOT reverted; the residual is
+a separate per-unit localization thread (§5.5c). **Owner spot-check recommended** for the 1687 gate + Max-Ammo▼
+tandem (highest-risk same-model reads) and the measurement-gated magnitudes.
+
+## 18. Deliverables
+
+- **Methodology + decisions:** `docs/kit-autonomy-decisions.md` (this doc; §14 authoritative).
+- **Skill:** `.claude/skills/kit-autonomy/SKILL.md` (live, gitignored — consistent with the other methodology skills).
+- **Tracked templates + run artifacts:** `scripts/kit-autonomy/` (TEST-FAITHFULNESS-REVIEW / BLIND-TEST-WRITER /
+  BLIND-OVERRIDE-WRITER / RECONCILING-JUDGE / README + `reviews/` + `blind/` + `results/`).
+- **The faithful, fully-unit-tested kit:** `scripts/tests/units/privaty.test.ts` (17 assertions, GREEN).
