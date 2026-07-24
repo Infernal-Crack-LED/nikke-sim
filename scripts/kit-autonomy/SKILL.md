@@ -123,8 +123,10 @@ counterfactual** — expect RED, and records the full pass/fail matrix as an art
 Implement the **minimum** `src/skills/overrides/<slug>.json` change to turn the FIX/MISSING tests green
 (approve the protected-path prompt). Every skipped line VERBATIM in `unmodeled`; every value outside the
 input domain is a ⚑ with estimate + recipe + tier; NO `ignored` blocks; override prose = current-state only
-(no history — the WHY goes to DECISIONS). `npx tsx scripts/validate-overrides.ts <slug>` must pass; tests go
-GREEN. (For an already-faithful unit this stage is minimal/none — the tests are pins.)
+(no history — the WHY goes to DECISIONS). The override `note` carries the provenance marker
+`Kit-autonomy gauntlet <YYYY-MM-DD>` (the Land step's `kit-status.ts --gauntlet` derives provenance + date
+from it). `npx tsx scripts/validate-overrides.ts <slug>` must pass; tests go GREEN. (For an already-faithful
+unit this stage is minimal/none — the tests are pins.)
 
 ## Stage 4 — engine updates (driver, isolated worktree) — ONLY if a primitive is genuinely missing
 
@@ -187,11 +189,31 @@ reason to revert). Unit tests pin _faithful_; the board pins _accurate_; report 
 
 ## Land (on GO)
 
-Override prose = current-state; `docs/DECISIONS.md` entry per ruling; `data/kit-status.json` via
-`scripts/kit-status.ts`; set `simSupported: true` in `data/characters.json` for the unit (protected path —
-the gauntlet's GO verdict is the owner-approved gate); `bash scripts/verify.sh` green; commit (freely, never
-push unless asked); `/mechanics-doc-upkeep` if the engine changed; `/skill-maintenance` if the session taught
-a reusable lesson.
+- Override prose = current-state, and the override `note` carries the `Kit-autonomy gauntlet <YYYY-MM-DD>`
+  marker (S3 wrote it).
+- `docs/DECISIONS.md` entry per ruling.
+- **Record the outcome in `data/kit-status.json`** (the per-unit SSOT) — this is the gauntlet's last step:
+  ```sh
+  npx tsx scripts/kit-status.ts --gauntlet <slug> \
+    --evidence "kit-autonomy gauntlet <date>; GO faithfulness <score>; <provenance: 'cross-family S2b(fable)/S5/S6/S7(opus) converged' — OR 'same-model only (Qwen reviewers)'>" \
+    --residual "<the owner spot-check cluster from manual-review/<slug>.md>"
+  npx tsx scripts/kit-status.ts --refresh   # regenerate AUTO mirrors (provenance/unmodeled/caveats/board) + counts
+  ```
+  `--gauntlet` reads the S7 judge result (`scripts/kit-autonomy/results/<slug>.json`) and sets
+  `kitParse.status: "unit-tested"`, `kitParse.provenance: "gauntlet"` (derived from the note marker),
+  `kitParse.date` (the gauntlet date), and the `kitParse.findings` (a GO summary + one line per judge gotcha).
+  On the EVIDENCE axis it records the gauntlet **without clobbering tuning provenance**: it APPENDS the
+  `--evidence`/`--residual` lines to any existing ones, sets the top-level `date` only if absent (a
+  fight-validated unit keeps its recording date), and defaults `graded` to `{teams:0, within3pct:0}` only if
+  absent. **It deliberately does NOT touch `tier`/`tuned`** — the gauntlet certifies STRUCTURE (faithfulness),
+  not tuning, so the unit keeps its tuning tier (a pure-model unit stays `MODEL_ONLY`/`tuned:false`; a
+  fight-validated unit stays `MEASURED`/`CALIBRATED`/`VALIDATED`). There is no `GAUNTLET` tier; never invent
+  one. `--evidence`/`--residual` are required (the driver supplies them from the run it just drove — nothing is
+  fabricated from the judge's free-text rationale; a same-model run's evidence must say "same-model only").
+- Set `simSupported: true` in `data/characters.json` for the unit (protected path — the gauntlet's GO verdict
+  is the owner-approved gate).
+- `bash scripts/verify.sh` green; commit (freely, never push unless asked); `/mechanics-doc-upkeep` if the
+  engine changed; `/skill-maintenance` if the session taught a reusable lesson.
 
 ## Verify
 
@@ -211,6 +233,10 @@ bash scripts/verify.sh                              # the canonical repo gate
 
 ## Change log
 
+- 2026-07-24 — Land step now records the GO in `data/kit-status.json` via `kit-status.ts --gauntlet <slug>`
+  (kitParse.status `unit-tested`, provenance `gauntlet` from the S3 note marker, findings/evidence/residual/
+  date/graded). The gauntlet certifies STRUCTURE, not tuning, so `tier`/`tuned` stay `MODEL_ONLY`/`false`
+  (there is no GAUNTLET tier).
 - 2026-07-23 — created. Encodes the autonomous test-first gauntlet (docs/kit-autonomy-decisions.md §14,
   red-team-hardened): test-centric gate, independent re-derivation (S2b/S5/S6), binding judge (S7),
   de-contaminated blind packets, independent RED gate, bounded no-go loop + webhook escalation.

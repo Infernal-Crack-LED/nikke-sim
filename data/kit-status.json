@@ -16,17 +16,17 @@
   },
   "counts": {
     "status": {
-      "audited": 41,
+      "audited": 38,
       "authored": 30,
-      "pending": 2,
-      "reconciled": 4
+      "unit-tested": 4,
+      "reconciled": 4,
+      "pending": 1
     },
     "tier": {
       "VALIDATED": 10,
-      "MODEL_ONLY": 42,
+      "MODEL_ONLY": 43,
       "MEASURED": 14,
-      "CALIBRATED": 10,
-      "GAUNTLET": 1
+      "CALIBRATED": 10
     },
     "band": {
       "±3% ✓": 5,
@@ -446,13 +446,22 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "pending",
-        "provenance": "hand-authored",
-        "date": null,
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/ark-ranger-black.json + scripts/kit-autonomy/manual-review/ark-ranger-black.md."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(fable+opus)/S5/S6(opus)/S7(opus+fable) converged",
+      "date": "2026-07-24",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "residual": "Same-model spot-check (manual-review §3): the 10s Transformation window (50% battery / 5%-per-sec drain, DATAMINED — count Ark Black Collider ticks per burst on footage); sustainedDamagePct scope (59.6/77.5/135.83 boost sustained-flavor DoTs only, not normal AR fire); burstCast-vs-fullBurstEnter trigger identity for the Transformation ATK buff. Magnitudes DATAMINED-unmeasured (gauntlet certifies structure, not numbers).",
       "unmodeled": {
         "skill1": [
           "Charges battery by 50% continuously, up to 100%. This effect cannot be removed. (part-destroy trigger — no destructible parts on the partless scope-lock boss; never fires in scope-lock)"
@@ -836,23 +845,28 @@
       "weapon": "MG",
       "class": "Defender",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-23",
         "findings": [
-          "One For All rebuild AUDIT: prose-faithful, ZERO discrepancies (caster-split disjoint+per-chain, Relax->recovery->AD chain, burst shield all engine-verified)"
+          "kit-autonomy gauntlet 2026-07-23: GO, faithfulness 0.9 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/crown.json + scripts/kit-autonomy/manual-review/crown.md.",
+          "S1 ATK buff burst-status scoping: kit restricts the 64.51% ATK to allies who already burst, but the TargetDef schema has no burst-status target, so it lands on ALL allies. In a comp with a non-bursting damage dealer this over-reads. Verify per-comp via rotation log before trusting the number on that comp.",
+          "S2 20.99% team Attack Damage cadence is a DERIVED estimate (hitCount 860 = 43 normal attacks × 20 Relax stacks), and the 7s duration vs the ~860-hit refill period is unmeasured. Effective uptime is unknown until Crown's MG hits-to-max and the buff's appearance count in a 180s fight are measured. The Relax→invuln→taunt→heal chain that natively fires it is not modeled; only its net firing cadence is.",
+          "Board fit is 1.000 (perfect) with σ=0.046 — but Crown has ZERO self-damage kit, so this board reading reflects the correctness of her buff MAGNITUDES landing on graded carries, NOT of the two scoping/cadence approximations, which the current graded comps may not exercise (no non-bursting carry stress-test; no shield-synergy teammate).",
+          "Shield and self-heal are inert placeholders — safe today, but they are the only channels that would matter to a shield-synergy or on-recovery teammate; don't strip them as 'defensive'."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": true,
-      "evidence": "Crown SOLO recording — MG range-bands read per popup class (battery 4); 0.89-1.14 across ~10 comps",
+      "evidence": "Crown SOLO recording — MG range-bands read per popup class (battery 4); 0.89-1.14 across ~10 comps | kit-autonomy gauntlet 2026-07-23; GO faithfulness 0.9; cross-family S2b(fable)/S5/S6/S7(opus) converged",
       "date": "2026-07-14",
       "graded": {
         "teams": 10,
         "within3pct": 3
       },
       "reference": false,
+      "residual": "Same-model spot-check (manual-review §4): S2 recovery cadence (hitCount 860 derived; team-AD uptime unmeasured, depends on healer frequency); S1 casterAtkPct magnitude vs the alternating two-B3 pattern; magnitudes DATAMINED-unmeasured (gauntlet certifies structure, not numbers). Board 1.000 reflects buff magnitudes on graded carries, not the scoping/cadence approximations.",
       "unmodeled": {
         "skill1": [],
         "skill2": [
@@ -2093,19 +2107,16 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
         "date": "2026-07-24",
         "findings": [
-          "GO faithfulness 1.0 — cross-family corroborated (S2b fable, S5/S6/S7 opus). All lines FAITHFUL or DOCUMENTED_GAP.",
-          "Whistle perResource ramp (4→5 stacks at t=5s) more faithful than S6 blind flat-cap authoring.",
-          "ownBurstGate:cast correctly pins S1 nuke to own-burst FBs only (two-B3 comp discrimination).",
-          "Electric spine (High-Risk Target + elemAdvantage lines) correctly element/status-gated; inert on Fire boss.",
-          "DEF▼10.56% documented as inert at bossDef:0, NOT mis-encoded as damageTakenPct (S2b-warned trap avoided).",
-          "Low-severity: hitCount:20 counts all hits not normal-only (documented, Electric-only); RIDERCRIT default relied on for flatDamage crit."
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/marciana-marine-study.json + scripts/kit-autonomy/manual-review/marciana-marine-study.md.",
+          "low FIDELITY (skill1): hitCount:20 counts ALL hits (normal+skill+burst), but the kit says '20 NORMAL attacks'.",
+          "low ENCODING (skill1): Neither flatDamage rider (3789.25 / 152.68) sets crit:true; correctness relies on the engine's RIDERCRIT default being ON."
         ]
       },
-      "tier": "GAUNTLET",
+      "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
       "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
@@ -2115,6 +2126,7 @@
         "within3pct": 0
       },
       "reference": false,
+      "residual": "Same-model spot-check (manual-review §3): ownBurstGate:'cast' nuke trigger identity; Whistle 4→5 ramp timing; elemAdvantage 20.41 first-fire convention; hitCount all-hits vs normal-only; RIDERCRIT default on flatDamage riders. Magnitudes DATAMINED-unmeasured — gauntlet certifies structure, not numbers.",
       "unmodeled": {
         "skill1": [
           "■ Activates when an enemy is neutralized if the target is in the Flagged Target state. Affects 1 random enemy unit(s). Flagged Target Designation Effect 1: Deals 3789.25% of final ATK as additional damage. Effect 2: Activates when the target is alive. Flagged Target: ATK ▼ 10.56% for 10 sec. — UNMODELED: no enemyNeutralized trigger in the engine; inert in the sim (the boss never dies). The Flagged Target status IS modeled (targetStatus) as the gate for this block, but the block itself never fires."
@@ -2863,23 +2875,24 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-23",
         "findings": [
-          "clean: 9/10 exact zero drift; the 1687% Designated-Target rider is now modeled FAITHFULLY — a lastBullet block gated requiresTargetStatus 'Designated Target', the status applied by her burst (2026-07-23, DECISIONS); the old burstCast-DoT proxy and its noFb are gone, and the '1687 comp-dependence' item is CLOSED (it fired in both comps; the earlier check missed an occluded popup). Max-Ammo-down interaction mechanically emergent. Open: she reads HOT post-enactment (mean ~1.12) — fit-exposure from the removed noFb calibration, needs per-unit localization. The targetStatus durationSec 10 is DATAMINED (the burst's \"Designated Target: ATK 5.02% down for 10 sec\" line IS the status line); its ATK-down content is v1-inert and sits in unmodeled.burst."
+          "kit-autonomy gauntlet 2026-07-23: GO, faithfulness 1 (judge unspecified). Artifacts: scripts/kit-autonomy/results/privaty.json + scripts/kit-autonomy/manual-review/privaty.md."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "Battery-5 focus — in/out-window popup ratio 2.8244 -> elemAdv in Element bucket; 0.77->1.00 on T4",
+      "evidence": "Battery-5 focus — in/out-window popup ratio 2.8244 -> elemAdv in Element bucket; 0.77->1.00 on T4 | kit-autonomy gauntlet 2026-07-23; GO faithfulness 1.0; same-model only (Qwen reviewers, no cross-family review)",
       "date": "2026-07-14",
       "graded": {
         "teams": 2,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "Same-model-only GO (manual-review §4): spot-check the 1687 Designated-Target gate + the Max-Ammo-down to shot-count tandem (highest-risk shared-prior reads); magnitudes DATAMINED-unmeasured (gauntlet certifies structure, not numbers). Board HOT (mean 1.099) is fit-exposure from the removed noFb calibration, NOT this encoding — separate per-unit localization thread.",
       "unmodeled": {
         "skill1": [],
         "skill2": [],

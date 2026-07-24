@@ -6,6 +6,11 @@
 //   npx tsx scripts/kit-status.ts --check            # fast structural check (verify.sh gate; no sims)
 //   npx tsx scripts/kit-status.ts --set <slug> status=authored [date=YYYY-MM-DD] [tier=...] [tuned=true]
 //   npx tsx scripts/kit-status.ts --finding <slug> '<finding text or JSON>'   # append a reconciliation finding
+//   npx tsx scripts/kit-status.ts --gauntlet <slug> --evidence '<line>' --residual '<line>'
+//                                                    # record a kit-autonomy gauntlet GO (the gauntlet's
+//                                                    # Land step): kitParse.status=unit-tested, provenance
+//                                                    # gauntlet (from the override note marker), findings +
+//                                                    # evidence/residual/date/graded. Does NOT touch tier/tuned.
 //
 // Three field groups per unit:
 //   WORKFLOW (kitParse.*)  — hand/driver-maintained; preserved verbatim across --refresh
@@ -14,10 +19,23 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const KIT_STATUS_URL = new URL('../data/kit-status.json', import.meta.url);
-const LEGACY_HAND_TUNED_URL = new URL('../data/hand-tuned.json', import.meta.url);
-const OVERRIDE_URL = (slug: string) => new URL(`../src/skills/overrides/${slug}.json`, import.meta.url);
+const LEGACY_HAND_TUNED_URL = new URL(
+  '../data/hand-tuned.json',
+  import.meta.url,
+);
+const OVERRIDE_URL = (slug: string) =>
+  new URL(`../src/skills/overrides/${slug}.json`, import.meta.url);
 
-const STATUSES = ['pending', 'authored', 'audited', 'reconciled'] as const;
+// 'unit-tested' = passed the kit-autonomy gauntlet (autonomous test-first faithfulness audit). It is a
+// WORKFLOW status (the kit-parse axis), NOT a tuning tier: a gauntleted unit keeps tier MODEL_ONLY until a
+// real fight validates its numbers (the gauntlet certifies structure, not magnitudes — docs/hand-tuned.md).
+const STATUSES = [
+  'pending',
+  'authored',
+  'audited',
+  'reconciled',
+  'unit-tested',
+] as const;
 type Status = (typeof STATUSES)[number];
 
 interface UnitEntry {
@@ -54,6 +72,10 @@ interface UnitEntry {
 }
 
 function provenance(note: string): string {
+  // The kit-autonomy gauntlet's Land step writes a "Kit-autonomy gauntlet <date>" marker into the override
+  // note (S3); checked first because a gauntlet run is the most recent/strongest provenance signal and
+  // supersedes any earlier parser/materialization marker the note may still carry.
+  if (note.includes('Kit-autonomy gauntlet')) return 'gauntlet';
   if (note.startsWith('MATERIALIZED PARSER OUTPUT')) return 'materialized';
   if (note.includes('PARSER BASELINE (HYPOTHESIS')) return 'parser-baseline';
   if (note.includes('[re-materialized')) return 're-materialized';
@@ -62,7 +84,9 @@ function provenance(note: string): string {
 }
 
 function loadDoc(): any {
-  return existsSync(KIT_STATUS_URL) ? JSON.parse(readFileSync(KIT_STATUS_URL, 'utf8')) : null;
+  return existsSync(KIT_STATUS_URL)
+    ? JSON.parse(readFileSync(KIT_STATUS_URL, 'utf8'))
+    : null;
 }
 function saveDoc(doc: any) {
   writeFileSync(KIT_STATUS_URL, JSON.stringify(doc, null, 2) + '\n');
@@ -79,26 +103,35 @@ const args = process.argv.slice(2);
 const mode = args[0];
 
 if (mode === '--refresh') {
-  const data = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
+  const data = JSON.parse(
+    readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'),
+  );
   const prior = loadDoc();
   // one-time bootstrap of the EVIDENCE axis from the legacy hand-tuned.json
   const legacy: Record<string, any> = {};
   let legacyMeta: any = null;
   if (!prior && existsSync(LEGACY_HAND_TUNED_URL)) {
     const ht = JSON.parse(readFileSync(LEGACY_HAND_TUNED_URL, 'utf8'));
-    legacyMeta = { policy: ht.policy, tiers: ht.tiers, reference_grade: ht.reference_grade };
+    legacyMeta = {
+      policy: ht.policy,
+      tiers: ht.tiers,
+      reference_grade: ht.reference_grade,
+    };
     for (const u of ht.units) legacy[u.slug] = u;
   }
 
   // board readings (sims all COMPS — the slow part); lazy import keeps --check/--set fast
-  const { collectBoardReadings, boardStats } = await import('./lib/board-readings.js');
+  const { collectBoardReadings, boardStats } =
+    await import('./lib/board-readings.js');
   const readings = collectBoardReadings();
 
   // kit-status is the rollout SSOT for units that HAVE a kit override — i.e. simSupported.
   // The 2026-07-19 sync tagging change made characters.json roster-wide (includes
   // Team-Builder-only "unsupported" units with no override file); scope out here.
   const units: Record<string, UnitEntry> = {};
-  for (const slug of Object.keys(data.characters).filter((s) => data.characters[s].simSupported).sort()) {
+  for (const slug of Object.keys(data.characters)
+    .filter((s) => data.characters[s].simSupported)
+    .sort()) {
     const c = data.characters[slug];
     const o = JSON.parse(readFileSync(OVERRIDE_URL(slug), 'utf8'));
     const prev: Partial<UnitEntry> = prior?.units?.[slug] ?? {};
@@ -119,17 +152,32 @@ if (mode === '--refresh') {
       tier: prev.tier ?? lg.tier ?? 'MODEL_ONLY',
       tuned: prev.tuned ?? lg.tuned ?? false,
       // EVIDENCE fields: prev wins, else legacy; omit when neither defines them
-      ...(pick(prev.control, lg.control) !== undefined ? { control: pick(prev.control, lg.control) } : {}),
-      ...(pick(prev.evidence, lg.evidence) !== undefined ? { evidence: pick(prev.evidence, lg.evidence) } : {}),
-      ...(pick(prev.date, lg.date) !== undefined ? { date: pick(prev.date, lg.date) } : {}),
-      ...(pick(prev.graded, lg.graded) !== undefined ? { graded: pick(prev.graded, lg.graded) } : {}),
-      ...(pick(prev.reference, lg.reference) !== undefined ? { reference: pick(prev.reference, lg.reference) } : {}),
-      ...(pick(prev.residual, lg.residual) !== undefined ? { residual: pick(prev.residual, lg.residual) } : {}),
+      ...(pick(prev.control, lg.control) !== undefined
+        ? { control: pick(prev.control, lg.control) }
+        : {}),
+      ...(pick(prev.evidence, lg.evidence) !== undefined
+        ? { evidence: pick(prev.evidence, lg.evidence) }
+        : {}),
+      ...(pick(prev.date, lg.date) !== undefined
+        ? { date: pick(prev.date, lg.date) }
+        : {}),
+      ...(pick(prev.graded, lg.graded) !== undefined
+        ? { graded: pick(prev.graded, lg.graded) }
+        : {}),
+      ...(pick(prev.reference, lg.reference) !== undefined
+        ? { reference: pick(prev.reference, lg.reference) }
+        : {}),
+      ...(pick(prev.residual, lg.residual) !== undefined
+        ? { residual: pick(prev.residual, lg.residual) }
+        : {}),
       unmodeled: o.unmodeled ?? { skill1: [], skill2: [], burst: [] }, // AUTO mirror
       ...(o.caveats ? { caveats: o.caveats } : {}),
       board: stats
         ? {
-            records: stats.records.map((r) => ({ comp: r.comp, ratio: round(r.ratio) })),
+            records: stats.records.map((r) => ({
+              comp: r.comp,
+              ratio: round(r.ratio),
+            })),
             n: stats.n,
             mean: round(stats.mean),
             mad: round(stats.mad),
@@ -144,7 +192,8 @@ if (mode === '--refresh') {
   const tierCounts: Record<string, number> = {};
   const bandCounts: Record<string, number> = {};
   for (const u of Object.values(units)) {
-    statusCounts[u.kitParse.status] = (statusCounts[u.kitParse.status] ?? 0) + 1;
+    statusCounts[u.kitParse.status] =
+      (statusCounts[u.kitParse.status] ?? 0) + 1;
     tierCounts[u.tier] = (tierCounts[u.tier] ?? 0) + 1;
     if (u.board) bandCounts[u.board.band] = (bandCounts[u.board.band] ?? 0) + 1;
   }
@@ -167,24 +216,37 @@ if (mode === '--refresh') {
   const withBoard = Object.values(units).filter((u) => u.board).length;
   console.log(
     `kit-status.json refreshed: ${Object.keys(units).length} units, ${withBoard} with board data, ` +
-      `status ${JSON.stringify(statusCounts)}`
+      `status ${JSON.stringify(statusCounts)}`,
   );
 } else if (mode === '--check') {
   // fast structural gate for verify.sh: roster coverage + unmodeled mirror freshness
-  const data = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
+  const data = JSON.parse(
+    readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'),
+  );
   const doc = loadDoc();
   const errors: string[] = [];
-  if (!doc) errors.push('data/kit-status.json missing — run scripts/kit-status.ts --refresh');
+  if (!doc)
+    errors.push(
+      'data/kit-status.json missing — run scripts/kit-status.ts --refresh',
+    );
   else {
-    for (const slug of Object.keys(data.characters).filter((s) => data.characters[s].simSupported)) {
+    for (const slug of Object.keys(data.characters).filter(
+      (s) => data.characters[s].simSupported,
+    )) {
       const u = doc.units[slug];
       if (!u) {
-        errors.push(`${slug}: missing from kit-status.json (run --refresh after sync)`);
+        errors.push(
+          `${slug}: missing from kit-status.json (run --refresh after sync)`,
+        );
         continue;
       }
-      if (!STATUSES.includes(u.kitParse?.status)) errors.push(`${slug}: bad kitParse.status "${u.kitParse?.status}"`);
+      if (!STATUSES.includes(u.kitParse?.status))
+        errors.push(`${slug}: bad kitParse.status "${u.kitParse?.status}"`);
       const o = JSON.parse(readFileSync(OVERRIDE_URL(slug), 'utf8'));
-      if (JSON.stringify(u.unmodeled) !== JSON.stringify(o.unmodeled ?? { skill1: [], skill2: [], burst: [] })) {
+      if (
+        JSON.stringify(u.unmodeled) !==
+        JSON.stringify(o.unmodeled ?? { skill1: [], skill2: [], burst: [] })
+      ) {
         errors.push(`${slug}: unmodeled mirror stale (run --refresh)`);
       }
       if (provenance(o.note ?? '') !== u.kitParse?.provenance) {
@@ -196,7 +258,9 @@ if (mode === '--refresh') {
       // count, and verify.sh stayed green because only `unmodeled` was compared. kit-status.json is the
       // per-unit review LOG (and the corpus /tuning-priors mines), so a stale mirror there reads as a
       // live claim to every future session. Same cheap string compare as `unmodeled`, no sims.
-      if (JSON.stringify(u.caveats ?? null) !== JSON.stringify(o.caveats ?? null)) {
+      if (
+        JSON.stringify(u.caveats ?? null) !== JSON.stringify(o.caveats ?? null)
+      ) {
         errors.push(`${slug}: caveats mirror stale (run --refresh)`);
       }
     }
@@ -243,8 +307,98 @@ if (mode === '--refresh') {
   }
   doc.units[slug].kitParse.findings.push(args[2]);
   saveDoc(doc);
-  console.log(`${slug}: ${doc.units[slug].kitParse.findings.length} finding(s)`);
+  console.log(
+    `${slug}: ${doc.units[slug].kitParse.findings.length} finding(s)`,
+  );
+} else if (mode === '--gauntlet') {
+  // Record a kit-autonomy gauntlet GO in the per-unit SSOT (the gauntlet's Land step). Reads the S7 judge
+  // result for the robust fields only (faithfulnessScore / model / gotchas — the verdictRationale is
+  // free-form and NOT parsed); the prose evidence/residual are driver-supplied so nothing is fabricated.
+  const slug = args[1];
+  const doc = loadDoc();
+  if (!doc?.units?.[slug]) {
+    console.error(
+      `unknown slug "${slug}" (or kit-status.json missing — run --refresh first)`,
+    );
+    process.exit(1);
+  }
+  const resultUrl = new URL(
+    `./kit-autonomy/results/${slug}.json`,
+    import.meta.url,
+  );
+  if (!existsSync(resultUrl)) {
+    console.error(
+      `missing judge result scripts/kit-autonomy/results/${slug}.json — S7 must run before landing`,
+    );
+    process.exit(1);
+  }
+  const result = JSON.parse(readFileSync(resultUrl, 'utf8'));
+  const o = JSON.parse(readFileSync(OVERRIDE_URL(slug), 'utf8'));
+  const note: string = o.note ?? '';
+  if (!note.includes('Kit-autonomy gauntlet')) {
+    console.error(
+      `${slug}: override note lacks the "Kit-autonomy gauntlet <date>" marker — S3 must write it before landing`,
+    );
+    process.exit(1);
+  }
+  let evidence: string | undefined;
+  let residual: string | undefined;
+  for (let i = 2; i < args.length; i++) {
+    if (args[i] === '--evidence') evidence = args[++i];
+    else if (args[i] === '--residual') residual = args[++i];
+    else {
+      console.error(
+        `unknown --gauntlet option "${args[i]}" (expected --evidence|--residual)`,
+      );
+      process.exit(1);
+    }
+  }
+  if (evidence === undefined || residual === undefined) {
+    console.error(
+      'usage: --gauntlet <slug> --evidence "<line>" --residual "<line>"',
+    );
+    process.exit(1);
+  }
+  const date =
+    note.match(/Kit-autonomy gauntlet (\d{4}-\d{2}-\d{2})/)?.[1] ??
+    new Date().toISOString().slice(0, 10);
+  const score = result.faithfulnessScore ?? '?';
+  const judge: string = result.model ?? 'unspecified';
+  const gotchas: any[] = Array.isArray(result.gotchas) ? result.gotchas : [];
+
+  const u = doc.units[slug];
+  // WORKFLOW axis — the gauntlet outcome.
+  u.kitParse.status = 'unit-tested';
+  u.kitParse.provenance = provenance(note); // 'gauntlet' (AUTO-derived from the note marker; --refresh agrees)
+  u.kitParse.date = date;
+  u.kitParse.findings = [
+    `kit-autonomy gauntlet ${date}: GO, faithfulness ${score} (judge ${judge}). ` +
+      `Artifacts: scripts/kit-autonomy/results/${slug}.json + scripts/kit-autonomy/manual-review/${slug}.md.`,
+    // judge gotchas are {severity,subkind,slot,summary} objects in some results and plain strings in others.
+    ...gotchas.map((g) =>
+      typeof g === 'string'
+        ? g
+        : `${g.severity ?? 'low'} ${g.subkind ?? 'GOTCHA'} (${g.slot ?? '?'}): ${g.summary ?? ''}`,
+    ),
+  ];
+  // EVIDENCE axis — record the gauntlet WITHOUT clobbering tuning provenance. tier/tuned/graded are LEFT
+  // UNCHANGED: the gauntlet certifies STRUCTURE (faithfulness), not tuning, so the unit keeps its tuning tier
+  // (MODEL_ONLY / tuned:false until a real fight validates it; a fight-validated unit keeps MEASURED/etc.).
+  // There is no GAUNTLET tier — never invent one. The top-level `date` (tuning/recording date) is preserved
+  // when present; evidence/residual APPEND the gauntlet line to any existing tuning provenance, not overwrite.
+  if (u.date === undefined) u.date = date;
+  u.evidence = u.evidence ? `${u.evidence} | ${evidence}` : evidence;
+  u.residual = u.residual ? `${u.residual} | ${residual}` : residual;
+  if (u.graded === undefined) u.graded = { teams: 0, within3pct: 0 };
+  saveDoc(doc);
+  console.log(
+    `${slug}: kitParse.status=unit-tested provenance=${u.kitParse.provenance} date=${date}; ` +
+      `${u.kitParse.findings.length} finding(s); tier=${u.tier} tuned=${u.tuned} (unchanged)`,
+  );
 } else {
-  console.error('usage: kit-status.ts --refresh | --check | --set <slug> k=v... | --finding <slug> "<text>"');
+  console.error(
+    'usage: kit-status.ts --refresh | --check | --set <slug> k=v... | --finding <slug> "<text>" | ' +
+      '--gauntlet <slug> --evidence "<line>" --residual "<line>"',
+  );
   process.exit(1);
 }

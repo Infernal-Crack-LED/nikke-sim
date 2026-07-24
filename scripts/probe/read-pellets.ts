@@ -200,8 +200,11 @@ for (let i = 0; i < timerFiles.length; i++) {
 }
 console.log(`  timer VLM: ${((Date.now() - t0Timer) / 1000).toFixed(1)}s`);
 
-// ---- VLM crosshair reads (sparse — 1fps, on the damage area frames) ----
-const CROSSHAIR_PROMPT = `You are looking at a cropped region from a NIKKE boss fight showing the
+// ---- VLM crosshair reads (skipped when ammo template is available) ----
+const ammoTemplatePath = `${scriptDir}ammo-box-template.png`;
+const crosshairFile = `${outDir}/crosshairs.json`;
+if (!existsSync(ammoTemplatePath)) {
+  const CROSSHAIR_PROMPT = `You are looking at a cropped region from a NIKKE boss fight showing the
 damage area around the boss. Find the CROSSHAIR — the small aiming reticle where the player's
 shots impact. It is usually a small circle, diamond, or chevron shape near the centre of the
 action, often with 4 small triangular hit-markers around it.
@@ -210,120 +213,125 @@ y: 0=top, 1000=bottom) within THIS image.
 If you cannot find a crosshair, return null for both.
 Respond with ONLY this JSON: {"x": <int or null>, "y": <int or null>}`;
 
-async function readCrosshairVlm(
-  b64: string,
-): Promise<{ x: number | null; y: number | null }> {
-  const body = {
-    model,
-    messages: [
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: CROSSHAIR_PROMPT },
-          {
-            type: 'image_url',
-            image_url: { url: `data:image/jpeg;base64,${b64}` },
-          },
-        ],
-      },
-    ],
-    temperature: 0,
-    max_tokens: 128,
-  };
-  try {
-    const res = await fetch(`${endpoint}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apikey}`,
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) return { x: null, y: null };
-    const j = (await res.json()) as {
-      choices?: { message?: { content?: unknown } }[];
+  async function readCrosshairVlm(
+    b64: string,
+  ): Promise<{ x: number | null; y: number | null }> {
+    const body = {
+      model,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: CROSSHAIR_PROMPT },
+            {
+              type: 'image_url',
+              image_url: { url: `data:image/jpeg;base64,${b64}` },
+            },
+          ],
+        },
+      ],
+      temperature: 0,
+      max_tokens: 128,
     };
-    let content = j?.choices?.[0]?.message?.content ?? '';
-    if (Array.isArray(content))
-      content = content
-        .map((c) => (c as { text?: string }).text ?? '')
-        .join('');
-    let s = String(content).trim();
-    const a = s.indexOf('{'),
-      b = s.lastIndexOf('}');
-    if (a >= 0 && b > a) s = s.slice(a, b + 1);
-    const o = (JSON.parse(s) ?? {}) as { x?: unknown; y?: unknown };
-    return {
-      x: typeof o.x === 'number' ? Math.round(o.x) : null,
-      y: typeof o.y === 'number' ? Math.round(o.y) : null,
-    };
-  } catch {
-    return { x: null, y: null };
-  }
-}
-
-// Read crosshair at 1fps on the damage area frames, then interpolate to all pellet frames
-console.log(`  reading crosshair @ ${TIMER_FPS}fps ...`);
-const t0Cross = Date.now();
-const crosshairSamples: {
-  videoT: number;
-  x: number | null;
-  y: number | null;
-}[] = [];
-const crosshairInterval = Math.round(fps / TIMER_FPS); // read every Nth pellet frame
-for (let i = 0; i < pelletFiles.length; i += crosshairInterval) {
-  const videoT =
-    at + (parseInt(pelletFiles[i].replace(/\D/g, ''), 10) - 1) / fps;
-  let pos = { x: null as number | null, y: null as number | null };
-  if (mock) {
-    pos = { x: 500, y: 500 };
-  } else {
-    const b64 = readFileSync(`${pelletFramesDir}/${pelletFiles[i]}`).toString(
-      'base64',
-    );
-    pos = await readCrosshairVlm(b64);
-    // VLMs often return pixel coords instead of normalized — detect and convert
-    const imgW = 1303 * zoom,
-      imgH = 396 * zoom; // damage area crop at zoom
-    if (pos.x != null && pos.x > 1000)
-      pos.x = Math.round((pos.x / imgW) * 1000);
-    if (pos.y != null && pos.y > 1000)
-      pos.y = Math.round((pos.y / imgH) * 1000);
-    // Clamp to valid range
-    if (pos.x != null) pos.x = Math.max(0, Math.min(1000, pos.x));
-    if (pos.y != null) pos.y = Math.max(0, Math.min(1000, pos.y));
-  }
-  crosshairSamples.push({ videoT, ...pos });
-}
-console.log(
-  `  crosshair VLM: ${((Date.now() - t0Cross) / 1000).toFixed(1)}s  (${crosshairSamples.length} samples)`,
-);
-
-// Interpolate crosshair to all pellet frames and write the crosshair file
-const crosshairMap: Record<string, { x: number; y: number }> = {};
-const goodSamples = crosshairSamples.filter((s) => s.x != null && s.y != null);
-if (goodSamples.length >= 2) {
-  for (const f of pelletFiles) {
-    const idx = parseInt(f.replace(/\D/g, ''), 10);
-    const videoT = at + (idx - 1) / fps;
-    // Find nearest sample
-    let best = goodSamples[0],
-      bd = Infinity;
-    for (const s of goodSamples) {
-      const d = Math.abs(s.videoT - videoT);
-      if (d < bd) {
-        bd = d;
-        best = s;
-      }
+    try {
+      const res = await fetch(`${endpoint}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apikey}`,
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) return { x: null, y: null };
+      const j = (await res.json()) as {
+        choices?: { message?: { content?: unknown } }[];
+      };
+      let content = j?.choices?.[0]?.message?.content ?? '';
+      if (Array.isArray(content))
+        content = content
+          .map((c) => (c as { text?: string }).text ?? '')
+          .join('');
+      let s = String(content).trim();
+      const a = s.indexOf('{'),
+        b = s.lastIndexOf('}');
+      if (a >= 0 && b > a) s = s.slice(a, b + 1);
+      const o = (JSON.parse(s) ?? {}) as { x?: unknown; y?: unknown };
+      return {
+        x: typeof o.x === 'number' ? Math.round(o.x) : null,
+        y: typeof o.y === 'number' ? Math.round(o.y) : null,
+      };
+    } catch {
+      return { x: null, y: null };
     }
-    crosshairMap[f] = { x: best.x!, y: best.y! };
   }
+
+  // Read crosshair at 1fps on the damage area frames, then interpolate to all pellet frames
+  console.log(`  reading crosshair @ ${TIMER_FPS}fps ...`);
+  const t0Cross = Date.now();
+  const crosshairSamples: {
+    videoT: number;
+    x: number | null;
+    y: number | null;
+  }[] = [];
+  const crosshairInterval = Math.round(fps / TIMER_FPS); // read every Nth pellet frame
+  for (let i = 0; i < pelletFiles.length; i += crosshairInterval) {
+    const videoT =
+      at + (parseInt(pelletFiles[i].replace(/\D/g, ''), 10) - 1) / fps;
+    let pos = { x: null as number | null, y: null as number | null };
+    if (mock) {
+      pos = { x: 500, y: 500 };
+    } else {
+      const b64 = readFileSync(`${pelletFramesDir}/${pelletFiles[i]}`).toString(
+        'base64',
+      );
+      pos = await readCrosshairVlm(b64);
+      // VLMs often return pixel coords instead of normalized — detect and convert
+      const imgW = 1303 * zoom,
+        imgH = 396 * zoom; // damage area crop at zoom
+      if (pos.x != null && pos.x > 1000)
+        pos.x = Math.round((pos.x / imgW) * 1000);
+      if (pos.y != null && pos.y > 1000)
+        pos.y = Math.round((pos.y / imgH) * 1000);
+      // Clamp to valid range
+      if (pos.x != null) pos.x = Math.max(0, Math.min(1000, pos.x));
+      if (pos.y != null) pos.y = Math.max(0, Math.min(1000, pos.y));
+    }
+    crosshairSamples.push({ videoT, ...pos });
+  }
+  console.log(
+    `  crosshair VLM: ${((Date.now() - t0Cross) / 1000).toFixed(1)}s  (${crosshairSamples.length} samples)`,
+  );
+
+  // Interpolate crosshair to all pellet frames and write the crosshair file
+  const crosshairMap: Record<string, { x: number; y: number }> = {};
+  const goodSamples = crosshairSamples.filter(
+    (s) => s.x != null && s.y != null,
+  );
+  if (goodSamples.length >= 2) {
+    for (const f of pelletFiles) {
+      const idx = parseInt(f.replace(/\D/g, ''), 10);
+      const videoT = at + (idx - 1) / fps;
+      // Find nearest sample
+      let best = goodSamples[0],
+        bd = Infinity;
+      for (const s of goodSamples) {
+        const d = Math.abs(s.videoT - videoT);
+        if (d < bd) {
+          bd = d;
+          best = s;
+        }
+      }
+      crosshairMap[f] = { x: best.x!, y: best.y! };
+    }
+  }
+  const crosshairFile = `${outDir}/crosshairs.json`;
+  writeFileSync(crosshairFile, JSON.stringify(crosshairMap, null, 2) + '\n');
+  console.log(
+    `  crosshair positions: ${Object.keys(crosshairMap).length} frames -> ${crosshairFile}`,
+  );
+} else {
+  console.log('  crosshair: using ammo box template matching (skipping VLM)');
 }
-const crosshairFile = `${outDir}/crosshairs.json`;
-writeFileSync(crosshairFile, JSON.stringify(crosshairMap, null, 2) + '\n');
-console.log(
-  `  crosshair positions: ${Object.keys(crosshairMap).length} frames -> ${crosshairFile}`,
-);
 
 // ---- run Python pellet counter (AFTER crosshair reads) ----
 if (!mock) {
@@ -336,8 +344,15 @@ if (!mock) {
   const minArea = Math.round(100 * zoomScale);
   const maxArea = Math.round(3000 * zoomScale);
   const pelletRadius = Math.round(80 * zoom);
+  const ammoTemplate = `${scriptDir}ammo-box-template.png`;
+  const ammoOffsetX = Math.round(62.5 * zoom);
+  const ammoOffsetY = Math.round(-5.5 * zoom);
+  const useAmmoTemplate = existsSync(ammoTemplate);
+  const crosshairArgs = useAmmoTemplate
+    ? `--ammo-template "${ammoTemplate}" --ammo-offset-x ${ammoOffsetX} --ammo-offset-y ${ammoOffsetY}`
+    : `--crosshair-file "${crosshairFile}"`;
   const raw = execSync(
-    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv --crosshair-file "${crosshairFile}" --pellet-radius ${pelletRadius}`,
+    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))}`,
     { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 },
   );
   frameCounts = JSON.parse(raw) as FrameCounts[];
