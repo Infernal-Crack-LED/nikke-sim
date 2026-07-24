@@ -91,6 +91,15 @@ const privatyUngated1687 = withPatchedOverride('privaty', (ov) => {
     throw new Error('privaty 1687 block has no gate — fixture is stale');
   delete b.requiresTargetStatus;
 });
+/** P5b counterfactual: the Max Ammo ▼50.66% debuff removed — the "it's just a penalty" misread. */
+const privatyNoMaxAmmo = withPatchedOverride('privaty', (ov) => {
+  const b = ov.skill1.find((x: any) =>
+    x.effects.some((e: any) => e.stat === 'maxAmmoPct'),
+  );
+  if (!b)
+    throw new Error('privaty S1 maxAmmoPct block missing — fixture is stale');
+  b.effects = b.effects.filter((e: any) => e.stat !== 'maxAmmoPct');
+});
 // NOTE (engine finding, surfaced by this test): `noFb` in an override is INERT under the default
 // FB-by-'timing' rule and is REJECTED by validate-overrides.ts (sim.ts skillNoFb; only burst-cast damage is
 // auto-FB-exempt). The P4 nearest-wrong "noFb" model is therefore NOT constructible at the override level —
@@ -100,6 +109,7 @@ const privatyUngated1687 = withPatchedOverride('privaty', (ov) => {
 const base = run();
 const shotFired = run({ privaty: privatyShotFired });
 const ungated = run({ privaty: privatyUngated1687 });
+const noMaxAmmo = run({ privaty: privatyNoMaxAmmo });
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
@@ -261,6 +271,38 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
           expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
       });
     }
+  });
+
+  describe('P5b — S1 Max Ammo ▼50.66% is damage-relevant (tandem; S2b adversarial top misread)', () => {
+    // Independently flagged by the S2b reviewer as the highest-risk shared misread: dropping the Max Ammo ▼
+    // as a non-damage "penalty". It halves the magazine during FB, which raises the last-bullet frequency and
+    // thus every lastBullet-triggered skill2 proc. Removing it must REDUCE the last-bullet (256.17) count.
+    it('removing the Max Ammo ▼ debuff REDUCES the last-bullet rider count (it gates shot count = damage)', () => {
+      expect(rider256(noMaxAmmo.events).length).toBeLessThan(
+        rider256(base.events).length,
+      );
+    });
+  });
+
+  describe('P5c — S1 fires on EVERY Full Burst entry (fullBurstEnter, not burstCast)', () => {
+    // S2b trigger-identity catch: fullBurstEnter fires on any team FB; burstCast only on privaty's own casts.
+    it('S1 atkPct 23.61 is applied once per Full Burst start frame', () => {
+      const fbStarts = base.events.filter(
+        (e) => e.kind === 'fullBurstStart',
+      ).length;
+      const applied = buffs(base.events).filter(
+        (b) =>
+          b.casterIdx === PRIVATY &&
+          b.stat === 'atkPct' &&
+          Math.abs(b.value - 23.61) < 0.001,
+      );
+      const frames = new Set(applied.map((b) => b.frame));
+      expect(fbStarts).toBeGreaterThan(0);
+      expect(
+        frames.size,
+        'S1 must fire once per FB entry (fullBurstEnter)',
+      ).toBe(fbStarts);
+    });
   });
 
   describe('P6 — burst: self elem-advantage buff + 1407.64% nuke (FB-exempt by cast timing)', () => {
