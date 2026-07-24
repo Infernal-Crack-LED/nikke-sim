@@ -7,12 +7,18 @@
 // also sustain the rotation: a ≤20s unit solo, or a ≤40s pair alternating — a
 // lone 40s/60s B1 or B2 can't burst every Full Burst cycle (see stageCovered).
 //
-// The search is a heuristic (team optimisation is a big space): rough-score
-// every candidate solo to prune the DPS pool, build a legal seed team by role,
-// then local-swap-refine on FULL-team sims (which capture support synergy). Not
-// guaranteed globally optimal — good and fast.
+// The search is a heuristic (team optimisation is a big space): price every
+// unit by its marginal damage vs a reference core (src/teamvalue.ts), enumerate
+// every legal team shape by sim-free proxy score, sim the best few dozen
+// candidates, then local-swap-refine the best few on FULL-team sims (which
+// capture support synergy). Not guaranteed globally optimal — good and fast.
 import { runSim } from './engine/sim.js';
 import { prepareTeam, type PrepareDeps, type UnitOptions } from './prepare.js';
+import {
+  buildValueTable,
+  enumerateTeams,
+  type ValueTable,
+} from './teamvalue.js';
 import type {
   CharacterData,
   Element,
@@ -122,6 +128,16 @@ export interface TeamResult {
 }
 
 const NEED = { I: 1, II: 1, III: 2 } as const;
+
+// Proxy-enumeration search constants (perf plan item 3b). The enumeration keeps
+// the top ENUM_TOP_K candidates by sim-free proxy score, sims the best
+// ENUM_SIM_TOP of them, and refines the best ENUM_REFINE_TOP by REAL score.
+// ADAPTIVE_B3_FRAC widens the B3 pool past the fixed poolB3 rank cut: any B3
+// within this fraction of the top solo value stays in (see buildPool).
+const ADAPTIVE_B3_FRAC = 0.5;
+const ENUM_TOP_K = 150;
+const ENUM_SIM_TOP = 40;
+const ENUM_REFINE_TOP = 3;
 
 // Λ units the generators pin to a fixed burst slot instead of treating as a free
 // wildcard. Red Hood is unsupported as a solo B1/B2 over a 180s fight (her 40s
@@ -513,6 +529,8 @@ interface CacheBundle {
   teamCache: Map<string, ReturnType<typeof runSim>>;
   resultCache: Map<string, TeamResult | null>;
   soloCache: Map<string, number>;
+  /** item 3a: value tables keyed by (pool + per-slug meta prior) — see getValueTable */
+  valueTables: Map<string, ValueTable>;
 }
 const SHARED_BUNDLES = new Map<string, CacheBundle>();
 const MAX_BUNDLES = 3;
@@ -540,6 +558,7 @@ function getBundle(hash: string): CacheBundle {
     teamCache: new Map(),
     resultCache: new Map(),
     soloCache: new Map(),
+    valueTables: new Map(),
   };
   SHARED_BUNDLES.set(hash, bundle);
   while (SHARED_BUNDLES.size > MAX_BUNDLES) {
@@ -732,17 +751,30 @@ export function makeCalc(input: TeamCalcInput) {
   };
 
   // rough solo score to prune the (large) B3 DPS pool. Supports (B1/B2) are
-  // kept wholesale — they score poorly solo but enable teams.
+  // kept wholesale — they score poorly solo but enable teams. DELIBERATELY the
+  // 5-COPY sim, not a 1-unit sim (item 3a revisited): the plan drafted 1-unit
+  // (22/24 identical top-24, ~3× cheaper), but a unit's ally-buffs apply to its
+  // own copies, so the 5-copy metric prices support-B3s' self-synergy — with
+  // 1-unit ranks the legacy seed never reaches the support-B3 basin and bestTeam
+  // measurably lost 5.7% score on the no-meta bench. A failed sim warns once
+  // instead of silently caching 0.
   const soloCache = bundle?.soloCache ?? new Map<string, number>();
+  const soloWarned = new Set<string>();
+  const warnSolo = (slug: string): void => {
+    if (soloWarned.has(slug)) return;
+    soloWarned.add(slug);
+    console.warn(`teamcalc: solo sim failed for ${slug} — score 0`);
+  };
   // Warm solo scores for `slugs` in ONE batch (through the evaluator when present)
-  // so buildPool/seedTeam can read them synchronously without blocking on a pool.
+  // so buildPool/canonicalFocus can read them synchronously without blocking.
   const warmSolo = async (slugs: string[]): Promise<void> => {
     const miss = slugs.filter((s) => !soloCache.has(s) && chars[s]);
     if (!miss.length) return;
     const results = await evalTeams(miss.map((s) => [s, s, s, s, s]));
-    results.forEach((r, i) =>
-      soloCache.set(miss[i], r ? r.units[0].totalDamage : 0),
-    );
+    results.forEach((r, i) => {
+      if (!r) warnSolo(miss[i]);
+      soloCache.set(miss[i], r ? r.units[0].totalDamage : 0);
+    });
   };
   const soloScore = (slug: string): number => {
     const hit = soloCache.get(slug);
@@ -751,6 +783,7 @@ export function makeCalc(input: TeamCalcInput) {
     try {
       v = simTeam([slug, slug, slug, slug, slug]).units[0].totalDamage;
     } catch {
+      warnSolo(slug);
       v = 0;
     }
     soloCache.set(slug, v);
@@ -808,15 +841,90 @@ export function makeCalc(input: TeamCalcInput) {
     return best;
   };
 
+  // --- value table + proxy enumeration (perf plan item 3) --------------------
+  // Memoized per (pool + per-slug meta prior); the bundle carries the map so
+  // repeated generations reuse it (the marginal sims also hit teamCache). The
+  // prior is part of the key because the reference-core support pick depends on
+  // it and the shared bundle is keyed only by (cfg, loadout, loadouts).
+  const valueTables = bundle?.valueTables ?? new Map<string, ValueTable>();
+  const getValueTable = async (pool: string[]): Promise<ValueTable> => {
+    const key = [...pool]
+      .sort()
+      .map((s) => `${s}:${meta ? meta.unitScore(s) : ''}`)
+      .join(',');
+    const hit = valueTables.get(key);
+    if (hit) return hit;
+    const vt = await buildValueTable({
+      pool,
+      effBurst: eb,
+      cooldownOf: (s) => chars[s].burstCooldownSec,
+      soloValue: soloScore,
+      unitPrior: meta ? (s) => meta.unitScore(s) : undefined,
+      evalSets,
+      cdShort: CD_SHORT,
+    });
+    valueTables.set(key, vt);
+    capMap(valueTables, 8);
+    return vt;
+  };
+
+  // Enumerate top-K candidate SETS for a pool by sim-free proxy score (item 3b).
+  // mustInclude units are guaranteed a spot in their class pool (they may be
+  // blocked or pruned out of the B3 cut — an explicit lock wins). Returns [] when
+  // the locks don't fit the enumerated shapes (e.g. a pinned double-B1 team) —
+  // the caller falls back to the legacy role-fill seed.
+  const enumerateCandidates = (
+    pool: string[],
+    vt: ValueTable,
+    mustInclude: string[],
+    seedTarget?: number,
+  ): string[][] => {
+    const poolOf = (b: string) => pool.filter((s) => eb(s) === b);
+    const b1s = poolOf('I');
+    const b2s = poolOf('II');
+    // Λ units go in the B3 dimension (the only Λ, red-hood, is force-pinned to
+    // III by effBurst; a future free wildcard would still be fielded as a B3).
+    const b3s = [...poolOf('III'), ...poolOf('Λ')];
+    for (const s of mustInclude) {
+      const b = eb(s);
+      const dim = b === 'I' ? b1s : b === 'II' ? b2s : b3s;
+      if (!dim.includes(s)) dim.push(s);
+    }
+    return enumerateTeams({
+      poolB1: b1s,
+      poolB2: b2s,
+      poolB3: b3s,
+      cooldownOf: (s) => chars[s].burstCooldownSec,
+      value: (s) => vt.values.get(s) ?? soloScore(s),
+      mustInclude,
+      advantaged: reqEl ? (s) => chars[s].element === reqEl : undefined,
+      unitPrior: meta ? (s) => meta.unitScore(s) : undefined,
+      metaWeight: META_W,
+      synergy,
+      spread:
+        seedTarget !== undefined && prydwenScore
+          ? { unitScore: prydwenScore, target: seedTarget, sigma: SPREAD_SIGMA }
+          : undefined,
+      cdShort: CD_SHORT,
+      cdPair: CD_PAIR,
+      topK: ENUM_TOP_K,
+    }).map((c) => c.team);
+  };
+
   const buildPool = (extraExclude: Set<string>): string[] => {
     const avail = Object.keys(chars).filter(
       (s) => !blocked.has(s) && !extraExclude.has(s),
     );
     const byBurst = (b: string) => avail.filter((s) => eb(s) === b);
-    const topB3 = byBurst('III')
+    // Adaptive B3 prune (item 3b): keep the top-`poolB3` by rank PLUS any B3
+    // within ADAPTIVE_B3_FRAC of the best solo value — so the pool tracks the
+    // roster's actual damage spread instead of a fixed count as it grows.
+    const rankedB3 = byBurst('III')
       .map((s) => [s, soloScore(s)] as const)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, poolB3)
+      .sort((a, b) => b[1] - a[1]);
+    const topVal = rankedB3[0]?.[1] ?? 0;
+    const topB3 = rankedB3
+      .filter(([, v], i) => i < poolB3 || v >= topVal * ADAPTIVE_B3_FRAC)
       .map(([s]) => s);
     // meta-relevant B3s the solo-damage prune drops but top players field anyway
     // (a popular support-DPS can score low solo yet belong in the pool)
@@ -830,16 +938,17 @@ export function makeCalc(input: TeamCalcInput) {
     return [...topB3, ...byBurst('I'), ...byBurst('II'), ...byBurst('Λ')];
   };
 
-  // legal seed by role: fill 2×B3 (Λ substitutes), then satisfy the B1 and B2
-  // cooldown rule (stageCovered), then best flex. With locked units
-  // (mustInclude), pin them first and fill the outstanding needs around them.
-  // The B1/B2 fill is cooldown-aware: a ≤20s caster is taken solo, otherwise a
-  // ≤40s pair is fielded to alternate — so the seed never emits a team with a
-  // lone 40s/60s B1 or B2 that isLegal would reject (gapped rotation).
+  // Legacy role-fill seed — since item 3b this is the FALLBACK only, for lock
+  // sets the proxy enumeration's shapes can't express (e.g. a pinned double-B1
+  // team). Fill 2×B3 (Λ substitutes), then satisfy the B1 and B2 cooldown rule
+  // (stageCovered), then best flex. With locked units (mustInclude), pin them
+  // first and fill the outstanding needs around them. The B1/B2 fill is
+  // cooldown-aware: a ≤20s caster is taken solo, otherwise a ≤40s pair is
+  // fielded to alternate — so the seed never emits a team with a lone 40s/60s
+  // B1 or B2 that isLegal would reject (gapped rotation).
   const seedTeam = (
     pool: string[],
     mustInclude?: string[],
-    flexStage?: 'I' | 'II',
     target?: number,
   ): string[] => {
     const score = new Map(pool.map((s) => [s, soloScore(s)]));
@@ -897,10 +1006,6 @@ export function makeCalc(input: TeamCalcInput) {
     }
     coverStage('I');
     coverStage('II');
-    // Optional double-support flex: seed the flex as an extra B1/B2 so shapes
-    // like B1+B2+B2+B3+B3 get explored — the solo-scored flex below rarely picks
-    // a support, and refine is role-restricted so it can't promote a B3 flex.
-    if (flexStage && team.length < 5) take((s) => eb(s) === flexStage);
     while (team.length < 5) {
       if (!take(() => true)) break; // flex
     }
@@ -1023,27 +1128,82 @@ export function makeCalc(input: TeamCalcInput) {
       Object.keys(chars).filter((s) => !blocked.has(s) && !exclude.has(s)),
     );
     const pool = buildPool(exclude);
-    const seed = seedTeam(pool, mustInclude, undefined, opts?.seedTarget);
-    if (!legal(seed)) return null; // e.g. everything useful blocked
     const locked = new Set(mustInclude);
-    let best = await refine(seed, pool, locked, score);
-    let bestScore = score(best);
-    // Double-B2 shapes (B1+B2+B2+2×B3) are common optimal teams, but the
-    // solo-scored flex rarely picks a support and refine is role-restricted (it
-    // can't turn a B3 flex into a B2). Re-seed with the flex biased to an extra
-    // B2 so those shapes compete on score. Burst I is deliberately NOT biased
-    // here: it's the scarcest required role, so letting one team hoard a second
-    // B1 would starve the rest of a disjoint roster (topTeams-role-bound.test.ts
-    // pins that team count tracks the Burst-I count). Double-B1 teams remain
-    // reachable via locked units and injected meta comps.
-    const b2Seed = seedTeam(pool, mustInclude, 'II', opts?.seedTarget);
-    if (legal(b2Seed)) {
-      const r = await refine(b2Seed, pool, locked, score);
-      const sc = score(r);
-      if (sc > bestScore) {
-        best = r;
-        bestScore = sc;
+    // Proxy-enumeration pipeline (item 3b): value table → enumerate every legal
+    // shape and keep the top-K by sim-free proxy → sim the best ENUM_SIM_TOP →
+    // refine the best ENUM_REFINE_TOP by REAL score. Replaces the role-fill
+    // seed + the old b2Seed special case: double-B2 shapes are a first-class
+    // enumeration dimension now, competing on proxy score instead of needing a
+    // biased re-seed. Double-B1 stays excluded from the shapes (Burst I is the
+    // scarcest required role — topTeams-role-bound.test.ts pins that team count
+    // tracks the Burst-I count); double-B1 teams remain reachable via locks.
+    let best: TeamResult | null = null;
+    let bestScore = -Infinity;
+    const vt = await getValueTable(pool);
+    const cands = enumerateCandidates(pool, vt, mustInclude, opts?.seedTarget);
+    if (cands.length) {
+      // SHAPE STRATIFICATION: refine is role-restricted (a B2 slot only swaps
+      // to a B2), so it can never move between the two legal shapes — and an
+      // additive proxy can't price a second support's diminishing return, so
+      // one shape crowds the other out of a plain top-N cut entirely (measured
+      // both directions on the no-meta bench as the value metric varied). Split
+      // the sim budget between the shapes and refine the best of EACH, so both
+      // basins are always explored (the data-driven form of the old seed +
+      // b2Seed pair).
+      const shapeOf = (set: string[]): number =>
+        set.filter((s) => eb(s) === 'II').length; // 1 or 2
+      const byShape = [1, 2].map((n) => cands.filter((c) => shapeOf(c) === n));
+      const half = Math.ceil(ENUM_SIM_TOP / 2);
+      const sets: string[][] = [];
+      for (const [i, of1] of byShape.entries()) {
+        const other = byShape[1 - i];
+        const quota = half + Math.max(0, half - other.length);
+        sets.push(...of1.slice(0, quota));
       }
+      const results = await evalSets(sets);
+      const ranked = results
+        .map((r, i) => ({ r, set: sets[i] }))
+        .filter((x): x is { r: TeamResult; set: string[] } => !!x.r)
+        .sort((a, b) => score(b.r) - score(a.r));
+      // Refine starts: the best simmed candidate of each shape, plus the legacy
+      // role-fill seed as a third, deliberately DIFFERENT basin. The additive
+      // proxy can't price complementarity (a support-B3's value only realizes
+      // next to the right dealers), so its top candidates cluster in one
+      // neighborhood; the greedy seed starts from solo-damage logic instead and
+      // measurably rescues teams the proxy buries (no-meta bench: the winning
+      // 3-B3 team was outside the proxy's top-150).
+      const starts: string[][] = [];
+      for (const n of [1, 2]) {
+        const top = ranked.find((x) => shapeOf(x.set) === n);
+        if (top) starts.push(top.set);
+      }
+      const legacySeed = seedTeam(pool, mustInclude, opts?.seedTarget);
+      const key = (t: string[]) => [...t].sort().join(',');
+      if (
+        legal(legacySeed) &&
+        !starts.some((s) => key(s) === key(legacySeed))
+      )
+        starts.push(legacySeed);
+      for (const { set } of ranked) {
+        if (starts.length >= ENUM_REFINE_TOP) break;
+        if (!starts.includes(set)) starts.push(set);
+      }
+      for (const set of starts) {
+        const r = await refine(set, pool, locked, score);
+        const sc = score(r);
+        if (sc > bestScore) {
+          best = r;
+          bestScore = sc;
+        }
+      }
+    }
+    // Fallback: locks that fit no enumerated shape (e.g. a pinned double-B1
+    // team) or every candidate sim failing → the legacy role-fill seed.
+    if (!best) {
+      const seed = seedTeam(pool, mustInclude, opts?.seedTarget);
+      if (!legal(seed)) return null; // e.g. everything useful blocked
+      best = await refine(seed, pool, locked, score);
+      bestScore = score(best);
     }
     // full-team match: evaluate the popular ranker comps directly (one batch) so a
     // real meta team can win on score even if the local search never assembled it.
