@@ -202,7 +202,7 @@ def count_opencv(img: np.ndarray, args) -> dict:
 # frames, classify by lifetime (pellets are short-lived, damage numbers persist)
 # ============================================================
 def detect_components_with_pos(img: np.ndarray, args):
-    """Return list of (cx, cy, is_red, area) for each detected component."""
+    """Return list of (cx, cy, is_red, area, circ) for each detected component."""
     import cv2
     h, w = img.shape[:2]
     cx0, cy0 = w / 2, h / 2
@@ -223,13 +223,37 @@ def detect_components_with_pos(img: np.ndarray, args):
             contours, hierarchy = cv2.findContours(comp_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
             if not contours:
                 continue
-            if any(h[2] != -1 for h in hierarchy[0] if h[3] == -1):
-                continue
             perim = cv2.arcLength(contours[0], True)
             circ = circularity(area, perim)
-            if circ < args.min_circ:
-                continue
-            comps.append((mx, my, is_red, area))
+            has_hole = any(h[2] != -1 for h in hierarchy[0] if h[3] == -1)
+            mult = 1
+            if circ >= args.min_circ:
+                # Normal round pellet: reject hole-digits (0/6/8/9).
+                if has_hole:
+                    continue
+            else:
+                # Low circularity — normally rejected, but a compact low-circ WHITE blob is
+                # usually overlapping/partially-occluded pellets. Recover it with a multiplicity
+                # from its area (partial single = 1, peanut pair = 2). Holes are ALLOWED here:
+                # a crescent + full-circle peanut has a hole from the occluded circle's shadowed
+                # background, whereas hole-digits are roundish (circ >= min_circ) and take the
+                # normal path above. Elongated fragments stay rejected via circ-lo / aspect.
+                if is_red or args.peanut_max_mult < 1:
+                    continue
+                if circ < args.peanut_circ_lo:
+                    continue
+                bx, by, bw, bh = cv2.boundingRect(contours[0])
+                aspect = min(bw, bh) / max(bw, bh) if max(bw, bh) > 0 else 0
+                if aspect < args.peanut_aspect:
+                    continue
+                unit = args.pellet_unit_area
+                if area < unit * 0.6 or area > unit * args.peanut_max_mult * 1.4:
+                    continue
+                mult = max(1, min(args.peanut_max_mult, round(area / unit)))
+            # Emit `mult` co-located components so the existing tracker/counter counts each.
+            for k in range(mult):
+                off = (k - (mult - 1) / 2.0) * 0.5
+                comps.append((float(mx) + off, float(my), is_red, int(area), float(circ)))
 
     detect(WHITE_LO[::-1].copy(), np.array([255,255,255], dtype=np.uint8), False)
     detect(RED_LO[::-1].copy(), RED_HI[::-1].copy(), True)
@@ -237,7 +261,7 @@ def detect_components_with_pos(img: np.ndarray, args):
 
 def temporal_filter(all_comps, max_pellet_frames=8, match_dist=30):
     """Track components across frames, return per-frame pellet counts.
-    all_comps: list of [(cx, cy, is_red, area), ...] per frame.
+    all_comps: list of [(cx, cy, is_red, area, circ), ...] per frame.
     Returns: list of {"white": int, "red": int} per frame (short-lived components only).
     """
     # Track: {id, is_red, last_frame, first_frame, last_pos}
@@ -253,7 +277,7 @@ def temporal_filter(all_comps, max_pellet_frames=8, match_dist=30):
 
         # Greedy nearest-neighbor matching to previous frame's tracks
         prev_active = [t for t in tracks if t['last_frame'] == fi - 1]
-        for ci, (cx, cy, is_red, area) in enumerate(comps):
+        for ci, (cx, cy, is_red, area, circ) in enumerate(comps):
             best_track = None
             best_dist = match_dist
             for t in prev_active:
@@ -344,6 +368,12 @@ def main():
     parser.add_argument('--min-area', type=int, default=100, help='min component area (px²)')
     parser.add_argument('--max-area', type=int, default=3000, help='max component area (px²)')
     parser.add_argument('--min-circ', type=float, default=0.55, help='min circularity (0..1)')
+    parser.add_argument('--red-r-min', type=int, default=200, help='red pellet R-channel floor (default 200)')
+    parser.add_argument('--red-gb-max', type=int, default=60, help='red pellet G/B-channel ceiling (default 60; real red pellets anti-alias up to ~90)')
+    parser.add_argument('--pellet-unit-area', type=int, default=320, help='approx area (px²) of one pellet at this zoom — basis for peanut multiplicity (default 320 at 2x)')
+    parser.add_argument('--peanut-circ-lo', type=float, default=0.30, help='min circularity for a low-circ blob to be recovered as overlapping pellets (default 0.30; below this = streak/damage)')
+    parser.add_argument('--peanut-aspect', type=float, default=0.45, help='min bounding-box aspect ratio for a recovered peanut blob (default 0.45; excludes elongated fragments)')
+    parser.add_argument('--peanut-max-mult', type=int, default=0, help='max pellets a low-circ blob can count as (default 0 = DISABLED; it over-counts without visual tuning — see HANDOFF. Try 2 with the debug-peanut strips)')
     parser.add_argument('--backend', choices=['all', 'numpy', 'pil', 'opencv'], default='all',
                         help='run one backend only (default: all for A/B)')
     parser.add_argument('--crosshair-file', help='JSON file mapping frame filename to {x,y} normalized 0-1000 crosshair coords')
@@ -351,9 +381,17 @@ def main():
     parser.add_argument('--ammo-offset-x', type=float, default=125, help='crosshair X offset from ammo box center in zoomed px (default 125 = 62.5 native at 2x)')
     parser.add_argument('--ammo-offset-y', type=float, default=-11, help='crosshair Y offset from ammo box center in zoomed px (default -11 = -5.5 native at 2x)')
     parser.add_argument('--pellet-radius', type=int, default=80, help='radius of pellet crop in ZOOMED px (default 80)')
+    parser.add_argument('--marker-radius', type=int, default=65, help='red components closer than this to the crosshair (zoomed px) are core-hit hit-markers, not pellets (default 65)')
+    parser.add_argument('--max-template-disp', type=float, default=150, help='max frame-to-frame ammo-box displacement (zoomed px) before a template match is rejected as a false lock (default 150)')
     parser.add_argument('--temporal', action='store_true', help='enable temporal filtering (track components across frames, classify by lifetime)')
     parser.add_argument('--max-pellet-frames', type=int, default=8, help='max frames a pellet component persists (default 8 at 30fps)')
+    parser.add_argument('--dump-tracks', help='(temporal) write full per-track diagnostics JSON to this path')
     args = parser.parse_args()
+
+    # Apply tunable red threshold to the module-level constants used by all backends
+    global RED_LO, RED_HI
+    RED_LO = np.array([args.red_r_min, 0, 0], dtype=np.uint8)
+    RED_HI = np.array([255, args.red_gb_max, args.red_gb_max], dtype=np.uint8)
 
     # Load crosshair positions if provided
     crosshairs = {}
@@ -416,6 +454,10 @@ def main():
         all_comps = []       # per-frame component lists (full frame coords)
         cross_positions = [] # per-frame crosshair positions (full frame coords)
         fnames = []
+        cross_confs = []   # per-frame template match confidence (None if no template)
+        cross_rawloc = []  # per-frame raw (unfiltered) template match top-left loc
+        last_acc = None    # last accepted ammo-box top-left loc (for displacement gate)
+        max_disp = args.max_template_disp
         for f in files:
             img = load_rgb(f)
             fname = os.path.basename(f)
@@ -424,30 +466,41 @@ def main():
             all_comps.append(detect_components_with_pos(img, args))
             # Find crosshair position via ammo template
             cross_pos = None
+            conf_val = None
+            raw_loc = None
             if ammo_tmpl is not None:
                 import cv2 as _cv2
                 frame_bgr = _cv2.cvtColor(img, _cv2.COLOR_RGB2BGR)
                 res = _cv2.matchTemplate(frame_bgr, ammo_tmpl, _cv2.TM_CCOEFF_NORMED)
                 _, conf, _, loc = _cv2.minMaxLoc(res)
-                if conf > 0.3:
+                conf_val = float(conf)
+                raw_loc = (int(loc[0]), int(loc[1]))
+                cand = raw_loc
+                # Positional-consistency gate: the ammo box moves smoothly, so a match
+                # that jumps implausibly far (e.g. locking onto the HP bar) is rejected
+                # and the last accepted position is carried forward instead.
+                accepted = None
+                if conf > 0.3 and (last_acc is None or
+                                   math.hypot(cand[0] - last_acc[0], cand[1] - last_acc[1]) < max_disp):
+                    accepted = cand
+                    last_acc = cand
+                elif last_acc is not None:
+                    accepted = last_acc
+                if accepted is not None:
                     th, tw = ammo_tmpl.shape[:2]
-                    cross_pos = (int(loc[0] + tw//2 + args.ammo_offset_x),
-                                 int(loc[1] + th//2 + args.ammo_offset_y))
+                    cross_pos = (int(accepted[0] + tw//2 + args.ammo_offset_x),
+                                 int(accepted[1] + th//2 + args.ammo_offset_y))
             if cross_pos is None:
                 ch = crosshairs.get(fname)
                 if ch and ch.get('x') is not None and ch.get('y') is not None:
                     h, w = img.shape[:2]
                     cross_pos = (int(ch['x'] / 1000 * w), int(ch['y'] / 1000 * h))
             cross_positions.append(cross_pos)
+            cross_confs.append(conf_val)
+            cross_rawloc.append(raw_loc)
 
-        # Track components across frames and classify by lifetime
-        filtered = temporal_filter(all_comps, args.max_pellet_frames)
-
-        # Per-frame: count only short-lived components near the crosshair
-        # Re-run detection to get positions of the filtered (pellet) components
-        # Actually, temporal_filter already gives per-frame counts of short-lived tracks.
-        # But we need to also filter by proximity to crosshair.
-        # Re-track with position data to get per-frame pellet positions.
+        # Track components across frames and classify by lifetime.
+        # Each track records per-frame position/area/circularity for diagnostics.
         tracks = []
         next_id = 0
         frame_tracks = []  # per-frame list of (track_id, x, y, is_red)
@@ -455,7 +508,7 @@ def main():
             prev_active = [t for t in tracks if t['last_frame'] == fi - 1]
             matched = set()
             active = []
-            for cx, cy, is_red, area in comps:
+            for cx, cy, is_red, area, circ in comps:
                 best_t, best_d = None, 30  # match_dist
                 for t in prev_active:
                     if t['id'] in matched: continue
@@ -464,11 +517,16 @@ def main():
                 if best_t:
                     best_t['last_frame'] = fi
                     best_t['last_pos'] = (cx, cy)
+                    best_t['areas'].append(area)
+                    best_t['circs'].append(circ)
+                    best_t['xs'].append(cx)
+                    best_t['ys'].append(cy)
                     matched.add(best_t['id'])
                     active.append((best_t['id'], cx, cy, is_red))
                 else:
                     tracks.append({'id': next_id, 'is_red': is_red, 'first_frame': fi,
-                                   'last_frame': fi, 'last_pos': (cx, cy)})
+                                   'last_frame': fi, 'last_pos': (cx, cy),
+                                   'areas': [area], 'circs': [circ], 'xs': [cx], 'ys': [cy]})
                     active.append((next_id, cx, cy, is_red))
                     next_id += 1
             frame_tracks.append(active)
@@ -479,17 +537,54 @@ def main():
         results = []
         for fi, fname in enumerate(fnames):
             cp = cross_positions[fi]
-            white, red = 0, 0
+            white, red, marker = 0, 0, 0
             if cp:
                 for tid, x, y, is_red in frame_tracks[fi]:
                     if tid not in pellet_ids: continue
-                    if math.hypot(x - cp[0], y - cp[1]) <= args.pellet_radius:
-                        if is_red: red += 1
-                        else: white += 1
+                    dist = math.hypot(x - cp[0], y - cp[1])
+                    if dist > args.pellet_radius: continue
+                    if is_red:
+                        # Red components tight to the crosshair are the triangular core-hit
+                        # hit-markers, not pellets; count them separately as a core-hit signal.
+                        if dist < args.marker_radius: marker += 1
+                        else: red += 1
+                    else:
+                        white += 1
             entry = {"file": fname}
             for name in backends:
-                entry[name] = {"white": white, "red": red}
+                entry[name] = {"white": white, "red": red, "marker": marker}
             results.append(entry)
+
+        # Optional diagnostic dump: every track with full stats + per-frame crosshair data
+        if args.dump_tracks:
+            dump = {
+                "params": {
+                    "max_pellet_frames": args.max_pellet_frames,
+                    "min_area": args.min_area, "max_area": args.max_area,
+                    "min_circ": args.min_circ, "center_exclude": args.center_exclude,
+                    "pellet_radius": args.pellet_radius,
+                    "ammo_offset_x": args.ammo_offset_x, "ammo_offset_y": args.ammo_offset_y,
+                },
+                "frame_files": fnames,
+                "cross_positions": cross_positions,
+                "cross_confs": cross_confs,
+                "cross_rawloc": cross_rawloc,
+                "frame_counts": [{"white": r["opencv"]["white"], "red": r["opencv"]["red"], "marker": r["opencv"]["marker"]} for r in results],
+                "tracks": [{
+                    "id": t['id'], "is_red": t['is_red'],
+                    "first": t['first_frame'], "last": t['last_frame'],
+                    "life": track_life[t['id']], "is_pellet": t['id'] in pellet_ids,
+                    "mean_area": round(sum(t['areas']) / len(t['areas']), 1),
+                    "max_area": max(t['areas']),
+                    "mean_circ": round(sum(t['circs']) / len(t['circs']), 3),
+                    "xs": [round(v, 1) for v in t['xs']],
+                    "ys": [round(v, 1) for v in t['ys']],
+                    "areas": t['areas'],
+                } for t in tracks],
+            }
+            with open(args.dump_tracks, 'w') as df:
+                json.dump(dump, df)
+            print(f'dumped {len(tracks)} tracks -> {args.dump_tracks}', file=sys.stderr)
     else:
         # Per-frame mode (original)
         for f in files:

@@ -112,6 +112,7 @@ if (!pelletFiles.length) {
 interface PelletCount {
   white: number;
   red: number;
+  marker?: number; // core-hit hit-markers (red triangles tight to the crosshair)
 }
 interface FrameCounts {
   file: string;
@@ -351,8 +352,18 @@ if (!mock) {
   const crosshairArgs = useAmmoTemplate
     ? `--ammo-template "${ammoTemplate}" --ammo-offset-x ${ammoOffsetX} --ammo-offset-y ${ammoOffsetY}`
     : `--crosshair-file "${crosshairFile}"`;
+  const redRMin = Number(flags['red-r-min'] ?? 200);
+  const redGbMax = Number(flags['red-gb-max'] ?? 60);
+  const markerRadius = Number(flags['marker-radius'] ?? 65);
+  // Peanut (overlapping-pellet) recovery: unit area scales with zoom² (~314px² at 2x).
+  const pelletUnitArea = Number(
+    flags['pellet-unit-area'] ?? Math.round(80 * zoom * zoom),
+  );
+  const peanutCircLo = Number(flags['peanut-circ-lo'] ?? 0.3);
+  const peanutAspect = Number(flags['peanut-aspect'] ?? 0.45);
+  const peanutMaxMult = Number(flags['peanut-max-mult'] ?? 0);
   const raw = execSync(
-    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))}`,
+    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult}`,
     { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 },
   );
   frameCounts = JSON.parse(raw) as FrameCounts[];
@@ -414,6 +425,7 @@ interface Read {
   counts: Record<string, PelletCount>;
   white: number;
   red: number;
+  marker: number;
   total: number;
   valid: boolean;
 }
@@ -423,14 +435,14 @@ for (let i = 0; i < pelletFiles.length; i++) {
   const videoT = at + (idx - 1) / fps;
   const fc = mock
     ? {
-        numpy: { white: 7, red: 0 },
-        pil: { white: 7, red: 0 },
-        opencv: { white: 8, red: 0 },
+        numpy: { white: 7, red: 0, marker: 0 },
+        pil: { white: 7, red: 0, marker: 0 },
+        opencv: { white: 8, red: 0, marker: 0 },
       }
     : (frameCounts[i] ?? {
-        numpy: { white: 0, red: 0 },
-        pil: { white: 0, red: 0 },
-        opencv: { white: 0, red: 0 },
+        numpy: { white: 0, red: 0, marker: 0 },
+        pil: { white: 0, red: 0, marker: 0 },
+        opencv: { white: 0, red: 0, marker: 0 },
       });
 
   // Consensus: median of active backends (single-backend mode fills others with 0)
@@ -462,6 +474,7 @@ for (let i = 0; i < pelletFiles.length; i++) {
     counts: { numpy: fc.numpy, pil: fc.pil, opencv: fc.opencv },
     white: best.white,
     red: best.red,
+    marker: best.marker ?? 0,
     total,
     valid,
   });
@@ -475,6 +488,10 @@ console.log(`  ${reads.length} pellet reads, ${nonZero} non-zero`);
 // of ≤MAX_GAP frames where total < EVENT_MIN; separate blasts are 0.667s apart.
 const MAX_GAP = Math.max(3, Math.round(fps * 0.13)); // ~0.13s gap tolerance
 const EVENT_MIN = 3; // ignore T=1-2 as background noise
+// Core-hit fallback: if a shot event contains a frame with >= markerMin red hit-markers
+// (the triangles that flash on a core hit), report at least 1 red even though the red core
+// pellet itself isn't detected by the threshold. Precision over recall — see HANDOFF.
+const MARKER_MIN = Number(flags['marker-min'] ?? 2);
 interface Shot {
   videoT: number;
   fightT: number | null;
@@ -483,6 +500,7 @@ interface Shot {
   red: number;
   total: number;
   frames: number;
+  core: boolean;
   backendAgreement: string;
 }
 const shots: Shot[] = [];
@@ -500,26 +518,58 @@ for (let i = 0; i <= reads.length; i++) {
     if (zeroRun <= MAX_GAP && i < reads.length) continue; // bridge the gap
     // Flush event (exclude trailing zero frames)
     const eventEnd = i - zeroRun;
-    let peakIdx = eventStart;
-    for (let j = eventStart; j < eventEnd; j++)
-      if (reads[j].total > reads[peakIdx].total) peakIdx = j;
-    const peak = reads[peakIdx];
     const eventFrames = eventEnd - eventStart;
     if (eventFrames >= 2) {
+      // Robust shot count: report the active frame (total >= EVENT_MIN) closest to the
+      // event's median total. A single frame frequently spikes 2-7 above the true count
+      // from transient VFX that passes every per-component filter; the old max-of-event
+      // reported that spike as the shot count. The median-level frame rejects it while
+      // still returning a real observed frame (so white + red === total).
+      const activeIdx: number[] = [];
+      for (let j = eventStart; j < eventEnd; j++)
+        if (reads[j].total >= EVENT_MIN) activeIdx.push(j);
+      const sortedTotals = activeIdx
+        .map((j) => reads[j].total)
+        .sort((a, b) => a - b);
+      const medianTotal = sortedTotals.length
+        ? (sortedTotals[(sortedTotals.length - 1) >> 1] +
+            sortedTotals[sortedTotals.length >> 1]) /
+          2
+        : 0;
+      let repIdx = activeIdx[0] ?? eventStart;
+      let bestD = Infinity;
+      for (const j of activeIdx) {
+        const d = Math.abs(reads[j].total - medianTotal);
+        if (d < bestD) {
+          bestD = d;
+          repIdx = j;
+        }
+      }
+      const rep = reads[repIdx];
+      // Core-hit fallback: the red core pellet itself isn't caught by the threshold, but the
+      // triangular hit-markers that flash on a core hit are. If any frame in the event has
+      // >= MARKER_MIN markers, a core hit landed → report exactly 1 red (a lower bound; the
+      // "rare 2" needs real red-pellet detection — see HANDOFF). Outer-zone red is VFX noise
+      // (area ~43px², not pellet-sized) and is deliberately NOT counted here.
+      let coreHit = false;
+      for (let j = eventStart; j < eventEnd; j++)
+        if (reads[j].marker >= MARKER_MIN) coreHit = true;
+      const shotRed = coreHit ? 1 : 0;
       const agreement = ['numpy', 'pil', 'opencv']
         .map((b) => {
-          const c = (peak.counts as Record<string, PelletCount>)[b];
+          const c = (rep.counts as Record<string, PelletCount>)[b];
           return `${b}:${c.white + c.red}`;
         })
         .join(' ');
       shots.push({
-        videoT: peak.videoT,
-        fightT: peak.fightT,
-        timerSec: peak.timerSec,
-        white: peak.white,
-        red: peak.red,
-        total: peak.total,
+        videoT: rep.videoT,
+        fightT: rep.fightT,
+        timerSec: rep.timerSec,
+        white: rep.white,
+        red: shotRed,
+        total: rep.white + shotRed,
         frames: eventFrames,
+        core: coreHit,
         backendAgreement: agreement,
       });
     }
@@ -551,6 +601,7 @@ const result = {
     fightT: r.fightT,
     white: r.white,
     red: r.red,
+    marker: r.marker,
     total: r.total,
     valid: r.valid,
     backends: r.counts,
@@ -586,7 +637,7 @@ if (validShots.length) {
   console.log('  shots:');
   for (const s of shots.slice(0, 25))
     console.log(
-      `    fight=${s.fightT != null ? s.fightT.toFixed(2) + 's' : '?'}  W=${s.white} R=${s.red} T=${s.total}${s.total >= MIN_PELLETS && s.total <= MAX_PELLETS ? '' : ' ⚠'}  (${s.frames}f)  [${s.backendAgreement}]`,
+      `    fight=${s.fightT != null ? s.fightT.toFixed(2) + 's' : '?'}  W=${s.white} R=${s.red} T=${s.total}${s.total >= MIN_PELLETS && s.total <= MAX_PELLETS ? '' : ' ⚠'}${s.core ? ' ◆core' : ''}  (${s.frames}f)  [${s.backendAgreement}]`,
     );
   if (shots.length > 25) console.log(`    ... and ${shots.length - 25} more`);
 }

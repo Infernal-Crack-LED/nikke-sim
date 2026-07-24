@@ -42,7 +42,7 @@ executes the blind roles (S2b/S5/S6/S7) via the CLI dispatch bridge.
 - **Skill:** `.qwen/skills/kit-autonomy/SKILL.md` (Qwen driver + model router)
 - **Base protocol + templates:** `scripts/kit-autonomy/SKILL.md` (tracked, shared)
 - **Dispatch bridge:** `scripts/kit-autonomy/dispatch-claude.sh` (packet → `claude -p` → result JSON)
-- **Model routing:** S2b (pre-op) → `claude-fable-5` · S5/S6/S7 (post-op) → `claude-opus-4-8`
+- **Model routing:** S2b (pre-op) → `claude-fable-5` · S5/S6/S7 (post-op) → `claude-opus-5`
 - **Artifacts:** `scripts/kit-autonomy/cross-family/<slug>/` (packets + results), `scripts/kit-autonomy/manual-review/<slug>.md` (owner review doc — Stage 9, always generate)
 
 ## Protected paths — DO NOT EDIT without explicit owner approval
