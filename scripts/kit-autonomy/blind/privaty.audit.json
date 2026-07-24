@@ -1,0 +1,138 @@
+{
+  "slug": "privaty",
+  "leakDetected": null,
+  "override": {
+    "slug": "privaty",
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Privaty (Water AR Attacker, Burst III, treasure; ammo 60, reloadFrames 81, chargeFrames 0 = autofire AR, hitsPerShot 1). S1 = fullBurstEnter team buff on ALL allies (ATK ▲23.61% / Reload Speed ▲51.16% / Max Ammo ▼50.66% / Attack Damage ▲20.16%, 10s); reload+ammo lines gate shot count (HARD RULE 1), modeled not skipped. S2 = two lastBullet riders: generic (Damage Taken ▲10.01% + 256.17%) and a 1687% rider gated on the burst's 'Designated Target' targetStatus. Burst = self elemAdvantageDamagePct ▲130% (prior 7), 1407.64% nuke, applies 'Designated Target' targetStatus enabling the S2 gate; ATK ▼5.02% kept inert; 3s stun SKIPPED (control). Riders crit:true/no-core/FB-by-timing-ON (prior 2). leakDetected: null.",
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Stuns for 3 sec."
+      ]
+    },
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": { "kind": "fullBurstEnter" },
+        "target": { "kind": "allies" },
+        "effects": [
+          { "kind": "buff", "stat": "atkPct", "value": 23.61, "durationSec": 10 },
+          { "kind": "buff", "stat": "reloadSpeedPct", "value": 51.16, "durationSec": 10 },
+          { "kind": "buff", "stat": "maxAmmoPct", "value": -50.66, "durationSec": 10 },
+          { "kind": "buff", "stat": "attackDamagePct", "value": 20.16, "durationSec": 10 }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": { "kind": "lastBullet" },
+        "target": { "kind": "enemy" },
+        "effects": [
+          { "kind": "buff", "stat": "damageTakenPct", "value": 10.01, "durationSec": 10 },
+          { "kind": "flatDamage", "atkPct": 256.17, "crit": true }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": { "kind": "lastBullet" },
+        "target": { "kind": "enemy" },
+        "requiresTargetStatus": "Designated Target",
+        "effects": [
+          { "kind": "flatDamage", "atkPct": 1687, "crit": true }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": { "kind": "burstCast" },
+        "target": { "kind": "self" },
+        "effects": [
+          { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 130, "durationSec": 10 }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": { "kind": "burstCast" },
+        "target": { "kind": "enemy" },
+        "effects": [
+          { "kind": "flatDamage", "atkPct": 1407.64 },
+          { "kind": "targetStatus", "name": "Designated Target", "durationSec": 10 },
+          { "kind": "buff", "stat": "atkPct", "value": -5.02, "durationSec": 10 }
+        ]
+      }
+    ],
+    "caveats": [
+      "skill2: 256.17% generic rider and 1687% Designated-Target rider modeled as INDEPENDENT (co-fire while status up); kit gives two ■ triggers, exclusivity unstated — ⚑ verify.",
+      "burst: 'Designated Target: ATK ▼5.02%' = targetStatus('Designated Target',10s) [opens S2 gate] + inert atkPct -5.02 boss debuff.",
+      "burst: 3s stun SKIPPED (control, no DPS vs partless boss).",
+      "skill2 riders crit:true/no-core/noFb-omitted (prior 2); burst 1407.64% nuke no crit (ein style) — ⚑ both.",
+      "burst: elemAdvantageDamagePct ▲130% live only with elemental advantage (prior 7); inert on neutral boss."
+    ]
+  },
+  "audit": [
+    { "slot": "skill1", "kitLine": "Activates when entering Full Burst", "status": "IMPLEMENTED", "effectOrReason": "trigger fullBurstEnter (literal 'entering Full Burst' = any team FB, not burstCast)" },
+    { "slot": "skill1", "kitLine": "Affects all allies", "status": "IMPLEMENTED", "effectOrReason": "target allies (includes self)" },
+    { "slot": "skill1", "kitLine": "ATK ▲ 23.61% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff atkPct 23.61 dur 10" },
+    { "slot": "skill1", "kitLine": "Reload Speed ▲ 51.16% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff reloadSpeedPct 51.16 dur 10 — weapon-state, gates shot count (HARD RULE 1)" },
+    { "slot": "skill1", "kitLine": "Max Ammunition Capacity ▼ 50.66% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff maxAmmoPct -50.66 dur 10 — ammo capacity ▼ gates reload cadence (HARD RULE 1)" },
+    { "slot": "skill1", "kitLine": "Attack Damage ▲ 20.16% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff attackDamagePct 20.16 dur 10 (Damage Up bucket)" },
+    { "slot": "skill2", "kitLine": "Activates when last bullet hits target", "status": "IMPLEMENTED", "effectOrReason": "trigger lastBullet (recurs every reload)" },
+    { "slot": "skill2", "kitLine": "Damage Taken ▲ 10.01% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff damageTakenPct 10.01 dur 10 on enemy (real damage amplifier)" },
+    { "slot": "skill2", "kitLine": "Deals 256.17% ... additional damage", "status": "IMPLEMENTED", "effectOrReason": "flatDamage 256.17 crit:true (function rider; no core, FB-by-timing ON)" },
+    { "slot": "skill2", "kitLine": "last bullet hits Designated Target", "status": "IMPLEMENTED", "effectOrReason": "trigger lastBullet + requiresTargetStatus 'Designated Target'" },
+    { "slot": "skill2", "kitLine": "Deals 1687% ... additional damage", "status": "IMPLEMENTED", "effectOrReason": "flatDamage 1687 crit:true (function rider; gated on burst status)" },
+    { "slot": "burst", "kitLine": "Affects self", "status": "IMPLEMENTED", "effectOrReason": "self block, trigger burstCast (own burst block)" },
+    { "slot": "burst", "kitLine": "Elem Advantage Atk Dmg ▲ 130% 10s", "status": "IMPLEMENTED", "effectOrReason": "buff elemAdvantageDamagePct 130 dur 10 (prior 7, exceeds ×1.10)" },
+    { "slot": "burst", "kitLine": "Affects all enemies", "status": "IMPLEMENTED", "effectOrReason": "enemy block, trigger burstCast" },
+    { "slot": "burst", "kitLine": "Deals 1407.64% ... Burst Skill damage", "status": "IMPLEMENTED", "effectOrReason": "flatDamage 1407.64 (burst-cast nuke, engine auto FB-exempt; no crit set)" },
+    { "slot": "burst", "kitLine": "Stuns for 3 sec", "status": "SKIPPED", "effectOrReason": "control on immortal partless boss that deals no damage = zero DPS impact -> unmodeled.burst" },
+    { "slot": "burst", "kitLine": "Designated Target: ATK ▼ 5.02% 10s", "status": "IMPLEMENTED", "effectOrReason": "targetStatus 'Designated Target' dur 10 (opens S2 gate) + inert atkPct -5.02 boss debuff" }
+  ],
+  "flags": [
+    {
+      "field": "cadence (charFixes: pullsPerSec / reloadFrames / rolling-reload)",
+      "estimate": "AR autofire; datamine reloadFrames 81, ammo 60, rl3 7.6, chargeFrames 0",
+      "reasoning": "rate_of_fire/reload datamine-unreliable (prior 1). AR is autofire (chargeFrames 0) so NO SR/RL bolt-recovery ⚑ applies, but the base pulls-per-sec + reload tuple still sets lastBullet frequency and is not kit-derivable. The FB-window Reload Speed ▲51.16% + Max Ammo ▼50.66% compose with base cadence to drive reload/lastBullet rate.",
+      "recipe": "measure real pullsPerSec + reloadFrames from a Privaty-focused recording; confirm the FB-window reload/ammo composition against observed last-bullet cadence."
+    },
+    {
+      "field": "skill2[0] vs skill2[1] (rider exclusivity)",
+      "estimate": "modeled INDEPENDENT — both the 256.17% and the 1687% fire on a last-bullet hit while Designated Target is active",
+      "reasoning": "kit text gives two separate ■ triggers but does not state they are mutually exclusive; in-game the generic last-bullet rider may be replaced by (not stacked on) the designated-target rider during the status window.",
+      "recipe": "verify from footage whether the 256.17% proc co-fires with the 1687% proc inside the Designated Target window; if exclusive, gate skill2[0] off the status (or merge)."
+    },
+    {
+      "field": "skill2[1] (1687% activation count)",
+      "estimate": "fires on last-bullet hits during the 10s Designated Target window per Privaty burst (CD 40s)",
+      "reasoning": "status uptime + number of last-bullet hits inside the window are cadence/rotation-dependent; cannot be derived without the reload cadence.",
+      "recipe": "count last-bullet procs landing inside the 10s status window from footage; coupled to the cadence ⚑ above."
+    },
+    {
+      "field": "skill2[*].flatDamage.crit",
+      "estimate": "crit:true on both riders (function-damage riders crit at caster rate)",
+      "reasoning": "prior-2 text-fidelity: function-type additional-damage riders CRIT by default, no core unless the text labels it core (it does not here). ein feathers (function riders) set crit:true.",
+      "recipe": "confirm orange popup bodies on the 256.17% / 1687% procs; drop crit:true if observed non-crit."
+    },
+    {
+      "field": "burst[1].flatDamage.crit (1407.64% nuke)",
+      "estimate": "no crit set (default off)",
+      "reasoning": "burst main-damage nuke, not a function rider; schema crit is opt-in and the ein burst-nuke style omits it. Uncertain whether burst skill damage crits in-engine.",
+      "recipe": "verify from footage whether the 1407.64% burst nuke crits; set crit:true if so."
+    },
+    {
+      "field": "skill2[*].flatDamage.noFb (FB-by-timing)",
+      "estimate": "noFb OMITTED (FB-by-timing default ON)",
+      "reasoning": "lastBullet riders are non-burst-cast; prior 2 default is FB-by-timing ON unless measured FB-OFF. noRange is engine-automatic (not set).",
+      "recipe": "set noFb:true only if footage shows the procs landing WITHOUT the +50% Full-Burst major."
+    },
+    {
+      "field": "burst[0] (elemAdvantageDamagePct 130)",
+      "estimate": "130% in the Damage Up bucket, live ONLY under elemental advantage",
+      "reasoning": "prior 7: element advantage is a clean ×1.10 unless the kit carries an elem-advantage damage buff — Privaty does, so it must be modeled; it is inert vs a neutral/non-advantaged scope-lock boss.",
+      "recipe": "confirm the boss element in graded comps; this buff moves only advantaged fights."
+    }
+  ]
+}

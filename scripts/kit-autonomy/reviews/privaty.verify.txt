@@ -1,0 +1,33 @@
+# S2d INDEPENDENT VERIFICATION MATRIX — privaty (kit-autonomy gauntlet)
+# Automated, objective vitest run of scripts/tests/units/privaty.test.ts.
+# FAITHFUL pins are GREEN vs the SHIPPED override; each DISCRIMINATING assertion runs a named
+# counterfactual via withPatchedOverride and asserts it DIVERGES — a test that passed under BOTH
+# the shipped override and its counterfactual (asserting nothing) would FAIL here. No self-reported RED.
+# generated: 2026-07-24T00:07:36Z
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy[39m
+
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP1 — S2 256.17% rider fires on the LAST BULLET (~once per magazine), not every pull[2m > [22mfires ≈ the reload count and far below the shot count (lastBullet cadence + fire-rate check)[32m 4[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP1 — S2 256.17% rider fires on the LAST BULLET (~once per magazine), not every pull[2m > [22mDISCRIMINATING: a shotFired trigger fires the rider on (almost) every pull[32m 3[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP2 — S2 1687% rider is gated on the Designated Target status window[2m > [22mevery 1687 rider lands inside a privaty burst + 10s window, and the gate is non-vacuous[32m 13[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP2 — S2 1687% rider is gated on the Designated Target status window[2m > [22mDISCRIMINATING: removing the gate fires 1687 on every last bullet (incl. out-of-window)[32m 10[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP3 — S2 riders carry no +30% range major (ENGINE-INVARIANT SANITY CHECK, §14.6)[2m > [22mrangeApplied is false on every S2 rider (holds for any override — discriminates nothing about privaty)[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP4 — the 256.17% rider takes the +50% Full Burst major BY LANDING TIME (FB-by-timing)[2m > [22ma rider landing IN Full Burst carries fbMajorApplied; one landing OUT does not (timing-gated)[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP5 — S1 Full-Burst-entry team buffs reach all four allies for 10 sec[2m > [22matkPct 23.61 is applied by privaty to all 4 allies for 10s[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP5 — S1 Full-Burst-entry team buffs reach all four allies for 10 sec[2m > [22mreloadSpeedPct 51.16 is applied by privaty to all 4 allies for 10s[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP5 — S1 Full-Burst-entry team buffs reach all four allies for 10 sec[2m > [22mmaxAmmoPct -50.66 is applied by privaty to all 4 allies for 10s[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP5 — S1 Full-Burst-entry team buffs reach all four allies for 10 sec[2m > [22mattackDamagePct 20.16 is applied by privaty to all 4 allies for 10s[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP5b — S1 Max Ammo ▼50.66% is damage-relevant (tandem; S2b adversarial top misread)[2m > [22mremoving the Max Ammo ▼ debuff REDUCES the last-bullet rider count (it gates shot count = damage)[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP5c — S1 fires on EVERY Full Burst entry (fullBurstEnter, not burstCast)[2m > [22mS1 atkPct 23.61 is applied once per Full Burst start frame[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP6 — burst: self elem-advantage buff + 1407.64% nuke (FB-exempt by cast timing)[2m > [22mapplies self elemAdvantageDamagePct 130 on each burstCast[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP6 — burst: self elem-advantage buff + 1407.64% nuke (FB-exempt by cast timing)[2m > [22mnuke lands once per burstCast at 1407.64% in the burst bucket, never taking the +50% FB major[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22mP7 — S2a Damage Taken ▲10.01% is a boss debuff applied on each last bullet[2m > [22ma damageTakenPct 10.01 debuff is applied, bounded by the last-bullet cadence[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22minertness / attribution — the S2 riders are privaty's OWN damage instances[2m > [22mevery 256.17 / 1687 rider is attributed to privaty (srcSlot skill2), not credited to a teammate[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.test.ts[2m > [22mprivaty — kit spec (faithful override; pins beat named counterfactuals)[2m > [22minertness / attribution — the S2 riders are privaty's OWN damage instances[2m > [22mremoving the whole S2 slot lowers privaty's own damage (the riders are hers)[32m 35[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m17 passed[39m[22m[90m (17)[39m
+[2m   Start at [22m 17:07:37
+[2m   Duration [22m 459ms[2m (transform 88ms, setup 0ms, import 297ms, tests 74ms, environment 0ms)[22m
+
