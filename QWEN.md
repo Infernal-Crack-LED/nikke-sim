@@ -33,6 +33,18 @@ npm run sim -- <slugs>   # CLI sim run
 bash scripts/verify.sh   # full verification (run before committing)
 ```
 
+## Kit-autonomy gauntlet
+
+Autonomous test-first kit-faithfulness audit for a single unit. Qwen drives (S0–S4, S8–S9), Claude
+executes the blind roles (S2b/S5/S6/S7) via the CLI dispatch bridge.
+
+- **Trigger:** "run the kit-autonomy gauntlet on `<slug>`"
+- **Skill:** `.qwen/skills/kit-autonomy/SKILL.md` (Qwen driver + model router)
+- **Base protocol + templates:** `scripts/kit-autonomy/SKILL.md` (tracked, shared)
+- **Dispatch bridge:** `scripts/kit-autonomy/dispatch-claude.sh` (packet → `claude -p` → result JSON)
+- **Model routing:** S2b (pre-op) → `claude-fable-5` · S5/S6/S7 (post-op) → `claude-opus-4-8`
+- **Artifacts:** `scripts/kit-autonomy/cross-family/<slug>/` (packets + results), `scripts/kit-autonomy/manual-review/<slug>.md` (owner review doc — Stage 9, always generate)
+
 ## Protected paths — DO NOT EDIT without explicit owner approval
 
 These paths are load-bearing for the sim's accuracy guarantees. **Never modify them** unless the owner explicitly asks:

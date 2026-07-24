@@ -26,6 +26,9 @@ docs/data/ranks
 .claude/
 CLAUDE.md
 
+# Qwen harness (methodology skills — gitignored like .claude/skills/)
+.qwen/skills/
+
 # private-repo git dir (harness + AI docs tracked separately)
 .git-private/
 
