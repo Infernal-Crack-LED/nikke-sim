@@ -1,0 +1,56 @@
+# S7 MECHANICAL CONVERGENCE CHECK — S5 blind test run UNMODIFIED against the driver's SHIPPED override
+# GREEN = the blind prose reading converges with the driver's encoding; any RED = a divergence the judge classifies.
+# generated: 2026-07-24T00:31:11Z
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy[39m
+
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 ATK ▲ (atkPct 23.61%)[2m > [22mapplies 23.61% to all four allies, 10s wall-clock (not rounds), on every FB entry[32m 3[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 Reload Speed ▲ (reloadSpeedPct 51.16%)[2m > [22mapplies 51.16% to all four allies, 10s wall-clock (not rounds), on every FB entry[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 Max Ammunition ▼ (maxAmmoPct -50.66%)[2m > [22mapplies -50.66% to all four allies, 10s wall-clock (not rounds), on every FB entry[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 Attack Damage ▲ (attackDamagePct 20.16%)[2m > [22mapplies 20.16% to all four allies, 10s wall-clock (not rounds), on every FB entry[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 trigger — fullBurstEnter (every team FB), not burstCast (own casts only)[2m > [22mFIXTURE NON-VACUITY: privaty casts >0 and helm completes some FBs (casts < total FBs)[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 trigger — fullBurstEnter (every team FB), not burstCast (own casts only)[2m > [22mapplies on every FB frame (== #fullBurstStart), more than #privaty-casts[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 trigger — fullBurstEnter (every team FB), not burstCast (own casts only)[2m > [22mDISCRIMINATING: a burstCast-keyed model applies on fewer frames[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 mechanical — weapon-state modifiers are live[2m > [22mremoving S1 lowers privaty total damage[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS1 mechanical — weapon-state modifiers are live[2m > [22mP3 maxAmmo▼ raises the last-bullet rate (more 256.17 riders than with it removed)[32m 1[2mms[22m[39m
+ [31m×[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P5 — last-bullet Damage Taken ▲10.01% is a BOSS debuff (benefits whole team)[2m > [22mis 10.01% on the boss (targetIdx null), 10s, on lastBullet cadence[32m 2[2mms[22m[39m
+[31m   → no privaty damageTakenPct debuff was applied: expected 0 to be greater than 0[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P5 — last-bullet Damage Taken ▲10.01% is a BOSS debuff (benefits whole team)[2m > [22mfeeds the taken bucket team-wide (more high-taken hits than with S2 removed)[32m 2[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P6 — last-bullet rider deals 256.17% of final ATK (skill2 bucket)[2m > [22mis the kit magnitude in the skill bucket, from skill2[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P6 — last-bullet rider deals 256.17% of final ATK (skill2 bucket)[2m > [22mfires per magazine (lastBullet), far fewer than per-shot[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P6 — last-bullet rider deals 256.17% of final ATK (skill2 bucket)[2m > [22mDISCRIMINATING: a shotFired model fires the rider on every pull[32m 2[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P7 — gated rider: 1687% on last bullets hitting a Designated Target[2m > [22mNON-VACUITY: fixture exercises BOTH the active and the inactive case[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P7 — gated rider: 1687% on last bullets hitting a Designated Target[2m > [22mis a strict gated subset of last bullets (fewer than the ungated 256.17 rider)[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P7 — gated rider: 1687% on last bullets hitting a Designated Target[2m > [22mevery gated rider lands inside a Designated-Target window (~10s after a privaty cast)[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P7 — gated rider: 1687% on last bullets hitting a Designated Target[2m > [22mDISCRIMINATING: dropping the gate fires 1687 on EVERY last bullet[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P11 — Designated-Target status (gates P7), applied per cast, ~10s[2m > [22mthe status is re-applied by each burst (gated riders span ≥2 distinct cast windows)[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P8 — self Elemental Advantage Attack Damage ▲130% (burstCast, self, 10s)[2m > [22mis 130% self-scoped, once per privaty burst cast (burstCast, not fullBurstEnter), for 10s[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P8 — self Elemental Advantage Attack Damage ▲130% (burstCast, self, 10s)[2m > [22mis LIVE with advantage (Water>Fire): removing it lowers privaty damage[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P8 — self Elemental Advantage Attack Damage ▲130% (burstCast, self, 10s)[2m > [22mis INERT without advantage (neutral boss): removing it changes nothing[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P8 — self Elemental Advantage Attack Damage ▲130% (burstCast, self, 10s)[2m > [22mDISCRIMINATING: a generic attackDamagePct would still move damage on a neutral boss[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P9 — nuke: 1407.64% of final ATK, Burst Skill damage, FB-exempt[2m > [22mfires once per privaty burst cast at the kit magnitude, in the burst bucket[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P9 — nuke: 1407.64% of final ATK, Burst Skill damage, FB-exempt[2m > [22mnever takes the +50% Full Burst major (the cast lands before FB opens)[32m 0[2mms[22m[39m
+ [2m[90m↓[39m[22m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P10 — stun 3s[2m > [22mUNMODELED: stun on a non-acting partless boss has no damage observable in v1
+ [2m[90m↓[39m[22m scripts/tests/units/privaty.blind.test.ts[2m > [22mBurst P11b — Designated Target: ATK ▼5.02% on the enemy[2m > [22mUNMODELED/inert: boss ATK feeds no damage path in v1 (the load-bearing part is the Designated-Target STATUS, asserted via P7/P11)
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/privaty.blind.test.ts[2m > [22mS2 P5 — last-bullet Damage Taken ▲10.01% is a BOSS debuff (benefits whole team)[2m > [22mis 10.01% on the boss (targetIdx null), 10s, on lastBullet cadence
+[31m[1mAssertionError[22m: no privaty damageTakenPct debuff was applied: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/privaty.blind.test.ts:[2m285:74[22m[39m
+    [90m283|[39m   [35mconst[39m taken [33m=[39m [34mprivBuffs[39m(base[33m.[39mevents[33m,[39m [32m'damageTakenPct'[39m)[33m;[39m
+    [90m284|[39m   it('is 10.01% on the boss (targetIdx null), 10s, on lastBullet caden…
+    [90m285|[39m     expect(taken.length, 'no privaty damageTakenPct debuff was applied…
+    [90m   |[39m                                                                          [31m^[39m
+    [90m286|[39m     [34mexpect[39m([[33m...[39m[35mnew[39m [33mSet[39m(taken[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39mvalue))])[33m.[39m[34mtoEqual[39m([[34m10.01[39m])[33m;[39m
+    [90m287|[39m     expect([...new Set(taken.map((b) => b.targetIdx))], 'Damage Taken …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m24 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (27)[39m
+[2m   Start at [22m 17:31:11
+[2m   Duration [22m 680ms[2m (transform 92ms, setup 0ms, import 557ms, tests 22ms, environment 0ms)[22m
+
