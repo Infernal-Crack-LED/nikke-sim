@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Durable vision server for the NIKKE probe tooling: a llama-server (:8090, multimodal) running
+     Qwen2.5-VL-7B + mmproj, used by scripts/probe/read-popups-vlm.ts to read damage popups + the
+     fight timer off probe recordings. Port 8090 is deliberately OFFSIDE maiden's llama servers
+     (chat :8080 / work :8081 / vision :8083) so both stacks can run at once. Unlike the OPTIONAL
+     maiden vision agent (RunAtLoad/KeepAlive false), this is RunAtLoad + KeepAlive = always up.
+     Model: ~/models/qwen2.5-vl-7b (ggml-org GGUF + mmproj). Logs: ~/Library/Logs/nikke/.
+     Install + load:
+       cp deploy/launchd/com.nikke-sim.model-vision.plist ~/Library/LaunchAgents/
+       launchctl bootstrap gui/501 ~/Library/LaunchAgents/com.nikke-sim.model-vision.plist
+     Stop/unload:
+       launchctl bootout gui/501/com.nikke-sim.model-vision -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.nikke-sim.model-vision</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/llama-server</string>
+    <string>-m</string>
+    <string>/Users/maxwellsutton/models/qwen2.5-vl-7b/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf</string>
+    <string>--mmproj</string>
+    <string>/Users/maxwellsutton/models/qwen2.5-vl-7b/mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf</string>
+    <string>--host</string>
+    <string>127.0.0.1</string>
+    <string>--port</string>
+    <string>8090</string>
+    <string>-c</string>
+    <string>16384</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/maxwellsutton/nikke-sim</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/local/bin</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/maxwellsutton/Library/Logs/nikke/model-vision.log</string>
+  <key>StandardErrorPath</key><string>/Users/maxwellsutton/Library/Logs/nikke/model-vision.log</string>
+</dict>
+</plist>

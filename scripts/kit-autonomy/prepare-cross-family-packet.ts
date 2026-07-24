@@ -60,7 +60,7 @@ const TEMPLATE: Record<string, string> = {
 function leakCheck(label: string, text: string, includeSlug = true) {
   const lower = text.toLowerCase();
   const needles = includeSlug
-    ? [slug.toLowerCase(), ...tokens.map((t) => t.toLowerCase())]
+    ? [slug!.toLowerCase(), ...tokens.map((t) => t.toLowerCase())]
     : tokens.map((t) => t.toLowerCase());
   const hits = needles.filter((tok) => lower.includes(tok));
   if (hits.length)

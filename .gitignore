@@ -38,3 +38,7 @@ scripts/blind-rebuild/packets/
 scripts/blind-rebuild/truth/
 scripts/blind-rebuild/reconstructions/
 scripts/blind-rebuild/results/
+
+scripts/probe/__pycache__
+scripts/probe/.venv
+scripts/kit-autonomy/cross-family/**/*

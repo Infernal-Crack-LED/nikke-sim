@@ -22,18 +22,18 @@ One file per parsed video: `docs/probe-data/<slug>.json` (`<slug>` = a short han
 usually `<probe>-<focus>`, e.g. `control-little-mermaid`). Schema and helpers live in
 `scripts/probe/parsed.ts`.
 
-| field | meaning |
-|---|---|
-| `video` | repo-relative path to the source recording |
-| `focus` | slug of the camera-focus unit (popups belong ONLY to the focused unit) |
-| `boss` | boss element (`null` = neutral) |
-| `comp` | team slug list in slot order |
-| `basis` | validation basis, e.g. `scope-lock base5` |
-| `extractedOn` | date the read was done (`YYYY-MM-DD`) |
-| `method` | how popups were read (contact-sheet fps, crop, full-res frames) |
-| `fightStartSec` | video time where the fight (AMBUSH) begins, if known |
-| `fightClock` | `true` if `popups[].t` is fight-relative rather than video-relative |
-| `popups[]` | the readings: `t` (seconds), `value` (damage), optional `crit`, `core`, `kind`, `note` |
+| field           | meaning                                                                                |
+| --------------- | -------------------------------------------------------------------------------------- |
+| `video`         | repo-relative path to the source recording                                             |
+| `focus`         | slug of the camera-focus unit (popups belong ONLY to the focused unit)                 |
+| `boss`          | boss element (`null` = neutral)                                                        |
+| `comp`          | team slug list in slot order                                                           |
+| `basis`         | validation basis, e.g. `scope-lock base5`                                              |
+| `extractedOn`   | date the read was done (`YYYY-MM-DD`)                                                  |
+| `method`        | how popups were read (contact-sheet fps, crop, full-res frames)                        |
+| `fightStartSec` | video time where the fight (AMBUSH) begins, if known                                   |
+| `fightClock`    | `true` if `popups[].t` is fight-relative rather than video-relative                    |
+| `popups[]`      | the readings: `t` (seconds), `value` (damage), optional `crit`, `core`, `kind`, `note` |
 
 `kind` is a best-effort tag (`normal`, `charge`, `proc`, `dot`, `nuke`, `barrage`, …).
 Leave `crit`/`core` unset when the frame didn't let you tell — absent means "not
@@ -54,6 +54,12 @@ determined", not "false".
   extraction with region presets (crosshair = damage, character = heals); `--fps 60` for fast streams.
 - `classify.py <img-glob> [--region … --rate]` — popup colour classifier (crit/core/normal/heal by
   colour + region; approximate rate). No OCR — values are still read by eye.
+- `read-popups-vlm.ts <video> --focus <slug> [--fps --at --dur --endpoint --model …]` — EXPERIMENTAL
+  MVP that automates the value read: a local vision model (Qwen2.5-VL via llama.cpp) reads popup
+  VALUES + the fight timer per frame, dedups repeats across frames, emits Popup-schema JSON. Classical
+  CV could not separate popups from the bright moving boss; the VLM reads the scene semantically.
+  Output is UNVALIDATED — confirm against `hit-values.ts` before trusting. `--mock` runs the pipeline
+  without a server.
 - `parsed.ts` — validate/list parsed files. `catalog.ts` — recording index (`catalog.json`).
 - `dot-crit.ts` — crit-signature analyzer over a parsed file.
 

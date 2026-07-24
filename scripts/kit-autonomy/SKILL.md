@@ -19,6 +19,7 @@ triangulation is a **secondary sampler**, subordinated so a prose→JSON agreeme
 disagreement.
 
 ## When to use
+
 - The owner has authorized autonomous kit authoring **on a branch** (override + engine edits on the branch
   only, never `main`): "run the kit-autonomy gauntlet on `<slug>`", "autonomous kit session for `<slug>`".
 - A unit needs a faithful, fully-unit-tested kit and no owner is available to drive the line-by-line spec.
@@ -27,7 +28,9 @@ disagreement.
   no unit attached (step-2 backfill).
 
 ## Non-negotiables
+
 Prepend `.claude/subagent-non-negotiables.md` to EVERY subagent prompt below.
+
 1. **Faithful > fit, measured > fudge.** NEVER fabricate a value to hit a number; NEVER weaken an assertion
    or re-introduce an unfaithful encoding to reach GO (the kit-tdd anti-pattern). A board move AWAY from 1.0
    after a faithful fix is fit-exposure (a separate localization thread), not a reason to revert.
@@ -41,6 +44,7 @@ Prepend `.claude/subagent-non-negotiables.md` to EVERY subagent prompt below.
    CALIBRATED ⚑; `docs/CONVENTIONS.md`). A `CALIBRATED ⚑` is never mistaken for `MEASURED`.
 
 ## The honest limit (read before trusting any GO)
+
 Every reviewing agent here is the **same underlying model** (the agent tool has no `model` parameter, so
 audit-kit's Opus-pinning is unavailable). Independent re-derivation decorrelates **idiosyncratic** error but
 NOT **shared-prior** bias: a plausible-but-wrong reading the model's prior favors — and the repo's taxonomy
@@ -60,10 +64,11 @@ are stat-independent); the gauntlet certifies STRUCTURE, not numbers.
 ```sh
 npx tsx scripts/lint-slug-disambiguation.ts                    # exact slug is P0
 ```
+
 - State the full name + slug + weapon/class/element/burst.
 - **Build the REDACTED methodology packet** that the blind roles (S2b/S5/S6) will receive. Strip the target
   unit's name/slug, its trigger/gate/magnitudes, and any worked example naming it from the excerpts of
-  `docs/kit-autonomy-decisions.md §5` and the `kit-parse` hard rules (substitute a *different* unit's example
+  `docs/kit-autonomy-decisions.md §5` and the `kit-parse` hard rules (substitute a _different_ unit's example
   if one is needed). The blind roles DO receive the kit prose (legitimate input — it names the mechanic; that
   is what is being derived) and the `src/skills/types.ts` schema (the vocabulary).
 - **Leak assertion (mirrors `scripts/blind-rebuild/build-packet.ts`):** before dispatching any blind role,
@@ -71,11 +76,13 @@ npx tsx scripts/lint-slug-disambiguation.ts                    # exact slug is P
   block**; fail loudly if any appear. (For privaty: `256.17` / `1687` / `1407.64` / `Designated Target`.)
 
 ## Stage 1 — read + line inventory (driver, sighted)
+
 Read `data/characters.json → characters.<slug>` (or `scripts/blind-rebuild/char-extracts/<slug>.json`), the
 shipped `src/skills/overrides/<slug>.json` IN FULL (blocks + note/caveats/unmodeled + any config fields), the
 `data/kit-status.json` row, and `docs/engine-modeling-gaps.md` hits. Split every skill into individual kit
 lines (a `■` header = trigger + target; each following sentence = one effect line). Record the line inventory
-+ current model + tier + board reading. (This is kit-tdd Step 0.)
+
+- current model + tier + board reading. (This is kit-tdd Step 0.)
 
 ## Stage 2 — tests FIRST, with independent re-derivation (the faithfulness gate)
 
@@ -83,6 +90,7 @@ lines (a `■` header = trigger + target; each following sentence = one effect l
 UNMODELED / MEASUREMENT-GATED) + the 4 questions (scope · duration semantics · trigger identity · target
 set), and name the **nearest-wrong counterfactual** explicitly. Write `scripts/tests/units/<slug>.test.ts`
 via `scripts/tests/lib/harness.ts` (`controlComp`, `runComp`, `cfg.onEvent`, `withPatchedOverride`):
+
 - **FAITHFUL line on an already-faithful override:** a PIN assertion that is **GREEN vs the shipped override
   AND RED vs the named counterfactual** (`withPatchedOverride`).
 - **FIX/MISSING line on an unfaithful override:** an assertion **RED vs the shipped override**, implemented
@@ -111,6 +119,7 @@ counterfactual** — expect RED, and records the full pass/fail matrix as an art
 (asserts nothing) FAILS this gate. This is the autonomous form of kit-tdd's "confirm RED before implementing."
 
 ## Stage 3 — faithful override (driver)
+
 Implement the **minimum** `src/skills/overrides/<slug>.json` change to turn the FIX/MISSING tests green
 (approve the protected-path prompt). Every skipped line VERBATIM in `unmodeled`; every value outside the
 input domain is a ⚑ with estimate + recipe + tier; NO `ignored` blocks; override prose = current-state only
@@ -118,14 +127,16 @@ input domain is a ⚑ with estimate + recipe + tier; NO `ignored` blocks; overri
 GREEN. (For an already-faithful unit this stage is minimal/none — the tests are pins.)
 
 ## Stage 4 — engine updates (driver, isolated worktree) — ONLY if a primitive is genuinely missing
+
 A GAP test (`it.skip` + reason) marks the missing primitive; entry in `docs/engine-modeling-gaps.md`. Build
 the primitive / event-payload extension in an **isolated worktree** (`git worktree add … -b <topic>` or
 `Agent(isolation:"worktree")`), run `/scientific-method` step-7 + `bash scripts/verify.sh` there, then merge
-back to the gauntlet branch. **Never edit `src/engine/**` in the shared tree.** The engine serves
+back to the gauntlet branch. **Never edit `src/engine/**`in the shared tree.** The engine serves
 faithfulness (a specific buff/stat/state-machine/bus), NEVER to simplify the kit. If the change has broad
-blast radius (a universal prior), it is a `/tuning-priors` promotion needing owner awareness → escalate.
+blast radius (a universal prior), it is a`/tuning-priors` promotion needing owner awareness → escalate.
 
 ## Stage 5 — blind post-op test-writer (separate blind subagent)
+
 Spawn with `scripts/kit-autonomy/BLIND-TEST-WRITER.md` (prepend non-negotiables), handing it the kit prose +
 harness API + schema + disposition vocab + §5 lessons (REDACTED per §0). Blind to the driver's
 tests/override/reasoning and the truth file. It writes its OWN `<slug>.test.ts` from the prose alone (the
@@ -133,6 +144,7 @@ same forcing function) + its spec table. Save to `scripts/kit-autonomy/blind/<sl
 `<slug>.test-spec.json`).
 
 ## Stage 6 — blind post-op override-writer (separate blind subagent)
+
 Spawn with `scripts/kit-autonomy/BLIND-OVERRIDE-WRITER.md` (prepend non-negotiables) — `kit-parse`
 BLIND-STUDY mode: kit prose + `types.ts` schema + `docs/modeling-priors.md` + kit-parse hard rules + ALWAYS-⚑
 taxonomy + a DIFFERENT unit's override as a style example (REDACTED per §0; VALUES-WITHHELD — no
@@ -141,6 +153,7 @@ tests/reasoning, DECISIONS/handoffs/probe-data, git history. It writes its OWN o
 table + ⚑ list. Save to `scripts/kit-autonomy/blind/<slug>.override.json` (+ `<slug>.audit.json`).
 
 ## Stage 7 — reconciling judge → binding go/no-go (separate subagent)
+
 Spawn with `scripts/kit-autonomy/RECONCILING-JUDGE.md` (prepend non-negotiables + the `/context` mechanics
 pack: `docs/data/damage-calculation.md` + `docs/data/game-mechanics.md`). Hand it: the kit prose; the S2b
 pre-op review; the S5 blind tests; the S6 blind override; the driver's tests + override + any engine change;
@@ -158,11 +171,13 @@ override (convergence); every ⚑ has estimate + recipe + tier; the tests discri
 fire-rate check passes. The verdict is BINDING.
 
 ## Stage 8 — board A/B report (driver, non-gating)
+
 `npx tsx scripts/board-read.ts | grep -i <slug>` before/after; report both numbers + classify movement
 (toward 1.0 = the misencoding was the error; away = fit-exposure, a separate localization thread, never a
-reason to revert). Unit tests pin *faithful*; the board pins *accurate*; report both.
+reason to revert). Unit tests pin _faithful_; the board pins _accurate_; report both.
 
 ## No-go loop + escalation
+
 - **NO-GO(faithfulness):** the driver fixes the specific cited divergence and re-runs from the earliest
   affected stage (S2 or S3). **Bound: 2 retries.** The driver may NOT weaken an assertion or re-introduce an
   unfaithful encoding to reach GO.
@@ -171,17 +186,22 @@ reason to revert). Unit tests pin *faithful*; the board pins *accurate*; report 
   The driver never makes an irreversible/engine-core decision alone.
 
 ## Land (on GO)
+
 Override prose = current-state; `docs/DECISIONS.md` entry per ruling; `data/kit-status.json` via
-`scripts/kit-status.ts`; `bash scripts/verify.sh` green; commit (freely, never push unless asked);
-`/mechanics-doc-upkeep` if the engine changed; `/skill-maintenance` if the session taught a reusable lesson.
+`scripts/kit-status.ts`; set `simSupported: true` in `data/characters.json` for the unit (protected path —
+the gauntlet's GO verdict is the owner-approved gate); `bash scripts/verify.sh` green; commit (freely, never
+push unless asked); `/mechanics-doc-upkeep` if the engine changed; `/skill-maintenance` if the session taught
+a reusable lesson.
 
 ## Verify
+
 ```sh
 npx vitest run scripts/tests/units/<slug>.test.ts   # the gate
 bash scripts/verify.sh                              # the canonical repo gate
 ```
 
 ## References
+
 - Design + decisions of record: `docs/kit-autonomy-decisions.md` (Part I lessons; Part II §10–§13 methodology;
   **§14 red-team revisions are AUTHORITATIVE**).
 - Templates: `scripts/kit-autonomy/{TEST-FAITHFULNESS-REVIEW,BLIND-TEST-WRITER,BLIND-OVERRIDE-WRITER,RECONCILING-JUDGE}.md`.
@@ -190,6 +210,7 @@ bash scripts/verify.sh                              # the canonical repo gate
   `/kit-tdd` (test-writing discipline), `/audit-kit` (triangulation), `/kit-parse` (blind override authoring).
 
 ## Change log
+
 - 2026-07-23 — created. Encodes the autonomous test-first gauntlet (docs/kit-autonomy-decisions.md §14,
   red-team-hardened): test-centric gate, independent re-derivation (S2b/S5/S6), binding judge (S7),
   de-contaminated blind packets, independent RED gate, bounded no-go loop + webhook escalation.

@@ -1,0 +1,74 @@
+{
+  "note": "Ark Ranger Black (ark-ranger-black), AR/Wind/Burst III/Tetra/Attacker, cd 40s, ammo 60.\n\nBATTERY/TRANSFORMATION STATE MACHINE: the kit's central mechanic is a battery resource that charges from part destruction (S1 L2) and, at 100%, triggers Transformation (ATK ▲156.19% + Ark Black Collider DoT). Transformation drains battery at 1%/0.2s (5%/s) until 0%. In the scope-lock (partless boss), the part-destroy trigger NEVER fires, so the battery starts at 0 and the ONLY way to charge it is the burst's Emergency Charge Protocol (Battery ▲100% → Transformation → Battery ▼50% → battery=50% → drains at 5%/s → Transformation lasts 10s). The burst CD is 40s and Transformation lasts 10s, so the 'while in Transformation: Battery ▲50%' burst branch NEVER fires in scope-lock (the burst always fires outside Transformation). The effective model: every burst triggers a 10s Transformation window. The 10s is DATAMINED from the kit's own arithmetic: 50% battery / (1% per 0.2s) = 50% / 5%/s = 10s.\n\nS1: partsDamagePct 20% (passive, inert vs partless boss — MEASURED inert by construction). hitCount:30 → sustainedDamagePct 59.6% for 5s (DATAMINED; at 720 RPM = 12 shots/s, fires every 2.5s; 5s duration → effectively permanent after first proc at t≈2.5s).\n\nS2: fullBurstEnter → all Wind AR allies (includes self): sustainedDamagePct 77.5% for 10s (DATAMINED). Fires on EVERY team Full Burst (every ~20s in the control comp), not just when ark-ranger-black bursts.\n\nBURST (burstCast trigger — fires only on rotations ark-ranger-black bursts, ~every 40s in the control comp with two B3 units):\n- ATK ▲156.19% for 10s (self) — the Transformation ATK buff; 10s = battery drain time (DATAMINED derivation above). burstCast NOT fullBurstEnter: keyed to her own burst, so it does NOT fire on helm's bursts.\n- Ark Black Collider: 45.87%/s sustained DoT on all enemies for 10s (DATAMINED; 'sustained damage every 1 sec until Transformation is canceled' = 10s DoT). flavor:'sustained' → routes through sustainedDamagePct bucket.\n- 266.69%/s sustained DoT on highest-HP enemy for 10s (DATAMINED; independent of Transformation). flavor:'sustained'.\n- sustainedDamagePct 135.83% for 10s (self, DATAMINED).\n\nUNMODELED: S1 battery-charge-from-part-destroy (part-destroy trigger unsupported; inert in scope-lock). Burst 'while in Transformation: Battery ▲50%' branch (never fires in scope-lock — burst CD 40s > Transformation 10s). The battery resource itself is not modeled (no sim observable; the 10s Transformation window is the faithful encoding of its effect).\n\nEVIDENCE TIERS: all magnitudes DATAMINED (kit text at skill level 10). 10s Transformation duration DATAMINED (derived from kit-stated drain rate + burst-stated 50% post-transform battery). No MEASURED values yet (no probe data).",
+  "unmodeled": {
+    "skill1": [
+      "Charges battery by 50% continuously, up to 100%. This effect cannot be removed. (part-destroy trigger — no destructible parts on the partless scope-lock boss; never fires in scope-lock)"
+    ],
+    "skill2": [],
+    "burst": [
+      "Activates while in Transformation status: Battery ▲ 50%. (never fires in scope-lock — burst CD 40s > Transformation duration 10s; the burst always fires outside Transformation)"
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "partsDamagePct", "value": 20 }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 30 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "sustainedDamagePct", "value": 59.6, "durationSec": 5 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "alliesOfElementWeapon", "element": "Wind", "weapon": "AR" },
+      "effects": [
+        { "kind": "buff", "stat": "sustainedDamagePct", "value": 77.5, "durationSec": 10 }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 156.19, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "dot", "atkPct": 45.87, "durationSec": 10, "intervalSec": 1, "flavor": "sustained" }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "dot", "atkPct": 266.69, "durationSec": 10, "intervalSec": 1, "flavor": "sustained" }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "sustainedDamagePct", "value": 135.83, "durationSec": 10 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "slug": "ark-ranger-black",
+  "kitDescription": "Ark Ranger Black is a Wind-element assault-rifle attacker whose kit revolves around a battery-powered Transformation. Her battery charges when enemy parts are destroyed, but on the partless raid boss the only way to fill it is her Burst III (Emergency Charge Protocol), which fills the battery, transforms her, then costs 50% — leaving enough charge for about 10 seconds of transformed state. While transformed she gains a very large ATK boost (▲156.19%) and radiates the Ark Black Collider, a damage-over-time pulse hitting all enemies every second until the transformation ends. Her burst also drops a strong 10-second damage-over-time on the toughest enemy and boosts her own sustained (DoT-type) damage; separately, every team Full Burst boosts sustained damage for Wind assault-rifle allies (herself, in practice), and every 30 normal shots she briefly boosts her own sustained damage as well. Passively she deals 20% more damage to enemy parts, which does nothing against this partless boss.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Damage to Parts ▲ 20% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive partsDamagePct 20, self; inert vs the partless boss, encoded for completeness and pinned exactly-inert by test A1 (totals identical with the block removed)",
+        "blindSaid": "S6 encoded identically (passive partsDamagePct 20); S5 it.skip'd as inert — no damage channel to discriminate",
+        "formulaCheck": "parts feeds the DamageUp bucket only for part hits; partless boss ⇒ zero contribution — inert-by-construction is the correct routing",
+        "fireRateOk": true,
+        "explanation": "Encoded faithfully and proven inert rather than silently dropped; the strongest possible treatment of a dead line."
+      },
+      {
+        "kitLine": "part destroy → battery +50%, up to 100%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 entry: part-destroy trigger never fires in scope-lock (partless boss); battery's only input is the burst",
+        "blindSaid": "S5 it.skip (dead trigger + no battery primitive); S6 unmodeled with the same reasoning",
+        "formulaCheck": "n/a (resource, not damage); the partless-boss premise is a pinned verified fact",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded, and correct for the scope-lock basis. Note the override is scope-lock-specific: on a boss WITH parts this line becomes live and the burst-only transformation model under-credits her."
+      },
+      {
+        "kitLine": "battery 100% → Transformation ATK ▲156.19%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self atkPct 156.19 durationSec 10; window derived from kit arithmetic (100%−50% = 50% battery ÷ 5%/s drain = 10s); battery state machine itself documented unmodeled",
+        "blindSaid": "S6 converged exactly (atkPct 156.19, burstCast, 10s, same derivation, ⚑ flagged); S5's central assertion — buff appears only after her own burstCast, not at t=0, and is time-bounded — is GREEN",
+        "formulaCheck": "atkPct feeds FinalATK, multiplying all her damage including the collider/burst DoTs — the dominant term, so the trigger identity and window length are the load-bearing bits; both are pinned by discriminating tests (A3 fullBurstEnter counterfactual RED)",
+        "fireRateOk": true,
+        "explanation": "The kit's literal trigger (battery=100%) is unreachable as written in-sim; burstCast is the faithful scope-lock proxy since Emergency Charge is the sole battery source. The 10s window is a kit-internal DERIVATION (kit-stated drain rate × burst-stated net battery), not a fudge, and both blind agents independently derived the same number."
+      },
+      {
+        "kitLine": "battery ▼1%/0.2s; deactivate at 0%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "battery resource not modeled (documented in note + unmodeled rationale); its full effect is compressed into the 10s durationSec",
+        "blindSaid": "S5/S6 identical treatment, both ⚑-flagged the derived window with a footage recipe (count collider ticks per burst)",
+        "formulaCheck": "the drain's only observable is window length, which the durationSec encoding captures exactly if the arithmetic holds",
+        "fireRateOk": true,
+        "explanation": "No behavioral loss in scope-lock; the ⚑ recipe (collider tick count per burst on footage) is the right measurement to confirm."
+      },
+      {
+        "kitLine": "after 30 normals: Sustained ▲59.6% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:30 → self sustainedDamagePct 59.6 durationSec 5 (repeating; at ~12 shots/s procs every ~2.5s ⇒ near-permanent uptime while firing)",
+        "blindSaid": "S6 identical; S5 asserts first apply preceded by ≥30 ARB shots — GREEN, and the passive counterfactual (A4) goes RED as required",
+        "formulaCheck": "sustainedDamagePct lifts only sustained-flavored hits (her DoTs), NOT normal AR fire — the S2b-flagged mis-scope risk (generic attackDamagePct) was avoided",
+        "fireRateOk": true,
+        "explanation": "Trigger, scope, flavor, and duration all match prose; cadence check confirms it actually procs throughout the fight."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Ark Black Collider 45.87%/1s until cancel",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy dot atkPct 45.87 intervalSec 1 durationSec 10, flavor sustained (window slaved to the same 10s transformation derivation); placed in the burst array rather than skill2",
+        "blindSaid": "S6 encoded the same block under skill2 with burstCast trigger — behaviorally identical since magnitudes are entered at their literal level-10 values and the trigger/target/duration match; S5 asserts sustained-DoT presence + the permanent-duration counterfactual (A5) is RED",
+        "formulaCheck": "flavor 'sustained' routes ticks through the sustainedDamagePct bucket, so all three Sustained ▲ buffs correctly amplify it; ticks landing inside the FB window take the +50% major by landing-time — correct per SSOT",
+        "fireRateOk": true,
+        "explanation": "'When Transformation takes effect' ≡ her burstCast in scope-lock; 'until canceled' ≡ the 10s window. The slot placement difference vs the kit's structure (skill2 line living in the burst array) is cosmetic at scope-lock's fixed 10/10/10 skill levels — worth normalizing on a future touch, not a divergence."
+      },
+      {
+        "kitLine": "FB enter: Wind AR allies Sustained ▲77.5% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → alliesOfElementWeapon Wind/AR, sustainedDamagePct 77.5 durationSec 10; fires on EVERY team Full Burst (~every 20s with two alternating B3s), including helm's rotations",
+        "blindSaid": "S6 identical; S5 asserts the recipient set is exactly [ark-ranger-black] and the all-allies counterfactual (A6) is RED",
+        "formulaCheck": "genuinely fullBurstEnter (unlike the burst self-buffs) — the S2b-flagged trigger-identity trap in BOTH directions was navigated correctly; sustained flavor keeps it off her normal fire",
+        "fireRateOk": true,
+        "explanation": "Trigger, element/weapon scoping (self is the only Wind AR present), value, and duration all match prose."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "in Transformation: Battery ▲ 50%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst entry: 40s burst cd > 10s transformation window, so she is never transformed at re-burst; branch never fires in scope-lock",
+        "blindSaid": "S6 identical reasoning, with a ⚑ recipe to revisit only if measured burst spacing ever falls inside the window",
+        "formulaCheck": "consistent with the rotation model (her casts land ~40s apart with two alternating B3s); if FB-extension mechanics ever compress her spacing below the window this re-opens",
+        "fireRateOk": true,
+        "explanation": "Correct inertness argument, recorded with its condition rather than silently dropped."
+      },
+      {
+        "kitLine": "not transformed: Emergency Charge Protocol",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "modeled implicitly as THE transformation trigger — the burstCast keying of the ATK buff + collider; literal battery arithmetic not tracked (documented)",
+        "blindSaid": "S5/S6 both treat this as the v1 transformation-enable path and flag the burstCast-proxy assumption for footage confirmation",
+        "formulaCheck": "the ▲100% → ▼50% net-50% arithmetic is exactly what produces the 10s window — honoring the ▼50% clause is what prevents the S2b-predicted 20s double-uptime misread, and all three artifacts honor it",
+        "fireRateOk": true,
+        "explanation": "The branch's entire observable effect (start a 10s transformation on each of her bursts) is captured."
+      },
+      {
+        "kitLine": "highest-maxHP enemy: 266.69%/1s for 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy dot atkPct 266.69 intervalSec 1 durationSec 10, flavor sustained",
+        "blindSaid": "S6 identical; S5 covers presence (per-source tick isolation skipped — ticks not source-labelled)",
+        "formulaCheck": "10s duration is literal in the prose (no derivation needed); single-boss fight makes highest-maxHP targeting degenerate; sustained flavor makes it a beneficiary of all three Sustained ▲ buffs, as the kit intends",
+        "fireRateOk": true,
+        "explanation": "Clean literal encoding; 10 ticks per burst confirmed by the A7 assertion."
+      },
+      {
+        "kitLine": "self: Sustained ▲135.83% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self sustainedDamagePct 135.83 durationSec 10",
+        "blindSaid": "S6 identical; S5 asserts self-only scope + preceded by HER burstCast — the fullBurstEnter mis-trigger (which the two-B3 fixture makes live) would fail it",
+        "formulaCheck": "burstCast, not fullBurstEnter — with helm as co-B3 this halves the apply-count vs the wrong model; sustained flavor keeps it off normal fire",
+        "fireRateOk": true,
+        "explanation": "The second S2b-flagged trigger-identity trap, also navigated correctly and pinned by a discriminating counterfactual."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: all 11 kit lines are FAITHFUL or DOCUMENTED_GAP, every documented gap carries its inertness argument (partless boss / cd-vs-window arithmetic) rather than a silent drop, and the convergence signal is unusually strong — the S5 blind tests run GREEN unmodified against the driver's shipped override, the S6 blind override matches the driver on every trigger, magnitude, duration, flavor, and unmodeled line (the only delta is cosmetic array placement of the transformation ATK + collider blocks, behaviorally inert at scope-lock's fixed skill levels but worth normalizing to the kit's slot structure on a future touch), and all four S2d counterfactuals discriminate RED, including both trigger-identity traps the S2b reviewers pre-registered (burstCast-vs-fullBurstEnter in each direction, made live by the two-B3 fixture). Fire-rate checks pass: the hitCount:30 buff procs ~every 2.5s, the per-burst package fires on each of her ~4 casts. The same-model residual the owner should spot-check is exactly the cluster every agent DERIVED identically rather than read literally: (1) the 10s transformation window (net-50% battery ÷ 5%/s — if the game applies the ▼50% differently the window is 20s and her dominant ATK term doubles), (2) burstCast as the proxy for 'battery reaches 100%', and (3) the never-fires claim for the in-transformation ▲50% branch, contingent on her real burst spacing. All three collapse to one footage measurement: count Ark Black Collider ticks per burst (should be ~10) on a real recording. Also note the override is deliberately scope-lock-specific — on any boss WITH destructible parts the dead battery-charge line goes live and this model under-credits her; that is recorded in the note and unmodeled entries.",
+  "model": "claude-fable-5"
+}
