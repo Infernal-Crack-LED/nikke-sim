@@ -1,0 +1,228 @@
+{
+  "slug": "crown",
+  "leakDetected": null,
+  "override": {
+    "slug": "crown",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 64.51,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "reloadSpeedPct",
+            "value": 44.35,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 37.44,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 860
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 20.99,
+            "durationSec": 7
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 36.24,
+            "durationSec": 15
+          },
+          {
+            "kind": "shield",
+            "maxHpPct": 10.45,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Relax: Incoming healing ▲ 4.06% continuously. Stacks up to 20 times.",
+        "Invulnerable for 5 sec.",
+        "Attract: Taunts all enemies for 5 sec.",
+        "Restores HP equal to 5.23% of the skill user's final Max HP."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 ATK buff is kit-scoped to 'allies who previously used their Burst Skills' (bursters only); the schema has no burst-status target, so it is applied to ALL allies here — over-credits any non-bursting damage dealer. reloadSpeedPct 44.35 legitimately covers ALL allies (both kit branches grant it), so that block is exact.",
+      "⚑ skill1 DEF buff is kit-scoped to non-bursters; applied to all allies as a stand-in. defPct is offensively inert in v1, so the mis-scope moves no damage — kept for completeness.",
+      "⚑ skill2 damage buff cadence (hitCount 860) is a DERIVED estimate: 43 normal attacks/stack × 20 stacks to max Relax → consume → heal → the ally Attack Damage buff fires. The Relax/heal/invuln/taunt chain itself is inert and unmodeled; only its net firing cadence and the 20.99% ally buff are represented. 7s duration vs the ~860-hit refill period is unverified — measure MG uptime before trusting.",
+      "⚑ burst shield (maxHpPct 10.45) is offensively inert (no HP pool) but retained: it emits a shield event that may drive a teammate's shield-synergy trigger."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Crown (crown) is a MG/Iron/Defender/Burst II support with ZERO self-damage kit lines — her own damage is pure MG weapon fire (normalAttackMultiplier 5.57). Damage-relevant kit output: skill1 casterAtkPct 64.51% to bursting allies at Full-Burst start (flat ATK add, biggest lever) + reloadSpeedPct 44.35% to all allies (shot-count uptime); skill2 team Attack Damage ▲20.99% on the long Relax cycle; burst team Attack Damage ▲36.24% + a shield. Burst-status target scoping and the Relax cadence are the two load-bearing approximations — see caveats."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at start of FB",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter for both branches"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲64.51% of user's ATK 15s (bursters)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "casterAtkPct 64.51 durationSec 15; target 'bursters' approximated as allies (⚑ over-credit)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload Speed ▲44.35% 15s (bursters)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "reloadSpeedPct 44.35 durationSec 15 to allies (both branches grant it → exact)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲37.44% of user's DEF 15s (non-bursters)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "defPct 37.44 durationSec 15; inert in v1, target approximated as allies"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload Speed ▲44.35% 15s (non-bursters)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "folded into the single all-allies reloadSpeedPct block above"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "After 43 normal attacks: Relax heal▲, ×20",
+      "status": "SKIPPED",
+      "effectOrReason": "Incoming-healing buff — no StatKey, offensively inert; drives the cycle cadence only (see hitCount 860)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "At max Relax: Invulnerable 5s",
+      "status": "SKIPPED",
+      "effectOrReason": "defensive, no damage effect"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attract: Taunt all enemies 5s",
+      "status": "SKIPPED",
+      "effectOrReason": "aggro control, inert in sim"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restore HP 5.23% final Max HP",
+      "status": "SKIPPED",
+      "effectOrReason": "self-heal, inert (no HP pool); it is the trigger source for the ally buff below"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "On recovery: allies Attack Damage ▲20.99% 7s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "attackDamagePct 20.99 durationSec 7 to allies; trigger 'when recovery takes effect' modeled as hitCount 860 (43×20 Relax cycle) ⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "All allies Attack Damage ▲36.24% 15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "attackDamagePct 36.24 durationSec 15 to allies, trigger burstCast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield 10.45% of final Max HP 15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shield maxHpPct 10.45 durationSec 15; inert offensively, retained for shield-synergy triggers"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].target / casterAtkPct 64.51",
+      "estimate": "target = all allies",
+      "reasoning": "Kit scopes this ATK buff to 'allies who previously used their Burst Skills'; the TargetDef schema has no burst-status target. Applied to all allies, which over-credits any non-bursting damage dealer.",
+      "recipe": "Verify in a graded comp whether all damage dealers burst before Crown's FB start; if a non-burster carries, this line over-reads and needs a per-comp burster set. Confirm via rotation log."
+    },
+    {
+      "field": "skill1[2] casterAtkPct scaling",
+      "estimate": "casterAtkPct feeds flat ATK = 64.51% × Crown's own ATK",
+      "reasoning": "'of the skill user's ATK' → flat add scaled by CASTER ATK, not the target's own ATK (that would be atkPct).",
+      "recipe": "Confirm the flat-ATK path in the buff engine; measure an ally's popup jump at FB start against 0.6451×Crown ATK."
+    },
+    {
+      "field": "skill2[0].trigger.count = 860",
+      "estimate": "hitCount 860 (43 normal attacks × 20 Relax stacks)",
+      "reasoning": "The 20.99% ally buff fires 'when recovery takes effect', which only happens at max Relax (20 stacks × 43 attacks each), then Relax resets. Net firing cadence ≈ 860 owner normal-attack hits. Engine cannot chain the Relax→heal→buff sequence natively.",
+      "recipe": "Count Crown's MG hits-to-max in footage; measure how many times the 20.99% ally buff appears in a 180s fight and how much of that window it holds (7s vs refill period)."
+    },
+    {
+      "field": "skill2[0].effects[0].durationSec = 7 vs cadence",
+      "estimate": "7s buff on an ~860-hit refill",
+      "reasoning": "If 860 hits take >7s the buff is intermittent (low uptime); if <7s it is effectively continuous. MG wind-up + fire rate unknown here.",
+      "recipe": "Derive from Crown's measured MG cadence at scope lock; compare refill period to 7s to set effective uptime."
+    },
+    {
+      "field": "burst shield / skill2 heal offensive value",
+      "estimate": "inert (0 damage)",
+      "reasoning": "No HP pool in v1; shield/heal/invuln/taunt produce no damage directly. Retained for kit completeness and possible teammate shield-synergy triggers.",
+      "recipe": "Only becomes load-bearing if a teammate carries a 'shielded'/on-recovery damage trigger; check team composition."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

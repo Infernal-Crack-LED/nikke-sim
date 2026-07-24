@@ -1,0 +1,81 @@
+{
+  "slug": "crown",
+  "kitDescription": "Crown (crown) — MG / Iron / Defender / Burst II support (cd 20s, ammo 300, reloadFrames 171, chargeFrames 0, hitsPerShot 1) with ZERO self-damage kit lines; her own contribution is pure MG weapon fire (normalAttackMultiplier 5.57). Damage-relevant kit output is entirely a team buffer: S1 at Full-Burst start grants bursting allies ATK ▲64.51% of Crown's ATK (flat caster-scaled add) + Reload Speed ▲44.35%, and non-bursting allies DEF ▲37.44% + Reload Speed ▲44.35%, all 15s; S2 runs a Relax-stack cycle (43 normal attacks/stack, max 20 → consume → invuln/taunt/self-heal) whose recovery event grants all allies Attack Damage ▲20.99% for 7s; Burst grants all allies Attack Damage ▲36.24% + a 10.45%-Max-HP shield, both 15s. The two load-bearing approximations are the burst-status target scoping (S1 ATK) and the Relax→heal→buff cadence (S2 20.99%).",
+  "convergence": "STRONG. All three cross-family/blind roles (S2b pre-op adversarial review, S5 blind test-writer, S6 blind override-writer) and the driver's shipped override converge on all 8 load-bearing lines: casterAtkPct 64.51 (flat caster-ATK add, NOT atkPct) keyed to fullBurstEnter; reloadSpeedPct 44.35 to all allies (both kit branches grant it → exact); the S2 recovery-chained team attackDamagePct 20.99 (7s); burst attackDamagePct 36.24 (15s) keyed to burstCast; and the 10.45% shield retained as an offensively-inert synergy channel. S2b's nearest-wrong models match the driver's discriminating counterfactuals (C1 casterAtkPct≠atkPct, C7 recovery≠interval, C8 burstCast≠fullBurstEnter) exactly.",
+  "lineFindings": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at start of Full Burst; bursting allies ATK ▲64.51% of user's ATK, 15s",
+      "disposition": "FAITHFUL",
+      "loadBearing": true,
+      "encoding": "fullBurstEnter → casterAtkPct 64.51, durationSec 15",
+      "note": "Correctly modeled as a flat add scaled by CASTER ATK, not target-ATK (atkPct). ⚑ Kit scopes this to 'allies who previously used their Burst Skills' but the TargetDef schema has no burst-status target, so it is applied to ALL allies — a genuine over-credit for any non-bursting damage dealer in comp. Schema-limited, not an error of intent; all three roles flag it identically.",
+      "discriminated": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload Speed ▲44.35% (both bursting + non-bursting branches), 15s",
+      "disposition": "FAITHFUL",
+      "loadBearing": true,
+      "encoding": "fullBurstEnter → reloadSpeedPct 44.35 to all allies, durationSec 15",
+      "note": "Exact: both kit branches grant the identical reload buff to their respective ally set, so folding into one all-allies block is correct, not an approximation. Real damage effect via shot-count uptime; escapes the classic 'skip reload as defensive QoL' failure.",
+      "discriminated": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Non-bursting allies DEF ▲37.44% of user's DEF, 15s",
+      "disposition": "FAITHFUL_INERT",
+      "loadBearing": false,
+      "encoding": "fullBurstEnter → defPct 37.44 to all allies, durationSec 15",
+      "note": "BENIGN DIVERGENCE — S2b marks this UNMODELED (damage-inert), driver/S6 encode it FAITHFUL for completeness. DEF is offensively inert in v1, so the mis-scope (applied to all allies vs kit's non-burster set) moves zero damage. Both dispositions agree it is not load-bearing.",
+      "discriminated": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "After 43 normal attacks: +1 Relax (max 20); at max → consume, invuln/taunt/self-heal",
+      "disposition": "UNMODELED_INERT",
+      "loadBearing": false,
+      "encoding": "represented only as the cadence source for the 20.99% buff (hitCount 860)",
+      "note": "Relax stacks, Invulnerable 5s, Taunt 5s, 5.23% Max-HP self-heal are all defensive with no offensive primitive/HP pool — correctly skipped. Invuln is NOT modeled as a firing interruption (correct: she keeps attacking). Its only live role is driving the downstream cadence.",
+      "discriminated": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "On recovery (max Relax): all allies Attack Damage ▲20.99%, 7s",
+      "disposition": "FAITHFUL_APPROXIMATED",
+      "loadBearing": true,
+      "encoding": "hitCount 860 (43 attacks × 20 stacks) → attackDamagePct 20.99, durationSec 7",
+      "note": "⚑ LOAD-BEARING APPROXIMATION. The trigger genuinely chains Relax(43×20)→heal→on-recovery, which the engine has no heal-pool primitive to fire natively, so it is modeled as a derived hitCount-860 cadence. The 7s duration vs the ~860-hit refill period is UNVERIFIED (uptime could be intermittent or effectively continuous depending on measured MG cadence at scope lock). S5 flagged this as a GAP (it.skip in a strict test); driver encodes it as a best-estimate. Cadence over-credit (43-hit vs 860-hit keying) is the primary risk — driver's C6/C7 counterfactuals pin the 860 count and recovery≠interval trigger.",
+      "discriminated": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "All allies Attack Damage ▲36.24%, 15s",
+      "disposition": "FAITHFUL",
+      "loadBearing": true,
+      "encoding": "burstCast → attackDamagePct 36.24, durationSec 15",
+      "note": "Correctly keyed to burstCast (her own B2 cast), not fullBurstEnter — avoids over-firing on rotations where a different B2 casts. C8 counterfactual discriminates burstCast from fullBurstEnter.",
+      "discriminated": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield 10.45% of user's final Max HP, 15s",
+      "disposition": "GAP_INERT",
+      "loadBearing": true,
+      "encoding": "shield maxHpPct 10.45, durationSec 15 (structural pin, C9)",
+      "note": "Offensively inert (no HP pool / no 'shield' onEvent kind), so it moves no damage directly and is unobservable via the event API. Retained structurally because it is the shield-synergy channel — silencing it would break any teammate 'shielded'/'requiresShielded' tandem (naga-style). Load-bearing ONLY if such a teammate is in comp; C9 pins the encoding.",
+      "discriminated": true
+    }
+  ],
+  "gotchas": [
+    "S1 ATK buff burst-status scoping: kit restricts the 64.51% ATK to allies who already burst, but the TargetDef schema has no burst-status target, so it lands on ALL allies. In a comp with a non-bursting damage dealer this over-reads. Verify per-comp via rotation log before trusting the number on that comp.",
+    "S2 20.99% team Attack Damage cadence is a DERIVED estimate (hitCount 860 = 43 normal attacks × 20 Relax stacks), and the 7s duration vs the ~860-hit refill period is unmeasured. Effective uptime is unknown until Crown's MG hits-to-max and the buff's appearance count in a 180s fight are measured. The Relax→invuln→taunt→heal chain that natively fires it is not modeled; only its net firing cadence is.",
+    "Board fit is 1.000 (perfect) with σ=0.046 — but Crown has ZERO self-damage kit, so this board reading reflects the correctness of her buff MAGNITUDES landing on graded carries, NOT of the two scoping/cadence approximations, which the current graded comps may not exercise (no non-bursting carry stress-test; no shield-synergy teammate).",
+    "Shield and self-heal are inert placeholders — safe today, but they are the only channels that would matter to a shield-synergy or on-recovery teammate; don't strip them as 'defensive'."
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": 0.9,
+  "verdict": "GO",
+  "verdictRationale": "All 8 load-bearing kit lines converge across the blind override-writer, the blind test-writer, the cross-family adversarial pre-op review, and the driver's shipped override, with the 12-test suite green and its counterfactuals (C1 casterAtkPct≠atkPct, C2 disjoint targeting, C6 hitCount 860, C7 recovery≠interval, C8 burstCast≠fullBurstEnter, C9 shield encoding) genuinely discriminating each modeled line from its nearest-wrong. The single divergence (defPct FAITHFUL vs UNMODELED) is damage-inert and both sides agree it is not load-bearing. Board sits at a perfect 1.000. Two honestly-flagged approximations remain — the S1 ATK burst-status over-credit (schema-limited) and the S2 20.99% Relax cadence/duration (primitive-limited, hitCount-860 derived, 7s uptime unverified) — neither of which is a faithfulness ERROR but both of which are UNMEASURED estimates. Score held at 0.9 rather than higher because those two are load-bearing and unvalidated against footage; they gate no engine constant and are correctly marked ⚑ HYPOTHESIS, so the model is a faithful, well-discriminated parser baseline: GO, with the S1-scoping and S2-cadence flags carried forward to hand-tune/measurement.",
+  "model": "claude-opus-4-8"
+}
