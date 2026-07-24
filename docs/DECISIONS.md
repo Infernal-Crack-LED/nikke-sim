@@ -2350,3 +2350,27 @@ The union-raid mint→prika output post-pass in App.tsx is deleted (subsumed by 
 requirement, same ruling): the sim must support the "prika bursts first, then only mint" rotation
 config for the pair** — no engine knob exists today (only Λ `lambdaStage`), so it lands with that
 kit work, not with this change.
+
+## Roster-generator perf/quality plan — branch `generator-perf` merged (2026-07-24)
+
+**What the branch changes (web Team/Roster generators + `src/teamcalc.ts`; ZERO engine edits).**
+Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
+- **1a/1b — worker offload + pool, batched argmax refine.** Roster search runs in web workers
+  (main thread never blocks); `refine` moved from first-improvement to per-slot argmax —
+  a measured-quality-neutral search-trajectory change, gated byte-identical on the no-meta bench.
+  Real-Chromium parity gate: pool roster === in-process fallback roster (`scripts/pool-browser-check.mjs`).
+- **2 — canonical team order + focus post-pass (+9% quality).** A team is a SET + a camera-focus
+  choice; every permutation maps to one representative and the focused unit is chosen
+  (highest-solo charge unit + a ≤5-sim final polish) instead of being an insertion-order
+  accident. Browser roster total +9.3%.
+- **3 — marginal value table + proxy enumeration (+6.8% roster at team-1 parity, fewer sims).**
+  Every unit priced by marginal damage vs a reference core (`src/teamvalue.ts`); all legal team
+  shapes enumerated sim-free; only the best candidates simmed and refined. Two bench-measured
+  deviations from the plan draft are recorded in the plan doc: the 5-copy solo metric is KEPT
+  (1-unit solo is blind to support-B3 self-synergy — cost 5.7% bestTeam score), and B3s price by
+  leave-one-out add-in marginal, not solo value.
+- **3c — always-combos retirement** (own entry above, owner ruling 2026-07-24).
+- **5 — cross-run sim cache.** Re-running a generation with tweaked pins reuses every prior sim
+  (measured 104× in-process; ~47× in-browser re-run).
+
+**Player-facing patch notes: PENDING at next push** (the pre-push hook nudges `/patch-notes`).
