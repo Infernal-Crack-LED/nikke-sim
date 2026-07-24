@@ -685,16 +685,26 @@ function TeamPortraits({
     slugs.map((s) => data.characters[s]?.imageUrl),
     64,
   );
+  // The engine focuses the middle slot (index min(2, n-1)) as the camera unit; a
+  // focused charge weapon (SR/RL) generates ×2.5 burst gauge. The generators now
+  // return teams already arranged with their best focus in this slot (perf plan
+  // item 2), so surface that meaning in the chip tooltip.
+  const focusIdx = Math.min(2, slugs.length - 1);
   return (
     <div ref={ref} className={`team-portraits cols-${cols}`}>
       {slugs.map((slug, i) => {
         const c = data.characters[slug];
         const adv = advantaged?.has(slug);
+        const isFocus = i === focusIdx;
+        const charge = c?.weapon === 'SR' || c?.weapon === 'RL';
+        const focusNote = isFocus
+          ? ` · camera focus${charge ? ' (×2.5 charge gauge)' : ''}`
+          : '';
         return (
           <div
             key={`${slug}-${i}`}
-            className={`tp-chip${adv ? ' adv' : ''}`}
-            title={c?.name ?? slug}
+            className={`tp-chip${adv ? ' adv' : ''}${isFocus ? ' focus' : ''}`}
+            title={`${c?.name ?? slug}${focusNote}`}
           >
             {c?.imageUrl ? (
               <img

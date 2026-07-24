@@ -130,6 +130,44 @@ const LAMBDA_STAGE: Record<'I' | 'II' | 'III', 1 | 2 | 3> = {
 const effBurst = (slug: string, chars: Record<string, Char>): string =>
   FORCED_BURST[slug] ?? chars[slug].burst;
 
+// --- canonical team order (perf plan item 2) --------------------------------
+// A team's sim depends on the slugs-array ORDER two ways (measured — the item-2
+// premise probe): (1) the camera-focus unit is the middle slot (index 2), whose
+// charge weapon generates ×2.5 burst gauge (~4.9% swing); (2) buff-target ties
+// break by slot index (~0.5% swing). So a team is really a SET plus a focus
+// choice. canonicalTeamOrder maps any permutation of a set to ONE deterministic
+// array — burst class then slug-alpha, with the focus unit moved to index 2 — so
+// permutations collapse to a single sim/cache entry AND the focused unit is
+// deterministic instead of an accident of search insertion order.
+const BURST_RANK: Record<string, number> = { I: 0, II: 1, III: 2, Λ: 3 };
+/** Charge weapons (SR/RL) are the only ones the focus ×2.5 gauge bonus applies to. */
+export const isChargeWeapon = (
+  chars: Record<string, Char>,
+  slug: string,
+): boolean => {
+  const w = chars[slug]?.weapon;
+  return w === 'SR' || w === 'RL';
+};
+/** Deterministic slot order for a SET: burst class (I,II,III,Λ) then slug-alpha,
+ *  with `focus` (when supplied) placed at the camera-focus slot (index 2). Pure in
+ *  the set + focus, so every permutation of the set yields the SAME array. */
+export function canonicalTeamOrder(
+  slugs: string[],
+  chars: Record<string, Char>,
+  focus?: string,
+): string[] {
+  const rank = (s: string) => BURST_RANK[effBurst(s, chars)] ?? 9;
+  const sorted = [...slugs].sort(
+    (a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0),
+  );
+  if (!focus || !sorted.includes(focus)) return sorted;
+  const rest = sorted.filter((s) => s !== focus);
+  if (rest.length !== sorted.length - 1) return sorted; // duplicate-slug guard
+  const at = Math.min(2, sorted.length - 1);
+  rest.splice(at, 0, focus);
+  return rest;
+}
+
 function deficits(counts: Record<string, number>): number {
   return (
     Math.max(0, NEED.I - (counts.I ?? 0)) +
@@ -640,6 +678,57 @@ export function makeCalc(input: TeamCalcInput) {
     return v;
   };
 
+  // --- canonical focus + set-keyed evaluation (perf plan item 2) -------------
+  // The search's focus for a team: the highest-solo-score charge unit (SR/RL) in
+  // the set, else none (no charge unit → focus bonus is inert). Deterministic and
+  // order-independent — replaces "whoever landed in the middle slot". soloScore
+  // must be warmed first (warmSolo), so this never re-enters the sim.
+  const canonicalFocus = (set: string[]): string | undefined => {
+    let best: string | undefined;
+    let bestV = -Infinity;
+    for (const s of set) {
+      if (!isChargeWeapon(chars, s)) continue;
+      const v = soloScore(s);
+      if (v > bestV) {
+        bestV = v;
+        best = s;
+      }
+    }
+    return best;
+  };
+  // Evaluate SETS: canonicalize each to its (order + search-focus) representative
+  // before simming, so every permutation of a set collapses to ONE cache entry and
+  // the focused unit is deterministic. The search uses this everywhere (refine,
+  // seed comps); warmSolo bypasses it (5-copy solo arrays are already canonical).
+  const evalSets = async (
+    sets: string[][],
+  ): Promise<(TeamResult | null)[]> =>
+    evalTeams(sets.map((s) => canonicalTeamOrder(s, chars, canonicalFocus(s))));
+  // Final polish on a WINNING team only (≤5 sims): try each charge unit as the
+  // camera focus (+ a no-charge-focus arrangement), keep the highest-scoring, and
+  // return that arrangement so TeamResult.slugs is the recommended slot order (focus
+  // at index 2). The set is unchanged, so meta/synergy/spread factors are constant —
+  // maximizing scoreOf picks the best focus. Guarantees score ≥ the search's pick.
+  const focusFinalize = async (team: TeamResult): Promise<TeamResult> => {
+    const set = team.units.map((u) => u.slug);
+    const charge = set.filter((s) => isChargeWeapon(chars, s));
+    if (!charge.length) return team; // focus inert — canonical order already final
+    const focuses: (string | undefined)[] = [...charge, undefined];
+    const arrs = focuses.map((f) => canonicalTeamOrder(set, chars, f));
+    const results = await evalTeams(arrs);
+    let best = team;
+    let bestScore = scoreOf(team);
+    for (const r of results) {
+      if (!r) continue;
+      const sc = scoreOf(r);
+      if (sc > bestScore) {
+        best = r;
+        bestScore = sc;
+      }
+    }
+    return best;
+  };
+
   const buildPool = (extraExclude: Set<string>): string[] => {
     const avail = Object.keys(chars).filter(
       (s) => !blocked.has(s) && !extraExclude.has(s),
@@ -782,7 +871,9 @@ export function makeCalc(input: TeamCalcInput) {
   ): Promise<TeamResult> => {
     const score = scoreFn ?? scoreOf;
     let team = start;
-    let best = (await evalTeams([team]))[0] ?? toResult(simTeam(team));
+    let best =
+      (await evalSets([team]))[0] ??
+      toResult(simTeam(canonicalTeamOrder(team, chars, canonicalFocus(team))));
     let bestScore = score(best);
     for (let round = 0; round < rounds; round++) {
       let improved = false;
@@ -804,7 +895,7 @@ export function makeCalc(input: TeamCalcInput) {
           cands.push(cand);
         }
         if (!cands.length) continue;
-        const results = await evalTeams(cands);
+        const results = await evalSets(cands);
         // argmax over improvements; first candidate (pool order) wins ties
         let pickScore = bestScore;
         let pick: TeamResult | null = null;
@@ -886,7 +977,7 @@ export function makeCalc(input: TeamCalcInput) {
           legal(comp),
       );
       if (comps.length) {
-        const results = await evalTeams(comps);
+        const results = await evalSets(comps);
         for (const r of results) {
           if (!r) continue;
           const sc = score(r);
@@ -897,7 +988,8 @@ export function makeCalc(input: TeamCalcInput) {
         }
       }
     }
-    return best;
+    // Focus post-pass on the winner: re-focus for the best camera slot (item 2).
+    return focusFinalize(best);
   };
 
   return {
@@ -968,5 +1060,13 @@ export function makeCalc(input: TeamCalcInput) {
     /** In-process sim → TeamResult (null on error). The pool worker's leaf op —
      *  a stateless sim executor calls this per team (perf plan item 1b). */
     simTeamResult: (team: string[]): TeamResult | null => localEval(team),
+    /** Canonical SET sim (perf plan item 2): TeamResult for a set, order-independent
+     *  — every permutation maps to one representative (canonical order + the set's
+     *  canonical charge focus) and hits a single cache entry. Warms solo scores so
+     *  the focus pick is stable. */
+    async simSet(set: string[]): Promise<TeamResult | null> {
+      await warmSolo(set);
+      return (await evalSets([set]))[0];
+    },
   };
 }
