@@ -374,6 +374,40 @@ and the full multiplier decomposition. Tests live in `scripts/tests/units/<slug>
   vs the shipped override; GREEN = convergence); **R8** D3 reclassified to a sanity check; **R9–R13**
   magnitude out of scope, fire-rate check added, ⚑-before-board, board A/B stage, judge reframed. The skill
   (Phase 2) is written from §14.
+- **2026-07-23 · D10 ·** **Live-run engine findings from S2a (privaty spec, 15 assertions GREEN).** The
+  test-first gate surfaced: **(1)** `noFb` in an override is **INERT under the default FB-by-`timing` rule
+  and REJECTED by `validate-overrides`** (`sim.ts:98`, `skillNoFb`; only burst-cast damage is auto-FB-exempt)
+  — so the "noFb" counterfactual is NOT constructible; **P4 pins FB-by-timing** via the fixture's natural
+  in-FB (`fbMajorApplied=true`) / out-of-FB (`false`) rider populations, discriminating timing-gated from
+  "always"/"never". **(2)** Boss-held debuffs emit `buffApply` with **`casterIdx===null`** (TDD plan §1d #3)
+  — so **P7 pins `damageTakenPct 10.01` by stat+value**, not caster (privaty is the fixture's only source).
+  **(3)** privaty's S2 `damageTakenPct 10.01` is a **boss debuff (team-wide benefit)** — removing S2 lowers
+  teammates' damage, so S2 is NOT team-inert; the inertness assertion was revised to rider ATTRIBUTION
+  (every 256.17/1687 rider is `slug==='privaty'`). All three are faithful-modeling facts the gauntlet correctly
+  exposed (not encoding bugs); the override needed NO change (S3 is minimal/none, as predicted for a faithful unit).
+- **2026-07-23 · D11 ·** **S2c reconciliation + S2d green-light (privaty).** The S2b adversarial reviewer
+  (blind to the driver) **converged on 9/11 lines** (skill1 all FAITHFUL; 256.17 last-bullet cadence;
+  damageTaken boss debuff; elemAdvantage self/`burstCast`; 1407.64 FB-exempt nuke; Stun UNMODELED). The one
+  divergence — the 1687 gate + Designated-Target status labeled MEASUREMENT-GATED — was **driven by a stale
+  leak (D12)** and **resolved to FAITHFUL**: the override enacts `requiresTargetStatus:"Designated Target"`,
+  the probe confirms the 1687 rider fires only in-window (12/12), and S2b's OWN proposed assertion ("1687 only
+  within 10s of burst, zero outside") is identical to the driver's P2 pin — the disagreement was the LABEL,
+  not the assertion. **Adopted S2b's two adversarial catches** as new discriminating assertions: **P5b** (Max
+  Ammo ▼50.66% tandem — removing it REDUCES the last-bullet count; S2b's highest-risk misread) and **P5c**
+  (S1 fires once per `fullBurstStart` frame → `fullBurstEnter`, not `burstCast`). Test is now **17 assertions,
+  all GREEN**. **S2d** recorded the objective verification matrix to `scripts/kit-autonomy/reviews/privaty.verify.txt`
+  (17/17; the DISCRIMINATING assertions run their counterfactuals and assert divergence — no self-reported RED).
+  **GREEN-LIGHT** to S3 (no override change) and Phase 3c (S5/S6/S7).
+- **2026-07-23 · D12 ·** **Leak found + methodology refinement.** `src/skills/types.ts` (the effect schema,
+  legitimately handed to blind roles as vocabulary) carries a comment at the `targetStatus` kind naming
+  "privaty" + "Designated Target" + "NOT enacted, still measurement-gated." This leaked the unit's answer to
+  S2b (and would to S5/S6) and biased the 1687 disposition toward MEASUREMENT-GATED. S2b DECLARED it (the
+  template's `leakDetected` field worked) and the divergence was resolved by driver evidence (D11), so the
+  outcome was not corrupted. The comment is also **stale doc-drift** (the gate IS enacted; re-encode landed
+  2026-07-23, `sim.ts:96`). **Refinement to §14.2:** the redaction procedure must ALSO strip per-unit example
+  comments from the SCHEMA handed to blind roles (not just the methodology excerpt), and the leak assertion
+  must scan every FILE the blind role reads (schema included) for the target's slug + answer tokens — not just
+  the assembled prompt. (Stale-comment fix is out of scope this session; noted for `/doc-drift`.)
 
 ## 9. Open questions / residual risks
 
