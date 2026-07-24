@@ -1,0 +1,44 @@
+{
+  "video": "docs/probes/clean-weapons/emma-claire-idollocean.MP4",
+  "screenshot": "docs/probes/clean-weapons/emma-claire-idollocean.jpg",
+  "probeDir": "docs/probes/clean-weapons",
+  "focus": "idoll-ocean",
+  "boss": "Iron",
+  "comp": ["emma", "claire", "idoll-ocean"],
+  "params": {
+    "basis": "scope-lock base5",
+    "sync": 400,
+    "skillLevels": "10/10/10",
+    "gear": "base5",
+    "cube": "none",
+    "coreLevel": 7,
+    "treasure": false,
+    "bossPartless": true,
+    "durationSec": 180,
+    "burstsDisabled": true,
+    "rarityCeilings": { "idoll-ocean": "0 stars / core 0", "claire": "2 stars / core 0" },
+    "focusReason": "BASE-WEAPON faithfulness basis (docs/data/clean-weapons.md) — these units' kits contribute ZERO damage, so the fight measures the engine's bare weapon model. idoll-ocean focused as the SMG cell; boss Iron is the only element neutral for all six."
+  },
+  "extractedOn": "2026-07-23",
+  "method": "ffmpeg full-res single frames at fixed timestamps (60fps source, 1206x2622 portrait, rotation 90 -> decodes 2622x1206). PRIMARY READ = the AMMO COUNTER as the shot clock, not popups: crop around the crosshair at 0.5s intervals. NB the ammo box is anchored to the crosshair and MOVES across the frame with the boss's range band — a fixed crop silently misses it, so it must be relocated per sample.",
+  "fightStartSec": null,
+  "fightClock": false,
+  "realTotals": { "emma": 59498961, "claire": 23474178, "idoll-ocean": 20217421 },
+  "ammoCounter": [
+    { "t": 60.0, "ammo": 76, "band": "mid" },
+    { "t": 60.5, "ammo": 66, "band": "mid" },
+    { "t": 61.0, "ammo": 56, "band": "mid" },
+    { "t": 61.5, "ammo": 46, "band": "mid" },
+    { "t": 62.0, "ammo": 36, "band": "mid" },
+    { "t": 145.0, "ammo": 20, "band": "far" },
+    { "t": 145.5, "ammo": 10, "band": "far" }
+  ],
+  "popups": [
+    { "t": 60.5, "value": 7694, "kind": "normal", "note": "white/plain; two overlapping instances of the same value" },
+    { "t": 61.0, "value": 7694, "kind": "normal", "note": "white/plain" },
+    { "t": 61.5, "value": 7694, "kind": "normal", "note": "white/plain" },
+    { "t": 62.0, "value": 7694, "kind": "normal", "note": "white/plain" }
+  ],
+  "notes": "HEADLINE (the reason this record exists): idoll-ocean's real SMG cadence is EXACTLY 20.0 rounds/s — 10 rounds per 0.5s, dead linear, measured in TWO separate range bands. The sim ships 24/s. Mechanism: 1440 rpm = 2.5 frames/shot at 60fps, and SMG is the ONLY weapon in the roster whose datamined rate_of_fire is not a whole frame count; ceil(2.5)=3 frames gives exactly 20.0/s. Engine arm SMGQUANT=1 (default OFF). Full evidence + whole-board A/B: docs/probe-runs.md section 'SMG CADENCE'. \n\nSECOND, UNRESOLVED OBSERVATION — her ATK basis may be ~1.4% low. The 7694 popup is a plain ranged normal, so it should read baseAtk x 8.73% x 1.3. The modelled baseAtk 68788 predicts 7806.8; the observed 7694 implies baseAtk ~67795, i.e. 1.44% BELOW the model. That is the right size for the rarity ceiling being slightly off — her '0 dupes / core 0' state is OWNER-SUPPLIED and unverifiable from the repo (data/characters.json carries NO unit-rarity field). A popup therefore pins her true in-fight ATK independently and could refine the ceiling. NOT acted on: single popup, crit/core colour not rigorously confirmed, and the discrepancy is small enough that a mis-set range-bonus term is an equally live explanation. Do NOT tune anything to it without a proper lattice read.",
+  "parsedSlug": "clean-weapons-idoll-ocean"
+}

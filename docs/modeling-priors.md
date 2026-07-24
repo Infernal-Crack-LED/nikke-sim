@@ -175,6 +175,41 @@ it "never fired." Count over the WHOLE fight with no cap, and confirm the effect
 (gauge/damage), not just a log line. LM's `teamAmmo` gauge-fill + barrage are in fact working
 (20 fires) — there was no bug there.
 
+## A datamined NOMINAL rate is not the EFFECTIVE rate — check frame quantization
+
+**The game fires on 60 fps frame boundaries, so a datamined `rate_of_fire` only survives intact if
+it divides evenly into 60.** Before trusting any per-second cadence taken from the weapon table,
+compute `60 / (rate_of_fire / 60)` and ask whether it is a whole number of frames. If it is not, the
+engine cannot hit the nominal rate — it rounds the interval UP, and the effective rate is
+`60 / ceil(frames)`.
+
+Census of the whole roster (2026-07-23): **SMG is the only weapon this bites.** AR 720→5f and 150→24f
+(`jill`), MG 3600→1f, RL 60/90/120/180/300→60/40/30/20/12f, SG 90→40f, SR 60/200→60/18f are all exact.
+SMG's 1440 rpm = 24/s = **2.5 frames** → `ceil` to 3 → **20.0/s**, which is exactly what the ammo
+counter measures. That single 20% over-count is why SMG was the only weapon class whose board mean sat
+above 1.0 (`liter` 1.208, `chisato` 1.154, `quency-escape-queen` 1.174 — all collapse to ~1.0 under
+the corrected rate).
+
+**The generalizable lesson: a "the game source is authoritative" adoption can be right about the
+NOMINAL quantity and wrong about the EFFECTIVE one.** The 2026-07-17 SMG 20→24 change was made on
+exactly that reasoning, using FB counts as its only instrument — but **FB counts measure gauge/second
+while the ammo counter measures shots/second**, so they could not discriminate the two. When a
+datamined value and a board reading disagree, find the instrument that measures the disputed quantity
+*directly* rather than the one that is merely downstream of it.
+
+## Measuring fire cadence: two frames beat a whole session
+
+The cheapest high-value read in the toolkit. The ammo counter is the designated shot clock, so
+**two frames 0.5 s apart give the cadence outright** — no OCR, no popup attribution, no lattice:
+
+1. Find a window where the focus unit is firing and no reload intervenes.
+2. Extract frames at `t` and `t+0.5` and read the counter (`076` → `066` = 10 rounds = 20/s).
+3. Repeat in a DIFFERENT range band — a rate that holds across bands is the weapon's, not an artifact.
+
+Gotcha that costs the most time: **the ammo box is anchored to the crosshair and moves across the
+frame with the boss's range band.** A fixed ffmpeg crop that worked at t=60 will be empty at t=100 and
+read as "no data" rather than "wrong crop". Relocate it per sample, or crop a full-width band.
+
 ## New-character starting checklist
 
 Apply before the first sim of a fresh override, in order:

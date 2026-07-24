@@ -168,5 +168,29 @@
    "focusReason": "solo SG band read (pre-registered SG landing corroboration); lone Burst II, zero full bursts; ATK-clean anchor"
   },
   "description": "Brid: Silent Track solo shotgun counter-reconciliation: 215 shots + 43 S2 riders (every 5th pull, 673,819/1,010,728), closure exact 74,592,500; far M 0.709. See docs/probe-data/brid-silent-track-sg-band.json (+ -events)."
+ },
+ {
+  "video": "docs/probes/clean-weapons/emma-claire-idollocean.MP4",
+  "focus": "idoll-ocean",
+  "comp": [
+   "emma",
+   "claire",
+   "idoll-ocean"
+  ],
+  "boss": "Iron",
+  "params": {
+   "basis": "scope-lock base5",
+   "sync": 400,
+   "skillLevels": "10/10/10",
+   "gear": "base5",
+   "cube": "none",
+   "coreLevel": 7,
+   "treasure": false,
+   "bossPartless": true,
+   "durationSec": 180,
+   "burstsDisabled": true
+  },
+  "parsedSlug": "clean-weapons-idoll-ocean",
+  "description": "BASE-WEAPON basis, idoll-ocean (SMG) focused, neutral Iron boss, bursts off. Ammo-counter read: real SMG cadence is 20.0 rounds/s, not the sim's 24 (frame quantization). Root-caused the whole SMG weapon-model thread."
  }
 ]

@@ -54,13 +54,32 @@ Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinem
 
 | Weapon | Cadence                 | Notes                     |
 | ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    |                           |
-| SMG    | 24/s                    |                           |
-| SG     | 1.5/s                   | 10 pellets/shot           |
+| AR     | 12/s                    | 5 frames exactly          |
+| SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
+| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
 | MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
 | Pistol | 4/s                     |                           |
 | SR     | charge cycle + 22f bolt | §4                        |
 | RL     | charge cycle            | no bolt recovery          |
+
+**⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
+(2026-07-23).** The ammo counter (the shot clock) on
+`docs/probes/clean-weapons/emma-claire-idollocean.MP4` with `idoll-ocean` focused reads
+`076→066→056→046→036` (t=60.0–62.0, mid band) and `020→010` (t=145.0–145.5, far band) — exactly
+10 rounds per 0.5 s, dead linear, in two separate range bands.
+**The mechanism is this section's own "frame-quantized" premise.** 1440 rpm = 24/s = **2.5 frames per
+shot**, and a census of every datamined `rate_of_fire` in the roster shows **SMG is the only weapon
+that is not a whole number of frames** (AR 720→5f, AR 150→24f `jill`, MG 3600→1f,
+RL 60/90/120/180/300→60/40/30/20/12f, SG 90→40f, SR 60/200→60/18f). `ceil(2.5) = 3` frames →
+exactly 20.0/s. So the table's "24/s" and the "frame-quantized" claim above it are mutually
+inconsistent, and the measurement resolves them in favour of 20.
+**This CONFLICTS with the ore-game community figure (~24/s) cited below** — that source's other rates
+carry ~2% slop (its AR ~11.79/s vs an exact 12/s), which cannot absorb a 20% gap, so the two are
+genuinely at odds rather than reconcilable. Our reading is a direct integer count of an in-game
+counter, which is the higher-tier instrument.
+Engine: `SMGQUANT=1` enables quantization (**default OFF** — the flip is P0-queued and blocked on one
+unexplained test failure: `docs/handoffs/2026-07-23-smg-cadence-flip.md`). Evidence + whole-board A/B:
+`docs/probe-runs.md` § "SMG CADENCE".
 
 Base rates: [ore-game measured rates](https://ore-game.com/nikke/post/verify-memo/)
 (AR ~11.79/s, SMG ~24/s, SG ~1.50/s at 60fps) + decoded shot tables
