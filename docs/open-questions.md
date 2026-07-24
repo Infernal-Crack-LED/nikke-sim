@@ -8,6 +8,49 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U33 — `idoll-ocean`'s ATK basis reads ~1.4% low against a popup (opened 2026-07-23)
+
+**The observation.** On `docs/probes/clean-weapons/emma-claire-idollocean.MP4` a plain ranged normal
+pops **7694**, repeatedly, at t≈60.5–62.0. A plain ranged SMG normal should be
+`baseAtk × 8.73% × 1.3`. The modelled `baseAtk` 68,788 predicts **7806.8**; 7694 implies
+**baseAtk ≈ 67,795 — 1.44% BELOW the model.**
+
+**Why it matters.** `idoll-ocean` is not SSR, so the basis caps her at an owner-supplied
+**0★ / core 0** (`CLEAN_WEAPON_LIMITS`). `data/characters.json` carries **no unit-rarity field**, so
+nothing in the repo can check that ceiling — a popup is the only independent handle on her true
+in-fight ATK. A 1.4% error is exactly the size a slightly-wrong ceiling would produce.
+
+**Why it is NOT enacted.** Three live explanations, undiscriminated: (a) the rarity ceiling is
+slightly off; (b) the range-bonus term is not exactly +30% for SMG; (c) the popup is not the plain
+ranged normal I took it for (crit/core colour was not rigorously confirmed, and instances overlapped
+visually). Also note the opposite-signed prior: **U18** has the in-fight ATK term reading ~1.6%
+*above* the static reference on the SG probes.
+
+**How to settle it.** A proper lattice read on an SMG probe pins the in-fight ATK term to ~0.01%
+(the counter-reconciliation method in `/probe-processing`). Do that before touching any ceiling.
+Do NOT tune the ceiling to close the gap. Parse record: `docs/probe-data/clean-weapons-idoll-ocean.json`.
+
+### U32 — `folkwang` (AR) sits stably ~3.7% COLD on the bare-weapon basis (opened 2026-07-23)
+
+**The reading.** `npx tsx scripts/clean-weapons-read.ts`: sim 23.91M vs real 24.82M = **0.963 COLD**,
+**n=2**, with a run-to-run spread of only **±0.8%**. Tightened from 0.956 at n=1. So it is a small,
+*stable* residual sitting just outside the ±3% goal — not noise, and not one of the two big weapon-model
+errors this basis found (SG landing, SMG cadence).
+
+**Why it is interesting.** `folkwang` has **no override** and her kit deals **zero damage** (shields /
+taunt / Max HP only), and bursting was off — so this cannot be calibration debt, kit misencoding, or
+rotation. It is the **AR weapon model**, measured with nothing in the way. It also matches the board's
+AR class mean (0.965) almost exactly, so it is very likely a class-wide AR term rather than anything
+about her.
+
+**Candidates, none tested.** AR frame cadence is exact (720 rpm = 5 frames — the SMG quantization
+finding cannot apply here, verified by census); so the suspect list is the AR core-hit rate / accuracy
+geometry (δ0 15.9 px, f_bloom 0.578 — both ⚑ fit-selected), the range-band map, or reload timing.
+
+**Next step.** Cheap, and not yet done: an ammo-counter cadence read + a popup lattice on an
+AR-focused clean-weapon recording. No such recording exists yet — `folkwang` was slot 2 (unfocused)
+in both team-A runs, so her popups are unreadable. **Needs a re-record with `folkwang` in slot 3.**
+
 ### U30 — chunked (multi-part) reloads: `reload_bullet` IS the tell, already honored for 14 of 15 units; `grave` is the lone gap (opened 2026-07-22)
 
 **The mechanic (owner correction, 2026-07-22 — the framing this entry opened with was wrong).** A

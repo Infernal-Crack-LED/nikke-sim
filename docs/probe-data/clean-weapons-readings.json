@@ -1,0 +1,40 @@
+{
+  "_comment": "Real per-unit totals for the BASE-WEAPON faithfulness basis (docs/data/clean-weapons.md). Scored by `npx tsx scripts/clean-weapons-read.ts`. Damage = the Battle Records damage row; the crossed-swords column is COMBAT POWER, never ATK. Append a run per recording; the scorer averages by unit and reports n.",
+  "basis": {
+    "scopeLock": true,
+    "boss": "Iron",
+    "bossNeutralForAll": true,
+    "burstsDisabled": true,
+    "coreHitRate": 1,
+    "durationSec": 180,
+    "rarityCeilings": { "idoll-ocean": { "stars": 0, "core": 0 }, "claire": { "stars": 2, "core": 0 } }
+  },
+  "runs": [
+    {
+      "recording": "docs/probes/clean-weapons/emma-claire-idollocean.MP4",
+      "screenshot": "docs/probes/clean-weapons/emma-claire-idollocean.jpg",
+      "date": "2026-07-23",
+      "comp": ["emma", "claire", "idoll-ocean"],
+      "focus": "idoll-ocean",
+      "totals": { "emma": 59498961, "claire": 23474178, "idoll-ocean": 20217421 }
+    },
+    {
+      "recording": "docs/probes/clean-weapons/marciana-folkwang-snowcrane.MP4",
+      "screenshot": "docs/probes/clean-weapons/marciana-folkwang-snowcrane.jpg",
+      "date": "2026-07-23",
+      "comp": ["marciana", "folkwang", "snow-crane"],
+      "focus": "snow-crane",
+      "focusNote": "slot 3 = snow-crane, so marciana is UNFOCUSED here — her popups are unreadable in this recording (totals are still valid).",
+      "totals": { "marciana": 41724144, "folkwang": 25017504, "snow-crane": 29430776 }
+    },
+    {
+      "recording": "docs/probes/clean-weapons/snowcrane-folkwang-marciana.MP4",
+      "screenshot": "docs/probes/clean-weapons/snowcrane-folkwang-marciana.jpg",
+      "date": "2026-07-23",
+      "comp": ["snow-crane", "folkwang", "marciana"],
+      "focus": "marciana",
+      "focusNote": "Re-recorded with marciana in slot 3 so she IS the camera focus — this is the recording the SG landing probe must use (docs/handoffs/2026-07-23-sg-landing-probe.md).",
+      "totals": { "snow-crane": 29571250, "folkwang": 24626087, "marciana": 41392267 }
+    }
+  ]
+}
