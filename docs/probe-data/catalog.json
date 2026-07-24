@@ -192,5 +192,29 @@
   },
   "parsedSlug": "clean-weapons-idoll-ocean",
   "description": "BASE-WEAPON basis, idoll-ocean (SMG) focused, neutral Iron boss, bursts off. Ammo-counter read: real SMG cadence is 20.0 rounds/s, not the sim's 24 (frame quantization). Root-caused the whole SMG weapon-model thread."
+ },
+ {
+  "video": "docs/probes/clean-weapons/snowcrane-folkwang-marciana.MP4",
+  "focus": "marciana",
+  "comp": [
+   "snow-crane",
+   "folkwang",
+   "marciana"
+  ],
+  "boss": "Iron",
+  "params": {
+   "basis": "scope-lock base5 (bare-weapon basis; kits inert, bursting OFF)",
+   "sync": 400,
+   "skillLevels": "10/10/10",
+   "gear": "base5",
+   "cube": "none",
+   "coreLevel": 7,
+   "treasure": true,
+   "bossPartless": true,
+   "durationSec": 180,
+   "disableBursts": true
+  },
+  "parsedSlug": "marciana-sg-band",
+  "description": "Bare-weapon SG-landing probe. marciana focused (slot 3), boss Iron. n=2: 0.850 COLD. Gap localized to the SG pellet-landing term (ATK/cadence/crit/core all ruled out)."
  }
 ]

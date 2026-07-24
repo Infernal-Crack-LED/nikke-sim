@@ -8,6 +8,30 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U35 — `marciana` SG cold-read is the PELLET-LANDING term; exact per-band landing needs a solo recording (opened 2026-07-23)
+
+**Settled by this probe (`docs/probe-data/marciana-sg-band.json`, n=2 = 0.850 COLD):** the 15% SG
+cold-read on the bare-weapon basis is localized to the **pellet-landing** term of the SG weapon model,
+by elimination. ATK basis pinned **+0.23%** (five popup values on one per-pellet lattice — near
+26149/36207/46264 = 13u/18u/23u, far 20115/30172 = 10u/15u, all u≈2011.47); cadence = sim (40
+game-frames); crit = fixed 15% stat; core popups visually rare (not the ~5× rise a core-driven gap
+needs). With all held, the 17.7% real/sim excess is forced onto landing: real ≈ **8.45/10 mean** vs
+sim **7.18** (sim per band: near 8.13 / mid 7.13 / midfar 6.57 / far 6.07), concentrated at the long
+bands where the sim's silhouette-gap model drops pellets.
+
+**What is STILL open (why this is UNANSWERED, not a verdict).** The **exact per-band landed-pellet
+count** could not be measured: NIKKE stacks per-pellet popups nearly on top of each other (an isolated
+near-band shot reads ~7–9 whites, indistinguishable from sim's 8.13), and the SG gold-standard fix —
+the pellet lattice on the running-total **delta** — is unavailable because the mid-fight team DAMAGE
+counter mixes all three units. **Recipe:** a **SOLO `marciana`** (exact slug `marciana`, SG/Iron — NOT
+`marciana-marine-study`) scope-lock recording, boss Iron, bursting off. Then the single-unit running
+total gives a clean per-shot delta on the lattice, reading landing shot-by-shot per band to ~0.1
+pellet — which pins whether the fix is a flat landing lift or a band-shaped one (flat-at-range is the
+hypothesis). Do NOT re-tune SG overrides to absorb this first: `marciana` has no override, so a pure
+override re-tune would be fitting overrides to a weapon-model landing error. Related: **U27** (isabel
+mid/midfar landing), the SG re-tune thread in CLAUDE.md, and **U32** (`folkwang` AR, same
+solo-re-record need for the AR class).
+
 ### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
 The engine clips the current belt to the new cap when a Max-Ammunition ▼ (`maxAmmoPct<0`) LANDS
 (measured/user-confirmed, `docs/data/game-mechanics.md` § "Max Ammunition ▼"; `src/engine/sim.ts`

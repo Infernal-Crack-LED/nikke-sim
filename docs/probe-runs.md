@@ -1535,3 +1535,52 @@ test's `d <= 20` exclusion filter — **hypothesis, not a verified explanation.*
 ⇒ **THE GATED PASS MUST EXPLAIN THE `modernia` MG SPEND FIRST**, then rebuild the five `liter`-vehicle
 discriminations on a non-SMG vehicle, then flip the default with regenerated snapshots. Regenerating
 snapshots around an unexplained failure is exactly what the verify discipline forbids.
+
+### SG SIDE — the cold-read is the PELLET-LANDING term (2026-07-23, `snowcrane-folkwang-marciana.MP4`)
+
+Re-recorded so `marciana` (SG/Iron, exact slug `marciana` — NOT `marciana-marine-study`) sits in slot
+3 = camera focus, making her popups readable (the original `marciana-folkwang-snowcrane.MP4` has her
+unfocused). This is an **independent second run**, so it re-scores every unit — first `n=2` for any
+clean-weapon unit. Parse persisted: `docs/probe-data/marciana-sg-band.json` (+ catalog).
+
+| unit | wpn | sim | real (run 2) | ratio | run 1 |
+|---|---|---|---|---|---|
+| `snow-crane` | SR | 29,018,296 | 29,571,250 | 0.981 ▼ | 0.986 |
+| `folkwang` | AR | 23,911,667 | 24,626,087 | 0.971 ▼ | 0.956 |
+| `marciana` | SG | 35,163,154 | **41,392,267** | **0.850 ▼** | 0.843 |
+
+**The gap reproduces** — `marciana` 0.843 → 0.850, only 0.8% run-to-run (repeatability is 0.5–3.5%),
+so the 15% SG cold-read is real signal. (⚔ reads 88364/92177/91943 — three different numbers for
+three Supporters, the standing confirmation that ⚔ is Combat Power, not the class-uniform ATK.)
+
+**Localized to the SG PELLET-LANDING model by ELIMINATION** (this is the deliverable — WHICH term):
+
+1. **ATK basis — RULED OUT, pinned exact.** Popups are **one per landed pellet** at exact lattice
+   steps `u = baseAtk·normAtkMult/100/hitsPerShot/10`. Five popup values across both bands —
+   near `26149`/`36207`/`46264` (= 13u/18u/23u = plain/crit/core, range bonus on) and far
+   `20115`/`30172` (= 10u/15u, no range bonus off-near) — **all give u = 2011.47** (spread 0.002%),
+   i.e. the in-fight ATK term is **+0.23%** above the sim's `u_sim = 2006.82`. ATK is not the gap.
+2. **Cadence — RULED OUT, = sim.** Ammo counter (mag 9) steps every **40 game-frames** = the sim's SG
+   interval exactly. As predicted, the SMG frame-quantization cannot apply (90 rpm = 40 frames exactly).
+3. **Crit — RULED OUT.** Fixed 15% stat; the orange-`36207`/`30172` popup fraction matches.
+4. **Core — RULED OUT as the driver.** Red "CORE HIT" popups are **rare** across every window — nowhere
+   near the ~5× rise (near core 4.3% → ~29%) a core-driven gap would require.
+5. **⇒ LANDING is FORCED to absorb the gap.** With ATK/shots/band-split/crit/core all held, the
+   17.7% real/sim excess (real units = 41,392,267/2011.47 = 20,578 vs sim 17,521) means real
+   pellet landing must be **~8.45/10 mean vs the sim's 7.18**. It concentrates at the LONG bands,
+   where the sim's silhouette-gap model drops pellets — sim per-band landing (engine event log,
+   4 signatures matching the documented boss band script): **near 8.13 / mid 7.13 / midfar 6.57 /
+   far 6.07**. A physically clean story: pellets keep landing on the large boss at range instead
+   of flying through gaps.
+
+**What could NOT be measured, and why (open follow-up).** The **exact per-band landed-pellet count**
+is defeated by NIKKE stacking per-pellet popups nearly on top of each other (an isolated near-band shot
+reads ~7–9 whites, indistinguishable from the sim's 8.13; a far-band shot reads a dense stack but not a
+clean integer). The SG gold-standard fix — the pellet lattice on the running-total **delta** — is
+unavailable here because the mid-fight team DAMAGE counter mixes all three units. **Exact landing needs
+a SOLO `marciana` recording** (single-unit running total → per-shot delta on the lattice). Filed U35.
+
+**NOT ENACTED — n=2, measurement only.** Records the localization; does not flip a constant, retune an
+override, or stamp a verdict (that is a separate `/scientific-method` pass, not this session — evidence
+rule). ⇒ The live consequence for the SG re-tune thread: a pure override re-tune would be fitting
+overrides to absorb a **weapon-model** landing error, so the landing model is the thing to fix first.

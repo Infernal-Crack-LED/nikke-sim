@@ -1,0 +1,37 @@
+{
+  "video": "docs/probes/clean-weapons/snowcrane-folkwang-marciana.MP4",
+  "screenshot": "docs/probes/clean-weapons/snowcrane-folkwang-marciana.jpg",
+  "probeDir": "docs/probes/clean-weapons",
+  "focus": "marciana",
+  "comp": ["snow-crane", "folkwang", "marciana"],
+  "params": {
+    "basis": "scope-lock base5 (bare-weapon basis; kits damage-inert, bursting OFF)",
+    "sync": 400,
+    "skillLevels": "10/10/10",
+    "gear": "base5",
+    "cube": "none",
+    "coreLevel": 7,
+    "treasure": true,
+    "bossPartless": true,
+    "bossElement": "Iron",
+    "durationSec": 180,
+    "focusReason": "slot 3 = default camera focus min(2,n-1); marciana re-recorded into focus 2026-07-23 so her popups are readable",
+    "disableBursts": true,
+    "realTotal": 41392267,
+    "simTotal": 35163154,
+    "ratioRealOverSim": 1.1771,
+    "run": 2
+  },
+  "extractedOn": "2026-07-23",
+  "method": "Opus per-pellet lattice read. game t0 = video 8.70s (dense 03:00->02:59 timer crop); game clock ~2% fast vs video (7 anchors). Popups are ONE PER LANDED PELLET at exact lattice steps u=baseAtk*normAtkMult/100/hitsPerShot/10. ATK pinned from 5 popup values across both bands (near 26149/36207/46264 = 13u/18u/23u; far 20115/30172 = 10u/15u), all giving u=2011.47 (spread 0.002%), +0.23% vs sim u_sim=2006.82. Cadence from ammo counter = 40 game-frames = sim. Clean isolated post-reload single shots read at 60fps near (video ~65s) + far (video ~100s).",
+  "fightStartSec": 8.70,
+  "fightClock": false,
+  "popups": [
+    { "t": 65.8, "value": 26149, "crit": false, "core": false, "kind": "normal", "note": "near-band plain pellet = 13u (range bonus on). u=2011.46" },
+    { "t": 65.8, "value": 36207, "crit": true, "core": false, "kind": "normal", "note": "near-band crit pellet = 18u. u=2011.50" },
+    { "t": 65.8, "value": 46264, "crit": false, "core": true, "kind": "normal", "note": "near-band core pellet = 23u ('CORE HIT'). u=2011.48. Core popups RARE across all near windows." },
+    { "t": 100.05, "value": 20115, "crit": false, "core": false, "kind": "normal", "note": "far-band plain pellet = 10u (no SG range bonus off-near). u=2011.50" },
+    { "t": 100.05, "value": 30172, "crit": true, "core": false, "kind": "normal", "note": "far-band crit pellet = 15u. u=2011.47" }
+  ],
+  "notes": "MEASUREMENT ONLY (n=2 for marciana), NOT ENACTED. Localizes the SG cold-read to the PELLET-LANDING term of the weapon model, by elimination: ATK basis pinned exact (+0.23%, from the per-pellet lattice), cadence = sim (40 game-frames), crit = fixed 15% stat, core visually rare (not the ~5x elevation a core-driven gap needs). The 17.7% real/sim gap is FORCED onto landing: sim weighted-mean landing 7.18/10 must be ~8.45/10 real. Sim per-band landing (from the engine event log, 4 signatures matching the documented boss band script): near 8.13 / mid 7.13 / midfar 6.57 / far 6.07. The gap concentrates at the LONG bands where the sim drops pellets to ~6/10 (silhouette-gap model) while the real spread stays on the large boss. EXACT per-band landed-pellet counts are DEFEATED by NIKKE stacking per-pellet popups nearly on top of each other; the SG 'gold standard' lattice-on-running-total delta is unavailable here because the mid-fight team DAMAGE counter mixes all 3 units. Exact landing needs a SOLO marciana recording (single-unit running total -> per-shot delta on the pellet lattice). Two big clean-weapon outliers both localize to the WEAPON MODEL, not kit/override (neither unit has either): marciana SG 0.850 COLD (this read) and idoll-ocean SMG HOT (root-caused separately to the 20-vs-24 rounds/s cadence)."
+}
