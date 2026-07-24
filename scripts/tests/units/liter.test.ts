@@ -32,7 +32,18 @@
 //
 // Fixture: the 720-kit-audit control comp (liter B1 / crown B2 / ada B3 / helm B3 — the SR/Water
 // Helm, boss Fire, focus ada). Deterministic (no seed).
+//
+// ⚠ The two ROTATION-COUNT discriminations below (ADD-UP, RAMP) run on a SEPARATE gauge-rich
+// vehicle — see LADDER_COMP. On the 4-unit control comp they read liter's OWN SMG weapon fire as a
+// large fraction of team gauge, so when the SMG cadence flipped 24→20 (frame quantization, DECISIONS
+// 2026-07-23) the rotation slid from cooldown-bound to gauge-bound: liter's CDR ladder only moves
+// counts while COOLDOWNS bind, so both discriminations tied at 20/s — a fixture artifact, not an L1
+// regression. The gauge-rich vehicle keeps the rotation cooldown-bound and makes liter's cadence a
+// negligible fraction of team gauge, so the discriminations hold IDENTICALLY at the default 20/s and
+// the SMGRATE=24 revert. The measured-truth VALUES (2.34s tier, buff magnitudes) are untouched, on the control
+// comp — the EXACT 2nd-cast-gap arithmetic is comp-independent.
 import { describe, expect, it } from 'vitest';
+import type { CompOptions } from '../lib/harness.js';
 import type { SimEvent } from '../../../src/types.js';
 import { controlComp, data, runComp, withPatchedOverride } from '../lib/harness.js';
 
@@ -45,11 +56,21 @@ const TEAM_SIZE = 4;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
-function run(overrides: Record<string, any> = {}) {
+function runOn(comp: CompOptions, overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
-  runComp({ ...controlComp(CARRY), overrides, cfg: { onEvent: (e) => events.push(e) } });
+  runComp({ ...comp, overrides, cfg: { onEvent: (e) => events.push(e) } });
   return events;
 }
+const run = (overrides: Record<string, any> = {}) => runOn(controlComp(CARRY), overrides);
+
+// Gauge-rich, SMG-cadence-robust vehicle for the two rotation-count discriminations (see header):
+// liter B1 / blanc B2 / maiden-ice-rose B3 (focus, ×2.5 charge gauge) / helm B3. No claim about
+// these units' own kits — only liter's ladder is varied; the rest are a constant gauge/cooldown bed.
+const LADDER_COMP: CompOptions = {
+  slugs: ['liter', 'blanc', 'maiden-ice-rose', 'helm'],
+  bossElement: 'Fire',
+  focusSlug: 'maiden-ice-rose',
+};
 
 /** Replace her S1 Full-Burst-entry escalating CDR ladder with a FLAT per-FB value (or drop it). */
 const cdrLadder = (seconds: number | null) =>
@@ -77,11 +98,15 @@ const stripHeals = (slug: string) =>
 const base = run();
 const noCdr = run({ liter: cdrLadder(null) });
 const flatTier1 = run({ liter: cdrLadder(2.34) });
-const flatTier3Only = run({ liter: cdrLadder(3.17) });
-const flatMax = run({ liter: cdrLadder(8.21) });
 const noOtherHeals = run({ helm: stripHeals('helm'), crown: stripHeals('crown') });
 
+// The two rotation-count discriminations run on the gauge-rich vehicle (see LADDER_COMP).
+const ladderBase = runOn(LADDER_COMP);
+const ladderNonCumulative = runOn(LADDER_COMP, { liter: cdrLadder(3.17) }); // 3rd tier REPLACES, not adds
+const ladderSaturated = runOn(LADDER_COMP, { liter: cdrLadder(8.21) }); // instantly at max from entry 1
+
 const fbCount = (evs: SimEvent[]) => evs.filter((e) => e.kind === 'fullBurstStart').length;
+const fbFrames = (evs: SimEvent[]) => evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame);
 const allCasts = (evs: SimEvent[]) => evs.filter((e): e is BurstCast => e.kind === 'burstCast');
 const literCasts = (evs: SimEvent[]) => allCasts(evs).filter((c) => c.slug === 'liter');
 const literBuffs = (evs: SimEvent[], stat: string, value?: number) =>
@@ -116,18 +141,33 @@ describe('liter — kit spec', () => {
 
     it('DISCRIMINATING: tiers ADD UP — beats a non-cumulative ladder that only ever grants 3.17s', () => {
       // "Each subsequent effect triggers all effects before it": the 3rd+ entry grants
-      // 2.34+2.7+3.17 = 8.21s, NOT the third tier replacing the first two.
+      // 2.34+2.7+3.17 = 8.21s, NOT the third tier replacing the first two. On the gauge-rich vehicle
+      // the rotation is cooldown-bound, so the extra cumulative reduction converts to more total
+      // burst casts over the fight (margin 3 — robust to the SMG cadence, see header).
       expect(
-        allCasts(base).length,
+        allCasts(ladderBase).length,
         'a non-cumulative reading would deliver strictly less cooldown reduction over the fight',
-      ).toBeGreaterThan(allCasts(flatTier3Only).length);
+      ).toBeGreaterThan(allCasts(ladderNonCumulative).length);
     });
 
-    it('RAMPS — the first two entries grant LESS than the saturated 8.21s', () => {
+    it('RAMPS — the first entries grant LESS than the saturated 8.21s, so Full Bursts arrive LATER', () => {
+      // The saturated ladder delivers all 8.21s from the FIRST entry; the real ramp reaches it only
+      // by the 3rd. Measured by TIMING, not count: on the gauge-rich vehicle both eventually hit the
+      // Full-Burst ceiling, so the coarse count ties — but the saturated arm's k-th Full Burst lands
+      // no later than the ramp's for every k, and strictly earlier for at least one early entry. An
+      // instantly-saturated ladder would make the two timelines identical and fail the strict clause.
+      const rampFbs = fbFrames(ladderBase);
+      const satFbs = fbFrames(ladderSaturated);
+      const k = Math.min(rampFbs.length, satFbs.length);
+      expect(k, 'no Full Bursts to compare').toBeGreaterThan(2);
       expect(
-        fbCount(base),
-        'an instantly-saturated ladder buys an extra Full Burst the real ramp does not',
-      ).toBeLessThan(fbCount(flatMax));
+        satFbs.slice(0, k).every((f, i) => f <= rampFbs[i]),
+        'a saturated ladder must never reach a Full Burst LATER than the real ramp',
+      ).toBe(true);
+      expect(
+        satFbs.slice(0, k).some((f, i) => f < rampFbs[i]),
+        'the real ramp delivers less early cooldown reduction, so some Full Burst must arrive later than under instant saturation',
+      ).toBe(true);
     });
   });
 

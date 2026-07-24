@@ -23,6 +23,7 @@ import { controlComp, data, runComp, withPatchedOverride } from '../lib/harness.
 
 type DamageEvent = Extract<SimEvent, { kind: 'damage' }>;
 type ShotEvent = Extract<SimEvent, { kind: 'shot' }>;
+type BuffApplyEvent = Extract<SimEvent, { kind: 'buffApply' }>;
 
 const MG_CARRY = 'modernia';            // MG, hitsPerShot 2
 const SMG_CARRY = 'quency-escape-queen'; // SMG, hitsPerShot 2 — same number, other branch
@@ -39,6 +40,20 @@ function capture(carry: string, patch?: (ov: any) => void) {
     shots: events.filter((e): e is ShotEvent => e.kind === 'shot' && e.slug === carry),
     normals: events.filter(
       (e): e is DamageEvent => e.kind === 'damage' && e.slug === carry && e.srcSlot === 'normal',
+    ),
+    // Frames on which a Max-Ammunition ▼ (maxAmmoPct<0) LANDS on `carry`. The engine clips the
+    // current belt to the new (smaller) cap when such a buff lands (sim.ts, "Max Ammo ▼ clips the
+    // CURRENT belt"; contract game-mechanics.md §"Max Ammunition ▼"). If the belt was over the new
+    // cap, that clip removes ammo WITHOUT a trigger pull — so a pull on this frame carries clip+spend
+    // in one `ammoAfter` delta and must not be read as a pure pull spend. Keyed to the CAUSE (the ▼
+    // landing), not to the delta magnitude.
+    ammoClipFrames: new Set(
+      events
+        .filter(
+          (e): e is BuffApplyEvent =>
+            e.kind === 'buffApply' && e.targetSlug === carry && e.stat === 'maxAmmoPct' && e.value < 0,
+        )
+        .map((e) => e.frame),
     ),
   };
 }
@@ -79,23 +94,71 @@ describe('hitsPerShot (multi-round weapons)', () => {
       [SMG_CARRY, 1],
       [SG_CARRY, 1],
     ] as const) {
-      const { shots } = capture(carry);
+      const { shots, ammoClipFrames } = capture(carry);
       // consecutive pulls inside ONE magazine, skipping unlimited-ammo shots (which spend nothing)
       const spends = shots
         .map((s, i) => ({ s, prev: shots[i - 1] }))
         .filter(
           ({ s, prev }) =>
-            prev && !s.unlimitedAmmo && !prev.unlimitedAmmo && s.magIndex === prev.magIndex,
+            prev &&
+            !s.unlimitedAmmo &&
+            !prev.unlimitedAmmo &&
+            s.magIndex === prev.magIndex &&
+            // a pull sharing its frame with a Max-Ammunition ▼ landing carries a belt clip folded
+            // into its ammo delta (see `ammoClipFrames`) — exclude by CAUSE, not by magnitude
+            !ammoClipFrames.has(s.frame),
         )
-        .map(({ s, prev }) => prev!.ammoAfter - s.ammoAfter)
-        // a reload-to-max inside the same magIndex (skill refill / swap) reads as a negative or
-        // outsized jump; those are not pull spends and are excluded rather than asserted on
-        .filter((d) => d >= 0 && d <= 20);
+        .map(({ s, prev }) => prev!.ammoAfter - s.ammoAfter);
       expect(spends.length, `${carry}: no ammo-spending pull pairs to measure`).toBeGreaterThan(20);
       expect(
         [...new Set(spends)],
         `${carry} (${charOf(carry).weapon}, hitsPerShot ${charOf(carry).hitsPerShot}) should spend ${want} round(s) per pull`,
       ).toEqual([want]);
+    }
+  });
+
+  it('the belt-clip exclusion is CAUSAL: an excluded modernia pair decomposes as clip + pull-spend', () => {
+    // Guards the exclusion above against masking a DIFFERENT bug: prove the contaminated pull pair
+    // really is a Max-Ammunition ▼ belt clip plus a normal spend, not an unexplained jump the
+    // exclusion happens to swallow. Mechanism (DECISIONS 2026-07-23): `liter`'s Max Ammo ▲45.17%
+    // lets modernia reload OVER her base cap; the ▲ expires without clamping the belt (overhang);
+    // later her OWN S1 Max Ammo ▼ re-lands and clips the overhang on a pull frame → that pull's
+    // ammo delta carries clip + spend. The SMG frame-quantized cadence (default since 2026-07-23)
+    // phases the overhang so it survives to the ▼ landing; the `SMGRATE=24` revert arm does not, so
+    // the genuine-clip assertion below is gated on the quantized cadence being active.
+    const { shots, ammoClipFrames } = capture(MG_CARRY);
+    const hps = charOf(MG_CARRY).hitsPerShot;
+    const clipped = shots
+      .map((s, i) => ({ s, prev: shots[i - 1] }))
+      .filter(
+        ({ s, prev }) =>
+          prev &&
+          !s.unlimitedAmmo &&
+          !prev.unlimitedAmmo &&
+          s.magIndex === prev.magIndex &&
+          ammoClipFrames.has(s.frame),
+      )
+      .map(({ s, prev }) => ({ frame: s.frame, d: prev!.ammoAfter - s.ammoAfter }));
+    // A ▼ landing clips only when the belt is OVER the new cap; when it is already under cap the
+    // pull spends normally (clipAmount 0). Either way the delta decomposes as clipAmount + spend
+    // with clipAmount >= 0 — it can never drop BELOW a normal spend, which is the guarantee that
+    // proves the exclusion swallows clip contamination and nothing else.
+    for (const { frame, d } of clipped) {
+      const clipAmount = d - hps;
+      expect(clipAmount, `modernia clip-frame pair @f${frame}: delta ${d} = clip + spend ${hps}`).toBeGreaterThanOrEqual(
+        0,
+      );
+    }
+    // …and at the shipped (frame-quantized) SMG cadence the genuine overhang clip actually occurs —
+    // a pull frame carrying MORE than a normal spend (the 10 = 8-round clip + 2-round spend that the
+    // exclusion removes). That is the real contamination the exclusion exists to guard against; if it
+    // never appears at the default cadence, the mechanism is wrong and the exclusion masks something.
+    if (!Number(process.env.SMGRATE)) {
+      const genuineClip = clipped.filter((c) => c.d > hps);
+      expect(
+        genuineClip.length,
+        'shipped SMG cadence: expected at least one over-cap belt clip folded into a pull delta',
+      ).toBeGreaterThan(0);
     }
   });
 

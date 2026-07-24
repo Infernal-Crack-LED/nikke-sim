@@ -8,6 +8,41 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-07-23, latest) SMG FIRE CADENCE FLIPPED 24→20.0 rounds/s (frame quantization) —
+  DEFAULT-ON. SUPERSEDES the 2026-07-17 D.2 adoption of 24/s.** The gun fires on FRAME BOUNDARIES:
+  the datamined nominal SMG rate 1440 rpm = 24/s = 2.5 frames/shot at 60 fps, and `ceil(2.5)=3`
+  frames gives exactly **20.0 rounds/s**. Engine: `PULLS_PER_SEC.SMG = quantizeToFrames(24)` is now
+  unconditional; `SMGRATE=<n>` pins a rate as the documented revert / A-B arm (`SMGRATE=24` restores
+  the old behavior byte-identically). **Evidence — DIRECT MEASUREMENT of the quantity itself**, which
+  outranks the datamined *nominal* that D.2 relied on: the in-game ammo counter (the designated shot
+  clock) on `docs/probes/clean-weapons/emma-claire-idollocean.MP4` with `idoll-ocean` camera-focused
+  reads 076→066→056→046→036 across t=60.0–62.0 (mid band) and 020→010 across t=145.0–145.5 (far
+  band) — exactly 10 rounds per 0.5 s, dead linear, in two separate range bands (n=1 unit; class
+  generalization rides the mechanism + a complete datamined census: SMG's 1440 is the ONLY roster
+  rate that is not a whole frame count, so quantization is a provable no-op for every other class,
+  independently corroborated by MG's terminal `end_rate_of_fire` 4200 quantizing to 1 frame = 60/s =
+  the sim's existing MG constant). **Why D.2 does not block this:** D.2's instrument was FB counts,
+  which measure gauge/second; the ammo counter measures shots/second. Under the current rotation model
+  all 11 measured full-burst assertions pass at BOTH 20 and 24 (FB counts no longer discriminate the
+  two), so the higher-tier shots/second measurement settles it. **Board:** fixes the whole SMG class
+  at once (control-suite `liter` 1.208→1.031; chisato 1.154→0.975, quency-escape-queen 1.174→1.046,
+  little-mermaid 1.042→0.967, idoll-ocean 1.166→1.017, nayuta ~unchanged kit-dominated); board ±5%
+  10→13; **all 11 measured FB assertions preserved, ZERO FB-count regressions.** The 6 tests that
+  went red under the flip were fixture artifacts: the `modernia` MG "10-round ammo spend" is a Max-Ammo
+  ▼ belt-clip folded into a test's ammo-delta estimator (root-caused, exclusion re-keyed to the clip
+  CAUSE + a positive decomposition assertion; MG economy byte-identical between arms), and the 5
+  FB-count discrimination fixtures had an SMG (`liter`) as their gauge vehicle — rebuilt on non-SMG /
+  gauge-rich vehicles, each mutation-verified to still fail when its mechanic breaks. Gated via
+  `/scientific-method`: 5-premise gate all CONFIRM, Fable pre-op APPROVED-WITH-REVISIONS (5 revisions
+  all taken), 2-of-2 blind post-op ACCEPT at HIGH+HIGH, implementation-reviewer FIX-BEFORE-MERGE
+  (docs, this entry). Snapshots regenerated with the change; `SMGRATE=24` reproduces the pre-flip
+  snapshot byte-identically (leakage control — every non-SMG mover moved only via an SMG teammate's
+  rotation). **Open (explicitly NOT closed by this):** the SMG override re-tune worklist (~24 SMG
+  overrides were fit to 24/s and now read a few % cold — `docs/control-regression-followups.md`);
+  post-flip residuals quency-escape-queen ~1.05 / nayuta ~0.85; the lazy Max-Ammo-▲-expiry overhang
+  clip is now reached code (open-questions). Full trail: `docs/handoffs/2026-07-23-smg-cadence-flip.md`,
+  `docs/probe-runs.md` (SMG CADENCE), measurement `docs/probe-data/clean-weapons-idoll-ocean.json`.
+
 - **(2026-07-23, latest) BASE-WEAPON BASIS, two follow-on owner rulings: `cfg.disableBursts`, and
   RARITY CEILINGS for non-SSR units.** Both refine the base-weapon basis entry below.
   **(1) Bursting is turned OFF in the sim, not merely made harmless.** The owner can disable
@@ -1160,7 +1195,11 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   theme 11 / fix #2.
 
 - **(2026-07-17) SMG class fire cadence adopted 20→24 pulls/s = the datamined `rate_of_fire` 1440 rpm
-  (game source authoritative); role-audit D.2, owner decision a.** The engine's SMG class default
+  (game source authoritative); role-audit D.2, owner decision a.** ⚠ **SUPERSEDED (2026-07-23) —
+  disregard: flipped to 20.0/s frame-quantized (see the 2026-07-23 SMG-cadence entry at the top of
+  this section). D.2 read the datamine as authoritative for the EFFECTIVE rate; a direct ammo-counter
+  measurement (shots/second, higher tier than D.2's FB-count instrument) showed the gun fires on frame
+  boundaries at 20.0/s.** The engine's SMG class default
   (`PULLS_PER_SEC.SMG`) was 20/s while the datamined weapon-table ROF is 1440 rpm = 24/s — the ONLY class
   default disagreeing with the datamine (AR 12=720, SG 1.5=90 match). Owner ruling: the game source wins.
   Warms all 7 SMG units +10-19% normal-fire damage (chisato +19.4%, quency-escape-queen +12.0%,

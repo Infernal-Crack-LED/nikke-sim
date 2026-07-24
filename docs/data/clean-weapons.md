@@ -11,16 +11,17 @@ Ruling + rationale: `docs/DECISIONS.md` (2026-07-23).
 ## Scoring it
 
 ```sh
-npx tsx scripts/clean-weapons-read.ts              # sim vs real, per unit
-SMGQUANT=1 npx tsx scripts/clean-weapons-read.ts   # with the measured 20/s SMG cadence
+npx tsx scripts/clean-weapons-read.ts              # sim vs real, per unit (shipped: SMG 20.0/s)
+SMGRATE=24 npx tsx scripts/clean-weapons-read.ts   # revert arm: pre-quantization nominal 24/s
 ```
 
 Real totals live in `docs/probe-data/clean-weapons-readings.json` — **append a run there** and the
 scorer picks it up and re-averages automatically. The sim side comes from the same `bareWeaponComp`
 fixture the pinned test uses, so the two can never drift apart. Ratio is **sim/real** (>1 = HOT).
 
-Board as of 2026-07-23 (3 recordings): **3/6 within ±3%** on the default engine, **4/6** with
-`SMGQUANT=1`. Run-to-run repeatability where n=2 is ±0.2–0.8%. Open residuals: `marciana` SG 0.846
+Board as of 2026-07-23 (3 recordings): **4/6 within ±3%** on the shipped engine (SMG frame-quantized
+to 20.0/s, DECISIONS 2026-07-23 — `idoll-ocean` 1.166→1.017); the `SMGRATE=24` revert reads 3/6.
+Run-to-run repeatability where n=2 is ±0.2–0.8%. Open residuals: `marciana` SG 0.846
 (→ the SG landing probe), `folkwang` AR 0.963 (**open-questions U32**), and `idoll-ocean`'s ATK basis
 reading ~1.4% low against a popup (**open-questions U33**).
 

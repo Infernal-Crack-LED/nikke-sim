@@ -1,7 +1,7 @@
 // BASE-WEAPON board — sim vs real for the six "clean weapon" units.
 //
-//   npx tsx scripts/clean-weapons-read.ts
-//   SMGQUANT=1 npx tsx scripts/clean-weapons-read.ts    # with the measured 20/s SMG cadence
+//   npx tsx scripts/clean-weapons-read.ts                # shipped: SMG frame-quantized to 20.0/s
+//   SMGRATE=24 npx tsx scripts/clean-weapons-read.ts     # revert arm: pre-quantization nominal 24/s
 //
 // The board-read.ts analogue for the bare-weapon basis (docs/data/clean-weapons.md). These six
 // units have NO override and their kits deal ZERO damage, so each row scores the engine's WEAPON
@@ -54,7 +54,7 @@ for (const run of readings.runs) {
 const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
 const fmtM = (n: number) => `${(n / 1e6).toFixed(2)}M`;
 
-const arm = process.env.SMGQUANT ? 'SMGQUANT=1 (SMG 20/s, measured)' : 'default (SMG 24/s)';
+const arm = Number(process.env.SMGRATE) ? `SMGRATE=${process.env.SMGRATE} (revert)` : 'default (SMG 20/s, frame-quantized)';
 console.log(`\nBASE-WEAPON BOARD — scope lock, boss ${CLEAN_WEAPON_BOSS_ELEMENT} (neutral for all six), core 100, bursts OFF`);
 console.log(`engine arm: ${arm}   |   ${readings.runs.length} recordings\n`);
 console.log('  unit           wpn   n        sim        real   sim/real          spread');

@@ -77,8 +77,8 @@ inconsistent, and the measurement resolves them in favour of 20.
 carry ~2% slop (its AR ~11.79/s vs an exact 12/s), which cannot absorb a 20% gap, so the two are
 genuinely at odds rather than reconcilable. Our reading is a direct integer count of an in-game
 counter, which is the higher-tier instrument.
-Engine: `SMGQUANT=1` enables quantization (**default OFF** — the flip is P0-queued and blocked on one
-unexplained test failure: `docs/handoffs/2026-07-23-smg-cadence-flip.md`). Evidence + whole-board A/B:
+Engine: SMG frame quantization is **DEFAULT-ON** (flipped 2026-07-23, DECISIONS); `SMGRATE=24` is the
+documented revert / A-B arm (`SMGRATE=<n>` pins any rate). Evidence + whole-board A/B:
 `docs/probe-runs.md` § "SMG CADENCE".
 
 Base rates: [ore-game measured rates](https://ore-game.com/nikke/post/verify-memo/)

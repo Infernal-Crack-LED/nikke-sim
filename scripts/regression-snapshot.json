@@ -6,11 +6,11 @@
   "trina": 57841850
  },
  "misc B3s (run I order)": {
-  "grave": 321237889,
-  "anis-star": 623611399,
-  "jill": 483605980,
-  "chisato": 553639904,
-  "noir": 145903968
+  "grave": 321322240,
+  "anis-star": 623831065,
+  "jill": 483638817,
+  "chisato": 470743623,
+  "noir": 145541176
  },
  "elec DPS (run E order)": {
   "crown": 134793151,
@@ -62,7 +62,7 @@
   "maiden-ice-rose": 248538350
  },
  "T5 wind-weak": {
-  "nayuta": 767561251,
+  "nayuta": 759370000,
   "cinderella-crystal-wave": 1144109371,
   "anis-star": 636389954,
   "liberalio": 965583409,
@@ -83,11 +83,11 @@
   "crown": 266586569
  },
  "PH water B3s": {
-  "little-mermaid": 372049982,
-  "crown": 158001871,
-  "quency-escape-queen": 708964966,
-  "dorothy-serendipity": 734766684,
-  "guillotine-winter-slayer": 292563189
+  "little-mermaid": 340751676,
+  "crown": 162067236,
+  "quency-escape-queen": 624052221,
+  "dorothy-serendipity": 740274165,
+  "guillotine-winter-slayer": 289764284
  },
  "PD Eva duo": {
   "emma-tactical-upgrade": 146257354,
@@ -96,11 +96,11 @@
   "helm": 268682542
  },
  "N1 rapi/quency wind": {
-  "d-killer-wife": 77133759,
-  "grave": 254213773,
-  "rapi-red-hood": 532601726,
-  "quency-escape-queen": 431881238,
-  "jill": 231627738
+  "d-killer-wife": 77196744,
+  "grave": 255689025,
+  "rapi-red-hood": 527780533,
+  "quency-escape-queen": 391824922,
+  "jill": 232730037
  },
  "N3 scarlet/liberalio iron": {
   "rouge": 54691411,
@@ -110,11 +110,11 @@
   "soda-twinkling-bunny": 112601639
  },
  "N6 mihara/maiden wind": {
-  "little-mermaid": 246003037,
-  "ade-agent-bunny": 92545178,
-  "mihara-bonding-chain": 806699183,
-  "maiden-ice-rose": 310617626,
-  "maxwell": 111899981
+  "little-mermaid": 224103033,
+  "ade-agent-bunny": 95920439,
+  "mihara-bonding-chain": 782774915,
+  "maiden-ice-rose": 315820450,
+  "maxwell": 109955130
  },
  "N8 emma/eunhwa duo fire": {
   "emma-tactical-upgrade": 100481893,
@@ -144,9 +144,9 @@
   "helm": 348802390
  },
  "soda-tb control (neutral, focus soda-twinkling-bunny)": {
-  "little-mermaid": 373811660,
-  "crown": 176197129,
-  "soda-twinkling-bunny": 311870435,
-  "helm": 359776372
+  "little-mermaid": 345536803,
+  "crown": 183034318,
+  "soda-twinkling-bunny": 318195657,
+  "helm": 359152817
  }
 }

@@ -8,6 +8,22 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
+The engine clips the current belt to the new cap when a Max-Ammunition ▼ (`maxAmmoPct<0`) LANDS
+(measured/user-confirmed, `docs/data/game-mechanics.md` § "Max Ammunition ▼"; `src/engine/sim.ts`
+~1830). The contract is SILENT on the reverse: when a Max-Ammunition ▲ **expires** while the belt is
+still OVER the new (lower) cap, the engine keeps the overhang and clips it LAZILY at the next ▼
+landing — it does not clip at expiry. This path was unreached at the old 24/s SMG cadence but is now
+REACHED at the shipped 20/s (2 genuine over-cap clips in the `modernia`/`liter` control comp — the
+`hits-per-shot.test.ts` fixture that surfaced it). The behaviour is byte-identical between the two
+cadence arms (only phasing differs), so it is NOT a frame-quantization defect — but it is now
+load-bearing in the ammo economy of any SMG-or-MG comp that pairs a Max-Ammunition ▲ source (e.g.
+`liter`) with a Max-Ammunition ▼ carrier (e.g. `modernia`), and it is MODEL-ONLY / unmeasured.
+**Recipe:** in a focus recording of such a comp, read whether the ammo counter drops the instant the
+▲ icon expires (immediate clip) or only later when the ▼ re-applies (lazy clip). Until measured, the
+engine's lazy-clip stands as the current model, not a validated mechanic. Surfaced by the SMG-cadence
+flip's implementation review (DECISIONS 2026-07-23).
+
 ### U33 — `idoll-ocean`'s ATK basis reads ~1.4% low against a popup (opened 2026-07-23)
 
 **The observation.** On `docs/probes/clean-weapons/emma-claire-idollocean.MP4` a plain ranged normal

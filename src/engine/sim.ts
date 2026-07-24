@@ -154,33 +154,26 @@ const isAutofireCharge = (char: CharacterData): boolean =>
   (char.role?.weapon as { shot_detail?: { input_type?: string } } | undefined)
     ?.shot_detail?.input_type === 'DOWN_Charge';
 
-// Canon fire cadence per weapon type (doc values; per trigger pull).
-// MG's "60 rps" counts belt rounds (hits): pulls/s = 60 / hitsPerShot and each
-// pull consumes hitsPerShot ammo. MG wind-up follows the measured frame ladder
-// below (docs/nikke-mg-windup-model.md), not a fitted curve.
-// Per-class pull cadence. AR 12 (=720rpm), SG 1.5 (=90rpm), SMG 24 (=1440rpm) all match the datamined
-// weapon-table rate_of_fire (role.weapon.shot_detail; game source). SMG adopted 20→24 on 2026-07-17
-// (role-audit D.2, OWNER DECISION a): the game source is authoritative and 24 holds EVERY SMG
-// measured-FB comp (chisato/nayuta/quency/little-mermaid) except PH-water, which tips 12→13 — the one
-// comp with two SMGs + little-mermaid's `teamAmmo`-400 → 37% fillGauge, whose +20% ammo rate trips that
-// big fill ~one cycle early. PH-water's FB was reclassified into the known ±1 burst-cycle-boundary set
-// (T4/T7/N2/N4/N5) in regression.ts — an UNDERSTOOD boundary over-prediction, not an ununderstood drift.
-// Two alternatives were tested & refuted before adopting: recalc gauge-per-shot ×20/24 (gauge/sec held
-// constant → still 13), and quency consumed=2 for her 2 muzzles (0 FB change — crown MG dominates the
-// teamAmmo counter). Per-unit measured cadences override via charFixes.pullsPerSec (jill 2.5). MG uses
-// the wind-up ladder, not this.
-// NOMINAL cadence per weapon type, straight off the datamined weapon table
-// (role.weapon.shot_detail.rate_of_fire ÷ 60): AR 720→12, SMG 1440→24, SG 90→1.5, MG 3600→60.
+// NOMINAL cadence per weapon type (per trigger pull), straight off the datamined weapon table
+// (role.weapon.shot_detail.rate_of_fire ÷ 60): AR 720→12, SMG 1440→24, SG 90→1.5. MG's datamined
+// rate_of_fire is 60 rpm (its wind-up START rung); the engine drives MG through the measured wind-up
+// ladder below (docs/nikke-mg-windup-model.md), NOT this table, so the MG:60 entry here is reachable
+// only via a weapon-swap INTO MG. Per-unit measured cadences override via charFixes.pullsPerSec
+// (jill 2.5). These are NOMINAL; the effective cadence is frame-quantized just below.
 const NOMINAL_PULLS_PER_SEC: Record<string, number> = {
   AR: 12, SMG: 24, SG: 1.5, MG: 60, Pistol: 4,
 };
-// FRAME QUANTIZATION (MEASURED 2026-07-23) — the gun fires on FRAME BOUNDARIES, so the real interval
-// is ceil(FPS / nominal) whole frames and the effective cadence is FPS / that.
+// FRAME QUANTIZATION (MEASURED 2026-07-23, DEFAULT-ON — DECISIONS 2026-07-23) — the gun fires on
+// FRAME BOUNDARIES, so the real interval is ceil(FPS / nominal) whole frames and the effective
+// cadence is FPS / that.
 //
-// This is a NO-OP for every weapon in the roster except SMG: a census of every datamined
-// rate_of_fire shows all of them land on an exact frame count — AR 720→5f and 150→24f (jill), MG
-// 3600→1f, RL 60/90/120/180/300→60/40/30/20/12f, SG 90→40f, SR 60/200→60/18f. SMG's 1440 is the
-// ONLY one that does not: 60/24 = 2.5 frames. Rounding that up to 3 gives exactly 20.0 rounds/s.
+// This is a NO-OP for every weapon in the roster except SMG: a full census of every datamined
+// rate_of_fire (data/characters.json role.weapon.shot_detail) shows all of them land on an exact
+// frame count — AR 720→5f and 150→24f (jill), MG 60→60f, RL 60/90/120/180/300→60/40/30/20/12f,
+// SG 90→40f, SR 60/200→60/18f. SMG's 1440 is the ONLY one that does not: 60/24 = 2.5 frames.
+// Rounding that up to 3 gives exactly 20.0 rounds/s. (MG's terminal end_rate_of_fire 4200 is also
+// non-integral and quantizes to 1 frame = 60/s — the sim's MG constant — an independent
+// corroboration of this mechanism, but MG runs on the wind-up ladder so nothing keys off it here.)
 //
 // MEASURED, not inferred: the ammo counter (the designated shot clock) on
 // docs/probes/clean-weapons/emma-claire-idollocean.MP4 with idoll-ocean focused reads
@@ -189,29 +182,18 @@ const NOMINAL_PULLS_PER_SEC: Record<string, number> = {
 //
 // SUPERSEDES the 2026-07-17 20→24 adoption (role-audit D.2, owner decision a), which read the
 // datamine as authoritative for the EFFECTIVE rate. It is authoritative for the NOMINAL rate; the
-// engine still quantizes it. That session had only FB counts as an instrument and could not see the
-// difference — and under the current rotation model FB counts no longer discriminate the two at all
-// (all 11 measured full-burst assertions pass at 20/s and at 24/s). Reverting evidence tier:
-// DIRECT MEASUREMENT of the quantity itself, which outranks the datamined nominal.
-// ⚠ NOT YET THE DEFAULT — opt in with `SMGQUANT=1` (or pin a rate directly with `SMGRATE=<n>`).
-// Default remains the nominal 24/s, so this commit is byte-identical to main.
-//
-// WHY IT IS NOT DEFAULT-ON despite the evidence: flipping it turns 6 unit tests red. Five are
-// FB-count DISCRIMINATION assertions whose vehicle is `liter` (an SMG) — at 20/s her gauge output
-// falls, the two arms of each discrimination tie, and the fixture stops discriminating (not an
-// engine regression, but the fixtures need rebuilding). The sixth is NOT understood: in
-// hits-per-shot.test.ts, `modernia` (MG) starts showing a 10-round ammo spend per pull. The likely
-// cause is `liter`'s "Max Ammunition Capacity ▲45.17%" proc retiming so its refill lands inside a
-// measured pull-pair window and slips past that test's `d <= 20` exclusion filter — but that is a
-// HYPOTHESIS, not a verified explanation. Landing the flip would mean regenerating snapshots and
-// reworking assertions around a failure nobody has explained, which the repo forbids outright.
-// The flip belongs in a gated /scientific-method pass that explains the MG spend first.
+// engine quantizes it to the frame grid. That session had only FB counts as an instrument and could
+// not see the difference — under the current rotation model FB counts no longer discriminate the two
+// at all (all 11 measured full-burst assertions pass at 20/s and at 24/s, because FB counts measure
+// gauge/second while the ammo counter measures shots/second). Evidence tier: DIRECT MEASUREMENT of
+// the quantity itself, which outranks the datamined nominal.
+// REVERT / A-B ARM: `SMGRATE=24` pins the pre-quantization nominal; `SMGRATE=<n>` pins any rate.
 const quantizeToFrames = (pps: number) => FPS / Math.ceil(FPS / pps - 1e-9);
 const PULLS_PER_SEC: Record<string, number> = Object.fromEntries(
   Object.entries(NOMINAL_PULLS_PER_SEC).map(([w, pps]) => {
     if (w !== 'SMG') return [w, pps]; // quantization is provably a no-op for every other weapon
-    if (Number(ENV.SMGRATE)) return [w, Number(ENV.SMGRATE)];
-    return [w, ENV.SMGQUANT ? quantizeToFrames(pps) : pps];
+    if (Number(ENV.SMGRATE)) return [w, Number(ENV.SMGRATE)]; // documented revert / A-B pin
+    return [w, quantizeToFrames(pps)]; // DEFAULT: SMG frame-quantized 24 → 20.0 rounds/s
   }),
 );
 // Frame intervals between MG rounds 1→35 (measured, 60fps; identical across units).

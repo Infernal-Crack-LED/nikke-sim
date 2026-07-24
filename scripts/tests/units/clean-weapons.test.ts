@@ -252,7 +252,10 @@ const BASELINE: Record<string, number> = {
   'snow-crane':  29018295.6903,
   emma:          58117326.0183,
   claire:        24044092.8525,
-  'idoll-ocean': 23577817.0691,
+  // SMG frame-quantization landed 2026-07-23 (24→20.0 rounds/s, DECISIONS): idoll-ocean is the only
+  // SMG in this fixture, so she is the only baseline that moved (23577817.0691 → below); the five
+  // non-SMG rows are byte-identical. Recomputed under the shipped cadence, not fitted.
+  'idoll-ocean': 20570911.3427724,
 };
 
 describe('CW5 — bare-weapon baselines (scope lock, boss Iron, core 100, no bursts)', () => {
