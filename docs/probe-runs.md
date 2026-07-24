@@ -1519,6 +1519,19 @@ spend per pull in `hits-per-shot.test.ts`. The likely cause is `liter`'s *"Max A
 ▲45.17%"* proc retiming so its refill lands inside a measured pull-pair window and slips past that
 test's `d <= 20` exclusion filter — **hypothesis, not a verified explanation.**
 
+> **ENACTED (2026-07-23) — flipped default-ON, `SMGQUANT` retired, revert is `SMGRATE=24`
+> (DECISIONS 2026-07-23).** All six red tests were resolved without silencing anything. The
+> `modernia` failure was root-caused (the above hypothesis was CLOSE but WRONG on mechanism): it is
+> not `liter`'s ▲ refill landing in the pull pair, but `modernia`'s OWN S1 *"Max Ammunition ▼5.04%"*
+> re-landing on a pull frame and clipping the belt overhang that `liter`'s already-EXPIRED ▲ left
+> over-cap — delta 10 = 8-round clip + 2-round spend. The test's exclusion was re-keyed from the
+> `d≤20` magnitude fudge to the clip's CAUSE (a `maxAmmoPct<0` buffApply on the pull frame) plus a
+> positive decomposition assertion; MG ammo economy is byte-identical between the two cadence arms.
+> The five FB-count discriminations were rebuilt on non-SMG / gauge-rich vehicles (each
+> mutation-verified to still fail when its mechanic breaks). Gated through `/scientific-method`
+> (5-premise CONFIRM, Fable pre-op + blind post-op 2-of-2 ACCEPT HIGH+HIGH, implementation review).
+> `SMGRATE=24` reproduces the pre-flip snapshot byte-identically (leakage control clean).
+
 ⇒ **THE GATED PASS MUST EXPLAIN THE `modernia` MG SPEND FIRST**, then rebuild the five `liter`-vehicle
 discriminations on a non-SMG vehicle, then flip the default with regenerated snapshots. Regenerating
 snapshots around an unexplained failure is exactly what the verify discipline forbids.

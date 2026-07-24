@@ -4,11 +4,19 @@
 // by a few percent — it changes how many Full Bursts the whole team gets, which is the one quantity
 // the graded comps measure EXACTLY (measured-exact full-burst counts, CLAUDE.md verified facts).
 //
-// Method: the control comp (liter B1 / crown B2 / ada B3 / helm B3, two Burst III units alternating
-// on a 40s cooldown) with ONE SYNTHETIC burstCdr block installed in ada's skill1 on a 5s interval.
-// The rotation is the readout: `burstCast` events per unit and `fullBurstStart` count. Everything
-// asserted below is a comparison BETWEEN arms of that fixture, never an absolute rotation claim —
-// the graded-comp rotation pins are in scripts/regression.ts and are not duplicated here.
+// Method: a NON-SMG control comp (zwei B1 / crown B2 / maiden-ice-rose B3 / helm B3, two Burst III
+// units alternating on a 40s cooldown) with ONE SYNTHETIC burstCdr block installed in the holder's
+// skill1 on a 5s interval. The rotation is the readout: `burstCast` events per unit and
+// `fullBurstStart` count. Everything asserted below is a comparison BETWEEN arms of that fixture,
+// never an absolute rotation claim — the graded-comp rotation pins are in scripts/regression.ts and
+// are not duplicated here.
+//
+// ⚠ The vehicle is deliberately SMG-FREE. The prior vehicle used `liter` (SMG) as the gauge/CDR
+// enabler; when the SMG cadence flipped 24→20 (frame quantization, DECISIONS 2026-07-23) liter's
+// gauge output fell, the comp dropped out of the base=max−1 boundary regime these discriminations
+// live on, and all four arms tied — a fixture artifact, not a rotation regression. With no SMG unit
+// in the comp the SMG cadence is a byte-identical no-op here, so the fixture is cadence-robust by
+// construction. (Verified: identical `burstCast`/FB counts at the default 20/s and the SMGRATE=24 revert.)
 //
 // Rules pinned:
 //   1. Dose-response: a larger reduction never yields fewer casts for the holder.
@@ -18,18 +26,26 @@
 //   4. The reduction CLAMPS at zero — an absurd value makes the holder permanently ready and the
 //      rotation, not the cooldown, becomes the binding constraint.
 import { describe, expect, it } from 'vitest';
+import type { CompOptions } from '../lib/harness.js';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, data, runComp, withPatchedOverride } from '../lib/harness.js';
+import { data, runComp, withPatchedOverride } from '../lib/harness.js';
 
-const CARRY = 'ada';
-const OTHER_B3 = 'helm';
+const CARRY = 'maiden-ice-rose'; // the burstCdr holder (Burst III, RL, 40s cooldown)
+const OTHER_B3 = 'helm';         // the SR/Water Helm — the alternating Burst III (NOT helm-aquamarine)
+// SMG-free core so the SMG cadence default cannot move this fixture (see header).
+const CDR_CORE = ['zwei', 'crown'] as const; // zwei B1 / crown B2
+const cdrComp = (): CompOptions => ({
+  slugs: [...CDR_CORE, CARRY, OTHER_B3],
+  bossElement: 'Fire',
+  focusSlug: CARRY,
+});
 
 interface Rotation {
   casts: Record<string, number>;
   fullBursts: number;
 }
 
-/** Run the control comp with a burstCdr probe on a 5s interval (omit `cdr` for the baseline). */
+/** Run the SMG-free comp with a burstCdr probe on a 5s interval (omit `cdr` for the baseline). */
 function rotation(cdr?: { seconds: number; oncePerBattle?: boolean }, target: unknown = { kind: 'allies' }): Rotation {
   const overrides = cdr
     ? {
@@ -41,7 +57,7 @@ function rotation(cdr?: { seconds: number; oncePerBattle?: boolean }, target: un
       }
     : undefined;
   const events: SimEvent[] = [];
-  runComp({ ...controlComp(CARRY), overrides, cfg: { onEvent: (e) => events.push(e) } });
+  runComp({ ...cdrComp(), overrides, cfg: { onEvent: (e) => events.push(e) } });
   const casts: Record<string, number> = {};
   let fullBursts = 0;
   for (const e of events) {
@@ -60,12 +76,12 @@ const huge = rotation({ seconds: 1000 });
 
 describe('burstCdr (burst cooldown reduction)', () => {
   it('fixture check — two Burst III units share the stage on equal cooldowns', () => {
-    // The whole readout depends on ada and helm alternating: whoever is off cooldown takes the
-    // stage-3 slot. If they ever stop sharing it (a data change to either cooldown), the arms below
-    // stop measuring cooldown pressure and this test would drift into asserting something else.
+    // The whole readout depends on the holder and OTHER_B3 alternating: whoever is off cooldown
+    // takes the stage-3 slot. If they ever stop sharing it (a data change to either cooldown), the
+    // arms below stop measuring cooldown pressure and this test would drift into asserting else.
     expect(data.characters[CARRY].burstCooldownSec).toBe(data.characters[OTHER_B3].burstCooldownSec);
-    expect(base.casts[CARRY], 'ada never cast').toBeGreaterThan(0);
-    expect(base.casts[OTHER_B3], 'helm never cast').toBeGreaterThan(0);
+    expect(base.casts[CARRY], `${CARRY} never cast`).toBeGreaterThan(0);
+    expect(base.casts[OTHER_B3], `${OTHER_B3} never cast`).toBeGreaterThan(0);
   });
 
   it('is dose-responsive — a bigger reduction never buys the holder fewer casts', () => {
@@ -111,11 +127,11 @@ describe('burstCdr (burst cooldown reduction)', () => {
   });
 
   it('clamps at zero — an absurd reduction leaves the ROTATION as the binding constraint', () => {
-    // max(0, cd - N): a 1000s reduction makes ada permanently ready, so she takes EVERY stage-3
-    // slot and helm never gets one. Total stage-3 casts still equal the Full Burst count — the
-    // rotation cannot manufacture extra stages out of a negative cooldown.
-    expect(huge.casts[CARRY], 'ada did not take every stage-3 slot').toBe(huge.fullBursts);
-    expect(huge.casts[OTHER_B3] ?? 0, 'helm still cast despite ada always being ready').toBe(0);
+    // max(0, cd - N): a 1000s reduction makes the holder permanently ready, so it takes EVERY
+    // stage-3 slot and OTHER_B3 never gets one. Total stage-3 casts still equal the Full Burst
+    // count — the rotation cannot manufacture extra stages out of a negative cooldown.
+    expect(huge.casts[CARRY], `${CARRY} did not take every stage-3 slot`).toBe(huge.fullBursts);
+    expect(huge.casts[OTHER_B3] ?? 0, `${OTHER_B3} still cast despite the holder always being ready`).toBe(0);
     expect(
       huge.fullBursts,
       `${huge.fullBursts} Full Bursts on an unbounded reduction vs ${cdr5.fullBursts} on a 5s one — ` +
