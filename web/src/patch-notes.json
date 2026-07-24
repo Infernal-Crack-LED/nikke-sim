@@ -1,5 +1,26 @@
 [
   {
+    "date": "2026-07-24",
+    "title": "Roster & Team Generators — smarter search, faster runs",
+    "notes": [
+      "The generators now measure each unit's real contribution to a team (including supports, priced by the damage they actually add) and weigh every legal team shape before simulating the best candidates — measurably better teams from fewer simulations, and a full 5-team roster now generates in seconds with repeat runs after tweaking pins near-instant.",
+      "The camera-focus slot is now chosen deliberately: each final team is arranged with its best focus unit in the middle slot, so the displayed order is the recommended order (about +9% team damage from focus placement alone).",
+      "Overall, the generator updates result in 2–10% higher damage teams.",
+      "Kit conditions: Mint and Prika are only ever fielded together, and Naga only joins a team with a shield-granting ally."
+    ]
+  },
+  {
+    "date": "2026-07-24",
+    "title": "Accuracy pass — the real SMG fire rate, plus per-unit kit corrections",
+    "notes": [
+      "SMGs actually fire at 20 rounds per second, not the listed 24 — the game fires on whole frames, and we measured the true rate frame-by-frame off the in-game ammo counter. Every SMG unit's damage now uses the real cadence, closing the largest cluster of over-predictions on our accuracy board (Liter, Chisato, Little Mermaid and more).",
+      "Helm: her allies' Critical Rate buff now applies to normal attacks only, and her burst's \"for 10 rounds\" is modeled as a true 10-round count instead of a timed window — both matching her kit text exactly.",
+      "Privaty: her burst's bonus damage is now modeled faithfully — it rides her Designated Target mark on the magazine's last bullet, replacing an approximate damage-over-time stand-in. Effects that depend on enemy status marks like this now use a proper shared status system in the engine.",
+      "Jill: her reload is now modeled exactly as her kit describes (a previous approximation gave her a faster phantom firing pattern).",
+      "New unit modeled: Marciana: Marine Study — full kit including her burst nuke, whistle stacks, and Electric-advantage effects."
+    ]
+  },
+  {
     "date": "2026-07-22",
     "title": "Shotgun & rifle accuracy rework — aim-circle geometry measured from real fights",
     "notes": [
