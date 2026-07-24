@@ -32,6 +32,19 @@ const SYNERGY = {
   ] as [string, string][],
   weight: 0.08,
 };
+// mirror of web/src/genCalc.ts TEAM_CONSTRAINTS (owner ruling 2026-07-24) — the
+// bench tracks the shipped generator config
+const CONSTRAINTS = {
+  together: [['mint', 'prika']],
+  companions: [
+    {
+      unit: 'naga',
+      anyOf: Object.entries(archetypeTags)
+        .filter(([slug, tags]) => slug !== 'naga' && tags.includes('shield'))
+        .map(([slug]) => slug),
+    },
+  ],
+};
 
 // A makeCalc whose loadoutFor counts calls, so we can read exact sim counts. Each
 // uncached sim resolves a loadout for all 5 slots, so sims = loadoutCalls / 5.
@@ -47,6 +60,7 @@ const mk = () =>
       return {};
     },
     synergy: SYNERGY,
+    constraints: CONSTRAINTS,
   });
 
 // A bare-engine sim (no memoization) for the --focus / solo-rank hypothesis probes.

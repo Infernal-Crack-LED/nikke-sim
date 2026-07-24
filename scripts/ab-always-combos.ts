@@ -106,6 +106,22 @@ const spreadTargets = (): number[] => {
   return [M + 2, M + 1, M, M, M - 2];
 };
 
+// mirror of web/src/genCalc.ts TEAM_CONSTRAINTS (owner ruling 2026-07-24):
+// active in BOTH arms — the retirement decision replaced the curated pins with
+// these fielding conditions, so reruns of this instrument compare against the
+// shipped default.
+const TEAM_CONSTRAINTS = {
+  together: [['mint', 'prika']],
+  companions: [
+    {
+      unit: 'naga',
+      anyOf: Object.entries(archetypeTags)
+        .filter(([slug, tags]) => slug !== 'naga' && tags.includes('shield'))
+        .map(([slug]) => slug),
+    },
+  ],
+};
+
 const calcFor = (weakness: Element | null) =>
   makeCalc({
     chars: chars as any,
@@ -117,6 +133,7 @@ const calcFor = (weakness: Element | null) =>
     requireElement: weakness,
     prydwenScore: prydwenScoreOf,
     synergy: { tags: archetypeTags, pairs: SYNERGY_PAIRS, weight: SYNERGY_WEIGHT },
+    constraints: TEAM_CONSTRAINTS,
     cache: 'shared', // control/treatment share every sim for the same weakness
   });
 

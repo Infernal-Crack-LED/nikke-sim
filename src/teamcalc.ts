@@ -98,6 +98,23 @@ export interface TeamCalcInput {
     /** score bonus per satisfied pair (e.g. 0.08 → +8% per pair) */
     weight: number;
   };
+  /** Hard roster rules (owner ruling 2026-07-24 — replaces the retired curated
+   *  always-include sets; these are CONDITIONS on being fielded, never a reason
+   *  to field a unit):
+   *  - `together`: unit groups that must share a team or be absent entirely
+   *    (fielding a strict subset is illegal). A group with a member unavailable
+   *    to the search (blocked / not modeled) RELAXES silently — matching the
+   *    old combo-relax convention — so e.g. mint stays fieldable in a roster
+   *    that doesn't own prika.
+   *  - `companions`: if `unit` is fielded, its team must also field ≥1 of
+   *    `anyOf` (a kit dependency — STRICT: no eligible companion in the pool
+   *    means the unit cannot be fielded).
+   *  Enforced in team legality (seeds, refine swaps, injected meta comps) and
+   *  compiled into the proxy enumeration (src/teamvalue.ts). */
+  constraints?: {
+    together?: string[][];
+    companions?: { unit: string; anyOf: string[] }[];
+  };
   /** Cross-run sim cache (perf plan item 5). `'shared'` reuses a process-level
    *  cache bundle keyed by (cfg, loadout, loadouts) — a team's sim depends only on
    *  those (+ static mult/deps), NOT on blocked/meta/synergy — so repeated
@@ -632,8 +649,32 @@ export function makeCalc(input: TeamCalcInput) {
   const reqEl = input.requireElement ?? null;
   const elementOk = (slugs: string[]): boolean =>
     !reqEl || slugs.some((s) => chars[s].element === reqEl);
+  // Hard roster rules (see TeamCalcInput.constraints). Availability-resolved
+  // once: a `together` group missing an available member relaxes; a companion
+  // rule keeps only satisfiers the search could actually field.
+  const availTo = (s: string): boolean => !!chars[s] && !blocked.has(s);
+  const together = (input.constraints?.together ?? []).filter((g) =>
+    g.every(availTo),
+  );
+  const companions = (input.constraints?.companions ?? [])
+    .filter((c) => !!chars[c.unit])
+    .map((c) => ({
+      unit: c.unit,
+      anyOf: c.anyOf.filter((s) => s !== c.unit && availTo(s)),
+    }));
+  const constraintsOk = (slugs: string[]): boolean => {
+    for (const g of together) {
+      const n = g.reduce((k, s) => k + (slugs.includes(s) ? 1 : 0), 0);
+      if (n > 0 && n < g.length) return false;
+    }
+    for (const { unit, anyOf } of companions) {
+      if (slugs.includes(unit) && !anyOf.some((s) => slugs.includes(s)))
+        return false;
+    }
+    return true;
+  };
   const legal = (slugs: string[]): boolean =>
-    isLegal(slugs, chars) && elementOk(slugs);
+    isLegal(slugs, chars) && elementOk(slugs) && constraintsOk(slugs);
 
   // Meta prior for a team in [0,1]: mean unit popularity, plus an exact-comp
   // bonus when the 5-unit set matches a popular ranker comp. 0 when no meta.
@@ -905,6 +946,7 @@ export function makeCalc(input: TeamCalcInput) {
         seedTarget !== undefined && prydwenScore
           ? { unitScore: prydwenScore, target: seedTarget, sigma: SPREAD_SIGMA }
           : undefined,
+      constraints: { together, companions },
       cdShort: CD_SHORT,
       cdPair: CD_PAIR,
       topK: ENUM_TOP_K,

@@ -103,12 +103,7 @@ import {
   slotLoadoutToUnitOptions,
   type SlotLoadout,
 } from './rosterApply';
-import {
-  assignMustUse,
-  assignAlwaysCombos,
-  type TeamResult,
-  type AlwaysCombos,
-} from '../../src/teamcalc';
+import { assignMustUse, type TeamResult } from '../../src/teamcalc';
 import {
   generatorCharacters,
   prydwenScoreOf,
@@ -554,54 +549,14 @@ const WEAKNESS_TO_BOSS: Record<Element, Element> = {
 // worker and the main thread reconstruct them identically. prydwenScoreOf is
 // imported above for the roster display sort + solo spread targets.
 
-// "Always include" meta supports for the roster generators (owner ruling
-// 2026-07-22). Applied to EVERY generation with no toggle. A combo whose unit is
-// unavailable (excluded, not owned in a synced roster, or not modeled) RELAXES
-// silently rather than failing the generation. Same-team groups are pinned
-// together; singles are placed burst-aware (teamcalc.assignAlwaysCombos).
-//
-// BURST SPREAD (owner ruling 2026-07-22): the always-included supports don't stack
-// a burst stage onto one team — the always B1s fan out onto distinct teams and the
-// always B2 groups fan out onto distinct teams (a B2 pair counts as ONE B2 group).
-// In Solo the 4 B1s take 4 teams and the 4 B2 groups take 4 teams; e.g. crown (B2)
-// and nayuta (B2) never share a team, nor do little mermaid (B1) and anis: star (B1).
-//
-// SOLO RAID (5 teams):
-//   • mint + prika                                    (same team; B2 pair)
-//   • Mast: Romantic Maid + Anchor: Innocent Maid     (same team; B2 pair)
-//   • crown + (helm OR naga)                          (same team; crown is B2; if
-//       naga is the partner, helm must appear on another team — runTopTeams)
-//   • moran, anis: star, liter, little mermaid         (B1s — one per team)
-//   • nayuta                                          (B2 — its own team)
-//   • privaty                                         (B3 — anywhere)
-const SOLO_ALWAYS_COMBOS: AlwaysCombos = {
-  pairs: [
-    ['mint', 'prika'],
-    ['mast-romantic-maid', 'anchor-innocent-maid'],
-  ],
-  oneOf: [{ anchor: 'crown', choices: ['helm', 'naga'] }],
-  singles: [
-    'moran',
-    'anis-star',
-    'liter',
-    'little-mermaid',
-    'nayuta',
-    'privaty',
-  ],
-};
-
-// UNION RAID (3 teams) — a relaxed set (same BURST SPREAD rule as Solo):
-//   • anis: star, little mermaid                      (B1s — one per team)
-//   • Mast: Romantic Maid                             (B2 free single — its own team;
-//       may pair with ANY B2 in UR, not forced to Anchor: Innocent Maid)
-//   • crown + (helm OR naga)                          ("crown + healer"; crown is B2;
-//       the UR healers are helm and naga)
-//   • if mint appears at all, prika must be with her  (mint+prika NOT required as a
-//       whole, unlike SR — enforced in runUnionTopTeams)
-const UNION_ALWAYS_COMBOS: AlwaysCombos = {
-  oneOf: [{ anchor: 'crown', choices: ['helm', 'naga'] }],
-  singles: ['anis-star', 'little-mermaid', 'mast-romantic-maid'],
-};
+// The curated "always include" combo sets (SOLO/UNION_ALWAYS_COMBOS, owner
+// ruling 2026-07-22) are RETIRED (owner ruling 2026-07-24): the marginal-value
+// search fields the meta supports on its own merit — A/B artifact
+// docs/handoffs/2026-07-24-always-combos-ab.md. What survives are CONDITIONS on
+// being fielded (never a reason to field anyone): mint+prika share a team, and
+// naga requires a shield-granting teammate — genCalc.TEAM_CONSTRAINTS, enforced
+// inside the search itself. User pins (pinnedByTeam / mustUse) are unchanged;
+// teamcalc.assignAlwaysCombos remains available for pin-grouping.
 
 // Like-tag synergy bias (pierce↔pierce ▲, projectile↔projectile ▲) now lives in
 // ./genCalc alongside the rest of the generator-calc config, so the worker and the
@@ -3063,37 +3018,16 @@ export function App({ user }: { user: AuthUser | null }) {
         row.filter((s): s is string => !!s),
       );
       const userMustUse = rosterGenGeneric.filter((s): s is string => !!s);
-      // Always-combos (owner ruling 2026-07-22): fold the curated meta supports
-      // onto the 5 teams. Same-team groups pin together; singles spread (via
-      // assignMustUse inside topTeams). Combos with unavailable units relax
-      // silently (genAvailable gates them).
-      const ac = assignAlwaysCombos(
-        SOLO_ALWAYS_COMBOS,
-        userPinned,
-        generatorCharacters as any,
-        5,
-        genAvailable,
-      );
-      // Solo conditional: crown paired with naga (not helm) → helm must appear on
-      // another team. The oneOf picks helm first when available, so this mainly
-      // fires when the user pins crown+naga while helm is still free.
-      const crownTeam = ac.pinnedByTeam.find((t) => t.includes('crown'));
-      const placed = new Set([...ac.pinnedByTeam.flat(), ...ac.singles]);
-      if (
-        crownTeam?.includes('naga') &&
-        !crownTeam.includes('helm') &&
-        genAvailable('helm') &&
-        !placed.has('helm')
-      ) {
-        ac.singles.push('helm');
-      }
-      const mustUse = [...userMustUse, ...ac.singles];
-      const locks = new Set([...ac.pinnedByTeam.flat(), ...mustUse]);
+      // Curated always-combos retired (owner ruling 2026-07-24) — only the
+      // user's own pins and generic must-use units constrain the roster; the
+      // mint+prika / naga-shielder conditions live in genCalc.TEAM_CONSTRAINTS
+      // and are enforced inside the search.
+      const locks = new Set([...userPinned.flat(), ...userMustUse]);
       setTeamResult(null);
       setRosterResults(
         await genTopTeams(genParams(calcCfg(), weakness, locks), 5, {
-          pinnedByTeam: ac.pinnedByTeam,
-          mustUse,
+          pinnedByTeam: userPinned,
+          mustUse: userMustUse,
           spreadTargets: soloSpreadTargets(),
         }),
       );
@@ -3110,26 +3044,18 @@ export function App({ user }: { user: AuthUser | null }) {
         row.filter((s): s is string => !!s),
       );
       const userMustUse = unionGenGeneric.filter((s): s is string => !!s);
-      // Relaxed always-combos (owner ruling 2026-07-22): anis:star / little
-      // mermaid / Mast:Romantic Maid (free singles) + crown+(helm|naga). Combos
-      // with unavailable units relax silently (genAvailable gates them).
-      const ac = assignAlwaysCombos(
-        UNION_ALWAYS_COMBOS,
-        userPinned,
-        generatorCharacters as any,
-        3,
-        genAvailable,
-      );
-      const mustUse = [...userMustUse, ...ac.singles];
-      const locks = new Set([...ac.pinnedByTeam.flat(), ...mustUse]);
+      // Curated always-combos retired (owner ruling 2026-07-24): only user pins
+      // + generic must-use constrain the teams; the mint+prika / naga-shielder
+      // conditions are enforced inside the search (genCalc.TEAM_CONSTRAINTS).
+      const locks = new Set([...userPinned.flat(), ...userMustUse]);
       const assigned = assignMustUse(
-        mustUse,
-        ac.pinnedByTeam,
+        userMustUse,
+        userPinned,
         generatorCharacters as any,
         3,
       );
       const reserved = Array.from({ length: 3 }, (_, i) => [
-        ...ac.pinnedByTeam[i],
+        ...(userPinned[i] ?? []),
         ...assigned.assigned[i],
       ]);
       const used = new Set<string>();
@@ -3146,29 +3072,9 @@ export function App({ user }: { user: AuthUser | null }) {
         for (const s of t.slugs) used.add(s);
         out.push(t);
       }
-      // mint → prika output invariant (UR): if mint is fielded at all, prika must
-      // be on her team. mint+prika is NOT required as a whole (unlike SR) — this
-      // only fires when the search/user included mint. If prika is unavailable or
-      // already on another team, relax silently.
-      const mintTi = out.findIndex((t) => t.slugs.includes('mint'));
-      if (mintTi >= 0 && !out[mintTi].slugs.includes('prika')) {
-        const prikaElsewhere = out.some(
-          (t, i) => i !== mintTi && t.slugs.includes('prika'),
-        );
-        if (genAvailable('prika') && !prikaElsewhere) {
-          const opts = unionGenBossOpts[mintTi] ?? defaultUnionBossOpts();
-          const params = genParams(unionCalcCfg(opts), opts.weakness, locks);
-          const exclude = new Set<string>();
-          out.forEach((t, i) => {
-            if (i !== mintTi) t.slugs.forEach((s) => exclude.add(s));
-          });
-          const rebuilt = await genBestTeam(params, {
-            exclude,
-            mustInclude: [...new Set([...reserved[mintTi], 'mint', 'prika'])],
-          });
-          if (rebuilt) out[mintTi] = rebuilt;
-        }
-      }
+      // (The old mint→prika output post-pass is gone: the mint+prika together
+      // rule is now enforced INSIDE the search via TEAM_CONSTRAINTS, so no team
+      // can come back with one of them and not the other.)
       setUnionGenResults(out);
     });
 

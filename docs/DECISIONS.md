@@ -2325,3 +2325,28 @@ RIDERCRIT engine default relied on for flatDamage crit (confirmed ON in sim.ts).
 
 **Artifacts:** `scripts/kit-autonomy/cross-family/marciana-marine-study/` (packets + results),
 `scripts/kit-autonomy/results/marciana-marine-study.json` (judge verdict).
+
+## Roster generator: curated always-include sets RETIRED → fielding conditions (2026-07-24)
+
+**Owner ruling.** The hardcoded `SOLO_ALWAYS_COMBOS` / `UNION_ALWAYS_COMBOS` sets (owner ruling
+2026-07-22, always called a stopgap) are retired: no unit is force-included in a generated roster
+any more. Evidence: the item-3 marginal-value search fields the meta core on its own merit —
+A/B artifact `docs/handoffs/2026-07-24-always-combos-ab.md` (branch `generator-perf`,
+`scripts/ab-always-combos.ts`): the derived path beats the curated pins on roster score in ALL
+SIX arms (+1.6%…+10.3%; every audited weakness + no-weakness) and fields 10/13 curated supports
+unprompted in every arm.
+
+**What replaces them — CONDITIONS on being fielded, never reasons to field anyone**
+(`TeamCalcInput.constraints`, wired as `web/src/genCalc.ts` `TEAM_CONSTRAINTS`, enforced in team
+legality and inside the proxy enumeration):
+- `mint` + `prika` must share a team (all-or-none; relaxes only when one is unavailable to the
+  search). Owner: their kit pairing is under-modeled today, so the rule carries what the sim
+  cannot yet see; a kit fix is planned.
+- `naga` requires a shield-granting teammate (any `shield`-tagged unit other than herself;
+  strict — no eligible shielder in the pool means she is not fielded).
+
+The union-raid mint→prika output post-pass in App.tsx is deleted (subsumed by the constraint);
+`assignAlwaysCombos` stays as machinery. **Queued with the coming mint/prika kit fix (owner
+requirement, same ruling): the sim must support the "prika bursts first, then only mint" rotation
+config for the pair** — no engine knob exists today (only Λ `lambdaStage`), so it lands with that
+kit work, not with this change.

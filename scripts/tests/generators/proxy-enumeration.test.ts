@@ -146,6 +146,42 @@ describe('enumerateTeams (item 3b)', () => {
     expect(out[0].team).toContain('d5');
   });
 
+  it('together constraint: group members appear all-or-none, never a strict subset', () => {
+    const out = enumerateTeams({
+      ...base(),
+      constraints: { together: [['b2a', 'd4']] },
+    });
+    expect(out.length).toBeGreaterThan(0);
+    let both = 0;
+    for (const { team } of out) {
+      const n = (team.includes('b2a') ? 1 : 0) + (team.includes('d4') ? 1 : 0);
+      expect(n === 0 || n === 2).toBe(true);
+      if (n === 2) both++;
+    }
+    expect(both).toBeGreaterThan(0); // the pair is still reachable, just atomic
+  });
+
+  it('companions constraint: fielding the unit requires a satisfier on the team', () => {
+    const out = enumerateTeams({
+      ...base(),
+      constraints: { companions: [{ unit: 'd1', anyOf: ['b2b', 'd5'] }] },
+    });
+    expect(out.length).toBeGreaterThan(0);
+    let fielded = 0;
+    for (const { team } of out) {
+      if (!team.includes('d1')) continue;
+      fielded++;
+      expect(team.includes('b2b') || team.includes('d5')).toBe(true);
+    }
+    expect(fielded).toBeGreaterThan(0); // d1 (top value) still gets fielded
+    // the unit can never satisfy its own dependency
+    const self = enumerateTeams({
+      ...base(),
+      constraints: { companions: [{ unit: 'd1', anyOf: ['d1'] }] },
+    });
+    expect(self.some(({ team }) => team.includes('d1'))).toBe(false);
+  });
+
   it('bounds the candidate list at topK', () => {
     const out = enumerateTeams({ ...base(), topK: 7 });
     expect(out).toHaveLength(7);

@@ -29,15 +29,21 @@ async function generate(browser, { noPool }) {
   await page.goto(`${base}/roster`, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Wind', exact: true }).click();
   const t0 = Date.now();
-  await page.getByRole('button', { name: /Calculate top 5 teams/ }).click();
-  await page.waitForSelector('.roster-cards', { timeout: 60000 });
+  // noWaitAfter: the in-process fallback runs sims ON the main thread, so
+  // playwright's post-click settlement (which needs an event-loop turn) can
+  // outwait its action timeout on a long generation. Skip it and let the
+  // result selectors below do the waiting.
+  await page
+    .getByRole('button', { name: /Calculate top 5 teams/ })
+    .click({ noWaitAfter: true, timeout: 60000 });
+  await page.waitForSelector('.roster-cards', { timeout: 120000 });
   // wait until the roster total has rendered a non-empty value
   await page.waitForFunction(
     () => {
       const el = document.querySelector('.rg-dmg.big');
       return el && el.textContent && el.textContent.trim().length > 0;
     },
-    { timeout: 60000 },
+    { timeout: 120000 },
   );
   const ms = Date.now() - t0;
   const sig = await page.$$eval('.rg-dmg', (els) =>
@@ -56,13 +62,15 @@ async function rerun(browser) {
   await page.getByRole('button', { name: 'Wind', exact: true }).click();
   const time = async () => {
     const t0 = Date.now();
-    await page.getByRole('button', { name: /Calculate top 5 teams/ }).click();
+    await page
+      .getByRole('button', { name: /Calculate top 5 teams/ })
+      .click({ noWaitAfter: true, timeout: 60000 });
     await page.waitForFunction(
       () => {
         const el = document.querySelector('.rg-dmg.big');
         return el && el.textContent && el.textContent.trim().length > 0;
       },
-      { timeout: 60000 },
+      { timeout: 120000 },
     );
     return Date.now() - t0;
   };
@@ -96,6 +104,11 @@ try {
     console.error('ROSTER MISMATCH — pool path is not byte-identical');
     process.exitCode = 1;
   }
+} catch (e) {
+  // without this, a thrown arm dies into the finally's process.exit(0) and the
+  // check "passes" having printed nothing (found the hard way, 2026-07-24)
+  console.error('CHECK FAILED:', e);
+  process.exitCode = 1;
 } finally {
   await browser.close();
   process.exit(process.exitCode ?? 0);

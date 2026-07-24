@@ -105,6 +105,29 @@ export const SYNERGY_PAIRS: [string, string][] = [
 ];
 export const SYNERGY_WEIGHT = 0.08;
 
+// Hard roster rules (owner ruling 2026-07-24). The curated always-include sets
+// (SOLO/UNION_ALWAYS_COMBOS) are RETIRED — the item-3 marginal-value search
+// fields the meta supports on its own (A/B artifact:
+// docs/handoffs/2026-07-24-always-combos-ab.md). What remains are CONDITIONS on
+// being fielded, not reasons to field anyone:
+//   - mint + prika must share a team (their kit pairing is under-modeled today;
+//     the sim can't see the split cost, so the rule carries it. Relaxes only if
+//     one of them is unavailable to the search).
+//   - naga requires a shield-granting teammate (owner ruling: her kit depends
+//     on a shielder being present) — anyOf = every `shield`-tagged unit except
+//     naga herself (she cannot satisfy her own dependency).
+export const TEAM_CONSTRAINTS = {
+  together: [['mint', 'prika']],
+  companions: [
+    {
+      unit: 'naga',
+      anyOf: Object.entries(archetypeTags)
+        .filter(([slug, tags]) => slug !== 'naga' && tags.includes('shield'))
+        .map(([slug]) => slug),
+    },
+  ],
+};
+
 /** Fully serializable generator-calc request — safe to postMessage to a worker. */
 export interface GenCalcParams {
   weakness: Element | null;
@@ -148,6 +171,7 @@ export function buildGenCalc(
       pairs: SYNERGY_PAIRS,
       weight: SYNERGY_WEIGHT,
     },
+    constraints: TEAM_CONSTRAINTS,
     evaluator,
   });
 }
