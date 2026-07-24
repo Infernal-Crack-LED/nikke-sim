@@ -105,8 +105,9 @@ describe('crown — S1 "One for All" (fullBurstEnter)', () => {
 
   // C2: nonBurstCasters → defPct 37.44 + reloadSpeedPct 44.35 (15s)
   it('C2: nonBurstCasters get defPct 37.44 (disjoint from burstCasters)', () => {
-    // In the control comp, B3 units (ada, helm) sometimes miss a burst cast → they
-    // become nonBurstCasters and receive defPct instead of casterAtkPct.
+    // In the control comp, the two B3s (ada, helm) ALTERNATE bursts — exactly one casts
+    // per chain (burstCaster → casterAtkPct), the other sits out (nonBurstCaster → defPct).
+    // So nonBurstCasters always has at least one member.
     const defBuffs = shippedBuffs.filter(
       (e) =>
         e.stat === 'defPct' &&

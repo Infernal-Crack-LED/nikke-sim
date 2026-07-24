@@ -13,6 +13,7 @@ chargeFrames 0 · hitsPerShot 1 · Pilgrim.
 ---
 
 ## 1. Real kit (data/characters.json — ground truth)
+
 - **S1** ■ Activates at the start of Full Burst. Affects all allies who previously used their Burst Skills.
   - ATK ▲ 64.51% of the skill user's ATK for 15 sec · Reload Speed ▲ 44.35% for 15 sec.
   - ■ Affects all allies who did not previously use their Burst Skills.
@@ -31,14 +32,17 @@ chargeFrames 0 · hitsPerShot 1 · Pilgrim.
 ## 2. What the code does (override + blind re-derivations)
 
 **skill1.** ■ Two DISJOINT blocks at `fullBurstEnter` (fires on ANY team Full Burst, not just Crown's own):
+
 - **Burst casters** (allies who cast their burst this chain): `casterAtkPct 64.51` (64.51% of CROWN's ATK,
   not the target's own — a flat caster-scaled add) + `reloadSpeedPct 44.35`, both 15s.
 - **Non-burst casters** (allies who did NOT cast): `defPct 37.44` (damage-inert in the sim — DEF feeds no
   player-damage path) + `reloadSpeedPct 44.35`, both 15s.
 - The engine's `burstCasters`/`nonBurstCasters` target kinds reset at FB end, so membership is per-chain.
-  In a standard rotation (all four cast), nonBurstCasters is empty; B3 units that miss a cast land there.
+  In a standard comp with two alternating B3s, exactly one B3 casts per chain (burstCaster) and the other
+  sits out (nonBurstCaster) — so nonBurstCasters always has at least one member.
 
 **skill2.** ■ Two blocks modeling the Relax→heal→recovery chain:
+
 - **hitCount 860** (43 attacks × 20 stacks = 860 total hits) → self → `heal`. The Relax stacking mechanic
   itself is UNMODELED (incoming healing ▲ 4.06% is defensive); only the net firing cadence is captured.
 - **recovery** trigger (fires when Crown RECEIVES a heal — from her own S2 heal OR from a teammate healer
@@ -51,6 +55,7 @@ chargeFrames 0 · hitsPerShot 1 · Pilgrim.
 for shield-synergy kits; no HP pool modeled).
 
 **codeDrivenSurprises (from the blind re-derivations):**
+
 - S1's `casterAtkPct` is caster-scaled: 64.51% of CROWN's ATK added flat to each burst caster. A generic
   `atkPct` would scale off each target's OWN ATK — a different (and wrong) number.
 - S1's disjoint targeting means no unit ever gets BOTH the casterAtkPct AND the defPct in the same chain.
@@ -62,8 +67,10 @@ for shield-synergy kits; no HP pool modeled).
 ---
 
 ## 3. Driver's executive summary
+
 Crown is **faithfully modeled** (gauntlet verdict GO, faithfulness 0.9, 0 real gotchas, cross-family
 corroborated). The override encodes:
+
 - **S1** — `fullBurstEnter` disjoint team buffs: burst casters get `casterAtkPct 64.51` + `reloadSpeedPct 44.35`
   (15s); non-casters get `defPct 37.44` + `reloadSpeedPct 44.35` (15s). Owner-rebuilt 2026-07-16 after the
   materialize freeze inherited a blablalink mis-parse.
@@ -81,14 +88,18 @@ rules out both idiosyncratic AND systematic shared-prior error on the load-beari
 ---
 
 ## 4. Owner spot-checks (the honest residual)
+
 This GO is **cross-family corroborated** — S2b (fable) + S5/S6/S7 (opus) ran on a different model family than
 the Qwen driver, substantially stronger than same-model only. Residual:
+
 1. **S2 recovery cadence** — the `hitCount 860` → heal → recovery chain is a DERIVED model of the Relax cycle.
    The 43×20 = 860 total is from the prose, but the actual in-game stacking cadence (MG fire rate, reload
    interruptions) is unmeasured. Effective team-AD uptime is unknown until probed in a real fight.
-2. **S1 burst-scoping** — `burstCasters`/`nonBurstCasters` membership depends on the rotation. In the control
-   comp (all four cast), nonBurstCasters is empty. In a comp where a B3 misses a cast, the split matters.
-   The blind reviewers converged on the disjoint structure, but per-comp rotation behavior is untested.
+2. **S1 burst-scoping** — `burstCasters`/`nonBurstCasters` membership depends on the rotation. In a standard
+   comp with two alternating B3s, exactly one B3 casts per chain (burstCaster → casterAtkPct) and the other
+   sits out (nonBurstCaster → defPct). The control comp confirmed this: 11 defPct events on slots 2/3 (ada
+   and helm alternating). The disjoint split is working as designed; the open question is whether the
+   casterAtkPct magnitude is correctly measured against real recordings of this alternating pattern.
 3. **Measurement-gated magnitudes** — 64.51 / 44.35 / 37.44 / 20.99 / 36.24 / 10.45 match the prose exactly
    but are not independently re-measured; the gauntlet certifies STRUCTURE, not numbers.
 4. **Board:** crown reads **1.000 (OK, σ=0.046)** — perfect fit. But Crown has ZERO self-damage kit lines,
