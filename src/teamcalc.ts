@@ -50,6 +50,12 @@ export interface TeamCalcInput {
   /** Per-unit loadout resolver (e.g. 12/12 lines that differ per unit). Overrides
    *  `loadout` when present; falls back to `loadout` for units it doesn't resolve. */
   loadoutFor?: (slug: string) => UnitOptions;
+  /** Serializable alternative to `loadoutFor` (functions don't cross a web-worker
+   *  boundary): a materialized per-slug loadout map, resolved on the main thread.
+   *  Wins over `loadoutFor`/`loadout` for any slug it contains; falls through to
+   *  them for slugs it doesn't. Produces byte-identical sims to the equivalent
+   *  `loadoutFor` (parity gate — src/teamcalc.loadouts-parity.test.ts). */
+  loadouts?: Record<string, UnitOptions>;
   blocked?: string[]; // excluded slugs (don't-own)
   /** DPS-pool prune size (top-N B3 by solo score). Higher = slower, more thorough. */
   poolB3?: number;
@@ -517,8 +523,13 @@ export function makeCalc(input: TeamCalcInput) {
   // per-unit loadout: pin the rotation stage for forced-burst Λ units so the sim
   // rotates Red Hood as a B3, consistent with how selection places her. Uses the
   // per-unit resolver (e.g. 12/12 lines) when supplied, else the uniform loadout.
+  const loadouts = input.loadouts;
   const baseLoadout = (slug: string): UnitOptions =>
-    input.loadoutFor ? input.loadoutFor(slug) : loadout;
+    loadouts && slug in loadouts
+      ? loadouts[slug]
+      : input.loadoutFor
+        ? input.loadoutFor(slug)
+        : loadout;
   const unitLoadout = (slug: string) => {
     const forced = FORCED_BURST[slug];
     const lo = baseLoadout(slug);
