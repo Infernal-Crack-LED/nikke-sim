@@ -421,6 +421,17 @@ and the full multiplier decomposition. Tests live in `scripts/tests/units/<slug>
   same-model limit (§14.1): both blind re-derivations converged leak-free and the one mechanical RED was a test
   artifact, not a misread. **Owner spot-check recommended** for the 1687 gate + Max-Ammo▼ tandem (highest-risk
   same-model reads) and the measurement-gated magnitudes.
+- **2026-07-23 · D14 ·** **Stage 9 added — per-unit manual-review doc** (`scripts/kit-autonomy/manual-review/<slug>.md`):
+  the owner's short-form review consolidating the real kit + the **blind code-only reconstruction** (what the sim
+  implements, independent of intent — the best short-form manual-review artifact) + the driver's executive summary
+  - owner spot-checks. **LOOP_DETECTED limitation:** generating the blind code-reconstruction via subagent failed
+    5× in this environment even with the loop-safe `sim.ts`/`types.ts` split (`scripts/blind-rebuild/code-bundle-now/`)
+    — the Qwen loop-detector kills subagents that read many engine files. **Fallback used for privaty:** the Jul-20
+    cached blind reconstruction (`scripts/blind-rebuild/reconstructions/privaty.json`) with a clearly-marked DRIVER
+    ANNOTATION correcting the one Jul-23 re-encoded line (the 1687 rider: was burstCast→DoT, now `lastBullet`→
+    `flatDamage` gated on `requiresTargetStatus:"Designated Target"`), the rest verified against the current code +
+    event-log probe. Documented as a known limitation in the skill (Stage 9); a fresh blind reconstruction needs an
+    environment without the aggressive loop-detector.
 
 ## 9. Open questions / residual risks
 
@@ -703,3 +714,5 @@ tandem (highest-risk same-model reads) and the measurement-gated magnitudes.
 - **Tracked templates + run artifacts:** `scripts/kit-autonomy/` (TEST-FAITHFULNESS-REVIEW / BLIND-TEST-WRITER /
   BLIND-OVERRIDE-WRITER / RECONCILING-JUDGE / README + `reviews/` + `blind/` + `results/`).
 - **The faithful, fully-unit-tested kit:** `scripts/tests/units/privaty.test.ts` (17 assertions, GREEN).
+- **Per-unit manual-review doc:** `scripts/kit-autonomy/manual-review/privaty.md` (real kit + blind code-only
+  reconstruction + driver executive summary + owner spot-checks — the owner's short-form review; Stage 9).
