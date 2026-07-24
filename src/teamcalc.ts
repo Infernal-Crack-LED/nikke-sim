@@ -7,12 +7,18 @@
 // also sustain the rotation: a ≤20s unit solo, or a ≤40s pair alternating — a
 // lone 40s/60s B1 or B2 can't burst every Full Burst cycle (see stageCovered).
 //
-// The search is a heuristic (team optimisation is a big space): rough-score
-// every candidate solo to prune the DPS pool, build a legal seed team by role,
-// then local-swap-refine on FULL-team sims (which capture support synergy). Not
-// guaranteed globally optimal — good and fast.
+// The search is a heuristic (team optimisation is a big space): price every
+// unit by its marginal damage vs a reference core (src/teamvalue.ts), enumerate
+// every legal team shape by sim-free proxy score, sim the best few dozen
+// candidates, then local-swap-refine the best few on FULL-team sims (which
+// capture support synergy). Not guaranteed globally optimal — good and fast.
 import { runSim } from './engine/sim.js';
 import { prepareTeam, type PrepareDeps, type UnitOptions } from './prepare.js';
+import {
+  buildValueTable,
+  enumerateTeams,
+  type ValueTable,
+} from './teamvalue.js';
 import type {
   CharacterData,
   Element,
@@ -50,6 +56,19 @@ export interface TeamCalcInput {
   /** Per-unit loadout resolver (e.g. 12/12 lines that differ per unit). Overrides
    *  `loadout` when present; falls back to `loadout` for units it doesn't resolve. */
   loadoutFor?: (slug: string) => UnitOptions;
+  /** Serializable alternative to `loadoutFor` (functions don't cross a web-worker
+   *  boundary): a materialized per-slug loadout map, resolved on the main thread.
+   *  Wins over `loadoutFor`/`loadout` for any slug it contains; falls through to
+   *  them for slugs it doesn't. Produces byte-identical sims to the equivalent
+   *  `loadoutFor` (parity gate — src/teamcalc.loadouts-parity.test.ts). */
+  loadouts?: Record<string, UnitOptions>;
+  /** Batch sim evaluator (roster-generator perf plan item 1b). When present, the
+   *  search delegates every full-team sim to this async batch instead of running
+   *  it in-process — a web-worker pool (web/src/simPool.ts) fans the batch across
+   *  cores. It receives ordered teams and returns their TeamResults in the SAME
+   *  order (null for a team whose sim threw). Omit → in-process sims (CLI/tests),
+   *  in which case bestTeam/topTeams still resolve synchronously under the hood. */
+  evaluator?: (teams: string[][]) => Promise<(TeamResult | null)[]>;
   blocked?: string[]; // excluded slugs (don't-own)
   /** DPS-pool prune size (top-N B3 by solo score). Higher = slower, more thorough. */
   poolB3?: number;
@@ -79,6 +98,31 @@ export interface TeamCalcInput {
     /** score bonus per satisfied pair (e.g. 0.08 → +8% per pair) */
     weight: number;
   };
+  /** Hard roster rules (owner ruling 2026-07-24 — replaces the retired curated
+   *  always-include sets; these are CONDITIONS on being fielded, never a reason
+   *  to field a unit):
+   *  - `together`: unit groups that must share a team or be absent entirely
+   *    (fielding a strict subset is illegal). A group with a member unavailable
+   *    to the search (blocked / not modeled) RELAXES silently — matching the
+   *    old combo-relax convention — so e.g. mint stays fieldable in a roster
+   *    that doesn't own prika.
+   *  - `companions`: if `unit` is fielded, its team must also field ≥1 of
+   *    `anyOf` (a kit dependency — STRICT: no eligible companion in the pool
+   *    means the unit cannot be fielded).
+   *  Enforced in team legality (seeds, refine swaps, injected meta comps) and
+   *  compiled into the proxy enumeration (src/teamvalue.ts). */
+  constraints?: {
+    together?: string[][];
+    companions?: { unit: string; anyOf: string[] }[];
+  };
+  /** Cross-run sim cache (perf plan item 5). `'shared'` reuses a process-level
+   *  cache bundle keyed by (cfg, loadout, loadouts) — a team's sim depends only on
+   *  those (+ static mult/deps), NOT on blocked/meta/synergy — so repeated
+   *  generations (re-clicking, tweaking pins/locks, toggling shaping) reuse every
+   *  prior sim. `'none'` (default) keeps a per-instance cache so the CLI/tests stay
+   *  hermetic. In the web the COORDINATOR passes `'shared'`; pool workers stay
+   *  stateless (`'none'`). */
+  cache?: 'shared' | 'none';
 }
 
 export interface TeamUnit {
@@ -102,6 +146,16 @@ export interface TeamResult {
 
 const NEED = { I: 1, II: 1, III: 2 } as const;
 
+// Proxy-enumeration search constants (perf plan item 3b). The enumeration keeps
+// the top ENUM_TOP_K candidates by sim-free proxy score, sims the best
+// ENUM_SIM_TOP of them, and refines the best ENUM_REFINE_TOP by REAL score.
+// ADAPTIVE_B3_FRAC widens the B3 pool past the fixed poolB3 rank cut: any B3
+// within this fraction of the top solo value stays in (see buildPool).
+const ADAPTIVE_B3_FRAC = 0.5;
+const ENUM_TOP_K = 150;
+const ENUM_SIM_TOP = 40;
+const ENUM_REFINE_TOP = 3;
+
 // Λ units the generators pin to a fixed burst slot instead of treating as a free
 // wildcard. Red Hood is unsupported as a solo B1/B2 over a 180s fight (her 40s
 // burst cooldown binds the whole rotation), so the team/roster generators only
@@ -116,6 +170,44 @@ const LAMBDA_STAGE: Record<'I' | 'II' | 'III', 1 | 2 | 3> = {
 /** Effective burst class for selection — a forced slot for pinned Λ units, else the char's own. */
 const effBurst = (slug: string, chars: Record<string, Char>): string =>
   FORCED_BURST[slug] ?? chars[slug].burst;
+
+// --- canonical team order (perf plan item 2) --------------------------------
+// A team's sim depends on the slugs-array ORDER two ways (measured — the item-2
+// premise probe): (1) the camera-focus unit is the middle slot (index 2), whose
+// charge weapon generates ×2.5 burst gauge (~4.9% swing); (2) buff-target ties
+// break by slot index (~0.5% swing). So a team is really a SET plus a focus
+// choice. canonicalTeamOrder maps any permutation of a set to ONE deterministic
+// array — burst class then slug-alpha, with the focus unit moved to index 2 — so
+// permutations collapse to a single sim/cache entry AND the focused unit is
+// deterministic instead of an accident of search insertion order.
+const BURST_RANK: Record<string, number> = { I: 0, II: 1, III: 2, Λ: 3 };
+/** Charge weapons (SR/RL) are the only ones the focus ×2.5 gauge bonus applies to. */
+export const isChargeWeapon = (
+  chars: Record<string, Char>,
+  slug: string,
+): boolean => {
+  const w = chars[slug]?.weapon;
+  return w === 'SR' || w === 'RL';
+};
+/** Deterministic slot order for a SET: burst class (I,II,III,Λ) then slug-alpha,
+ *  with `focus` (when supplied) placed at the camera-focus slot (index 2). Pure in
+ *  the set + focus, so every permutation of the set yields the SAME array. */
+export function canonicalTeamOrder(
+  slugs: string[],
+  chars: Record<string, Char>,
+  focus?: string,
+): string[] {
+  const rank = (s: string) => BURST_RANK[effBurst(s, chars)] ?? 9;
+  const sorted = [...slugs].sort(
+    (a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0),
+  );
+  if (!focus || !sorted.includes(focus)) return sorted;
+  const rest = sorted.filter((s) => s !== focus);
+  if (rest.length !== sorted.length - 1) return sorted; // duplicate-slug guard
+  const at = Math.min(2, sorted.length - 1);
+  rest.splice(at, 0, focus);
+  return rest;
+}
 
 function deficits(counts: Record<string, number>): number {
   return (
@@ -444,12 +536,83 @@ export function countSynergyPairs(
   return n;
 }
 
+// --- cross-run sim cache (perf plan item 5) ---------------------------------
+// A team's sim result depends ONLY on (cfg, loadout, loadouts) plus static
+// mult/deps — not on blocked/meta/synergy (those drive selection/scoring, which
+// read cached sims). So a process-level bundle keyed by those inputs lets repeated
+// generations reuse every prior sim. LRU keeps the last 3 configs; a soft entry cap
+// bounds the biggest maps. Opt-in via `cache: 'shared'` (web coordinator only).
+interface CacheBundle {
+  teamCache: Map<string, ReturnType<typeof runSim>>;
+  resultCache: Map<string, TeamResult | null>;
+  soloCache: Map<string, number>;
+  /** item 3a: value tables keyed by (pool + per-slug meta prior) — see getValueTable */
+  valueTables: Map<string, ValueTable>;
+}
+const SHARED_BUNDLES = new Map<string, CacheBundle>();
+const MAX_BUNDLES = 3;
+const MAX_TEAM_ENTRIES = 5000;
+
+/** Deterministic JSON with recursively sorted object keys, so two configs built the
+ *  same way hash identically regardless of key insertion order. */
+function stableStringify(v: unknown): string {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
+  if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
+  const keys = Object.keys(v as Record<string, unknown>).sort();
+  return `{${keys
+    .map((k) => `${JSON.stringify(k)}:${stableStringify((v as any)[k])}`)
+    .join(',')}}`;
+}
+
+function getBundle(hash: string): CacheBundle {
+  const hit = SHARED_BUNDLES.get(hash);
+  if (hit) {
+    SHARED_BUNDLES.delete(hash); // LRU touch
+    SHARED_BUNDLES.set(hash, hit);
+    return hit;
+  }
+  const bundle: CacheBundle = {
+    teamCache: new Map(),
+    resultCache: new Map(),
+    soloCache: new Map(),
+    valueTables: new Map(),
+  };
+  SHARED_BUNDLES.set(hash, bundle);
+  while (SHARED_BUNDLES.size > MAX_BUNDLES) {
+    const oldest = SHARED_BUNDLES.keys().next().value;
+    if (oldest === undefined) break;
+    SHARED_BUNDLES.delete(oldest);
+  }
+  return bundle;
+}
+
+/** Soft entry cap: evict oldest (Map insertion order) once past `cap`. */
+function capMap(m: Map<unknown, unknown>, cap: number): void {
+  while (m.size > cap) {
+    const k = m.keys().next().value;
+    if (k === undefined) break;
+    m.delete(k);
+  }
+}
+
 export function makeCalc(input: TeamCalcInput) {
   const { chars, mult, deps } = input;
   const loadout = input.loadout ?? {};
   const blocked = new Set(input.blocked ?? []);
   const poolB3 = input.poolB3 ?? 24;
   const rounds = input.rounds ?? 3;
+  // Sim caches: shared process-level bundle (keyed by the sim-determining inputs)
+  // when opted in, else per-instance (hermetic). See CacheBundle / item 5.
+  const bundle =
+    input.cache === 'shared'
+      ? getBundle(
+          stableStringify({
+            cfg: input.cfg,
+            loadout: input.loadout,
+            loadouts: input.loadouts,
+          }),
+        )
+      : null;
   const meta = input.meta;
   const META_W = meta?.weight ?? 0;
   const prydwenScore = input.prydwenScore;
@@ -486,8 +649,32 @@ export function makeCalc(input: TeamCalcInput) {
   const reqEl = input.requireElement ?? null;
   const elementOk = (slugs: string[]): boolean =>
     !reqEl || slugs.some((s) => chars[s].element === reqEl);
+  // Hard roster rules (see TeamCalcInput.constraints). Availability-resolved
+  // once: a `together` group missing an available member relaxes; a companion
+  // rule keeps only satisfiers the search could actually field.
+  const availTo = (s: string): boolean => !!chars[s] && !blocked.has(s);
+  const together = (input.constraints?.together ?? []).filter((g) =>
+    g.every(availTo),
+  );
+  const companions = (input.constraints?.companions ?? [])
+    .filter((c) => !!chars[c.unit])
+    .map((c) => ({
+      unit: c.unit,
+      anyOf: c.anyOf.filter((s) => s !== c.unit && availTo(s)),
+    }));
+  const constraintsOk = (slugs: string[]): boolean => {
+    for (const g of together) {
+      const n = g.reduce((k, s) => k + (slugs.includes(s) ? 1 : 0), 0);
+      if (n > 0 && n < g.length) return false;
+    }
+    for (const { unit, anyOf } of companions) {
+      if (slugs.includes(unit) && !anyOf.some((s) => slugs.includes(s)))
+        return false;
+    }
+    return true;
+  };
   const legal = (slugs: string[]): boolean =>
-    isLegal(slugs, chars) && elementOk(slugs);
+    isLegal(slugs, chars) && elementOk(slugs) && constraintsOk(slugs);
 
   // Meta prior for a team in [0,1]: mean unit popularity, plus an exact-comp
   // bonus when the 5-unit set matches a popular ranker comp. 0 when no meta.
@@ -517,8 +704,13 @@ export function makeCalc(input: TeamCalcInput) {
   // per-unit loadout: pin the rotation stage for forced-burst Λ units so the sim
   // rotates Red Hood as a B3, consistent with how selection places her. Uses the
   // per-unit resolver (e.g. 12/12 lines) when supplied, else the uniform loadout.
+  const loadouts = input.loadouts;
   const baseLoadout = (slug: string): UnitOptions =>
-    input.loadoutFor ? input.loadoutFor(slug) : loadout;
+    loadouts && slug in loadouts
+      ? loadouts[slug]
+      : input.loadoutFor
+        ? input.loadoutFor(slug)
+        : loadout;
   const unitLoadout = (slug: string) => {
     const forced = FORCED_BURST[slug];
     const lo = baseLoadout(slug);
@@ -526,8 +718,9 @@ export function makeCalc(input: TeamCalcInput) {
   };
 
   // memoize full-team sims (keyed by ordered slugs) and solo scores so repeated
-  // bestTeam calls (topTeams) and refine rounds don't re-sim the same teams.
-  const teamCache = new Map<string, ReturnType<typeof runSim>>();
+  // bestTeam calls (topTeams) and refine rounds don't re-sim the same teams. Maps
+  // come from the shared bundle when opted in (item 5), else are per-instance.
+  const teamCache = bundle?.teamCache ?? new Map<string, ReturnType<typeof runSim>>();
   const simTeam = (slugs: string[]) => {
     const key = slugs.join(',');
     const hit = teamCache.get(key);
@@ -536,12 +729,94 @@ export function makeCalc(input: TeamCalcInput) {
     const prepared = prepareTeam(cs, slugs.map(unitLoadout), deps);
     const r = runSim(cs, mult, { ...input.cfg, slugs } as SimConfig, prepared);
     teamCache.set(key, r);
+    capMap(teamCache, MAX_TEAM_ENTRIES);
     return r;
   };
 
+  const toResult = (r: ReturnType<typeof simTeam>): TeamResult => ({
+    slugs: r.units.map((u) => u.slug),
+    teamDamage: r.teamDamage,
+    teamDps: r.teamDps,
+    fullBursts: r.fullBursts,
+    fullBurstUptime: r.fullBurstUptime,
+    units: r.units.map((u) => ({
+      slug: u.slug,
+      name: u.name,
+      burst: u.burst,
+      weapon: u.weapon,
+      element: u.element,
+      advantaged: u.advantaged,
+      share: u.share,
+      totalDamage: u.totalDamage,
+    })),
+  });
+
+  // In-process sim → TeamResult (never throws to the batch layer; caught → null).
+  const localEval = (team: string[]): TeamResult | null => {
+    try {
+      return toResult(simTeam(team));
+    } catch {
+      return null;
+    }
+  };
+
+  // Batch-evaluate teams to TeamResults, memoized by ordered slugs (perf plan 1b).
+  // Cache hits are served immediately; misses go to `input.evaluator` (a worker
+  // pool) when present, else run in-process. Order-preserving; null = sim error.
+  const resultCache = bundle?.resultCache ?? new Map<string, TeamResult | null>();
+  const evalTeams = async (
+    teams: string[][],
+  ): Promise<(TeamResult | null)[]> => {
+    const out: (TeamResult | null)[] = new Array(teams.length);
+    const missTeams: string[][] = [];
+    const missIdx: number[] = [];
+    teams.forEach((t, i) => {
+      const k = t.join(',');
+      if (resultCache.has(k)) out[i] = resultCache.get(k)!;
+      else {
+        missTeams.push(t);
+        missIdx.push(i);
+      }
+    });
+    if (missTeams.length) {
+      const got = input.evaluator
+        ? await input.evaluator(missTeams)
+        : missTeams.map(localEval);
+      got.forEach((r, k) => {
+        resultCache.set(missTeams[k].join(','), r ?? null);
+        out[missIdx[k]] = r ?? null;
+      });
+      capMap(resultCache, MAX_TEAM_ENTRIES);
+    }
+    return out;
+  };
+
   // rough solo score to prune the (large) B3 DPS pool. Supports (B1/B2) are
-  // kept wholesale — they score poorly solo but enable teams.
-  const soloCache = new Map<string, number>();
+  // kept wholesale — they score poorly solo but enable teams. DELIBERATELY the
+  // 5-COPY sim, not a 1-unit sim (item 3a revisited): the plan drafted 1-unit
+  // (22/24 identical top-24, ~3× cheaper), but a unit's ally-buffs apply to its
+  // own copies, so the 5-copy metric prices support-B3s' self-synergy — with
+  // 1-unit ranks the legacy seed never reaches the support-B3 basin and bestTeam
+  // measurably lost 5.7% score on the no-meta bench. A failed sim warns once
+  // instead of silently caching 0.
+  const soloCache = bundle?.soloCache ?? new Map<string, number>();
+  const soloWarned = new Set<string>();
+  const warnSolo = (slug: string): void => {
+    if (soloWarned.has(slug)) return;
+    soloWarned.add(slug);
+    console.warn(`teamcalc: solo sim failed for ${slug} — score 0`);
+  };
+  // Warm solo scores for `slugs` in ONE batch (through the evaluator when present)
+  // so buildPool/canonicalFocus can read them synchronously without blocking.
+  const warmSolo = async (slugs: string[]): Promise<void> => {
+    const miss = slugs.filter((s) => !soloCache.has(s) && chars[s]);
+    if (!miss.length) return;
+    const results = await evalTeams(miss.map((s) => [s, s, s, s, s]));
+    results.forEach((r, i) => {
+      if (!r) warnSolo(miss[i]);
+      soloCache.set(miss[i], r ? r.units[0].totalDamage : 0);
+    });
+  };
   const soloScore = (slug: string): number => {
     const hit = soloCache.get(slug);
     if (hit !== undefined) return hit;
@@ -549,10 +824,133 @@ export function makeCalc(input: TeamCalcInput) {
     try {
       v = simTeam([slug, slug, slug, slug, slug]).units[0].totalDamage;
     } catch {
+      warnSolo(slug);
       v = 0;
     }
     soloCache.set(slug, v);
     return v;
+  };
+
+  // --- canonical focus + set-keyed evaluation (perf plan item 2) -------------
+  // The search's focus for a team: the highest-solo-score charge unit (SR/RL) in
+  // the set, else none (no charge unit → focus bonus is inert). Deterministic and
+  // order-independent — replaces "whoever landed in the middle slot". soloScore
+  // must be warmed first (warmSolo), so this never re-enters the sim.
+  const canonicalFocus = (set: string[]): string | undefined => {
+    let best: string | undefined;
+    let bestV = -Infinity;
+    for (const s of set) {
+      if (!isChargeWeapon(chars, s)) continue;
+      const v = soloScore(s);
+      if (v > bestV) {
+        bestV = v;
+        best = s;
+      }
+    }
+    return best;
+  };
+  // Evaluate SETS: canonicalize each to its (order + search-focus) representative
+  // before simming, so every permutation of a set collapses to ONE cache entry and
+  // the focused unit is deterministic. The search uses this everywhere (refine,
+  // seed comps); warmSolo bypasses it (5-copy solo arrays are already canonical).
+  const evalSets = async (
+    sets: string[][],
+  ): Promise<(TeamResult | null)[]> =>
+    evalTeams(sets.map((s) => canonicalTeamOrder(s, chars, canonicalFocus(s))));
+  // Final polish on a WINNING team only (≤5 sims): try each charge unit as the
+  // camera focus (+ a no-charge-focus arrangement), keep the highest-scoring, and
+  // return that arrangement so TeamResult.slugs is the recommended slot order (focus
+  // at index 2). The set is unchanged, so meta/synergy/spread factors are constant —
+  // maximizing scoreOf picks the best focus. Guarantees score ≥ the search's pick.
+  const focusFinalize = async (team: TeamResult): Promise<TeamResult> => {
+    const set = team.units.map((u) => u.slug);
+    const charge = set.filter((s) => isChargeWeapon(chars, s));
+    if (!charge.length) return team; // focus inert — canonical order already final
+    const focuses: (string | undefined)[] = [...charge, undefined];
+    const arrs = focuses.map((f) => canonicalTeamOrder(set, chars, f));
+    const results = await evalTeams(arrs);
+    let best = team;
+    let bestScore = scoreOf(team);
+    for (const r of results) {
+      if (!r) continue;
+      const sc = scoreOf(r);
+      if (sc > bestScore) {
+        best = r;
+        bestScore = sc;
+      }
+    }
+    return best;
+  };
+
+  // --- value table + proxy enumeration (perf plan item 3) --------------------
+  // Memoized per (pool + per-slug meta prior); the bundle carries the map so
+  // repeated generations reuse it (the marginal sims also hit teamCache). The
+  // prior is part of the key because the reference-core support pick depends on
+  // it and the shared bundle is keyed only by (cfg, loadout, loadouts).
+  const valueTables = bundle?.valueTables ?? new Map<string, ValueTable>();
+  const getValueTable = async (pool: string[]): Promise<ValueTable> => {
+    const key = [...pool]
+      .sort()
+      .map((s) => `${s}:${meta ? meta.unitScore(s) : ''}`)
+      .join(',');
+    const hit = valueTables.get(key);
+    if (hit) return hit;
+    const vt = await buildValueTable({
+      pool,
+      effBurst: eb,
+      cooldownOf: (s) => chars[s].burstCooldownSec,
+      soloValue: soloScore,
+      unitPrior: meta ? (s) => meta.unitScore(s) : undefined,
+      evalSets,
+      cdShort: CD_SHORT,
+    });
+    valueTables.set(key, vt);
+    capMap(valueTables, 8);
+    return vt;
+  };
+
+  // Enumerate top-K candidate SETS for a pool by sim-free proxy score (item 3b).
+  // mustInclude units are guaranteed a spot in their class pool (they may be
+  // blocked or pruned out of the B3 cut — an explicit lock wins). Returns [] when
+  // the locks don't fit the enumerated shapes (e.g. a pinned double-B1 team) —
+  // the caller falls back to the legacy role-fill seed.
+  const enumerateCandidates = (
+    pool: string[],
+    vt: ValueTable,
+    mustInclude: string[],
+    seedTarget?: number,
+  ): string[][] => {
+    const poolOf = (b: string) => pool.filter((s) => eb(s) === b);
+    const b1s = poolOf('I');
+    const b2s = poolOf('II');
+    // Λ units go in the B3 dimension (the only Λ, red-hood, is force-pinned to
+    // III by effBurst; a future free wildcard would still be fielded as a B3).
+    const b3s = [...poolOf('III'), ...poolOf('Λ')];
+    for (const s of mustInclude) {
+      const b = eb(s);
+      const dim = b === 'I' ? b1s : b === 'II' ? b2s : b3s;
+      if (!dim.includes(s)) dim.push(s);
+    }
+    return enumerateTeams({
+      poolB1: b1s,
+      poolB2: b2s,
+      poolB3: b3s,
+      cooldownOf: (s) => chars[s].burstCooldownSec,
+      value: (s) => vt.values.get(s) ?? soloScore(s),
+      mustInclude,
+      advantaged: reqEl ? (s) => chars[s].element === reqEl : undefined,
+      unitPrior: meta ? (s) => meta.unitScore(s) : undefined,
+      metaWeight: META_W,
+      synergy,
+      spread:
+        seedTarget !== undefined && prydwenScore
+          ? { unitScore: prydwenScore, target: seedTarget, sigma: SPREAD_SIGMA }
+          : undefined,
+      constraints: { together, companions },
+      cdShort: CD_SHORT,
+      cdPair: CD_PAIR,
+      topK: ENUM_TOP_K,
+    }).map((c) => c.team);
   };
 
   const buildPool = (extraExclude: Set<string>): string[] => {
@@ -560,10 +958,15 @@ export function makeCalc(input: TeamCalcInput) {
       (s) => !blocked.has(s) && !extraExclude.has(s),
     );
     const byBurst = (b: string) => avail.filter((s) => eb(s) === b);
-    const topB3 = byBurst('III')
+    // Adaptive B3 prune (item 3b): keep the top-`poolB3` by rank PLUS any B3
+    // within ADAPTIVE_B3_FRAC of the best solo value — so the pool tracks the
+    // roster's actual damage spread instead of a fixed count as it grows.
+    const rankedB3 = byBurst('III')
       .map((s) => [s, soloScore(s)] as const)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, poolB3)
+      .sort((a, b) => b[1] - a[1]);
+    const topVal = rankedB3[0]?.[1] ?? 0;
+    const topB3 = rankedB3
+      .filter(([, v], i) => i < poolB3 || v >= topVal * ADAPTIVE_B3_FRAC)
       .map(([s]) => s);
     // meta-relevant B3s the solo-damage prune drops but top players field anyway
     // (a popular support-DPS can score low solo yet belong in the pool)
@@ -577,16 +980,17 @@ export function makeCalc(input: TeamCalcInput) {
     return [...topB3, ...byBurst('I'), ...byBurst('II'), ...byBurst('Λ')];
   };
 
-  // legal seed by role: fill 2×B3 (Λ substitutes), then satisfy the B1 and B2
-  // cooldown rule (stageCovered), then best flex. With locked units
-  // (mustInclude), pin them first and fill the outstanding needs around them.
-  // The B1/B2 fill is cooldown-aware: a ≤20s caster is taken solo, otherwise a
-  // ≤40s pair is fielded to alternate — so the seed never emits a team with a
-  // lone 40s/60s B1 or B2 that isLegal would reject (gapped rotation).
+  // Legacy role-fill seed — since item 3b this is the FALLBACK only, for lock
+  // sets the proxy enumeration's shapes can't express (e.g. a pinned double-B1
+  // team). Fill 2×B3 (Λ substitutes), then satisfy the B1 and B2 cooldown rule
+  // (stageCovered), then best flex. With locked units (mustInclude), pin them
+  // first and fill the outstanding needs around them. The B1/B2 fill is
+  // cooldown-aware: a ≤20s caster is taken solo, otherwise a ≤40s pair is
+  // fielded to alternate — so the seed never emits a team with a lone 40s/60s
+  // B1 or B2 that isLegal would reject (gapped rotation).
   const seedTeam = (
     pool: string[],
     mustInclude?: string[],
-    flexStage?: 'I' | 'II',
     target?: number,
   ): string[] => {
     const score = new Map(pool.map((s) => [s, soloScore(s)]));
@@ -644,10 +1048,6 @@ export function makeCalc(input: TeamCalcInput) {
     }
     coverStage('I');
     coverStage('II');
-    // Optional double-support flex: seed the flex as an extra B1/B2 so shapes
-    // like B1+B2+B2+B3+B3 get explored — the solo-scored flex below rarely picks
-    // a support, and refine is role-restricted so it can't promote a B3 flex.
-    if (flexStage && team.length < 5) take((s) => eb(s) === flexStage);
     while (team.length < 5) {
       if (!take(() => true)) break; // flex
     }
@@ -683,24 +1083,31 @@ export function makeCalc(input: TeamCalcInput) {
     return team.slice(0, 5);
   };
 
-  // local search: swap each slot for a pool alternative, keep improvements.
-  // `scoreFn` overrides the ranking score (the solo spread passes a target-biased
-  // score); defaults to scoreOf so other callers are unchanged.
-  const refine = (
+  // local search: swap each slot for a pool alternative, keep improvements. Per
+  // slot it now evaluates ALL legal same-class candidates in one batch and applies
+  // the single BEST improvement (per-slot argmax), rather than the first one found
+  // mid-scan — deterministic (stable tie-break = pool order) and it fans out to the
+  // worker pool one slot at a time (perf plan item 1b). `scoreFn` overrides the
+  // ranking score (the solo spread passes a target-biased score); defaults to scoreOf.
+  const refine = async (
     start: string[],
     pool: string[],
     locked: Set<string>,
     scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number,
-  ): TeamResult => {
+  ): Promise<TeamResult> => {
     const score = scoreFn ?? scoreOf;
     let team = start;
-    let best = simTeam(team);
+    let best =
+      (await evalSets([team]))[0] ??
+      toResult(simTeam(canonicalTeamOrder(team, chars, canonicalFocus(team))));
     let bestScore = score(best);
     for (let round = 0; round < rounds; round++) {
       let improved = false;
       for (let i = 0; i < 5; i++) {
         if (locked.has(team[i])) continue;
         const slotBurst = eb(team[i]);
+        // collect every legal same-class candidate for this slot, then batch-sim
+        const cands: string[][] = [];
         for (const alt of pool) {
           if (team.includes(alt)) continue;
           // role-restrict: only swap for the same burst class (or Λ either way)
@@ -711,47 +1118,44 @@ export function makeCalc(input: TeamCalcInput) {
           const cand = team.slice();
           cand[i] = alt;
           if (!legal(cand)) continue;
-          const r = simTeam(cand);
+          cands.push(cand);
+        }
+        if (!cands.length) continue;
+        const results = await evalSets(cands);
+        // argmax over improvements; first candidate (pool order) wins ties
+        let pickScore = bestScore;
+        let pick: TeamResult | null = null;
+        let pickTeam: string[] | null = null;
+        for (let k = 0; k < cands.length; k++) {
+          const r = results[k];
+          if (!r) continue;
           const sc = score(r);
-          if (sc > bestScore) {
-            best = r;
-            bestScore = sc;
-            team = cand;
-            improved = true;
+          if (sc > pickScore) {
+            pickScore = sc;
+            pick = r;
+            pickTeam = cands[k];
           }
+        }
+        if (pick && pickTeam) {
+          best = pick;
+          bestScore = pickScore;
+          team = pickTeam;
+          improved = true;
         }
       }
       if (!improved) break;
     }
-    return toResult(best);
+    return best;
   };
 
-  const toResult = (r: ReturnType<typeof simTeam>): TeamResult => ({
-    slugs: r.units.map((u) => u.slug),
-    teamDamage: r.teamDamage,
-    teamDps: r.teamDps,
-    fullBursts: r.fullBursts,
-    fullBurstUptime: r.fullBurstUptime,
-    units: r.units.map((u) => ({
-      slug: u.slug,
-      name: u.name,
-      burst: u.burst,
-      weapon: u.weapon,
-      element: u.element,
-      advantaged: u.advantaged,
-      share: u.share,
-      totalDamage: u.totalDamage,
-    })),
-  });
-
-  const bestTeam = (opts?: {
+  const bestTeam = async (opts?: {
     exclude?: Set<string>;
     mustInclude?: string[];
     /** ranking-score override (solo spread passes a target-biased score) */
     scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number;
     /** soft prydwen meta-sum target the seed biases toward (solo spread) */
     seedTarget?: number;
-  }): TeamResult | null => {
+  }): Promise<TeamResult | null> => {
     const exclude = opts?.exclude ?? new Set<string>();
     const score = opts?.scoreFn ?? scoreOf;
     // Locked units override the blocked list (an explicit lock wins over a
@@ -760,41 +1164,74 @@ export function makeCalc(input: TeamCalcInput) {
     const mustInclude = (opts?.mustInclude ?? []).filter(
       (s, i, a) => chars[s] && !exclude.has(s) && a.indexOf(s) === i,
     );
+    // Warm every candidate's solo score in ONE batch first, so buildPool's B3
+    // prune + seedTeam's ranking read soloCache synchronously (perf plan 1b).
+    await warmSolo(
+      Object.keys(chars).filter((s) => !blocked.has(s) && !exclude.has(s)),
+    );
     const pool = buildPool(exclude);
-    const seed = seedTeam(pool, mustInclude, undefined, opts?.seedTarget);
-    if (!legal(seed)) return null; // e.g. everything useful blocked
     const locked = new Set(mustInclude);
-    let best = refine(seed, pool, locked, score);
-    let bestScore = score(best);
-    // Double-B2 shapes (B1+B2+B2+2×B3) are common optimal teams, but the
-    // solo-scored flex rarely picks a support and refine is role-restricted (it
-    // can't turn a B3 flex into a B2). Re-seed with the flex biased to an extra
-    // B2 so those shapes compete on score. Burst I is deliberately NOT biased
-    // here: it's the scarcest required role, so letting one team hoard a second
-    // B1 would starve the rest of a disjoint roster (topTeams-role-bound.test.ts
-    // pins that team count tracks the Burst-I count). Double-B1 teams remain
-    // reachable via locked units and injected meta comps.
-    const b2Seed = seedTeam(pool, mustInclude, 'II', opts?.seedTarget);
-    if (legal(b2Seed)) {
-      const r = refine(b2Seed, pool, locked, score);
-      const sc = score(r);
-      if (sc > bestScore) {
-        best = r;
-        bestScore = sc;
+    // Proxy-enumeration pipeline (item 3b): value table → enumerate every legal
+    // shape and keep the top-K by sim-free proxy → sim the best ENUM_SIM_TOP →
+    // refine the best ENUM_REFINE_TOP by REAL score. Replaces the role-fill
+    // seed + the old b2Seed special case: double-B2 shapes are a first-class
+    // enumeration dimension now, competing on proxy score instead of needing a
+    // biased re-seed. Double-B1 stays excluded from the shapes (Burst I is the
+    // scarcest required role — topTeams-role-bound.test.ts pins that team count
+    // tracks the Burst-I count); double-B1 teams remain reachable via locks.
+    let best: TeamResult | null = null;
+    let bestScore = -Infinity;
+    const vt = await getValueTable(pool);
+    const cands = enumerateCandidates(pool, vt, mustInclude, opts?.seedTarget);
+    if (cands.length) {
+      // SHAPE STRATIFICATION: refine is role-restricted (a B2 slot only swaps
+      // to a B2), so it can never move between the two legal shapes — and an
+      // additive proxy can't price a second support's diminishing return, so
+      // one shape crowds the other out of a plain top-N cut entirely (measured
+      // both directions on the no-meta bench as the value metric varied). Split
+      // the sim budget between the shapes and refine the best of EACH, so both
+      // basins are always explored (the data-driven form of the old seed +
+      // b2Seed pair).
+      const shapeOf = (set: string[]): number =>
+        set.filter((s) => eb(s) === 'II').length; // 1 or 2
+      const byShape = [1, 2].map((n) => cands.filter((c) => shapeOf(c) === n));
+      const half = Math.ceil(ENUM_SIM_TOP / 2);
+      const sets: string[][] = [];
+      for (const [i, of1] of byShape.entries()) {
+        const other = byShape[1 - i];
+        const quota = half + Math.max(0, half - other.length);
+        sets.push(...of1.slice(0, quota));
       }
-    }
-    // full-team match: evaluate the popular ranker comps directly so a real meta
-    // team can win on score even if the local search never assembled it.
-    if (meta) {
-      for (const comp of meta.seedComps) {
-        if (
-          comp.length !== 5 ||
-          comp.some((s) => !chars[s] || blocked.has(s) || exclude.has(s)) ||
-          mustInclude.some((s) => !comp.includes(s)) ||
-          !legal(comp)
-        )
-          continue;
-        const r = toResult(simTeam(comp));
+      const results = await evalSets(sets);
+      const ranked = results
+        .map((r, i) => ({ r, set: sets[i] }))
+        .filter((x): x is { r: TeamResult; set: string[] } => !!x.r)
+        .sort((a, b) => score(b.r) - score(a.r));
+      // Refine starts: the best simmed candidate of each shape, plus the legacy
+      // role-fill seed as a third, deliberately DIFFERENT basin. The additive
+      // proxy can't price complementarity (a support-B3's value only realizes
+      // next to the right dealers), so its top candidates cluster in one
+      // neighborhood; the greedy seed starts from solo-damage logic instead and
+      // measurably rescues teams the proxy buries (no-meta bench: the winning
+      // 3-B3 team was outside the proxy's top-150).
+      const starts: string[][] = [];
+      for (const n of [1, 2]) {
+        const top = ranked.find((x) => shapeOf(x.set) === n);
+        if (top) starts.push(top.set);
+      }
+      const legacySeed = seedTeam(pool, mustInclude, opts?.seedTarget);
+      const key = (t: string[]) => [...t].sort().join(',');
+      if (
+        legal(legacySeed) &&
+        !starts.some((s) => key(s) === key(legacySeed))
+      )
+        starts.push(legacySeed);
+      for (const { set } of ranked) {
+        if (starts.length >= ENUM_REFINE_TOP) break;
+        if (!starts.includes(set)) starts.push(set);
+      }
+      for (const set of starts) {
+        const r = await refine(set, pool, locked, score);
         const sc = score(r);
         if (sc > bestScore) {
           best = r;
@@ -802,7 +1239,38 @@ export function makeCalc(input: TeamCalcInput) {
         }
       }
     }
-    return best;
+    // Fallback: locks that fit no enumerated shape (e.g. a pinned double-B1
+    // team) or every candidate sim failing → the legacy role-fill seed.
+    if (!best) {
+      const seed = seedTeam(pool, mustInclude, opts?.seedTarget);
+      if (!legal(seed)) return null; // e.g. everything useful blocked
+      best = await refine(seed, pool, locked, score);
+      bestScore = score(best);
+    }
+    // full-team match: evaluate the popular ranker comps directly (one batch) so a
+    // real meta team can win on score even if the local search never assembled it.
+    if (meta) {
+      const comps = meta.seedComps.filter(
+        (comp) =>
+          comp.length === 5 &&
+          !comp.some((s) => !chars[s] || blocked.has(s) || exclude.has(s)) &&
+          !mustInclude.some((s) => !comp.includes(s)) &&
+          legal(comp),
+      );
+      if (comps.length) {
+        const results = await evalSets(comps);
+        for (const r of results) {
+          if (!r) continue;
+          const sc = score(r);
+          if (sc > bestScore) {
+            best = r;
+            bestScore = sc;
+          }
+        }
+      }
+    }
+    // Focus post-pass on the winner: re-focus for the best camera slot (item 2).
+    return focusFinalize(best);
   };
 
   return {
@@ -820,14 +1288,14 @@ export function makeCalc(input: TeamCalcInput) {
      * 19/18/17/17/15) instead of stacking. Soft — damage, legality and pinned
      * locks outrank the target. Omit → unchanged greedy (no shaping).
      */
-    topTeams: (
+    topTeams: async (
       n: number,
       opts?: {
         pinnedByTeam?: string[][];
         mustUse?: string[];
         spreadTargets?: number[];
       },
-    ): TeamResult[] => {
+    ): Promise<TeamResult[]> => {
       const pinned = opts?.pinnedByTeam ?? [];
       const assigned = assignMustUse(opts?.mustUse ?? [], pinned, chars, n);
       const reserved: string[][] = Array.from({ length: n }, (_, i) => [
@@ -848,7 +1316,7 @@ export function makeCalc(input: TeamCalcInput) {
               scoreOf(r) *
               closeness(teamMetaSum(r.units.map((u) => u.slug)), target)
           : undefined;
-        const t = bestTeam({
+        const t = await bestTeam({
           exclude,
           mustInclude: reserved[i],
           scoreFn,
@@ -861,14 +1329,25 @@ export function makeCalc(input: TeamCalcInput) {
       return out;
     },
     /** Best team built around a pinned unit + that unit's line in it. */
-    characterAnalysis: (
+    characterAnalysis: async (
       slug: string,
-    ): { team: TeamResult; unit: TeamUnit } | null => {
-      const team = bestTeam({ mustInclude: [slug] });
+    ): Promise<{ team: TeamResult; unit: TeamUnit } | null> => {
+      const team = await bestTeam({ mustInclude: [slug] });
       if (!team) return null;
       const unit = team.units.find((u) => u.slug === slug)!;
       return { team, unit };
     },
     simTeam,
+    /** In-process sim → TeamResult (null on error). The pool worker's leaf op —
+     *  a stateless sim executor calls this per team (perf plan item 1b). */
+    simTeamResult: (team: string[]): TeamResult | null => localEval(team),
+    /** Canonical SET sim (perf plan item 2): TeamResult for a set, order-independent
+     *  — every permutation maps to one representative (canonical order + the set's
+     *  canonical charge focus) and hits a single cache entry. Warms solo scores so
+     *  the focus pick is stable. */
+    async simSet(set: string[]): Promise<TeamResult | null> {
+      await warmSolo(set);
+      return (await evalSets([set]))[0];
+    },
   };
 }

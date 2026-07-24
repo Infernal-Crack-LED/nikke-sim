@@ -101,7 +101,7 @@ describe('Union always-combos spread burst roles across teams (3 teams)', () => 
 });
 
 describe('generation still completes with the burst-aware pins', () => {
-  it('topTeams(5) builds 5 disjoint teams and the B1 spread survives the search', () => {
+  it('topTeams(5) builds 5 disjoint teams and the B1 spread survives the search', async () => {
     const calc = makeCalc({
       chars: chars as any,
       mult,
@@ -112,7 +112,7 @@ describe('generation still completes with the burst-aware pins', () => {
       rounds: 1,
     });
     const ac = assignAlwaysCombos(SOLO_ALWAYS_COMBOS, [[], [], [], [], []], chars as any, 5);
-    const top = calc.topTeams(5, { pinnedByTeam: ac.pinnedByTeam, mustUse: ac.singles });
+    const top = await calc.topTeams(5, { pinnedByTeam: ac.pinnedByTeam, mustUse: ac.singles });
     const topSlugs = top.map((r) => r.slugs);
     const slugs = topSlugs.flat();
     expect(top.length, 'topTeams(5) did not build 5 teams').toBe(5);

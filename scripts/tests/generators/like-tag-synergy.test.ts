@@ -94,13 +94,13 @@ describe('generation still completes with the synergy bias active', () => {
     synergy: { tags: archetypeTags, pairs: SYNERGY_PAIRS, weight: SYNERGY_WEIGHT },
   });
 
-  it('bestTeam builds with synergy', () => {
-    const bt = calc.bestTeam({});
+  it('bestTeam builds with synergy', async () => {
+    const bt = await calc.bestTeam({});
     expect(bt).not.toBeNull();
     expect(bt!.slugs).toHaveLength(5);
   });
 
-  it('topTeams(5) builds 5 disjoint teams with synergy', () => {
+  it('topTeams(5) builds 5 disjoint teams with synergy', async () => {
     const SOLO_ALWAYS_COMBOS: AlwaysCombos = {
       pairs: [
         ['mint', 'prika'],
@@ -110,7 +110,7 @@ describe('generation still completes with the synergy bias active', () => {
       singles: ['moran', 'anis-star', 'liter', 'little-mermaid', 'nayuta', 'privaty'],
     };
     const ac = assignAlwaysCombos(SOLO_ALWAYS_COMBOS, [[], [], [], [], []], chars as any, 5);
-    const top = calc.topTeams(5, { pinnedByTeam: ac.pinnedByTeam, mustUse: ac.singles });
+    const top = await calc.topTeams(5, { pinnedByTeam: ac.pinnedByTeam, mustUse: ac.singles });
     const slugs = top.flatMap((r) => r.slugs);
     expect(top).toHaveLength(5);
     expect(new Set(slugs).size, 'a unit was reused across teams').toBe(slugs.length);
