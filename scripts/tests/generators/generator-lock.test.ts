@@ -32,23 +32,23 @@ if (b1.length < 3 || b2.length < 2 || b3.length < 2) {
 const name = (s: string) => data.characters[s]?.name ?? s;
 
 describe('generator lock-in', () => {
-  it('no-lock bestTeam builds a legal 5-team, deterministically', () => {
-    const base1 = calc.bestTeam();
-    const base2 = calc.bestTeam();
+  it('no-lock bestTeam builds a legal 5-team, deterministically', async () => {
+    const base1 = await calc.bestTeam();
+    const base2 = await calc.bestTeam();
     expect(base1).not.toBeNull();
     expect(distinct5(base1!.slugs), 'no-lock team is not 5 distinct units').toBe(true);
     expect(base2).not.toBeNull();
     expect(base2!.slugs, 'no-lock bestTeam is not deterministic (behaviour changed)').toEqual(base1!.slugs);
   });
 
-  it('fields a single locked unit', () => {
-    const single = calc.bestTeam({ mustInclude: [b1[0]] });
+  it('fields a single locked unit', async () => {
+    const single = await calc.bestTeam({ mustInclude: [b1[0]] });
     expect(single, `single lock ${name(b1[0])} built nothing`).not.toBeNull();
     expect(single!.slugs).toContain(b1[0]);
   });
 
-  it('fields multiple compatible locks (B1 + B2 + B3)', () => {
-    const multi = calc.bestTeam({ mustInclude: [b1[0], b2[0], b3[0]] });
+  it('fields multiple compatible locks (B1 + B2 + B3)', async () => {
+    const multi = await calc.bestTeam({ mustInclude: [b1[0], b2[0], b3[0]] });
     expect(
       multi,
       `three compatible locks (${name(b1[0])}, ${name(b2[0])}, ${name(b3[0])}) built nothing`,
@@ -57,8 +57,8 @@ describe('generator lock-in', () => {
     for (const s of [b1[0], b2[0], b3[0]]) expect(multi!.slugs).toContain(s);
   });
 
-  it('refuses an impossible lock set (3× Burst I) rather than build an illegal team', () => {
-    expect(calc.bestTeam({ mustInclude: [b1[0], b1[1], b1[2]] })).toBeNull();
+  it('refuses an impossible lock set (3× Burst I) rather than build an illegal team', async () => {
+    expect(await calc.bestTeam({ mustInclude: [b1[0], b1[1], b1[2]] })).toBeNull();
   });
 
   it('locksFeasible agrees with what bestTeam can build', () => {
@@ -67,16 +67,16 @@ describe('generator lock-in', () => {
     expect(locksFeasible([b1[0], b1[1], b1[2]], chars as any), '3× Burst I reported feasible').toBe(false);
   });
 
-  it('no-lock topTeams builds 5 disjoint legal teams', () => {
-    const top = calc.topTeams(5);
+  it('no-lock topTeams builds 5 disjoint legal teams', async () => {
+    const top = await calc.topTeams(5);
     const topSlugs = top.flatMap((t) => t.slugs);
     expect(top).toHaveLength(5);
     expect(top.every((t) => distinct5(t.slugs)), 'a team is not 5 distinct units').toBe(true);
     expect(new Set(topSlugs).size, 'topTeams reused a unit across teams').toBe(topSlugs.length);
   });
 
-  it('honours pinned + generic locks without reusing a unit', () => {
-    const locked = calc.topTeams(5, { pinnedByTeam: [[b1[0]]], mustUse: [b3[1]] });
+  it('honours pinned + generic locks without reusing a unit', async () => {
+    const locked = await calc.topTeams(5, { pinnedByTeam: [[b1[0]]], mustUse: [b3[1]] });
     const lockedSlugs = locked.flatMap((t) => t.slugs);
     expect(locked.length, 'locked topTeams built nothing').toBeGreaterThan(0);
     expect(locked[0].slugs, `pinned ${name(b1[0])} is not on team 1`).toContain(b1[0]);

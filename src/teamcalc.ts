@@ -56,6 +56,13 @@ export interface TeamCalcInput {
    *  them for slugs it doesn't. Produces byte-identical sims to the equivalent
    *  `loadoutFor` (parity gate — src/teamcalc.loadouts-parity.test.ts). */
   loadouts?: Record<string, UnitOptions>;
+  /** Batch sim evaluator (roster-generator perf plan item 1b). When present, the
+   *  search delegates every full-team sim to this async batch instead of running
+   *  it in-process — a web-worker pool (web/src/simPool.ts) fans the batch across
+   *  cores. It receives ordered teams and returns their TeamResults in the SAME
+   *  order (null for a team whose sim threw). Omit → in-process sims (CLI/tests),
+   *  in which case bestTeam/topTeams still resolve synchronously under the hood. */
+  evaluator?: (teams: string[][]) => Promise<(TeamResult | null)[]>;
   blocked?: string[]; // excluded slugs (don't-own)
   /** DPS-pool prune size (top-N B3 by solo score). Higher = slower, more thorough. */
   poolB3?: number;
@@ -550,9 +557,76 @@ export function makeCalc(input: TeamCalcInput) {
     return r;
   };
 
+  const toResult = (r: ReturnType<typeof simTeam>): TeamResult => ({
+    slugs: r.units.map((u) => u.slug),
+    teamDamage: r.teamDamage,
+    teamDps: r.teamDps,
+    fullBursts: r.fullBursts,
+    fullBurstUptime: r.fullBurstUptime,
+    units: r.units.map((u) => ({
+      slug: u.slug,
+      name: u.name,
+      burst: u.burst,
+      weapon: u.weapon,
+      element: u.element,
+      advantaged: u.advantaged,
+      share: u.share,
+      totalDamage: u.totalDamage,
+    })),
+  });
+
+  // In-process sim → TeamResult (never throws to the batch layer; caught → null).
+  const localEval = (team: string[]): TeamResult | null => {
+    try {
+      return toResult(simTeam(team));
+    } catch {
+      return null;
+    }
+  };
+
+  // Batch-evaluate teams to TeamResults, memoized by ordered slugs (perf plan 1b).
+  // Cache hits are served immediately; misses go to `input.evaluator` (a worker
+  // pool) when present, else run in-process. Order-preserving; null = sim error.
+  const resultCache = new Map<string, TeamResult | null>();
+  const evalTeams = async (
+    teams: string[][],
+  ): Promise<(TeamResult | null)[]> => {
+    const out: (TeamResult | null)[] = new Array(teams.length);
+    const missTeams: string[][] = [];
+    const missIdx: number[] = [];
+    teams.forEach((t, i) => {
+      const k = t.join(',');
+      if (resultCache.has(k)) out[i] = resultCache.get(k)!;
+      else {
+        missTeams.push(t);
+        missIdx.push(i);
+      }
+    });
+    if (missTeams.length) {
+      const got = input.evaluator
+        ? await input.evaluator(missTeams)
+        : missTeams.map(localEval);
+      got.forEach((r, k) => {
+        resultCache.set(missTeams[k].join(','), r ?? null);
+        out[missIdx[k]] = r ?? null;
+      });
+    }
+    return out;
+  };
+
   // rough solo score to prune the (large) B3 DPS pool. Supports (B1/B2) are
   // kept wholesale — they score poorly solo but enable teams.
   const soloCache = new Map<string, number>();
+  // Warm solo scores for `slugs` in ONE batch (through the evaluator when present)
+  // so buildPool/seedTeam can read them synchronously without blocking on a pool.
+  const warmSolo = async (slugs: string[]): Promise<void> => {
+    const miss = slugs.filter((s) => !soloCache.has(s) && chars[s]);
+    if (!miss.length) return;
+    const results = await evalTeams(miss.map((s) => [s, s, s, s, s]));
+    results.forEach((r, i) =>
+      soloCache.set(miss[i], r ? r.units[0].totalDamage : 0),
+    );
+  };
   const soloScore = (slug: string): number => {
     const hit = soloCache.get(slug);
     if (hit !== undefined) return hit;
@@ -694,24 +768,29 @@ export function makeCalc(input: TeamCalcInput) {
     return team.slice(0, 5);
   };
 
-  // local search: swap each slot for a pool alternative, keep improvements.
-  // `scoreFn` overrides the ranking score (the solo spread passes a target-biased
-  // score); defaults to scoreOf so other callers are unchanged.
-  const refine = (
+  // local search: swap each slot for a pool alternative, keep improvements. Per
+  // slot it now evaluates ALL legal same-class candidates in one batch and applies
+  // the single BEST improvement (per-slot argmax), rather than the first one found
+  // mid-scan — deterministic (stable tie-break = pool order) and it fans out to the
+  // worker pool one slot at a time (perf plan item 1b). `scoreFn` overrides the
+  // ranking score (the solo spread passes a target-biased score); defaults to scoreOf.
+  const refine = async (
     start: string[],
     pool: string[],
     locked: Set<string>,
     scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number,
-  ): TeamResult => {
+  ): Promise<TeamResult> => {
     const score = scoreFn ?? scoreOf;
     let team = start;
-    let best = simTeam(team);
+    let best = (await evalTeams([team]))[0] ?? toResult(simTeam(team));
     let bestScore = score(best);
     for (let round = 0; round < rounds; round++) {
       let improved = false;
       for (let i = 0; i < 5; i++) {
         if (locked.has(team[i])) continue;
         const slotBurst = eb(team[i]);
+        // collect every legal same-class candidate for this slot, then batch-sim
+        const cands: string[][] = [];
         for (const alt of pool) {
           if (team.includes(alt)) continue;
           // role-restrict: only swap for the same burst class (or Λ either way)
@@ -722,47 +801,44 @@ export function makeCalc(input: TeamCalcInput) {
           const cand = team.slice();
           cand[i] = alt;
           if (!legal(cand)) continue;
-          const r = simTeam(cand);
+          cands.push(cand);
+        }
+        if (!cands.length) continue;
+        const results = await evalTeams(cands);
+        // argmax over improvements; first candidate (pool order) wins ties
+        let pickScore = bestScore;
+        let pick: TeamResult | null = null;
+        let pickTeam: string[] | null = null;
+        for (let k = 0; k < cands.length; k++) {
+          const r = results[k];
+          if (!r) continue;
           const sc = score(r);
-          if (sc > bestScore) {
-            best = r;
-            bestScore = sc;
-            team = cand;
-            improved = true;
+          if (sc > pickScore) {
+            pickScore = sc;
+            pick = r;
+            pickTeam = cands[k];
           }
+        }
+        if (pick && pickTeam) {
+          best = pick;
+          bestScore = pickScore;
+          team = pickTeam;
+          improved = true;
         }
       }
       if (!improved) break;
     }
-    return toResult(best);
+    return best;
   };
 
-  const toResult = (r: ReturnType<typeof simTeam>): TeamResult => ({
-    slugs: r.units.map((u) => u.slug),
-    teamDamage: r.teamDamage,
-    teamDps: r.teamDps,
-    fullBursts: r.fullBursts,
-    fullBurstUptime: r.fullBurstUptime,
-    units: r.units.map((u) => ({
-      slug: u.slug,
-      name: u.name,
-      burst: u.burst,
-      weapon: u.weapon,
-      element: u.element,
-      advantaged: u.advantaged,
-      share: u.share,
-      totalDamage: u.totalDamage,
-    })),
-  });
-
-  const bestTeam = (opts?: {
+  const bestTeam = async (opts?: {
     exclude?: Set<string>;
     mustInclude?: string[];
     /** ranking-score override (solo spread passes a target-biased score) */
     scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number;
     /** soft prydwen meta-sum target the seed biases toward (solo spread) */
     seedTarget?: number;
-  }): TeamResult | null => {
+  }): Promise<TeamResult | null> => {
     const exclude = opts?.exclude ?? new Set<string>();
     const score = opts?.scoreFn ?? scoreOf;
     // Locked units override the blocked list (an explicit lock wins over a
@@ -771,11 +847,16 @@ export function makeCalc(input: TeamCalcInput) {
     const mustInclude = (opts?.mustInclude ?? []).filter(
       (s, i, a) => chars[s] && !exclude.has(s) && a.indexOf(s) === i,
     );
+    // Warm every candidate's solo score in ONE batch first, so buildPool's B3
+    // prune + seedTeam's ranking read soloCache synchronously (perf plan 1b).
+    await warmSolo(
+      Object.keys(chars).filter((s) => !blocked.has(s) && !exclude.has(s)),
+    );
     const pool = buildPool(exclude);
     const seed = seedTeam(pool, mustInclude, undefined, opts?.seedTarget);
     if (!legal(seed)) return null; // e.g. everything useful blocked
     const locked = new Set(mustInclude);
-    let best = refine(seed, pool, locked, score);
+    let best = await refine(seed, pool, locked, score);
     let bestScore = score(best);
     // Double-B2 shapes (B1+B2+B2+2×B3) are common optimal teams, but the
     // solo-scored flex rarely picks a support and refine is role-restricted (it
@@ -787,29 +868,32 @@ export function makeCalc(input: TeamCalcInput) {
     // reachable via locked units and injected meta comps.
     const b2Seed = seedTeam(pool, mustInclude, 'II', opts?.seedTarget);
     if (legal(b2Seed)) {
-      const r = refine(b2Seed, pool, locked, score);
+      const r = await refine(b2Seed, pool, locked, score);
       const sc = score(r);
       if (sc > bestScore) {
         best = r;
         bestScore = sc;
       }
     }
-    // full-team match: evaluate the popular ranker comps directly so a real meta
-    // team can win on score even if the local search never assembled it.
+    // full-team match: evaluate the popular ranker comps directly (one batch) so a
+    // real meta team can win on score even if the local search never assembled it.
     if (meta) {
-      for (const comp of meta.seedComps) {
-        if (
-          comp.length !== 5 ||
-          comp.some((s) => !chars[s] || blocked.has(s) || exclude.has(s)) ||
-          mustInclude.some((s) => !comp.includes(s)) ||
-          !legal(comp)
-        )
-          continue;
-        const r = toResult(simTeam(comp));
-        const sc = score(r);
-        if (sc > bestScore) {
-          best = r;
-          bestScore = sc;
+      const comps = meta.seedComps.filter(
+        (comp) =>
+          comp.length === 5 &&
+          !comp.some((s) => !chars[s] || blocked.has(s) || exclude.has(s)) &&
+          !mustInclude.some((s) => !comp.includes(s)) &&
+          legal(comp),
+      );
+      if (comps.length) {
+        const results = await evalTeams(comps);
+        for (const r of results) {
+          if (!r) continue;
+          const sc = score(r);
+          if (sc > bestScore) {
+            best = r;
+            bestScore = sc;
+          }
         }
       }
     }
@@ -831,14 +915,14 @@ export function makeCalc(input: TeamCalcInput) {
      * 19/18/17/17/15) instead of stacking. Soft — damage, legality and pinned
      * locks outrank the target. Omit → unchanged greedy (no shaping).
      */
-    topTeams: (
+    topTeams: async (
       n: number,
       opts?: {
         pinnedByTeam?: string[][];
         mustUse?: string[];
         spreadTargets?: number[];
       },
-    ): TeamResult[] => {
+    ): Promise<TeamResult[]> => {
       const pinned = opts?.pinnedByTeam ?? [];
       const assigned = assignMustUse(opts?.mustUse ?? [], pinned, chars, n);
       const reserved: string[][] = Array.from({ length: n }, (_, i) => [
@@ -859,7 +943,7 @@ export function makeCalc(input: TeamCalcInput) {
               scoreOf(r) *
               closeness(teamMetaSum(r.units.map((u) => u.slug)), target)
           : undefined;
-        const t = bestTeam({
+        const t = await bestTeam({
           exclude,
           mustInclude: reserved[i],
           scoreFn,
@@ -872,14 +956,17 @@ export function makeCalc(input: TeamCalcInput) {
       return out;
     },
     /** Best team built around a pinned unit + that unit's line in it. */
-    characterAnalysis: (
+    characterAnalysis: async (
       slug: string,
-    ): { team: TeamResult; unit: TeamUnit } | null => {
-      const team = bestTeam({ mustInclude: [slug] });
+    ): Promise<{ team: TeamResult; unit: TeamUnit } | null> => {
+      const team = await bestTeam({ mustInclude: [slug] });
       if (!team) return null;
       const unit = team.units.find((u) => u.slug === slug)!;
       return { team, unit };
     },
     simTeam,
+    /** In-process sim → TeamResult (null on error). The pool worker's leaf op —
+     *  a stateless sim executor calls this per team (perf plan item 1b). */
+    simTeamResult: (team: string[]): TeamResult | null => localEval(team),
   };
 }

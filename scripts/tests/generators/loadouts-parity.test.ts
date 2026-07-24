@@ -43,15 +43,15 @@ const materialized: Record<string, UnitOptions> = {};
 for (const slug of Object.keys(chars)) materialized[slug] = loadoutFor(slug);
 
 describe('makeCalc loadouts map ≡ loadoutFor (item 1a parity gate)', () => {
-  it('bestTeam is byte-identical', () => {
-    const a = makeCalc(base()).bestTeam();
-    const b = makeCalc(base(materialized)).bestTeam();
+  it('bestTeam is byte-identical', async () => {
+    const a = await makeCalc(base()).bestTeam();
+    const b = await makeCalc(base(materialized)).bestTeam();
     expect(b).toEqual(a);
   });
 
-  it('topTeams(5) is byte-identical', () => {
-    const a = makeCalc(base()).topTeams(5);
-    const b = makeCalc(base(materialized)).topTeams(5);
+  it('topTeams(5) is byte-identical', async () => {
+    const a = await makeCalc(base()).topTeams(5);
+    const b = await makeCalc(base(materialized)).topTeams(5);
     expect(b).toEqual(a);
   });
 

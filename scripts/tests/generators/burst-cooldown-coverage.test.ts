@@ -7,8 +7,8 @@
 // is illegal — the generator must refuse to emit such a team (src/teamcalc.ts
 // stageCovered/isLegal). This generalizes the old Red-Hood-only "40s cooldown
 // binds the rotation" exclusion to every B1/B2. It only READS the engine.
-import { describe, expect, it } from 'vitest';
-import { makeCalc } from '../../../src/teamcalc.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { makeCalc, type TeamResult } from '../../../src/teamcalc.js';
 import { scopeLockCfg } from '../../lib/scope-lock.js';
 import { deps, effBurst, generatorPool, mult, rotationLegal } from '../lib/harness.js';
 
@@ -54,22 +54,22 @@ describe('pool preconditions — the cooldown shapes under test exist', () => {
 });
 
 describe('B1 cooldown coverage', () => {
-  it('refuses to build on a lone 40s B1', () => {
+  it('refuses to build on a lone 40s B1', async () => {
     const keep = new Set([B1_40[0], ...B2_20.slice(0, 8), ...AMPLE_B3]);
-    expect(calcForPool(keep).topTeams(1), `lone 40s B1 (${B1_40[0]}) built a team`).toHaveLength(0);
+    expect(await calcForPool(keep).topTeams(1), `lone 40s B1 (${B1_40[0]}) built a team`).toHaveLength(0);
   });
 
-  it('covers the stage with a single 20s B1', () => {
+  it('covers the stage with a single 20s B1', async () => {
     const keep = new Set([B1_20[0], ...B2_20.slice(0, 8), ...AMPLE_B3]);
-    const top = calcForPool(keep).topTeams(1);
+    const top = await calcForPool(keep).topTeams(1);
     expect(top, `single 20s B1 (${B1_20[0]}) built no team`).toHaveLength(1);
     expect(legal(top[0].slugs)).toBe(true);
     expect(top[0].slugs).toContain(B1_20[0]);
   });
 
-  it('covers the stage with two alternating 40s B1', () => {
+  it('covers the stage with two alternating 40s B1', async () => {
     const keep = new Set([B1_40[0], B1_40[1], ...B2_20.slice(0, 8), ...AMPLE_B3]);
-    const top = calcForPool(keep).topTeams(1);
+    const top = await calcForPool(keep).topTeams(1);
     expect(top, `two 40s B1 (${B1_40[0]}+${B1_40[1]}) built no team`).toHaveLength(1);
     expect(legal(top[0].slugs)).toBe(true);
     expect(top[0].slugs).toContain(B1_40[0]);
@@ -78,22 +78,22 @@ describe('B1 cooldown coverage', () => {
 });
 
 describe('B2 cooldown coverage', () => {
-  it('refuses to build on a lone 40s B2', () => {
+  it('refuses to build on a lone 40s B2', async () => {
     const keep = new Set([B2_40[0], ...B1_20.slice(0, 8), ...AMPLE_B3]);
-    expect(calcForPool(keep).topTeams(1), `lone 40s B2 (${B2_40[0]}) built a team`).toHaveLength(0);
+    expect(await calcForPool(keep).topTeams(1), `lone 40s B2 (${B2_40[0]}) built a team`).toHaveLength(0);
   });
 
-  it('covers the stage with a single 20s B2', () => {
+  it('covers the stage with a single 20s B2', async () => {
     const keep = new Set([B2_20[0], ...B1_20.slice(0, 8), ...AMPLE_B3]);
-    const top = calcForPool(keep).topTeams(1);
+    const top = await calcForPool(keep).topTeams(1);
     expect(top, `single 20s B2 (${B2_20[0]}) built no team`).toHaveLength(1);
     expect(legal(top[0].slugs)).toBe(true);
     expect(top[0].slugs).toContain(B2_20[0]);
   });
 
-  it('covers the stage with two alternating 40s B2', () => {
+  it('covers the stage with two alternating 40s B2', async () => {
     const keep = new Set([B2_40[0], B2_40[1], ...B1_20.slice(0, 8), ...AMPLE_B3]);
-    const top = calcForPool(keep).topTeams(1);
+    const top = await calcForPool(keep).topTeams(1);
     expect(top, `two 40s B2 (${B2_40[0]}+${B2_40[1]}) built no team`).toHaveLength(1);
     expect(legal(top[0].slugs)).toBe(true);
     expect(top[0].slugs).toContain(B2_40[0]);
@@ -103,7 +103,10 @@ describe('B2 cooldown coverage', () => {
 
 describe('broad invariant: no emitted team has a gapped B1/B2 rotation', () => {
   const full = calcForPool(new Set(Object.keys(chars)));
-  const top = full.topTeams(5);
+  let top: TeamResult[];
+  beforeAll(async () => {
+    top = await full.topTeams(5);
+  });
 
   it('builds from the full pool with every team sustaining B1 and B2 every cycle', () => {
     expect(top.length, 'full pool built nothing').toBeGreaterThanOrEqual(1);
@@ -124,15 +127,15 @@ describe('broad invariant: no emitted team has a gapped B1/B2 rotation', () => {
     expect(dbl, 'topTeams(5) explored no double-support shape').toBeGreaterThanOrEqual(1);
   });
 
-  it('builds the double-support shape deterministically from a locked pair', () => {
-    const t2 = full.bestTeam({ mustInclude: [B2_20[0], B2_20[1]] });
+  it('builds the double-support shape deterministically from a locked pair', async () => {
+    const t2 = await full.bestTeam({ mustInclude: [B2_20[0], B2_20[1]] });
     expect(t2, `locked 2×B2 (${B2_20[0]}+${B2_20[1]}) built nothing`).not.toBeNull();
     expect(legal(t2!.slugs)).toBe(true);
     expect(t2!.slugs).toContain(B2_20[0]);
     expect(t2!.slugs).toContain(B2_20[1]);
     expect(t2!.slugs.filter((s) => effBurst(chars, s) === 'II').length).toBeGreaterThanOrEqual(2);
 
-    const t1 = full.bestTeam({ mustInclude: [B1_20[0], B1_20[1]] });
+    const t1 = await full.bestTeam({ mustInclude: [B1_20[0], B1_20[1]] });
     expect(t1, `locked 2×B1 (${B1_20[0]}+${B1_20[1]}) built nothing`).not.toBeNull();
     expect(legal(t1!.slugs)).toBe(true);
     expect(t1!.slugs).toContain(B1_20[0]);

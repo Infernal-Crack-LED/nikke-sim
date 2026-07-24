@@ -49,9 +49,9 @@ describe('solo topTeams team-count is role-bounded by Burst I', () => {
     [5, 5],
     [4, 4],
     [3, 3],
-  ])('a pool with %i Burst-I units → topTeams(5) returns %i legal disjoint teams', (nB1, want) => {
+  ])('a pool with %i Burst-I units → topTeams(5) returns %i legal disjoint teams', async (nB1, want) => {
     const keep = new Set([...B1.slice(0, nB1), ...AMPLE_B2, ...AMPLE_B3]);
-    const top = calcForPool(keep).topTeams(5);
+    const top = await calcForPool(keep).topTeams(5);
     const slugs = top.flatMap((t) => t.slugs);
     expect(top, `got ${top.length} team(s), want ${want}`).toHaveLength(want);
     expect(top.every((t) => distinct5(t.slugs)), 'a team is not 5 distinct units').toBe(true);

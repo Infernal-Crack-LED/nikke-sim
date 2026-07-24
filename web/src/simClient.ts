@@ -95,7 +95,7 @@ export async function genBestTeam(
       // fall through to the main-thread path
     }
   }
-  return buildGenCalc(params).bestTeam({
+  return await buildGenCalc(params).bestTeam({
     exclude: wire.exclude ? new Set(wire.exclude) : undefined,
     mustInclude: wire.mustInclude,
   });
@@ -114,5 +114,5 @@ export async function genTopTeams(
       // fall through to the main-thread path
     }
   }
-  return buildGenCalc(params).topTeams(n, opts);
+  return await buildGenCalc(params).topTeams(n, opts);
 }

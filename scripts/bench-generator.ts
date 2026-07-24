@@ -86,22 +86,22 @@ function benchSingle(): void {
   console.log(`avg over ${n} sims: ${((t5 - t4) / n).toFixed(1)}ms`);
 }
 
-function benchBest(): void {
+async function benchBest(): Promise<void> {
   loadoutCalls = 0;
   const calc = mk();
   const t0 = performance.now();
-  const r = calc.bestTeam();
+  const r = await calc.bestTeam();
   const t1 = performance.now();
   console.log(
     `bestTeam: ${((t1 - t0) / 1000).toFixed(1)}s, sims=${loadoutCalls / 5}, team=${r?.slugs.join(',')}`,
   );
 }
 
-function benchTop(n: number): void {
+async function benchTop(n: number): Promise<void> {
   loadoutCalls = 0;
   const calc = mk();
   const t0 = performance.now();
-  const teams = calc.topTeams(n);
+  const teams = await calc.topTeams(n);
   const t1 = performance.now();
   console.log(
     `topTeams(${n}): ${((t1 - t0) / 1000).toFixed(1)}s, sims=${loadoutCalls / 5}, teams=${teams.length}`,
@@ -154,12 +154,17 @@ function benchFocus(): void {
 const args = process.argv.slice(2);
 const has = (f: string) => args.includes(f);
 const all = has('--all') || args.length === 0;
-poolInfo();
-if (all || has('--single')) benchSingle();
-if (all || has('--best')) benchBest();
-if (all || has('--top')) {
-  const i = args.indexOf('--top');
-  const n = Number(args[i + 1]);
-  benchTop(Number.isFinite(n) && n > 0 ? n : 5);
+
+async function main(): Promise<void> {
+  poolInfo();
+  if (all || has('--single')) benchSingle();
+  if (all || has('--best')) await benchBest();
+  if (all || has('--top')) {
+    const i = args.indexOf('--top');
+    const n = Number(args[i + 1]);
+    await benchTop(Number.isFinite(n) && n > 0 ? n : 5);
+  }
+  if (all || has('--focus')) benchFocus();
 }
-if (all || has('--focus')) benchFocus();
+
+void main();

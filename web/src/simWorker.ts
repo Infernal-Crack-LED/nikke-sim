@@ -41,19 +41,19 @@ const ctx = self as unknown as {
   postMessage: (msg: WorkerResponse) => void;
 };
 
-ctx.onmessage = (e: MessageEvent<WorkerRequest>) => {
+ctx.onmessage = async (e: MessageEvent<WorkerRequest>) => {
   const req = e.data;
   try {
     const calc = buildGenCalc(req.params);
     const result =
       req.kind === 'bestTeam'
-        ? calc.bestTeam({
+        ? await calc.bestTeam({
             exclude: req.opts?.exclude
               ? new Set(req.opts.exclude)
               : undefined,
             mustInclude: req.opts?.mustInclude,
           })
-        : calc.topTeams(req.n, req.opts);
+        : await calc.topTeams(req.n, req.opts);
     ctx.postMessage({ id: req.id, result } satisfies WorkerResponse);
   } catch (err) {
     ctx.postMessage({
