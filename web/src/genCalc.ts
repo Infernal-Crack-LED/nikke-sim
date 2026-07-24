@@ -120,8 +120,14 @@ export interface GenCalcParams {
 
 /** Rebuild the generator's makeCalc instance from serializable params. Identical
  *  output on the main thread and inside a worker (both reconstruct meta/prydwen/
- *  synergy from the same static JSON). */
-export function buildGenCalc(params: GenCalcParams) {
+ *  synergy from the same static JSON). An optional `evaluator` (the worker pool's
+ *  simMany, perf plan 1b) fans full-team sims across cores; omit it for a leaf
+ *  pool worker or the in-process fallback, where sims run locally. Kept OUT of the
+ *  serializable GenCalcParams — a function can't cross the worker boundary. */
+export function buildGenCalc(
+  params: GenCalcParams,
+  evaluator?: (teams: string[][]) => Promise<(TeamResult | null)[]>,
+) {
   return makeCalc({
     chars: generatorCharacters as any,
     mult,
@@ -140,6 +146,7 @@ export function buildGenCalc(params: GenCalcParams) {
       pairs: SYNERGY_PAIRS,
       weight: SYNERGY_WEIGHT,
     },
+    evaluator,
   });
 }
 

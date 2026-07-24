@@ -1,64 +1,39 @@
-// Roster-generator web worker (perf plan item 1a). Runs the teamcalc search off
-// the UI thread so "Calculate top 5 teams" never freezes the page. It imports the
-// same static JSON as the main thread and reconstructs the calc via buildGenCalc,
-// so its output is byte-identical to a main-thread run (parity gate:
-// scripts/tests/generators/loadouts-parity.test.ts). Requests carry only
-// serializable params — `exclude` arrives as a string[] and is rehydrated to a Set.
+// Stateless sim-executor worker for the generator pool (perf plan item 1b). One
+// of N identical workers (web/src/simPool.ts). On `init` it builds a leaf calc
+// from the serializable params (NO evaluator → sims run locally in this worker);
+// on `sim` it maps a batch of teams to TeamResults and posts them back. The SEARCH
+// (seed/refine/argmax) runs in the coordinator (main thread) — these workers only
+// execute sims, so output stays byte-identical to a single-thread run
+// (scripts/tests/generators/loadouts-parity.test.ts).
 import {
   buildGenCalc,
   type GenCalcParams,
   type TeamResult,
 } from './genCalc';
 
-export type WorkerRequest =
-  | {
-      id: number;
-      kind: 'bestTeam';
-      params: GenCalcParams;
-      opts?: { exclude?: string[]; mustInclude?: string[] };
-    }
-  | {
-      id: number;
-      kind: 'topTeams';
-      params: GenCalcParams;
-      n: number;
-      opts?: {
-        pinnedByTeam?: string[][];
-        mustUse?: string[];
-        spreadTargets?: number[];
-      };
-    };
+export type PoolRequest =
+  | { type: 'init'; params: GenCalcParams }
+  | { type: 'sim'; id: number; teams: string[][] };
 
-export type WorkerResponse =
-  | { id: number; result: TeamResult | TeamResult[] | null }
-  | { id: number; error: string };
+export type PoolResponse = { id: number; results: (TeamResult | null)[] };
 
-// Type `self` loosely so this file doesn't need the "webworker" lib (which can
-// clash with the DOM lib the web tsconfig pulls in) — the worker only touches
-// onmessage/postMessage.
+// Type `self` loosely so this file doesn't need the "webworker" lib.
 const ctx = self as unknown as {
-  onmessage: ((e: MessageEvent<WorkerRequest>) => void) | null;
-  postMessage: (msg: WorkerResponse) => void;
+  onmessage: ((e: MessageEvent<PoolRequest>) => void) | null;
+  postMessage: (msg: PoolResponse) => void;
 };
 
-ctx.onmessage = async (e: MessageEvent<WorkerRequest>) => {
-  const req = e.data;
-  try {
-    const calc = buildGenCalc(req.params);
-    const result =
-      req.kind === 'bestTeam'
-        ? await calc.bestTeam({
-            exclude: req.opts?.exclude
-              ? new Set(req.opts.exclude)
-              : undefined,
-            mustInclude: req.opts?.mustInclude,
-          })
-        : await calc.topTeams(req.n, req.opts);
-    ctx.postMessage({ id: req.id, result } satisfies WorkerResponse);
-  } catch (err) {
-    ctx.postMessage({
-      id: req.id,
-      error: String((err as Error)?.message ?? err),
-    } satisfies WorkerResponse);
+let calc: ReturnType<typeof buildGenCalc> | null = null;
+
+ctx.onmessage = (e: MessageEvent<PoolRequest>) => {
+  const msg = e.data;
+  if (msg.type === 'init') {
+    calc = buildGenCalc(msg.params); // leaf calc — no evaluator, local sims
+    return;
   }
+  const c = calc;
+  const results = c
+    ? msg.teams.map((t) => c.simTeamResult(t))
+    : msg.teams.map(() => null);
+  ctx.postMessage({ id: msg.id, results });
 };

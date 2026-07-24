@@ -1,19 +1,20 @@
-// Main-thread client for the roster-generator worker (perf plan item 1a). Lazily
-// spins up ONE module worker and marshals bestTeam/topTeams calls to it, returning
-// promises the UI awaits. When workers are unavailable (SSR prerender, the JSDOM
-// web-smoke, or a browser that fails to construct the worker) it transparently
-// falls back to running the same buildGenCalc on the calling thread — identical
-// results, just blocking. Item 1b swaps this single worker for a pool.
+// Main-thread client for the roster generator (perf plan item 1b). The search
+// (seed/refine/argmax) runs HERE, on the main thread, but delegates every full-team
+// sim batch to the worker pool (web/src/simPool.ts) via makeCalc's `evaluator` —
+// so the heavy work is parallel across cores while the coordinator only does light
+// bookkeeping between awaited batches (the UI thread stays responsive). When the
+// pool is unavailable (SSR prerender, JSDOM smoke) the same buildGenCalc runs
+// in-process with no evaluator — identical results, just single-threaded.
+//
+// Output is byte-identical to a single-thread run (the pool only executes sims;
+// scoring/selection is coordinator-side) — parity gate:
+// scripts/tests/generators/loadouts-parity.test.ts.
 import {
   buildGenCalc,
   type GenCalcParams,
   type TeamResult,
 } from './genCalc';
-import type { WorkerRequest, WorkerResponse } from './simWorker';
-
-// Distributive omit — `Omit<Union, K>` collapses to the members' common keys, so
-// use this to strip `id` from each WorkerRequest variant while keeping `n`/`opts`.
-type WithoutId<T> = T extends unknown ? Omit<T, 'id'> : never;
+import { simPool } from './simPool';
 
 export interface BestTeamOpts {
   exclude?: Set<string> | string[];
@@ -24,95 +25,49 @@ export interface TopTeamsOpts {
   mustUse?: string[];
   spreadTargets?: number[];
 }
+/** Cumulative-sims-done callback (denominator is unknown up front — the search
+ *  size depends on the pool contents), for a lightweight "Calculating… (N)" UI. */
+export type ProgressFn = (simsDone: number) => void;
 
-const asArray = (e?: Set<string> | string[]): string[] | undefined =>
-  e === undefined ? undefined : Array.isArray(e) ? e : [...e];
+const asSet = (e?: Set<string> | string[]): Set<string> | undefined =>
+  e === undefined ? undefined : e instanceof Set ? e : new Set(e);
 
-let worker: Worker | null = null;
-let workerUnavailable = false;
-let nextId = 1;
-const pending = new Map<
-  number,
-  { resolve: (v: any) => void; reject: (e: Error) => void }
->();
-
-function getWorker(): Worker | null {
-  if (workerUnavailable) return null;
-  if (worker) return worker;
-  if (typeof Worker === 'undefined') {
-    workerUnavailable = true;
-    return null;
-  }
-  try {
-    const w = new Worker(new URL('./simWorker.ts', import.meta.url), {
-      type: 'module',
-    });
-    w.onmessage = (e: MessageEvent<WorkerResponse>) => {
-      const res = e.data;
-      const p = pending.get(res.id);
-      if (!p) return;
-      pending.delete(res.id);
-      if ('error' in res) p.reject(new Error(res.error));
-      else p.resolve(res.result);
+// Build a coordinator calc whose sims fan out to the pool (when available), with a
+// running total threaded to onProgress. Falls back to an in-process calc.
+function coordinator(params: GenCalcParams, onProgress?: ProgressFn) {
+  if (simPool.init(params)) {
+    let total = 0;
+    const evaluator = async (
+      teams: string[][],
+    ): Promise<(TeamResult | null)[]> => {
+      const r = await simPool.simMany(teams);
+      total += teams.length;
+      onProgress?.(total);
+      return r;
     };
-    w.onerror = (e) => {
-      // A fatal worker error rejects everything in flight; future calls fall
-      // back to the main thread so the generator never silently hangs.
-      workerUnavailable = true;
-      worker = null;
-      const err = new Error(`sim worker error: ${e.message ?? 'unknown'}`);
-      for (const [, p] of pending) p.reject(err);
-      pending.clear();
-    };
-    worker = w;
-    return w;
-  } catch {
-    workerUnavailable = true;
-    return null;
+    return buildGenCalc(params, evaluator);
   }
+  return buildGenCalc(params); // in-process fallback (prerender / no workers)
 }
 
-function post(req: WithoutId<WorkerRequest>): Promise<any> {
-  const w = getWorker();
-  if (!w) return Promise.reject(new Error('no worker'));
-  const id = nextId++;
-  return new Promise((resolve, reject) => {
-    pending.set(id, { resolve, reject });
-    w.postMessage({ ...req, id } as WorkerRequest);
-  });
-}
-
-/** bestTeam off the worker (falls back to the main thread when unavailable). */
-export async function genBestTeam(
+/** bestTeam, search on the main thread + sims on the pool. */
+export function genBestTeam(
   params: GenCalcParams,
   opts?: BestTeamOpts,
+  onProgress?: ProgressFn,
 ): Promise<TeamResult | null> {
-  const wire = { exclude: asArray(opts?.exclude), mustInclude: opts?.mustInclude };
-  if (getWorker()) {
-    try {
-      return await post({ kind: 'bestTeam', params, opts: wire });
-    } catch {
-      // fall through to the main-thread path
-    }
-  }
-  return await buildGenCalc(params).bestTeam({
-    exclude: wire.exclude ? new Set(wire.exclude) : undefined,
-    mustInclude: wire.mustInclude,
+  return coordinator(params, onProgress).bestTeam({
+    exclude: asSet(opts?.exclude),
+    mustInclude: opts?.mustInclude,
   });
 }
 
-/** topTeams(n) off the worker (falls back to the main thread when unavailable). */
-export async function genTopTeams(
+/** topTeams(n), search on the main thread + sims on the pool. */
+export function genTopTeams(
   params: GenCalcParams,
   n: number,
   opts?: TopTeamsOpts,
+  onProgress?: ProgressFn,
 ): Promise<TeamResult[]> {
-  if (getWorker()) {
-    try {
-      return await post({ kind: 'topTeams', params, n, opts });
-    } catch {
-      // fall through to the main-thread path
-    }
-  }
-  return await buildGenCalc(params).topTeams(n, opts);
+  return coordinator(params, onProgress).topTeams(n, opts);
 }
