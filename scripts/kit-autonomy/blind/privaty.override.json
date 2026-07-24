@@ -1,0 +1,141 @@
+{
+  "slug": "privaty",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Privaty (Water AR Attacker, Burst III, treasure; ammo 60, reloadFrames 81, chargeFrames 0 = autofire AR, hitsPerShot 1). S1 = fullBurstEnter team buff on ALL allies (ATK ▲23.61% / Reload Speed ▲51.16% / Max Ammo ▼50.66% / Attack Damage ▲20.16%, 10s). The reload-speed + max-ammo lines GATE SHOT COUNT (HARD RULE 1) and are modeled, not skipped; max-ammo ▼ = negative maxAmmoPct. S2 = two lastBullet riders: a generic one (Damage Taken ▲10.01% boss debuff + 256.17% additional damage, fires every reload) and a 1687% additional-damage rider gated on the burst's 'Designated Target' status (requiresTargetStatus). Burst = self Elemental Advantage Attack Damage ▲130% (prior 7: exceeds the clean ×1.10, must be modeled), a 1407.64% Burst Skill nuke, and applies the 'Designated Target' targetStatus (10s) that opens the S2 1687% gate; the line's ATK ▼5.02% is kept as an inert boss debuff (boss ATK does not feed player DPS in v1). The 3s stun is SKIPPED (control on an immortal partless boss that deals no damage = zero DPS impact). Function-damage riders authored crit:true / no-core / noFb-omitted (FB-by-timing ON) per prior-2 text-fidelity; the burst nuke has no crit set (ein burst-nuke style). leakDetected: null.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Stuns for 3 sec."
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 23.61,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 51.16,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -50.66,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20.16,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 10.01,
+          "durationSec": 10
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 256.17,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresTargetStatus": "Designated Target",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1687,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 130,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1407.64
+        },
+        {
+          "kind": "targetStatus",
+          "name": "Designated Target",
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": -5.02,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill2: the 256.17% generic last-bullet rider and the 1687% Designated-Target rider are modeled as INDEPENDENT blocks (both fire on a last-bullet hit while the status is up). The kit gives two separate ■ triggers but never states mutual exclusivity — ⚑ verify whether they co-fire or are exclusive during the status window.",
+    "burst: 'Designated Target: ATK ▼ 5.02%' is modeled as targetStatus('Designated Target', 10s) — the load-bearing part that opens the S2 1687% requiresTargetStatus gate — plus an inert atkPct -5.02 boss debuff (boss ATK does not feed player DPS in v1; kept so the stat line is not silently dropped).",
+    "burst: 3s stun SKIPPED to unmodeled — control on an immortal partless boss that deals no damage; zero DPS impact.",
+    "skill2 riders: crit:true / no core / noFb omitted (FB-by-timing ON) per prior-2 text-fidelity for function-type additional-damage riders; the 1407.64% burst nuke has NO crit set (ein burst-nuke style, schema crit is opt-in) — ⚑ both choices.",
+    "burst: elemAdvantageDamagePct ▲130% is live ONLY when Privaty has elemental advantage vs the boss (prior 7); inert on a neutral/non-advantaged scope-lock boss, so it moves only advantaged comps."
+  ]
+}
