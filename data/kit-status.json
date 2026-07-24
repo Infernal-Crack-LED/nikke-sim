@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "audited": 38,
+      "unit-tested": 5,
       "authored": 30,
-      "unit-tested": 4,
+      "audited": 37,
       "reconciled": 4,
       "pending": 1
     },
@@ -43,23 +43,25 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "Flash Grenade cadence + true-dmg buffs modeled kit-faithful. F3 headline: Special Modification over-fires 2 specials/window vs kit '1 round' (no maxShots) = 45% of her total; kit-literal ~-20% -> board 0.950 may lean on the 2nd shot (measure popups before touching)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/ada.json + scripts/kit-autonomy/manual-review/ada.md.",
+          "med FIDELITY (burst): Special Modification 'for 1 round(s)' shipped as durationSec:10 weaponSwap (no maxShots) → ~2 boosted charge shots/window vs kit-literal 1 round."
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": false,
-      "evidence": "Run E: 0.97-1.08; S1 \"Burst-3 casters\" scope fix from run-E video",
+      "evidence": "Run E: 0.97-1.08; S1 \"Burst-3 casters\" scope fix from run-E video | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged on all load-bearing lines",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "F3 Special Modification 'for 1 round(s)': kit-literal durationShots:1 vs shipped weaponSwap durationSec:10 no-maxShots (~2 specials/window); measurement-gated, board 0.99 leans on 2nd shot (kit-literal cap -> ~0.95); owner spot-check = count boosted charge rockets per burst window from popup footage",
       "unmodeled": {
         "skill1": [
           "Recovers 10% of the damage dealt as HP for 10 sec. (skipped: lifesteal — no HP pool consumer modeled; see findings F1/F2: targets bursted Burst-3 allies, would fire their 'recovery' triggers if a B3 recovery-consumer comp appears)"
@@ -67,6 +69,9 @@
         "skill2": [],
         "burst": []
       },
+      "caveats": [
+        "burst: ⚑ Special Modification 'for 1 round(s)' — MEASUREMENT-GATED fidelity flag (kit-status F3). Kit-literal reading = exactly 1 boosted charged round per burst window (durationShots:1). Shipped encoding = weaponSwap durationSec:10 with no maxShots cap, which over-fires ~2 special charged shots per window (~45% of her total). Board (≈0.99) leans on the 2nd shot; capping to kit-literal drops the board to ~0.95. Estimate: 2 specials/window (shipped, board-validated) vs 1 (kit-literal). Recipe: record Ada's special-charged-shot count per burst window from fight popup footage; if kit-literal (1), add maxShots:1 to the burst weaponSwap block. Tier: CALIBRATED ⚑ / MEASUREMENT-GATED. Independently re-derived by the blind cross-family reviewer (gauntlet 2026-07-24)."
+      ],
       "board": {
         "records": [
           {

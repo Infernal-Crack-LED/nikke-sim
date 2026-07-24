@@ -1,0 +1,88 @@
+{
+  "slug": "ada",
+  "leakDetected": null,
+  "testSource": "import { describe, it, expect } from 'vitest';\nimport { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';\n\n// ada — RL/Electric/Attacker/Burst III. BLIND spec test authored from kit prose ALONE.\n// (event/API field names mirror the harness contract described in the packet; where a field is a\n//  best-guess it is noted inline — a divergence there IS a payload for the judge.)\n//\n// KIT (ground truth):\n//   skill1  ■ Activates when entering Full Burst. Affects all Burst-3 allies who previously used their Burst.\n//              - ATK +60% OF THE SKILL USER'S ATK, 10s   -> casterAtkPct 60 (flat add of caster's ATK; NOT self-scaled atkPct)\n//              - True Damage +50%, 10s                    -> trueDamagePct 50\n//              - Recovers 10% of damage as HP, 10s        -> lifesteal (no HP pool in v1 -> GAP)\n//   skill2  ■ Activates during Full Burst. Affects enemy nearest crosshair EVERY 2 sec.\n//              - Flash Grenade Toss: 420% of final ATK as True Damage -> flatDamage atkPct 420 flavor true, interval 2s, fbGate inFb, noRange\n//           ■ Activates when using Burst Skill. Affects self.\n//              - Flash Grenade activation-time condition -1 sec, 10s   -> mutates skill2 interval 2s->1s (no primitive -> GAP)\n//   burst   ■ Affects self.\n//              - ATK +40%, 10s          -> atkPct 40\n//              - True Damage +42%, 10s  -> trueDamagePct 42\n//              - Special Modification, for 1 ROUND(S):  (durationShots:1, NOT seconds)\n//                  Charge Speed -300%   -> chargeSpeedPct -300\n//                  Charge Damage +1500% -> chargeDamagePct 1500 (additive charge-bucket points)\n//\n// FIXTURE: controlComp('ada', true) — liter B1 / crown B2 / ada B3 carry / helm B3; ada self-bursts each\n//   rotation so (a) she enters Full Burst and (b) skill1's 'burst-caster B3' target set includes her.\n//\n// WHY the discriminators: buffApply events carry {stat,value} so encoding choices (casterAtkPct vs atkPct,\n//   trueDamagePct vs attackDamagePct, durationShots vs durationSec) are checked STRUCTURALLY even in a solo\n//   comp where the two encodings would net the same total ATK.\n\ntype Ev = any;\nfunction run(opts: any) {\n  const events: Ev[] = [];\n  const cfg = { ...(opts.cfg || {}), onEvent: (e: Ev) => events.push(e) };\n  const res = runComp({ ...opts, cfg });\n  return { res, events };\n}\n\nconst ADA = 'ada';\nconst applies = (evs: Ev[], stat: string, value: number) =>\n  evs.filter((e) => e.kind === 'buffApply' && e.stat === stat && Math.abs(e.value - value) < 1e-6);\n// grenade / charge-nuke hits stand far above a normal RL shot (base mult 0.613, core 2.0)\nconst bigTrue = (e: Ev) => e.kind === 'damage' && e.mult > 3 && /true/i.test(String(e.bucket));\nconst normalHit = (e: Ev) => e.kind === 'damage' && e.mult < 3;\n\n// ---- hoisted runs (each is a full 180s sim) ----\nconst base = run(controlComp(ADA, true));\n\n// counterfactual A: charge buff as a 10s WINDOW instead of 1 ROUND -> many charged shots boosted\nconst longCharge = run({\n  ...controlComp(ADA, true),\n  overridesPatch: withPatchedOverride(ADA, (ov: any) => {\n    for (const blk of ov.blocks)\n      for (const eff of blk.effects)\n        if (eff.kind === 'buff' && eff.stat === 'chargeDamagePct') {\n          delete eff.durationShots;\n          eff.durationSec = 10;\n        }\n  }),\n});\n\n// counterfactual B: strip the Flash-Grenade flatDamage block entirely\nconst noGrenade = run({\n  ...controlComp(ADA, true),\n  overridesPatch: withPatchedOverride(ADA, (ov: any) => {\n    ov.blocks = ov.blocks.filter(\n      (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - 420) < 1e-6),\n    );\n  }),\n});\n\ndescribe('ada — skill1 (FB-enter, B3 burst-casters)', () => {\n  it('fixture actually enters Full Burst (non-vacuity)', () => {\n    expect(base.events.filter((e) => e.kind === 'fullBurstStart').length).toBeGreaterThan(0);\n  });\n\n  it('ATK buff is casterAtkPct 60 (flat % of CASTER ATK), NOT self-scaled atkPct 60', () => {\n    // FAITHFUL: casterAtkPct present. NEAREST-WRONG: encoded as atkPct 60 -> would show stat 'atkPct'\n    // value 60 instead (burst only grants atkPct 40, so a 60-valued atkPct can only come from mis-encoding).\n    expect(applies(base.events, 'casterAtkPct', 60).length).toBeGreaterThan(0);\n    expect(applies(base.events, 'atkPct', 60).length).toBe(0);\n  });\n\n  it('True Damage +50% is trueDamagePct 50', () => {\n    // NEAREST-WRONG: attackDamagePct/elementDamagePct 50 -> different stat in the log.\n    expect(applies(base.events, 'trueDamagePct', 50).length).toBeGreaterThan(0);\n    expect(applies(base.events, 'attackDamagePct', 50).length).toBe(0);\n  });\n\n  it('skill1 buffs land AT Full Burst entry, not at burst cast', () => {\n    // in a solo comp burstCast and fullBurstEnter are 1:1, so this checks COUNT parity with FB starts\n    // (a burstCast mis-key would still count 1:1 here — flagged as a solo-comp limitation in the spec).\n    const fbCount = base.events.filter((e) => e.kind === 'fullBurstStart').length;\n    expect(applies(base.events, 'casterAtkPct', 60).length).toBe(fbCount);\n  });\n\n  it.skip('Recovers 10% of damage as HP — GAP: lifesteal, no HP pool in v1 (offensively inert; only feeds a teammate on-recovery consumer)', () => {});\n});\n\ndescribe('ada — skill2 (Flash Grenade, during Full Burst)', () => {\n  it('Flash Grenade true-damage hits fire ONLY during Full Burst', () => {\n    // FAITHFUL: fbGate inFb. NEAREST-WRONG: interval with no FB gate -> hits appear with inFullBurst=false.\n    const gren = base.events.filter(bigTrue);\n    expect(gren.length).toBeGreaterThan(0);\n    expect(gren.every((e) => e.inFullBurst === true)).toBe(true);\n  });\n\n  it('non-vacuity: the fixture also produces plenty of out-of-FB normal shots', () => {\n    expect(base.events.some((e) => normalHit(e) && e.inFullBurst === false)).toBe(true);\n  });\n\n  it('grenade is enemy-targeted — removing it drops Ada but leaves teammates byte-identical', () => {\n    expect(unitOf(noGrenade.res, ADA).total).toBeLessThan(unitOf(base.res, ADA).total);\n    for (const mate of ['liter', 'crown', 'helm']) {\n      expect(unitOf(noGrenade.res, mate).total).toBe(unitOf(base.res, mate).total);\n    }\n  });\n\n  it.skip('Flash Grenade activation-time -1s for 10s — GAP: no interval-mutation primitive; in practice halves cadence (2s->1s) across Ada\\u2019s own FB window', () => {});\n});\n\ndescribe('ada — burst (self)', () => {\n  it('self ATK +40% and True Damage +42%', () => {\n    expect(applies(base.events, 'atkPct', 40).length).toBeGreaterThan(0);\n    expect(applies(base.events, 'trueDamagePct', 42).length).toBeGreaterThan(0);\n  });\n\n  it('Special Modification: chargeDamage +1500 & chargeSpeed -300 present', () => {\n    expect(applies(base.events, 'chargeDamagePct', 1500).length).toBeGreaterThan(0);\n    expect(applies(base.events, 'chargeSpeedPct', -300).length).toBeGreaterThan(0);\n  });\n\n  it('Special Modification lasts ONE ROUND, not a 10s window', () => {\n    // FAITHFUL: durationShots:1 -> only the next charged shot is boosted.\n    // NEAREST-WRONG: durationSec:10 -> every charged shot for 10s is boosted -> strictly more total damage.\n    expect(totals(longCharge.res).total).toBeGreaterThan(totals(base.res).total);\n  });\n});\n",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK +60% of skill user's ATK 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat==='casterAtkPct' value 60 present; fails under nearest-wrong atkPct 60 (self-scaled) which would emit stat 'atkPct'. Solo comp nets same ATK, so event-stat is the discriminator."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "True Damage +50% 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply trueDamagePct 50 present; no attackDamagePct 50 (fails if mis-bucketed to generic Damage-Up as attackDamagePct)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "trigger = entering Full Burst",
+      "disposition": "FAITHFUL",
+      "assertion": "casterAtkPct-60 apply count == fullBurstStart count. Discriminates fullBurstEnter vs fullBurstEnd; solo-comp cannot separate fullBurstEnter from burstCast (1:1) — flagged."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "target = B3 allies who used burst",
+      "disposition": "FAITHFUL",
+      "assertion": "target burstCasters{stage:3}; in solo the set is Ada herself. Non-carrier B3 (helm, no burst cast) must NOT receive it — checked indirectly via teammate byte-identity in the grenade-removal test (helm total unchanged)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 10% of damage as HP",
+      "disposition": "GAP",
+      "assertion": "it.skip — lifesteal with no HP pool in v1; offensively inert. Only relevance is emitting recovery events for a teammate on-recovery consumer (tandem)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Flash Grenade 420% true dmg",
+      "disposition": "FAITHFUL",
+      "assertion": "big true-flavored hits (mult>3, bucket~true) all have inFullBurst===true; fails under nearest-wrong ungated interval (hits with inFullBurst=false). Non-vacuity: out-of-FB normal shots proven present."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "target = enemy nearest crosshair",
+      "disposition": "FAITHFUL",
+      "assertion": "removing the flatDamage-420 block drops Ada's total but leaves liter/crown/helm totals byte-identical — grenade hits only the enemy, never teammates."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "grenade activation-time -1s 10s",
+      "disposition": "GAP",
+      "assertion": "it.skip — no primitive to dynamically shorten an interval trigger. Trigger identity is burstCast (self, on own burst). In practice it halves grenade cadence 2s->1s across Ada's FB; ⚑ the base skill2 interval should stay 2s and this is unmodeled."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK +40% 10s (self)",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply atkPct 40 present (self-scaled, correct here since it's the caster's own ATK)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage +42% 10s (self)",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply trueDamagePct 42 present."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Speed -300% 1 round",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply chargeSpeedPct -300 present; paired with durationShots:1 (round-count). Slows the single post-burst charge shot."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Damage +1500% 1 round",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply chargeDamagePct 1500 present; DURATION SEMANTICS discriminated by counterfactual: patching durationShots:1 -> durationSec:10 strictly increases total (many charged shots boosted vs only the next one). Green under round-count, red (total too high) under seconds."
+    }
+  ],
+  "fixtures": "controlComp('ada', true) throughout — liter B1 / crown B2 / ada B3 carry / helm B3, boss Fire, focus ada. helm=true kept (its crit buffs live in separate buckets and cannot touch the trueDamagePct/casterAtkPct buffApply-stat assertions or the true-flavored grenade filter). The comp is required so a B3 chain completes and Ada actually enters Full Burst and self-bursts each rotation, which is what makes skill1's 'B3 burst-caster' target set include her and gates skill2's grenade window. Deterministic, no seed. Three hoisted runs: base + two withPatchedOverride counterfactuals (charge-window, grenade-removal).",
+  "gaps": [
+    "skill1 line 3 'Recovers 10% of damage as HP' — it.skip: lifesteal, v1 has no HP pool; offensively inert (only a potential on-recovery tandem feed).",
+    "skill2 line 2 'Flash Grenade activation-time condition -1 sec for 10 sec' — it.skip: no primitive to mutate an interval trigger's period; the burstCast-scoped reduction effectively halves grenade cadence 2s->1s during Ada's own FB but cannot be encoded, so the base interval stays 2s and this is ⚑ unmodeled.",
+    "SOLO-COMP LIMITATIONS (not skips, flagged): (a) casterAtkPct vs atkPct nets identical total ATK when caster===sole target, so only the event-stat name discriminates the encoding; (b) fullBurstEnter vs burstCast trigger identity is 1:1 in a solo self-burst comp and cannot be separated by count — a multi-B3 comp would be needed to prove skill1 keys to FB entry (and gains the +50% FB major) rather than pre-FB burst cast.",
+    "⚑ Flash Grenade rider crit/core/noFb: modeled noRange (riders off-range) and no core (text says no 'core strike'); crit-eligibility at caster rate is a RIDERCRIT judgment left unset/conservative — measurement-gated, not asserted.",
+    "⚑ 'Charge Damage +1500%' read as chargeDamagePct (additive charge-bucket points) rather than chargeDamageMultPct (scales base charge damage); the two diverge and the choice is not provable from prose alone."
+  ],
+  "model": "claude-opus-4-8"
+}
