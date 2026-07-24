@@ -40,7 +40,7 @@ lives. Newest first within each section.
   rotation). **Open (explicitly NOT closed by this):** the SMG override re-tune worklist (~24 SMG
   overrides were fit to 24/s and now read a few % cold — `docs/control-regression-followups.md`);
   post-flip residuals quency-escape-queen ~1.05 / nayuta ~0.85; the lazy Max-Ammo-▲-expiry overhang
-  clip is now reached code (open-questions). Full trail: `docs/handoffs/2026-07-23-smg-cadence-flip.md`,
+  clip is now reached code (open-questions). Full trail: `docs/handoffs/closed/2026-07-23-smg-cadence-flip.md`,
   `docs/probe-runs.md` (SMG CADENCE), measurement `docs/probe-data/clean-weapons-idoll-ocean.json`.
 
 - **(2026-07-23, latest) BASE-WEAPON BASIS, two follow-on owner rulings: `cfg.disableBursts`, and
