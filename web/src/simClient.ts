@@ -45,9 +45,10 @@ function coordinator(params: GenCalcParams, onProgress?: ProgressFn) {
       onProgress?.(total);
       return r;
     };
-    return buildGenCalc(params, evaluator);
+    return buildGenCalc(params, evaluator, 'shared');
   }
-  return buildGenCalc(params); // in-process fallback (prerender / no workers)
+  // in-process fallback (prerender / no workers) — still shares the cross-run cache
+  return buildGenCalc(params, undefined, 'shared');
 }
 
 /** bestTeam, search on the main thread + sims on the pool. */

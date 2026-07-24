@@ -92,6 +92,14 @@ export interface TeamCalcInput {
     /** score bonus per satisfied pair (e.g. 0.08 → +8% per pair) */
     weight: number;
   };
+  /** Cross-run sim cache (perf plan item 5). `'shared'` reuses a process-level
+   *  cache bundle keyed by (cfg, loadout, loadouts) — a team's sim depends only on
+   *  those (+ static mult/deps), NOT on blocked/meta/synergy — so repeated
+   *  generations (re-clicking, tweaking pins/locks, toggling shaping) reuse every
+   *  prior sim. `'none'` (default) keeps a per-instance cache so the CLI/tests stay
+   *  hermetic. In the web the COORDINATOR passes `'shared'`; pool workers stay
+   *  stateless (`'none'`). */
+  cache?: 'shared' | 'none';
 }
 
 export interface TeamUnit {
@@ -495,12 +503,80 @@ export function countSynergyPairs(
   return n;
 }
 
+// --- cross-run sim cache (perf plan item 5) ---------------------------------
+// A team's sim result depends ONLY on (cfg, loadout, loadouts) plus static
+// mult/deps — not on blocked/meta/synergy (those drive selection/scoring, which
+// read cached sims). So a process-level bundle keyed by those inputs lets repeated
+// generations reuse every prior sim. LRU keeps the last 3 configs; a soft entry cap
+// bounds the biggest maps. Opt-in via `cache: 'shared'` (web coordinator only).
+interface CacheBundle {
+  teamCache: Map<string, ReturnType<typeof runSim>>;
+  resultCache: Map<string, TeamResult | null>;
+  soloCache: Map<string, number>;
+}
+const SHARED_BUNDLES = new Map<string, CacheBundle>();
+const MAX_BUNDLES = 3;
+const MAX_TEAM_ENTRIES = 5000;
+
+/** Deterministic JSON with recursively sorted object keys, so two configs built the
+ *  same way hash identically regardless of key insertion order. */
+function stableStringify(v: unknown): string {
+  if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
+  if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
+  const keys = Object.keys(v as Record<string, unknown>).sort();
+  return `{${keys
+    .map((k) => `${JSON.stringify(k)}:${stableStringify((v as any)[k])}`)
+    .join(',')}}`;
+}
+
+function getBundle(hash: string): CacheBundle {
+  const hit = SHARED_BUNDLES.get(hash);
+  if (hit) {
+    SHARED_BUNDLES.delete(hash); // LRU touch
+    SHARED_BUNDLES.set(hash, hit);
+    return hit;
+  }
+  const bundle: CacheBundle = {
+    teamCache: new Map(),
+    resultCache: new Map(),
+    soloCache: new Map(),
+  };
+  SHARED_BUNDLES.set(hash, bundle);
+  while (SHARED_BUNDLES.size > MAX_BUNDLES) {
+    const oldest = SHARED_BUNDLES.keys().next().value;
+    if (oldest === undefined) break;
+    SHARED_BUNDLES.delete(oldest);
+  }
+  return bundle;
+}
+
+/** Soft entry cap: evict oldest (Map insertion order) once past `cap`. */
+function capMap(m: Map<unknown, unknown>, cap: number): void {
+  while (m.size > cap) {
+    const k = m.keys().next().value;
+    if (k === undefined) break;
+    m.delete(k);
+  }
+}
+
 export function makeCalc(input: TeamCalcInput) {
   const { chars, mult, deps } = input;
   const loadout = input.loadout ?? {};
   const blocked = new Set(input.blocked ?? []);
   const poolB3 = input.poolB3 ?? 24;
   const rounds = input.rounds ?? 3;
+  // Sim caches: shared process-level bundle (keyed by the sim-determining inputs)
+  // when opted in, else per-instance (hermetic). See CacheBundle / item 5.
+  const bundle =
+    input.cache === 'shared'
+      ? getBundle(
+          stableStringify({
+            cfg: input.cfg,
+            loadout: input.loadout,
+            loadouts: input.loadouts,
+          }),
+        )
+      : null;
   const meta = input.meta;
   const META_W = meta?.weight ?? 0;
   const prydwenScore = input.prydwenScore;
@@ -582,8 +658,9 @@ export function makeCalc(input: TeamCalcInput) {
   };
 
   // memoize full-team sims (keyed by ordered slugs) and solo scores so repeated
-  // bestTeam calls (topTeams) and refine rounds don't re-sim the same teams.
-  const teamCache = new Map<string, ReturnType<typeof runSim>>();
+  // bestTeam calls (topTeams) and refine rounds don't re-sim the same teams. Maps
+  // come from the shared bundle when opted in (item 5), else are per-instance.
+  const teamCache = bundle?.teamCache ?? new Map<string, ReturnType<typeof runSim>>();
   const simTeam = (slugs: string[]) => {
     const key = slugs.join(',');
     const hit = teamCache.get(key);
@@ -592,6 +669,7 @@ export function makeCalc(input: TeamCalcInput) {
     const prepared = prepareTeam(cs, slugs.map(unitLoadout), deps);
     const r = runSim(cs, mult, { ...input.cfg, slugs } as SimConfig, prepared);
     teamCache.set(key, r);
+    capMap(teamCache, MAX_TEAM_ENTRIES);
     return r;
   };
 
@@ -625,7 +703,7 @@ export function makeCalc(input: TeamCalcInput) {
   // Batch-evaluate teams to TeamResults, memoized by ordered slugs (perf plan 1b).
   // Cache hits are served immediately; misses go to `input.evaluator` (a worker
   // pool) when present, else run in-process. Order-preserving; null = sim error.
-  const resultCache = new Map<string, TeamResult | null>();
+  const resultCache = bundle?.resultCache ?? new Map<string, TeamResult | null>();
   const evalTeams = async (
     teams: string[][],
   ): Promise<(TeamResult | null)[]> => {
@@ -648,13 +726,14 @@ export function makeCalc(input: TeamCalcInput) {
         resultCache.set(missTeams[k].join(','), r ?? null);
         out[missIdx[k]] = r ?? null;
       });
+      capMap(resultCache, MAX_TEAM_ENTRIES);
     }
     return out;
   };
 
   // rough solo score to prune the (large) B3 DPS pool. Supports (B1/B2) are
   // kept wholesale — they score poorly solo but enable teams.
-  const soloCache = new Map<string, number>();
+  const soloCache = bundle?.soloCache ?? new Map<string, number>();
   // Warm solo scores for `slugs` in ONE batch (through the evaluator when present)
   // so buildPool/seedTeam can read them synchronously without blocking on a pool.
   const warmSolo = async (slugs: string[]): Promise<void> => {

@@ -127,8 +127,10 @@ export interface GenCalcParams {
 export function buildGenCalc(
   params: GenCalcParams,
   evaluator?: (teams: string[][]) => Promise<(TeamResult | null)[]>,
+  cache: 'shared' | 'none' = 'none',
 ) {
   return makeCalc({
+    cache,
     chars: generatorCharacters as any,
     mult,
     deps: GEN_DEPS,

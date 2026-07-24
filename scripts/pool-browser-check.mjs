@@ -47,10 +47,37 @@ async function generate(browser, { noPool }) {
   return { sig, ms };
 }
 
+// Same-context re-run: click Calculate twice on ONE page. The second run should be
+// near-instant because the shared cross-run cache (item 5) reuses every sim.
+async function rerun(browser) {
+  const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(`${base}/roster`, { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: 'Wind', exact: true }).click();
+  const time = async () => {
+    const t0 = Date.now();
+    await page.getByRole('button', { name: /Calculate top 5 teams/ }).click();
+    await page.waitForFunction(
+      () => {
+        const el = document.querySelector('.rg-dmg.big');
+        return el && el.textContent && el.textContent.trim().length > 0;
+      },
+      { timeout: 60000 },
+    );
+    return Date.now() - t0;
+  };
+  const first = await time();
+  await page.waitForTimeout(200);
+  const second = await time();
+  await ctx.close();
+  return { first, second };
+}
+
 const browser = await chromium.launch();
 try {
   const pool = await generate(browser, { noPool: false });
   const solo = await generate(browser, { noPool: true });
+  const rr = await rerun(browser);
 
   const same = JSON.stringify(pool.sig) === JSON.stringify(solo.sig);
   console.log('pool     :', pool.sig.join(' | '), `(${pool.ms}ms)`);
@@ -61,6 +88,9 @@ try {
   const speedup = solo.ms / pool.ms;
   console.log(
     `wall clock: pool ${pool.ms}ms vs fallback ${solo.ms}ms (${speedup.toFixed(2)}× )`,
+  );
+  console.log(
+    `cross-run cache (item 5): 1st ${rr.first}ms → 2nd ${rr.second}ms (${(rr.first / rr.second).toFixed(1)}× faster re-run)`,
   );
   if (!same) {
     console.error('ROSTER MISMATCH — pool path is not byte-identical');
