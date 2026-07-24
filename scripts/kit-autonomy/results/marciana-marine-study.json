@@ -1,0 +1,152 @@
+{
+  "slug": "marciana-marine-study",
+  "kitDescription": "Marciana: Marine Study is an Iron AR Burst III Attacker built around 'Whistle' stacks: she opens battle with 4 stacks (of a 5-stack cap), each granting a continuous self ATK buff, and reaches the cap a few seconds in. When she enters Full Burst AFTER casting her own Burst, she strikes the highest-Max-HP enemy for a large 3789.25%-of-ATK bonus hit and flags it. Her Burst buffs her own Attack Damage and (when elementally advantaged) Elemental-Advantage damage, and brands Electric-Code enemies as 'High-Risk Targets' with reduced DEF; once a target is High-Risk, every 20 normal hits adds a 152.68% strike. A large part of her kit is wave-clear flavor — a spread nuke on enemy-kill and a 214.36% Penguin Emergency Dispatch that needs 6+ Raptures — all of which lies dormant against a single immortal raid boss.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": [
+      "CAVEAT (infra, not model): the S5 blind test file assumes a SIDE-EFFECTING withPatchedOverride (`withPatchedOverride(...) && controlComp(...)` / comma-operator patterns), whereas the harness's withPatchedOverride RETURNS a patched-override clone passed via the `overrides` field. Run literally unmodified, S5's counterfactual runs would silently use the BASE override, so its delta assertions would false-RED — a RECON_ERROR in the blind writer's harness-API assumption, NOT a divergence in the driver's model. Corrected for that API misuse, S5's intent matches the driver's shipped override on every load-bearing line (ownBurstGate:'cast', High-Risk status gate, self-scoped Whistle, elemAdvantage inertness on a neutral boss, burst self-buffs). The driver's own 14 tests use the correct API and are GREEN (S2d-verified)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "FB-enter after OWN burst 3789.25%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter + ownBurstGate:'cast' -> enemy flatDamage 3789.25 (+ targetStatus 'Flagged Target' 10s for completeness)",
+        "blindSaid": "S5/S6/S2b all: fullBurstEnter + ownBurstGate:'cast' (the canonical own-burst phrasing, NOT plain fullBurstEnter, NOT burstCast)",
+        "formulaCheck": "skill '% of final ATK' rider: crit-eligible, no core, takes +50% FB major by FB-entry timing; RIDERCRIT engine default (landed ON) supplies crit without an explicit field.",
+        "fireRateOk": true,
+        "explanation": "Highest-leverage trap handled correctly. Driver's M1 pins nuke count === her burstCast count (not total FB count) and inFullBurst=true, with counterfactuals for burstCast-keying and gate removal. Modeling 'Flagged Target' as a targetStatus is harmless completeness (no consumer reads it)."
+      },
+      {
+        "kitLine": "Flagged Target: ATK v10.56% 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "inert (boss ATK irrelevant); status window modeled, debuff content unmodeled",
+        "blindSaid": "UNMODELED — defensively inert",
+        "formulaCheck": "boss ATK debuff has zero effect on outgoing damage in v1.",
+        "fireRateOk": true,
+        "explanation": "Correctly documented as inert."
+      },
+      {
+        "kitLine": "enemy neutralized -> 3789.25% random",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — no enemyNeutralized trigger; boss never dies",
+        "blindSaid": "GAP / it.skip — no neutralization events",
+        "formulaCheck": "unreachable vs single immortal partless boss.",
+        "fireRateOk": true,
+        "explanation": "Correctly unmodeled and verbatim-documented; nuke count stays == burst count."
+      },
+      {
+        "kitLine": "20 normals vs High-Risk -> 152.68%",
+        "category": "FAITHFUL",
+        "subkind": "FIDELITY",
+        "driverSaid": "hitCount:20 + requiresTargetStatus:'High-Risk Target' -> flatDamage 152.68; CAVEAT: hitCount counts ALL hits, not normal-only",
+        "blindSaid": "S2b/S5/S6: hitCount:20 gated on 'High-Risk Target' (Electric-only), inert on non-Electric boss",
+        "formulaCheck": "kit says 'landing 20 NORMAL attacks'; engine hitCount:20 counts all hits (normal+skill+burst). Small over-count for an AR with rare procs; and the whole block is Electric-only so it never fires on the graded Fire comp.",
+        "fireRateOk": true,
+        "explanation": "Status-gate is correct and the biggest over-credit risk (ungated firing vs any boss) is avoided. The normal-only vs all-hit fidelity gap is openly documented → DOCUMENTED_GAP tier, not a silent divergence."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "start: Whistle ATK+32.73%/stk, +4",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resource whistle initial:4 max:5; passive perResource atkPct mult 32.73 (4 stacks=130.92% at t0)",
+        "blindSaid": "S2b: START 4 stacks (130.92%), 5th at t~5s; S6 authored flat 163.65% cap (less faithful)",
+        "formulaCheck": "ATK% bucket; per-stack 32.73, cap 5. Opening at 4 stacks is the kit-stated start.",
+        "fireRateOk": true,
+        "explanation": "Driver's perResource ramp is MORE faithful than the S6 blind flat-cap authoring — it opens at 130.92% and reaches 163.65% at t=5s. M3 discriminates ramp vs flat via baseAtk step."
+      },
+      {
+        "kitLine": "<=3 Raptures/5s -> +1 Whistle",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:5 resource+1 (always true vs 1 boss -> 5th stack at t=5s)",
+        "blindSaid": "S2b/S5: statically-true 5s accrual -> caps at 5; do NOT model live Rapture counting",
+        "formulaCheck": "condition statically true in scope-lock; degenerates to +1/5s to cap.",
+        "fireRateOk": true,
+        "explanation": "Correct static resolution; documented as enemy-count-gated in reality."
+      },
+      {
+        "kitLine": ">=6 Raptures/1s: 214.36% Dispatch",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — never >=6 enemies; Whistle never drains",
+        "blindSaid": "GAP / it.skip",
+        "formulaCheck": "unreachable; correctly leaves Whistle monotone non-decreasing.",
+        "fireRateOk": true,
+        "explanation": "Correctly unmodeled; also correctly reasons the spend never erodes the pool."
+      },
+      {
+        "kitLine": "Rapture appears <=5 -> ElemAdv Dmg+20.41%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive -> self elemAdvantageDamagePct 20.41",
+        "blindSaid": "S2b/S5/S6: passive elemAdvantageDamagePct, advantage-gated (NOT generic attackDamage)",
+        "formulaCheck": "Damage-Up bucket, engine-gated to elemental advantage; live only vs Electric. Correct stat (not generic attackDamagePct, which would over-credit vs neutral bosses).",
+        "fireRateOk": true,
+        "explanation": "Correct stat and first-fire convention (boss spawn = appearance at t0). M4 discriminates passive vs interval:5."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "self ElemAdv Atk Dmg+30.97% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast self elemAdvantageDamagePct 30.97 durationSec 10",
+        "blindSaid": "S2b/S5/S6 agree — advantage-gated, distinct stat from the generic sibling",
+        "formulaCheck": "advantage-gated Damage-Up; inert on Fire, live on Electric.",
+        "fireRateOk": true,
+        "explanation": "Correct stat split preserved (not merged with the 27.45 generic line). M5 pins value + 10s expiry."
+      },
+      {
+        "kitLine": "self Attack Damage+27.45% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast self attackDamagePct 27.45 durationSec 10",
+        "blindSaid": "S2b/S5/S6: generic attackDamagePct, self-only, element-UNgated",
+        "formulaCheck": "Damage-Up bucket, always live; self-scoped (not allies).",
+        "fireRateOk": true,
+        "explanation": "The element-ungated half kept distinct; self-scoped. Correct."
+      },
+      {
+        "kitLine": "Electric enemies: High-Risk DEF v10.56% 20s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + bossElementGate:'Electric' -> enemy targetStatus 'High-Risk Target' 20s; DEF v content inert at bossDef:0 (documented)",
+        "blindSaid": "S2b flagged the trap: DEF v is NOT numerically damageTakenPct; boss-DEF path is an engine GAP — must NOT be silently substituted",
+        "formulaCheck": "status application is Electric-gated; at scope-lock bossDef:0 the DEF v is genuinely inert. Driver did NOT smuggle it in as damageTakenPct — avoided the single S2b-warned encoding trap.",
+        "fireRateOk": true,
+        "explanation": "Status (the load-bearing gate for the 152.68 rider) is Electric-gated correctly; DEF v openly documented as inert rather than mis-encoded. M6 pins Electric-fires / Fire-does-not."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "hitCount:20 counts ALL hits (normal+skill+burst), but the kit says '20 NORMAL attacks'.",
+      "evidence": "Kit: 'landing 20 normal attacks against a target in the High-Risk Target state'. Engine hitCount trigger is not normal-only. Damage-calc SSOT distinguishes normal vs skill/burst instances.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "If the engine exposes a normal-attack-only hit counter, key the trigger to it; otherwise the small over-count on an AR with rare procs is acceptable and is already documented. This block is Electric-only (never fires on the graded Fire comp)."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill1",
+      "summary": "Neither flatDamage rider (3789.25 / 152.68) sets crit:true; correctness relies on the engine's RIDERCRIT default being ON.",
+      "evidence": "S6 blind writer explicitly set crit:true citing RIDERCRIT; driver omitted it on both riders. Damage-calc: skill '% of final ATK' is crit-eligible. CLAUDE.md records RIDERCRIT landed ON (A32).",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Confirm the RIDERCRIT engine default applies crit to flatDamage riders (it is a landed default ON, so behavior is almost certainly correct); if for any reason a flatDamage rider does NOT inherit crit from that default, add crit:true. Owner spot-check item."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdictRationale": "GO. Every kit line is either FAITHFUL or an explicitly DOCUMENTED_GAP — there is no SILENT_DROP, no mis-routed bucket, no undocumented divergence. The three highest-leverage traps S2b named are all handled: (1) the 3789.25% nuke uses fullBurstEnter + ownBurstGate:'cast' (M1 pins nuke count == her burstCast count, inFullBurst=true, with burstCast-keying and gate-removal counterfactuals), so the two-B3 double-fire is avoided; (2) the entire Electric spine (152.68% rider, High-Risk status, both elemAdvantage lines) is correctly element/status-gated and inert on a neutral/Fire boss, exercised only via an Electric-boss unit-test arm (M6); (3) the DEF v10.56% is documented as inert at bossDef:0 rather than mis-encoded as damageTakenPct — the exact trap S2b warned of. On the Whistle stacks the driver is MORE faithful than the S6 blind writer: a perResource 4->5 ramp (M3) instead of a flat cap. Blind re-derivations converge at the model level on all load-bearing lines; the only S5 REDs stem from the blind writer assuming a side-effecting withPatchedOverride (a harness-API recon error), not from any model disagreement, and the driver's own 14 tests are GREEN with strong nearest-wrong discriminators. Same-model residuals for the owner to spot-check (all low, none blocking): (a) that flatDamage riders inherit crit from the RIDERCRIT engine default since the driver set no explicit crit:true; (b) the hitCount all-hits vs normal-only fidelity approximation (documented, Electric-only); (c) all magnitudes are DATAMINED kit-literal and unmeasured — out of scope for this gate but not yet board-validated.",
+  "model": "claude-opus-4-8"
+}

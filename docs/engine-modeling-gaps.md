@@ -28,19 +28,19 @@
 | `alliesLowestHp` | 1 | blanc |
 | `alliesOfClass` | 0 | _none_ |
 | `alliesOfElement` | 8 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, guillotine-winter-slayer, guilty, maiden-ice-rose, rei-ayanami |
-| `alliesOfElementWeapon` | 1 | trina |
+| `alliesOfElementWeapon` | 2 | ark-ranger-black, trina |
 | `alliesOfWeapon` | 6 | arcana-fortune-mate, d-killer-wife, drake, leona, noir, tove |
 | `alliesTopAtk` | 5 | alice, maxwell, miranda, naga, soda-twinkling-bunny |
 | `atkOfMaxHpPct` | 2 | cinderella, maiden-ice-rose |
 | `bossElement` | 2 | eve, helm-aquamarine |
-| `bossElementGate` | 3 | brid-silent-track, eve, helm-aquamarine |
+| `bossElementGate` | 4 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study |
 | `burstCasters` | 3 | ada, arcana, crown |
 | `burstCdr` | 14 | anis-star, arcana, blanc, d-killer-wife, helm-aquamarine, liter, little-mermaid, moran, … |
 | `burstEligibility` | 1 | rapi-red-hood |
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 4 | alice, liberalio, miranda, soda-twinkling-bunny |
-| `cast` | 1 | cinderella-crystal-wave |
+| `cast` | 2 | cinderella-crystal-wave, marciana-marine-study |
 | `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 1 | scarlet-black-shadow |
@@ -56,20 +56,20 @@
 | `everyNOffset` | 2 | arcana, neon-vision-eye |
 | `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
 | `fbGate` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
-| `flatDamage` | 46 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
+| `flatDamage` | 47 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
 | `gainPierce` | 3 | ade-agent-bunny, grave, milk-blooming-bunny |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 5 | alice, asuka, mari, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
-| `hitCount` | 31 | ade-agent-bunny, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, d-killer-wife, … |
+| `hitCount` | 33 | ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, … |
 | `hitRatePct` | 11 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
-| `interval` | 5 | helm-aquamarine, isabel, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
+| `interval` | 6 | helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
 | `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 3 | grave, noir, tove |
@@ -81,9 +81,9 @@
 | `normalAttackPct` | 5 | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
 | `notCast` | 0 | _none_ |
 | `outFb` | 1 | velvet |
-| `ownBurstGate` | 1 | cinderella-crystal-wave |
+| `ownBurstGate` | 2 | cinderella-crystal-wave, marciana-marine-study |
 | `pelletCountFlat` | 2 | arcana-fortune-mate, dorothy-serendipity |
-| `perResource` | 1 | soda-twinkling-bunny |
+| `perResource` | 2 | marciana-marine-study, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
 | `pullsPerSec` | 1 | jill |
 | `rampSec` | 2 | arcana-fortune-mate, cinderella |
@@ -93,7 +93,7 @@
 | `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 1 | naga |
-| `requiresTargetStatus` | 2 | d-killer-wife, privaty |
+| `requiresTargetStatus` | 3 | d-killer-wife, marciana-marine-study, privaty |
 | `resourceGate` | 1 | soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
 | `sequentialMultPct` | 1 | eve |
@@ -106,13 +106,13 @@
 | `swapGate` | 2 | laplace, snow-white-heavy-arms |
 | `swapped` | 2 | laplace, snow-white-heavy-arms |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
-| `targetStatus` | 2 | d-killer-wife, privaty |
+| `targetStatus` | 3 | d-killer-wife, marciana-marine-study, privaty |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
 | `unswapped` | 0 | _none_ |
-| `weapon` | 8 | arcana-fortune-mate, d-killer-wife, drake, leona, nayuta, noir, tove, trina |
+| `weapon` | 9 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, nayuta, noir, tove, … |
 | `weaponSwap` | 11 | ada, chisato, cinderella-crystal-wave, laplace, moran, nayuta, red-hood, snow-white-heavy-arms, … |
 | `whileSwapped` | 1 | snow-white-heavy-arms |
 

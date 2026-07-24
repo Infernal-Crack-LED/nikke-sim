@@ -2297,3 +2297,31 @@ visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–1
   pre-registration); the cone as the SG distribution (KS-refuted). NOT touched: `BAND_CORE_PX`
   (measured file values intact; the ⚑ UNIGEO series is a separate constant), all measured timing/
   gauge constants, MG/SR/RL (flat 0.95 core, no accuracy circle).
+
+## marciana-marine-study — kit-autonomy gauntlet GO (2026-07-24)
+
+**Verdict:** GO (cross-family corroborated), faithfulness 1.0. S2b (claude-fable-5) + S5/S6/S7
+(claude-opus-4-8) converged on all load-bearing lines.
+
+**Key rulings:**
+- S1 nuke (3789.25% ATK): `fullBurstEnter + ownBurstGate:'cast'` — fires only on Marciana's own
+  burst FBs, not helm's alternating rotations. Two-B3 comp discrimination pins nuke count === her
+  burstCast count (not total FB count). Nearest-wrong: plain `fullBurstEnter` (doubles the nuke)
+  or `burstCast` (fires pre-FB, loses +50% major).
+- Whistle stacks: `perResource` whistle pool (initial:4, max:5) + `interval:5` resource+1.
+  More faithful than S6 blind flat-cap authoring (163.65% from t=0). M3 discriminates via baseAtk
+  step at t=5s (4→5 stacks).
+- Electric spine: `bossElementGate:'Electric'` on High-Risk Target status; `requiresTargetStatus`
+  gate on S1 20-hit rider. Both inert on Fire boss (M6). DEF▼10.56% documented as inert at
+  bossDef:0 — NOT mis-encoded as `damageTakenPct` (S2b-warned trap avoided).
+- `elemAdvantageDamagePct` (20.41 passive + 30.97 burst) correctly distinct from generic
+  `attackDamagePct` (27.45 burst). Advantage-gated; inert on Fire boss.
+
+**Documented gaps:** enemy-neutralized trigger (S1 block 2, inert — boss never dies); ≥6 Raptures
+Penguin Dispatch (S2, inert — never ≥6 enemies); DEF▼ magnitude (inert at bossDef:0).
+
+**Low-severity notes:** hitCount:20 counts all hits not normal-only (documented, Electric-only);
+RIDERCRIT engine default relied on for flatDamage crit (confirmed ON in sim.ts).
+
+**Artifacts:** `scripts/kit-autonomy/cross-family/marciana-marine-study/` (packets + results),
+`scripts/kit-autonomy/results/marciana-marine-study.json` (judge verdict).
