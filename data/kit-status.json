@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 5,
+      "unit-tested": 6,
       "authored": 30,
-      "audited": 37,
+      "audited": 36,
       "reconciled": 4,
       "pending": 1
     },
@@ -147,23 +147,24 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "materialization clean; hasPierce correctly retained (note STALE re pierce double-hit — PIERCE_CORE_DOUBLE=false); 0.91 residual is basis/comp-side (read 1.10-1.12 HOT w/ same model 07-13/14)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/alice.json + scripts/kit-autonomy/manual-review/alice.md."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "tb2 test-5 focus — pierce = one popup per shot, no double-hit (A23); run A 1.12",
+      "evidence": "tb2 test-5 focus — pierce = one popup per shot, no double-hit (A23); run A 1.12 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "spot-check: caster-relative charge-speed qualifier (flat +11.67%, no caster-relative StatKey); effective charge cadence vs datamined chargeFrames 90/reloadFrames 141/ammo 6; 80.15%+11.67% stacking convention when alice self-includes; board 1.101 HOT (basis/comp-side)",
       "unmodeled": {
         "skill1": [],
         "skill2": [
@@ -173,8 +174,9 @@
         "burst": []
       },
       "caveats": [
-        "skill1: Charge Speed 11.67% is modeled as a flat target-own buff; the kit says '11.67% of the skill user's Charge Speed' (caster-relative) — qualifier unreconciled (no caster-relative charge-speed StatKey exists). Low impact at scope lock.",
-        "skill2: Pierce is modeled UNGATED (hasPierce); the kit gates it '>80% HP' — always satisfied in v1 (boss deals no damage to units). Re-encode the gate if incoming damage is ever modeled."
+        "skill1: Charge Speed 11.67% is modeled as a flat target-own buff; the kit says '11.67% of the skill user's Charge Speed' (caster-relative) — qualifier unreconciled (no caster-relative charge-speed StatKey exists). ⚑ OUT-OF-DOMAIN (engine-core: needs a caster-relative charge-speed StatKey). Estimate: at scope lock the caster (alice) is at base charge speed unless she ranks top-2 ATK AND has her own +80.15% burst buff live at FB entry, in which case the flat 11.67% understates the grant by up to ~80% of 11.67 (~+9pp) on those rotations only — a low-single-digit-% cadence effect on the 2 targeted allies. Recipe: read the 2 targeted allies' charged-shot cadence in a focus video vs sim; if it disagrees, snapshot the caster's charge speed at FB entry. Tier: out-of-domain (no primitive); low impact at scope lock.",
+        "skill2: Pierce is modeled UNGATED (hasPierce); the kit gates it '>80% HP' — always satisfied in v1 (boss deals no damage to units). Re-encode the gate if incoming damage is ever modeled. hasPierce is a hit TAG (enables pierceDamagePct eligibility, sim.ts:1400), NOT a damage stat, and PIERCE_CORE_DOUBLE=false (sim.ts:1091) so there is no core+body double-hit — damage-INERT at scope lock (verified byte-identical totals with/without).",
+        "skill2: lifesteal 'recover HP by 8.12% of attack damage' below 80% HP is UNMODELED. ⚑ OUT-OF-DOMAIN (engine-core: needs an HP pool + incoming-damage model). Estimate: exactly 0 impact at scope lock — the boss deals no damage, no unit ever drops below the 80% gate, and there is no HP pool to heal, so the line can move no damage and emits no event. Recipe: add an HP-pool / damage-taken primitive, then encode the <80%HP gate + 8.12%-of-attack-damage continuous recovery (and watch crown's 'when recovery takes effect' consumer in the control comp for leaked ally heals). Tier: out-of-domain (no primitive); inert in v1."
       ],
       "board": {
         "records": [
