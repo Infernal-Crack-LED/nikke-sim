@@ -1,0 +1,188 @@
+{
+  "slug": "arcana-fortune-mate",
+  "kitDescription": "Arcana: Fortune Mate is a Fire shotgun Attacker (Burst II) who turns her own burst into a personal power window. Casting her burst puts her in 'Making Memories' — self Critical Rate +20.09%, Attack Damage +29.99%, a 2-round reload, and a 554.4%-of-final-ATK hit on all enemies that lands before the Full Burst window opens. While in that status her normal attacks tick a counter: every 2nd attack tops her magazine up by 6 rounds, every 4th grants 'Happy Memories' (+1 shotgun pellet, up to +3), and every 6th grants 'Precious Moments' (ATK +2.49%, up to 3 stacks); each Happy Memories application also stacks 'Snapshots of Youth' (+10% normal-attack multiplier, up to +30%). When the Full Burst ends she buffs every shotgun-wielding ally with a flat ATK grant worth 13% of HER ATK per Precious Moments stack for 15 seconds, and she strips her own Making Memories and Snapshots. Separately, casting her burst gives every OTHER shotgun ally +55% Attack Damage for 10 seconds. Net effect: a shotgun-team carry who snowballs her own pellet count and multiplier inside her burst window while paying the team back in ATK and Damage-Up.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1-a 'fires on Full Burst END, not ENTER' — blind reads the FIRST casterAtkPct buffApply in the stream without filtering casterIdx===afm, so a teammate's casterAtkPct grant sets the ordering baseline. Blind-side test-hygiene defect, not an encoding divergence (driver test pins firings(line).length === fbEnds count on afm-cast buffs).",
+      "S1-a 'reaches shotgun-wielding allies only … tgts.size === 1' — same missing casterIdx filter; the target set is polluted by other casters' casterAtkPct applies. Driver test asserts targets(line) === [afm, drake, zwei] on afm-cast events with liter (RL) excluded, which is the correct SG-typed check.",
+      "S1-a 'stack-scaled and capped at 3 stacks (13/26/39), not flat at its maximum' — two independent causes: (i) `value <= 39.001` is false because the SSOT stores casterAtkPct as an ABSOLUTE ATK grant (caster ATK × pct ≈ 46670), not a percentage — a blind-side misconception; (ii) totalOf(BASE) < totalOf(CASTER_FLAT_MAX) is false because the driver DOES bake the cap (value 39, no live stack scaling) — that half is the real, driver-DOCUMENTED ramp approximation (caveat 2, HOT direction), not an undocumented gotcha.",
+      "S1-b/c 'Snapshots … EXPIRES at FB end' (expects a buffRemove for normalAttackPct) — SSOT: buffRemove fires ONLY for reload-caused removals; a durationSec lapse emits no event. Driver models the FB-end strip as durationSec 11 lapse-reset. Blind-side event-model misconception.",
+      "burst 'Critical Rate +20.09% … and expires' (expects buffRemove for critRatePct) — same buffRemove-on-lapse misconception.",
+      "burst 'Attack Damage +29.99% … and expires' (expects buffRemove for attackDamagePct) — same buffRemove-on-lapse misconception.",
+      "S2-a '2x reload 6 rounds + burst reload 2 rounds are damage: they add real shots' — the driver deliberately leaves both reloads UNMODELED (override `unmodeled.skill2`/`unmodeled.burst`, verbatim, with the COLD-direction note). Documented skip, not a silent drop."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "FB ends → SG allies: ATK ▲13% of user",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger fullBurstEnd, target alliesOfWeapon SG (self INCLUDED — no except-self clause), buff casterAtkPct durationSec 15",
+        "blindSaid": "S2b: 'casterAtkPct path, fullBurstEnd, 15s wall-clock, weapon-typed, self INCLUDED'; S6 blind override independently chose the same trigger/target/stat/duration",
+        "formulaCheck": "SSOT: casterAtkPct is stored as an absolute ATK grant (caster ATK × pct/100) — correct primitive for 'of the skill user's ATK'; alliesOfWeapon {SG} is the weapon-typed target set the prose names",
+        "fireRateOk": true,
+        "explanation": "Driver test pins targets === [afm, drake, zwei] (liter/RL excluded), firings === fbEnds count, expiresFrame − frame === 15×60. Discriminates against alliesOfClass-Attacker (drops SG Supporter zwei) and all-allies (leaks onto liter)."
+      },
+      {
+        "kitLine": "x stack count of Precious Moments",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Baked to the 3-stack cap (value 39) — caveat 2: 'assumes 3 stacks; the ramp arithmetic reaches ~2 by FB end (HOT direction), and the block fires on EVERY team FB end even on rotations she did not burst (0 stacks in reality)'",
+        "blindSaid": "S2b named the static-magnitude read as the nearest-wrong model ('assert the ramp, not just the cap'); S6 blind override encoded it as perResource {preciousMoments × 13} for live 13/26/39 scaling",
+        "formulaCheck": "Prose states the magnitude scales with live stack count; the engine offers perResource as the faithful primitive, so the cap-bake is an approximation, not a formula error",
+        "fireRateOk": true,
+        "explanation": "The only substantive blind push-back that is NOT an API misconception. It is explicitly documented in the shipped override's caveats with its direction (HOT) and is a magnitude/ramp item — measurement-gated per method F. Owner-visible, listed in gotchas as documentedByDriver."
+      },
+      {
+        "kitLine": "Happy Memories → self: NA mult ▲10%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "normalAttackPct 30 (10 × 3) on self, keyed to her OWN burstCast, durationSec 11 + rampSec 11",
+        "blindSaid": "S2b: normalAttackPct SCOPED to the normal multiplier, nearest-wrong = attackDamagePct (would lift the 554.4 nuke); S5 blind test's SNAP_GENERIC counterfactual PASSED against the driver override",
+        "formulaCheck": "SSOT: normalAttackPct scales the NORMAL-attack multiplier only, never burst/skill — correct bucket for 'Normal Attack Damage Multiplier'",
+        "fireRateOk": true,
+        "explanation": "The kit's chained trigger ('when Happy Memories takes effect') has no engine primitive; proxying it to the burstCast that opens Making Memories is documented in the note and is the same window the real chain lives in. Driver test filters on stat === 'normalAttackPct', so a generic attackDamagePct mis-bucket yields [] and goes RED."
+      },
+      {
+        "kitLine": "FB ends → self: removes MM + Snapshots",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Verbatim in unmodeled.skill1; the window end is modeled as durationSec 11 (her cast → FB exit) lapse-reset. Note records the residual that FB-end removal does NOT name Happy Memories / Precious Moments, which the 11s lapse nevertheless expires",
+        "blindSaid": "S2b: 'removal strips ONLY MM + Snapshots; Happy Memories and Precious Moments PERSIST across cycles' — a per-window reset under-credits every window after the first; S6 blind used resource pools to persist them",
+        "formulaCheck": "SSOT: durationSec lapse emits no buffRemove, so the removal is behaviourally correct for MM + Snapshots; the divergence is confined to cross-window persistence of the two stack pools",
+        "fireRateOk": true,
+        "explanation": "Two halves: the named removals are faithfully realised by the 11s window; the un-named persistence of Happy/Precious is a COLD-direction refinement, documented in the shipped note as part of the gotcha #1 measurement item. Partially offsets the HOT ramp bake above."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "normal attacks in MM: 2/4/6 counter",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No per-status attack counter exists; all three payloads are keyed to her burstCast with rampSec 11 so each stack pool ramps 0→cap across the window (caveat 1, with the ⚑ on the 1.5 pulls/s SG cadence)",
+        "blindSaid": "S2b it.skip'd the counter as an explicit GAP ('the engine has no per-status-window counter'); S6 blind recorded the counter text verbatim in unmodeled.skill2 and flagged the same cadence dependency",
+        "formulaCheck": "No formula conflict — this is a missing engine primitive, and both blind agents independently reached the same GAP conclusion",
+        "fireRateOk": true,
+        "explanation": "Both post-op blinds and the pre-op reviewer converge that the counter is unmodelable today. The driver's rampSec 11 proxy is the closest available shape and carries its estimate + recipe. Kit-silent sub-question (does the counter cycle past 6 inside one window?) is flagged by all three agents."
+      },
+      {
+        "kitLine": "Two times: Reloads 6 rounds.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 verbatim; caveat 3 quantifies it as '~3-5 window shots (COLD direction, partially masks the ramp over-credit)'",
+        "blindSaid": "S6 blind modeled it as instantReload fraction 0.667 (6/9) and flagged the add-vs-set semantics; S5 blind test asserted it adds shots (the one non-artifact RED)",
+        "formulaCheck": "Reload/fire-uptime modifiers ARE damage-relevant (standing rule), so this is a real omission — but a quantified, direction-labelled one",
+        "fireRateOk": true,
+        "explanation": "Honest skip with direction and magnitude estimate, and it points the same way (COLD) as the HOT ramp bake it partly cancels. Not a silent drop: named verbatim in `unmodeled` and asserted as such by the driver's U1 test."
+      },
+      {
+        "kitLine": "Four times: Happy Memories: pellets ▲1",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "pelletCountFlat 3 (10 → 13 effective SG pellets), self, burstCast-keyed, durationSec 11 + rampSec 11 — the 2026-07-21 A4 fix replacing the old normalAttackPct-30 proxy",
+        "blindSaid": "S2b named the proxy as a nearest-wrong model and noted it IS distinguishable here; S6 blind INDEPENDENTLY chose pelletCountFlat (not the proxy); S5 blind's PELLET_PROXY counterfactual PASSED",
+        "formulaCheck": "SSOT: pelletCountFlat adds effective pellets and is MULTIPLICATIVE with normalAttackPct (each pellet = 1/hitsPerShot of the shot); gauge is base-capped so extra pellets do not pump burst energy",
+        "fireRateOk": true,
+        "explanation": "Strongest cross-family corroboration in this packet: all three independent agents picked the pellet primitive over the additive proxy. Driver test asserts shipped normal-bucket total > additive counterfactual × 1.03 (×1.69 vs ×1.60); the blind test independently asserts the two models must diverge and that teammates/gauge are untouched."
+      },
+      {
+        "kitLine": "Six times: Precious Moments: ATK ▲2.49%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "atkPct 7.47 (2.49 × 3) on self, burstCast-keyed, durationSec 11 + rampSec 11",
+        "blindSaid": "S2b: self-only ATK% stack, must not appear on teammates; S6 blind used a preciousMoments resource pool × 2.49 — same stat, same cap",
+        "formulaCheck": "SSOT: atkPct scales base ATK and feeds every bucket — correct for a plain 'ATK ▲' line, distinct from the attackDamagePct Damage-Up bucket",
+        "fireRateOk": true,
+        "explanation": "Driver test pins value set === [7.47], targetIdx === afm only, one firing per cast, 11s window. Blind's NO_PRECIOUS load-bearing + teammate-inertness assertions both PASSED against the shipped override."
+      },
+      {
+        "kitLine": "using Burst → SG allies (except self)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger burstCast (her OWN cast), target alliesOfWeapon SG with excludeSelf: true, attackDamagePct 55, durationSec 10",
+        "blindSaid": "S2b called self-inclusion 'the kit's sharpest edge / the biggest single over-credit available here'; S6 blind reached the same intent (its `exceptSelf` spelling is an invalid field name — a blind-side encoding typo, schema is `excludeSelf`); S5 blind's inertness assertion PASSED",
+        "formulaCheck": "SSOT: attackDamagePct is the Damage-Up bucket (additive within bucket, multiplies once); excludeSelf drops the caster; burstCast is the literal 'when using Burst Skill' trigger, distinct from fullBurstEnter",
+        "fireRateOk": true,
+        "explanation": "Driver test asserts targets === [drake, zwei] with afm absent, firings === her cast count, 10s duration, and discriminates BOTH ways: dropping excludeSelf leaks onto afm ([1,2,3]); an alliesOfClass-Attacker retarget drops zwei AND re-admits afm ([1,2])."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Effect 1: Critical Rate ▲20.09% cont.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critRatePct 20.09 on self, burstCast, durationSec 11 (cast → FB exit)",
+        "blindSaid": "S2b: UNSCOPED crit — text says 'Critical Rate' with no normal-attack qualifier, so NOT critRateNormalPct; S6 blind agreed explicitly on the same reasoning",
+        "formulaCheck": "SSOT: critRatePct lifts crit on EVERY eligible bucket; critRateNormalPct would restrict it to normals — the prose supports the unscoped stat",
+        "fireRateOk": true,
+        "explanation": "Driver test filters on stat === 'critRatePct' and asserts value set === [20.09] — a critRateNormalPct mis-scope yields an empty set and goes RED, so the named nearest-wrong IS discriminated. 'Continuously' is realised as the cast→FB-exit window (11s), not a permanent passive."
+      },
+      {
+        "kitLine": "Effect 2: Reloads 2 round(s).",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim; folded into caveat 3's COLD-direction uptime estimate",
+        "blindSaid": "S6 blind modeled it as instantReload fraction 0.222 (2/9) and flagged the add-vs-set semantics as unverified",
+        "formulaCheck": "Reload effects change shots fired and are damage-relevant; omission is quantified and direction-labelled",
+        "fireRateOk": true,
+        "explanation": "Same class as the 6-round reload: an explicitly recorded skip asserted by the driver's U2 test, not a silent drop."
+      },
+      {
+        "kitLine": "Effect 3: Attack Damage ▲29.99% cont.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 29.99 on self, burstCast, durationSec 11",
+        "blindSaid": "S2b and S6 both encoded it as a generic Damage-Up on self for the life of Making Memories",
+        "formulaCheck": "SSOT: attackDamagePct stacks additively inside the Damage-Up bucket then multiplies once — correct routing for a generic 'Attack Damage ▲'",
+        "fireRateOk": true,
+        "explanation": "Driver test pins value 29.99, one firing per cast, 11×60-frame window. Kept distinct from the 55% team line by value filtering, so the two Damage-Up sources cannot be confused."
+      },
+      {
+        "kitLine": "Deals 554.4% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 554.4 to enemy on burstCast; lands in the burst bucket with fbMajorApplied false",
+        "blindSaid": "S2b: pre-FB, FB-exempt (noFb), range-bonus-OFF, no core (text lacks 'core strike'); S6 blind set noFb: true explicitly; S5 blind's NO_NUKE + fbMajorApplied===false assertions PASSED",
+        "formulaCheck": "SSOT: a burst CAST lands before the FB window opens, so burst-cast damage is FB-exempt and range-bonus-off by the universal rider rule; 'without core strike' wording absent → core-ineligible",
+        "fireRateOk": true,
+        "explanation": "Driver test asserts one nuke per cast, atkPct set === [554.4], srcSlot === 'burst', and an EMPTY list of fbMajorApplied events — the exact discriminator against the FB-major-credited misread. The halved-magnitude counterfactual (277.2) confirms the value is load-bearing."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill1",
+      "summary": "S1's team ATK grant is baked at the 3-stack cap (casterAtkPct 39) rather than scaling with the live Precious Moments count, so the first Full Burst end over-credits (~2 stacks in reality) and rotations she did not burst credit 3 stacks where the truth is 0.",
+      "evidence": "Kit: 'ATK ▲ 13% of the skill user's ATK x stack count of Precious Moments'. SSOT offers perResource as the live-scaling primitive (S6 blind used perResource {preciousMoments × 13}); S2b named the static read as the nearest-wrong model and asked for a ramp assertion; the S5 blind's CASTER_FLAT_MAX counterfactual is numerically identical to the shipped override, which is why that assertion went RED. Driver documents it verbatim in caveat 2 with the HOT direction.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement before re-encoding: pin the real per-window stack trajectory from footage (read the Precious Moments pip count at each Full Burst end over 3+ rotations), then either re-key to perResource {preciousMoments × 13} if the pool primitive accepts casterAtkPct, or set an authored rampSec matched to the measured cadence. Do NOT retune the 39 to hit the board."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "The Full-Burst-end removal names ONLY Making Memories and Snapshots of Youth, but the driver's uniform durationSec 11 also expires Happy Memories (pellets) and Precious Moments (ATK), which the kit leaves standing across cycles.",
+      "evidence": "Kit: 'Removes Making Memories. Removes Snapshots of Youth.' — Happy Memories and Precious Moments are not named. S2b: 'a model wiping all four statuses under-credits every window after the first'; S6 blind encoded both as persistent resource pools. Documented in the shipped override note as part of gotcha #1 and in the S2c measurement-gated flag list.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement: confirm on footage that the Happy Memories / Precious Moments pips survive Full Burst end and persist into the next rotation (and whether they cap at 3 cumulatively). If they persist, move both to persistent self-buffs (or resource pools) and leave only critRatePct/attackDamagePct/normalAttackPct on the 11s window. COLD-direction correction on an already-HOT unit — do not land it as a board tune."
+    },
+    {
+      "subkind": "SILENT_DROP",
+      "slot": "skill2",
+      "summary": "Both in-window reloads (6 rounds at the 2-attack threshold, 2 rounds at burst) are omitted, costing real shots on a 9-round magazine with a 161-frame reload.",
+      "evidence": "Kit: 'Two times: Reloads 6 rounds' and burst 'Effect 2: Reloads 2 round(s)'. Standing rule: reload/fire-uptime modifiers are damage-relevant, not defensive. S5 blind modeled both as instantReload and its shot-count assertion went RED against the shipped override; S6 blind encoded fractions 0.667 and 0.222. NOT a true silent drop — both are recorded verbatim in `unmodeled` with a '~3-5 window shots, COLD direction' estimate and asserted by the driver's U1/U2 tests.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Confirm instantReload semantics in sim.ts (adds to the belt vs sets it) then encode fraction 6/9 and 2/9; the 6-round one should ideally be timed ~2 pulls into the window rather than at cast. Verify on footage that the ammo counter jumps +6 after exactly the 2nd trigger pull."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Every one of the 13 kit lines is FAITHFUL (9) or DOCUMENTED_GAP (4) — faithfulness 1.0, zero UNDOCUMENTED divergences, so the three gotchas above are logged for owner visibility with documentedByDriver:true rather than as blocking findings. The S5 blind run is mechanically RED (11/7/2), and I classified all 7 REDs against the SSOT rather than taking the driver's word: three fail on the blind's own misconception that casterAtkPct stores a percentage (the SSOT states it is an absolute caster-ATK grant) compounded by a missing casterIdx filter that lets teammates' grants pollute the ordering and target-set checks; three fail because the blind expected a buffRemove on duration lapse (the SSOT states buffRemove fires only for reload-caused removals); one fails because the driver deliberately leaves both kit reloads unmodeled. Only ONE red carries substance — the CASTER_FLAT_MAX counterfactual is numerically identical to the shipped override because the driver bakes the 3-stack cap instead of scaling live — and that is exactly what caveat 2 already documents, with its HOT direction. Discrimination is sound: every load-bearing line either has an explicit counterfactual in the driver's suite (l1OneStack 3:1, targetClass, targetAll, l3NoExclude, l5AdditiveProxy, selfBuffsOnFbEnter with fixture A's zero-cast inertness, l7Half) or is pinned by a stat-name-filtered assertion that yields an empty set under its named mis-bucketing (critRatePct vs critRateNormalPct, normalAttackPct vs attackDamagePct), and every faithful block fires at the prose cadence (per own cast, or per FB end) with fixture A proving the Making-Memories family is perfectly inert across 12 team Full Bursts she did not burst into. The three-way cross-family convergence is strongest exactly where it matters: claude-fable-5 (pre-op) and claude-opus-5 (post-op override, blind) independently chose the pelletCountFlat primitive over the additive normalAttackPct proxy, corroborating the 2026-07-21 A4 fix, and both independently flagged excludeSelf as the kit's sharpest edge. Same-model residual for the owner to spot-check: all agents here are Claude, so the shared-prior risk is concentrated in the two items nobody could resolve from prose — whether the 2/4/6 counter CYCLES within one ~11s window (which would change the reachable stack ceiling and the whole rampSec 11 model) and whether the Happy Memories / Precious Moments pips actually persist past Full Burst end. Both need one focus recording, and both are COLD-direction refinements of a unit that is already over-modeled; they must not be tuned to hit the board reading.",
+  "model": "claude-opus-5"
+}

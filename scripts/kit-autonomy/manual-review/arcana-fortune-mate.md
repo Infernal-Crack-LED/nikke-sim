@@ -1,0 +1,55 @@
+# Manual review — `arcana-fortune-mate` (Arcana: Fortune Mate, SG / Attacker / Fire / Burst II)
+
+> Kit-autonomy gauntlet 2026-07-24. **Verdict: GO (cross-family corroborated)** · faithfulness **1.0** · tier **2**.
+> ⚠ EXACT SLUG: this is `arcana-fortune-mate` (SG/Fire/B2 Attacker, aka **afm / jkana / arcanafm**) — **not** base `arcana` (RL/Supporter/Electric/B2). The two share a base name; the slug-disambiguation lint flags bare "Arcana" as ambiguous (a false positive on the full variant name, which legitimately contains the base word). Everything here reasons from `characters['arcana-fortune-mate']`.
+
+## What the kit does (owner sanity-check, from the binding S7 judge)
+
+Arcana: Fortune Mate is a Fire shotgun Attacker (Burst II) who turns her own burst into a personal power window. Casting her burst puts her in **Making Memories** — self Critical Rate +20.09%, Attack Damage +29.99%, a 2-round reload, and a 554.4%-of-final-ATK hit on all enemies that lands *before* the Full Burst window opens. While in that status her normal attacks tick a counter: every 2nd attack tops her magazine up by 6 rounds, every 4th grants **Happy Memories** (+1 shotgun pellet, up to +3), and every 6th grants **Precious Moments** (ATK +2.49%, up to 3 stacks); each Happy Memories application also stacks **Snapshots of Youth** (+10% normal-attack multiplier, up to +30%). When the Full Burst ends she buffs every shotgun-wielding ally with a flat ATK grant worth 13% of HER ATK per Precious Moments stack for 15s, and she strips her own Making Memories and Snapshots. Separately, casting her burst gives every OTHER shotgun ally +55% Attack Damage for 10s. Net effect: a shotgun-team carry who snowballs her own pellet count and multiplier inside her burst window while paying the team back in ATK and Damage-Up.
+
+## Line-by-line disposition (driver ⇄ S2b fable ⇄ S5/S6 opus — all converge)
+
+| Line | Disposition | Encoding (shipped, UNCHANGED by this gauntlet) |
+| --- | --- | --- |
+| S1 FB-end → SG allies: ATK ▲13% casterATK × Precious stacks / 15s | **FAITHFUL** (magnitude = DOCUMENTED-GAP, below) | `fullBurstEnd`, target `alliesOfWeapon SG` (self included — no except-self clause), `casterAtkPct 39/15s` |
+| S1 Happy Memories → self: Snapshots NA mult ▲10% ×3 | **FAITHFUL** | `burstCast` (own), target `self`, `normalAttackPct 30/11s ramp 11` (normal-scoped, NOT attackDamagePct) |
+| S1 FB-end → self: removes Making Memories + Snapshots | **DOCUMENTED-GAP** (UNMODELED verbatim) | mode cleanup; the window end is realised by the 11s `durationSec` lapse-reset on the self-buffs |
+| S2 2-hit: Reload 6 rounds | **DOCUMENTED-GAP** (UNMODELED verbatim) | uptime QoL; ~3-5 window shots, COLD direction (caveat 3) |
+| S2 4-hit: Happy Memories pellets ▲1 ×3 | **FAITHFUL** (the A4 fix) | `burstCast` (own), target `self`, `pelletCountFlat 3/11s ramp 11` — the real pellet primitive, MULTIPLICATIVE with Snapshots |
+| S2 6-hit: Precious Moments ATK ▲2.49% ×3 | **FAITHFUL** | `burstCast` (own), target `self`, `atkPct 7.47/11s ramp 11` |
+| S2 burst → SG allies (except self): Attack Damage ▲55% / 10s | **FAITHFUL** | `burstCast` (own), target `alliesOfWeapon SG` + `excludeSelf:true`, `attackDamagePct 55/10s` |
+| Burst Making Memories: Crit Rate ▲20.09% | **FAITHFUL** | `burstCast` (own), target `self`, `critRatePct 20.09/11s` (UNSCOPED — text has no normal-attack qualifier) |
+| Burst Making Memories: Reload 2 rounds | **DOCUMENTED-GAP** (UNMODELED verbatim) | uptime QoL; folded into caveat 3's COLD estimate |
+| Burst Making Memories: Attack Damage ▲29.99% | **FAITHFUL** | `burstCast` (own), target `self`, `attackDamagePct 29.99/11s` |
+| Burst 554.4% final ATK damage (all enemies) | **FAITHFUL** | `burstCast`, target `enemy`, `flatDamage atkPct 554.4` (FB-exempt: cast lands before FB opens; no core) |
+
+All level-10 magnitudes confirmed against the datamine (`description_value_list` index 9): S1 13/15/10/3, S2 6/1/3/2.49/3/55/10, burst 20.09/2/29.99/554.4.
+
+## NO ENCODING CHANGE — the shipped override was already faithful (owner attention)
+
+Unlike a parser-baseline rescue, this gauntlet made **zero** changes to the encoding. The shipped override (already through the owner's 2026-07-16 weapon-target + mechanic fixes and the 2026-07-21 A4 pellet-count fix) was independently re-derived as faithful by **four** agents: the driver (Qwen), the claude-fable-5 pre-op reviewer (S2b), the claude-opus-5 blind test-writer (S5) and blind override-writer (S6), and ratified by the claude-opus-5 reconciling judge (S7) at faithfulness 1.0. Only the gauntlet provenance note was appended.
+
+The convergences that matter most (each independently derived, then discriminated in `scripts/tests/units/arcana-fortune-mate.test.ts`):
+
+- **A4 pellet primitive (strongest cross-family corroboration).** All three blind agents chose `pelletCountFlat 3` for Happy Memories over the additive `normalAttackPct` proxy. Because she *also* carries a real `normalAttackPct` line (Snapshots), the two are distinguishable: pellets ×1.30 multiplicatively with Snapshots ×1.30 = **×1.69**, vs the proxy's additive 30+30 = **×1.60**. The driver test asserts shipped normals > additive counterfactual (×1.03 guard; observed ~+10%); the blind test independently asserts the two models must diverge and that teammates/gauge are untouched.
+- **excludeSelf on the 55% (both fable and opus: "the kit's sharpest edge / biggest single over-credit").** Driver fixture B fields `zwei` (SG/Supporter) + `drake` (SG/Attacker) so the 55% resolves to `[drake, zwei]` with afm absent; dropping `excludeSelf` leaks onto afm (`[1,2,3]`), and an `alliesOfClass Attacker` retarget drops zwei AND re-admits afm (`[1,2]`).
+- **burstCast keying of the Making-Memories self-buffs (NOT fullBurstEnter).** Fixture A (`[liter,crown,afm,drake,helm]`, crown contests the B2 slot ⇒ afm casts 0 while the team Full-Bursts 12×) proves every self-buff is perfectly INERT there; a `fullBurstEnter` counterfactual fires on all 12 team FBs. The blind override-writer's choice of `passive` for the pellet/ATK stacks was independently ruled wrong by the blind *test*-writer (must be burstCast-gated) — corroborating the driver.
+- **Weapon-typed SG targeting (alliesOfWeapon SG).** `zwei` (SG non-Attacker) falsifies the old `alliesOfClass Attacker` approximation; `liter` (RL) falsifies an all-allies retarget.
+
+## Residuals for owner spot-check (⚑ — measurement-gated, documented in the override note; the judge logged these `documentedByDriver:true`, NOT blocking)
+
+1. **Stack-magnitude / ramp timing (gotcha #1, the over-model root).** The 2/4/6 phase counter has no engine primitive, so all three stack pools (Snapshots, Happy pellets, Precious) are keyed to her burstCast with `rampSec 11` (the ⚑ rests on the ~1.5 pulls/s SG cadence estimate), and S1's team ATK is baked at the 3-stack cap (`casterAtkPct 39`) rather than scaling with the live Precious count. The first FB-end over-credits (~2 stacks in reality) and rotations she did not burst credit 3 where the truth is 0 (HOT direction). **Recipe:** pin the real per-window stack trajectory from footage (read the Precious/Happy pips at each FB-end over 3+ rotations); then re-key S1 to `perResource {preciousMoments × 13}` if the pool primitive accepts casterAtkPct, or author a measured rampSec. **Do NOT retune the 39 to hit the board.**
+2. **Cross-window persistence of Happy Memories + Precious Moments (FIDELITY, COLD).** The FB-end removal names ONLY Making Memories + Snapshots; the driver's uniform 11s window also expires the Happy (pellets) and Precious (ATK) stacks, which the kit may leave standing across cycles (under-crediting every window after the first). **Recipe:** confirm on footage that the Happy/Precious pips survive FB-end and persist (and whether they cap at 3 cumulatively); if so, move both to persistent self-buffs/resource pools and leave only crit/AD/normalAttackPct on the 11s window. COLD-direction correction on an already-HOT unit — do not land as a board tune. (Partly cancels residual #1.)
+3. **In-window reloads omitted (SILENT_DROP/low, COLD).** Both reloads (6 rounds @2-hit, 2 rounds @burst) are unmodeled — recorded verbatim in `unmodeled` with a "~3-5 window shots, COLD" estimate. **Recipe:** confirm `instantReload` semantics in sim.ts (adds vs sets the belt), then encode fraction 6/9 (timed ~2 pulls into the window) and 2/9; verify the ammo counter jumps +6 after exactly the 2nd pull.
+4. **Same-model caveat (the judge's note).** All four agents here are the Claude family (driver excepted), so the shared-prior risk concentrates exactly where prose can't resolve it: whether the 2/4/6 counter **cycles** within one ~11s window (~14-16 pulls ≈ 2 cycles, which would change the reachable stack ceiling and the whole rampSec model) and whether the Happy/Precious pips **persist** past FB-end. Both need **one focus recording**; both are COLD refinements of a unit that is already over-modeled.
+
+## Board (non-gating)
+
+`board-read.ts`: ratio **0.898** (1 team: N5 snowwhite-HA fire, boss Fire; COLD; ±15% unfocused). Unchanged by this gauntlet (no encoding change). The override note documents the over-model root = stack magnitude (gotcha #1); the unit is MODEL_ONLY, unfocused — a focus recording is batched.
+
+## Cross-family provenance
+
+- **S2b** (pre-op test-faithfulness review): `claude-fable-5` → `reviews/arcana-fortune-mate.test-review.json` (all 7 lines FAITHFUL, identical load-bearing set, leak CLEAN).
+- **S5** (blind post-op test-writer): `claude-opus-5` → `blind/arcana-fortune-mate.test.ts` (+ `.adapted.test.ts`, `.convergence.txt`). 11/7/2 vs driver override; all 7 reds ruled artifacts.
+- **S6** (blind post-op override-writer): `claude-opus-5` → `blind/arcana-fortune-mate.override.json` (+ `.audit.json`). Structural convergence; independently chose pelletCountFlat.
+- **S7** (binding reconciling judge): `claude-opus-5` → `results/arcana-fortune-mate.json`. **GO, faithfulness 1.0, discriminationOk true.**

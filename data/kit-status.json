@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 11,
-      "audited": 35,
+      "unit-tested": 12,
       "authored": 26,
+      "audited": 34,
       "reconciled": 4,
       "pending": 1
     },
@@ -417,24 +417,27 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "1.42 HOT: F4 REFUTES the 'pellet/Snapshots double-count' premise (distinct buffs; additive model UNDER-counts ~5% vs true multiplicative). Real cause F1: stack ramp baked to max not time-averaged (~+8-10%) + F2 S1 stacks baked (~+5-6%); F5 skipped kit reloads (hard rule 1) offset cold. Budget F1+F2 -> 1.42->~1.24, remainder = SG per-unit landing"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/arcana-fortune-mate.json + scripts/kit-autonomy/manual-review/arcana-fortune-mate.md.",
+          "med ENCODING (skill1): S1's team ATK grant is baked at the 3-stack cap (casterAtkPct 39) rather than scaling with the live Precious Moments count, so the first Full Burst end over-credits (~2 stacks in reality) and rotations she did not burst credit 3 stacks where the truth is 0.",
+          "med FIDELITY (skill1): The Full-Burst-end removal names ONLY Making Memories and Snapshots of Youth, but the driver's uniform durationSec 11 also expires Happy Memories (pellets) and Precious Moments (ATK), which the kit leaves standing across cycles.",
+          "low SILENT_DROP (skill2): Both in-window reloads (6 rounds at the 2-attack threshold, 2 rounds at burst) are omitted, costing real shots on a 9-round magazine with a 161-frame reload."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "N5 unfocused: 1.88",
+      "evidence": "N5 unfocused: 1.88 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; A4 pelletCountFlat + excludeSelf + burstCast-keying independently re-derived; NO encoding change (shipped override already faithful)",
       "date": "2026-07-14",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "Normals bucket drives it; unfocused — a focus recording is batched",
+      "residual": "Normals bucket drives it; unfocused — a focus recording is batched | spot-check cluster: stack-magnitude/ramp timing (gotcha #1, rampSec 11 on ~1.5 pulls/s estimate + S1 3-stack cap bake, HOT) + cross-window persistence of Happy/Precious stacks (COLD) + in-window reloads omitted (COLD) — all measurement-gated, need one focus recording",
       "unmodeled": {
         "skill1": [
           "Full Burst ends: self removes Making Memories + Snapshots of Youth."

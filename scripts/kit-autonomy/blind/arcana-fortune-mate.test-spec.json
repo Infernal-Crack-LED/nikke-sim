@@ -1,0 +1,94 @@
+{
+  "slug": "arcana-fortune-mate",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "FB end: ATK 13% of user ATK x stacks",
+      "disposition": "FAITHFUL",
+      "assertion": "First casterAtkPct buffApply must appear AFTER the first fullBurstEnd in stream order, apply count >= fullBurstEnd count, and the target set must be exactly {her slot}. RED under: the block re-keyed to fullBurstEnter (grant lands between fullBurstStart and fullBurstEnd), and under an 'all allies' target set (4 distinct targetIdx). Magnitude: every value <= 39 (3-stack cap) AND base total < a patched flat-39/maxStacks-1 variant, so a no-ramp/no-stack-scaling authoring goes RED."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Happy Memories effect: NAD Mult +10%",
+      "disposition": "FIX",
+      "assertion": "No 'when another buff applies' trigger exists, so this must ride the block granting Happy Memories. Asserted: normalAttackPct applies exist, the first one comes after her first burstCast, count >= 2 (re-granted per window), and buffRemove exists. RED under a permanent passive (single apply at stream start, no removal) and under stat=attackDamagePct (scope swap changes the total because generic Damage-Up also lifts the 554.4% burst hit). Derived and documented: only 1 stack is reachable per window since S1-c wipes it at FB end."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB end: removes MM + Snapshots",
+      "disposition": "FAITHFUL",
+      "assertion": "Expressed as expiry: buffRemove must exist for critRatePct 20.09, attackDamagePct 29.99 and normalAttackPct, and the burst self-buffs apply at most once per her burstCast. RED under 'continuously' read as permanent (no removes, one apply)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Only one effect at a time / resets",
+      "disposition": "GAP",
+      "assertion": "it.skip - the engine has no per-status-window attack counter with reset, so a hitCount proxy over-fires inside the 10s window and the pellet/ATK stack ramp becomes a per-unit estimate (flag)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "2 times: Reloads 6 rounds",
+      "disposition": "FAITHFUL",
+      "assertion": "Folded with the burst's 2-round reload: dropping every instantReload effect must strictly reduce her shot event count (9-round SG, 161-frame reload). RED under 'reload is defensive, skip it'. Patch-hit count > 0 guards non-vacuity, so an unmodeled line also goes RED. Teammate inertness deliberately NOT asserted here: her shot count feeds team gauge."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "4 times: pellets +1, stacks 3",
+      "disposition": "FAITHFUL",
+      "assertion": "pelletCountFlat applies exist with values in [1,3], first apply after her first burstCast, base total > pellet-dropped total, and all three teammates byte-identical (pellets do not pump gauge). Plus a fidelity check: swapping the pellet path for the old normalAttackPct proxy must CHANGE the total, because Snapshots of Youth is a co-active normal-multiplier buff (multiplicative vs additive) - the usual 'proxy is damage-neutral' escape does not hold for this unit."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "6 times: Precious Moments ATK +2.49%",
+      "disposition": "FAITHFUL",
+      "assertion": "atkPct applies at 2.49/4.98/7.47 targeting her only, values <= 7.47 (3-stack cap), first apply after her first burstCast, base > dropped variant, teammates identical. RED under a team-scoped target, an uncapped stack, or an always-on passive."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst use: SG allies (ex self) AD +55%",
+      "disposition": "FAITHFUL",
+      "assertion": "Inertness: ZERO buffApply with attackDamagePct ~= 55 in this comp (liter SMG / crown RL / helm SR, and the line excludes self). RED under an 'all allies' or self-inclusive target set. Positive case it.skip'd - non-vacuity unsatisfiable without a second shotgun ally."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Crit Rate +20.09% continuously",
+      "disposition": "FAITHFUL",
+      "assertion": "Unscoped critRatePct (the kit says plain Critical Rate, not 'of normal attacks'), applies <= her burstCast count, target = her only, and a buffRemove exists. RED under a permanent self-buff and under a team-wide target."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reloads 2 round(s)",
+      "disposition": "FAITHFUL",
+      "assertion": "Covered by the shot-count counterfactual above (all instantReload effects dropped -> strictly fewer shots)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage +29.99% continuously",
+      "disposition": "FAITHFUL",
+      "assertion": "attackDamagePct 29.99 applies <= her burstCast count, self-only target, buffRemove exists (S1-c). RED under permanent, under team-scoped, and it is value-distinguishable from the 55% S2-b line."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "554.4% of final ATK burst damage",
+      "disposition": "FAITHFUL",
+      "assertion": "Dropping the flatDamage at 554.4 must lower the total (so a missing burst hit is RED), and the damage bucket that carries exactly one event per her burstCast must have fbMajorApplied === false - a burst cast resolves before the FB window opens, so crediting the +50% FB major goes RED. Bucket identified by count-matching rather than a hardcoded bucket name."
+    },
+    {
+      "slot": "kit-wide",
+      "kitLine": "SG cadence inside the 10s MM window",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "Flagged, not asserted: whether the 6-attack threshold is reached each window depends on the datamine-unreliable SG cadence. Kit-internal consistency check done: 9 ammo + 161-frame reload + the 2-attack 6-round refill leaves roughly 12-15 pulls in a 10s window, so all three thresholds (2/4/6) are reachable once per window - the kit is self-consistent, and the derived per-window yield is 1 pellet stack + 1 Precious Moments stack + 1 Snapshots stack."
+    }
+  ],
+  "fixtures": "controlComp('arcana-fortune-mate', true) for all 10 runs - liter B1 / crown B2 / carry / helm B3, Fire boss, deterministic, no seed. helm kept ON: her ally buff is critRateNormalPct-scoped and she wields an SR, so she cannot confound the pellet path, the normal-multiplier readings, or the shotgun-ally target set. Two fixture limits are asserted rather than assumed, both consequences of the carry being Burst II: (1) crown is the competing Burst II, so a dedicated 'fixture validity' group asserts her own burstCast count >= 1 - if it is 0 the entire Making Memories family is unreachable in this comp and that failure is the finding; (2) she is the ONLY shotgun present, so S1-a collapses to a self grant and S2-b has an empty target set - S2-b's inertness is asserted, its positive case is it.skip'd. Note on the packet: the redacted schema's teamHas comment names `arcana` (RL/Electric) - a DIFFERENT unit from `arcana-fortune-mate` (SG/Fire) - so it is not a leak of this target's answer.",
+  "gaps": [
+    "S2-a per-window attack counter (Only one effect is triggered at a time / Resets when Making Memories is removed) - it.skip: no engine primitive for a status-window counter with reset; any hitCount proxy over-fires inside the window, making the pellet/Precious stack ramp a per-unit estimate (flag).",
+    "S2-b positive case (a second shotgun ally gaining Attack Damage +55% for 10s) - it.skip: controlComp supplies no second shotgun, so non-vacuity cannot be satisfied without a custom comp API the harness summary does not expose.",
+    "S1-a stack coupling (13% x Precious Moments stack count) is asserted only through the cap (values <= 39) and the flat-39 counterfactual, not through per-value stack arithmetic - the observable value depends on whether the driver encoded it per-stack, via perResource, or as a ramped maximum, and this test must stay encoding-agnostic.",
+    "Burst-hit identification uses a bucket-name-agnostic heuristic (the bucket with exactly one damage event per her burstCast) because bucket string literals were not documented in the packet; if her burst hit shares a bucket with normal/core damage this assertion needs the real bucket name.",
+    "NOTE: this role was run without filesystem tools, so scripts/kit-autonomy/blind/arcana-fortune-mate.test.ts and .test-spec.json could not be written - the orchestrator must persist testSource and this JSON to those paths.",
+    "NOTE: shape assumptions to tighten mechanically before running - CompOptions carries cfg (cfg.onEvent) and an overrides map keyed by slug; totals()/unitOf() damage read through defensive accessors; vitest assumed as the test runner. No assertion depends on an event timestamp field (all ordering claims use stream position)."
+  ],
+  "model": "claude-opus-5"
+}
