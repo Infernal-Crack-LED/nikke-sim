@@ -1,0 +1,102 @@
+{
+  "slug": "snow-white-heavy-arms",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill2",
+      "kitLine": "on BS3 enter: ATK ▲73.92% 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply atkPct≈73.92 present + zeroing it drops HER total while teammate byte-identical. Fails under wrong magnitude, generic-vs-scoped mis-key, or ally-scoped target."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge: ATK ▲46.84% 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply atkPct≈46.84 present + zeroing it drops HER total, teammate unchanged. Fails if dropped or mis-scoped to allies."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲84.48% 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply attackDamagePct≈84.48 (Damage-Up bucket, NOT atkPct) + zeroing drops HER total. Fails under the nearest-wrong generic-atkPct or wrong-value encoding."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Charge Dmg ▲528% 1 round",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply chargeDamagePct≈528 present + zeroing drops HER total; AND first apply comes AFTER first burstCast (Fully-Active-gated). Fails under a permanent/from-t0 mis-model or durationSec instead of durationShots:1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Sequential ▲158.4% 1 round",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply sequentialMultPct≈158.4 (true multiplicative bucket). Fails if encoded as additive sequentialDamagePct or wrong value."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▲4.2% 4s",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "Real boss debuff (whole-team) but lock-on-gated with no lock-on entity in v1; it.skip probes whether driver models it as an always-on passive (divergence signal, not a hard convergence claim)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Auto Fire 41.9%+105.59% seq",
+      "disposition": "GAP",
+      "assertion": "⚑ sequential shot COUNT rides the unmodeled Seven Dwarves ammo/lock-on economy (max 5, +10 Fully-Active); flat total not discriminable blind → it.skip."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge: Gains Pierce 5s",
+      "disposition": "GAP",
+      "assertion": "Pierce inert v1 (no live Pierce-Damage consumer; her own Damage-to-Parts is parts-inert) → it.skip."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage to Parts ▲62.64% 5s",
+      "disposition": "UNMODELED",
+      "assertion": "partsDamagePct inert v1 (partless boss) → it.skip; kept in override for completeness."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Auto Fire Ready: DEF ▲42.24%",
+      "disposition": "UNMODELED",
+      "assertion": "Self DEF is damage-inert v1 (defPct) → it.skip; also loads the Seven Dwarves weapon economy (GAP)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "fix charge 1.2s / burst 3.2s",
+      "disposition": "GAP",
+      "assertion": "Charge-time CLAMP primitive (not a chargeSpeedPct buff); shot-cadence readout too noisy to assert blind → it.skip."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Lock-On designation (max 5)",
+      "disposition": "GAP",
+      "assertion": "Enemy-targeting mechanic; no enemy/lock-on entity in v1 → it.skip."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "41.9% to destructible projectiles",
+      "disposition": "UNMODELED",
+      "assertion": "No destructible projectiles in v1 → inert, it.skip."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Fully Active: 2 uses, +ammo/+lockon",
+      "disposition": "GAP",
+      "assertion": "Status/resource open (2 uses, consumed 1 per Full Charge; removed on out-of-FB normal attack) — bookkeeping that gates S2d, not directly damage-observable; covered indirectly by the 528%-gating temporal-order assertion."
+    }
+  ],
+  "fixtures": "controlComp('snow-white-heavy-arms', true) — single comp for all runs. liter B1 + crown B2 supply the burst chain so her B3 casts and a Full Burst opens (a lone B3 makes ZERO FBs, leaving Fully-Active and all burst/BS3 buffs unexercised). helm kept as the inertness teammate (TEAMMATE='helm'): her total must stay byte-identical when a SWHA self-buff is zeroed. Deterministic, no seed. 5 hoisted runs total: 1 base + 4 counterfactuals (zero atkPct 46.84 / atkPct 73.92 / attackDamagePct 84.48 / chargeDamagePct 528).",
+  "gaps": [
+    "S1 Damage Taken ▲4.2% — lock-on-gated boss debuff, no lock-on entity in v1 (it.skip, divergence probe)",
+    "S1 Auto Fire 41.9%/105.59% — sequential shot count rides unmodeled Seven Dwarves ammo economy (⚑, it.skip)",
+    "S2 Gains Pierce 5s — inert v1, no live pierce consumer (it.skip)",
+    "S2 Damage to Parts ▲62.64% — partsDamagePct inert v1, partless boss (it.skip)",
+    "S1 DEF ▲42.24% — self DEF damage-inert v1 (it.skip)",
+    "S2/Burst charge-time fix 1.2s/3.2s — clamp primitive, cadence-noisy (it.skip)",
+    "S1 Lock-On designation — no enemy/lock-on entity (it.skip)",
+    "Burst 41.9% to destructible projectiles — inert v1, no projectiles (it.skip)"
+  ],
+  "model": "claude-opus-4-8"
+}

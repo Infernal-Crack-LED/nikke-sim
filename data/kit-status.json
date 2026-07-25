@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 22,
+      "unit-tested": 23,
       "authored": 21,
-      "audited": 29,
+      "audited": 28,
       "reconciled": 4,
       "pending": 1
     },
@@ -3497,23 +3497,25 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "Auto-Fire hit count KIT-EXACT (over-count ruled out — burst boosts loaded ammo 5->15). 1.073 HOT = bond warming + cadence ⚑ (sim assumes optimum). F1 DEF 42.24 dropped (hard rule 3); F2 Pierce 5s missing (hasPierce unset). Backfilled"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/snow-white-heavy-arms.json + scripts/kit-autonomy/manual-review/snow-white-heavy-arms.md.",
+          "low ENGINE (skill2[2] sequentialDamagePct 158.4): sequentialDamagePct 158.4 is encoded faithfully but INERT on flatDamage riders — the engine flatDamage path does not route flavor:'sequential' into the seqMult bucket (measured seqMult=1 on both 527.95 and 1055.9 lumps)."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "probe u7 team-two — seven burst windows observed end-to-end, Fully-Active ends-on-uses measured; run C 0.95",
+      "evidence": "probe u7 team-two — seven burst windows observed end-to-end, Fully-Active ends-on-uses measured; run C 0.95 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(fable-5)/S5/S6/S7(opus-4-8) converged; binding judge GREEN, no REAL-GOTCHA; board mean 0.942 (0.91-0.98, n=4)",
       "date": "2026-07-14",
       "graded": {
         "teams": 3,
         "within3pct": 1
       },
       "reference": false,
+      "residual": "owner spot-check cluster: (a) W14 stageEnter:3 vs burstCast non-discriminable in sole-B3; (b) W15/W16 whileSwapped+durationSec10 vs per-swap durationShots:1 damage-equivalent; (c) W16 sequentialDamagePct 158.4 inert-on-flatDamage-riders (engine plumbing, out of scope)",
       "unmodeled": {
         "skill1": [
           "Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.",

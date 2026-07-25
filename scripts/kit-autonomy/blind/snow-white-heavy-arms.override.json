@@ -1,0 +1,170 @@
+{
+  "slug": "snow-white-heavy-arms",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 42.24
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 4.2
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 41.9
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 527.95,
+          "flavor": "sequential"
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 46.84,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 62.64,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 73.92,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 528,
+          "durationShots": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "sequentialMultPct",
+          "value": 158.4,
+          "durationShots": 2
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 84.48,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Lock-On: Designates enemy nearest crosshair as Seven Dwarves target (max 5); pure targeting mechanic — resolveTargets(enemy) has no entity in sim.",
+      "Auto Fire Ready loads Seven Dwarves with ammo (max 5): sets the sequential-hit count of Auto Fire Effect 2 (modeled as a ×5 lump on 105.59%).",
+      "Number of uses of Seven Dwarves Fully Active ▼1 on Full Charge while Fully Active (counter bookkeeping — defines the 2-charge Fully Active window).",
+      "Removes Seven Dwarves Fully Active when performing a normal attack while not in Full Burst (state bookkeeping)."
+    ],
+    "skill2": [
+      "Fixes charge time at 1.2 sec continuously (charge-time CLAMP primitive per gaps §1b — coincides with default chargeFrames 72 ≈ 1.2s, so left implicit)."
+    ],
+    "burst": [
+      "Seven Dwarves Fully Active (2 uses): Fixes charge time 3.2 sec, Max Lock-On ▲10, Max Auto-Fire ammo ▲10 (sequential hits 5→15). State machine — damage impact approximated via S1 Auto Fire + S2 Fully-Active buffs, NOT the 5→15 ammo swell.",
+      "Deals 41.9% of final ATK to all destructible projectiles (inert vs a partless boss with no destructible projectiles)."
+    ]
+  },
+  "caveats": [
+    "⚑ Auto Fire cadence keyed to shotFired (one full charge ≈ 1.2s); real per-charge count is datamine-derived — pin from footage.",
+    "⚑ Effect 2 sequential count lumped at ×5 (out-of-Fully-Active); the Fully Active 15-hit window (2 charges post-burst) + its 3.2s slower charge are NOT separately modeled.",
+    "⚑ Auto Fire hits authored as plain instant flatDamage riders (no core, engine no-range, FB by timing). If Seven Dwarves gets core strikes or +30% range, add core/rangeOk.",
+    "⚑ DOUBLE-COUNT RISK: engine still fires the base SR full-charge shot (coreAttackMultiplier 200); if Seven Dwarves Auto Fire REPLACES the normal shot rather than adding, these riders over-count.",
+    "⚑ damageTakenPct 4.2% authored as an enemy boss debuff — verify the engine applies it (resolveTargets(enemy) returns []; damageTakenPct must go through the boss-debuff channel).",
+    "⚑ Fully-Active-gated Charge Damage ▲528% / Sequential ▲158.4% ('1 round' each) approximated via burstCast + durationShots 2 (the 2 Fully Active charges); no true Fully-Active status gate.",
+    "sequentialMultPct 158.4 reads the additive '▲158.4%' as ×2.584 in the sequential bucket — confirm additive-vs-multiplier interpretation against popups."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. This is a charge-loop kit: damage is Seven Dwarves Auto Fire per Full Charge (41.9% all + 105.59%×ammo sequential), modeled on shotFired with a ×5 sequential lump. Charge-time clamp, Lock-On targeting, Auto-Fire-Ready ammo loading, and the Fully Active 2-use state (5→15 ammo, 3.2s charge) are documented in unmodeled and only crudely approximated. Base-charge-shot double-count, Auto-Fire core/range, and the boss damageTaken channel are all open ⚑."
+}
