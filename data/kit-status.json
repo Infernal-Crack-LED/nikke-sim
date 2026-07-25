@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 31,
-      "authored": 17,
+      "unit-tested": 32,
+      "authored": 16,
       "audited": 25,
       "reconciled": 4
     },
@@ -3090,20 +3090,26 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/raven.json + scripts/kit-autonomy/manual-review/raven.md.",
+          "med ENGINE (skill1 (cadence input, engine/charFixes — not the override block)): The DoT-instance count rests on a 22-frame bolt-recovery gap being applied to an RL, which the mechanics SSOT says RL does NOT have — an unverified ~27% shot-rate (and therefore DoT-output) swing on her dominant damage bucket.",
+          "med ENGINE (base weapon data (data/characters.json → raven) — OUT OF KIT-LINE SCOPE, reported not acted on): HYPOTHESIS: raven's `chargeMultiplier` is 0 while her datamined `full_charge_damage` is 25000 (=250%), so her full-charge rocket may be resolving with a Charge bucket of 1.0 (or 0) instead of 2.5 — a potential 2.5× under-credit on her normal-attack channel that no agent in this gauntlet mentions."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded",
+      "evidence": "Pure model — never fielded | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged — S6 blind override encoding-identical, 17/18 S5 blind green (1 RECON_ERROR)",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "RL bolt-gap cadence ⚑ (engine-wide, ~27% DoT swing); chargeMultiplier 0 data bug (~2.5x cold normal channel, out of kit scope); spot-check: re-record before grading + burstCast-vs-FBenter split",
       "unmodeled": {
         "skill1": [],
         "skill2": [

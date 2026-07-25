@@ -1,0 +1,122 @@
+{
+  "slug": "raven",
+  "kitDescription": "Raven is an Iron-element rocket-launcher Attacker (Burst III) whose damage is mostly a burn-style damage-over-time. Every full-charge rocket she fires plants a sustained-damage effect on the target that ticks for 68.46% of her ATK once a second for five seconds, and since a new one lands with each shot, several tick at once (the game caps the pile-up at ten). Entering Full Burst gives her a self ATK boost worth 47.52% of her own attack for ten seconds. Her burst hits everything on the field for 492.3% of her ATK and puts her into A.N. Mode, which raises her sustained damage by 89.44% for ten seconds — i.e. it supercharges her own damage-over-time rather than her rockets. The rest of her second skill is about boss parts: a small Damage-to-Parts buff at battle start and on each Full Burst, plus a much larger sustained-damage buff that only triggers when a part is actually destroyed. Against the partless test boss every parts line does nothing, so on this fixture she is a rocket-fired DoT carrier with one large burst nuke.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "raven S1b — 'is SELF-scoped (no teammate receives it)': expected 0 stray casterAtkPct self-applications, got 12. CLASSIFIED RECON_ERROR (blind test-authoring bug, not an encoding defect). The blind filter is `stat==='casterAtkPct' && casterIdx===targetIdx && targetSlug!=='raven'` — it never restricts caster to raven, so any OTHER unit that grants casterAtkPct to itself (crown, per the driver's probe) is counted as a 'stray' from raven's line. Independent of that attribution, raven's own self-scoping is directly pinned by the driver's test (`casterIdx===RAVEN` ⇒ `[...new Set(targetIdx)] === [RAVEN]`, 1 application per Full Burst), so the property the blind meant to test is proven GREEN by a different instrument. The other 17 active S5 assertions pass; the 3 skips are the blind's own declared GAP/measurement-gated lines (10-stack cap, DoT-crit gating, part-destroy 47.32%)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge: 68.46% sustained/1s x10, 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → enemy, dot{atkPct 68.46, intervalSec 1, durationSec 5, flavor 'sustained'}; one independent instance appended per pull; 10-stack cap unenforced but argued non-binding (~2.8 avg / 3.7 peak concurrent at the datamined cadence).",
+        "blindSaid": "S6 blind override is byte-equivalent on this block; S5 blind test pins ticks≈5×shots, 2× linearity in atkPct, and stacking>2× a 1-sec-duration counterfactual — all GREEN vs the shipped override.",
+        "formulaCheck": "Auto always full-charges (DATAMINED, einkk NikkeFullChargeMode.always), so for an RL with chargeFrames 60 every trigger pull IS the full-charge attack — shotFired is an exact proxy, not an approximation. 'sustained damage' ⇒ Sustained flavor, which per damage-calculation §1e/§2c takes ATK/element/FB-by-timing/DamageUp, never core, never range (noRange), and crit under the default-ON DOT_CRIT. 'Nearest to the crosshair' collapses to the single boss. Cap head-room checked independently: reaching 10 concurrent 5-sec instances needs >2 shots/sec (≤30f cycle); charge_time 100 = 60f is a hard floor and no comp member grants charge speed, so the cap cannot bind on either cadence branch (60f or 82f) — the driver's non-binding claim survives even the FASTER end of its own ⚑.",
+        "fireRateOk": true,
+        "explanation": "Encoding, trigger, flavor, interval and duration all match the prose and the formula SSOT; the DoT fires ~5 ticks per shot over the fight (driver asserts ticks ≥ 4×shots, blind asserts ticks in and out of Full Burst)."
+      },
+      {
+        "kitLine": "FB enter: ATK ▲47.52% of user ATK 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → self, buff casterAtkPct 47.52, durationSec 10; test pins count == fullBurstStart count, target set == {raven}, expiry == 600 frames, value == 0.4752 × staticAtk and constant across casts.",
+        "blindSaid": "Identical encoding. S5 pins flat-ATK (>1000, ≠47.52), a single distinct value (⇒ static not final ATK), 10s expiry via a durationSec→2 counterfactual, and count == FB count. Only the mis-scoped stray filter went RED.",
+        "formulaCheck": "'X% of the skill user's ATK' = KR 기준/base → flat add of the caster's STATIC ATK outside the recipient's (1+ATK%) sum (damage-calculation §1a) ⇒ casterAtkPct, not atkPct. 'Activates when entering Full Burst' = the fullBurstEnter event, which fires on EVERY team Full Burst including rotations helm casts — the driver's co-B3 fixture proves appliedCoB3 == fbStarts > raven's own casts, killing the burstCast misread behaviorally.",
+        "fireRateOk": true,
+        "explanation": "The kit's own phrasing distinguishes this line ('when entering Full Burst') from the burst-block A.N. Mode grant, and the driver encodes the two triggers differently and discriminates BOTH directions in one fixture. Note the honest limit the driver states: for a SELF buff casterAtkPct and atkPct are damage-equivalent, so the discriminator is the recorded buffApply value (flat ≈56.9k vs raw 47.52) — the strongest test available, and the trigger half is fully behavioral."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Battle start: Vital Atk parts ▲21.12% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → self, buff partsDamagePct 21.12, durationSec 5; kept (not deleted) per the never-drop-a-stat-buff rule, with inertness pinned as byte-identical totals for every unit.",
+        "blindSaid": "Identical encoding. The S6 blind raised a caveat that a `passive` trigger might be treated as UNEXPIRING (making the 5s window permanent); the driver's assertion `expiresFrame - frame === 5×60` for every partsDamagePct application mechanically resolves that caveat in the driver's favour.",
+        "formulaCheck": "'Damage to Parts ▲' is a parts-scoped Damage-Up term; the scope-lock boss is PARTLESS (memory: test-boss-has-no-parts), so the faithful consequence is exactly zero damage movement — and `base.totals` deep-equals `noParts.totals`, i.e. inert to the last point, not merely 'small'. Any laundering into attackDamagePct would have broken that equality.",
+        "fireRateOk": true,
+        "explanation": "Modeled and present (1 battle-start + 1 per FB = fbStarts+1 applications), self-scoped, correct magnitude and duration, and provably inert on this fixture."
+      },
+      {
+        "kitLine": "FB enter: Vital Atk parts ▲21.12% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → self, partsDamagePct 21.12, 5s.",
+        "blindSaid": "Identical. S5's over-credit guard (no raven-targeted buff carries 21.12 on a stat other than partsDamagePct) passes.",
+        "formulaCheck": "Same 'entering Full Burst' wording as skill1 line 2 ⇒ same fullBurstEnter trigger; consistent within the kit. Inert on a partless boss.",
+        "fireRateOk": true,
+        "explanation": "Counts reconcile exactly: partsDamagePct applications == fullBurstStart count + 1, which simultaneously proves the FB-keyed copy fires every rotation and that the battle-start copy fires exactly once."
+      },
+      {
+        "kitLine": "Part destroyed → Single Point ▲47.32% 15s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim in the override (all three prose lines, incl. 'Removes Vital Attack' and the A.N.-Mode exclusion) + a caveat; plus a NEGATIVE pin that no raven buff of any stat ever carries the 47.32 magnitude. Explicitly REPLACES a prior hand-authored always-on passive sustainedDamagePct 47.32.",
+        "blindSaid": "Same disposition from all three independent agents. S2b named 'rescuing this line as a passive/FB-keyed sustained ▲47.32%' as the single most damaging plausible misread in the kit; S5 carries the same negative pin; S6 records it unmodeled with the same caveat.",
+        "formulaCheck": "The trigger is part destruction; the engine has no part-destruction trigger and the scope-lock boss has no parts, so the line is UNREACHABLE — the genuinely-skippable 'parts' class. Encoding it on any reachable trigger would add ~47 percentage points of Damage-Up to her DOMINANT channel (the sustained DoT), a large silent over-credit.",
+        "fireRateOk": true,
+        "explanation": "Correctly unmodeled, recorded verbatim, and guarded by a negative assertion so a future 'rescue' would turn the test RED. Removing the prior always-on 47.32 passive is the right call (a model shown to contradict the partless basis is deleted, not parked) — but it is the one genuinely BOARD-MOVING consequence of this landing, and is called out for the owner below."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 492.3% final ATK Burst Skill dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy, flatDamage atkPct 492.3, no explicit noFb/crit (engine defaults govern); test pins one hit per own burst cast, bucket 'burst', magnitude 492.3, and fbMajorApplied false on every hit.",
+        "blindSaid": "Same block, with `crit:true, noFb:true` written EXPLICITLY. Per the driver's engine read those are cosmetic no-ops (flatDamage is crit-eligible unless crit===false; burst-slot burstCast damage is auto-FB-exempt) — the S5 blind's own fbMajorApplied assertion passing against the driver's override confirms the exemption is applied without the explicit flag.",
+        "formulaCheck": "Burst-cast instant damage lands BEFORE the Full Burst window opens (MEASURED twice on Cinderella's nuke; 22f FB_PRE_DELAY) ⇒ no +0.5 major, no entry auras — pinned. 'All enemies (including parts)' collapses to one hit on the partless single-target boss (no parts multiplication). Burst nukes crit at the sheet rate and take NO core unless the text says 'as core damage' — it does not; the driver adds neither.",
+        "fireRateOk": true,
+        "explanation": "Magnitude, count, bucket and the FB-boundary rule are all pinned; the only difference from the blind is a redundant flag."
+      },
+      {
+        "kitLine": "A.N. Mode: Sustained dmg ▲89.44% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self, buff sustainedDamagePct 89.44, durationSec 10; tests pin count == her OWN casts (strictly < team FBs in the co-B3 comp), +0.8944 dmgUp on the sustained ticks, and byte-identical normal-bucket damage with the buff present vs removed.",
+        "blindSaid": "Identical encoding; S5 pins self-scope, 89.44, durationSec 10, count == fbStarts in the SOLO comp and ≤ fbStarts in the co-B3 comp, and uses the buff as the FLAVOR probe for the DoT.",
+        "formulaCheck": "The buff is granted inside her OWN burst block with no 'entering Full Burst' clause ⇒ burstCast, not fullBurstEnter — and the kit demonstrably distinguishes the two phrasings elsewhere in the same unit. 'Sustained damage ▲' is a flavor-gated DamageUp term (§1e): it may lift ONLY sustained-flavored instances (her DoT), never her RL normals or the 492.3% nuke.",
+        "fireRateOk": true,
+        "explanation": "This is the strongest-tested line in the packet: the trigger is discriminated behaviorally (co-B3 comp separates burstCast from fullBurstEnter in both directions) AND the flavor scoping is discriminated twice — the dmgUp delta on ticks is exactly +0.8944, normals are byte-identical, and the attackDamagePct counterfactual demonstrably DOES lift normals."
+      },
+      {
+        "kitLine": "A.N. Effect 1: Removes Single Point Attack",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED verbatim ('A.N. Mode:' header + 'Effect 1: Removes Single Point Attack.').",
+        "blindSaid": "Same disposition; S6 additionally notes the A.N. Mode STATUS itself (which gates the skill2 part-destroy branch) is unrepresented and must be revisited if parts are ever modeled.",
+        "formulaCheck": "Removal of a buff that can never be granted is a strict no-op; the mode-exclusivity mechanic (A.N. Mode gate on skill2 ⟷ Effect 1 removal) is entirely dormant in v1. Note this dependency is now consistent in BOTH directions — with the 47.32 passive deleted there is no longer a phantom buff for Effect 1 to fail to remove.",
+        "fireRateOk": true,
+        "explanation": "Correctly recorded as unmodeled with the dependency documented for a future parts-capable boss."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1 (cadence input, engine/charFixes — not the override block)",
+      "summary": "The DoT-instance count rests on a 22-frame bolt-recovery gap being applied to an RL, which the mechanics SSOT says RL does NOT have — an unverified ~27% shot-rate (and therefore DoT-output) swing on her dominant damage bucket.",
+      "evidence": "game-mechanics.md §2 weapon table: 'SR | charge cycle + 22f bolt' vs 'RL | charge cycle | no bolt recovery'; §4 attributes the +22f release latency to SR, exempting autofire units via charFixes.noBoltRecovery. The driver's override note assumes '60f charge + 22f bolt gap default ON (autofire NOT set; verify — noBoltRecovery would be a ~15-20% shot swing)' → ~0.57 shots/s. Neither blind agent independently checked the RL row (S6 restated the cadence as a generic ⚑). WHOLE-PICTURE NARROWING (this judge): the other two members of the cadence tuple are DERIVABLE and CONFIRMED from the datamine in Section 3 — reloadFrames 141 == reload_time 200 × 0.6 + 21 with reload_bullet 10000 (single-chunk), and chargeFrames 60 == charge_time 100 (1.0s); rate_of_fire 60 ⇒ a 60-frame shot cycle. So the ⚑ collapses to the single binary question of the bolt gap, not the whole tuple.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs verification, not a number: read src/engine charge-weapon path + charFixes for whether the 22f release latency is gated to SR, and reconcile with the §2 'RL: no bolt recovery' row (one of the two is wrong for RL generally — this is an engine-wide question, not a raven override edit). Empirical confirm: count sustained-tick popups per second in a raven solo focus recording — ~3.4 concurrent ticks/s implies the 82f cycle, ~4.6 implies the 60f cycle. Does NOT block GO: it is a magnitude/cadence input, owner- and measurement-gated, and flagged by the driver."
+    },
+    {
+      "subkind": "ENGINE",
+      "slot": "base weapon data (data/characters.json → raven) — OUT OF KIT-LINE SCOPE, reported not acted on",
+      "summary": "HYPOTHESIS: raven's `chargeMultiplier` is 0 while her datamined `full_charge_damage` is 25000 (=250%), so her full-charge rocket may be resolving with a Charge bucket of 1.0 (or 0) instead of 2.5 — a potential 2.5× under-credit on her normal-attack channel that no agent in this gauntlet mentions.",
+      "evidence": "Section 3 ground truth: characters.raven.chargeMultiplier = 0, but role.weapon.shot_detail.full_charge_damage = 25000 and damage-calculation §1d defines Charge = chargeMult/100 + … with chargeMult as 'the per-unit full-charge multiplier (SR typically 250, Alice 350, cinderella 200)'. Her other weapon fields all populate consistently (normalAttackMultiplier 61.3 == damage 6130; coreAttackMultiplier 200 == core_damage_rate 20000; chargeFrames 60 == charge_time 100; reloadFrames 141 == reload_time 200 × 0.6 + 21), which makes the lone 0 look like a data-population miss rather than a deliberate value. I could NOT verify the engine's handling of chargeMultiplier 0 (no tree access in this judge run), so this is explicitly a hypothesis, not a confirmed defect — and it is a base-stat/weapon-data issue shared with any comparably-populated RL, NOT something introduced by this gauntlet or expressible in the kit override.",
+      "documentedByDriver": false,
+      "severity": "med",
+      "suggestedFix": "Verify before acting: (1) grep the charge-bucket code in src/engine/sim.ts for how chargeMult 0 resolves (Charge=0 would zero her normals; a `|| 1` fallback would give 100% instead of 250%); (2) check whether other RL units (e.g. rapi-red-hood) carry a populated chargeMultiplier in data/characters.json; (3) if it is a population gap, the faithful value is the datamined 250 (full_charge_damage 25000 ÷ 100) — a datamined correction, never a fitted one. If confirmed it moves her weapon channel only (~35% of her output at the driver's own estimate), not her DoT."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdictRationale": "GO. All 8 kit lines are FAITHFUL (6) or DOCUMENTED_GAP (2), and the two blind re-derivations converged hard: the S6 blind override is ENCODING-IDENTICAL to the driver's on every block (the only textual difference is a redundant crit/noFb pair on the burst nuke that the engine already defaults), and 17 of 18 active S5 blind assertions run GREEN against the driver's shipped override. The single RED is a RECON_ERROR in the blind test's own filter — its 'stray casterAtkPct' detector omits a caster===raven restriction, so it counts any other unit's self-cast caster-scaled ATK grant; crucially, the property it meant to test is independently proven by the driver's own assertion (casterIdx===RAVEN ⇒ every target is RAVEN, once per Full Burst), so raven's self-scoping holds regardless of whether the driver's crown attribution for those 12 events is exactly right. Ranked findings: (1) the RL bolt-recovery cadence question — documented ⚑ by the driver, but I narrowed it: reloadFrames, chargeFrames and rate_of_fire are all derivable-and-confirmed from the Section 3 datamine, so the whole cadence residual reduces to whether the SR 22f release latency is wrongly applied to an RL (game-mechanics §2 says RL has none), a ~27% swing on her dominant DoT channel and an engine-wide question rather than an override edit; I also checked the 10-stack cap independently and it stays non-binding on BOTH cadence branches (10 concurrent 5-sec instances would need >2 shots/sec, below the 60f charge floor, with no charge-speed source in the comp), so the cadence ⚑ does not threaten the uncapped-append model. (2) An OUT-OF-SCOPE hypothesis nobody raised: chargeMultiplier 0 against a datamined full_charge_damage of 250% — reported, not acted on, with a verification recipe. Nothing needs to change for GO. Same-model residual for the owner to spot-check: every agent here is Claude, so agreement on the two hardest judgement calls is stability, not proof — specifically (a) the deletion of the prior hand-authored always-on sustainedDamagePct 47.32 passive, which is the one genuinely BOARD-MOVING consequence of this landing (raven loses a ~47pp Damage-Up on her dominant bucket; correct per the partless scope-lock basis and per the rule that a model shown to be wrong is deleted rather than parked, but her old number was fit to the old model, so any calibration or graded-comp exposure should be re-checked before reading her new total as a regression), and (b) the burstCast-vs-fullBurstEnter split within one kit, which rests on reading 'A.N. Mode granted inside her own burst block' as cast-keyed while skill1/skill2's explicit 'when entering Full Burst' lines are FB-keyed — the co-B3 fixture makes this behaviorally falsifiable, and it is the assertion to re-verify first if real footage ever disagrees. NOTE: I have no tool access in this run, so this verdict could not be written to scripts/kit-autonomy/results/raven.json — the orchestrator must persist the JSON above.",
+  "model": "claude-opus-5"
+}

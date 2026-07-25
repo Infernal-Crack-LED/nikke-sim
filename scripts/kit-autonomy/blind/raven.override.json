@@ -1,0 +1,135 @@
+{
+  "slug": "raven",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 68.46,
+          "durationSec": 5,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 47.52,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 21.12,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 21.12,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 492.3,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 89.44,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "■ Activates when an ally or self destroys an enemy's part. Affects self if self is not in A.N. Mode status.",
+      "Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.",
+      "Removes Vital Attack."
+    ],
+    "burst": [
+      "Effect 1: Removes Single Point Attack."
+    ]
+  },
+  "caveats": [
+    "⚑ TRIGGER MAPPING: skill1 sustained-damage line keys on 'performing a Full Charge attack'. Encoded as shotFired (an RL trigger pull in this engine is a full-charge shot). If the engine can fire an RL uncharged, or full charges are counted separately, the faithful key is chargeCounter {count:1}. UNVERIFIED.",
+    "⚑ CADENCE TUPLE: DoT instance count is driven entirely by the datamine-unreliable RL cadence (chargeFrames 60, reloadFrames 141, ammo 6). Every damage number in this override moves with it.",
+    "⚑ STACK CAP: kit caps the sustained damage at 10 stacks; the engine appends one independent DoT instance per fire with NO cap. At the estimated RL cadence only ~3-4 instances overlap inside the 5s window, so the cap is believed non-binding — but it is UNENFORCED, and a faster real cadence would over-credit.",
+    "⚑ noFb on the burst nuke: set per the standing prior that burst-cast instant damage lands before the FB window opens. Not measured for this unit.",
+    "⚑ crit on the burst nuke: set per the standing rider prior (riders crit at the caster's sheet rate, no core). Not measured.",
+    "⚑ DoT crit: left OFF (default). Most DoTs are validated non-crit; opt in only if popup colour on a real recording shows orange sustained ticks.",
+    "⚑ 'Start of battle' 5s window encoded as a passive trigger + durationSec 5, i.e. applied at frame 0 and expiring at t=5s. If the engine treats passive as unexpiring, this block would be permanently live — verify by inspection of the buff-expiry path.",
+    "PARTLESS BOSS: both Vital Attack blocks (partsDamagePct) are INERT in v1, and the Single Point Attack chain (sustained ▲47.32%) is UNREACHABLE — its trigger is part destruction, which the scope-lock boss cannot produce. Raven loses a large sustained-damage multiplier on this fixture relative to a real parted boss; do not read the resulting board number as her real ceiling.",
+    "A.N. Mode is modeled only as its damage effect (the burst self-buff). The mode STATUS itself (which suppresses the skill2 part-destruction branch and removes Single Point Attack) is not represented — harmless while that branch is unreachable, but it must be revisited if parts are ever modeled."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Raven (RL/Iron/Attacker/B3) is a sustained-damage carrier: S1 appends a 5s / 1s-tick 68.46% sustained DoT per full-charge shot (kit cap 10 stacks, engine-uncapped) and grants herself ATK ▲47.52% of her own ATK for 10s on Full Burst entry; her burst is a 492.3% instant nuke plus A.N. Mode's Sustained Damage ▲89.44% for 10s, which multiplies the S1 DoT. S2's Vital Attack part-damage buffs are parsed but inert on a partless boss, and the Single Point Attack branch (Sustained Damage ▲47.32%) is unmodeled because its part-destruction trigger has no schema representation and cannot fire in v1 — see unmodeled + caveats."
+}
