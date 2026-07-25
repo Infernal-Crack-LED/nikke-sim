@@ -30,6 +30,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # Deliberately the CHEAP pre-flight, not the full gate. The full gate runs
+      # twice around this already: ci.yml (`verify.sh full`) fires on the same push
+      # to main, and railway.json's buildCommand is `verify.sh deploy`. A third full
+      # run here would add ~7 min to every production deploy for zero extra coverage.
       - run: npm run typecheck
       - run: npm test
 

@@ -320,6 +320,143 @@ def temporal_filter(all_comps, max_pellet_frames=8, match_dist=30):
     return results
 
 # ============================================================
+# Ammo counter: read the 3 digits inside the box the pellet tracker already locates.
+#
+# The box is ALREADY found every frame by the proven `--ammo-template` + `--max-template-disp`
+# track above (it is crosshair-anchored and slides across the frame, so a fixed crop misses it).
+# This mode reuses that lock and adds the last 20%: segment the glyphs, match each against a
+# fixed-font digit atlas, and ABSTAIN rather than guess when the match is poor.
+#
+# Deterministic beats a VLM here for the same reason the timer read fails: 2-3 white digits on a
+# fixed crop is exactly where a 7B VLM produces confident wrong answers (~25% correction rate on
+# the timer spine), while template matching on a fixed bitmap font is exact or it declines.
+#
+# The glyphs are white on a dark box, and the box turns RED at low ammo (owner note) — both are
+# matched. Selection is by SHAPE, not position: digit components share a top edge, a ~45px height
+# at zoom 2 and an even pitch, which separates them from HUD marks of similar brightness.
+# ============================================================
+DIGIT_H_RANGE = (0.55, 0.90)   # digit height as a fraction of the template height (74px at zoom 2)
+DIGIT_W_RANGE = (0.08, 0.45)   # digit width, same basis
+DIGIT_ROW_TOL = 0.10           # max top-edge spread (fraction of template height) within one row
+
+
+def _ammo_roi(img_rgb, loc, tshape, pad_x=70, pad_y=25):
+    """Generous region around the matched ammo template — the box plus slack for the digits."""
+    th, tw = tshape[:2]
+    h, w = img_rgb.shape[:2]
+    x0, x1 = max(0, loc[0] - pad_x), min(w, loc[0] + tw + pad_x)
+    y0, y1 = max(0, loc[1] - pad_y), min(h, loc[1] + th + pad_y)
+    return img_rgb[y0:y1, x0:x1], (x0, y0)
+
+
+def segment_ammo_digits(roi_rgb, templ_h):
+    """Return the digit cells (binary crops) left-to-right, or [] if the box is not readable."""
+    import cv2
+    r, g, b = roi_rgb[..., 0].astype(int), roi_rgb[..., 1].astype(int), roi_rgb[..., 2].astype(int)
+    white = (r > 190) & (g > 190) & (b > 190)
+    red = (r > 150) & (g < 90) & (b < 90)          # the low-ammo box renders its digits red
+    mask = ((white | red) * 255).astype(np.uint8)
+    n, labels, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
+
+    hlo, hhi = DIGIT_H_RANGE[0] * templ_h, DIGIT_H_RANGE[1] * templ_h
+    wlo, whi = DIGIT_W_RANGE[0] * templ_h, DIGIT_W_RANGE[1] * templ_h
+    cands = []
+    for i in range(1, n):
+        x, y, w, h, _ = stats[i]
+        if hlo <= h <= hhi and wlo <= w <= whi:
+            cands.append((x, y, w, h, i))
+    if not cands:
+        return []
+    # keep the largest set of components sharing a top edge — that is the number, and it drops
+    # same-height HUD marks elsewhere in the ROI
+    tol = DIGIT_ROW_TOL * templ_h
+    best = []
+    for _, y0, _, _, _ in cands:
+        row = [c for c in cands if abs(c[1] - y0) <= tol]
+        if len(row) > len(best):
+            best = row
+    best.sort(key=lambda c: c[0])
+    cells = []
+    for x, y, w, h, i in best:
+        cells.append(((labels[y:y + h, x:x + w] == i).astype(np.uint8) * 255, (x, y, w, h)))
+    return cells
+
+
+def normalize_glyph(cell, size=(20, 32)):
+    import cv2
+    return cv2.resize(cell, size, interpolation=cv2.INTER_AREA)
+
+
+def load_digit_atlas(path):
+    """atlas dir of <digit>_<tag>.png glyph bitmaps -> {digit: [normalized glyph, ...]}"""
+    import cv2
+    atlas = {}
+    p = Path(path)
+    if not p.is_dir():
+        return atlas
+    for f in sorted(p.glob('*.png')):
+        d = f.stem.split('_')[0]
+        if not d.isdigit():
+            continue
+        img = cv2.imread(str(f), cv2.IMREAD_GRAYSCALE)
+        if img is None:
+            continue
+        atlas.setdefault(int(d), []).append(normalize_glyph(img))
+    return atlas
+
+
+def match_digit(cell, atlas):
+    """Best (digit, score) for one glyph by normalized correlation against the atlas."""
+    import cv2
+    g = normalize_glyph(cell)
+    best, best_score = None, -1.0
+    for d, glyphs in atlas.items():
+        for ref in glyphs:
+            s = float(cv2.matchTemplate(g, ref, cv2.TM_CCOEFF_NORMED)[0][0])
+            if s > best_score:
+                best, best_score = d, s
+    return best, best_score
+
+
+def read_ammo_frame(img_rgb, ammo_tmpl, args, last_acc):
+    """Locate the box (proven template track + jump gate) and read its digits."""
+    import cv2
+    frame_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+    res = cv2.matchTemplate(frame_bgr, ammo_tmpl, cv2.TM_CCOEFF_NORMED)
+    _, conf, _, loc = cv2.minMaxLoc(res)
+    accepted = None
+    # The jump gate assumes CONSECUTIVE frames (the box slides smoothly). Pass
+    # --max-template-disp 0 to disable it for scattered/sampled frames, where a large jump
+    # between samples is expected and carrying the previous box forward would be the bug.
+    gate = args.max_template_disp
+    if conf > 0.3 and (last_acc is None or gate <= 0 or
+                       math.hypot(loc[0] - last_acc[0], loc[1] - last_acc[1]) < gate):
+        accepted = (int(loc[0]), int(loc[1]))
+    elif last_acc is not None:
+        accepted = last_acc
+    if accepted is None:
+        return {'ammo': None, 'reason': 'no-box', 'boxConf': round(float(conf), 3)}, last_acc, []
+
+    roi, _ = _ammo_roi(img_rgb, accepted, ammo_tmpl.shape)
+    cells = segment_ammo_digits(roi, ammo_tmpl.shape[0])
+    out = {'boxConf': round(float(conf), 3), 'cells': len(cells), 'loc': list(accepted)}
+    if not cells or len(cells) > 3:
+        out.update({'ammo': None, 'reason': 'no-digits' if not cells else 'too-many-cells'})
+        return out, accepted, []
+    return out, accepted, cells
+
+
+def build_atlas_from_cells(cells, label, outdir, tag):
+    import cv2
+    os.makedirs(outdir, exist_ok=True)
+    if len(cells) != len(label):
+        return 0
+    for k, ((cell, _), ch) in enumerate(zip(cells, label)):
+        cv2.imwrite(os.path.join(outdir, f'{ch}_{tag}{k}.png'), cell)
+    return len(cells)
+
+
+# ============================================================
 # Debug: save thresholded masks with detected dots outlined
 # ============================================================
 def save_debug(img: np.ndarray, path: str, args):
@@ -386,6 +523,11 @@ def main():
     parser.add_argument('--temporal', action='store_true', help='enable temporal filtering (track components across frames, classify by lifetime)')
     parser.add_argument('--max-pellet-frames', type=int, default=8, help='max frames a pellet component persists (default 8 at 30fps)')
     parser.add_argument('--dump-tracks', help='(temporal) write full per-track diagnostics JSON to this path')
+    parser.add_argument('--ammo-digits', action='store_true', help='read the AMMO COUNTER digits inside the located box (needs --ammo-template + --ammo-atlas)')
+    parser.add_argument('--ammo-atlas', help='directory of digit glyph PNGs named <digit>_<tag>.png')
+    parser.add_argument('--build-atlas', action='store_true', help='(with --ammo-digits --ammo-atlas --labels) harvest labelled glyphs instead of reading')
+    parser.add_argument('--labels', help='(--build-atlas) comma-separated counter values, one per input frame, in filename order')
+    parser.add_argument('--digit-score-min', type=float, default=0.60, help='min glyph match score; a frame below it ABSTAINS rather than guessing (default 0.60)')
     args = parser.parse_args()
 
     # Apply tunable red threshold to the module-level constants used by all backends
@@ -447,6 +589,50 @@ def main():
             if x1 - x0 >= 20 and y1 - y0 >= 20:
                 return img[y0:y1, x0:x1]
         return img
+
+    if args.ammo_digits:
+        if ammo_tmpl is None:
+            print('--ammo-digits needs --ammo-template', file=sys.stderr)
+            sys.exit(1)
+        labels = (args.labels or '').split(',') if args.build_atlas else []
+        atlas = {} if args.build_atlas else load_digit_atlas(args.ammo_atlas or '')
+        if not args.build_atlas and not atlas:
+            print(f'--ammo-digits needs a digit atlas (--ammo-atlas {args.ammo_atlas}); '
+                  f'build one with --build-atlas --labels "076,065,..."', file=sys.stderr)
+            sys.exit(1)
+        last_acc = None
+        saved = 0
+        out = []
+        for fi, f in enumerate(files):
+            img = load_rgb(f)
+            entry, last_acc, cells = read_ammo_frame(img, ammo_tmpl, args, last_acc)
+            entry['file'] = os.path.basename(f)
+            if args.build_atlas:
+                lab = labels[fi].strip() if fi < len(labels) else ''
+                entry['label'] = lab
+                if lab and cells:
+                    saved += build_atlas_from_cells(cells, lab, args.ammo_atlas, f'f{fi:03d}')
+                    entry['saved'] = len(cells) == len(lab)
+            elif cells:
+                digits, scores = [], []
+                for cell, _ in cells:
+                    d, s = match_digit(cell, atlas)
+                    digits.append(d)
+                    scores.append(round(s, 3))
+                entry['digits'] = digits
+                entry['scores'] = scores
+                # abstain on the whole frame if ANY glyph is weak — a partly-guessed counter is
+                # worse than no read, because it looks like data
+                if min(scores) < args.digit_score_min or any(d is None for d in digits):
+                    entry['ammo'] = None
+                    entry['reason'] = 'low-score'
+                else:
+                    entry['ammo'] = int(''.join(str(d) for d in digits))
+            out.append(entry)
+        if args.build_atlas:
+            print(f'atlas: saved {saved} glyphs -> {args.ammo_atlas}', file=sys.stderr)
+        print(json.dumps(out, indent=2))
+        return
 
     if args.temporal:
         # Temporal mode: detect on FULL frames (stable coords), track, filter by lifetime,

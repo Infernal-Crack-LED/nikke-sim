@@ -286,3 +286,29 @@ noted.
   and `simSupported` (has an override).
 - **Commit freely, never push.** Local commits are encouraged; `git push` / PRs are owner-gated (both
   repos). `bash scripts/verify.sh` green before anything leaves the machine. → CLAUDE.md hard constraints.
+
+## 7. Probe reader instruments (what measures what, and how far it is trusted)
+
+The measurement toolchain in `scripts/probe/`. Tier matters: a deterministic-CV reader is repeatable
+and cannot hallucinate; a VLM reader is a survey until something independent confirms it. Procedure:
+`/probe-processing`. Validation record: `docs/probe-runs.md` (2026-07-24).
+
+| instrument | measures | method | trust |
+|---|---|---|---|
+| `scan.ts` + `scan-frames.py` | **Full-Burst counts + timings**, burst chain anatomy, nuke signatures | deterministic CV, **no model**; 3 detectors merged (FB drain window / whole-frame golden splash / stage-3 hexagon) | ✅ EXACT on 8 recordings with independently measured FB counts; every burst corroborated by a 2nd detector |
+| `read-ammo.ts` + `count-pellets.py --ammo-digits` | **shots/second**, reloads, magazine state — every weapon class | digit atlas + `cv2.matchTemplate` in the existing ammo-box track; abstains on weak matches; monotonicity discards misreads | ✅ SMG 20.3/s in two range bands (r²=1.00), reproducing the hand read behind DECISIONS 2026-07-23. ⚠ small-magazine SG unreadable (~29% of frames) |
+| `read-battle-records.ts` | per-unit **totals / damage taken / healing / Combat Power** + slot order | VLM on the static end-of-fight screen + an arithmetic checksum vs the cumulative team total | ✅ 37/37 numbers exact on 2 screenshots — but only trusted when the **checksum closes** |
+| `read-total-damage.ts` | cumulative team total over the fight (the SG-lattice source) | VLM @1 fps + monotonicity warnings | survey; individual totals need confirmation before a lattice fit rests on them |
+| `read-burst-gauge.ts` | burst-state timeline + transitions, optional sim compare | `--classifier cv` (default) delegates to `scan.ts`; `--classifier vlm` is the old per-frame read | cv as above. ⚠ **vlm must not be used for FB counts** — 6 `full` transitions in a 30 s window where the truth is ≤2 |
+| `read-pellets.ts` + `count-pellets.py` | SG **per-shot pellet landing** | CV pellet detection + crosshair tracking | ⚑ CANDIDATE — tuned on `marciana-solo.MP4` only; 70 of ~90 shots, avgTotal 7.6 vs the lattice's ≈8.45. Not a landing measurement (U35) |
+| `read-popups-vlm.ts` | per-hit **damage popups** (value, crit/core, position) | VLM per frame + dedup + confidence scoring + hit-value band membership | PROVISIONAL. Its useful output is the ranked `needsConfirmation[]`; the **auto-accept path is UNEXERCISED** and unproven |
+| `hit-values.ts` / `hit-bands.ts` | the per-unit **hit-value band table** (the attribution key) | sim debug tap, no video | deterministic. Overlapping bands CANNOT be attributed — that rule is upstream of every popup read |
+
+Two structural facts that keep getting re-derived:
+
+- **The burst-indicator crop (`crop=188:82:2428:448`) shows a DRAINING Full-Burst window bar, not a
+  filling gauge.** It resets at the burst and drains to zero over ~8.5 s of rendered width, and the
+  widget is absent entirely between cycles. The burst gauge CHARGING is not in that crop. Rendered
+  window widths (~8.2 s for a nominal 10 s window) are comparable to each other, never absolute.
+- **The "team burst bar" and "solo BURST meter" crops are SUB-STRIPS of that same gauge crop**, so
+  they are not an independent instrument — they are diagnostics only.

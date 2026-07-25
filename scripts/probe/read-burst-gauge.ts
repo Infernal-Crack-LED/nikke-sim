@@ -1,6 +1,18 @@
-// Burst-gauge state reader. Samples the burst gauge HUD element at ~1fps and asks a LOCAL VLM
-// to classify its state per frame. Outputs a burst-state timeline you can compare to the sim's
-// burst rotation.
+// Burst-gauge state reader. Samples the burst gauge HUD element and classifies its state per
+// frame, then reports a burst-state timeline you can compare to the sim's burst rotation.
+//
+// TWO CLASSIFIERS OVER ONE SHELL (--classifier cv|vlm) — the crops, debounce, timer spine,
+// `fightT` re-anchoring and `--sim` compare are shared, so the two are directly comparable and
+// together they are the PROVE-IT-DIFFERENTLY pair for a burst timeline.
+//
+//   cv  (DEFAULT) — deterministic pixel measurement via scripts/probe/scan.ts. Validated
+//                   2026-07-24 against 7 recordings with independently measured Full Burst
+//                   counts (11/12/13/13/13/13/14) plus the soda-twinkling-bunny control (10): EXACT on all 8,
+//                   every burst corroborated by a second detector. No model, ~12s per video.
+//   vlm           — the original Qwen2.5-VL per-frame read. RETAINED for A/B only: on a 30s LM
+//                   control window it reported SIX transitions into `full` (a Full Burst is a 10s
+//                   window and they are 13-34s apart, so at most ~2 fit) and its timer spine needs
+//                   12-17 corrections per 60 frames. Do NOT count full bursts off it.
 //
 // Burst gauge states (owner-confirmed 2026-07-24):
 //   filling  — gray bar + white fill (burst gauge accumulating, no burst available)
@@ -8,6 +20,12 @@
 //   stage2   — yellow bar with roman numeral II (B2 ready)
 //   stage3   — red bar with roman numeral III (B3 ready)
 //   full     — blinking, draining red bar with NO numeral (Full Burst active, 10s window)
+//
+// ⚠ The CV classifier does NOT emit `filling`: the burst gauge CHARGING is not rendered inside
+// this crop (measured 2026-07-24 — the widget is absent between cycles, and the bar that IS drawn
+// DRAINS rather than fills). It emits `full` for the draining bar and stage1/2/3 for the chain
+// hexagons, and `null` where the widget is absent. The VLM classifier emits `filling` because it
+// was asked to choose from the list above; that is a prompt artifact, not an observation.
 //
 // PIXEL-PERFECT CROP (2622x1206 source — the standard recording resolution):
 //   The burst gauge sits at a FIXED screen position every fight. Coordinates measured from an
@@ -17,7 +35,9 @@
 //   Override with --gauge-crop / --timer-crop for non-standard resolutions.
 //
 //   npx tsx scripts/probe/read-burst-gauge.ts <video> [opts]
-//     --fps <n>             sampling rate (default 2 — burst states change fast, 2fps catches them)
+//     --classifier cv|vlm   per-frame classifier (default cv — see above)
+//     --fps <n>             sampling rate (default 5 for cv / 2 for vlm. The stage hexagon shows
+//                           for ~0.4s, so the CV path needs >=4 to catch every burst chain)
 //     --at <s> --dur <s>    clip window (default: whole video)
 //     --endpoint <url>      OpenAI-compatible base (default http://localhost:8090/v1)
 //     --model <name>        model field (default qwen2.5-vl)
@@ -74,7 +94,12 @@ if (!video || !existsSync(video)) {
   process.exit(1);
 }
 
-const fps = Number(flags.fps ?? 2);
+const classifier = (flags.classifier ?? 'cv') as 'cv' | 'vlm';
+if (classifier !== 'cv' && classifier !== 'vlm') {
+  console.error(`--classifier must be "cv" or "vlm" (got "${classifier}")`);
+  process.exit(1);
+}
+const fps = Number(flags.fps ?? (classifier === 'cv' ? 5 : 2));
 const at = Number(flags.at ?? 0);
 const dur = flags.dur ? Number(flags.dur) : 0;
 const endpoint = (flags.endpoint ?? 'http://localhost:8090/v1').replace(
@@ -97,12 +122,15 @@ const simSlugs =
     : null;
 const outDir =
   flags.out ?? (process.env.CLAUDE_SCRATCH ?? '/tmp') + '/burst-gauge';
+// videoT of the 03:00->02:59 flip (game t0). The CV path has no digit reader, so it takes t0 as
+// an argument rather than guessing: one `frames.ts <video> --at 3 --dur 10 --fps 2 --region timer
+// --sheet 5 --zoom 3` sheet pins it. Given it, timerSec + fightT are exact arithmetic instead of
+// a single-anchored VLM spine (which needed 12-17 corrections per 60 frames).
+const t0Flag = flags.t0 && flags.t0 !== 'true' ? Number(flags.t0) : null;
 
 mkdirSync(outDir, { recursive: true });
 const gaugeFramesDir = `${outDir}/frames-gauge`;
 const timerFramesDir = `${outDir}/frames-timer`;
-mkdirSync(gaugeFramesDir, { recursive: true });
-mkdirSync(timerFramesDir, { recursive: true });
 
 // ---- extract frames (two passes — one per crop) ----
 function extract(crop: string, zoom: number, dir: string, label: string) {
@@ -119,16 +147,22 @@ function extract(crop: string, zoom: number, dir: string, label: string) {
   console.log(`  ${files.length} ${label} frames -> ${dir}`);
   return files;
 }
-console.log(
-  `extracting frames @ ${fps}fps${dur ? ` for ${dur}s from t=${at}` : ' (whole video)'} ...`,
-);
-const gaugeFiles = extract(gaugeCrop, gaugeZoom, gaugeFramesDir, 'gauge');
-const timerFiles = extract(timerCrop, timerZoom, timerFramesDir, 'timer');
-if (!gaugeFiles.length || !timerFiles.length) {
-  console.error(
-    'no frames extracted — check --at/--dur/--gauge-crop/--timer-crop',
+let gaugeFiles: string[] = [];
+let timerFiles: string[] = [];
+if (classifier === 'vlm') {
+  mkdirSync(gaugeFramesDir, { recursive: true });
+  mkdirSync(timerFramesDir, { recursive: true });
+  console.log(
+    `extracting frames @ ${fps}fps${dur ? ` for ${dur}s from t=${at}` : ' (whole video)'} ...`,
   );
-  process.exit(1);
+  gaugeFiles = extract(gaugeCrop, gaugeZoom, gaugeFramesDir, 'gauge');
+  timerFiles = extract(timerCrop, timerZoom, timerFramesDir, 'timer');
+  if (!gaugeFiles.length || !timerFiles.length) {
+    console.error(
+      'no frames extracted — check --at/--dur/--gauge-crop/--timer-crop',
+    );
+    process.exit(1);
+  }
 }
 
 // ---- VLM prompts ----
@@ -230,6 +264,27 @@ async function readTimer(b64: string): Promise<number | null> {
   return typeof o.timerSec === 'number' ? Math.round(o.timerSec) : null;
 }
 
+// ---- CV classifier: delegate to scan.ts (deterministic, no model) ----
+interface CvScan {
+  gaugeStates: { videoT: number; state: string | null; fill: number }[];
+  fbCandidates: { videoT: number; sources: string[]; confidence: number; durationSec?: number }[];
+  orphanEvents: { videoT: number; source: string }[];
+  fullWindows: { start: number; end: number; durationSec: number }[];
+  detectors: Record<string, number>;
+  summary: { fullBursts: number; corroborated: number; gaps: number[]; minGap: number | null; maxGap: number | null };
+}
+function runCvScan(): CvScan {
+  const scanOut = `${outDir}/scan`;
+  const scanScript = new URL('./scan.ts', import.meta.url).pathname;
+  const a = [scanScript, video, '--fps', String(fps), '--out', scanOut, '--gauge-crop', gaugeCrop];
+  if (at) a.push('--at', String(at));
+  if (dur) a.push('--dur', String(dur));
+  if (t0Flag != null) a.push('--t0', String(t0Flag));
+  console.log('running deterministic CV scan (scripts/probe/scan.ts) ...');
+  execFileSync('npx', ['tsx', ...a], { stdio: ['ignore', 'inherit', 'inherit'] });
+  return JSON.parse(readFileSync(`${scanOut}/scan.json`, 'utf8')) as CvScan;
+}
+
 // ---- mock (synthetic burst rotation) ----
 function mockGauge(idx: number): BurstState {
   const cycle = idx % 20;
@@ -243,7 +298,7 @@ function mockTimer(idx: number): number {
   return Math.max(0, 180 - Math.floor(idx / fps));
 }
 
-// ---- run (sequential — gentle on a local server) ----
+// ---- run ----
 const reads: {
   videoT: number;
   timerSec: number | null;
@@ -251,8 +306,31 @@ const reads: {
 }[] = [];
 let n = 0;
 let totalMs = 0;
-const frameCount = Math.min(gaugeFiles.length, timerFiles.length);
-for (let i = 0; i < frameCount; i++) {
+let cvScan: CvScan | null = null;
+
+if (classifier === 'cv') {
+  cvScan = runCvScan();
+  for (const g of cvScan.gaugeStates) {
+    reads.push({
+      videoT: g.videoT,
+      timerSec: t0Flag == null ? null : Math.round(180 - (g.videoT - t0Flag)),
+      burstState: (g.state as BurstState | null) ?? null,
+    });
+  }
+  console.log(
+    `  cv: ${cvScan.summary.fullBursts} full bursts ` +
+      `(${cvScan.summary.corroborated}/${cvScan.summary.fullBursts} corroborated), ` +
+      `${reads.length} frames`,
+  );
+  if (t0Flag == null)
+    console.log(
+      '  note: no --t0, so timerSec/fightT are null. Pin game t0 with ONE sheet:\n' +
+        `        npx tsx scripts/probe/frames.ts "${video}" --at 3 --dur 10 --fps 2 --region timer --sheet 5 --zoom 3`,
+    );
+}
+
+const frameCount = classifier === 'cv' ? reads.length : Math.min(gaugeFiles.length, timerFiles.length);
+for (let i = 0; classifier === 'vlm' && i < frameCount; i++) {
   const idx = parseInt(gaugeFiles[i].replace(/\D/g, ''), 10);
   const videoT = at + (idx - 1) / fps;
   const t0 = Date.now();
@@ -339,7 +417,9 @@ function correctTimer(
   }
   return corrected;
 }
-const timerCorrections = correctTimer(reads, fps);
+// The VLM path infers the timer per frame and then straightens it against a linear spine; the CV
+// path has no digit reader, so it takes t0 as an argument and the arithmetic is exact.
+const timerCorrections = classifier === 'vlm' ? correctTimer(reads, fps) : 0;
 if (timerCorrections)
   console.log(
     `  timer: corrected ${timerCorrections} read(s) from linear spine`,
@@ -347,15 +427,19 @@ if (timerCorrections)
 
 // ---- fight-start offset: videoT where the fight timer reads 180 (3:00) ----
 // From any corrected read: fightStartVideoT = videoT + timerSec - 180.
-let fightStartVideoT: number | null = null;
-for (const r of reads) {
-  if (r.timerSec != null) {
-    fightStartVideoT = Math.round((r.videoT + r.timerSec - 180) * 100) / 100;
-    break;
+let fightStartVideoT: number | null = t0Flag;
+if (fightStartVideoT == null)
+  for (const r of reads) {
+    if (r.timerSec != null) {
+      fightStartVideoT = Math.round((r.videoT + r.timerSec - 180) * 100) / 100;
+      break;
+    }
   }
-}
 if (fightStartVideoT != null)
-  console.log(`  fight starts at videoT=${fightStartVideoT}s (timer=180)`);
+  console.log(
+    `  fight starts at videoT=${fightStartVideoT}s (timer=180)` +
+      (t0Flag != null ? ' [--t0, exact]' : ' [inferred from ONE VLM timer read — cross-check it]'),
+  );
 
 // ---- extract transitions (debounced: require 2 consecutive frames of the new state) ----
 const transitions: {
@@ -365,10 +449,18 @@ const transitions: {
   from: BurstState | null;
   to: BurstState;
 }[] = [];
+// A null read means different things per classifier and must be handled differently:
+//   vlm — "the model could not tell", i.e. missing data. Skipping it is right.
+//   cv  — "the burst widget is not on screen", which is a REAL state (no burst ready, no Full
+//         Burst running). Skipping it would fuse consecutive Full Bursts into one `full` run and
+//         collapse the timeline to a handful of transitions.
+const IDLE = 'idle' as unknown as BurstState;
 let confirmedState: BurstState | null = null;
 let pendingState: BurstState | null = null;
 let pendingCount = 0;
-for (const r of reads) {
+for (const raw0 of reads) {
+  const r =
+    classifier === 'cv' && raw0.burstState == null ? { ...raw0, burstState: IDLE } : raw0;
   if (r.burstState == null) continue;
   if (r.burstState === confirmedState) {
     pendingState = null;
@@ -516,13 +608,15 @@ if (simSlugs) {
   }
 }
 
+const fbTransitions = transitions.filter((t) => t.to === 'full').length;
 const result = {
   video,
+  classifier,
   fps,
   at,
   dur: dur || null,
-  endpoint,
-  model,
+  endpoint: classifier === 'vlm' ? endpoint : null,
+  model: classifier === 'vlm' ? model : 'cv (scripts/probe/scan.ts)',
   gaugeCrop,
   timerCrop,
   gaugeZoom,
@@ -530,6 +624,19 @@ const result = {
   framesProcessed: frameCount,
   timerCorrections,
   fightStartVideoT,
+  t0Source: t0Flag != null ? '--t0 (exact)' : classifier === 'cv' ? 'none' : 'vlm timer spine (single anchor)',
+  fullBursts: classifier === 'cv' ? (cvScan?.summary.fullBursts ?? null) : fbTransitions,
+  // CV only: the full scan — per-detector counts, per-burst corroboration, drain-window durations,
+  // and any event that matched no window. This is what makes the count auditable.
+  cv: cvScan
+    ? {
+        detectors: cvScan.detectors,
+        summary: cvScan.summary,
+        fbCandidates: cvScan.fbCandidates,
+        orphanEvents: cvScan.orphanEvents,
+        fullWindows: cvScan.fullWindows,
+      }
+    : null,
   reads,
   transitions,
   simTransitions,
@@ -538,9 +645,16 @@ const rawOut = `${outDir}/burst-gauge.json`;
 writeFileSync(rawOut, JSON.stringify(result, null, 2) + '\n');
 console.log(`\nwrote ${rawOut}`);
 console.log(
-  `  ${reads.filter((r) => r.burstState != null).length}/${frameCount} gauge reads, ` +
+  `  classifier=${classifier}  ` +
+    `${reads.filter((r) => r.burstState != null).length}/${frameCount} gauge reads, ` +
     `${reads.filter((r) => r.timerSec != null).length}/${frameCount} timers, ` +
     `${transitions.length} state transitions`,
+);
+console.log(
+  `  FULL BURSTS: ${result.fullBursts}` +
+    (classifier === 'cv'
+      ? `  (drain windows; ${cvScan?.summary.corroborated}/${cvScan?.summary.fullBursts} corroborated by the splash/hexagon detectors)`
+      : `  (transitions into "full" — UNVALIDATED off the VLM classifier; re-run with --classifier cv before this becomes a measured count)`),
 );
 if (transitions.length) {
   console.log('  transitions (debounced):');
