@@ -1286,54 +1286,57 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "0.72-1.27 spread: F1 (top ~35% cold) 34-feather burst lump resolves at cast-instant BEFORE her own True-Damage +55.3% buff -> x1.553 under-credit (fix delaySec on lump); F2 between-burst trickle keyed to FB-count but really time-cadenced -> spread. 34/burst+6/rotation are Prydwen-tier (not kit-derivable, ein-focus recording needed)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/ein.json + scripts/kit-autonomy/manual-review/ein.md.",
+          "high ENGINE (skill1 / skill2 / burst (all true-flavored flatDamage)): Every ein rider — the 4-feather start lump, the 34-feather burst lump, the 6-feather trickle and the 300.02% nuke — is crit-eligible, which contradicts game-mechanics.md §9's explicit ruling that flavor:\"true\" flatDamage never crits; the driver's test PINS the higher-damage branch.",
+          "high ENCODING (skill2 / burst (Near Feather cadence)): Feather instance counts are 34 per her burst plus 6 per full-burst end, against the prose's explicit '4 at battle start' + '6 summoned at burst' — roughly 185 feather hits per fight versus a kit-literal ~28 (~6.6×), on what is her largest damage term.",
+          "med FIDELITY (burst / skill2 (⚑3 ordering)): Her own True Damage ▲55.3% burst buff never reaches the 3087.54 feather lump — the lump resolves at cast-instant in the skill2 slot, before the burst-slot buff registers — so the buff moves only ~0.7% of her total and the lump is under-credited ×1.553.",
+          "low ENCODING (skill2 (Charge Damage ▲80% 'for 1 shot')): A round-scoped window is encoded as a permanent passive on the grounds that durationShots:1 is mechanically infeasible on a shotFired trigger — but game-mechanics §11 documents durationShots as implemented with 'spent right after the shot so the Nth shot still benefits'.",
+          "low FIDELITY (skill2 (orb burst-gauge dot)): Test E7 proves the orb's zero-damage ticks exist, but never asserts the gauge side-effect that is the block's entire purpose — 'modeled ≠ working' is unverified for the orb."
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": false,
-      "evidence": "Run E: 0.89-0.98; orb gauge from datamined arena data",
+      "evidence": "Run E: 0.89-0.98; orb gauge from datamined arena data | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; battle-start 4 feathers now modeled",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
         "within3pct": 1
       },
       "reference": false,
-      "residual": "U8 lists an older 0.71-0.76 read — worth an ein-focus recording",
+      "residual": "U8 lists an older 0.71-0.76 read — worth an ein-focus recording | crit-on-true-damage scope (game-mechanics §9 claims a crit&&!trueFlavor guard absent from engine; ein feathers/nuke crit pinned E4/E5, Prydwen-confirmed; owner to rule, cross-cuts all true-flavor units); feather cadence 34 vs kit-literal 6 + F1 ordering x1.553 need ein-focus recording U8 (land together); durationShots+shotFired zero-benefit -> file vs primitive",
       "unmodeled": {
-        "skill1": [
-          "Activates at the start of battle. Affects self. Summons 4 Near Feathers."
-        ],
+        "skill1": [],
         "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill2: Near Feather cadence (34 instances per her burst, 6 per rotation between bursts) is a community-sourced (Prydwen) estimate, not kit-derivable — kit only states 4 feathers at battle start + 6 summoned at burst; needs an ein-focused recording (U8)",
-        "skill2: the between-burst feather trickle is keyed to full-burst COUNT (6 per FB end), not to time — comps with long rotations under-count it, fast rotations over-count it",
-        "burst: the 34-feather burst lump resolves at cast-instant, BEFORE her own True Damage ▲ 55.3% burst buff and teammates' full-burst-entry auras register (block order) — real feathers land inside the 10s window with those buffs up"
+        "⚑2 MEASUREMENT-GATED (tier 2): Near Feather cadence (34 instances per her burst, 6 per rotation between bursts) is a community-sourced (Prydwen) estimate, not kit-derivable — kit only states 4 feathers at battle start + 6 summoned at burst. estimate: as shipped (34/burst burstCast lump + 6/rotation fullBurstEnd lump). recipe: ein-focused recording (U8) to read the real per-window feather count, then re-split the lumps.",
+        "skill2: the between-burst feather trickle is keyed to full-burst COUNT (6 per FB end), not to time — comps with long rotations under-count it, fast rotations over-count it (part of ⚑2).",
+        "⚑3 MEASUREMENT-GATED (tier 2): the 34-feather burstCast lump resolves at cast-instant, BEFORE her own True Damage ▲ 55.3% burst buff and teammates' full-burst-entry auras register (block order) — real feathers land inside the 10s window with those buffs up. Consequence: removing the true-damage buff drops her total only ~0.7% (the big lump never sees it) — the lump is under-credited ×1.553. estimate: +55.3% on the burstCast lump once inside the buff window. recipe: delaySec on the burstCast lump (or distribute it across the 10s window) once the ein-focus recording (U8) supplies the real feather timing."
       ],
       "board": {
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.6263
+            "ratio": 0.6277
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 0.6424
+            "ratio": 0.6461
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8996
+            "ratio": 0.902
           }
         ],
         "n": 3,
-        "mean": 0.7228,
-        "mad": 0.2772,
+        "mean": 0.7253,
+        "mad": 0.2747,
         "band": ">15%",
         "temp": "COLD ▼"
       }
