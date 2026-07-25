@@ -1,0 +1,199 @@
+{
+  "slug": "neon-vision-eye",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 437.98,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "requiresTargetStatus": "Super Firepower",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 262.79,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 80.04,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "everyN": 3,
+      "everyNOffset": 1,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 35.05,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "everyN": 3,
+      "everyNOffset": 2,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 75,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "everyN": 3,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 75,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 110.21,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "everyN": 3,
+      "everyNOffset": 1,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 45.03,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "everyN": 3,
+      "everyNOffset": 1,
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Super Firepower",
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Invulnerable for 3 sec. Activates 5 time(s) per battle.",
+      "Gains debuff immunity to ∞ debuffs for 3 sec. Activates 5 time(s) per battle.",
+      "Healthy Body: Incoming healing ▲ 10.26% for 20 sec."
+    ],
+    "skill2": [
+      "Activates when performing a normal attack while in Firepower Charge status. Affects self. Increases the Firepower Gauge's charge by 2.",
+      "Activates when Firepower Charge ends. Affects self. Increases the Firepower Gauge's charge by 45."
+    ],
+    "burst": [
+      "Firepower Charge: Charges the Firepower Gauge for 10 sec. This effect cannot be removed.",
+      "Increases the Firepower Gauge's charge by 1.",
+      "Decreases the Firepower Gauge's charge by 100.",
+      "Explosion Radius ▲ 200% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ The Firepower Gauge is NOT simulated as a resource pool. The whole gauge economy is collapsed into a derived 1-in-3 cadence: her 1st/4th/7th burst takes the Super Firepower branch (everyN:3, everyNOffset:1), the other two take the (damage-inert) Firepower Charge branch. Every gauge-arithmetic input is an estimate — see flags[0]/flags[1].",
+    "⚑ Super Firepower is a SELF status, but the engine has no self-status gate with a time window. It is modeled through the ONLY 10s name-keyed window primitive available: her Super burst opens targetStatus 'Super Firepower' (10s) on the boss and the skill1 262.79% rider gates on requiresTargetStatus. This is a deliberate mis-scope of channel, not of behaviour — the window opens/closes on exactly the right frames and the name-keying means no other kit can satisfy it. If the validator or reviewer rejects the channel, the rider must be re-homed, NOT dropped (it is a real damage line).",
+    "⚑ Trigger identity for the 437.98%/262.79% riders: the text says 'when landing a Full Charge attack', modeled as chargeCounter count:1 (fires once per full charge). If the RL path in the sim can fire uncharged shots, shotFired would over-credit and chargeCounter is the safer literal read — but the per-charge proc COUNT is unverified.",
+    "⚑ Damage riders are authored with target {kind:'self'} (the caster deals % of her own final ATK); {kind:'enemy'} resolves to an empty target set in this engine and would silently zero the hit. Only the targetStatus block uses target 'enemy' (validator-required).",
+    "⚑ Riders set crit:true (riders crit at the caster's sheet rate) and take NO core (the text never says 'core strike damage'). No flavor tag is set: 'Firepower Explosion' is not stated to be Projectile Explosion Damage, so it is left out of that bucket rather than guessed into it.",
+    "⚑ noFb is NOT set on either rider (FB-by-timing default ON, per the priors — measured-only).",
+    "⚑ 'Explosion Radius ▲ 200%' is unmodeled. On a single-target partless boss a larger blast radius adds no damage by itself, but it is the kind of geometry change that can lift effective hit rate / core rate. If a real recording shows her in-burst core/hit rate rising, this is the first suspect — magnitude is measured-only (hitRatePct).",
+    "⚑ Multi-B3 comps: the everyN counters key off trigger activations (her burstCast / any fullBurstEnter). In a comp where ANOTHER Burst III completes a rotation, the fullBurstEnter and fullBurstEnd counters drift out of phase with her own burst count and the Super-gated blocks fire on the wrong rotations. Correct on a sole-B3 graded comp; re-check before using her alongside a second B3."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no override, no tests, no board output). Structure: (1) skill1's Full-Charge rider is the unit's damage engine — 437.98% every full charge, +262.79% during the Super Firepower window; 'Affects the enemy if the enemy is the stage target' is always true against the scope-lock boss, so it is a no-op gate. (2) The Firepower Gauge economy is derived, not simulated: she opens at 100 (skill2 start-of-battle +100), the Super branch spends 100, and a Firepower-Charge rotation rebuilds only ~+60 (+1 at cast, +2 per full charge for ~7 charges in the 10s window, +45 at charge end) — so it takes TWO charge rotations to refill, putting Super on bursts 1/4/7 (everyN:3, everyNOffset:1) and Firepower Charge on the other two. (3) The FB-end burst-gen buff rides the two charge rotations (offsets 2 and 0 mod 3); its magnitude is '5% x gauge charge amount', which is a live pool the sim does not track — 75 (=5x~15) is a flagged placeholder, not a measurement. (4) Defensive/heal-receipt lines (invulnerability, debuff immunity, Healthy Body incoming-healing) are unmodeled: Healthy Body modifies healing RECEIVED, it does not EMIT a heal, so it cannot drive an ally's on-recovery consumer and is genuinely inert here."
+}

@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 36,
+      "unit-tested": 37,
       "authored": 14,
-      "audited": 23,
+      "audited": 22,
       "reconciled": 4
     },
     "tier": {
@@ -2752,23 +2752,25 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "Firepower-Gauge/Super alternation modeled + video-verified (every-3rd-Super). Values verbatim. F1: Super +262.79 rider crit-OFF (extraHitDamagePct) vs base crit-ON (~7% cold, offsets 1.040 HOT). Backfilled"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 0.93 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/neon-vision-eye.json + scripts/kit-autonomy/manual-review/neon-vision-eye.md.",
+          "low FIDELITY (skill2): The Super-Firepower ATK +35.05% rider is applied on her burst CAST rather than on Full Burst ENTRY as the kit states, shifting its 10s window ~22 frames early."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "Run B video — gauge tracked cast-by-cast, every-3rd-Super confirmed; 0.91-1.06",
+      "evidence": "Run B video — gauge tracked cast-by-cast, every-3rd-Super confirmed; 0.91-1.06 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 0.93 (binding opus judge); cross-family S2b(fable)/S5/S6/S7(opus) converged on all 6 load-bearing lines; period-3/phase-1 Super cycle re-derived 3 ways + video; 22-test spec GREEN",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "low-sev FIDELITY: 35.05 Super ATK keyed burstCast not fullBurstEnter (~22f window phase, marginal under-credit, documented); spot-check: 262.79 burst-bucket majors/flavors vs recording, ~7-shots/charge-window estimate, Explosion Radius skip if in-burst hit/core rate rises",
       "unmodeled": {
         "skill1": [
           "When attacked while not in Healthy Body: Invulnerability for 3 sec (5 times per battle) and debuff immunity; Healthy Body: incoming healing ▲10.26% for 20 sec (defensive — invuln/immunity/received-heal amp; emits no heal event, no cross-unit consumer wiring needed)"

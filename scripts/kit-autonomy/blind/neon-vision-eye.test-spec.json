@@ -1,0 +1,106 @@
+{
+  "slug": "neon-vision-eye",
+  "leakDetected": "PARTIAL — the supplied (supposedly answer-free) EFFECT SCHEMA leaks this unit in the `everyNOffset` field comment: \"e.g. offset 1 + everyN 3 fires on the 1st, 4th, 7th… activation (Neon:VE starts at full Firepower Gauge)\". That names the target unit and hints at the driver's likely encoding (an everyN:3/everyNOffset:1 burst-branch alternation) plus the gauge's starting state. No magnitudes leaked, and the gauge-starts-at-100 fact is independently derivable from the prose (skill2 'start of battle … charge by 100'). I did NOT adopt the everyN encoding as ground truth: every assertion below is written encoding-agnostically against EVENTS, so a resource-pool encoding and an everyN encoding both pass iff faithful. Reporting per non-negotiable #3; the packet-prep script should strip slug mentions from types.ts comments before dispatch.",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Invulnerable 3s / debuff immunity, 5x",
+      "disposition": "GAP",
+      "assertion": "it.skip — no \"when attacked\" trigger kind exists and the v1 boss deals no damage, so the payload is unobservable. Skipping is correct, not a drop."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Healthy Body: Incoming healing +10.26%",
+      "disposition": "GAP",
+      "assertion": "it.skip — no incoming-healing StatKey and no HP pool. Noted so it is auditable rather than silently absent."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge -> 437.98% add'l damage",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the rider fires per full-charge attack: >=60 skill1-sourced damage events over 180 s (an RL cycles ~120+ full charges). RED under the nearest-wrong interval / hitCount:N / everyN cadence, which lands a small fraction. A second counterfactual (skill1 flatDamage atkPct zeroed) proves the hits carry the damage: the unit's total must fall below 85% of baseline."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Super Firepower: +262.79% add'l",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the extra rider is status-GATED: at least one frame carries two skill1 damage events (base + Super rider co-landing), but fewer than half of all charge frames do. RED if the rider is missing (zero doubled frames) and RED if the status gate is lost (every frame doubles). Frame non-degeneracy is asserted first so this cannot pass vacuously."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Battle start: gauge charge +100",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the gauge starts FULL, via its only observable consequence: the Super Firepower branch fires on the unit's FIRST cast (the 45.03 apply frame equals the first 110.21 apply frame). RED under a gauge modelled as starting empty, where the first Super lands several casts later or never."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Normal attack in charge: gauge +2",
+      "disposition": "GAP",
+      "assertion": "it.skip — pure gauge bookkeeping with no direct event. Its damage-relevant effect (how fast the gauge refills, hence the Super/Charge branch cadence) is pinned indirectly by the burst-branch count assertions."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Charge ends: gauge +45",
+      "disposition": "GAP",
+      "assertion": "it.skip — no status-END trigger primitive exists. Same indirect coverage as the +2 line."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB end: Burst Gauge speed +5% x gauge",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves trigger identity full-burst-END: >=1 burstGenPct self-buff, every apply frame in the fullBurstEnd frame set and NOT in the fullBurstStart set, window ~5 s (300 frames +/-6). RED if the line is dropped as a \"gauge/defensive\" skip (count 0) and RED if keyed to fullBurstEnter. Magnitude is deliberately not asserted (5% x live gauge may be emitted as a perResource placeholder)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Enter FB: Maximum Firepower ATK +80.04%",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves trigger identity full-burst-ENTER and the ATK bucket: every 80.04 atkPct apply frame is a fullBurstStart frame, 10 s window, and no attackDamagePct 80.04 exists. RED under the nearest-wrong burst-cast keying (applies strictly before the FB window opens) and RED under an Attack-Damage-bucket mis-encoding."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Super Firepower: ATK +35.05% add'l",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the additional ATK is status-conditional: count >=1 and strictly < the 80.04 count, same fullBurstStart frames, and no merged 115.09 buff exists. Exercises both the active and inactive case (Super windows are a minority of FB entries). RED if dropped, RED if merged, RED if made unconditional."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gauge <100: Firepower Charge 10s, +1",
+      "disposition": "GAP",
+      "assertion": "it.skip for the status itself (no timed-self-status primitive). Its observable consequence — that casts on a non-full gauge do NOT grant Super Firepower — is asserted as 45.03 count < 110.21 count."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gauge 100: Atk Damage +45.03%, -100",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the branch is gated AND spends the gauge: 45.03 attackDamagePct fires on cast #1, on a strict subset of this unit's casts, always on an own-cast frame, 10 s window. RED under an unconditional encoding (counts equal) and RED if the gauge is not spent (every cast would be Super)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Explosion Radius +200% for 10 sec",
+      "disposition": "UNMODELED (flagged)",
+      "assertion": "it.skip with an explicit FLAG: this is hit-geometry with no primitive, but for an RL it plausibly raises landed/core hits, so it is an unquantified DAMAGE line, not a defensive skip. Measurement-gated (needs footage); must appear in the override's `unmodeled` field, not be silently absent."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage +110.21% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the unconditional branch: >=2 applies (40 s cd over 180 s), each a 10 s wall-clock window with no durationShots (a 6-round magazine would make a round-count encoding expire at a variable frame), in the attackDamagePct bucket, and never merged with 45.03 into a single 155.24 buff (which would silently make the conditional branch unconditional)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "(whole kit) \"Affects self\" scoping",
+      "disposition": "FAITHFUL",
+      "assertion": "Inertness: no buffApply with any of this unit's four magnitudes targets a teammate, and the zeroed-rider counterfactual leaves every teammate's total byte-identical. RED if any self line is mis-scoped to allies. The counterfactual deliberately zeroes the skill1 rider rather than the burst-gen line, because burst-gen legitimately shifts rotation timing for the whole team."
+    }
+  ],
+  "fixtures": "controlComp('neon-vision-eye', true) only — one baseline run plus one counterfactual run (skill1 flatDamage atkPct zeroed), 2 x 180 s sims total, both hoisted at module scope. helm=true is REQUIRED, not incidental: this unit is Burst III and a lone B3 makes ZERO Full Bursts, which would make five FB/burst-keyed lines read vacuously green; the control comp's B1+B2 make the chain cast. Helm is left in because none of her crit/charge-flavoured buffs can forge the four magnitudes asserted (110.21 / 45.03 / 80.04 / 35.05) and no assertion reads a raw total except the single counterfactual delta. Teammate slugs are never hardcoded — inertness compares the totals() map with this unit's key removed.",
+  "gaps": [
+    "skill1 'when attacked' invulnerability + debuff immunity (5x/battle) — no such trigger kind; the v1 boss deals no damage, so the payload is unobservable.",
+    "skill1 Healthy Body incoming-healing +10.26% / 20 s — no incoming-healing StatKey and no HP pool.",
+    "skill2 gauge +2 per normal attack while in the charge status — pure resource bookkeeping, no direct event; covered indirectly by the Super/Charge branch cadence.",
+    "skill2 gauge +45 when the charge status ends — no status-END trigger primitive exists; same indirect coverage.",
+    "burst Firepower Charge (10 s unremovable self status, gauge +1) — no timed-self-status primitive; only its gauge consequence is asserted.",
+    "burst Explosion Radius +200% / 10 s — FLAGGED (⚑) rather than dismissed: no radius/hit-geometry primitive, but on an RL this plausibly raises landed and core hits, so it is an unquantified damage line. Measurement-gated (needs footage: compare landed-hit / core rate inside vs outside the 10 s window). Estimate withheld deliberately — guessing a precise magnitude here would be wrong."
+  ],
+  "model": "claude-opus-5"
+}
