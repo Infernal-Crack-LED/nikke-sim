@@ -1,0 +1,259 @@
+{
+  "slug": "nayuta",
+  "resources": [
+    {
+      "name": "memoryAbsorption",
+      "initial": 0,
+      "min": 0,
+      "max": 30
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 25.15,
+          "durationSec": 5,
+          "maxStacks": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 30.16,
+          "durationSec": 5,
+          "maxStacks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "swapGate": "swapped",
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 150,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "swapGate": "swapped",
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 380.46,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "memoryAbsorption",
+          "delta": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 1.4,
+          "maxStacks": 30
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "memoryAbsorption",
+        "min": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.2,
+          "maxStacks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "memoryAbsorption",
+        "min": 10
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20.27,
+          "maxStacks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "memoryAbsorption",
+        "min": 30
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 21.05,
+          "maxStacks": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 35.45,
+          "durationSec": 15,
+          "maxStacks": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 645.33,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 275.18,
+          "chargeTimeSec": 1.8,
+          "chargeMultPct": 250,
+          "durationSec": 10
+        },
+        {
+          "kind": "unlimitedAmmo",
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Unchanging Heart: Gain Indomitability for 9 sec. Activates 1 time(s) during battle.",
+      "Equally shares HP recovery for 5 sec."
+    ],
+    "skill2": [
+      "immune to stack count increase or decrease effects continuously. This effect cannot be removed."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ EVERY numeric cadence/economy assumption below is UNMEASURED. The kit text supplies all magnitudes; the TRIGGERS for two damage lines and the swap shot economy are inferred.",
+    "⚑ 'Memory Absorption takes effect' is modeled as the every-3s stack tick (skill2 line 1). If the stack tick STOPS 'taking effect' once the pool is capped at 30 (t≈90s), then skill1's ally core/ATK buffs and the self-heal go DEAD after ~90s — a large swing. Modeled here as continuing to fire for the whole fight.",
+    "⚑ The 380.46% 'stage target' line carries NO activation clause. Modeled as a rider on the SAME trigger as the preceding 150% Memory-Incineration full-charge line (i.e. the full charge deals 150% to all enemies plus 380.46% extra to the stage target). Alternative reading: an independent interval-triggered hit. This choice is worth 5x the 150% line and must be pinned from popups before trusting the burst-window total.",
+    "⚑ 'attacking with Full Charge while in Memory Incineration' is modeled as shotFired + swapGate:'swapped' — i.e. EVERY swapped shot is assumed to be a full charge (1.8s fixed charge time). If the engine can fire partial charges while swapped, this over-counts the riders.",
+    "⚑ flatDamage crit:true on both damage lines follows the RIDERCRIT prior (riders crit at the caster's sheet rate); neither is core-tagged (no 'core strike damage' wording).",
+    "⚑ noFb is deliberately NOT set anywhere — FB is taken by timing (default ON). The burst-cast damage lands pre-FB by timing, so no explicit exemption is authored.",
+    "⚑ The stage-1/2/3 thresholds (2/10/30 stacks) are modeled with a named resource + resourceGate rather than `escalating` (which is activation-count-, not threshold-, keyed). The resource-gain effect is ordered FIRST in the slot so the gates read the post-gain pool; if the engine evaluates gates before the same-frame gain, every stage arrives one tick (3s) late — immaterial at fight scale.",
+    "Continuous (no-durationSec) self-buffs carry maxStacks:1 so the every-3s re-application refreshes rather than accumulating."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of nayuta (SMG/Wind/Supporter/Burst II) from kit prose only. Structure: skill2 is a 3s-tick stack engine (Memory Absorption, +1.4% Hit Rate/stack to 30 = +42% at cap, reached t≈90s) that both self-buffs in three stack-gated stages (ATK 15.2% at ≥2, Attack Damage 20.27% at ≥10, core damage 21.05% at ≥30) and drives skill1's ally package (core damage 25.15% + casterAtk 30.16% for 5s, re-applied every 3s = effectively permanent uptime) plus a 25%-Max-HP self-heal that fires the recovery trigger every 3s (tandem: heal-synergy consumers). Burst is a 15s team Attack Damage 35.45%, a 645.33% burst-skill hit, and a 10s Memory Incineration weapon swap (275.18%/shot, 1.8s fixed charge, 250% full-charge mult, unlimited ammo) that ALSO arms skill1's full-charge riders (150% + 380.46%). The two riders and the swap shot economy are the whole burst-window damage story and are the least-constrained part of this parse."
+}

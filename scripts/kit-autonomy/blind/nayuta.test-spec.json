@@ -1,0 +1,102 @@
+{
+  "slug": "nayuta",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Indomitability 9s, 1 time",
+      "disposition": "UNMODELED",
+      "assertion": "it.skip — defensive status, no engine primitive and the v1 boss deals no damage; no observable consequence to discriminate."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "core dmg ▲25.15% 5s, all allies",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply(coreDamagePct,25.15) reaches 4 distinct targetSlugs, expiresFrame−frame ≈ 300, ≥50 applies per ally, first apply ≥ frame 150. RED under self-only scoping, under a flattened `passive` (1 apply at frame 0, no 5s window), and under a model that stops refreshing once the stack pool caps at 30."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲30.16% of user's ATK 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat is casterAtkPct with ONE identical flat value across all 4 targets and that value ≠ 30.16 (flat-resolved), 5s expiry; plus an inertness assertion that no atkPct=30.16 is ever emitted. RED under the plain-atkPct nearest-wrong (target-scaled instead of caster-scaled)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 25% of final Max HP",
+      "disposition": "GAP",
+      "assertion": "it.skip — heal emits no event kind in the documented stream, and the line is SELF-targeted so no teammate on-recovery consumer (crown) fires in the control comp. Unobservable payload."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Equally shares HP recovery 5s",
+      "disposition": "UNMODELED",
+      "assertion": "it.skip — no HP pool / no incoming damage in v1; nothing to share."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge in Memory Incin.: 150%",
+      "disposition": "FAITHFUL",
+      "assertion": "damage events with srcSlot 'skill1' exist, every one falls inside a [cast, cast+600] Memory Incineration window, and 3–12 fire per window (10s / 1.8s ≈ 5 full charges). RED if the rider is keyed to every shot/charge with no swap gate (hundreds of procs fight-wide), and RED if the rider is missing entirely."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "stage target: +380.46% additional",
+      "disposition": "FAITHFUL",
+      "assertion": "Sum of skill1 flatDamage atkPct === 530.46 (150 + 380.46) — encoding-agnostic across split-vs-merged effects; plus a counterfactual stripping skill1 flatDamage that must lower nayuta's total. RED if the 'stage target' conditional is dropped (sum 150) or the base line dropped (sum 380.46). The scope-lock boss IS the stage target, so the line is unconditionally live here."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Hit Rate ▲1.4%, cap 30, every 3s",
+      "disposition": "FAITHFUL (hitRate→core magnitude MEASUREMENT-GATED)",
+      "assertion": "Every apply carries value 1.4 and maxStacks 30, targets nayuta only, peak stacks === 30 with none above, ≥30 applies, first apply at t≈3s not t=0. RED under a pre-summed 42% single apply, under an uncapped pool, and under a t=0 first fire. The hitRatePct→core-rate conversion itself is the engine's ⚑ HRCORE path and is deliberately not re-asserted here."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stage 1: ≥2 stacks, ATK ▲15.2%",
+      "disposition": "FAITHFUL",
+      "assertion": "Ordinal + temporal: ≥1 Memory Absorption apply precedes the first atkPct=15.2 apply and its frame ≥ 300 (t≈6s); target is self only. RED if the stage buff is authored as a passive live from frame 0 (0 preceding stacks, frame 0)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stage 2: ≥10 stacks, Atk Dmg ▲20.27%",
+      "disposition": "FAITHFUL",
+      "assertion": "≥9 stack applies precede the first attackDamagePct=20.27 and frame ≥ 1740 (t≈30s), self-only. RED under passive-from-0 and under a gate set at the wrong threshold (e.g. 2 stacks ⇒ t≈6s)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stage 3: ≥30 stacks, core ▲21.05%",
+      "disposition": "FAITHFUL",
+      "assertion": "≥29 stack applies precede the first coreDamagePct=21.05 and frame ≥ 5100 (t≈90s — half the fight), self-only; plus a non-vacuity check that nayuta deals damage both before and after that frame so both regimes are exercised. RED under passive-from-0, which would over-credit ~90s of core damage."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "stage buffs 'Affects self'",
+      "disposition": "FAITHFUL (inertness)",
+      "assertion": "The union of targetSlugs across all three stage magnitudes is exactly {nayuta}. RED if any stage buff leaks to allies (a plausible mis-read given skill1's sibling block is ally-scoped)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲35.45% 15s allies",
+      "disposition": "FAITHFUL",
+      "assertion": "Apply count === castCount × 4, 4 distinct targets, expiresFrame−frame ≈ 900. RED under self-only scoping and under a 10s duration copied from the swap window."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "645.33% Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "assertion": "Sum of burst flatDamage atkPct === 645.33; exactly one srcSlot='burst' damage event per cast; fbMajorApplied !== true. RED if the nuke is granted the +50% Full-Burst major — a Burst II cast resolves before the FB window opens — or if it fires per Full Burst rather than per own cast."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Memory Incineration weapon swap",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: weaponSwap damagePct 275.18 / chargeTimeSec 1.8 / chargeMultPct 250 / durationSec 10. Behavioral: ≤15 shots in each 10s post-cast window vs ≥50 in a swap-free 10s window, and the counterfactual with the swap stripped restores ≥50 shots in that window and moves the total. RED if the swap is unmodeled or chargeTimeSec is dropped (SMG cadence persists through the burst)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Unlimited ammunition 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "Zero reload events inside [cast+30, cast+570], while reloads do occur elsewhere in the fight (non-vacuity). RED if unlimitedAmmo is omitted — a 120-round SMG reloads at least once in any 10s spray stretch."
+    }
+  ]
+}

@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 37,
+      "unit-tested": 38,
       "authored": 14,
-      "audited": 22,
+      "audited": 21,
       "reconciled": 4
     },
     "tier": {
@@ -2703,24 +2703,26 @@
       "weapon": "SMG",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "0.637 COLD (leading, ENGINE): Memory Incineration swap shots core-rated + range-gated as base SMG instead of the swap weapon's SR-class treatment -> ~2x loss on swap-shot damage in far/midfar (half her FBs); whole-picture reproduces 0.62-0.68. F2 swap chargeTimeSec 2.13 vs measured 1.8. F3 Hit Rate 42%@cap dropped"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/nayuta.json + scripts/kit-autonomy/manual-review/nayuta.md.",
+          "low FIDELITY (burst): chargeTimeSec ships at 2.13 against a kit that says 'Charge time: Fixed at 1.8 sec' — the 0.5s SR bolt-recovery cycle is folded into the charge time rather than modeled as a separate cadence term, so the shipped number contradicts the prose's own stated value.",
+          "low ENCODING (skill1): The shipped override `note` still contains the superseded one-hit-per-burst description of the 380.46% block as its primary narrative, with the tier-audit correction appended later — so the note contradicts itself and the leading text describes an encoding that is no longer shipped."
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": false,
-      "evidence": "T5 wind-weak 0.86-1.03 (A5)",
+      "evidence": "T5 wind-weak 0.86-1.03 (A5) | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; 8 FAITHFUL / 7 DOCUMENTED_GAP, 0 silent drops",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "High run-to-run variance",
+      "residual": "High run-to-run variance | R1 380.46% scope (per-full-charge fold), R2 chargeTimeSec 2.13 vs kit 1.8, R3 HitRate 1.4%/stack unmodeled — all measurement-gated; one Memory Incineration window of popup footage settles R1+R2",
       "unmodeled": {
         "skill1": [
           "Unchanging Heart: Gain Indomitability for 9 sec. Activates 1 time(s) during battle.",
