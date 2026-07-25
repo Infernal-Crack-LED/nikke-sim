@@ -180,7 +180,7 @@ current but not a contract.
 | `everyN` / `everyNOffset`          | Effects land on every Nth activation (offset phases it)                                                                                                               | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny |
 | `formation` (`noB1`/`hasB1`)       | Static squad-formation gate                                                                                                                                           | anis-star, rapi-red-hood                                                                                   |
 | `teamHas` (+`.slugs`)              | Static team-composition gate (element/class/weapon/burst/named slugs)                                                                                                 | noir                                                                                                       |
-| `mode` / `modes`                   | Block active only in the unit's selected kit mode                                                                                                                     | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, mint, milk-blooming-bunny, prika |
+| `mode` / `modes`                   | Block active only in the unit's selected kit mode                                                                                                                     | bready, cinderella-crystal-wave, delta-ninja-thief, mint, milk-blooming-bunny, prika |
 
 ### Targeting selectors (`block.target`)
 

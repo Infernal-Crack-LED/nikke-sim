@@ -1,0 +1,125 @@
+{
+  "slug": "elegg-boom-and-shock",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Required hit count: 100 / max 13 ghost",
+      "disposition": "FAITHFUL",
+      "scope": "Team-wide hit accrual — 'cumulative across all allies' counts every ally's rounds, not Elegg's own MG hits only.",
+      "durationSemantics": "Permanent resource pool (0..13, persists across the fight); the 6 sec possession + 'Recurring interval: 6 sec' reads as a capture CYCLE — at most 1 ghost per 6 s cycle even when 100 team hits accrue faster.",
+      "triggerIdentity": "teamAmmo count:100 (team-cumulative rounds) feeding a `resource` +1 delta into a 'ghost' pool {initial 0, min 0, max 13}. ⚑ whether the 6 s recurrence additionally caps capture rate at 1/6s — a 5-wide team lands 100 rounds in only a few seconds, so this choice dominates the ramp. Caveat: teamAmmo ignores infinite-ammo shots; a teammate's unlimitedAmmo window would stall accrual under that primitive.",
+      "targetSet": "Owner-scoped resource; the 'Affects 1 random enemy' possession target is moot against the single boss.",
+      "nearestWrongModel": "Counting only Elegg's own hits (hitCount on self), or a pure per-100-hits capture with no 6 s cycle cap — either shifts the ghost ramp by a large factor (13 ghosts at ~78 s under 1/6s pacing vs far earlier uncapped).",
+      "distinguishingAssertion": "Read buffApply frames off the event log: the tier-2 gate (elemAdvantageDamagePct 35) must first appear no earlier than ~4 capture cycles (~24 s) under the 6 s-paced faithful reading; a pure-hit-count model applies it within the opening seconds and an own-hits-only model shifts it to a different, Elegg-cadence-derived frame.",
+      "inertness": "No ghost-gated buffApply of any tier before the first completed capture (first 100 team hits AND first cycle).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "1+ ghosts: ATK ▲ 16.2% of user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK, flat add scaled by the CASTER'S ATK ('of the skill user's ATK'), not the holder's.",
+      "durationSemantics": "'continuously' = permanent while the gate holds; no durationSec, no capture-tied 6 s expiry.",
+      "triggerIdentity": "passive block with resourceGate {name:'ghost', min:1}.",
+      "targetSet": "alliesOfElement Water, including self — in the control fixture (liter/crown/elegg/helm) Elegg is the only Water unit, so it is effectively self-only there; that is a fixture fact, not the model.",
+      "nearestWrongModel": "atkPct 16.2 (scales each holder's own ATK) instead of casterAtkPct; or target 'allies' unscoped by element.",
+      "distinguishingAssertion": "buffApply carries stat 'casterAtkPct' with value ≈ 0.162 × elegg.staticAtk (a FLAT ATK number — the harness flat-resolves caster-scaled stats at apply time), and targetSlug ∈ Water allies only. RED if stat is 'atkPct'/value 16.2, or if liter/crown/helm receive an apply.",
+      "inertness": "Non-Water allies get no apply; no apply while the ghost pool is 0; the buff must survive burst spends because of the min-1 ghost clamp (see burst line).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "4+ ghosts: Elem Adv Atk Dmg ▲ 35%",
+      "disposition": "FAITHFUL",
+      "scope": "elemAdvantageDamagePct — Damage-Up bucket credited ONLY under elemental advantage (live vs the Fire control boss for Water units; this is the taxonomy-8 case where advantage must exceed the clean ×1.10).",
+      "durationSemantics": "'continuously' = permanent while gated; additive with tier 1 ('each subsequent effect triggers all effects before it' — both tiers co-active at ≥4).",
+      "triggerIdentity": "passive block with resourceGate {name:'ghost', min:4}.",
+      "targetSet": "alliesOfElement Water including self.",
+      "nearestWrongModel": "Generic attackDamagePct 35 (credits without advantage / against any boss element), or replacing tier 1 instead of stacking with it at ≥4.",
+      "distinguishingAssertion": "buffApply stat 'elemAdvantageDamagePct' value 35 present iff pool ≥4, with the tier-1 casterAtkPct apply simultaneously live; against a hypothetical non-advantaged boss element the 35% moves zero damage while the 16.2% still moves it.",
+      "inertness": "At 1–3 ghosts only tier 1 is live; the 35% contributes nothing below 4 ghosts and nothing to non-Water teammates.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "When using Burst Skill: ATK ▲40% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK.",
+      "durationSemantics": "durationSec 10 — genuine wall-clock seconds (kit says 'sec', not rounds).",
+      "triggerIdentity": "burstCast (Elegg's OWN burst only) — 'Activates when using Burst Skill' is the literal burst-cast form, NOT fullBurstEnter.",
+      "targetSet": "self.",
+      "nearestWrongModel": "fullBurstEnter — the control fixture carries helm as co-B3, so any rotation helm bursts would wrongly re-apply Elegg's 40%; this is exactly the burst-cast/FB-enter over-credit divergence.",
+      "distinguishingAssertion": "Count buffApply {stat:'atkPct', value:40, targetSlug:'elegg-boom-and-shock'} events == count of Elegg burstCast events, and strictly < count of fullBurstStart events whenever helm takes a rotation.",
+      "inertness": "Rotations where the co-B3 (helm) bursts must produce zero applies of this buff.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Capture at max capacity: 1100% dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Instant flatDamage rider, 1100% of final ATK, single boss target; no core (text silent); crits at caster rate per rider convention; takes FB by landing timing (default ON — this is NOT burst-cast damage).",
+      "durationSemantics": "Instant, once per qualifying capture event.",
+      "triggerIdentity": "The SAME capture trigger as skill1's accrual, gated resourceGate {name:'ghost', min:13} read on the PRE-clamp pool — fires when a capture completes while already at cap (the capture itself is absorbed by the cap).",
+      "targetSet": "enemy (validator requires target 'enemy'; engine resolves the boss implicitly).",
+      "nearestWrongModel": "Firing on EVERY capture ungated (massive over-credit), firing once on first reaching 13, or being silently unreachable and shipped untested — with Elegg bursting on a 40 s cd and spending 6–9 ghosts per cast against ~1 ghost/6 s accrual, the pool plausibly NEVER sustains 13 in the standard rotation.",
+      "distinguishingAssertion": "Two-sided: (a) in the standard control rotation assert ZERO damage events with mult 1100; (b) in a patched variant that suppresses/delays Elegg's burst so the pool climbs to 13 by ~78 s, assert one 1100% event per subsequent capture cycle while the pool holds at 13.",
+      "inertness": "No 1100% event while pool <13; the line must not add a fixed per-fight nuke independent of the resource trajectory.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ghosts ≠13: 800% ×6; ghosts ▼6 min 1",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-cast sequential damage: 6 flatDamage hits of 800% with flavor 'sequential' (flavor is cross-unit load-bearing — a teammate's sequentialDamagePct/sequentialMultPct must scale these hits); burst-cast damage is FB-exempt (noFb) since it lands before the FB window opens.",
+      "durationSemantics": "Instant at cast; the resource spend is permanent state (delta −6, clamped so the pool never drops below 1).",
+      "triggerIdentity": "burstCast with resourceGate {name:'ghost', max:12} for the branch; a resource effect delta:−6 ordered AFTER the gated damage so the gate reads the pre-spend pool.",
+      "targetSet": "enemy (random-target flavor moot vs single boss — all 6 hits land on it).",
+      "nearestWrongModel": "One lump 4800% hit without sequential flavor; or the +50% FB major applied; or spending −6 without the min-1 floor, which would zero the pool and drop the tier-1 casterAtkPct buff after every burst.",
+      "distinguishingAssertion": "On an Elegg burstCast with pool <13: exactly 6 damage events of mult 800 with fbMajorApplied=false and sequential flavor; immediately post-cast the pool equals max(1, pre−6) and the tier-1 buff remains live (no gap in casterAtkPct).",
+      "inertness": "The 13-hit branch must not also fire; the tier-1 ATK buff must never fully lapse due to a burst spend.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ghosts =13: 800% ×13; ghosts ▼9",
+      "disposition": "FAITHFUL",
+      "scope": "Same shape as the other branch but 13 sequential 800% hits and a −9 spend — note 13−9=4 lands the pool exactly on the tier-2 threshold, so the 35% elemAdvantage buff survives a max-pool burst.",
+      "durationSemantics": "Instant at cast; permanent −9 pool change.",
+      "triggerIdentity": "burstCast with resourceGate {name:'ghost', min:13}; branches must be mutually exclusive and evaluated on the pre-spend pool (a spend ordered before the branch gates makes this branch unreachable — a real ordering bug class the schema warns about).",
+      "targetSet": "enemy.",
+      "nearestWrongModel": "Both branches firing on one cast (6+13 hits); the branch keyed to fullBurstEnter; or spend-before-gate ordering silently forcing the ≠13 branch forever.",
+      "distinguishingAssertion": "In a scenario engineered to have pool==13 at cast: exactly 13 damage events of mult 800 (and NOT 6 additional ones), post-cast pool ==4 with the elemAdvantageDamagePct 35 buffApply still in force.",
+      "inertness": "In the standard control rotation where the pool never reaches 13, this branch contributes zero events — but that must be asserted, not assumed (pair with the engineered-13 scenario so the branch is provably reachable).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ghost-capture-accrual-100-hits",
+    "skill1:tier1-casterAtkPct-16.2-water",
+    "skill1:tier2-elemAdvantageDamagePct-35",
+    "skill2:burstCast-self-atk-40-10s",
+    "skill2:capture-at-cap-1100pct-nuke",
+    "burst:branch-not13-800x6-spend6-min1",
+    "burst:branch-13-800x13-spend9"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Ability: Find and capture ghosts possessing the enemy.",
+      "Affects 1 random enemy."
+    ],
+    "skill2": [],
+    "burst": [
+      "Affects random enemy units"
+    ]
+  },
+  "notes": "Expected shared-prior misreads to reconcile, in priority order. (1) CAPTURE PACING is the biggest magnitude lever: 100 team-cumulative rounds accrue in a few seconds for a 5-wide comp, so whether the 6 s possession/'Recurring interval: 6 sec' caps captures at 1 per 6 s cycle decides the whole ghost ramp (tier-2 at ~24 s and cap-13 at ~78 s vs almost immediately). ⚑ this is a convention until pinned from footage; if the driver filed 'Possession lasts 6 sec' as pure flavor, that IS the divergence to surface. (2) skill2's 40% is burstCast, not fullBurstEnter — the control fixture's co-B3 helm makes this assertable (applies == Elegg burstCasts < fullBurstStarts). (3) The 16.2% is casterAtkPct — the harness flat-resolves it, so assert on the flat value ≈0.162×staticAtk, never the raw 16.2. (4) Resource ORDERING: burst spends (−6/−9) must sit after the branch gates and skill2's min-13 gate must read the pre-clamp/pre-spend pool; a mis-ordered spend silently kills the 13-branch and the 1100% nuke while everything still 'passes'. (5) The 1100% nuke and the 13-hit branch are plausibly UNREACHED in the standard rotation (spend 6–9/burst vs ~1 ghost/6 s accrual) — per the passing-tests-don't-justify-unreached-code rule, the test set needs an engineered pool==13 scenario, not just standard-rotation inertness. (6) Keep flavor 'sequential' on the burst hits — inert solo but load-bearing under any teammate's sequential-scoped buff. (7) teamAmmo as the accrual primitive ignores infinite-ammo shots; note the caveat if any fixture teammate carries unlimitedAmmo.",
+  "model": "claude-fable-5"
+}
