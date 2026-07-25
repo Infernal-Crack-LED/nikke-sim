@@ -69,7 +69,7 @@
 | `inFb` | 4 | modernia, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
-| `interval` | 6 | helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
+| `interval` | 7 | cinderella-crystal-wave, helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
 | `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 4 | grave, noir, tove, trina |

@@ -863,24 +863,24 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-17",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "RESOLVED 2026-07-17: FB-nuke riders now OWN-BURST-GATED via engine `ownBurstGate:'cast'` block gate (types.ts Block + sim.ts applyBlock) composing with the existing fullBurstEnter trigger — kept at FB-entry (keeps the +50% FB major, unlike re-keying to burstCast). The prior 'sole-B3 → movement ZERO' premise was WRONG: she alternates stage-3 with a co-B3 in BOTH graded comps (Liberalio T5, Rapi:RH T8), so the gate is board-MOVING and IMPROVES fit: T8 1.062 HOT→1.001, T5 1.009→0.978 (both within ±3%, board MAD 0.036→0.012). Regression snapshot updated for T5 ccw total (understood). Snipe-branch core:true still unvalidated (F2)."
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/cinderella-crystal-wave.json + scripts/kit-autonomy/manual-review/cinderella-crystal-wave.md."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "U1 core-strike rule fix; T5 1.09 / T8 1.25",
+      "evidence": "U1 core-strike rule fix; T5 1.09 / T8 1.25 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (judge claude-opus-5, re-graded after 2 board-inert text fixes); cross-family S2b(fable)/S5/S6/S7(opus) converged on all load-bearing lines; ownBurstGate FB-enter rider centerpiece triply discriminated",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
         "within3pct": 2
       },
       "reference": false,
-      "residual": "U3 open — elemental-advantage delivery type",
+      "residual": "U3 open — elemental-advantage delivery type | Snipe alt-path cluster: maxAmmo 1-vs-15 (40-round-expend clamp, kit-internal contradiction), snipe entry/exit state machine approx (static mode 100% uptime), Preparation reload clamp (no primitive); all non-validated (graded=MG)",
       "unmodeled": {
         "skill1": [
           "Activates when reloading to max ammunition capacity. Affects self. Preparation for Change: Reloading Time changes to fixed 3 sec for 6 sec. (Removed when the last bullet is fired.)"
@@ -894,18 +894,18 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9635
+            "ratio": 0.9636
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9764
+            "ratio": 0.9771
           }
         ],
         "n": 2,
-        "mean": 0.97,
-        "mad": 0.03,
-        "band": "±5%",
-        "temp": "COLD ▼"
+        "mean": 0.9703,
+        "mad": 0.0297,
+        "band": "±3% ✓",
+        "temp": "OK  ·"
       }
     },
     "crown": {

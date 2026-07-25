@@ -1,0 +1,225 @@
+{
+  "slug": "cinderella-crystal-wave",
+  "hasPierce": false,
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 62.13,
+          "chargeTimeSec": 1,
+          "chargeMultPct": 250,
+          "maxAmmo": 15,
+          "weapon": "SR",
+          "hasPierce": true,
+          "durationSec": 5,
+          "maxShots": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 24
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 900
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "teamAmmo",
+        "count": 200
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fillGauge",
+          "pct": 12
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 29
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 26.21,
+          "whileSwapped": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 26
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "ownBurstGate": "cast",
+      "swapGate": "swapped",
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1189.66
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "ownBurstGate": "cast",
+      "swapGate": "unswapped",
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 833.79,
+          "core": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 92,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 65,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 6000,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Additional Effect 2: Activates when performing a Full Charge attack. Expends ammo. Amount: 40 round(s).",
+      "Removal Condition: Reloading to max ammunition while in the Preparation for Change state.",
+      "Preparation for Change: Reload time is fixed at 3 sec for 6 sec. Removed upon firing the last bullet."
+    ],
+    "skill2": [
+      "Decoy: Creates an avatar with 70.34% of the skill user's final Max HP. This effect is continuous.",
+      "Removes Pinpoint.",
+      "Removes Destroy."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ WHOLE-PICTURE CONTRADICTION IN THE KIT TEXT (surfaced, not silently resolved): Snipe Mode's stated Max Ammunition Capacity is 15 rounds, yet a Full Charge attack 'Expends ammo. Amount: 40 round(s)'. 40 > 15, so a single full charge cannot be paid for out of the stated magazine. Two readings: (a) one full charge empties the Snipe magazine and forces the 3 sec fixed reload — i.e. exactly ONE snipe shot per activation (the reading modeled here, via maxShots:1); (b) the 40-round figure is a counter feed for the ammo-consumption economy (the S1 teamAmmo 200 trigger) rather than a magazine debit. Reading (b) would make Snipe Mode multi-shot and would materially raise her share. MUST be settled by watching the ammo counter in Snipe Mode on a recording before any tuning.",
+    "⚑ The engine has no reload-time CLAMP primitive (types.ts explicitly excludes 'reload speed is FIXED at x' from durationShots/reloadSpeedPct), so 'Preparation for Change' is unmodeled. Direction of the error is known and small on the base weapon: reloadFrames 171 = 2.85 s, so a 3 s clamp is ~-5% reload speed (a slight LOSS), while it is presumably a large GAIN on the Snipe weapon's own reload. Net sign unknown.",
+    "⚑ Pinpoint (coreDamagePct 26) and Destroy (partsDamagePct 26.21) are MUTUALLY EXCLUSIVE in the kit ('Removes Pinpoint' / 'Removes Destroy'). The schema has whileSwapped for Destroy but no 'whileUnswapped' complement, so Pinpoint is authored as an unconditional passive and OVER-CREDITS core damage during the (short) Snipe windows. Partly self-cancelling: partsDamagePct is inert on the partless v1 boss, so this override currently carries Pinpoint's 26% core for 100% of the fight instead of ~90-95%.",
+    "⚑ Which skill2 Full-Burst branch fires (1189.66% all-enemies vs 833.79% core-strike) depends entirely on whether she is in Snipe Mode at the FB-entry frame — the kit gives NO timing. Under the model here (one snipe shot per MG magazine, ~1-2 s of a ~15+ s cycle) she is USUALLY NOT swapped, so the 833.79% core branch dominates. If reading (b) above is right, or if the rotation happens to align the swap with FB entry, the 1189.66% branch fires instead — a large swing that is NOT a tuning knob but a timing fact to be read off footage.",
+    "⚑ The skill1 900%/5 sec line is encoded as a hitCount proxy, not a true wall-clock timer: the schema exposes no interval/periodic TriggerDef (the block-gate docs enumerate 'fullBurstEnter/hitCount/burstCast/…' with no periodic kind). Consequence: the proxy STALLS while she is in Snipe Mode (charge shots, not MG rounds) and speeds up/slows down with any fire-rate buff, neither of which the real 'every 5 sec' clause would do. A dot{atkPct:900, intervalSec:5, durationSec:fightLength} encoding would reproduce the cadence exactly but would lose RIDERCRIT eligibility (DoT ticks are non-crit by default and DOT_CRIT is gated OFF). Judge should adjudicate which proxy the engine prefers.",
+    "hasPierce is deliberately FALSE at the top level — Pierce is granted only inside the Snipe Mode weapon-change block ('Additional Effect 1: Gains Pierce'), so it is carried as weaponSwap.hasPierce (per-shot tag), not as a whole-fight flag."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (S6 cross-family packet); the driver's override, tests, DECISIONS, probe data and board output were NOT consulted. Structure: S1 = a reload-keyed Snipe Mode weapon swap (SR, 1 s fixed charge, 62.13% base × 250% full charge, Pierce) + the always-on Beauty-Full 24% Attack Damage + a 900% periodic hit (hitCount PROXY — no interval trigger exists in the schema) + the teamAmmo-200 → 12% gauge fill for the whole team. S2 = flat 29% ATK, the Destroy/Pinpoint parts-vs-core toggle pair, and the two mutually exclusive FB-entry nukes, both gated ownBurstGate:'cast' because the kit says 'entering Full Burst AFTER this unit uses her Burst Skill' — a bare fullBurstEnter would over-fire in any multi-B3 comp. Burst = 92% Attack Damage + 65% ATK for 10 s on herself plus a 6000% burst-cast nuke marked noFb (burst-cast damage lands before the FB window opens). Three things are load-bearing and unresolved: the 15-round-capacity-vs-40-round-cost contradiction (see caveats), the swap trigger/economy (the schema has no reload-to-max trigger; lastBullet is the proxy), and her MG cadence (which sets the hitCount threshold). Do not read any of the three as calibrated. Unmodeled: the reload-time clamp (no clamp primitive), the Decoy avatar (no HP pool on the v1 boss and it is NOT a shield — encoding it as one would falsely satisfy other kits' requiresShielded gates), and the Destroy/Pinpoint removal clauses."
+}
