@@ -1,0 +1,171 @@
+{
+  "slug": "arcana",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "burstCasters",
+        "stage": 3,
+        "element": "Electric"
+      },
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 180,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 5,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "burstCasters",
+        "stage": 3,
+        "element": "Electric"
+      },
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 180,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 6
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 50,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 7.5,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Electric"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 300
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 10,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Wheel of Fortune status is modeled as ownBurstGate:'cast'. WoF is granted ONLY by arcana's own burst (burst block 1 targets all Electric Code allies; arcana is Electric, so she self-applies it). 'self is in Wheel of Fortune status' at Full-Burst end therefore == 'arcana cast her own burst into this rotation'. Note the literal-duration race: WoF is 10 s from the stage-2 cast, while Full Burst ends ~10 s after the FB window OPENS (which is after her cast) — read literally the status has already expired at FB end and the entire gated half of the kit would be dead. Kit intent is clearly that it is live, so the gate is modeled as satisfied; verify against footage before trusting.",
+    "⚑ ownBurstGate is documented in types.ts as composing with a fullBurstEnter trigger; here it is used with fullBurstEnd. Confirm the engine evaluates the rotationCasters set at FB end the same way before trusting the gated blocks.",
+    "⚑ VISIBILITY: both 180% blocks (skill1 attackDamagePct, skill2 casterAtkPct) resolve to burstCasters{stage:3, element:'Electric'}. On any comp with no Burst-III Electric ally that set is EMPTY and the two largest numbers in this kit are completely inert — a control-comp board read says nothing about them. Grade this unit on a comp containing a B3 Electric carry.",
+    "⚑ Burst-block ordering: the 300% nuke is placed BEFORE the Judgement damageTakenPct block, so the nuke does NOT benefit from its own +10% damage-taken debuff. Unverified — swap the block order if popups show the burst hit at the boosted value.",
+    "⚑ The 300% burst hit is left with default crit/FB handling (no crit/noFb flags): burst-cast damage lands before the FB window opens, so the engine's timing-based FB major should exempt it automatically, and flat-damage riders crit at the caster's sheet rate under RIDERCRIT. Not measured.",
+    "⚑ Cadence: base RL cadence (ammo 6, reloadFrames 171, chargeFrames 60) is datamine-sourced and known-unreliable; arcana's own normal-attack contribution rides on it. She is a supporter, so this is small relative to the team buffs, but it is unverified."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. Structure: arcana is a Burst-II Electric supporter whose entire payload fires on fullBurstEnd. Three of her blocks are gated on 'self is in Wheel of Fortune status', which is a self-applied status from her own burst (burst block 1 grants it to all Electric Code allies, and she is Electric) — modeled as ownBurstGate:'cast', so those blocks only fire on rotations she personally bursted (her 40 s burst CD means that is not every rotation, partly offset by her own 'Death' 6 s burst CDR to all allies). The two 180% lines are further scoped to Burst-3 Electric allies who cast their burst that rotation (burstCasters{stage:3,element:'Electric'}) and are INERT on any comp without such an ally. The ungated lines (skill1 casterAtkPct 5% / 10 s to all allies, skill2 attackDamagePct 7.5% / 10 s to all allies) fire on every FB end regardless. Only one kit line is unmodeled: 'Cooldown of Skill 2 ▼ 75%' has no effect-schema channel (there is burstCdr but no skill-CD reduction primitive) — it is a real damage channel for allies whose skill 2 is modeled as an interval trigger, and is recorded verbatim in unmodeled.skill1."
+}

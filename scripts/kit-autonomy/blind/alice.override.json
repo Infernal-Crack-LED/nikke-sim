@@ -1,0 +1,67 @@
+{
+  "slug": "alice",
+  "skill1": [
+    {
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesHighestAtk",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 11.67,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamageMultPct",
+          "value": 7,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 80.15,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 55.12,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "S2a (>80% HP): Gain continuous Pierce.",
+      "S2b (<80% HP): Continuously recover HP by 8.12% of attack damage."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ NO chargeSpeedPct StatKey exists in the schema. Both 'Charge Speed ▲' lines (S1 11.67%, burst 80.15%) are proxied as attackSpeedPct — a placeholder. If the engine has no charge-speed→shot-count path, these are effectively INERT; if it does, the correct stat may differ in magnitude/semantics. This is a charge SR whose whole identity is charge speed, so this is the single most load-bearing uncertainty in the override.",
+    "⚑ S1 target 'alliesHighestAtk' assumed to exist as the mirror of alliesLowestAtk (comment in the redacted schema references 'N highest-ATK ally' carriers). Kit says 'highest FINAL ATK' → final-ATK ranking, no excludeSelf (Alice can be one of the 2).",
+    "S2 fully unmodeled & inert in v1: continuous Pierce is inert on a partless boss; the <80%-HP self-lifesteal branch never triggers (boss deals no damage, Alice stays >80% HP) and heals self only (no on-recovery consumer, no HP pool)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Alice (alice) SR/Fire/Attacker/B3 charge unit. S1: FB-enter grant of Charge Speed + Charge Damage to the 2 highest-final-ATK allies for 10s. Burst: self Charge Speed + ATK for 10s (own-burst / burstCast trigger). Charge-speed lines proxied to attackSpeedPct pending confirmation of an engine charge-speed path — see caveats. S2 (pierce + conditional self-lifesteal) inert in v1. Intended save: scripts/kit-autonomy/blind/alice.override.json + alice.audit.json."
+}

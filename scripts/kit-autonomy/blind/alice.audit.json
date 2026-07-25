@@ -1,0 +1,86 @@
+{
+  "slug": "alice",
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (team FB entry)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 2 allies highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesHighestAtk count:2, final-ATK ranking, self-eligible ⚑"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲11.67% ... 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackSpeedPct 11.67 dur10 — PROXY, no chargeSpeedPct stat ⚑"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲7% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamageMultPct 7 dur10 (scales base charge damage)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": ">80% HP: Gain continuous Pierce",
+      "status": "SKIPPED",
+      "effectOrReason": "pierce grant inert on partless v1 boss; gate always true (Alice >80% HP) but no damage effect"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "<80% HP: recover 8.12% of atk dmg",
+      "status": "SKIPPED",
+      "effectOrReason": "self-lifesteal; <80% branch never triggers (no boss damage), no HP pool, no on-recovery consumer"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target self for both burst buffs"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Speed ▲80.15% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackSpeedPct 80.15 dur10 — PROXY, no chargeSpeedPct stat ⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲55.12% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 55.12 dur10, self, own burst window"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1.effects[0].stat / override.burst.effects[0].stat (Charge Speed)",
+      "estimate": "attackSpeedPct at kit face values (11.67 / 80.15)",
+      "reasoning": "No chargeSpeedPct StatKey in the schema, but 'Charge Speed ▲' is a weapon-state modifier that changes charged-shots-fired → it IS damage and must not be silently skipped. attackSpeedPct is the nearest generic 'attack faster' proxy.",
+      "recipe": "Confirm whether the engine maps any StatKey to chargeFrames for charge weapons (inspect sim.ts charge path / a known charge-buffer's override, e.g. snow-white). If a real charge-speed stat/handling exists, re-point both buffs to it and recheck magnitude semantics ('% of skill user's Charge Speed' for S1 is a caster-relative add). If no path exists, move both lines to unmodeled."
+    },
+    {
+      "field": "override.skill1.target (alliesHighestAtk)",
+      "estimate": "{kind:'alliesHighestAtk', count:2}, self-eligible",
+      "reasoning": "The redacted schema shows only alliesLowestAtk but its comment names 'N highest-ATK ally' carriers (miranda/soda), implying a mirror kind. Kit text 'highest FINAL ATK' → final-ATK ranking; no 'except self' clause so Alice can be one of the 2.",
+      "recipe": "Verify the exact target kind name in types.ts (alliesHighestAtk vs a shared kind + direction flag). Confirm final-ATK vs base-ATK ranking and self-inclusion against the harness (buffApply targetIdx set)."
+    },
+    {
+      "field": "cadence tuple (charge SR)",
+      "estimate": "datamined chargeFrames 90 / reloadFrames 141 / ammo 6 as-is",
+      "reasoning": "Datamine cadence fields (rate_of_fire, reloadFrames) are known-unreliable; effective charge cadence gates how much the charge-speed/charge-damage buffs actually convert to shots.",
+      "recipe": "Measure Alice's real charged-shot cadence from footage (shots/sec, effect of the 80.15% burst charge-speed) and pin the effective chargeFrames before trusting any charge-speed-driven damage number."
+    },
+    {
+      "field": "override.burst.trigger (burstCast vs fullBurstEnter)",
+      "estimate": "burstCast (self-buffs in own burst block)",
+      "reasoning": "Self ATK/Charge-Speed buffs in Alice's OWN burst block fire only on rotations she bursts; keying to fullBurstEnter would over-credit in multi-B3 comps. Alice is the graded-comp B3, so both resolve the same there.",
+      "recipe": "Confirm burst self-buffs apply at her cast (not any team FB) via a two-B3 team test in the harness (burstCast event vs fullBurstStart)."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

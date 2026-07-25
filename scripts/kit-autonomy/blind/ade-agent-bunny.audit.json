@@ -1,0 +1,129 @@
+{
+  "slug": "ade-agent-bunny",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when landing Full Charge att",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Header → trigger {kind:'shotFired'} (every SR trigger pull is a full charge, chargeFrames 60); target {kind:'allies'} (includes self, no excludeSelf). 'within the effective range' assumed always true vs the single boss."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 15.2% of the skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 15.2, durationSec 5, target allies. 'of the skill user's ATK' = flat add scaled off CASTER ATK → casterAtkPct, NOT atkPct."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacking w/ Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Header → trigger {kind:'shotFired'}; target {kind:'self'} ('Affects self')."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Spy Lens: stacks up to 10 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Stack COUNT modeled as resource {name:'spyLens', delta:+1} per full charge, capped at 10 — the only consumer is skill2's max-stack gate. Placed in skill1 so the increment dispatches BEFORE skill2's gate reads the pool (slot order), giving the correct 10th-charge unlock."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Minimum Effective Range ▲ 4.44%",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey for effective/minimum range in types.ts; the +30% full-range bonus is engine-automatic and takes no kit modifier. Verbatim line recorded in unmodeled.skill1. NOT a weapon-state modifier in the HARD-RULE sense — it changes no shot count, no weapon, no cadence."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when landing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Header → trigger {kind:'shotFired'}; target {kind:'allies'}."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Pierce Damage ▲ 18.36% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 18.36, durationSec 5, allies. Kept despite the 'inert in v1' note — it is live for any Pierce-tagged ally, including Ade herself once hasPierce is set."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates only if Spy Lens is at max",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Gate → resourceGate {name:'spyLens', min:10} on a self block; target {kind:'self'} ('Affects self')."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Gains Pierce. This effect is continuous",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Top-level hasPierce:true (the only Pierce channel that is not swap-scoped or one-shot). Cannot be resource-gated — the ~12 s pre-max window is over-credited; see caveats."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 16% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 16 (self-scaling, no 'of the skill user's' qualifier), durationSec 5 re-applied per full charge under the ≥10-stack gate — 'continuously' is realized as a per-charge refresh whose 5 s window outlasts the 2.35 s reload, so it never lapses while she fires."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Header parsed; its only payload (Min Effective Range) is skipped, so no self block is emitted. Trigger for the slot is {kind:'burstCast'} — no 'entering Full Burst' clause anywhere in the burst text."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Minimum Effective Range ▲ 55.56%/10s",
+      "status": "SKIPPED",
+      "effectOrReason": "Same reason as S1b — no range StatKey. Verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 55.04% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 55.04, durationSec 10, target allies (Damage Up bucket), trigger burstCast."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Pierce Damage ▲ 10.13% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 10.13, durationSec 10, allies — same block as the Attack Damage line ('Affects all allies' covers both)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[1].resourceGate / resources[0]",
+      "estimate": "10 stacks reached at ~12-13 s (≈10 full charges: 6 shots in ~6-7 s + 2.35 s reload + 4 more), then held for the rest of the fight → gate open ~93% of a 180 s fight.",
+      "reasoning": "⚑ Depends entirely on Spy Lens stack-expiry semantics, which the prose does not settle ('stacks up to 10 time(s) and lasts for 5 sec'). REFRESH-ON-STACK (assumed) → reload gap 2.35 s < 5 s so the chain never breaks and 10 is reachable. PER-STACK-INDEPENDENT expiry → only ~5 stacks concurrent (5 s ÷ ~1.0-1.2 s cycle) and the whole S2b block (Pierce + ATK ▲16%) is DEAD FOREVER. The kit's own numbers hint at refresh-on-stack: 10 × 4.44% = 44.4% is clearly designed to be a reachable near-peer of the burst's 55.56%.",
+      "recipe": "Record a solo Ade fight; watch the Spy Lens buff icon's stack pip — note the timestamp it first reads 10 and whether it ever falls back. If it caps at ~5 and oscillates, flip S2b OFF entirely (delete the block + hasPierce) rather than lowering the gate."
+    },
+    {
+      "field": "override.hasPierce",
+      "estimate": "true, unconditional (real: off for the first ~12 s)",
+      "reasoning": "⚑ Pierce is gated on max Spy Lens but the engine's only unconditional-pierce channel is the top-level flag; `pierceModes` keys on user-selectable modes, not stacks. Over-credits her own consumption of the S2a 18.36% / burst 10.13% Pierce Damage buffs during the ramp.",
+      "recipe": "Same recording as above — once the stack-cap timing is pinned, if the ramp turns out long (>25 s) ask the owner whether to add a stack-gated pierce primitive rather than shipping the unconditional flag."
+    },
+    {
+      "field": "cadence (chargeFrames 60 / reloadFrames 141 / ammo 6)",
+      "estimate": "~1.0-1.2 s per full-charge shot cycle, 6 shots then a 2.35 s reload → ~8.4 s per magazine cycle, ~0.72 charges/s",
+      "reasoning": "⚑ Datamine-unreliable field class (rate_of_fire / reloadFrames). No rate_of_fire was supplied at all, so the per-shot post-charge recovery is a pure guess. This cadence is LOAD-BEARING twice over: it sets the Spy Lens ramp AND the refresh rate of all three per-charge ally buffs (a cycle slower than 5 s would let the 15.2% / 18.36% / 16% buffs LAPSE between shots).",
+      "recipe": "Frame-count the ammo counter 6→0 in a solo recording (ammo counter measures shots/sec directly); do NOT infer it from burst-gauge or damage totals."
+    },
+    {
+      "field": "skill1[*].trigger / skill2[*].trigger — 'shotFired' as full-charge",
+      "estimate": "1 activation per trigger pull",
+      "reasoning": "⚑ Both recurring blocks are keyed 'Full Charge', not 'attack'. `shotFired` = every trigger pull; the mapping is exact only if the engine never fires an uncharged SR shot. If partial charges exist, all three ally buffs over-fire (harmlessly, since they refresh) but the Spy Lens ramp is TOO FAST — the max-stack gate would open early.",
+      "recipe": "Check whether sim.ts emits shotFired for sub-full-charge SR shots; if it does, gate these blocks on the charge-complete path instead."
+    },
+    {
+      "field": "unmodeled.skill1[0] / unmodeled.burst[0] — Minimum Effective Range",
+      "estimate": "0 damage impact as modeled; true impact unknown (potentially the ±30% full-range bonus on her own shots and the 'within effective range' gate on both ally buffs)",
+      "reasoning": "⚑ 44.4% (stacked) + 55.56% (burst) of a range stat with no schema representation. Skipped honestly rather than proxied into a damage stat — proxying a range buff as, say, attackDamagePct would be exactly the fabrication the prime directive forbids. But this is ~100 percentage points of a kit stat going to zero, so it is the most likely place this override under-models her.",
+      "recipe": "Owner ruling needed on whether Minimum Effective Range gates the engine's +30% range bonus for SRs; if yes, it needs a real StatKey (engine-modeling-gaps entry) before Ade can be calibrated."
+    },
+    {
+      "field": "override.resources / skill2[1].resourceGate (primitive risk)",
+      "estimate": "n/a — structural",
+      "reasoning": "⚑ Not a magnitude flag: `resources` + `resourceGate` were chosen over a `passive` + `rampSec` approximation because they model the actual stack mechanism and are queryable. If validate-overrides rejects `resources` in an OverrideFile, the fallback is a self `passive` buff atkPct 16 with rampSec ≈ 12 (which over-credits the ramp window by ~half, ≈0.5% of fight-total ATK-time — negligible either way).",
+      "recipe": "Run validate-overrides on a scratch copy (NOT in src/skills/overrides/ during a parallel run); if `resources` is rejected, swap to the rampSec form and keep the caveat text."
+    }
+  ],
+  "model": "claude-opus-5"
+}

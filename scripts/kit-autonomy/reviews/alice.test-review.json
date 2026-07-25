@@ -1,0 +1,106 @@
+{
+  "slug": "alice",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲ 11.67% of the skill user",
+      "disposition": "FAITHFUL",
+      "scope": "Charge-speed stat only — cadence-relevant solely for charge weapons (SR/RL); damage-inert on non-charge recipients but the buff must still APPLY to them",
+      "durationSemantics": "10 sec wall-clock (genuine durationSec; not rounds/stacks)",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' = ANY team FB, including rotations where alice did not burst. NOT burstCast.",
+      "targetSet": "2 allies with highest FINAL ATK; no 'except self' clause → self-inclusive; kit literally says 'final ATK' → DYNAMIC final-ATK ranking (re-ranked at apply time, so her own burst ATK ▲55.12% affects whether she ranks top-2)",
+      "nearestWrongModel": "Keyed to burstCast (fires only on her rotations — under-credits every helm-led FB in the control comp), or excludeSelf, or static base-ATK ranking, or plain +11.67% instead of caster-relative ('of the skill user's Charge Speed')",
+      "distinguishingAssertion": "Count fullBurstStart events; assert a charge-speed buffApply with casterIdx==alice's slot fires at EVERY FB entry (count == total FB count, including FBs where alice cast no burstCast event), and that alice's own slot appears in the targetIdx set when her final ATK ranks top-2 (post-burst rotations)",
+      "inertness": "Zero application outside FB entries; zero damage delta attributable to the buff on a non-charge-weapon recipient (buff present, damage unchanged)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 7% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Charge-damage bucket ONLY (chargeDamageMultPct-style, scales the charge component) — never normal-attack, skill, or burst damage",
+      "durationSemantics": "10 sec wall-clock",
+      "triggerIdentity": "fullBurstEnter (same ■ header as the charge-speed line — any team FB)",
+      "targetSet": "Same 2-highest-final-ATK ally set, self-inclusive",
+      "nearestWrongModel": "Generic attackDamagePct (credits ALL damage incl. non-charge hits and any flat riders), or scoped to self only",
+      "distinguishingAssertion": "Toggle the line via withPatchedOverride: only alice's charge-bucket damage events change mult (by the 7% charge-bucket factor); totals for a non-charge recipient (e.g. liter/crown) move ZERO; under the nearest-wrong generic encoding her non-charge buckets would also move — RED",
+      "inertness": "Non-charge damage buckets and non-charge-weapon teammates' totals must not move",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Gain continuous Pierce (above 80% HP)",
+      "disposition": "FAITHFUL",
+      "scope": "Pierce as a HIT TAG on her own shots (Pierce-Damage-▲ bucket eligibility), not a stat buff; v1 damage-inert (partless boss, pierceDamagePct parsed-but-inert)",
+      "durationSemantics": "Permanent in v1 — boss deals no damage, HP never drops below 80%, so the '>80% HP' gate is ALWAYS satisfied; encode as a plain passive, not an HP state machine",
+      "triggerIdentity": "passive (the HP clause is a condition that is constant-true in v1; there is no HP-damage model to flip it)",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoded as a pierceDamagePct stat BUFF (a Damage-Up stat her kit does not grant), or left conditional/off because 'HP state is unmodeled', or dropped entirely with no unmodeled record",
+      "distinguishingAssertion": "Her shots carry the pierce tag from t=0 for the whole fight (queryable on damage events / via a patched-in ally Pierce Damage ▲ probe becoming eligible on her hits); AND inertness: toggling the line yields ZERO total-damage delta on the control comp",
+      "inertness": "Must move NOTHING on the control comp (no pierce-damage carrier present; partless boss) — a nonzero delta means it was mis-encoded as a damage stat",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recover HP by 8.12% of attack damage",
+      "disposition": "UNMODELED",
+      "scope": "Self lifesteal, gated on 'HP falls below 80%' — a branch that can never activate in v1 (no unit takes damage)",
+      "durationSemantics": "Continuous while below 80% HP — state never reached",
+      "triggerIdentity": "HP-threshold state entry (unreachable in v1)",
+      "targetSet": "self",
+      "nearestWrongModel": "Modeling it as an unconditional self-heal that emits recovery events — DANGEROUS ONLY IF mis-targeted: crown ('when recovery takes effect') sits in the control comp, so a heal wrongly emitted to allies would spuriously fire her recovery trigger",
+      "distinguishingAssertion": "No heal events from alice's skill2 appear in the event log; crown's recovery-triggered blocks fire at exactly their alice-absent baseline count",
+      "inertness": "Crown's recovery-consumer cadence must be identical with alice's override present vs a stub — any delta means a heal leaked to allies",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Speed ▲ 80.15% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Her OWN charge cadence — the kit-defining line. chargeFrames 90 → ~90/1.8015 ≈ 50f charge during the window (further reduced if her self-inclusive S1 +11.67% co-stacks). This is a WEAPON-STATE modifier: it IS damage because it gates shot count (taxonomy #6).",
+      "durationSemantics": "10 sec wall-clock",
+      "triggerIdentity": "burstCast — self mode inside her OWN burst block. NOT fullBurstEnter. The control comp has helm as co-B3, so the two readings diverge on every alternating rotation.",
+      "targetSet": "self",
+      "nearestWrongModel": "Two-headed: (1) keyed to fullBurstEnter — fires on helm-led FBs too, over-crediting ~2× the uptime; (2) the buff APPLIES but never feeds the charge-time path (inert stat mapping — the redacted StatKey list shows no explicit chargeSpeed key, so an encoder could park it on a key the engine ignores)",
+      "distinguishingAssertion": "BEHAVIORAL, not key-name: count alice `shot` events in the 10s window after HER burstCast — must rise to the +80.15% cadence vs an equal-length no-burst window (reload-aware: ammo 6, reloadFrames 141, so count across the full window). AND on rotations where helm bursts and alice does not, alice's cadence stays at baseline (no buffApply concurrent with helm's burstCast).",
+      "inertness": "No cadence lift and no buffApply on helm-led rotations; nothing applied to allies",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 55.12% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK (atkPct — scales her own ATK), all her damage buckets",
+      "durationSemantics": "10 sec wall-clock",
+      "triggerIdentity": "burstCast (same own-burst block)",
+      "targetSet": "self",
+      "nearestWrongModel": "fullBurstEnter keying (applies on every team FB incl. helm's — over-credits in the co-B3 control comp), or casterAtkPct flat-add semantics instead of own-ATK percentage",
+      "distinguishingAssertion": "buffApply(atkPct, 55.12, target==alice) occurs exactly once per alice burstCast event and NEVER on FBs entered via helm's burst; her damage-event mult inside her window reflects the ATK lift, and the count of applications == count of her burstCast events (not the FB count)",
+      "inertness": "Helm-led rotations show no 55.12 application; no ally receives it",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ChargeSpeed▲11.67%-of-caster",
+    "skill1:ChargeDamage▲7%",
+    "skill2:continuous-Pierce",
+    "burst:ChargeSpeed▲80.15%",
+    "burst:ATK▲55.12%"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "■ Affects self. Activates when HP falls below 80%. Continuously recover HP by 8.12% of attack damage."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to force apart: (1) burstCast vs fullBurstEnter on BOTH burst self-buffs — the control comp deliberately carries helm as co-B3, so the wrong keying roughly doubles uptime; any test that only checks 'buff appears during FB' is blind to it — the assertion must anchor to alice's own burstCast events and assert ABSENCE on helm-led rotations. (2) Charge speed must be verified as a shot-count/cadence change, not a buffApply existence check: the redacted StatKey list contains no chargeSpeed key (yet removeOnReload's comment references a cinderella 'Charge Speed toggle', so the engine has SOME channel — possibly attackSpeedPct or a stripped key); a buff parked on an engine-ignored key would pass an apply-only test while contributing zero damage. Assert cadence over a reload-inclusive window (ammo 6, reloadFrames 141 interact with faster charging). (3) S1 self-inclusion + DYNAMIC 'final ATK' ranking: after her own burst (+55.12% ATK) she should rank top-2 and receive her own S1 charge speed/charge damage, stacking with the 80.15%; an excludeSelf or base-ATK-static encoding drops that stack. Stacking convention for 80.15%+11.67% (additive-in-stat vs multiplicative on charge time) is a ⚑ convention — pin from footage if a cadence read disagrees. (4) '11.67% of the skill user's Charge Speed' is caster-relative wording; nearest-wrong is a plain target-self 11.67% — magnitude is small but the encoding should snapshot the caster stat. (5) Pierce is a hit TAG (Pierce-Damage-▲ eligibility), not a stat buff, and must be INERT on the control comp — a total-damage delta from the pierce line is itself a failure signal. (6) The skill2 heal branch is unreachable in v1 (no HP damage) and must emit no recovery events — crown is a recovery-consumer in the control comp, so a mis-targeted heal would corrupt her cadence; assert crown's recovery-trigger count at baseline.",
+  "model": "claude-fable-5"
+}

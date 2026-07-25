@@ -1,0 +1,151 @@
+{
+  "slug": "ada",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 60% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK grant, but sourced from the CASTER's ATK — a flat add of 60% of Ada's ATK, not a scale of the target's own ATK.",
+      "durationSemantics": "durationSec: 10 (wall-clock, per FB entry, refreshed each FB).",
+      "triggerIdentity": "fullBurstEnter (text: 'when entering Full Burst') — fires on ANY team FB, including rotations where helm bursts, NOT burstCast.",
+      "targetSet": "burstCasters stage III ('all Burst 3 allies who previously used their Burst Skill') — only the B3(s) who actually cast this rotation; includes Ada herself on her own rotations; helm receives it on helm's rotations.",
+      "nearestWrongModel": "stat atkPct (scales the target's own ATK) instead of casterAtkPct; and/or target = all B3 allies regardless of whether they cast (over-credits the idle co-B3 every rotation).",
+      "distinguishingAssertion": "onEvent buffApply at each fullBurstStart: stat casterAtkPct value 60 applied ONLY to the rotation's B3 caster(s). In controlComp(ada) with helm co-B3, on a helm-burst rotation helm gets the buff and ada does NOT (and vice versa). Damage delta on helm from this buff scales with ADA's staticAtk (patch ada's ATK via withPatchedOverride-adjacent means → helm's flat add moves), not helm's.",
+      "inertness": "Must NOT apply to liter (B1) or crown (B2) ever; must NOT apply to a B3 that did not cast this rotation.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "True Damage ▲ 50% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "trueDamagePct — boosts TRUE-flavored damage only. On Ada it feeds her S2 grenade (true-flavored); on a target with no true-damage source it is inert.",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "fullBurstEnter, same block as the ATK line.",
+      "targetSet": "burstCasters stage III (same as line 1).",
+      "nearestWrongModel": "Encoded as generic attackDamagePct (boosts ALL damage of the target, including normal RL shots and helm's SR shots) instead of true-flavor-scoped trueDamagePct.",
+      "distinguishingAssertion": "With the buff live, damage events flavored 'true' (the S2 grenade) grow by the bucket math; ada's NORMAL RL shot damage per hit is UNCHANGED by toggling this line via withPatchedOverride. On a helm-burst rotation the buff applies to helm but moves ZERO helm damage (helm has no true-flavored hits).",
+      "inertness": "Normal-attack and charge-bucket damage must not move when this value is zeroed; helm total must be insensitive to it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 10% of damage as HP",
+      "disposition": "UNMODELED",
+      "scope": "Lifesteal on the B3 burst caster(s) — no HP pool in v1, offensively inert as a stat.",
+      "durationSemantics": "durationSec: 10 window.",
+      "triggerIdentity": "Same fullBurstEnter block.",
+      "targetSet": "burstCasters stage III.",
+      "nearestWrongModel": "Silently dropped with no unmodeled record; OR modeled as a per-hit 'heal' effect that spams recovery events every damage tick, spuriously feeding an on-recovery consumer.",
+      "distinguishingAssertion": "TANDEM CHECK (taxonomy #4): targets are B3 casters only — crown (the known 'recovery'-trigger consumer) is B2 and can NEVER be a target, so no recovery events need be emitted for her sake. Assert zero 'recovery'-kind consequences: crown's on-recovery blocks fire the same count with this line present vs absent. Line must appear verbatim in `unmodeled.skill1`.",
+      "inertness": "Must move zero damage anywhere; must not emit recovery events that trip crown.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Flash Grenade Toss: 420% … True Damage",
+      "disposition": "FAITHFUL",
+      "scope": "flatDamage atkPct 420, flavor 'true', single enemy. Rider defaults per methodology #9: no core, crits at caster rate, noRange (engine force-sets), FB +50% by TIMING — since it only fires during FB, fbMajorApplied should be true on every proc.",
+      "durationSemantics": "Repeating while FB is live; each proc instant.",
+      "triggerIdentity": "interval sec:2 gated fbGate:'inFb' ('Activates during Full Burst … every 2 sec'). ⚑ first-fire phase within the FB window (t=FB+2 vs t=FB+0) is a convention — pin from footage if cadence-sensitive.",
+      "targetSet": "enemy (boss).",
+      "nearestWrongModel": "Ungated interval:2 running the whole fight (fires outside FB too — roughly doubles-to-triples proc count over a rotation), OR a single proc per FB keyed to fullBurstEnter, OR noFb:true stripping the +50% it earns by timing.",
+      "distinguishingAssertion": "Count damage events with srcSlot skill2 / flavor 'true': ~5 per 10s FB window (2s cadence), ZERO between fullBurstEnd and the next fullBurstStart. Every such event has inFullBurst true and fbMajorApplied true. Zeroing trueDamagePct sources must scale these events; normal shots untouched.",
+      "inertness": "No grenade events outside FB; no core bucket on grenade hits; rangeApplied false.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "activation time condition ▼ 1 sec for 10 sec",
+      "disposition": "GAP",
+      "scope": "Reduces the grenade's interval from 2s to 1s — i.e. DOUBLES proc rate for 10s. This is a proc-economy line (taxonomy #6 analog): it gates hit count, never 'defensive/skip'.",
+      "durationSemantics": "durationSec: 10 from Ada's own burst cast.",
+      "triggerIdentity": "burstCast, self ('Activates when using Burst Skill' in her own S2 block) — NOT fullBurstEnter. Diverges exactly when the co-B3 exists: on helm-burst rotations the speed-up must NOT be live.",
+      "targetSet": "self (modifies her own S2 interval).",
+      "nearestWrongModel": "Keyed to fullBurstEnter so every FB gets 1s cadence (over-credits ~2× grenade count on all non-Ada rotations); OR dropped because the schema's interval trigger has a static `sec` and no interval-modifier primitive — a silent drop halves grenade output on Ada rotations.",
+      "distinguishingAssertion": "Grenade event count per FB window: ~10 in an FB entered off Ada's own burstCast (1s cadence, 10s overlap), ~5 in an FB entered off helm's burst (2s cadence). Both counts asserted from onEvent, keyed by which slot emitted burstCast that rotation.",
+      "inertness": "Helm-rotation grenade cadence stays 2s; nothing else in the kit moves.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 40% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic atkPct on self (scales own ATK — distinct stat from skill1's casterAtkPct flat add; both can be live simultaneously on Ada's own rotations).",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast (self buff inside her OWN burst block; no 'Activates when' clause needed — the burst header is the trigger). Fires only on rotations Ada bursts; cd 40s means at most every other ~20s rotation, alternating with helm.",
+      "targetSet": "self.",
+      "nearestWrongModel": "fullBurstEnter — applies every team FB including helm's rotations (over-credits ~2× uptime in the control comp).",
+      "distinguishingAssertion": "buffApply stat atkPct value 40 target ada occurs ONLY on frames where a burstCast event with ada's slot precedes it; count of these applications over the fight equals ada's burstCast count, not the fullBurstStart count.",
+      "inertness": "No application on helm-burst rotations; no ally receives it.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage ▲ 42% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "trueDamagePct self — additive in the same Damage-Up bucket as skill1's 50% when both live (Ada-burst rotations: 92 additive points feeding her true-flavored grenade only).",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast self.",
+      "targetSet": "self.",
+      "nearestWrongModel": "Generic attackDamagePct (would boost her RL normals + the 1500% charge round, a large over-credit), or fullBurstEnter keying.",
+      "distinguishingAssertion": "Zeroing this value changes ONLY grenade-event damage on Ada-burst rotations; her normal/charge-bucket per-shot damage and all helm-rotation grenade damage are bit-identical.",
+      "inertness": "Normal + charge damage; helm rotations.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Speed ▼ 300% … for 1 round(s)",
+      "disposition": "FIX",
+      "scope": "Weapon-state modifier (taxonomy #6) — this IS damage: it slows the next charge shot, costing shot economy inside her own buff window. chargeSpeedPct −300 on self.",
+      "durationSemantics": "'for 1 round(s)' = ROUND COUNT → durationShots: 1. NEVER durationSec. The buff must survive the entire (lengthened, multi-second) charge of the next round and drop right after that round fires.",
+      "triggerIdentity": "burstCast self (rider of Special Modification inside her own burst).",
+      "targetSet": "self.",
+      "nearestWrongModel": "durationSec: 1 — the slow expires before the ~4s charge completes, so the round fires at normal speed AND (fatally, if the paired damage line shares the encoding) the +1500% applies to zero shots. Second-order trap: naive chargeSpeed math 1+(−300/100) = −2 gives a negative/NaN charge time; the faithful reading is charge time ×(1+3)=×4 (chargeFrames 60 → ~240f ≈ 4s). ⚑ verify the engine's negative-chargeSpeed handling explicitly.",
+      "distinguishingAssertion": "After each ada burstCast, the gap between her burst frame and her NEXT shot event ≈ 4× base charge time (~240f), and the SECOND post-burst shot returns to ~60f charge cadence. Under durationSec:1 the first-shot gap collapses to ~60f — red.",
+      "inertness": "Exactly one round slowed per burst; ammo economy otherwise unchanged; no effect on helm rotations.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Damage ▲ 1500% … for 1 round(s)",
+      "disposition": "FIX",
+      "scope": "chargeDamagePct +1500 (ADDITIVE percentage points in the charge bucket, per schema) scoped to charge-bucket damage only — never normal or grenade damage.",
+      "durationSemantics": "durationShots: 1 — expires right after the one mega round fires, spanning however long its slowed charge takes (and a reload if the burst lands on an empty mag).",
+      "triggerIdentity": "burstCast self, same Special Modification rider as the speed line — the two must land and expire TOGETHER on the same single round.",
+      "targetSet": "self.",
+      "nearestWrongModel": "durationSec: 1 (window closes mid-charge → the mega shot never happens, silently deleting the kit's signature nuke); or chargeDamageMultPct (scales by BASE charge damage — different arithmetic); or durationShots forgotten so ALL subsequent rounds carry +1500% (massive over-credit).",
+      "distinguishingAssertion": "Exactly ONE post-burst shot per ada burstCast carries the boosted charge bucket (per-hit damage ~an order of magnitude above her normal charge shots, landing seconds after cast); shot #2 after the burst is back at baseline charge damage. Assert both the boosted count == her burstCast count AND shot#2's per-hit value.",
+      "inertness": "Grenade (true) damage and normal-bucket damage untouched; only 1 round per burst boosted.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ATK ▲ 60% of skill user's ATK (fullBurstEnter → burstCasters III)",
+    "skill1:True Damage ▲ 50% (true-flavor scoped)",
+    "skill2:Flash Grenade Toss 420% true @ interval 2s, inFb-gated",
+    "skill2:activation time ▼1s for 10s (burstCast self → 1s cadence)",
+    "burst:ATK ▲ 40% self (burstCast)",
+    "burst:True Damage ▲ 42% self (burstCast)",
+    "burst:Charge Speed ▼ 300% for 1 ROUND (durationShots:1)",
+    "burst:Charge Damage ▲ 1500% for 1 ROUND (durationShots:1)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Recovers 10% of damage as HP for 10 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to hunt: (1) THE trap is 'for 1 round(s)' on both Special Modification effects — durationSec:1 is red because the slowed charge itself takes ~4s, so a seconds encoding yields ZERO boosted shots; the faithful encoding is durationShots:1 with the buff surviving across the lengthened charge (helm's '10 round(s)' precedent in the schema comment shows durationShots is the sanctioned primitive). (2) Charge Speed ▼300% arithmetic: a 1+pct/100 formula goes NEGATIVE — the engine's handling must be inspected/asserted (faithful ≈ charge time ×4); a clamp-to-instant or NaN silently changes shot economy. (3) skill1's ATK is 'of the skill user's ATK' → casterAtkPct flat add, and its target is burstCasters(III) — with helm as co-B3 in controlComp, an all-B3 or fullBurstEnter-to-everyone encoding over-credits the non-casting B3 every rotation; conversely the driver may key it burstCast and under-credit helm rotations. (4) skill2's ▼1s rider is burstCast-gated — a fullBurstEnter keying doubles grenade count on every helm rotation; also the schema has NO interval-modifier primitive, so watch for a silent drop (halves Ada-rotation grenades) or a hacky always-1s encoding (over-credits helm rotations) — either divergence is load-bearing and must be surfaced, not averaged. (5) Grenade rider flags: it earns the FB +50% by timing (noFb must be OFF), gets no core, is noRange — a noFb:true or core:true drifts it. (6) True Damage ▲ lines must be flavor-scoped: on helm they're INERT (no true source) — an attackDamagePct encoding leaks into normals/charge and is the single biggest silent over-credit available in this kit. All magnitudes are kit-literal (DATAMINED); the only ⚑s are the interval first-fire phase convention and the negative-charge-speed engine semantics.",
+  "model": "claude-fable-5"
+}

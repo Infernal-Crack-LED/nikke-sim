@@ -1,0 +1,49 @@
+{
+  "slug": "alice",
+  "spec": [
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 55.12% self /10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply atkPct≈55.12 targets ONLY alice's slot; zeroing it lowers alice's damage while all teammates stay byte-identical. Fails under nearest-wrong models: buff inert (no damage delta) or scoped to allies (teammate damage moves)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲7% /10s, 2 top-ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "alice-cast chargeDamageMultPct≈7 buffApply hits EXACTLY 2 distinct targets and never before the first fullBurstStart. Fails under nearest-wrong: 'all allies' (4 targets), 'self only' (1), or burstCast-keyed / passive (application precedes FB open)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲11.67% of user CS/10s",
+      "disposition": "GAP",
+      "assertion": "it.skip — the redacted StatKey enum exposes no charge-speed key, so a `buff` effect cannot carry it; a faithful override records it in `unmodeled`. No observable to discriminate."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Speed ▲80.15% self /10s",
+      "disposition": "GAP",
+      "assertion": "it.skip — same missing primitive as the skill1 charge-speed line (no chargeSpeedPct in the effect schema)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": ">80% HP: continuous Pierce",
+      "disposition": "UNMODELED",
+      "assertion": "it.skip — pierceDamagePct is parsed-but-inert in v1 (partless immortal boss); HP is always 100% so the >80% gate is trivially always-on. Nothing to move."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "<80% HP: recover 8.12% atk dmg",
+      "disposition": "GAP",
+      "assertion": "it.skip — the <80% HP trigger never fires (boss deals no damage; HP never drops) and the heal effect models no HP amount; also no teammate on-recovery consumer in the control comp to make the emitted event observable."
+    }
+  ],
+  "fixtures": "controlComp('alice', true) — liter B1 / crown B2 / alice B3 carry / helm B3, Fire-neutral scope-lock boss, focus alice. B1+B2 are required so alice's B3 actually casts and the team enters Full Burst (skill1 is fullBurstEnter-keyed; a lone B3 yields ZERO Full Bursts). helm=true kept because helm's own chargeDamageMultPct (~158.4%) is filtered out by magnitude+caster and does not confound the alice-7% assertion; her presence gives a real 4-unit ATK ranking for the '2 highest-ATK allies' target-count test. One baseline run + one counterfactual (burst atkPct zeroed) = 2 runs, well under the ~20-run cap.",
+  "gaps": [
+    "skill1 Charge Speed ▲ 11.67% of the skill user's Charge Speed — no charge-speed StatKey in the effect schema; a `buff` cannot express it (missing primitive; belongs in `unmodeled`).",
+    "burst Charge Speed ▲ 80.15% — same missing charge-speed primitive.",
+    "skill2 >80% HP continuous Pierce — pierceDamagePct inert in v1 (no destructible parts); the >80% gate is trivially always-true on the immortal boss.",
+    "skill2 <80% HP lifesteal (recover 8.12% of attack damage) — trigger unreachable in v1 (boss deals no damage, HP never falls below 80%) and heal models no HP amount; no on-recovery teammate consumer in the control comp."
+  ],
+  "model": "claude-opus-4-8"
+}

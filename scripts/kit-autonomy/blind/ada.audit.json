@@ -1,0 +1,218 @@
+{
+  "slug": "ada",
+  "leakDetected": null,
+  "override": {
+    "slug": "ada",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "burstCasters",
+          "stage": 3
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 60,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 50,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 2
+        },
+        "fbGate": "inFb",
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 420,
+            "flavor": "true"
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 40,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 42,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeSpeedPct",
+            "value": -300,
+            "durationShots": 1
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 1500,
+            "durationShots": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Recovers 10% of damage as HP for 10 sec."
+      ],
+      "skill2": [
+        "Activates when using Burst Skill. Affects self. Flash Grenade Toss activation time condition ▼ 1 sec for 10 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill2 Flash-Grenade cadence: kit-literal 2s, but Ada's own burst cuts activation-time by 1s for 10s → effectively 1s during any FB she bursts into (≈doubles procs). Fixed-interval engine can't halve dynamically; baseline uses the conservative 2s. Pin from footage.",
+      "⚑ skill1 'Recovers 10% of damage as HP' modeled as offensively-inert lifesteal (no HP pool). If a teammate carries an on-recovery consumer (Crown-style), it may need a heal event — left unmodeled.",
+      "⚑ burst 'Charge Damage ▲1500%' read as additive charge-bucket points (chargeDamagePct); if it is a base-scaling multiplier the schema's chargeDamageMultPct would be correct instead."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. RL/Electric/Attacker B3. skill1 = FB-enter team buff to B3 burst-casters (caster-ATK flat +60%, true +50%, +lifesteal). skill2 = in-FB recurring 420% true grenade every 2s (halves to 1s under her own burst — see caveat). burst = self ATK+40%/true+42% for 10s plus a one-round Special Modification: charge speed −300% / charge damage +1500% on the next charged rocket."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates entering FB; B3 allies who bursted",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter, target burstCasters stage3 (includes self)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲60% of skill user's ATK 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 60 durationSec 10 (flat add on caster ATK)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "True Damage ▲50% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff trueDamagePct 50 durationSec 10 (Damage-Up bucket)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 10% of damage as HP 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "lifesteal; no HP pool in v1 → offensively inert. Tandem-caveat flagged."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "During FB, enemies nearest crosshair every 2s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger interval sec2 + fbGate inFb, target enemy"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Flash Grenade: 420% final ATK True Damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 420 flavor true (FB-by-timing ON, no core)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "On burst cast: grenade activation-time ▼1s 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "dynamic interval reduction; fixed-interval trigger can't express. ⚑ flagged."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, target self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲40% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 40 durationSec 10"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage ▲42% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff trueDamagePct 42 durationSec 10"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Special Modification for 1 round(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "round-count duration → durationShots 1 on the two Effect buffs"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 1: Charge Speed ▼300%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeSpeedPct -300 durationShots 1 (weapon-state; slows next charge)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 2: Charge Damage ▲1500%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 1500 durationShots 1 (charge bucket)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger.sec",
+      "estimate": "2 (baseline); 1 during Ada's own burst window",
+      "reasoning": "Kit literal is 'every 2 sec'; her burst adds 'activation-time ▼1 sec for 10 sec' → 1s cadence for the 10s FB she bursts into. Non-Ada FBs stay 2s. Engine interval is fixed, so a single value can't express both.",
+      "recipe": "Count Flash-Grenade popups in a 10s FB where Ada bursts (expect ~10 @1s) vs a FB where another B3 chains it (~5 @2s). If graded as the carry (she always bursts), set sec:1."
+    },
+    {
+      "field": "skill2[0].trigger / fire economy",
+      "estimate": "interval-driven, FB-only",
+      "reasoning": "Grenade is on an internal timer, not tied to her RL trigger-pulls; her base fire cadence (PULLS_PER_SEC, RL charge) is datamine-derived and unreliable.",
+      "recipe": "Confirm grenade procs are wall-clock (timer) not per-shot by watching a low-fire-rate segment; verify RL charge cadence via ammo counter."
+    },
+    {
+      "field": "burst[0].effects[3].stat (chargeDamagePct vs chargeDamageMultPct)",
+      "estimate": "chargeDamagePct 1500 (additive points)",
+      "reasoning": "'Charge Damage ▲1500%' most commonly = additive charge-bucket points. If it multiplies BASE charge damage (Helm-style 'Charge Damage Multiplier'), chargeDamageMultPct is correct and the magnitude interacts differently.",
+      "recipe": "Compare her post-burst charged-rocket popup to base charged rocket; ratio ≈1+15 (additive over a small base) vs ×16 of base charge tells them apart."
+    },
+    {
+      "field": "burst[0].effects[2..3].durationShots",
+      "estimate": "1 round",
+      "reasoning": "'for 1 round(s)' = round-count, expires after her next fired round (the buffed charge shot), spanning any reload — not wall-clock.",
+      "recipe": "Confirm exactly ONE charged rocket carries the +1500% (the shot right after burst), then it drops."
+    },
+    {
+      "field": "skill1 lifesteal",
+      "estimate": "unmodeled (inert)",
+      "reasoning": "'Recovers 10% of damage as HP' is per-hit lifesteal on the B3 burst-casters; no HP pool → zero board effect, but could fire a teammate's on-recovery trigger.",
+      "recipe": "Only model (as a heal event emitting recovery) if a co-comp unit consumes 'when recovery takes effect'."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

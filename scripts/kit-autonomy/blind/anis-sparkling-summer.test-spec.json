@@ -1,0 +1,61 @@
+{
+  "slug": "anis-sparkling-summer",
+  "s5spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK +55.31% of skill user ATK, 10s",
+      "disposition": "FIX",
+      "assertion": "buffApply count == fullBurstStart count and > anis burstCast count (proves fullBurstEnter, RED under burstCast keying); every apply targets anis alone (proves the Electric-Code scoping, RED under a plain `allies` target — the counterfactual run confirms `allies` genuinely moves liter/crown/helm, so self-only is not a vacuous claim); apply→remove gap == 10s ±0.4 (RED under a 15s duration). Caster-ATK basis has no StatKey but is numerically exact here (caster === sole recipient); cross-unit divergence it.skip'd with a recipe."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload Speed +49.28%, 10s",
+      "disposition": "GAP",
+      "assertion": "it.skip — no reload-speed StatKey exists in the effect schema, so no override can express it. NOT a defensive skip (reload speed gates shots fired = damage). ⚑ estimate: 141f/1.4928 ≈ 94.5f (2.35s → 1.575s); verification recipe = median anis reload gap in-window vs out-of-window."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "last bullet: 382.42% of final ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "rider count == anis reload count ±1 (proves lastBullet/per-magazine keying; RED under shotFired, where the counterfactual run shows >2× the procs on a 5-round magazine); ≤1.5 procs per magazine (proves the '2 enemy units' clause collapses to ONE hit against the single v1 boss); coreRate == 0 for every rider (kit says no core strike) while normals carry core; rangeApplied false; fbMajorApplied true iff inFullBurst, with both cases present (proves noFb stays OFF and FB is taken by landing timing)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "rider crit eligibility",
+      "disposition": "FAITHFUL",
+      "assertion": "rider critRate equals the caster's normal-hit sheet rate (RED under a crit-exempt rider). Riders crit at the caster rate; only core is withheld absent explicit core-strike text."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Interruption Part Dmg +6.91%, 10s",
+      "disposition": "UNMODELED",
+      "assertion": "it.skip — no StatKey for interruption-part damage AND the scope-lock boss is partless, so doubly unobservable. Belongs verbatim in the override `unmodeled` field, never an `ignored` effect block (validator rejects those)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammo -73.92%, 10s (self)",
+      "disposition": "FIX",
+      "assertion": "reloads inside the 10s post-cast window > 1.25× reloads in an equal window at +12..+22s (non-vacuity: the inactive window is asserted non-empty; cd 40s so no overlap), AND total reloads > the drop-the-line counterfactual, AND a sign-flipped (+ammo) run gives fewer reloads than the dropped-line run. Separately: rider count > the dropped-line run's rider count — the self-synergy loop (≈5→1 rounds ⇒ near-every-pull last bullet ⇒ more 382.42% procs). ⚑ percent→flat conversion: 5 × (1−0.7392) = 1.304 rounds; the flat delta and its rounding convention (−4 → 1 round, vs −3.7) are not literally in the kit text."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reload Speed +27.72%, 10s",
+      "disposition": "GAP",
+      "assertion": "it.skip — same missing primitive as skill1. Additive overlap with the S1 49.28% gives ~77% during her own window (est. 141f/1.77 ≈ 80f ≈ 1.33s), which is precisely when the ~1-round magazine makes reload time dominate her uptime. Flagged, not invented."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Elemental Adv. Atk Dmg +42.24%, 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply count == anis burstCast count and < fullBurstStart count (proves burstCast keying for a self mode in her OWN burst block; RED under fullBurstEnter, which over-credits helm's rotations), all targeting anis only. Magnitude is damage-inert on the Fire-boss control comp (Electric is advantaged vs Iron, not Fire): asserted by zeroing the value and requiring byte-identical totals — a RED there means the engine credits elemental-advantage damage without checking advantage, which is a real finding either way. The magnitude test vs an Iron boss is it.skip'd (controlComp fixes the boss element; not guessed)."
+    }
+  ],
+  "s5gaps": [
+    "skill1 Reload Speed +49.28% / burst Reload Speed +27.72% — it.skip: the effect schema has no reload-speed StatKey (chargeSpeedPct/attackSpeedPct/fireRatePct exist, reload does not), so the line is inexpressible in an override. Damage-relevant (gates shots fired), ⚑ estimate + measurement recipe recorded in the skip body.",
+    "skill2 Damage to Interruption Parts +6.91% — it.skip: no primitive for interruption-part damage and the scope-lock boss is partless; unobservable payload.",
+    "burst Elemental Advantage Damage magnitude — it.skip: verifying the >1.10 multiplier needs an Iron-Code boss and the documented harness surface (controlComp) fixes the boss to Fire. I did not guess an options key to swap it; the structural apply + Fire-boss inertness are asserted live instead.",
+    "skill1 caster-ATK basis ('% of the skill user's ATK' vs the schema's target-own-ATK atkPct) — it.skip: exactly equal in this fixture because anis is the sole Electric recipient; divergence needs a second Electric ally with a different ATK. Recipe recorded.",
+    "TargetDef has no element-scoped allies primitive ('all Electric Code allies'). Resolvable to self in this comp only; a general encoding would need an alliesOfElement target or a per-comp hand-scoping. Noted rather than silently widened to `allies`.",
+    "HARNESS PLUMBING GUESSED (blind, harness source not provided): test runner assumed vitest; onEvent installed via opts.cfg; patched overrides passed via opts.overrides[SLUG]; event time read defensively via t/sec/time/frame; unit slot index via idx/slot/index/slotIdx; rider hits identified as anis-sourced damage events with bucket !== 'normal' (guarded by a normals-dominate sanity assertion so a bucket-naming mismatch reds loudly rather than passing vacuously). All plumbing is centralised in the single run() helper so it is a one-line fix-up if the real API differs."
+  ]
+}

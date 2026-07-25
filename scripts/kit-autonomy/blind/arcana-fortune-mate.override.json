@@ -1,0 +1,232 @@
+{
+  "slug": "arcana-fortune-mate",
+  "resources": [
+    {
+      "name": "preciousMoments",
+      "initial": 0,
+      "min": 0,
+      "max": 3
+    },
+    {
+      "name": "happyMemories",
+      "initial": 0,
+      "min": 0,
+      "max": 3
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 13,
+          "durationSec": 15,
+          "perResource": {
+            "name": "preciousMoments",
+            "mult": 13
+          }
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 10,
+          "durationSec": 7,
+          "maxStacks": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "instantReload",
+          "fraction": 0.667
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "happyMemories",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "preciousMoments",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "pelletCountFlat",
+          "value": 1,
+          "perResource": {
+            "name": "happyMemories",
+            "mult": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 2.49,
+          "perResource": {
+            "name": "preciousMoments",
+            "mult": 2.49
+          }
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG",
+        "exceptSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 55,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 20.09,
+          "durationSec": 10
+        },
+        {
+          "kind": "instantReload",
+          "fraction": 0.222
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 29.99,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 554.4,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Effect varies according to the number of attacks. Only one effect is triggered at a time. Resets when Making Memories is removed."
+    ],
+    "burst": [
+      "Function: Enhances attack capabilities."
+    ]
+  },
+  "caveats": [
+    "⚑ Making Memories window length (burst-cast → Full Burst end) estimated at 10s; the two burst self-buffs and the Snapshots buff are duration-proxies for the S1 'Removes Making Memories / Removes Snapshots of Youth' lines (engine has no remove-on-FB-end primitive).",
+    "⚑ S2's per-status attack counter (2/4/6 attacks while in Making Memories) is NOT modeled as a counter — all three thresholds are keyed to the ONE burstCast that grants Making Memories, i.e. they fire at cast instead of ~1.5s/3s/4.5s into the window. Under-credits the mid-window 6-round reload (it lands on a near-full magazine) and over-credits the pellet/ATK stack by a few seconds per rotation.",
+    "⚑ Snapshots of Youth is modeled at ONE stack per Making Memories window (Happy Memories 'takes effect' once per window at the 4th attack); the kit's 'stacks up to 3' is therefore unreachable in this model. If the 2/4/6 counter actually CYCLES within a window, the correct value is up to 30% normalAttackPct and up to 3 pellet/Precious-Moments stacks gained per burst — a materially different model.",
+    "⚑ Happy Memories / Precious Moments are encoded as resource pools + perResource passives rather than repeated maxStacks applications, so their fight-long ramp (1 stack per rotation → cap 3) is engine-driven rather than an authored rampSec.",
+    "⚑ SG cadence (pullsPerSec) + reloadFrames 161 are datamine-unreliable; the count of normal attacks available inside a 10s Making Memories window (and hence whether all three thresholds are reached) rests on them.",
+    "Target kind 'alliesOfWeapon' (weapon-typed, class-blind, optional exceptSelf) is inferred from the schema comment for 'all shotgun-wielding allies [(except self)]'; the declaration line was redacted in the packet, so the exact kind/field names must be confirmed against types.ts before validating.",
+    "noRange is engine-automatic and is not set anywhere; noFb is set ONLY on the burst-cast nuke (burst-cast damage is FB-exempt by rule), never on a rider."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of arcana-fortune-mate (SG/Fire/Attacker/B2, ammo 9, hitsPerShot 10). Structure: her burst grants the self status Making Memories (crit 20.09% + Attack Damage 29.99% + a 2-round reload), which is stripped at Full Burst end — so both burst self-buffs carry durationSec 10 as a proxy for S1's 'Removes Making Memories'. S2 is a counter inside that status: 2 attacks = a 6-round partial reload (instantReload 0.667 of the 9-round magazine — a weapon-state/shot-count effect, NOT skippable), 4 attacks = Happy Memories (pellets +1, permanent, cap 3 → modeled as the happyMemories resource feeding a perResource pelletCountFlat passive, so +3 pellets on a 10-pellet SG = +30% normal damage at cap), 6 attacks = Precious Moments (ATK +2.49%, permanent, cap 3 → preciousMoments resource feeding a perResource atkPct passive). All three are keyed to burstCast because the engine has no status-scoped attack counter; the counter text itself is recorded verbatim in unmodeled. Snapshots of Youth (S1) triggers off Happy Memories taking effect → normalAttackPct 10% self, duration-bounded to FB end (7s ⚑, applies ~4 shots into the window); it interacts multiplicatively with pelletCountFlat by design. S1's team line is a fullBurstEnd casterAtkPct grant to ALL shotgun allies INCLUDING self (no 'except self' clause), scaled live by the Precious Moments pool via perResource (13% of caster ATK per stack, 15s) — the only kit-stated stack-scaled magnitude, so it ramps 13→26→39% over the first three rotations. S2's second line is a burstCast (own-burst-gated, NOT fullBurstEnter — she is B2 and must herself cast) Attack Damage 55%/10s to shotgun allies EXCLUDING self. Burst damage 554.4% of final ATK as a burstCast flatDamage, crit-eligible, no core (no 'core strike' wording), FB-exempt. No hit-rate/core, DEF/HP, heal/shield, weapon-swap, DoT, pierce or element-advantage lines exist in this kit; nothing was silently dropped."
+}

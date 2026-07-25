@@ -1,0 +1,89 @@
+{
+  "slug": "anchor-innocent-maid",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Potency of HP ▲ 30.96% for 5 sec",
+      "disposition": "GAP",
+      "assertion": "it.skip — healing-potency has no StatKey and no consumer (no HP pool). Audited instead: must appear in `unmodeled`. Nearest-wrong it guards against: mapping it onto maxHpPct/targetMaxHpPct, which would feed HP→ATK scalers it has no business feeding."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Distributed Damage ▲ 30.4% / 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply(distributedDamagePct, 30.4) from anchor covers every ally slot incl. self; first apply has ≥2 preceding fullBurstStart and activation count === FB−1. RED under (a) flattened escalation (fires on FB #1, count === FB), (b) scope-widened attackDamagePct — that patched run's total is strictly GREATER than baseline, proving the faithful stat is correctly inert in this comp. durationSec===10 checked structurally."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Stack count of debuffs ▼ 1",
+      "disposition": "GAP",
+      "assertion": "it.skip — no ally-debuff-stack primitive exists; nothing to decrement. Recorded in `unmodeled`."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 3.04% Max HP/1s for 8s",
+      "disposition": "FAITHFUL (tandem, gated)",
+      "assertion": "Gate: block carries a squad gate (teamHas), so it is inert in controlComp — removing the gate must raise crown-cast buffApply count (crown consumes `recovery`). RED if the gate was dropped (counts equal at baseline) or the heal was skipped as defensive (patched === baseline). Structural: heal ticks===8, intervalSec===1, target allies, trigger fullBurstEnter — a single instant heal would lose 7 recovery events per Full Burst."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Full Burst ends",
+      "disposition": "FAITHFUL",
+      "assertion": "All skill2 blocks trigger.kind === 'fullBurstEnd', and the first hitRatePct apply has ≥1 preceding fullBurstEnd. RED under a fullBurstEnter model (which applies before any end event)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: Hit Rate ▲ 10.13% / 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "First apply has exactly 1 preceding fullBurstEnd; activation count === FB-end count; all allies targeted; durationSec===10. Establishes the tier-1 baseline the tier-2/3 offsets are measured against."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: ATK ▲ 35.02% of user ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "casterAtkPct@35.02, first apply ≥2 preceding FB-ends, activations === FB−1 (inactive on end #1 = the both-cases check). RED under flattened escalation (fires on end #1, count === FB). Separately RED under stat→atkPct: that patched run's total differs from baseline, discriminating caster-scaled flat add from target-scaled percent."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Three times: Reload Speed ▲40.04%",
+      "disposition": "FAITHFUL",
+      "assertion": "reloadSpeedPct@40.04, ≥3 preceding FB-ends, activations === FB−2, durationSec===15 (not the 10s of the tiers above). Damage-relevance: zeroing the value makes the run's total strictly LESS than baseline — RED under the 'reload is defensive, skip it' model, which leaves totals identical. Non-vacuity: reload events > 0."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Storage: excess healing, 60.19%, 25s",
+      "disposition": "GAP",
+      "assertion": "it.skip — no HP pool, no incoming damage, so 'excess healing' has no source and the bank has no consumer. Must be present in `unmodeled`."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 40.18% of user Max HP",
+      "disposition": "FAITHFUL (tandem)",
+      "assertion": "Structural: heal effect, target allies, ticks 1 (instant, not a HoT). Behavioral: stripping the heal lowers crown-cast buffApply count vs baseline — RED if the heal line was skipped."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 30.09% of user ATK / 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "casterAtkPct@30.09, trigger burstCast, target allies, durationSec 10; activation count === HER OWN burstCast count, which the fixture proves is strictly LESS than the team Full Burst count (two Burst-IIs share the stage-2 slot). RED under the fullBurstEnter mis-key, which over-credits on every rotation crown takes the slot."
+    },
+    {
+      "slot": "all",
+      "kitLine": "(audit) no silent drops",
+      "disposition": "FAITHFUL",
+      "assertion": "`unmodeled` mentions Potency / Stack count / Storage, and no `ignored`/`unsupported` effect kinds exist (validator-rejected)."
+    }
+  ],
+  "fixtures": "controlComp('anchor-innocent-maid', true) for every run — liter(B1)/crown(B2)/anchor(B2, focus)/helm(B3), deterministic, no seed. helm=true is MANDATORY: she is Burst II, so helm=false leaves the team with no Burst III, the chain never closes, ZERO Full Bursts occur and every skill1/skill2 assertion silently passes on empty sets (an explicit ≥3 Full Burst assertion guards this). crown is load-bearing as the `recovery` consumer — there is no 'heal' event kind, so the only observable for the two heal lines is crown's re-application buffApply count, which (unlike a totals delta) does not saturate against helm's own heals. The two-Burst-II roster is deliberate: it makes her own burstCast count strictly less than the team Full Burst count, which is the split that discriminates burstCast from fullBurstEnter for the burst block. 8 hoisted sim runs + 1 no-op override clone for structural reads: BASE, FLAT_S1, FLAT_S2, ATK_SELF, RELOAD_0, DIST_GENERIC, NO_SQUAD_GATE, NO_BURST_HEAL.",
+  "gaps": [
+    "skill1 tier 1 'Potency of HP ▲ 30.96% / 5s' — it.skip: no healing-potency StatKey, no HP pool, no consumer. Audited via `unmodeled` only.",
+    "skill1 tier 3 'Stack count of debuffs ▼ 1' — it.skip: no ally-debuff-stack / cleanse primitive in the engine.",
+    "burst 'Storage' (banks excess healing up to 60.19% Max HP for 25s) — it.skip: excess healing cannot exist without an HP pool and boss damage; the bank has no consumer.",
+    "⚑ Same-squad gate roster: the kit says 'an ally from the same squad' but names nobody. Which slugs satisfy it is roster data I am blind to (data/characters.json), so the test asserts only that SOME gate exists on the heal block and that it is INACTIVE in controlComp — it cannot verify the slug list is the right one. Recipe: read the unit's squad membership from characters.json / the wiki and check teamHas.slugs covers exactly those.",
+    "⚑ Duration discrimination is structural, not behavioral: the 5/10/15/25s windows are asserted by reading durationSec off the override clone, because buff-window length is not separable from the totals in a 180s fight with overlapping re-applies. A behavioral check would need event timestamps (the log's time field name is not documented in the packet).",
+    "Burst group is fixture-conditional: if crown always wins the shared stage-2 slot, her burstCast count is 0 and the burst assertions fail. That failure is a real fixture finding (needs a comp where she is the sole Burst II), not a defect in the override — the test states this explicitly rather than skipping quietly.",
+    "The 3.04%/40.18% Max-HP heal MAGNITUDES are unrepresentable (the `heal` effect models no HP amount), so only tick structure and the recovery channel are verifiable.",
+    "Test framework assumed to be vitest (explicit imports); harness plumbing for the patched override (`overrides` map on CompOptions) and for slot indices is accessed through shape-tolerant adapters, since the packet documents withPatchedOverride's return value only as 'an in-memory override clone'."
+  ]
+}

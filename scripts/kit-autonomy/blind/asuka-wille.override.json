@@ -1,0 +1,168 @@
+{
+  "slug": "asuka-wille",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 471.86,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 15.62,
+          "crit": true
+        },
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 0.83,
+          "durationSec": 9,
+          "maxStacks": 30
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 30.97,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 60,
+          "durationShots": 1
+        },
+        {
+          "kind": "heal",
+          "ticks": 3,
+          "intervalSec": 1
+        },
+        {
+          "kind": "consumeAmmo",
+          "fraction": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": -40,
+          "durationSec": 9
+        },
+        {
+          "kind": "instantReload",
+          "fraction": 0.21
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 46.8,
+          "durationSec": 9
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 36,
+          "durationSec": 9
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 66.2,
+          "crit": true,
+          "delaySec": 9
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Function: Reduces MG heating up speed and removes ammo. Fixes reload speed and continuously restores HP based on Max HP.",
+      "Effect 1: MG heating up speed ▼ 100% for 3 sec."
+    ],
+    "burst": [
+      "Function: Reduces the normal attack damage while increasing attack capabilities.",
+      "Function: After Annihilation State ends, fires powerful attacks at targets affected by Anti A.T. Field.",
+      "Anti A.T. Field status is removed after the effect is triggered."
+    ]
+  },
+  "caveats": [
+    "⚑ ANNIHILATION STATE HAS NO ENGINE PRIMITIVE. It is a 9s SELF status opened by her own burst cast; the engine has no self-status window gate. Both status-gated blocks are proxied by fbGate 'inFb' + ownBurstGate 'cast' (skill1 every-10-shots) and by ownBurstGate 'cast' on FB-enter / FB-end (skill2). Mismatch: Annihilation State runs cast→cast+9s, Full Burst runs fbStart→fbStart+10s, so shots in the pre-FB gap are missed and the last ~1s of FB is over-counted.",
+    "⚑ SINGLE-TARGET COLLAPSE. 'Affects 2 enemy unit(s) ... nearest to the crosshair' is modeled as ONE instance (15.62% + one Anti A.T. Field stack per proc) because the scope-lock boss is a single partless enemy. If the second target instead resolves onto the same boss in-game, both the rider damage and the stack-accrual rate DOUBLE (and so does the burst nuke's stack mirror).",
+    "⚑ ANTI A.T. FIELD DURATION TRUNCATED 30s → 9s. Kit gives 30s but also states the status is REMOVED when Annihilation triggers (= end of the 9s state). The engine has no remove-on-trigger primitive; a literal 30s would leave the whole team's Damage Taken ▲ debuff live for ~21s after the kit removes it. 9s approximates the real lifetime; it still over-runs for late-window stacks.",
+    "⚑ The burst 'Annihilation' hit's stack mirror is a STATIC estimate (6.62% × 10 stacks). flatDamage has no perResource path, so a live stack count is not expressible; this number is the single largest unmeasured lever in the file.",
+    "⚑ MG cadence (pullsPerSec, reloadFrames 161) is datamine-unreliable and is NOT stated in the kit text. Every proc count in this file (50-hit rider, every-10-shots rider, resulting stack count) scales directly with it.",
+    "⚑ noFb is NOT set anywhere (default FB-by-timing ON per prior 9). The delayed Annihilation hit lands at cast+9s, i.e. inside the Full Burst window, so it currently takes the +50% FB major; unmeasured."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (S6), no board access, no driver artifacts. Structure: skill1 = a 50-hit 471.86% rider (always on) + the Annihilation-State-only every-10-shots 15.62% rider that stacks the Anti A.T. Field Damage Taken ▲ debuff on the boss (team-wide benefit, not a self buff — tandem rule). skill2 = an FB-enter Attack Damage ▲30.97% gated on her having cast her own burst, plus Emergency Repair (self heal-over-time 3 ticks, full ammo dump forcing a reload + lastBullet, and a +60% reload-speed round-count buff) keyed to 'when using Annihilation' — proxied to fullBurstEnd since Annihilation fires at the END of the 9s state, not at cast. burst = the Annihilation State self package (normal-attack multiplier ▼40%, 21% instant reload, caster-ATK ▲46.8%, Attack Damage ▲36%, all 9s) plus the delayed Annihilation nuke (delaySec 9) whose magnitude mirrors the Anti A.T. Field stack count. Weapon-state lines were NOT skipped: the ammo dump, the forced reload, the 21% reload and the reload-speed fix are all authored (they gate shots fired); only the MG heating-up-speed line is unmodeled because the engine has no MG spin-up/heat model at all. The ▼40% normal-attack multiplier is authored as a NEGATIVE normalAttackPct — it is a real damage loss and must not be dropped as 'defensive'."
+}

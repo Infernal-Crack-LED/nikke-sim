@@ -1,0 +1,63 @@
+{
+  "slug": "asuka",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Damage dealt to Shield ▲601.01%",
+      "disposition": "GAP",
+      "assertion": "Asserts the line appears in override.unmodeled.skill1 and that no effect anywhere carries 601.01 as value/atkPct. RED under a silent drop (no audit record) and RED under the nearest-wrong encoding as attackDamagePct/elementDamagePct (6x damage inflation). Payload itself it.skip'd — no StatKey for shield damage and no shield pool on the v1 boss."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲96.98% for 25 sec (on recovery)",
+      "disposition": "FAITHFUL",
+      "assertion": "Three-part. (1) first apply index in the log is AFTER the first burstCast — RED under trigger passive/start-of-battle (applies at frame 0). (2) With helm=false, dropping the burst heal effect zeroes the buff entirely — RED if the buff is keyed to burstCast directly or if the burst heal was not modeled; this is the tandem proof that the trigger is recovery. (3) every apply targets asuka — RED under an allies target."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Elem Advantage Atk Dmg ▲30.02%/10s",
+      "disposition": "FAITHFUL (gated, inert in fixture)",
+      "assertion": "Committed run must produce ZERO applies (no shield source in controlComp) while the requiresShielded-ungated patch produces >0 — both branches exercised, so the zero is not vacuous; RED if the in-Shield-status clause was dropped as decorative. On the ungated run: apply count === fullBurstStart count (RED under burstCast keying, which gives strictly fewer since own cd is 40s), targetIdx === asuka, and stat === elemAdvantageDamagePct (RED under generic elementDamagePct/attackDamagePct)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Core damage ▲60.07%/10s, Fire allies",
+      "disposition": "FAITHFUL",
+      "assertion": "(1) applies to asuka === fullBurstStart count — RED under burstCast keying (fewer) and under excludeSelf (zero). (2) recipient set is a strict subset of the recipients under a patched plain-allies target — RED if the Fire filter was dropped (team-wide over-credit). (3) under a patched element:'Wind' target asuka receives nothing while she does under the committed override — proves the filter is real and Fire-keyed, independent of teammate elements."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack damage ▲150.04% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Apply count > 0 but STRICTLY LESS than fullBurstStart count (40s own cd cannot cover every FB) — RED under fullBurstEnter keying, the nearest-wrong trigger for a burst-slot line. stat === attackDamagePct and no atkPct apply at 150.04 — RED under the ATK-stat mis-bucket. Zeroing the value lowers asuka damage while liter/crown unit records stay byte-identical (self scope)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 3.16% of atk dmg as HP/10s",
+      "disposition": "FAITHFUL (cadence ⚑)",
+      "assertion": "Proven indirectly and strongly by the S1b heal-removal counterfactual: with helm=false, dropping this heal must zero the ATK ▲96.98% buff. RED if the heal was skipped as defensive/inert — which is exactly the trap, since asuka is her own recovery source. Tick cadence (1 event vs 10) it.skip'd as ⚑: the prose gives no per-tick rate, and the choice shifts the 25s ATK window anchor by up to 10s."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Hit Rate ▲101.37% for 10 sec",
+      "disposition": "FAITHFUL (magnitude ⚑)",
+      "assertion": "stat === hitRatePct, self-targeted, apply count < fullBurstStart count and exactly equal to the attackDamagePct apply count (both ride the same burst cast) — RED under FB-enter keying or a split trigger. Zeroing the value lowers asuka damage (core lift is live by default) while liter is unchanged. The hit-rate-to-core magnitude itself is it.skip'd as measured-only."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gain Pierce for 25 sec",
+      "disposition": "FAITHFUL (payload inert in v1)",
+      "assertion": "Structural: a gainPierce effect exists with durationSec === 25 — RED under the nearest-wrong normalisation to the 10s window the other three burst lines share, and RED under a static hasPierce flag (which cannot express the 25s window). Behavioural test documents inertness: removing the effect leaves totals() byte-identical, since pierceDamagePct is parsed-but-inert in v1."
+    }
+  ],
+  "fixtures": "controlComp('asuka', true) for the Full-Burst-scoped lines (S2a/S2b) and the burst self-buffs — the second B3 (helm) means asuka cannot burst on every Full Burst, which is what makes the burstCast-vs-fullBurstEnter counts discriminate. controlComp('asuka', false) for every recovery assertion: helm is the harness comp's heal source, so with her present an external heal also fires S1b and the burst-heal -> ATK tandem cannot be attributed to asuka's own kit. All S2a assertions are on buffApply events rather than damage because the fixture boss is Fire and asuka is Fire, so elemAdvantageDamagePct is damage-inert here by construction. 9 hoisted runs total (2 committed + 7 withPatchedOverride counterfactuals); the override-structure checks use withPatchedOverride's mutate callback as a read-only inspector and cost no run.",
+  "gaps": [
+    "S1a 'Damage dealt to Shield ▲601.01% continuously' — it.skip: no StatKey for shield damage and the v1 boss has no shield pool; only the unmodeled-record + no-smuggling assertions are enforceable.",
+    "Burst heal tick cadence — it.skip (⚑): prose says 'over 10 sec' with no per-tick rate, so 1 recovery event vs 10 is not derivable from text; it shifts the anchor of the 25s ATK window by up to 10s and should be measured or ruled.",
+    "Hit Rate -> core magnitude — it.skip (⚑): hrCoreMult is a derived engine constant, measured-only; the test asserts direction (damage strictly drops when zeroed) but not size, and assumes the default HRCORE=1 gate.",
+    "S2a active branch — no unit in controlComp shields asuka, so the in-Shield-status branch is exercised only via the ungated patch, never natively. If a shielder is in fact present in controlComp, the 'gate suppresses' assertion goes RED and that is a documented divergence for the judge to arbitrate, not a silent pass.",
+    "Gain Pierce payload — asserted structurally only; pierceDamagePct is parsed-but-inert in v1, so no damage-side discrimination exists."
+  ],
+  "model": "claude-opus-5"
+}

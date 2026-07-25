@@ -1,0 +1,264 @@
+{
+  "slug": "asuka-wille",
+  "kitDescription": "Asuka: WILLE is a Wind MG Burst III attacker built around a 9-second self mode called Annihilation State that only her own burst opens. Casting the burst trades away 40% of her normal-attack damage in exchange for +46.8% ATK based on her own base ATK, +36% attack damage, and an instant 21% magazine top-up; if the team enters Full Burst while she is in that state she gains a further +30.97% attack damage for 10 seconds. While the state is live, every 10 rounds she fires also strike the two enemies nearest her crosshair for a small extra hit and apply Anti A.T. Field, a stacking Damage Taken debuff worth 0.83% per stack up to 30 stacks — which amplifies the whole team's damage, not just hers. Independently of the state, every 50 landed rounds trigger a large 471.86% bonus hit. When the state ends she fires Annihilation at every target carrying Anti A.T. Field for 6.62% per mirrored stack and the debuff is then consumed. That same moment triggers Emergency Repair: her belt is emptied, she recovers 3.77% of max HP each second for three seconds, her next reload is fixed 60% faster, and her MG spin-up cost is briefly removed.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1a x3 ('fires on a 50-HIT counter', 'doubling the threshold halves the proc count', 'is ungated') — the blind's removedTimes() multiset diff attributes 448 timestamps to the 471.86 rider vs the ~147 (= landed rounds / 50) that the driver's slug+atkPct event filter counts; INSTRUMENT artifact of the blind's timestamp-collision-prone diff, not an override divergence (the driver's direct atkPct===471.86 event count is the sounder instrument and is green).",
+      "burst 'ATK +46.8% is a CASTER-ATK flat add' + 'all three self buffs are keyed to HER burst cast' — the blind filters buffApply by value≈46.8, but the engine writes the resolved FLAT ATK grant into buffApply.value and carries the percentage in the key ('2:burst:casterAtkPct:46.8'). RECON_ERROR: the driver's stat is exactly casterAtkPct as the blind demanded; only the reader is wrong (the driver's own W8 filters on key.endsWith(':46.8')).",
+      "S1b 'debuff shape: 0.83 per stack, 30 s, capped at 30 (structural)' — expects durationSec===30 (prose literal); driver ships 9. DELIBERATE and documented: the burst prose says the status is removed when Annihilation triggers (state end ≈ cast+9s), so 30s never binds. S2b's spec and the S6 blind override BOTH independently landed on the ~9s effective life, so the S5 assertion is the outlier of three derivations.",
+      "S2b 'the 100%-ammo dump lands at Annihilation time' (window 6-12s after cast) — the driver's fullBurstEnd proxy lands ~1s late relative to the true cast+9s Annihilation instant and can slip past the blind's upper bound. Documented proxy (no delayed/state-end trigger keyed to her own burst exists); the co-located S5 assertion 'she does NOT reload in the first second of her window' — the high-stakes burstCast nearest-wrong — passes.",
+      "S2b 'reload speed fixed +60% for 1 ROUND' (durationShots===1, durationSec undefined) — driver ships durationSec 10.5. Genuine semantic divergence: the driver reports types.ts has no round-count/clamp form for reloadSpeedPct, the S6 blind assumed durationShots:1. See gotcha 2."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates after landing 50 normal atk",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger hitCount count:50, target enemy, ungated",
+        "blindSaid": "S6 identical (hitCount 50, crit:true added); S2b: hitCount counts ROUNDS, must accrue in AND out of the state",
+        "formulaCheck": "MG hitsPerShot 1 -> 1 count per round; rider is generic additional damage, not the normal bucket, so the burst's normalAttackPct -40 must not touch it (S5 scope test confirms riders unchanged when the nerf is dropped)",
+        "fireRateOk": true,
+        "explanation": "Ungated as the prose demands (no status clause on this line); ~147 procs over 180s ≈ landed rounds / 50, and the S5 'procs outside Annihilation State' assertion is green. crit left unset per the measured-only convention (S6 set crit:true unmeasured)."
+      },
+      {
+        "kitLine": "Deals 471.86% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 471.86",
+        "blindSaid": "same magnitude",
+        "formulaCheck": "kit-literal; additional-damage channel, FB major by landing timing, no core",
+        "fireRateOk": true,
+        "explanation": "Magnitude is prose-literal (DATAMINED tier); removing the block eliminates every 471.86 event and moves no ally total."
+      },
+      {
+        "kitLine": "Activates only when in Annihilation St",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "requiresTargetStatus 'Annihilation State', with the burst inflicting targetStatus 'Annihilation State' 9s on the boss (marciana/privaty pattern) because no SELF-status window primitive exists",
+        "blindSaid": "S6 proxied the same gate with fbGate 'inFb' + ownBurstGate 'cast' and flagged the ~1s window mismatch; S2b asked only that the observable (procs confined to [cast, cast+9]) hold",
+        "formulaCheck": "gate is a pure trigger predicate — no bucket involvement; the driver's proxy tracks cast->cast+9s exactly, whereas S6's fbGate proxy would lose the pre-FB slice and over-count the FB tail",
+        "fireRateOk": true,
+        "explanation": "Strictly the better of the two proxies: it reproduces the 9s window from HER cast rather than borrowing the 10s FB window. S5's timing-only assertion (zero 15.62 events outside her windows) is green under it. Residual: the mode is represented as a fabricated BOSS status (see gotcha 3)."
+      },
+      {
+        "kitLine": "Affects 2 enemy unit(s) every 10 shot(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "hitCount 10; 2-target clause collapses to 1 instance on the single partless v1 boss (stated in note + caveats)",
+        "blindSaid": "S6 flagged the identical collapse and noted it halves both rider throughput and the stack-accrual rate vs a 2-instance read; S5 it.skip'd it as non-discriminable",
+        "formulaCheck": "single-enemy fixture gives the split no observable; 15.62x1 vs 31.24x1 is a modelling choice this fixture cannot separate",
+        "fireRateOk": true,
+        "explanation": "Cadence is per-10-rounds inside the window; the driver's W2 shows the debuff actually reaching the 30-stack cap, i.e. >=30 procs per 9s window, consistent with the MG cadence profile."
+      },
+      {
+        "kitLine": "Damage: Deals 15.62% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 15.62 inside the gated block",
+        "blindSaid": "same",
+        "formulaCheck": "kit-literal additional damage; her channel only",
+        "fireRateOk": true,
+        "explanation": "S5 confirms every proc lies inside [her cast, +9s] and that deleting it moves no ally total. This replaced an earlier ungated hitCount-44 time-average, which was the exact nearest-wrong S2b named."
+      },
+      {
+        "kitLine": "Anti A.T. Field: Damage Taken ▲0.83%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "buff damageTakenPct 0.83, maxStacks 30, target enemy, durationSec 9 = EFFECTIVE life (consumed at state end), not the nominal 30s",
+        "blindSaid": "S6 also truncated 30->9 with the same reasoning; S2b called the effective life '≈ the 9s build window'; only the S5 structural assertion demands the literal 30",
+        "formulaCheck": "damageTakenPct is a boss-held target-side amp that multiplies EVERY unit's damage — a 30s persistence would carry up to 30x0.83% = ~24.9% team amp for ~21s past its kit-stated removal, the single largest over-credit available in this file (team sum 1979M -> 1837M when fixed)",
+        "fireRateOk": true,
+        "explanation": "The driver is MORE faithful than the prose-literal reading here, and two of the three independent derivations agree. Boss-held (targetIdx null), per-stack 0.83 not folded, cap 30 verified reached. Residual tail documented as ⚑6: consumption is instant in-game but modeled as gradual per-stack expiry, leaving ~8s of over-credit per cycle."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering FB while in Annih",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger fullBurstEnter + ownBurstGate:'cast'",
+        "blindSaid": "S6 converged on exactly fullBurstEnter + ownBurstGate 'cast'; S2b named 'plain ungated fullBurstEnter' as the nearest-wrong that roughly doubles uptime in the dual-B3 comp",
+        "formulaCheck": "trigger identity only; the buff itself is Damage-Up bucket, additive with the burst's +36 during overlap (1+0.36+0.3097), never multiplicative",
+        "fireRateOk": true,
+        "explanation": "Purpose-built primitive, keeps the block AT FB entry (burstCast would fire pre-FB). Apply count == her burst-cast count and strictly < fullBurstStart count in the helm co-B3 fixture; the ownBurstGate-stripped counterfactual fires strictly more. Both blind agents and the driver agree — this is the headline Tier-2 fix and it is right."
+      },
+      {
+        "kitLine": "Attack Damage ▲30.97% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff attackDamagePct 30.97, durationSec 10, self",
+        "blindSaid": "same (10s, not the burst's 9s)",
+        "formulaCheck": "10s deliberately outlasts the 9s mode by 1s — prose-literal; distinct from the 36/9s line so the two are separable in the log",
+        "fireRateOk": true,
+        "explanation": "Self-scoped, exact duration, no ally leakage; S5's structural + runtime assertions on this line are green."
+      },
+      {
+        "kitLine": "Activates when using Annihilation",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd + ownBurstGate:'cast' ≈ Annihilation-State end (~cast+9s), ~1s late; no delayed/state-end trigger primitive exists",
+        "blindSaid": "S6 independently chose fullBurstEnd + ownBurstGate 'cast' and flagged the same ~1s slip and its one-magazine-boundary consequence",
+        "formulaCheck": "Annihilation fires at state END, so a burstCast key would be 9s EARLY — dumping a 300-round belt at the START of her buffed window, the highest-stakes nearest-wrong S2b/S5 both named. The driver avoids it.",
+        "fireRateOk": true,
+        "explanation": "Cross-family convergence on the proxy. Cost of the ~1s slip is bounded and documented; note the internal inconsistency that the finisher models the same in-game instant as burstCast+delaySec 9 while this block uses fullBurstEnd (gotcha 4)."
+      },
+      {
+        "kitLine": "MG heating up speed ▼100% for 3 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in `unmodeled.skill2`, ⚑2 (no MG wind-up/heat primitive; localization ambiguous — frozen ramp vs instant full spin; measure first)",
+        "blindSaid": "S6 SKIPPED with the same reason + a frame-count recipe; S5 it.skip",
+        "formulaCheck": "engine models a constant cadence with no heat/spin-up curve, so there is nothing for a heat-speed modifier to act on; laundering it into fireRatePct would invent cadence (the S2b nearest-wrong)",
+        "fireRateOk": true,
+        "explanation": "Correctly flagged rather than dropped or laundered. This is a real fidelity hole (weapon-state lines ARE damage) but the decision is recorded with a measurement recipe."
+      },
+      {
+        "kitLine": "Removes 100% of ammo",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "consumeAmmo fraction:1 at fullBurstEnd; the earlier 'no ammo-dump vocabulary' claim was WRONG and is retracted in the note",
+        "blindSaid": "S6 identical (consumeAmmo fraction:1 at fullBurstEnd); S2b flagged skipping it as 'defensive' as taxonomy trap #4",
+        "formulaCheck": "shot economy is damage: an emptied belt forces a 161-frame reload and fires lastBullet triggers. Landing at fullBurstEnd puts it ~10s after the burst's instantReload 0.21, so the two no longer collide",
+        "fireRateOk": true,
+        "explanation": "Genuine recovery of a previously-dropped weapon-state line, independently corroborated by S6. Stripping it perturbs her reload frame set; no forced reload appears in the first second of her window."
+      },
+      {
+        "kitLine": "recovers 3.77% Max HP every 1s over 3s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal ticks:3 intervalSec:1, self; damage-INERT here (verified removing it moves no total) — encoded for kit completeness",
+        "blindSaid": "S6 identical; S2b predicted it should be TANDEM-live via crown's on-recovery triggers and asserted crown's total would move",
+        "formulaCheck": "3 ticks not 1 matters only to on-recovery consumers; self-target grants no Max HP so no HP-scaled ATK path",
+        "fireRateOk": false,
+        "explanation": "Encoding matches the prose (3-tick HoT, correct interval, self). Activation is NOT observable: the SimEvent union surfaces no recovery event, so both the driver's W4 and S5's heal test are structural pins plus a one-sided totals check. S2b's premise that crown consumes her recovery events is NOT borne out (removing the heal moves no total) — that is a spec expectation, not a driver defect, but it means this line's cadence is unverified. Owner spot-check candidate."
+      },
+      {
+        "kitLine": "Reload speed fixed at 60% for 1 rounds",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "reloadSpeedPct 60 for durationSec 10.5 ⚑3 — 'for 1 rounds' on a reload-speed FIX is a stat clamp the engine cannot express (reports types.ts explicitly NOT durationShots); the window proxies 'one fast reload per burst cycle'",
+        "blindSaid": "S6 + S5 both used durationShots:1 and S5 asserts durationSec undefined; S6 separately flagged that 'FIXED at' (set-not-add) is unrepresentable",
+        "formulaCheck": "a shortened reload = more rounds fired = more damage, so over-wide coverage over-credits. At MG cadence a 300-round belt empties in well under 10.5s, so the window can cover ~2 reloads where the kit grants 1",
+        "fireRateOk": true,
+        "explanation": "Both the round-count semantics AND the 'fixed at' (override-not-additive) semantics are genuinely awkward for the schema, and the driver documents the choice. But the 10.5s window is the loosest proxy in the file and the one place where the S6 blind is plausibly more faithful — see gotcha 2."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Normal Atk Dmg Multiplier ▼40% for 9s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff normalAttackPct -40, durationSec 9, self",
+        "blindSaid": "S6 identical; S2b named generic attackDamagePct -40 as the nearest-wrong",
+        "formulaCheck": "scoped to the 5.47 normal multiplier only — riders (471.86 / 15.62) and the finisher are untouched, and the -40 never enters the Damage-Up bucket where it would dilute against the co-active +36/+30.97",
+        "fireRateOk": true,
+        "explanation": "Correct scope AND correct sign. S5's discriminating scope test is green: dropping it lifts her in-window normal hits while the 471.86 riders at the same timestamps stay within 2%."
+      },
+      {
+        "kitLine": "Reloads 21% magazine(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "instantReload fraction:0.21 at burstCast",
+        "blindSaid": "S6 identical, with a flag that add-vs-set-to semantics are unverified",
+        "formulaCheck": "instant top-up, no reload animation; 21% of 300 = 63 rounds",
+        "fireRateOk": true,
+        "explanation": "Prose-literal fraction; stripping it shifts her reload frame set, so it is live. The add-vs-set ambiguity S6 raised is a one-line engine read the owner may want to close."
+      },
+      {
+        "kitLine": "ATK ▲46.8% of the skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff casterAtkPct 46.8, durationSec 9, self",
+        "blindSaid": "S6 identical; S2b named plain atkPct 46.8 as the nearest-wrong (would compound with liter/crown ATK buffs)",
+        "formulaCheck": "'of the skill user's ATK' = flat add off the caster's static ATK, so the delta must be invariant to teammates' concurrent ATK% buffs — casterAtkPct is exactly that stat",
+        "fireRateOk": true,
+        "explanation": "Right stat key, right duration, self-only, once per cast. The two S5 REDs on this line are the blind reading buffApply.value (which holds the resolved FLAT grant) instead of the key — a RECON_ERROR that the driver's own W8 filter avoids."
+      },
+      {
+        "kitLine": "Attack Damage ▲36% for 9 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff attackDamagePct 36, durationSec 9, self, at burstCast",
+        "blindSaid": "S6 identical",
+        "formulaCheck": "Damage-Up bucket, ADDITIVE with the 30.97 during overlap (~1.6697 combined, not 1.36x1.3097 = ~1.7812)",
+        "fireRateOk": true,
+        "explanation": "Apply count == her cast count and strictly < fullBurstStart count, so it is not mis-keyed to FB entry; 9s duration separates it cleanly from the 10s S2 buff in the log."
+      },
+      {
+        "kitLine": "Deals 6.62% ... Mirrors the stack count",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "one flatDamage 198.6 = 6.62 x 30-stack cap, delaySec:9 so it LANDS at state end inside the FB window (FB-boosted, finding F2); no dynamic-stack-scale primitive exists (⚑4/⚑5)",
+        "blindSaid": "S6 used 66.2 = 6.62 x an ASSUMED 10 stacks from an assumed ~12 rounds/s MG cadence, and called it 'the single largest unmeasured lever'; S5 only bounds k to (1.5, 30]",
+        "formulaCheck": "flatDamage has no perResource path, so a live mirror is inexpressible. The 30-cap is NOT a bare assumption here: the driver's own W2 asserts max observed stacks == 30, i.e. the 9s window actually reaches the cap at the engine's MG cadence, so 6.62x30 is the internally-consistent value. S6's 10-stack figure rests on a ~12 rounds/s prior that the engine's MG profile contradicts (per the datamined-nominal-vs-effective-rate rule).",
+        "fireRateOk": true,
+        "explanation": "Timing is mechanically CONFIRMED, not asserted: S5's independent 'lands 7.5-11s after her cast' test is GREEN against the driver's override, which proves delaySec is honored and rules out the instant-at-cast nearest-wrong. The stack count remains cadence-gated and the 30-cap inherits ⚑1 (MG cadence) — if real cadence is lower, this line is over-credited by up to ~3x. Magnitude is out of scope per rule F but is the top measurement priority."
+      },
+      {
+        "kitLine": "Field is removed after effect triggered",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "no remove-target-buff / consume-status primitive; approximated by durationSec 9 per stack, leaving a short post-window tail (~34% modeled uptime vs ~22.5% true); ⚑6 with a consumeTargetStatus recipe, Tier 2",
+        "blindSaid": "S6 did the same truncation and listed it under `unmodeled.burst`; S5 it.skip'd it and warned the un-consumed alternative over-credits both the team debuff and any stack-derived constant",
+        "formulaCheck": "the residual tail is a target-side amp on the WHOLE team, so the error is team-wide, not self-contained — correctly identified as the highest-value remaining fix",
+        "fireRateOk": true,
+        "explanation": "All three derivations agree the mechanic is unmodelable today and agree on the direction of the residual. The driver quantifies it (~1.5x team amp inside the ~8s tail) and gives the engine primitive needed — the best available disposition."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "test-header (scripts/tests/units/asuka-wille.test.ts)",
+      "summary": "The driver's unit-test docblock is STALE and now contradicts both the shipped override and the test's own assertions — it documents the pre-gauntlet encoding as if it were current.",
+      "evidence": "Header says S2 Eff2 'Removes 100% of ammo -> UNMODELED (see header note)' while W11 asserts consumeAmmo fraction:1 on a fullBurstEnd block; says 'W3 TIER-2 HEADLINE: trigger is `burstCast`, NOT `fullBurstEnter`' while the override ships fullBurstEnter + ownBurstGate 'cast' and W3's title says so; says W10 '(Timing: encoded at cast -> no FB major)' while W10 asserts `inFullBurst && fbMajorApplied` on a delaySec:9 hit; W5's header line says Emergency Repair is 'encoded at burstCast'. The W2 note also still describes the 15.62 rider as 'the steady-state proxy ... every 44 overall shots', the encoding the gauntlet replaced. Neither blind agent could see this file; it is a driver-only artifact defect.",
+      "documentedByDriver": false,
+      "severity": "med",
+      "suggestedFix": "Rewrite the docblock to the shipped encoding: S2 Eff2 = consumeAmmo fraction:1 at fullBurstEnd; W3 = fullBurstEnter + ownBurstGate 'cast' (nearest-wrong = bare fullBurstEnter, NOT burstCast); W5 = fullBurstEnd; W10 = delaySec:9 landing at state end inside FB, FB major APPLIED; W2 = requiresTargetStatus-gated hitCount 10, not a /44 time-average. The per-unit test header is the spec of record for the next auditor, so a stale header will re-introduce the fixed defects."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2 (Emergency Repair Effect 4)",
+      "summary": "'Reload speed is fixed at a 60% increase for 1 rounds' is modeled as a 10.5-second window, which at MG cadence can accelerate roughly two reloads where the kit grants one.",
+      "evidence": "Kit: 'Reload speed is fixed at a 60% increase for 1 rounds.' Driver: `{stat: reloadSpeedPct, value: 60, durationSec: 10.5}`. Both blind agents wrote `durationShots: 1`, and S5 asserts `durationSec === undefined` (RED). Faster reloads mean more rounds fired, so this sits in the shot-economy damage path, not a defensive one. With ammo 300 at the engine's MG cadence a belt empties in well under 10.5s, so the window covers more reloads than the one round the kit specifies. The driver's justification (types.ts has no round-count/clamp form for this stat) could not be re-verified in this pass — no tool access.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Read types.ts and settle the primitive: if a buff round-count form exists, ship `durationShots: 1` per both blind derivations. If it genuinely does not, narrow the window to one reload's worth of wall-clock (~161/1.6 frames ≈ 1.7s from the forced reload) rather than 10.5s, and keep the 'fixed at / set-not-add' nuance flagged. Do not widen further to fit a total."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst / skill1 (Annihilation State proxy)",
+      "summary": "A SELF mode is represented as a fabricated status inflicted on the boss, which is an unguarded side channel any other unit reading target statuses could pick up.",
+      "evidence": "Kit says 'Activates only when in Annihilation State status. Affects self.' — the status lives on HER. Driver: `burst -> {kind: targetStatus, name: 'Annihilation State', durationSec: 9}` on `target: {kind: enemy}`, with skill1 gating on `requiresTargetStatus`. The driver documents the proxy and its provenance (marciana/privaty pattern) but not the contamination surface: any unit whose kit gates on this status name, or any mechanic that scales off status/debuff COUNT on the target, would now read a status the boss should not carry. Inert in the liter/crown/helm control comp; not inert by construction. S6 instead proxied the gate with fbGate 'inFb' + ownBurstGate 'cast' (no fabricated status, but a worse-fitting window).",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Keep the proxy (it is the better window fit) but add the contamination caveat to the note, and grep for other consumers of `requiresTargetStatus`/target-status-count before this unit enters any comp with debuff-count scaling. The durable fix is a self-status window primitive mirroring requiresTargetStatus."
+    },
+    {
+      "subkind": "SILENT_DROP",
+      "slot": "burst (Annihilation finisher precondition)",
+      "summary": "'Affects the target(s) afflicted with Anti A.T. Field' — the finisher's affliction precondition is nowhere in the override: no gate, no caveat, no `unmodeled` entry.",
+      "evidence": "Kit header on the second burst block: '■ Affects the target(s) afflicted with Anti A.T. Field.' Driver's finisher block is an ungated `burstCast` + `flatDamage 198.6, delaySec: 9` with no `requiresTargetStatus` (the debuff is a damageTakenPct buff, not a named status, so there is nothing to gate on). The driver's note documents the STACK MIRROR proxy (⚑4/⚑5) and the consumption gap (⚑6) but never the precondition. Behaviourally near-inert in this fixture: the gated 10-shot proc guarantees stacks exist by cast+9s, so the finisher never fires against a clean boss.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "One line in `caveats`: the finisher's 'targets afflicted with Anti A.T. Field' precondition is unexpressible (the debuff is a stat buff, not a named status) and is inert here because the in-window proc always builds stacks first. Note that it would matter if she ever bursts without firing in-window, or once stack-count mirroring becomes dynamic."
+    },
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2 vs burst (two proxies for one in-game instant)",
+      "summary": "Annihilation-State end is modeled twice with different clocks — burstCast+delaySec 9 for the finisher, fullBurstEnd for Emergency Repair — so two effects the kit fires simultaneously land ~1s apart.",
+      "evidence": "Kit ties both to the same moment: burst 'After Annihilation State ends, fires powerful attacks' and skill2 'Activates when using Annihilation'. Driver ships `delaySec: 9` from burstCast for the finisher (S5 confirms landing at cast+7.5-11s) but `fullBurstEnd` for the repair package (FB start + 10s ≈ cast+10.5s). The ~1s gap is what makes S5's 'ammo dump lands 6-12s after cast' assertion RED. Consequence is one magazine boundary / one lastBullet, and the ammo dump landing after rather than at the finisher.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "If the schema accepts delaySec on buff/heal/consumeAmmo effects, re-key the Emergency Repair block to burstCast + delaySec 9 so both proxies share one clock; if it does not, say so explicitly in the note (currently the note explains why fullBurstEnd beats burstCast but never addresses why the finisher got delaySec and this block did not)."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "0.95",
+  "verdict": "GO",
+  "verdictRationale": "GO. Every load-bearing line in S2b's set is either FAITHFUL or a documented gap with a measurement recipe, and the two highest-value gauntlet fixes are independently corroborated rather than merely self-reported: S6 (blind, prose-only) converged on the SAME encodings for the S2 FB-entry gate (fullBurstEnter + ownBurstGate 'cast', not bare fullBurstEnter and not burstCast), the Emergency Repair trigger (fullBurstEnd), the consumeAmmo recovery, the 3-tick heal, and — critically — the Anti A.T. Field 30s->9s truncation, which S2b's independent spec also called for. That last fix is the real money: a damageTakenPct debuff is a target-side amp on the WHOLE team, and the pre-gauntlet 30-stack near-permanent encoding over-credited team damage by ~3-4x average (team sum 1979M->1837M). Convergence is mechanically RED, not green, and I classify all eight S5 failures as non-defects: five are blind instrument errors (the removedTimes multiset over-attributing the 471.86 rider at 448 vs ~147; two reads of buffApply.value where the engine stores the resolved flat ATK and carries the percentage in the key), one is the 30s-literal assertion where the driver is MORE faithful and outvoted 2-1 by the other derivations, and two are the documented proxies I raise as gotchas 2 and 5. Discrimination holds: each load-bearing test fails under its named nearest-wrong (ownBurstGate stripped fires strictly more; the gate-dropped counterfactual leaks 15.62 procs across the whole fight; the single-stack finisher reads 6.62 not 198.6; dropping the -40 lifts normals while leaving riders within 2%), and S5's independent delaySec assertion confirms the finisher genuinely lands at cast+9s rather than at cast. Ranked real findings: (1) the driver's test docblock is stale and still documents the pre-gauntlet encoding — a med-severity artifact defect that will mislead the next auditor into re-introducing the exact bugs this gauntlet fixed, and the only finding I would ask to be fixed before the next unit; (2) the reloadSpeedPct 10.5s window, the loosest proxy in the file, where both blind agents' durationShots:1 is plausibly more faithful and which I could not adjudicate without reading types.ts; (3-5) three low-severity undocumented-nuance items (the fabricated boss status as a side channel, the dropped 'afflicted with Anti A.T. Field' precondition, the two different clocks for one in-game instant). Same-model residual for the owner to spot-check: all five agents in this gauntlet are the same model family, so convergence proves stability, not correctness — the two places where that matters most are (a) the finisher's 6.62 x 30 magnitude, which rests entirely on the engine's MG cadence profile producing >=300 in-window rounds (the driver's own test does show stacks hitting the 30 cap, so it is internally consistent, but S6's 10-stack read from a ~12 rounds/s prior is a 3x disagreement that only an ammo-counter read off footage can settle), and (b) the heal, whose activation no SimEvent surfaces, so both test suites can only pin it structurally and S2b's expectation that crown consumes her recovery events is NOT borne out in the sim. Packet bookkeeping: the driver section claims 27 assertions but the S2d run shows 24 tests. Also note I had no tool access in this pass, so scripts/kit-autonomy/results/asuka-wille.json was NOT written — the orchestrator must persist this JSON to that path, and the S5 RED classifications above are traced from the artifacts rather than re-executed.",
+  "model": "claude-opus-5"
+}

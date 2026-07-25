@@ -40,28 +40,28 @@
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 4 | alice, liberalio, miranda, soda-twinkling-bunny |
-| `cast` | 2 | cinderella-crystal-wave, marciana-marine-study |
+| `cast` | 4 | arcana, asuka-wille, cinderella-crystal-wave, marciana-marine-study |
 | `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 1 | scarlet-black-shadow |
 | `chargeMultPct` | 6 | ada, cinderella-crystal-wave, nayuta, red-hood, snow-white, zwei |
 | `consolidation` | 1 | dorothy-serendipity |
-| `consumeAmmo` | 1 | jill |
+| `consumeAmmo` | 2 | asuka-wille, jill |
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
 | `critRateNormalPct` | 1 | helm |
-| `delaySec` | 2 | rapi-red-hood, snow-white |
+| `delaySec` | 3 | asuka-wille, rapi-red-hood, snow-white |
 | `durationShots` | 1 | helm |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
-| `everyN` | 5 | arcana, mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
-| `everyNOffset` | 2 | arcana, neon-vision-eye |
+| `everyN` | 4 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
+| `everyNOffset` | 1 | neon-vision-eye |
 | `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
 | `fbGate` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
 | `flatDamage` | 47 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
-| `gainPierce` | 3 | ade-agent-bunny, grave, milk-blooming-bunny |
+| `gainPierce` | 4 | ade-agent-bunny, asuka, grave, milk-blooming-bunny |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
-| `hasPierce` | 5 | alice, asuka, mari, red-hood, zwei |
+| `hasPierce` | 4 | alice, mari, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
 | `hitCount` | 33 | ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, … |
 | `hitRatePct` | 11 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
@@ -81,7 +81,7 @@
 | `normalAttackPct` | 5 | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
 | `notCast` | 0 | _none_ |
 | `outFb` | 1 | velvet |
-| `ownBurstGate` | 2 | cinderella-crystal-wave, marciana-marine-study |
+| `ownBurstGate` | 4 | arcana, asuka-wille, cinderella-crystal-wave, marciana-marine-study |
 | `pelletCountFlat` | 2 | arcana-fortune-mate, dorothy-serendipity |
 | `perResource` | 2 | marciana-marine-study, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
@@ -92,8 +92,8 @@
 | `removeOnReload` | 0 | _none_ |
 | `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
-| `requiresShielded` | 1 | naga |
-| `requiresTargetStatus` | 3 | d-killer-wife, marciana-marine-study, privaty |
+| `requiresShielded` | 2 | asuka, naga |
+| `requiresTargetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
 | `resourceGate` | 1 | soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
 | `sequentialMultPct` | 1 | eve |
@@ -106,7 +106,7 @@
 | `swapGate` | 2 | laplace, snow-white-heavy-arms |
 | `swapped` | 2 | laplace, snow-white-heavy-arms |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
-| `targetStatus` | 3 | d-killer-wife, marciana-marine-study, privaty |
+| `targetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |
