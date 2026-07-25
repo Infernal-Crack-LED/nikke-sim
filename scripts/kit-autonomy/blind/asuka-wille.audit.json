@@ -1,0 +1,206 @@
+{
+  "slug": "asuka-wille",
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 50 normal atk",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:50 (MG hitsPerShot 1 → 50 rounds); target enemy"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 471.86% of final ATK as add dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 471.86, crit:true (rider crits at caster rate), no core (text says no core strike), FB by timing"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates only when in Annihilation St",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "PROXY gate: fbGate 'inFb' + ownBurstGate 'cast' — no self-status-window primitive exists"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 2 enemy unit(s) ... every 10 sh",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:10; 2-target clause collapses to 1 instance on the single partless boss (⚑ caveat)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage: Deals 15.62% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 15.62, crit:true"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Anti A.T. Field: Damage Taken ▲ 0.83%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 0.83, maxStacks 30, target enemy (boss debuff, team-wide); durationSec truncated 30→9 to approximate removal-at-Annihilation"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst whi",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter + ownBurstGate 'cast' (Annihilation State only exists if SHE burst — a bare fullBurstEnter would over-fire in multi-B3 comps)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Damage ▲ 30.97% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 30.97, durationSec 10, self"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Annihilation",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "PROXY trigger fullBurstEnd + ownBurstGate 'cast' — Annihilation fires when the 9s state ENDS, not at burst cast"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Function: Reduces MG heating up speed",
+      "status": "SKIPPED",
+      "effectOrReason": "descriptive function header; its sub-effects are itemized below"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "MG heating up speed ▼ 100% for 3 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "engine models a constant pullsPerSec — no MG heat/spin-up curve exists to modify. Weapon-state line, so recorded verbatim in unmodeled + flagged, NOT silently dropped"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Removes 100% of ammo",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "consumeAmmo fraction:1 — empties the belt and forces an immediate reload (fires lastBullet)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "recovers 3.77% Max HP every 1s / 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks:3 intervalSec:1, target self — emits 3 recovery events (feeds on-recovery consumers; not skippable on isolation)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Reload speed fixed at 60% for 1 rounds",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct 60 with durationShots:1 (ROUND count, not seconds). 'Fixed at' (override-other-buffs) semantics are not expressible — authored as additive ⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Function: Reduces the normal attack da",
+      "status": "SKIPPED",
+      "effectOrReason": "descriptive function header for Annihilation State"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Normal Atk Dmg Multiplier ▼ 40% 9 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff normalAttackPct -40, durationSec 9, self — a real damage LOSS scaling the 5.47 normal multiplier"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reloads 21% magazine(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload fraction:0.21 ⚑ (add-vs-set-to semantics unverified)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 46.8% of the skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 46.8 (flat add off caster ATK, not atkPct), durationSec 9, self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 36% for 9 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 36, durationSec 9, self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Function: After Annihilation State end",
+      "status": "SKIPPED",
+      "effectOrReason": "descriptive header; supplies the timing (state end) used as delaySec 9 on the damage line"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 6.62% of final ATK as add damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage delaySec:9, crit:true, atkPct 66.2 = 6.62 × ⚑10 estimated Anti A.T. Field stacks; target enemy"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Mirrors the stack count of Anti A.T. F",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "as the ⚑ static stack multiplier above — flatDamage has no perResource path for a live pool"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Anti A.T. Field status is removed afte",
+      "status": "SKIPPED",
+      "effectOrReason": "no remove-on-trigger primitive for a stacked buff; approximated by truncating the debuff to 9s"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.burst[1].effects[0].atkPct",
+      "estimate": "66.2 (= 6.62% × 10 stacks); plausible range 66–199 (10–30 stacks)",
+      "reasoning": "Annihilation mirrors the live Anti A.T. Field stack count, which accrues at 1 stack per 10 rounds fired during the 9s Annihilation State only (status is wiped each Annihilation, and the 40s burst CD exceeds the 30s status life, so every rotation rebuilds from zero). At an assumed MG cadence of ~12 rounds/s → ~108 rounds → 10 procs → 10 stacks. At ~20/s it is 18 stacks; the 30 cap needs ~300 rounds in 9s and is almost certainly unreachable. flatDamage has no perResource hook, so the count cannot track live.",
+      "recipe": "cfg.onEvent → count buffApply events with stat 'damageTakenPct' value 0.83 (casterIdx===null && targetIdx===null, boss-held) between her burstCast and burstCast+9s in a controlComp('asuka-wille') run; multiply that count × 6.62. Cross-check against footage: the Annihilation popup magnitude ÷ (final ATK × 6.62%) = the true mirrored stack count."
+    },
+    {
+      "field": "override.skill1[1] (fbGate 'inFb' + ownBurstGate 'cast')",
+      "estimate": "proxy gate for the 9s Annihilation State self-status",
+      "reasoning": "The engine has no self-status window primitive. Annihilation State opens at HER burst cast and runs 9s; Full Burst opens slightly later and runs 10s. The proxy loses the pre-FB slice and over-counts the FB tail (~1s), and it silently assumes she is the FB-completing B3. Without ownBurstGate a bare inFb gate would fire this rider on ANY teammate's Full Burst, which the kit forbids.",
+      "recipe": "onEvent: log burstCast(asuka-wille) t0, fullBurstStart t1, fullBurstEnd t2; count damage events with bucket=rider atkPct 15.62 falling outside [t0, t0+9]. If the offset materially changes the proc count, request an engine self-status window (mirror of targetStatus/requiresTargetStatus) rather than widening the proxy."
+    },
+    {
+      "field": "override.skill1[1].effects[1].durationSec",
+      "estimate": "9 (kit literal is 30)",
+      "reasoning": "Kit states BOTH a 30s duration and removal when Annihilation triggers (end of the 9s state). Since she cannot stack the status outside Annihilation State, the 30s value never binds in real play; keeping it literal would leave a team-wide Damage Taken ▲ of up to 30×0.83% alive for ~21s past its kit-stated removal — an over-credit on every ally's damage, not just hers.",
+      "recipe": "Read the boss debuff icon timeline from footage: confirm the Anti A.T. Field icon disappears at the Annihilation hit, not 30s after the last stack. If the engine gains a remove-on-trigger primitive, restore durationSec 30 and clear on the burst[1] landing."
+    },
+    {
+      "field": "override.skill2[1].trigger (fullBurstEnd)",
+      "estimate": "proxy for 'when using Annihilation' (≈ burst cast + 9s)",
+      "reasoning": "Emergency Repair keys to Annihilation, which fires at the END of the 9s state — not at burst cast. Buff/heal/consumeAmmo effects have no delaySec, so the nearest primitive is fullBurstEnd (FB start + 10s), typically ~1s late relative to the true fire. This misplaces the forced reload by ~1s, which shifts one magazine boundary and therefore one lastBullet.",
+      "recipe": "Compare sim reload events against footage: find the frame where her belt drops to 0 without firing dry, measure its offset from the burst banner; if it is ~9.0s and fullBurstEnd lands at ~10.x s, split the block into a burstCast-keyed one once a delayed-buff primitive exists."
+    },
+    {
+      "field": "override.skill2[1].effects[0] (reloadSpeedPct 60, durationShots 1)",
+      "estimate": "+60 additive for 1 round",
+      "reasoning": "'Reload speed is FIXED at a 60% increase' overrides other reload modifiers rather than adding to them; the schema has only additive reloadSpeedPct. Solo/control comps carry few reload buffs so the two readings coincide there, but in a reload-buffing team the additive model over-credits. 'for 1 rounds' is correctly a ROUND count (durationShots), not seconds — it must survive the forced reload and expire after the next round fires.",
+      "recipe": "Run controlComp with and without a reload-speed support; if the sim's post-Annihilation reload duration diverges from footage in the buffed team only, the fix is a 'fixed value' flavor on the buff (set-not-add)."
+    },
+    {
+      "field": "override.burst[0].effects[1] (instantReload fraction 0.21)",
+      "estimate": "0.21 = add 21% of max capacity (63 rounds of 300)",
+      "reasoning": "Kit says 'Reloads 21% magazine(s)'. The schema comment ('refill magazine, fraction of max') is ambiguous between ADD 21% and SET the belt to 21%. If the engine SETS, a burst cast on a near-full belt would be a large ammo LOSS — the opposite of the kit's intent.",
+      "recipe": "Read sim.ts instantReload handling directly (one line), or onEvent-log her ammo immediately before/after burstCast in a run where she bursts on a full belt."
+    },
+    {
+      "field": "override.skill1[1] target multiplicity",
+      "estimate": "1 instance per proc (kit says 2 enemy units)",
+      "reasoning": "The scope-lock boss is a single partless enemy, so only one of the two crosshair-nearest targets exists. This halves both the 15.62% rider throughput and the Anti A.T. Field stack rate versus a two-target read — and the stack rate feeds the burst nuke, so the error compounds.",
+      "recipe": "Footage: count the small Anti A.T. Field popups per 10 rounds during Annihilation State (1 vs 2), and count Damage Taken ▲ stack icons at the state's end. If it is 2, double the block (or duplicate the effects) and re-derive the burst nuke stack estimate."
+    },
+    {
+      "field": "cadence tuple (pullsPerSec / reloadFrames 161 / ammo 300)",
+      "estimate": "MG prior ~12 rounds/s effective (frame-quantized), reload ~2.68s",
+      "reasoning": "The kit text gives no rate of fire and datamined rate_of_fire/reloadFrames are known-unreliable; MG effective rate is additionally frame-quantized (60/ceil(60/nominal)) and, in-game, ramps with heat — which this file cannot model. Both hitCount triggers (50 and 10) and therefore every rider and the burst nuke's magnitude scale linearly with this number.",
+      "recipe": "Ammo-counter read from footage — count rounds consumed per second directly off the HUD counter (the instrument that measures shots/sec), not FB-count or damage totals which are downstream of it."
+    },
+    {
+      "field": "noFb (all flatDamage riders) / burst[1] delayed hit FB eligibility",
+      "estimate": "default OFF everywhere (riders take Full Burst by timing)",
+      "reasoning": "Per-kit noFb is measured-only and is never set unmeasured. Note the consequence here: the Annihilation hit is authored as a DELAYED hit landing at cast+9s, which is inside the Full Burst window, so it currently receives the +50% FB major — unlike an instant burst-cast hit, which would be FB-exempt by construction.",
+      "recipe": "Popup-read the Annihilation number against a same-run normal-attack popup with known buffs; back out whether the ×1.5 FB major is present. Only then set noFb."
+    },
+    {
+      "field": "unmodeled.skill2 'MG heating up speed ▼ 100% for 3 sec'",
+      "estimate": "unmodeled (assume damage-neutral in v1)",
+      "reasoning": "Weapon-state modifiers are damage, so this is flagged rather than dropped: the engine has a flat pullsPerSec with no heat/spin-up curve, so there is nothing for a 100% heat-speed reduction to act on. Its real effect is coupled to the ammo dump + fixed reload (the Emergency Repair package resets the belt and the ramp together), so modeling it in isolation would be guesswork.",
+      "recipe": "Frame-count her rounds/s in the 3s immediately after the Annihilation forced reload versus a mid-belt 3s window elsewhere in the fight. A measured difference is the size of the missing mechanic and would justify a fireRatePct stand-in or a real MG heat model."
+    }
+  ],
+  "model": "claude-opus-5"
+}

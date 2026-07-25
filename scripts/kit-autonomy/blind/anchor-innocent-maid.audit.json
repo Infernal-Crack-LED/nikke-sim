@@ -1,0 +1,134 @@
+{
+  "slug": "anchor-innocent-maid",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter, target allies (team-wide FB entry, NOT burstCast — she is not the sole burster)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effects vary according to number used",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating (Nth activation applies steps 1..N)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Once: Potency of HP ▲ 30.96% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 30.96 / 5s — ⚑ stat identity; inert either way, kept for step ordering"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Twice: Distributed Damage ▲ 30.4% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff distributedDamagePct 30.4 / 10s (step 2)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Three times: Stack count of debuffs ▼1",
+      "status": "SKIPPED",
+      "effectOrReason": "ally debuff cleanse — no ally-debuff channel in v1 (boss deals no damage/debuffs); verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ …while ally from same squad present",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second fullBurstEnter block with teamHas.slugs gate (⚑ roster unverified)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 3.04% Max HP every 1 sec 8 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks 8, intervalSec 1, target allies — 8 recovery events (tandem: feeds on-recovery consumers); HP amount unmodeled by design"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when Full Burst ends",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnd, target allies"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effects vary according to number used",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating, 3 steps"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: Hit Rate ▲ 10.13% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 10.13 / 10s (core-hit lift; ⚑ conversion magnitude is engine-side)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: ATK ▲ 35.02% of skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 35.02 / 10s — caster-scaled flat add, NOT atkPct"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Three times: Reload Speed ▲ 40.04% 15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct 40.04 / 15s — weapon-state modifier IS damage (gates shots fired); never skipped"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies on the burstCast block"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Storage: Stores excess healing, 60.19%",
+      "status": "SKIPPED",
+      "effectOrReason": "excess-healing bank vs a 25s window — no HP pool and no incoming damage in v1; verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 40.18% of Max HP as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks 1 to all allies — one recovery event per burst cast (tandem channel)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 30.09% of skill user's ATK 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 30.09 / 10s, allies"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[1].teamHas.slugs",
+      "estimate": "[\"anchor\", \"poli\", \"neve\"]",
+      "reasoning": "'an ally from the same squad' has no squad axis in the data, so it is expressed as a slug list (same precedent as noir's burst same-squad gate). I am BLIND to data/characters.json here and cannot verify Anchor's squad roster; the list is a recollection-level guess. A wrong list makes the block inert (under-credit) rather than over-firing, which is the safe direction because the heal drives teammates' on-recovery triggers.",
+      "recipe": "Read the squad/lore field for anchor-innocent-maid (and each candidate) in data/characters.json or the blablalink profile; replace the slugs array with the confirmed same-squad roster, including the base anchor slug if it qualifies. Then confirm with a runComp trace that the heal's buffApply/recovery events appear only on rosters containing a listed ally."
+    },
+    {
+      "field": "override.skill1[0].effects[0].steps[0].stat",
+      "estimate": "targetMaxHpPct 30.96 for 5s (offensively inert)",
+      "reasoning": "'Potency of HP ▲' is not a StatKey. Two readings: (a) Max HP ▲ (targetMaxHpPct), (b) a healing-potency / recovery-amount multiplier, which the schema cannot express at all. Reading (a) is literal-word-closest and is inert for damage (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, and this unit carries no HP→ATK scaler), so the choice moves no damage today. The step is retained regardless because escalating indexes by position — dropping it would promote the Distributed Damage step to the FIRST Full Burst, a real over-credit.",
+      "recipe": "Confirm the stat's in-game display name on the blablalink kit page / the datamined stat id. If it is a recovery-amount stat, move the line verbatim to unmodeled.skill1 and replace the step with the nearest inert placeholder that preserves the index, or add a healing-potency StatKey if a consumer ever exists. Either way re-check that the Distributed Damage buff first appears on the SECOND full burst in a runComp buffApply trace."
+    },
+    {
+      "field": "override.skill2[0].effects[0].steps[0] (hitRatePct 10.13)",
+      "estimate": "10.13 Hit Rate → engine hrCoreMult core-hit lift (magnitude of the lift itself unmeasured)",
+      "reasoning": "The 10.13% is verbatim from the kit, but the Hit-Rate→core-rate conversion is a derived engine relationship (sim.ts hrCoreMult, HRCORE-gated), not a measured per-unit constant. The damage this line produces is therefore only as good as that global slope, and it is an ALWAYS-⚑ field by policy.",
+      "recipe": "Do not tune the 10.13 (kit-true). Validate the downstream lift on a recorded fight: run the control comp with HRCORE=1 vs HRCORE=0 in SEPARATE processes (module-const env flag), compare the focus unit's core-hit fraction delta against the accuracy-circle geometry in docs/data/sg-calc/ / HRCORE, and refine the slope there, not here."
+    },
+    {
+      "field": "base cadence tuple (RL: chargeFrames 60, reloadFrames 141, ammo 6) — consumer of skill2 reloadSpeedPct 40.04",
+      "estimate": "use the datamined tuple as-is; reload buff payoff ≈ 141f/1.4004 ≈ 101f per cycle on a 6-round RL",
+      "reasoning": "rate_of_fire / reloadFrames are known-unreliable datamine fields, and the effective cadence is frame-quantised (60fps boundaries). The reload-speed step's entire value is mediated by the reload frame count and the charge time, so a wrong tuple silently mis-prices a modeled damage line.",
+      "recipe": "Read the reload cycle + charge time off a recording of this unit (ammo-counter timestamps between empty and refill, and trigger-pull to shot-landing for the charge), quantise to 60fps frame boundaries, and correct the character entry before grading this override's reload contribution."
+    },
+    {
+      "field": "override.burst[0].trigger (burstCast) and skill1/skill2 escalating counters",
+      "estimate": "burstCast for the burst block; escalating counters monotonic, never reset",
+      "reasoning": "Trigger identity is read literally — the burst block is her own cast (fires only on rotations where she actually bursts, and lands pre-FB so it takes no +50% major, correct for a buff), while skill1/skill2 are team-wide FB enter/end and fire on ANY chain. The kit is SILENT on whether the 'number of times used' counters reset (per battle vs per something else); I assume monotonic per battle, which is the standard escalating semantic.",
+      "recipe": "In a recorded multi-rotation fight, check that the Distributed Damage / Reload Speed tiers persist from the 2nd/3rd Full Burst onward and never revert to tier 1; if they revert, the counter resets and the escalating primitive needs a reset rule (a per-rotation everyN/offset shape) instead."
+    }
+  ]
+}

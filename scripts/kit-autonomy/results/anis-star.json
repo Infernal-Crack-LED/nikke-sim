@@ -1,0 +1,201 @@
+{
+  "slug": "anis-star",
+  "kitDescription": "Anis: Star is an Electric Rocket-Launcher Defender on Burst I whose whole kit forks on squad formation: if she is the only Burst I on the team she runs 'My Own Star' (a permanent self ATK ▲40.01%, a recurring 7.48s team burst-cooldown cut at every Full Burst end, a team flat ATK grant worth 35.01% of HER ATK on Full Burst entry, and an extra self Attack Damage ▲35.2% inside her own burst); with any other Burst I ally she instead runs 'Everyone's Star' (she re-enters the burst queue at stage 1, heals the team per full charge, and grants team Max HP off her own Max HP). Independent of formation she passively speeds everyone's burst-gauge fill by 6%, and every landed Full Charge shot tacks on a 120.13%-of-final-ATK rider. On Full Burst entry she hands the team Attack Damage ▲34% and Projectile Explosion Damage ▲92.03% (nominally only to allies with lower final DEF than her). Her burst summons Shooting Stars — 40 automatic hits of 40.01% final ATK at 0.25s intervals over 10s, carrying the projectile-explosion flavor — while clamping her charge time to 0.7s, doubling explosion radius, and buffing her own DEF. In practice her damage is the full-charge rocket stream plus the star barrage, both amplified by her own FB-window Damage-Up stacking.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Burst Gauge filling speed ▲6% cont.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive / allies / burstGenPct 6, no duration",
+        "blindSaid": "S2b + S5 + S6 all: passive, allies, burstGenPct 6, permanent",
+        "formulaCheck": "burstGenPct scales gauge accrual, not a one-shot fill; no damage bucket touched — routing correct",
+        "fireRateOk": true,
+        "explanation": "Unanimous three-way convergence. 'start of battle' + 'continuously' = permanent passive; the self-alive precondition is always true in v1 (no deaths). S5 asserts 4 distinct targets applied exactly once each, which fails the self-only and per-FB-retrigger nearest-wrongs."
+      },
+      {
+        "kitLine": "noB1 My Own Star ATK ▲40.01% cont.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive / self / atkPct 40.01, formation noB1, no duration",
+        "blindSaid": "identical (S6 byte-equivalent); S2b named the nearest-wrongs as ungated application and casterAtkPct mis-encoding",
+        "formulaCheck": "atkPct scales the unit's OWN ATK — correct for a plain 'ATK ▲' with no 'of the skill user's' qualifier; contrast the skill2 line which does carry that qualifier and correctly routes to casterAtkPct",
+        "fireRateOk": true,
+        "explanation": "Permanent while the formation holds; 'cannot be removed' means no expiry, and the FB-end re-application is a no-op on a permanent buff. Driver test A1 pins self/continuous and F1 proves it is ABSENT in the hasB1 comp."
+      },
+      {
+        "kitLine": "noB1 Burst Skill CD ▼7.48 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd / allies / burstCdr 7.48s, formation noB1 (recurring, not oncePerBattle)",
+        "blindSaid": "S2b flagged this as the #2 shared-prior trap (oncePerBattle is the nearest-wrong); S5 asserts ungated > ungated+oncePerBattle in FB count; S6 encoded the identical recurring fullBurstEnd block",
+        "formulaCheck": "burstCdr is a rotation primitive, damage-inert directly; the battle-start instance is genuinely inert because all cooldowns are 0 at t=0 (S6 caveat independently derives the same)",
+        "fireRateOk": true,
+        "explanation": "The trap all three agents named is dodged: the driver's encoding re-fires at EVERY fullBurstEnd. Driver test A10 shows the CDR buys additional casts (noCdr counterfactual → fewer casts), which is the multi-rotation timing assertion S2b demanded. The omitted battle-start application is documented and provably inert."
+      },
+      {
+        "kitLine": "hasB1 Everyone's Star re-enter stage 1",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive / self / reenterStage {stage:1}, formation hasB1 — note documents this as the REAL mechanic, superseding an earlier burstEligibility approximation",
+        "blindSaid": "S6 used burstEligibility {stage:1} and ⚑'d it, explicitly suspecting the real mechanic is a same-rotation re-entry (reading b); S2b marked it MEASUREMENT-GATED and warned against inventing extra casts",
+        "formulaCheck": "SSOT §2: reenterStage {stage:1} IS the real Everyone's-Star re-entry primitive — the driver picked the correct primitive, the blind picked the closest one it could see",
+        "fireRateOk": true,
+        "explanation": "The blind's ⚑ predicted exactly this: it guessed reading (a) via burstEligibility while suspecting reading (b), and the driver shipped the true primitive that encodes (b). Both blinds' concern was 'don't invent extra casts without measurement' — reenterStage is not an invention, it is the engine's own representation of the mechanic. Divergence resolves in the driver's favour on primitive availability, not on kit reading."
+      },
+      {
+        "kitLine": "Full Charge: +120.13% final ATK rider",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired / enemy / flatDamage atkPct 120.13 — once per pull (RL always full-charges), NOT per hit",
+        "blindSaid": "S6 used chargeCounter{count:1}; S2b and S5 both named per-hit keying (hitsPerShot 2 → exact 2× over-credit) as the nearest-wrong and asserted rider count === shot count, never 2×",
+        "formulaCheck": "flatDamage atkPct is a % of final ATK routed outside the normal-attack multiplier; rangeApplied forced false on riders, no core bucket (prose does not say 'core strike'), FB major by landing timing",
+        "fireRateOk": true,
+        "explanation": "Driver test A3 pins exactly one rider per shot, which is the discriminating assertion both blinds specified. shotFired vs chargeCounter{count:1} is a trigger-spelling difference with identical firing semantics for an always-full-charging RL — not a divergence. The 2× per-hit trap is provably avoided."
+      },
+      {
+        "kitLine": "Cancels Everyone's/My Own Star",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1, verbatim — bookkeeping expressed structurally by the mutually exclusive formation gates",
+        "blindSaid": "S6 unmodeled.skill1 verbatim, same reasoning; S2b listed both under unmodeledVerbatim with the same 'expressed by the formation gate, not a block' note",
+        "formulaCheck": "n/a — pure state bookkeeping, zero damage routing",
+        "fireRateOk": true,
+        "explanation": "Three-way agreement that the noB1/hasB1 gates are mutually exclusive by construction, so the cancel lines are structurally enforced rather than dropped. Verbatim retention in unmodeled is the correct disposition."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "FB enter, MOS: ATK ▲35.01% of user",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / allies / casterAtkPct 35.01 for 10s, formation noB1",
+        "blindSaid": "S2b and S6 identical; S5 asserted 4 targets × fbCount with a 10s window and that swapping casterAtkPct→atkPct changes team damage",
+        "formulaCheck": "SSOT: 'of the skill user's ATK' → casterAtkPct, a FLAT add of 35.01% of Anis's ATK — correct. buffApply.value is the RESOLVED flat grant (≈28101), not the literal 35.01",
+        "fireRateOk": true,
+        "explanation": "Correct stat choice on the exact distinction the SSOT calls out; atkPct would over-credit high-ATK carries. Driver test A9 discriminates by LINEAR SCALING (doubleCaster: 35.01→70.02 doubles the resolved value), which is the right way to prove a resolved-flat grant. F1 proves absence in the hasB1 comp."
+      },
+      {
+        "kitLine": "hasB1 Full Charge heal 1.26% MaxHP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 — hasB1-gated, offensively inert in the validated sole-B1 scope, owner-ruled drop; note documents the crown-recovery tandem it would feed",
+        "blindSaid": "BOTH blinds implemented it and called it tandem-critical (S2b: dropping it silently deflates crown's on-recovery uptime; S6 cited prior 8; S5 wrote a helm-off assertion for it)",
+        "formulaCheck": "SSOT §2: heal/lifesteal is offensively inert EXCEPT via a teammate on-recovery consumer — so the blinds' concern is mechanically real, and the driver's scope argument (hasB1 branch, validated basis is the sole-B1 comp) is also real",
+        "fireRateOk": true,
+        "explanation": "This is the one substantive blind-vs-driver disagreement, and it lands as a DOCUMENTED_GAP rather than a gotcha: the driver did not silently drop it as 'defensive' (the nearest-wrong both blinds feared) — it is recorded in unmodeled with the specific tandem it would feed, under an explicit owner ruling, and it is unreachable in the reference-grade sole-B1 fixture. The gap is real and should be closed if a hasB1 comp with an on-recovery consumer (crown) is ever graded; see gotchas for the low-severity entry."
+      },
+      {
+        "kitLine": "FB enter: Proj. Explosion ▲92.03%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / allies / projectileExplosionPct 92.03 for 10s; note ⚑'s the lower-DEF target set approximated as all allies (she is top-DEF Defender)",
+        "blindSaid": "S2b: mandatory self-inclusion, ally coverage is a ⚑ stand-in that MUST be documented, must not be dumped into attackDamagePct; S6 identical encoding with the same ⚑",
+        "formulaCheck": "SSOT: projectileExplosionPct feeds ONLY projectile-explosion-flavored damage (RL explosion + Shooting Stars) and is inert on non-RL kits — so the all-allies widening is inert on this comp's non-RL teammates, bounding the ⚑'s blast radius",
+        "fireRateOk": true,
+        "explanation": "Correct bucket (not laundered into attackDamagePct), self always included, and the missing DEF-ranked TargetDef is flagged with the reason she is normally top-DEF. Because the stat is RL/explosion-only, the approximation moves nothing unless a second RL ally with lower DEF is present. Driver test A4 pins the stat/value/window."
+      },
+      {
+        "kitLine": "FB enter: Attack Damage ▲34% allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / allies / attackDamagePct 34 for 10s, no star gate",
+        "blindSaid": "S2b flagged burstCast keying as the nearest-wrong (under-credits every dual-B1 rotation she sits out); S5 and S6 identical to the driver",
+        "formulaCheck": "attackDamagePct is the Damage-Up bucket, ADDITIVE with the burst self 35.2% — correct additive composition per SSOT",
+        "fireRateOk": true,
+        "explanation": "Keyed to fullBurstEnter (ANY team FB), not burstCast, so it fires on rotations liter takes the B1 slot. Driver test A5 pins all-allies/10s, and F2 confirms it is formation-independent (fires in both comps)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Shooting Stars 40.01% / 0.25s / 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / enemy / dot atkPct 40.01, intervalSec 0.25, durationSec 10, flavor projectileExplosion — 40 ticks per cast, one instance",
+        "blindSaid": "S2b: exactly 40 ticks per HER cast and ZERO when liter casts; nearest-wrongs are fullBurstEnter keying (massive over-credit) and intervalSec 1 (10 ticks). S6 identical, crit left OFF pending measurement",
+        "formulaCheck": "dot with projectileExplosion flavor correctly picks up the skill2 92.03% bucket per SSOT; single non-repeating trigger avoids DoT-instance multiplication; no core on stars",
+        "fireRateOk": true,
+        "explanation": "Trigger, interval, duration, tick count and flavor all converge three ways. Driver test A7 pins 40 ticks/cast and the halfDot counterfactual (0.25→0.5 → 20 ticks) is the exact discrimination S5 demanded against a 1s-interval read. Crit left off follows the measured-only DoT-crit prior; S6 independently ⚑'d it with a popup-colour recipe."
+      },
+      {
+        "kitLine": "Charge time fixed at 0.7 sec, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / self / chargeSpeedPct 30 for 10s — SUBTRACTIVE derivation: 60 × (1 − 0.30) = 42f = 0.7s exactly",
+        "blindSaid": "BOTH blinds derived 42.86 assuming a MULTIPLICATIVE formula (1/0.7 = 1.4286); S6 ⚑'d it as a clamp-vs-percent composition issue",
+        "formulaCheck": "SSOT is explicit: sim.ts:2560 needed = round(chargeFrames × (1 − chargeSpeedPct/100)), so 30 → 42f → 0.7s EXACTLY, and a multiplicative reading is WRONG for this engine",
+        "fireRateOk": true,
+        "explanation": "RECON_ERROR territory on the blinds' side, not the driver's: neither blind could read sim.ts, and the SSOT plus the owner's 2026-07-13 ruling corroborate 30. The driver's value is the only one that actually produces 0.7s in this engine. The line is correctly modeled as damage-affecting (it gates shot count and rider count), not dropped as QoL. Driver test A8 pins chargeSpeedPct 30 self/10s. The clamp-vs-percent under-clamp residual under a stacked charge-speed team remains a legitimate ⚑, but is not a divergence."
+      },
+      {
+        "kitLine": "MOS: Attack Damage ▲35.2% self",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / self / attackDamagePct 35.2 for 10s, formation noB1",
+        "blindSaid": "S2b and S6 identical; nearest-wrongs named as ungated, ally-broadcast, or fullBurstEnter-keyed",
+        "formulaCheck": "stacks ADDITIVELY with the skill2 team 34% in the Damage-Up bucket — correct per SSOT",
+        "fireRateOk": true,
+        "explanation": "Correctly self-only, correctly gated to My Own Star, correctly keyed to her own cast. Driver test A6 pins it and F1 proves absence in the hasB1 comp."
+      },
+      {
+        "kitLine": "ES: Max HP ▲15.02% of user, allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / allies / casterMaxHpPct 15.02 for 10s, formation hasB1 (resolves to a maxHpFlat buffApply)",
+        "blindSaid": "S2b and S6 identical; nearest-wrong is targetMaxHpPct (each ally's own HP) or the wrong star gate",
+        "formulaCheck": "SSOT: casterMaxHpPct is a FLAT add of % of the CASTER's Max HP and ally-granted Max HP never feeds a teammate's atkOfMaxHpPct — offensively inert here, correctly so",
+        "fireRateOk": true,
+        "explanation": "Right stat on the caster-scaled distinction, right formation gate. Driver test F1 asserts maxHpFlat is present iff hasB1, which is the exact flip assertion. Damage-inert by design and kept for kit completeness."
+      },
+      {
+        "kitLine": "Explosion Radius ▲100% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim — no radius primitive, single partless boss",
+        "blindSaid": "S2b UNMODELED (nearest-wrong: laundering it into a damage %); S5 it.skip; S6 SKIPPED with the same reasoning",
+        "formulaCheck": "no AoE/radius geometry in the damage formula; against a single partless target a larger radius moves zero damage",
+        "fireRateOk": true,
+        "explanation": "Unanimous. Correctly retained verbatim rather than laundered into a damage percentage — the trap S2b explicitly named."
+      },
+      {
+        "kitLine": "DEF ▲55.01% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst — inert in v1",
+        "blindSaid": "BOTH blinds implemented it as an inert defPct 55.01 for kit completeness; S2b additionally noted it is the input to skill2's 'lower final DEF than self' comparison if that target set is ever modeled",
+        "formulaCheck": "SSOT: DEF is damage-inert — zero damage impact either way, so this is a bookkeeping-only divergence",
+        "fireRateOk": true,
+        "explanation": "Provably zero-damage either way, so not a gotcha. The blinds have the better long-run argument (keeping the inert defPct preserves the input to any future final-DEF ranking for the 92.03% target set, and matches the schema's keep-inert-stats convention), but the driver documented the omission rather than silently dropping it. Recorded as a low-severity bookkeeping note in gotchas."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "hasB1 Everyone's-Star full-charge heal (1.26% of final Max HP) is unmodeled, so no recovery events fire in a dual-B1 comp — an on-recovery consumer such as crown loses the uptime this cadence would drive.",
+      "evidence": "Driver ships it in unmodeled.skill2 under an owner ruling with the crown-recovery tandem documented. Both blind agents independently implemented it and both named 'dropped as defensive' as the nearest-wrong: S2b called it TANDEM-critical and specified asserting crown's recovery-trigger count scales with Anis's shot count; S6 implemented it as heal ticks:1 per chargeCounter citing prior 8; S5 wrote a helm-off assertion for it. SSOT confirms heals are offensively inert EXCEPT via a teammate on-recovery consumer, so the deflation is mechanically real — but only in the hasB1 branch, which the reference-grade sole-B1 fixture never enters.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Faithful representation: add skill2 block { trigger: shotFired (or chargeCounter count:1), target: allies, formation: 'hasB1', effects: [{kind:'heal', ...1.26% of caster final Max HP}] } so recovery events emit at full-charge cadence. It is inert in every sole-B1 comp, so landing it cannot move the current graded basis; gate the decision on whether any graded hasB1 comp pairs her with an on-recovery consumer. No magnitude invention needed — 1.26% of final Max HP is the prose's own number."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "burst",
+      "summary": "Burst DEF ▲55.01% is recorded in unmodeled rather than shipped as an inert defPct buff, so the value is absent from the buff table if a final-DEF ranking is ever needed for the skill2 lower-DEF target set.",
+      "evidence": "Both blinds shipped defPct 55.01 self/10s for kit completeness; S2b flagged it as the input to the 92.03% 'allies with lower final DEF than self' comparison and S5's assertion was 'defPct present AND zeroing it moves zero damage'. SSOT confirms DEF is damage-inert, so total damage is identical either way — verified by the driver's validate-overrides run (365.9M) being unaffected by an inert stat.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Add { trigger: burstCast, target: self, effects: [{kind:'buff', stat:'defPct', value:55.01, durationSec:10}] } to the burst slot and drop the line from unmodeled. Purely additive bookkeeping — zero damage movement, verifiable by an unchanged validate-overrides total — and it restores the input the future DEF-ranked TargetDef would read."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Convergence is GREEN: the adapted S5 blind test runs 24 passed / 5 skipped (documented GAPs) / 0 failed against the shipped override, and the driver's own 18-assertion suite is green with an independent S2d verify plus a clean validate-overrides (0 warnings, 365.9M). All 16 kit lines classify FAITHFUL or DOCUMENTED_GAP — 12 faithful, 4 documented gaps — for a faithfulness score of 1.0 with no REAL-GOTCHA. Every trap the pre-op review predicted was dodged: the formation fork is encoded with the correct noB1/hasB1 primitive and proven to FLIP by a second comp; the 7.48s CDR recurs at every fullBurstEnd rather than oncePerBattle and is shown to buy extra casts; the 120.13% rider fires once per attack rather than twice per hitsPerShot=2 shot; Shooting Stars key to burstCast at 0.25s for exactly 40 ticks per cast with the halfDot counterfactual discriminating a 1s-interval read; casterAtkPct and casterMaxHpPct correctly use caster-scaled flat adds, with linear-scaling discrimination proving the resolved-value semantics; and the 92.03% lands in projectileExplosionPct rather than being laundered into attackDamagePct. The two blind-vs-driver value divergences resolve in the driver's favour on evidence the blinds could not see: chargeSpeedPct 30 is the only value that yields 0.7s under the engine's SUBTRACTIVE charge formula (sim.ts:2560, corroborated by probe and the owner's 2026-07-13 ruling), making the blinds' 42.86 a RECON_ERROR of the no-tools dispatch; and reenterStage{stage:1} is the real re-entry primitive the blinds approximated with burstEligibility while explicitly suspecting the mechanic the driver shipped. The two remaining divergences — the hasB1 full-charge heal and the inert burst defPct — are both documented in unmodeled, both provably zero-damage in the validated sole-B1 scope, and are logged as low-severity gotchas with faithful (non-fudge) fixes rather than blocking findings; neither is a silent drop. Discrimination holds across every load-bearing line via named counterfactuals, and the residual ⚑s (cadence tuple, hitsPerShot split-vs-merge, charge-clamp composition under stacked charge speed, lower-DEF target coverage, star crit) are magnitude/measurement-gated and out of scope.",
+  "model": "claude-opus-5"
+}

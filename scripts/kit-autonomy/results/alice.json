@@ -1,0 +1,102 @@
+{
+  "slug": "alice",
+  "kitDescription": "Alice is a Fire SR Attacker (Burst III) whose whole identity is charged shots. When the team enters Full Burst, she grants the two allies with the highest final ATK a 10-second Charge Speed (+11.67%) and Charge Damage (+7%) boost. Her own burst is a self-buff that dramatically shortens her charge time (Charge Speed +80.15%) and raises her ATK (+55.12%) for 10 seconds, letting her fire many faster, harder-hitting charged shots. She also has an HP-gated self passive: continuous Pierce while above 80% HP, switching to self-healing (recover 8.12% of attack damage) if she drops below 80%. At scope lock the Pierce is damage-inert (partless boss, no pierce-damage carrier) and the lifesteal branch never triggers (boss deals no damage), so her effective contribution is the FB-enter ally charge buffs plus her own burst cadence/ATK lift.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when entering Full Burst",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger fullBurstEnter",
+        "blindSaid": "fullBurstEnter (S6); S5 assertion 'never before first fullBurstStart'",
+        "formulaCheck": "team-FB entry key, fires on any B3-led FB incl. helm rotations — correct per '■ Activates when entering Full Burst'",
+        "fireRateOk": true,
+        "explanation": "Keyed to team FB entry, not burstCast; driver A1 counterfactual shows fullBurstEnter (11 FB frames) discriminates from burstCast (alice's 6 casts)."
+      },
+      {
+        "kitLine": "Affects 2 allies highest final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "alliesTopAtk {byFinalAtk:true, count:2}, self-eligible",
+        "blindSaid": "alliesHighestAtk count:2 final-ATK, self-eligible (⚑ kind-name guess); S5 'exactly 2 distinct targets'",
+        "formulaCheck": "final-ATK dynamic ranking, no excludeSelf → alice can rank top-2 post-burst; matches 'highest final ATK'",
+        "fireRateOk": true,
+        "explanation": "byFinalAtk re-ranks at apply time so alice's own +55.12% can pull her into the top-2 and stack her S1 onto her burst — driver A1 asserts per-firing count==2, not a 4-ally union."
+      },
+      {
+        "kitLine": "Charge Speed ▲11.67% (10s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff chargeSpeedPct 11.67 dur10",
+        "blindSaid": "attackSpeedPct proxy (⚑ no chargeSpeed StatKey — schema redacted)",
+        "formulaCheck": "chargeSpeedPct shortens needed=round(chargeFrames×(1−cs/100)) sim.ts:2557-2560 — the correct charge-time path, NOT attackSpeedPct (fire-rate)",
+        "fireRateOk": true,
+        "explanation": "Blind proxied to attackSpeedPct only because the StatKey was redacted as an answer token; driver's live chargeSpeedPct is engine-verified. Caster-relative 'of the skill user's Charge Speed' qualifier ⚑-flagged (no caster-relative StatKey, small magnitude, out-of-domain)."
+      },
+      {
+        "kitLine": "Charge Damage ▲7% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff chargeDamagePct 7 dur10",
+        "blindSaid": "S6: chargeDamageMultPct 7 (⚑); S5 materialized CORRECTED to chargeDamagePct (types.ts:23 additive bucket)",
+        "formulaCheck": "SSOT: 'Charge Damage ▲7%' = additive percentage points → chargeDamagePct (sim.ts:1385), NOT chargeDamageMultPct (base-charge scaler). Driver picked the correct one of the two charge stats.",
+        "fireRateOk": true,
+        "explanation": "The single subtle stat-choice trap (chargeDamagePct vs chargeDamageMultPct); driver routed correctly and the blind S5 test self-corrected to the same key. Non-charge recipients move zero (A2 discriminates)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": ">80% HP: continuous Pierce",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hasPierce:true (hit tag), inert at scope lock",
+        "blindSaid": "S6 SKIPPED inert; S5 it.skip; S2b FAITHFUL-inert, encode as plain passive",
+        "formulaCheck": "hasPierce is a tag enabling pierceDamagePct eligibility (sim.ts:1400); PIERCE_CORE_DOUBLE=false (sim.ts:1091); no pierceDamagePct source + partless boss → damage-INERT. >80% gate always-true in v1.",
+        "fireRateOk": true,
+        "explanation": "Correctly modeled as a hit tag, not a stat buff; driver B1 asserts byte-identical totals with pierce removed — a nonzero delta or a pierceDamagePct-as-buff mis-encoding would break it."
+      },
+      {
+        "kitLine": "<80% HP: recover 8.12% atk dmg",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED (verbatim in unmodeled.skill2), ⚑ 0 impact",
+        "blindSaid": "S6 SKIPPED / S5 it.skip / S2b UNMODELED — unreachable, no recovery events",
+        "formulaCheck": "Scope lock: boss deals no damage, no HP pool → <80% branch never entered; heal models no HP amount. Correctly unreachable.",
+        "fireRateOk": true,
+        "explanation": "Deliberately unmodeled with reason recorded. Crown (on-recovery consumer) is in the control comp, so a mis-emitted heal would corrupt her cadence — S2b/S5 assert crown's recovery-trigger count stays at the alice-absent baseline; driver B2 it.skip is consistent (no heal leak)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Charge Speed ▲80.15% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger burstCast, self, buff chargeSpeedPct 80.15 dur10",
+        "blindSaid": "attackSpeedPct proxy (⚑ redacted StatKey); burstCast (S6)",
+        "formulaCheck": "chargeSpeedPct → ~90/1.8015 ≈ 50f charge in-window (sim.ts:2557); burstCast self (NOT fullBurstEnter) so no over-credit on helm-led FBs. This is the kit-defining cadence line and IS damage (gates shot count).",
+        "fireRateOk": true,
+        "explanation": "Live chargeSpeedPct converts to real shot-count cadence; C1 counterfactual shows burstCast (6 alice casts, self-only) discriminates from fullBurstEnter (11 FB frames). Blind's attackSpeedPct was a redaction-forced proxy, not a driver defect."
+      },
+      {
+        "kitLine": "ATK ▲55.12% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger burstCast, self, buff atkPct 55.12 dur10",
+        "blindSaid": "atkPct 55.12 self, burstCast (S6/S5 converge)",
+        "formulaCheck": "atkPct scales her own ATK across all her buckets; burstCast keying avoids double-crediting on helm's FBs in the co-B3 control comp.",
+        "fireRateOk": true,
+        "explanation": "C2 asserts one atkPct(55.12) application per alice burstCast and none on helm-led rotations; zeroing lowers only alice's damage, teammates byte-identical."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All six kit lines are FAITHFUL (five load-bearing) or a recorded DOCUMENTED_GAP (the unreachable <80% lifesteal), so faithfulness is 1.0 with zero REAL-GOTCHAs. The S5 blind tests materialize GREEN against the shipped override (6 pass + 4 skip), and both blind writers (S5/S6, cross-family opus) independently re-derived the driver's exact structure — fullBurstEnter + top-2 final-ATK self-inclusive for S1, burstCast self for the burst, pierce-as-tag-inert, lifesteal-unmodeled. The ONLY blind divergences were stat-key guesses forced by the redacted StatKey enum (attackSpeedPct-for-charge-speed, chargeDamageMultPct-for-charge-damage, alliesHighestAtk kind-name) — every one ⚑-flagged by the blind writers and every one resolved to the driver's engine-verified keys (chargeSpeedPct sim.ts:2557, chargeDamagePct sim.ts:1385 — correctly the additive bucket not the base-charge scaler, alliesTopAtk+byFinalAtk). These are RECON_ERROR artifacts of redaction, not gotchas. Discrimination holds: A1/A2/B1/C1/C2 each fail under their named nearest-wrong model (burstCast↔fullBurstEnter keying, top-2↔all-allies, pierce-tag↔pierceDamagePct-buff). The same-model residual the owner should spot-check is measurement-gated and out of gauntlet scope: (1) the caster-relative '11.67% of the skill user's Charge Speed' qualifier modeled as a plain +11.67% (no caster-relative StatKey, small magnitude); (2) the effective charge cadence produced by the 80.15% Charge Speed against datamined chargeFrames 90 / reloadFrames 141 / ammo 6 — pin from footage before trusting the charge-driven damage number; (3) the 80.15%+11.67% stacking convention (additive-in-stat vs multiplicative on charge time) when alice self-includes in her own S1. Board reads 1.101 HOT (1 record); the residual is attributed to basis/comp-side, not a kit-encoding defect. GO.",
+  "model": "claude-opus-4-8"
+}

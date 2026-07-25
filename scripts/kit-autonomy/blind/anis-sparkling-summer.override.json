@@ -1,0 +1,107 @@
+{
+  "slug": "anis-sparkling-summer",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 55.31,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 49.28,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 382.42,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": []
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -73.92,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 27.72,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "elementDamagePct",
+          "value": 42.24,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Damage to Interruption Parts ▲ 6.91% for 10 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 element scope: the kit restricts the ATK/Reload grant to 'all Electric Code allies'. The schema's TargetDef has no element facet for a plain allies target (alliesOfClass/alliesOfWeapon exist; no alliesOfElement). Modeled as untyped {kind:'allies'} — OVER-CREDITS on any team with non-Electric allies. Needs either a new alliesOfElement target kind or a per-comp caveat before this unit is graded on a mixed-element comp. On an all-Electric comp the model is exact.",
+    "⚑ skill1 'ATK ▲ 55.31% of the skill user's ATK' is a CASTER-ATK-scaled flat add, not a self-scaled atkPct. The schema has casterMaxHpPct for the HP analogue but no casterAtkPct. Encoded as atkPct 55.31 (scales each TARGET's own ATK) — this is WRONG for any ally whose ATK differs from Anis's, and self-consistent only for the caster. Magnitude is kit-true; the scaling BASE is a schema gap.",
+    "⚑ burst 'Max Ammunition Capacity ▼ 73.92%' — schema exposes maxAmmoFlat (flat rounds) only; no percent ammo stat is listed. Encoded as a maxAmmoPct buff of -73.92, which the validator may reject. If so the faithful flat equivalent on a 5-round magazine is ceil/floor(5 × 0.2608) ≈ 1 round, i.e. maxAmmoFlat -4. This line is DAMAGE-RELEVANT in both directions: it slashes shots per magazine but raises lastBullet frequency ~4x, which is the delivery cadence of the 382.42% skill2 rider. Do not skip it.",
+    "⚑ 'Reload Speed ▲' (skill1 49.28%, burst 27.72%) — no reloadSpeedPct key appears in the redacted StatKey list. Reload speed is a weapon-state modifier and is NOT skippable (it gates shots fired, and with a 141-frame reload on a 5-round SG it is large). If the real StatKey name differs, rename; do not drop.",
+    "⚑ skill2 rider trigger cadence: lastBullet is kit-stated, but the EFFECTIVE rate depends on the burst's ammo cut and both reload buffs. Unmeasured interaction — the rider's per-fight proc count is the single biggest uncertainty in this override.",
+    "⚑ skill2 rider crit: set crit:true (riders crit at the caster's sheet rate per the priors); core is OFF (no 'core strike' wording). noFb left OFF (FB by timing, default).",
+    "⚑ skill2 rider target: 'the 2 enemy unit(s) with the highest final ATK' — the sim has ONE boss, so the 2-target multi-hit collapses to a single instance. Modeled as one 382.42% hit. If the engine ever models multiple enemies this must become 2 hits.",
+    "⚑ SG hitsPerShot 10 / pellet landing: no pelletCountFlat line in this kit, so nothing authored; standard SG landing path applies.",
+    "⚑ cadence tuple (pullsPerSec, reloadFrames 141, ammo 5) is datamined and unreliable — verify against a real recording before trusting shots-per-window."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. Three schema gaps are load-bearing and flagged in caveats: (1) no element-scoped allies target for the skill1 'all Electric Code allies' clause — the untyped allies target OVER-CREDITS a mixed-element comp; (2) no casterAtkPct stat for 'X% of the skill user's ATK' — encoded as target-scaled atkPct, which is only exact for the caster; (3) no percent max-ammo stat for the burst's ▼73.92% — encoded as maxAmmoPct, with maxAmmoFlat -4 (5→1 round) as the fallback. The burst is a SELF-ONLY weapon-economy package: it trades magazine size for reload speed plus elemental-advantage damage, and the ammo cut is the mechanism that raises lastBullet frequency and thus the skill2 382.42% rider's proc rate — the ammo line must NOT be treated as defensive/inert. Only genuinely unmodeled line is the Interruption-Parts damage buff (the scope-lock boss is partless).",
+  "modes": null
+}

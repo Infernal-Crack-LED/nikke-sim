@@ -1,0 +1,117 @@
+{
+  "slug": "asuka",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at start of battle. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Activation header for the shield-damage line; carries no effect of its own. Its payload line is SKIPPED (see next row)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage dealt to Shield ▲ 601.01% cont.",
+      "status": "SKIPPED",
+      "effectOrReason": "No shield layer on the v1 boss and no StatKey for shield-damage scaling. Verbatim in unmodeled.skill1. Deliberately NOT approximated as attackDamagePct — that would credit ~601% of a bucket it never touches."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when recovery takes effect.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'recovery'} — fires when Asuka RECEIVES a heal (own burst lifesteal, or any ally healer). Not passive: uptime is entirely gated on heal events."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 96.98% for 25 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 96.98, durationSec 25, target self. Seconds (not rounds); refreshes on each recovery event."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Entering FB. Self when in Shield status.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (team-wide FB entry, NOT burstCast — text says 'entering Full Burst') + block gate requiresShielded:true for the shield-status condition."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Elemental Adv Atk Damage ▲ 30.02% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elemAdvantageDamagePct 30.02, durationSec 10 — the exception to the flat ×1.10 element rule (prior 8), so it must be modeled explicitly."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Entering FB. All Fire Code allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter, target {kind:'alliesOfElement', element:'Fire'} (self included — Asuka is Fire)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Dmg when attacking core ▲ 60.07% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff coreDamagePct 60.07, durationSec 10. Team-scoped core bucket, not a generic damage buff."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Single self-targeted block on trigger burstCast (self mode in the unit's OWN burst slot → burst-cast, not fullBurstEnter — prevents over-firing in multi-B3 comps)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gain Pierce for 25 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect gainPierce durationSec 25 (timed window, so NOT the static hasPierce flag). Makes her hits Pierce-tagged so any Pierce Damage ▲ source goes live; outlasts the 10s buffs by design."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack damage ▲ 150.04% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 150.04, durationSec 10 (Damage Up bucket, unscoped — kit gives no normal-attack/charge scoping)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 3.16% of atk damage as HP 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect heal {ticks:10, intervalSec:1} to self. No HP amount modeled (v1 has no HP pool), but per the tandem/cross-unit HARD RULE it is NOT skippable: it is the sole in-kit driver of her own skill1 'recovery' ATK ▲96.98%, and it also feeds any teammate's on-recovery consumer."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Hit Rate ▲ 101.37% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 101.37, durationSec 10 — routed to the engine's hrCoreMult core-lift path. ⚑ magnitude of the HR→core conversion is measured-only."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.burst[0].effects[3] (heal ticks/intervalSec)",
+      "estimate": "ticks: 10, intervalSec: 1 (10 recovery events over the 10s window)",
+      "reasoning": "'Recovers 3.16% of attack damage as HP over 10 sec' is lifesteal — in game it emits recovery continuously on every landed hit, not once. The engine's heal effect models event emission only, so tick count is a free parameter the kit never states. ticks:1 would emit one recovery at cast (ATK buff live cast→cast+25s); ticks:10 keeps it refreshing to cast+10+25s. With a 40s burst CD the two differ by ~10s of ~97% ATK uptime per rotation — material, and it also changes refresh timing for any teammate on-recovery consumer.",
+      "recipe": "Record a solo/control fight and read the ATK-buff apply/remove timeline via cfg.onEvent buffApply/buffRemove filtered to stat atkPct value 96.98 on her slot; the gap between the last recovery-driven refresh and burst cast pins the real emission cadence. Cross-check against popup damage stepping down 25s after the LAST recovery event, not 25s after cast."
+    },
+    {
+      "field": "override.burst[0].effects[2] (hitRatePct 101.37 → core rate)",
+      "estimate": "value taken verbatim from kit (101.37); resulting core-rate lift = whatever hrCoreMult yields — UNVALIDATED for this unit",
+      "reasoning": "ALWAYS-⚑ #7: the Hit-Rate→core magnitude is measured-only. The kit states the Hit Rate percentage but not what it does to core-hit frequency; that slope is an engine-level derived model. An AR with coreAttackMultiplier 200 has a large core lever, so an error in the slope moves her burst-window damage substantially.",
+      "recipe": "Footage core-rate count inside vs outside her 10s burst window (count red 'CORE HIT' popups / total popups over the same number of rounds), at fixed range band, then compare to the sim's realized core rate with HRCORE=1 vs HRCORE=0 (per-PROCESS env toggle — never in-loop)."
+    },
+    {
+      "field": "override.skill2[0].requiresShielded",
+      "estimate": "true — gate modeled as shield-present at FB entry; effectively inert with no shielder on the team",
+      "reasoning": "'Affects self when in Shield status' is a condition, and the schema's requiresShielded gate is evaluated when the trigger fires. Whether the real game checks the shield at the FB-entry instant (modeled) or grants the buff if a shield exists at any point in the window is not determinable from the prose. Precedent (naga's cast-time shield check) is owner-ruled default-off, which this follows. On a shieldless comp the whole 30.02% elemental-advantage buff is dead — a large swing if the gate is wrong or if the intended comp always shields her.",
+      "recipe": "Run the control comp with and without a shield source and diff her damage; separately confirm in footage that the buff icon appears at FB entry only while shielded. If a shield applied mid-FB also grants it, the gate needs to become a `shielded` trigger instead."
+    },
+    {
+      "field": "base stats — cadence tuple (ammo 20 / reloadFrames 84 / rate_of_fire)",
+      "estimate": "as datamined; no override-level correction applied",
+      "reasoning": "ALWAYS-⚑ #1: datamined rate_of_fire is NOMINAL and reloadFrames is a known-unreliable field. Effective fire rate is 60/ceil(60/nominal) on frame boundaries, so the nominal value is not directly usable. Nothing in this override compensates for it, and her kit has no reload/ammo/fire-rate modifier to interact with it.",
+      "recipe": "Read shots/sec directly off the ammo counter in footage (the instrument that measures the disputed quantity), not off FB counts; time a full 20→0 magazine plus reload cycle."
+    },
+    {
+      "field": "override.skill2[1].target (alliesOfElement Fire, self included)",
+      "estimate": "self included (no excludeSelf)",
+      "reasoning": "'Affects all Fire Code allies' with Asuka herself being Fire Code — the kit gives no 'except self' clause, so the literal read includes her. If wrong, her own 60.07% coreDamagePct is double-counted against nothing else (she has no second core source), which would over-credit her personal core bucket by the full 60pp during every FB.",
+      "recipe": "Compare her core-bucket popup magnitudes inside FB against a Fire teammate's under identical core hits; equal proportional lift confirms self-inclusion."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,141 @@
+{
+  "slug": "arcana-fortune-mate",
+  "leakDetected": null,
+  "leakNote": "Redacted methodology is clean. The effect schema's teamHas example names `arcana` — that is the BASE unit (RL/Electric), a different unit from this SG/Fire variant per the exact-slug rule; not a leak of this unit's answer.",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "FB ends → SG allies: ATK ▲13% of user",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK add, flat % of the CASTER's ATK (casterAtkPct path), multiplied by live Precious Moments stack count (0–3) at fire time",
+      "durationSemantics": "15 s wall-clock (durationSec: 15) from each Full Burst end",
+      "triggerIdentity": "fullBurstEnd (literal 'when Full Burst ends') — NOT fullBurstEnter, NOT burstCast; fires on every team FB end regardless of who burst",
+      "targetSet": "All shotgun-wielding allies — weapon-typed, no '(except self)' clause, so self INCLUDED",
+      "nearestWrongModel": "Encoded as fixed atkPct 13 on the target's own ATK (wrong base) and/or a static 13% ignoring the ×stack-count scaling, and/or keyed to fullBurstEnter (buff live DURING FB instead of the downtime after it)",
+      "distinguishingAssertion": "cfg.onEvent: with 0 Precious Moments stacks at first FB end (counter never reached 6), assert NO casterAtkPct buffApply (or value 0); after stacks=N, assert a buffApply at the fullBurstEnd frame with value 13×N and stat casterAtkPct (flat add — value invariant when the recipient's own base ATK is changed), absent at fullBurstStart",
+      "inertness": "Must NOT apply to non-SG allies (liter/crown in controlComp); must NOT be live inside the FB window it follows; recipient's own-ATK scaling must not change the add",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Happy Memories → self: NA mult ▲10%",
+      "disposition": "FAITHFUL",
+      "scope": "Normal-attack damage MULTIPLIER scale (normalAttackPct) — scoped to normal-attack hits only, never the burst nuke",
+      "durationSemantics": "'continuously' with maxStacks 3 — persists until explicitly removed at FB end (skill1 block 3), not a timed window",
+      "triggerIdentity": "Chained trigger: fires when Happy Memories (skill2 four-times pellet stack) takes effect — one Snapshots stack per Happy Memories application; ⚑ whether a refresh at Happy-Memories cap (3) still fires this",
+      "targetSet": "Self only",
+      "nearestWrongModel": "Encoded as attackDamagePct (generic Damage-Up, over-credits the 554.4% burst nuke) or as an independent passive/interval stack unlinked from Happy Memories applications",
+      "distinguishingAssertion": "Normal-bucket damage events after k Happy Memories procs show mult scaled ×(1+0.10k) vs control; the burst-bucket 554.4% event mult is IDENTICAL with and without Snapshots stacks (red under the attackDamagePct misread); zero Snapshots buffApply before the 4th counted attack of the first Making Memories window",
+      "inertness": "Burst-skill damage and any flatDamage bucket must not move; stacks must be gone after fullBurstEnd",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB ends → self: removes MM + Snapshots",
+      "disposition": "FAITHFUL",
+      "scope": "Status/stack removal only — no stat magnitude",
+      "durationSemantics": "Defines the END of the Making Memories window (burst cast → FB end) and zeroes Snapshots of Youth; Happy Memories and Precious Moments are NOT named, so those stacks PERSIST across cycles",
+      "triggerIdentity": "fullBurstEnd",
+      "targetSet": "Self",
+      "nearestWrongModel": "Making Memories modeled as a fixed 10 s durationSec (breaks under fullBurstExtend and misses the pre-FB cast→FB-start segment) OR removal also wiping Happy Memories / Precious Moments (kills the cross-cycle 3-stack ramp)",
+      "distinguishingAssertion": "buffRemove for the burst's critRatePct 20.09 / attackDamagePct 29.99 and for Snapshots coincides with the fullBurstEnd event frame, not castFrame+10 s; pelletCountFlat and the 2.49% atkPct stacks survive past FB end (buff still present on the next window's first shot); skill2 counter events resume from 0 in window 2 (a reload-6 fires on the 2nd attack of window 2, not the counter continuing from window 1)",
+      "inertness": "Happy Memories (pellets) and Precious Moments (ATK) must NOT be removed at FB end",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "normal attacks in MM: 2/4/6 counter",
+      "disposition": "FAITHFUL",
+      "scope": "Counts the owner's normal-attack trigger pulls (ROUNDS — 1 per pull for SG, spending the 9-round magazine), NOT the 10 pellets per shot",
+      "durationSemantics": "Counter live only while Making Memories is up (her burst cast → FB end); 'Resets when Making Memories is removed' → counter re-starts at 0 each burst window; ⚑ whether the counter CYCLES past 6 within one window (8→reload, 10→pellet, 12→ATK) or arms once per window — kit-silent, flag with an estimate (cycling is the common pattern; her ~1.5 pulls/s SG × ~11 s window ≈ 14–16 pulls ≈ 2 cycles) and pin from footage",
+      "triggerIdentity": "hitCount-family thresholds gated on the Making Memories self-status (requiresTargetStatus is boss-side; this needs a self-status/window gate — e.g. blocks live only during the burst-cast→fullBurstEnd span). Sub-effects: 2× → instantReload fraction 6/9 (Reloads 6 ROUNDS, not full); 4× → pelletCountFlat +1, maxStacks 3; 6× → atkPct 2.49 self, maxStacks 3, permanent",
+      "targetSet": "Self for all three payloads",
+      "nearestWrongModel": "Counter ungated (counts all fight-long normals → stacks capped in the opening seconds and reload-6 spam all fight) OR counting pellet hits (10× rate → everything caps in the first magazine) OR 'Reloads 6 rounds' as a full instantReload OR Happy Memories encoded as normalAttackPct instead of pelletCountFlat",
+      "distinguishingAssertion": "Before her first burst cast, N shots produce ZERO counter payload events (no partial reload event, no pelletCountFlat/atkPct buffApply) — red under the ungated read; inside the first window, the partial reload event lands after exactly the 2nd PULL (not after pull 1 under a pellet-count read, which would trigger at 2 pellets ≪ 1 shot); the reload event refills ≤6 rounds (ammo goes 7→9, capped), not an unconditional 9; after the 4th pull, effectivePellets on subsequent shot events reads base+1 (queryable pellet count), while a normalAttackPct-proxy model shows no pellet change",
+      "inertness": "Non-SG allies untouched; nothing fires outside Making Memories; the 2.49% ATK stacks are self-only and must not appear on teammates",
+      "evidenceTier": "DATAMINED (magnitudes); CALIBRATED ⚑ (cycling-past-6 behavior and cap-refresh semantics)",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "using Burst → SG allies (except self)",
+      "disposition": "FAITHFUL",
+      "scope": "Attack Damage ▲55% — attackDamagePct (Damage-Up bucket), generic across the recipients' hit types",
+      "durationSemantics": "10 s wall-clock from her burst CAST",
+      "triggerIdentity": "burstCast (literal 'when using Burst Skill' — her OWN cast, pre-FB), NOT fullBurstEnter; fires only on rotations SHE bursts",
+      "targetSet": "All shotgun-wielding allies EXCEPT SELF — the explicit exclusion is the sharp edge",
+      "nearestWrongModel": "Self included in the target set (over-credits the carry herself by a 55-point Damage-Up dilution-bucket add — the single largest plausible over-credit in this kit) and/or keyed to fullBurstEnter (over-fires on FBs chained by another Burst-II unit in off-rotations)",
+      "distinguishingAssertion": "On her burstCast event frame, buffApply attackDamagePct 55 targets every OTHER SG ally and there is NO self-targeted apply (filter buffApply by stat=attackDamagePct, value=55, targetIdx===casterIdx must be empty); her own damage events in the following 10 s carry a Damage-Up bucket identical to a run with this block deleted (withPatchedOverride)",
+      "inertness": "Her own damage must not move; non-SG allies must not receive it; no application on an FB she did not personally burst into",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self: Making Memories (crit/reload/AD)",
+      "disposition": "FAITHFUL",
+      "scope": "Effect 1: critRatePct 20.09 — UNSCOPED crit (text says 'Critical Rate', no normal-attack qualifier, so NOT critRateNormalPct); Effect 3: attackDamagePct 29.99 generic; Effect 2: instantReload of 2 rounds = fraction 2/9 of her 9-round magazine, one-shot at cast",
+      "durationSemantics": "'continuously' = for the life of the Making Memories status: burst cast → removed at fullBurstEnd by skill1 block 3. NOT a fixed 10 s and NOT permanent",
+      "triggerIdentity": "burstCast (self block inside her own burst), stage 2; also OPENS the Making Memories window the skill2 counter is gated on — pre-FB shots between cast and FB start already count",
+      "targetSet": "Self",
+      "nearestWrongModel": "durationSec: 10 hard-coded (diverges whenever fullBurstExtend is live, and silently drops the cast→FB-start head segment) or the crit line scoped to normal attacks only (under-credits the pre-FB portion of nothing else here, but mis-buckets crit on any flatDamage), or 'Reloads 2 round(s)' as a full magazine refill",
+      "distinguishingAssertion": "damage events between her cast frame and fullBurstEnd carry crit rate = sheet+20.09 and a +29.99 Damage-Up component; the first damage event AFTER fullBurstEnd is back at sheet crit (buffRemove at the FB-end frame); the cast-frame reload event adds exactly 2 rounds (e.g. ammo 4→6), not →9",
+      "inertness": "Teammates' crit/AD must not move; nothing applies on team FBs she did not burst into",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "all enemies: 554.4% Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "flatDamage atkPct 554.4 of FINAL ATK, burst bucket; crits at caster sheet rate; NO core (text lacks 'core strike'); single boss so 'all enemies' = one hit",
+      "durationSemantics": "Instant, once per cast",
+      "triggerIdentity": "burstCast damage — lands PRE-FB, therefore FB-exempt (noFb per taxonomy: a burst cast lands before the FB window opens) and range-bonus-OFF per the universal rider rule",
+      "targetSet": "Enemy",
+      "nearestWrongModel": "fbMajorApplied=true on the nuke (letting the +50% FB major and FB auras credit a pre-FB hit) or core-eligible",
+      "distinguishingAssertion": "The 554.4-mult damage event has inFullBurst=false / fbMajorApplied=false and rangeApplied=false, zero core component; deleting the block moves ONLY one burst-bucket event per rotation",
+      "inertness": "Must not scale with Snapshots of Youth (normal-attack-scoped) nor with her own skill2 55% (self-excluded); must not receive FB +50%",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:fullBurstEnd-team-casterAtk-13xStacks",
+    "skill1:happyMemories-chained-snapshots-normalAttackPct",
+    "skill1:fullBurstEnd-removes-MM-and-snapshots",
+    "skill2:MM-gated-2/4/6-counter (reload6 + pelletCountFlat + atkPct2.49)",
+    "skill2:burstCast-SGallies-exceptSelf-AD55",
+    "burst:MM-self-crit20.09/reload2/AD29.99-untilFbEnd",
+    "burst:flatDamage-554.4-noFb-noCore"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in descending damage-risk order: (1) skill2 team buff INCLUDING SELF — the '(except self)' clause is the kit's sharpest edge; a self-included 55-point Damage-Up on the carry is the biggest single over-credit available here. (2) The skill1 team ATK being fixed 13% of the RECIPIENT'S ATK instead of a caster-flat add × live Precious Moments stack count — with 0 stacks it must be zero/absent, and its magnitude ramps across the fight as the 6-count threshold accrues stacks (1st FB end likely 1 stack, not 3; assert the ramp, not just the cap). (3) 'Continuously' on the burst self-buffs given durationSec:10 instead of removal-at-fullBurstEnd — near-identical numerically on a plain 10 s FB, so the distinguishing assertion must use the removal FRAME (or a fullBurstExtend run) rather than totals. (4) The skill2 counter left ungated or counting the SG's 10 pellets instead of trigger pulls — either caps all three payloads absurdly early; the pre-first-burst inertness assertion (zero counter events while firing) kills both at once. (5) Happy Memories encoded as a normalAttackPct proxy instead of pelletCountFlat — near damage-neutral for a unit ALSO carrying a real normalAttackPct line (Snapshots of Youth), where the interaction is multiplicative under pelletCountFlat vs additive-in-the-same-stat under the proxy, so it IS distinguishable here: assert effectivePellets=base+stacks on shot events. (6) Removal scope: FB end strips ONLY Making Memories + Snapshots; Happy Memories and Precious Moments persist and cross-window ramp to their 3-caps — a model wiping all four statuses under-credits every window after the first. Flags: ⚑ counter cycling past 6 within one window and ⚑ whether a capped Happy Memories refresh still fires the Snapshots chain — both kit-silent, pin from footage; magnitudes themselves are all kit-literal. Comp note for the driver: she is Burst II, so controlComp's crown (B2) collides — the burstCast-vs-fullBurstEnter discrimination NEEDS a comp where the other B2 can chain an FB she doesn't burst into, which is exactly where the wrong trigger over-fires.",
+  "model": "claude-fable-5",
+  "driverReconciliation": {
+    "driver": "qwen",
+    "reviewer": "claude-fable-5",
+    "stage": "S2c",
+    "agreement": "CONVERGED — driver and blind reviewer independently disposition ALL 7 kit lines FAITHFUL with an identical load-bearing set (L1 S1 casterAtk 13%x3 SG allies; L2 Snapshots normalAttackPct 30; L3 S2 AD55 SG-except-self; L4 Precious atkPct 7.47; L5 Happy pelletCountFlat 3; L6 MM critRatePct 20.09 + attackDamagePct 29.99; L7 554.4 burst nuke).",
+    "convergentDiscriminations": [
+      "L3 excludeSelf — reviewer names self-inclusion \"the kit's sharpest edge / biggest single over-credit\"; driver test pins targets [drake,zwei] and the no-excludeSelf cf leaks afm.",
+      "L5 pelletCountFlat vs normalAttackPct proxy — reviewer: \"distinguishable here… multiplicative under pelletCountFlat vs additive-in-the-same-stat\"; driver test asserts shipped normals > additive cf (x1.69 > x1.60).",
+      "burstCast-vs-fullBurstEnter keying — reviewer explicitly notes the B2-collision comp need (\"the other B2 can chain an FB she doesn't burst into\"); driver fixture A (crown contests B2, afm 0 casts/12 team FBs) pins self-buffs inert + fullBurstEnter cf over-fires.",
+      "L1/L3 weapon-typed targeting (alliesOfWeapon SG) — reviewer: must not apply to non-SG allies; driver fixture B fields zwei (SG non-Attacker) + liter (RL) to falsify both alliesOfClass-Attacker and all-allies."
+    ],
+    "measurementGatedFlags": [
+      "Stack ramp magnitude/timing (rampSec 11 rests on the ~1.5 pulls/s SG cadence estimate) — override gotcha #1, owner-accepted measurement item.",
+      "Counter cycling past 6 within one ~11s window (~14-16 pulls ≈ 2 cycles) — kit-silent, reviewer ⚑, pin from footage.",
+      "Cross-window persistence of Happy Memories + Precious Moments stacks (S1 block 3 removes only MM + Snapshots, NOT Happy/Precious) — reviewer notes a per-window reset under-counts later windows; override documents this within the stack-magnitude residual. Direction note: this is a COLD-direction refinement of an already-HOT over-model; NOT a faithfulness failure."
+    ],
+    "leakCheck": "CLEAN — reviewer flagged the schema teamHas example naming base `arcana` (RL/Electric) as a different unit, NOT a leak of this variant's answer.",
+    "realGotcha": "NONE",
+    "verdict": "GO (test-faithfulness review corroborated cross-family; pending S5/S6/S7 post-op blind corroboration)"
+  }
+}

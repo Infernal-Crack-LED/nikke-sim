@@ -1,0 +1,258 @@
+{
+  "slug": "anis-star",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 40.01
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "hasB1",
+      "effects": [
+        {
+          "kind": "burstEligibility",
+          "stage": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 120.13,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 35.01,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "hasB1",
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 92.03,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 34,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 40.01,
+          "durationSec": 10,
+          "intervalSec": 0.25
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 42.86,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 55.01,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 35.2,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "hasB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 15.02,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "If there are no other Burst 1 allies: Effect 1: Affects self. Cancels Everyone's Star.",
+      "If there are any other Burst 1 allies: Effect 1: Affects self. Cancels My Own Star."
+    ],
+    "skill2": [],
+    "burst": [
+      "Explosion Radius ▲ 100% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ CADENCE TUPLE (RL, datamine-unreliable): pullsPerSec / reloadFrames 141 / chargeFrames 60 / hitsPerShot 2 are shipped as datamined. Engine default 22f bolt-recovery is LEFT ON — autofire is not text-derivable. If she autofires, charFixes.noBoltRecovery:true is a ~15-20% shot-count swing.",
+    "⚑ MULTI-PROJECTILE (hitsPerShot 2): split-vs-merge is kit-silent. Shipped as the datamined 2 hits; read popups to confirm whether the two projectiles land as one instance or two.",
+    "⚑ BURST charge-time CLAMP: 'Charge time is fixed at 0.7 sec' is a stat CLAMP, not a percentage buff. Encoded as chargeSpeedPct 42.86 derived from base chargeFrames 60 (1.000s -> 0.700s = x1.4286). This composes ADDITIVELY with any other charge-speed buff instead of clamping — under a stacked charge-speed team it will UNDER-clamp (real charge stays pinned at 0.7s). Engine-modeling-gaps class (stat clamps).",
+    "⚑ 'Everyone's Star: Re-enters Burst and changes to Stage 1' encoded as burstEligibility stage 1 (hasB1 branch). This is the closest schema primitive; the real mechanic may instead be a re-burst within the SAME rotation (extra cast) rather than added stage-1 eligibility. Verify against a rotation log before trusting.",
+    "⚑ skill2 block 3 target 'self and all allies with lower final DEF than self' has NO schema equivalent. Approximated as all allies (she is a Defender, so she is normally the highest-DEF unit). Over-credits any team carrying a HIGHER-DEF ally.",
+    "⚑ Shooting Stars crit: encoded as a DoT with the default crit-OFF exemption per the priors (DoT crit is opt-in only where MEASURED). The line reads as repeating ATTACKS, so crit:true is plausible; read popup colours (orange = crit) before flipping it.",
+    "The skill1 burst-CDR line activates 'at the start of battle AND when Full Burst ends'. Only the fullBurstEnd instance is modeled: at t=0 every ally's burst cooldown is already 0, so the battle-start application is inert. Revisit if the engine ever starts allies on cooldown.",
+    "noFb is NOT set anywhere (FB-by-timing default ON per prior 2); noRange is engine-automatic and never authored.",
+    "The two 'Cancels ...' lines are enforced STRUCTURALLY by the mutually exclusive formation gates (noB1 / hasB1) rather than as effects, so the two Star states can never co-apply."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of anis-star (RL/Electric/Defender/Burst I) from kit prose + methodology only; no override, test, board output, probe data or git history consulted. Structure: skill1 carries a team burst-gen passive, a formation-forked Star state (noB1 -> self ATK 40.01% + team burst CDR 7.48s on FB end; hasB1 -> stage-1 burst re-entry), and a per-full-charge 120.13% rider. skill2 is four FB-window buffs, two of them Star-gated. burst is a 0.25s/10s star barrage (40 ticks) plus a charge-time clamp, DEF, and a Star-forked damage/HP buff. Weapon-state lines (charge-time clamp) are modeled as damage per prior 9, not dropped as defensive; the heal line is modeled as a recovery EVENT per prior 8 so heal-synergy teammates fire."
+}

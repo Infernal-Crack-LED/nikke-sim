@@ -1,0 +1,46 @@
+S5 BLIND-TEST CONVERGENCE — arcana-fortune-mate (claude-opus-5 blind test vs driver override)
+=============================================================================================
+Raw blind test (blind/arcana-fortune-mate.test.ts) written from kit prose ALONE. Mechanically
+adapted (adapted.test.ts) per the writer's own "shape assumptions, one-line fixes" invitation:
+  (1) import path ../lib/harness -> ../lib/harness.js (run from scripts/tests/units/)
+  (2) override shape o.blocks -> [].concat(skill1,skill2,burst) (real override has no `blocks`)
+  (3) fixture controlComp(afm) -> [liter,afm,ada]: crown in controlComp contests the B2 slot so
+      afm casts 0 (writer's flagged fixture-validity risk); [liter,afm,ada] makes afm SOLE B2
+      (bursts) AND the ONLY SG (preserves the writer's S1-a-self / S2-b-empty inertness logic).
+  (4) totalOf: totals() returns a per-slug Record, not a number -> totals(res)[SLUG].
+  (5) idxOf: returned e.srcSlot (string 'normal') for damage -> unitIdx ?? casterIdx.
+
+RESULT vs driver override: 11 passed / 7 failed / 2 skipped (20).
+
+CONVERGENT PASSES (the load-bearing set, independently derived):
+  + fixture validity: afm identifiable, casts her own burst, team reaches Full Burst
+  + in-window AND out-of-window shots both exercised
+  + S1-a granted on EVERY Full Burst end (no own-burst gate — line has no such clause)
+  + S2-a whole family GATED ON HER burstCast — nothing fires before her first cast  [burstCast keying]
+  + Snapshots normalAttackPct modeled, load-bearing, moves no teammate
+  + Snapshots SCOPED to normal multiplier (generic attackDamagePct would lift the 554.4 nuke)  [normalAttackPct scoping]
+  + Happy Memories pelletCountFlat +1×<=3, load-bearing, gauge/teammate-inert
+  + pellet primitive NOT interchangeable with a normalAttackPct proxy (multiplicative vs additive)  [A4 fix]
+  + Precious Moments self atkPct 2.49×<=3, load-bearing
+  + S2-b 55% never lands on non-SG ally, never on self (excludeSelf + SG-only)  [excludeSelf]
+  + 554.4% nuke modeled, once per cast, Full-Burst-exempt by timing  [pre-FB nuke]
+
+RESIDUAL FAILURES — ALL blind-test artifacts (0 real gotchas), 3 classes:
+  (A) casterAtkPct ABSOLUTE-ATK storage misconception (3): the engine stores casterAtkPct as an
+      absolute ATK grant (afm ~46670 = 39% x caster ATK), not a percentage. Blind asserted value<=39
+      and a flat-39-counterfactual comparison, and did not filter casterAtkPct by afm's casterIdx
+      (so it picked up liter's/ada's casterAtkPct for the ordering + target-set checks). Identical
+      to the 4 casterAtkPct-absolute artifacts the judge ruled non-real for base `arcana`.
+      -> S1-a "FB-end ordering", "SG-only inertness (tgts.size 2 not 1)", "stack-cap 13/26/39".
+  (B) buffRemove-for-duration-expiry misconception (3): the engine emits buffRemove ONLY for
+      reload-caused removals (types.ts); a durationSec lapse emits no event. The driver models the
+      FB-end removal of MM/Snapshots faithfully via durationSec 11 lapse-reset, so no buffRemove
+      fires. Blind expected an explicit buffRemove. -> Snapshots "expires", burst crit "expires",
+      burst AD "expires". (Driver test pins removal via fixture-A inertness + the 11s duration.)
+  (C) reload modeling divergence (1): blind modeled the kit reloads (Reload 6 @2-hit, Reload 2 @burst)
+      as damage-relevant (instantReload). The driver documents them as UNMODELED inert uptime QoL
+      (override unmodeled.skill2/burst, note: "~3-5 window shots, COLD direction, partially masks the
+      ramp over-credit") — an honest, owner-accepted skip, not a hidden faithfulness failure.
+
+VERDICT: blind spec CONVERGES on the identical load-bearing set; all 7 residuals are API/event-model
+misconceptions (A,B) plus one documented modeling skip (C). NO REAL-GOTCHA against the driver override.

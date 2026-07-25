@@ -1,0 +1,131 @@
+{
+  "slug": "ade-agent-bunny",
+  "hasPierce": true,
+  "resources": [
+    {
+      "name": "spyLens",
+      "initial": 0,
+      "min": 0,
+      "max": 10
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 15.2,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "spyLens",
+          "delta": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 18.36,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "spyLens",
+        "min": 10
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 16,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 55.04,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 10.13,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec."
+    ],
+    "skill2": [],
+    "burst": [
+      "Minimum Effective Range ▲ 55.56% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ Minimum Effective Range ▲ (S1 Spy Lens 4.44%/stack, burst 55.56%) has NO StatKey in types.ts — the range-band/+30% full-range path is engine-automatic and takes no kit modifier. Both magnitudes are dropped; only the Spy Lens STACK COUNT is modeled (as the `spyLens` resource) because skill2's gate reads it. If the engine ever gains a range-band stat, these are the two lines to re-enact.",
+    "⚑ Spy Lens accrual assumes REFRESH-ON-STACK (each new stack refreshes the 5 s window). Under that reading the reload gap (141 f = 2.35 s) never breaks the chain, so 10 stacks are reached at ~10 full charges (~12-13 s) and then held for the rest of the fight. Under the alternative PER-STACK-INDEPENDENT-EXPIRY reading, only ~5 stacks are ever concurrent (5 s window ÷ ~1.0-1.2 s charge cycle) and skill2's max-stack block — Pierce + ATK ▲16% — would be COMPLETELY DEAD. This single semantic choice is the largest uncertainty in the override.",
+    "⚑ The `spyLens` resource never DECAYS (the engine has no time-decay on resource pools). Faithful only while the unit fires continuously; any firing gap > 5 s would drop real stacks below 10 while the sim keeps the gate open.",
+    "⚑ `hasPierce: true` is authored UNCONDITIONALLY, but the kit gates Pierce on max Spy Lens — it is really off for the first ~12 s (~7% of a 180 s fight). Pierce is the top-level CharacterSkills flag with no resource-gated form, so the ramp cannot be expressed; this over-credits her OWN benefit from her S2/burst Pierce Damage ▲ buffs early. `pierceModes` was not used (it keys on kit modes, not stacks).",
+    "The 'on targets within the effective range' activation clause on both S1a and S2a is treated as ALWAYS SATISFIED (single scope-lock boss, engine applies the range band automatically). If the sim ever models an out-of-band boss, both ally buffs would need a range gate.",
+    "SR full-charge modeling: every `shotFired` is treated as a Full Charge attack (chargeFrames 60). Correct only if the engine never fires uncharged SR shots.",
+    "`pierceDamagePct` is documented as 'parsed but inert in v1' except where a hit is Pierce-tagged — both ally Pierce buffs are kept regardless (schema-present stat, never a silent drop), and they DO become live for Ade herself once `hasPierce` is set."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of Ade: Agent Bunny (ade-agent-bunny), SR/Iron/Supporter/Burst II, from kit prose + base stats only. Shape: a charge-cadence support — every full charge sprays a 5 s all-ally caster-ATK flat add (S1a, 15.2% of her ATK) and a 5 s all-ally Pierce Damage ▲18.36% (S2a), while self-stacking Spy Lens (S1b) toward a 10-stack threshold that unlocks continuous self Pierce + ATK ▲16% (S2b). Burst is a flat 10 s team Attack Damage ▲55.04% + Pierce Damage ▲10.13% on her own cast (Burst II, cd 20 s). Both Minimum Effective Range lines are unmodeled — no StatKey exists for range; only the stack COUNT survives, as the `spyLens` resource that S2b's `resourceGate` reads. Trigger identity: no line carries an 'entering Full Burst' clause, so the burst block is keyed `burstCast` (fires only on rotations SHE bursts), and both recurring conditionals are keyed `shotFired` (= one full charge for a charge weapon), NOT `interval`. No damage riders in the kit, so no noFb/noRange/core decisions arise."
+}

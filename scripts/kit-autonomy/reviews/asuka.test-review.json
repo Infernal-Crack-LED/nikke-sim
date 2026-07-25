@@ -1,0 +1,136 @@
+{
+  "slug": "asuka",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Damage dealt to Shield ▲ 601.01%",
+      "disposition": "UNMODELED",
+      "scope": "damage vs enemy SHIELD objects only — not a generic damage bucket; the v1 boss has no shield HP pool and the schema has no shield-damage StatKey",
+      "durationSemantics": "'continuously' = permanent passive from battle start",
+      "triggerIdentity": "passive (start of battle)",
+      "targetSet": "self",
+      "nearestWrongModel": "encoding 601.01% as attackDamagePct/damageTakenPct — a ~7x Damage-Up over-credit on all damage",
+      "distinguishingAssertion": "no buffApply with value 601.01 on ANY damage-relevant stat; solo asuka total identical with this line present vs stripped via withPatchedOverride",
+      "inertness": "must move NOTHING — carry totals, allies, and every damage event's mult unchanged",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "recovery takes effect: ATK ▲ 96.98%",
+      "disposition": "FAITHFUL",
+      "scope": "generic ATK stat (atkPct), all attack categories",
+      "durationSemantics": "durationSec 25 (wall-clock), refreshable on each recovery event",
+      "triggerIdentity": "trigger {kind:'recovery'} — fires when a 'heal' effect TARGETS asuka (any source: her own burst HoT, helm/crown team heals); NOT passive, NOT burstCast",
+      "targetSet": "self",
+      "nearestWrongModel": "modeled as passive always-on ATK, or keyed only to her own burst — missing that ANY incoming heal (helm's, and her own 10-tick burst HoT) proc/refresh it",
+      "distinguishingAssertion": "buffApply atkPct 96.98 on asuka appears ONLY after a heal event targeting her, and appears in controlComp on helm-heal rotations even when asuka has not burst; with all heal sources patched out, zero applications",
+      "inertness": "no atkPct 96.98 buffApply before the first recovery event of the fight",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter, in Shield status: Elem Adv ▲",
+      "disposition": "FAITHFUL",
+      "scope": "elemAdvantageDamagePct 30.02 — Damage-Up bucket active ONLY with elemental advantage (taxonomy §8: stacks past the clean ×1.10)",
+      "durationSemantics": "durationSec 10",
+      "triggerIdentity": "fullBurstEnter (any team FB) + requiresShielded block gate evaluated AT trigger time — asuka must hold a live shield when FB begins",
+      "targetSet": "self",
+      "nearestWrongModel": "two stacked misreads: (a) dropping the 'when in Shield status' gate (ungated FB-enter buff); (b) encoding as generic attackDamagePct 30.02, which moves damage vs ANY boss element",
+      "distinguishingAssertion": "vs the Fire control boss (asuka Fire → no advantage) carry totals must be IDENTICAL with this block present vs stripped; buffApply stat must be elemAdvantageDamagePct not attackDamagePct; with no shield effect ever targeting asuka, no buffApply fires even at FB enter",
+      "inertness": "controlComp (Fire boss) damage — a 30.02 attackDamagePct misencoding turns this red",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter: core dmg ▲ 60.07% Fire allies",
+      "disposition": "FAITHFUL",
+      "scope": "coreDamagePct (core bucket only) — NOT generic Damage Up",
+      "durationSemantics": "durationSec 10",
+      "triggerIdentity": "fullBurstEnter, ungated",
+      "targetSet": "alliesOfElement Fire, INCLUDING self ('all Fire Code allies')",
+      "nearestWrongModel": "target set widened to all allies regardless of element, or narrowed to self-only; or coreDamagePct swapped for attackDamagePct (over-credits non-core shots)",
+      "distinguishingAssertion": "buffApply coreDamagePct 60.07 lands on every Fire ally including asuka at each fullBurstStart, and NEVER on a non-Fire teammate (assert its absence on liter/crown/helm if non-Fire); damage events with core=0 show no mult change from this buff",
+      "inertness": "non-Fire allies' buff logs; non-core damage mult",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gain Pierce for 25 sec",
+      "disposition": "FAITHFUL",
+      "scope": "gainPierce (timed pierce-tag window) — makes Pierce Damage ▲ buffs live for her hits; her own kit has no pierceDamagePct so likely board-inert alone but must exist for tandem",
+      "durationSemantics": "durationSec 25 — NOTE: outlives the 10s siblings; a uniform-10s encoding is wrong",
+      "triggerIdentity": "burstCast (her OWN burst, ≈ every 40s cd) — NOT fullBurstEnter; diverges in controlComp where helm is co-B3",
+      "targetSet": "self",
+      "nearestWrongModel": "static hasPierce:true flag (always-on from t=0), or duration copied as 10s, or keyed to fullBurstEnter so helm's rotations grant it",
+      "distinguishingAssertion": "with a patched-in ally pierceDamagePct probe buff, asuka's hits take the pierce bucket only inside [castT, castT+25] after HER burstCast events, and not on FBs she didn't cast",
+      "inertness": "pre-first-burst shots and helm-rotation FBs must show no pierce eligibility",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack damage ▲ 150.04% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "attackDamagePct (Damage-Up bucket, diluted with other Damage-Up) — NOT atkPct",
+      "durationSemantics": "durationSec 10",
+      "triggerIdentity": "burstCast self-block (no activation clause inside own burst)",
+      "targetSet": "self",
+      "nearestWrongModel": "stat swapped to atkPct 150.04 (ATK bucket multiplies differently than Damage-Up — materially different totals under crown/liter support), or fullBurstEnter keying",
+      "distinguishingAssertion": "buffApply with stat attackDamagePct value 150.04 (and NO atkPct 150.04 anywhere) exactly at her burstCast events, expiring 10s later",
+      "inertness": "helm-cast FB rotations gain nothing from this line",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 3.16% of atk dmg as HP over 10s",
+      "disposition": "FAITHFUL",
+      "scope": "lifesteal HoT — no HP pool modeled, but MUST be encoded as heal with ticks (≈10, intervalSec 1) targeting self, because it is the in-kit driver of skill1's recovery→ATK ▲96.98%",
+      "durationSemantics": "heal EVENTS spread over 10 sec (ticks), not one instant event — repeated ticks keep refreshing the 25s S1 buff",
+      "triggerIdentity": "burstCast; heal effect emits recovery events to self",
+      "targetSet": "self",
+      "nearestWrongModel": "the classic taxonomy-§4 skip: 'heal = defensive, no damage' → S1's ATK buff never fires off her own burst; secondary misread: ticks:1 single event instead of a HoT",
+      "distinguishingAssertion": "after each asuka burstCast, ≥1 recovery-driven buffApply atkPct 96.98 on asuka follows within the 10s window WITH ALL OTHER TEAM HEAL SOURCES PATCHED OUT (isolates the self-loop); multiple tick events observable across the window",
+      "inertness": "n/a — this line's whole value is the tandem it must NOT be inert on",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Hit Rate ▲ 101.37% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "hitRatePct — core-hit lift via the engine hrCoreMult path; NOT a no-op accuracy stat",
+      "durationSemantics": "durationSec 10",
+      "triggerIdentity": "burstCast self-block",
+      "targetSet": "self",
+      "nearestWrongModel": "dropped as 'accuracy doesn't matter vs a boss' — but Hit Rate feeds core rate (HRCORE); alternate misread: encoding as critRatePct",
+      "distinguishingAssertion": "buffApply hitRatePct 101.37 at her burstCast; damage events inside the window show elevated core rate vs outside (HRCORE live), and totals shift when the buff is stripped via withPatchedOverride",
+      "inertness": "no crit-rate movement; nothing outside her own 10s windows",
+      "evidenceTier": "DATAMINED (buff value); the HR→core conversion slope itself is the engine-global ⚑ measured-only field, not per-unit",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:recovery→ATK▲96.98 25s",
+    "skill2:FBenter+shielded elemAdv▲30.02",
+    "skill2:FBenter coreDmg▲60.07 Fire allies",
+    "burst:gainPierce 25s",
+    "burst:attackDamagePct 150.04 10s",
+    "burst:heal-over-10s self (drives S1 recovery)",
+    "burst:hitRatePct 101.37 10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Damage dealt to Shield ▲ 601.01% continuously."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile, in priority order: (1) The burst lifesteal is the load-bearing line most likely skipped as 'defensive' — it self-loops into skill1's recovery-triggered ATK ▲96.98%/25s, and with the burst cd at 40s plus any team heal source (helm in controlComp) that ATK buff can approach permanent uptime; a driver who modeled S1 correctly but dropped the burst heal, or who never patched out team heals when asserting the loop, has an untested tandem. (2) All four burst self-lines must be burstCast, not fullBurstEnter — controlComp runs helm as co-B3, so the two keyings genuinely diverge there; any assertion set that only checks 'buff present during FB' is green under both and proves nothing. (3) skill2a must be doubly distinguishable: elemAdvantageDamagePct (inert vs the Fire control boss — asserting controlComp invariance catches an attackDamagePct misencoding) AND requiresShielded (catches the dropped gate; note the gate is evaluated at FB-enter, so shield-vs-FB event ordering matters if a shielder like crown applies shields on the same FB edge — the assertion should apply the probe shield strictly before FB). (4) Burst durations are mixed 25/10/10/10 — Pierce at 25s is the odd one out and invites a copy-paste 10s. (5) The 601.01% shield line is the biggest single number in the kit and the most dangerous if promoted to a damage bucket; it must appear verbatim in `unmodeled` (rule 6: no ignored-blocks) with an explicit inertness assertion. (6) AR, chargeFrames 0, hitsPerShot 1 — no charge/round-count semantics anywhere in this kit; any durationShots usage would itself be a misread.",
+  "model": "claude-fable-5"
+}

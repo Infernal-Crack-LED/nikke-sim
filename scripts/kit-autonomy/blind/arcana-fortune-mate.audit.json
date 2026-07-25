@@ -1,0 +1,183 @@
+{
+  "slug": "arcana-fortune-mate",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when Full Burst ends. Affects…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block trigger fullBurstEnd, target alliesOfWeapon SG (includes self — no 'except self')."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 13% of the skill user's ATK x s…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 13, durationSec 15, perResource {preciousMoments × 13} — live stack-count scaling (13/26/39%)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when Happy Memories takes e…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Proxied to burstCast (the single instant Happy Memories can take effect per Making Memories window)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Snapshots of Youth: Normal Attack Dam…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff normalAttackPct 10, maxStacks 3, durationSec 7 (⚑ FB-end removal proxy; only 1 stack reachable in this model)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when Full Burst ends. Affec…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Removal clause encoded as the durationSec bounds on the Making Memories / Snapshots buffs (no remove-at-FB-end primitive)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes Making Memories.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec 10 on the burst self-buff bundle (⚑ cast→FB-end window estimate)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes Snapshots of Youth.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec 7 on the normalAttackPct buff (⚑ applies ~4 shots into the window)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when performing normal atta…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Status-gated normal-attack counter proxied to the burstCast that grants Making Memories."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect varies according to the number…",
+      "status": "SKIPPED",
+      "effectOrReason": "No engine primitive for a status-scoped attack counter with once-per-threshold semantics + reset-on-removal; verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Two times: Reloads 6 rounds.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload fraction 0.667 (6 of 9 max rounds) — weapon-state/shot-count effect, timing-shifted to cast (⚑)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Four times: Happy Memories: pellets ▲…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resource happyMemories +1 (max 3) + passive buff pelletCountFlat perResource {×1} — permanent, not FB-end-removed."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Six times: Precious Moments: ATK ▲ 2.…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resource preciousMoments +1 (max 3) + passive buff atkPct perResource {×2.49}; also feeds S1's ally grant."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill. Aff…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (own-burst literal, NOT fullBurstEnter), target alliesOfWeapon SG exceptSelf true."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Damage ▲ 55% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 55, durationSec 10 (Damage Up bucket)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self. / Making Memories",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Self status bundle on burstCast; the status is the gate S2's counter reads."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Function: Enhances attack capabilitie…",
+      "status": "SKIPPED",
+      "effectOrReason": "Flavor/summary line with no mechanic; verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 1: Critical Rate ▲ 20.09% cont…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 20.09 durationSec 10 — UNSCOPED crit (no 'of normal attacks' wording), so not critRateNormalPct."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 2: Reloads 2 round(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload fraction 0.222 (2 of 9 max rounds)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 3: Attack Damage ▲ 29.99% cont…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 29.99 durationSec 10 (Damage Up bucket)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies. / Deals 554.4% o…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 554.4, crit true, noFb true (burst-cast damage lands pre-FB), no core (kit says no 'core strike')."
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[0].effects[*].durationSec (10) and skill1[1].effects[0].durationSec (7)",
+      "estimate": "Making Memories 10s from cast; Snapshots 7s from apply",
+      "reasoning": "Both statuses are 'continuously' but explicitly removed at Full Burst end; the engine has no remove-on-FB-end primitive, so the window must be a duration. Cast→FB-open offset plus a 10s FB gives ~10s; Snapshots starts ~4 SG shots (~3s) into the window.",
+      "recipe": "In a graded comp, log fullBurstStart/fullBurstEnd + burstCast frames for her rotation and set durationSec = (fbEnd − burstCast) exactly; for Snapshots use (fbEnd − 4th shot frame). Cross-check with a popup read: her normal-attack damage should step down at the FB-end frame."
+    },
+    {
+      "field": "skill2[0..2].trigger (burstCast proxy for the 2/4/6 attack thresholds)",
+      "estimate": "all three thresholds fire at burst cast",
+      "reasoning": "Kit-silent in engine terms: no status-scoped attack counter exists, and hitCount is fight-cumulative with no reset. Keying to the once-per-window burstCast preserves 'once per Making Memories cycle' but loses the intra-window delay; the 6-round reload in particular lands on a near-full magazine, under-crediting fire uptime.",
+      "recipe": "Count her SG trigger pulls between burst cast and FB end on footage; confirm the mid-window reload happens after exactly 2 shots (ammo counter jumping +6) and whether the pellet/ATK stacks appear on shots 4 and 6. If the reload matters, re-key it to a hitCount block gated fbGate:'inFb' with everyN thinned to one activation per window."
+    },
+    {
+      "field": "skill1[1].effects[0] (Snapshots of Youth stack count)",
+      "estimate": "1 stack (10% normalAttackPct) per window; cap 3 unreachable",
+      "reasoning": "Under a monotone in-window counter with fixed 2/4/6 thresholds, Happy Memories takes effect exactly once per Making Memories cycle, so Snapshots can only reach 1 stack before FB end strips it. The kit's 'stacks up to 3' hints the counter may CYCLE (2/4/6 repeating), which would also give up to 3 pellet + 3 Precious Moments stacks in a single window.",
+      "recipe": "Read the buff-icon stack pip on Snapshots of Youth during one Full Burst on footage; if it reaches 2–3 within one window the counter cycles and every S2 threshold must be re-keyed to a repeating in-FB trigger."
+    },
+    {
+      "field": "resources[*] + perResource encoding (happyMemories, preciousMoments)",
+      "estimate": "+1 stack per own-burst rotation, cap 3 (≈2–3 rotations to cap)",
+      "reasoning": "Stack/currency steady-state is an ALWAYS-⚑ field. Start (0), gain (1/cycle) and cap (3) are kit-stated, so the trajectory is DERIVED rather than guessed — no ramp haircut needed; but it assumes the stacks are never removed (only Making Memories and Snapshots are named in the S1 removal lines) and that she casts her own burst every rotation.",
+      "recipe": "Verify on footage that the Happy Memories / Precious Moments pips persist across Full Burst end and across rotations, and that they cap at 3; if they wipe on FB end, convert both to duration-bounded buffs."
+    },
+    {
+      "field": "base cadence (pullsPerSec / reloadFrames 161)",
+      "estimate": "SG datamined cadence as-is; ~6+ pulls available per 10s window",
+      "reasoning": "Cadence tuple is datamine-unreliable by standing rule; every threshold in this kit is attack-count-gated, so whether the 4th and 6th attacks land before FB end depends on it. Effective rate is also frame-quantised (60/ceil(60/nominal)).",
+      "recipe": "Ammo-counter read on a solo recording: count trigger pulls per second and reload completion frames; feed the effective (frame-quantised) value, not the nominal datamine field."
+    },
+    {
+      "field": "skill2[0].effects[0].fraction / burst[0].effects[1].fraction (instantReload)",
+      "estimate": "0.667 (6/9) and 0.222 (2/9)",
+      "reasoning": "The kit gives ROUND counts, but instantReload takes a fraction of max ammo; 9-round magazine → 6/9 and 2/9. Assumes the fraction is ADDED to the current belt (partial top-up) rather than setting the belt to that fraction.",
+      "recipe": "Confirm instantReload semantics in sim.ts (add vs set) and re-derive; if maxAmmoFlat-style round counts become expressible, use them instead so the value survives any max-ammo buff."
+    },
+    {
+      "field": "target kind 'alliesOfWeapon' (skill1[0], skill2[5])",
+      "estimate": "{ kind: 'alliesOfWeapon', weapon: 'SG', exceptSelf?: true }",
+      "reasoning": "The packet's types.ts excerpt retains the descriptive comment for 'all shotgun-wielding allies [(except self)]' but its declaration line was redacted, so the kind/field spelling is inferred, not read.",
+      "recipe": "Read the real src/skills/types.ts TargetDef union and rename to the actual kind before running validate-overrides; both target sets are weapon-typed and class-blind (an SG Supporter counts)."
+    },
+    {
+      "field": "perResource on casterAtkPct / pelletCountFlat",
+      "estimate": "supported generically (value ignored, pool × mult each frame)",
+      "reasoning": "The schema documents perResource on a crit-damage buff and says the buff's value is replaced by pool × mult; applying it to a flat-ATK stat and to the SG pellet path is an extrapolation, and the doc suggests applying perResource buffs as PASSIVE self-buffs (S1's grant is instead a 15s ally buff).",
+      "recipe": "Grep the perResource branch in sim.ts for stat-kind restrictions; if flat-ATK or pellet stats are excluded, fall back to authoring the max magnitude (39% / +3 pellets) with rampSec ≈ time to the 3rd own-burst rotation."
+    },
+    {
+      "field": "burst[1].effects[0].noFb (true)",
+      "estimate": "true",
+      "reasoning": "Per the standing rule, burst-cast/instant damage is Full-Burst-exempt because the cast resolves before the FB window opens; this is the burst nuke, not a function-damage rider (riders keep noFb default OFF).",
+      "recipe": "Log the damage event for her 554.4% hit and check inFullBurst / fbMajorApplied at the cast frame; if the engine already resolves her B2 cast pre-FB, drop noFb and let timing decide (or set burstSnapshotsPreFb instead)."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,149 @@
+{
+  "slug": "arcana",
+  "kitDescription": "Arcana is a Burst II Electric supporter whose entire payload lands on the tail of the team's Full Burst rather than inside it. Her own burst nukes the boss for 300% of her final ATK, leaves the boss taking 10% more damage for 10s (Judgement), and puts every Electric ally — herself included — into the Wheel of Fortune status with a 10% attack-damage buff. On any rotation where she personally burst (Wheel of Fortune is live on her), the moment Full Burst ends she pours an enormous package into whichever Burst III Electric ally cast their burst that rotation: +180% attack damage and a flat ATK grant worth 180% of her own ATK, both for 15s, plus a 75% cut to that ally's Skill 2 cooldown. On those same rotations the whole team gets 6 seconds off their burst cooldowns and a flat ATK grant worth 50% of hers for 5s. Two smaller lines are unconditional and fire after every Full Burst regardless: a flat ATK grant worth 5% of her ATK for 10s and +7.5% attack damage for 10s, both to all allies. She is a rotation-shaped unit: without a Burst III Electric partner her two biggest numbers have no legal target and do literally nothing.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "K3 'fires on EVERY Full Burst end' — grants(A, casterAtkPct, 5) returns [] because the engine stores casterAtkPct as an ABSOLUTE ATK value (arcana ATK × 5/100 ≈ 4986.7), not the percentage 5. Test-representation bug, not a model divergence.",
+      "K3 'reaches all four allies including herself, for 10 sec' — same value-filter bug.",
+      "K4 'fires at FB end onto the Electric B3 alone, for 15 sec' — same value-filter bug (shipped value ≈179521 ≠ 180).",
+      "K5a ACTIVE 'fires on every FB end in fixture B' — same value-filter bug (shipped value ≈49867 ≠ 50).",
+      "K5b 'removing burstCdr costs Full Bursts' — FB count is 4 with and without the 6s CDR in the blind's fixture B; the observable is too coarse to cross a boundary at ~35-41s rotations. Discrimination weakness in the probe, not evidence the CDR is inert.",
+      "inertness 'grants no crit/core/element/charge/weapon-state stat' — reloadSpeedPct reported. Slot-index collision: the filter is casterIdx===A_ARCANA(2)||casterIdx===B_ARCANA(1) applied to the UNION of both fixtures, and slot 1 in fixture A is CROWN, whose kit grants reloadSpeedPct. Arcana's shipped override grants no forbidden stat (verifiable structurally in §3)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "if self is in Wheel of Fortune status",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "ownBurstGate:'cast' composed with trigger fullBurstEnd on skill1[0], skill2[0], skill2[1]; replaced the parser-baseline everyN:2/offset:1 round-count proxy",
+        "blindSaid": "S2b (fable) and S6 (opus) INDEPENDENTLY derived ownBurstGate:'cast' from the prose alone, both for the same reason: arcana is the sole source of Wheel of Fortune and she is Electric, so the status reduces to 'she burst into this rotation'; both also named the dead-by-epsilon trap of a literal 10s aliveness check at FB end",
+        "formulaCheck": "Engine-verified: sim.ts:2246 fires fullBurstEnd triggers BEFORE :2252 clears rotationCasters, so ownBurstGate:'cast' sees this rotation's casters at FB end. targetStatus is enemy-only by construction, so it is not the right channel.",
+        "fireRateOk": true,
+        "explanation": "The one substantive change this gauntlet made, and it is a strict faithfulness improvement. The round-count proxy was wrong in BOTH directions, reproduced: 0 arcana casts in [liter,crown,arcana,ada,helm] yet everyN fired the 180% AD 6× and Death 30×; and in [liter,arcana,ada] where she bursts every rotation it fired only ceil(FB/2). The shipped gate measures 0 firings at 0 casts and one per FB end at every-rotation casts. Cross-family corroborated (fable + opus, both blind)."
+      },
+      {
+        "kitLine": "The Magician: CD of Skill 2 ▼ 75%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; no skill-CD primitive in the engine",
+        "blindSaid": "S2b: GAP; S5: it.skip with the same reasoning (EffectDef carries burstCdr for BURST cooldowns only; a unit's skill cadence is baked into its trigger with no cross-unit rewrite channel); S6: SKIPPED, recorded verbatim, explicitly 'NOT a defensive/inert line'",
+        "formulaCheck": "No effect kind in the schema reduces another character's skill cooldown; modeling it needs a new effect kind plus a per-unit skill-CD clock.",
+        "fireRateOk": true,
+        "explanation": "Three independent reads agree it is a genuine schema gap, and all three refuse to call it inert. Recorded verbatim in unmodeled.skill1 and asserted by driver test A0. The sim under-credits arcana by whatever a 75% cut to an interval-triggered ally skill 2 is worth over 15s — sizing recipe is in the S6 flag list."
+      },
+      {
+        "kitLine": "Attack damage ▲ 180% for 15 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 180 / 15s, trigger fullBurstEnd, target burstCasters{stage:3, element:'Electric'}, ownBurstGate:'cast'",
+        "blindSaid": "S6 blind override is byte-equivalent on this block; S5 K2 passes UNMODIFIED against the driver's shipped override (fires at FB end, lands on the Electric B3 alone, 15s, inert in the no-Electric-B3 comp)",
+        "formulaCheck": "'Attack damage ▲' is the generic Damage-Up bucket (attackDamagePct), additive within bucket — not ATK. Keyed to fullBurstEnd it starts as the FB window closes and never collects the +50% FB major, which is the dominant over-credit both blinds warned about.",
+        "fireRateOk": true,
+        "explanation": "The largest line in the kit and the most heavily corroborated: blind test GREEN, blind override identical, target discipline proven twice (Electric-B3-only holder set in the 3-unit fixture; entirely absent from the no-Electric-B3 fixture)."
+      },
+      {
+        "kitLine": "ATK ▲ 5% of skill user's ATK 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 5 / 10s, target allies, UNGATED (separate ■ header with no WoF clause)",
+        "blindSaid": "S2b and S6 both read this header as ungated; S5 K3's DISCRIMINATING assertion (casterAtkPct→atkPct counterfactual must move totals) PASSED, proving the caster-ATK basis is really wired",
+        "formulaCheck": "'of the skill user's ATK' = casterAtkPct, a flat ATK add derived from the CASTER's sheet, stored as an absolute value; the nearest-wrong atkPct scales each target's OWN ATK. §2 confirms the representation.",
+        "fireRateOk": true,
+        "explanation": "Fires on every FB end in both fixtures (driver A7 asserts A_FB firings even in the comp where arcana never bursts) — the gate correctly does NOT bleed onto this ■. The value-based S5 assertions failed only on the absolute-vs-percentage representation; the counterfactual that actually discriminates the bucket passed."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Strength: ATK ▲ 180% of user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 180 / 15s, burstCasters{stage:3, Electric}, ownBurstGate:'cast'",
+        "blindSaid": "S6 blind override identical; S5 K4's structural assertions fail only on the value filter, and its inertness assertion passes (though vacuously, under the same filter bug)",
+        "formulaCheck": "casterAtkPct, not atkPct — the classic misread all three agents named. Shipped value ≈179521 = arcana ATK × 1.80, consistent with the 5%/50% lines at ≈4986.7/≈49867 (ratio 1:10:36).",
+        "fireRateOk": true,
+        "explanation": "Driver test A5 pins it by duration-bucketing (15s) plus the 36× magnitude ratio against the 5% line, which sidesteps the representation trap the blind fell into, and proves ada-only targeting plus fixture-A inertness non-vacuously (the all-allies counterfactual leaks onto all three slots)."
+      },
+      {
+        "kitLine": "Death: CD of Burst Skill ▼ 6 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCdr seconds 6, target allies, ownBurstGate:'cast', no oncePerBattle; 'event-silent — mutates burstCdFrames directly', so the gate is pinned via the observable 50% sibling in the same block",
+        "blindSaid": "S6 encodes it identically (no oncePerBattle, unqualified line repeats every gated FB end); S5 K5b tried to observe it via FB count and measured no delta (4 vs 4)",
+        "formulaCheck": "§2: burstCdr mutates burstCdFrames directly and emits no event. Prose says seconds, not percent — the S2b nearest-wrong ('read as ▼6%') is avoided. Ungated it would over-credit everyone's cadence; gated it cannot runaway-open the WoF gate.",
+        "fireRateOk": false,
+        "explanation": "Encoding is faithful and its block demonstrably fires (the sibling 50% casterAtkPct grant in the same block is asserted every FB end in fixture B, zero in fixture A). What is NOT demonstrated by any artifact is that the 6s reduction produces an effect: the only probe aimed at it (K5b) showed zero FB-count movement. At ~35-41s rotations a 6s shave plausibly fails to cross an integer FB boundary over 180s, so this reads as a coarse instrument rather than a dead line — but it is unproven either way. See gotchas."
+      },
+      {
+        "kitLine": "ATK ▲ 50% of user's ATK for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 50 / 5s, target allies (same ■ as Death), ownBurstGate:'cast'",
+        "blindSaid": "S6 identical; S2b flagged duration bleed (15s/10s) and target-set contamination from the other ■ as the nearest-wrongs — neither occurred",
+        "formulaCheck": "Duration 5s and target ALL allies (not the B3-Electric caster set) both match the ■ header it sits under; casterAtkPct basis confirmed by the 10× ratio against the 5% line.",
+        "fireRateOk": true,
+        "explanation": "Driver A6 asserts all three slots, every FB end in fixture B, inert in fixture A, with an un-gating counterfactual that fires in fixture A — a real GREEN/RED pair. This line is the observable that carries the gate discrimination for the otherwise event-silent Death block."
+      },
+      {
+        "kitLine": "Attack damage ▲ 7.5% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 7.5 / 10s, target allies, UNGATED",
+        "blindSaid": "S6 identical; S5 K6 PASSES unmodified against the shipped override, including the 'no atkPct twin' assertion",
+        "formulaCheck": "Damage-Up bucket, not ATK; separate ■ with no WoF clause → no gate. S5 also uses this line as the K10 trigger-identity probe precisely because it has no gate to confound the frame comparison — and K10 passed, confirming firings coincide with fullBurstEnd and never fullBurstStart, and that the fullBurstEnter counterfactual moves damage.",
+        "fireRateOk": true,
+        "explanation": "Fully green under the blind test. This line also carries the trigger-identity proof for the whole skill half of the kit."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Wheel of Fortune: Attack dmg ▲ 10%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger burstCast, target alliesOfElement{Electric}, attackDamagePct 10 / 10s",
+        "blindSaid": "S6 identical; S5 K7 PASSES — fires on the cast frame (not FB entry/end), holder set equals exactly the Electric allies computed from data/characters.json, and includes arcana herself",
+        "formulaCheck": "No 'Activates when' clause inside her own burst block → burstCast, not fullBurstEnter. S2b named fullBurstEnter keying here as 'the single largest over-credit available in this kit' (it would open all four gated lines every rotation despite her 40s CD); the shipped encoding avoids it.",
+        "fireRateOk": true,
+        "explanation": "Green under the blind test with an element-scoping discriminator (an all-allies model would reach the Iron ally) and self-inclusion, which is the mechanism that arms her own WoF gate. Driver A1 adds the same discrimination independently."
+      },
+      {
+        "kitLine": "Deals 300% of final ATK as Burst dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 300, trigger burstCast, target enemy, ordered BEFORE the Judgement debuff in the same block",
+        "blindSaid": "S6 split it into its own block with target SELF, on the theory that resolveTargets{enemy} is empty for damage emission — a structural divergence from the driver. S5 K8 PASSES against the driver's shipped encoding: one burst-bucket hit per cast at atkPct 300, fbMajorApplied never true, coreRate 0.",
+        "formulaCheck": "§2: burstCast damage resolves PRE-FB and is FB-exempt automatically by timing, so no noFb flag is required; 'Burst Skill damage' with no core-strike wording → no core bucket. Both confirmed by the blind's own assertions running against the shipped file.",
+        "fireRateOk": true,
+        "explanation": "S6's target-self worry is a RECON_ERROR on the driver's encoding: the blind test, written independently, observed exactly one 300% burst-bucket hit per cast from the driver's target-enemy block, so the emission path works. Both encodings also place the nuke before Judgement, so neither self-boosts — the S6 ⛑ on block ordering remains an open unmeasured question, unchanged by this gauntlet."
+      },
+      {
+        "kitLine": "Judgement: Damage taken ▲ 10% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff damageTakenPct 10 / 10s, target enemy, per burst cast",
+        "blindSaid": "S6 identical; S5 K9 PASSES including the DISCRIMINATING boss-held assertion (casterIdx AND targetIdx both null, never an ally slot)",
+        "formulaCheck": "§2: boss-held debuffs emit buffApply with casterIdx===null AND targetIdx===null. An ally-side encoding would carry a real targetIdx and credit only its holders; the observed events do not.",
+        "fireRateOk": true,
+        "explanation": "Green under the blind test's strongest available discriminator, and independently pinned by driver A3 with a removal counterfactual."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "Death's 6s burstCdr is encoded and its block demonstrably fires, but NO artifact in this gauntlet demonstrates the cooldown reduction actually produces an effect — the one probe aimed at it measured zero movement.",
+      "evidence": "Kit: 'Death: Cooldown of Burst Skill ▼ 6 sec.' → driver skill2[1] burstCdr seconds 6. Per §2 burstCdr mutates burstCdFrames directly and emits no event, so its only observable is cadence. S5 blind K5b ('removing it must reduce the Full Burst count') measured 4 Full Bursts with the CDR and 4 without in [liter, arcana, ELECTRIC_B3]. The driver classified this as a fixture weakness and pinned the BLOCK's gate via the observable 50% casterAtkPct sibling instead — which proves the block fires, not that the CDR bites.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Not an encoding change — the encoding matches the prose. Needs a sharper instrument than FB count: instrument arcana's own burstCast frames across the fight in fixture B with and without the burstCdr effect and assert the inter-cast interval drops by ~6s per gated FB end (expected ~40-41s → ~34-35s given her 40s CD), or assert burstCdFrames directly. If the cast-frame timeline is identical too, the effect is genuinely not reaching allies' cooldowns and this escalates to a real ENGINE gotcha. Judge by measured cadence/FB-count preservation, never by aggregate damage ratio."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Ten kit lines: nine FAITHFUL, one honest DOCUMENTED_GAP (The Magician's skill-2 CDR — no primitive exists, recorded verbatim, and all three agents independently refused to call it inert). No REAL-GOTCHA survives inspection. All six S5 blind-test reds are artifacts of the blind agent, confirmed against the engine facts in §2 rather than taken on the driver's word: four are one root cause — the blind filters casterAtkPct buffApply events by the percentage (5/50/180) while the engine stores an ABSOLUTE ATK value, and the shipped values ≈4986.7/≈49867/≈179521 are exactly arcana's ATK × the kit percentages, self-consistent at the 1:10:36 ratio the driver's tests pin; one is a slot-index collision (the forbidden-stat filter reads casterIdx 1 across the UNION of both fixtures, and slot 1 in the control comp is crown, whose kit — not arcana's — grants reloadSpeedPct); one is the coarse FB-count probe on the event-silent burstCdr. Critically, every S5 assertion whose observable the engine stores as a plain percentage — K2 (the 180% Damage-Up on the Electric-B3 caster, with its no-Electric-B3 inertness discriminator), K6, K7, K8, K9 and the K10 trigger-identity pair — ran UNMODIFIED against the driver's shipped override and passed, so the highest-leverage risks in this kit (FB-end vs FB-enter keying, Damage-Up vs ATK bucket, Electric-only Wheel scoping, FB-exemption on the 300% nuke, boss-held Judgement) are cross-family corroborated, not merely self-asserted. The one substantive change — everyN:2/offset:1 → ownBurstGate:'cast' on the three Wheel-of-Fortune-gated blocks — is FAITHFUL and is the most valuable output of this run: arcana is the sole source of Wheel of Fortune and is herself Electric, so the status reduces to 'she burst into this rotation'; the fable pre-op reviewer and the opus blind override-writer derived that same encoding independently from prose alone, both naming the dead-by-epsilon trap of a literal 10s aliveness check, and the driver reproduced the round-count proxy failing in both directions (6 spurious 180% AD firings and 30 spurious Death firings at zero arcana casts; only ceil(FB/2) firings when she bursts every rotation). The engine ordering that makes the gate work is code-verified (sim.ts:2246 fires fullBurstEnd triggers before :2252 clears rotationCasters), resolving the S6 'modeled ≠ working' flag. Discrimination holds: every load-bearing line has a GREEN-vs-shipped / RED-vs-counterfactual pair in the driver's 24/24 suite, including counterfactuals for both the ungated model and the old everyN proxy over-firing in the comp where arcana never casts. Two residuals the owner should spot-check. First, one evidence claim in the driver's §8 reconciliation is overstated: K5a's fixture-A gate discrimination does NOT corroborate the fix, because the same casterAtkPct value-filter bug makes it pass vacuously against the old proxy too — gate corroboration therefore rests on the driver's own A4 (attackDamagePct 180, stored as a true percentage, non-vacuously inert at 0 casts while both counterfactuals fire) plus the two blinds' independent derivation, which is sufficient but is a narrower base than claimed. Second, and the same-model residual worth a human eye: Death's 6s burstCdr is proven ENCODED and its block proven FIRING, but nothing here proves the reduction actually bites — the only probe returned 4 Full Bursts either way; sharpen it to cast-frame intervals rather than FB counts. Both 180% lines are inert on any comp without a Burst-III Electric ally, so grade this unit only on such a comp; base arcana is MODEL_ONLY with zero graded teams, so this fix carries no regression risk and corrects the model ahead of any recording.",
+  "model": "claude-opus-5"
+}

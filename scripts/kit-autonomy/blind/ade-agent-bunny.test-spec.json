@@ -1,0 +1,57 @@
+{
+  "slug": "ade-agent-bunny",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK +15.2% of the skill user's ATK, 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: exactly one casterAtkPct 15.2 buff, durationSec 5, per-full-charge trigger; runtime buffApply reaches >=4 distinct targets incl. self. Counterfactuals: zeroing lowers team damage; swapping stat to atkPct moves the team total (proves caster-sourced vs own-ATK is not cosmetic); re-targeting to self lowers team damage. RED under the nearest-wrongs: atkPct-at-15.2, self-only scope, burstCast/fullBurstEnter keying, or a dead buff."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Spy Lens: Min Eff Range +4.44% x10, 5s",
+      "disposition": "GAP",
+      "assertion": "it.skip — no StatKey models Minimum Effective Range and the engine exposes range only as the binary +30% full-range bonus, so the payload is unobservable. The stack counter is NOT skipped: it is the S2b gate and is covered by the ungated-clone counterfactual. The line must appear in unmodeled (asserted by the no-silent-drops test)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Pierce Damage +18.36% for 5 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: one pierceDamagePct 18.36, durationSec 5, per-full-charge trigger, allies; no attackDamagePct at 18.36 (mis-bucketing nearest-wrong). Runtime: applies to >=4 targets. Inertness: zeroing the whole pierce channel leaves liter/crown/helm byte-identical (they carry no Pierce tag). Strict damage-movement version is it.skip'd — see gaps."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Spy Lens max -> Pierce + ATK +16% cont.",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: one atkPct 16 (own-ATK scaler, NOT casterAtkPct), target self, NO durationSec/durationShots ('continuously'), and some gate present (resourceGate | rampSec | non-passive trigger). Runtime: applies only to ade's index. Counterfactuals: zeroing lowers ade only and moves no teammate; an UNGATED clone (trigger->passive, gate/ramp stripped) out-damages the baseline — non-vacuity proof that the fixture exercises both the pre-max and post-max Spy Lens states (~10 full charges = ~10s at 60f charge / 6 ammo / 141f reload). RED under: ungated-from-t0, 5s duration, ally scope, casterAtkPct encoding."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Min Effective Range +55.56% for 10 sec",
+      "disposition": "GAP",
+      "assertion": "it.skip, same missing primitive as S1b; presence in unmodeled asserted."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage +55.04% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: attackDamagePct 55.04, durationSec 10, target allies, trigger burstCast. Runtime: applies-to-ade count EQUALS her burstCast count — RED if keyed to fullBurstEnter (over-fires on rotations another burst completes the chain) and RED if never fired. Counterfactuals: zeroing lowers team damage; stretching durationSec to 60 RAISES it, proving the 10s window is bounded rather than authored permanent."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Pierce Damage +10.13% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: pierceDamagePct 10.13, durationSec 10, allies, burstCast. Runtime: its apply count equals the Attack Damage apply count (same cast, same target set) — RED if scoped self-only or keyed to a different trigger."
+    }
+  ],
+  "fixtures": "controlComp('ade-agent-bunny', true) for every run — deterministic, no seed, helm kept ON (no crit-rate reads in this file, so helm's critRateNormalPct cannot confound). 10 hoisted sims: 1 baseline with cfg.onEvent capture + 9 withPatchedOverride counterfactuals; all structural assertions are read off the override clone with zero extra runs. Ade's unit index is self-identified from the casterAtkPct-15.2 buffApply events rather than assumed from slot order. PRINCIPAL FIXTURE RISK: ade is Burst II and controlComp already supplies crown (B2), so the two may contend for the single B2 slot and ade may never cast — the first burst test is an explicit non-vacuity gate on that, and if it goes RED the burst block needs a comp with no second B2. Context note: the session's git status listed the driver's filenames (override/test/review paths) but no contents were read — no driver reasoning, magnitudes, or truth values were seen.",
+  "gaps": [
+    "S1b 'Spy Lens: Minimum Effective Range +4.44%, 10 stacks' — it.skip: no StatKey for Minimum Effective Range; the engine models range only as the binary +30% full-range bonus (damage.rangeApplied), with no band-threshold input, so the magnitude is unobservable. The stack counter itself is modeled/tested as the S2b gate.",
+    "Burst 'Minimum Effective Range +55.56% for 10 sec' — it.skip, same missing primitive.",
+    "STRICT pierce damage-movement assertion — it.skip: types.ts contradicts itself for a blind reader (StatKey pierceDamagePct says 'parsed but inert in v1', while CharacterSkills.hasPierce says Pierce Damage feeds the Damage-Up bucket). Ade's entire S2b payoff plus two of her three ally buffs ride on which is current. Only the direction-safe (<=) and teammate-inertness forms are asserted live; un-skip the strict form once liveness is confirmed.",
+    "The 'within the effective range' / 'landing' qualifier on S1a and S2a is treated as always satisfied for an SR against the scope-lock boss (flag: assumption, not derived from the prose). If the engine ever models band-dependent landing for SR, both allies buffs need an uptime haircut.",
+    "Integration assumptions (blind, no tool access to read helm.test.ts): patched override injected as opts.overrides, event sink at opts.cfg.onEvent, damage read via totals(res).total and unitOf(res, slug).damage, event owner index via srcSlot/casterIdx. All four are confined to the four helpers at the top of the file — a single-line fix each if the exemplar differs."
+  ],
+  "model": "claude-opus-5"
+}

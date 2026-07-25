@@ -1,0 +1,134 @@
+{
+  "slug": "anchor-innocent-maid",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "targetMaxHpPct",
+              "value": 30.96,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "distributedDamagePct",
+              "value": 30.4,
+              "durationSec": 10
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "teamHas": {
+        "slugs": [
+          "anchor",
+          "poli",
+          "neve"
+        ]
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 8,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "hitRatePct",
+              "value": 10.13,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "casterAtkPct",
+              "value": 35.02,
+              "durationSec": 10
+            },
+            {
+              "kind": "buff",
+              "stat": "reloadSpeedPct",
+              "value": 40.04,
+              "durationSec": 15
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 30.09,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Three times: Stack count of debuffs ▼ 1."
+    ],
+    "skill2": [],
+    "burst": [
+      "Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 step 1 'Potency of HP ▲ 30.96%' is mapped to targetMaxHpPct as the literal reading; if it is a healing-POTENCY (recovery-amount) stat the schema has no key for it. Either way the step is offensively INERT — it is retained so the escalating step INDEX is correct (dropping it would make the Distributed Damage step fire on the FIRST Full Burst instead of the second).",
+    "⚑ skill1 block 2 'an ally from the same squad' is gated via teamHas.slugs with an UNVERIFIED squad roster (see flags). Wrong slugs make the block inert = under-credit, deliberately chosen over an ungated block that would over-fire teammates' on-recovery triggers (e.g. crown in the control comp).",
+    "Both heal effects carry NO HP amount (the engine models no HP pool). Their only live consequence is emitting recovery events to all allies, which drives on-recovery consumers; the 3.04%/40.18% Max-HP magnitudes are recorded here only.",
+    "'Three times: Stack count of debuffs ▼ 1' is a cleanse with no v1 consumer — omitted from the escalating steps array (escalating applies steps 1..N, so a 2-step array is correct behaviour at N=3).",
+    "noFb is not applicable to this kit: it contains ZERO damage effects (no flatDamage/dot/storedHit). Nothing here takes or is exempt from the Full-Burst major.",
+    "The escalating counters are per-block and independent (skill1 counts Full-Burst ENTRIES, skill2 counts Full-Burst ENDS); neither is stated to reset, so both are treated as monotonic for the fight.",
+    "Burst is keyed burstCast (her own cast), so its ATK buff lands PRE-Full-Burst — correct per trigger fidelity for a Burst II self-slot block, and it must not be re-keyed to fullBurstEnter."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. Structure: two escalating support ladders (skill1 on Full-Burst ENTER, skill2 on Full-Burst END) plus a burst that heals all allies and grants a caster-ATK buff. All magnitudes are verbatim from the kit text; the only interpretive calls are (a) 'Potency of HP' → targetMaxHpPct placeholder and (b) the same-squad slug roster, both flagged. Reload Speed ▲ 40.04% is modeled (NOT skipped) per the weapon-state-is-damage rule; Hit Rate ▲ 10.13% is modeled as hitRatePct, whose core-lift conversion is engine-side and measurement-gated."
+}

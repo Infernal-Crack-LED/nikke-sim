@@ -1,0 +1,138 @@
+{
+  "slug": "ade-agent-bunny",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 15.2% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Triggered by landing a Full Charge attack in effective range; SR base (chargeFrames 60) means every fully-charged shot qualifies — effectively per-shot for an always-charging SR. Range gate assumed satisfied vs the scope-lock boss.",
+      "durationSemantics": "durationSec 5, refreshed per full-charge landing. Cadence check: charge ~1s + reload 141f ≈ 2.35s → max gap ~3.4s < 5s, so near-100% uptime after the first shot (NOT permanent from t=0).",
+      "triggerIdentity": "shotFired (full-charge landing) — on-HIT wording ('landing'), not on-fire; in a 100%-hit sim these coincide. No FB gate.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "atkPct (scales each TARGET's own ATK) instead of casterAtkPct — 'of the skill user's ATK' is a flat add of 15.2% of ADE's ATK. Ade is a Supporter with modest ATK; atkPct on a high-ATK B3 carry massively over-credits. Secondary misread: 'passive' encoding (credits t=0 before the first shot lands).",
+      "distinguishingAssertion": "onEvent buffApply: stat === 'casterAtkPct', value 15.2, applied to all 5 slots on each of ade's full-charge shots. Assert carry's effectiveAtk delta == 0.152 × ade.staticAtk (flat), NOT 0.152 × carry ATK. Also assert first buffApply occurs at first shot-landing frame, not frame 0.",
+      "inertness": "Must not scale with the carry's ATK; removing ade's shots (stun window) must drop the buff after 5s.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Spy Lens: Min Eff Range ▲ 4.44%, 10 stacks",
+      "disposition": "GAP",
+      "scope": "Self, per full-charge attack (on-FIRE wording — 'when attacking', no landing/range clause, unlike the sibling line).",
+      "durationSemantics": "Stacks to 10, 'lasts for 5 sec'. CRITICAL AMBIGUITY: per-stack independent 5s expiry vs standard NIKKE refresh-all-on-new-stack. Under per-stack expiry at plausible SR cadence (~1 shot/1–1.5s incl. charge) the pool holds ~3–5 stacks and NEVER reaches 10 → skill2's gated block is permanently dead. Under refresh-all (the conventional reading) max stacks land after 10 shots (~12–16s incl. one reload) and hold for the fight. ⚑ ramp-to-max time is a derived estimate.",
+      "triggerIdentity": "shotFired (full-charge), self-scoped counter — should be a `resources` pool ('spyLens', 0..10) incremented per shot, because skill2 reads it via resourceGate.",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropping the line entirely because 'Minimum Effective Range' has no StatKey (it IS inert as a stat in v1) — which silently kills skill2's max-stack gate, the unit's entire Pierce mode. The stat is inert; the STACK COUNT is load-bearing.",
+      "distinguishingAssertion": "Assert a spyLens resource exists, increments 1 per full-charge shot, caps at 10, and that the skill2 gated effects (Pierce + ATK 16%) first appear at/after the 10th shot — GREEN if tracked, RED if the line was skipped (skill2 pierce block then either never fires or fires from t=0 depending on how the skip was patched).",
+      "inertness": "The range stat itself must move NOTHING (no damage, no range-bonus change); only the counter side-effect matters.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Pierce Damage ▲ 18.36% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Team-wide pierceDamagePct — feeds the Damage-Up bucket ONLY of pierce-tagged hits. In the control comp (liter/crown/carry/helm) no ally is pierce-tagged, so this line moves only ade herself, and only AFTER her Spy-Lens pierce mode is live.",
+      "durationSemantics": "durationSec 5, refreshed per full-charge landing (same near-100% uptime math as skill1 line 1).",
+      "triggerIdentity": "shotFired (full-charge landing, on-hit + range clause, same shape as skill1 block 1).",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Encoding as attackDamagePct (generic Damage Up) for the whole team — over-credits every non-pierce ally on every rotation. Second misread: applying it to ade's own hits before Pierce is gained.",
+      "distinguishingAssertion": "With the buff live, assert carry/helm damage totals are IDENTICAL with the line zeroed via withPatchedOverride (non-pierce hitters unmoved), while ade's post-max-stack damage events carry the +18.36 Damage-Up contribution. RED under the attackDamagePct misread (carry moves).",
+      "inertness": "Non-pierce teammates' totals; ade's own pre-max-stack shots.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Gains Pierce. This effect is continuous.",
+      "disposition": "FIX",
+      "scope": "Self; tags ade's own charge shots as Pierce (making pierceDamagePct feed her Damage-Up bucket). Gated: 'Activates only if Spy Lens is at max stacks'.",
+      "durationSemantics": "'Continuous' — permanent once activated (conventional NIKKE reading), NOT durationSec 5 like the sibling lines, and NOT only-while-at-max-stacks. Static whole-fight `hasPierce` is also wrong (credits pierce from t=0, before 10 charges accrue). Engine likely lacks a dynamic pierce toggle → the driver must either use resourceGate-based per-shot pierce tagging or a documented ⚑ steady-state approximation with a ramp haircut for the pre-activation window (~12–16s).",
+      "triggerIdentity": "resourceGate {name:'spyLens', min:10} on the full-charge trigger; once fired, permanent.",
+      "targetSet": "self",
+      "nearestWrongModel": "Top-level `hasPierce: true` (pierce from frame 0) — over-credits the opening ~12–16s AND survives even if stacks are unreachable. Runner-up misread: pierce active only while stacks==10, dropping across reload stack-decay under the per-stack-expiry reading.",
+      "distinguishingAssertion": "Assert ade's damage events before the 10th full-charge shot receive NO pierceDamagePct Damage-Up contribution, and events after do — permanently, including during subsequent reloads (no buffRemove for the pierce state). RED under hasPierce (early events credited) and RED under while-at-max (post-reload events uncredited).",
+      "inertness": "Pre-activation window; nothing team-facing (pierce is self-only).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 16% continuously.",
+      "disposition": "FAITHFUL",
+      "scope": "Self-only own-ATK scaling (atkPct, not casterAtkPct — no 'of the skill user's ATK' phrasing).",
+      "durationSemantics": "Permanent once activated (continuous, same gate and same permanence question as the Pierce line). NOT 5s.",
+      "triggerIdentity": "Same max-stack gate: resourceGate spyLens ≥ 10.",
+      "targetSet": "self",
+      "nearestWrongModel": "durationSec 5 by analogy to the neighboring lines (buff flickers off across reloads), or passive-from-t0 (over-credits the ramp window), or target allies (it is self-only).",
+      "distinguishingAssertion": "buffApply atkPct 16 on ade only, first at the 10th full-charge shot, then never removed (no matching buffRemove for the rest of the fight). Teammates' ATK unchanged by this line.",
+      "inertness": "All four teammates' ATK; ade's ATK pre-10th-shot.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Min Effective Range ▲ 55.56% for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Self, on her own burst cast.",
+      "durationSemantics": "10s (irrelevant — no schema stat).",
+      "triggerIdentity": "burstCast (own-burst block).",
+      "targetSet": "self",
+      "nearestWrongModel": "Force-mapping it to a range-bonus or hitRatePct proxy 'so it does something' — inventing damage for an unobserved mechanic (violates MEASURED > FUDGE). Correct handling: verbatim in `unmodeled`.",
+      "distinguishingAssertion": "Zeroing/removing this line changes NO damage event and no total (byte-identical totals under withPatchedOverride).",
+      "inertness": "Everything — the line must move nothing.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 55.04% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Damage-Up bucket (attackDamagePct) for the whole team — dilutes additively with other support Damage-Up.",
+      "durationSemantics": "durationSec 10 — covers the FB window when cast pre-FB.",
+      "triggerIdentity": "burstCast (a self-block inside her OWN burst = fires ONLY on rotations ade casts Burst II), NOT fullBurstEnter. Ade is Burst II and the control comp already has crown at B2 — in any comp with a second B2 the two triggers diverge hard.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "fullBurstEnter — the buff then fires on EVERY team Full Burst including rotations where crown (or any other B2) takes the slot, over-crediting every non-ade rotation. This is the taxonomy's canonical burst-cast trap and my top shared-prior-misread candidate.",
+      "distinguishingAssertion": "In a two-B2 comp (ade + crown), count buffApply events with value 55.04: must equal ade's burstCast event count, NOT the fullBurstStart count. RED under fullBurstEnter (count == every FB).",
+      "inertness": "Rotations where ade does not cast; any comp where she never wins the B2 slot.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Pierce Damage ▲ 10.13% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Team-wide pierceDamagePct — same pierce-tagged-hits-only scoping as skill2 line 1; in practice moves only ade (post-max-stacks) unless a pierce teammate exists.",
+      "durationSemantics": "durationSec 10.",
+      "triggerIdentity": "burstCast (same own-burst block risk as the 55.04 line).",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "attackDamagePct for the team (over-credits non-pierce allies), and/or fullBurstEnter keying (over-fires in two-B2 comps). Also stacking confusion: this is ADDITIVE with skill2's 18.36 in the same bucket for her pierced hits, not multiplicative.",
+      "distinguishingAssertion": "Zero this line via withPatchedOverride: carry/helm totals identical; ade's post-max-stack, in-window damage events lose exactly a 10.13-point Damage-Up contribution. Event count of value-10.13 buffApplies == ade's burstCast count.",
+      "inertness": "Non-pierce teammates; non-ade rotations; ade pre-pierce-activation.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:casterAtkPct 15.2 allies 5s",
+    "skill1:spyLens stack counter (gate feed for skill2)",
+    "skill2:pierceDamagePct 18.36 allies 5s",
+    "skill2:Gains Pierce @ max stacks (continuous)",
+    "skill2:atkPct 16 self (continuous)",
+    "burst:attackDamagePct 55.04 allies 10s (burstCast)",
+    "burst:pierceDamagePct 10.13 allies 10s (burstCast)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Minimum Effective Range ▲ 4.44% (stat only — stack counter IS modeled)"
+    ],
+    "skill2": [],
+    "burst": [
+      "Minimum Effective Range ▲ 55.56% for 10 sec"
+    ]
+  },
+  "notes": "Three places I expect a shared-prior misread. (1) Spy Lens reachability: whether 10 stacks is ever attained hinges on refresh-all vs per-stack 5s expiry — under per-stack expiry at SR cadence (charge 1s, ammo 6, reload ~2.35s) the pool plateaus ~3–5 and the ENTIRE skill2 self-mode (Pierce + ATK 16) is dead; the driver must state which reading they encoded and ⚑ the ramp-to-max estimate (~12–16s under refresh-all). A test asserting only 'pierce eventually on' under both readings would mask this. (2) casterAtkPct vs atkPct on skill1 — 'of the skill user's ATK' is a flat add keyed to a Supporter's low ATK; the atkPct misread inflates the carry. (3) burstCast vs fullBurstEnter on both burst buffs — ade is B2 and the control comp's B2 slot is contested (crown), so the misread over-fires on every non-ade rotation; assert count-equality against her burstCast events, not fullBurstStart. Also reconcile the pierce plumbing: the schema's static hasPierce cannot express stack-gated pierce — a resourceGate-driven mechanism or a documented ⚑ steady-state approximation is required, and the pre-activation window (~first 12–16s) must show zero pierceDamagePct credit. Finally, both team pierce buffs must be provably inert on the non-pierce control-comp teammates — that inertness is itself a required assertion, not an excuse to skip the lines.",
+  "model": "claude-fable-5"
+}
