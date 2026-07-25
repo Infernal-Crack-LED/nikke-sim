@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 26,
-      "authored": 19,
+      "unit-tested": 27,
+      "authored": 18,
       "audited": 27,
       "reconciled": 4,
       "pending": 1
@@ -3306,22 +3306,24 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "materialized dropped 'Attacks sequentially 10 times' (burst nuke was x1) — restored x10; S2 shipped kit-literal single 15s window (rejected unsupported 'permanent DoT' premise; no S2 cooldown in datamine)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/sakura-bloom-in-summer.json + scripts/kit-autonomy/manual-review/sakura-bloom-in-summer.md."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded (not owned)",
+      "evidence": "Pure model — never fielded (not owned) | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "spot-check: Q4 burst-DoT full-10-stack reading (351.6%/s vs per-second ramp, ~0.55x if ramp wins — read sustained tick popups right after her burst); volley rangeApplied/crit are schema-defaults not event-asserted; Dancing Flower 7.82 is a 50%-duty time-average (re-window if engine gains duration-carrying passives)",
       "unmodeled": {
         "skill1": [
           "Activates when an ally or self destroys an enemy's part. Affects self.",

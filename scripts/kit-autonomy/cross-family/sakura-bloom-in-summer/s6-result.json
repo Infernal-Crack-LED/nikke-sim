@@ -1,0 +1,258 @@
+{
+  "slug": "sakura-bloom-in-summer",
+  "leakDetected": null,
+  "override": {
+    "slug": "sakura-bloom-in-summer",
+    "skill1": [],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 15
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 15.64,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 15
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 256,
+            "durationSec": 15,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 457.14,
+            "flavor": "sequential",
+            "crit": true,
+            "noRange": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 35.16,
+            "durationSec": 10,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates at the start of battle. Affects self. Forcefully uses Skill 2. — modeled implicitly as skill2's interval first-fire phase, not as its own block (no force-cast effect kind exists).",
+        "Activates when an ally or self destroys an enemy's part. Affects self. Sustained Damage ▲ 5.1% for 30 sec. — the scope-lock boss is partless; no partDestroyed TriggerDef exists. Never fires.",
+        "Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status. Dancing Flower Duration ▲ 10.02 sec. — partless boss; also no duration-extension primitive.",
+        "Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status. Sakura Petals Duration ▲ 10.02 sec. — partless boss; also no duration-extension primitive."
+      ],
+      "skill2": [],
+      "burst": [
+        "Deals 35.16% of final ATK as sustained damage every 1 sec, stacks up to 10 times and lasts for 10 sec. — the 10-stack CAP is not modeled; the engine appends one independent DoT instance per burst cast and never dedups, so concurrent instances approximate stacking without enforcing the ceiling."
+      ]
+    },
+    "caveats": [
+      "⛑ skill2 cadence: kit gives NO cooldown for Skill 2. Modeled as interval 15s (= the stated buff/DoT duration, i.e. maintained-uptime) with force-cast first-fire at t=0 per the skill-CD convention. UNMEASURED — the true CD could be longer, which would leave gaps.",
+      "⛑ Sakura Petals DoT re-application: at interval 15s vs durationSec 15s the instances abut rather than overlap. If the real CD is shorter than 15s, the append-not-refresh engine would MULTIPLY the DoT. Verify cadence before trusting burst-adjacent totals.",
+      "⛑ Burst 10-hit split: modeled as 10 discrete 457.14% hits (text says 'Attacks sequentially 10 times'). If popups show one merged number, damage is identical but crit variance is not.",
+      "⛑ Burst DoT stack cap of 10 unenforced (see unmodeled).",
+      "'Affects the enemy with the highest final ATK' / 'random enemies' / 'the same targets' all collapse to the single boss in v1 — target selection is a no-op here.",
+      "Burst damage is burstCast-keyed (not fullBurstEnter) per trigger-identity fidelity: it lands pre-FB and is FB-exempt by timing."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read from kit prose only. Full-kit audit: 8 kit lines total. Implemented 4 (skill2 Dancing Flower Attack Damage buff, skill2 Sakura Petals sustained DoT, burst 10x sequential hit, burst stacking sustained DoT). Skipped 4, all in skill1: the start-of-battle force-cast (folded into skill2's first-fire phase) and three part-destruction riders (the scope-lock boss is partless and TriggerDef has no partDestroyed kind, so all three are permanently inert). Load-bearing uncertainty is skill2's kit-silent cooldown, which drives BOTH the Attack Damage uptime and the 256%/s DoT's re-application rate — the single largest damage lever in this kit."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Forcefully uses Skill 2.",
+      "status": "SKIPPED",
+      "effectOrReason": "No force-cast effect kind. Folded into skill2's interval first-fire at t=0 per the skill-CD convention; recorded verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Sustained Damage ▲ 5.1% for 30 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger is enemy-part destruction; scope-lock boss is partless and no partDestroyed TriggerDef exists. Would be sustainedDamagePct 5.1 / 30s self if a part channel existed."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Dancing Flower Duration ▲ 10.02 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Same dead part-destroyed trigger; additionally no buff-duration-extension primitive in the schema."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Sakura Petals Duration ▲ 10.02 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Same dead part-destroyed trigger; additionally no DoT-duration-extension primitive in the schema."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Dancing Flower: Attack Damage ▲ 15.64%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 15.64, durationSec 15, target self, trigger interval 15s (⛑ cadence). 'Attack Damage' maps to the Damage Up bucket, not atkPct."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Sakura Petals: 256% ... every 1 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot atkPct 256, intervalSec 1, durationSec 15, flavor sustained, target enemy. Highest-final-ATK enemy = the sole boss."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "457.14% ... sequentially 10 times.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "10x flatDamage atkPct 457.14, flavor sequential, crit true, noRange true, on burstCast. FB-exempt by cast timing (no noFb set — burst-cast damage lands before the FB window)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "35.16% ... stacks up to 10 ... 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot atkPct 35.16, intervalSec 1, durationSec 10, flavor sustained, on burstCast. Stack cap unenforced (append-not-refresh); noted in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[*].trigger.sec",
+      "estimate": "interval 15s, first fire t=0 (start-of-battle force-cast)",
+      "reasoning": "The kit states NO cooldown for Skill 2. Both skill2 lines carry a 15s duration, and the skill1 force-cast implies skill2 is meant to be up from t=0. Setting the interval equal to the duration yields seamless-but-non-overlapping uptime, the least-assuming choice. The datamined skillCooldownsSec field is not in this packet.",
+      "recipe": "Read skillCooldownsSec for slot 2 from the datamine; cross-check against footage by counting Sakura Petals DoT tick popups — gaps between tick trains give the real CD directly. If CD < 15s the append-not-refresh engine will stack DoT instances and inflate damage superlinearly."
+    },
+    {
+      "field": "override.skill1 (force-cast representation)",
+      "estimate": "first-fire phase t=0 rather than t=CD",
+      "reasoning": "Per the skill-CD first-fire convention, a kit line reading 'Forcefully uses Skill N' first-fires at t=0; without it an interval trigger would first fire at t=sec. This is a convention, not a measurement.",
+      "recipe": "Confirm from footage that Sakura Petals ticks begin within the first second of the fight rather than ~15s in."
+    },
+    {
+      "field": "override.burst[0].effects (split vs merge)",
+      "estimate": "10 discrete hits of 457.14% each",
+      "reasoning": "'Attacks sequentially 10 times' states the count explicitly, so the split is textual rather than inferred. Kit-silent part is whether the game renders 10 popups or one merged number — damage-identical, but it changes per-hit crit variance and any per-hit rider interaction.",
+      "recipe": "Count burst popups in a recording; 10 orange/white numbers vs 1 settles it."
+    },
+    {
+      "field": "override.burst[1].effects[0] (stack cap)",
+      "estimate": "one appended DoT instance per burst cast; 10-stack cap unenforced",
+      "reasoning": "The engine appends an independent DoT instance per fire and never dedups. With a 10s duration and a 40s burst cd, only one instance is ever live at a time, so the cap is unreachable in practice on this rotation and the approximation costs nothing HERE — but it is wrong in principle and would break if the burst cadence tightened.",
+      "recipe": "If a faster-cycling comp is ever graded, verify no more than 10 concurrent tick instances; otherwise leave as-is and keep the unmodeled note."
+    },
+    {
+      "field": "override.burst[*] noFb",
+      "estimate": "unset (default OFF — FB bonus applied by timing)",
+      "reasoning": "Per-kit noFb is measured-only and must not be set blind. Burst-cast damage is FB-exempt by cast timing anyway (the cast lands before the FB window opens), so the engine handles it without an explicit flag.",
+      "recipe": "Only set after a popup-level measurement shows a burst component missing the +50% it should have received."
+    },
+    {
+      "field": "override (Hit-Rate / core)",
+      "estimate": "no hitRatePct, no core:true anywhere",
+      "reasoning": "The kit text contains no Hit Rate line and no 'core strike damage' wording. Per the rider rule, function-damage riders get NO core unless the text says so. Absence here is textual, not an estimate.",
+      "recipe": "n/a — nothing to measure; re-check only if the kit text is revised."
+    }
+  ],
+  "model": "claude-opus-5"
+}
