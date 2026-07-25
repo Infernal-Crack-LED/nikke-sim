@@ -9,6 +9,7 @@ faithfulness signal; a divergence you catch that the driver did not document is 
 > before `▲`/`▼`); quote ≤ ~40 chars; keep output clinical. Do not echo full flavorful sentences.
 
 ## You are given
+
 - The unit's **kit prose** (skill1/skill2/burst) + base stats. Ground truth — read literally.
 - The **harness API** (`scripts/tests/lib/harness.ts`) + the **effect schema** (`src/skills/types.ts`) + the
   disposition vocabulary + the 4 per-line questions + the RECURRING FAILURE-MODE taxonomy (REDACTED of this
@@ -18,10 +19,51 @@ faithfulness signal; a divergence you catch that the driver did not document is 
   assertions). Copy the discipline, not the unit.
 
 ## You must NOT see
+
 The driver's tests, the driver's override, the driver's reasoning, the truth file. If handed any, the test is
 void — say so.
 
+## Harness boilerplate (copy EXACTLY — the import paths + shapes are the #1 blind failure)
+
+Test files live at `scripts/tests/units/<slug>.test.ts`. Imports are ESM (`.js` extensions, NodeNext) and
+relative to THAT directory:
+
+```ts
+import { describe, expect, it } from 'vitest';
+import type { SimEvent } from '../../../src/types.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
+```
+
+Shape cheat-sheet (verified against `harness.ts` / `types.ts` — the shapes blind tests most often guess WRONG):
+
+- `totals(res)` → `Record<slug, number>` — a PER-SLUG MAP of total damage, NOT a scalar. Read one unit as
+  `totals(res)['<slug>']`, or use `unitOf(res, '<slug>')` for the full result row (`.totalDamage`, per-bucket
+  breakdown, events). `unitOf` THROWS if the slug isn't in the comp.
+- `controlComp(carry, helm?=true)` → `CompOptions`; `runComp(opts)` → `SimResult` (deterministic, no seed).
+- `CompOptions.overrides` is a PER-SLUG MAP: `Record<slug, OverrideFile | undefined>`. There is NO top-level
+  `blocks` on an override and NO `o.blocks`.
+- The `OverrideFile` is SLOT-KEYED: `{ skill1?, skill2?, burst? }`, each slot a `CharacterSkills` carrying its
+  OWN `blocks: Block[]` (+ `unmodeled`, `hasPierce`, `modes`, `resources`, …). A counterfactual therefore
+  patches `ov.skill1!.blocks` / `ov.burst!.blocks` — `ov.blocks` is a NO-OP (no such top-level field).
+- Build counterfactuals with `withPatchedOverride('<slug>', (ov) => { …mutate ov.skill1/skill2/burst… })` → an
+  in-memory `OverrideFile` clone (committed JSON untouched); pass it via `overrides: { '<slug>': patched }`.
+- `gainPierce` (a Block EFFECT — timed/step-gated pierce) ≠ `hasPierce` (a static boolean FLAG). Don't encode
+  one as the other.
+- Caster-scaled buff events emit FLAT-resolved values on `buffApply` (e.g. `casterAtkPct` re-emits as flat ATK;
+  `casterMaxHpPct`/`targetMaxHpPct` as `maxHpFlat`) — assert the flat number, not the percentage.
+- There is NO `buffRemove` event on natural time-lapse (only on explicit removal) — for a "for N sec" buff,
+  assert it is GONE after the window via totals/events; don't assert a removal frame.
+- Boss-held debuffs emit `buffApply` with `casterIdx === null` AND `targetIdx === null` — filter them by
+  stat+value.
+
 ## Method
+
 1. Enumerate every kit line; disposition each (FAITHFUL/FIX/MISSING/GAP/UNMODELED/MEASUREMENT-GATED) + the 4
    questions (scope / duration semantics / trigger identity / target set).
 2. Write `scripts/tests/units/<slug>.test.ts` (return its full source): one assertion group per kit line.
@@ -39,15 +81,24 @@ void — say so.
 3. Keep runs hoisted (each `runComp` is a full 180s sim); a file under ~20 runs.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "leakDetected": "<null or what leaked>",
   "testSource": "<the full <slug>.test.ts source>",
-  "spec": [ { "slot": "...", "kitLine": "<≤40 chars>", "disposition": "...", "assertion": "<what it proves + nearest-wrong it fails under>" } ],
+  "spec": [
+    {
+      "slot": "...",
+      "kitLine": "<≤40 chars>",
+      "disposition": "...",
+      "assertion": "<what it proves + nearest-wrong it fails under>"
+    }
+  ],
   "fixtures": "<which comp(s) used and why>",
-  "gaps": [ "<it.skip'd lines + reason>" ]
+  "gaps": ["<it.skip'd lines + reason>"]
 }
 ```
+
 Save the test source to `scripts/kit-autonomy/blind/<slug>.test.ts` and the JSON to
 `scripts/kit-autonomy/blind/<slug>.test-spec.json`. Tight structured JSON, not an essay.

@@ -6,6 +6,7 @@ same-model shared-prior limit (`docs/kit-autonomy-decisions.md` §14.1). Both th
 `docs/handoffs/2026-07-23-kit-autonomy-model-router-claude.md`) implement this protocol so they interoperate.
 
 ## Why
+
 A clean GO from same-model blind reviewers is evidence against IDIOSYNCRATIC error, not proof of faithfulness:
 two same-model agents both make the systematic misreads the model's prior favors (scope-collapse, duration-
 semantics, trigger-identity) and CONVERGE on the wrong reading = false confidence. **Cross-family** reviewers
@@ -13,12 +14,13 @@ semantics, trigger-identity) and CONVERGE on the wrong reading = false confidenc
 diversity (qwen3.8↔qwen3.7 share deep family priors; Qwen↔Claude do not).
 
 ## Routing policy
+
 Roles: **S2b** adversarial test-faithfulness reviewer (blind) · **S5** blind test-writer · **S6** blind
 override-writer · **S7** reconciling judge (NOT blind — grades artifacts).
 
-| Tier | When | S2b | S5 | S6 | S7 |
-| --- | --- | --- | --- | --- | --- |
-| **1 (default)** | every unit | **cross-family** | same-family | same-family | **cross-family** |
+| Tier             | When                                                                                                                           | S2b                        | S5               | S6               | S7                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------- | ---------------- | ---------------- | -------------------------- |
+| **1 (default)**  | every unit                                                                                                                     | **cross-family**           | same-family      | same-family      | **cross-family**           |
 | **2 (elevated)** | unit has a scoped-buff / round-count / `burstCast`-vs-`fullBurstEnter` / status-gate mechanic, OR is meta-defining/high-stakes | **cross-family ×2 models** | **cross-family** | **cross-family** | **cross-family ×2 models** |
 
 - **Cross-family** = a different model FAMILY than the driver (Qwen driver → Claude reviewer; Claude driver →
@@ -29,7 +31,24 @@ override-writer · **S7** reconciling judge (NOT blind — grades artifacts).
   (e.g. driver Sonnet → S2b/S7 on Opus/Fable) for within-family diversity on top of the cross-family check.
 - The driver decides the tier up front (from the S1 line inventory) and records it.
 
+## Canonical model names (authoritative)
+
+The dispatch bridge (`scripts/kit-autonomy/dispatch-claude.sh`) passes the model string straight to
+`claude -p --model <name>` — it does NOT map aliases, so the name must resolve in the Claude CLI, and
+**similar-looking names are DIFFERENT models, not aliases**.
+
+- **S2b (pre-op adversarial reviewer) → `claude-fable-5`**
+- **S5 / S6 / S7 (post-op test-writer / override-writer / reconciling judge) → `claude-opus-5`** (REQUIRED)
+
+`claude-opus-5` is required for the post-op roles (matches `QWEN.md`). **`claude-opus-4-8` is a different
+model and is NOT a substitute** — do not dispatch the post-op roles to it. An ad-hoc batch prompt may carry a
+wrong/older name; the dispatcher must follow THIS protocol, not the ad-hoc name, and flag the conflict. Every
+result JSON records the name it was dispatched with (`model` field), so a post-op result whose `model` is not
+`claude-opus-5` (or an S2b result not on `claude-fable-5`) is off-protocol and must be re-dispatched on the
+correct model. Change the canonical names only by editing THIS file AND `QWEN.md` together.
+
 ## Neither family natively calls the other → handoff-based dispatch
+
 The Qwen `agent` tool has no `model` param; Claude's `agent`/Workflow pins Claude models only. So a cross-family
 role is dispatched by **packet handoff**:
 
@@ -43,8 +62,10 @@ role is dispatched by **packet handoff**:
    which roles were cross-family-reviewed.
 
 ## Blind-packet de-contamination (S2b / S5 / S6 only)
+
 The blind roles read the kit PROSE (legitimate input — it names the mechanic being derived) + the effect SCHEMA
 (`types.ts`) + the failure-mode methodology. They must NOT receive any text that STATES the target's answer.
+
 1. **Redact the schema:** strip every line of `types.ts` that names the target slug or any ANSWER TOKEN (the
    target's magnitudes + signature mechanic names — e.g. for privaty: `256.17`, `1687`, `1407.64`,
    `Designated Target`). (`types.ts` comments name specific units — this is the leak found in D12.)
@@ -62,16 +83,19 @@ override + the S2b/S5/S6 outputs + the convergence result). Cross-family S7 just
 family.
 
 ## Result contracts
+
 - **S2b** → `test-review.json` (contract in `TEST-FAITHFULNESS-REVIEW.md`): per-line disposition + nearest-wrong
   model + distinguishing assertion + load-bearing set + `leakDetected`.
 - **S5** → `blind/<slug>.test.ts` + `test-spec.json` (contract in `BLIND-TEST-WRITER.md`).
 - **S6** → `blind/<slug>.override.json` + `audit.json` (contract in `BLIND-OVERRIDE-WRITER.md`).
 - **S7** → `results/<slug>.json` (contract in `RECONCILING-JUDGE.md`): lineFindings + gotchas + `kitDescription`
-  + `faithfulnessScore` + verdict (GO / NO-GO(faithfulness) / NO-GO(engine-core)).
-Every result records `model` (which model/family produced it) so the verdict can report provenance.
+  - `faithfulnessScore` + verdict (GO / NO-GO(faithfulness) / NO-GO(engine-core)).
+    Every result records `model` (which model/family produced it) so the verdict can report provenance.
 
 ## Reconciliation + verdict reporting
+
 The driver combines same-family + cross-family results:
+
 - **Convergence across families** on a load-bearing line = strong evidence (the line survives different priors).
 - A **cross-family divergence** the same-family run missed = a candidate REAL-GOTCHA (the payload cross-family
   review exists to catch); the judge classifies it.
@@ -82,6 +106,7 @@ The driver combines same-family + cross-family results:
   the load-bearing lines is "GO (cross-family corroborated)".
 
 ## Status of this protocol
+
 Designed 2026-07-23. The Qwen side (packet prep + same-family dispatch + handoff + reconciliation) is
 implemented in `.claude/skills/kit-autonomy-qwen/` + `scripts/kit-autonomy/prepare-cross-family-packet.ts`. The
 Claude side (model-pinned same-family reviewers + the cross-family handoff to Qwen) is the work order in the

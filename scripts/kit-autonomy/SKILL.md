@@ -84,6 +84,13 @@ lines (a `■` header = trigger + target; each following sentence = one effect l
 
 - current model + tier + board reading. (This is kit-tdd Step 0.)
 
+**Recognize known gaps — do NOT re-derive them.** Most "missing primitive" residuals are already itemized in
+`docs/engine-modeling-gaps.md`; when a line hits one, document it as the known theme (measurement-gated /
+inherent-v1) instead of re-analyzing the limitation from scratch. Recurring ones: cadence tuple = **theme 1**,
+defensive/heal/shield (no HP pool in v1) = **theme 2**, flat Max-Ammo = **theme 14**, timed/swap pierce =
+**theme 5**, weapon-swap economy = **theme 7**, "X is fixed at V" stat locks = **theme 1b**. A new residual
+not in the catalog gets a dated entry there at Land (the cross-unit backlog), not just a per-unit note.
+
 ## Stage 2 — tests FIRST, with independent re-derivation (the faithfulness gate)
 
 **S2a — driver writes the tests.** For each kit line: a disposition (FAITHFUL / FIX / MISSING / GAP /
@@ -125,8 +132,17 @@ Implement the **minimum** `src/skills/overrides/<slug>.json` change to turn the 
 input domain is a ⚑ with estimate + recipe + tier; NO `ignored` blocks; override prose = current-state only
 (no history — the WHY goes to DECISIONS). The override `note` carries the provenance marker
 `Kit-autonomy gauntlet <YYYY-MM-DD>` (the Land step's `kit-status.ts --gauntlet` derives provenance + date
-from it). `npx tsx scripts/validate-overrides.ts <slug>` must pass; tests go GREEN. (For an already-faithful
-unit this stage is minimal/none — the tests are pins.)
+from it). `npx tsx scripts/validate-overrides.ts <slug>` must pass; tests go GREEN.
+
+**Certify-only path (already-faithful unit).** If the shipped override is already faithful — every line a PIN,
+no FIX/MISSING — S3 makes NO encoding change: add only the `Kit-autonomy gauntlet <YYYY-MM-DD>` note marker,
+then flip provenance at Land. The gauntlet CERTIFIES structure; do not manufacture a change to look productive.
+(5 of the 10-unit 2026-07-24 bottom-up batch were certify-only.)
+
+**Kit-silent cadence ⚑ (recurring).** When fire rate / reload / charge cadence is absent from the datamine and
+the recording, apply the STANDARD `⚑ cadence tuple` flag (`docs/engine-modeling-gaps.md` theme 1) with its
+video-plan recipe (solo scope-lock clip: rounds/10s + mag-empty→first-shot gap) — do not re-derive the
+limitation per unit. Same for the other catalog themes: cite the theme, attach its recipe, move on.
 
 ## Stage 4 — engine updates (driver, isolated worktree) — ONLY if a primitive is genuinely missing
 
@@ -144,6 +160,13 @@ harness API + schema + disposition vocab + §5 lessons (REDACTED per §0). Blind
 tests/override/reasoning and the truth file. It writes its OWN `<slug>.test.ts` from the prose alone (the
 same forcing function) + its spec table. Save to `scripts/kit-autonomy/blind/<slug>.test.ts` (+
 `<slug>.test-spec.json`).
+
+The `scripts/kit-autonomy/blind/**` artifacts are an EVIDENCE TRAIL — the blind role's verbatim output,
+mechanical defects and all — and are EXCLUDED from the production typecheck (`tsconfig.json` `exclude`,
+alongside `scripts/blind-rebuild/code-bundle/**`). They are NOT run by vitest and must never break
+`npm run typecheck`; a blind test file's harness/import defects are expected and irrelevant. Convergence is
+carried by the blind SPEC table + the S6 override + the driver's harness-correct test, not by executing the
+blind file. Do not "fix" the blind file to make it compile — preserve it verbatim.
 
 ## Stage 6 — blind post-op override-writer (separate blind subagent)
 
@@ -215,6 +238,27 @@ reason to revert). Unit tests pin _faithful_; the board pins _accurate_; report 
 - `bash scripts/verify.sh` green; commit (freely, never push unless asked); `/mechanics-doc-upkeep` if the
   engine changed; `/skill-maintenance` if the session taught a reusable lesson.
 
+## Batch hygiene (shared worktree)
+
+When running the gauntlet for a BATCH of units on one shared worktree (one commit per unit):
+
+- **Clean up scratch after a successful commit.** The progress/extract files are RESUME instrumentation, not
+  artifacts: `rm -f .gauntlet-progress-<slug>.txt .<slug>-extract.json` once the unit's commit has landed. The
+  commit is the durable record and the orchestrator keys off commit-exists (`git rev-list origin/main..HEAD`),
+  not the progress file, so removing it post-commit is safe; leaving it behind pollutes the worktree for the
+  next unit.
+- **Dispatch FOREGROUND, never background.** Run `scripts/kit-autonomy/dispatch-claude.sh` as a foreground
+  shell with a LONG timeout (~480000–600000 ms): opus S5/S6/S7 take 2–5 min. A backgrounded dispatch can
+  outlive the agent's turn and leak (a result JSON landing after the unit is already committed). Dispatch is the
+  explicit EXCEPTION to any 60s "stop-don't-wait" rule — only a real error / no-valid-JSON after a long wait is
+  a failure; suspect impatience before suspecting the bridge.
+- **Commit only this unit's artifacts — never `git add -A`.** In a shared worktree, prior units'
+  `cross-family/<slug>/` dirs accumulate. The cross-family packets + results are an EVIDENCE TRAIL and batch
+  drivers force-commit them (`git add -f scripts/kit-autonomy/cross-family/<slug>/`) — fine for THIS unit's dir
+  (the result JSONs are not regenerable without an expensive re-dispatch), but `git add -A` would sweep every
+  prior unit's accumulated `cross-family/` dir too. Add paths explicitly: this unit's override + test +
+  `results/` + `manual-review/` + `cross-family/<slug>/` + the `kit-status.json` flip.
+
 ## Verify
 
 ```sh
@@ -233,6 +277,21 @@ bash scripts/verify.sh                              # the canonical repo gate
 
 ## Change log
 
+- 2026-07-24 (post-batch hardening, 10-unit bottom-up batch) — rolled the batch's recurring re-derivations
+  into the skill: (1) harness import boilerplate + structural shape cheat-sheet (totals/unitOf per-slug maps,
+  slot-keyed OverrideFile with NO top-level `blocks`, `gainPierce` effect vs `hasPierce` flag, flat-resolved
+  caster buff events, no `buffRemove` on time-lapse) added to `BLIND-TEST-WRITER.md` AND restored to the
+  `prepare-cross-family-packet.ts` harnessNote — the #1 blind-test failure was guessing these shapes; (2) the
+  `scripts/kit-autonomy/blind/**` typecheck exclude documented (Stage 5) — blind files are an evidence trail,
+  not run by vitest; (3) Batch-hygiene section + `kit-gauntlet-driver` rules: clean up `.gauntlet-progress-*`/
+  `.<slug>-extract.json` post-commit, dispatch `dispatch-claude.sh` FOREGROUND (never background; it leaks),
+  commit only this unit's tracked artifacts; (4) canonical model names now live in `CROSS-FAMILY-PROTOCOL.md`
+  (S2b `claude-fable-5`; S5/S6/S7 `claude-opus-5` REQUIRED — `claude-opus-4-8` is a different model, not an
+  alias); (5) `prepare-cross-family-packet.ts` prints an advisory TOKEN HINT for prose magnitudes that appear in
+  `types.ts` but are missing from `--tokens` (catches under-redaction) + over-redaction guidance; (6) S1 now
+  points drivers at the `docs/engine-modeling-gaps.md` themes to RECOGNIZE known gaps instead of re-deriving
+  (batch cross-check + 2 new owner-flagged engine questions recorded there); (7) standard `⚑ cadence tuple`
+  (theme 1) flag + recipe; (8) explicit certify-only fast path for already-faithful units.
 - 2026-07-24 — Land step now records the GO in `data/kit-status.json` via `kit-status.ts --gauntlet <slug>`
   (kitParse.status `unit-tested`, provenance `gauntlet` from the S3 note marker, findings/evidence/residual/
   date/graded). The gauntlet certifies STRUCTURE, not tuning, so `tier`/`tuned` stay `MODEL_ONLY`/`false`
