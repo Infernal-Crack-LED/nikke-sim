@@ -1,14 +1,12 @@
 {
-  "note": "Tier audit (Bossing A). S2's 94.15% Attack Damage + 50.82% reload targets '1 leftmost Electric Code ally with ASSAULT RIFLES' — now modeled EXACTLY via the alliesOfElementWeapon target (U8 run-B video, 2026-07-13: the old alliesOfElement approximation was feeding +94% Attack Damage to the RL carries cindy/neon AND trina herself, the source of the run-B heat trio). Burst kept in parser (team AD 20.9 + maxAmmo 20; the 'Burst Skill damage of AoE skills' rider unsupported, warned). SCOPE AUDIT 2026-07-13: burst slot now overridden — the parser's 'Max Ammunition +20 round(s)' line was hitting ALL Electric allies as +20%; the kit targets 'all Electric Code allies with assault rifles' (= moran-class units) and the value is FLAT 20 rounds (= +33.3% on a 60-round AR magazine; engine only supports percent). Hit Rate 45.3 skipped — hitRatePct lifts AR/SMG/SG core rate via acrForHR and this line targets Electric AR allies, so modeling it would move the board; queued (kit-audit plan 2026-07-20, measurement-gated). The AoE-burst-damage rider lines remain unsupported (warned). [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "Kit-autonomy gauntlet 2026-07-24 (cross-family: S2b claude-fable-5, S5/S6/S7 claude-opus-4-8; GO — STRUCTURE certified faithful, magnitudes remain hand-validated; residual owner spot-check = S1 heal/recovery primitive gap + burst Hit Rate 45.3 measurement-gated ⚑, see scripts/kit-autonomy/manual-review/trina.md). GAUNTLET FIX 2026-07-24: the burst 'Max Ammunition Capacity ▲20 round(s)' line is now maxAmmoFlat 20 (kit-literal flat rounds; the engine's flat-rounds path is live — theme 14, cf. tove/grave/noir), SUPERSEDING the prior maxAmmoPct 33.3 proxy which was exact only for a 60-round magazine (a 20-round Electric AR ally got +6.66 rounds vs the kit-literal +20). Cross-family corroborated: the blind fable S2b reviewer independently derived maxAmmoFlat 20 (nearest-wrong 'maxAmmoPct … differ wildly'). Regression-neutral on trina's two snapshot comps (elec battery: moran 60-round → round(60×1.333)=80 == 60+20; N3 scarlet/liberalio iron: no Electric AR ally → the buff lands on nobody). Tier audit (Bossing A). S2's 94.15% Attack Damage + 50.82% reload targets '1 leftmost Electric Code ally with ASSAULT RIFLES' — now modeled EXACTLY via the alliesOfElementWeapon target (U8 run-B video, 2026-07-13: the old alliesOfElement approximation was feeding +94% Attack Damage to the RL carries cindy/neon AND trina herself, the source of the run-B heat trio). Burst kept in parser (team AD 20.9 + maxAmmo 20; the 'Burst Skill damage of AoE skills' rider unsupported, warned). SCOPE AUDIT 2026-07-13: burst slot now overridden — the parser's 'Max Ammunition +20 round(s)' line was hitting ALL Electric allies as +20%; the kit targets 'all Electric Code allies with assault rifles' (= moran-class units) and the value is FLAT 20 rounds (= +33.3% on a 60-round AR magazine; engine only supports percent). Hit Rate 45.3 skipped — hitRatePct lifts AR/SMG/SG core rate via acrForHR and this line targets Electric AR allies, so modeling it would move the board; queued (kit-audit plan 2026-07-20, measurement-gated). The AoE-burst-damage rider lines remain unsupported (warned). [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
   "unmodeled": {
     "skill1": [
       "Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.",
       "Recovers 2.03% of the skill user's final Max HP as HP.",
       "Recovers 1.57% of the skill user's final Max HP as HP."
     ],
-    "skill2": [
-      "Invulnerable for 2 sec."
-    ],
+    "skill2": ["Invulnerable for 2 sec."],
     "burst": [
       " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
       "Changes Spread Roots to Wilted Roots.",
@@ -102,8 +100,8 @@
       "effects": [
         {
           "kind": "buff",
-          "stat": "maxAmmoPct",
-          "value": 33.3,
+          "stat": "maxAmmoFlat",
+          "value": 20,
           "durationSec": 10
         }
       ]
@@ -111,7 +109,7 @@
   ],
   "caveats": [
     "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).",
-    "burst: Max Ammunition +20 rounds is encoded as maxAmmoPct 33.3 (assumes a 60-round AR base magazine).",
+    "burst: Max Ammunition +20 rounds is encoded kit-literal as maxAmmoFlat 20 (flat rounds — exact for every Electric AR ally regardless of magazine size; upgraded 2026-07-24 gauntlet from the prior maxAmmoPct 33.3 proxy, which assumed a 60-round AR base magazine and under-buffed smaller magazines, e.g. a 20-round ally got +6.66 vs the kit-literal +20).",
     "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina.",
     "[2026-07-17 THEME-13] Her two 'Max HP ▲ X% of the skill user's Max HP' grants are now modeled as casterMaxHpPct (S2 44.98% → all Electric-AR allies, passive/constant; burst 20.14% → all allies, 10s). Offensively INERT: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 rule) — no board damage moves. Kit-SSOT completeness only."
   ]

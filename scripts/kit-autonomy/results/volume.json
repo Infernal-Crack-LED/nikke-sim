@@ -1,0 +1,64 @@
+{
+  "slug": "volume",
+  "kitDescription": "Volume — Wind / SMG / Attacker / Burst I (cd 20s, ammo 120, hitsPerShot 1, normalMult 8.73, coreMult 200). Pure rotation-accelerator + crit-support with no personal damage riders (plain SMG fire). S1: kill-gated self ATK ▲12.6%/5s (inert vs the immortal partless raid boss). S2 block A: entering Full Burst → all allies escalating Burst-CD ▼2.34/2.7/3.17s (cumulative, 8.21s/entry at cap). S2 block B: using Burst Skill → all allies escalating Crit DMG ▲10.77/12.46/14.42%/5s (cumulative, +37.65% at cap). Burst: all allies generic Crit Rate ▲31.9%/5s.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "CONVERGED — 4 passed / 2 failed / 1 skipped (7 total) with only the two mechanical blindness artifacts corrected (missing vitest import; ov.blocks → skill1/skill2/burst slot arrays), assertions unchanged. The 4 load-bearing assertions (fixture sanity, skill2b critDamage escalation ≥2 distinct magnitudes incl. 10.77, burst critRate ≈31.9 constant on ≥2 allies, skill2a CDR directional FB-count invariant base≥zeroed) all pass green vs the shipped override. The it.skip on skill1 converges on the driver's UNMODELED disposition. The two failures are both the blind's own value-0≠absent counterfactual defect, not a faithfulness gap.",
+    "redAssertions": [
+      {
+        "assertion": "skill2b critDamagePct 'zeroing removes the buff' — expects buffApply count 0 after zeroStat sets value=0",
+        "classification": "RECON_ERROR",
+        "reason": "A value-0 buff still emits a buffApply event (count 20, not 0); the blind counterfactual conflates value-0 with buff-absent. The companion assertion it actually cared about (zeroing lowers team total) holds. Not a driver-encoding fault."
+      },
+      {
+        "assertion": "burst critRatePct 'zeroing removes the buff' — expects buffApply count 0 after zeroStat sets value=0",
+        "classification": "RECON_ERROR",
+        "reason": "Same value-0≠absent defect on the blind's own mechanics; the team-total-drop companion holds. Driver's sole-B1 fixture is additionally strictly more discriminating than the blind's controlComp on burstCast-vs-fullBurstEnter trigger identity."
+      }
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Affects self when killing an enemy: ATK ▲12.6% for 5 sec",
+        "disposition": "UNMODELED",
+        "finding": "FAITHFUL skip. No on-kill trigger primitive exists in TriggerDef, and the scope-lock raid boss is immortal/partless/add-less, so the trigger can never fire. Recorded verbatim in unmodeled.skill1 (audit SKIPPED ↔ unmodeled 1:1); NOT approximated as a passive/shotFired ATK proxy — doing so would fabricate a +12.6% ATK the kit never grants (MEASURED>FUDGE). V1 actively PINS the absence (0 atkPct buffApply from Volume) and is RED under the passive-permanent nearest-wrong — a non-vacuous absence claim, not a silent drop. Both blind agents converge (UNMODELED / GAP it.skip)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "entering Full Burst → all allies: Cooldown of Burst Skill ▼2.34/2.7/3.17s (escalating)",
+        "disposition": "FAITHFUL",
+        "finding": "fullBurstEnter → allies → escalating burstCdr [2.34, 2.7, 3.17]. Trigger identity correct: 'when entering Full Burst' = fullBurstEnter (any team FB, 5×), the deliberate split from block B's burstCast — the kit's defining trap, handled correctly. Cumulative escalating per 'each subsequent effect triggers all before it' (8.21s/entry at cap). Self-inclusion load-bearing (shaves Volume's own 20s B1 CD). burstCdr emits no buffApply (sim.ts:2047), so V2 verifies it via effect: FIRE-RATE check (base casts 10 > no-block 9 = modeled≠working passes) and TRIGGER check (burstCast counterfactual over-accelerates to 13 casts). All three blinds converge."
+      },
+      {
+        "kitLine": "using Burst Skill → all allies: Critical Damage ▲10.77/12.46/14.42% for 5 sec (escalating)",
+        "disposition": "FAITHFUL",
+        "finding": "burstCast → allies → escalating critDamagePct [10.77, 12.46, 14.42] durationSec 5. Trigger burstCast (10×/target = her own casts), correctly distinct from block A's fullBurstEnter. Cumulative escalating with DISTINCT buff keys (sim.ts:2056) so the three steps coexist+sum (+37.65% at cap). V3 discriminates escalating (per-target counts 10/9/8 = casts/casts-1/casts-2; RED vs always-max) AND trigger (RED vs fullBurstEnter's 5/target). Generic unscoped critDamagePct correct. All three blinds converge."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Affects all allies: Critical Rate ▲31.9% for 5 sec",
+        "disposition": "FAITHFUL",
+        "finding": "burstCast → allies → generic critRatePct 31.9 durationSec 5. Plain 'Critical Rate ▲' correctly read as generic critRatePct (lifts skill/burst buckets too), NOT scoped critRateNormalPct. V4 discriminates trigger (RED vs fullBurstEnter 5/target) AND scope (RED vs critRateNormalPct — skill/burst bucket crit unchanged). Constant (non-escalating), reaches all 3 allies, never lands on the boss. All three blinds converge."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "id": "intra-slot-trigger-split",
+      "severity": "HANDLED",
+      "note": "The two skill2 blocks carry DELIBERATELY different triggers — 'entering Full Burst' (fullBurstEnter, any team FB) for the CDR block vs 'using Burst Skill' (burstCast, her own casts) for the crit-damage block. Collapsing both onto one trigger is the single most likely shared misread and only diverges with a second Burst-I unit / uncompleted chains. Driver keyed them correctly and its sole-B1 [volume/crown/helm] fixture (casts 10 ≠ FB 5) discriminates the split by count — strictly more discriminating than the blind's controlComp (which coincides). Not a REAL-GOTCHA."
+    },
+    {
+      "id": "escalating-cumulative-vs-replacement",
+      "severity": "HANDLED-HYPOTHESIS",
+      "note": "'Each subsequent effect triggers all effects before it' read as CUMULATIVE (engine escalating: Nth activation applies steps 1..N), giving 8.21s CDR / +37.65% crit DMG at cap rather than top-tier-alone. This is the literal-clause reading, matches the engine primitive 1:1, and both blinds independently flag the cumulative-vs-tier-replacement ambiguity with a measurement recipe (S6 flag + caveat). Correctly labeled a HYPOTHESIS to confirm on a graded ≥3-FB fight; not fabricated. Not a REAL-GOTCHA."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": 0.95,
+  "verdict": "GO",
+  "verdictRationale": "Every kit line is accounted for with no silent drops: skill1 UNMODELED (audit SKIPPED ↔ unmodeled verbatim 1:1, absence actively PINNED and RED under the passive nearest-wrong), skill2a/skill2b/burst all FAITHFUL. All three blind agents (S2b claude-fable-5, S5 + S6 claude-opus-4-8, two families) returned leakDetected null and converge on the driver's encoding including the deliberate fullBurstEnter/burstCast trigger split and the cumulative escalating semantics. The S5 blind tests run green vs the shipped override on all 4 load-bearing assertions with the skip converging on UNMODELED; the only 2 REDs are the blind's own value-0≠absent counterfactual defect, correctly classified RECON_ERROR, not a faithfulness gotcha. The S2d matrix shows every FAITHFUL pin GREEN vs shipped AND RED under its named nearest-wrong (trigger identity, escalating ladder, generic-vs-scoped crit) — no vacuous test. The fire-rate / modeled≠working check passes (burstCdr present-and-working: base 10 casts > no-block 9). The sole ALWAYS-⚑ field, the cadence tuple, carries a proper estimate + recipe + CALIBRATED tier; no other ⚑ applies (no riders/swap/DoT/stacks/HR/multi-projectile). No REAL-GOTCHA survives. Magnitudes are all kit-literal (DATAMINED), none contradicting the prose's own numbers and all owner/measurement-gated ones out of scope. BINDING: GO.",
+  "model": "claude-opus-4-8"
+}

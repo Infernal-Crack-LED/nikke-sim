@@ -1,0 +1,90 @@
+{
+  "slug": "snow-white",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "hits 30 time(s) → 82.8% additional dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Rider damage proc keyed to normal-attack hits only; AR hitsPerShot=1 so rounds==hits. Burst-swap charge shots are NOT the base normal attack — whether they feed the counter is kit-ambiguous; at 1 round per ~5s the contribution is negligible either way.",
+      "durationSemantics": "Instant hit, no duration. Counter is cumulative and rolls over (fires every 30th hit), spanning reloads.",
+      "triggerIdentity": "hitCount count:30 (counts ROUNDS). NOT interval, NOT shotFired. No FB gate — procs in and out of Full Burst.",
+      "targetSet": "enemy (the target)",
+      "nearestWrongModel": "Encoding as an interval/cadence proc (e.g. one hit every ~2.5s wall-clock) instead of hitCount:30 — nearly damage-equivalent while firing, but wrong during reloads and during the burst swap window (counter stalls when she isn't landing AR rounds); or giving the rider core:true / rangeApplied:true.",
+      "distinguishingAssertion": "Filter damage events with srcSlot=snow-white, bucket=flatDamage(skill1): count === floor(cumulative normal hits/30), each proc frame-coincident with a 30th hit event; proc spacing WIDENS during reloads and during the 10s burst-swap window (near-zero procs there); every proc has rangeApplied=false and zero core contribution; per-proc mult = 82.8% of live final ATK (so it grows under the S1 ATK buff).",
+      "inertness": "Must not tick on wall-clock during reload/swap windows; must not receive core or the +30% range bonus; takes the +50% FB major by landing timing only (default ON per rider rule).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "hits 30 time(s) → self ATK ▲8.28% 5s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK buff (atkPct), unscoped — applies to all her damage while live.",
+      "durationSemantics": "durationSec:5, refresh-on-reproc (no stack text → maxStacks 1 / refresh). NOT rounds, NOT permanent. At ~12 pulls/s, 30 hits ≈ 2.5s, and the worst gap (last-bullet proc → reload 1.85s → 30 more hits ≈ 2.5s ≈ 4.35s) < 5s, so uptime is near-100% while firing — but it MUST lapse across the ~10s burst-swap window (counter stalls, 5s expiry hits).",
+      "triggerIdentity": "Same hitCount:30 counter as line 1 (both blocks fire together on the 30th hit).",
+      "targetSet": "self",
+      "nearestWrongModel": "Permanent passive atkPct 8.28 (uptime shortcut) — totals are nearly identical during AR fire so a totals-only test goes GREEN on the wrong model; or letting it STACK (8.28% × n).",
+      "distinguishingAssertion": "Event-log, not totals: buffApply(atkPct 8.28, target=self) occurs only at 30-hit boundaries; a matching buffRemove appears ~5s after the last proc inside the burst-swap window (the swap charge shot at ~t_cast+5s must NOT carry the S1 ATK buff unless a proc landed <5s before); effective ATK from this line never exceeds base×1.0828 (no stacking).",
+      "inertness": "Must not be live during long non-firing stretches (burst swap window); must not stack; must not buff allies.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects enemies… 144.73% as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Skill damage (AoE 'within range' — single partless boss ⇒ one hit per cast). Crits at caster's sheet rate (rider rule); NO core (text lacks 'core strike'); noRange (engine force-sets riders range-off).",
+      "durationSemantics": "Instant per cast, no duration.",
+      "triggerIdentity": "Damage line with NO activation clause → interval trigger at the datamined skillCooldownsSec; interval-classified skill ⇒ first fire at t=CD, not t=0 (no 'Forcefully uses' clause anywhere in the kit). ⚑ The cadence value itself is outside the prose — must come from the datamined CD, flagged, never invented.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Keying the cast to fullBurstEnter or burstCast (because the SECOND s2 block mentions Full Burst) — that ties the 144.73% hit to FB rotations instead of a free-running interval clock, changing both count and timing; or first-firing at t=0.",
+      "distinguishingAssertion": "damage events for this bucket appear at a fixed interval spacing equal to the datamined CD starting at t=CD, count ≈ floor(fightLen/CD), INDEPENDENT of fullBurstStart timestamps (some casts land outside FB with fbMajorApplied=false); rangeApplied=false; no core contribution.",
+      "inertness": "Cast count must not change when FB rotation timing shifts (e.g. helm=false control); no range bonus, no core.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "using this skill during FB → Crit ▲26.1%",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC Critical Rate (critRatePct) — no 'of normal attacks' qualifier, so it must NOT be scoped to critRateNormalPct; applies to normals, riders, and the burst charge shot alike.",
+      "durationSemantics": "durationSec:10, refresh on re-proc.",
+      "triggerIdentity": "The critical one: 'when USING THIS SKILL during Full Burst' = the S2 interval cast itself, gated fbGate:'inFb' — it fires only when the periodic S2 cast happens to land inside an FB window. It is NOT fullBurstEnter (any team FB) and NOT burstCast. Uptime is an alignment artifact of CD vs the FB rotation, not one-per-FB.",
+      "targetSet": "self",
+      "nearestWrongModel": "fullBurstEnter-keyed crit buff (fires every FB, ~100% FB coverage) — the classic trigger-identity over-credit. Under the faithful model, an S2 cast landing between FB windows grants NOTHING that rotation.",
+      "distinguishingAssertion": "buffApply(critRatePct 26.1, self) timestamps are a strict SUBSET of S2 damage-cast timestamps (frame-coincident with them), and only those casts where inFullBurst=true at cast; count(buffApply) < count(fullBurstStart) whenever the CD/rotation alignment leaves some FBs uncovered — under the nearest-wrong model count equals fullBurstStart count. Also assert at least one S2 cast with inFullBurst=false produces NO buffApply.",
+      "inertness": "Must not fire on FB entries where no S2 cast lands in-window; must not lift crit on skill/burst-only rotations beyond its 10s windows; never applied to allies.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Change weapon: 5s charge, 499.5%, ×1000%",
+      "disposition": "FAITHFUL",
+      "scope": "weaponSwap on self: charge weapon (chargeTimeSec 5), damagePct 499.5, chargeMultPct 1000 ('Full Charge Damage: 1000% OF DAMAGE' = ×10 multiplier on the 499.5%, i.e. a full-charge shot ≈ 4995% final ATK in the CHARGE bucket), maxAmmo 1, swap-scoped hasPierce (per-shot pierce tag, NOT the unit-level whole-fight flag).",
+      "durationSemantics": "⚑ Swap window duration is NOT in the prose (standard FB window ~10s is an estimate, flag it). ⚑ Shot economy is kit-silent: maxAmmo 1 + 5s charge ⇒ one full-charge shot ~5s post-cast; whether a 1-round reload + second charge fits before the window ends is unstated — estimate optimistically per methodology, flag either way. Base AR fire halts for the window and resumes after.",
+      "triggerIdentity": "burstCast (self mode in her OWN burst block) — NOT fullBurstEnter. Load-bearing in the control comp: helm is co-B3, so snow-white does not cast every rotation; the swap must appear ONLY on her cast rotations.",
+      "targetSet": "self (caster-slot weapon overwrite)",
+      "nearestWrongModel": "Three plausible misreads, worst first: (1) 'Full Charge Damage: 1000% of damage' read as a flat 1000%-of-ATK hit or as +1000% additive instead of ×10 on 499.5% (≈2× to 5× magnitude error); (2) keying the swap to fullBurstEnter so she fires the cannon on helm's rotations too (over-credits in any 2×B3 comp); (3) unlimited swap shots for the window (ignoring maxAmmo 1 / free reloads ⇒ ~2× shots).",
+      "distinguishingAssertion": "Per snow-white burstCast event: exactly ONE (⚑ possibly two if a reload fits — assert the flagged count, not a guess) charge-bucket damage event at ~cast+5s with mult ≈ 4995% of final ATK (499.5 × 10), pierce-tagged, fbMajorApplied=true when it lands inside the FB window; ZERO swap shots on rotations where the burstCast event belongs to helm; zero snow-white AR shot events during the swap window and normal cadence resumes after it.",
+      "inertness": "No swap shots on FBs she didn't cast; no whole-fight pierce tag on her base AR shots outside the window; pierceDamagePct/parts remain inert vs the partless boss; the swap must not leave the base weapon's ammo/reload state corrupted after revert.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:hitCount30-flatDamage-82.8",
+    "skill1:hitCount30-selfAtk-8.28-5s",
+    "skill2:interval-damage-144.73",
+    "skill2:inFb-cast-critRate-26.1-10s",
+    "burst:weaponSwap-499.5-x10-1ammo-pierce"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile against the driver, ranked: (1) burst 'Full Charge Damage: 1000% of damage' is a ×10 multiplier on the 499.5% swap shot (charge bucket, ≈4995% ATK full-charge), not a separate 1000%-ATK hit — the single largest magnitude trap in this kit. (2) S2's crit buff trigger is 'when USING THIS SKILL during Full Burst' = the S2 interval cast with an inFb gate, NOT fullBurstEnter; a fullBurstEnter model gives ~every-FB uptime and only an event-log subset assertion (buffApply ⊆ S2-cast timestamps, with an uncovered FB counterexample) distinguishes them. (3) Control comp runs helm as co-B3, so burstCast-vs-fullBurstEnter divergence on the burst swap is LIVE in the default harness — assert zero swap shots on helm-cast rotations. (4) S1's ATK buff has near-100% uptime while firing, so a permanent-passive shortcut passes any totals test; the distinguishing evidence is buffRemove ~5s into the burst-swap window where the 30-hit counter stalls. (5) ALWAYS-⚑ fields here: swap window duration (not in prose), swap shot economy (1 vs 2 charged shots), S2 cadence tuple (datamined CD, first-fire t=CD since no force-cast clause anywhere in the kit). (6) Pierce is swap-scoped per-shot tagging, not unit-level hasPierce — largely inert vs the partless boss but the tag placement must still be correct. Not a leak (different unit by non-negotiable #1), but noting for hygiene: the harness schema comments reference snow-white-heavy-arms (SWHA) weaponSwap maxShots semantics; the target here is base snow-white and nothing target-specific leaked into the redacted methodology.",
+  "model": "claude-fable-5"
+}

@@ -1,25 +1,17 @@
 {
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || Zwei (`zwei`) — SG / Electric / Supporter / Burst I (20s); ammo 9, reloadFrames 111, hitsPerShot 10, normalMult 100.75, coreMult 200. Her VALUE is team buffs (crit rate + pierce damage); own SG output modest. Kit-parse AUTHOR pass 2026-07-16, merged from overrides-baselines/zwei.json. FULL-KIT AUDIT: S1 = FB-enter team Pierce Damage 20.13% 'for 1 round(s)' (dur 5 ⚑4 — round-scoped has no schema primitive; per-magazine reading) + 10.06%/10s (stated) — same-stat pair COEXISTS in the buff list (staged baseline DBG-verified, no same-caster-slot swallow) → additive 30.19 early FB; + per-Zwei-normal-attack-in-FB stacking Pierce Damage 24.99% x3 (shotFired + fbGate inFb; dur 5 ⚑4 round-scoped — dur must span her ~3s swap-cycle gap so consecutive swap shots chain her own stacks like real round-persistence). All pierceDamagePct: inert for non-Pierce allies but LIVE for Zwei HERSELF via hasPierce during her swap window, and feeds any pierce carrier (alice/red-hood/mari) — hard rule 3, never dropped. S2 = (a) 'after 5 normal attack(s)' → team heal event (shotFired everyN 5 → allies `heal`; hard rule 2). Kit heals COVER HP 7.52% — amount not modeled (heal is event-only); whether cover-HP recovery fires ally 'recovery' consumers (crown) is a HYPOTHESIS ⚑6. everyN on shotFired = per trigger PULL (correct for 'normal attack(s)'; hitCount 5 would wrongly count PELLETS = 2x/pull on hitsPerShot 10). (b) FB-enter team Crit Rate 18.63%/10s (fully live stat). (c) per-normal-attack team Crit Rate 15%/5s x3 gated 'while in Pierce Attacks 101 status' — that status = her OWN burst's team buff (10s from her B1 cast); no status-gate primitive → proxied shotFired + fbGate inFb ⚑5 (exact for a sole-B1 team where every FB follows her cast; real window starts ~2-3s earlier and ends ~7s into FB; multi-B1 teams would over-credit — trigger-fidelity rule 6 noted, not expressible). BURST = (a) self weaponSwap: charge cannon 50.69%/shot, chargeTimeSec 1.2, Full Charge 300% → 152.07%/full shot, maxAmmo 1; durationSec 10 est ⚑3 TOP (duration UNSTATED in text; RRH-class default). Swap economy ⚑3 TOP: engine sims text-faithful ~3 shots/window (1.2s charge + 1.85s base reload per 1-ammo mag; swap is bolt-gap-exempt + skips SG landing falloff, sim.ts 1531/1652); the RRH swap bias-correction optimistic bound is ~8 shots (reload-free, charge-gated 10/1.2) — NOT shipped because 'Max Ammunition Capacity: 1' is EXPLICIT kit text and the owner reverted an analogous invented unlimitedAmmo on arcana-fortune-mate (SG model pass 2026-07-16); if footage shows reload-free cadence, add {kind:'unlimitedAmmo',durationSec:10} to the swap block. noFb DEFAULT (prior 2 — swap shots landing in FB get +50%; no measured FB-OFF evidence). (b) team 'Pierce Attacks 101' = Pierce Damage 25.03%/10s (burstCast → allies; the named status itself is the S2c gate, see ⚑5). hasPierce:true — 'Additional Effect: Pierce' tags the SWAPPED cannon; no swap-scoped pierce primitive (pierceModes needs kit modes) → unit-wide flag, leakage ≈ 0 because every pierce buff in her kit is FB/burst-window-scoped, exactly when she is swapped ⚑7; engine gives SG NO pierce double-hit (sim.ts 1698) so the flag only feeds pierceDamagePct → her Damage Up (verbatim line kept in unmodeled per mari precedent — a flag is not a block). MANDATORY cadence ⚑1 (SG class pullsPerSec + reloadFrames 111 datamine; mag-empty ~6s, no implausibility tell). SG pellet landing per-unit ⚑2 (class SG_LANDING_BY_BAND shipped). No 'Hit Rate' line (hard rule 4 N/A); no currency/ramp mechanic beyond the x3 buff stacks; element ×1.10 clean (no elemental-code buff). SKIPPED lines: only 【Phase】/Items cost-progression flavor + the burst 'Cooldown: 20 s' (already burstCooldownSec 20 in char data) — zero hard-rule-class lines in unmodeled. NO recording yet — HYPOTHESIS.",
-  "hasPierce": true,
+  "note": "Zwei (`zwei`) — SG / Electric / Supporter / Burst I (20s); ammo 9, reloadFrames 111, hitsPerShot 10, normalMult 201.5, coreMult 200. Team pierce/crit support; own SG output modest. Kit-autonomy gauntlet 2026-07-24 (cross-family: S2b claude-fable-5, S5/S6/S7 claude-opus-4-8 converged). MODEL — S1: FB-enter (fullBurstEnter) team Pierce Damage 20.13% for 1 ROUND (durationShots 1 — holder-scoped round count, NO wall-clock expiry; the durationShots primitive now exists, helm carrier) + 10.06% for 10s (timed); the two coexist as distinct buffs (additive 30.19% early FB). + per-Zwei-normal-attack-in-FB (shotFired + fbGate inFb) Pierce Damage 24.99% ×3 stacks, durationShots 1/stack. All pierceDamagePct feed the Damage-Up bucket ONLY on pierce-tagged hits (ally pierce carriers + Zwei's own swapped cannon shots) — inert on non-pierce allies. S2: FB-enter team Critical Rate 18.63% for 10s (GENERIC critRatePct — prose says plain 'Critical Rate', NOT normal-scoped critRateNormalPct). + per-Zwei-normal-attack (shotFired) Critical Rate 15% ×3 stacks, 5s/stack, gated on swapGate:'swapped' — the documented proxy for 'while in Pierce Attacks 101 status' (that ally-held status = her burst's 25.03% pierce team-buff, 10s from burstCast; no ally-buff-state gate primitive exists, so swapGate is exact when the swap duration equals the 10s status duration; in a sole-B1 team it coincides with Full Burst, and unlike an fbGate proxy it correctly stays silent on rotations Zwei does NOT burst). BURST: self weaponSwap charge cannon (damagePct 50.69% final ATK, chargeTimeSec 1.2, chargeMultPct 300% → ~152% full-charge shot, maxAmmo 1, hasPierce scoped to the SWAP per 'Additional Effect: Pierce' on the changed weapon — NOT a unit-wide flag, so her normal SG shots are not pierce-tagged); + burstCast team 'Pierce Attacks 101' = Pierce Damage 25.03% for 10s (the window the S2 15% gate reads). UNMODELED: S2 'after 5 normal attacks → Restores 7.52% of Cover HP' — no cover/HP pool in the partless-boss sim, and whether cover repair fires ally 'recovery' triggers is an UNVERIFIED hypothesis (⚑); documented rather than encoded as a heal that would pump crown's on-recovery tandem off an unmeasured mechanic (measured>fudge; blind S2b independently converged on UNMODELED). ⚑ FLAGS: (1) swap duration kit-silent — authored 10s to match the Pierce-Attacks-101 window (the kit's only stated 10s anchor), footage-gated; (2) swap shot economy ~3 full-charge shots/window (1.2s charge + 1-ammo reload at 111f) — datamine duration_value '1 Shot' ambiguous, footage-gated; (3) swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess; (4) base SG cadence tuple (datamine rate_of_fire/reloadFrames unreliable). Element ×1.10 clean (no elemental-code buff); no Hit-Rate line.",
   "unmodeled": {
-    "skill1": [
-      "【Phase 3】Items ×110"
-    ],
-    "skill2": [
-      "【Phase 2】Items ×50"
-    ],
-    "burst": [
-      "【Phase 1】",
-      "Cooldown: 20 s",
-      "Additional Effect: Pierce"
-    ]
+    "skill1": ["【Phase 3】Items ×110"],
+    "skill2": ["【Phase 2】Items ×50", "Restores 7.52% of Cover HP."],
+    "burst": ["【Phase 1】", "Cooldown: 20 s"]
   },
   "caveats": [
-    "burst: weapon-swap window economy is an unmeasured estimate — duration 10s (unstated in kit) and ~3 shots/window (charge 1.2s + 1-ammo reload); if footage shows reload-free cadence it is ~8 shots",
-    "skill1: 'for 1 round(s)' round-scoped buff durations approximated as 5s (no round primitive in the schema)",
-    "skill2: the Crit Rate stack's 'Pierce Attacks 101 status' gate is proxied by an in-Full-Burst gate — exact only when Zwei is the team's sole Burst I",
-    "skill2: the every-5-attacks heal recovers COVER HP in-kit; whether that fires teammates' on-recovery triggers is an unverified hypothesis",
-    "unit: pierce applies only to the swapped burst cannon in-kit; modeled as unit-wide hasPierce (her pierce buffs are burst-window-scoped, so spillover onto normal shotgun fire is minimal)"
+    "burst: weapon-swap duration is kit-silent — authored 10s to match the Pierce Attacks 101 window; shot economy ~3 full-charge shots/window (1.2s charge + 1-ammo reload). Datamine duration_value '1 Shot' is ambiguous; footage-gated ⚑",
+    "burst: 'Additional Effect: Pierce' is scoped to the swapped cannon (weaponSwap.hasPierce), NOT a unit-wide flag — her normal SG shots are not pierce-tagged, so the Pierce Damage ▲ buffs feed only her swap shots + any pierce-tagged ally",
+    "skill1: 'for 1 round(s)' encoded as durationShots 1 (holder-scoped round count, no wall-clock expiry) via the durationShots primitive (helm carrier); the prior parser-baseline approximated it as 5s",
+    "skill2: the 15% Crit Rate stack's 'while in Pierce Attacks 101 status' gate is proxied by swapGate:'swapped' (no ally-buff-state primitive); exact when the swap duration equals the 10s status duration. In a sole-B1 team this coincides with Full Burst; in multi-B1 teams it correctly stays silent on rotations Zwei does not burst (an fbGate proxy would over-credit there)",
+    "skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)",
+    "burst: swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess ⚑; base SG cadence tuple is datamine-unreliable ⚑"
   ],
   "skill1": [
     {
@@ -27,8 +19,18 @@
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 20.13, "durationSec": 5 },
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 10.06, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 20.13,
+          "durationShots": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 10.06,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -37,35 +39,43 @@
       "fbGate": "inFb",
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 24.99, "durationSec": 5, "maxStacks": 3 }
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 24.99,
+          "durationShots": 1,
+          "maxStacks": 3
+        }
       ]
     }
   ],
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": { "kind": "shotFired" },
-      "everyN": 5,
-      "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "heal" }
-      ]
-    },
-    {
-      "slot": "skill2",
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 18.63, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 18.63,
+          "durationSec": 10
+        }
       ]
     },
     {
       "slot": "skill2",
       "trigger": { "kind": "shotFired" },
-      "fbGate": "inFb",
+      "swapGate": "swapped",
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 15, "durationSec": 5, "maxStacks": 3 }
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 15,
+          "durationSec": 5,
+          "maxStacks": 3
+        }
       ]
     }
   ],
@@ -75,7 +85,15 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "weaponSwap", "damagePct": 50.69, "chargeTimeSec": 1.2, "chargeMultPct": 300, "maxAmmo": 1, "durationSec": 10 }
+        {
+          "kind": "weaponSwap",
+          "damagePct": 50.69,
+          "chargeTimeSec": 1.2,
+          "chargeMultPct": 300,
+          "maxAmmo": 1,
+          "hasPierce": true,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -83,7 +101,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 25.03, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 25.03,
+          "durationSec": 10
+        }
       ]
     }
   ]

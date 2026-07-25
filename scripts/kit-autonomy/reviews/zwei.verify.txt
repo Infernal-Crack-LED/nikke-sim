@@ -1,0 +1,48 @@
+=== S2d INDEPENDENT VERIFICATION MATRIX — zwei (kit-autonomy gauntlet 2026-07-24) ===
+Test file: scripts/tests/units/zwei.test.ts (driver-authored S2a, reconciled vs blind S2b fable).
+Gate: every FAITHFUL pin GREEN vs shipped; every FIX line RED vs shipped (then GREEN post-S3);
+      every DISCRIMINATING assertion GREEN (its counterfactual provably differs). No self-reported RED.
+
+----- (i) vs UNMODIFIED SHIPPED override (parser-baseline; durationSec 5 / fbGate / unit-wide hasPierce / heal) -----
+ [31m❯[39m scripts/tests/units/zwei.test.ts [2m([22m[2m18 tests[22m[2m | [22m[31m3 failed[39m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 14[2mms[22m[39m
+[31m       [31m×[31m is durationShots 1 with NO wall-clock expiry (round-count, not seconds)[39m[32m 5[2mms[22m[39m
+       [32m✓[39m reaches all three allies once per Full Burst[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: the stale durationSec 5 encoding carries a timed expiry, not a round budget[32m 0[2mms[22m[39m
+       [32m✓[39m is a 10-second timed buff (expiresFrame +600), no round budget[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: keyed to fullBurstEnter (5×/target), NOT burstCast (9×/target)[32m 1[2mms[22m[39m
+[31m       [31m×[31m is a round-count (durationShots 1) buff with a ×3 stacking CAP[39m[32m 1[2mms[22m[39m
+       [32m✓[39m fires ONLY during Full Burst (fbGate inFb) — every application lands in an FB window[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: durationSec 5 (round misread) loses the round budget[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: ungated (no fbGate) fires outside FB windows too[32m 1[2mms[22m[39m
+       [2m[90m↓[39m[22m GAP/UNMODELED: no cover/HP pool in the partless-boss sim; whether cover repair fires ally 'recovery' triggers is an UNVERIFIED hypothesis (⚑). Encoding it as a `heal` would pump crown's on-recovery tandem (+20.99% AD) every 5 Zwei shots off an unmeasured mechanic (measured>fudge). Blind S2b independently converged on UNMODELED. The line is recorded verbatim in unmodeled.skill2 + caveats, not silently dropped.
+       [32m✓[39m is the generic critRatePct stat (not the scoped critRateNormalPct), 10s, once per FB[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: a scoped critRateNormalPct would leave skill/burst bucket crit UNCHANGED[32m 2[2mms[22m[39m
+       [32m✓[39m is a 5-second ×3-stacking buff[32m 0[2mms[22m[39m
+[31m       [31m×[31m fires ONLY inside the Pierce Attacks 101 window ([burstCast, +10s]) — the swapGate proxy[39m[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: ungated (no swapGate) fires outside the windows + far more often[32m 0[2mms[22m[39m
+       [32m✓[39m the swap cannon fires (atkPct 50.69 shots exist) and is removed with the swap block[32m 1[2mms[22m[39m
+       [32m✓[39m is a 10-second timed buff reaching all three allies[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATING: keyed to burstCast (9×/target), NOT fullBurstEnter (5×/target)[32m 1[2mms[22m[39m
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 3 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+[41m[1m FAIL [22m[49m scripts/tests/units/zwei.test.ts[2m > [22mzwei — kit spec[2m > [22mZ3 — S1 normal-attack-in-FB Pierce Damage 24.99% ×3 stacks, for 1 ROUND[2m > [22mis a round-count (durationShots 1) buff with a ×3 stacking CAP
+    [90m263|[39m     it('is a round-count (durationShots 1) buff with a ×3 stacking CAP…
+[41m[1m FAIL [22m[49m scripts/tests/units/zwei.test.ts[2m > [22mzwei — kit spec[2m > [22mZ6 — S2 normal-attack-while-Pierce-Attacks-101 Crit Rate 15% ×3, 5 sec (swapGate proxy)[2m > [22mfires ONLY inside the Pierce Attacks 101 window ([burstCast, +10s]) — the swapGate proxy
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m3 failed[39m[22m[2m | [22m[1m[32m14 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (18)[39m
+
+----- (ii) vs FIXED override (post-S3: durationShots 1 / swapGate:'swapped' / swap-scoped hasPierce / cover-HP UNMODELED) -----
+ ✓ scripts/tests/units/zwei.test.ts (18 tests | 1 skipped) 7ms
+ Test Files  1 passed (1)
+      Tests  17 passed | 1 skipped (18)
+
+----- COUNTERFACTUAL (nearest-wrong) DISCRIMINATION — each is a withPatchedOverride patch; the ----- 
+----- DISCRIMINATING assertions above stay GREEN because each counterfactual provably DIFFERS:  -----
+  cfRoundSec        : S1 20.13/24.99 durationShots 1 -> durationSec 5   (Z1/Z3 round-count nearest-wrong)
+  cfS2Trigger       : S1 10.06 fullBurstEnter -> burstCast (5x -> 9x/tgt) (Z2 trigger nearest-wrong)
+  cfCritScoped      : S2 18.63 critRatePct -> critRateNormalPct          (Z5 scope nearest-wrong)
+  cfNoGate          : strip fbGate(S1 24.99)+swapGate(S2 15)             (Z3/Z6 ungated nearest-wrong)
+  cfNoSwap          : remove burst weaponSwap                            (Z7 swap-presence nearest-wrong)
+  cfBurstPierceFbEnter: burst 25.03 burstCast -> fullBurstEnter (9x -> 5x/tgt) (Z8 trigger nearest-wrong)
+
+VERDICT: gate PASSES. 3 FIX lines RED-vs-shipped -> GREEN-post-S3; 0 tests green-under-both
+(shipped AND counterfactual); every FAITHFUL pin GREEN vs shipped; Z4 cover-HP documented UNMODELED (it.skip).

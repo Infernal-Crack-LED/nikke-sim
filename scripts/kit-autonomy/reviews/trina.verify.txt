@@ -1,0 +1,85 @@
+=== S2d INDEPENDENT VERIFICATION MATRIX — trina (kit-autonomy gauntlet 2026-07-24) ===
+Test file: scripts/tests/units/trina.test.ts (driver-authored S2a; reconciled vs blind S2b claude-fable-5).
+Gate: every FAITHFUL pin GREEN vs shipped; every DISCRIMINATING assertion provably differs from its
+      nearest-wrong counterfactual (no test green-under-both → none vacuous). No self-reported RED.
+Fixture: [moran(B1,Elec AR) / liter(B1) / trina(B2,Elec RL) / scarlet(B3,Elec AR) / helm(B3)], boss Fire,
+         focus trina, deterministic. Slot order moran 0 / liter 1 / trina 2 / scarlet 3 / helm 4.
+Base run: Trina casts = 13, team Full Bursts = 12 (burstCast 13 != fullBurstEnter 12 → trigger identity is
+          count-discriminable in this sole-B2 comp). Two Electric AR allies fielded deliberately: moran
+          (slot 0, the LEFTMOST) + scarlet (slot 3) — count:1 lines land on [0] only, count:99 lines on [0,3];
+          liter (1) + helm (4) are NOT Electric AR, so the all-allies burst line reaches [0,1,2,3,4] but the
+          Electric-AR-scoped lines reach only [0,3].
+
+----- (i) vs UNMODIFIED SHIPPED override -----
+ ✓ scripts/tests/units/trina.test.ts — 21 passed | 1 failed | 1 skipped (23)
+   The single FAILURE is EXPECTED — it is the one FIX line (T8), RED vs shipped by design:
+     × T8 "is a FLAT 20 rounds … maxAmmoFlat 20": expected +0 to be 26 — the shipped override encodes the
+       burst Max-Ammo line as maxAmmoPct 33.3 (a percentage proxy), so ZERO maxAmmoFlat 20 events emit.
+   Every FAITHFUL pin (T2/T4/T5) and every UNMODELED/GAP absence pin (T1/T3/T6/T7) is GREEN vs shipped.
+   The T8 discriminating counterfactuals are GREEN (they assert the nearest-wrong maxAmmoPct behavior).
+   → S3 implements the FIX (maxAmmoPct 33.3 → maxAmmoFlat 20); after S3 the full file is GREEN (see below).
+
+----- DISCRIMINATION — each PIN is GREEN vs shipped AND RED under its named nearest-wrong counterfactual -----
+GREEN vs shipped | differs (RED pin) | T1 S1 three heal lines UNMODELED (no HP pool / no recovery primitive in v1)
+     PIN(shipped):     skill1-keyed buffApply from trina = 0; skill1-sourced damage = 0 (skill1 == [])
+     PIN(nearest-wrong): FABRICATE a passive skill1 buff → skill1-keyed buffApply > 0 (the empty slot is a
+                       deliberate skip, not a harness blind spot)
+GREEN vs shipped | differs (RED pin) | T2 S2 passive casterMaxHpPct 44.98 → all Electric AR allies, constant
+     PIN(shipped):     maxHpFlat (key …:skill2:maxHpFlat:44.98) value = 44.98% of trina.maxHp (≈1349458),
+                       CONSTANT across both targets [0,3], applied frame 0, NO expiry (durs=[null])
+     PIN(nearest-wrong scope): target `allies` → targets [0,1,2,3,4] (not just the 2 Electric AR allies)
+     PIN(nearest-wrong stat): targetMaxHpPct → value differs per target (moran 1483941 != scarlet 1222059)
+     PIN(nearest-wrong duration): add 10s expiry → durs=[600] (not the faithful constant [null])
+GREEN vs shipped | differs (RED pin) | T3 S2 "Invulnerable for 2 sec" UNMODELED (no invuln primitive / no HP pool)
+     PIN(shipped):     S2-keyed stats == {attackDamagePct, maxHpFlat, reloadSpeedPct} exactly — NO invuln effect
+GREEN vs shipped | differs (RED pin) | T4 S2 burstCast → 1 leftmost Electric AR ally: AttackDamage 94.15 + ReloadSpeed 50.82, 10s
+     PIN(shipped):     attackDamagePct 94.15 = 13 (=casts), reloadSpeedPct 50.82 = 13, targets [0] (moran, the
+                       leftmost Electric AR), 600f (10s), on burstCast
+     PIN(nearest-wrong count): count 99 → targets [0,3] (both Electric AR allies, not just the leftmost)
+     PIN(nearest-wrong trigger): fullBurstEnter → 94.15 buffs = 12 (=fbs), != 13 (=casts)
+     PIN(nearest-wrong duration): 3s window → durs=[180], != [600]
+GREEN vs shipped | differs (RED pin) | T5 Burst → all allies: AttackDamage 20.9 + casterMaxHpPct 20.14, 10s (burstCast)
+     PIN(shipped):     attackDamagePct 20.9 = 65 (=casts×5), maxHpFlat(20.14) = 65, targets [0,1,2,3,4] (all),
+                       600f, value = 20.14% of trina.maxHp constant across targets
+     PIN(nearest-wrong trigger): fullBurstEnter → 20.9 buffs = 60 (=fbs×5), != 65 (=casts×5)
+     PIN(nearest-wrong scope): alliesOfElementWeapon → targets [0,3] (Electric AR only, not all 5)
+GREEN vs shipped | differs (RED pin) | T6 Burst Spread Roots 435.6 / Wilted Roots 64.46 — documented GAP (no engine primitive)
+     PIN(shipped):     burst-keyed stats ⊆ {attackDamagePct, maxHpFlat, maxAmmo*}, size 3 — NO burst-skill-dmg-amp
+                       stat (the 435.6/64.46 amp is UNMODELED, not mis-encoded as a generic attackDamagePct/atkPct)
+     (it.skip marks the missing burst-skill-damage-amp primitive; teammate-COLD lever, feature request)
+GREEN vs shipped | differs (RED pin) | T7 Burst "Hit Rate ▲45.3%" UNMODELED (measurement-gated)
+     PIN(shipped):     hitRatePct buffApply from trina = 0 (the line is a documented, queued skip)
+RED vs shipped (FIX) | discriminating cf GREEN | T8 Burst "Max Ammunition ▲20 round(s)" = maxAmmoFlat 20 (FIX)
+     PIN(shipped):     maxAmmoFlat 20 = 0  ← RED (shipped encodes maxAmmoPct 33.3, the percentage proxy)
+     PIN(after S3 fix): maxAmmoFlat 20 = 26 (=casts×2), targets [0,3], 600f, value 20 (flat rounds)  ← GREEN
+     PIN(nearest-wrong = shipped encoding): maxAmmoPct 33.3 → maxAmmoFlat 20 = 0 AND maxAmmoPct 33.3 > 0
+                       (a percentage approximation, exact only for a 60-round magazine; for a 20-round Electric
+                        AR ally it grants +6.66 rounds vs the kit-literal +20)
+     PIN(nearest-wrong scope): target `allies` → targets [0,1,2,3,4] (not just the 2 Electric AR allies)
+
+----- S2c RECONCILIATION vs blind S2b (claude-fable-5, cross-family) -----
+CONVERGED (load-bearing, cross-family): T2 casterMaxHpPct 44.98 (caster-keyed, Electric AR, permanent);
+  T4 burstCast 94.15/50.82 (leftmost Electric AR, burstCast NOT fullBurstEnter, attackDamagePct NOT atkPct);
+  T5 burst 20.9/20.14 (all allies, attackDamagePct NOT atkPct, caster-keyed MaxHP); T6 Spread Roots/Wilted
+  Roots GAP (fable: "THE dominant trap … NO 435.6-valued buffApply may exist"); T8 maxAmmoFlat 20 — FABLE
+  INDEPENDENTLY DERIVED maxAmmoFlat 20 (FLAT) with nearest-wrong "maxAmmoPct 20 … differ wildly", corroborating
+  the driver's FIX of the shipped maxAmmoPct 33.3 proxy.
+DIVERGED → resolved toward prose-faithful + engine reality (NOT toward the shipped override), both documented
+  UNMODELED (not silent drops, not NO-GO):
+  (1) S1 fullBurstEnd 4.06% HoT — fable FAITHFUL (model as a 5-tick recovery emitter, loadBearing) vs driver
+      UNMODELED. Resolution: the v1 engine has NO HP pool and NO heal/recovery-event primitive, so healing is
+      unmodelable; the line is recorded verbatim in unmodeled.skill1 and caveats (recovery-trigger consumers
+      e.g. Crown get no events from Trina). Fable's ideal encoding presupposes a recovery-event primitive that
+      does not exist → documented engine GAP, inert on Trina's own damage.
+  (2) Burst Hit Rate ▲45.3% — fable FAITHFUL (model hitRatePct, ⚑ HR→core) vs driver UNMODELED. Resolution:
+      measurement-gated ⚑ — hitRatePct lifts AR/SMG/SG core rate via acrForHR and this line targets Electric AR
+      allies, so modeling it WOULD move the board; queued per the kit-audit plan pending a measurement. Recorded
+      verbatim in unmodeled.burst + caveats. The HR→core magnitude is the only ⚑ both reviewers acknowledge.
+Fable's fixture recommendations (an Electric-AR carry comp; a two-Electric-AR comp asserting the leftmost-only
+  slice; burstCast-vs-fullBurstEnter made observable) are ALL satisfied by the driver's sole-B2 two-Electric-AR
+  fixture (moran slot 0 / scarlet slot 3; casts 13 != fbs 12).
+
+VERDICT: gate PASSES after the S3 FIX. 1 FIX line (T8 maxAmmoFlat 20 — cross-family corroborated by fable);
+0 tests green-under-both; every FAITHFUL pin GREEN vs shipped; T1/T3/T6/T7 documented UNMODELED/GAP with
+discriminating absence-pins (not silent drops). The 2 fable divergences (S1 HoT, Hit Rate) reconcile to
+documented UNMODELED engine/measurement gaps → owner spot-check items (manual-review/trina.md), NOT NO-GO.

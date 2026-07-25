@@ -1,0 +1,70 @@
+S2d INDEPENDENT VERIFICATION GATE — soda-twinkling-bunny (2026-07-24)
+Method: `npx vitest run scripts/tests/units/soda-twinkling-bunny.test.ts` against (i) the unmodified SHIPPED
+override and (ii) each named counterfactual (withPatchedOverride, in-memory — committed JSON untouched).
+22 tests, all 22 PASS vs shipped (the DISCRIMINATING assertions exercise each counterfactual inline; a
+counterfactual that behaved identically to shipped would FAIL its DISCRIMINATING assertion, so none is vacuous).
+
+Fixture: controlComp('soda-twinkling-bunny') = liter(B1) / crown(B2) / soda-twinkling-bunny(B3 carry) / helm(B3),
+boss Fire, focus soda. Slot order: liter 0 / crown 1 / soda 2 / helm 3. Soda is a Burst-III SG; she needs the
+real rotation to cast at all (a lone B3 makes ZERO Full Bursts). The helm co-B3 is load-bearing: 9 Full Bursts
+but only 5 soda casts, so 4 FBs are helm-led — this is what discriminates stageEnter (FB-ext fires on ANY B3's
+cast) from burstCast (soda-only).
+
+The Golden Chip POOL emits NO event (resource deltas are internal state; perResource crit is computed live at
+damage time, buffApply carries base value 0). The pool is therefore observed INDIRECTLY: which resourceGate-
+gated buffs fire (and on which bursts), the Full Burst window length, and the live crit folded into expected-
+value totals. Measured cadence (deterministic, no seed): soda casts 5x at 5.0/45.2/88.2/130.9/171.2s; 9 FB
+windows ALL 15.00s (10 base + 5 extension); ATK ▲65.25 (≥30) fires on bursts 1-4 (pool drains below 30 by burst
+5); Hit Rate ▲38.91 (≥20) fires on all 5 bursts (burst-5 pre-consume ∈ [20,30)); skill2 rider = 154 in-FB hits
+at flat 130%; AD 10.51 targets = soda(self)×51, liter×27, helm×24 (the ally block never targets soda).
+
+--- (i) vs SHIPPED override (resource pool 50/0/50; perResource crit ×1.32; +1/3-in-FB-normal rebuild;
+        AD self+top-ATK-ally excludeSelf; cumulative FB-ext +2/+5 stageEnter:3; flat-130 in-FB rider;
+        burst 628.7; HR≥20 / ATK≥30 pre-consume; −17 spend ordered after gates) ---
+FAITHFUL pins (expect GREEN):
+  STB1 pool opens at 50: ATK≥30 + HR≥20 both fire on burst 1; first FB already 15s .............. GREEN
+  STB2 crit is LIVE perResource: passive critDamagePct buffApply frame 0, value 0, self, no expiry;
+       removing it drops soda total ~15M ....................................................... GREEN
+  STB3 +1/3-in-FB-normal rebuild: ATK gate 4x, HR gate 5x (= burst count) ...................... GREEN
+  STB4 AD 10.51 self + top-final-ATK ally (excludeSelf): slot 2 holds exactly its self-block count
+       (the ally block never targets soda); self + ≥1 ally buffed .............................. GREEN
+  STB5 FB-ext CUMULATIVE ladder: every FB window == 15s (10 + 5 at ≥20) ........................ GREEN
+  STB6 in-FB rider: 154 skill2 hits at 130%, all inFullBurst=true .............................. GREEN
+  STB7 burst nuke 628.7 once per cast (burst bucket); spend-after-gates ordering ............... GREEN
+  STB8 HR≥20 on all 5 bursts, ATK≥30 on first 4 (sawtooth decay); both self 15s ................. GREEN
+NO FIX lines: the shipped override is faithful; every kit line is FAITHFUL (two are re-encoded — the start+50
+pool seed and the −17 spend — both documented in caveats, so unmodeled is empty).
+
+--- (ii) each named counterfactual (expect RED = the assertion discriminates) ---
+  STB1/STB8 pool initial 0 -> 0 gate fires on burst 1, FB stays 10s ............................ RED (discriminated)
+  STB2 crit block removed -> soda total drops ~15M (the live pool×1.32 is damage-bearing) ...... RED (discriminated)
+  STB3 +chip generation removed -> ATK gate 4->2, HR gate 5->2, total drops ~36M ............... RED (discriminated)
+  STB4 AD blocks removed -> zero 10.51 buffs, total drops ~46M ................................. RED (discriminated)
+  STB4 excludeSelf dropped -> soda slot2 51->78 (ally block double-targets soda), liter 27->0 ... RED (discriminated)
+  STB5 FB-ext removed -> FB windows 10s (not 15s) .............................................. RED (discriminated)
+  STB5 flat +2 ladder (wrong shape) -> max FB 12s, never 15s ................................... RED (discriminated)
+  STB6 rider removed -> zero skill2 damage, total drops ~126M (35%) ............................ RED (discriminated)
+  STB7 burst nuke removed -> zero burst-bucket damage .......................................... RED (discriminated)
+  STB7 spend moved BEFORE gates -> ATK gate 4->1, HR gate 5->3 (pre-consume ordering broken) .... RED (discriminated)
+
+DOCUMENTED RESIDUALS (not vacuous tests — genuine ⚑ flags / discriminability limits, flagged for owner spot-check):
+  (1) RIDER magnitude + Time-Extension gating: the kit reads 52.04% (TE-I) / +85.02% (TE-II, cumulative 137.06%)
+      gated on the TE state latched at Burst-Stage-3 entry. The engine has NO state-snapshot primitive; a live
+      resourceGate proxy is WRONG (it drops the rider post-consume when the pool dips below threshold). The shipped
+      override models a FLAT 130% on every in-FB normal (⚑ recording-derived, TE-II-dominant) — faithful trigger/
+      target/cadence (in-FB normal → 1 enemy, per pull not per pellet), magnitude/state-gating ⚑. Both cross-family
+      blinds (fable S2b, opus S6) independently flag the same TE-snapshot gap with the same recipe.
+  (2) HIT RATE downstream: the HR ▲38.91% block is faithful to the KIT, but its two downstream channels (core-hit
+      rate via acrForHR, pellet landing via coneSigmaFor) are over-credited vs the owner hand-count of this fight
+      (docs/probe-data/soda-tb-sg-core-hr-windows.json) — a coupled tuning residual, not a faithfulness failure.
+  (3) S5 blind test FILE is a documented harness artifact (import path assumes scripts/tests/units/; mutates
+      o.blocks which the override does not expose → no-op; passes the override object to controlComp() which
+      expects a slug; reads .idx/.total/.mult-as-scalar which drift from the harness). It cannot run unmodified;
+      convergence is carried by the fixture-independent S5 SPEC TABLE (matches driver dispositions + discrimination
+      intent) + the S6 blind override (line-for-line structural match) + the driver's harness-correct test (this
+      file) which mechanically asserts every discrimination the S5 spec names, 22/22 GREEN vs shipped.
+
+VERDICT: no test is GREEN under both shipped and its counterfactual (none vacuous). Every FAITHFUL pin is GREEN
+vs shipped; every named counterfactual is RED. The shipped override is faithful — S3 made NO encoding change
+(only cleared two stale unmodeled entries for effects that ARE modeled, documented the re-encoding + the rider ⚑
+in caveats, and added the gauntlet provenance marker to the note).

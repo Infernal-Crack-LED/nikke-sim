@@ -1,0 +1,109 @@
+{
+  "slug": "snow-white",
+  "kitDescription": "Snow White (base, AR/Iron/Attacker/Burst III) is a self-sufficient sustained-DPS attacker. Every 30 normal-attack hits she deals a bonus instance of 82.8% of final ATK to the target and grants herself ATK +8.28% for 5 sec — which, at her fire cadence (a proc roughly every 2.5s), holds near-permanent uptime. Her S2 periodically deals 144.73% of final ATK to enemies in range, and when that skill triggers during Full Burst she gains Critical Rate +26.1% for 10 sec. Her Burst swaps her weapon to a 5-sec-charge cannon: a piercing shot for 499.5% of final ATK whose full-charge coefficient is ×10 (4995%), limited to one round per burst. Against a Fire boss she has no elemental advantage (Iron beats Electric, not Fire), so her damage rides purely on the charge multiplier, Full-Burst major, core, and her self-buffed crit.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "hits 30 -> +82.8% ATK add'l dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger hitCount count:30 -> enemy flatDamage atkPct 82.8",
+        "blindSaid": "S6: hitCount 30 -> enemy flatDamage 82.8 crit:true (same; explicit crit vs driver default-ON)",
+        "formulaCheck": "flatDamage rider in 'skill' bucket, srcSlot skill1, atkPct 82.8; fact(b) 58 instances == floor(1743/30) (hitsPerShot 1 => hits==shots); critEligible true, rangeApplied false per rider convention",
+        "fireRateOk": true,
+        "explanation": "Encoding matches prose and formula routing; hitCount-30 cadence probe-confirmed at 58 fires. Driver default-ON crit == blind explicit crit:true."
+      },
+      {
+        "kitLine": "hits 30 -> self ATK +8.28% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger hitCount count:30 -> self buff atkPct 8.28 durationSec 5",
+        "blindSaid": "S6: hitCount 30 -> self buff 8.28 5s (SAME)",
+        "formulaCheck": "fact(c): casterIdx==targetIdx==2 (self), 300-frame (5s) expiry, same hitCount-30 cadence; near-100% uptime since proc ~every 2.5s < 5s",
+        "fireRateOk": true,
+        "explanation": "Self-scope, magnitude, duration all faithful. Discrimination test SW2 RED vs all-allies (holders>1) rules out the permanent-passive shortcut the S2b review flagged."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "in-range: 144.73% ATK dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger interval sec:15 -> enemy flatDamage atkPct 144.73",
+        "blindSaid": "S6: interval (NO sec, cadence left as kit-silent flag) -> enemy flatDamage 144.73",
+        "formulaCheck": "fact(d): 11 instances at EXACT 15s multiples, bucket 'skill' srcSlot skill2; proc times are 15-multiples INDEPENDENT of FB-entry times (5.73,23.4,...) so fbMajor is coincidental, not a gate",
+        "fireRateOk": true,
+        "explanation": "Magnitude/bucket/target/enemy-scope FAITHFUL and converge with blind. The prose carries NO activation clause, so the 15s cadence is owner-ruled/datamined (first-fire t=CD) — documented as a caveat with first-fire-phase + FB-scoping flagged (residual e). SW3 test RED vs fullBurstEnter (FB-entry times != 15-multiples) and RED vs burstCast (6!=11) confirms interval, not FB-gated."
+      },
+      {
+        "kitLine": "S2 in FB -> Crit Rate +26.1% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger fullBurstEnter -> self buff critRatePct 26.1 durationSec 10",
+        "blindSaid": "S6 + S2b: prose-literal inFb-gated interval cast (fires at S2-cast time IF in FB) — divergent trigger MECHANISM; both blind roles read this independently",
+        "formulaCheck": "fact(e): generic critRatePct (not critRateNormalPct), self, 600-frame (10s), fires 11x == fullBurstStart at FB-entry frames EXACTLY (critFrames==fbFrames)",
+        "fireRateOk": true,
+        "explanation": "Magnitude/stat-family/self-scope/duration all FAITHFUL and converge. Trigger MECHANISM diverges: driver fullBurstEnter (owner-ruled 2026-07-20) vs the prose-literal inFb-gated interval cast that BOTH blind roles independently derived. Documented (residual a) and discriminable (SW4 RED vs inFb-gated interval: S2-cast frames != FB-entry frames). Not undocumented => DOCUMENTED, not REAL-GOTCHA — but this is the same-model residual to spot-check (see rationale)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "swap: 499.5% + FC 1000% pierce 1amm",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger burstCast -> enemy flatDamage atkPct 499.5, charge:true chargeMultPct:1000 (->x10), core:true, pierce:true, rangeOk:true, delaySec 5.5",
+        "blindSaid": "S6 + S2b: weaponSwap damagePct 499.5, chargeTimeSec 5, chargeMultPct 1000 (->x10), maxAmmo 1, hasPierce, durationSec 10 flag — prose-literal swap MECHANISM; both blind roles independent; blind INDEPENDENTLY derived x10 from 'Full Charge Damage 1000% of damage'",
+        "formulaCheck": "fact(f): 6 instances == burstCast, bucket 'burst', atkPct 499.5, mult.charge==10 (4995% full-charge coefficient), fbMajorApplied+inFullBurst true (delay 5.5 lands inside FB), coreEligible true, rangeApplied 1/6 (rangeOk, boss-range/timing dependent). x10 corroborated by footage (six nuke popups ~630 ATK-multiples reconcile with x10 x FB x core x crit; ~3-4x above any 1499.5% additive class)",
+        "fireRateOk": true,
+        "explanation": "Every load-bearing magnitude converges across driver + both blinds + footage: 499.5, x10 multiplier (not additive 1499.5% — the largest trap, both blinds independently avoided it), pierce, 1-ammo, burstCast, FB-major-by-landing, core. Encoding MECHANISM diverges (delayed-flatDamage vs prose-literal weaponSwap), owner-ruled from footage (she keeps firing her AR through the ~5s charge, so no swap/AR-suppression) and documented (residual b). SW5 test RED vs no-charge (charge 1!=10) and RED vs instant (fbMajor false!=true)."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "S2/S4 crit rider modeled as fullBurstEnter, not the prose-literal inFb-gated interval cast",
+      "evidence": "Kit: 'Activates when using this skill during Full Burst. ...Critical Rate +26.1% for 10 sec.' Driver: fullBurstEnter trigger; both blind roles (opus S6 + fable S2b): inFb-gated interval cast. fact(e) critFrames==fbFrames shows the SHIPPED override fires at FB entry, but that measures the override, not the game.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Owner spot-check via sw.MP4: does the 26.1% crit buff appear at the exact FB-entry frame (=> fullBurstEnter, driver correct) or offset to the ~15s S2-cast frame while in FB (=> inFb-gated interval, blinds correct)? Magnitudes are unaffected; only trigger timing/uptime edge cases differ."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Burst cannon modeled as delayed-flatDamage, not the prose-literal weaponSwap",
+      "evidence": "Kit: 'Change the weapon in use: Charge Time 5 sec; Damage 499.5%; Full Charge Damage 1000% of damage; Max Ammunition 1; Pierce.' Driver: delayed flatDamage delaySec 5.5. Both blinds: weaponSwap. Owner ruling (2026-07-20, footage): AR keeps firing through charge => no swap/ammo-suppression.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Owner spot-check: confirm from footage that her AR fire is uninterrupted during the burst charge (validates delayed-flatDamage). If a future engine models weaponSwap, ensure it does NOT suppress AR uptime, matching the footage."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Delayed cannon does not receive Normal Attack Damage +% (inert at scope)",
+      "evidence": "fact(g): the delayed flatDamage bypasses the swap-shot normalScale path; no Normal-Attack-Damage buffer exists in the control comp, so inert now.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "No change at scope. Flag for revisit if a Normal-Attack-Damage buffer joins her comp — the cannon would then be under-credited; needs the normalScale routing restored to the rider."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Pierce core+body double-hit unmodeled (PIERCE_CORE_DOUBLE=false)",
+      "evidence": "fact(h): engine-wide OFF; inert on the partless scope-lock boss.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "No change; measurement-gated engine-wide primitive. Inert on partless boss; revisit only with a cored/multi-part target and a measured double-hit."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "GO. All five kit lines are FAITHFUL: S1 rider (82.8, hitCount-30, 58 fires == floor(1743/30)), S1 self-ATK (8.28, self, 5s, near-100% uptime), S2 AoE (144.73, interval, 11 procs at exact 15s multiples, enemy), S2 crit (26.1, generic critRatePct, self, 10s, FB-related), and the burst cannon (499.5 x10 pierce core FB-major-by-landing, 6 == burstCast). The two blind re-derivations converge on EVERY load-bearing magnitude — most importantly both independently derived the x10 full-charge MULTIPLIER (4995%) from 'Full Charge Damage 1000% of damage', avoiding the additive-1499.5% trap the S2b review ranked #1. The only S5 'divergences' are RECON_ERROR schema no-ops (§6 i–v: the blind test scanned ov.blocks[] on a slot-keyed override, used totalDamage vs total, and filtered bucket 'charge' vs 'burst') — its positive intent, remapped to the driver schema, converges GREEN, and the driver's own 22/22-passing test (§8) supplies the real discrimination (each line RED vs its named nearest-wrong). Fire-rate check passes: no modeled-but-inert line — all five blocks fire at the prose-implied cadence over 180s. Two mechanism divergences are DOCUMENTED, not gotchas: (a) S4 crit trigger fullBurstEnter vs the prose-literal inFb-gated interval cast, and (b) the burst delayed-flatDamage vs prose-literal weaponSwap. In BOTH cases both blind roles read the prose-literal alternative and the driver shipped the owner-ruled / footage-corrected model; the magnitudes converge either way. The same-model residual the owner should spot-check is precisely these two: fact(e) (critFrames==fbFrames) and fact(f) measure the SHIPPED OVERRIDE, not the game — the independent ground truth is the 2026-07-20 owner footage ruling, so the owner should confirm on sw.MP4 that (i) the 26.1% crit buff lands at the FB-entry frame rather than the in-FB S2-cast frame, and (ii) her AR fire is uninterrupted through the ~5s burst charge (validating no weaponSwap). Documented residuals (c) Normal-Attack-Damage fidelity gap, (d) pierce core+body double-hit, and (e) S2 first-fire-phase + FB-scoping flags are all correctly inert at scope and flagged with recipes. Nothing must change for GO; faithfulness 1.0.",
+  "model": "claude-opus-4-8"
+}

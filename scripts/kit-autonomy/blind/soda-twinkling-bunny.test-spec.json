@@ -1,0 +1,66 @@
+{
+  "slug": "soda-twinkling-bunny",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "start: Golden Chip stacks ▲ 50",
+      "disposition": "FAITHFUL",
+      "assertion": "Zeroing the resource initial strictly lowers soda total (less early crit-dmg + fewer burst gates open). Fails under 'no start grant' / initial 0."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Crit Damage ▲ 1.32% x50 continuously",
+      "disposition": "FIX",
+      "assertion": "Live perResource crit-dmg off the Golden Chip pool >> a fixed single-1.32%-stack model. Fails under a fixed non-scaling crit-dmg buff. HYPOTHESIS: same pool as the gating currency."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack Damage ▲ 10.51% 2s self+topATK",
+      "disposition": "FAITHFUL",
+      "assertion": "attackDamagePct 10.51/2s applies to self + EXACTLY ONE other ally (highest final ATK). Fails under target=allies (all) or self-only; teammates not buffed stay byte-identical."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "enter BS3: FB Duration ▲ gated",
+      "disposition": "FAITHFUL",
+      "assertion": "Max FB window >10s and strictly longer than the extend-removed run. Fails under no fullBurstExtend / un-gated fixed duration."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB normal->enemy 52.04/85.02% TE-gated",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "Removing the flatDamage rider lowers soda total (behavioral). Exact mult + Time-Extension gating shape is it.skip (unobservable blind)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "S1: 628.7% burst dmg all enemies",
+      "disposition": "FAITHFUL",
+      "assertion": "A soda burst-bucket hit ~628.7% exists and lands inFullBurst=false (pre-FB). Fails under wrong magnitude / FB-major applied to an instant burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "S2(≥20): Hit Rate ▲ 38.91% 15s self",
+      "disposition": "FAITHFUL",
+      "assertion": "hitRatePct 38.91 self-scoped, 15s, applies ≥1x. ⛑ hitRate = core-lift derived. Fails if allies-scoped or wrong duration."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "S3(≥30): ATK ▲ 65.25% 15s self",
+      "disposition": "FAITHFUL",
+      "assertion": "atkPct 65.25 self-scoped 15s; removing S2+S3 lowers soda total with teammates identical. Gate non-vacuity: applies on FEWER bursts than soda burst-casts (pool decays below 30)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Golden Chip stacks ▼ 17 after",
+      "disposition": "FAITHFUL",
+      "assertion": "Consumption is what makes the >=30 / >=20 gates bite on later bursts (tested via the ATK-buff-count < burst-count assertion). ⛑ trajectory derived, not measured."
+    }
+  ],
+  "fixtures": "controlComp('soda-twinkling-bunny', true) — liter B1 / crown B2 / soda B3 carry / helm B3, boss Fire, focus soda. Chosen so (a) a real burst chain opens Full Burst repeatedly (a lone B3 makes ZERO FBs, so every in-FB / entering-BS3 trigger would be dead), and (b) a multi-ally pool exists so S1c's 'highest final ATK ally except self' resolves to a discriminable single teammate. helm=true kept (its buffs don't confound the structural event-log assertions used here).",
+  "gaps": [
+    "S1b rebuild rate (+1 Golden Chip per 3 FB normal attacks): it.skip — '3 normal attacks' = 3 trigger PULLS, but the engine's hitCount trigger counts pellet-HITS (SG hitsPerShot 10), so the faithful encoding (hitCount count vs a shot-scoped counter) is ambiguous blind and ⛑. Verify by inspection of the driver's trigger.",
+    "S2b exact rider magnitude / Time-Extension gating: it.skip — whether TE state is keyed via a resourceGate proxy on Golden Chip ≥10/≥20 or a real named TE status, and how flatDamage atkPct (52.04 / 85.02 / cumulative 137.06) surfaces on the damage event, are unobservable without seeing the override. Behavioral total-drop is asserted instead.",
+    "Whether 'Golden Chip: Critical Damage' shares the SAME pool as the gating 'Golden Chip stacks' (my load-bearing HYPOTHESIS) vs two independent pools — the S1b test discriminates live-scaling from fixed, but not one-pool-vs-two directly; a divergence here is the intended payload."
+  ],
+  "model": "claude-opus-4-8"
+}

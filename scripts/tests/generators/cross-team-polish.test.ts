@@ -58,6 +58,24 @@ describe('cross-team polish (item 4)', () => {
     expect(total(polished) / total(greedy)).toBeGreaterThan(1.1);
   });
 
+  it('strands nobody it could have fielded', async () => {
+    // The count itself is the assertion above; this is the reason it matters —
+    // the losing roster left 5 units (a whole legal team) on the bench.
+    const polished = await calc.topTeams(N);
+    const fielded = new Set(polished.flatMap((t) => t.slugs));
+    const benched = [...POOL].filter((s) => !fielded.has(s));
+    expect(benched, `stranded ${benched.length} units`).toEqual([]);
+  });
+
+  // NOT TESTED HERE: that the count repair honours a pin on the row it recovers
+  // (repairCount's rowPins/laterPins handling). It needs a pool where greedy
+  // stalls AND leaves >5 units spare, so the recovered team has a real choice of
+  // 5 and can drop the pinned unit. This family has no such pool — at 20 units
+  // spare is exactly 5 (the pin lands in row 3 by arithmetic, so the assertion
+  // passes with the handling deleted), and at 21 greedy already fields 4 teams
+  // and the repair never runs. Verified both directions 2026-07-25; left unpinned
+  // rather than shipped as a test that proves nothing.
+
   it('never lowers the roster total, and keeps the teams legal + disjoint', async () => {
     const greedy = await calc.topTeams(N, { polishPasses: 0 });
     const polished = await calc.topTeams(N);

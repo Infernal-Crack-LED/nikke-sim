@@ -1,0 +1,49 @@
+=== S2d INDEPENDENT VERIFICATION MATRIX — velvet (kit-autonomy gauntlet 2026-07-24) ===
+Test file: scripts/tests/units/velvet.test.ts (driver-authored S2a; reconciled vs blind S2b claude-fable-5).
+Gate: every FAITHFUL pin GREEN vs shipped; every DISCRIMINATING assertion provably differs from its
+      nearest-wrong counterfactual (no test green-under-both → none vacuous). No self-reported RED.
+Fixture: [liter(B1) / velvet(B2) / helm(B3)], boss Iron (Wind ×1.10), focus velvet, deterministic.
+Base run: Velvet casts = 10, team Full Bursts = 5 (burstCast 10 != fullBurstEnter 5 → trigger identity
+          is count-discriminable in this sole-B2 comp). Slot order liter 0 / velvet 1 / helm 2.
+
+----- (i) vs UNMODIFIED SHIPPED override (already faithful — hand-verified parser-baseline) -----
+ ✓ scripts/tests/units/velvet.test.ts (20 tests) 10ms
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   (No S3 fix required: the shipped override is already faithful, so every line is a GREEN pin, not a FIX.
+    The override note/caveats already document the ammo-pouch drop, the outFb/inFb gates, the hitCount:50
+    fidelity choice, and the weaponSwap shot-economy estimate.)
+
+----- DISCRIMINATION — each PIN is GREEN vs shipped AND RED under its named nearest-wrong counterfactual -----
+GREEN vs shipped | differs (RED pin) | V1 Bullet Snatch UNMODELED (pouch + enemy ammo)
+     PIN(shipped):     maxAmmo buffs from velvet = 0; stripping skill1 leaves liter/helm totals BYTE-IDENTICAL
+     PIN(nearest-wrong): consumeAmmo sign-flipped onto ALLIES → ally reload count 53 > base 33 (forced reloads)
+GREEN vs shipped | differs (RED pin) | V2 S1 self ATK▲30.5 + AttackDamage▲30.5 outFb
+     PIN(shipped):     atkPct 30.5 = 87 applies, ALL outFb (inFb=0), self only, 3s; attackDamagePct 30.5 = 87 (distinct stat)
+     PIN(nearest-wrong gate): drop outFb → atkPct 30.5 applies appear INSIDE FB (inFb>0)
+     PIN(nearest-wrong collapse): atkPct 61 = 0 (the two 30.5s are distinct stats, not a doubled atkPct)
+GREEN vs shipped | differs (RED pin) | V3 S2 team casterAtkPct 25.2 (FLAT) + chargeDamagePct 100.8 inFb
+     PIN(shipped):     casterAtkPct value≈25133 (flat add of velvet ATK, >1000), 135 applies ALL inFb, targets 0/1/2
+                       chargeDamagePct 100.8 = 135 applies ALL inFb, 3s, targets 0/1/2
+     PIN(nearest-wrong gate): drop inFb → casterAtkPct applies appear OUTSIDE FB
+     PIN(nearest-wrong stat): atkPct 25.2 → value exactly 25.2 (a scaler <100), casterAtkPct = 0
+     PIN(nearest-wrong stat): chargeDamageMultPct 100.8 present, chargeDamagePct 100.8 = 0
+GREEN vs shipped | differs (RED pin) | V4 S2 "50 normal attacks during FB" proc (hitCount:50 + inFb)
+     PIN(shipped):     400.92 flatDamage procs = 0; self attackDamagePct 15.03 = 0  (SR cannot land 50 in-FB hits)
+     PIN(nearest-wrong gate): drop inFb → 2 procs, ALL OUT of FB (cumulative 50-hit threshold crosses out-of-FB)
+     PIN(nearest-wrong threshold): hitCount 5 → 10 procs ALL IN FB, each atkPct=400.92 (bucket skill) + self 15.03/5s
+     NOTE: cumulative-vs-in-FB-only counting + FB-reset is a documented ⚑ fidelity hypothesis; both readings
+           converge on 0 procs in this fixture (the absence pin is non-vacuous: both counterfactuals fire).
+GREEN vs shipped | differs (RED pin) | V5 burst weaponSwap 7%/10s + attackDamagePct 34.52/10s (burstCast)
+     PIN(shipped):     attackDamagePct 34.52 = 10 (=casts), 600f (10s), self only; swap shots atkPct=7 (90) inside
+                       the 10s burst window vs 69.04 SR normals outside it (the swap REPLACES the SR)
+     PIN(nearest-wrong trigger): fullBurstEnter → 34.52 buffs = 5 (=fbs), != 10 (=casts)
+     PIN(nearest-wrong duration): 3s window → 180f, != 600f
+     PIN(nearest-wrong swap mult): damagePct 70 → swap shots atkPct=70, atkPct=7 swap shots = 0
+
+VERDICT: gate PASSES. 0 FIX lines (override already faithful); 0 tests green-under-both (shipped AND
+counterfactual); every FAITHFUL pin GREEN vs shipped; V1 Bullet Snatch documented UNMODELED with a
+discriminating absence-pin + inertness pin (not a silent drop, not an it.skip — actively pinned inert).
+The two fable FIX flags (hitCount cumulative-vs-in-FB counting; weaponSwap cadence ⚑) are documented
+fidelity HYPOTHESES in the override note/caveats, inert or measurement-gated, NOT encoding errors that move
+damage in this fixture — reconciled to ⚑/owner-spot-check items (see manual-review/velvet.md §4), not NO-GO.

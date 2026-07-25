@@ -1,0 +1,76 @@
+{
+  "slug": "volume",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "self when killing an enemy: ATK ▲12.6%",
+      "disposition": "UNMODELED",
+      "scope": "generic self ATK buff (no normal/charge/crit scoping)",
+      "durationSemantics": "durationSec 5 (wall-clock, refreshable per kill)",
+      "triggerIdentity": "on-kill — the schema has NO kill trigger, and the v1 fight is a single immortal boss, so the trigger can NEVER fire; must be recorded verbatim in `unmodeled`, not approximated",
+      "targetSet": "self only",
+      "nearestWrongModel": "encoding it as a passive (always-on) or shotFired-triggered self atkPct 12.6 buff 'since kills are frequent in real content' — silently over-crediting a trigger that is unobservable vs the boss",
+      "distinguishingAssertion": "event log for volume contains ZERO buffApply with stat atkPct value 12.6 across the whole run; withPatchedOverride deleting the skill1 block changes totals(res) by exactly 0",
+      "inertness": "must move nothing — no damage delta, no buff events, no rotation change",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "entering Full Burst: Burst CD ▼ (escalating)",
+      "disposition": "FAITHFUL",
+      "scope": "not a stat buff — an instantaneous burst-cooldown shave (burstCdr), no damage scoping",
+      "durationSemantics": "instantaneous per activation (seconds removed from current cooldowns), NOT a timed buff and NOT a permanent CD% stat; escalating count is 'times entered', clamped at three — every entry from the 3rd on applies steps 1..3 = 2.34+2.7+3.17 = 8.21s",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' fires on ANY team FB, whether or not volume cast her own burst; encode as trigger fullBurstEnter + effect escalating[burstCdr 2.34, burstCdr 2.7, burstCdr 3.17]",
+      "targetSet": "all allies INCLUDING self — self-inclusion is load-bearing: shaving volume's own 20s B1 cooldown is the mechanism that accelerates the whole rotation",
+      "nearestWrongModel": "two plausible misreads: (a) keying to burstCast because the sibling block in the same slot is burst-cast-worded — under-fires on any rotation volume doesn't personally cast; (b) reading 'Each subsequent effect triggers all effects before it' as REPLACEMENT (only the Nth tier applies) instead of cumulative, giving 3.17s instead of 8.21s at cap",
+      "distinguishingAssertion": "record fullBurstStart timestamps: with volume present the gap between consecutive fullBurstStart events after the 3rd FB is consistent with an 8.21s shave off the 20s chain (≈12s CD floor), RED if only 3.17s is applied; and in a comp where a DIFFERENT B1 casts the opening rotations, the CD shave still lands on every FB entry (burstCast keying would show unshaved 20s gaps)",
+      "inertness": "must not apply any timed stat buff (no buffApply/buffRemove pair from this block); no effect before the first fullBurstStart",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "using Burst Skill: Crit Damage ▲ 5 sec (esc.)",
+      "disposition": "FAITHFUL",
+      "scope": "generic critDamagePct (unscoped — applies to all crit hits, not normal-only)",
+      "durationSemantics": "durationSec 5, wall-clock — kit says 'for 5 sec', no round-count language; escalating count is 'number of uses' of HER burst, cumulative: 1st cast 10.77, 2nd 10.77+12.46=23.23, 3rd+ 37.65 percentage points",
+      "triggerIdentity": "burstCast — 'Activates when using Burst Skill' fires ONLY on rotations volume herself casts (pre-FB timing), explicitly DIFFERENT from the sibling block's fullBurstEnter; this intra-slot trigger split is the kit's defining trap",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "keying to fullBurstEnter to match the sibling block — over-credits every FB in a comp where another Burst-I unit (e.g. liter in the control comp) takes the cast, and shifts the 5s window to FB open instead of cast time; secondary misread: non-cumulative tiers (14.42 at cap instead of 37.65)",
+      "distinguishingAssertion": "critDamagePct buffApply events from volume occur if-and-only-if a burstCast event for volume precedes them in the same rotation (zero applications on rotations where the other B1 casts); the 2nd application's value is 23.23 not 12.46; buffRemove fires 5s after cast — i.e. the buff dies roughly mid-FB, so late-FB damage events show no volume critDamage contribution",
+      "inertness": "must NOT fire on FBs entered off another B1's cast; must not persist past +5s (the back half of the 10s FB window is unbuffed)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "all allies: Critical Rate ▲ 31.9% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic critRatePct — NOT critRateNormalPct (no 'of normal attacks' scoping in the text)",
+      "durationSemantics": "durationSec 5, wall-clock — half the 10s FB window, not the full window",
+      "triggerIdentity": "burstCast (it IS her burst skill; applies at cast, pre-FB banner)",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "stretching durationSec to 10 'to cover the Full Burst window' — over-credits the back half of every FB she casts; secondary misread: scoping to normal attacks only, which would under-credit teammates' skill/burst crit",
+      "distinguishingAssertion": "buffApply critRatePct 31.9 at volume's burstCast frame on all 5 units, matching buffRemove exactly 5s later; damage events between t_cast+5 and fullBurstEnd carry the base crit rate (RED if the elevated rate persists to FB end)",
+      "inertness": "no application on rotations volume doesn't cast; crit-rate lift must not appear on any hit outside the 5s window",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:fullBurstEnter escalating burstCdr [2.34,2.7,3.17]",
+    "skill2:burstCast escalating critDamagePct [10.77,12.46,14.42] 5s",
+    "burst:critRatePct 31.9 allies 5s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Affects self when killing an enemy. ATK ▲ 12.6% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to check the driver against: (1) the two skill2 blocks have DELIBERATELY different triggers — 'when entering Full Burst' (fullBurstEnter, any team FB) for the CDR block vs 'when using Burst Skill' (burstCast, her own casts only) for the crit-damage block; collapsing both onto either trigger is the single most likely shared error, and it only diverges when a second Burst-I unit is in the team (the control comp's liter is exactly that), so the distinguishing tests MUST use a comp where volume does not cast every rotation. (2) 'Each subsequent effect triggers all effects before it' is CUMULATIVE (engine `escalating`: Nth activation applies steps 1..N, clamped) — steady-state CDR is 8.21s per FB entry and steady-state crit damage is 37.65pp, not the top tier alone. (3) burstCdr is an instantaneous cooldown shave, not a timed buff and not a permanent CD% — the observable is fullBurstStart spacing compressing below the 20s chain floor, and 'all allies' includes volume herself (her own B1 CD is the rotation bottleneck this kit exists to break). (4) Both 5s buffs cover only the FRONT half of a 10s FB (crit-damage even starts pre-banner at cast) — a duration stretched to 10s is a plausible over-credit. (5) skill1 is on-kill: no kill trigger exists in the schema and the v1 boss is immortal — it must land verbatim in `unmodeled`, and any encoding of it (passive/shotFired proxy) is an invented mechanic violating MEASURED>FUDGE. All magnitudes are kit-literal (DATAMINED); nothing here is measurement-gated and no ALWAYS-⚑ field applies (no damage lines, no cadence claims, no stacks-with-ramp).",
+  "model": "claude-fable-5"
+}

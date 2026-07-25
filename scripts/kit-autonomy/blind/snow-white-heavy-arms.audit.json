@@ -1,0 +1,159 @@
+{
+  "slug": "snow-white-heavy-arms",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Lock-On designate (max 5 targets)",
+      "status": "SKIPPED",
+      "effectOrReason": "targeting mechanic; no enemy entity in sim, enables Auto Fire"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Auto Fire Ready: DEF ▲42.24% cont.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff defPct 42.24 passive self (inert v1, kept for completeness)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Auto Fire Ready loads ammo (max 5)",
+      "status": "SKIPPED",
+      "effectOrReason": "sets sequential-hit count of Effect 2 (modeled as ×5 lump)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Lock-On enemies Damage Taken ▲4.2%/4s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 4.2 enemy (boss debuff, maintained → passive)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Auto Fire Eff1 41.9% all enemies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage 41.9 on shotFired (per full charge)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Auto Fire Eff2 105.59% seq ×ammo",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage 527.95 (105.59×5) flavor sequential"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Fully Active uses ▼1 on full charge",
+      "status": "SKIPPED",
+      "effectOrReason": "counter bookkeeping (2-charge Fully Active window)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Normal attack removes Fully Active",
+      "status": "SKIPPED",
+      "effectOrReason": "state bookkeeping"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Fixes charge time 1.2s cont.",
+      "status": "SKIPPED",
+      "effectOrReason": "charge-time clamp primitive; ≈ default chargeFrames 72"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge: Gains Pierce 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gainPierce durationSec 5 on shotFired (effectively continuous)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge: ATK ▲46.84% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 46.84 durationSec 5 (refreshed each charge)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge: Dmg to Parts ▲62.64% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff partsDamagePct 62.64 (inert v1, kept)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Enter BS3: ATK ▲73.92% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 73.92 durationSec 10 on burstCast"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Fully Active: Charge Dmg ▲528% 1rd",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 528 durationShots 2 (approx Fully Active window)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Fully Active: Seq atk dmg ▲158.4% 1rd",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff sequentialMultPct 158.4 durationShots 2"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲84.48% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 84.48 durationSec 10 on burstCast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Seven Dwarves Fully Active state (2 uses)",
+      "status": "SKIPPED",
+      "effectOrReason": "state machine (5→15 ammo, 3.2s charge, +10 lock-on); damage via S1/S2 approximations"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "41.9% to destructible projectiles",
+      "status": "SKIPPED",
+      "effectOrReason": "inert vs partless boss (no destructible projectiles)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[2].trigger",
+      "estimate": "shotFired (~1.2s/charge)",
+      "reasoning": "Auto Fire activates on each Full Charge; base chargeFrames 72 = 1.2s matches the S2 charge-time clamp, so shotFired ≈ one full charge.",
+      "recipe": "Count Auto-Fire popups/sec in a recording; confirm charge cadence and re-key/adjust if the effective charge interval differs."
+    },
+    {
+      "field": "skill1[2].effects[1].atkPct",
+      "estimate": "527.95 (105.59×5)",
+      "reasoning": "Effect 2 fires sequentially per ammo loaded by Auto Fire Ready (max 5 out of Fully Active, 15 in Fully Active). Steady-state = 5; lumped as one hit since all target the boss.",
+      "recipe": "Read the sequential-hit burst on a full charge (popup count) out of burst vs the 2 post-burst charges; model the Fully Active 15-hit window separately if it moves the total."
+    },
+    {
+      "field": "skill1[2].effects",
+      "estimate": "plain bucket, no core/range",
+      "reasoning": "Kit gives no 'core strike' text for Auto Fire and instant riders are engine-no-range; default OFF per HARD RULE 9.",
+      "recipe": "Check popups for red CORE HIT on Seven Dwarves damage; if present set core/coreRate; if the volley gets the +30% range, set rangeOk."
+    },
+    {
+      "field": "skill1[2] (double-count)",
+      "estimate": "riders ADD on top of base charge shot",
+      "reasoning": "Engine fires the base SR full-charge shot (coreAttackMultiplier 200) independently; unclear if Seven Dwarves Auto Fire replaces or supplements it.",
+      "recipe": "Compare total-damage sim vs a real fight; if 2× high, suppress the base charge shot (Auto Fire replaces it)."
+    },
+    {
+      "field": "skill1[1] (damageTakenPct target)",
+      "estimate": "enemy boss debuff, 4.2% flat",
+      "reasoning": "'Damage Taken ▲' is a team-wide boss debuff; maintained every 0.2s while charging → effectively permanent, non-stacking.",
+      "recipe": "Verify the engine applies enemy-targeted damageTakenPct (boss-debuff channel); confirm it does not stack across Lock-On targets on a single boss."
+    },
+    {
+      "field": "skill2[2] (Fully Active gate)",
+      "estimate": "burstCast + durationShots 2",
+      "reasoning": "Charge Damage 528% / Sequential 158.4% require Seven Dwarves Fully Active, entered at burst for 2 uses; no literal Fully-Active status gate available blind.",
+      "recipe": "Model Fully Active as a 2-use resource with a resourceGate; measure whether both post-burst charges get the buff and the 528%/158.4% magnitudes via popup deltas."
+    },
+    {
+      "field": "noFb",
+      "estimate": "default OFF (FB by timing)",
+      "reasoning": "Per methodology, function-damage riders take Full Burst by landing timing unless measured otherwise.",
+      "recipe": "If Auto Fire popups outside/inside FB show no +50% step, set noFb:true on the flatDamage riders."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

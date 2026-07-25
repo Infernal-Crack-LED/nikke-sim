@@ -1,0 +1,170 @@
+{
+  "slug": "trina",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ after Full Burst ends → all allies",
+      "disposition": "FAITHFUL",
+      "scope": "heal-over-time, generic (no attack scoping); amount = % of CASTER final Max HP",
+      "durationSemantics": "'every 1 sec for 5 sec' = 5 ticks, intervalSec 1 — a multi-event HoT, not one instant heal and not durationSec on a buff",
+      "triggerIdentity": "fullBurstEnd (literal 'after Full Burst ends'); fires once per FB cycle",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Skipped as 'defensive heal, no damage' (taxonomy #4), or encoded as heal ticks:1 (single recovery event), or keyed to fullBurstEnter instead of fullBurstEnd",
+      "distinguishingAssertion": "With cfg.onEvent, after each fullBurstEnd event exactly 5 recovery-emitting heal ticks fire per ally over the next 5s (a recovery-consumer teammate like crown re-triggers 5×); RED if 1 event, if events precede fullBurstEnd, or if zero heal events exist",
+      "inertness": "Zero heal/recovery events before the first fullBurstEnd; carry damage unmoved when no on-recovery consumer is in the comp",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Full Charge atk, 2 lowest-HP < 30%",
+      "disposition": "GAP",
+      "scope": "conditional heal 2.03% caster Max HP, rides full-charge attacks only",
+      "durationSemantics": "instant per qualifying full-charge shot",
+      "triggerIdentity": "per full-charge shot (shotFired on an RL where every pull is full-charge), GATED on an ally-HP-percentage threshold the v1 engine cannot evaluate (no HP pool — nobody takes damage, all allies pinned at 100%)",
+      "targetSet": "the 2 lowest-HP-percentage allies",
+      "nearestWrongModel": "Ungated heal on EVERY full-charge shot — floods recovery events at Trina's fire cadence and over-drives any on-recovery consumer (crown-style) enormously",
+      "distinguishingAssertion": "Event log contains ZERO per-shot heal/recovery events attributable to skill1 blocks 2-3 across a full run (only the 5-tick fullBurstEnd HoT emits recovery); RED under the ungated reading where recovery events track shot cadence",
+      "inertness": "Must move nothing: no per-shot recovery events, no damage delta with an on-recovery teammate present",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Full Charge atk, 2 lowest-HP < 50%",
+      "disposition": "GAP",
+      "scope": "conditional heal 1.57% caster Max HP, same shape as the 30% tier",
+      "durationSemantics": "instant per qualifying full-charge shot",
+      "triggerIdentity": "same as the 30% tier — HP-threshold gate unevaluable in v1 (immortal-boss, no HP pool)",
+      "targetSet": "the 2 lowest-HP-percentage allies",
+      "nearestWrongModel": "Same as tier 1: ungated per-shot heal; or the two tiers double-stacked (both firing) instead of mutually threshold-gated",
+      "distinguishingAssertion": "Same zero-per-shot-recovery assertion as the 30% tier; additionally no double-emission (2 heal events per shot) anywhere in the log",
+      "inertness": "Must move nothing in v1",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ start of battle → Electric AR allies",
+      "disposition": "FAITHFUL",
+      "scope": "Max HP grant = 44.98% of the SKILL USER'S Max HP (caster-HP-keyed flat grant, NOT % of the target's own Max HP); 'without restoring HP' = stat-only",
+      "durationSemantics": "permanent (start of battle, no duration clause); 'only if self is alive' is always true in v1",
+      "triggerIdentity": "passive (start-of-battle)",
+      "targetSet": "alliesOfElementWeapon element:Electric weapon:AR — NOT all allies, NOT all Electric, NOT all AR; Trina (RL) can never self-match",
+      "nearestWrongModel": "targetMaxHpPct (44.98% of each TARGET's own Max HP) instead of caster-keyed; or target widened to all Electric allies ignoring the AR facet",
+      "distinguishingAssertion": "buffApply events for this stat land ONLY on Electric+AR allies and on no one in a comp lacking any (inert on controlComp if it has no Electric AR); ally-granted Max HP must NOT feed any teammate's atkOfMaxHpPct conversion (e3 rule) — carry damage identical with the block deleted via withPatchedOverride when the carry has an HP→ATK scaler",
+      "inertness": "Offensively inert everywhere (ally HP grants don't feed conversions; Trina has no own HP-scaler); zero damage delta on any comp — but the buff must still EXIST as a future-consumer stat",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ start of battle → 1 leftmost, Invuln 2s",
+      "disposition": "UNMODELED",
+      "scope": "pure defensive (invulnerability); boss deals no damage in v1",
+      "durationSemantics": "2 sec, once at battle start",
+      "triggerIdentity": "passive (start-of-battle)",
+      "targetSet": "the 1 LEFTMOST Electric AR ally (positional slice of the element+weapon pool)",
+      "nearestWrongModel": "Silently dropped without an unmodeled record (silent-drop audit failure) — there is no damage-side misread available",
+      "distinguishingAssertion": "The override's unmodeled.skill2 array carries this line verbatim; no engine block exists for it",
+      "inertness": "Must move nothing (no primitive exists)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ when using Burst Skill → 1 leftmost",
+      "disposition": "FAITHFUL",
+      "scope": "Attack Damage ▲ 94.15% = attackDamagePct (Damage Up bucket, diluted with other Damage-Up sources) — NOT atkPct; plus Reload Speed ▲ 50.82% = reloadSpeedPct, a weapon-state modifier that IS damage (shortens AR reload dead-time → more shots)",
+      "durationSemantics": "both 'for 10 sec' = durationSec 10, refreshed per cast",
+      "triggerIdentity": "burstCast — 'Activates when using Burst Skill' means TRINA'S OWN burst cast, firing pre-FB on rotations SHE bursts; NOT fullBurstEnter (any team FB). Diverges whenever another B2 shares the team; also diverges in apply-timing even solo (cast frame vs FB-start frame)",
+      "targetSet": "the 1 LEFTMOST Electric Code AR ally — positional, single unit; not self (Trina is RL), not all Electric ARs",
+      "nearestWrongModel": "Keyed to fullBurstEnter (over-credits any rotation where a different B2 bursts, and shifts apply-time to FB start); secondary misreads: atkPct instead of attackDamagePct, target widened to all Electric ARs, or reloadSpeedPct skipped as 'defensive'",
+      "distinguishingAssertion": "buffApply for the 94.15 value carries casterIdx=Trina, exactly ONE targetIdx (the leftmost Electric AR), and its frame coincides with Trina's burstCast event, strictly BEFORE that rotation's fullBurstStart; in a comp with a second B2 inserted so Trina does not cast some rotation, NO 94.15/50.82 buffApply occurs that rotation (RED under fullBurstEnter). Deleting the reloadSpeedPct effect alone must reduce the Electric-AR carry's shot count (RED if damage-identical)",
+      "inertness": "Zero buffApply of these values on any non-Electric-AR unit; inert on a comp with no Electric AR ally",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ all allies: MaxHP 20.14% + AtkDmg 20.9%",
+      "disposition": "FAITHFUL",
+      "scope": "two effects: Max HP grant keyed to CASTER's Max HP ('of the skill user's Max HP', stat-only per 'without restoring HP'), and Attack Damage ▲ 20.9% = attackDamagePct team-wide",
+      "durationSemantics": "both 'for 10 sec' — timed, unlike skill2 block1's permanent HP grant",
+      "triggerIdentity": "burstCast (a no-activation-clause line inside the unit's own burst block applies on HER cast); B2 cd 20s so it recurs every rotation she bursts",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "attackDamagePct misfiled as atkPct (wrong bucket — multiplies instead of diluting against other Damage-Up sources); or HP grant as targetMaxHpPct; or the pair keyed to fullBurstEnter",
+      "distinguishingAssertion": "buffApply attackDamagePct 20.9 hits all 5 units at Trina's burstCast frame each rotation and expires 10s later (buffRemove); carry damage-event mult during her FB reflects a DILUTED Damage-Up bucket — adding another attackDamagePct source (e.g. via withPatchedOverride) shifts damage sub-linearly (RED if the 20.9 multiplies as its own bucket like atkPct)",
+      "inertness": "Self Max-HP grant must not create damage (Trina has no atkOfMaxHpPct); no effect persists past 10s",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ enemy count 1: Spread Roots 435.6%",
+      "disposition": "GAP",
+      "scope": "EXTREMELY scoped: boosts only BURST-SKILL damage, and only of burst skills whose text says 'Affects all enemies' (AoE-flavored bursts) — no StatKey in the schema expresses burst-skill-scoped damage; NOT a generic buff of any kind",
+      "durationSemantics": "5 sec (half the 10s window of the other burst effects)",
+      "triggerIdentity": "burstCast, gated on live enemy count == 1 — TRUE on the v1 solo boss, so the gate itself is satisfied; the blocker is the missing stat, not the gate",
+      "targetSet": "all allies",
+      "nearestWrongModel": "THE dominant trap of this kit: 435.6% encoded as generic attackDamagePct/atkPct for 5s — a board-detonating over-credit of ALL damage instead of only AoE-burst-skill damage; second-order misread: applying it to a single-target-burst carry",
+      "distinguishingAssertion": "NO buffApply event with value 435.6 exists anywhere in the run (the line must live in unmodeled.burst verbatim until a burst-skill-scoped stat exists); carry total is IDENTICAL with the line's text deleted from the override. RED the instant any 435.6-valued buff appears",
+      "inertness": "Must move zero damage in the shipped state; normal-attack, skill-proc, and DoT buckets must be untouched even under any future partial model",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ enemy count >2: Wilted Roots 64.46%",
+      "disposition": "GAP",
+      "scope": "same burst-skill-scoped stat as Spread Roots, replacement branch at 64.46%",
+      "durationSemantics": "5 sec",
+      "triggerIdentity": "burstCast gated on enemy count > 2 — NEVER true on the v1 solo boss; doubly inert (gate false AND stat unexpressible)",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Either branch applied unconditionally, or BOTH branches applied simultaneously (the prose says Wilted REPLACES Spread — 'Changes Spread Roots to Wilted Roots' — they are mutually exclusive)",
+      "distinguishingAssertion": "No buffApply with value 64.46 anywhere; if a future model lands, exactly ONE of {435.6, 64.46} may ever be live at a time and on the solo boss it must be the 435.6 branch",
+      "inertness": "Absolutely inert in v1",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Electric AR allies: HitRate + Ammo 20",
+      "disposition": "FAITHFUL",
+      "scope": "Hit Rate ▲ 45.3% = hitRatePct (core-hit lift via hrCoreMult, live by default, ⚑-derived HR→core magnitude per the ALWAYS-⚑ list); Max Ammunition ▲ 20 round(s) = maxAmmoFlat 20 — a FLAT capacity add, which is a weapon-state/damage line (fewer reloads per 10s window, shifts lastBullet cadence)",
+      "durationSemantics": "'for 10 sec' on BOTH — and critically, '▲ 20 round(s)' is a flat AMOUNT, not a durationShots round-count expiry; the duration is the 10 sec",
+      "triggerIdentity": "burstCast (no activation clause, inside her own burst block) — same burstCast-vs-fullBurstEnter divergence as skill2 block3",
+      "targetSet": "alliesOfElementWeapon Electric+AR — not all allies, not the whole team's ammo",
+      "nearestWrongModel": "maxAmmoPct 20 (a 20 PERCENT capacity scale — on a 300-round AR-adjacent belt vs a 60-round AR magazine these differ wildly) instead of maxAmmoFlat 20 rounds; or '20 round(s)' misread as a durationShots expiry; or hitRatePct dropped as 'accuracy is defensive'",
+      "distinguishingAssertion": "During the 10s post-cast window an Electric AR carry's magazine capacity = base×(1+maxAmmoPct)+20 exactly (count shot events between reload events: +20 shots per magazine vs the un-buffed window, RED under a ×1.2 reading on any AR whose base magazine ≠ 100); damage events from that carry inside the window show an elevated core rate vs outside (hrCoreMult live), and both effects vanish at t+10s",
+      "inertness": "Zero ammo/HR change on non-Electric-AR units (e.g. an SR helm); no capacity change outside the 10s window; Trina's own RL ammo-6 unchanged (she is not AR)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:fullBurstEnd 5-tick team HoT (recovery-event emitter)",
+    "skill2:start-of-battle caster-keyed MaxHP grant to Electric AR allies",
+    "skill2:burstCast leftmost-Electric-AR AttackDamage 94.15% /10s",
+    "skill2:burstCast leftmost-Electric-AR ReloadSpeed 50.82% /10s",
+    "burst:burstCast all-allies AttackDamage 20.9% /10s (+caster-keyed MaxHP 20.14%)",
+    "burst:burstCast Electric-AR HitRate 45.3% /10s",
+    "burst:burstCast Electric-AR maxAmmoFlat +20 /10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when attacking with Full Charge. Affects the target(s) if the HP of 2 ally unit(s) with the lowest HP percentage is lower than 30%. Recovers 2.03% of the skill user's final Max HP as HP.",
+      "■ Activates when attacking with Full Charge. Affects the target(s) if the HP of 2 ally unit(s) with the lowest HP percentage is lower than 50%. Recovers 1.57% of the skill user's final Max HP as HP."
+    ],
+    "skill2": [
+      "■ Activates at the start of battle. Affects the 1 leftmost Electric Code ally unit(s) with assault rifles. Invulnerable for 2 sec."
+    ],
+    "burst": [
+      "■ Activates when enemy count aside from Nikkes is 1. Affects all allies. Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
+      "■ Activates when enemy count aside from Nikkes is more than 2. Affects all allies. Changes Spread Roots to Wilted Roots. Wilted Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 64.46% for 5 sec."
+    ]
+  },
+  "notes": "Three reconciliation points where I expect a shared-prior misread. (1) SPREAD ROOTS IS THE TRAP: the enemy-count-1 gate IS satisfied on the v1 solo boss, which tempts modeling the 435.6% — but no StatKey expresses 'Burst Skill damage of AoE-flavored bursts'; any encoding as attackDamagePct/atkPct is a catastrophic over-credit and the tests must assert NO 435.6-valued buffApply exists at all. If the driver modeled it via some proxy, that is a divergence to fight, not echo. (2) TRINA IS THE SOLE B2 IN controlComp-style teams only if she REPLACES crown — but the harness controlComp hardcodes crown at B2, so a Trina test comp must swap her in; with both B2s present the rotation alternates casters and burstCast-vs-fullBurstEnter for skill2 block3 and both burst blocks becomes observable — the tests SHOULD build exactly that two-B2 comp for the discriminating assertion. (3) ALL of Trina's damage-bearing output is gated on an Electric AR ally existing and, for two lines, on the LEFTMOST such ally: tests need (a) a comp with an Electric AR carry (none of liter/crown/helm qualifies — verify the chosen carry's element+weapon from characters.json, per the exact-slug rule), (b) an inertness run on a no-Electric-AR comp asserting Trina moves nothing except the team-wide 20.9% Attack Damage and the heal events, and (c) a two-Electric-AR comp asserting the leftmost-only slice (exactly one targetIdx on the 94.15 buffApply). Lesser traps: '▲ 20 round(s)' is maxAmmoFlat-with-durationSec-10, neither a percent nor a durationShots; skill1's HoT must emit 5 discrete recovery events (ticks:5) or on-recovery consumers under-fire; both Max HP grants are caster-Max-HP-keyed and offensively inert (e3 rule) but must exist as buffs. Evidence tiers are all DATAMINED (magnitudes literal in prose); the only ⚑ is the engine-global HR→core conversion behind hitRatePct.",
+  "model": "claude-fable-5"
+}

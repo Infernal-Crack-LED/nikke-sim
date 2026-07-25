@@ -1,0 +1,81 @@
+{
+  "slug": "takina",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "start-battle & FB-end: ATK ▲80.04% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "self atkPct 80.04 durationSec5 — passive block (battle start) + fullBurstEnd block (refresh)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB-enter: True Damage ▲35.05% 15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstEnter → self trueDamagePct 35.05 durationSec15"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all enemies: Damage Taken ▲10.09% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "interval(⚑20s) → enemy damageTakenPct 10.09 durationSec5 (boss debuff)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stuns for 2 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "CC; enemy-stun inert on immortal partless boss (resolveTargets enemy→[]) → unmodeled"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all allies: True Damage ▲140.49% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "interval(⚑20s) → allies trueDamagePct 140.49 durationSec10"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes weapon; Damage 200.64%; 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast → self weaponSwap damagePct200.64 durationSec10 (⚑ cadence/ammo)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self: Normal attacks deal true damage 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "damage-type conversion of swap shots; no schema primitive → unmodeled + caveat"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "targets hit: Damage Taken ▲6.04% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shotFired + swapGate:swapped → enemy damageTakenPct 6.04 durationSec5 (per-hit refresh)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[*].trigger.sec",
+      "estimate": "interval sec = 20 (both skill2 groups)",
+      "reasoning": "Kit prose gives NO activation clause for skill2 → interval per the no-clause rule. Skill cooldown is not in the prose and datamined skill CDs are unreliable; 140.49% ally True-Damage (10s dur) uptime hinges on it (CD~20s → ~50% uptime).",
+      "recipe": "Datamine skillCooldownsSec for takina S2, then pin first-fire phase (t=CD vs t=0) by watching when the ally True-Damage / enemy Damage-Taken popup first appears in footage."
+    },
+    {
+      "field": "burst[0].effects[0] (weaponSwap pullsPerSec/maxAmmo/maxShots/weapon)",
+      "estimate": "left unset → defaults to base SR (ammo 6, chargeFrames 60); likely UNDER-credits",
+      "reasoning": "Weapon-swap shot economy is kit-silent (ALWAYS-⚑). 200.64%/shot over 10s; if the swap is a fast/uncharged weapon the base SR cadence badly undercounts shots. Guessing a precise cadence blind would be fabrication.",
+      "recipe": "Count normal-attack popups inside the 10s burst window in a Takina burst recording → derive shots/sec and magazine; set weaponSwap.pullsPerSec/maxAmmo/maxShots (and weapon class if it changes)."
+    },
+    {
+      "field": "burst 'normal attacks deal true damage' (unmodeled)",
+      "estimate": "0 damage change modeled",
+      "reasoning": "No effect primitive converts a weapon's shots to true-damage type. Effect is nonzero only if the sim reduces normal damage by boss DEF (true damage would bypass it).",
+      "recipe": "Confirm whether the sim applies boss DEF to normal hits; if so, add a swap-scoped true-damage routing or an equivalent Damage-Up compensation calibrated to the observed burst popups."
+    },
+    {
+      "field": "skill1[0] passive+durationSec encoding",
+      "estimate": "start-of-battle ATK ▲80.04% for 5s via passive buff w/ durationSec:5",
+      "reasoning": "No dedicated battle-start trigger exists; passive is the only t=0 apply. Correct ONLY if the engine expires passive buffs at durationSec; if passive is permanent, this over-credits a huge ATK buff.",
+      "recipe": "Confirm passive+durationSec expiry in sim.ts; if unsupported, drop this block (keep only the fullBurstEnd refresh) and accept the tiny opening-5s undercredit."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

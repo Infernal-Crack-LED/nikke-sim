@@ -1,0 +1,203 @@
+{
+  "slug": "velvet",
+  "resources": [
+    {
+      "name": "ammoPouch",
+      "initial": 6000,
+      "min": 0,
+      "max": 6000
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "ammoPouch",
+          "delta": 6000
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "ammoPouch",
+          "delta": 6000
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "fbGate": "outFb",
+      "resourceGate": {
+        "name": "ammoPouch",
+        "min": 100
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 30.5,
+          "durationSec": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 30.5,
+          "durationSec": 3
+        },
+        {
+          "kind": "resource",
+          "name": "ammoPouch",
+          "delta": -100
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "fbGate": "inFb",
+      "resourceGate": {
+        "name": "ammoPouch",
+        "min": 300
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 25.2,
+          "durationSec": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 100.8,
+          "durationSec": 3
+        },
+        {
+          "kind": "resource",
+          "name": "ammoPouch",
+          "delta": -300
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50
+      },
+      "fbGate": "inFb",
+      "resourceGate": {
+        "name": "ammoPouch",
+        "min": 300
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 15.03,
+          "durationSec": 5
+        },
+        {
+          "kind": "resource",
+          "name": "ammoPouch",
+          "delta": -300
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50
+      },
+      "fbGate": "inFb",
+      "resourceGate": {
+        "name": "ammoPouch",
+        "min": 300
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 400.92
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 7,
+          "durationSec": 10,
+          "pullsPerSec": 12
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 34.52,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Bullet Snatch Effect 1: Affects all enemies. Removes 5% of ammo. (No enemy entity in the sim — resolveTargets({enemy}) is empty; inert. Recorded for completeness.)"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ ammoPouch gating vs infinite-refill: skill1 says the fill is 'continuous and cannot be removed'. If that means the pouch is CONTINUOUSLY topped to 6000, every resourceGate/spend here is cosmetic and all buffs fire unconditionally — DELETE the gates. Modeled as a per-rotation refill pool (baseline). This decides whether skill2's charge buff / 50-hit proc can ever be ammo-starved.",
+    "⚑ swap-weapon economy: burst weaponSwap.pullsPerSec (=12 est), weapon-class, and maxAmmo are all kit-silent. The 7%/shot rapid weapon must fire fast enough to land 50 normals within the 10s FB and to keep skill2's charge buff refreshed.",
+    "⚑ 'Full Charge' identity of swap shots: skill2's ally-buff block triggers on 'attacking with Full Charge during FB'. Assumed the burst swap-weapon shots each count as a full charge (only way the charge buff and the 50-normal counter both fire in-FB). If false, skill2 block1 never triggers and the support value collapses.",
+    "⚑ 50-normals counting is 'during Full Burst' only; engine hitCount counts ALL hits. Out-of-FB base-SR shots should not count. Modeled with fbGate:'inFb' as a proxy (her only rapid fire is the in-FB swap weapon), but true FB-only counting is not expressible — verify proc frequency."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Velvet (SR/Wind/Supporter/Burst II) is an ammo-pouch supporter: skill1 refills a 6000-round pouch at battle start + BS2 entry and self-buffs (ATK/Attack-Damage +30.5%, 3s) on each out-of-FB full charge; skill2 is the payload — on each in-FB full-charge shot it grants ALL allies ATK ▲25.2%-of-caster + Charge Damage ▲100.8% (3s, refreshed) for 300 pouch rounds, and after 50 in-FB normals deals 400.92% additional damage + self Attack-Damage ▲15.03%. Burst swaps to a rapid weapon (7%/shot, 10s) with self Attack-Damage ▲34.52%. Charge Damage ▲100.8% is the board-relevant headline for charge-based carries. Load-bearing unknowns are the pouch refill semantics (may be infinite → drop gates), swap fire rate/class, and whether swap shots register as full charges."
+}

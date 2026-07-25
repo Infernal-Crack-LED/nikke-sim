@@ -12,6 +12,16 @@
 // `--tokens` = the target's ANSWER TOKENS (signature magnitudes + mechanic names) that must not appear outside
 // the kit-prose block. The driver supplies them (it knows the kit). The kit prose itself legitimately contains
 // them and is excluded from the leak check.
+//
+// TOKEN COVERAGE (hard-won 2026-07-24): the leak assertion only catches tokens the DRIVER supplies, so an
+// under-supplied list leaks. Supply BOTH the signature MAGNITUDES (e.g. "256.17") AND the signature mechanic/
+// resource/status NAMES (e.g. "Designated Target", a resource-pool name) — a types.ts comment that states the
+// unit's own value OR names its mechanic leaks the answer if that token is missing (soda-twinkling-bunny leaked
+// the chip economy via a comment until the name was added). The script prints an advisory TOKEN HINT listing
+// prose magnitudes that also appear in types.ts but are absent from --tokens. Conversely, do NOT over-redact:
+// schema/methodology lines naming OTHER units are legitimate (they don't leak the target) — stripping them
+// starves the blind role of vocabulary (snow-white RECON_ERROR: a trueNormals line naming another unit was
+// over-redacted). Redact only lines naming the TARGET or its answer tokens.
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -110,6 +120,26 @@ const redactedSchema = schemaLines
   .join('\n');
 leakCheck('redacted schema (types.ts)', redactedSchema);
 
+// ---- 2b. TOKEN HINT (advisory — catches under-supplied --tokens) ------------------------------
+// The leak assertion only catches tokens the driver supplied. If a types.ts comment states one of the unit's
+// OWN magnitudes and that magnitude isn't in --tokens, the redacted schema keeps the line and leaks the answer.
+// List every distinctive kit-prose magnitude (2+ decimals) that also appears in types.ts but is NOT a token, so
+// the driver can add it. Advisory only (console.warn) — does not change redaction or the fail-on-leak behavior.
+const schemaText = schemaLines.join('\n');
+const proseMagnitudes = Array.from(new Set(prose.match(/\d+\.\d{2,}/g) ?? []));
+const missingTokens = proseMagnitudes.filter(
+  (m) =>
+    schemaText.includes(m) &&
+    !tokens.some((t) => t.includes(m) || m.includes(t)),
+);
+if (missingTokens.length) {
+  console.warn(
+    `\n⚠ TOKEN HINT: these kit-prose magnitudes also appear in types.ts but are NOT in --tokens:\n  ${missingTokens.join(
+      ', ',
+    )}\n  If a types.ts comment states one of the unit's own values, add it to --tokens so redaction strips that\n  line. Also include signature mechanic/resource/status NAMES (not just numbers). Lines naming OTHER units\n  are legitimate — do NOT over-redact them.\n`,
+  );
+}
+
 // ---- 3. redacted methodology (strip lines naming the target) ----------------------------------
 const methLines = readFileSync(
   join(HERE, 'redacted-methodology.md'),
@@ -131,6 +161,10 @@ writeFileSync(join(outDir, 'types-redacted.ts'), redactedSchema);
 // All generic infrastructure (true for every unit) — exposes NO answer tokens, so it preserves
 // blindness; the per-packet leak assertion below still runs over it.
 const harnessNote = `=== HARNESS API (scripts/tests/lib/harness.ts) ===
+Imports (ESM, .js extensions, relative to scripts/tests/units/<slug>.test.ts):
+  import { describe, expect, it } from 'vitest';
+  import type { SimEvent } from '../../../src/types.js';
+  import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
 controlComp(carry, helm?=true) → CompOptions (liter B1 / crown B2 / carry B3 / helm B3, boss Fire, focus carry). A lone Burst III unit makes ZERO full bursts — the fixture MUST include B1+B2 so bursts actually cast.
 runComp(opts) → SimResult (deterministic, no seed).
 totals(res) → Record<slug, number>: a PER-SLUG MAP keyed by unit slug → that unit's totalDamage. Index totals(res)[slug]; it is NOT a scalar.

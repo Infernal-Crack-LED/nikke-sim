@@ -1,0 +1,164 @@
+{
+  "slug": "snow-white-heavy-arms",
+  "kitDescription": "Snow White: Heavy Arms is a Water SR Attacker (Burst III) who charges her weapon; while charging she designates Lock-On targets (max 5) and loads Auto Fire ammo, then on Full Charge fires an AoE hit to all enemies plus a sequence of stronger shots against Lock-On targets that scales with the ammo she loaded. Her Burst enters 'Seven Dwarves Fully Active' — for two uses it lengthens her charge to 3.2s and massively raises Lock-On/ammo caps plus charge- and sequential-damage, producing a large burst-window volley. She layers self ATK buffs on Full Charge (46.84%), on entering Burst Stage 3 (73.92%), and during Burst (84.48% + attack-damage), and stacks a Damage-Taken debuff on Lock-On enemies (4.2%/4s). Against a partless Fire boss she carries Water elemental advantage, while her Damage-to-Parts (62.64%) and Pierce buffs are inert there.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": [
+      "Literal S5 counterfactuals no-op against the driver schema (scan ov.blocks[] not skill1/skill2/burst; 2-arg vs 3-arg harness; totalDamage vs total) — RECON_ERROR from schema-blindness, not a real divergence. Intent-remapped assertions (atkPct 73.92, atkPct 46.84, attackDamagePct 84.48, chargeDamagePct 528 Fully-Active-gated, sequential* 158.4) all converge GREEN on the driver's shipped override."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "0.2s charging: Lock-On nearest enemy",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled (targeting bookkeeping)",
+        "blindSaid": "S6 also unmodeled",
+        "formulaCheck": "targeting-only; no damage bucket routing",
+        "fireRateOk": true,
+        "explanation": "Designation mechanic; solo-raid partless boss has one target. Deliberately unmodeled, documented in note."
+      },
+      {
+        "kitLine": "0.2s charging: Auto Fire Ready, DEF +42.24%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled (DEF 42.24 + ammo bookkeeping)",
+        "blindSaid": "S6 encoded defPct 42.24 — INERT",
+        "formulaCheck": "self DEF has no offensive bucket; ammo count feeds the sequential volley size handled by riders",
+        "fireRateOk": true,
+        "explanation": "Both agree DEF 42.24 is inert on damage; blind's encoding vs driver's skip are damage-equivalent. RECON-level, no finding."
+      },
+      {
+        "kitLine": "Lock-On enemies: Dmg Taken +4.2% 4s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1[0] passive damageTakenPct 4.2 on enemy",
+        "blindSaid": "S6 SAME; S2b SAME (~100% uptime, single-instance)",
+        "formulaCheck": "damageTakenPct on boss taken-bucket; 0.2s refresh of 4s window => permanent steady-state",
+        "fireRateOk": true,
+        "explanation": "Boss-held debuff (casterIdx/targetIdx null, keyed 2:skill1:damageTakenPct:4.2). Single-instance permanent is correct."
+      },
+      {
+        "kitLine": "Full Charge: 41.9% ALL + 105.59% Lock-On seq",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1[1] flatDamage 41.9 + flatDamage 527.95 flavor:sequential (105.59x5 baseline)",
+        "blindSaid": "S6 INDEPENDENTLY derived 41.9 + 527.95; S2b FAITHFUL (flavor MUST be sequential)",
+        "formulaCheck": "riders take +50% FB major by landing, +30% range OFF; seqMult built from sequentialDamagePct",
+        "fireRateOk": true,
+        "explanation": "Blind convergence on the x5=527.95 lump is the real signal. Fires x84 shots per driver test W5/W6."
+      },
+      {
+        "kitLine": "Full Charge while Fully Active: uses -1",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst[1] weaponSwap maxShots:2 (uses-based termination)",
+        "blindSaid": "S6 documented uses as durationShots:2 / UNMODELED swap; S2b FAITHFUL maxShots not 10s window",
+        "formulaCheck": "maxShots:2 ends swap after 2nd swapped shot; a 10s window would admit a 3rd 3.2s shot ~9.6s",
+        "fireRateOk": true,
+        "explanation": "S2b explicitly confirms uses-based (maxShots) over a naive 10s window. Driver correct."
+      },
+      {
+        "kitLine": "normal attack not in FB: removes Fully Active",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled",
+        "blindSaid": "not modeled",
+        "formulaCheck": "state-management; no bucket",
+        "fireRateOk": true,
+        "explanation": "Fully Active is consumed via maxShots within the FB window; the out-of-FB removal path is not exercised in the sole-B3 burst rotation. Documented."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "battle start: fix charge time 1.2s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled (charge-time clamp)",
+        "blindSaid": "S6 UNMODELED",
+        "formulaCheck": "charge cadence (base chargeFrames 72 = 1.2s already); no damage bucket",
+        "fireRateOk": true,
+        "explanation": "Base charge is already 1.2s; the clamp is behaviorally moot outside Fully Active. Documented."
+      },
+      {
+        "kitLine": "Full Charge: Pierce 5s + ATK +46.84% + Parts +62.64%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill2[0] atkPct 46.84 (5s) + partsDamagePct 62.64 (5s); Pierce unmodeled",
+        "blindSaid": "S6 SAME minus pierce; S2b atk near-permanent FAITHFUL, parts inert FAITHFUL",
+        "formulaCheck": "atkPct in ATK bucket; partsDamagePct inert on partless boss; Pierce inert vs partless",
+        "fireRateOk": true,
+        "explanation": "0.2s-refreshed 5s => near-permanent ATK. Parts+Pierce faithfully encoded but inert on the partless scope-lock boss (W13 byte-identical). Pierce skip documented."
+      },
+      {
+        "kitLine": "enter Burst Stage 3: ATK +73.92% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill2[1] stageEnter:3 atkPct 73.92 (10s) self",
+        "blindSaid": "S6 chose burstCast trigger — coincides in sole-B3; S2b FAITHFUL",
+        "formulaCheck": "atkPct ATK bucket; trigger stageEnter:3 is the literal prose ('entering Burst Stage 3')",
+        "fireRateOk": true,
+        "explanation": "Driver encodes literal prose trigger. Residual (a): stageEnter:3 vs blind's burstCast is frame-indiscriminable in a sole-B3 fixture — owner spot-check, not a failure."
+      },
+      {
+        "kitLine": "Full Charge+Fully Active: ChgDmg +528% + SeqDmg +158.4%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill2[2] chargeDamagePct 528 + sequentialDamagePct 158.4 (10s, whileSwapped)",
+        "blindSaid": "S6 chargeDamagePct 528 durationShots:2 + sequentialMultPct 158.4 durationShots:2",
+        "formulaCheck": "chargeDamagePct 528 ADDITIVE charge points (2.5+5.28=7.78, probe-verified consumed); sequentialDamagePct = engine's additive seq bucket (fact c)",
+        "fireRateOk": true,
+        "explanation": "Charge 528 verified applied (W15 swap normals charge 7.78 vs 2.5). Duration rep (whileSwapped/10s vs durationShots:2) is same equivalence class — both buff exactly the 2 swap shots. sequentialDamagePct is the engine-real key; blind's sequentialMultPct was a schema guess."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "self: Attack Damage +84.48% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst[0] burstCast attackDamagePct 84.48 (10s) self",
+        "blindSaid": "S6 SAME; S5 emitted + self-scoped (helm inert) ✓",
+        "formulaCheck": "attackDamagePct in damageUp bucket; self-scoped",
+        "fireRateOk": true,
+        "explanation": "Fires on burstCast; W17 counterfactual (fullBurstEnter) fires strictly after cast, discriminating the trigger."
+      },
+      {
+        "kitLine": "Fully Active: 2 uses, 3.2s charge, +10 LockOn, +10 ammo",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst[1] weaponSwap damagePct 69.04 chargeTimeSec 3.2 maxShots 2; the 1055.9 extra volley on skill1[2] swapGate:swapped",
+        "blindSaid": "S6 did NOT model weaponSwap/1055.9 — approximated via S2 buffs + x5 lump, documented 5->15 ammo swell as UNMODELED",
+        "formulaCheck": "maxShots:2 uses-based; swapGate:swapped confines the +10-ammo extra (105.59x10=1055.9) to the 2 swap full-charge shots",
+        "fireRateOk": true,
+        "explanation": "DRIVER IS MORE COMPLETE than the blind: it models the 15-ammo swap volley (527.95 baseline + 1055.9 extra) and the 3.2s weaponSwap charge mode. W7/W18 verify exactly 2/burst swap shots, remove weaponSwap -> 0."
+      },
+      {
+        "kitLine": "all destructible projectiles: 41.9% final ATK",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled",
+        "blindSaid": "S6 UNMODELED",
+        "formulaCheck": "no destructible projectiles on the partless scope-lock boss",
+        "fireRateOk": true,
+        "explanation": "Target set absent on the validation boss. Documented."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2[2] sequentialDamagePct 158.4",
+      "summary": "sequentialDamagePct 158.4 is encoded faithfully but INERT on flatDamage riders — the engine flatDamage path does not route flavor:'sequential' into the seqMult bucket (measured seqMult=1 on both 527.95 and 1055.9 lumps).",
+      "evidence": "Kit: 'Sequential attack damage +158.4% for 1 round(s)'; SSOT: seqMult built from sequentialDamagePct only for flavor:'sequential' hits (sim.ts:1413); fact (c): engine flatDamage path drops the routing. Driver encodes prose faithfully (W16 emission pin); blind guessed multiplicative key sequentialMultPct.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "No override edit — this is src/engine/** plumbing (out of gauntlet scope: gauntlet must not touch the engine). The prose is faithfully encoded; the 158.4 is a small support-diluted contribution. Owner spot-check: route flatDamage flavor:'sequential' riders into seqMult if the sequential-damage bucket should apply."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Every kit line is FAITHFUL or a DOCUMENTED_GAP — faithfulness 1.0, no REAL-GOTCHAs. The two blind re-derivations converge on the load-bearing structure: S6 independently derived the 41.9 + 527.95 (105.59x5) sequential lump and the 4.2% boss debuff, and S5's intent-remapped assertions (atkPct 73.92/46.84, attackDamagePct 84.48, chargeDamagePct 528 Fully-Active-gated, sequential 158.4) all green against the shipped override. The S5 literal RED diffs (§6 i-iii — ov.blocks[] vs skill1/skill2/burst accessor, 2-arg harness, totalDamage field) are RECON_ERROR from schema-blindness, not divergences. The one substantive stat-key divergence (blind's sequentialMultPct vs driver's sequentialDamagePct, §6 iv) resolves in the driver's favor: sequentialDamagePct is the engine-real additive key, and both are inert-on-riders per fact (c). The driver is notably MORE complete than the S6 blind, which did not model the weaponSwap/1055.9 fifteen-ammo Fully Active volley or the 3.2s charge mode. Discrimination is real (each FAITHFUL line green-vs-shipped and red-vs-nearest-wrong, 30/30 S2d PASS). Three documented residuals for owner spot-check, none faithfulness failures: (a) stageEnter:3 vs burstCast is frame-indiscriminable in a sole-B3 fixture; (b) whileSwapped/durationSec:10 vs durationShots per-swap is a damage-equivalent duration representation; (c) sequentialDamagePct 158.4 is inert on flatDamage riders — an engine-core plumbing question, out of gauntlet scope. Same-model residual: S5/S6 are both claude-opus-4-8 (S2b is fable-5), so convergence proves stability more than independent correctness — the owner should spot-check the sequentialDamagePct routing (fact c) and the stageEnter-vs-burstCast trigger in a non-sole-B3 comp.",
+  "model": "claude-opus-4-8"
+}

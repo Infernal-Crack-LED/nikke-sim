@@ -1,0 +1,62 @@
+{
+  "slug": "zwei",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "FB-enter: Pierce Dmg ▲20.13% 1 round",
+      "disposition": "FAITHFUL (inert-for-damage until pierce-tagged; buff still applied)",
+      "assertion": "buffApply casterIdx=ZWEI stat=pierceDamagePct value=20.13 has durationShots===1 and expiresFrame===null; targets all 4 allies. FAILS under the 'for N round(s)'→durationSec:1 seconds-trap (expiresFrame=frame+60) and under a self-scoped target."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB-enter: Pierce Dmg ▲10.06% 10s",
+      "disposition": "FAITHFUL (inert-for-damage until pierce-tagged)",
+      "assertion": "value=10.06 has expiresFrame-frame===600 and NO durationShots; all 4 allies. FAILS if modeled as a round count or self-only."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "normal atk in FB: Pierce ▲24.99% x3 1rd",
+      "disposition": "FAITHFUL (shotFired + fbGate:inFb, maxStacks 3, durationShots 1)",
+      "assertion": "value=24.99 durationShots===1; application COUNT > the once-per-FB 20.13 count (per-shot, not FB-enter); every application frame inside a fullBurstStart→End window. FAILS if mis-keyed to fullBurstEnter (count collapses to ~Z1a) or ungated on FB."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 5 normals: Restore 7.52% Cover HP",
+      "disposition": "GAP (heal → recovery trigger; no HP pool, no heal event kind)",
+      "assertion": "it.skip — observable only via a teammate on-recovery consumer whose buff signature is unknowable blind, and masked by crown/helm heals saturating that consumer."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB-enter: Critical Rate ▲18.63% 10s",
+      "disposition": "FAITHFUL (generic critRatePct, allies, fullBurstEnter)",
+      "assertion": "buffApply value=18.63 reaches ALL_ALLIES per frame (self-scope collapses to {ZWEI}=RED), expiresFrame-frame===600 (not rounds), once-per-FB frame count. Clean generic-crit discriminator that fires even without zwei bursting."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "normal atk in Pierce-Attacks-101: Crit ▲15% 5s x3",
+      "disposition": "FIX/GAP (magnitude faithful; ally-self-status GATE has no schema primitive — approximated as post-burst window)",
+      "assertion": "value=15, expiresFrame-frame===300; every application frame >= first zwei burstCast (an ungated-from-t=0 model applies it before the first burst = RED). Gate is a documented approximation."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self: weapon swap 50.69%/300%/1ammo/+Pierce",
+      "disposition": "FAITHFUL (weaponSwap; ⚑ durationSec kit-silent for a B1 unit)",
+      "assertion": "zwei's own total != no-swap counterfactual; a teammate's total near-inert (<2%, self-scoped). Couples on zwei actually bursting (fixture sanity guard)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "allies: 'Pierce Attacks 101' Pierce Dmg ▲25.03% 10s",
+      "disposition": "FAITHFUL + ⚑ INTERPRETIVE (status name ⇒ gainPierce(allies,10s) is my read; this is the load-bearing grant)",
+      "assertion": "PAYLOAD: teammate (liter) total DROPS both when all pierceDamagePct are zeroed AND when the gainPierce grant is removed. If the driver read the status as a bare label (no grant), all pierce buffs stay inert and BOTH assertions go RED — the intended convergence divergence."
+    }
+  ],
+  "fixtures": "controlComp('zwei') = [liter B1, crown B2, zwei (B1!) support-slot, helm B3], boss Fire, focus zwei. Deterministic, no seed. Teammate read off liter (slot 0). CRITICAL CAVEAT: zwei is BURST I and collides with liter — the team still reaches Full Burst via liter→crown→helm, so the two FB-ENTER lines (Z1, Z4) are exercised regardless, but Z5/Z6/Z7 need zwei to actually cast. The `fixture sanity` test asserts zweiBursts>0; if RED the swap/grant/status assertions are known-vacuous and the comp must be rebuilt with zwei occupying the B1 slot. helm left ON (its Water buffs don't confound pierce/crit reads on a Fire boss).",
+  "gaps": [
+    "Z3 (skill2 heal 7.52% Cover HP after 5 normals): it.skip — no HP pool + no recovery/heal event kind on cfg.onEvent; observable only through a tandem on-recovery consumer whose buff signature is unknowable blind and is masked by crown's + helm's own heals.",
+    "Z5 gate: 'while in Pierce Attacks 101 status' has no ally-self-status gate primitive in the schema (requiresTargetStatus is boss-only) — asserted via a post-burst-window approximation, not the true status gate.",
+    "Z6 swap durationSec: kit-silent for a Burst I unit (no fixed FB window) — ⚑ estimate; the test only asserts self-vs-inert directionally, not the exact swap window length.",
+    "Z1/Z2 buffApply assertions assume an inert-for-damage pierceDamagePct buff is still EMITTED as a buffApply event (application ≠ damage consumption). If the engine suppresses buffApply for damage-inert stats, these degrade to GAP and the round-vs-seconds trap can only be pinned via the Z7 damage channel."
+  ],
+  "model": "claude-opus-4-8"
+}

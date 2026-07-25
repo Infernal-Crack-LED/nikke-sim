@@ -1,0 +1,135 @@
+{
+  "slug": "velvet",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates start of battle + enter BS2",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger split: passive (t0 refill) + stageEnter stage:2 (per-rotation refill)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "All enemies: Removes 5% of ammo",
+      "status": "SKIPPED",
+      "effectOrReason": "No enemy entity in sim; recorded in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Self: fill ammo pouch 6000, max 6000",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resource ammoPouch delta:+6000 (initial 6000, max 6000)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge while NOT in Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired + fbGate:'outFb' (SR shot = full charge)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Expends 100 rounds",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resource ammoPouch delta:-100 + resourceGate min:100"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 30.5% for 3 sec (self)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 30.5 durationSec:3"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack Damage ▲ 30.5% 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 30.5 durationSec:3"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge DURING Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired + fbGate:'inFb' (swap shots assumed full-charge — ⚑)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Self: expends 300 rounds",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resource ammoPouch delta:-300 + resourceGate min:300"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "All allies ATK ▲25.2% of user ATK 3s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 25.2 durationSec:3, target allies"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "All allies Charge Damage ▲100.8% 3s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 100.8 durationSec:3, target allies (headline)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "After landing 50 normal attacks in FB",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:50 + fbGate:'inFb' (FB-only counting is proxy — ⚑)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Self: expends 300 rounds",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resource ammoPouch delta:-300 (in self block)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Self Attack Damage ▲15.03% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 15.03 durationSec:5"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Target: 400.92% of final ATK add'l dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 400.92, target enemy (FB by timing, no core/crit stated)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes weapon: 7% final ATK, 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap damagePct:7 durationSec:10 (pullsPerSec/class/ammo ⚑)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 34.52% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 34.52 durationSec:10, self"
+    }
+  ],
+  "flags": [
+    {
+      "field": "resources.ammoPouch / all resourceGate+resource blocks",
+      "estimate": "Per-rotation pool: 6000, refilled at t0 + each BS2 entry, spent -100/-300 per proc",
+      "reasoning": "Kit says the fill is 'continuous and cannot be removed'. This may instead mean the pouch is CONTINUOUSLY auto-topped to 6000, in which case no proc is ever ammo-starved and the gates over-restrict (esp. the 50-hit proc and later charge-buff refreshes once >20 in-FB shots spend >6000).",
+      "recipe": "Watch a fight: does skill2's Charge-Damage buff ever lapse mid-FB, or does the 50-hit 400.92% proc fail to fire late in long FBs? If never starved → delete resources+gates, make all buffs unconditional."
+    },
+    {
+      "field": "burst[0].effects[0].weaponSwap.pullsPerSec / weapon / maxAmmo",
+      "estimate": "pullsPerSec 12 (SMG-like); weapon-class and maxAmmo unset",
+      "reasoning": "Datamine rate_of_fire is unreliable and the swap economy is kit-silent. 7%/shot implies a rapid weapon; it must fire fast enough to (a) land 50 normals inside the 10s FB and (b) refresh skill2's 3s charge buff. Class drives auto-core rate; maxAmmo/reload drives shot count.",
+      "recipe": "Datamine the burst swap shot_id (fire rate, magazine, class) OR count her shots per burst window in footage; set pullsPerSec/weapon/maxAmmo accordingly."
+    },
+    {
+      "field": "skill2[0].trigger (shotFired+fbGate:inFb) — 'Full Charge' identity of swap shots",
+      "estimate": "Swap-weapon shots each count as a Full Charge (so skill2 block1 fires during FB)",
+      "reasoning": "skill2's ally buff and the 50-normal counter both key off in-FB attacks. Velvet's base SR charges slowly; only the burst swap weapon can produce enough in-FB shots. Assumed the swap weapon fires full-charge shots. If it fires plain normals, block1 never triggers and Velvet's entire ally-support value disappears.",
+      "recipe": "Confirm in footage that ally Charge Damage / ATK buff icons apply during Velvet's own burst (i.e., her swap shots satisfy the 'Full Charge during FB' clause)."
+    },
+    {
+      "field": "skill2[1..2].trigger hitCount count:50 (FB-only counting)",
+      "estimate": "count:50 with fbGate:'inFb' as a proxy for 'during Full Burst' only",
+      "reasoning": "Engine hitCount counts ALL cumulative hits; the kit counts only normals landed during FB. Approximated by fbGate (her rapid fire is FB-only via the swap), but out-of-FB base-SR shots would still increment the raw counter — over-counting could pull the proc earlier than real.",
+      "recipe": "Measure how often the 400.92% add'l-damage popup appears (per-FB vs per-N-FBs); if the engine can't restrict counting to FB, adjust count to match observed cadence."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

@@ -1,0 +1,40 @@
+=== S2d INDEPENDENT VERIFICATION MATRIX — volume (kit-autonomy gauntlet 2026-07-24) ===
+Test file: scripts/tests/units/volume.test.ts (driver-authored S2a; reconciled vs blind S2b fable).
+Gate: every FAITHFUL pin GREEN vs shipped; every DISCRIMINATING assertion provably differs from its
+      nearest-wrong counterfactual (no test green-under-both → none vacuous). No self-reported RED.
+Fixture: [volume(B1) / crown(B2) / helm(B3)], boss Iron (Wind ×1.10), focus volume, deterministic.
+Base run: Volume casts = 10, team Full Bursts = 5 (burstCast 10 != fullBurstEnter 5 → trigger identity
+          is count-discriminable in this sole-B1 comp).
+
+----- (i) vs UNMODIFIED SHIPPED override (already faithful — parser-baseline merged + S1 bug fixed) -----
+ ✓ scripts/tests/units/volume.test.ts (12 tests) 11ms
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   (No S3 fix required: the shipped override is already faithful, so every line is a GREEN pin, not a FIX.)
+
+----- DISCRIMINATION — each PIN is GREEN vs shipped AND RED under its named nearest-wrong counterfactual -----
+GREEN vs shipped | differs (RED pin) | V1 kill-gated ATK UNMODELED
+     PIN(shipped):     atkPct 12.6 from volume = 0  (skill1 empty — boss never dies, trigger never fires)
+     PIN(nearest-wrong): atkPct 12.6 from volume = 1  (passive permanent self buff — the pre-gauntlet misread)
+GREEN vs shipped | differs (RED pin) | V2 burstCdr FIRE-RATE (modeled != working)
+     PIN(shipped):     volume casts base=10 > no-block=9  (the burstCdr refund accelerates her own cadence)
+     PIN(nearest-wrong): block absent → 9 > 9 = false  (an inert/absent encoding fails the fire-rate check)
+GREEN vs shipped | differs (RED pin) | V2 burstCdr TRIGGER fullBurstEnter != burstCast
+     PIN(shipped):     burstCast-trigger casts=13 > base=10  (burstCast over-applies the 5-activation refund)
+     PIN(nearest-wrong): fullBurstEnter base=10 (5 activations) vs burstCast=13 (10) — provably distinct
+GREEN vs shipped | differs (RED pin) | V3 critDamage ESCALATING ladder
+     PIN(shipped):     10.77/tgt=10(=casts) 12.46=9(=casts-1) 14.42=8(=casts-2)  — "triggers all before it"
+     PIN(nearest-wrong): always-max: 10.77=0, 14.42/tgt=10 (no ramp) — the ladder collapses
+GREEN vs shipped | differs (RED pin) | V3 critDamage TRIGGER burstCast != fullBurstEnter
+     PIN(shipped):     10.77/tgt base=10 (=casts)
+     PIN(nearest-wrong): fullBurstEnter: 10.77/tgt=5 (=fbs) — half as many applications
+GREEN vs shipped | differs (RED pin) | V4 critRate GENERIC + burstCast
+     PIN(shipped):     critRatePct 31.9/tgt=10 (=casts), 5s, all 3 allies, never the boss
+     PIN(nearest-wrong): fullBurstEnter: 31.9/tgt=5 (=fbs)
+GREEN vs shipped | differs (RED pin) | V4 critRate SCOPE generic != normal-scoped
+     PIN(shipped):     critRatePct 31.9 total=30 (generic — lifts skill/burst bucket crit)
+     PIN(nearest-wrong): scoped: critRatePct 31.9=0, critRateNormalPct 31.9=30 (skill/burst crit unchanged)
+
+VERDICT: gate PASSES. 0 FIX lines (override already faithful); 0 tests green-under-both (shipped AND
+counterfactual); every FAITHFUL pin GREEN vs shipped; V1 kill-gated line documented UNMODELED with a
+discriminating absence-pin (not a silent drop, not an it.skip — actively pinned inert).

@@ -1,0 +1,94 @@
+{
+  "slug": "zwei",
+  "kitDescription": "Zwei (SG/Electric/Supporter/Burst I) — a pierce-team support enabler. S1 stacks team Pierce Damage ▲ on Full-Burst-enter (20.13% for 1 round + 10.06% for 10s) and per normal attack in FB (24.99% ×3, 1-round). S2 grants team generic Crit Rate on FB-enter (18.63%/10s) and 15% ×3 (5s) per normal attack inside the 'Pierce Attacks 101' window, plus a 5-normal-attack Cover-HP restore. Burst swaps Zwei to a self charge-SG (1.2s charge, 50.69%/shot, 300% full-charge, 1 ammo, Pierce-tagged) and opens the ally 'Pierce Attacks 101' status: Pierce Damage ▲ 25.03% for 10s.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "15 passed / 3 failed / 1 skipped (19 total)",
+    "redAssertions": [
+      {
+        "test": "Z6 — 'self-scoped: teammate total near-inert to swap (<2%)'",
+        "actualVsExpected": "actual delta 2.87% vs blind's arbitrary 2% tolerance",
+        "classification": "RECON_ERROR",
+        "note": "The swap IS self-targeted. The 2.87% residual is a documented CADENCE effect: removing the swap shifts Zwei's shotFired timing → her shotFired-triggered team buffs (24.99%/15%) → teammate totals move ~1-3%. The driver correctly dropped this over-tight inertness assertion. Not a faithfulness gap."
+      },
+      {
+        "test": "Z7a — 'zeroing all pierceDamagePct drops liter's (teammate) total'",
+        "classification": "ADJUDICATED_DIVERGENCE",
+        "note": "Blind (opus S5/S6) modeled gainPierce(allies,10s), which pierce-tags liter so the buffs feed her; driver modeled pierceDamagePct 25.03 ONLY (no grant), so liter is not pierce-tagged and the buffs are correctly inert on her in a no-pierce-carry control comp. RED is a consequence of the interpretive fork, not proof of driver error — driver's no-grant reading UPHELD (see gotchas)."
+      },
+      {
+        "test": "Z7b — 'removing the gainPierce grant drops liter's total'",
+        "classification": "ADJUDICATED_DIVERGENCE",
+        "note": "Driver has no gainPierce effect, so its removal is a no-op → RED. Same fork as Z7a. Upheld: the pierce GRANT is inferred from the status NAME, not from any effect line; the explicit effect is 'Pierce Damage ▲' (a damage-bucket buff)."
+      }
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "FB-enter: Pierce Damage ▲ 20.13% for 1 round",
+        "disposition": "FAITHFUL",
+        "encoding": "fullBurstEnter → allies → pierceDamagePct 20.13, durationShots:1",
+        "note": "Round-count correctly encoded as durationShots (holder-round expiry, no wall-clock), NOT the durationSec:1 seconds-trap. Trigger is fullBurstEnter (any team FB), not burstCast. Pierce-bucket, so inert on non-pierce holders by design."
+      },
+      {
+        "kitLine": "FB-enter: Pierce Damage ▲ 10.06% for 10 sec",
+        "disposition": "FAITHFUL",
+        "encoding": "fullBurstEnter → allies → pierceDamagePct 10.06, durationSec:10",
+        "note": "Distinct buff from the 20.13 line (not collapsed), correct seconds semantics."
+      },
+      {
+        "kitLine": "normal atk in FB: Pierce Damage ▲ 24.99%, ×3, 1 round",
+        "disposition": "FAITHFUL",
+        "encoding": "shotFired + fbGate:inFb → allies → pierceDamagePct 24.99, maxStacks:3, durationShots:1",
+        "note": "Trigger subject is Zwei's own in-FB normal attacks; per-shot application (count > the once-per-FB 20.13 count). Round-count-per-stack avoids the near-permanent 3-stack over-credit of a durationSec encoding."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "after 5 normal atks: Restores 7.52% of Cover HP",
+        "disposition": "UNMODELED (documented)",
+        "encoding": "listed verbatim in unmodeled.skill2 + caveats; audit ↔ unmodeled 1:1",
+        "note": "Majority (3 of 4 agents: driver, fable, opus-S5-skipped) UNMODELED. Disciplined measured>fudge: no HP/cover pool in v1, and whether in-game cover repair fires 'recovery' triggers is an unverified HYPOTHESIS — modeling it as a heal would pump crown's on-recovery tandem (+20.99% AD) every 5 Zwei rounds off an unmeasured mechanic. Not a silent drop."
+      },
+      {
+        "kitLine": "FB-enter: Critical Rate ▲ 18.63% for 10 sec",
+        "disposition": "FAITHFUL",
+        "encoding": "fullBurstEnter → allies → critRatePct 18.63, durationSec:10",
+        "note": "Generic critRatePct (plain 'Critical Rate ▲', no normal-attack scoping) — correctly NOT critRateNormalPct; lifts crit on skill/burst buckets too. Applies to all allies even when Zwei doesn't personally burst."
+      },
+      {
+        "kitLine": "normal atk while in Pierce Attacks 101: Crit ▲ 15% for 5s, ×3",
+        "disposition": "FAITHFUL (⚑ gate proxy)",
+        "encoding": "shotFired + swapGate(swapped) → allies → critRatePct 15, maxStacks:3, durationSec:5",
+        "note": "No ally-held-buff-state gate primitive exists (§2); swapGate(swapped) is a documented proxy — the swap and the PA101 status both originate at Zwei's burstCast and share the ⚑10s window, and it correctly stays silent on rotations Zwei does NOT burst (superior to fbGate in multi-B1 comps). Ungated, this line is the single largest over-credit in the kit (+45% team crit permanently) — correctly avoided. Exact only when proxy window == status window; footage-gated with recipe."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "self: Change weapon — 1.2s charge, 50.69% dmg, 300% full-charge, 1 ammo, +Pierce",
+        "disposition": "FAITHFUL (⚑ swap duration/economy)",
+        "encoding": "burstCast → self → weaponSwap {damagePct:50.69, chargeTimeSec:1.2, chargeMultPct:300, maxAmmo:1, hasPierce:true, durationSec:10⚑}",
+        "note": "All four near-misses avoided: chargeMultPct present (full-charge ≈152% not 50.69%); hasPierce present (its omission would silently inert ALL pierce buffs on her own shots); swap is windowed not permanent. Swap duration/shot-economy (~3 full-charge shots/window) is kit-silent — flagged with estimate+recipe+tier (CALIBRATED)."
+      },
+      {
+        "kitLine": "allies: Pierce Attacks 101 — Pierce Damage ▲ 25.03% for 10 sec",
+        "disposition": "FAITHFUL (pierceDamagePct) — gainPierce grant NOT modeled (ADJUDICATED)",
+        "encoding": "burstCast → allies → pierceDamagePct 25.03, durationSec:10 (no gainPierce)",
+        "note": "The explicit Pierce-Damage-▲ effect is modeled faithfully (burstCast timing, pre-FB, only on rotations Zwei bursts; gates skill2's 15% window). The gainPierce grant divergence (§8A) is the load-bearing call — see gotchas; driver's no-grant reading upheld."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "id": "gainPierce-on-Pierce-Attacks-101",
+      "severity": "ADJUDICATED-DIVERGENCE (not a REAL-GOTCHA)",
+      "split": "driver + fable(cross-family): pierceDamagePct only, no grant | opus S5 + S6: gainPierce(allies,10s) + pierceDamagePct",
+      "ruling": "UPHELD the driver's no-grant reading as the more textually faithful one. Decisive evidence: the SAME burst block uses the explicit pierce-grant vocabulary 'Additional Effect: Pierce' for Zwei's swapped weapon, but 'Pierce Damage ▲ 25.03%' for the ally line. The designers had the grant wording in hand and chose a damage-bucket stat instead — the differential wording indicates a damage buff, not a grant. 'Pierce Attacks 101' is the status NAME (container/flavor); the effect line is the mechanic. Inferring a team-wide pierce grant from a status name is precisely the measured>fudge violation (inventing a load-bearing mechanic to make the unit 'work'). Whole-picture holds under the no-grant reading: Zwei still buffs real pierce carries + her own swap shots with pierce, AND provides UNCONDITIONAL team crit (18.63% + 15%×3) — she is not useless. The driver documented gainPierce as an explicit ⚑ footage-gated hypothesis with recipe — no silent drop. FOOTAGE ACTION for owner: confirm whether allies' shots visibly pierce after Zwei's burst; if yes, add gainPierce(allies, swap-window) and the whole pierce package lights up on any team — a large upward re-model."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": 0.9,
+  "verdict": "GO",
+  "verdictRationale": "Every one of the 8 kit lines is accounted for with no silent drops (audit ↔ unmodeled 1:1). Round-count semantics ('for N round(s)' → durationShots) and generic critRatePct (not critRateNormalPct) are both correctly handled; the weapon swap carries chargeMultPct + hasPierce + a bounded window (all three classic near-misses avoided); the 15% crit stack is gated (the single biggest over-credit avoided) via a documented proxy. All 3 convergence REDs are classified: Z6 is a RECON_ERROR (over-tight blind tolerance vs a documented ~2.87% cadence residual), and Z7×2 are the one genuine interpretive fork (gainPierce), which I adjudicate in the driver's favor on differential-wording textual evidence and measured>fudge — it is documented as a footage-gated ⚑ hypothesis, not dropped. No REAL-GOTCHA survives; the SSOT (§2) confirms pierceDamagePct plumbing is live, so there is no engine-core blocker (the 'parsed but inert in v1' schema comment is stale). Discrimination is real (S2d counterfactual matrix isolates round-vs-sec, trigger identity, crit scope, gate presence, swap presence, and burst-vs-FB keying) and the fire-rate check passes. Score docked to 0.9 solely for the load-bearing gainPierce fork on which reasonable graders (2 of 4 agents) split — the owner should footage-confirm the pierce-grant question, as it materially changes Zwei's team contribution if the grant reading is correct.",
+  "model": "claude-opus-4-8"
+}

@@ -15,7 +15,7 @@
 > **This block is the single source of truth for "which units use primitive X".** Regenerate with
 > `npx tsx scripts/doc-drift.ts --update`; `scripts/verify.sh` fails if it is stale. Derived by
 > structural match against `src/skills/overrides/*.json` — **prose mentions in `note`/`caveats`/
-> `unmodeled` deliberately do NOT count**, since a unit whose note merely *discusses* a primitive is
+> `unmodeled` deliberately do NOT count**, since a unit whose note merely _discusses_ a primitive is
 > not a user. Do not restate these counts in prose elsewhere; link here instead. Primitive list is
 > taken from `docs/STATE.md` §5, so adding a row there enrolls it automatically.
 
@@ -50,12 +50,12 @@
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
 | `critRateNormalPct` | 1 | helm |
 | `delaySec` | 3 | asuka-wille, rapi-red-hood, snow-white |
-| `durationShots` | 1 | helm |
+| `durationShots` | 2 | helm, zwei |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
-| `everyN` | 4 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
+| `everyN` | 3 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny |
 | `everyNOffset` | 1 | neon-vision-eye |
 | `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
-| `fbGate` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
+| `fbGate` | 5 | modernia, moran, soda-twinkling-bunny, velvet, zwei |
 | `flatDamage` | 47 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
@@ -66,13 +66,13 @@
 | `hitCount` | 33 | ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, … |
 | `hitRatePct` | 11 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
-| `inFb` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
+| `inFb` | 5 | modernia, moran, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
 | `interval` | 6 | helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
 | `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
-| `maxAmmoFlat` | 3 | grave, noir, tove |
+| `maxAmmoFlat` | 4 | grave, noir, tove, trina |
 | `maxShots` | 1 | snow-white-heavy-arms |
 | `mode` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny, mint, prika |
 | `modes` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny, mint, prika |
@@ -103,8 +103,8 @@
 | `stageEnter` | 8 | cinderella, ein, mast-romantic-maid, mihara-bonding-chain, mint, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
-| `swapGate` | 2 | laplace, snow-white-heavy-arms |
-| `swapped` | 2 | laplace, snow-white-heavy-arms |
+| `swapGate` | 4 | laplace, snow-white-heavy-arms, takina, zwei |
+| `swapped` | 4 | laplace, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
 | `targetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
@@ -152,14 +152,14 @@
 
 ### ❌ C. Unwired / inherent-v1 limitation / measurement-only — no discrete primitive to build
 
-| Theme                                    | Why it's here                                       |
-| ---------------------------------------- | --------------------------------------------------- |
-| 1. Cadence tuple (~22 units)             | measurement backlog (video plan), not an engine gap |
-| 2. Defensive/heal/shield (~25 units)     | no HP pool in v1 (immortal boss) → inert by design  |
-| 17. User-selected modes (8 units)        | config/owner-review, not a primitive                |
-| 18. Kill-gated effects (~4 units)        | inherent (immortal solo boss)                       |
+| Theme                                      | Why it's here                                                               |
+| ------------------------------------------ | --------------------------------------------------------------------------- |
+| 1. Cadence tuple (~22 units)               | measurement backlog (video plan), not an engine gap                         |
+| 2. Defensive/heal/shield (~25 units)       | no HP pool in v1 (immortal boss) → inert by design                          |
+| 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                        |
+| 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                               |
 | 19. SG pull-vs-pellet `hitCount` 10× lever | measurement/calibration; per-unit landing CLOSED (A31/U17), open tail = U27 |
-| 12-tail. eve Mk2 sequential-doubling     | open sub-caveat, no primitive yet                   |
+| 12-tail. eve Mk2 sequential-doubling       | open sub-caveat, no primitive yet                                           |
 
 ---
 
@@ -212,10 +212,43 @@
 - `asuka-wille` — "Anti A.T. Field status is removed after the effect is triggered" represented nowhere
   (SILENT_DROP). `rapi-red-hood` / `miranda` also carry a SILENT_DROP-class line each.
 
+## 2026-07-24 — kit-autonomy bottom-up gauntlet batch cross-check (10 units)
+
+> The autonomous kit-autonomy gauntlet (test-first independent re-derivation + cross-family blind roles +
+> binding judge) ran bottom-up on 10 units: `zwei`, `volume`, `velvet`, `trina`, `tove`, `takina`,
+> `soline-frost-ticket`, `soda-twinkling-bunny`, `snow-white-heavy-arms`, `snow-white`. All GO (faithfulness
+> 0.9–1.0). Like the 2026-07-20 audit, the batch found **no new engine primitive** beyond the 19 themes — its
+> value is independent re-confirmation plus the two owner-flagged engine questions below.
+
+**Re-confirmed existing themes** (documented as the known theme, not re-derived):
+
+- **Theme 1 (cadence tuple):** `soline-frost-ticket`, `volume`, `velvet`, `zwei` (kit-silent SG/swap cadence).
+- **Theme 2 (defensive/heal, no HP pool in v1):** `zwei` cover-HP→recovery firing, `trina` S1 heal lines.
+- **Theme 14 (flat Max-Ammo):** `tove` (`maxAmmoFlat 6`), `trina` (see FIX below).
+- **Theme 5 (timed/swap pierce):** `snow-white` — pierce CORE+BODY double-hit unmodeled, inert on the partless
+  boss (multipart-only; don't conflate with the Pierce Damage ▲ that does apply).
+- **Theme 7 (weapon-swap economy):** `velvet`, `takina`, `snow-white-heavy-arms` (swap-shot cadence kit-silent).
+
+**Genuinely-new owner-flagged ENGINE questions** (rulings needed, not primitives to build here):
+
+- `takina` — **true swap normals CRIT.** `sim.ts:2842` crits true swap normals (`crit: true`); the §2c "true
+  damage cannot crit" carve-out covers riders / `RIDER_CRIT` only, NOT swap normals. Broad blast radius —
+  `chisato` and `laplace` also carry `trueNormals`. Owner ruling needed; not changed by the gauntlet.
+- `snow-white-heavy-arms` — **`sequentialDamagePct` inert on flatDamage riders.** The engine flatDamage path
+  does not route `flavor: 'sequential'` → `seqMult`, so her W16 `sequentialDamagePct 158.4` never lands on the
+  flatDamage rider (relates to theme 12-tail / eve Mk2 sequential-doubling). Low severity — inert on the
+  partless boss in her comps.
+
+**One faithfulness FIX landed (theme 14 enactment, not a new gap):** `trina` burst "Max Ammunition Capacity
+▲20 round(s)" was encoded `maxAmmoPct 33.3` (a %-proxy exact only for 60-round magazines — a 20-round
+Electric-AR ally got +6.66 rounds vs the kit-literal +20) → kit-literal `maxAmmoFlat 20`, independently
+re-derived by all three blind reviewers and verified regression- and board-neutral.
+
 ## Highest-leverage engine fixes (ranked by blast radius)
 
 Systematic limitations, not per-unit fudge — each corrects many units at once. Capability-build detail
-+ board deltas are in DECISIONS (dates below); live flag/primitive state in `docs/STATE.md`. Compact:
+
+- board deltas are in DECISIONS (dates below); live flag/primitive state in `docs/STATE.md`. Compact:
 
 1. **Per-tick recovery-event emitter** (theme 2b) — ✅ CAPABILITY LANDED 2026-07-17 (`heal.ticks`/
    `intervalSec` + `recoveryEmitters` queue; opted in anchor-innocent-maid, blanc). Open HoT backfill:
@@ -307,16 +340,16 @@ in its single-status, same-unit, same-frame form. Everything below is what that 
 
 ### 1b. "is fixed at" stat LOCKS — no engine vocabulary — 8 units
 
-Kit lines of the form *"X is **fixed at** V"* CLAMP a stat for a window (owner ruling 2026-07-22): the
+Kit lines of the form _"X is **fixed at** V"_ CLAMP a stat for a window (owner ruling 2026-07-22): the
 value is the locked level and it cannot be modified further — not a delta applied on top. Sign varies
-(`milk-blooming-bunny` reads *"fixed at a 50% **reduction**"*, `jill` *"a 99.96% increase"*). The engine
+(`milk-blooming-bunny` reads _"fixed at a 50% **reduction**"_, `jill` _"a 99.96% increase"_). The engine
 has stat buffs but no clamp, so all of these are approximated, ignored, or hand-carved:
 
-| locked stat | units |
-|---|---|
-| reload speed | `jill`, `exia`, `asuka-wille`, `milk-blooming-bunny` |
-| charge time | `anis-star`, `nayuta`, `cinderella-crystal-wave` (also *"reload time is fixed at 3 sec"*) |
-| pellet count | `dorothy-serendipity` — the only one modelled, via her bespoke `consolidation` block |
+| locked stat  | units                                                                                     |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| reload speed | `jill`, `exia`, `asuka-wille`, `milk-blooming-bunny`                                      |
+| charge time  | `anis-star`, `nayuta`, `cinderella-crystal-wave` (also _"reload time is fixed at 3 sec"_) |
+| pellet count | `dorothy-serendipity` — the only one modelled, via her bespoke `consolidation` block      |
 
 Impact is comp-dependent (a reload-speed lock only bites when a teammate would otherwise buff reload).
 → open-questions **U31**, which also carries the `jill` `reloadFrames: 0` consequence.

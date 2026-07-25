@@ -1,0 +1,37 @@
+{
+  "slug": "volume",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "kill: ATK ▲12.6% for 5s (self)",
+      "disposition": "GAP",
+      "assertion": "it.skip — the immortal partless v1 boss emits no kill events and the schema has no on-kill trigger primitive; there is no active vs inactive case to exercise, so any assertion would be vacuous."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB-enter: Burst CD ▼2.34/2.7/3.17s allies",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves burstCdr is live: base Full-Burst count >= count with CDR zeroed (invariant CDR can only add/keep FBs). Nearest-wrong (CDR dropped/zeroed) fires FEWER FBs when the rotation is cooldown-bound. Escalating magnitude itself is not cleanly event-observable (directional test only)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "burst-cast: Crit DMG ▲10.77/12.46/14.42% 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "critDamagePct buffApply events show >=2 distinct magnitudes incl. 10.77 (escalation); flat-10.77 non-escalating nearest-wrong collapses to 1 magnitude → RED. Zeroing critDamagePct removes the buff + lowers team total (GREEN vs a crit-RATE mis-encoding, which would be inert on this channel). Trigger identity burstCast-vs-fullBurstEnter is NOT discriminated (volume sole B1)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Crit Rate ▲31.9% for 5s (all allies)",
+      "disposition": "FAITHFUL",
+      "assertion": "critRatePct buffApply ≈31.9 on >=2 ally targets, constant (not escalating). Zeroing drops team total and is inert on critDamagePct — fails under the SCOPE nearest-wrong that encodes crit-rate as crit-damage, or the target nearest-wrong that scopes it self-only (single target)."
+    }
+  ],
+  "fixtures": "controlComp('volume') (helm=true) — liter(B1)/crown(B2)/helm(B3) supply a completable burst chain with volume as focus. Deterministic, no seed. CAVEAT: volume is Burst I and competes with liter's B1 slot; the whole skill2b/burst analysis requires volume to actually cast, so a fixture-sanity `it` and a per-assertion non-vacuity guard (critDamagePct buffApply > 0) make the file fail loudly if she never bursts rather than pass silently. Counterfactuals via withPatchedOverride re-clone from committed JSON so patches never stack (base + 3 patched runs = 4 runs, well under the ~20 cap).",
+  "gaps": [
+    "skill1 (it.skip): 'when killing an enemy' ATK buff — no kill events on the immortal partless v1 boss and no on-kill trigger primitive in the schema; unmodelable/inert in v1.",
+    "skill2b trigger identity: burstCast vs fullBurstEnter is indistinguishable on this fixture because volume is the sole B1 and therefore bursts on every Full Burst (the two triggers coincide). A second B1 in the comp would be needed to discriminate — not exercised here; only magnitude/escalation is tested.",
+    "skill2a burst-CDR magnitude/escalation: burstCdr does not emit a buffApply, so the escalating tuple [2.34,2.7,3.17] and its per-entry growth cannot be read directly; only the directional Full-Burst-count invariant (base >= zeroed) is asserted, and equality (gauge-bound rotation) is reported as a finding, not a failure."
+  ],
+  "model": "claude-opus-4-8"
+}

@@ -1,0 +1,41 @@
+S2d INDEPENDENT VERIFICATION GATE — soline-frost-ticket (2026-07-24)
+Method: `npx vitest run scripts/tests/units/soline-frost-ticket.test.ts` against (i) the unmodified SHIPPED
+override and (ii) each named counterfactual (withPatchedOverride, in-memory — committed JSON untouched).
+10 tests, all 10 PASS vs shipped (the DISCRIMINATING assertions exercise each counterfactual inline).
+
+Fixture: soline-frost-ticket(B1,SG Water) / crown(B2) / ada(B3), boss Fire, focus soline. Soline is the SOLE
+Burst I (controlComp's liter would be a 2nd B1, so a custom comp is used). Crown is the recovery CONSUMER that
+makes the burst heal observable; ada is a heal-free B3. Measured cadence: soline casts 6x, team completes 6
+Full Bursts; each burstCast frame (799,2750,4701,6652,8603,10554) strictly precedes its fullBurstStart frame
+(881,2832,4783,6734,8722,10673) by ~82 frames — trigger identity is frame-discriminable.
+
+ZERO direct-damage kit: every assertion is EVENT-LOG based (buffApply / burstCast / fullBurstStart), never
+damage-total based.
+
+--- (i) vs SHIPPED override (casterMaxHpPct 20 passive; burstCdr 7.48 fullBurstEnter; heal burstCast) ---
+FAITHFUL pins (expect GREEN):
+  fixture sanity: soline casts >0 bursts, >0 FBs, burstCast < fullBurstStart ........ GREEN
+  F1 casterMaxHpPct 20 -> maxHpFlat, all 3 allies, frame 0, permanent, key ':20' .... GREEN
+  F2 burstCdr live: base FB count (6) > burstCdr-removed FB count (5) ............... GREEN
+  F3 skill1-keyed buffs emit EXACTLY {maxHpFlat} (discount-removal UNMODELED) ....... GREEN
+  F4 skill2-keyed buffs EMPTY (whole S2 block UNMODELED — no fabricated heal) ....... GREEN
+  F6 burst heal -> crown recovery 20.99 fires precisely on soline's burstCast frames  GREEN
+NO FIX lines: the shipped override is faithful; every kit line is FAITHFUL or documented UNMODELED.
+
+--- (ii) each named counterfactual (expect RED = the assertion discriminates) ---
+  F1 value 10 (1 ticket, nearest-wrong) -> key ':10' not ':20' ...................... RED (discriminated)
+  F1 target self (nearest-wrong) -> reaches only slot 0, not all 3 allies ........... RED (discriminated)
+  F2 burstCdr removed (nearest-wrong) -> FB count drops 6->5 (the F2 PIN fails) ..... RED (discriminated)
+  F6 trigger fullBurstEnter (nearest-wrong) -> recovery fires on FB-START not cast .. RED (discriminated)
+  F6 heal removed (nearest-wrong) -> no recovery source, crown recovery never fires . RED (discriminated)
+
+DOCUMENTED RESIDUAL (not a vacuous test — a genuine B1 discriminability limit, flagged for owner spot-check):
+  F2 trigger identity fullBurstEnter vs burstCast is NOT behaviorally discriminable for a Burst-I unit whose own
+  cast opens every chain (her burstCast and the team fullBurstEnter fire the same number of times, ~82 frames
+  apart, so the cadence effect is near-identical). The F2 PIN discriminates block-PRESENT/fires (base > noCdr)
+  and implicitly kills oncePerBattle (the block fires on all 6 FBs, not just the first); the fullBurstEnter-vs-
+  burstCast choice rests on the prose ("when entering Full Burst") + fable S2b convergence, not a behavioral RED.
+
+VERDICT: no test is GREEN under both shipped and its counterfactual (none vacuous). Every FAITHFUL pin is GREEN
+vs shipped; every named counterfactual is RED. The shipped override is faithful — S3 is a note-marker update only
+(no encoding change).

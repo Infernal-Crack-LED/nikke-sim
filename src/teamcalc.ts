@@ -269,6 +269,39 @@ function isLegal(slugs: string[], chars: Record<string, Char>): boolean {
 }
 
 /**
+ * Does `pool` contain SOME legal 5-team? Exact and sim-free — the count-repair pass
+ * (topTeams) uses it to test a candidate donation before paying for a real search.
+ *
+ * A stage is covered the cheapest of two ways: ONE ≤20s caster, or TWO ≤40s ones
+ * (CD_SHORT/CD_PAIR, mirroring stageCovered). So enumerate the 2×2 strategies — a
+ * strategy is reachable if the pool holds the casters it names, and it FITS if its
+ * support slots plus NEED.III still leave the team at 5 units. That last test is the
+ * one a "does the pool cover both stages?" shortcut gets wrong: a pool whose only
+ * casters are 2×40s B1 AND 2×40s B2 covers both stages and is still infeasible,
+ * because 2+2 supports + 2 B3 is a 6-unit team.
+ *
+ * effBurst has already forced the roster's only Λ (Red Hood) to III, so III is the
+ * whole non-support remainder here — no separate wildcard accounting.
+ */
+function canFormLegalTeam(pool: string[], chars: Record<string, Char>): boolean {
+  if (pool.length < 5) return false;
+  const slotsFor = (stage: 'I' | 'II'): number[] => {
+    const cds = pool
+      .filter((s) => effBurst(s, chars) === stage)
+      .map((s) => chars[s].burstCooldownSec);
+    const ways: number[] = [];
+    if (cds.some((c) => c <= CD_SHORT)) ways.push(1);
+    if (cds.filter((c) => c <= CD_PAIR).length >= 2) ways.push(2);
+    return ways;
+  };
+  const thirds = pool.filter((s) => effBurst(s, chars) === 'III').length;
+  if (thirds < NEED.III) return false;
+  for (const a of slotsFor('I'))
+    for (const b of slotsFor('II')) if (a + b + NEED.III <= 5) return true;
+  return false;
+}
+
+/**
  * Can a PARTIAL locked set still be completed to a legal 5-team? The outstanding
  * burst deficits (deficits() ignores Λ) must be coverable by the locked Λ units
  * plus the (5 − k) free slots still to fill. Used to decide whether a "must-use"
@@ -1458,18 +1491,120 @@ export function makeCalc(input: TeamCalcInput) {
         return out;
       };
 
+      /**
+       * COUNT REPAIR — recover a team greedy stranded.
+       *
+       * build() maximizes team i against the pool it inherits, with no idea that a
+       * support it takes is one the units behind it NEEDED. Two ≤40s casters of the
+       * same stage are worth more together on one team (they alternate, so both get
+       * to burst) than split, so greedy reliably pairs them — and if that empties
+       * the stage for the leftovers, five otherwise-fieldable units are stranded and
+       * the roster comes back SHORT of n. That is a resource-allocation failure, not
+       * scarcity, and the polish pass cannot see it: polish only re-seeds each team
+       * with the previous roster's own teams, so once greedy is a fixed point under
+       * re-seeding it returns an identical roster and the strict-improvement gate
+       * ends the loop. Measured on the item-4 bench pool (cross-team-polish.test.ts):
+       * 3 teams / 5362M with 5 units unused, where a different allocation of the
+       * SAME 20 units fields 4 teams / 5914M (+10.3%).
+       *
+       * So repair it directly: find one donation — team i gives up a unit and takes
+       * a leftover back — that leaves both sides legal, and rebuild. Locating it is
+       * sim-free (canFormLegalTeam), so only an accepted repair costs a search; the
+       * predicate ignores element/constraint rules, which makes it LOOSER than the
+       * real `legal`, so it can waste a search but never skip a valid donation.
+       * Rows carrying pins/must-use units never donate them.
+       */
+      const eligible = Object.keys(chars).filter((s) => !blocked.has(s));
+      const repairCount = async (
+        cur: TeamResult[],
+      ): Promise<TeamResult[] | null> => {
+        // The recovered team lands in the next empty ROW, so it inherits that row's
+        // reservations exactly as build() would: row `k`'s pins are its mustInclude,
+        // and units held for rows behind it stay out of reach of both sides. Without
+        // this a pin on an unreached row would be silently spent as ordinary filler.
+        const k = cur.length;
+        const rowPins = reserved[k] ?? [];
+        const laterPins = new Set(reserved.slice(k + 1).flat());
+        const used = new Set(cur.flatMap((t) => t.slugs));
+        const spare = eligible.filter(
+          (s) => !used.has(s) && !laterPins.has(s),
+        );
+        // spare already failed to yield a team (that is why build() stopped), so a
+        // repair is only conceivable if a swap can change that.
+        if (spare.length < 5) return null;
+        // Try the CHEAPEST donation first: give up the lowest solo value that
+        // unblocks the leftovers, take the highest back. Solo value is already
+        // warmed + cached, so the ordering is free, and it lands on supports
+        // first — the units the stranded side is actually short of, since a B3's
+        // solo damage dwarfs a buffer's. First feasible donation wins; the polish
+        // passes below then refine the whole repaired roster.
+        const cheapest = (a: string, b: string) => soloScore(a) - soloScore(b);
+        // …but never take back a unit pinned to the row being recovered.
+        const takeBack = [...spare]
+          .filter((s) => !rowPins.includes(s))
+          .sort((a, b) => cheapest(b, a));
+        for (const [i, t] of cur.entries()) {
+          for (const u of [...t.slugs].sort(cheapest)) {
+            if (reserved[i].includes(u)) continue;
+            const kept = t.slugs.filter((s) => s !== u);
+            for (const v of takeBack) {
+              const donor = [...kept, v];
+              if (!legal(donor)) continue;
+              const rest = spare.filter((s) => s !== v).concat(u);
+              if (!canFormLegalTeam(rest, chars)) continue;
+              // Realize it with the real search: the recovered team is built from
+              // `rest` proper (refined + scored like any other), and the donor team
+              // is re-simmed so its score reflects the unit it gave up.
+              const recovered = await bestTeam({
+                exclude: new Set(eligible.filter((s) => !rest.includes(s))),
+                mustInclude: rowPins,
+                scoreFn: scoreFnAt(k),
+                seedTarget:
+                  targets?.[k] !== undefined && prydwenScore
+                    ? targets[k]
+                    : undefined,
+              });
+              if (!recovered) continue;
+              const donorRes = (await evalSets([donor]))[0];
+              if (!donorRes) continue;
+              return [
+                ...cur.slice(0, i),
+                await focusFinalize(donorRes),
+                ...cur.slice(i + 1),
+                recovered,
+              ];
+            }
+          }
+        }
+        return null;
+      };
+
       let roster = await build([]);
+      // Both cross-team stages hang off `polishPasses`, so `polishPasses: 0` stays
+      // the pure sequential-greedy roster — the A/B control arm the item-4 bench
+      // and cross-team-polish.test.ts compare against.
       const passes = opts?.polishPasses ?? POLISH_PASSES;
+      while (passes && roster.length && roster.length < n) {
+        const repaired = await repairCount(roster);
+        if (!repaired) break;
+        roster = repaired;
+      }
       for (let p = 0; p < passes && roster.length; p++) {
         const cand = await build(
           roster.map((t) => t.slugs),
           roster,
         );
-        // a pass that drops a team, or doesn't strictly improve the total, is
-        // discarded and ends the loop (deterministic ⇒ further passes repeat it)
+        // Lexicographic (team COUNT, then total): a pass that FIELDS MORE TEAMS wins
+        // outright, because a roster that leaves 5 units on the bench is worse than
+        // one that plays them even when the extra team is weak enough to drag the
+        // per-team average down (owner ruling 2026-07-25). At equal count the total
+        // must strictly improve, so polish still can't lower a roster. Either way a
+        // pass that fails the test ends the loop — the build is deterministic, so
+        // further passes would just repeat it.
         if (
           cand.length < roster.length ||
-          rosterScore(cand) <= rosterScore(roster)
+          (cand.length === roster.length &&
+            rosterScore(cand) <= rosterScore(roster))
         )
           break;
         roster = cand;

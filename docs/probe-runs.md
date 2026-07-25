@@ -1584,3 +1584,104 @@ a SOLO `marciana` recording** (single-unit running total → per-shot delta on t
 override, or stamp a verdict (that is a separate `/scientific-method` pass, not this session — evidence
 rule). ⇒ The live consequence for the SG re-tune thread: a pure override re-tune would be fitting
 overrides to absorb a **weapon-model** landing error, so the landing model is the thing to fix first.
+
+## Probe reader build-out — instrument validation (2026-07-24, `docs/probes/` re-scored)
+
+Not a fight measurement: this validates the new READER SCRIPTS against Full-Burst counts that were
+already measured independently, so later runs can trust their output. Plan:
+`docs/handoffs/2026-07-24-probe-reader-buildout-plan.md`.
+
+### What the burst-gauge crop actually renders (corrects the state vocabulary)
+
+The 188×82 crop at (2428,448) does **not** show a filling burst gauge. Measured frame-by-frame on
+`docs/probes/probe u7/13 fb count wind weak vid.MP4`, it shows two things and is otherwise absent:
+
+1. the burst CHAIN, as coloured stage hexagons at the crop's left edge, ~0.4 s each — green "I",
+   yellow "II", red "III" — the red one immediately preceding the Full Burst;
+2. the FULL BURST WINDOW, as a magenta bar that resets to ~96% at the burst and **drains
+   monotonically to zero** over ~8.5 s of rendered width. Two consecutive windows on that recording:
+   13.8→21.8 s and 26.4→35.0 s, both peaking at 0.96 fill.
+
+That drain is the owner's "blinking, draining red bar with NO numeral". The burst gauge CHARGING is
+not in this crop at all, so the CV classifier emits no `filling` state — the VLM classifier emitted
+one only because the prompt offered it as an option.
+
+Rendered widths are ~8.2 s for a nominal 10 s window (the bar's last stretch is too narrow to
+register a column), so window DURATIONS are comparable to each other but are not an absolute
+Full-Burst duration measurement.
+
+### Full-Burst counts — `scripts/probe/scan.ts` vs measured truth
+
+Three detectors, merged: the drain window (spine), the whole-frame golden splash (independent screen
+region), and the stage-3 hexagon. ~12 s per whole video, one ffmpeg decode, no model anywhere.
+
+| recording | measured FB | scan.ts | corroborated |
+|---|---|---|---|
+| `probe u7/13 fb count wind weak vid.MP4` | 13 | **13** | 13/13 |
+| `probe u7/12 burst count elec weak vid.mov` | 12 | **12** | 12/12 |
+| `rrh probe/mika t255 11fb vid.mov` | 11 | **11** | 11/11 |
+| `rrh probe/team 1 t256 burst 13fb.MP4` | 13 | **13** | 13/13 |
+| `rrh probe/team 2 t257 burst 14fb vid.MP4` | 14 | **14** | 14/14 |
+| `rrh probe/team 3 t256 burst 13fb vid.MP4` | 13 | **13** | 13/13 |
+| `rrh probe/windweak t257 13fb.mov` | 13 | **13** | 13/13 |
+| `control + carry/soda tb control.mov` | 10 (owner countdown read) | **10** | 10/10 |
+
+**Exact on 8 of 8.** Per-detector recall: drain window 8/8 exact, splash 7/8 (it under-reads on a
+washed-out background), stage-3 hexagon ~80% (a screen-wide colour wash hides it).
+
+**The VLM classifier's failure is reproduced and bounded.** On the `control/lm.MP4` window
+(t=5, 30 s) where `read-burst-gauge.ts --classifier vlm` had reported **six** transitions into
+`full` — impossible, since a Full Burst is a 10 s window and they are 13–34 s apart — the CV reads
+**2**, gap 14.0 s. Over the whole of `lm.MP4` the CV finds 13 uniformly spaced windows
+(12.8–17.0 s apart, 8.0–8.6 s each, peaks 0.94–0.96) while the splash detector catches only 5 of
+them; the merge reports the disagreement rather than hiding it.
+
+**Correction to a documented premise:** the "team burst bar" (`crop=200:14:2420:478`) and the
+"solo/2-unit BURST meter" (`crop=142:12:2470:488`) are SUB-STRIPS of the gauge crop (which spans
+x 2428–2616, y 448–530). They re-measure the same drain bar at coarser granularity, so they were
+never an independent second instrument, and their documented "≥95%→<50% drop" fires when the drain
+crosses half rather than at the burst (27 such drops on a 13-Full-Burst recording). They are kept
+as diagnostics and excluded from the corroboration count.
+
+### Fire cadence — `scripts/probe/read-ammo.ts` vs the SMG hand read
+
+Deterministic digit-atlas template matching inside the box the pellet counter's template track
+already locates; it abstains on a weak glyph match rather than guessing, and discards any read that
+breaks ammo monotonicity without a reload-sized jump.
+
+On `docs/probes/clean-weapons/emma-claire-idollocean.MP4` (`idoll-ocean` camera-focused), in two
+range bands: **20.31 rounds/s** (t=55–75, 5 firing runs) and **20.32 rounds/s** (t=120–140), every
+run at r² = 1.00, individual runs reading 19.84–20.00/s. That independently reproduces the hand read
+that settled the SMG cadence at 20.0 rounds/s (DECISIONS 2026-07-23) — a different instrument path
+(atlas matching over 200 sampled frames) reaching the same number as the four-digit hand read.
+
+⚠ **Gap:** small-magazine SG is not yet readable. `marciana-solo.MP4` yields a value on only ~29% of
+frames and no usable firing run — her counter renders 1–2 digits rather than a 3-digit belt, and the
+box template locks weakly (conf ~0.43 vs ~0.73 on the SMG footage). SG cadence still goes through
+the pellet counter.
+
+### Battle Records — `scripts/probe/read-battle-records.ts`
+
+VLM read of the static end-of-fight screen, gated by an arithmetic checksum (per-unit damage must
+sum to the independently-measured cumulative team total). **37 of 37 numbers exact** across two
+screenshots: `clean-weapons/emma-claire-idollocean.jpg` (3 rows × 4 fields, checksum Δ 0.00%) and
+`probe u7/13 fb count wind weak dmg.png` (5 rows × 5 fields). The ⚔ = Combat Power field map is
+hard-coded and the script refuses to emit an `atk` field at all.
+
+### Popup confidence — `read-popups-vlm.ts` (built, gate met VACUOUSLY)
+
+Each deduped popup is now scored by how many of the LOOKS at its own time+position window agreed on
+its value, plus hit-value band membership. Validation was 20 frames of `control/lm.MP4` (t=45–49)
+against the hand read in `docs/probe-data/control-little-mermaid.json`.
+
+The plan's ship gate — zero auto-accepted popups that the hand read disagrees with — is **met, but
+vacuously: 0 of 30 popups auto-accept**, because `little-mermaid`'s bands overlap outright (normal
+14,664–69,913, its crit image 21,484–87,858, its core image 36,660–174,782), so no value can pin a
+class. That is the entanglement that probe's own notes describe.
+
+Worth recording because it shaped the rule: the FIRST draft (agreeing looks + in-band only)
+auto-accepted 4, of which **2 were bad** — a 10,818,572 read as "normal" whose only matching bands
+were `skill:core`/`skill:crit+core`, and a 64,733 called "crit" when 64,733 is that unit's *non-crit*
+normal. Both were caught by adding two conditions: the matched band variant must be reachable from
+the reported class, and the value must match exactly one variant. ⇒ **The auto-accept path itself is
+UNEXERCISED** and stays unproven until a focus unit with a clean band trips it.

@@ -1,0 +1,49 @@
+{
+  "slug": "snow-white",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "30 hits: +82.8% ATK add'l dmg (enemy)",
+      "disposition": "FAITHFUL",
+      "assertion": "Zeroing the 82.8% flatDamage strictly lowers SW total while teammates stay byte-identical (SW/enemy-scoped); halving the hitCount 30->15 makes the rider contribution scale ~2x. FAILS under interval/shotFired trigger (no 2x scaling) or an allies mis-scope (teammates would move)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "30 hits: self ATK ▲ 8.28% / 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "Every buffApply(atkPct, 8.28) has targetIdx === casterIdx (self); zeroing it lowers SW total but leaves teammates identical. FAILS under an allies-scoped model (targetIdx != casterIdx, teammate totals change)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "144.73% ATK skill dmg (enemies)",
+      "disposition": "FAITHFUL (⚡ cadence)",
+      "assertion": "Zeroing the 144.73% flatDamage lowers SW total, teammates unchanged (proves it exists and is SW-sourced enemy damage). Cadence is ⚡: kit gives NO activation clause, so the interval frequency is invented/datamine-unreliable and is deliberately NOT pinned (it.skip)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "crit rate ▲ 26.1% / 10s in-FB, self",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply is stat 'critRatePct' (generic) with targetIdx === casterIdx (self), and NO 'critRateNormalPct' apply at that value; removing the inFb gate strictly increases the apply count (gate suppresses out-of-FB skill2 uses). FAILS under critRateNormalPct scoping, allies scoping, or a missing/ungated model."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "weaponSwap cannon 499.5% / 1000% FC",
+      "disposition": "FAITHFUL (⚡ duration)",
+      "assertion": "burstCast fires; SW emits charge-bucket damage events (weapon truly swaps); nulling weaponSwap.damagePct lowers SW total with teammates unchanged. FAILS under 'no swap / normal-weapon' model (no charge-bucket SW damage). Swap duration + shot count are ⚡ kit-silent -> it.skip."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammo 1 round; Pierce",
+      "disposition": "GAP",
+      "assertion": "Max-Ammo-1 shot economy folds into the ⚡ swap-duration gap; Pierce Damage ▲ has no carrier on the control comp so pierce tagging is offensively inert here — it.skip with reason (no independent handle blind)."
+    }
+  ],
+  "fixtures": "controlComp('snow-white', true) — liter B1 / crown B2 / snow-white B3 (focus) / helm B3, boss Fire. B1/B2 enable the burst chain so SW's B3 actually casts and the team reaches Full Burst; FB windows are mandatory for skill2's crit-in-FB gate to have an ACTIVE case, and the long out-of-FB stretches give it an INACTIVE case (so the gate assertion is non-vacuous). helm=true is fine: helm's crit line uses a different value (26.1 filter isolates SW's) and teammate-inertness checks compare exact totals so helm buffs can't confound the counterfactual deltas.",
+  "gaps": [
+    "burst exact cannon shot count / swap DURATION — ⚡ kit-silent (prose gives no durationSec or maxShots); shot economy is an ALWAYS-⚡ weapon-swap field, estimate-only, cannot be pinned blind.",
+    "burst Max-Ammo-1 + 'Additional Effect: Pierce' — Pierce Damage ▲ bucket has no carrier on the control comp, so pierce tagging is offensively inert; no independent handle to assert without a pierce-buff teammate or measured popups.",
+    "skill2 144.73% damage interval cadence — ⚡ no activation clause in the kit; the firing frequency is invented and datamine-unreliable, so only its existence/scope is asserted, not its rate."
+  ],
+  "model": "claude-opus-4-8"
+}

@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 14,
-      "authored": 24,
-      "audited": 34,
+      "unit-tested": 24,
+      "authored": 20,
+      "audited": 28,
       "reconciled": 4,
       "pending": 1
     },
@@ -1041,7 +1041,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9788
+            "ratio": 0.979
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -1053,8 +1053,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9528,
-        "mad": 0.0472,
+        "mean": 0.9529,
+        "mad": 0.0471,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1883,7 +1883,7 @@
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.1584
+            "ratio": 1.1589
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
@@ -1891,8 +1891,8 @@
           }
         ],
         "n": 4,
-        "mean": 0.979,
-        "mad": 0.1002,
+        "mean": 0.9792,
+        "mad": 0.1003,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -2311,7 +2311,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6407
+            "ratio": 0.6405
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -2320,7 +2320,7 @@
         ],
         "n": 2,
         "mean": 0.9032,
-        "mad": 0.2625,
+        "mad": 0.2626,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2431,12 +2431,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.2248
+            "ratio": 1.2249
           }
         ],
         "n": 1,
-        "mean": 1.2248,
-        "mad": 0.2248,
+        "mean": 1.2249,
+        "mad": 0.2249,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -3436,24 +3436,28 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "S2a 144.73% was materialized as passive firing ~1x/fight (inert) -> now shotFired+swapGate (~5x/fight); S2b crit fbGate; burst charge-cannon 4995%/full-charge (1000% of 499.5% base). Pierce swap-scoped (unmodeled, no swap-pierce vocab)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/snow-white.json + scripts/kit-autonomy/manual-review/snow-white.md.",
+          "med FIDELITY (burst): S2/S4 crit rider modeled as fullBurstEnter, not the prose-literal inFb-gated interval cast",
+          "med FIDELITY (burst): Burst cannon modeled as delayed-flatDamage, not the prose-literal weaponSwap",
+          "low FIDELITY (burst): Delayed cannon does not receive Normal Attack Damage +% (inert at scope)",
+          "low FIDELITY (burst): Pierce core+body double-hit unmodeled (PIERCE_CORE_DOUBLE=false)"
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": true,
-      "evidence": "N4 confounded: 1.11",
+      "evidence": "N4 confounded: 1.11 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; provenance: cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged on all 5 kit lines",
       "date": "2026-07-13",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "DPS-chart FILLER control — control-trusted for its minimal team buffs, but own calibration is thin (one confounded read)",
+      "residual": "DPS-chart FILLER control — control-trusted for its minimal team buffs, but own calibration is thin (one confounded read) | owner spot-check (manual-review §3): (a) S2 crit fullBurstEnter vs inFb-gated interval cast; (b) burst delayed-flatDamage vs weaponSwap; (c) cannon Normal-Attack-Damage fidelity gap (inert at scope); (d) pierce core+body double-hit unmodeled (PIERCE_CORE_DOUBLE=false); (e) S2 15s first-fire phase + FB-scoping unmeasured",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
@@ -3497,23 +3501,25 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "Auto-Fire hit count KIT-EXACT (over-count ruled out — burst boosts loaded ammo 5->15). 1.073 HOT = bond warming + cadence ⚑ (sim assumes optimum). F1 DEF 42.24 dropped (hard rule 3); F2 Pierce 5s missing (hasPierce unset). Backfilled"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/snow-white-heavy-arms.json + scripts/kit-autonomy/manual-review/snow-white-heavy-arms.md.",
+          "low ENGINE (skill2[2] sequentialDamagePct 158.4): sequentialDamagePct 158.4 is encoded faithfully but INERT on flatDamage riders — the engine flatDamage path does not route flavor:'sequential' into the seqMult bucket (measured seqMult=1 on both 527.95 and 1055.9 lumps)."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "probe u7 team-two — seven burst windows observed end-to-end, Fully-Active ends-on-uses measured; run C 0.95",
+      "evidence": "probe u7 team-two — seven burst windows observed end-to-end, Fully-Active ends-on-uses measured; run C 0.95 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(fable-5)/S5/S6/S7(opus-4-8) converged; binding judge GREEN, no REAL-GOTCHA; board mean 0.942 (0.91-0.98, n=4)",
       "date": "2026-07-14",
       "graded": {
         "teams": 3,
         "within3pct": 1
       },
       "reference": false,
+      "residual": "owner spot-check cluster: (a) W14 stageEnter:3 vs burstCast non-discriminable in sole-B3; (b) W15/W16 whileSwapped+durationSec10 vs per-swap durationShots:1 damage-equivalent; (c) W16 sequentialDamagePct 158.4 inert-on-flatDamage-riders (engine plumbing, out of scope)",
       "unmodeled": {
         "skill1": [
           "Lock-On — Function: Designates the enemy as a target of Seven Dwarves. Max Lock-On targets: 5. Deactivation condition: Performing a normal attack or taking cover.",
@@ -3563,38 +3569,39 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "Golden-Chip gating arithmetically CORRECT (pre-consume ordering honored). F2 engine target bug: top-ATK ally 'except self' but alliesTopAtk includes owner (no excludeSelf) -> if Soda ranks #1 the buff collides to self = ally gets nothing. F3 FB-extension shape wrong (cumulative +2/+5 not flat 4; measured 14.71s impossible under +4). F1 Hit Rate 38.91 dropped"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/soda-twinkling-bunny.json + scripts/kit-autonomy/manual-review/soda-twinkling-bunny.md.",
+          "med FIDELITY (skill2): Per-FB-normal rider modeled as a flat 130% with no Time-Extension state gating; kit reads 52.04% (TE-I) / +85.02% (TE-II, cumulative 137.06%) latched at Burst-Stage-3 entry",
+          "low FIDELITY (burst): Hit Rate ▲38.91% is kit-faithful, but its two downstream channels (core rate via acrForHR, pellet landing via coneSigmaFor) are over-credited vs the owner hand-count",
+          "low ENCODING (burst): Burst nuke lacks an explicit noFb flag (S6 blind set noFb:true); relies on natural pre-FB-window timing to stay FB-exempt"
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "N3: 0.77",
+      "evidence": "N3: 0.77 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged",
       "date": "2026-07-14",
       "graded": {
         "teams": 1,
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Chip-economy model, untuned",
+      "residual": "Chip-economy model, untuned | owner spot-check: (1) Golden-Chip rebuild fork - confirm the '3 normals in FB' trigger is the +1 rebuild source (driver+S2b converged, S6 dissented monotonic-decay, driver recording-validated sim 50/43/38 vs measured 50/44/40/38/31); (2) skill2 rider flat-130 magnitude + Time-Extension gating (no engine state-snapshot primitive) on a soda-focus recording; (3) HR downstream core/landing over-credit vs hand-count (coupled SG re-fit). See scripts/kit-autonomy/manual-review/soda-twinkling-bunny.md",
       "unmodeled": {
-        "skill1": [
-          "Activates at the start of battle. Affects self. Golden Chip stacks ▲ 50."
-        ],
+        "skill1": [],
         "skill2": [],
-        "burst": [
-          "Golden Chip stacks ▼ 17 after the effect is applied."
-        ]
+        "burst": []
       },
       "caveats": [
         "skill1/burst: FAITHFUL DYNAMIC Golden-Chip pool LANDED 2026-07-17 (engine resource-counter primitive) — replaces the flat crit-42 + every-burst-65.25 derivations. Pool: start 50 (cap 50), +1 per datamined '3 normal attacks during Full Burst' (the same trigger as the AD +10.51 block), −17 on her burst (spent AFTER the gates). Crit Damage is LIVE = goldenChip×1.32 (perResource); burst ATK ▲65.25 gated at ≥30 chips (pre-spend). VALIDATED vs soda tb control.mov: sim pre-consume 50/43/38… reproduces the measured 50/44/40/38/31 within 1-2 chips (the datamined per-3-normals generation MATCHES the recorded drain, not fit to it); crit major 2.66 at 50 chips = 1+base1.0+50×1.32/100 ✓. Now comp-correct: N3 no-burst comp chips stay 50 → crit 66% → 0.954→0.974 (matches the note's ~0.96 prediction the flat-42 under-credited); burst comps drain as measured.",
         "skill2: Full Burst extension is the datamined chip-gated CUMULATIVE ladder — Time Extension I +2s at >=10 Golden Chips, Time Extension II +3s more at >=20, so +5s at >=20 and +2s at 10-19 (two resourceGate blocks on stageEnter:3). It fires on EVERY Burst-Stage-3 cast, hers or an ally's, and reads HER chip count at that instant, so late-fight Full Bursts shorten as the pool drains.",
         "burst: Hit Rate ▲38.91% for 15s is LIVE, gated at >=20 Golden Chips pre-consume (burstCast + resourceGate, ordered before the -17 spend like the ATK gate). It drives TWO channels, not one: core-hit rate via acrForHR, AND pellet LANDING via coneSigmaFor -> pelletLandFrac (sim.ts ~1266 and ~2539). ⚑ BOTH are over-credited against the owner hand-count of this fight (docs/probe-data/soda-tb-sg-core-hr-windows.json). Core: measured HR-on .074/.029/.079/.022 (near/mid/midfar/far) vs the cone's .160/.133/.077/.051. Landing is the LARGER error: measured HR-on .931/.916/.778/.711 vs the model's .998/.995/.992/.971 — the sim reads near-total landing where the count says far tops out at .711. The cone's sigma is the shared cause (measured 38.6-41.6px at HR0 vs the frozen 32.0, shrinking 9-25% vs the frozen 35%). This block is faithful to the KIT; its two downstream layers are not yet faithful to the MEASUREMENT, and they are a coupled set to be re-fit together, never singly.",
-        "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected)."
+        "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected).",
+        "kit-autonomy 2026-07-24: the two lines once listed under unmodeled are RE-ENCODED, not skipped — 'start of battle: Golden Chip stacks ▲50' is the resource pool seed (resources[0].initial=50), and 'Golden Chip stacks ▼17 after the effect is applied' is the trailing burst resource block (burstCast → goldenChip delta -17, ordered AFTER the ≥20/≥30 gates so they read the pre-consume pool). unmodeled is therefore empty (every kit line has a faithful encoding); both cross-family blind audits (fable S2b unmodeledVerbatim, opus S6 audit) independently concur that no line is unmodeled.",
+        "kit-autonomy 2026-07-24: skill2 in-FB rider is modeled as a FLAT 130% on every in-FB normal (⚑ recording-derived, Time-Ext-II-dominant), NOT gated on the Time-Extension state. The datamine reads 52.04% in TE-I / +85.02% in TE-II (cumulative 137.06%); the faithful encoding would latch the TE tier at Burst-Stage-3 entry and hold it for the whole FB (a state-snapshot primitive the engine lacks — a live resourceGate proxy is WRONG, it drops the rider post-consume when the pool dips below threshold). The flat 130 sidesteps the live-pool trap and approximates the TE-II-dominant case; refine the magnitude + TE gating on a soda-focus recording. Trigger/target/cadence (in-FB normal → 1 enemy, per pull not per pellet) are faithful; only the magnitude/state-gating is ⚑."
       ],
       "board": {
         "records": [
@@ -3620,18 +3627,23 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/soline-frost-ticket.json + scripts/kit-autonomy/manual-review/soline-frost-ticket.md."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged — opus S6 blind override reproduces the encoding line-for-line",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: (a) burstCdr trigger identity fullBurstEnter-vs-burstCast not behaviorally discriminable for a B1 opener (prose-faithful, fable-corroborated); (b) ticket steady-state casterMaxHpPct 20 collapses the 10%->20% ramp (damage-inert flag3); (c) SG cadence tuple flag1 + per-unit pellet landing flag2 unmeasured; (d) S2 HP<15% emergency heal unmodeled (structurally unreachable — no HP-threshold trigger / no incoming damage)",
       "unmodeled": {
         "skill1": [
           "Removes First Train Discount."
@@ -3660,23 +3672,26 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "true-damage buffs verified firing (trueNormals stamps trueFlavor on swap shots); values exact. F5 burst fbGate->swapGate; F6 swap-window shot economy unmeasured (~1.044 HOT)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/takina.json + scripts/kit-autonomy/manual-review/takina.md.",
+          "med ENGINE (burst): True swap normals still CRIT in the engine — the §2c 'true damage cannot crit' carve-out is not plumbed for swap normals",
+          "med FIDELITY (skill2): skill2 modeled as uptime-average permanents (3.36/93.66) rather than the engine-expressible interval pulse both blind agents chose; only steady-state-equivalent for time-uniform damage"
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "Solo sniper gauge recording (A22) + focus/unfocused gauge steps (A24); run G 1.01 after SR-gen fix",
+      "evidence": "Solo sniper gauge recording (A22) + focus/unfocused gauge steps (A24); run G 1.01 after SR-gen fix | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged — both blind re-derivations independently reproduced the structure + the swapGate FIX",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "Owner spot-check (manual-review/takina.md §4): (1) skill2 15s cooldown is COMMUNITY-sourced (Prydwen) — measure the real cooldown/pulse and consider switching the uptime-average permanents (3.36/93.66) to the engine-expressible interval-pulse (10.09/140.49 at 5s/10s); pulse-vs-swap-window alignment may matter for her burst-concentrated true damage. (2) ENGINE: true swap normals crit (sim.ts:2842 crit:true; §2c carve-out covers riders/RIDER_CRIT only, not swap normals) — broad blast radius (chisato/laplace), needs owner ruling, not changed here. (3) swap-shot economy kit-silent ⚑. (4) battle-start ATK activation UNMODELED (no battleStart trigger).",
       "unmodeled": {
         "skill1": [
           "Activates at the start of battle: ATK ▲ 80.04% for 5 sec (the battle-start activation only; the Full-Burst-end activation of the same line IS modeled as the fullBurstEnd block — engine has no battleStart trigger and passive-trigger buffs ignore durationSec, sim.ts:983-993, so this instance is not override-expressible today)"
@@ -3686,16 +3701,21 @@
         ],
         "burst": []
       },
+      "caveats": [
+        "⚑ S2 15s cooldown is COMMUNITY-sourced (Prydwen), NOT in the kit prose — the uptime-average values (damageTakenPct 3.36 = 10.09 x 5/15; trueDamagePct 93.66 = 140.49 x 10/15) depend on it. CALIBRATED; recipe: read the real skill2 cooldown + pulse shape from a focused Takina recording and rescale (value x uptime/CD). An interval-trigger pulse (10.09/140.49 for 5s/10s every CD) is the behavior-equivalent alternative the blind S2b reviewer independently proposed; both average to the same steady-state.",
+        "⚑ swap-shot economy (cadence / charge behaviour / ammo of the swapped 200.64% weapon) is kit-silent (ALWAYS-⚑ #3) — estimated optimistically by the engine's swap model; the kit gives no Full Charge line so no chargeMultPct.",
+        "⚑ true swap normals crit in the engine (sim.ts:2842 crit:true; §2c 'true damage cannot crit' carve-out covers riders/RIDER_CRIT only, not swap normals). Engine-fidelity gap; board impact unmeasured — owner spot-check, not an override encoding."
+      ],
       "board": {
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9158
+            "ratio": 0.9159
           }
         ],
         "n": 1,
-        "mean": 0.9158,
-        "mad": 0.0842,
+        "mean": 0.9159,
+        "mad": 0.0841,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -3706,22 +3726,27 @@
       "weapon": "AR",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "FULL RECONCILIATION (owner-queued): 6 of 7 lines discrepant. S2 crit-rate STALE 3.32->10.08 (3x under); S2 SG attack-speed 42.24% MISSING (alliesOfWeapon SG); burst SG 24.21% MISSING (SG allies should get 2.32+24.21 = 79.59% caster ATK); burst duration STALE 10->15s; S1 reload 5.31% + Max-Ammo+2 skipped (hard rule 1). Backfilled"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/tove.json + scripts/kit-autonomy/manual-review/tove.md.",
+          "low ENGINE (skill1): Self 5.31%/10-normals reload is UNMODELED — no instantReload/refillAmmo primitive in v1",
+          "low FIDELITY (skill2): 'At max stacks' gate modeled as an always-on frame-0 passive (no buff-stack gate primitive)",
+          "low FIDELITY (burst): Burst 'mirrors the stack count' baked as a static ×3 (no live stack-mirror for casterAtkPct)"
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — bare override, never validated",
+      "evidence": "Pure model — bare override, never validated | kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95; provenance: cross-family S2b(fable)/S5/S6/S7(opus) converged on all six modeled lines incl. the additive SG burst co-stack 79.59",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: confirm Temporary Modification holds at 3 stacks continuously + read live stack count on burst frame for the x3 mirror (steady-state CALIBRATED flags); S1 trigger cadence prose(10 attacks)-vs-datamine(2%); unmodeled self 5.31% reload (no engine primitive). See scripts/kit-autonomy/manual-review/tove.md",
       "unmodeled": {
         "skill1": [
           "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine."
@@ -3737,23 +3762,24 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "1.140 HOT NOT the kit (Spread Roots 435.6% is UNMODELED, engine has no burst-skill-dmg-amp — it's a teammate-COLD lever for 20+ B3 nukes, feature request). HOT is the weapon-fire model (cadence tuple / RL core crediting). Hard-rule violations F1/F3/F5/F8 (dropped heals/HP-grants/hit-rate)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/trina.json + scripts/kit-autonomy/manual-review/trina.md."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "Target-scope \"leftmost Electric AR ally\" from run-B video -> alliesOfElementWeapon; 2.62 -> 1.14",
+      "evidence": "Target-scope \"leftmost Electric AR ally\" from run-B video -> alliesOfElementWeapon; 2.62 -> 1.14 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged; burst Max-Ammo FIX maxAmmoPct 33.3 -> maxAmmoFlat 20 corroborated x3 (fable S2b + opus S5 + opus S6 independently derived), regression- and board-neutral",
       "date": "2026-07-13",
       "graded": {
         "teams": 3,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: burst Hit Rate 45.3 measurement-gated (HR->core magnitude); S1 heal/recovery-event primitive gap; Spread Roots/Wilted Roots burst-skill-dmg-amp primitive gap (teammate-COLD lever); burstCast-vs-fullBurstEnter trigger identity in multi-B2 comps - see scripts/kit-autonomy/manual-review/trina.md",
       "unmodeled": {
         "skill1": [
           "Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.",
@@ -3772,7 +3798,7 @@
       },
       "caveats": [
         "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).",
-        "burst: Max Ammunition +20 rounds is encoded as maxAmmoPct 33.3 (assumes a 60-round AR base magazine).",
+        "burst: Max Ammunition +20 rounds is encoded kit-literal as maxAmmoFlat 20 (flat rounds — exact for every Electric AR ally regardless of magazine size; upgraded 2026-07-24 gauntlet from the prior maxAmmoPct 33.3 proxy, which assumed a 60-round AR base magazine and under-buffed smaller magazines, e.g. a 20-round ally got +6.66 vs the kit-literal +20).",
         "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina.",
         "[2026-07-17 THEME-13] Her two 'Max HP ▲ X% of the skill user's Max HP' grants are now modeled as casterMaxHpPct (S2 44.98% → all Electric-AR allies, passive/constant; burst 20.14% → all allies, 10s). Offensively INERT: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 rule) — no board damage moves. Kit-SSOT completeness only."
       ],
@@ -3808,23 +3834,27 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "ammo-pouch gate correct (effectively unlimited); values exact. F2 team buff (25.2 casterAtk + 100.8 chargeDmg) stays up on swap shots (plausible 1.068 HOT contributor if swap doesn't full-charge; swapGate:unswapped fix-if-confirmed)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/velvet.json + scripts/kit-autonomy/manual-review/velvet.md.",
+          "S2 ally support (casterAtkPct 25.2 + chargeDamagePct 100.8) rides SWAPPED shots during Velvet's own 10s burst-weapon window — whether the 7% swap weapon satisfies 'Full Charge' is unverified (⚑ measurement-gated, documented caveat). If the swap weapon does NOT full-charge, this in-FB team buff collapses to only non-velvet-burst (crown-cast) FBs. Not a divergence in this fixture; a footage spot-check item.",
+          "hitCount:50 in-FB-only counting is inexpressible (engine counts all cumulative hits; fbGate is fire-time only). Inert here (0 procs both ways); would matter only if a fixture reached the threshold — DOCUMENTED-GAP, owner spot-check via popup cadence.",
+          "The blind S5 fixture (controlComp adds crown as a competing Burst II) is a fixture-choice artifact that vacates its own burst/FB assertions — NOT a faithfulness signal. The driver's sole-B2 comp is the correct discriminating fixture."
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": false,
-      "evidence": "Hand-verified vs a real scope-lock run (T5 wind-weak); 1.50 -> 1.05",
+      "evidence": "Hand-verified vs a real scope-lock run (T5 wind-weak); 1.50 -> 1.05 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: (1) swap-shot Full-Charge identity - do ally Charge-Dmg/ATK buffs apply during Velvet's own burst (does the 7% swap weapon full-charge?); (2) hitCount:50 in-FB-only counting fidelity (400.92% popup cadence); (3) weaponSwap shot cadence/class (kit-silent ALWAYS-flag). Magnitudes remain hand-validated (T5 wind-weak, board 1.017).",
       "unmodeled": {
         "skill1": [
           "Bullet Snatch (battle start + Burst Stage 2): removes 5% ammo from all enemies; fills own ammo pouch to 6,000 rounds.",
@@ -3862,18 +3892,25 @@
       "weapon": "SMG",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/volume.json + scripts/kit-autonomy/manual-review/volume.md.",
+          "HANDLED intra-slot-trigger-split (skill2): the two S2 blocks carry deliberately different triggers — fullBurstEnter (Burst-CD ▼) vs burstCast (Crit DMG ▲). Driver keyed them correctly and the sole-B1 fixture discriminates the split by count (Volume casts 10 != team FB 5); strictly more discriminating than the S5 blind's controlComp (which coincides). All 4 agents converged. Not a REAL-GOTCHA.",
+          "HANDLED-HYPOTHESIS escalating-cumulative-vs-replacement (skill2): 'each subsequent effect triggers all effects before it' read CUMULATIVE (engine escalating, sim.ts:2056 — Nth activation applies steps 1..N) -> 8.21s Burst-CD / +37.65% Crit DMG at cap, pinned by the driver test (per-target counts 10/9/8). Measurement-gated: confirm cumulative vs top-tier-replacement (3.17s / 14.42%) on a graded >=3-FB fight. Not a REAL-GOTCHA."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: (1) escalating cumulative-vs-tier-replacement — confirm on a graded >=3-FB fight (cumulative 8.21s CDR / +37.65% critDMG at cap vs top-tier 3.17s / 14.42%); (2) cadence tuple fire rate/reload/rolling-reload unmeasured (solo scope-lock video: rounds/10s + mag-empty gap + partial-refill tell); (3) burstCast-vs-fullBurstEnter split — a multi-B1 team is the real-world divergence case",
       "unmodeled": {
         "skill1": [
           "Affects self when killing an enemy.",
@@ -3883,9 +3920,9 @@
         "burst": []
       },
       "caveats": [
-        "skill1: the kill-gated ATK ▲ 12.6% is unmodeled — it can never trigger against the raid boss (the boss does not die mid-fight)",
-        "cadence: fire rate / reload are unmeasured estimates (engine SMG default 20 pulls/s shipped; the raw datamine says 24 pulls/s, and reload_start_ammo 119 hints at rolling reload) — verify on a focus video",
-        "skill2/burst: escalating tiers reach full value only from her 3rd Full Burst / 3rd burst cast, and every modeled effect is burst-gated — the whole kit is inert in a team that cannot chain Full Bursts"
+        "skill1: the kill-gated ATK ▲ 12.6% is UNMODELED — it can never trigger against the raid boss (the boss does not die mid-fight); recorded verbatim, not encoded as a passive/shotFired ATK proxy",
+        "cadence: fire rate / reload are unmeasured estimates (engine SMG default shipped; datamine says 24 pulls/s, and reload_start_ammo 119 hints at a rolling reload) — verify on a focus video ⚑",
+        "skill2/burst: escalating tiers reach full value only from her 3rd Full Burst / 3rd burst cast (burstCdr 8.21s/FB; critDamage +37.65%), and every modeled effect is burst/FB-gated — the whole kit is inert in a team that cannot chain Full Bursts"
       ],
       "board": null
     },
@@ -3895,37 +3932,44 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.9 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/zwei.json + scripts/kit-autonomy/manual-review/zwei.md.",
+          "ADJUDICATED-DIVERGENCE gainPierce (burst Pierce Attacks 101): judge upheld driver no-grant reading (pierceDamagePct 25.03 only) over blind S5/S6 gainPierce, on differential-wording evidence (swap uses explicit Additional Effect: Pierce; ally line uses Pierce Damage ▲). Footage-gated flag: if allies pierce after Zwei burst, add gainPierce (large upward re-model). Not a REAL-GOTCHA."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.9; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged; gainPierce fork adjudicated no-grant (footage-gated flag)",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check (manual-review/zwei.md S4): (1) gainPierce - footage-confirm whether allies pierce after Zwei burst; (2) burst swap duration/shot-economy footage-gated (datamine duration_value 1 Shot ambiguous); (3) cover-HP->recovery hypothesis (re-model S2a as heal if confirmed); (4) S2c swapGate proxy exact only when swap window == 10s PA101 status; (5) swap range-band/core SR-like guess + base SG cadence datamine-unreliable",
       "unmodeled": {
         "skill1": [
           "【Phase 3】Items ×110"
         ],
         "skill2": [
-          "【Phase 2】Items ×50"
+          "【Phase 2】Items ×50",
+          "Restores 7.52% of Cover HP."
         ],
         "burst": [
           "【Phase 1】",
-          "Cooldown: 20 s",
-          "Additional Effect: Pierce"
+          "Cooldown: 20 s"
         ]
       },
       "caveats": [
-        "burst: weapon-swap window economy is an unmeasured estimate — duration 10s (unstated in kit) and ~3 shots/window (charge 1.2s + 1-ammo reload); if footage shows reload-free cadence it is ~8 shots",
-        "skill1: 'for 1 round(s)' round-scoped buff durations approximated as 5s (no round primitive in the schema)",
-        "skill2: the Crit Rate stack's 'Pierce Attacks 101 status' gate is proxied by an in-Full-Burst gate — exact only when Zwei is the team's sole Burst I",
-        "skill2: the every-5-attacks heal recovers COVER HP in-kit; whether that fires teammates' on-recovery triggers is an unverified hypothesis",
-        "unit: pierce applies only to the swapped burst cannon in-kit; modeled as unit-wide hasPierce (her pierce buffs are burst-window-scoped, so spillover onto normal shotgun fire is minimal)"
+        "burst: weapon-swap duration is kit-silent — authored 10s to match the Pierce Attacks 101 window; shot economy ~3 full-charge shots/window (1.2s charge + 1-ammo reload). Datamine duration_value '1 Shot' is ambiguous; footage-gated ⚑",
+        "burst: 'Additional Effect: Pierce' is scoped to the swapped cannon (weaponSwap.hasPierce), NOT a unit-wide flag — her normal SG shots are not pierce-tagged, so the Pierce Damage ▲ buffs feed only her swap shots + any pierce-tagged ally",
+        "skill1: 'for 1 round(s)' encoded as durationShots 1 (holder-scoped round count, no wall-clock expiry) via the durationShots primitive (helm carrier); the prior parser-baseline approximated it as 5s",
+        "skill2: the 15% Crit Rate stack's 'while in Pierce Attacks 101 status' gate is proxied by swapGate:'swapped' (no ally-buff-state primitive); exact when the swap duration equals the 10s status duration. In a sole-B1 team this coincides with Full Burst; in multi-B1 teams it correctly stays silent on rotations Zwei does not burst (an fbGate proxy would over-credit there)",
+        "skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)",
+        "burst: swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess ⚑; base SG cadence tuple is datamine-unreliable ⚑"
       ],
       "board": null
     }

@@ -1,0 +1,69 @@
+{
+  "slug": "soline-frost-ticket",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Start of battle + on Burst: Issue 1 ticket (max 2)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "passive buff casterMaxHpPct value 20 (2 tickets x 10% of caster Max HP), maxStacks 2, target allies — modeled at steady-state cap; ramp flagged"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Ticket effect: Max HP up tickets*10% caster Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "folded into the casterMaxHpPct value above (2*10=20)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter: Cooldown of Burst Skill down 7.48 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCdr seconds 7.48, trigger fullBurstEnter, target allies"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter: Removes First Train Discount",
+      "status": "SKIPPED",
+      "effectOrReason": "internal ticket-consume-suppression status toggle; no damage/stat consequence in v1 -> unmodeled"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Squad HP <15% & has ticket: heal 12.27% Max HP; ticket -1",
+      "status": "SKIPPED",
+      "effectOrReason": "trigger 'HP < 15%' cannot fire (immortal boss, no HP pool); heal has no modeled amount -> unmodeled"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Start of battle: First Train Discount 6 sec (no ticket consume)",
+      "status": "SKIPPED",
+      "effectOrReason": "internal bookkeeping status enabling ticket-free heals; no offensive effect -> unmodeled"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "All allies: Recovers 32.26% caster final Max HP as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks 1, trigger burstCast, target allies — recovery-event emitter for heal-synergy; no HP amount modeled"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].effects[0].value",
+      "estimate": "20 (2-ticket cap; ramps 10 -> 20 after first burst)",
+      "reasoning": "Ticket currency: 1 ticket issued at battle start, +1 on each Burst cast, capped at 2. Steady-state = 2 tickets = 20% of caster Max HP. Early fight sits at 1 ticket (10%) until the first burst. ALWAYS-flag stack/currency steady-state + ramp haircut.",
+      "recipe": "Confirm accrual (1 at t=0, +1 per burst, cap 2) and whether any consumer scales off this ally-granted Max HP. If a rampSec haircut is wanted, set rampSec to the time-to-first-burst; but note ally-granted Max HP is offensively inert (e3), so this never moves board damage — verify no downstream atkOfMaxHpPct consumer before spending tuning effort."
+    },
+    {
+      "field": "override.skill1[0].trigger",
+      "estimate": "passive (steady-state stand-in for 'start of battle AND on Burst cast')",
+      "reasoning": "The kit accrues tickets on two events (battle start + own burst). Modeled as a single always-on passive at cap because the grant is continuous and offensively inert. A faithful accrual would need battle-start seed + burstCast increment.",
+      "recipe": "If a consumer ever reads live ticket count, replace with an initial-1 resource pool + burstCast delta +1 (clamp max 2) instead of a flat passive."
+    },
+    {
+      "field": "override.burst[0].effects[0] (heal amount)",
+      "estimate": "32.26% caster final Max HP — amount NOT modeled (engine emits event only)",
+      "reasoning": "Engine heal effect carries no HP magnitude; it only fires teammates' 'recovery' triggers (tandem heal-synergy). The 32.26% figure is recorded for completeness but unused by damage math in v1.",
+      "recipe": "Only matters if a teammate has an on-recovery damage buff in the comp; verify tandem interaction there. Otherwise inert."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}
