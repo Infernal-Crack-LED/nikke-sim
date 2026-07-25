@@ -1,0 +1,137 @@
+{
+  "slug": "soline-frost-ticket",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Issues 1 ticket, up to a maximum of 2",
+      "disposition": "FAITHFUL",
+      "scope": "generic resource issuance, not attack-scoped",
+      "durationSemantics": "continuous/permanent while held ('This effect is continuous') — no durationSec, no rounds; cap 2, consumed only by skill2's heal",
+      "triggerIdentity": "DUAL trigger: passive (start of battle, issues 1) AND burstCast (her OWN Burst Skill, +1 up to cap). 'when using Burst Skill' is burstCast, NOT fullBurstEnter",
+      "targetSet": "all allies (including self) — each ally holds a ticket count",
+      "nearestWrongModel": "Ticket issuance keyed to fullBurstEnter (any team FB issues a ticket) instead of burstCast; and/or uncapped stacking beyond 2; and/or a durationSec expiry on the tickets",
+      "distinguishingAssertion": "Ticket-count-driven buffApply appears at t=0 (1 ticket); the SECOND increment coincides with soline's own burstCast event (not merely fullBurstStart); after her 2nd+ burst casts NO third increment appears (cap 2); the grant never expires (no buffRemove) across the whole run",
+      "inertness": "In a comp where soline never casts her burst, the count must stay at 1 for the entire fight",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max HP ▲ tickets * 10% of user's Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "generic Max HP stat grant, scales with live ticket count (10%/20%)",
+      "durationSemantics": "continuous while tickets held — permanent in v1 (tickets are never consumed because skill2's consumer can't fire)",
+      "triggerIdentity": "rides the ticket state (passive presence), value = ticketCount × 10%",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "targetMaxHpPct ('Max HP ▲ X%' of each target's OWN HP) instead of casterMaxHpPct — the text says '10% of the SKILL USER's Max HP', a caster-HP-scaled flat grant; second misread: letting the ally grant feed a teammate's atkOfMaxHpPct conversion",
+      "distinguishingAssertion": "buffApply events carry the casterMaxHpPct-family stat at value 10 per ticket (20 at cap), identical absolute HP for every ally regardless of the target's own Max HP; toggling the line via withPatchedOverride changes ZERO damage totals for carry/helm/crown (ally-granted Max HP does not feed atkOfMaxHpPct per the e3 rule)",
+      "inertness": "All damage totals of every unit — this line is offensively inert in the control comp; keep the stat anyway (future consumer rule)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Burst Skill ▼ 7.48 sec",
+      "disposition": "FAITHFUL",
+      "scope": "burst-cooldown modifier — no damage stat",
+      "durationSemantics": "instant one-shot CDR per activation (a subtraction, not a timed buff)",
+      "triggerIdentity": "fullBurstEnter (text: 'when entering Full Burst') — fires on EVERY team Full Burst, not oncePerBattle, not on her own cast only",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "oncePerBattle: true on the burstCdr; OR reading 7.48 as a percent; OR keying to burstCast so it only fires on rotations soline bursts (with her 40s CD she may skip rotations, so burstCast under-fires vs fullBurstEnter)",
+      "distinguishingAssertion": "burstCdr of 7.48s applies at EVERY fullBurstStart event: over a 180s run, count of each unit's burstCast events strictly exceeds the withPatchedOverride(no-CDR) baseline (40s-CD units pull toward every-rotation cadence); on the 3rd+ Full Burst the reduction still lands (kills oncePerBattle); per-shot damage event values are unchanged",
+      "inertness": "Individual damage-event magnitudes (mult, crit/core rates) must NOT move — only burst/FB cadence and hence totals",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes First Train Discount",
+      "disposition": "UNMODELED",
+      "scope": "buff-removal utility, no stat",
+      "durationSemantics": "instant removal on each Full Burst entry",
+      "triggerIdentity": "fullBurstEnter",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Inventing a targetStatus/debuff on the boss, or any encoding that emits events — the engine has no buff-removal primitive, and the discount it removes is itself inert in v1 (tickets can never be consumed because skill2's HP<15% trigger cannot fire in a no-damage-intake sim)",
+      "distinguishingAssertion": "No block in the override sources any event from this line; withPatchedOverride adding/removing it moves NOTHING on the board; the verbatim text appears in unmodeled.skill1",
+      "inertness": "Everything — total board inertness, plus mandatory verbatim record (no silent drop)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 12.27% of user's Max HP",
+      "disposition": "UNMODELED",
+      "scope": "conditional emergency heal, gated on target holding ≥1 ticket",
+      "durationSemantics": "instant single heal per qualifying activation",
+      "triggerIdentity": "HP-threshold trigger ('when HP of anyone in squad < 15%') — NO schema representation exists, and in v1 the boss deals no damage so no unit can ever drop below 15%; structurally unreachable, not measurement-gated",
+      "targetSet": "the low-HP squad member, only if that target has tickets (NOT all allies)",
+      "nearestWrongModel": "Encoding it as an interval or passive heal 'to approximate sustain' — this would spuriously emit recovery events every cycle and over-credit any on-recovery consumer (Crown's 'when recovery takes effect' buffs) massively",
+      "distinguishingAssertion": "Zero heal/recovery events are ever sourced from soline's skill2 across a full run (filter cfg.onEvent recovery-driving heals by srcSlot); Crown's recovery-triggered buffApply events correlate ONLY with soline's burst casts and Crown's own kit, never with a skill2 block",
+      "inertness": "Crown's on-recovery buff uptime — the single most dangerous over-credit channel on this kit if this line is mis-encoded as live",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Ticket count ▼ 1",
+      "disposition": "UNMODELED",
+      "scope": "resource spend riding the same HP<15% activation",
+      "durationSemantics": "instant decrement per qualifying heal",
+      "triggerIdentity": "same unreachable HP-threshold trigger as the heal; also suppressed while First Train Discount is live",
+      "targetSet": "the healed target's ticket pool",
+      "nearestWrongModel": "Wiring a resource delta:-1 onto some reachable trigger (interval/burstCast) — tickets would decay, eroding the Max HP grant that the kit says is continuous",
+      "distinguishingAssertion": "Ticket count is monotonically non-decreasing over the whole run (1 at t=0, 2 after her first burst, never lower); the Max-HP grant never steps down",
+      "inertness": "The skill1 Max HP grant's permanence",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "First Train Discount for 6 sec",
+      "disposition": "UNMODELED",
+      "scope": "named function buff (no stat): ticket-consumption immunity for the s2 heal",
+      "durationSemantics": "durationSec 6 from battle start (also strippable early by skill1's FB-enter removal)",
+      "triggerIdentity": "passive (start of battle)",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Encoding as a targetStatus on the boss, or as some 6s stat buff — it is an ally-side rule modifier whose sole consumer (ticket consumption) is unreachable in v1",
+      "distinguishingAssertion": "No buffApply with any StatKey is emitted for this line; verbatim text sits in unmodeled.skill2; toggling it moves nothing",
+      "inertness": "Everything — fully inert in v1",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 32.26% of user's Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "unconditional squad heal on burst cast — the kit's tandem channel",
+      "durationSemantics": "instant single heal per cast (ticks:1); no HoT wording",
+      "triggerIdentity": "burstCast (her own Burst I, 40s CD reduced by her own S1 CDR) — a burst-slot effect fires on HER cast, never on other rotations' FB entries",
+      "targetSet": "all allies (including self)",
+      "nearestWrongModel": "Skipping the heal as 'defensive, no damage' (taxonomy trap 4) — a heal effect emits recovery events that fire teammates' on-recovery triggers (Crown in the control comp); second misread: fullBurstEnter keying, which would emit heals on rotations soline sat out",
+      "distinguishingAssertion": "Exactly one batch of heal→recovery events per soline burstCast event, targeting all five slots, and NONE on Full Bursts where she did not cast; with Crown in the comp, Crown's 'when recovery takes effect' buffApply count strictly increases vs withPatchedOverride removing this heal",
+      "inertness": "No direct damage events from the burst itself (Supporter B1, no damage clause); only recovery-consumer uptime may move",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ticket-issuance (passive + burstCast, cap 2)",
+    "skill1:MaxHP-per-ticket casterMaxHpPct 10%/ticket (kept though offensively inert)",
+    "skill1:burstCdr 7.48s on every fullBurstEnter, all allies",
+    "burst:heal 32.26% caster Max HP on burstCast → recovery events to all allies"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Removes First Train Discount."
+    ],
+    "skill2": [
+      "Recovers 12.27% of the skill user's final Max HP as HP.",
+      "Ticket count ▼ 1.",
+      "First Train Discount for 6 sec. Function: The effects of I'll Help You Board the Train! will not consume tickets."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to check the driver against: (1) the burst heal dropped as 'defensive' — it is the kit's main live tandem channel (recovery events → Crown's on-recovery consumers); its absence is a MISSING, not an UNMODELED. (2) Max HP grant encoded as targetMaxHpPct — prose says '10% of the SKILL USER's Max HP' → casterMaxHpPct family, identical flat HP to every ally; must also verify board inertness (ally Max HP grants never feed a teammate's atkOfMaxHpPct). (3) skill2's HP<15% heal resurrected as an interval/passive heal — the worst over-credit path on this kit, silently pumping Crown's recovery uptime; correct v1 disposition is unmodeled-with-verbatim because the sim has no HP intake, so the trigger is structurally unreachable (this is NOT measurement-gated). (4) burstCdr mis-encoded as oncePerBattle or as a percent — assert it lands on the 3rd+ FB and that only cadence (event counts/timing), never per-event damage values, moves. (5) Ticket issuance keyed to fullBurstEnter — diverges from burstCast exactly on rotations her 40s CD forces her to skip; the cap-at-2 assertion plus second-increment-coincides-with-her-cast distinguishes. Whole-picture: as an SG Burst-I Supporter her own fire contributes little; the two board-moving lines are the FB-enter burstCdr (rotation cadence for the whole team) and the burst heal (recovery tandem). All magnitudes (10%, 2-cap, 7.48s, 12.27%, 6s, 32.26%) are literal kit text → DATAMINED; no ALWAYS-⚑ field is exercised except her SG cadence tuple, which belongs to the base-stat layer, not these blocks.",
+  "model": "claude-fable-5"
+}

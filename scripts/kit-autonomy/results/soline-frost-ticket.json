@@ -1,0 +1,92 @@
+{
+  "slug": "soline-frost-ticket",
+  "kitDescription": "Soline: Frost Ticket is a Water SG Burst-I Supporter who is a pure healer/enabler with no offensive kit lines — her only damage is ordinary shotgun spray. At battle start and each time she casts her own Burst she hands every ally a 'ticket' (capped at 2), and each ticket raises every ally's Max HP by 10% of Soline's own Max HP. Whenever the team enters Full Burst she cuts everyone's Burst-Skill cooldown by 7.48 seconds (a real team-rotation accelerator) and clears the internal 'First Train Discount' status. If any squad member drops below 15% HP she pours out an emergency heal for 12.27% of her Max HP, spending one of that ally's tickets. Her Burst itself heals the whole squad for 32.26% of her Max HP, which is what fires teammates' on-recovery damage buffs.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Issues 1 ticket, up to a max of 2",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive casterMaxHpPct 20 (2 tickets x10%) to allies; ticket accrual collapsed to steady-state cap",
+        "blindSaid": "fable S2b: dual trigger (passive battle-start + burstCast, cap 2); opus S6: passive casterMaxHpPct 20 maxStacks 2 — identical encoding",
+        "formulaCheck": "engine has NO cap-2/consume-on-S2 stack primitive; steady-state = 2 tickets held ~97% of fight (only consume is the unreachable S2 heal); ramp 10->20 is a documented flag and is damage-inert anyway (FACT 1)",
+        "fireRateOk": true,
+        "explanation": "The ticket currency has no engine primitive; the faithful AVAILABLE encoding is the derived steady-state flat passive. She reaches cap at her first burst and never consumes under scope-lock. Ramp collapse is a documented flag, not a gotcha."
+      },
+      {
+        "kitLine": "Max HP up tickets*10% of user's Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterMaxHpPct value 20, target allies",
+        "blindSaid": "both blinds: casterMaxHpPct family (caster-HP-scaled), explicitly NOT targetMaxHpPct",
+        "formulaCheck": "prose says '10% of the SKILL USER's Max HP' -> casterMaxHpPct; resolves to flat maxHpFlat at apply (FACT 1); offensively INERT on allies (atkOfMaxHpPct counts a unit's OWN Max HP only, e3 rule) — kept per hard rule 3",
+        "fireRateOk": true,
+        "explanation": "Correct family and scope. S2d confirms the buff is byte-inert on team totals and the counterfactuals (value 10 / target self) both go RED. Inertness is faithful, not a drop."
+      },
+      {
+        "kitLine": "Cooldown of Burst Skill down 7.48 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCdr seconds 7.48 on fullBurstEnter, allies",
+        "blindSaid": "both blinds: burstCdr 7.48 on fullBurstEnter (NOT oncePerBattle, NOT burstCast, NOT a percent)",
+        "formulaCheck": "burstCdr emits no event (FACT 3); observable is cadence — base 6 FBs vs 5 without; fires on all 6 FBs (kills oncePerBattle)",
+        "fireRateOk": true,
+        "explanation": "Live and firing at prose cadence over 180s; S2d shows removing it drops FB count 6->5 (RED). The one residual is trigger identity (see rationale), which is prose-faithful but not behaviorally discriminable for a B1 opener."
+      },
+      {
+        "kitLine": "Removes First Train Discount",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim (ticket-economy bookkeeping, no damage/stat/consumer)",
+        "blindSaid": "both blinds: UNMODELED / GAP — internal status toggle, board-inert",
+        "formulaCheck": "toggles whether the S2 heal consumes a ticket; inert since the consuming heal never fires; no engine primitive",
+        "fireRateOk": true,
+        "explanation": "Deliberate unmodeled with verbatim record; F3 test pins skill1-keyed buffs emit EXACTLY {maxHpFlat} (no silent drop, no mis-encode)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "HP<15%: heal 12.27% + ticket -1",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled whole block; skill2 [] — wiring to any available trigger would fabricate recovery events",
+        "blindSaid": "both blinds: UNMODELED, structurally unreachable (NOT measurement-gated) — no HP-threshold TriggerDef, no incoming boss damage",
+        "formulaCheck": "sim models zero incoming damage + no HP-threshold trigger -> the <15% gate can never open; forcing it would over-credit any recovery consumer (measured > fudge)",
+        "fireRateOk": true,
+        "explanation": "Correct v1 disposition. F4 pins skill2-keyed buffApply empty (no fabricated heal/discount). This is the single most dangerous over-credit channel and the driver correctly leaves it inert."
+      },
+      {
+        "kitLine": "First Train Discount 6 sec + Function",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim (ticket-consumption bookkeeping, no damage path)",
+        "blindSaid": "both blinds: UNMODELED — ally-side rule modifier, sole consumer (ticket consumption) unreachable in v1",
+        "formulaCheck": "no stat/damage; gates a heal that never fires; no engine primitive",
+        "fireRateOk": true,
+        "explanation": "Documented skip; verbatim in unmodeled.skill2."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Recovers 32.26% of user's Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal on burstCast, target allies",
+        "blindSaid": "both blinds: FAITHFUL heal on burstCast (NOT fullBurstEnter); fable flags 'drop as defensive' as the trap -> this is the kit's live tandem channel",
+        "formulaCheck": "heal emits a RECOVERY event, no HP amount (FACT 2); observable is Crown's on-recovery attackDamagePct 20.99 firing on Soline's burstCast frames",
+        "fireRateOk": true,
+        "explanation": "Correct trigger and target; S2d shows recovery fires precisely on Soline's cast frames, the fullBurstEnter counterfactual fires on FB-start frames (RED), and removing the heal zeroes Crown recovery (RED). The heal is the served hard-rule-2 recovery-synergy channel."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdictRationale": "GO. Every kit line is FAITHFUL (ticket casterMaxHpPct grant, FB-enter burstCdr 7.48, burst heal on burstCast) or a documented UNMODELED gap (S1 discount-removal, the whole S2 block, S2 First Train Discount) — faithfulness 1.0, zero REAL-GOTCHAs. Both cross-family re-derivations converge: fable's pre-op S2b agrees on all four load-bearing lines and both trigger identities (casterMaxHpPct not targetMaxHpPct; burstCdr on fullBurstEnter not oncePerBattle/burstCast; heal on burstCast not fullBurstEnter), and opus's blind S6 override reproduces the driver's encoding line-for-line (only cosmetic maxStacks:2 / ticks:1 diffs). The S5 blind test run is a DOCUMENTED harness artifact (suite error: missing vitest imports + `ov.blocks` no-op helpers + a `casterMaxHpPct` filter that never matches the engine's emitted `maxHpFlat` stat — identical class to the takina/tove `o.blocks` no-op), not an override divergence; convergence is carried by the fixture-independent spec table + S6, and the driver's own S2d matrix shows all 6 FAITHFUL pins GREEN vs shipped and all 5 named counterfactuals RED (no vacuous test). The three engine FACTs hold: the ally Max-HP grant is offensively inert (kept per hard rule 3 for a future consumer, not a silent drop), the S2 HP<15% heal is STRUCTURALLY unreachable in v1 (not measurement-gated — correctly unmodeled rather than fabricated), and the burstCdr is a real cadence lever (6 FBs vs 5). Two same-model residuals for the owner to spot-check, neither GO-blocking and both prose-faithful: (1) the burstCdr trigger identity fullBurstEnter-vs-burstCast is NOT behaviorally discriminable for a Burst-I unit whose own cast opens every chain (same firing count, ~82 frames apart) — the driver picked fullBurstEnter on the prose wording ('when entering Full Burst') corroborated by fable; (2) the ticket steady-state (flat casterMaxHpPct 20) collapses the 10%->20% ramp, a documented flag that moves zero damage because the grant is inert. Magnitudes (10%, 7.48s, 12.27%, 32.26%, cap 2) are all literal DATAMINED level-10 prose values and out of scope. The shipped override is faithful — GO.",
+  "verdict": "GO",
+  "model": "claude-opus-4-8"
+}

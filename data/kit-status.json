@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 20,
-      "authored": 22,
+      "unit-tested": 21,
+      "authored": 21,
       "audited": 30,
       "reconciled": 4,
       "pending": 1
@@ -3620,18 +3620,23 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/soline-frost-ticket.json + scripts/kit-autonomy/manual-review/soline-frost-ticket.md."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged — opus S6 blind override reproduces the encoding line-for-line",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: (a) burstCdr trigger identity fullBurstEnter-vs-burstCast not behaviorally discriminable for a B1 opener (prose-faithful, fable-corroborated); (b) ticket steady-state casterMaxHpPct 20 collapses the 10%->20% ramp (damage-inert flag3); (c) SG cadence tuple flag1 + per-unit pellet landing flag2 unmeasured; (d) S2 HP<15% emergency heal unmodeled (structurally unreachable — no HP-threshold trigger / no incoming damage)",
       "unmodeled": {
         "skill1": [
           "Removes First Train Discount."

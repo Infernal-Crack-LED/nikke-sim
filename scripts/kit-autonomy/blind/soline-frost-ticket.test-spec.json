@@ -1,0 +1,55 @@
+{
+  "slug": "soline-frost-ticket",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Issue ticket; MaxHP up tickets*10% caster",
+      "disposition": "FAITHFUL (offensively inert)",
+      "assertion": "buffApply(casterMaxHpPct) emitted to allies (value 10 at battle start); zeroing every Max-HP grant leaves team totals byte-identical. Fails the inertness check if encoded as an ATK buff or as self-feeding targetMaxHpPct (would move damage)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Enter Full Burst: Burst CD down 7.48s",
+      "disposition": "FAITHFUL",
+      "assertion": "Full-Burst count over 180s is monotone in burstCdr.seconds {0,7.48,40} with strict big>none. Fails (all equal) under the nearest-wrong model where the CDR is omitted or modeled inert."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Enter Full Burst: Remove First Train Disc.",
+      "disposition": "GAP",
+      "assertion": "it.skip — kit-internal status toggle with no damage-bearing primitive; only meaningful paired with the (E) ticket-consumption bookkeeping the engine does not model."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "HP<15%: heal 12.27% + ticket -1",
+      "disposition": "GAP (MEASUREMENT/POOL-GATED)",
+      "assertion": "it.skip — v1 boss deals no damage and there is no HP pool, so the <15% gate never opens; unobservable in the deterministic sim."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Battle start: First Train Discount 6s",
+      "disposition": "GAP",
+      "assertion": "it.skip — internal 6s window that suppresses ticket consumption; no damage effect and no ticket-consumption engine to interact with."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Heal 32.26% caster MaxHP, all allies",
+      "disposition": "FAITHFUL (tandem-relevant)",
+      "assertion": "Team total monotone under heal presence (base>=noHeal): a heal can only ADD damage via Crown's recovery trigger, never subtract; a strict gap confirms the tandem. If mis-encoded as a damage bucket, stripping it drops damage and the monotone/inert expectation is disturbed."
+    }
+  ],
+  "fixtures": "controlComp('soline-frost-ticket', true) — liter(B1)/crown(B2)/soline(focus)/helm(B3). helm=true (its buffs don't confound FB-count / inertness / monotone-total assertions and it supplies the B3 that closes Full Burst). Crown is deliberately retained as the recovery-consumer that makes the (F) heal potentially non-inert. Documented dual-B1 caveat: Soline is Burst I and controlComp seeds liter as a second B1, so on rotations liter opens Soline may not cast — assertions needing her own burst (2nd ticket=20%, burst-heal tandem) are guarded or it.skip'd; the battle-start ticket (value 10) and CDR/inertness claims do not require her cast and stay non-vacuous.",
+  "gaps": [
+    "skill1 (C) Removes First Train Discount — it.skip: kit-internal status, no damage primitive.",
+    "skill2 (D) HP<15% heal + ticket consume — it.skip: v1 boss deals no damage / no HP pool, gate never opens.",
+    "skill2 (E) First Train Discount 6s (no-consume) — it.skip: internal ticket-consumption bookkeeping, no damage effect.",
+    "burst (F, strong-tandem variant) — it.skip: a clean strict Crown-recovery read needs Soline as the sole B1 opener; controlComp's second B1 (liter) can steal the open, which the harness cannot override."
+  ],
+  "flags": [
+    "Base SG cadence (rate_of_fire / reloadFrames 111) is the datamine-unreliable ⚑ for her own normal-attack damage, but it is generic weapon fire, not a kit line — no kit magnitude is invented; all kit values (10%, 7.48s, 12.27%, 32.26%) are literal in the prose.",
+    "Ticket steady-state is a two-step ramp (1 ticket=10% at t=0 -> 2 tickets=20% only after her own burst) with skill2 consumption suppressed by First Train Discount; since the whole Max-HP grant is offensively inert in v1, the exact trajectory moves zero damage and is not tuned — flagged for completeness, not modeled as a magnitude.",
+    "TRIGGER IDENTITY note: (A)'s +1 ticket keys to 'when using Burst Skill' = burstCast (her own cast), NOT fullBurstEnter — keying it to team FB-enter would over-credit the 2nd ticket in multi-burster comps. (B) and (C) key to fullBurstEnter (any team FB). Verified against the taxonomy's burst-cast vs full-burst-enter distinction."
+  ],
+  "model": "claude-opus-4-8"
+}

@@ -1,5 +1,5 @@
 {
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || soline-frost-ticket (Soline: Frost Ticket) — Burst-I Water Supporter SG healer/enabler with ZERO direct-damage kit lines (no %ATK damage / DoT / rider anywhere in the kit). Her only damage is base SG spray (normalMult 201.5 / coreMult 200 / hitsPerShot 10 / ammo 9 / reloadFrames 111) under the engine's per-unit SG landing model (class SG_LANDING_BY_BAND table is the shipped default until her landing is measured — ⚑2). MODELED: (S1 blk1) ticket Max-HP grant — 'Issues 1 ticket, up to a maximum of 2 … Ticket effect: Max HP ▲ tickets×10% of the skill user's Max HP', continuous, to ALL allies → passive `casterMaxHpPct 20` = derived steady-state (prior 4 derivable-currency: starts at 1 ticket [10%] at battle start, +1 per HER burst cast → cap 2 after her first burst [B1 opener → within rotation 1]; the only consume is the S2 HP<15% emergency heal, which never fires under scope-lock [no incoming boss damage], so the pool sits at cap for ~97% of the fight — ramp haircut negligible, ⚑3). KEPT per hard rule 3 even though ally-granted Max HP is currently inert for HP-scaling consumers (atkOfMaxHpPct counts a unit's OWN Max HP only, prior 6) — deleting it would destroy a future consumer/scaler; NOT an HP-scaling kit herself (no atkOfMaxHpPct line). (S1 blk2) 'Activates when entering Full Burst … Cooldown of Burst Skill ▼ 7.48 sec' to all allies → `burstCdr seconds 7.48` on `fullBurstEnter` (trigger read literally per prior 10 — team-FB entry, regardless of who bursted). A real rotation lever the engine supports (40s burst CD → ~32.5s effective team cadence). (BURST) 'Recovers 32.26% of the skill user's final Max HP as HP' to all allies → `heal` event on `burstCast`/allies (hard rule 2 / prior 8): fires every rotation she bursts (B1 opener) and drives any teammate 'when recovery takes effect' consumer (Crown-style); HP amount is event-only by engine design. SKIPPED → `unmodeled` (verbatim; reasons here): (S1 blk3) 'Removes First Train Discount' — pure ticket-economy bookkeeping (toggles whether the S2 emergency heal consumes a ticket); no damage, no stat, no modeled consumer; inert under scope-lock because the consuming heal never fires anyway. (S2 blk1, whole block) squad-HP<15% emergency heal (12.27% caster Max HP, ticket ▼1) — a HEAL (hard-rule-2 class) parked in unmodeled DELIBERATELY: the schema has no HP-threshold TriggerDef and the sim models no incoming boss damage, so the trigger condition never exists in-sim; wiring it to any available trigger would FABRICATE recovery events (measured > fudge). The hard-rule-2 intent (recovery synergy works when a consumer is present) is served by the BURST heal, which fires reliably every rotation. (S2 blk2) 'First Train Discount for 6 sec' + Function text — the same ticket-consumption bookkeeping, gating a heal that never fires; no damage path. ⚑ FLAGS (all UNMEASURED): (⚑1) CADENCE TUPLE (mandatory): pullsPerSec (SG class rate) + reloadFrames 111 + rolling/partial-reload behavior — shipped datamine as-is (no charFixes); mag-empty sanity: 9 rounds at ~1 pull/s ≈ 9s, no fire-mode-flavor tell → no escalation; recipe = read rounds/min + the reload gap from any focus video. (⚑2) SG per-unit pellet landing — class SG_LANDING_BY_BAND is the shipped default (SG landing is per-unit; her own landing unmeasured); recipe = focused solo, per-magazine damage-counter deltas by range band. (⚑3) ticket steady-state = 2 (casterMaxHpPct 20) — DERIVED trajectory, not cap-tier guess; caveat: in a team that never Full Bursts she never casts Burst and stays at 1 ticket (10%); recipe = confirm 2 tickets held in a real fight (no HP<15% consumes expected under scope-lock). No noFb/noRange decisions (no rider damage exists); not a charge weapon (no autofire ⚑). BURST-ELIGIBILITY note: as a lone/enabler-less unit she makes ZERO full bursts — then S1 blk2 (burstCdr), the burst heal, and the 2nd ticket all never happen; solo damage is unchanged (no FB-gated damage lines).",
+  "note": "Kit-autonomy gauntlet 2026-07-24 (GO faithfulness 1.0; cross-family S2b claude-fable-5 / S5-S7 claude-opus-4-8 converged — opus S6 blind override reproduces this encoding line-for-line). soline-frost-ticket (Soline: Frost Ticket) — Burst-I Water Supporter SG healer/enabler with ZERO direct-damage kit lines (no %ATK damage / DoT / rider anywhere in the kit); her only damage is base SG spray (normalMult 201.5 / coreMult 200 / hitsPerShot 10 / ammo 9 / reloadFrames 111) under the engine's per-unit SG landing model (class SG_LANDING_BY_BAND shipped default until her landing is measured — ⚑2). MODELED: (S1 blk1) ticket Max-HP grant — 'Issues 1 ticket, up to a maximum of 2 … Ticket effect: Max HP ▲ tickets×10% of the skill user's Max HP', continuous, to ALL allies → passive `casterMaxHpPct 20` = derived steady-state (2 tickets × 10%; she starts at 1 ticket [10%] at battle start, reaches the cap [20%] at her first Burst cast, and never consumes under scope-lock because the only consume is the unreachable S2 emergency heal — pool sits at cap ~97% of the fight). casterMaxHpPct resolves to flat Max HP at apply (sim.ts:1772) and is offensively INERT on allies (atkOfMaxHpPct counts a unit's OWN Max HP only, e3 rule) — kept per hard rule 3 for a future consumer/scaler, NOT a silent drop; NOT an HP-scaling kit herself (no atkOfMaxHpPct line). The 10%→20% ramp is a documented ⚑3 that moves zero damage because the grant is inert. (S1 blk2) 'Activates when entering Full Burst … Cooldown of Burst Skill ▼ 7.48 sec' to all allies → `burstCdr seconds 7.48` on `fullBurstEnter` (prose 'when entering Full Burst' = team-FB entry, regardless of who bursted; corroborated by fable S2b — NOT oncePerBattle, NOT burstCast). burstCdr emits no event (sim.ts:2047, mutates burstCdFrames directly); observed via team cadence — a real rotation lever (6 Full Bursts with vs 5 without over 180s; 40s burst CD → ~32.5s effective team cadence). (BURST) 'Recovers 32.26% of the skill user's final Max HP as HP' to all allies → `heal` event on `burstCast`/allies (hard rule 2 / prior 8): fires every rotation she casts (B1 opener) and drives any teammate 'when recovery takes effect' consumer (Crown-style); HP amount is event-only by engine design (no HP pool modeled). SKIPPED → `unmodeled` (verbatim; reasons here): (S1 blk3) 'Removes First Train Discount' — pure ticket-economy bookkeeping (toggles whether the S2 emergency heal consumes a ticket); no damage, no stat, no modeled consumer; inert under scope-lock because the consuming heal never fires anyway. (S2 blk1, whole block) squad-HP<15% emergency heal (12.27% caster Max HP, ticket ▼1) — a HEAL (hard-rule-2 class) parked in unmodeled DELIBERATELY: the schema has no HP-threshold TriggerDef and the sim models no incoming boss damage, so the trigger is STRUCTURALLY UNREACHABLE in v1 (NOT measurement-gated); wiring it to any available trigger would FABRICATE recovery events (measured > fudge). The hard-rule-2 intent (recovery synergy works when a consumer is present) is served by the BURST heal, which fires reliably every rotation. (S2 blk2) 'First Train Discount for 6 sec' + Function text — the same ticket-consumption bookkeeping, gating a heal that never fires; no damage path. ⚑ FLAGS (all UNMEASURED): (⚑1) CADENCE TUPLE (mandatory): SG rate of fire + reloadFrames 111 + rolling/partial-reload behavior — shipped datamine as-is (no charFixes); recipe = read rounds/min + the reload gap from any focus video. (⚑2) SG per-unit pellet landing — class SG_LANDING_BY_BAND is the shipped default (SG landing is per-unit; her own landing unmeasured); recipe = focused solo, per-magazine damage-counter deltas by range band. (⚑3) ticket steady-state = 2 (casterMaxHpPct 20) — DERIVED trajectory, not cap-tier guess; caveat: in a team that never Full Bursts she never casts Burst and stays at 1 ticket (10%); recipe = confirm 2 tickets held in a real fight (no HP<15% consumes expected under scope-lock). SAME-MODEL RESIDUALS (owner spot-check; prose-faithful, non-GO-blocking): (a) the burstCdr trigger identity fullBurstEnter-vs-burstCast is NOT behaviorally discriminable for a Burst-I unit whose own cast opens every chain (same firing count, ~82 frames apart, near-identical cadence effect); fullBurstEnter chosen on the prose wording ('when entering Full Burst') + fable convergence. (b) the ticket steady-state collapses the 10%→20% ramp (damage-inert). No noFb/noRange decisions (no rider damage exists); not a charge weapon (no autofire ⚑). BURST-ELIGIBILITY note: as a lone/enabler-less unit she makes ZERO full bursts — then S1 blk2 (burstCdr), the burst heal, and the 2nd ticket all never happen; solo damage is unchanged (no FB-gated damage lines).",
   "unmodeled": {
     "skill1": [
       "Removes First Train Discount."
@@ -23,18 +23,33 @@
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "buff", "stat": "casterMaxHpPct", "value": 20 }
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 20
+        }
       ]
     },
     {
       "slot": "skill1",
-      "trigger": { "kind": "fullBurstEnter" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "burstCdr", "seconds": 7.48 }
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        }
       ]
     }
   ],
@@ -42,10 +57,16 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "allies" },
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
       "effects": [
-        { "kind": "heal" }
+        {
+          "kind": "heal"
+        }
       ]
     }
   ]
