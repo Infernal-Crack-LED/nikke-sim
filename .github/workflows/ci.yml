@@ -1,8 +1,17 @@
 name: CI
 
 # Runs the safety checks on every PR into main and on pushes to main.
-# Mirror of bakery-bot's CI (typecheck + test; nikke-sim has no lint/format yet).
 # Make these checks "required" in the branch ruleset so nothing merges red.
+#
+# This runs the SAME gate the Railway build runs (railway.json buildCommand =
+# `verify.sh deploy`), one tier down: `full` = everything in `deploy` except the
+# DPS-chart artifact build + its smoke, which need a multi-minute `npm run dpschart`
+# and only matter on the deploy box. That equivalence is the point — CI used to run
+# only `npm test` (web build + client smoke, ~40s), so every other verify step
+# (vitest, engine + control regression, doc-drift, sg-geometry, kit-status, …) was
+# first exercised inside the Railway BUILD, i.e. after merge. On 2026-07-25 that let
+# PR #22 merge green and then fail the deploy twice on generator unit tests. A PR now
+# fails on the same step the deploy would.
 on:
   pull_request:
     branches: [main]
@@ -15,8 +24,11 @@ concurrency:
 
 jobs:
   checks:
-    name: typecheck · test
+    name: verify
     runs-on: ubuntu-latest
+    # The full gate is minutes, not seconds — the generator unit tests alone are
+    # ~3 min. Well under the 360-min default, but don't let a hang burn a runner.
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,8 +42,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Test
-        run: npm test
+      # verify.sh runs `npm run typecheck` as its FIRST step and `npm run web:build`
+      # + the client smoke (i.e. `npm test`) as its last, so this one step is a strict
+      # superset of the two it replaced. Keep it as one step, not a flattened list:
+      # verify.sh is the canonical gate (CLAUDE.md constraint 5) and a new check added
+      # there must reach CI by existing, exactly as vitest's glob wires in test files.
+      - name: Verify (typecheck · validations · regressions · unit tests · web smoke)
+        run: bash scripts/verify.sh full
