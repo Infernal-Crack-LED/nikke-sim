@@ -1092,18 +1092,24 @@
       "weapon": "MG",
       "class": "Defender",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 0.93 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/delta-ninja-thief.json + scripts/kit-autonomy/manual-review/delta-ninja-thief.md.",
+          "low ENCODING (skill2): The Ninjutsu IFAK all-ally heal is triggered on hitCount 200 as a proxy for the kit's explicit 'every 4 sec', and the override note justifies this by claiming no timed-interval trigger exists — but the engine has one."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 0.93 (binding opus judge); cross-family S2b(fable)/S5/S6/S7(opus) converged; IFAK interval-trigger gotcha resolved",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "trigger split proven by frame not count (sole-B2 fixture); solo-defender default mode wrong in 2-Defender comps (inert); MG cadence tuple unmeasured",
       "unmodeled": {
         "skill1": [],
         "skill2": [
@@ -1118,8 +1124,8 @@
         ]
       },
       "caveats": [
-        "skill2: Defender-count formation branch is user-selected via modes ('solo defender' default) — not auto-detected from the squad; pick 'with defender ally' when another Defender is present",
-        "skill2: IFAK all-ally heal cadence is a hitCount-200 proxy for 'every 4 sec' (unmeasured estimate)",
+        "skill2: Defender-count formation branch is user-selected via modes ('solo defender' is the default = modes[0]; 'auto' disables the branch since the engine cannot auto-detect Defender count) — not auto-detected from the squad; pick 'with defender ally' when another Defender is present",
+        "skill2: IFAK all-ally heal uses the engine's timed-interval trigger ({kind:'interval', sec:4}, first fire t=4); unmeasured only whether the stored heal releases on the 4s boundary or re-arms after a gap",
         "skill2/burst: shields and heals are event-only (no HP pools) — the shield-size and IFAK-accumulation ▲20.13% riders therefore have no modeled effect"
       ],
       "board": null

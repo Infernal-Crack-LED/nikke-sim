@@ -1,0 +1,179 @@
+{
+  "slug": "delta-ninja-thief",
+  "modes": [
+    "soloDefender",
+    "withDefender"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 12,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.04,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 8,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "mode": "soloDefender",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 12.25,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "mode": "soloDefender",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 200
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 12.25,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "mode": "withDefender",
+      "trigger": {
+        "kind": "interval",
+        "sec": 4
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 20,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 15,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 170,
+          "flavor": "distributed",
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Effect 2: Attract: Taunt all enemies continuously.",
+      "Effect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+      "Effect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.",
+      "Effect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK."
+    ],
+    "burst": [
+      "Next shield's HP ▲ 20.13% for 10 sec.",
+      "Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ FORMATION BRANCH: the engine has no 'no OTHER Defender ally' formation gate (formation only covers B1; teamHas can assert presence but not absence), so the two start-of-battle branches are encoded as user-selectable modes ['soloDefender','withDefender'] with soloDefender as the kit-order default. Selecting the wrong mode silently swaps the shield channel for the ally-heal channel.",
+    "⚑ IFAK cadence: 'every 4 sec … lasts for 4 sec' modeled as interval sec:4 with first fire at t=4; whether the stored-heal releases at 4s boundaries or re-arms with a gap is unmeasured.",
+    "⚑ hitCount:200 threshold timing depends on the MG cadence tuple (pulls/s not supplied; reloadFrames 171 / ammo 300 are datamine-unreliable) — the shield may fire once or twice per magazine cycle depending on the true rate.",
+    "Shield HP (12.25% Max HP), the burst's next-shield +20.13%, the stored-heal amount (165.28% ATK) and its +20.13% cap buff carry no HP pool in v1 — shields/heals exist only as event channels that fire teammates' 'shielded'/'recovery' triggers.",
+    "Skill1 block 3 targets 'enemies within attack range nearest to the crosshair'; against the single partless scope-lock boss this is equivalent to a plain enemy debuff.",
+    "Attract and Ninjutsu Camouflage are defensive statuses with no damage channel; the STATUS each confers is represented only by the mode gate it opens."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Independent blind prose→JSON read of Delta: Ninja Thief (delta-ninja-thief, MG/Water/Defender/Burst II). Offensive content is entirely support-shaped: two boss Damage Taken ▲ debuffs (12%/15s on team Full-Burst entry, 8%/10s on her OWN burst cast — burstCast, NOT fullBurstEnter, so it must not fire on rotations she does not cast), a self ATK ▲15.04% on burst cast, a team Distributed Damage ▲20% + casterAtkPct 15% for 10s, and one instant 170%-of-final-ATK distributed hit. That hit is authored noFb:true per the burst-cast FB-exemption rule (she is Burst II — her cast resolves before the Full-Burst window opens) and crit:true per the rider-crit convention; core is absent (the kit never says core strike). Start-of-battle is a formation fork the schema cannot negate, so it is modes-gated (see caveats). Shield/heal/lifesteal lines are retained as event channels rather than dropped (tandem rule: an on-recovery or on-shield consumer such as a healing-synergy ally reads them); their magnitudes are unrepresentable in v1 and are listed verbatim in unmodeled. No ignored blocks."
+}
