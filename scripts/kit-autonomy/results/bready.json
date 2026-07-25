@@ -1,0 +1,170 @@
+{
+  "slug": "bready",
+  "kitDescription": "Bready is a Water SR Burst-III attacker whose kit splits in half depending on what kind of buff her team feeds her. An ally buff that raises sustained damage puts her into Lingering Taste; a distributed-damage buff (received while she has no sustained-damage buff) puts her into Recommended Taste instead, and each taste cancels the other. Either taste costs her 20% Charge Speed for 50 seconds, so she charges more slowly whichever branch she is on. In Lingering Taste every third full-charge hit makes the boss take 10.2% more damage for 5 seconds and applies Aftertaste, a 150.04%-of-ATK sustained tick every second for 5 seconds, and her burst amplifies that Aftertaste effect by 349.8%. In Recommended Taste each full-charge hit instead grants her 60.01% Attack Damage for 5 seconds and fires a 265.07% distributed hit at all enemies, and her burst grants 70.09% ATK. Regardless of taste she gains 70.01% ATK whenever the team enters Full Burst, plus 60.19% Attack Damage for 10 seconds from her own burst cast.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "Taste exclusivity: 'modes length === 2' \u2014 driver ships 3 modes [auto,sustained,distributed]; blind assumed a 2-element taste pair. MODE-ARITY, not a kit divergence.",
+      "S1b/c: 'a chargeSpeedPct -20 self buffApply exists' + 'sign-flipping to +20 raises damage' \u2014 driver models the \u25bc20% as charFixes.chargeFrames 72 (no buffApply event). Driver is engine-correct: chargeSpeedPct is clamped to >=0 before `needed = chargeFrames \u00d7 (1 \u2212 cs/100)`, so a \u221220 buff is INERT (the blind's encoding is a 'modeled \u2260 working' drop). RECON_ERROR by the blind.",
+      "S2a Damage Taken 10.2 present / team lift / drop-counterfactual (3 asserts) \u2014 blind's reverseModes() on a 3-element array selected 'distributed', never 'sustained', so the Lingering branch was never exercised. MODE-SELECTION artifact.",
+      "S2a Aftertaste dot structural + drop-counterfactual \u2014 same mode-selection artifact (dot lives in the sustained-mode block).",
+      "S2a '1-per-3-charges vs 1-per-charge ratio' \u2014 same artifact (Lingering branch never live).",
+      "S2b/c Recommended rider asserts \u2014 blind's 'recommended' run resolved to default `auto` (tasteless), so attackDamagePct 60.01 and the 265.07 rider read 0. MODE-SELECTION artifact.",
+      "Bb 'Aftertaste Effect 349.8 present + inertness pair' \u2014 same artifact.",
+      "Bc 'atkPct 70.09 present in Recommended' \u2014 same artifact.",
+      "'exactly one Taste branch live per run and flipping swaps it' \u2014 same artifact.",
+      "NOTE: all 11 REDs root-cause to exactly two things \u2014 the 2-mode-vs-3-mode arity/selection mismatch and the charge-speed MECHANISM (where the driver is provably right). ZERO reds attribute to a magnitude, trigger identity, target set, scope, duration or flavor disagreement. The blind S6 override independently reproduces all 10 lines with identical magnitudes/triggers/targets/durations/flavors, so the two families CONVERGE on the encoding; the mechanical GREEN is only partial (7 asserts) and the blind suite never reached the sustained branch."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "entering Full Burst: ATK \u25b270.01% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / target self / buff atkPct 70.01 durationSec 10",
+        "blindSaid": "identical (S6); S5 asserted it and PASSED against the driver override",
+        "formulaCheck": "atkPct sums into (1+\u03a3ATK%) on staticAtk (\u00a71a) \u2014 correct bucket; 'when entering Full Burst' is the team FB-window-start event, not her own cast",
+        "fireRateOk": true,
+        "explanation": "The one line mechanically corroborated by the blind suite: application count === fullBurstStart count, and the burstCast counterfactual applies it strictly fewer times (helm/40s CD gap). Driver additionally pins frame-equality with fullBurstStart AND frame-inequality with her burstCast, and confirms it fires in all three modes (unconditional)."
+      },
+      {
+        "kitLine": "Lingering: Charge Speed \u25bc20% 50s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "entry trigger listed verbatim in unmodeled.skill1 (no buff-gain primitive); payload encoded as charFixes.chargeFrames 72 = 60 \u00d7 1.20, UNCONDITIONAL; \u2691 72 (subtractive) vs 75 (divisive) flagged",
+        "blindSaid": "mode-gated passive buff chargeSpeedPct \u221220, durationSec 50",
+        "formulaCheck": "\u00a74/\u00a71d: Charge Speed is SUBTRACTIVE on charge TIME with a +100% cap; the engine's clamp to [0,100] means a negative chargeSpeedPct cannot slow anything, so a charge SLOWDOWN is expressible only as a longer chargeFrames. Driver's 72 matches the subtractive convention and leaves ally +CS buffs shortening from the 72 base",
+        "fireRateOk": true,
+        "explanation": "Payload is live and directionally correct \u2014 H2's counterfactual (72\u219260) yields MORE full-charge shots, so the debuff demonstrably gates shot count (not skipped as 'defensive'). Two documented gaps: (a) the buff-gain entry trigger and the 'Cancels \u2026' line are verbatim-unmodeled, replaced by a static mode; (b) charFixes is unconditional, so the penalty is also carried in the tasteless state where the prose gives none \u2014 the driver states this in the caveats and the test header. Exact 72-vs-75 is measurement-gated and correctly left un-asserted."
+      },
+      {
+        "kitLine": "Recommended: Charge Speed \u25bc20% 50s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "same charFixes payload (identical \u25bc20% in either taste); entry trigger + 'Cancels Lingering Taste' verbatim in unmodeled.skill1",
+        "blindSaid": "second mode-gated chargeSpeedPct \u221220 passive (same inert-encoding problem)",
+        "formulaCheck": "same as the Lingering line; the prose gives both tastes the identical \u221220%, so one unconditional charge-time value is behaviourally equivalent to two mode-gated ones WHENEVER a taste is held",
+        "fireRateOk": true,
+        "explanation": "Collapsing the two identical payloads into one unconditional charFixes is faithful for both taste states and is the only encoding the engine executes. The 'not-in-a-sustained-state' priority clause (Lingering outranks Recommended) is inexpressible as a static mode and is folded into the documented mode gate; mutual exclusivity IS structurally enforced (exactly one mode live)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "3 Full Charges (Lingering) \u2192 DT \u25b210.2%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount count 3 / target enemy / buff damageTakenPct 10.2 durationSec 5 / mode sustained",
+        "blindSaid": "chargeCounter count 3 / target enemy / damageTakenPct 10.2 / 5s \u2014 identical semantics",
+        "formulaCheck": "\u00a71g: damageTakenPct is a boss-side Taken-bucket entry, so it lifts EVERY unit's damage \u2014 the 'Affects the target' wording is correctly a boss debuff, not a self buff. hitsPerShot 1 on an SR makes hits == full-charge landings under auto (auto always full-charges, \u00a74)",
+        "fireRateOk": true,
+        "explanation": "Correctly routed as a boss debuff (targetIdx null), value and 5s duration pinned, and mode-gated inert in distributed. Discrimination hole (see `discriminationOk`): the driver asserts only presence + duration, NOT the ~1-per-3-full-charges cadence, so a count:1 encoding \u2014 or an engine hitCount that also counts Aftertaste ticks / rider hits and therefore self-feeds \u2014 would pass unnoticed. The blind's ratio assert (Recommended per-shot count \u2248 2\u20134.5\u00d7 the Lingering count) is exactly the missing pin."
+      },
+      {
+        "kitLine": "Aftertaste: 150.04%/s sustained, 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "dot atkPct 150.04 / durationSec 5 / intervalSec 1 / flavor sustained, in the same 3-hit sustained-mode block; \u2691 stack-vs-refresh + overlap flagged",
+        "blindSaid": "identical dot (150.04 / 5s / 1s / sustained), also flagged append-not-refresh",
+        "formulaCheck": "\u00a72c: sustained-flavored function damage, ticks read CURRENT buffs, never core/range, crit ON by default (DOT_CRIT, non-true flavor) \u2014 driver sets no crit/core overrides, so it inherits the SSOT defaults correctly. flavor 'sustained' is what gates the burst's Damage-Up term onto it (\u00a71e)",
+        "fireRateOk": true,
+        "explanation": "Magnitude, interval, duration and flavor all match the prose; the repeating-trigger append (a fresh 5-tick instance per proc) is the engine's real semantics and is flagged rather than silently assumed. Driver pins the modal 60f tick gap. Not pinned: exactly 5 ticks per instance, and the proc count \u2014 the same cadence hole as the line above."
+      },
+      {
+        "kitLine": "FC hit (Recommended): Atk Dmg \u25b260.01%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired / target self / buff attackDamagePct 60.01 durationSec 5 / mode distributed",
+        "blindSaid": "identical (shotFired, self, attackDamagePct 60.01, 5s)",
+        "formulaCheck": "\u00a71e: 'Attack Damage \u25b2' is the DamageUp bucket (attackDamagePct), NOT atkPct \u2014 both agents got the bucket right, which matters because it multiplies rather than dilutes against the burst's own 60.19 attackDamagePct... they in fact ADD inside DamageUp, and compound multiplicatively against atkPct. Correct as encoded",
+        "fireRateOk": true,
+        "explanation": "Fires \u22650.9\u00d7 her shot count (5s refresh over a ~1.5s+ cycle \u21d2 near-permanent uptime while firing) and is 0 in sustained mode. Minor prose gap, shared with the blind: the trigger is shotFired (on release) while the kit says 'hitting a target with Full Charge' \u2014 no miss model exists for SR in this engine, so the two coincide; not a divergence."
+      },
+      {
+        "kitLine": "FC hit (Recommended): 265.07% distrib",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired / target enemy / flatDamage atkPct 265.07 flavor distributed; no crit/core/noFb overrides (engine defaults); \u2691 in-FB vs out-FB verification recipe recorded",
+        "blindSaid": "same magnitude/flavor, but authored under target self with a caveat that enemy-targeted damage might resolve to []",
+        "formulaCheck": "\u00a72b/\u00a79: function-type skill damage crits at the caster's rate, NEVER cores, NEVER takes range (noRange), takes FB by landing timing. \u00a71g: distributed deals the same TOTAL vs one target as vs many \u2014 full value against the single boss is correct, never a split penalty",
+        "fireRateOk": true,
+        "explanation": "Rider count === her shot count, and the driver pins the disposition triple (critEligible true / coreEligible false / rangeApplied false), which is the exact place a wrong model grants core or range. The blind's target-self placement is a RECON_ERROR about the engine (the driver's enemy-targeted damage demonstrably lands); the distributed FLAVOR is inert at \u00d71 in this fixture, correctly noted as engine behaviour rather than a gap."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "self: Attack Damage \u25b260.19% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / self / attackDamagePct 60.19 durationSec 10, unconditional (no mode)",
+        "blindSaid": "identical; S5 asserted it and PASSED against the driver override",
+        "formulaCheck": "\u00a78: a self line in her OWN burst block with no activation clause fires on HER cast \u2014 application count must equal her burstCast count and be strictly below the team fullBurstStart count in a co-B3 comp",
+        "fireRateOk": true,
+        "explanation": "Second mechanically corroborated line: the blind confirmed count === her burstCast count < FB count, and that re-keying to fullBurstEnter over-credits her total. Driver additionally pins frame-equality with burstCast and inequality with fullBurstStart, plus the unconditional check in both taste modes."
+      },
+      {
+        "kitLine": "in Lingering: Aftertaste Eff \u25b2349.8%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCast / self / buff sustainedDamagePct 349.8 durationSec 10 / mode sustained; \u2691 ADDITIVE Damage-Up reading stated with the consequence quantified (ticks \u00d75.10 additive vs \u00d77.20 multiplicative \u21d2 ~41% hotter)",
+        "blindSaid": "identical encoding (sustainedDamagePct 349.8, 10s, Lingering-gated) with the same scope-widening caveat \u2014 independent convergence on the additive reading",
+        "formulaCheck": "\u00a71e: Sustained Damage \u25b2 is an ADDITIVE term inside DamageUp, gated to sustained-flavored instances; her Aftertaste dot is the only sustained-flavor source she owns and the buff is self-scoped, so the scope widening is damage-equivalent HERE. The named-effect ('Aftertaste Effect \u25b2') reading would instead be a multiplier on the 150.04% tick, outside the shared bucket and therefore undiluted by crown/liter Damage-Up",
+        "fireRateOk": true,
+        "explanation": "Applied once per her burst cast, 349.8, 10s, inert in distributed mode. The additive-vs-multiplicative semantics is the single largest unresolved magnitude question in this kit and is explicitly flagged with its dilution consequence rather than silently chosen \u2014 DOCUMENTED_GAP, and magnitude semantics are owner/measurement-gated (method F). Coverage note: no assertion checks the buff actually LANDS ON the tick values (the observable is a consumer's reaction), so 'modeled \u2260 working' for the sustainedDamagePct\u2192dot routing is unverified by either suite; the blind's drop-dot-and-drop-boost inertness pair is the missing isolation."
+      },
+      {
+        "kitLine": "in Recommended: ATK \u25b270.09% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / self / buff atkPct 70.09 durationSec 10 / mode distributed",
+        "blindSaid": "identical",
+        "formulaCheck": "generic atkPct, ATK% sum bucket (\u00a71a); distinct value from the S1 FB-enter 70.01 so exact-value filters cannot conflate the two lines",
+        "fireRateOk": true,
+        "explanation": "Applied once per her burst cast in distributed mode, 0 in sustained. Both suites filter on the exact 70.09 vs 70.01, so the S2b-flagged near-collision between these two lines cannot pass silently under a swap."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill1 (override metadata / shipped default)",
+      "summary": "The shipped default mode is `auto` (tasteless), but the override's own note AND caveat both state the default is `sustained` \u2014 the artifact contradicts its own documentation, and the default the board actually runs leaves 6 of 10 kit lines inert while still paying the charge-speed penalty.",
+      "evidence": "Shipped: \"modes\": [\"auto\",\"sustained\",\"distributed\"] (first = default). Note: \"modeled as user-selectable `modes` [sustained, distributed] \u2026 DEFAULT sustained (her signature Aftertaste sustained-DoT identity + the burst's biggest line 349.8% is Lingering-gated)\". Caveat 1: \"(default: sustained = Lingering Taste \u2026)\". Driver test H10 asserts the opposite and calls it deliberate: \"the default `auto` mode (= tasteless) leaves EVERY taste-gated line inert\". Blind S6 defaulted to lingeringTaste and separately flagged the no-taste state as a real third state worth adding. Consequence per \u00a71e/\u00a71g: in `auto` her whole skill2 (boss Damage Taken 10.2 team amp, Aftertaste dot, the 60.01 Attack Damage self buff, the 265.07 distributed rider) and burst lines 2\u20133 contribute nothing, while charFixes.chargeFrames 72 still costs her shots \u2014 a strictly net-negative default.",
+      "documentedByDriver": false,
+      "severity": "med",
+      "suggestedFix": "Reconcile before merge \u2014 this is a one-line pick, not a magnitude: either (a) ship [\"sustained\",\"auto\",\"distributed\"] to match the note's stated default and rationale, or (b) keep `auto` first and rewrite the note + caveat to say the default is tasteless and WHY (i.e. no scope-lock teammate grants a sustained- or distributed-damage buff, so the literal prose leaves her tasteless). If (b), also state that the unconditional charge penalty makes `auto` pessimistic and that the taste-carrying modes are the ones to use for any comp containing a sustained/distributed buffer."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "'Aftertaste Effect \u25b2 349.8%' is encoded as an ADDITIVE sustainedDamagePct term in the shared Damage-Up bucket rather than as a multiplier on the named Aftertaste effect \u2014 the downstream effect is modeled, not the named mechanic, and the two readings differ by ~41% on her tick values.",
+      "evidence": "Kit: \"Aftertaste Effect \u25b2 349.8% for 10 sec\" (Lingering-gated, self). \u00a71e places Sustained Damage \u25b2 additively inside DamageUp, so 349.8 is DILUTED by her own 60.19 attackDamagePct and by any team Damage-Up; a named-effect multiplier would scale the 150.04% tick directly (\u2248674.9%) and be undiluted. Driver quantified it (\u00d75.10 additive vs \u00d77.20 multiplicative); blind S6 independently chose the same additive encoding and raised the same scope-widening caveat; S2b pre-flagged it as a \u2691 the driver must state rather than silently pick.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Leave as-is (additive) and keep the \u2691 \u2014 do NOT pick a number to move the board. Measurement recipe: a bready-focus recording in a Lingering team; read one Aftertaste tick popup immediately BEFORE her burst and one INSIDE her 10s window, remove the known FB/crit/core/element factors, and compare the ratio against the two predictions (additive \u2248 \u00d75.10 with this fixture's Damage-Up present, multiplicative \u2248 \u00d77.20 independent of other Damage-Up). Additionally add a cheap sim-side isolation now \u2014 drop the dot and the 349.8 buff together and confirm the totals are identical to dropping the dot alone \u2014 to prove the buff routes onto the dot at all."
+    },
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2",
+      "summary": "The Aftertaste/Damage-Taken proc rate rides on hitCount:3 and NOTHING in the driver's suite pins the ~1-per-3-full-charges cadence, so a count-inflating hitCount (if it also counts Aftertaste dot ticks or the rider) or a count:1 encoding would both pass green. UNVERIFIED BY THIS JUDGE \u2014 no code read available.",
+      "evidence": "Kit: \"Activates after landing 3 Full Charge attack(s)\". Driver encodes {kind:\"hitCount\", count:3} and asserts only presence + the 5s duration + mode inertness; the DoT test asserts the modal 60f tick gap, not the instance count. If hitCount counts every damage instance by her rather than weapon hits, each 5-tick Aftertaste instance feeds the next proc and the debuff/DoT uptime becomes self-reinforcing \u2014 a classic 'modeled \u2260 working' inflation. S2b's distinguishing assertion and the blind's ratio test (Recommended per-shot count between 2\u00d7 and 4.5\u00d7 the Lingering proc count) are exactly the pins that would catch it; the blind's version never executed because its mode selection never reached the sustained branch.",
+      "documentedByDriver": false,
+      "severity": "med",
+      "suggestedFix": "Add one assertion to the sustained run: count(bossDebuff damageTakenPct 10.2) \u2248 floor(breadyShots / 3) within a reload-gap tolerance, and count(Aftertaste ticks) \u2248 5 \u00d7 that proc count. Confirm by inspection which instances the engine's hitCount trigger increments (weapon hits only vs all damage events); if it counts dot ticks or the distributed rider, switch to a full-charge/shot-scoped counter. No magnitude change either way."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "charFixes.chargeFrames 72 is unconditional, so the Taste-only Charge Speed \u25bc20% is also paid in the tasteless `auto` state where the prose grants no taste and therefore no penalty.",
+      "evidence": "Kit: the \u25bc20% exists only as \"Lingering Taste:\" / \"Recommended Taste:\" payloads. Driver caveat: \"the Taste Charge Speed \u25bc20% debuff is modeled as a permanent charge-time increase (60\u219272 frames; assumes she is always in a taste)\", and the test header repeats it. \u00a74 confirms charge time is the only expressible channel (chargeSpeedPct clamps at 0, so the blind's \u221220 buff would be inert). Interacts with gotcha 1: with `auto` as the shipped default this documented gap becomes the live board configuration.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Keep the encoding (it is the only channel that works) and keep the caveat. If the mode-conditional form is ever wanted, it needs a mode-gated charge-time primitive; until then, resolving gotcha 1 in favour of a taste-carrying default makes the unconditional penalty correct by construction rather than merely documented."
+    }
+  ],
+  "discriminationOk": false,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All 10 kit lines are FAITHFUL (8) or DOCUMENTED_GAP (2) \u2014 every magnitude, bucket, trigger identity, target set, duration and flavor matches the prose and the formula SSOT, and the two cross-family blind re-derivations CONVERGE on all of them (the S2b spec and the S6 override reproduce the same 10 encodings independently). The S5 mechanical run is RED (7 pass / 11 fail / 4 skip) but ZERO failures are faithfulness divergences: nine are artifacts of the blind assuming a 2-element taste pair, so its reverseModes() selected `distributed` and then `auto` and never exercised the sustained branch at all; the other two are the charge-speed MECHANISM, where the driver is provably right (chargeSpeedPct clamps to >=0, so the blind's \u221220 buff would be silently inert and only a longer chargeFrames can slow an SR \u2014 a genuine 'modeled \u2260 working' catch by the driver, and a RECON_ERROR by the blind, as is its claim that enemy-targeted damage resolves to []). Ranked real findings: (1) the shipped default mode `auto` contradicts the override's own note and caveat, which both say `sustained` \u2014 undocumented, board-visible, and it makes 6 of 10 lines inert while still charging her the charge-speed penalty; fix the array or fix the note before merge, it is a one-line pick with no magnitude content. (2) The 349.8% 'Aftertaste Effect' additive-vs-multiplicative reading (~41% on her tick values) \u2014 properly \u2691-flagged, measurement-gated, out of scope to decide here. (3) hitCount:3 has no cadence assertion, so the Aftertaste/Damage-Taken proc rate is unpinned and a count-inflating or count:1 model would pass green \u2014 this is why discriminationOk is false; the rest of the load-bearing set does discriminate (H1/H7 pin FB-enter vs burstCast by exact frame in both directions, H2's 72\u219260 counterfactual proves the charge debuff gates shot count, every taste-gated line is asserted inert in the opposite mode, and the rider's crit/no-core/no-range triple is pinned). Neither undocumented item is a wrong mechanic, so this is a GO conditional on those two cheap additions, not a faithfulness rejection. Same-model residual for the owner to spot-check: the sustained (Lingering) branch was verified ONLY by the driver's own suite \u2014 the independent blind never reached it \u2014 so the boss Damage-Taken debuff, the Aftertaste dot cadence, and the 349.8 buff actually landing on the tick values all rest on a single family's assertions; the fastest independent check is the sustained run's proc-count ratio plus the drop-dot/drop-boost inertness pair.",
+  "model": "claude-opus-5"
+}

@@ -637,18 +637,27 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/bready.json + scripts/kit-autonomy/manual-review/bready.md.",
+          "med ENCODING (skill1 (override metadata / shipped default)): The shipped default mode is `auto` (tasteless), but the override's own note AND caveat both state the default is `sustained` — the artifact contradicts its own documentation, and the default the board actually runs leaves 6 of 10 kit lines inert while still paying the charge-speed penalty.",
+          "med FIDELITY (burst): 'Aftertaste Effect ▲ 349.8%' is encoded as an ADDITIVE sustainedDamagePct term in the shared Damage-Up bucket rather than as a multiplier on the named Aftertaste effect — the downstream effect is modeled, not the named mechanic, and the two readings differ by ~41% on her tick values.",
+          "med ENGINE (skill2): The Aftertaste/Damage-Taken proc rate rides on hitCount:3 and NOTHING in the driver's suite pins the ~1-per-3-full-charges cadence, so a count-inflating hitCount (if it also counts Aftertaste dot ticks or the rider) or a count:1 encoding would both pass green. UNVERIFIED BY THIS JUDGE — no code read available.",
+          "low FIDELITY (skill1): charFixes.chargeFrames 72 is unconditional, so the Taste-only Charge Speed ▼20% is also paid in the tasteless `auto` state where the prose grants no taste and therefore no penalty."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; judge GO; post-verdict mode reconciliation [sustained,distributed] + cadence pins",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "charge 72-vs-75; 349.8 additive-vs-multiplicative (~41%); DoT stack/cadence tuple; taste auto-derivation",
       "unmodeled": {
         "skill1": [
           "Activates when gaining a buff that increases sustained damage. Affects self.",
