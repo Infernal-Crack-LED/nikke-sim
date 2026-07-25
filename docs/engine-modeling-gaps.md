@@ -72,7 +72,7 @@
 | `interval` | 6 | helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
 | `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
-| `maxAmmoFlat` | 3 | grave, noir, tove |
+| `maxAmmoFlat` | 4 | grave, noir, tove, trina |
 | `maxShots` | 1 | snow-white-heavy-arms |
 | `mode` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny, mint, prika |
 | `modes` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny, mint, prika |

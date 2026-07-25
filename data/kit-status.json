@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 17,
+      "unit-tested": 18,
       "authored": 22,
-      "audited": 33,
+      "audited": 32,
       "reconciled": 4,
       "pending": 1
     },
@@ -3737,23 +3737,24 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "1.140 HOT NOT the kit (Spread Roots 435.6% is UNMODELED, engine has no burst-skill-dmg-amp — it's a teammate-COLD lever for 20+ B3 nukes, feature request). HOT is the weapon-fire model (cadence tuple / RL core crediting). Hard-rule violations F1/F3/F5/F8 (dropped heals/HP-grants/hit-rate)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/trina.json + scripts/kit-autonomy/manual-review/trina.md."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "Target-scope \"leftmost Electric AR ally\" from run-B video -> alliesOfElementWeapon; 2.62 -> 1.14",
+      "evidence": "Target-scope \"leftmost Electric AR ally\" from run-B video -> alliesOfElementWeapon; 2.62 -> 1.14 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged; burst Max-Ammo FIX maxAmmoPct 33.3 -> maxAmmoFlat 20 corroborated x3 (fable S2b + opus S5 + opus S6 independently derived), regression- and board-neutral",
       "date": "2026-07-13",
       "graded": {
         "teams": 3,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: burst Hit Rate 45.3 measurement-gated (HR->core magnitude); S1 heal/recovery-event primitive gap; Spread Roots/Wilted Roots burst-skill-dmg-amp primitive gap (teammate-COLD lever); burstCast-vs-fullBurstEnter trigger identity in multi-B2 comps - see scripts/kit-autonomy/manual-review/trina.md",
       "unmodeled": {
         "skill1": [
           "Continuously recovers 4.06% of the skill user's final Max HP every 1 sec for 5 sec.",
@@ -3772,7 +3773,7 @@
       },
       "caveats": [
         "burst: Spread Roots (435.6% Burst-Skill-damage amp on 'Affects all enemies' skills) FIRES in solo raid (enemy count = 1) and is NOT modeled — teammate all-enemies B3 burst nukes cast within 5s of Trina's burst are missing a large amp (teammates read COLD in Trina comps).",
-        "burst: Max Ammunition +20 rounds is encoded as maxAmmoPct 33.3 (assumes a 60-round AR base magazine).",
+        "burst: Max Ammunition +20 rounds is encoded kit-literal as maxAmmoFlat 20 (flat rounds — exact for every Electric AR ally regardless of magazine size; upgraded 2026-07-24 gauntlet from the prior maxAmmoPct 33.3 proxy, which assumed a 60-round AR base magazine and under-buffed smaller magazines, e.g. a 20-round ally got +6.66 vs the kit-literal +20).",
         "skill1: heals are unmodeled — recovery-trigger consumers (e.g. Crown's 'when recovery takes effect') get no events from Trina.",
         "[2026-07-17 THEME-13] Her two 'Max HP ▲ X% of the skill user's Max HP' grants are now modeled as casterMaxHpPct (S2 44.98% → all Electric-AR allies, passive/constant; burst 20.14% → all allies, 10s). Offensively INERT: ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion (e3 rule) — no board damage moves. Kit-SSOT completeness only."
       ],

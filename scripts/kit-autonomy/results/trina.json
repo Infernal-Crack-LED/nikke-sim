@@ -1,0 +1,120 @@
+{
+  "slug": "trina",
+  "kitDescription": "Trina (RL / Electric / Supporter / Burst II, cd 20s) — a pure Electric-AR support enabler. Her damage-relevant output is: S2 start-of-battle Max HP grant + burst-cast Attack Damage ▲94.15% / Reload Speed ▲50.82% to the leftmost Electric-AR ally; burst all-ally Attack Damage ▲20.9% (+caster-keyed Max HP); burst Hit Rate ▲45.3% + Max Ammo ▲20 rounds to Electric-AR allies. Her own RL damage is negligible. Non-damage / unmodelable-in-v1 kit: three S1 heals, S2 Invulnerable, and the Spread/Wilted Roots AoE-burst-damage amp.",
+  "convergence": {
+    "s2b_fable_preop": {
+      "model": "claude-fable-5",
+      "leakDetected": null,
+      "result": "FULL spec convergence on every load-bearing line. Independently derived maxAmmoFlat 20 (nearest-wrong 'maxAmmoPct … differ wildly'), corroborating the driver's S3 fix. Two dispositions differ (S1 HoT: fable FAITHFUL-as-recovery-emitter, Hit Rate: fable FAITHFUL-with-⚑) — both reconcile to documented engine/measurement gaps, not divergences against the driver."
+    },
+    "s5_blind_tests": {
+      "model": "claude-opus-4-8",
+      "leakDetected": null,
+      "specConvergence": "FULL — the blind per-line spec agrees with the driver on every load-bearing line (burst 20.9 all-allies FAITHFUL, S2 94.15/50.82 Electric-AR count:1 burstCast FAITHFUL, maxAmmoFlat 20 independently derived, S1 heals + invuln + Spread/Wilted Roots GAP, hitRate 45.3 ⚑).",
+      "testRun": "3 passed / 2 failed / 6 skipped (11). The 2 failures are BLIND HARNESS ARTIFACTS, not override divergences: (b) goPatched discards withPatchedOverride's returned clone so the counterfactual is never applied; (c) num(totals(res)) misreads the harness Record<slug,number> so base.tot is always 0 — both counterfactual assertions compare 0>0. Driver's own T5 verifies both faithfully. RED-only-from-artifacts, classified."
+    },
+    "s6_blind_override": {
+      "model": "claude-opus-4-8",
+      "leakDetected": null,
+      "result": "Structurally IDENTICAL to the driver on every load-bearing block (S2 burstCast Electric-AR count:1 94.15+50.82, burst all-allies 20.9, burst Electric-AR maxAmmoFlat 20 — a THIRD independent derivation of the fix, Spread/Wilted Roots UNMODELED). Three divergences, ALL adjudicated as the driver being MORE faithful: (1) casterMaxHpPct (driver, kit says 'of the skill USER'S Max HP') vs targetMaxHpPct (blind, self-flagged the mismatch); (2) S1 HoT UNMODELED (driver — no heal primitive in v1) vs blind heal-block (would not validate/execute); (3) Hit Rate UNMODELED measurement-gated (driver, project decision) vs blind hitRatePct-with-⚑. None a real gotcha against the driver."
+    },
+    "overall": "CONVERGENT — cross-family agreement across three independent blind re-derivations on every load-bearing structural decision; the maxAmmoFlat 20 fix is corroborated ×3 (fable S2b, opus S5, opus S6); all divergences resolve toward the driver."
+  },
+  "lineFindings": [
+    {
+      "slot": "skill1",
+      "kitLine": "After Full Burst ends → all allies: recover 4.06% caster Max HP /1s for 5s",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "v1 has no HP pool and no heal/recovery-event primitive → unmodelable. Recorded verbatim in unmodeled.skill1 + caveats (recovery-trigger consumers e.g. Crown get no events from Trina). Fable's ideal recovery-emitter encoding presupposes a primitive that does not exist. T1 pins ZERO skill1-keyed events and discriminates the empty slot from a harness blind spot via a fabricated-skill1 counterfactual."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge, 2 lowest-HP <30% → recover 2.03% caster Max HP",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "Doubly inert: no HP pool AND an ally-HP-percentage gate v1 cannot evaluate (all allies pinned at 100%). Documented."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge, 2 lowest-HP <50% → recover 1.57% caster Max HP",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "Same HP-threshold gate, unevaluable in v1; the two tiers are mutually threshold-gated (not double-stacked). Documented."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Start of battle → all Electric-AR allies: Max HP ▲44.98% of caster Max HP, constant",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "casterMaxHpPct 44.98, passive (frame 0), no expiry ('constantly'), alliesOfElementWeapon(Electric,AR,count 99). Correctly caster-keyed (kit: 'of the skill USER'S Max HP') — beats the blind's targetMaxHpPct. Offensively inert (e3 rule) but correctly encoded for SSOT completeness. T2 discriminates scope (allies), stat (targetMaxHpPct → per-target value), and duration (10s expiry)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Start of battle → 1 leftmost Electric-AR ally: Invulnerable 2s",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "No invulnerability primitive / no damage-to-allies model in v1; defensive and inert. Recorded in unmodeled.skill2. T3 pins S2 emits exactly {attackDamagePct, maxHpFlat, reloadSpeedPct} and no invuln effect."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "On Burst → 1 leftmost Electric-AR ally: Attack Damage ▲94.15% + Reload Speed ▲50.82% 10s",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "burstCast → alliesOfElementWeapon(Electric,AR,count 1) → attackDamagePct 94.15 (Damage-Up bucket, NOT atkPct) + reloadSpeedPct 50.82 (weapon-state = damage, NOT dropped as defensive), 10s. Fires 13× (=casts) over 180s. T4 discriminates count (99→both allies), trigger (fullBurstEnter, frame-discriminated), and duration (3s). U8 run-B video confirms the alliesOfElementWeapon target fixed the old alliesOfElement leak that fed +94% to RL carries."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "All allies: Max HP ▲20.14% of caster Max HP + Attack Damage ▲20.9% 10s",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "burstCast → allies → attackDamagePct 20.9 (all 5 slots) + casterMaxHpPct 20.14, 10s. Fires 65× (=casts×5). T5 discriminates trigger (fullBurstEnter) and scope (Electric-AR-only). The one fixture-independent full GREEN/RED discriminator; both blind reviewers converge FAITHFUL."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Enemy count ==1: Spread Roots — Burst Skill damage of 'Affects all enemies' skills ▲435.6% 5s",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "No StatKey expresses scoped 'burst-skill damage of Affects-all-enemies skills'. The enemy-count==1 gate IS satisfied on the solo boss (THE trap: routing 435.6% through attackDamagePct/atkPct would catastrophically over-credit ALL damage). Teammate-COLD lever (inert on Trina's own damage; amps teammates' all-enemies B3 nukes). Recorded verbatim; feature request. T6 pins NO burst-skill-damage-amp buff exists. All three blind reviewers converge on this as the dominant trap and assert no 435.6-valued buffApply may exist."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Enemy count >2: Wilted Roots ▲64.46% 5s (replaces Spread Roots)",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "Same missing primitive AND the >2-enemy gate never fires on the solo boss (enemy count==1). Doubly inert. Mutually exclusive with Spread Roots ('Changes Spread Roots to Wilted Roots'). Documented."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Electric-AR allies: Hit Rate ▲45.3% 10s",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "MEASUREMENT_GATED",
+      "note": "⚑ The only ⚑ both reviewers acknowledge. hitRatePct lifts AR/SMG/SG core rate via acrForHR; the HR→core magnitude is unmeasured (ALWAYS-⚑). Modeling it WOULD move the board (targets Electric-AR allies), so queued per the kit-audit plan pending a measurement — a documented disposition, not a silent drop. T7 pins ZERO hitRatePct buffs. estimate+recipe+tier present in §9."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Electric-AR allies: Max Ammunition Capacity ▲20 round(s) 10s",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "GAUNTLET FIX: maxAmmoFlat 20 (kit-literal flat rounds; the engine's flat-rounds path is live — theme 14, cf. tove/grave/noir), SUPERSEDING the prior maxAmmoPct 33.3 proxy that was exact only for a 60-round magazine (a 20-round Electric-AR ally got +6.66 vs +20). Regression-neutral on both snapshot comps (moran 60-round: round(60×1.333)=80==60+20; N3: no Electric-AR ally). Fires 26× (=casts×2). Corroborated ×3 cross-family (fable S2b, opus S5, opus S6 all independently derived maxAmmoFlat 20). T8 discriminates stat/value (maxAmmoPct 33.3) and scope (allies)."
+    }
+  ],
+  "gotchas": [],
+  "discriminationOk": true,
+  "discriminationNote": "§8 matrix confirms every load-bearing test is GREEN vs shipped AND RED under its named nearest-wrong counterfactual — no test is green-under-both (none vacuous). Absence-pins for the UNMODELED/GAP lines (T1/T3/T6/T7) discriminate documented skips from harness blind spots. Fire-rate 'modeled≠working' check passes: each FAITHFUL block fires at the prose-implied cadence over 180s (T4=13=casts, T5=65=casts×5, T8=26=casts×2). Full suite GREEN post-S3-fix (22 tests + 1 GAP skip).",
+  "faithfulnessScore": 0.95,
+  "verdict": "GO",
+  "verdictRationale": "GO. Every kit line is accounted for: 4 FAITHFUL (S2 casterMaxHpPct 44.98, S2 burstCast 94.15/50.82, burst all-ally 20.9/20.14, burst maxAmmoFlat 20) and 7 documented UNMODELED/GAP/⚑ (3 S1 heals, S2 invuln, Spread/Wilted Roots, Hit Rate) — audit SKIPPED ↔ unmodeled 1:1, no silent drops. No REAL-GOTCHA: the three S6 blind divergences all resolve toward the driver being MORE faithful (casterMaxHpPct over targetMaxHpPct per kit prose; S1 HoT UNMODELED because no heal primitive exists; Hit Rate UNMODELED per the project's measurement-gated decision). The S5 blind tests converge FULLY on spec; their 2 test failures are classified blind harness artifacts (unapplied counterfactual + a Record-shape misread), RED only from blindness, not override divergence. The maxAmmoFlat 20 fix is cross-family corroborated ×3 and regression-neutral. Discrimination passes (§8 matrix, no vacuous tests), the fire-rate check passes (FAITHFUL blocks fire every cycle), and every ⚑ carries estimate + recipe + tier. Residual owner spot-check items (S1 heal/recovery primitive gap + burst Hit Rate 45.3 measurement-gated ⚑) are documented engine/measurement gaps, not blockers. Verdict is BINDING.",
+  "model": "claude-opus-4-8"
+}

@@ -1,0 +1,230 @@
+{
+  "slug": "trina",
+  "leakDetected": null,
+  "override": {
+    "slug": "trina",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 5,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesOfElementWeapon",
+          "element": "Electric",
+          "weapon": "AR"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 44.98
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfElementWeapon",
+          "element": "Electric",
+          "weapon": "AR",
+          "count": 1
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 94.15,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "reloadSpeedPct",
+            "value": 50.82,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 20.14,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 20.9,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfElementWeapon",
+          "element": "Electric",
+          "weapon": "AR"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 45.3,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "maxAmmoFlat",
+            "value": 20,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Full Charge: if 2 lowest-HP allies <30% HP, recover 2.03% caster Max HP — HP-threshold heal, no HP-pool gate expressible; v1 boss deals no damage so ally HP never drops below 30% (inert).",
+        "Full Charge: if 2 lowest-HP allies <50% HP, recover 1.57% caster Max HP — same HP-threshold heal, inert in v1 (no damage taken)."
+      ],
+      "skill2": [
+        "Start of battle: 1 leftmost Electric AR ally Invulnerable 2s — defensive; no HP/damage-taken model in v1."
+      ],
+      "burst": [
+        "enemy count = 1: Spread Roots — Burst Skill damage of skills 'Affects all enemies' ▲435.6% for 5s. Condition TRUE on single-target boss, BUT no StatKey captures a scoped 'AoE-burst-skill-damage' amplifier; mismapping to attackDamagePct would massively over-credit ALL damage. Flagged large gap (see flags).",
+        "enemy count >2: Changes to Wilted Roots — same AoE-burst-damage buff ▲64.46% for 5s. Requires >2 enemies; inert on 1-enemy scope-lock boss AND same no-StatKey gap."
+      ]
+    },
+    "caveats": [
+      "targetMaxHpPct grants (skill2 44.98%, burst 20.14%) read 'of the skill user's Max HP' (CASTER-scaled), but targetMaxHpPct scales by the TARGET's own Max HP — semantic mismatch. Kept for kit completeness; offensively INERT either way (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct — e3 rule), so the mismatch moves no damage. If a casterMaxHpPct stat exists, prefer it.",
+      "Burst team-buff blocks keyed to burstCast (Trina B2 casts pre-FB; 10s duration covers the FB window). Judge burstCast vs fullBurstEnter against measurement — divergence only matters in multi-B2 comps.",
+      "skill2 line3 + skill1 heal chosen as the load-bearing damage-relevant lines; the two conditional heals + invulnerability are survival-only and inert in a partless immortal-boss v1.",
+      "⚑ hitRatePct 45.3 magnitude → core-lift is measured-only (see flags); shipped live but treat as HYPOTHESIS."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Trina (RL/Electric/Supporter/B2) is a pure supporter — her own damage is negligible RL normals; her value is team buffs to Electric-AR allies: skill2 burst-cast Attack Damage ▲94.15% + Reload ▲50.82% to the leftmost Electric-AR ally, burst Attack Damage ▲20.9% to all + Hit Rate ▲45.3% / Max Ammo ▲20 to Electric-AR allies. LARGEST GAP: the Spread Roots / Wilted Roots burst lines (▲435.6% / ▲64.46% 'Burst Skill damage of skills that Affect all enemies') have no StatKey and are left unmodeled — a real, potentially large omission for an AoE-burst carrier, but faithful (no StatKey to route it through; approximating via attackDamagePct would over-credit everything). Heals and the caster-scaled Max-HP grants are offensively inert in v1."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "After FB end: HoT 4.06%/s ×5, all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks:5 intervalSec:1, trigger fullBurstEnd, target allies (emits recovery events for tandem consumers; HP amount unmodeled)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge: 2 lowest <30% → recover 2.03%",
+      "status": "SKIPPED",
+      "effectOrReason": "HP-threshold heal; no HP-pool gate expressible + v1 boss deals no damage → never fires (inert)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge: 2 lowest <50% → recover 1.57%",
+      "status": "SKIPPED",
+      "effectOrReason": "same HP-threshold heal, inert in v1"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Start: Electric AR allies Max HP ▲44.98%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 44.98 (passive); offensively inert but recorded — caster-scaled nuance in caveats"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Start: 1 leftmost Electric AR ally Invuln 2s",
+      "status": "SKIPPED",
+      "effectOrReason": "defensive; no damage/HP-taken model"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "On Burst: 1 leftmost E-AR ally AtkDmg ▲94.15% + Reload ▲50.82% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast → alliesOfElementWeapon count1: attackDamagePct 94.15 + reloadSpeedPct 50.82, 10s (reload = weapon-state = damage)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "All allies: Max HP ▲20.14% + AtkDmg ▲20.9% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast → allies: targetMaxHpPct 20.14 (inert-recorded) + attackDamagePct 20.9, 10s"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1 enemy: Spread Roots AoE-burst dmg ▲435.6% 5s",
+      "status": "SKIPPED",
+      "effectOrReason": "no StatKey for scoped 'burst damage of Affects-all-enemies skills'; condition TRUE on boss but unmodelable without over-crediting — ⚑ large gap"
+    },
+    {
+      "slot": "burst",
+      "kitLine": ">2 enemies: Wilted Roots ▲64.46% 5s",
+      "status": "SKIPPED",
+      "effectOrReason": "requires >2 enemies → inert on 1-enemy boss; also same no-StatKey gap"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Electric AR allies: Hit Rate ▲45.3% + MaxAmmo ▲20 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast → alliesOfElementWeapon: hitRatePct 45.3 (⚑ core-lift) + maxAmmoFlat 20, 10s"
+    }
+  ],
+  "flags": [
+    {
+      "field": "(base cadence) pullsPerSec / RL fire+charge tuple",
+      "estimate": "engine default from datamine (chargeFrames 60, ammo 6, reloadFrames 170)",
+      "reasoning": "ALWAYS-⚑ cadence tuple: datamined rate_of_fire / reloadFrames are unreliable, and effective cadence lands on 60fps frame boundaries. Trina's own RL damage is negligible (pure supporter), so error impact is tiny, but flagged per taxonomy.",
+      "recipe": "Read her ammo counter / shots-per-second off a fight recording; derive effective = 60/ceil(60/nominal)."
+    },
+    {
+      "field": "burst[1].effects[0] hitRatePct value:45.3",
+      "estimate": "45.3 (kit nominal) → core-lift magnitude via hrCoreMult is UNMEASURED",
+      "reasoning": "Hit-Rate→core magnitude is measured-only (ALWAYS-⚑). The 45.3% is the literal kit Hit Rate; how much core-hit rate it actually buys on Electric-AR carriers is not derivable from prose.",
+      "recipe": "Toggle HRCORE on/off on a graded Electric-AR comp with Trina bursting; compare CORE-HIT popup fraction on the AR carrier vs the kit's stated hit-rate delta."
+    },
+    {
+      "field": "burst — Spread Roots / Wilted Roots (▲435.6% / ▲64.46%)",
+      "estimate": "UNMODELED (0 contribution); true value could be large for an AoE-burst carrier",
+      "reasoning": "No StatKey captures 'Burst Skill damage of skills that Affect all enemies'. Spread Roots' 1-enemy condition is TRUE on the scope-lock boss, so this is a genuine omission — but routing 435.6% through attackDamagePct/attackDamagePct would over-credit every damage source, not just qualifying AoE-burst skills. Left faithful-but-incomplete.",
+      "recipe": "Requires either a new scoped StatKey (AoE-burst-skill damage bucket) + measurement of which teammates' burst damage qualifies, or a hand-fit against a recorded Trina-buffed AoE-burst carrier's popups vs an un-buffed baseline."
+    },
+    {
+      "field": "skill2[0]/burst[0] targetMaxHpPct (44.98 / 20.14)",
+      "estimate": "value kept as-authored; treated inert",
+      "reasoning": "Kit says 'of the skill user's Max HP' (caster-scaled) but targetMaxHpPct scales by target's own Max HP. Mismatch is harmless because ally-granted Max HP does not feed a teammate's atkOfMaxHpPct (e3 rule) — the grant is offensively inert. Would matter only if a future consumer/scaler reads a caster-scaled Max-HP grant.",
+      "recipe": "If a casterMaxHpPct StatKey is available, re-key these; otherwise no action — no damage moves in v1."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

@@ -1,0 +1,76 @@
+{
+  "slug": "trina",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "FB-end: recover 4.06%/s for 5s, all allies",
+      "disposition": "GAP",
+      "assertion": "it.skip — heal-over-time (ticks:5); no HP pool in v1 so it drives no damage. Nearest-wrong would be treating the % as an ATK/HP-scaler; not assertable."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge, 2 lowest-HP <30%: heal 2.03%",
+      "disposition": "GAP",
+      "assertion": "it.skip — HP-percentage-gated heal; immortal boss keeps all allies at 100% so it never fires."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge, 2 lowest-HP <50%: heal 1.57%",
+      "disposition": "GAP",
+      "assertion": "it.skip — same HP-gate, never fires."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "start: Max HP ▲44.98% of caster HP, Elec+AR",
+      "disposition": "UNMODELED",
+      "assertion": "it.skip — ally-granted Max HP is offensively inert (no atkOfMaxHpPct feed for non-self). Kept as a buff for completeness; no damage delta to discriminate. ⛑ stat-key: caster-scaled Max HP has no clean key in the redacted list."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "start: Invulnerable 2s, 1 leftmost Elec+AR",
+      "disposition": "GAP",
+      "assertion": "it.skip — defensive; no damage-taken model on allies."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "burst-cast: Atk Dmg▲94.15% + Reload▲50.82% 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "Inertness: attackDamagePct≈94.15 buffApply must land on ZERO allies in the control comp (no Electric-AR unit) — RED if driver widened target to all-allies/all-AR. Positive magnitude + burstCast-vs-fullBurstEnter divergence it.skip'd (needs custom comp + 2nd burster)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "all allies: Max HP▲20.14% + Atk Dmg▲20.9% 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "MAIN: attackDamagePct≈20.9 buffApply reaches all 4 slots (proves trina bursts + all-ally scope). base.total > zeroed.total (value moves damage; RED if inert/mis-bucketed). base.total > scoped.total after re-scoping target to Electric+AR (RED under the nearest-wrong Electric-AR-only scope). Max HP portion inert (it.skip)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "enemies==1: Spread Roots ▲435.6% 5s",
+      "disposition": "GAP",
+      "assertion": "it.skip — \"burst-skill damage of Affects-all-enemies skills\" has no engine bucket; belongs in unmodeled. Single-boss = 1 enemy so this branch is the active one, but still unmodeled."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "enemies>2: Wilted Roots ▲64.46% 5s",
+      "disposition": "GAP",
+      "assertion": "it.skip — multi-enemy gate off in single-boss (never active) + same AoE-scaler GAP."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Elec+AR allies: Hit Rate▲45.3% + Max Ammo▲20 rounds 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "Inertness: hitRatePct≈45.3 and maxAmmoFlat≈20 buffApply must land on ZERO of liter/crown/helm (not Electric-AR) — RED if driver mis-scoped. Positive magnitudes it.skip'd (fixture lacks Electric-AR ally; hitRate is ⛑ measurement-gated)."
+    }
+  ],
+  "fixtures": "controlComp('trina', true) = liter(B1)/crown(B2)/trina/helm(B3), helm=true. Chosen because it is the only harness-supplied comp and it supplies lower-tier bursters so trina can cast. CRITICAL LIMITATION surfaced by the spec: none of liter/crown/helm is an Electric-Code AR unit and trina is RL, so every 'Electric Code allies with assault rifles' line (skill2 all three blocks, burst block 4) targets the EMPTY set — assertable only for inertness. Only the all-allies burst Attack-Damage ▲20.9% is fixture-independent and yields a full GREEN-under-faithful / RED-under-nearest-wrong discriminator (value-off + wrong-scope counterfactuals). A faithful positive test of the Electric-AR payload + the burstCast-vs-fullBurstEnter trigger split requires a custom comp containing an Electric AR ally and a second burster.",
+  "gaps": [
+    "skill1 FB-end HoT 4.06%/s×5s + HP-gated <30%/<50% heals — it.skip: no HP pool in v1 (immortal boss); heals drive nothing.",
+    "skill2 Invulnerable 2s — it.skip: defensive, no damage-taken model on allies.",
+    "skill2 Atk Dmg▲94.15% + Reload▲50.82% (positive magnitude) — it.skip: control comp has no Electric-AR ally; also needs a 2nd burster to separate burstCast from fullBurstEnter.",
+    "burst Hit Rate▲45.3% + Max Ammo▲20 rounds (positive magnitude) — it.skip: fixture lacks Electric-AR ally; hitRatePct core-lift magnitude is ⛑ measurement-gated regardless.",
+    "burst Spread Roots ▲435.6% / Wilted Roots ▲64.46% — it.skip: 'burst-skill damage of Affects-all-enemies skills' has no engine bucket (belongs in `unmodeled`); >2-enemy branch also gated off in single-boss.",
+    "skill2 Max HP▲44.98% + burst Max HP▲20.14% (of caster HP) — it.skip: ally-granted Max HP offensively inert; no discriminating damage delta. ⛑ stat-key: caster-scaled Max HP absent from the redacted StatKey list."
+  ],
+  "model": "claude-opus-4-8"
+}
