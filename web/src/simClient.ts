@@ -24,6 +24,8 @@ export interface TopTeamsOpts {
   pinnedByTeam?: string[][];
   mustUse?: string[];
   spreadTargets?: number[];
+  /** cross-team polish passes (teamcalc item 4); omit for the shipped default */
+  polishPasses?: number;
 }
 /** Cumulative-sims-done callback (denominator is unknown up front — the search
  *  size depends on the pool contents), for a lightweight "Calculating… (N)" UI. */
