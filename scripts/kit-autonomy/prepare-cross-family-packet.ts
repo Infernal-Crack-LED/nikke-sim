@@ -125,13 +125,30 @@ const outDir = join(HERE, 'cross-family', slug);
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'types-redacted.ts'), redactedSchema);
 
+// Structural cheat-sheet for the blind roles: the NON-unit-specific harness/override shapes they
+// kept guessing wrong (structural RECON_ERRORs — flat "blocks" vs slot-keyed file, totals() map vs
+// scalar, gainPierce vs hasPierce, flat-resolved caster-stat event values, no buffRemove on lapse).
+// All generic infrastructure (true for every unit) — exposes NO answer tokens, so it preserves
+// blindness; the per-packet leak assertion below still runs over it.
 const harnessNote = `=== HARNESS API (scripts/tests/lib/harness.ts) ===
-controlComp(carry, helm?=true) → CompOptions (liter B1 / crown B2 / carry B3 / helm B3, boss Fire, focus carry).
-runComp(opts) → SimResult (deterministic, no seed). totals(res); unitOf(res, slug).
-withPatchedOverride(slug, mutate) → in-memory override clone (committed JSON untouched).
-cfg.onEvent: (ev) => void — kinds shot/damage/buffApply/buffRemove/reload/burstCast/fullBurstStart/fullBurstEnd;
-damage carries bucket, srcSlot, crit/core rates, inFullBurst, fbMajorApplied, rangeApplied, mult.
-NOTE: boss-held debuffs emit buffApply with casterIdx===null AND targetIdx===null — filter them by stat+value.`;
+controlComp(carry, helm?=true) → CompOptions (liter B1 / crown B2 / carry B3 / helm B3, boss Fire, focus carry). A lone Burst III unit makes ZERO full bursts — the fixture MUST include B1+B2 so bursts actually cast.
+runComp(opts) → SimResult (deterministic, no seed).
+totals(res) → Record<slug, number>: a PER-SLUG MAP keyed by unit slug → that unit's totalDamage. Index totals(res)[slug]; it is NOT a scalar.
+unitOf(res, slug) → that unit's result row (throws if the slug is not in the comp).
+CompOptions.overrides → Record<slug, OverrideFile | undefined>: a PER-SLUG MAP of in-memory override patches keyed by slug (unpatched slugs load from disk).
+withPatchedOverride(slug, mutate) → deep-clones the committed override, applies mutate to the CLONE, returns it (committed JSON on disk untouched).
+cfg.onEvent: (ev) => void — kinds shot/damage/buffApply/buffRemove/reload/burstCast/fullBurstStart/fullBurstEnd.
+damage events carry bucket, srcSlot, crit/core rates, inFullBurst, fbMajorApplied, rangeApplied, mult.
+buffApply events carry { stat, key, value, stacks, maxStacks, casterIdx, targetIdx, targetSlug, refresh, expiresFrame, durationShots }.
+buffRemove is emitted ONLY for removeOnReload buffs at reload-to-max (cause:'reload') — the engine does NOT emit buffRemove when a buff expires by time. Do NOT pair a buffApply with a buffRemove on natural lapse; read expiresFrame / durationShots off the buffApply to reason about expiry.
+CASTER-SCALED STAT VALUES ARE FLAT-RESOLVED AT APPLY TIME: a buffApply 'value' for casterAtkPct is (kit%/100)×caster.staticAtk — a flat ATK number, NOT the raw kit percentage. highestAllyAtkPct is emitted under stat 'casterAtkPct' (flat ATK); casterMaxHpPct / targetMaxHpPct are emitted under stat 'maxHpFlat' (flat HP). Plain percentage stats (atkPct, attackDamagePct, critRatePct, …) keep their raw percentage value. Filter events by stat+key and assert on the emitted value accordingly.
+NOTE: boss-held debuffs emit buffApply with casterIdx===null AND targetIdx===null — filter them by stat+value.
+
+=== OVERRIDE FILE SHAPE (src/skills/overrides/<slug>.json — the OverrideFile you read and write) ===
+The override JSON is keyed by SKILL SLOT: { note?, unmodeled?: {skill1[],skill2[],burst[]}, skill1: Block[], skill2: Block[], burst: Block[], hasPierce?, modes?, … }. All three slot arrays are REQUIRED for a roster unit. Each Block also redundantly carries its own "slot" field. There is NO top-level "blocks" array on the file — iterate override.skill1 / .skill2 / .burst. (The engine's INTERNAL CharacterSkills flattens the slots into one blocks[] array, but the override FILE is slot-keyed.)
+A Block = { slot, trigger: TriggerDef, target: TargetDef, effects: EffectDef[], + optional gates: formation / teamHas / everyN+everyNOffset / requiresCore / fbGate / swapGate / requiresShielded / requiresTargetStatus / ownBurstGate / bossElementGate / resourceGate / mode }.
+PIERCE: timed or step-gated "Gain Pierce" is a gainPierce effect (kind:'gainPierce', optional durationSec; absent durationSec = continuous) — DISTINCT from the top-level hasPierce:boolean flag (whole-fight Pierce tagging). A boolean cannot step-gate pierce that turns on only after a stack threshold; use a gainPierce effect on the triggering block.
+The exact StatKey / TriggerDef / TargetDef / EffectDef identifiers are in the REDACTED EFFECT SCHEMA below — read it for precise field names before writing assertions or override JSON.`;
 
 const requestLines: string[] = [
   `# Cross-family review REQUEST — \`${slug}\``,
