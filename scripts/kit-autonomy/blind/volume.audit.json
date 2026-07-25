@@ -1,0 +1,81 @@
+{
+  "slug": "volume",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Kill: ATK ▲12.6% for 5 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Kill trigger; immortal boss + no adds = never fires. No 'kill' TriggerDef primitive. → unmodeled.skill1 (verbatim)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter (all allies): escalating hdr",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter, target allies, effects[escalating]."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: Burst CD ▼ 2.34 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step1 burstCdr 2.34."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: Burst CD ▼ 2.7 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step2 burstCdr 2.7 (cumulative)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Three times: Burst CD ▼ 3.17 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step3 burstCdr 3.17 (cumulative)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst use (all allies): escalating hdr",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, target allies, effects[escalating]."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: Crit DMG ▲ 10.77% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step1 buff critDamagePct 10.77 durSec 5."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: Crit DMG ▲ 12.46% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step2 buff critDamagePct 12.46 durSec 5 (cumulative)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Three times: Crit DMG ▲ 14.42% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step3 buff critDamagePct 14.42 durSec 5 (cumulative)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "All allies: Crit Rate ▲ 31.9% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, target allies, buff critRatePct 31.9 durSec 5."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1",
+      "estimate": "inert (0 buff/damage in the solo-raid sim)",
+      "reasoning": "'Affects self when killing an enemy' — the scope-lock raid boss is immortal and the fight has no adds, so a kill never occurs. There is no 'kill' TriggerDef primitive to key it to. Guessing a proxy trigger/cadence would fabricate uptime the unit never earns, so the faithful call is to leave skill1 empty and record the line verbatim in unmodeled.",
+      "recipe": "If an add-spawning / killable-target fight is ever modeled, add an on-kill trigger and apply buff atkPct 12.6 durationSec 5 target self; otherwise it stays inert."
+    },
+    {
+      "field": "override.skill2 (both escalating blocks)",
+      "estimate": "CUMULATIVE escalating (Nth activation = sum of tiers 1..N)",
+      "reasoning": "Kit states 'Each subsequent effect triggers all effects before it', which maps 1:1 to the `escalating` primitive (Nth activation applies steps 1..N). Alternative reading = tier-REPLACEMENT (Nth activation applies ONLY tier N). The literal clause favors cumulative, but I cannot verify which the engine/game actually does without a fight.",
+      "recipe": "Watch a graded fight where Volume enters FB ≥3 times: measure total Burst-CD shaved per FB (cumulative → ~8.21s on the 3rd, replacement → 3.17s) and Crit DMG applied on her 3rd burst cast (cumulative → 37.65%, replacement → 14.42%). Swap escalating for per-count magnitudes if replacement is observed."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

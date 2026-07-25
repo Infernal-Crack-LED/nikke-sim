@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 15,
-      "authored": 23,
+      "unit-tested": 16,
+      "authored": 22,
       "audited": 34,
       "reconciled": 4,
       "pending": 1
@@ -3862,18 +3862,25 @@
       "weapon": "SMG",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/volume.json + scripts/kit-autonomy/manual-review/volume.md.",
+          "HANDLED intra-slot-trigger-split (skill2): the two S2 blocks carry deliberately different triggers — fullBurstEnter (Burst-CD ▼) vs burstCast (Crit DMG ▲). Driver keyed them correctly and the sole-B1 fixture discriminates the split by count (Volume casts 10 != team FB 5); strictly more discriminating than the S5 blind's controlComp (which coincides). All 4 agents converged. Not a REAL-GOTCHA.",
+          "HANDLED-HYPOTHESIS escalating-cumulative-vs-replacement (skill2): 'each subsequent effect triggers all effects before it' read CUMULATIVE (engine escalating, sim.ts:2056 — Nth activation applies steps 1..N) -> 8.21s Burst-CD / +37.65% Crit DMG at cap, pinned by the driver test (per-target counts 10/9/8). Measurement-gated: confirm cumulative vs top-tier-replacement (3.17s / 14.42%) on a graded >=3-FB fight. Not a REAL-GOTCHA."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: (1) escalating cumulative-vs-tier-replacement — confirm on a graded >=3-FB fight (cumulative 8.21s CDR / +37.65% critDMG at cap vs top-tier 3.17s / 14.42%); (2) cadence tuple fire rate/reload/rolling-reload unmeasured (solo scope-lock video: rounds/10s + mag-empty gap + partial-refill tell); (3) burstCast-vs-fullBurstEnter split — a multi-B1 team is the real-world divergence case",
       "unmodeled": {
         "skill1": [
           "Affects self when killing an enemy.",
@@ -3883,9 +3890,9 @@
         "burst": []
       },
       "caveats": [
-        "skill1: the kill-gated ATK ▲ 12.6% is unmodeled — it can never trigger against the raid boss (the boss does not die mid-fight)",
-        "cadence: fire rate / reload are unmeasured estimates (engine SMG default 20 pulls/s shipped; the raw datamine says 24 pulls/s, and reload_start_ammo 119 hints at rolling reload) — verify on a focus video",
-        "skill2/burst: escalating tiers reach full value only from her 3rd Full Burst / 3rd burst cast, and every modeled effect is burst-gated — the whole kit is inert in a team that cannot chain Full Bursts"
+        "skill1: the kill-gated ATK ▲ 12.6% is UNMODELED — it can never trigger against the raid boss (the boss does not die mid-fight); recorded verbatim, not encoded as a passive/shotFired ATK proxy",
+        "cadence: fire rate / reload are unmeasured estimates (engine SMG default shipped; datamine says 24 pulls/s, and reload_start_ammo 119 hints at a rolling reload) — verify on a focus video ⚑",
+        "skill2/burst: escalating tiers reach full value only from her 3rd Full Burst / 3rd burst cast (burstCdr 8.21s/FB; critDamage +37.65%), and every modeled effect is burst/FB-gated — the whole kit is inert in a team that cannot chain Full Bursts"
       ],
       "board": null
     },

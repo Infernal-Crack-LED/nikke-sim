@@ -1,0 +1,101 @@
+{
+  "slug": "volume",
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "burstCdr",
+              "seconds": 2.34
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.7
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 3.17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "critDamagePct",
+              "value": 10.77,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "critDamagePct",
+              "value": 12.46,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "critDamagePct",
+              "value": 14.42,
+              "durationSec": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 31.9,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Affects self when killing an enemy. ATK ▲ 12.6% for 5 sec. — kill-triggered; raid boss is immortal and the scope-lock fight has no adds, so it never fires. No 'kill' trigger primitive exists in TriggerDef; modeled as inert rather than fabricating a proxy cadence."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⛑ skill1 (ATK ▲12.6%/5s on kill) is INERT in the solo-raid sim (immortal boss, no adds) — zero board impact. Left out of blocks; recorded verbatim in unmodeled. Only matters in a hypothetical add-spawning fight.",
+    "Both skill2 branches use `escalating` per the kit's literal 'Each subsequent effect triggers all effects before it' — the Nth activation applies steps 1..N CUMULATIVELY (not tier-replacement). So the 3rd FB enter grants 2.34+2.7+3.17=8.21s Burst-CD reduction, and the 3rd own-burst cast grants 10.77+12.46+14.42=37.65% Crit DMG. If a real fight shows tier-REPLACEMENT instead, swap escalating for a per-count magnitude — measure before trusting.",
+    "TRIGGER SPLIT is deliberate: skill2a 'entering Full Burst' = fullBurstEnter (fires on ANY team FB); skill2b 'using Burst Skill' = burstCast (fires only on rotations Volume herself bursts). As a B1 she typically bursts every rotation, so in graded comps the two co-fire, but the primitives differ.",
+    "burst Crit Rate 31.9%/5s targets {allies} (includes self). It is a stat buff (not damage), so noFb/range/core exemptions are irrelevant."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Volume is a pure buff-support SMG/Wind/B1 with NO damage riders, weapon swaps, stacks, DoTs, or Hit-Rate lines — so no cadence tuple / split-vs-merge / noFb flags apply (her only damage is base normal-attack fire the engine handles). The only judgment calls are: (1) skill1's kill-trigger is inert in the immortal-boss raid sim (dropped to unmodeled, no fabricated proxy); (2) both skill2 branches read as CUMULATIVE `escalating` per the explicit 'each subsequent effect triggers all effects before it' clause; (3) skill2a keys fullBurstEnter vs skill2b keys burstCast — they diverge in multi-B1 comps. All magnitudes are kit-literal; none invented."
+}
