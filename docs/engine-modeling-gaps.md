@@ -90,7 +90,7 @@
 | `recovery` | 2 | asuka, crown |
 | `reenterStage` | 1 | anis-star |
 | `removeOnReload` | 0 | _none_ |
-| `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
+| `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
