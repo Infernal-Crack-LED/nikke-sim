@@ -58,6 +58,7 @@
 // ⇒ THE AUTO-ACCEPT PATH IS THEREFORE UNEXERCISED. Treat it as unproven until a focus unit with a
 // CLEAN, non-overlapping band actually trips it; until then this reader's practical output is the
 // ranked needsConfirmation[] list plus the batched frames.ts command that resolves it.
+// ⇒ TRACKED AS open-questions **U36** — including how to pick a clean-band unit to settle it.
 //
 // Output: <out>/popup-reads.json with per-frame raw reads + deduped popups
 //   (frame#, videoT, gameT from the in-game timer, value, crit/core, position, confidence),

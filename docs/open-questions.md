@@ -8,6 +8,42 @@ it was implemented. ⚑ = calibrated-and-applied but mechanism unconfirmed (flag
 
 ## UNANSWERED
 
+### U36 — the popup reader's AUTO-ACCEPT path is unexercised: does it hold on a clean-band unit? (opened 2026-07-24)
+
+**Status: an INSTRUMENT question, not a game-mechanics one — but it gates how much popup reading can
+be trusted without Opus confirmation, so it is tracked here rather than lost in a script comment.**
+
+`scripts/probe/read-popups-vlm.ts` now scores every deduped popup: `confidence` = agreeing looks /
+total looks over the frames the popup persists in (genuinely independent samples — different images,
+unlike re-running one frame, which a deterministic decoder answers identically including its
+mistakes), plus `inBand` membership in the focus unit's `hit-bands.ts` value bands, plus two
+class checks. `autoAccept` = confidence ≥ 0.75 AND ≥3 agreeing looks AND in-band AND the matched
+band variant is reachable from the reported class AND exactly one variant matches.
+
+**Why it is unproven.** The validation pass (2026-07-24, 20 frames of `docs/probes/control/lm.MP4`
+t=45–49 against the hand read in `docs/probe-data/control-little-mermaid.json`) met the ship gate —
+zero auto-accepted popups the hand read disagrees with — **vacuously: 0 of 30 popups auto-accepted.**
+`little-mermaid`'s bands overlap outright (normal 14,664–69,913, its crit image 21,484–87,858, its
+core image 36,660–174,782), so no value there can pin a class. The gate passed because nothing was
+offered to it, which is not evidence that the rule is right.
+
+Worth keeping, because it is what shaped the rule: the FIRST draft (agreeing looks + in-band only)
+auto-accepted 4, of which **2 were wrong** — a 10,818,572 read as "normal" whose only matching bands
+were `skill:core`/`skill:crit+core` (identity still unresolved: it fits a real core barrage
+arithmetically, but the same run had the hallucination guard drop `6473333` and `17333`, and
+`108,189` recurs in the neighbouring frames, so a digit concatenation is equally likely — note it is
+NOT the top-centre team total, which sits outside the damage crop), and a 64,733 called "crit" when
+64,733 is that unit's *non-crit* normal. The two class conditions were added to catch exactly those.
+
+**To answer it:** run the reader on a SHORT clip whose focus unit has a CLEAN, non-overlapping band
+(a big skill/burst hit well clear of its normal band and of that normal's crit/core images — check
+with `npx tsx scripts/probe/hit-values.ts <focus> <team…> --boss <E>` BEFORE picking the unit), then
+compare every `autoAccepted[]` entry against a hand read of those instants. Ship the auto-accept
+path as trusted only if the disagreement count is zero on a run where it actually accepted
+something. Until then treat `autoAccept` as advisory and work from `needsConfirmation[]` (which is
+the reader's real present-day value — it emits a ready-made batched `frames.ts --times` command).
+Record: `docs/probe-runs.md` 2026-07-24; ruling: `docs/DECISIONS.md` "Probe reader build-out".
+
 ### U35 — `marciana` SG cold-read is the PELLET-LANDING term; exact per-band landing needs a solo recording (opened 2026-07-23)
 
 **Settled by this probe (`docs/probe-data/marciana-sg-band.json`, n=2 = 0.850 COLD):** the 15% SG
