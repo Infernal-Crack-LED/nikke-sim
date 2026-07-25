@@ -1,0 +1,135 @@
+{
+  "slug": "anis-sparkling-summer",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter — literal 'entering Full Burst' wording, fires on ANY team Full Burst, NOT burstCast (this is skill1, not her own burst block)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all Electric Code allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — DEGRADED: schema has no element facet on allies (only alliesOfClass/alliesOfWeapon). Over-credits non-Electric allies. ⚑ caveat 1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK 55.31% of skill user's ATK 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 55.31 durationSec 10 — magnitude kit-true; scaling base is caster-ATK, schema has no casterAtkPct. ⚑ caveat 2"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload Speed 49.28% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct 49.28 durationSec 10 — weapon-state modifier, IS damage (gates shots fired on a 141-frame reload). ⚑ stat-key name uncertain"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when firing the last bullet",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet — per-magazine recurring conditional, explicitly not auto-skippable"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "2 enemy unit(s) w/ highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss sim collapses the 2-target set to one instance; count not expressible on the enemy target"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 382.42% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 382.42, crit true, core absent (no 'core strike' wording), noFb absent (FB by timing default ON), noRange engine-automatic"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when firing last bullet / self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second block authored with the same lastBullet trigger + self target; its only effect line is unmodeled, so the block carries an empty effects array as the audit anchor"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Dmg to Interruption Parts 6.91% 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "No interruption-part / destructible-part damage channel in the schema, and the scope-lock boss is partless — zero damage effect in v1. Recorded verbatim in unmodeled.skill2"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self (no activation clause)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, target self — a self-mode package inside the unit's OWN burst block is burst-cast per the trigger-identity rule, NOT fullBurstEnter"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammo Capacity 73.92% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoPct -73.92 durationSec 10 (fallback maxAmmoFlat -4 on the 5-round mag). Weapon-state = damage: cuts shots per magazine AND multiplies lastBullet procs. ⚑ caveat 3"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reload Speed 27.72% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct 27.72 durationSec 10 — stacks additively with the skill1 49.28% while both windows overlap"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Elem Advantage Atk Damage 42.24% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elementDamagePct 42.24 durationSec 10 — a 'Superior Elemental Code' style line, so the clean x1.10 advantage is exceeded and MUST be modeled (prior 8). Live only vs an element-disadvantaged boss"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].target",
+      "estimate": "{kind:'allies'} (untyped) as a stand-in for 'all Electric Code allies'",
+      "reasoning": "The redacted TargetDef offers alliesOfClass and alliesOfWeapon but no element facet, and the block-level gates (teamHas.element) gate the block's EXISTENCE, not its target set. An untyped allies target grants the buff to every ally regardless of element, over-crediting any mixed-element comp; teamHas:{element:'Electric'} would be wrong (it gates on presence, not per-target).",
+      "recipe": "Either add an alliesOfElement target kind to types.ts, or restrict grading of this unit to all-Electric comps where the two encodings coincide. Verify by running a control comp with 1 Electric + 3 non-Electric allies and checking whether the non-Electric allies' ATK moves on FB entry."
+    },
+    {
+      "field": "override.skill1[0].effects[0].stat",
+      "estimate": "atkPct 55.31 (should be a caster-ATK-scaled flat add)",
+      "reasoning": "'55.31% of the skill user's ATK' scales off ANIS's ATK and is added to each recipient — the exact analogue of casterMaxHpPct on the HP axis. No casterAtkPct key exists in the StatKey list, so the encoded atkPct scales each recipient's OWN ATK instead. Exact for the caster; wrong sign of error depends on whether allies out-ATK her (a high-ATK carry is OVER-credited).",
+      "recipe": "Add casterAtkPct to StatKey mirroring the casterMaxHpPct resolution path (snapshot caster effectiveAtk at apply time, grant as flat ATK). Verify with a two-unit comp where the ally's base ATK is ~2x Anis's: the faithful model grants both the SAME absolute ATK, the current model grants the ally 2x."
+    },
+    {
+      "field": "override.burst[0].effects[0]",
+      "estimate": "maxAmmoPct -73.92; fallback maxAmmoFlat -4 (5 rounds -> 1)",
+      "reasoning": "The redacted StatKey list exposes only maxAmmoFlat (explicitly 'FLAT round count (not %)'), so a percent ammo stat may not exist and the validator may reject maxAmmoPct. 5 x (1 - 0.7392) = 1.304 rounds; the game floors/rounds magazine size, giving 1 (or 2 if it rounds up). This is the highest-leverage line in the kit: it converts one 5-round magazine into ~4 magazines' worth of lastBullet events over the 10s window, multiplying the 382.42% skill2 rider.",
+      "recipe": "Check whether a percent ammo StatKey exists; if not use maxAmmoFlat -4. Then record a real fight: count reload events and 382.42% popups inside the 10s burst window and compare against sim reload/damage events (cfg.onEvent kinds reload + damage). The popup count directly pins whether the magazine floors to 1 or 2."
+    },
+    {
+      "field": "override.skill1[0].effects[1].stat / burst[0].effects[1].stat",
+      "estimate": "reloadSpeedPct (name unverified)",
+      "reasoning": "Reload Speed appears twice in this kit at large magnitudes (49.28% + 27.72%) against a 141-frame reload on a 5-round SG, so it is materially damage-bearing (memory: reload modifiers are NOT defensive). The redacted StatKey excerpt does not show a reload key, but the redaction is partial and the priors state reload speed IS a modeled weapon-state modifier.",
+      "recipe": "Grep StatKey in src/skills/types.ts for the reload key name and rename both buffs. Verify magnitude by counting shots fired in a 10s window with the buff toggled on/off via withPatchedOverride."
+    },
+    {
+      "field": "override.skill2[0] proc cadence",
+      "estimate": "~1 proc per magazine outside burst; ~3-4x that during her 10s burst window",
+      "reasoning": "lastBullet is kit-stated so the trigger is NOT invented, but the effective rate is a product of the ammo cut and two overlapping reload buffs — none of which is measured. The 382.42% rider is the unit's only direct damage line, so its proc count dominates her damage share.",
+      "recipe": "Instrument cfg.onEvent for kind 'damage' with the 382.42 mult and kind 'reload'; compare the per-fight proc count against a recorded fight's popup count for the same window."
+    },
+    {
+      "field": "override.burst[0].effects[2] (elementDamagePct)",
+      "estimate": "42.24, live only when Anis holds elemental advantage",
+      "reasoning": "Prior 8: elemental advantage is a clean x1.10 UNLESS the kit carries an elemental-advantage damage buff, in which case it exceeds x1.10 and must be modeled. Anis is Electric; the graded scope-lock boss is neutral/Fire per the harness control comp, so this buff may be entirely inert on the graded board while being large in a real Water-boss fight.",
+      "recipe": "Confirm how the engine gates elementDamagePct (does it self-check advantage, or does the override need a bossElementGate?). If the engine does not gate it, add bossElementGate for the disadvantaged element so it cannot silently credit a neutral-boss run."
+    },
+    {
+      "field": "override (per-kit noFb)",
+      "estimate": "not set (FB by timing, default ON) for the 382.42% rider",
+      "reasoning": "Per the priors, function-damage riders take Full Burst by TIMING and noFb is measured-only. Setting it blind would be a fabricated calibration.",
+      "recipe": "Read popup values for the rider inside vs outside the FB window on a recording; a ~1.5x ratio confirms FB applies."
+    },
+    {
+      "field": "override (cadence tuple)",
+      "estimate": "ammo 5, reloadFrames 141, hitsPerShot 10 as datamined",
+      "reasoning": "Datamined rate_of_fire / reloadFrames are known-unreliable fields, and this unit's whole model hinges on magazine turnover (lastBullet cadence).",
+      "recipe": "Read the on-screen ammo counter frame-by-frame on a recording to get shots/sec and the true reload wall-clock, rather than inferring from burst-gauge or FB counts."
+    }
+  ],
+  "model": "claude-opus-5"
+}

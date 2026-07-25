@@ -1,0 +1,121 @@
+{
+  "slug": "anis-sparkling-summer",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 55.31% of the skill user's ATK",
+      "disposition": "FIX",
+      "scope": "Generic ATK buff, no attack-type scoping — but magnitude is CASTER-scaled ('of the skill user's ATK' = flat add of 55.31% × Anis's final ATK), not a % of the target's own ATK.",
+      "durationSemantics": "durationSec: 10 (wall-clock seconds, literal 'for 10 sec' — no round count).",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' fires on ANY team Full Burst, including rotations where the co-B3 (helm) bursts, not only Anis's own casts. NOT burstCast.",
+      "targetSet": "All Electric Code allies INCLUDING self. The redacted TargetDef list has class/weapon-typed ally targets but no element-typed one — element-typed targeting is a possible schema GAP the driver must resolve (not silently widen to {kind:'allies'}). On controlComp (liter/crown/helm all Iron) the only Electric unit is Anis herself, so the block is effectively self-only there.",
+      "nearestWrongModel": "Plain atkPct scaling each TARGET's own ATK (over-credits any higher-ATK Electric carry), and/or target {kind:'allies'} untyped (buffs the whole Iron control team), and/or keyed to burstCast (misses helm-rotation FBs).",
+      "distinguishingAssertion": "onEvent buffApply during EVERY fullBurstStart (helm rotations included): stat lands ONLY on Anis's slot in controlComp (liter/crown/helm receive nothing), and the granted ATK delta equals 55.31% × Anis's final ATK. Caster-vs-target scaling is invisible on controlComp (caster==sole target) — assert it on a comp with a second, higher-ATK Electric ally: delta must NOT scale with that ally's ATK.",
+      "inertness": "Non-Electric allies' effectiveAtk must not move; buff must also fire on FBs Anis did not burst into.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload Speed ▲ 49.28% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier — reload duration. This IS damage (taxonomy #6): it raises shots fired AND, via faster magazine cycling, raises skill2 lastBullet proc frequency. Never 'skip: defensive'.",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "fullBurstEnter (same ■ header as the ATK line), any team FB.",
+      "targetSet": "All Electric Code allies incl. self → effectively self-only on controlComp.",
+      "nearestWrongModel": "Dropped as a non-damage/defensive stat; or applied as a generic team buff to all four allies; or keyed burstCast so it misses non-Anis FBs.",
+      "distinguishingAssertion": "Anis's reload-event spacing shrinks during the 10 s post-FB window: with reloadFrames 141 (~2.35 s base), reload completions inside the window come measurably faster than outside it, so her shot count per FB window rises. On controlComp, liter/crown/helm reload cadence unchanged.",
+      "inertness": "Non-Electric allies' reload cadence and shot counts unchanged.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 382.42% of final ATK as damage",
+      "disposition": "FAITHFUL",
+      "scope": "Instant flatDamage rider, % of final ATK. Not a DoT, no charge/crit/core scoping in text. Per methodology rule 9: takes the +50% FB bonus by landing TIMING (default ON), no +30% range (noRange), crits at caster rate, NO core.",
+      "durationSemantics": "Instant per activation, no duration.",
+      "triggerIdentity": "lastBullet — 'when firing the last bullet', per-magazine. Counts ROUNDS: SG ammo is 5 rounds; hitsPerShot 10 is PELLETS and must not feed this trigger. Critically COUPLED to burst's Max Ammo ▼: a ~1-round magazine during the burst window fires this on nearly every trigger pull.",
+      "targetSet": "'2 enemy units with the highest final ATK' — solo-boss sim has ONE enemy, so exactly ONE 382.42% instance per proc, never ×2.",
+      "nearestWrongModel": "Doubling the hit (×2 'for 2 enemies') against the single boss; or hitCount keyed to pellet hits (10× too frequent); or shotFired (5× too frequent outside burst); or a static proc rate that ignores the burst-window magazine shrink.",
+      "distinguishingAssertion": "damage events with srcSlot==anis, bucket flatDamage: count outside the burst window == her reload count (one per 5-round magazine), each at mult 382.42% ×1 instance; count INSIDE her 10 s burst window jumps to ~one per trigger pull (magazine ≈1 round). Red under ×2-per-proc, red under pellet-counted, red if window frequency doesn't rise.",
+      "inertness": "No proc without a magazine exhaustion; no core bucket on these hits.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage to Interruption Parts ▲ 6.91%",
+      "disposition": "UNMODELED",
+      "scope": "Interruption-parts-scoped damage. The scope-lock boss is partless and hit location never changes damage; no StatKey exists for parts damage.",
+      "durationSemantics": "durationSec: 10 (would-be).",
+      "triggerIdentity": "lastBullet, self.",
+      "targetSet": "self",
+      "nearestWrongModel": "Laundered into attackDamagePct/damageTakenPct as a generic 6.91% Damage Up — over-credits every hit on a partless boss.",
+      "distinguishingAssertion": "Deleting this line from the override changes total damage by exactly 0; no buffApply for any generic damage stat at lastBullet cadence.",
+      "inertness": "Must move nothing anywhere; recorded verbatim in `unmodeled` (no `ignored` block — validator rejects those).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition Capacity ▼ 73.92% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self weapon-state change and the kit's ENGINE, not a downside: 5 × (1−0.7392) = 1.304 → ~1-round magazine (⚑ rounding convention floor-vs-round-min-1 is not in the text) → lastBullet fires ~every pull → multiplies skill2 procs and reload count for 10 s.",
+      "durationSemantics": "durationSec: 10 wall-clock.",
+      "triggerIdentity": "burstCast — a self mode in the unit's OWN burst block fires ONLY on rotations Anis bursts (cd 40 s ≈ every other rotation). NOT fullBurstEnter: with helm co-B3 in controlComp these diverge — helm's rotations must NOT shrink Anis's magazine.",
+      "targetSet": "self only.",
+      "nearestWrongModel": "Skipped as a defensive/self-nerf line (kills the whole burst loop); or keyed fullBurstEnter (fires every rotation, ~doubling proc income); or sign-flipped to ▲.",
+      "distinguishingAssertion": "During Anis's own 10 s burst windows only: reload events ≥3–4 (vs ~1 per comparable non-burst 10 s) and skill2 flatDamage procs spike to ~per-pull. On helm-burst rotations the magazine stays 5 and proc cadence stays baseline — red under fullBurstEnter keying.",
+      "inertness": "No magazine change outside her own burst windows; teammates' ammo untouched.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reload Speed ▲ 27.72% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self reload-speed. Damage-relevant: with the ~1-round magazine she reloads every pull, so reload time dominates her burst-window shot economy. Stacks with skill1's 49.28% on her own rotations (burst cast precedes FB entry; both 10 s windows overlap) — ⚑ stacking convention (additive in one speed pool vs multiplicative) is not kit-stated.",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast, self (same ■ block).",
+      "targetSet": "self only.",
+      "nearestWrongModel": "Skipped as defensive; or keyed fullBurstEnter; or granted to allies.",
+      "distinguishingAssertion": "On an Anis-burst rotation her per-cycle (shot+reload) period inside the window reflects BOTH reload buffs (~141f / combined factor), strictly shorter than a helm-burst-rotation FB window where only skill1's applies — shot count per window differs accordingly.",
+      "inertness": "Teammates' reload cadence unchanged; no effect on rotations she doesn't burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Elemental Advantage Attack Damage ▲ 42.24%",
+      "disposition": "FAITHFUL",
+      "scope": "Elemental-ADVANTAGE-scoped damage (taxonomy #8): lifts the element-advantage bucket beyond the clean ×1.10 — ONLY live when Anis is advantaged (Electric vs a Water boss). NOT a generic Damage Up.",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast, self (same ■ block as the ammo/reload lines).",
+      "targetSet": "self only.",
+      "nearestWrongModel": "Encoded as attackDamagePct (or ungated elementDamagePct that pays out vs ANY boss) — over-credits every burst window against non-Water bosses, including the controlComp Fire boss where the line must be worth exactly zero.",
+      "distinguishingAssertion": "controlComp boss is Fire (Electric not advantaged): withPatchedOverride deleting this line changes totals by exactly 0. Against a Water boss, damage events in her burst windows carry an element factor > 1.10 (×1.10 × (1+0.4224) shape); outside her windows, back to plain ×1.10.",
+      "inertness": "Zero movement vs Fire/neutral bosses; zero on helm-burst rotations.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ATK ▲ 55.31% of skill user's ATK (Electric allies, FB-enter)",
+    "skill1:Reload Speed ▲ 49.28% (Electric allies, FB-enter)",
+    "skill2:382.42% lastBullet damage (1 instance vs solo boss)",
+    "burst:Max Ammo ▼ 73.92% (burstCast, self)",
+    "burst:Reload Speed ▲ 27.72% (burstCast, self)",
+    "burst:Elemental Advantage dmg ▲ 42.24% (burstCast, self, advantage-gated)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Damage to Interruption Parts ▲ 6.91% for 10 sec."
+    ],
+    "burst": []
+  },
+  "notes": "This kit is one coupled machine: burst Max Ammo ▼ (5→~1 round) is the multiplier on skill2's lastBullet nuke and on both reload-speed buffs — the single highest-risk shared-prior misread is treating the ammo cut as a skippable self-downside or keying the burst self-block to fullBurstEnter (controlComp has helm co-B3, so burstCast-vs-FB-enter diverges every other rotation; assert Anis-burst rotations differ from helm-burst rotations). Second expected misread: '2 enemy units with highest final ATK' doubled against the single sim boss — must be exactly 1 instance. Third: skill1's 'of the skill user's ATK' modeled as target-own atkPct — invisible on controlComp (caster==sole Electric target) so the distinguishing test needs a second Electric ally; also no element-typed ally TargetDef exists in the redacted schema, so the driver must show how 'all Electric Code allies' is expressed rather than silently widening to all allies. Fourth: elemental-advantage buff must be inert vs the Fire control boss (a generic Damage-Up encoding is red there). ⚑ open conventions the driver must state: ammo rounding at 1.304 (floor/round, min 1), reload-speed stacking (additive pool vs multiplicative) and its formula direction (time÷(1+x) vs time×(1−x)), and rider FB/crit defaults (FB-by-timing ON, noRange, no core per methodology rule 9). lastBullet counts ROUNDS (5), never the SG's 10 pellets.",
+  "model": "claude-fable-5"
+}

@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 8,
-      "authored": 28,
+      "unit-tested": 9,
       "audited": 36,
+      "authored": 27,
       "reconciled": 4,
       "pending": 1
     },
@@ -244,18 +244,23 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness ? (judge unspecified). Artifacts: scripts/kit-autonomy/results/anis-sparkling-summer.json + scripts/kit-autonomy/manual-review/anis-sparkling-summer.md."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; driver test 21/21 + adapted blind 18/18 green; binding judge 0 gotchas",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "measurement-gated cadence tuple + burst-window last-bullet proc count (heaviest lever); SG pellet landing; elem-advantage boss element",
       "unmodeled": {
         "skill1": [],
         "skill2": [],

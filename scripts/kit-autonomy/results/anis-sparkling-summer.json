@@ -1,0 +1,64 @@
+{
+  "slug": "anis-sparkling-summer",
+  "name": "Anis: Sparkling Summer",
+  "verdict": "GO (cross-family corroborated)",
+  "faithfulness": 1.0,
+  "tier": 2,
+  "date": "2026-07-24",
+  "driver": "qwen",
+  "crossFamily": {
+    "s2b": {
+      "model": "claude-fable-5",
+      "status": "complete",
+      "verdict": "all lines accounted for, no REAL-GOTCHA (6 FAITHFUL load-bearing + partsDamagePct; leakDetected null). The 2 disposition flags (S1 'FIX', S2 'UNMODELED') were redacted-schema artifacts — the full schema HAS alliesOfElement (used) and partsDamagePct (modeled inert)."
+    },
+    "s5": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "blindTestGreen": true,
+      "note": "Pristine blind test (blind/anis-sparkling-summer.test.ts) run UNMODIFIED vs driver override: COLLECTION ERROR — Cannot find module '../lib/harness' (the P1 import-path RECON_ERROR the blind writer pre-flagged: 'HARNESS PLUMBING GUESSED'); 0 assertions ran. ADAPTED blind test (pristine preserved verbatim; P1-P10 harness/redaction plumbing corrected, kit reading + assertion intent untouched) vs driver override: 18 passed / 0 failed = GREEN. The blind's mechanical model converged on every discrimination: fullBurstEnter (count==fbStarts > burstCast), lastBullet rider (count==reloads, RED under shotFired >2x), 2-enemy→1 instance, no-core/no-range/FB-by-timing, crit at caster rate, max-ammo→reload-spike+proc-spike (RED under drop/sign-flip), reload-as-damage (additive co-stack), elem-advantage burstCast-keyed + advantage-gated (LIVE Water / GATED Iron). leakDetected null."
+    },
+    "s6": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "note": "Independent prose→override converged with the driver on EVERY load-bearing mechanical decision: S1 fullBurstEnter (not burstCast), S2 lastBullet flatDamage 382.42 crit/no-core/noFb-off 1-instance-vs-solo-boss, burst burstCast self-package, maxAmmoPct -73.92 as the proc engine ('must NOT be treated as defensive/inert'), reloadSpeedPct 49.28+27.72 modeled as damage (additive stack), elem-advantage 42.24 advantage-gated. Four DOCUMENTED redaction-artifact divergences only — the blind intuited each mechanic and named the exact missing primitive in its caveats: (1) untyped allies vs alliesOfElement (schema has it; driver uses it); (2) atkPct vs casterAtkPct (schema has it; driver uses it); (3) elementDamagePct vs elemAdvantageDamagePct (schema has it, engine self-gates; driver uses it); (4) partsDamagePct UNMODELED-verbatim vs driver modeled-inert (both record it, both agree inert vs partless boss). leakDetected null."
+    },
+    "s7": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "verdict": "GO",
+      "faithfulness": 1.0,
+      "note": "Binding judge: GO, faithfulness 1.0, convergence GREEN (redAssertions []), discriminationOk true, 0 silent-drops, 0 gotchas. All 7 kit lines FAITHFUL; unmodeled arrays empty (SKIPPED↔unmodeled 1:1 trivial). Both opus blind re-derivations converged on every mechanical decision; all four S6 divergences ruled redaction artifacts (driver strictly more faithful); pristine-S5 collection error ruled RECON_ERROR (harness import the blind pre-flagged as guessed); adapted S5 18/18 green. Fire-rate + discrimination pass on every FAITHFUL block."
+    }
+  },
+  "lines": {
+    "faithful": [
+      "S1: ATK ▲ 55.31% of the skill user's ATK for 10 sec (casterAtkPct, fullBurstEnter → alliesOfElement Electric)",
+      "S1: Reload Speed ▲ 49.28% for 10 sec (reloadSpeedPct, fullBurstEnter → alliesOfElement Electric)",
+      "S2: Deals 382.42% of final ATK as damage (flatDamage, lastBullet → enemy, crit:true, no core, FB-by-timing; 2-highest-final-ATK collapses to the solo boss)",
+      "S2: Damage to Interruption Parts ▲ 6.91% for 10 sec (partsDamagePct, lastBullet → self — modeled inert vs the partless boss, repo convention)",
+      "Burst: Max Ammunition Capacity ▼ 73.92% for 10 sec (maxAmmoPct, burstCast → self — engine floors 5×0.2608 to 1-round mags, the proc engine)",
+      "Burst: Reload Speed ▲ 27.72% for 10 sec (reloadSpeedPct, burstCast → self, additive with S1's 49.28)",
+      "Burst: Elemental Advantage Attack Damage ▲ 42.24% for 10 sec (elemAdvantageDamagePct, burstCast → self, engine-gated on real Electric advantage)"
+    ],
+    "unmodeled": []
+  },
+  "flags": [
+    "⚑ CADENCE TUPLE (TOP, measurement-gated): SG pullsPerSec + reloadFrames 141 + rolling-reload/reload_start_ammo are datamine-unreliable and not text-derivable; governs BOTH her out-of-burst last-bullet cadence and the burst-window proc count. Estimate = engine SG class default rate + datamined reloadFrames 141. Recipe: focused solo video — rounds/min, reload gap, per-magazine counter deltas.",
+    "⚑ BURST-WINDOW LAST-BULLET PROC COUNT (heaviest lever, measurement-gated): with ~1-round mags + ~1.33s stacked-reload gaps, procs/window ≈ shots/window ≈ 5-7 × 382.42%. The engine's max(1, round(5×0.2608))=1 floor is what makes every in-burst shot a last bullet, so an error here scales the kit's single heaviest damage lever. Recipe: slow-mo one focused burst window — count shots, reloads, and 382.42% popups.",
+    "⚑ crit:true on the 382.42% rider (parser convention): verify popup colour (orange = crit) on the proc.",
+    "⚑ elemAdvantageDamagePct 42.24 pays out ONLY under real Electric advantage (BEATS[Electric]=Water) — confirm the graded boss element before reading her board number.",
+    "⚑ SG pellet split/landing: 10 pellets/shot through the class SG_LANDING_BY_BAND table (shipped default; per-unit landing is a measured-only refinement). Recipe: focused solo per-magazine counter deltas → landing fraction vs the noir/guilty anchors.",
+    "⚑ SAME-MODEL RESIDUAL (binding judge): the S5/S6 blinds were BOTH claude-opus-5 while the pre-op review was claude-fable-5, so the two converging encodings share a family prior. The residual is the measurement-gated cadence/proc-count cluster above (out of judging scope), not a structural faithfulness question — all three cross-family roles converged on the encoding independently."
+  ],
+  "evidence": {
+    "driverTest": "scripts/tests/units/anis-sparkling-summer.test.ts — 21/21 GREEN",
+    "blindTestPristine": "scripts/kit-autonomy/blind/anis-sparkling-summer.test.ts — claude-opus-5; COLLECTION ERROR vs driver override (P1 import-path RECON_ERROR the blind pre-flagged; 0 assertions ran)",
+    "blindTestAdapted": "scripts/kit-autonomy/blind/anis-sparkling-summer.adapted.test.ts — pristine preserved; P1-P10 plumbing/redaction corrected, kit reading untouched — 18 passed / 0 failed = GREEN vs driver override",
+    "blindOverride": "scripts/kit-autonomy/blind/anis-sparkling-summer.override.json — claude-opus-5; converged on all load-bearing mechanics; 4 redaction-artifact divergences",
+    "s2bReview": "scripts/kit-autonomy/reviews/anis-sparkling-summer.test-review.json — claude-fable-5, all lines accounted for",
+    "judgePacket": "scripts/kit-autonomy/results/anis-sparkling-summer-judge-packet.md — self-contained S7 packet",
+    "judgeVerdict": "scripts/kit-autonomy/cross-family/anis-sparkling-summer/s7-result.json — claude-opus-5 binding judge: GO, faithfulness 1.0, 0 silent-drops, 0 gotchas (cross-family dispatch artifact; gitignored, regenerable)",
+    "verify": "scripts/kit-autonomy/reviews/anis-sparkling-summer.verify.txt — 21/21 GREEN"
+  }
+}
