@@ -5,6 +5,7 @@
 //   npx tsx scripts/bench-generator.ts --best      # bestTeam: wall time + sim count + team
 //   npx tsx scripts/bench-generator.ts --top [N]   # topTeams(N=5): wall time + sim count + teams
 //   npx tsx scripts/bench-generator.ts --focus     # focus-slot (middle-slot ×2.5) spread + solo-rank
+//   npx tsx scripts/bench-generator.ts --polish [N] # item-4 A/B: greedy-only vs cross-team polish
 //   npx tsx scripts/bench-generator.ts --all       # everything
 //
 // Sim counts are exact: a counting `loadoutFor` (called once per unit = 5× per uncached sim)
@@ -111,17 +112,45 @@ async function benchBest(): Promise<void> {
   );
 }
 
-async function benchTop(n: number): Promise<void> {
-  loadoutCalls = 0;
-  const calc = mk();
-  const t0 = performance.now();
-  const teams = await calc.topTeams(n);
-  const t1 = performance.now();
+type Roster = Awaited<ReturnType<ReturnType<typeof mk>['topTeams']>>;
+
+function reportRoster(label: string, teams: Roster, secs: number, sims: number): void {
+  const total = teams.reduce((a, t) => a + t.teamDamage, 0);
+  const inv = teams.filter((t, i) => i > 0 && t.teamDamage > teams[i - 1].teamDamage).length;
   console.log(
-    `topTeams(${n}): ${((t1 - t0) / 1000).toFixed(1)}s, sims=${loadoutCalls / 5}, teams=${teams.length}`,
+    `${label}: ${secs.toFixed(1)}s, sims=${sims}, teams=${teams.length}, total=${(total / 1e9).toFixed(3)}B, inversions=${inv}`,
   );
   for (const t of teams)
     console.log('  ', t.slugs.join(','), Math.round(t.teamDamage / 1e6) + 'M');
+}
+
+async function runTop(n: number, polishPasses?: number): Promise<[Roster, number, number]> {
+  loadoutCalls = 0;
+  const calc = mk();
+  const t0 = performance.now();
+  const teams = await calc.topTeams(n, polishPasses === undefined ? undefined : { polishPasses });
+  const t1 = performance.now();
+  return [teams, (t1 - t0) / 1000, loadoutCalls / 5];
+}
+
+async function benchTop(n: number): Promise<void> {
+  const [teams, secs, sims] = await runTop(n);
+  reportRoster(`topTeams(${n})`, teams, secs, sims);
+}
+
+// Item-4 A/B: greedy-only control vs the shipped polish passes. Fresh calc per
+// arm (CLI caches are hermetic), so the sim counts are comparable.
+async function benchPolish(n: number): Promise<void> {
+  const [ctl, ctlS, ctlSims] = await runTop(n, 0);
+  reportRoster(`polish OFF (greedy)`, ctl, ctlS, ctlSims);
+  const [trt, trtS, trtSims] = await runTop(n);
+  reportRoster(`polish ON`, trt, trtS, trtSims);
+  const tot = (r: Roster) => r.reduce((a, t) => a + t.teamDamage, 0);
+  console.log(
+    `Δ roster damage: ${(((tot(trt) / tot(ctl)) - 1) * 100).toFixed(2)}%, ` +
+      `Δ sims: ${trtSims - ctlSims} (${((trtSims / ctlSims - 1) * 100).toFixed(0)}%), ` +
+      `Δ wall: ${(trtS - ctlS).toFixed(1)}s`,
+  );
 }
 
 function benchFocus(): void {
@@ -179,6 +208,11 @@ async function main(): Promise<void> {
     await benchTop(Number.isFinite(n) && n > 0 ? n : 5);
   }
   if (all || has('--focus')) benchFocus();
+  if (has('--polish')) {
+    const i = args.indexOf('--polish');
+    const n = Number(args[i + 1]);
+    await benchPolish(Number.isFinite(n) && n > 0 ? n : 5);
+  }
 }
 
 void main();

@@ -156,6 +156,20 @@ const ENUM_TOP_K = 150;
 const ENUM_SIM_TOP = 40;
 const ENUM_REFINE_TOP = 3;
 
+// Cross-team polish passes (perf plan item 4). After the greedy roster is built,
+// re-run the whole sequential build with the previous roster's teams offered to
+// every team as extra local-search starts, and keep the pass only if the TOTAL
+// roster score strictly improves. Bounded at 2 passes; a pass that improves
+// nothing stops the loop.
+const POLISH_PASSES = 2;
+// A polished-in seed is only worth a full refine when it lands within this
+// fraction of the score to beat. Refining every offered team from every slot is
+// where ~all of the polish cost sat on the bench (+95% sims); a seed far below
+// the incumbent re-climbs into ground the enumeration already covered, while the
+// measured reclaim came from a seed at 87% of its target. Seeds below the gate
+// are still SIMMED (they can win outright), just not re-climbed.
+const POLISH_SEED_FRAC = 0.8;
+
 // Λ units the generators pin to a fixed burst slot instead of treating as a free
 // wildcard. Red Hood is unsupported as a solo B1/B2 over a 180s fight (her 40s
 // burst cooldown binds the whole rotation), so the team/roster generators only
@@ -1155,6 +1169,19 @@ export function makeCalc(input: TeamCalcInput) {
     scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number;
     /** soft prydwen meta-sum target the seed biases toward (solo spread) */
     seedTarget?: number;
+    /** extra local-search starts (item 4 polish: the previous roster's teams).
+     *  Each is refined like any other start, so a team offered here can be
+     *  improved from — not merely copied. Illegal/unavailable ones are dropped. */
+    extraSeeds?: string[][];
+    /** item-4 polish fast path: refine ONLY `extraSeeds` — no enumeration, no
+     *  legacy seed, no meta comps. Valid only when the caller already holds this
+     *  pool's pipeline result (a re-run would reproduce it: deterministic +
+     *  cached), so the seeds are the only thing that can beat it. Returns null
+     *  when no seed is legal here. */
+    seedsOnly?: boolean;
+    /** score of the caller's incumbent, i.e. the score an extra seed has to get
+     *  near before it earns a full refine (see POLISH_SEED_FRAC). */
+    seedFloor?: number;
   }): Promise<TeamResult | null> => {
     const exclude = opts?.exclude ?? new Set<string>();
     const score = opts?.scoreFn ?? scoreOf;
@@ -1181,8 +1208,35 @@ export function makeCalc(input: TeamCalcInput) {
     // tracks the Burst-I count); double-B1 teams remain reachable via locks.
     let best: TeamResult | null = null;
     let bestScore = -Infinity;
-    const vt = await getValueTable(pool);
-    const cands = enumerateCandidates(pool, vt, mustInclude, opts?.seedTarget);
+    // Caller-supplied starts (item 4): keep the ones this team could actually
+    // field — every unit known, not consumed by another team, and blocked only
+    // if it is one of this team's locks (an explicit lock outranks don't-own).
+    const extraStarts = (opts?.extraSeeds ?? []).filter(
+      (t) =>
+        t.length === 5 &&
+        !t.some(
+          (s) =>
+            !chars[s] ||
+            (blocked.has(s) && !locked.has(s)) ||
+            exclude.has(s),
+        ) &&
+        mustInclude.every((s) => t.includes(s)) &&
+        legal(t),
+    );
+    const key = (t: string[]) => [...t].sort().join(',');
+    const starts: string[][] = [];
+    const pushStart = (t: string[]) => {
+      if (!starts.some((s) => key(s) === key(t))) starts.push(t);
+    };
+    if (opts?.seedsOnly && !extraStarts.length) return null;
+    const cands = opts?.seedsOnly
+      ? []
+      : enumerateCandidates(
+          pool,
+          await getValueTable(pool),
+          mustInclude,
+          opts?.seedTarget,
+        );
     if (cands.length) {
       // SHAPE STRATIFICATION: refine is role-restricted (a B2 slot only swaps
       // to a B2), so it can never move between the two legal shapes — and an
@@ -1214,23 +1268,41 @@ export function makeCalc(input: TeamCalcInput) {
       // neighborhood; the greedy seed starts from solo-damage logic instead and
       // measurably rescues teams the proxy buries (no-meta bench: the winning
       // 3-B3 team was outside the proxy's top-150).
-      const starts: string[][] = [];
       for (const n of [1, 2]) {
         const top = ranked.find((x) => shapeOf(x.set) === n);
-        if (top) starts.push(top.set);
+        if (top) pushStart(top.set);
       }
       const legacySeed = seedTeam(pool, mustInclude, opts?.seedTarget);
-      const key = (t: string[]) => [...t].sort().join(',');
-      if (
-        legal(legacySeed) &&
-        !starts.some((s) => key(s) === key(legacySeed))
-      )
-        starts.push(legacySeed);
+      if (legal(legacySeed)) pushStart(legacySeed);
       for (const { set } of ranked) {
         if (starts.length >= ENUM_REFINE_TOP) break;
-        if (!starts.includes(set)) starts.push(set);
+        pushStart(set);
       }
-      for (const set of starts) {
+    }
+    for (const set of starts) {
+      const r = await refine(set, pool, locked, score);
+      const sc = score(r);
+      if (sc > bestScore) {
+        best = r;
+        bestScore = sc;
+      }
+    }
+    // Caller seeds (item 4): sim them all — a seed can win outright — but only
+    // re-climb the ones near the score to beat (POLISH_SEED_FRAC).
+    if (extraStarts.length) {
+      const floor = Math.max(bestScore, opts?.seedFloor ?? -Infinity);
+      const seeded = await evalSets(extraStarts);
+      const climb: string[][] = [];
+      for (const [k, r] of seeded.entries()) {
+        if (!r) continue;
+        const sc = score(r);
+        if (sc >= POLISH_SEED_FRAC * floor) climb.push(extraStarts[k]);
+        if (sc > bestScore) {
+          best = r;
+          bestScore = sc;
+        }
+      }
+      for (const set of climb) {
         const r = await refine(set, pool, locked, score);
         const sc = score(r);
         if (sc > bestScore) {
@@ -1239,6 +1311,9 @@ export function makeCalc(input: TeamCalcInput) {
         }
       }
     }
+    // Seed-only polish: the caller compares against its incumbent, and the
+    // fallback seed + meta comps are already folded into it.
+    if (opts?.seedsOnly) return best && focusFinalize(best);
     // Fallback: locks that fit no enumerated shape (e.g. a pinned double-B1
     // team) or every candidate sim failing → the legacy role-fill seed.
     if (!best) {
@@ -1287,6 +1362,24 @@ export function makeCalc(input: TeamCalcInput) {
      * bias toward `spreadTargets[i]` so the roster slopes gently downward (e.g.
      * 19/18/17/17/15) instead of stacking. Soft — damage, legality and pinned
      * locks outrank the target. Omit → unchanged greedy (no shaping).
+     *
+     * CROSS-TEAM POLISH (perf plan item 4). Greedy builds team i from the pool
+     * minus teams 1..i-1, so a later team can beat an earlier one (measured on
+     * the bench fixture: team 4 2343M < team 5 2369M) — an inversion that PROVES
+     * the earlier team's local search missed a team its own pool contained.
+     * After the greedy roster is built we therefore re-run the whole sequential
+     * build with the previous roster's teams offered to EVERY team as extra
+     * local-search starts (`extraSeeds`), so team i can reclaim (and refine
+     * from) a team a later index found; the displaced teams rebuild behind it in
+     * the same pass. A pass is accepted only if the TOTAL roster score strictly
+     * improves, so polish can never lower the roster. Up to POLISH_PASSES
+     * passes, stopping at the first that doesn't improve. `polishPasses: 0`
+     * gives the pure greedy roster (the A/B control arm).
+     *
+     * NOTE (plan deviation): the plan's polish re-ran team i with ALL other final
+     * teams excluded. That pool is a strict SUBSET of team i's greedy pool for
+     * every i (and identical for the last team), so it cannot reach the team the
+     * inversion proves was missed — the seeded re-run is the form that can.
      */
     topTeams: async (
       n: number,
@@ -1294,6 +1387,8 @@ export function makeCalc(input: TeamCalcInput) {
         pinnedByTeam?: string[][];
         mustUse?: string[];
         spreadTargets?: number[];
+        /** cross-team polish passes (default POLISH_PASSES); 0 = greedy only */
+        polishPasses?: number;
       },
     ): Promise<TeamResult[]> => {
       const pinned = opts?.pinnedByTeam ?? [];
@@ -1303,30 +1398,91 @@ export function makeCalc(input: TeamCalcInput) {
         ...assigned.assigned[i],
       ]);
       const targets = opts?.spreadTargets;
-      const used = new Set<string>();
-      const out: TeamResult[] = [];
-      for (let i = 0; i < n; i++) {
-        const exclude = new Set(used);
-        for (let j = i + 1; j < n; j++)
-          for (const s of reserved[j]) exclude.add(s);
+      // team i's ranking score (spread shaping biases it toward its own target)
+      const scoreFnAt = (
+        i: number,
+      ):
+        | ((r: { teamDamage: number; units: { slug: string }[] }) => number)
+        | undefined => {
         const target = targets?.[i];
-        const shaped = target !== undefined && prydwenScore;
-        const scoreFn = shaped
-          ? (r: { teamDamage: number; units: { slug: string }[] }) =>
-              scoreOf(r) *
-              closeness(teamMetaSum(r.units.map((u) => u.slug)), target)
-          : undefined;
-        const t = await bestTeam({
-          exclude,
-          mustInclude: reserved[i],
-          scoreFn,
-          seedTarget: shaped ? target : undefined,
-        });
-        if (!t) break;
-        out.push(t);
-        t.slugs.forEach((s) => used.add(s));
+        if (target === undefined || !prydwenScore) return undefined;
+        return (r) =>
+          scoreOf(r) *
+          closeness(teamMetaSum(r.units.map((u) => u.slug)), target);
+      };
+      const scoreAt = (i: number, r: TeamResult): number =>
+        (scoreFnAt(i) ?? scoreOf)(r);
+      const rosterScore = (teams: TeamResult[]): number =>
+        teams.reduce((a, t, i) => a + scoreAt(i, t), 0);
+
+      // one greedy sequential build; `seeds` are extra local-search starts every
+      // team gets to try (empty on the first, greedy, build). `incumbents` is the
+      // roster the seeds came from: while a build reproduces that roster team for
+      // team, each team's pool is IDENTICAL to the one that produced its
+      // incumbent, so the full pipeline would return the incumbent again
+      // (deterministic + cached) and only the seeds can beat it — those teams take
+      // the seeds-only fast path. The first team that actually changes ends the
+      // shortcut: every team behind it faces a new pool and rebuilds in full.
+      const setKey = (t: string[]) => [...t].sort().join(',');
+      const build = async (
+        seeds: string[][],
+        incumbents?: TeamResult[],
+      ): Promise<TeamResult[]> => {
+        const used = new Set<string>();
+        const out: TeamResult[] = [];
+        let prefixIntact = !!incumbents;
+        for (let i = 0; i < n; i++) {
+          const exclude = new Set(used);
+          for (let j = i + 1; j < n; j++)
+            for (const s of reserved[j]) exclude.add(s);
+          const inc = prefixIntact ? incumbents?.[i] : undefined;
+          const t = await bestTeam({
+            exclude,
+            mustInclude: reserved[i],
+            scoreFn: scoreFnAt(i),
+            seedTarget:
+              targets?.[i] !== undefined && prydwenScore ? targets[i] : undefined,
+            extraSeeds: seeds,
+            seedsOnly: !!inc,
+            seedFloor: inc ? scoreAt(i, inc) : undefined,
+          });
+          // ties keep the incumbent (stable output when nothing improves)
+          const pick =
+            inc && (!t || scoreAt(i, t) <= scoreAt(i, inc)) ? inc : t;
+          if (!pick) break;
+          out.push(pick);
+          pick.slugs.forEach((s) => used.add(s));
+          if (prefixIntact && setKey(pick.slugs) !== setKey(inc?.slugs ?? []))
+            prefixIntact = false;
+        }
+        return out;
+      };
+
+      let roster = await build([]);
+      const passes = opts?.polishPasses ?? POLISH_PASSES;
+      for (let p = 0; p < passes && roster.length; p++) {
+        const cand = await build(
+          roster.map((t) => t.slugs),
+          roster,
+        );
+        // a pass that drops a team, or doesn't strictly improve the total, is
+        // discarded and ends the loop (deterministic ⇒ further passes repeat it)
+        if (
+          cand.length < roster.length ||
+          rosterScore(cand) <= rosterScore(roster)
+        )
+          break;
+        roster = cand;
       }
-      return out;
+
+      // Display order: strongest team first. Skipped when the user pinned units
+      // to specific team ROWS — those rows map to team indices in the UI, so
+      // reordering would move a pin out from under its row. (Generic must-use
+      // units carry no row identity, so they don't block the sort.)
+      const rowPinned = pinned.some((row) => row?.length);
+      return rowPinned
+        ? roster
+        : [...roster].sort((a, b) => b.teamDamage - a.teamDamage);
     },
     /** Best team built around a pinned unit + that unit's line in it. */
     characterAnalysis: async (

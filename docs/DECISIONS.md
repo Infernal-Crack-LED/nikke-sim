@@ -2373,4 +2373,33 @@ Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
 - **5 — cross-run sim cache.** Re-running a generation with tweaked pins reuses every prior sim
   (measured 104× in-process; ~47× in-browser re-run).
 
+- **4 — cross-team polish pass + strongest-first display order (2026-07-24, branch `gen-item4`).**
+  Greedy builds team *i* from the pool minus teams 1..*i*−1, so a later team beating an earlier one
+  (bench: team 4 2343M < team 5 2369M) PROVES the earlier team's search missed a team its own pool
+  contained. Fix, in `src/teamcalc.ts`: after the greedy roster, re-run the whole sequential build
+  with the previous roster's teams offered to every team as extra local-search starts
+  (`bestTeam({ extraSeeds })`), keeping a pass only if the TOTAL roster score strictly improves;
+  ≤2 passes, ties keep the incumbent. `topTeams` then returns the teams strongest-first UNLESS the
+  caller row-pinned units (`pinnedByTeam` rows map to UI team indices — a sort would move a pin out
+  from under its row; generic `mustUse` carries no row identity and still sorts).
+  **Three deliberate deviations from the plan draft, all bench-measured** (artifact:
+  `docs/handoffs/closed/2026-07-24-gen-item4-polish-ab.md`): (1) the plan's "re-run team *i* with all
+  OTHER final teams excluded" is a strict SUBSET of team *i*'s greedy pool for every *i* — it cannot
+  reach the missed team by construction, so the seeded re-run replaces it; (2) the accept rule moved
+  per-team → per-pass on the roster total, because a reclaim raises one team while the rebuilt tail
+  drops (this is what makes "polish never lowers the roster" true); (3) a `POLISH_SEED_FRAC = 0.8`
+  gate re-climbs only seeds near the score to beat — same roster for 2197 sims instead of 3362
+  (+28% vs +95% over greedy). An exact `seedsOnly` shortcut skips re-deriving teams whose pool is
+  unchanged (the pipeline is deterministic + cached, so it would return the incumbent).
+  **Measured:** no-meta CLI bench roster 14.432B → **14.471B (+0.27%)**; on a constrained 20-unit
+  pool (4 Burst-I ⇒ 4 role-legal teams) greedy **stalls at 3 teams** and polish reaches **4, +13.0%**
+  — the small-eligible-pool case is the owner-reported symptom, so that is where the item pays.
+  **On the shipped app config (full pool, meta + spread shaping) it is a measured NO-OP** in both
+  quality and wall clock (real-Chromium 13.13B / 7865ms vs 7884ms, pool === fallback both arms) — a
+  gate-off arm (refine every seed) returns the SAME roster for +19% wall, so the gate is not hiding a
+  gain. Landing it anyway is the safe direction: it is monotone by construction and it only bites on
+  the constrained pools real users have. Coverage: `scripts/tests/generators/cross-team-polish.test.ts`
+  (6 tests) + `--polish` on `scripts/bench-generator.ts`; 78 pre-existing generator tests green with
+  nothing re-pinned; `verify.sh` green.
+
 **Player-facing patch notes: PENDING at next push** (the pre-push hook nudges `/patch-notes`).
