@@ -1,0 +1,198 @@
+{
+  "slug": "rapi-red-hood",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "formation": "noB1",
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 8.02,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "formation": "hasB1",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 95.04,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 48,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "advantageVs",
+          "element": "Electric"
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 150.72
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 100.6
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 88.11,
+          "flavor": "projectileAttachment",
+          "crit": true
+        },
+        {
+          "kind": "storedHit",
+          "atkPct": 88.11,
+          "charges": 1,
+          "flavor": "projectileExplosion",
+          "core": 0.33,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 20
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 18.01,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 2808,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 421.2,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Combat Assist: Changes to Burst Stage 1. This effect is continuous.",
+      "Cancels Combat Assist."
+    ],
+    "skill2": [
+      "Max Ammunition Capacity: 1 round(s)."
+    ],
+    "burst": [
+      "Explosion Radius ▲ 100.62% for 10 sec. (Stage 1)",
+      "Explosion Radius ▲ 100.62% for 10 sec. (Stage 3)",
+      "Skill 2's requirement for triggering attachable projectiles ▼ 60 for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ The 150.72% Projectile Attachment / 100.6% Projectile Explosion continuous buffs are authored as generic attackDamagePct because the schema has no flavor-scoped stat key. This OVER-CREDITS every non-projectile hit (all normal MG fire + the 2808% nuke) by ~251pp of Damage Up and is almost certainly WRONG in magnitude distribution — it needs a flavor-scoped stat (projectileAttachmentDamagePct / projectileExplosionDamagePct) or the buffs must be folded into the projectile effects' own atkPct. Same defect applies to the burst's 421.2% Projectile Attachment line.",
+    "⚑ The 120-normal-attack counter: MG hitsPerShot is 1, so 120 rounds ≈ one 300-ammo magazine's first 40%. Whether the counter counts ROUNDS or trigger PULLS is kit-silent; assumed rounds.",
+    "⚑ Split-vs-merge for the attachable projectile is kit-silent: modeled as ONE attachment hit + ONE stored explosion charge (Max Ammunition Capacity 1 round supports a single projectile in flight).",
+    "⚑ The stage-3 burst's Skill-2 threshold reduction (120→60 for 10s) is NOT modeled — the engine has no dynamic-trigger-count primitive. This UNDER-credits projectile procs during the burst window.",
+    "⚑ Explosion core rate 0.33 and crit:true on both projectile components are priors-sourced estimates, not derived from this kit text."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Structure: S1 is a formation-gated pair — with NO Burst-1 ally the unit holds Combat Assist (acts as B1) and its FB-enter branch buffs ALL allies (CDR 7.48s + Attack Damage 8.02%); with a Burst-1 ally present Combat Assist is cancelled and the FB-enter branch instead self-buffs ATK 95.04% + Interruption-Part damage 48%. Modeled with formation:'noB1' / 'hasB1' respectively. S2 grants Electric elemental advantage (advantageVs) plus two continuous projectile-flavor Damage-Up buffs and a 120-normal-attack attachable projectile whose explosion is held until Full Burst (storedHit). Burst is stage-split via burstCast stage 1 (self CDR 20s + ally caster-scaled ATK 18.01%) vs stage 3 (2808% nuke + Projectile Attachment 421.2%). Combat Assist's stage-change itself is unmodeled: the engine has no runtime burst-stage reassignment, so the noB1 case is expressed only through the formation gate, NOT by actually casting the unit at stage 1 — this is the single largest structural approximation here and it makes the stage-1 burst branch effectively unreachable in a normal B1+B2+B3 comp."
+}

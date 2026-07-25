@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 32,
+      "unit-tested": 33,
       "authored": 16,
-      "audited": 25,
+      "audited": 24,
       "reconciled": 4
     },
     "tier": {
@@ -3024,34 +3024,41 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "projectile attach/explode modeled faithful; 150.72/100.6 damage-type buffs correctly routed to attachment/explosion flavors (engine-verified); values exact. F1/F3 skippable partless lines backfilled"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/rapi-red-hood.json + scripts/kit-autonomy/manual-review/rapi-red-hood.md.",
+          "med FIDELITY (burst / skill2): The ▼60 threshold reduction is scoped to Full-Burst STATE (countInFb 60) rather than to a 10s window opened by her own Stage-3 cast, so it also applies in Full Bursts she did not cast and in noB1 (Stage-1) rotations where the prose grants no reduction.",
+          "med ENCODING (burst): `requiresPulls: 120` on the 2808% nuke is not in the prose, and its constant equals Skill 2's launch threshold exactly — the banner-1 observation it rests on is equally explained by a missing ROCKET EXPLOSION rather than a missing nuke.",
+          "med FIDELITY (skill2): 'Max Ammunition Capacity: 1 round(s)' is filed unmodeled while rockets bank without limit (measured batches of 2/4/9/8), and no test anywhere pins the capacity question — the S5 blind assertion that appears to cover it passes VACUOUSLY against the shipped override.",
+          "low SILENT_DROP (burst): The Stage-3 line 'Projectile Attachment Damage ▲ 421.2% for 10 sec.' is absent from the `unmodeled` registry — its removal is reasoned only in the free-text note, so the machine-readable record of deliberate omissions does not contain it.",
+          "low FIDELITY (skill2): The attachment hit is core-INELIGIBLE, which contradicts the mechanics SSOT's general rule that launchWeapon deliveries (naming this unit's projectiles) do core — the override rests on a per-unit measured ruling that is not cross-referenced from the SSOT.",
+          "low FIDELITY (skill2): `instantInFb: true` (a rocket attached during Full Burst detonates immediately) extends the prose, which only says projectiles explode on ENTERING Full Burst; it is measurement-backed and SSOT-documented but pinned by no test."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed",
+      "evidence": "THREE focus recordings — burst-nuke recipe fit to measured constants, +421% buff measured-inert removed | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (13 FAITHFUL/6 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge discriminationOk true",
       "date": "2026-07-14",
       "graded": {
         "teams": 5,
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Invisible-X residual (44-52% of her damage) deliberately left open",
+      "residual": "Invisible-X residual (44-52% of her damage) deliberately left open | Spot-check cluster (measurement-gated): flighted-nuke FB timing (delaySec 0.4, fbMajor true), +421.2% measured-inert removal, batch-accumulation vs prose Max Ammo:1, explosion core 0.33 + crit, countInFb 60 FB-state vs Stage-3+10s. COLD board 0.930 = deliberately-open Invisible-X/MG-cold gap.",
       "unmodeled": {
         "skill1": [
-          "Damage to Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
+          "Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
         ],
         "skill2": [
           "Attachable Projectile — Max Ammo: 1"
         ],
         "burst": [
           "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)",
-          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)"
+          "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)",
+          "Projectile Attachment Damage ▲421.2% for 10 sec (self; Burst Stage 3 — MEASURED-INERT on every visible class, 0.13% precision across 3 comps, 2026-07-14; removed as dead datamine entry 101631006, see note)"
         ]
       },
       "board": {

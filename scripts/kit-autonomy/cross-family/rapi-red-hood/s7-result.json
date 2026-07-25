@@ -1,0 +1,267 @@
+{
+  "slug": "rapi-red-hood",
+  "kitDescription": "Rapi: Red Hood is a Fire machine-gunner whose kit reshapes itself around the squad she is in. If the team has no Burst I unit she switches into Combat Assist and fills the Burst 1 slot herself, and every Full Burst she then shortens the whole team's burst cooldowns and gives everyone a small Attack Damage boost; if a Burst I ally is present she stays a Burst III and instead gives herself a large ATK spike (plus bonus damage to interruption parts) each Full Burst. Her second skill is the damage engine: she counts her own machine-gun rounds, and every 120 rounds she fires a sticky rocket that attaches to the boss for immediate damage and then detonates when Full Burst begins, with two permanent passives that make both the attach and the explosion hit much harder; she also counts as elementally advantaged against Electric enemies. Her burst does one of two things depending on which slot she casts from: at Stage 1 it is a support button (self cooldown refund, plus a team ATK buff scaled off her own attack), and at Stage 3 it is a huge single missile (2808% of ATK) that flies out and lands a moment later, alongside self buffs that make her rockets come faster and hit harder for ten seconds. In practice, in a normal team she is a Burst III nuker whose rockets pile up between Full Bursts and all go off at once when the window opens.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Combat Assist: Changes to Burst Stage 1",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive block, formation:'noB1', effect burstEligibility stage 1",
+        "blindSaid": "S6 declined to model the stage change at all (formation gate only, flagged as its 'single largest structural approximation'); S2b required the gate",
+        "formulaCheck": "Squad formation is static at scope lock (no deaths), so the prose's battle-start / Full-Burst-end re-evaluation is equivalent to a setup-time gate; the driver additionally makes her ACTUALLY cast at stage 1, which the blind could not.",
+        "fireRateOk": true,
+        "explanation": "Driver is strictly more faithful than the blind: the noB1 chain provably opens with her stage-1 casts (test RRH2 asserts every one of her burstCast events is stage 1 in the noB1 fixture, stage 3 in hasB1). She never counts as her own B1 ally."
+      },
+      {
+        "kitLine": "Cancels Combat Assist (hasB1)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "encoded by absence — no burstEligibility block under formation 'hasB1'",
+        "blindSaid": "listed the line as unmodeled text",
+        "formulaCheck": "Cancellation of a gate that is only applied under noB1 is the null encoding; no engine primitive needed.",
+        "fireRateOk": true,
+        "explanation": "Discriminated: RRH2 shows stage-3 casts only in the hasB1 fixture."
+      },
+      {
+        "kitLine": "Cooldown of Burst Skill ▼ 7.48 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCdr 7.48 on the noB1 fullBurstEnter allies block",
+        "blindSaid": "identical (S6); S2b called it load-bearing",
+        "formulaCheck": "Rotation-rate effect, not a damage bucket — correctly a burstCdr effect rather than a buff.",
+        "fireRateOk": true,
+        "explanation": "Shares a block and trigger with the 8.02% buff, which is proven to fire once per FB entry in the noB1 fixture — so the block demonstrably fires. No test pins the resulting rotation acceleration directly (structural pin only, S5)."
+      },
+      {
+        "kitLine": "Attack Damage ▲ 8.02% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff attackDamagePct 8.02, durationSec 10, target allies, formation noB1, trigger fullBurstEnter",
+        "blindSaid": "identical (S6, S2b)",
+        "formulaCheck": "attackDamagePct is the DamageUp bucket (§1e) — correct routing for an 'Attack Damage ▲' line.",
+        "fireRateOk": true,
+        "explanation": "RRH2 asserts it reaches all 3 allies for exactly 600 frames on each FB entry, and is absent in the hasB1 fixture; S5's independent ungating counterfactual makes the inertness non-vacuous."
+      },
+      {
+        "kitLine": "ATK ▲ 95.04% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff atkPct 95.04, self, 10s, formation hasB1, trigger fullBurstEnter",
+        "blindSaid": "identical (S6, S2b) — S2b's named trap was keying it to burstCast",
+        "formulaCheck": "atkPct sums into (1 + ΣATK%) on staticAtk (§1a) — correct for a plain ATK ▲ line, not a caster-scaled flat.",
+        "fireRateOk": true,
+        "explanation": "fullBurstEnter (not burstCast) as the blind required. S5 independently pins one application per fullBurstStart. Note: in both fixtures she casts every Full Burst, so fullBurstEnter vs burstCast is not separately discriminated by either test — the formation gate is what is pinned."
+      },
+      {
+        "kitLine": "Damage to Interruption Parts ▲ 48%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1, verbatim wording",
+        "blindSaid": "S6 encoded partsDamagePct 48 (schema-inert); S2b called it inert either way",
+        "formulaCheck": "Partless scope-lock boss — no parts-damage term can contribute; both encodings are bit-identical in output.",
+        "fireRateOk": true,
+        "explanation": "Documentation choice only. The one S5 red was here (paraphrased 'Damage to Parts') and the driver corrected to verbatim wording; that fix was documentation, not behavior."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Applies Elemental Advantage vs Electric",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "advantageVs Electric",
+        "blindSaid": "identical (S6, S2b)",
+        "formulaCheck": "Eligibility for the ×1.1 Element bucket (§1c), not an elementDamagePct buff — correct; inert against the Fire control boss.",
+        "fireRateOk": true,
+        "explanation": "Correctly inert in every graded fixture; the nearest-wrong (a flat element buff paying out vs any boss) is excluded by the encoding kind itself."
+      },
+      {
+        "kitLine": "Projectile Attachment Damage ▲ 150.72%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff projectileAttachmentPct 150.72, continuous",
+        "blindSaid": "S6 authored it as GENERIC attackDamagePct and flagged its own encoding as almost certainly wrong (over-credits all MG fire + the nuke); S2b marked the line FIX for exactly this reason",
+        "formulaCheck": "damage-calculation.md §1f: Projectile = 1 + (Projectile Explosion % | Projectile Attachment %)/100, its OWN multiplicative bucket on attachment/explosion-flavored hits — the driver's routing is the SSOT's routing.",
+        "fireRateOk": true,
+        "explanation": "The most valuable convergence in this run: both blinds independently identified the flavor-scoping requirement and the driver already satisfies it. RRH3 pins projFactor 2.5072 on attachment hits and 1.0000 on every normal, and collapses to 1.0 when the buffs are removed."
+      },
+      {
+        "kitLine": "Projectile Explosion Damage ▲ 100.6%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff projectileExplosionPct 100.6, continuous",
+        "blindSaid": "S6 generic attackDamagePct (self-flagged wrong); S2b FIX",
+        "formulaCheck": "Same §1f bucket, explosion flavor.",
+        "fireRateOk": true,
+        "explanation": "RRH3 pins projFactor 2.0060 on explosion-flavored instances only; the two flavors do not cross-contaminate (attach reads 2.5072, not 3.5132), so the per-flavor gate is real."
+      },
+      {
+        "kitLine": "Activates after 120 normal attack(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger hitCount count 120 (+ countInFb 60, graded separately below)",
+        "blindSaid": "identical count 120 (S6, S2b); S2b's trap was an interval approximation",
+        "formulaCheck": "MG hitsPerShot 1 → one round per pull; a count trigger keeps the channel coupled to fire rate, wind-up ladder and reloads, which an interval trigger would sever.",
+        "fireRateOk": true,
+        "explanation": "S5 independently verifies skill2 damage exists BEFORE the first fullBurstStart, which is the assertion that kills the 'both 88.11% lines paid at explosion time' model."
+      },
+      {
+        "kitLine": "Attach 88.11% / Explosion 88.11% on FB",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 88.11 flavor projectileAttachment (immediate, no core) + storedHit 88.11 flavor projectileExplosion, core 0.33, crit true, instantInFb true",
+        "blindSaid": "S6 same magnitudes/split, core 0.33 + crit true (self-labelled priors-sourced, not prose-derived); S2b treated core/crit as measurement-gated ⚑",
+        "formulaCheck": "Stored-hit accumulate-then-detonate and the aim-independent coreOverride ≈1/3 are both documented in damage-calculation.md §1b/§2d for this exact unit (MEASURED 2026-07-16, docs/probe-data/rrh-explosion-core.json N=9); release lands inside the window so it takes the +0.5 FB major, which is the SSOT rule for stored-hit releases.",
+        "fireRateOk": true,
+        "explanation": "RRH4 pins coreRate 0.330, crit-eligibility on both flavors, attachment core-INELIGIBLE, and every instance an integer multiple of 88.11. Caveat recorded below: the SSOT's general rule says launchWeapon deliveries DO core, and the attachment's no-core comes from a per-unit MEASURED ruling that overrides it."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity: 1 round(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "listed in unmodeled.skill2; storedHit carries no charge cap, so out-of-burst rockets bank and the first explosion of each FB is a batch (owner-measured batches of 2/4/9/8)",
+        "blindSaid": "S6 charges:1; S2b called the cap load-bearing and named uncapped banking as 'the over-credit to hunt'",
+        "formulaCheck": "damage-calculation.md §1b/§2d records the batch-accumulation mechanic for this unit as MEASURED — the mechanics SSOT, which is co-equal ground truth with the prose here, corroborates the driver against the literal prose line.",
+        "fireRateOk": true,
+        "explanation": "Highest-magnitude prose-vs-measurement tension in the kit, and both blinds flagged it. See gotcha: the conflict may be illusory (capacity 1 plausibly describes the LAUNCHER magazine, not the number of projectiles stuck to the boss), and no test pins it — S5's capacity assertion is vacuous against the shipped override."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Stage 1: Cooldown of Burst Skill ▼ 20 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCdr 20, self, trigger burstCast stage 1",
+        "blindSaid": "identical (S6, S2b)",
+        "formulaCheck": "Self-scoped and stage-keyed — cannot leak onto her 40s stage-3 cadence in standard comps.",
+        "fireRateOk": true,
+        "explanation": "Shares the burstCast stage-1 trigger with the casterAtkPct block, which RRH6 proves fires in the noB1 fixture; inert in hasB1 by construction."
+      },
+      {
+        "kitLine": "Stage 1: Explosion Radius ▲ 100.62%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst, stage-1 instance",
+        "blindSaid": "S6 unmodeled; S2b UNMODELED",
+        "formulaCheck": "No radius model exists and the fight is a single boss — zero damage contribution under any encoding.",
+        "fireRateOk": true,
+        "explanation": "Unanimous. Driver correctly records BOTH instances (stage 1 and stage 3) as separate kit lines rather than collapsing them."
+      },
+      {
+        "kitLine": "Stage 1: ATK ▲ 18.01% of user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff casterAtkPct 18.01, allies, 10s, burstCast stage 1",
+        "blindSaid": "identical (S6, S2b) — S2b's trap was plain atkPct",
+        "formulaCheck": "§1a: 'X% of caster's ATK' resolves to a FLAT add of the caster's ATK × X, outside the recipient's (1+ATK%) — casterAtkPct is that primitive; plain atkPct would mis-credit every ally with a different staticAtk.",
+        "fireRateOk": true,
+        "explanation": "RRH6 discriminates the magnitude without depending on absolute ATK (18.01/11.16 ratio counterfactual) and confirms all 3 allies for exactly 600 frames."
+      },
+      {
+        "kitLine": "Stage 3: Deals 2808% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 2808, enemy, burstCast stage 3, delaySec 0.4, requiresPulls 120",
+        "blindSaid": "S6 and S2b both required noFb:true (pre-FB burst-cast rule)",
+        "formulaCheck": "damage-calculation.md 'Flighted damage (2026-07-14)' names this exact nuke: delaySec queues it for landing-time resolution and the cast-instant no-Full-Burst rule does NOT apply to flighted damage. The blinds applied the general rule; the SSOT carries the per-unit exception, MEASURED at +0.02% recipe fit across three focus recordings.",
+        "fireRateOk": true,
+        "explanation": "Driver wins on the FB-timing delta and the SSOT is explicit. RRH5 pins fbMajorApplied true, bucket 'burst', exactly one per cast. The requiresPulls 120 gate is a separate, unprosed addition — graded in the gotchas."
+      },
+      {
+        "kitLine": "Stage 3: Explosion Radius ▲ 100.62%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst, stage-3 instance, explicitly noted as a second separate line",
+        "blindSaid": "S6 unmodeled; S2b UNMODELED",
+        "formulaCheck": "Inert.",
+        "fireRateOk": true,
+        "explanation": "Unanimous."
+      },
+      {
+        "kitLine": "Stage 3: Proj Attach Dmg ▲ 421.2% 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "REMOVED as MEASURED-INERT (0.13% precision, 3 comps; dead datamine entry 101631006); reasoned in the note but NOT listed in unmodeled.burst",
+        "blindSaid": "S6 encoded it (generic attackDamagePct 421.2); S2b called it FAITHFUL and load-bearing, expecting in-window attachments at 88.11×6.7192",
+        "formulaCheck": "Prose asserts the line; measurement asserts no observable effect. Per the repo's evidence hierarchy MEASURED outranks prose, and the driver's own note records that the SAME-BRANCH +95.04% IS live — which is the control that makes the null read credible rather than an instrumentation failure.",
+        "fireRateOk": true,
+        "explanation": "Substantively defensible and the strongest documented divergence from both blinds. The defect is registry-level: the verbatim line is missing from unmodeled.burst, so the repo's machine-readable record of deliberate omissions does not contain it. Both blinds encoded this line, so it is the one place where the shipped kit is materially smaller than two independent re-derivations."
+      },
+      {
+        "kitLine": "S2 requirement ▼ 60 for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "trigger countInFb 60 — the threshold halves whenever Full Burst is active",
+        "blindSaid": "S6 skipped it (no dynamic-trigger primitive, flagged as under-credit); S5 it.skip'd it as a GAP; S2b required a 10s window from the stage-3 cast, reverting",
+        "formulaCheck": "Prose scopes the reduction to a 10s window opened by HER stage-3 cast; the driver scopes it to the Full Burst state. In a solo-B3 rotation these nearly coincide (cast → FB is 22f, both run ~10s). They diverge in FBs she does not cast, and in noB1 rotations where she casts at stage 1 and the prose grants no reduction at all.",
+        "fireRateOk": true,
+        "explanation": "Documented in the note and in damage-calculation.md ('countInFb 60 in her Full Burst — fills 2× faster in FB', owner-measured meter). Graded as a documented fidelity divergence, not a gotcha, but it is the scope residual most likely to over-generate rockets outside her own stage-3 rotations."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst / skill2",
+      "summary": "The ▼60 threshold reduction is scoped to Full-Burst STATE (countInFb 60) rather than to a 10s window opened by her own Stage-3 cast, so it also applies in Full Bursts she did not cast and in noB1 (Stage-1) rotations where the prose grants no reduction.",
+      "evidence": "Kit: 'Skill 2's requirement for triggering attachable projectiles ▼ 60 for 10 sec.' appears ONLY in the Stage-3 branch. Driver: trigger {hitCount, count 120, countInFb 60} — unconditional on FB state. S2b required 'within 10s of a stage-3 cast'; S5 and S6 both declined to model it at all (no dynamic-trigger primitive). SSOT damage-calculation.md §1b records the FB-scoped form as owner-measured meter behaviour, so the two framings are genuinely in tension rather than one being a transcription slip.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Keep as-is for solo-B3 comps where the scopes coincide, but record the divergence in the note's carryover paragraph explicitly. To resolve: read the rocket-meter fill rate in a Full Burst that RRH did NOT cast (helm-cast FB in the hasB1 control comp) — if the meter still fills 2× there, the FB-state model is the measured mechanic and the prose line is a second, coincident source; if it fills 1×, the trigger needs a cast-scoped 10s window primitive. Do not adjust the 60/120 constants to compensate."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "burst",
+      "summary": "`requiresPulls: 120` on the 2808% nuke is not in the prose, and its constant equals Skill 2's launch threshold exactly — the banner-1 observation it rests on is equally explained by a missing ROCKET EXPLOSION rather than a missing nuke.",
+      "evidence": "Kit Stage-3 text has no charge or ammunition precondition on the 2808% line (the only gating language in the whole burst is the stage split). Driver note: 'CHARGE-GATED (requiresPulls 120 — fire-weak banner-1 at ~68 shots had no nuke; every >=120 banner did)'. At ~68 shots the S2 rocket channel had ALSO not yet reached its 120-round launch, so no explosion could occur at that banner either; damage-calculation.md warns that RRH's proc popups entangle with her other hit classes by value (the reason the U13 footage read was ruled inconclusive). Neither blind proposed any pull gate. The gate is inert in the graded fixture — RRH5 asserts nukes.length === casts.length and passes — so nothing currently tests it.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement, not a number: re-read the banner-1 segment of the fire-weak focus recording and classify which hit class was absent — a 2808%-scaled instance (≈15–30M at scope lock) versus an 88.11%-scaled explosion (≈1.6–4.5M). If the absent class was the explosion, delete requiresPulls; if genuinely the nuke, keep it and add a fixture (an early-FB comp reaching Full Burst under 120 pulls) that pins the suppression. Until read, consider ENV-gating it default-ON with a documented revert arm so the claim is A/B-testable."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "'Max Ammunition Capacity: 1 round(s)' is filed unmodeled while rockets bank without limit (measured batches of 2/4/9/8), and no test anywhere pins the capacity question — the S5 blind assertion that appears to cover it passes VACUOUSLY against the shipped override.",
+      "evidence": "Kit: 'Max Ammunition Capacity: 1 round(s).' S6 blind shipped charges:1; S2b named uncapped banking 'the over-credit to hunt'. Driver relies on damage-calculation.md §2d ('rockets attached OUTSIDE Full Burst do NOT explode until FB begins, so they ACCUMULATE and the FIRST explosion of each FB is a BATCH', MEASURED 2026-07-16). S5's guard is `ALL_EFFECTS.filter(e => typeof e.charges === 'number')` followed by a per-element assertion — the driver's storedHit emits no `charges` key, so the filtered array is empty and the loop body never executes. The GREEN on that assertion asserts nothing.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "The tension is likely illusory and should be resolved by reading, not re-measuring: 'Max Ammunition Capacity' plausibly describes the LAUNCHER's magazine (one rocket fired per launch, reloading between) rather than a cap on projectiles already stuck to the boss — under that reading batch accumulation is fully prose-consistent and the line should move from `unmodeled` to a note stating it IS modeled (one rocket per meter-fill). Independently, add a driver-side assertion that the explosion count per FB entry is ≥1 and matches the banked-rocket count, so the capacity model is pinned by something rather than by a vacuous filter."
+    },
+    {
+      "subkind": "SILENT_DROP",
+      "slot": "burst",
+      "summary": "The Stage-3 line 'Projectile Attachment Damage ▲ 421.2% for 10 sec.' is absent from the `unmodeled` registry — its removal is reasoned only in the free-text note, so the machine-readable record of deliberate omissions does not contain it.",
+      "evidence": "Kit text carries the line (ulti description_value_06 = 421.2 at level 10). Shipped override: no effect encodes it, and unmodeled.burst lists only the two Explosion Radius instances. Both blinds encoded it (S6 as attackDamagePct 421.2; S2b marked it FAITHFUL and load-bearing). game-mechanics.md's skill-resolution rule requires `unmodeled` to list verbatim every kit-text line the model deliberately does not represent.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Add the verbatim line to `unmodeled.burst` as: \"Projectile Attachment Damage ▲421.2% for 10 sec (self; Burst Stage 3) — MEASURED-INERT on every visible hit class (0.13% precision, 3 comps, 2026-07-14); dead datamine entry 101631006. Same-branch +95.04% IS live, which controls for instrumentation failure.\" No behavioral change."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "The attachment hit is core-INELIGIBLE, which contradicts the mechanics SSOT's general rule that launchWeapon deliveries (naming this unit's projectiles) do core — the override rests on a per-unit measured ruling that is not cross-referenced from the SSOT.",
+      "evidence": "damage-calculation.md §2b and game-mechanics.md §9: 'Weapon-based deliveries (launchWeapon: Anis:Star's stars, Rapi:RH's projectiles) DO core+crit but still no range.' Driver: flatDamage attachment with no core, and test RRH4 pins `coreEligible === false`. Justification lives only in the override note ('the landed \"stickies never core\" ruling — the small out-of-burst ATTACH class (~340-620k, still no core)'). S6 blind gave the attachment no core either but gave no reason; S2b did not reach the question.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "No engine change — the measured per-unit ruling outranks the general rule. Add the exception to damage-calculation.md's launchWeapon sentence ('except RRH's out-of-burst ATTACH class, MEASURED no-core — the in-FB EXPLOSION cores at ~1/3') so the SSOT and the override stop disagreeing on paper."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "`instantInFb: true` (a rocket attached during Full Burst detonates immediately) extends the prose, which only says projectiles explode on ENTERING Full Burst; it is measurement-backed and SSOT-documented but pinned by no test.",
+      "evidence": "Kit: 'When entering Full Burst, the projectiles explode.' A literal reading defers an in-FB attach to the NEXT FB entry. Driver ships instantInFb:true; damage-calculation.md §1b records it ('A rocket attached DURING FB explodes INSTANTLY (storedHit.instantInFb) → the in-FB per-frame release path'), sourced to the owner-measured rocket meter. S6 blind omitted it entirely. Neither the driver's test nor S5 asserts the in-FB release timing.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Add a driver-side pin: assert at least one explosion-flavored instance occurs at a frame strictly between a fullBurstStart and its end (not co-located with the entry frame) in the hasB1 fixture, and that removing instantInFb erases it. Purely a test-coverage addition; no value changes."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "GO. All 19 kit lines are either FAITHFUL (13) or DOCUMENTED_GAP (6); zero undocumented divergences, so faithfulness is 1.0. Convergence is GREEN mechanically: the S5 blind test, written from prose alone, runs 23/23 green with 2 honest skips against the shipped override, and the one initial red was a verbatimness fix to the `unmodeled` text, not behavior. The two blinds converged on the entire load-bearing structure independently — formation gate both directions, fullBurstEnter (not burstCast) for the 95.04%, hitCount-120 with attachment paid at launch time, stored explosion released at FB entry, caster-scaled 18.01% to allies, the 2808% stage-3 rider — and on the two places they diverged the DRIVER is the more faithful party against the formula SSOT: the 150.72/100.6 projectile passives are routed through the dedicated Projectile bucket (damage-calculation.md §1f names this unit) where the S6 blind used generic attackDamagePct and flagged its own encoding as 'almost certainly WRONG', and the nuke's flighted delaySec 0.4 / FB-major-true is the SSOT's own per-unit exception to the burst-cast boundary rule, which both blinds applied generically. Discrimination holds for the load-bearing set: every FAITHFUL block is proven to FIRE from the event log in the fixture where it is live and proven ABSENT in the other, with counterfactuals that fail under the named nearest-wrong models (RRH1–RRH6), and the two burstCdr effects inherit firing proof from block-mates on the same trigger. Ranked residuals, none verdict-blocking: (1) the ▼60 reduction is scoped to Full-Burst state rather than her Stage-3 cast + 10s, which over-generates rockets in FBs she does not cast and in noB1 rotations; (2) `requiresPulls: 120` on the nuke is unprosed and its constant is exactly S2's threshold, so the banner-1 evidence is equally consistent with a missing rocket explosion — it is inert in the graded fixture and therefore untested; (3) 'Max Ammunition Capacity: 1' is filed unmodeled against uncapped banking, and the S5 assertion that appears to cover it passes vacuously because it filters on a `charges` key the driver never emits — my read is that the conflict is illusory (capacity 1 = the launcher magazine, not projectiles attached to the boss), which would make the model prose-consistent and the `unmodeled` entry unnecessary; (4) the 421.2% line's removal is reasoned in the note but missing from `unmodeled.burst`, a registry defect to fix with no behavioral change; (5)(6) the attachment's no-core and instantInFb both extend or contradict general SSOT rules on per-unit measured grounds and want a cross-reference and a test pin respectively. Same-model residual for the owner to spot-check: every agent in this gauntlet is the same model family on the S5/S6/S7 side, so the strongest independent signal here is the cross-family (fable) S2b review — and S2b agreed with the opus blinds on all three items where the driver overrode them on measurement (nuke FB timing, the 421.2% removal, batch accumulation). Those three are precisely where the shipped model departs from what three independent prose readings produced, so they are the owner's highest-value spot-check; the de-contamination leak (the redacted schema exposed the approved nickname 'RRH' in storedHit comments naming core ~1/3 and crit) touched only the explosion core/crit magnitudes, both writers declined to treat the leaked values as prose-derived, and the driver cites the independent measurement provenance — impact on this verdict is nil, but prepare-cross-family-packet.ts should redact the nicknames[] array.",
+  "model": "claude-opus-5"
+}
