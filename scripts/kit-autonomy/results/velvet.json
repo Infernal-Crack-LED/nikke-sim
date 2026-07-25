@@ -1,0 +1,67 @@
+{
+  "slug": "velvet",
+  "kitDescription": "Velvet (SR/Wind/Supporter/Burst II, cd 20s, ammo 6, chargeFrames 60, chargeMultiplier 250, normalMult 69.04). An ammo-pouch supporter: S1 fills a 6000-round pouch at battle start + Burst-Stage-2 entry (and strips 5% enemy ammo — inert, no enemy entity), and on each out-of-FB full-charge shot self-buffs ATK ▲30.5% + Attack Damage ▲30.5% (3s). S2 is the payload: on each in-FB full-charge shot grants ALL allies ATK ▲25.2%-of-caster (flat) + Charge Damage ▲100.8% (3s), and after 50 in-FB normals grants self Attack Damage ▲15.03% (5s) + 400.92% flatDamage rider. Burst swaps to a rapid weapon (7%/shot, 10s) with self Attack Damage ▲34.52% (10s).",
+  "convergence": {
+    "s5TestsVsDriverOverride": "PASS — 12/12 blind post-op assertions converge on the driver's shipped override once only mechanical artifacts-of-blindness are corrected (harness import path; o.blocks→slot arrays skill1/skill2/burst; .total→.totalDamage; srcSlot numeric→e.slug==='velvet'). No assertion text changed. Every load-bearing line matches: S1b self atkPct 30.5 + attackDamagePct 30.5 (two distinct stats, self-scoped, teammate totals byte-identical when removed); S2a casterAtkPct 25.2 present + atkPct@25.2 absent; S2a chargeDamagePct 100.8 present + chargeDamageMultPct@100.8 absent, reaches >1 ally; S2b fires-iff-fbNormals>=50 + monotone counterfactual; burst attackDamagePct 34.52 keyed to velvet's own burst; weaponSwap changes shot economy vs no-swap. The S6 blind override-writer independently reproduced the identical encoding on every load-bearing line from prose alone; its only structural difference (explicit ammoPouch resource+gates) is acknowledged in its own ⚑#1 to be deletable-if-continuous, converging on the driver's drop.",
+    "redAssertions": [
+      {
+        "assertion": "S5 blind fixture controlComp('velvet', true) = [liter/crown/velvet/helm]",
+        "classification": "FIXTURE-ARTIFACT (not a faithfulness divergence)",
+        "detail": "crown is a second Burst II that out-prioritizes velvet for the B2 cast (measured: crown 10 casts, velvet 0), making the blind's burst/FB non-vacuity guard and burst assertions vacuous in that comp. The driver's viable sole-B2 fixture [liter/velvet/helm] (velvet 10 casts, 5 team FBs) exercises them. The blind's SPEC table — the real signal — is fixture-independent and converges fully regardless."
+      }
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Start of battle / entering Burst Stage 2 — fills 6000-round ammo pouch (continuous, unremovable)",
+        "disposition": "UNMODELED (sanctioned drop)",
+        "finding": "Derivably NEVER-BINDING: max drain per 20s rotation ≈ 7 outFb×100 + 7 inFb×300 + ≤1 proc×300 ≈ 3.1k « 6000 cap, refilled to cap at every stage-2 entry → every ammo-gated effect fires at full uptime; model-or-omit is damage-neutral. Not a silent drop: actively pinned inert (V1 — velvet emits 0 maxAmmo buffs; stripping skill1 leaves ally totals byte-identical) AND documented in the note. S6 blind modeled it explicitly with resourceGates but its own ⚑#1 says delete-if-continuous, converging on the drop."
+      },
+      {
+        "kitLine": "Affects all enemies. Removes 5% of ammo",
+        "disposition": "UNMODELED (recorded verbatim)",
+        "finding": "No enemy entity in v1 (resolveTargets({enemy})=[]) → inert. Recorded in unmodeled.skill1, audit SKIPPED ↔ unmodeled 1:1. V1 discriminates against the nearest-wrong (consumeAmmo sign-flipped onto ALLIES: forces ally reloads, 53>33, cutting team damage) — GREEN vs shipped, RED vs counterfactual."
+      },
+      {
+        "kitLine": "Full Charge while NOT in Full Burst → self ATK ▲30.5% + Attack Damage ▲30.5% (3s)",
+        "disposition": "FAITHFUL",
+        "finding": "shotFired + fbGate:'outFb' (schema's canonical outFb example is Velvet; SR trigger-pull = full charge). Two DISTINCT stats — atkPct 30.5 (ATK bucket) AND attackDamagePct 30.5 (Damage-Up bucket), NOT a collapsed atkPct 61. Discriminated on both the gate (0 in-FB applies) and the collapse (atkPct 61 = 0). Driver's outFb correction vs the earlier draft (which leaked the buff through FB windows at ~72% uptime where the +50% FB major lives) is the load-bearing fix."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Full Charge DURING Full Burst → all allies ATK ▲25.2% of caster's ATK + Charge Damage ▲100.8% (3s)",
+        "disposition": "FAITHFUL",
+        "finding": "shotFired + fbGate:'inFb' → allies. casterAtkPct 25.2 (FLAT add of Velvet's ATK, resolves >1000 at apply ≈25133) NOT atkPct (target's own ATK scaler); chargeDamagePct 100.8 (additive charge-bucket points) NOT chargeDamageMultPct (base-charge multiplier). All allies incl. self (slots 0/1/2). Three nearest-wrongs discriminated: drop-inFb (applies outside FB), atkPct (value 25.2 scaler + casterAtkPct=0), chargeDamageMultPct. Documented caveat (not asserted): the buff is kept alive by swapped shots in her own burst window — 'Full Charge' identity of swap shots is measurement-gated ⚑."
+      },
+      {
+        "kitLine": "After landing 50 normal attacks during FB → self Attack Damage ▲15.03% (5s) + 400.92% flatDamage",
+        "disposition": "FAITHFUL encoding, DOCUMENTED-GAP on counting fidelity",
+        "finding": "hitCount:50 + fbGate:'inFb' → self attackDamagePct 15.03/5s + enemy flatDamage 400.92 (bucket skill; no core/crit/range clause → none granted; lands in FB by timing so +50% major applies). Faithful encoding fires ZERO procs in this 180s fixture (an SR lands ~10 in-FB hits/window « 50) — a NON-VACUOUS absence: both counterfactuals fire (drop-inFb → 2 out-of-FB procs; hitCount 5 → 10 in-FB procs at atkPct=400.92 + self 15.03/5s). ⚑ cumulative-vs-in-FB-only counting + per-FB reset is not expressible in the engine (hitCount counts all cumulative hits; fbGate gates fire-time only); both readings converge on 0 procs here, so the choice is inert/damage-neutral in this fixture. Classified DOCUMENTED-GAP (fidelity hypothesis), NOT a modeled≠working silent drop nor a REAL-GOTCHA — the fable S2b FIX flag agrees."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Changes the weapon: Damage 7% of final ATK, 10 sec",
+        "disposition": "FAITHFUL (structure) / ⚑ cadence",
+        "finding": "burstCast → weaponSwap damagePct:7, durationSec:10 — REPLACES the SR (swap shots at atkPct=7 inside the 10s window vs 69.04 outside; V5 discriminates against damagePct 70). Swap cadence/ammo/weapon-class are KIT-SILENT (ALWAYS-⚑ #3): engine fires a default ~10 shots/10s (S6 blind estimate pullsPerSec 12); shipped flagged with recipe (datamine burst swap shot_id, or count shots per window on video). CALIBRATED tier."
+      },
+      {
+        "kitLine": "Attack Damage ▲ 34.52% for 10 sec",
+        "disposition": "FAITHFUL",
+        "finding": "burstCast → self attackDamagePct 34.52, durationSec:10, once per Velvet cast. Keyed to HER burstCast, NOT fullBurstEnter — discriminable in the sole-B2 fixture (burstCast 10 ≠ fullBurstEnter 5). Three nearest-wrongs discriminated: fullBurstEnter (fires 5× not 10×), duration 3s (180f≠600f), and the co-terminous swap-mult check."
+      }
+    ]
+  },
+  "gotchas": [
+    "S2 ally support (casterAtkPct 25.2 + chargeDamagePct 100.8) rides SWAPPED shots during Velvet's own 10s burst-weapon window — whether the 7% swap weapon satisfies 'Full Charge' is unverified (⚑ measurement-gated, documented caveat). If the swap weapon does NOT full-charge, this in-FB team buff collapses to only non-velvet-burst (crown-cast) FBs. Not a divergence in this fixture; a footage spot-check item.",
+    "hitCount:50 in-FB-only counting is inexpressible (engine counts all cumulative hits; fbGate is fire-time only). Inert here (0 procs both ways); would matter only if a fixture reached the threshold — DOCUMENTED-GAP, owner spot-check via popup cadence.",
+    "The blind S5 fixture (controlComp adds crown as a competing Burst II) is a fixture-choice artifact that vacates its own burst/FB assertions — NOT a faithfulness signal. The driver's sole-B2 comp is the correct discriminating fixture."
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": 0.95,
+  "verdict": "GO",
+  "verdictRationale": "Every kit line is accounted for with no silent drops and a 1:1 audit-SKIPPED ↔ unmodeled mapping: S1 pouch fill (sanctioned never-binding drop, actively pinned inert V1), S1 enemy-ammo removal (UNMODELED, no enemy entity), S1 outFb self-buff (FAITHFUL), S2 inFb ally buffs (FAITHFUL, casterAtkPct + chargeDamagePct correctly discriminated from atkPct/chargeDamageMultPct), S2 50-hit proc (FAITHFUL encoding + DOCUMENTED-GAP on in-FB counting fidelity, inert here by construction — not modeled≠working), burst weaponSwap 7%/10s + attackDamagePct 34.52 (FAITHFUL, cadence ⚑). Cross-family convergence is complete: fable S2b pre-op leakDetected null, opus S5 blind tests 12/12 vs the shipped override, opus S6 blind override-writer reproduced the identical load-bearing encoding independently from prose and its 4 ⚑ flags map exactly onto the driver's caveats. The S2d matrix shows every FAITHFUL pin GREEN vs shipped and every DISCRIMINATING assertion RED under its named nearest-wrong (0 tests green-under-both → none vacuous). All three ⚑ flags (hitCount counting, swap cadence, swap-shot Full-Charge identity) carry estimate + recipe + tier. The fire-rate check passes for every FAITHFUL block; the 50-hit proc's 0-proc result is a fidelity-correct inert encoding (counterfactuals fire), classified DOCUMENTED-GAP not REAL-GOTCHA. No engine-core defect and no REAL-GOTCHA. Magnitudes remain owner/measurement-gated per contract and out of scope.",
+  "model": "claude-opus-4-8"
+}

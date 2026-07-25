@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 16,
+      "unit-tested": 17,
       "authored": 22,
-      "audited": 34,
+      "audited": 33,
       "reconciled": 4,
       "pending": 1
     },
@@ -3808,23 +3808,27 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "ammo-pouch gate correct (effectively unlimited); values exact. F2 team buff (25.2 casterAtk + 100.8 chargeDmg) stays up on swap shots (plausible 1.068 HOT contributor if swap doesn't full-charge; swapGate:unswapped fix-if-confirmed)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/velvet.json + scripts/kit-autonomy/manual-review/velvet.md.",
+          "S2 ally support (casterAtkPct 25.2 + chargeDamagePct 100.8) rides SWAPPED shots during Velvet's own 10s burst-weapon window — whether the 7% swap weapon satisfies 'Full Charge' is unverified (⚑ measurement-gated, documented caveat). If the swap weapon does NOT full-charge, this in-FB team buff collapses to only non-velvet-burst (crown-cast) FBs. Not a divergence in this fixture; a footage spot-check item.",
+          "hitCount:50 in-FB-only counting is inexpressible (engine counts all cumulative hits; fbGate is fire-time only). Inert here (0 procs both ways); would matter only if a fixture reached the threshold — DOCUMENTED-GAP, owner spot-check via popup cadence.",
+          "The blind S5 fixture (controlComp adds crown as a competing Burst II) is a fixture-choice artifact that vacates its own burst/FB assertions — NOT a faithfulness signal. The driver's sole-B2 comp is the correct discriminating fixture."
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": false,
-      "evidence": "Hand-verified vs a real scope-lock run (T5 wind-weak); 1.50 -> 1.05",
+      "evidence": "Hand-verified vs a real scope-lock run (T5 wind-weak); 1.50 -> 1.05 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: (1) swap-shot Full-Charge identity - do ally Charge-Dmg/ATK buffs apply during Velvet's own burst (does the 7% swap weapon full-charge?); (2) hitCount:50 in-FB-only counting fidelity (400.92% popup cadence); (3) weaponSwap shot cadence/class (kit-silent ALWAYS-flag). Magnitudes remain hand-validated (T5 wind-weak, board 1.017).",
       "unmodeled": {
         "skill1": [
           "Bullet Snatch (battle start + Burst Stage 2): removes 5% ammo from all enemies; fills own ammo pouch to 6,000 rounds.",

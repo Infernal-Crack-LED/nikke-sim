@@ -1,0 +1,169 @@
+{
+  "slug": "velvet",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ start of battle / entering Burst Stage 2",
+      "disposition": "UNMODELED",
+      "scope": "resource bookkeeping (ammo pouch), not a damage stat",
+      "durationSemantics": "permanent pool, refilled to 6000 cap on each trigger ('continuous and cannot be removed')",
+      "triggerIdentity": "battle-start + stageEnter:2 (ANY stage-2 burst cast, not her own burstCast — 'entering Burst Stage 2' is the team rotation event)",
+      "targetSet": "self (pouch); Effect 1 targets all enemies",
+      "nearestWrongModel": "treating the pouch as a binding gate worth simulating dynamically, or keying the refill to her own burstCast so the pool 'runs dry' on rotations crown takes B2",
+      "distinguishingAssertion": "DERIVATION, not sim: max drain per 20s rotation ≈ 7 outFB charges×100 + 7 inFB charges×300 + ≤1 hitCount proc×300 ≈ 3.1k < 6000, refilled every stage-2 entry → pool NEVER binds. If the driver modeled a resource, assert every resourceGate evaluation passes (zero blocked activations across a full control run); if unmodeled, assert identical buff uptimes to a resource-modeled patch",
+      "inertness": "pouch modeling choice must move ZERO damage on any comp — it is derivably never-binding",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all enemies. Removes 5% of ammo",
+      "disposition": "UNMODELED",
+      "scope": "enemy ammo economy — the sim boss has no ammo/magazine",
+      "durationSemantics": "instant",
+      "triggerIdentity": "same header (battle start + stage-2 enter)",
+      "targetSet": "all enemies (resolveTargets enemy → [] in this engine)",
+      "nearestWrongModel": "encoding it as consumeAmmo on ALLIES (sign/target flip) — would force ally reloads and CUT team damage",
+      "distinguishingAssertion": "zero reload/consumeAmmo events on any ally slot attributable to velvet; teammates' shot counts identical with velvet's S1 block active vs stripped",
+      "inertness": "must not move any ally's ammo economy or the board",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge while not in Full Burst: ATK ▲30.5%",
+      "disposition": "FAITHFUL",
+      "scope": "generic ATK, self only",
+      "durationSemantics": "durationSec 3 (true seconds; no round language)",
+      "triggerIdentity": "per full-charge shot fired, fbGate:'outFb' (the schema's own canonical outFb example). Repeating — refreshes on every out-of-FB charge shot, giving near-continuous uptime outside FB with a short gap across the 141f reload",
+      "targetSet": "self",
+      "nearestWrongModel": "dropping the outFb gate (buff also refreshes on in-FB charges, stacking with the S2 self path all fight) or one-shot 'passive' 100% uptime",
+      "distinguishingAssertion": "buffApply atkPct=30.5 targeting velvet occurs ONLY with inFullBurst=false at the sourcing shot; every FB window contains zero fresh applications, and uptime dips ~0.3-1.4s during the reload+recharge seam (a passive encoding shows no dip; an ungated one shows in-FB applies)",
+      "inertness": "self-only — no buffApply of this stat on any other slot; must not fire during FB",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack Damage ▲30.5% for 3 sec (same block)",
+      "disposition": "FAITHFUL",
+      "scope": "attackDamagePct (Damage Up bucket) — NOT a second ATK line",
+      "durationSemantics": "durationSec 3",
+      "triggerIdentity": "same full-charge outFb block",
+      "targetSet": "self",
+      "nearestWrongModel": "collapsing both 30.5s into a single doubled atkPct 61%, or bucketing Attack Damage as chargeDamagePct because the trigger is a charge shot",
+      "distinguishingAssertion": "damage events from velvet's out-of-FB charge shots carry BOTH a 1.305 ATK-side factor and an additive 30.5 in the Damage-Up bucket (bucket field on the damage event) — the two multiply (~1.70×), they don't add to 1.61",
+      "inertness": "must not inflate the charge bucket or any ally's Damage Up",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "allies: ATK ▲25.2% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct — flat add of 25.2% of VELVET's ATK, not a 25.2% scaler on each ally's own ATK",
+      "durationSemantics": "durationSec 3 ('continuously' = maintained by re-trigger, not permanent)",
+      "triggerIdentity": "per full-charge shot, fbGate:'inFb' ('with Full Charge DURING Full Burst')",
+      "targetSet": "all allies INCLUDING self (no 'except self' clause)",
+      "nearestWrongModel": "stat=atkPct (scales the carry's much larger ATK → big over-credit), or trigger=fullBurstEnter one-shot (wrong uptime shape and fires even in FBs where she cannot full-charge)",
+      "distinguishingAssertion": "buffApply events with stat casterAtkPct value 25.2 land on ALL 5 slots, sourced from velvet in-FB charge shots only; carry's damage delta from this line equals a FLAT add pinned to velvet's ATK (patch velvet's ATK ×2 via withPatchedOverride-adjacent control → ally gain doubles; under atkPct it would be invariant). CRITICAL: in FBs entered off VELVET'S OWN burst this block must fire ZERO times — her swap weapon (7%/shot) has no full charge, so only crown-cast (non-velvet-burst) FBs proc it",
+      "inertness": "zero applications outside FB; zero applications during her own swap windows",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "allies: Charge Damage ▲100.8% for 3 sec",
+      "disposition": "FAITHFUL",
+      "scope": "chargeDamagePct — additive points in the charge bucket, allies incl. self",
+      "durationSemantics": "durationSec 3, refreshed per in-FB full charge",
+      "triggerIdentity": "same inFb full-charge block",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "chargeDamageMultPct (base-charge multiplier — different, stronger math) or granting it out-of-FB where it would ride her own permanent charge uptime",
+      "distinguishingAssertion": "a charging teammate's charge-bucket contribution rises by +100.8 additive points only inside 3s windows trailing velvet's in-FB charge shots; velvet's own out-of-FB charge damage is UNCHANGED by this line (only S1's 30.5s apply there)",
+      "inertness": "no effect on non-charge damage (normals/riders); nothing outside FB",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after landing 50 normal attack(s) during FB",
+      "disposition": "FIX",
+      "scope": "counter counts velvet's landed normal-attack ROUNDS during Full Burst only (SR hitsPerShot 1; swap shots ARE normal attacks and dominate the count)",
+      "durationSemantics": "self Attack Damage ▲15.03% durationSec 5 on proc",
+      "triggerIdentity": "hitCount:50 with in-FB counting — NOT a plain cumulative hitCount:50 with an fbGate slapped on fire-time (that counts out-of-FB SR rounds toward the threshold). ⚑ whether the count resets at FB end is a convention — pin from footage if it matters",
+      "targetSet": "self (buff) / enemy (rider)",
+      "nearestWrongModel": "ungated cumulative hitCount:50 — velvet's out-of-FB SR shots (~0.7/s) accrue the counter so procs fire in fights where she NEVER bursts; faithfully, ~8 SR rounds per non-velvet FB can never reach 50, so the line is reachable ONLY inside her own 10s swap windows at the ⚑ swap cadence (needs ≥5 shots/s to proc even once)",
+      "distinguishingAssertion": "in a comp where velvet never casts her burst (crown holds B2), assert ZERO 400.92 flatDamage events all fight even though her cumulative hit total far exceeds 50; in a velvet-bursting run, procs appear only inside her swap windows, count consistent with the ⚑ swap fire rate",
+      "inertness": "no procs from out-of-FB firing; no procs in never-bursts comps",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 400.92% of final ATK as additional dmg",
+      "disposition": "FAITHFUL",
+      "scope": "flatDamage 400.92, % of velvet's final ATK snapshotted at proc (rides her live 34.52+15.03 Damage-Up and swap-window ATK state)",
+      "durationSemantics": "instant per proc",
+      "triggerIdentity": "same hitCount-in-FB block",
+      "targetSet": "the target (enemy)",
+      "nearestWrongModel": "granting core eligibility or the +30% range bonus to the rider, or exempting it from FB (it lands DURING FB by timing → +50% applies; it is not burst-cast damage)",
+      "distinguishingAssertion": "each 400.92 damage event shows crit at caster sheet rate, core=0, rangeApplied=false, fbMajorApplied=true (proc timing is inside FB by construction)",
+      "inertness": "count is bounded by pouch-independent trigger math (pool never gates it); zero events when the hitCount never trips",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes the weapon: 7% of final ATK, 10 sec",
+      "disposition": "FIX",
+      "scope": "weaponSwap damagePct 7, durationSec 10 — replaces her SR (no charging while swapped)",
+      "durationSemantics": "hard 10s time bound, no maxShots stated",
+      "triggerIdentity": "burstCast (her own Burst-II cast only)",
+      "targetSet": "self",
+      "nearestWrongModel": "modeling the swap as an additive buff on top of continuing SR charge shots (she'd keep proccing S2's charge block during her own FBs — over-credit on the ally buffs AND her charge damage), or silently inventing a precise fire rate",
+      "distinguishingAssertion": "during each 10s swap window: velvet emits many low-mult (7%) shot events, ZERO charge-bucket damage, and ZERO S1/S2 full-charge buffApply events sourced from her. ⚑ ALWAYS-⚑ #3: swap cadence/ammo/weapon-class are kit-silent — the tuple MUST ship flagged with an optimistic estimate + popup-read recipe; the 7%/shot magnitude with a ~50-hit threshold implies ≥~5 shots/s as a consistency floor, not a measurement",
+      "inertness": "swap must not run on crown-cast rotations; base SR economy resumes at window end",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 34.52% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "attackDamagePct, self only, applies to swap shots and the 400.92 rider inside the window",
+      "durationSemantics": "durationSec 10, co-terminous with the swap",
+      "triggerIdentity": "burstCast — a self mode inside her OWN burst block; NOT fullBurstEnter",
+      "targetSet": "self",
+      "nearestWrongModel": "fullBurstEnter keying — fires on EVERY team FB including crown-cast rotations where velvet never burst (the canonical burst-cast/FB-enter over-credit; diverges precisely because another Burst-II unit shares the team)",
+      "distinguishingAssertion": "buffApply attackDamagePct=34.52 on velvet appears only in rotations whose burstCast event names HER slot; rotations where crown's burstCast fires show zero such applications",
+      "inertness": "no application on non-velvet-burst rotations; never targets allies",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:fullCharge-outFb ATK▲30.5 (3s)",
+    "skill1:fullCharge-outFb AttackDamage▲30.5 (3s)",
+    "skill2:fullCharge-inFb casterAtkPct 25.2 → all allies",
+    "skill2:fullCharge-inFb chargeDamagePct 100.8 → all allies",
+    "skill2:hitCount50-inFb AttackDamage▲15.03 (5s)",
+    "skill2:hitCount50-inFb flatDamage 400.92",
+    "burst:weaponSwap 7%/10s (⚑ cadence)",
+    "burst:attackDamagePct 34.52 (burstCast, 10s)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Effect 1: Affects all enemies. Removes 5% of ammo.",
+      "Effect 2: Affects self. Fills the ammo pouch with 6000 round(s), up to a maximum of 6000. This effect is continuous and cannot be removed.",
+      "Effect 1: Expends ammo from the ammo pouch. Amount: 100 round(s)."
+    ],
+    "skill2": [
+      "Effect 1: Affects self. Expends ammo from the ammo pouch. Amount: 300 round(s). (both blocks)"
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to hunt: (1) THE BIG ONE — S2's ally buffs (casterAtkPct 25.2 + chargeDamage 100.8) CANNOT fire during full bursts entered off velvet's own burst, because her swap weapon (7%/shot, no charge time stated) replaces the SR and never full-charges; they fire only in crown-cast FBs where she keeps her SR. A driver who lets the swap coexist with SR charging, or keys the ally buffs to fullBurstEnter, over-credits every velvet-burst rotation. (2) hitCount:50 must count in-FB rounds only — a cumulative counter with a fire-time fbGate reaches 50 off out-of-FB SR shots and procs the 400.92 rider in comps where velvet never bursts; faithfully those comps see ZERO procs (~8 SR rounds per 10s FB can never reach 50). (3) casterAtkPct vs atkPct on the 25.2 — flat add of the SUPPORTER's ATK, verifiable by scaling velvet's ATK and checking the ally delta scales while carry-ATK scaling leaves it fixed. (4) burstCast vs fullBurstEnter on the 34.52 self buff — diverges because crown is a second Burst-II. (5) The 6000-round pouch is derivably NEVER-binding (max ~3.1k drain per 20s rotation vs refill-to-cap at every stage-2 entry) — model-or-omit must be damage-neutral; a driver who spent effort making the pool gate anything, or keyed the refill to her own burstCast so it could run dry, encoded a mechanic the arithmetic forbids. (6) Swap cadence/ammo is the one ALWAYS-⚑: no fire-rate appears in the prose; a precise unflagged pullsPerSec is auto-suspect. All stated magnitudes/durations are literal kit text (seconds throughout — no round-count durations anywhere in this kit).",
+  "model": "claude-fable-5"
+}

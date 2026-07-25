@@ -1,0 +1,62 @@
+{
+  "slug": "velvet",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Start/BS2: fill 6000 pouch; -5% enemy ammo",
+      "disposition": "GAP",
+      "assertion": "it.skip — resource-pool init has no direct-damage observable; enemy ammo removal is inert (no enemy entity). Only matters as a depletion gate, which is unasserted."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FullCharge !FB: self ATK+AtkDmg 30.5%/3s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply atkPct=30.5 AND attackDamagePct=30.5 casterIdx=velvet, every targetIdx=velvet; teammate totals byte-identical when removed. Fails nearest-wrong: allies-scope (teammates would move) and drop-the-block (buff vanishes)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FullCharge inFB: allies +25.2% casterATK",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply casterAtkPct=25.2 exists AND atkPct=25.2 does NOT — discriminates '25.2% of skill-user ATK' (flat caster-scaled) from atkPct (target's own ATK)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FullCharge inFB: allies ChargeDmg 100.8%",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply chargeDamagePct=100.8 to >1 ally slot AND chargeDamageMultPct=100.8 absent (additive pts, not base-scaled mult); removing it moves teammate totals (proves ally-scope)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "50 normals inFB: self AtkDmg 15.03%/5s",
+      "disposition": "FIX",
+      "assertion": "self attackDamagePct=15.03 fires iff FB normal-count>=50 (conditional non-vacuity). Payload: if driver counts ALL normals (not FB-only) it over-fires when fbNormals<50 -> the else-branch RED flags the divergence."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "50 normals inFB: 400.92% add'l damage",
+      "disposition": "FIX",
+      "assertion": "removing the flatDamage(400.92)+15.03 block never increases velvet total (monotone) and drops the buff. Rider disposition (noFb/noRange/no-core) is a FLAG, not magnitude-asserted."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self AtkDmg 34.52%/10s (own burst)",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply attackDamagePct=34.52 self on burst-cast (also the velvet-casts non-vacuity proxy); removing the swap block removes it. Nearest-wrong: keyed off velvet's burst, not any team FB."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "weapon swap 7%/shot, 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "velvet shot count differs vs a no-swap counterfactual — proves the swap changes weapon cadence/ammo (base SR 69.04/shot -> 7% swap weapon). Cadence itself is a FLAG (kit-silent)."
+    }
+  ],
+  "fixtures": "controlComp('velvet', true): liter B1 / crown B2 / velvet(carry, actually B2) / helm B3, Fire boss, focus velvet. Velvet is Burst II so the carry slot holds a B2 and the FB chain is liter -> one B2 -> helm; the non-vacuity block asserts a fullBurstStart occurs AND velvet's burst-only 34.52% self-buff appears (proves velvet — not crown — was the B2 that cast), otherwise every in-FB (S2a) and burst (Bst) assertion would be silently vacuous. helm kept (true) — it is the B3 that completes the chain here, so it cannot be dropped.",
+  "gaps": [
+    "S1a (start-of-battle / BS2 ammo-pouch fill of 6000 rounds + 'remove 5% of enemy ammo'): it.skip — resource init has no queryable damage observable, and the enemy ammo removal is inert (resolveTargets({enemy}) is empty in v1).",
+    "Ammo-pouch depletion & whether the expend-ammo effects (S1b -100, S2a -300, S2b -300) are hard-gated on pool balance: NOT asserted — modeling-uncertain; would need a resourceGate + a fight long enough to drain 6000 between BS2 refills.",
+    "S2b '50 normal attacks during Full Burst' trigger encoding (hitCount vs per-FB reset; FB-only vs cumulative counting) and the 400.92% rider's noFb/noRange/core flags: FLAGGED — asserted only via the fires-iff-fbNormals>=50 conditional + a monotone counterfactual, not by exact magnitude.",
+    "Burst weapon-swap cadence (pulls/s of the 7% weapon): FLAGGED — kit-silent and datamine-unreliable; tested only as 'shot count changes vs no-swap', never as a specific value."
+  ],
+  "model": "claude-opus-4-8"
+}
