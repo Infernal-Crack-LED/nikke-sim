@@ -782,23 +782,26 @@
       "weapon": "RL",
       "class": "Defender",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "HP-scaling + x10 nuke modeled (popup-validated 0.99). F1 (P1): burstSnapshotsPreFb:false contradicts note+engine-comment (either stale or a regression; large term) — decidable from existing footage at both flag values"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/cinderella.json + scripts/kit-autonomy/manual-review/cinderella.md.",
+          "high ENGINE (burst): burstSnapshotsPreFb:false means the nuke snapshots her OWN same-cast stage-3 atkOfMaxHpPct conversion; the file's [HISTORICAL] BURST TIMING sentence (e3 video + U10) says it must LOSE that stack. The contradiction is now stated verbatim in the file with a resolution recipe, but which reading is correct remains unmeasured.",
+          "low ENCODING (skill2): Beautiful is filed as a smooth casterMaxHpPct 19.2 rampSec 36 in the skill1 array rather than 12 discrete interval-3s stacks in skill2 — a modeling choice with a bounded sub-stack difference, now explicitly documented."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "Focus session u8-e3 — every per-instance popup verified exact; twin-rocket + own-MaxHP fixes; runs B/E 0.96-1.00",
+      "evidence": "Focus session u8-e3 — every per-instance popup verified exact; twin-rocket + own-MaxHP fixes; runs B/E 0.96-1.00 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (8/8); cross-family S2b(fable)/S5/S6/S7(opus) converged; S1a atkOfMaxHpPct + C7 mirror 346.8/rampSec36 byte-identical to blind override; G2 sequential-flavor fixed+pinned (board-inert, 347.1M unchanged)",
       "date": "2026-07-13",
       "graded": {
         "teams": 5,
         "within3pct": 2
       },
       "reference": false,
+      "residual": "G1 burstSnapshotsPreFb same-cast snapshot contradicts [HISTORICAL] BURST TIMING note (= kit-status F1) — owner re-read one e3 nuke popup; mag-dump n=1 footage; mirror once-per-cast vs once-per-hit (10x rider)",
       "unmodeled": {
         "skill1": [],
         "skill2": [
@@ -811,7 +814,10 @@
         "skill2: Beautiful (Max HP ▲ 1.6% ×12 = +19.2% continuously, from her battle-start Decoy) is now modeled FAITHFULLY (2026-07-17, theme 3), replacing the steady-state bake: a self casterMaxHpPct 19.2 with rampSec 36 (passive Max-HP ramp from t=0) feeds her atkOfMaxHp via effectiveAtk (own-kit Max-HP only — engine wiring 2026-07-17, ally grants still excluded per the cindy e3 rule); atkOfMaxHp reverted to base 2.71; the burst's Beautiful-mirror split off as a rampSec-36 flatDamage 346.8 (nuke base back to 13659.2). Steady state (t≥36s) is byte-identical to the old bake (2.71×1.192=3.23; 13659.2+346.8=14006); pre-36s bursts now correctly credit PARTIAL Beautiful, reproducing the measured e3 early→late FB-proc growth (633.7k→667.0k). VALIDATED: mirror ramps 47.5@t=5s → 346.8@t≥36s; drift board-neutral for all other units.",
         "skill2: the Decoy avatar itself is not modeled (defensive/aggro summon; v1 boss deals no damage so full decoy uptime — and thus full Beautiful uptime — is assumed).",
         "skill1 CADENCE — MAG-DUMP (2026-07-21, supersedes the chargeSpeedPct-45 proxy): her real fire pattern is a whole-mag dump, now modeled directly via charFixes.magDumpRof (one ~1.0s charge PRIMES the mag → 24 rockets autofire at datamine rate_of_fire 180 / 3-per-s → ~2.1s reload → recharge), so NO charge-speed proxy is needed. The kit toggle 'Charge Speed ▲ 100% on full charge, Removed upon reloading to max ammunition' is the game's description of exactly this autofire-after-first-charge behavior; ally charge-speed buffs now apply only to the once-per-mag prime (subtractive on the 60f), NOT the dump rof. Directly measured (ammo-counter frame read, cindy solo neutral.MP4): ~390 pulls/180s (cycle ~10.75s/24), vs the old per-rocket-charge model's ~300 which was the COLD-0.937 cause. This RETIRES the subtractive-CS-formula landmine (the old +45 proxy) and the open-questions U25 divisive-formula hypothesis (which was built on the ~315 popup-division estimate; the divisor was 3-per-pull but is 2 — rocket + S1 rider). n=1 recording; Fable pre-op APPROVED-WITH-REVISIONS; gated enactment pass. DECISIONS 2026-07-21.",
-        "skill1 ROCKET MAGNITUDE (2026-07-21): removed the TWIN-INSTANCE normalAttackPct +100. Per pull = ONE rocket (weaponCoef 32.11% × 200% full-charge) + the 136.6% S1 rider, video-verified by a same-footage popup recon (~97.5s, one ATK): rider 109806 = 136.6% × ATK → ATK 80,385; rocket-core 103246 = 64.22% × 2(core) × 80,385 EXACT (both kit coefs → the identical ATK, matching sim staticAtk 80,118). Datamine shot_count 1 / muzzle_count 1 independently = one projectile/pull. The old +100 made the rocket base 128.44% which the engine then cored to 256.88% = a 2× rocket over-credit. Owner-ruled 1-rocket 2026-07-21."
+        "skill1 ROCKET MAGNITUDE (2026-07-21): removed the TWIN-INSTANCE normalAttackPct +100. Per pull = ONE rocket (weaponCoef 32.11% × 200% full-charge) + the 136.6% S1 rider, video-verified by a same-footage popup recon (~97.5s, one ATK): rider 109806 = 136.6% × ATK → ATK 80,385; rocket-core 103246 = 64.22% × 2(core) × 80,385 EXACT (both kit coefs → the identical ATK, matching sim staticAtk 80,118). Datamine shot_count 1 / muzzle_count 1 independently = one projectile/pull. The old +100 made the rocket base 128.44% which the engine then cored to 256.88% = a 2× rocket over-credit. Owner-ruled 1-rocket 2026-07-21.",
+        "burst SEQUENTIAL FLAVOR (2026-07-25, kit-autonomy gauntlet G2 fix): the consolidated 13659.2 nuke now carries flavor:'sequential' (kit: 'Attacks sequentially for 10 time(s)'). seqMult multiplies the whole packet, so 1×13659.2 flavored is arithmetically identical to 10×1365.92 flavored — board-inert in any comp with no sequential buffer (the control comp has none), correct in any comp that has one. Restores routing into the SSOT seqMult bucket / sequentialDamagePct / sequentialMultPct support that the unflavored consolidation silently dropped.",
+        "⚑ burst SAME-CAST SNAPSHOT — OWNER RESOLUTION REQUIRED (2026-07-25, kit-autonomy gauntlet G1, REAL-GOTCHA high): burstSnapshotsPreFb is FALSE, so per the engine's stageEnter-before-burstCast ordering her nuke DOES snapshot her own same-cast stage-3 atkOfMaxHpPct 2.71 conversion (~+1.5x baseAtk on the nuke, ~45% of her fight damage). This CONTRADICTS the [HISTORICAL] BURST TIMING sentence above (e3 video + U10: 'the nuke must lose ... the same-cast stage-3 ATK stack (burstSnapshotsPreFb flag)'), which is NOT named in the 2026-07-21 SUPERSEDES list — though that sentence's reasoning is explicitly coupled to the now-removed TWIN-INSTANCE model ('the old frame-0 calibration was compensating for the halved twin rockets; with rockets fixed ...'). The shipped flag (false) is the most recent explicit value (2026-07-21 rebuild); the driver test now PINS the shipped behavior (nuke baseAtk reflects the live same-cast conversion). RESOLVE: re-read ONE nuke popup from docs/probes/u8 e3 (cindy focus) — the two models differ ~1.5x in baseAtk on the same cast and the file already reports early/late FB procs 633.7k/667.0k from that footage, so one popup settles it — then either set burstSnapshotsPreFb:true (if the e3 reading holds) or delete the stale BURST TIMING sentence and record the superseding measurement here + DECISIONS. Estimate of board impact if the historical reading is correct: ~20-25% nuke over-credit. Tier 2. The gauntlet driver could not view the footage, so this remains open pending owner measurement.",
+        "skill2 BEAUTIFUL SLOT (2026-07-25, kit-autonomy gauntlet G3, low/documented): Beautiful is filed as a smooth self casterMaxHpPct 19.2 rampSec 36 in the skill1 array (skill2 is []), not as 12 discrete 1.6% interval-3s stacks in skill2. Linear and discrete coincide at every 3s boundary; inside a window the linear form over-credits by ≤1 stack (≤1.6% Max HP, sub-1% of damage; at the t≈5.4s first cast it credits 2.88% where discrete gives 1.6%). Self-granted ⇒ caster===target, so it feeds atkOfMaxHpPct exactly as the discrete form would. The empty skill2 array is deliberate (the block lives at skill1[1]); the discrete form (interval 3s / value 1.6 / maxStacks 12) is available if step-vs-line ever matters."
       ],
       "board": {
         "records": [
@@ -825,11 +831,11 @@
           },
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.9334
+            "ratio": 0.9452
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.9159
+            "ratio": 0.9275
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
@@ -845,8 +851,8 @@
           }
         ],
         "n": 7,
-        "mean": 0.8853,
-        "mad": 0.1174,
+        "mean": 0.8886,
+        "mad": 0.1141,
         "band": "±15%",
         "temp": "COLD ▼"
       }
