@@ -1,0 +1,122 @@
+{
+  "slug": "noir",
+  "kitDescription": "Noir is a Wind shotgun Attacker on Burst III who plays as a team-wide attack and ammo battery rather than a pure nuker. Her first skill is a permanent team aura that adds a flat 14.08% of her own ATK to every ally, active from the start of the fight as long as she is above 70% HP (never an issue at scope lock). Every time the team enters Full Burst, she hands all allies +5 rounds of magazine capacity for 10 seconds and instantly tops up 39.88% of each ally's magazine, which is real damage because it means more shots fired and less reload downtime. Her own burst hits the boss for 351.64% of final ATK, then buffs Hit Rate and Interruption-Part damage for shotgun allies (13.93% / 23.23%, 10s). If one of her Rabbit-squad teammates (Blanc or Rouge) is on the field, she additionally gives the whole team a longer 30-second Hit Rate ▲11.61% and Interruption-Part ▲19.36% package.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ATK ▲ 14.08% of skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive / allies / buff casterAtkPct 14.08, no duration",
+        "blindSaid": "identical (S6 byte-equal block); S5 verified the emitted value is a FLAT ATK (>100, not 14.08) applied once to all 4 allies before the first shot",
+        "formulaCheck": "damage-calculation §1a: '% of caster's ATK' grants add FLAT (caster's static ATK × X) OUTSIDE the recipient's (1+ATK%) sum — casterAtkPct is the correct construct; plain atkPct would dilute and would scale off each ally's own ATK.",
+        "fireRateOk": true,
+        "explanation": "Both blinds and the driver converge on casterAtkPct/passive/allies. Driver N1 pins value ≈ 0.1408×noir.staticAtk, identical across all 4 allies, expiresFrame null; S5 independently confirmed it is live before the first shot and moves EVERY ally's damage. Nearest-wrong (atkPct) is discriminated by a counterfactual run."
+      },
+      {
+        "kitLine": "Activates when above 70% HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "not encoded; assumption stated in the override note ('assumed always-satisfied at scope lock, boss damage unmodeled')",
+        "blindSaid": "same disposition, recorded as a ⚑ caveat; S5 wrote an explicit it.skip explaining the gate is unobservable in v1",
+        "formulaCheck": "No HP-loss model exists at scope lock (partless immortal boss, nobody takes damage), so the gate is trivially true; no formula bucket is involved.",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded decision on all three sides. It is documented in the note rather than in `unmodeled` (the whole line IS modeled; only the clause is assumed), which is the correct filing."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Max Ammunition Capacity ▲ 5 rd, 10 s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / allies / buff maxAmmoFlat 5 durationSec 10",
+        "blindSaid": "identical stat/value/duration/trigger/target (S6 merges the two S2 effects into one block — functionally identical); S5 asserted exactly fbStarts×4 applies, value===5, durationShots null, finite expiry",
+        "formulaCheck": "game-mechanics §11: max-ammo sources are flat and additive, increases never clip. Weapon-state → shots fired → damage (per the reload-speed-affects-damage rule); not skippable utility.",
+        "fireRateOk": true,
+        "explanation": "Driver N2 pins the grant to Full-Burst-ENTRY frames (frame 400) vs noir's burstCast frame (378) and runs the burstCast counterfactual, which lands on the cast frame instead — a frame-level discrimination stronger than a count comparison. Target 'all allies' discriminated against a self-only counterfactual. Nearest-wrongs maxAmmoPct 5 and durationShots 5 are both excluded (S5 asserts value 5 with a finite seconds expiry and null durationShots)."
+      },
+      {
+        "kitLine": "Reload 39.88% magazine(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / allies / instantReload fraction 0.3988 (separate block, same trigger+target)",
+        "blindSaid": "identical (same effect kind and fraction, co-located in the single S2 block)",
+        "formulaCheck": "An instant partial magazine refill, not a Reload Speed ▲ buff — reloadFrames/reload-speed math (§2a) is untouched, which is what the prose says ('Reload X% magazine(s)', not 'Reloading Speed ▲').",
+        "fireRateOk": true,
+        "explanation": "The engine snaps ammo silently (no event), so the driver pins it structurally (kind/fraction/trigger/target read off the shipped file) AND behaviourally via a shifted team reload cadence when stripped. S5 independently confirmed the isolated line pays noir damage (offReload < base). Nearest-wrong reloadSpeedPct is excluded by the structural pin, though neither test asserts the ABSENCE of a reloadSpeedPct buff (S2b's nice-to-have — no impact, since the shipped file provably contains no such effect)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 351.64% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / enemy / flatDamage atkPct 351.64; noFb NOT set (engine auto-exempts)",
+        "blindSaid": "same magnitude/trigger/target, but additionally sets noFb:true + crit:true and flagged both for adjudication",
+        "formulaCheck": "damage-calculation §1b Full Burst timing rule: burst-slot cast damage lands BEFORE the FB countdown (22f FB_PRE_DELAY) and receives neither the +0.5 nor entry auras. Burst nuke gets crit but never core (no 'as core damage' wording) and never range.",
+        "fireRateOk": true,
+        "explanation": "Driver N4 measures one 351.64 burst-bucket hit per noir burstCast with fbMajorApplied false on every instance — i.e. the FB exemption is EMPIRICALLY confirmed without noFb, so the blind's noFb:true is behaviourally redundant (adjudicated: driver's omission is correct, not a drop). crit:true is likewise redundant per damage-calculation §2b ('function-type instances CRIT at the caster's rate, default on'); the stored-hit path is the only crit-off-by-default path and this is not it. No core flag on either side — correct, the prose says 'Burst Skill damage', not core."
+      },
+      {
+        "kitLine": "[SG allies] Hit Rate ▲ 13.93%, 10 s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / alliesOfWeapon SG / buff hitRatePct 13.93 durationSec 10",
+        "blindSaid": "identical block (target, stat, value, duration, trigger)",
+        "formulaCheck": "game-mechanics §7 / UNIGEO: Hit Rate shrinks the accuracy circle R(hr) = (0.648·scale_w/2)·(1−hr/100), lifting core-hit fraction for AR/SMG/SG. So hitRatePct is DAMAGE for an SG recipient, not cosmetic accuracy — routing it as hitRatePct (not attackDamagePct, not a no-op) is correct.",
+        "fireRateOk": true,
+        "explanation": "Driver's COMP A carries two SG allies (noir+guilty) and two non-SG (liter/crown), so alliesOfWeapon SG is discriminated against the all-allies counterfactual by target SET, not just by cardinality — strictly stronger than S5's noir-alone controlComp (which could only assert size<4). S5 additionally confirmed the block keys off noir's own cast (applies < fbStarts, so a fullBurstEnter mis-key is excluded) and that deleting it costs noir damage while leaving non-SG teammates byte-identical. The magnitude of the HR→core lift is engine-side (⚑, measurement-gated) and out of scope per rule F."
+      },
+      {
+        "kitLine": "[SG allies] Parts Dmg ▲ 23.23%, 10 s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "same block / buff partsDamagePct 23.23 durationSec 10",
+        "blindSaid": "identical",
+        "formulaCheck": "Parts damage is a parts-only Damage-Up entry; the scope-lock boss is partless (memory: test-boss-has-no-parts), so it is parsed-but-inert. Bucketing it as attackDamagePct would be a large generic over-credit on the carry.",
+        "fireRateOk": true,
+        "explanation": "Driver N6 proves EXACT inertness — totals byte-identical for every unit with all partsDamagePct lines stripped — which simultaneously excludes the attackDamagePct mis-bucket (that counterfactual could not be damage-neutral). S5 corroborated independently (offParts totals equal for all 4 allies, and parts23.length === hr13.length confirming same trigger + same target set)."
+      },
+      {
+        "kitLine": "[same-squad] Hit Rate ▲ 11.61%, 30 s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / allies / teamHas {slugs:[blanc,rouge]} / buff hitRatePct 11.61 durationSec 30",
+        "blindSaid": "same STRUCTURE (teamHas gate on the all-ally 30 s block) but slugs:[] — an honest blind data gap (no access to characters.json squad fields), flagged with the exact recipe the driver executed",
+        "formulaCheck": "game-mechanics §9: same-squad gates are static team-composition checks (teamHas.slugs), exact at scope lock where no ally dies. Duration 30 s vs cd 40 s ⇒ ~75% uptime, distinct from the SG block's 10 s.",
+        "fireRateOk": true,
+        "explanation": "The strongest-tested line in the packet: driver proves the gate BOTH ways — inert in COMP A (zero 11.61 applies), fires to all 4 allies for exactly 30 s in COMP B with blanc aboard, and the ungated counterfactual fires in COMP A (so the gate is doing real work, not vacuously matching). S5 reached the same conclusion from the opposite direction (closed in controlComp; opens to 4 allies and raises noir's total when ungated) and differenced the expiries to confirm exactly 1200 frames = (30−10)s vs the SG block. The blind's empty slug list is a DOCUMENTED_GAP on the blind side, not a driver divergence."
+      },
+      {
+        "kitLine": "[same-squad] Parts Dmg ▲ 19.36%, 30 s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "same gated block / buff partsDamagePct 19.36 durationSec 30",
+        "blindSaid": "identical",
+        "formulaCheck": "As above — partsDamagePct, inert on the partless boss, gated by the same teamHas check.",
+        "fireRateOk": true,
+        "explanation": "Covered by N6's exact-inertness pin (which strips both parts lines) plus N5's gate proof. S5 separately asserted zero 19.36 applies in the closed-gate fixture."
+      },
+      {
+        "kitLine": "still on the battlefield",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "alive-check not encoded; note states 'still on the battlefield is scope-trivial (nothing dies at scope lock), so a static comp gate is exact'",
+        "blindSaid": "S2b filed the identical clause under unmodeledVerbatim with the same reasoning; S6 did not separate it",
+        "formulaCheck": "No death model at scope lock; the membership half of the clause IS gated (teamHas), only the liveness half is assumed.",
+        "fireRateOk": true,
+        "explanation": "Deliberate and recorded. The load-bearing half of the clause (squad membership) is encoded; only the trivially-true half is assumed."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdictRationale": "GO. Convergence is GREEN and mechanical: the S5 blind test suite, written from prose alone, runs 19 PASSED / 3 SKIPPED / 0 FAILED against the driver's SHIPPED override, and the S6 blind override is block-for-block identical on every stat, value, trigger, target and duration. The only two diffs are non-findings: (1) the blind's noFb:true + crit:true on the 351.64% flatDamage are behaviourally redundant — the driver's N4 MEASURED fbMajorApplied false on every nuke instance without noFb, matching the SSOT's burst-cast timing rule, and function-type damage crits at the caster's rate by default; (2) the blind's teamHas.slugs:[] is a self-flagged blind data gap (no access to characters.json squad fields) whose stated recipe the driver executed to reach [blanc, rouge], owner-ruled 2026-07-20. Zero REAL-GOTCHAs: no kit line is silently dropped (both `unmodeled` arrays are empty because every line is a block), and the two condition clauses that are not encoded (>70% HP; 'still on the battlefield') are trivially satisfied at scope lock and documented in the note. Discrimination is met on all eight load-bearing lines, each against the S2b reviewer's named nearest-wrong: casterAtkPct-vs-atkPct, fullBurstEnter-vs-burstCast (pinned at FRAME level — grant at FB-entry frame 400 vs cast frame 378, the counterfactual landing on 378), allies-vs-self, alliesOfWeapon-SG-vs-allies (driver's COMP A carries 2 SG + 2 non-SG allies, discriminating by target SET rather than cardinality — stronger than the blind's noir-alone fixture), gated-vs-ungated proven in BOTH directions across two comps, and partsDamagePct-vs-attackDamagePct excluded by an exact byte-identical-totals inertness pin. Fire-rate check passes on every block: S1 is live before the first shot, S2 fires on every FB entry (fbStarts×4 applies), the nuke fires once per cast, the SG package rides only noir's own casts, and the gated package is proven to fire in COMP B rather than merely being present. Residuals the owner should spot-check (same-model, none blocking): (a) all three agents are the same model family except S2b (claude-fable-5, which independently returned GO with the same eight FAITHFUL dispositions) — the strongest cross-family corroboration here is that the S2b reviewer's nearest-wrong list maps 1:1 onto the driver's counterfactuals; (b) the S2 same-frame ORDERING — the 39.88% refill resolving against the RAISED 14-round cap rather than base 9 — is documented in the override note but not behaviourally pinned, because the engine's ammo snap emits no event (sim.ts:2105); it is a real shots-fired quantity and worth a future pin if an ammo-counter observable is added; (c) the hitRatePct→core-lift MAGNITUDE is engine-side and measurement-gated (⚑3), out of scope per the magnitude rule — these tests pin the buff's presence, target and duration only. Nothing must change for GO.",
+  "verdict": "GO",
+  "model": "claude-opus-5"
+}

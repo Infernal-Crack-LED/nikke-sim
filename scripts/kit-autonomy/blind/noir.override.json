@@ -1,0 +1,127 @@
+{
+  "slug": "noir",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 14.08
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 5,
+          "durationSec": 10
+        },
+        {
+          "kind": "instantReload",
+          "fraction": 0.3988
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 351.64,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 13.93,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 23.23,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "teamHas": {
+        "slugs": []
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 11.61,
+          "durationSec": 30
+        },
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 19.36,
+          "durationSec": 30
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 'Activates when above 70% HP' is modeled as an unconditional passive: v1 has no HP pool (immortal boss, nobody takes damage), so the >70% HP gate is always satisfied. Faithful for the scope-lock fight; would need an HP-state gate if incoming damage is ever modeled.",
+    "⚑ burst group 3 'Activates with an ally from the same squad still on the battlefield' — I cannot determine Noir's squad membership from the kit text alone. Authored as teamHas.slugs with an EMPTY list (block currently inert). Fill the squadmate slugs in from data/characters.json before use, or drop the gate if the owner rules the graded comps always satisfy it.",
+    "⚑ Both Hit Rate ▲ lines (13.93% / 11.61%) route through the hitRatePct→core-lift path, whose magnitude is a derived, measured-only conversion (sim.ts hrCoreMult). The kit percentages are verbatim; the resulting core-rate lift is NOT.",
+    "partsDamagePct (23.23% / 19.36%) is parsed but inert in v1 — the scope-lock boss is partless. Kept as blocks (not unmodeled) so a future parts model picks them up.",
+    "Burst damage (351.64%) is authored noFb:true per the schema rule that a burst cast lands before the Full-Burst window opens; core:false (the text does not say 'core strike damage'); crit:true at the caster's sheet rate.",
+    "Noir is SG, so she is inside her own alliesOfWeapon:'SG' target set (no excludeSelf in the kit text)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the noir kit prose (S6 cross-family). skill1 = constant caster-scaled ATK aura to all allies, HP gate always-true in v1. skill2 = FB-enter team weapon-state package: +5 flat max ammo for 10s plus a 39.88%-magazine partial reload — both are damage-relevant (shot count), never skipped. burst = three groups: a 351.64% burst-cast nuke on the boss, a 10s SG-only Hit Rate + Parts package, and a 30s all-ally Hit Rate + Parts package gated on a same-squad ally (squadmate slugs UNKNOWN blind — gate authored empty/inert, see caveats). No ignored blocks. noFb set only on the burst-cast hit; noRange left to the engine."
+}

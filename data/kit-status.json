@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 35,
-      "authored": 15,
+      "unit-tested": 36,
+      "authored": 14,
       "audited": 23,
       "reconciled": 4
     },
@@ -2811,20 +2811,23 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "wave-1: comp reading warmed 1.040→1.092 HOT after kit-faithful S2 fix (+5 rounds self, instantReload allies) — solo anchor bit-identical; residual comp-side over-model to hand-tune (SG landing is solo-calibrated)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/noir.json + scripts/kit-autonomy/manual-review/noir.md."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
+      "date": "2026-07-25",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "S2 refill-ordering vs raised 14-cap (silent ammo snap, sim.ts:2105); hitRate->core magnitude measurement-gated (flag3)",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
