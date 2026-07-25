@@ -1,0 +1,88 @@
+{
+  "slug": "red-hood",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed +3.81%, 10 stacks, 5 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves per-normal-attack re-application (>50 applies), maxStacks 10 reached, durationSec 5 with no durationShots, self-only. Fails under: pre-stacked 38.1% passive (1 apply), maxStacks 1 (damage drops), chargeDamagePct mis-stat, or round-count duration."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Excess Charge Speed -> Charge Dmg 240%",
+      "disposition": "FIX / derived-stat approximation",
+      "assertion": "Proves a self charge-damage tier exists whose effective magnitude (value x maxStacks) lands near 240% x 38.1 = 91.44, and a second tier near 240% x 100.8 = 241.92 (or 333.36 combined). Fails under: conversion dropped entirely, 1:1 conversion (38.1), or converting only the S1a stacks while ignoring the Red Wolf +100.8% charge speed. Zeroing it lowers her damage and moves no teammate."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Gain Pierce continuously",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves whole-fight pierce via hasPierce flag or a passive gainPierce with NO durationSec. Fails under a 10s burst-scoped gainPierce."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Beast Cage: DEF +50.68% of user DEF",
+      "disposition": "GAP (no casterDefPct; defPct inert in v1)",
+      "assertion": "Proves the line is modeled as a stage-1-gated 10s ally DEF grant or ledgered in unmodeled — never silently dropped — and that zeroing all defPct leaves every unit byte-identical (v1 inertness). Fails under an ungated DEF block or an omitted line."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Last Howl: recovers 23.04% as HP",
+      "disposition": "GAP (heal payload unobservable) / trigger testable",
+      "assertion": "Proves the heal is target self and gated to burst step 2. Fails under target allies (which would fire crown on-recovery consumers and fabricate team damage) or an ungated heal firing on her step-3 rotations."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Red Wolf cast: ATK +71.42% 10s self",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves burstCast stage 3 keying, self-only, 10s, applied exactly once per Red Wolf cast. Discriminates against fullBurstEnter keying because helm also closes stage 3, so FB starts strictly outnumber her casts (asserted). Zeroing it lowers only her damage."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 1: ATK +77.55% of user ATK allies",
+      "disposition": "FAITHFUL (fixture-inert)",
+      "assertion": "Proves stat casterAtkPct (flat add off her ATK) not atkPct, target allies, stage 1, 10s; plus runtime inertness — red-hood emits ZERO cross-target casterAtkPct in a fixture where she only ever casts Red Wolf. Fails under an ungated or stage-conflated step-1 block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Steps 1+2: Burst CD -40s once/battle",
+      "disposition": "FAITHFUL (fixture-inert)",
+      "assertion": "Proves burstCdr 40 with oncePerBattle true and stage in {1,2} only, plus a cadence ceiling (<=6 Red Wolf casts in 180s). Fails under an ungated/always-on CDR, which would zero her 40s cooldown and roughly double her burst count."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 3: swap 51.46%, full charge 250%",
+      "disposition": "FAITHFUL (economy fields are flagged)",
+      "assertion": "Proves a weaponSwap on a burstCast stage-3 self block with damagePct 51.46, chargeMultPct 250, durationSec 10, and that it carries live damage (zeroing damagePct lowers her total). Fails under a flatDamage encoding, a wrong-stage gate, or a swap that never reaches the sim."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 3: Charge Speed +100.8% 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves stat chargeSpeedPct value 100.8, stage 3, 10s, applied once per Red Wolf cast, and load-bearing (zeroing lowers damage). Fails under a chargeDamagePct mis-stat or a missing buff."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 2: Attract / Incoming healing",
+      "disposition": "UNMODELED",
+      "assertion": "Ledger test: both lines must appear in override.unmodeled. Fails under a silent drop."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 3: Expand Pierce range 100%",
+      "disposition": "UNMODELED",
+      "assertion": "Ledger test satisfied by an unmodeled entry OR a hasPierce tag on the swap. Fails under a silent drop."
+    }
+  ],
+  "fixtures": "controlComp('red-hood', true) only — liter B1 / crown B2 / red-hood Burst Lambda / helm B3. helm is deliberately KEPT (not dropped) because she is the second stage-3 caster: that makes full-burst count strictly exceed red-hood's own burst count, which is the only way a blind test can discriminate burstCast keying from fullBurstEnter keying for the Red Wolf ATK buff. Consequence accepted and asserted: a Lambda unit alongside a B1 and a B2 fills stage 3, so Beast Cage (step 1) and The Last Howl (step 2) NEVER cast in this fixture — those lines are tested structurally (override shape, stage gates) plus at runtime as inert (zero cross-target casterAtkPct from her, defPct counterfactual byte-identical). 7 hoisted runs: baseline + 6 counterfactuals (stack charge speed -> 0, maxStacks -> 1, charge damage -> 0, Red Wolf ATK -> 0, swap damagePct -> 0, burst charge speed -> 0) plus one inline defPct-inertness run.",
+  "gaps": [
+    "Attract: taunts all enemies for 10 sec — no aggro/taunt primitive; the v1 boss deals no damage so it is unobservable either way.",
+    "Incoming healing +74.88% for 10 sec — no incoming-heal stat in StatKey, and heal effects model no HP amount.",
+    "Expand Pierce range by 100% for 10 sec — pierce is a boolean/tag; there is no pierce range or target-count model.",
+    "DEF +50.68% of the skill user's DEF — no casterDefPct stat (only defPct, explicitly inert in v1), so the caster-scaling is unrepresentable.",
+    "Recovers 23.04% of attack damage as HP over 10 sec — the heal effect carries no HP amount, so the 23.04% payload cannot be asserted; only the target set and the stage-2 gate are testable.",
+    "Red Wolf swap shot economy (pulls/sec, magazine size, charge time under the swap) — kit-silent, MEASUREMENT-GATED (⚑); asserted only that the kit-stated fields (damagePct / chargeMultPct / durationSec) are exact, never the invented cadence fields."
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,159 @@
+{
+  "slug": "red-hood",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a normal attack",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired, target self, buff chargeSpeedPct 3.81 durationSec 5 maxStacks 10 — weapon-state modifier (gates charge cycle → shots fired), engine tracks stacks/expiry live"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Speed ▲ 3.81%, stacks up to 10 time(s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "same block as above (magnitude/stack/duration fields)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Convert excess over 100% Charge Speed",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⚑ APPROXIMATED: no conversion primitive in the schema. Split into passive self buff chargeDamagePct 36.6 (rampSec 5, = 2.4 × 3.81 × ~4 mean stacks) + a burst-step-3 chargeDamagePct 241.92 (= 2.4 × 100.8) for the Red Wolf charge-speed window"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 240% of the excess value",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "the 240% conversion factor applied in both limbs above"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Gain Pierce continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "top-level hasPierce:true — 'start of battle … continuously' is whole-fight Pierce tagging, not a step-gated gainPierce effect"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "During Beast Cage: DEF ▲ 50.68% for 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast stage 1 (Beast Cage = her burst Step 1), target allies, buff defPct 50.68 durationSec 10 — inert in v1 but retained per the keep-inert-stat rule; caster-DEF scaling has no StatKey"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "During Last Howl: recovers 23.04% as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast stage 2, target self, heal ticks 10 intervalSec 1 — emits 10 recovery events over the 10s window (heal lines are never skipped on isolation; drives on-recovery consumers)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "When casting Red Wolf: ATK ▲ 71.42% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast stage 3, target self, buff atkPct 71.42 durationSec 10"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 1: ATK ▲ 77.55% of user's ATK, 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast stage 1, target allies, buff casterAtkPct 77.55 durationSec 10 (flat-ATK path, '% of the skill user's ATK')"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 1: Burst CD ▼ 40 sec, once/battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast stage 1, target self, burstCdr seconds 40 oncePerBattle true"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 2: Attract: Taunts all enemies 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "no taunt/aggro primitive; the v1 boss deals no damage so aggro moves nothing. Verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 2: Incoming healing ▲ 74.88% 10s",
+      "status": "SKIPPED",
+      "effectOrReason": "no HP pool and no heal-amount stat — heal effects emit recovery EVENTS only, so a healing-received multiplier has nothing to scale. Verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 2: Burst CD ▼ 40 sec, once/battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast stage 2, target self, burstCdr seconds 40 oncePerBattle true"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Step 3: Changes the weapon in use",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast stage 3, target self, weaponSwap damagePct 51.46 chargeMultPct 250 durationSec 10 hasPierce true"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage: 51.46% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 51.46"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Full Charge Damage: 250% of damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeMultPct 250"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Duration: 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.durationSec 10 (time-bound, no maxShots stated)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Expand Pierce range by 100% for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Pierce RANGE (how many bodies a shot passes through) has no model; the scope-lock boss is a single partless target so extra pierce depth hits nothing. The Pierce TAG itself is modeled (hasPierce + weaponSwap.hasPierce). Verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Speed ▲ 100.8% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeSpeedPct 100.8 durationSec 10 on the stage-3 block; also feeds the S1b conversion rider (chargeDamagePct 241.92)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[1].effects[0].value",
+      "estimate": "36.6 (charge-damage percentage points, out of burst)",
+      "reasoning": "S1b converts charge-speed excess over 100% into charge damage at 240%, i.e. chargeDamagePct = 2.4 × 3.81 × (live stack count). The engine has no conversion primitive, so the value must be a static stand-in for the TIME-AVERAGE stack count. Stacks last 5s and one is gained per normal attack; with chargeFrames 60 (~1.0s base charge, faster as stacks accrue), ammo 6 and reloadFrames 141 (~2.35s), a rough cycle is ~1.0s/shot × 6 then a 2.35s dry gap ⇒ ~0.7 shots/s ⇒ mean stacks ≈ 4 of 10, i.e. excess ≈ 15.2% ⇒ 36.6pp. This is an ESTIMATE, not a measurement, and it is the single largest uncertainty in this override.",
+      "recipe": "Run the unit in a graded comp with cfg.onEvent capturing buffApply where stat==='chargeSpeedPct' && casterIdx===targetIdx; integrate the live stack count over battle length (weighting each stack by its 5s window, minus reload gaps) to get meanStacks, then set value = 2.4 × 3.81 × meanStacks. Cross-check against a popup read: the ratio of full-charge popup values out of burst vs a run with the block deleted should equal (1 + value/100) in the charge bucket."
+    },
+    {
+      "field": "override.skill1[1].effects[0].rampSec",
+      "estimate": "5",
+      "reasoning": "The conversion value is authored at a steady-state stack count that does not exist at t=0 (zero stacks at battle start). rampSec linearly ramps the contribution over the opening so the sim does not credit full charge damage on the first shot. 5s ≈ the stack window length, i.e. roughly the time to reach the steady-state count at the estimated cadence.",
+      "recipe": "From the same buffApply stack trace, find the elapsed time at which the running stack count first reaches its steady-state mean; set rampSec to that."
+    },
+    {
+      "field": "override.burst[3].effects[2].value",
+      "estimate": "241.92 (= 2.4 × 100.8)",
+      "reasoning": "Arithmetically exact GIVEN the reading that 'excess value' means percentage points of Charge Speed above the 100% baseline and that buff sources add linearly into that excess. Both premises are unverified: if the game instead converts only the excess of a MULTIPLICATIVE charge-speed total, or caps the conversion, this is wrong. Also additive-decomposition assumption: this rider sits on top of the passive stack limb rather than recomputing the combined excess.",
+      "recipe": "Compare a full-charge popup inside Red Wolf against one outside it with ATK/other buffs held constant; the residual after removing weaponSwap damagePct 51.46 / chargeMultPct 250 and atkPct 71.42 isolates the charge-damage delta. Solve for the implied conversion of the 100.8% line."
+    },
+    {
+      "field": "override.burst[3].effects[0] (weaponSwap shot economy)",
+      "estimate": "inherits base SR: ammo 6, chargeFrames 60 (~1.0s), base cadence; no maxShots",
+      "reasoning": "ALWAYS-⚑ item 3: the kit states only damage %, full-charge %, and duration for Red Wolf. Ammo capacity, charge time, and pulls/sec for the swapped weapon are kit-silent, and the swap's shot count over the 10s window is what actually sets its damage. Estimated optimistically (no reload penalty change, no ammo cut).",
+      "recipe": "Count swap-window shots in footage (popup count between the Red Wolf banner and its expiry) and compare to the sim's shot events with srcSlot === her slot in the same window; set maxAmmo / chargeTimeSec / pullsPerSec / maxShots to match."
+    },
+    {
+      "field": "base cadence tuple (pullsPerSec / reloadFrames 141 / chargeFrames 60)",
+      "estimate": "as datamined",
+      "reasoning": "ALWAYS-⚑ item 1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and for a charge SR the effective cycle is charge time + a recovery term the datamine does not express. Everything in this override that depends on shot count (the S1 stack accrual, the conversion steady state, the swap shot economy) rides on this tuple.",
+      "recipe": "Read the ammo counter frame-by-frame on a plain out-of-burst magazine to get shots/sec directly (the instrument that measures the disputed quantity), and time reload-start → full-ammo for the reload term."
+    },
+    {
+      "field": "burst stage assignment (Λ)",
+      "estimate": "burstCast stage 1 / 2 / 3 map 1:1 to Beast Cage / The Last Howl / Red Wolf",
+      "reasoning": "Λ units fill whichever burst stage the rotation needs, and the kit's step branches are keyed to that stage. This is the literal reading of 'When used in Step N', but it means Red Wolf (the only offensive branch) only fires in comps where she takes the stage-3 slot — a fixture property. Also unverified: whether the two once-per-battle 40s CDRs let her burst again within the same fight in a way the rotation engine actually enacts.",
+      "recipe": "Log burstCast events with their stage for her slot across the graded comps; confirm which branch(es) fire and whether the burstCdr effects produce an extra cast. If the engine instead advances a PERSONAL step counter rather than reading the rotation stage, re-key these blocks."
+    }
+  ],
+  "model": "claude-opus-5"
+}

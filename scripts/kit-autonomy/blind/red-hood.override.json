@@ -1,0 +1,200 @@
+{
+  "slug": "red-hood",
+  "hasPierce": true,
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 3.81,
+          "durationSec": 5,
+          "maxStacks": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 36.6,
+          "rampSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 50.68,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 71.42,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 77.55,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 40,
+          "oncePerBattle": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 40,
+          "oncePerBattle": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 51.46,
+          "chargeMultPct": 250,
+          "durationSec": 10,
+          "hasPierce": true
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 100.8,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 241.92,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Attract: Taunts all enemies for 10 sec.",
+      "Incoming healing ▲ 74.88% for 10 sec.",
+      "Expand Pierce range by 100% for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ S1b is a CONVERSION (charge-speed excess over 100% → charge damage at 240%). The schema has no conversion primitive, so it is decomposed into two STATIC approximations: a passive chargeDamagePct sized to the estimated steady-state stack count (out of burst) plus a burst-step-3 rider = 2.4 × 100.8. Both are UNMEASURED.",
+    "⚑ The passive limb under-credits during Red Wolf: the +100.8% charge speed shortens the charge cycle, so stacks accrue faster and sit closer to the 10 cap than the out-of-burst estimate assumes.",
+    "⚑ Weapon-swap shot economy for Red Wolf is kit-silent (no maxAmmo, no charge time, no cadence stated) — the swap inherits the base SR ammo/charge/cadence by omission.",
+    "⚑ Λ burst: which of the three steps fires is rotation-position dependent, so which branch the sim exercises is a fixture property, not a kit property. Verify the graded comp actually reaches step 2/3 before reading any step-gated number.",
+    "noFb deliberately UNSET everywhere (FB-by-timing default ON); no Hit-Rate line in this kit, so no hrCore flag.",
+    "S2's DEF grant is authored as defPct (inert in v1) — the kit says '50.68% of the skill user's DEF' and the schema has no casterDefPct; kept for completeness per the keep-inert-stat rule.",
+    "S2's Last Howl recovery is authored as a 10-tick heal so on-recovery consumers on teammates stay refreshed; no HP amount is modeled."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. Structure: S1 = per-normal-attack charge-speed stack (3.81%, 10 stacks, 5s, engine-live) + a static stand-in for the charge-speed→charge-damage conversion. S2 = whole-fight Pierce (top-level hasPierce, 'start of battle … continuously'), a step-1 team DEF grant, a step-2 self heal-over-time, and a step-3 self ATK 71.42%/10s keyed to burstCast stage 3. Burst = three Λ branches keyed by burstCast stage: step 1 team casterAtkPct 77.55%/10s + once-per-battle 40s burst CDR; step 2 the same once-per-battle 40s CDR (taunt + incoming-healing skipped, see unmodeled); step 3 the Red Wolf weapon swap (51.46% per shot, 250% full charge, 10s, Pierce-tagged) plus the 100.8% charge-speed buff and the conversion rider. Skipped lines are defensive/aggro or single-target-inert on a partless boss and are recorded verbatim in unmodeled."
+}
