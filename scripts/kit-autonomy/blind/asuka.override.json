@@ -1,0 +1,110 @@
+{
+  "slug": "asuka",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "recovery"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 96.98,
+          "durationSec": 25
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "requiresShielded": true,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 30.02,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Fire"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 60.07,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 25
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 150.04,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 101.37,
+          "durationSec": 10
+        },
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates at the start of battle. Affects self. Damage dealt to Shield ▲ 601.01% continuously. — the v1 boss carries no shield HP layer, so a shield-damage multiplier has no channel to feed (no StatKey exists for it); recorded here rather than approximated as a generic damage buff, which would badly over-credit."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ hitRatePct 101.37 routes through the engine's derived hrCoreMult core-lift; the Hit-Rate→core slope is measured-only and is NOT part of this parse. Treat the resulting core-rate lift as unvalidated.",
+    "⚑ The burst lifesteal line is encoded as a 10× 1s `heal` to self purely so it fires her own skill1 `recovery` trigger; the tick count/cadence is an estimate, not kit-stated. It is the ONLY in-kit source of her ATK ▲96.98%, so solo she gets that buff only from her own burst window onward — an external healer changes her uptime completely.",
+    "⚑ skill2's Elemental-Advantage block is gated `requiresShielded` per 'Affects self when in Shield status'; with no shielder on the team it is inert by construction. Whether the real gate reads shield-at-FB-entry (modeled) or shield-at-any-point is unverified.",
+    "elemAdvantageDamagePct is live only when Asuka (Fire) actually holds elemental advantage over the boss — inert on a neutral/advantaged-against matchup.",
+    "'all Fire Code allies' is read as INCLUDING self (Asuka is Fire); alliesOfElement without excludeSelf encodes that.",
+    "⚑ Cadence tuple (ammo 20 / reloadFrames 84 / rate_of_fire) comes from the known-unreliable datamine fields and is not re-derived here."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read from kit prose only. Structure: skill1 = one dead line (shield damage, no v1 channel) + a big on-recovery self ATK buff whose only in-kit feeder is her own burst's lifesteal — the heal effect exists to close that loop, not to model HP. skill2 = two independent fullBurstEnter blocks, one self-only behind a shield-status gate, one Fire-element team core buff. burst = pure self-buff block on burstCast (25s Pierce, 10s Attack Damage / Hit Rate / lifesteal). No noFb set (FB-by-timing default ON); no noRange set (engine-automatic)."
+}

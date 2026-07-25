@@ -1,0 +1,125 @@
+{
+  "slug": "asuka",
+  "kitDescription": "Asuka is a Fire-element Burst III attacker with an assault rifle whose personal damage is gated on two things: being healed, and the team reaching Full Burst. Her first skill gives her a large, long-lasting ATK boost every time a heal lands on her — from a teammate's healer or from her own burst's lifesteal — alongside a very large bonus to damage dealt to enemy shields that simply never comes up against the raid boss. On entering Full Burst she gives every Fire ally, herself included, a big bonus to damage on core hits for ten seconds; and, only while she is holding a shield, an additional damage bonus that is live only when she has elemental advantage over the target. Her own burst is a pure self-buff package: twenty-five seconds of Pierce, plus ten seconds each of raised attack damage, raised hit rate, and lifesteal that returns a slice of her damage as HP. That lifesteal is the keystone of her loop — it re-triggers her own ATK buff, so even a healer-less team gets that buff, just only in windows around her burst. Against the Fire test boss she has no elemental advantage, so in this fixture her practical output comes from the attack-damage, hit-rate and core-damage lines.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2a 'the in-Shield-status gate suppresses the block in a comp with no shield source' — expects 0 elemAdv applies in controlComp, driver's shipped override yields 11 (= FB count). The blind's stated fixture premise ('no unit in controlComp shields asuka') is FALSE: crown's burst shield covers all allies at every FB entry. The blind's own gaps list pre-registered this exact branch as 'a documented divergence for the judge to arbitrate'. Encoding CONVERGES (both carry requiresShielded:true); the RED is a fixture misconception, not an encoding divergence.",
+      "burst attackDamagePct 'moves asuka damage and nothing else (self scope)' — expects unitOf(noAtkDmg,'liter') deep-equal to unitOf(base,'liter'). liter's totalDamage is byte-identical (129303667.87 both runs); only the team-relative `share` field moves because asuka's damage fell and the team-total denominator changed. Assertion is over-strict on a derived field; the self-scope claim it targets is satisfied.",
+      "burst hitRatePct 'carries real damage ... and only for asuka' — identical whole-record deep-equal artifact on liter (`share` denominator), with liter's totalDamage unchanged."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Damage dealt to Shield ▲ 601.01%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED, verbatim in unmodeled.skill1 ('Damage dealt to Shield ▲ 601.01% continuously.'); reason in note (no shield-damage StatKey; partless scope-lock boss never shields)",
+        "blindSaid": "S2b: UNMODELED, must move nothing, biggest single number in the kit and most dangerous if promoted. S6: same, verbatim in unmodeled with the same reasoning",
+        "formulaCheck": "No damage bucket in the SSOT maps to enemy-shield-HP scaling and the v1 boss carries no shield layer; promoting 601.01 into attackDamagePct/damageTakenPct would be a ~7x Damage-Up over-credit. Skipping is the only faithful option",
+        "fireRateOk": true,
+        "explanation": "Inert by construction and recorded as a documented skip (rule 6 respected — no `ignored` block). The blind S5 anti-smuggling assertion (no effect anywhere carries 601.01) passes against the shipped file. Three-way agreement."
+      },
+      {
+        "kitLine": "recovery takes effect: ATK ▲ 96.98%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger {kind:'recovery'}, target self, buff atkPct 96.98 durationSec 25",
+        "blindSaid": "S2b and S6 both: identical encoding; S2b named the nearest-wrong as passive/always-on or burstCast-keyed",
+        "formulaCheck": "atkPct is the ATK bucket (not Damage-Up) — correct for a bare 'ATK ▲'. 25s wall-clock, refreshable per recovery event; matches prose duration semantics exactly",
+        "fireRateOk": true,
+        "explanation": "Both the driver's H2 and the blind S1b assertions are green. Cadence proven live three ways: base run fires repeatedly across the fight (max frame > 1000), the no-recovery-source patch (helm heals + own lifesteal stripped) yields ZERO applies, and the passive counterfactual yields exactly one apply at frame 0. Modeled AND working."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "FB enter, in Shield status: Elem Adv ▲",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter, target self, requiresShielded:true block gate, buff elemAdvantageDamagePct 30.02 durationSec 10 (gauntlet FIX 2026-07-24; the pre-gauntlet baseline modeled it ungated on a false 'no shield-state primitive' premise)",
+        "blindSaid": "S2b (fable) named the dropped gate as the nearest-wrong model; S6 (opus) independently encoded requiresShielded:true. Cross-family convergence on the fix",
+        "formulaCheck": "elemAdvantageDamagePct is the advantage-conditional Damage-Up key, correctly distinct from the flat ×1.10 element multiplier and from generic attackDamagePct; requiresShielded is a real block gate in src/skills/types.ts (naga precedent). Inert vs the Fire boss (Fire attacker, Fire target = no advantage), as the prose implies",
+        "fireRateOk": true,
+        "explanation": "The gauntlet FIX is the single most valuable output of this run: it corrected a false engine-capability premise in the shipped note and moved the encoding from ungated to kit-literal. Fires 11/11 FB entries in the control comp because crown's burst shield covers asuka at every entry; the crownNoShield counterfactual drops it to 0, proving the gate is live rather than decorative. The only S5 RED on this line is the blind's own false fixture premise (see convergence), which its gaps list pre-registered."
+      },
+      {
+        "kitLine": "FB enter: core dmg ▲ 60.07% Fire allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter, target {alliesOfElement, Fire} (self included), buff coreDamagePct 60.07 durationSec 10",
+        "blindSaid": "S2b and S6 both identical, both explicitly reading 'all Fire Code allies' as INCLUDING self",
+        "formulaCheck": "coreDamagePct is the core-only bucket — correct; a swap to attackDamagePct would over-credit non-core shots. Target set matches the prose's element filter",
+        "fireRateOk": true,
+        "explanation": "Green under both test suites. Driver pins applies === fullBurstStart count (11, discriminating against burstCast keying at 6) and targets === [asuka] alone, with an all-allies counterfactual reaching all four slots. Blind S5 additionally confirms the recipient set is a strict subset of the plain-allies patch and that retargeting to element Wind drops asuka out — the Fire key is real, not incidental."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Gain Pierce for 25 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "gainPierce effect durationSec 25 on the burstCast self block (gauntlet FIX 2026-07-24; was the permanent top-level hasPierce flag)",
+        "blindSaid": "S2b named the static hasPierce flag and a copy-pasted 10s duration as the two nearest-wrong models; S6 independently encoded gainPierce durationSec 25. Both blinds chose the timed effect",
+        "formulaCheck": "Pierce is a tag window, not a damage bucket; with PIERCE_CORE_DOUBLE off and no pierceDamagePct source it is v1-inert either way, so the fix is damage-neutral and purely a fidelity gain. The 25s duration is the odd one out among three 10s siblings and is preserved",
+        "fireRateOk": true,
+        "explanation": "Second gauntlet FIX, cross-family corroborated. Asserted structurally (durationSec === 25, no top-level hasPierce) plus an inertness check (removing it leaves totals byte-identical) — the only discrimination available while the payload is inert, and honestly labelled as such by both the driver and the blind."
+      },
+      {
+        "kitLine": "Attack damage ▲ 150.04% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, buff attackDamagePct 150.04 durationSec 10",
+        "blindSaid": "S2b and S6 identical; S2b named the atkPct mis-bucket and fullBurstEnter keying as the nearest-wrong models",
+        "formulaCheck": "attackDamagePct is the Damage-Up bucket (dilutes with other Damage-Up), materially different from atkPct under crown/liter support — correct routing for a bare 'Attack damage ▲'",
+        "fireRateOk": true,
+        "explanation": "Fires 6 times (= asuka's own burstCast count) at exactly the cast frames, strictly fewer than the 11 FB entries — this is the discrimination against fullBurstEnter keying that matters in a two-B3 comp. Blind S5's stat/count/no-atkPct assertions are all green; only its whole-record deep-equal on liter goes red, on the team-relative `share` field."
+      },
+      {
+        "kitLine": "Recovers 3.16% of atk dmg as HP/10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "single `heal` effect (no ticks) on the burstCast self block — encoded so it fires her own S1 recovery trigger; the ticks:1-vs-ticks:10 cadence KEPT as-is and flagged ⚑ with recipe in the note, explicitly not fabricated to 10",
+        "blindSaid": "S2b: MUST be a HoT with ticks ≈10, intervalSec 1, because repeated ticks keep refreshing the 25s S1 buff. S6: heal {ticks:10, intervalSec:1} but flagged ⚑ as 'an estimate, not kit-stated'. S5 it.skip'd the cadence as ⚑ measurement-gated ('the prose gives no per-tick rate')",
+        "formulaCheck": "The SSOT models heal as recovery-event emission only (no HP pool in v1), so the line's entire modelled consequence is how many recovery events reach asuka. The prose states a 10s window but no per-tick rate; NIKKE lifesteal emits on landed hits, which the schema cannot express either way",
+        "fireRateOk": true,
+        "explanation": "The load-bearing half is FAITHFUL and proven: the lifesteal-only fixture (helm's heals stripped) shows S1's ATK ▲96.98 firing exactly once per burst at the cast frame — the self-loop is real, not assumed, and the classic 'heal = defensive, skip it' trap was avoided. The residual is cadence only: one event at cast anchors the 25s ATK window at cast, whereas a 10-tick HoT would anchor it at cast+10, ~10s of ~97% ATK uptime per 40s rotation. Both blinds preferred ticks:10 but both labelled it an estimate; under MEASURED>FUDGE, keeping ticks:1 with a ⚑ and a recipe is the correct call, not a defect. Listed as a low-severity documented residual below."
+      },
+      {
+        "kitLine": "Hit Rate ▲ 101.37% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, buff hitRatePct 101.37 durationSec 10; feeds AR core rate via the engine's HR→core path (acrForHR), ⚑ in-game core lift unmeasured",
+        "blindSaid": "S2b: hitRatePct, NOT dropped as 'accuracy doesn't matter vs a boss' and NOT critRatePct; the HR→core slope is an engine-global ⚑, not a per-unit one. S6 identical, same ⚑",
+        "formulaCheck": "Hit Rate routes to core-hit frequency through the engine's derived hrCoreMult/acrForHR path (accuracy-geometry ruling); the kit value 101.37 is DATAMINED and taken verbatim. The slope itself is measured-only and correctly out of per-unit scope",
+        "fireRateOk": true,
+        "explanation": "Fires 6 times at the cast frames, self-only, equal in count to the attackDamagePct applies (same cast) — green under both suites. With coreAttackMultiplier 200 this is a real damage lever, so the magnitude ⚑ on the HR→core slope is properly an engine-level flag, not a per-unit fudge. Only the liter deep-equal artifact goes red."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Lifesteal 'over 10 sec' is encoded as ONE recovery event at cast rather than a HoT, so the 25s S1 ATK window anchors at cast instead of cast+10 — documented ⚑, not a silent divergence.",
+      "evidence": "Kit: 'Recovers 3.16% of attack damage as HP over 10 sec.' Shipped burst effect is a bare {\"kind\":\"heal\"} with no ticks/intervalSec. SSOT: heal models recovery-event emission only (no HP pool in v1), so the modelled consequence is purely the recovery-event count feeding S1's {kind:'recovery'} trigger. Driver kept ticks:1 and flagged it; S6 (opus) encoded ticks:10 intervalSec:1 but flagged the value as an estimate; S2b (fable) called the HoT form load-bearing; S5 it.skip'd the cadence as not derivable from prose. So both blinds prefer 10 but neither claims it as kit-stated.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "NEEDS MEASUREMENT — do not fabricate ticks:10. Recipe: record a control fight with a heal-free team, log buffApply/buffRemove filtered to atkPct 96.98 on asuka's slot via cfg.onEvent, and read the gap between her burst cast and the LAST recovery-driven refresh. If damage popups step down 25s after cast, ticks:1 is right; if they step down 25s after cast+10 (or refresh mid-window), switch to ticks:10 intervalSec:1. Cross-check against whether in-game lifesteal emits per landed hit, which would imply many more than 10 events."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "requiresShielded is modelled as shield-present AT the FB-entry instant; the control comp cannot distinguish that from shield-at-any-point-in-window because crown shields on every chain.",
+      "evidence": "Kit: 'Affects self when in Shield status.' The block gate is evaluated when the trigger fires, so the model is shield-at-entry. In controlComp the gate is satisfied on 11/11 FB entries (crown's 15s all-ally burst shield), and 0/11 with crown's shield stripped — which proves the gate is LIVE but not which timing rule it implements. S2b explicitly flagged the shield-vs-FB edge ordering; S6 flagged the same as unverified and followed the naga default-off precedent.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "NEEDS MEASUREMENT — leave the encoding as-is (it is the literal read and follows the naga precedent). Recipe: in footage, confirm the buff icon appears at FB entry only while a shield is already up; if a shield applied mid-Full-Burst also grants it, the gate must become a `shielded` trigger rather than a trigger-time block gate. Board-inert here regardless (Fire attacker vs Fire boss = no elemental advantage)."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA survived. All 8 kit payload lines are FAITHFUL (6) or DOCUMENTED_GAP (2), and every load-bearing line fails under its named nearest-wrong model: recovery-vs-passive is proven by both a zero-firing no-heal-source run and a passive counterfactual that fires once at frame 0; burstCast-vs-fullBurstEnter is proven by the 6-vs-11 count split that only a two-B3 comp exposes; the Fire-element filter and the self-scope both collapse under their all-allies/Wind counterfactuals; and the requiresShielded gate goes silent under crownNoShield. The three S5 REDs are all artifacts and are honestly classified: one is the blind's own pre-registered false fixture premise (it assumed controlComp has no shield source — crown's burst shield covers asuka at every FB entry, so the shipped and blind encodings actually CONVERGE on requiresShielded:true), and two are whole-record deep-equals on liter that move only the team-relative `share` denominator while liter's totalDamage is byte-identical. The two gauntlet FIXES are the real value produced here and both are cross-family corroborated (fable S2b named the dropped shield gate as the nearest-wrong model; opus S6 independently encoded requiresShielded:true and gainPierce:25s), both are damage-neutral in the control comp (team totals byte-identical at 443617952.67), and the first of them retired a demonstrably FALSE premise in the shipped note — requiresShielded does exist in src/skills/types.ts. The driver's refusal to adopt ticks:10 for the lifesteal despite both blinds preferring it is the correct MEASURED>FUDGE call, not a gap in courage: the per-tick rate is nowhere in the prose and the choice is material (~10s of ~97% ATK uptime per 40s rotation), so it is flagged with a recipe rather than invented. Same-model residual for the owner to spot-check, in priority order: (1) the lifesteal cadence — every agent here is a Claude model and all three reasoned from the same 'heal effect = recovery emitter' prior, so nobody independently questioned whether in-game lifesteal procs the recovery trigger at all, which is the premise the whole S1 self-loop rests on; (2) 'all Fire Code allies' read as INCLUDING self — unanimous across all three agents and never independently tested, and if wrong it over-credits her personal core bucket by the full 60pp every Full Burst; (3) the shield-gate timing rule, inert here but not inert in a shielded comp with elemental advantage.",
+  "model": "claude-opus-5"
+}

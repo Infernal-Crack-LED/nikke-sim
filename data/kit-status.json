@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 12,
-      "authored": 26,
+      "unit-tested": 13,
+      "authored": 25,
       "audited": 34,
       "reconciled": 4,
       "pending": 1
@@ -507,22 +507,26 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "skill1 ATK+96.98 re-encoded passive-proxy → kit-faithful recovery trigger (fires only w/ a healer); revert path in findings if preserve-verbatim preferred (untested unit)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/asuka.json + scripts/kit-autonomy/manual-review/asuka.md.",
+          "low FIDELITY (burst): Lifesteal 'over 10 sec' is encoded as ONE recovery event at cast rather than a HoT, so the 25s S1 ATK window anchors at cast instead of cast+10 — documented ⚑, not a silent divergence.",
+          "low FIDELITY (skill2): requiresShielded is modelled as shield-present AT the FB-entry instant; the control comp cannot distinguish that from shield-at-any-point-in-window because crown shields on every chain."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded",
+      "evidence": "Pure model — never fielded | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0 (binding judge claude-opus-5); cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-5) converged; 2 gauntlet FIXES (requiresShielded:true gate on S2 elemAdvantage + gainPierce:25s on burst), both damage-neutral, both independently derived by the blind models; 15-test driver spec GREEN",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "lifesteal cadence: single recovery event vs 10-tick HoT (measurement-gated, material to S1 ATK uptime); spot-check whether in-game lifesteal procs 'when recovery takes effect' at all; 'all Fire Code allies' read as including self (unanimous, untested); shield-gate timing rule (inert in this fixture)",
       "unmodeled": {
         "skill1": [
           "Damage dealt to Shield ▲ 601.01% continuously."
@@ -532,8 +536,8 @@
       },
       "caveats": [
         "skill1: ATK ▲96.98% is recovery-triggered — needs a heal landing on her (teammate healer, or her own burst lifesteal); a healer-less team that never Full-Bursts gains it never",
-        "skill2: Elemental Advantage buff requires Shield status in-game — no shield-state gate in the engine, modeled as unconditional at Full-Burst entry (over-credits without a shielder; only matters with elemental advantage)",
-        "burst: 'Gain Pierce for 25 sec' modeled as permanent hasPierce (pierce currently inert vs the v1 boss); lifesteal modeled as one recovery event at cast, real effect ticks over 10s",
+        "skill2: Elemental Advantage buff requires Shield status in-game — modeled with the requiresShielded block gate (gauntlet FIX 2026-07-24; the primitive exists, cf. naga — the prior 'no shield-state gate' note was wrong). Inert without a shielder AND without elemental advantage; in the control comp crown's burst shield keeps her shielded at every FB entry, so the gate is satisfied there",
+        "burst: 'Gain Pierce for 25 sec' modeled as a timed gainPierce:25s burstCast effect (gauntlet FIX 2026-07-24; was the permanent top-level hasPierce flag — pierce currently inert vs the v1 boss either way); lifesteal modeled as one recovery event at cast, real effect ticks over 10s (tick cadence measurement-gated)",
         "burst: fire cadence is an unmeasured datamine estimate — 20-ammo AR with an 18.76% normal multiplier is unlikely to fire at the AR class default"
       ],
       "board": null

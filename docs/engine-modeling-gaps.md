@@ -59,9 +59,9 @@
 | `flatDamage` | 47 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
-| `gainPierce` | 3 | ade-agent-bunny, grave, milk-blooming-bunny |
+| `gainPierce` | 4 | ade-agent-bunny, asuka, grave, milk-blooming-bunny |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
-| `hasPierce` | 5 | alice, asuka, mari, red-hood, zwei |
+| `hasPierce` | 4 | alice, mari, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
 | `hitCount` | 33 | ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, … |
 | `hitRatePct` | 11 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
@@ -92,7 +92,7 @@
 | `removeOnReload` | 0 | _none_ |
 | `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
-| `requiresShielded` | 1 | naga |
+| `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 3 | d-killer-wife, marciana-marine-study, privaty |
 | `resourceGate` | 1 | soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
