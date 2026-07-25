@@ -40,16 +40,16 @@
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 4 | alice, liberalio, miranda, soda-twinkling-bunny |
-| `cast` | 3 | arcana, cinderella-crystal-wave, marciana-marine-study |
+| `cast` | 4 | arcana, asuka-wille, cinderella-crystal-wave, marciana-marine-study |
 | `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 1 | scarlet-black-shadow |
 | `chargeMultPct` | 6 | ada, cinderella-crystal-wave, nayuta, red-hood, snow-white, zwei |
 | `consolidation` | 1 | dorothy-serendipity |
-| `consumeAmmo` | 1 | jill |
+| `consumeAmmo` | 2 | asuka-wille, jill |
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
 | `critRateNormalPct` | 1 | helm |
-| `delaySec` | 2 | rapi-red-hood, snow-white |
+| `delaySec` | 3 | asuka-wille, rapi-red-hood, snow-white |
 | `durationShots` | 1 | helm |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
 | `everyN` | 4 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
@@ -81,7 +81,7 @@
 | `normalAttackPct` | 5 | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
 | `notCast` | 0 | _none_ |
 | `outFb` | 1 | velvet |
-| `ownBurstGate` | 3 | arcana, cinderella-crystal-wave, marciana-marine-study |
+| `ownBurstGate` | 4 | arcana, asuka-wille, cinderella-crystal-wave, marciana-marine-study |
 | `pelletCountFlat` | 2 | arcana-fortune-mate, dorothy-serendipity |
 | `perResource` | 2 | marciana-marine-study, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
@@ -93,7 +93,7 @@
 | `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
-| `requiresTargetStatus` | 3 | d-killer-wife, marciana-marine-study, privaty |
+| `requiresTargetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
 | `resourceGate` | 1 | soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
 | `sequentialMultPct` | 1 | eve |
@@ -106,7 +106,7 @@
 | `swapGate` | 2 | laplace, snow-white-heavy-arms |
 | `swapped` | 2 | laplace, snow-white-heavy-arms |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
-| `targetStatus` | 3 | d-killer-wife, marciana-marine-study, privaty |
+| `targetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |

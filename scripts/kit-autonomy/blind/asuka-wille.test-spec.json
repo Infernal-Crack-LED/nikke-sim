@@ -1,0 +1,125 @@
+{
+  "slug": "asuka-wille",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "after landing 50 normal atk -> 471.86%",
+      "disposition": "FAITHFUL",
+      "assertion": "Removed-timestamp diff shows procs ~= landedShots/50 and doubling trigger.count halves them; RED under an interval/shotFired key (count is ignored -> ratio 1.0) and under a wrong threshold. Also asserts it procs OUTSIDE Annihilation State (ungated by the kit text) and moves no ally damage."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Annihilation State only: every 10 shot(s)",
+      "disposition": "FIX",
+      "assertion": "Every 15.62% proc timestamp must lie inside [herCast, herCast+9]; RED under an ungated passive every-10-shots block and under an fbGate:'inFb' proxy (which also fires during helm-led Full Bursts she did not open). Cadence check pins shots-per-proc to 7-14, RED under per-shot or per-second keys."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 15.62% of final ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "Deleting it drops her damage but leaves ally totals within 0.1% — proves it is her own damage channel, not a team effect."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Anti A.T. Field: Damage Taken +0.83%",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply(damageTakenPct, 0.83) must be boss-held (targetIdx not her slot) and deleting it must drop ALLY damage >0.5% — RED under the classic mis-encoding as a self attackDamagePct (allies unmoved). Structural: per-stack 0.83 (not 0.83x30 folded), durationSec 30, maxStacks 30. Applications confined to Annihilation windows."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 2 enemy unit(s) near crosshair",
+      "disposition": "GAP",
+      "assertion": "it.skip — single-enemy v1 boss gives the 2-target clause no observable; 15.62x1 vs 31.24x1 is not discriminable in this fixture."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter while in Annihilation State",
+      "disposition": "FIX",
+      "assertion": "Apply count must equal her own burst casts and every application must sit inside her Annihilation window; the counterfactual that strips ownBurstGate and re-keys to plain fullBurstEnter must produce STRICTLY MORE applications and more damage — so the faithful model is GREEN and the over-crediting team-FB key is RED. Fixture guarantees FB starts > her casts."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Damage +30.97% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural durationSec 10 (not the burst's 9) + target self; runtime targetIdx === her slot for every application, and buffRemove within 10.5 s of its apply. RED under a team-scoped or 9 s encoding."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Removes 100% of ammo",
+      "disposition": "FAITHFUL",
+      "assertion": "Reload-timestamp diff (base vs consumeAmmo deleted) must place every forced reload 6-12 s after her cast, plus no reload at all in the first second of her window — RED under the high-stakes nearest-wrong of keying Emergency Repair to burstCast, which would dump a 300-round belt at the START of her buffed window."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Reload speed fixed at +60% for 1 round",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural durationShots===1 with durationSec undefined — RED under the duration-semantics error of writing durationSec:1 (a round count spans the reload; one second does not). Behavioural: her shot count strictly exceeds the run with the buff deleted."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 3.77% Max HP every 1s / 3s",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural heal ticks===3, intervalSec===1, self — a single-tick heal would under-refresh crown's on-recovery consumer. One-sided behavioural check: deleting it can never raise team damage, and must not move her own damage."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "MG heating up speed -100% for 3 sec",
+      "disposition": "GAP",
+      "assertion": "it.skip — no heat/overheat primitive exists in the effect schema, so the line has no representable payload; belongs in `unmodeled`."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Normal Atk Dmg Multiplier -40% / 9s",
+      "disposition": "FAITHFUL",
+      "assertion": "Scope test: deleting it must lift her in-window NORMAL hits (ratio <0.92) while leaving the 471.86% rider amounts at those same timestamps unchanged (0.98-1.02) — RED under the nearest-wrong attackDamagePct:-40, which would shrink riders too. Structural: value negative (sign-flip guard), durationSec 9."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK +46.8% of skill user's ATK / 9s",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural stat must be casterAtkPct (\"of the skill user's ATK\"), durationSec 9, target self; runtime apply count === her casts and targetIdx === her slot (no ally leakage). Numerically identical to atkPct on a self target, so the stat-key check is the only discriminator — flagged as such."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage +36% for 9 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural durationSec 9 + self; apply count === her casts, strictly fewer than fullBurstStart count — RED if keyed to fullBurstEnter (over-fires on helm-led rotations) or given the 10 s duration of the S2a buff."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Reloads 21% magazine(s)",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural instantReload fraction ~0.21 — RED under a full-belt refill (fraction 1 / omitted), which would hand her 300 rounds instead of 63."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Annihilation: 6.62% after State ends",
+      "disposition": "FIX",
+      "assertion": "Removed-timestamp diff must place the hit 7.5-11 s after each of her casts — RED under an instant burst-cast hit (delaySec 0), which would also wrongly collect the in-window buffs/FB major."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Mirrors the stack count of the Field",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "Structural: the shipped atkPct must be a near-integer multiple of 6.62 with k in (1.5, 30] — RED under a bare 6.62% (k=1), which under-credits by up to 30x. The exact k is a derived flag (depends on her real in-window shot cadence, a datamine-unreliable field)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Field removed after effect triggers",
+      "disposition": "GAP",
+      "assertion": "it.skip — no consume-stacks primitive; a damageTakenPct buff can only expire on its own 30 s clock, so stacks carry into the next rotation and over-credit both the team debuff and any stack-derived constant."
+    }
+  ],
+  "fixtures": "controlComp('asuka-wille', true) only — liter B1 / crown B2 / asuka-wille B3 / helm B3, boss Fire, deterministic (no seed). helm is kept ON on purpose: a SECOND Burst III is the only thing that makes fullBurstStart count exceed her own burst-cast count, which is what turns every own-burst gate (S1b Annihilation-State gating, S2a's 'while in Annihilation State', burst-b's timing) into a discriminating test instead of a vacuous one; a fixture non-vacuity `it` asserts that precondition explicitly. Crown (B2) is the on-recovery consumer that makes S2b's heal cross-unit rather than inert. Wind vs the Fire boss carries no elemental advantage, so there is no x1.10 confound. 11 hoisted runs (1 base + 10 counterfactuals), all built with withPatchedOverride so the committed JSON is untouched; nothing is written to src/skills/overrides/ and validate-overrides is not run.",
+  "gaps": [
+    "S2b Effect 1 'MG heating up speed -100% for 3 sec' — it.skip: no heat/overheat primitive in the effect schema; the line has no representable payload and belongs in `unmodeled`.",
+    "S1b 'Affects 2 enemy unit(s) within the attack range nearest to the crosshair' — it.skip: the v1 boss is a single enemy, so a 2-target split has no observable and 15.62x1 vs 31.24x1 cannot be discriminated here.",
+    "burst-b 'Anti A.T. Field status is removed after the effect is triggered' — it.skip: no consume-stacks effect exists; a damageTakenPct buff can only expire on its own 30 s clock, so stacks survive Annihilation and carry across rotations, over-crediting both the team debuff and any stack-derived Annihilation constant.",
+    "burst-b stack count mirrored by Annihilation — it.skip (MEASUREMENT-GATED): the multiple k depends on her true in-window shot cadence (the datamined MG rate_of_fire is a known-unreliable field, so the cadence tuple is an ALWAYS-flag quantity) and on whether stacks persist between rotations. The test only bounds k to (1.5, 30]; the exact value must be pinned from footage.",
+    "'Reload speed is FIXED at a 60% increase' — the engine's reloadSpeedPct has no 'fixed/override' semantics (it stacks additively with other reload buffs). Modelled as a plain +60 with durationShots 1; the fixed-value nuance is unrepresentable and is flagged rather than asserted.",
+    "'Annihilation State' has no first-class self-status gate in the schema (no requiresOwnBuff). The test asserts the OBSERVABLE consequence (procs confined to [herCast, herCast+9]) rather than any particular encoding, so a resourceGate, an ownBurstGate+fbGate pair, or a burst-slot placement all pass if — and only if — the timing is right.",
+    "Harness field names beyond the documented event kinds were not visible to me; timestamp/slot/amount access goes through tOf/srcOf/dmgOf shims and the patched-override wiring assumes `opts.overrides[slug]`. If the harness spells these differently the shims need a one-line fix — the assertions themselves are unaffected. Runner assumed to be vitest.",
+    "I had no tool access in this run, so scripts/kit-autonomy/blind/asuka-wille.test.ts and .test-spec.json were NOT written to disk — the orchestrator should persist `testSource` and this JSON to those paths."
+  ],
+  "model": "claude-opus-5"
+}

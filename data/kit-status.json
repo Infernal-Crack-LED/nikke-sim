@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 13,
-      "authored": 25,
+      "unit-tested": 14,
+      "authored": 24,
       "audited": 34,
       "reconciled": 4,
       "pending": 1
@@ -548,37 +548,48 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "skill2 FB->burstCast (Annihilation-State gate, cinderella-crystal-wave class); Emergency Repair reload+heal modeled (was wrongly skipped as defensive)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/asuka-wille.json + scripts/kit-autonomy/manual-review/asuka-wille.md.",
+          "med FIDELITY (test-header (scripts/tests/units/asuka-wille.test.ts)): The driver's unit-test docblock is STALE and now contradicts both the shipped override and the test's own assertions — it documents the pre-gauntlet encoding as if it were current.",
+          "low ENCODING (skill2 (Emergency Repair Effect 4)): 'Reload speed is fixed at a 60% increase for 1 rounds' is modeled as a 10.5-second window, which at MG cadence can accelerate roughly two reloads where the kit grants one.",
+          "low FIDELITY (burst / skill1 (Annihilation State proxy)): A SELF mode is represented as a fabricated status inflicted on the boss, which is an unguarded side channel any other unit reading target statuses could pick up.",
+          "low SILENT_DROP (burst (Annihilation finisher precondition)): 'Affects the target(s) afflicted with Anti A.T. Field' — the finisher's affliction precondition is nowhere in the override: no gate, no caveat, no `unmodeled` entry.",
+          "low ENGINE (skill2 vs burst (two proxies for one in-game instant)): Annihilation-State end is modeled twice with different clocks — burstCast+delaySec 9 for the finisher, fullBurstEnd for Emergency Repair — so two effects the kit fires simultaneously land ~1s apart."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded",
+      "evidence": "Pure model — never fielded | kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95 (binding judge claude-opus-5); cross-family S2b(fable)/S5/S6/S7(opus) converged on consumption 30s->9s + fullBurstEnter+ownBurstGate + fullBurstEnd + consumeAmmo + heal ticks:3 + delaySec:9 finisher; team sum 1979M->1837M (baseline over-credited whole team via near-permanent Anti A.T. Field debuff)",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "finisher 6.62x30 cap vs S6 10-stack (measurement-gated, ammo-counter read off footage); heal damage-inert/self-targeted (S2b crown-tandem not borne out in sim); MG cadence tuple unverified datamine; instant-consumption residual (no remove-target-buff primitive)",
       "unmodeled": {
         "skill1": [],
         "skill2": [
-          "Effect 1: MG heating up speed ▼ 100% for 3 sec.",
-          "Effect 2: Removes 100% of ammo."
+          "Effect 1: MG heating up speed ▼ 100% for 3 sec."
         ],
         "burst": []
       },
       "caveats": [
         "skill1: cadence tuple (MG wind-up ladder / 300 ammo / reloadFrames 161) is the unverified datamine — read rounds/min + the reload gap from any focus video (⚑1)",
-        "skill1: the in-Annihilation-State every-10-shots proc + Anti A.T. Field stacks are steady-state proxies (every 44 hits, debuff at its 30-stack cap) — count 15.62% popups per burst window and read the Annihilation popup ÷ 6.62 for the real stack count (⚑4/⚑5)",
-        "skill2: the Full-Burst-entry Attack Damage buff is encoded as burstCast because it requires Annihilation State (granted only by HER OWN burst) — identical to FB-enter when she is the only Burst III unit, and it correctly does NOT fire on another Burst III unit's rotations",
-        "skill2: Emergency Repair really activates ~9s AFTER burst cast (at Annihilation State end); the schema has no delayed trigger, so the heal event + reload-speed window start at cast — the 10.5s reload-speed window is an unmeasured encoding of 'one fast reload per burst cycle' (⚑3)",
-        "skill2: 'MG heating up speed ▼ 100% for 3 sec' and 'Removes 100% of ammo' are UNMODELED — the heating line is ambiguous (frozen wind-up vs instant full spin) and the engine has no ammo-dump/wind-up vocabulary; measure her post-Emergency-Repair fire cadence before modeling (⚑2)",
-        "burst: the Annihilation finisher (6.62% × stacks) is modeled as one 198.6% hit at cast; the real hit lands ~9s later INSIDE the Full Burst window, so it may be FB-boosted in-game (hand-slot finding F2 — verify before re-encoding)"
+        "skill1: the every-10-shots proc + Anti A.T. Field stacks are GATED to the Annihilation State window (requiresTargetStatus 'Annihilation State', hitCount 10) and the debuff durationSec is 9 (consumed at state-end), replacing the prior ungated near-permanent 30-stack encoding; whether the window builds the full 30 stacks is cadence-dependent (⚑4/⚑5)",
+        "skill1/burst: 'Annihilation State' is a SELF mode proxied as a boss targetStatus (the engine has no self-status gate). This is a name-keyed side channel any other unit's requiresTargetStatus 'Annihilation State' could read; no other in-scope unit does, so it is inert today, but a future carrier of that gate name would falsely see her mode (judge gotcha 3 — a requiresOwnBuff primitive would replace the proxy)",
+        "burst: the Annihilation finisher's prose precondition 'Affects the target(s) afflicted with Anti A.T. Field' is NOT separately gated — the single v1 boss always carries the debuff during the window, so the precondition is implicitly satisfied; a multi-target fight would need a requiresTargetStatus gate on the Anti A.T. Field status (judge gotcha 4)",
+        "skill1/burst: the Anti A.T. Field CONSUMPTION is instant in-game (all stacks removed at the finisher ~cast+9s) but the engine has no remove-target-buff primitive, so the debuff expires gradually 9s per stack — a short post-window tail over-credits team amp by up to ~1.5x in that tail (⚑6: add a consumeTargetStatus effect keyed to the finisher; Tier 2)",
+        "skill2: the Full-Burst-entry Attack Damage buff is fullBurstEnter + ownBurstGate:'cast' (fires at FB entry only on rotations SHE burst in — Annihilation State is granted only by her own burst); identical to FB-enter when she is the only Burst III unit, and it correctly does NOT fire on another Burst III unit's rotations (verified in the dual-B3 control comp)",
+        "skill2: Emergency Repair (heal + reload-speed + ammo dump) is encoded at fullBurstEnd + ownBurstGate:'cast' ≈ Annihilation-State end (~cast+9s, ~1s late); the schema has no delayed/state-end trigger keyed to her burst, so fullBurstEnd is the closest proxy",
+        "skill2: 'Removes 100% of ammo' is modeled as consumeAmmo fraction:1 at fullBurstEnd (~10s after the burst's instantReload 0.21, so no collision); its damage content is the forced fast reload covered by the reloadSpeedPct 60 window (⚑3)",
+        "skill2: the 3.77%-Max-HP heal is a 3-tick self recovery emitter (ticks:3/intervalSec:1) but is damage-INERT in the sim (self-targeted, asuka-wille has no recovery block; verified removing it moves no total) — encoded for kit completeness / future recovery synergy",
+        "skill2: 'MG heating up speed ▼ 100% for 3 sec' is UNMODELED (⚑2) — no wind-up primitive; ambiguous (frozen ramp vs instant full spin). Measure her post-Emergency-Repair fire cadence before modeling",
+        "burst: the Annihilation finisher (6.62% × stacks) is one 198.6% hit (30-stack cap) with delaySec:9 — it LANDS at state-end inside the FB window (FB-boosted, finding F2) and mirrors the LIVE stack count (no dynamic-stack-scale primitive, so the 30-cap is a documented proxy; the blind rebuild used 10 stacks — verify the popup ÷ 6.62 for the real count, ⚑4/⚑5)"
       ],
       "board": null
     },
