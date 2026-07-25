@@ -1,0 +1,144 @@
+{
+  "slug": "drake",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 20.09,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 11.85,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 63.88,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 50.14,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 98.55,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 201.6,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 3009.6,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 72.18,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 31.68,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 trigger unit: kit says \"after N normal attack(s)\". Drake is SG with hitsPerShot 10, so a hitCount trigger that counts PELLET HITS instead of ROUNDS would fire these riders ~10x too often. Authored as rounds/trigger-pulls (count 10 / count 5); MUST be verified against the engine's hitCount accounting for multi-pellet weapons before trusting any total.",
+    "⚑ skill2 first line reads \"Affects 3 enemy unit(s) with the lowest remaining HP\" — the v1 sim has a single boss, so the 98.55% lands ONCE per activation, not 3x. If the engine ever models multiple enemies this line must fan out to 3 targets.",
+    "⚑ Both damage riders default to Full-Burst-by-timing (noFb NOT set) per the standing prior; only the burst nuke is FB-exempt (burst cast resolves before the FB window opens).",
+    "⚑ maxAmmoPct stacks on Drake herself during her own Full Burst: skill1's SG-ally +50.14% and burst's self +72.18% co-apply on a 9-round magazine. Whether the engine adds them additively and how it rounds the resulting capacity (9 -> ~20 rounds) is unverified; it directly gates shots fired and therefore damage.",
+    "⚑ hitRatePct 20.09 is routed through the engine's Hit-Rate->core lift (hrCoreMult). The kit gives a Hit Rate percentage, NOT a core rate; the conversion magnitude is a measured-only quantity and is the single largest uncertainty in this unit's team contribution.",
+    "⚑ crit:true on all three flatDamage riders follows the standing rider-crit prior, not kit text. If the engine's global RIDERCRIT gate already governs rider crit eligibility, these explicit flags are redundant (not additive) — confirm before reading any crit-rate assertion off these hits."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of drake (SG/Fire/Attacker/B3) from kit prose only. Structure: skill1 is a pure FB-enter team aura split into a universal leg (Hit Rate + ATK, all allies) and a shotgun-scoped leg (ATK + Max Ammo, alliesOfWeapon SG — Drake is SG so she receives her own second leg). skill2 is two independent normal-attack-count riders (10-attack 98.55% AoE-flavored, 5-attack 201.6% single-target) — both authored as hitCount triggers counting ROUNDS, which is the load-bearing assumption for a 10-pellet shotgun (see caveats). Burst is a single 3009.6% instant nuke on cast (FB-exempt per the burst-cast timing prior) plus a self Max Ammo + Attack Damage window. Weapon-state lines (Max Ammunition Capacity ▲, both legs) are modeled as damage-relevant per the HARD RULES — they gate shots fired on a 9-round magazine with a 111-frame reload, where ammo capacity is unusually leveraged. No kit line is dropped; unmodeled is empty for all three slots. Nothing here has been checked against a board, a probe, or the regression snapshot."
+}

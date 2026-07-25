@@ -1249,23 +1249,24 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "reconciled",
-        "provenance": "parser-baseline",
-        "date": "2026-07-17",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "S2 '10 attacks' = pulls-vs-pellets 10x lever (shipped count 100 = 10 pulls, brid-anchored); maxAmmo burst window economy unverified",
-          "✅ RESOLVED 2026-07-17 (favorite-item sync): enacted S1 hitRate 11.85→20.09 + NEW alliesOfWeapon-SG ATK 63.88/maxAmmo 50.14; S2 NEW 2nd nuke 201.6 (hitCount 50); burst 1254→3009.6 + self AD 31.68. All blocks DBG-confirmed firing. Model-only (no board comp)."
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/drake.json + scripts/kit-autonomy/manual-review/drake.md."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded (not owned)",
+      "evidence": "Pure model — never fielded (not owned) | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "burst FB-exemption assertion gap; note staleness (pre-treasure values); hitRatePct core-rate magnitude unmeasured; pull-vs-pellet per-unit confirmation",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
