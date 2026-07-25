@@ -1,0 +1,3 @@
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m17 passed[39m[22m[90m (17)[39m
+S5-blind-vs-S6convergent: 19 pass / 1 fail (S1_LONG universal cadence artifact: atkPct 5/5 permanent at datamined cadence, 5s->60s no-op; encoding-independent) / 2 skip. CR-count now PASSES (6==6).

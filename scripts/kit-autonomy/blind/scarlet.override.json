@@ -1,0 +1,97 @@
+{
+  "slug": "scarlet",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 23.15,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 6.61,
+          "rampSec": 56
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 19.57,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 849.15,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Current HP ▼ 4.01%."
+    ],
+    "skill2": [
+      "There is a 30% chance of activating when attacked.",
+      "Deals 138.24% of final ATK as additional damage."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ SELF-HP ENGINE GAP: this kit is HP-threshold-driven (S1 pays Current HP ▼4.01% per proc; S2's Crit Damage gates on HP<60%, burst's Crit Rate on HP<50%). v1 models no HP pool, so the HP cost is unmodeled and both gates are approximated (S2 by a rampSec proxy, burst by an ungated full-value buff). All three lines must be re-checked together once an HP pool or a measured fight exists.",
+    "⚑ S2 rampSec=56 is a DERIVED-but-UNVERIFIED equal-integral proxy for a step-on at ~28s, not a real ramp shape. It depends on AR cadence (datamine-unreliable) and on every normal attack landing.",
+    "⚑ Burst Crit Rate ▲19.57% is modeled UNGATED and therefore OVER-CREDITS every burst cast before HP<50% (~37s of self-damage alone). On a comp whose first burst chain lands ≈8-12s, burst #1 is over-credited.",
+    "⚑ The S2 counter-attack (30%-on-attacked, 138.24%) is NOT modeled — the sim has no incoming-damage channel, so its proc rate is outside the input domain, not merely unknown. This is the single largest known damage gap in this baseline.",
+    "⚑ Burst nuke noFb:true per the standing rule that burst-cast/instant damage lands before the FB window opens; it is a rule application, not a measured per-kit noFb."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. S1 = hitCount:10 self ATK ▲23.15% ×5 stacks / 5s (stacks lapse across the 159f reload, so steady-state is BELOW 5 — the engine resolves this naturally, no ramp authored). S1's Current HP ▼4.01% is unmodeled (no HP pool in v1) but is LOAD-BEARING: it is the mechanism that opens S2's HP<60% gate and the burst's HP<50% gate. Derivation of the gate timings from the kit alone (self-damage only, a floor — boss damage only speeds it up): current-HP decay is multiplicative, 0.9599^n, so HP<60% at n=13 procs (=130 landed rounds) and HP<50% at n=17 procs (=170 rounds). At ~12 pulls/s with a 20-round magazine + 159f reload that is ≈4.6 rounds/s → HP<60% at ≈28s, HP<50% at ≈37s. S2's Crit Damage ▲6.61% 'continuously' is therefore authored as a passive with rampSec:56 — a linear ramp over 2T has the same time-integral as a step at T, so 56 is the equal-integral proxy for the ~28s step. The burst's 10s Crit Rate window cannot use rampSec (its clock would start at the cast frame, ramping WITHIN the window), so it is authored ungated at full value and flagged as an early-burst over-credit. Burst nuke 849.15% authored crit-eligible, no core (the text says no core strike), noFb per the burst-cast FB-exemption rule. noRange left unset (engine-automatic)."
+}

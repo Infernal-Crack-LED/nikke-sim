@@ -86,7 +86,7 @@
 | `perResource` | 2 | marciana-marine-study, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
 | `pullsPerSec` | 1 | jill |
-| `rampSec` | 2 | arcana-fortune-mate, cinderella |
+| `rampSec` | 3 | arcana-fortune-mate, cinderella, scarlet |
 | `recovery` | 2 | asuka, crown |
 | `reenterStage` | 1 | anis-star |
 | `removeOnReload` | 0 | _none_ |

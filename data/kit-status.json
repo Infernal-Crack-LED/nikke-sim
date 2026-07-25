@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 25,
-      "authored": 20,
+      "unit-tested": 26,
+      "authored": 19,
       "audited": 27,
       "reconciled": 4,
       "pending": 1
@@ -3348,18 +3348,25 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/scarlet.json + scripts/kit-autonomy/manual-review/scarlet.md.",
+          "med FIDELITY (burst): The burst's 'Activates when HP falls below 50%' gate is not represented at all — the 19.57% crit-rate buff fires on EVERY cast, including casts made at full HP. Documented ⚑, not a silent drop.",
+          "low FIDELITY (skill2): The HP<60% step-on for the 6.61% Crit Damage buff is modeled as a 56s linear ramp; the equal-integral argument holds in TIME but not in damage-weighted terms. Documented ⚑."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; +rampSec:56 S2 gate proxy vs parser baseline",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "burst HP<50% gate ungated (med: does burst #1 crit boosted? resourceGate prototyped); S2 rampSec time-vs-damage integral (low); cadence tuple 27.08/shot non-standard; compounding-vs-flat HP drain reading; same-model footage check",
       "unmodeled": {
         "skill1": [
           "Current HP ▼ 4.01%."
@@ -3371,10 +3378,10 @@
         "burst": []
       },
       "caveats": [
-        "skill1: the 'Current HP ▼ 4.01%' self-drain is not simulated as HP; it justifies treating her HP-gated crit buffs as active (unmeasured assumption)",
+        "skill1: the 'Current HP ▼ 4.01%' self-drain is not simulated as HP (engine has no HP pool); it is load-bearing only as the mechanism that opens the two HP-threshold gates, and feeds the derived ~28s/~37s crossing times",
         "skill2: the 30%-when-attacked 138.24% proc is unmodeled — the sim has no incoming boss attacks; real-fight contribution is an open ⚑",
-        "skill2: the HP<60% gate on the 6.61% crit-damage buff is assumed permanently active (S1 self-drain); over-credits roughly the first 30s",
-        "burst: the HP<50% gate on the 19.57% crit-rate buff is assumed active at cast; her first burst may really occur above the threshold",
+        "skill2: the HP<60% gate on the 6.61% crit-damage buff is approximated by rampSec:56 (equal-integral proxy for a step-on at ~28s); the shape is approximate and the crossing time is ⚑-derived (real fights cross earlier)",
+        "burst: the HP<50% gate on the 19.57% crit-rate buff is modeled ungated (rampSec unusable on a per-cast window); pre-~37s bursts are over-credited ⚑",
         "cadence: 20-ammo AR with a 27.08% per-shot multiplier is a non-standard fire-mode tell — the datamined rate of fire and 159-frame reload are unverified estimates"
       ],
       "board": null

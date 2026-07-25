@@ -1,9 +1,7 @@
 {
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. --- BASE Scarlet (slug `scarlet`, AR/Electric/Attacker/B3) — NOT scarlet-black-shadow. MODEL: S1 = self ATK ▲23.15% on hitCount:10, maxStacks 5, dur 5s — faithful encoding; the engine derives the stack level natively from cadence (no haircut knob; see ⚑2). S1 'Current HP ▼ 4.01%' = self HP COST per proc, UNMODELED as a block (engine has no HP-drain mechanic; not a heal/HP-buff hard-rule class) but it is her design ENABLER: geometric self-drain (×0.9599/proc) puts her <60% HP after ~13 procs (~28s at datamined cadence) and <50% after ~17 (~37s), boss damage only accelerates — so the HP-gated crit buffs below are modeled ASSUMED-ACTIVE (⚑3). S2a '30% chance when attacked → 138.24% additional damage' SKIPPED to unmodeled: 'when this unit is hit' is the sanctioned skip class — the v1 sim models no incoming boss attacks, so the trigger NEVER fires in-sim; real-fight contribution is nonzero and ⚑4-flagged (NOTE: the old materialized file misparsed this as a passive flatDamage with an invented trigger — removed). S2b crit dmg ▲6.61% 'continuously' when HP<60% → passive self buff, gate assumed satisfied (⚑3; over-credits the first ~28s slightly). BURST: (a) crit rate ▲19.57%/10s when HP<50% → burstCast self 10s, gate assumed (⚑3; her FIRST burst ~15-25s may really precede the gate — flagged); (b) 849.15% Burst Skill damage → burstCast flatDamage vs enemy (auto FB-exempt as burst-cast per prior 2, no noFb set; 'all enemies' = the single boss). No weapon swap, no charge (chargeFrames 0), no DoT, no Hit-Rate, hitsPerShot 1 (no split/merge), element = clean ×1.10 default (no Superior-Elemental-Code buff). ⚑1 CADENCE TUPLE (MANDATORY — ESCALATED to likely-wrong): 20-ammo AR with normalMult 27.08 (~3× the usual AR per-shot value) + melee-slash flavor = classic non-class fire-mode tell; ship datamined pullsPerSec + reloadFrames 159 (~2.65s — long for an AR), rolling-reload unknown. Recipe: rounds/min + reload gap from any focus video. ⚑2 S1 STACK STEADY-STATE (prior 4): at datamined cadence (~1 proc/0.83s firing, 5s dur spans the 2.65s reload) stacks sit near-permanent ~5/5; if the real fire rate is slower (⚑1) the level drops — entirely cadence-driven, moves with ⚑1. Recipe: stack icon count / ATK popup mid-fight. ⚑3 HP-THRESHOLD GATES (kit-silent vs engine — no HP trigger exists): S2b passive + burst crit-rate modeled assumed-active per the drain arithmetic above; unmodeled early ramp over-credits S2b ~first 28s and the burst crit-rate may miss her first cast. Recipe: HP bar + first crit-popup timing from a focus video → below-threshold uptime. ⚑4 S2a ATTACKED-PROC (unmodeled): est contribution 0 in-sim / ~0-3% of real solo total (a handful of boss hits × 30% × 138.24%). Recipe: focus video — count her additional-damage popups coinciding with boss attacks on her; if material, model as a dot at the measured proc cadence.",
+  "note": "BASE Scarlet (slug `scarlet`, AR/Electric/Attacker/B3, cd 40s, ammo 20, chargeFrames 0) — NOT scarlet-black-shadow (RL/B3). Kit-autonomy gauntlet 2026-07-25 (cross-family: S2b claude-fable-5; S5/S6/S7 claude-opus-5; GO faithfulness — see manual-review). MODEL: S1 'after 10 normal attacks' = hitCount:10 → self ATK ▲23.15% / maxStacks 5 / 5s (engine derives the stack level from cadence; at the datamined cadence it reaches 5/5 and holds — the 5s window bridges the 159f reload). S2 'HP<60% → Crit Dmg ▲6.61% continuously' = passive self critDamagePct 6.61 (permanent) with rampSec:56 — the equal-integral proxy for the HP<60% step-on at ~28s (a linear 0→full ramp over 2T has the same time-integral as a step at T; T≈28s from the compounding self-drain below). BURST: 'HP<50% → Crit Rate ▲19.57%/10s' = burstCast self critRatePct 19.57/10s, modeled UNGATED (rampSec is unusable on a per-cast 10s window — its clock would ramp INSIDE the window — so the buff is full-value on every cast and the pre-~37s casts are an over-credit ⚑). burstCast (her OWN cast), NOT fullBurstEnter — controlComp carries helm as co-B3, so team FBs (11) ≠ her casts (6) and fullBurstEnter would over-fire. '849.15% Burst Skill damage' = burstCast flatDamage vs enemy ('all enemies' = the single boss); a burst CAST lands BEFORE the Full Burst window, so it is FB-exempt by timing (no +50% major; verified fact 2026-07-13) and crit-eligible. S2 '30% chance when attacked → 138.24% additional damage' is UNMODELED (sanctioned skip): 'when this unit is hit' never fires in-sim — the v1 boss has no modeled attack cadence. No weapon swap, no charge, no DoT, hitsPerShot 1, element = clean ×1.10 default. HP-THRESHOLD GATES (the kit's design center): S1's 'Current HP ▼4.01%' is a self HP COST — the engine has no HP pool, so it is unmodeled as HP, but it is LOAD-BEARING as the mechanism that opens the two gates: current-HP decay is multiplicative (×0.9599/proc), so HP<60% at 13 procs (130 rounds, ~28s) and HP<50% at 17 procs (170 rounds, ~37s) from self-drain alone; boss damage only makes these EARLIER. These derived crossing times feed the rampSec:56 proxy and the burst over-credit ⚑. ENCODING-CHOICE NOTE (cross-family): the fable S2b reviewer recommended modeling the gates literally via a bloodProc proc-count resource pool + resourceGate (step-on at proc 13/17); the opus S5/S6 reviewers converged on the rampSec/ungated ⚑ proxy here, reasoning that the proc-count threshold is itself cadence-derived and ignores boss damage, so encoding a precise gate would be false precision — the driver adopted the opus-convergent proxy. The resource-pool gate is a legitimate future improvement if an HP pool primitive or a measured fight lands. ⚑1 CADENCE TUPLE (datamine-unreliable): 20-ammo AR with normalMult 27.08 (~3× the usual AR per-shot) + melee-slash flavor = non-class fire-mode tell; datamined pullsPerSec + reloadFrames 159 unverified. The hitCount:10 frequency, the 5-stack steady state, the rampSec:56, and the burst over-credit all scale with true rounds/sec. Recipe: rounds/min + reload gap from a focus video. ⚑2 HP-GATE TIMING: rampSec:56 (S2) and the ungated-burst over-credit are DERIVED from the compounding self-drain reading, not measured; real fights cross earlier (boss damage). Recipe: HP bar + first crit-popup timing from a focus video. ⚑3 S2a ATTACKED-PROC (unmodeled): est 0 in-sim / ~0-3% of real solo total (a handful of boss hits × 30% × 138.24%). Recipe: focus video — count her additional-damage popups coinciding with boss attacks on her; if material, model as a dot at the measured proc cadence.",
   "unmodeled": {
-    "skill1": [
-      "Current HP ▼ 4.01%."
-    ],
+    "skill1": ["Current HP ▼ 4.01%."],
     "skill2": [
       "There is a 30% chance of activating when attacked.",
       "Deals 138.24% of final ATK as additional damage."
@@ -11,22 +9,17 @@
     "burst": []
   },
   "caveats": [
-    "skill1: the 'Current HP ▼ 4.01%' self-drain is not simulated as HP; it justifies treating her HP-gated crit buffs as active (unmeasured assumption)",
+    "skill1: the 'Current HP ▼ 4.01%' self-drain is not simulated as HP (engine has no HP pool); it is load-bearing only as the mechanism that opens the two HP-threshold gates, and feeds the derived ~28s/~37s crossing times",
     "skill2: the 30%-when-attacked 138.24% proc is unmodeled — the sim has no incoming boss attacks; real-fight contribution is an open ⚑",
-    "skill2: the HP<60% gate on the 6.61% crit-damage buff is assumed permanently active (S1 self-drain); over-credits roughly the first 30s",
-    "burst: the HP<50% gate on the 19.57% crit-rate buff is assumed active at cast; her first burst may really occur above the threshold",
+    "skill2: the HP<60% gate on the 6.61% crit-damage buff is approximated by rampSec:56 (equal-integral proxy for a step-on at ~28s); the shape is approximate and the crossing time is ⚑-derived (real fights cross earlier)",
+    "burst: the HP<50% gate on the 19.57% crit-rate buff is modeled ungated (rampSec unusable on a per-cast window); pre-~37s bursts are over-credited ⚑",
     "cadence: 20-ammo AR with a 27.08% per-shot multiplier is a non-standard fire-mode tell — the datamined rate of fire and 159-frame reload are unverified estimates"
   ],
   "skill1": [
     {
       "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 10
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "hitCount", "count": 10 },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
@@ -41,17 +34,14 @@
   "skill2": [
     {
       "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
           "stat": "critDamagePct",
-          "value": 6.61
+          "value": 6.61,
+          "rampSec": 56
         }
       ]
     }
@@ -59,12 +49,8 @@
   "burst": [
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
       "effects": [
         {
           "kind": "buff",
@@ -76,18 +62,9 @@
     },
     {
       "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 849.15
-        }
-      ]
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 849.15 }]
     }
   ]
 }
