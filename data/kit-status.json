@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 14,
-      "authored": 24,
+      "unit-tested": 15,
+      "authored": 23,
       "audited": 34,
       "reconciled": 4,
       "pending": 1
@@ -3895,37 +3895,44 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.9 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/zwei.json + scripts/kit-autonomy/manual-review/zwei.md.",
+          "ADJUDICATED-DIVERGENCE gainPierce (burst Pierce Attacks 101): judge upheld driver no-grant reading (pierceDamagePct 25.03 only) over blind S5/S6 gainPierce, on differential-wording evidence (swap uses explicit Additional Effect: Pierce; ally line uses Pierce Damage ▲). Footage-gated flag: if allies pierce after Zwei burst, add gainPierce (large upward re-model). Not a REAL-GOTCHA."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.9; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged; gainPierce fork adjudicated no-grant (footage-gated flag)",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check (manual-review/zwei.md S4): (1) gainPierce - footage-confirm whether allies pierce after Zwei burst; (2) burst swap duration/shot-economy footage-gated (datamine duration_value 1 Shot ambiguous); (3) cover-HP->recovery hypothesis (re-model S2a as heal if confirmed); (4) S2c swapGate proxy exact only when swap window == 10s PA101 status; (5) swap range-band/core SR-like guess + base SG cadence datamine-unreliable",
       "unmodeled": {
         "skill1": [
           "【Phase 3】Items ×110"
         ],
         "skill2": [
-          "【Phase 2】Items ×50"
+          "【Phase 2】Items ×50",
+          "Restores 7.52% of Cover HP."
         ],
         "burst": [
           "【Phase 1】",
-          "Cooldown: 20 s",
-          "Additional Effect: Pierce"
+          "Cooldown: 20 s"
         ]
       },
       "caveats": [
-        "burst: weapon-swap window economy is an unmeasured estimate — duration 10s (unstated in kit) and ~3 shots/window (charge 1.2s + 1-ammo reload); if footage shows reload-free cadence it is ~8 shots",
-        "skill1: 'for 1 round(s)' round-scoped buff durations approximated as 5s (no round primitive in the schema)",
-        "skill2: the Crit Rate stack's 'Pierce Attacks 101 status' gate is proxied by an in-Full-Burst gate — exact only when Zwei is the team's sole Burst I",
-        "skill2: the every-5-attacks heal recovers COVER HP in-kit; whether that fires teammates' on-recovery triggers is an unverified hypothesis",
-        "unit: pierce applies only to the swapped burst cannon in-kit; modeled as unit-wide hasPierce (her pierce buffs are burst-window-scoped, so spillover onto normal shotgun fire is minimal)"
+        "burst: weapon-swap duration is kit-silent — authored 10s to match the Pierce Attacks 101 window; shot economy ~3 full-charge shots/window (1.2s charge + 1-ammo reload). Datamine duration_value '1 Shot' is ambiguous; footage-gated ⚑",
+        "burst: 'Additional Effect: Pierce' is scoped to the swapped cannon (weaponSwap.hasPierce), NOT a unit-wide flag — her normal SG shots are not pierce-tagged, so the Pierce Damage ▲ buffs feed only her swap shots + any pierce-tagged ally",
+        "skill1: 'for 1 round(s)' encoded as durationShots 1 (holder-scoped round count, no wall-clock expiry) via the durationShots primitive (helm carrier); the prior parser-baseline approximated it as 5s",
+        "skill2: the 15% Crit Rate stack's 'while in Pierce Attacks 101 status' gate is proxied by swapGate:'swapped' (no ally-buff-state primitive); exact when the swap duration equals the 10s status duration. In a sole-B1 team this coincides with Full Burst; in multi-B1 teams it correctly stays silent on rotations Zwei does not burst (an fbGate proxy would over-credit there)",
+        "skill2: 'after 5 normal attacks → Restores 7.52% of Cover HP' is UNMODELED — no cover/HP pool; cover-HP→recovery firing is an unverified hypothesis (encoding it as a heal would pump crown's on-recovery tandem off an unmeasured mechanic)",
+        "burst: swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess ⚑; base SG cadence tuple is datamine-unreliable ⚑"
       ],
       "board": null
     }

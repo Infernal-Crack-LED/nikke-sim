@@ -50,9 +50,9 @@
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
 | `critRateNormalPct` | 1 | helm |
 | `delaySec` | 3 | asuka-wille, rapi-red-hood, snow-white |
-| `durationShots` | 1 | helm |
+| `durationShots` | 2 | helm, zwei |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
-| `everyN` | 4 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
+| `everyN` | 3 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny |
 | `everyNOffset` | 1 | neon-vision-eye |
 | `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
 | `fbGate` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
@@ -103,8 +103,8 @@
 | `stageEnter` | 8 | cinderella, ein, mast-romantic-maid, mihara-bonding-chain, mint, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
-| `swapGate` | 2 | laplace, snow-white-heavy-arms |
-| `swapped` | 2 | laplace, snow-white-heavy-arms |
+| `swapGate` | 3 | laplace, snow-white-heavy-arms, zwei |
+| `swapped` | 3 | laplace, snow-white-heavy-arms, zwei |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
 | `targetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |

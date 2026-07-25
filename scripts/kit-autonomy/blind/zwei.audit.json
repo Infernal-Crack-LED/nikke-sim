@@ -1,0 +1,81 @@
+{
+  "slug": "zwei",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter / Pierce Dmg ▲20.13% 1 round",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 20.13 durationShots:1 (round-count, allies, fullBurstEnter)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter / Pierce Dmg ▲10.06% 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 10.06 durationSec:10 (allies, same block)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "normal atk in FB / Pierce ▲24.99% x3 1rnd",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shotFired + fbGate:inFb, buff pierceDamagePct 24.99 maxStacks:3 durationShots:1 (allies)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 5 normals / Restore 7.52% Cover HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "hitCount count:5 → heal (event only; HP amount not modeled — tandem/on-recovery)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter / Crit Rate ▲18.63% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstEnter, buff critRatePct 18.63 durationSec:10 (unscoped generic crit, allies)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "normal atk in Pierce-101 / Crit ▲15% x3 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "shotFired, buff critRatePct 15 maxStacks:3 durationSec:5; pierce-status gate approximated by fbGate:inFb (⚑)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Change weapon 1.2s/50.69%/300%/1ammo/Pierce",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "self weaponSwap damagePct:50.69 chargeTimeSec:1.2 chargeMultPct:300 maxAmmo:1 hasPierce:true durationSec:10⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Pierce Attacks 101: Pierce Dmg ▲25.03% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "allies: gainPierce durationSec:10 (status enables team pierce) + buff pierceDamagePct 25.03 durationSec:10"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.burst[0].effects[0].durationSec / maxShots",
+      "estimate": "durationSec:10; maxShots omitted",
+      "reasoning": "Weapon-change window and swap shot economy are kit-silent. A 1.2s-charge SG with 1 ammo over a ~10s window lands few full-charge shots; the exact count and window are UNMEASURED (ALWAYS-⚑ weapon-swap economy).",
+      "recipe": "Read burst footage: count full-charge swap shots and the swap end time; set durationSec/maxShots to what actually lands."
+    },
+    {
+      "field": "override.skill2[2] (pierce-status gate)",
+      "estimate": "approximated as fbGate:inFb",
+      "reasoning": "'while in Pierce Attacks 101 status' has no dedicated ally-pierce block gate. Pierce is granted by the burst for ~10s ≈ the FB window, so fbGate:inFb is a proxy; ungated it over-credits normal-attack crit outside the pierce window (SCOPE/TRIGGER trap).",
+      "recipe": "Confirm the pierce window vs FB window from footage; if pierce persists beyond FB, replace the proxy with the true active-window model."
+    },
+    {
+      "field": "CharacterSkills cadence (base SG pullsPerSec)",
+      "estimate": "engine default from datamine",
+      "reasoning": "SG fire cadence (and reloadFrames 111) are datamine-unreliable; effective fire rate snaps to 60fps boundaries. Round-count durations (durationShots) and hitCount:5 timing depend on it.",
+      "recipe": "Verify shots/sec from an ammo-counter read of real footage; adjust if the datamined nominal disagrees."
+    },
+    {
+      "field": "override pierceDamagePct effects (v1 plumbing)",
+      "estimate": "modeled faithfully as pierceDamagePct buffs",
+      "reasoning": "types.ts marks pierceDamagePct 'parsed but inert in v1', yet full pierce machinery (hasPierce/gainPierce/pierce tags) now exists. Whether these buffs feed the Damage-Up bucket when pierce is live is uncertain from the schema alone.",
+      "recipe": "Toggle a pierce-active fight in the harness and confirm Pierce Damage ▲ moves damage; if inert, note the whole kit contributes ~0 offensively and escalate."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}
