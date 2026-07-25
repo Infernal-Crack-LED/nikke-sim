@@ -2403,3 +2403,54 @@ Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
   nothing re-pinned; `verify.sh` green.
 
 **Player-facing patch notes: PENDING at next push** (the pre-push hook nudges `/patch-notes`).
+
+## Probe reader build-out — four hand reads replaced by scripts (2026-07-24)
+
+**Decision.** Build the readers the `/probe-processing` skill's MISSING READERS worklist named,
+rather than keep hand-reading frames. Owner-approved plan:
+`docs/handoffs/2026-07-24-probe-reader-buildout-plan.md`. Landed on branch `probe-readers`. Nothing
+here touches `src/engine/**`, `data/**` or `src/skills/overrides/**` — these are measurement
+instruments, and building one and validating it against known ground truth is ordinary work.
+
+**Why.** `/probe-processing` was regularly burning 2–3 h producing nothing, because the numpy scans
+it described in prose were re-derived by hand every run and manual Opus frame-reading is slow and
+error-prone. The design rule the plan set — *prefer deterministic CV on a fixed crop over a VLM
+read; use a VLM only where the task is genuinely semantic* — held up: the two deterministic readers
+are exact on their validation sets, and both remaining VLM readers needed an arithmetic gate.
+
+**What landed.**
+1. **`scripts/probe/scan.ts` + `scan-frames.py`** — deterministic CV Full-Burst instrument, no model.
+   Three detectors merged: the Full-Burst **drain window**, the whole-frame golden **splash**, and
+   the stage-3 **hexagon**. ~12 s per whole video on one ffmpeg decode.
+2. **`read-burst-gauge.ts --classifier cv|vlm`** (cv default), plus `--t0` so `timerSec`/`fightT`
+   are exact arithmetic from one measured anchor instead of a single-anchored VLM timer spine
+   (which needed 12–17 corrections per 60 frames).
+3. **`read-ammo.ts`** + `count-pellets.py --ammo-digits` + `scripts/probe/ammo-atlas/` — the
+   ammo-counter cadence read, for every weapon class.
+4. **`read-battle-records.ts`** — the end-of-fight screen, VLM + arithmetic checksum.
+5. **`read-popups-vlm.ts`** confidence scoring + `needsConfirmation[]`; `hit-values.ts` refactored
+   onto a shared **`hit-bands.ts`** so the printed table and the reader's in-band check cannot drift.
+
+**Evidence.** Full record in `docs/probe-runs.md` (2026-07-24).
+- FB counts: **exact on 8 of 8** recordings whose counts were measured independently and earlier
+  (11/12/13/13/13/13/14 + the soda-twinkling-bunny control's 10), every burst corroborated by a
+  second detector. The failure case that motivated the work is bounded too: on the `control/lm.MP4`
+  window where the VLM classifier reported six Full Bursts in 30 s, the CV reads 2.
+- Cadence: SMG **20.31 / 20.32 rounds/s** in two range bands, r² = 1.00 — an independent
+  reproduction of the hand read behind the 2026-07-23 SMG cadence ruling.
+- Battle Records: **37/37 numbers exact** on two screenshots.
+
+**Two corrections to previously-documented premises** (both structural, both verified by direct
+pixel measurement — they change no constant, no default and no board value):
+- The burst-gauge crop renders a **draining Full-Burst window bar**, not a filling gauge; the burst
+  gauge CHARGING is not in that crop at all. The `filling` state the VLM emitted was a prompt
+  artifact — it was offered that option and had to pick something.
+- The documented "team burst bar" (`crop=200:14:2420:478`) and "solo BURST meter"
+  (`crop=142:12:2470:488`) are **sub-strips of the gauge crop** (x 2428–2616, y 448–530), so they
+  were never an independent cross-check, and their "≥95%→<50% drop" fires when the drain crosses
+  half rather than at the burst. They are diagnostics now, excluded from the corroboration count.
+
+**Explicitly NOT claimed.** `read-popups-vlm.ts`'s auto-accept path is built but **unexercised** —
+it accepted 0 of 30 popups on the one hand-read probe available, because that unit's value bands
+overlap outright. Treat an `autoAccept` as unproven until a clean-band unit trips it. And
+`read-ammo.ts` does not yet read a small-magazine SG counter (~29% of frames on `marciana-solo`).

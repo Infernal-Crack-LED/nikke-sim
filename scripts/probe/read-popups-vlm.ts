@@ -18,6 +18,10 @@
 //                           Override for non-standard resolutions.
 //     --pos-tol <n>         dedup position tolerance, 0-1000 normalized (default 70)
 //     --time-win <s>        dedup time window = popup lifetime (default 0.7)
+//     --min-looks <n>       looks required for auto-accept (default 3)
+//     --min-agreement <f>   agreeing/total looks required for auto-accept (default 0.75)
+//     --no-band-check       skip the hit-values band check (then NOTHING auto-accepts)
+//     --band-tol <pct>      band-edge tolerance in percent (default 1)
 //     --json-mode           request response_format=json_object (only if your server supports it)
 //     --out <dir>           scratch dir for frames + raw JSON (default $CLAUDE_SCRATCH|/tmp/popup-vlm)
 //     --save <slug>         also persist a (validated, UNVALIDATED-data) ParsedProbe to docs/probe-data/
@@ -28,8 +32,36 @@
 //   llama-server -m ~/models/qwen2.5-vl-7b/Qwen2.5-VL-7B-Instruct-Q4_K_M.gguf \
 //     --mmproj ~/models/qwen2.5-vl-7b/mmproj-Qwen2.5-VL-7B-Instruct-f16.gguf --port 8090
 //
+// CONFIDENCE + AUTO-ACCEPT (2026-07-24) — so high-confidence popups skip Opus confirmation.
+// A popup persists for ~0.3-0.5s, so at --fps 5 the model gets 3-4 LOOKS at it, on DIFFERENT
+// images. Those are genuinely independent samples even from a deterministic decoder (re-running
+// the SAME frame is not — two runs over one video agreed 190/190 including their mistakes).
+//   looks       = detections in this popup's time+position window, across all values
+//   agreeing    = those that read THIS value
+//   confidence  = agreeing / looks
+//   inBand      = the value falls inside a hit-values band for the focus unit (hit-bands.ts)
+// AUTO-ACCEPT = confidence >= --min-agreement AND agreeing >= --min-looks AND inBand. Everything
+// else lands in needsConfirmation[], which Opus resolves in ONE batched frames.ts --times call.
+// A value outside every band is surfaced, not dropped: it is either a misread or an unmodelled
+// hit, and both are worth knowing about. `inBand` alone means the VALUE is corroborated; the
+// stricter auto-accept additionally requires the CLASS (normal/crit/core) to be pinned.
+//
+// VALIDATION (2026-07-24, 20 frames of `control/lm.MP4` t=45-49 vs the hand read in
+// `docs/probe-data/control-little-mermaid.json`): the gate "zero auto-accepted popups the hand
+// read disagrees with" is MET — but VACUOUSLY, because 0 of 30 popups auto-accept there.
+// little-mermaid's bands overlap outright (normal 14,664-69,913, its crit image 21,484-87,858,
+// its core image 36,660-174,782), so no value can pin a class, which is the entanglement that
+// probe's own notes describe. The first draft of the rule (looks + in-band only) auto-accepted 4,
+// of which 2 were bad — a 10,818,572 "normal" matching only core bands, and a 64,733 called
+// "crit" when 64,733 is that unit's NON-crit normal — and those two failures are what the
+// class-consistency and class-unambiguity conditions were added to catch.
+// ⇒ THE AUTO-ACCEPT PATH IS THEREFORE UNEXERCISED. Treat it as unproven until a focus unit with a
+// CLEAN, non-overlapping band actually trips it; until then this reader's practical output is the
+// ranked needsConfirmation[] list plus the batched frames.ts command that resolves it.
+//
 // Output: <out>/popup-reads.json with per-frame raw reads + deduped popups
-//   (frame#, videoT, gameT from the in-game timer, value, crit/core, position).
+//   (frame#, videoT, gameT from the in-game timer, value, crit/core, position, confidence),
+//   plus autoAccepted[] / needsConfirmation[] and the band table used.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -41,6 +73,7 @@ import {
 } from 'node:fs';
 import type { Element } from '../../src/types.js';
 import { saveParsed, type ParsedProbe, type Popup } from './parsed.js';
+import { computeHitBands, matchBands, type BandHit, type HitBandTable } from './hit-bands.js';
 
 const argv = process.argv.slice(2);
 const video = argv[0];
@@ -77,6 +110,10 @@ const apikey = flags.apikey ?? 'no-key';
 const crop = flags.crop ?? 'crop=1303:396:672:268';
 const posTol = Number(flags['pos-tol'] ?? 70);
 const timeWin = Number(flags['time-win'] ?? 0.7);
+const minLooks = Number(flags['min-looks'] ?? 3);
+const minAgreement = Number(flags['min-agreement'] ?? 0.75);
+const bandCheck = flags['no-band-check'] !== 'true';
+const bandTol = Number(flags['band-tol'] ?? 1);
 const maxTokens = Number(flags['max-tokens'] ?? 1024);
 const jsonMode = flags['json-mode'] === 'true';
 // --mock: synthetic VLM reads to exercise dedup/timer/output without a running server
@@ -384,10 +421,62 @@ function gameTAt(videoT: number): number | null {
 }
 const fightClock = timerMap.length >= 3;
 
+// ---- confidence: how many of the looks at this spot-and-instant agreed on this value ----
+// A "look" is any detection inside the popup's own time+position window. Detections there that
+// read a DIFFERENT value are disagreeing looks — that is the model reading the same pixels two
+// ways, which is exactly the signal a self-reported confidence score would not give us.
+function looksAt(c: Cluster): { agreeing: number; total: number } {
+  const t0c = c.ts[0] - timeWin / 2;
+  const t1c = c.ts[c.ts.length - 1] + timeWin / 2;
+  const cx = median(c.xs), cy = median(c.ys);
+  let total = 0;
+  for (const d of dets) {
+    if (d.videoT < t0c || d.videoT > t1c) continue;
+    if (Math.abs(d.x - cx) >= posTol || Math.abs(d.y - cy) >= posTol) continue;
+    total++;
+  }
+  return { agreeing: c.frames.length, total: Math.max(total, c.frames.length) };
+}
+
+// The band table needs a sim run, so build it once (skippable for a video with no sim support).
+let bandTable: HitBandTable | null = null;
+if (bandCheck) {
+  try {
+    bandTable = computeHitBands(focus, comp, boss);
+    console.log(`  hit-value bands for ${focus}: ${bandTable.bands.length} hit types`);
+  } catch (e) {
+    console.log(`  ⚠ could not build the hit-value band table (${(e as Error).message.split('\n')[0]}) — ` +
+      'nothing will auto-accept; pass --no-band-check to acknowledge, and confirm every popup by hand');
+  }
+}
+
 const popups = clusters
   .map((c) => {
     const videoT = median(c.ts);
     const gameT = gameTAt(videoT);
+    const { agreeing, total } = looksAt(c);
+    const confidence = Math.round((agreeing / total) * 100) / 100;
+    const bands: BandHit[] = bandTable ? matchBands(bandTable, c.value, bandTol) : [];
+    const inBand = bands.length > 0;
+    // The variant a band matched must be REACHABLE from the class the model reported: a popup it
+    // called "normal" cannot be corroborated by a band's CORE image — that is a self-contradiction
+    // whatever the true value is. (2026-07-24: this caught a 10,818,572 read as "normal" whose only
+    // matching bands were skill:core / skill:crit+core. Whether that was a real core barrage or a
+    // digit concatenation — the same run had the hallucination guard drop 6473333 and 17333, and
+    // 108,189 recurs in the neighbouring frames — the read does not corroborate itself either way.)
+    const wantVariant: Record<string, BandHit['variant'][]> = {
+      normal: ['base'], crit: ['crit'], core: ['core', 'crit+core'],
+    };
+    const classConsistent = bands.some((b) => wantVariant[c.cls].includes(b.variant));
+    // If one value sits in several variants of the same hit type, the band cannot pin the class —
+    // that is the documented entanglement (LM's normals and their crit images overlap outright).
+    // The value may still be right, but the crit/core call is NOT corroborated, so it is not
+    // auto-acceptable. Overlapping bands cannot be attributed; that rule is upstream of this one.
+    const variants = new Set(bands.map((b) => b.variant));
+    const classUnambiguous = variants.size === 1;
+    const autoAccept =
+      confidence >= minAgreement && agreeing >= minLooks &&
+      inBand && classConsistent && classUnambiguous;
     return {
       frame: c.frames[Math.floor(c.frames.length / 2)],
       videoT: Math.round(videoT * 100) / 100,
@@ -400,9 +489,31 @@ const popups = clusters
       x: Math.round(median(c.xs)),
       y: Math.round(median(c.ys)),
       seenInFrames: c.frames.length,
+      looks: total,
+      agreeingLooks: agreeing,
+      confidence,
+      inBand,
+      bands,
+      classConsistent,
+      classUnambiguous,
+      autoAccept,
+      reason: autoAccept
+        ? undefined
+        : !inBand
+          ? (bandTable ? 'value matches no hit-value band for the focus unit' : 'no band table available')
+          : !classConsistent
+            ? `read as "${c.cls}" but the value only matches ${[...variants].join('/')} band(s) — self-inconsistent`
+            : !classUnambiguous
+              ? `value sits in ${variants.size} band variants (${[...variants].join('/')}) — entangled, the class cannot be corroborated`
+              : agreeing < minLooks
+                ? `only ${agreeing} agreeing look(s), need ${minLooks}`
+                : `looks disagree (${agreeing}/${total})`,
     };
   })
   .sort((a, b) => a.t - b.t);
+
+const autoAccepted = popups.filter((p) => p.autoAccept);
+const needsConfirmation = popups.filter((p) => !p.autoAccept);
 
 // ---- output ----
 const result = {
@@ -419,6 +530,9 @@ const result = {
   timeWin,
   framesProcessed: frameFiles.length,
   fightClock,
+  confidencePolicy: { minLooks, minAgreement, bandCheck, bandTol, bandTypes: bandTable?.bands.length ?? 0 },
+  autoAccepted,
+  needsConfirmation,
   timerReads: timerMap.map((m) => ({
     videoT: Math.round(m.videoT * 100) / 100,
     gameT: m.gameT,
@@ -444,10 +558,25 @@ else
   console.log(
     '  NOTE: fight timer not read reliably — popup.t is video-relative; check timerReads.',
   );
+console.log(
+  `  AUTO-ACCEPTED ${autoAccepted.length}/${popups.length} ` +
+    `(confidence >= ${minAgreement}, >= ${minLooks} agreeing looks, in-band); ` +
+    `${needsConfirmation.length} need confirmation`,
+);
+if (needsConfirmation.length) {
+  const times = [...new Set(needsConfirmation.map((p) => p.videoT))].sort((a, b) => a - b);
+  console.log(`  confirm them in ONE batched call:\n` +
+    `    npx tsx scripts/probe/frames.ts "${video}" --times "${times.slice(0, 24).join(',')}" --region crosshair --zoom 2` +
+    (times.length > 24 ? `   (+${times.length - 24} more times in needsConfirmation[])` : ''));
+}
 
 // ---- optionally persist a (structurally validated) ParsedProbe ----
 if (saveSlug) {
-  const ppPopups: Popup[] = popups.map((p) => {
+  // Only AUTO-ACCEPTED popups are persisted: docs/probe-data/ is the tracked record, and an
+  // unconfirmed VLM read entering it is exactly what the skill forbids.
+  if (needsConfirmation.length)
+    console.log(`  --save: omitting ${needsConfirmation.length} popup(s) that need confirmation`);
+  const ppPopups: Popup[] = autoAccepted.map((p) => {
     const q: Popup = { t: p.t, value: p.value };
     if (p.crit) q.crit = true;
     if (p.core) q.core = true;
@@ -471,7 +600,9 @@ if (saveSlug) {
     fightClock: fightClock || undefined,
     popups: ppPopups,
     notes:
-      'Auto-read by scripts/probe/read-popups-vlm.ts (MVP). UNVALIDATED — confirm against hit-values.ts before trusting.',
+      `Auto-read by scripts/probe/read-popups-vlm.ts. AUTO-ACCEPTED subset only ` +
+      `(>=${minLooks} agreeing looks at >=${minAgreement} agreement, value inside a hit-values band); ` +
+      `${needsConfirmation.length} lower-confidence popup(s) were omitted and still need a frame confirmation.`,
   };
   console.log(`  saved ParsedProbe -> ${saveParsed(saveSlug, pp)}`);
 }
