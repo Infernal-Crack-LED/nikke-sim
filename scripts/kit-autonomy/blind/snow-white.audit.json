@@ -1,0 +1,105 @@
+{
+  "slug": "snow-white",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when normal attack hits 30",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "hitCount count:30 trigger, shared by both S1 blocks"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 82.8% of final ATK add. dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 82.8 → enemy; crit:true, no core, noFb default-ON"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 8.28% for 5 sec (self)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 8.28 durationSec 5 → self"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 144.73% of final ATK as dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 144.73 → enemy; no activation clause → interval; crit:true"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "using skill during FB → Crit ▲26.1%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 26.1 durationSec 10 → self; fbGate:inFb on interval trigger"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Change the weapon in use (self)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap on burstCast → self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Time: 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeTimeSec 5"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage: 499.5% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 499.5"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Full Charge Damage: 1000% of dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeMultPct 1000"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition: 1 round(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.maxAmmo 1"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Additional Effect: Pierce",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.hasPierce true (swap-scoped, not global)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[0].effects[0].durationSec",
+      "estimate": "10",
+      "reasoning": "Kit gives no swap-window length; standard Burst III Full-Burst window is 10s.",
+      "recipe": "Measure the weapon-change (sniper) window duration from a Snow White burst recording."
+    },
+    {
+      "field": "burst[0].effects[0].maxShots",
+      "estimate": "~2 charged shots (omitted; time-bounded by durationSec)",
+      "reasoning": "Swap shot economy is kit-silent; 5s charge + 1 ammo (reload between) yields roughly 2 full-charge shots in a ~10s window.",
+      "recipe": "Count full-charge sniper shots fired during the burst window in footage; set maxShots if uses-bounded rather than time-bounded."
+    },
+    {
+      "field": "burst[0].effects[0].weapon",
+      "estimate": "SR-like charge weapon (left unset)",
+      "reasoning": "Charge time + 1-round ammo implies a sniper-class swap; weapon class drives auto-core rate and range-band eligibility, but the kit does not name it.",
+      "recipe": "Identify the burst weapon class and its core/range behaviour from footage; set weapon (and pullsPerSec) if it differs from base AR."
+    },
+    {
+      "field": "skill1/skill2 trigger cadence",
+      "estimate": "engine PULLS_PER_SEC for AR; S2 recast on datamined CD",
+      "reasoning": "S1 hitCount(30) timing and S2 interval firing depend on datamine-unreliable rate_of_fire / reloadFrames / skillCooldownsSec.",
+      "recipe": "Ammo-counter shots/sec for the AR cadence; measure S2 recast interval directly from a fight."
+    },
+    {
+      "field": "flatDamage.crit (skill1 82.8%, skill2 144.73%)",
+      "estimate": "crit:true, core:false",
+      "reasoning": "RIDERCRIT rule: flat-damage riders / skill damage crit at the caster's sheet rate and receive NO core unless the text says 'core strike damage' (it does not).",
+      "recipe": "Confirm orange crit popups (and absence of red CORE HIT) on the S1/S2 damage numbers in footage."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

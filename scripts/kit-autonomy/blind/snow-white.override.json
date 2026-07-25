@@ -1,0 +1,111 @@
+{
+  "slug": "snow-white",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 82.8,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 8.28,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 144.73,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "fbGate": "inFb",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 26.1,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 499.5,
+          "chargeTimeSec": 5,
+          "chargeMultPct": 1000,
+          "maxAmmo": 1,
+          "hasPierce": true,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ burst weaponSwap durationSec=10 is an UNMEASURED estimate (kit states no swap window length).",
+    "⚑ burst swap shot-economy (charged-shots-per-window) is kit-silent; maxShots left unset, time-bounded only.",
+    "⚑ burst swap weapon CLASS is kit-silent (charge+1-ammo implies SR-like); left unset → base AR core/range-band assumed.",
+    "⚑ S1/S2 hit-count + S2 interval cadence ride the datamine-unreliable AR rate_of_fire / reloadFrames / skillCooldownsSec.",
+    "⚑ flatDamage crit:true on S1(82.8%)/S2(144.73%) follows the RIDERCRIT rule (crit at caster rate, no core) — confirm via popup colour."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. S1: two hitCount(30) blocks — an 82.8% additional-damage rider on the target and a self ATK ▲8.28%/5s. S2: interval skill damage 144.73% (enemy) plus a self Crit Rate ▲26.1%/10s gated to Full Burst ('when using this skill during Full Burst' → fbGate inFb on the same interval trigger). Burst: self weaponSwap (charge weapon, 5s charge, 499.5% base, 1000%-of-damage full charge, 1 ammo, Pierce). Pierce is scoped to the swap shots (weaponSwap.hasPierce), NOT the whole-fight hasPierce flag. flatDamage riders crit:true, core:false (no 'core strike' text); noFb left default-ON (FB by timing). Swap durationSec (10s), swap weapon class, and swap shot-economy are all kit-silent ⚑."
+}

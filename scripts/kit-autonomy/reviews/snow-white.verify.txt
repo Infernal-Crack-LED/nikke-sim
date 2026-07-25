@@ -1,0 +1,10 @@
+
+ RUN  v4.1.10 /Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-bottom-up-7-24
+
+ ✓ scripts/tests/units/snow-white.test.ts (22 tests) 15ms
+
+ Test Files  1 passed (1)
+      Tests  22 passed (22)
+   Start at  01:04:40
+   Duration  587ms (transform 92ms, setup 0ms, import 474ms, tests 15ms, environment 0ms)
+

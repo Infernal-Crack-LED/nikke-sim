@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 23,
-      "authored": 21,
+      "unit-tested": 24,
+      "authored": 20,
       "audited": 28,
       "reconciled": 4,
       "pending": 1
@@ -3436,24 +3436,28 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "S2a 144.73% was materialized as passive firing ~1x/fight (inert) -> now shotFired+swapGate (~5x/fight); S2b crit fbGate; burst charge-cannon 4995%/full-charge (1000% of 499.5% base). Pierce swap-scoped (unmodeled, no swap-pierce vocab)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/snow-white.json + scripts/kit-autonomy/manual-review/snow-white.md.",
+          "med FIDELITY (burst): S2/S4 crit rider modeled as fullBurstEnter, not the prose-literal inFb-gated interval cast",
+          "med FIDELITY (burst): Burst cannon modeled as delayed-flatDamage, not the prose-literal weaponSwap",
+          "low FIDELITY (burst): Delayed cannon does not receive Normal Attack Damage +% (inert at scope)",
+          "low FIDELITY (burst): Pierce core+body double-hit unmodeled (PIERCE_CORE_DOUBLE=false)"
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": true,
-      "evidence": "N4 confounded: 1.11",
+      "evidence": "N4 confounded: 1.11 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; provenance: cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged on all 5 kit lines",
       "date": "2026-07-13",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "DPS-chart FILLER control — control-trusted for its minimal team buffs, but own calibration is thin (one confounded read)",
+      "residual": "DPS-chart FILLER control — control-trusted for its minimal team buffs, but own calibration is thin (one confounded read) | owner spot-check (manual-review §3): (a) S2 crit fullBurstEnter vs inFb-gated interval cast; (b) burst delayed-flatDamage vs weaponSwap; (c) cannon Normal-Attack-Damage fidelity gap (inert at scope); (d) pierce core+body double-hit unmodeled (PIERCE_CORE_DOUBLE=false); (e) S2 15s first-fire phase + FB-scoping unmeasured",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
