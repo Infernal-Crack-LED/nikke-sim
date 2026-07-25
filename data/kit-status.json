@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 9,
-      "audited": 36,
+      "unit-tested": 10,
       "authored": 27,
+      "audited": 35,
       "reconciled": 4,
       "pending": 1
     },
@@ -280,23 +280,26 @@
       "weapon": "RL",
       "class": "Defender",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "REFERENCE-GRADE holds: zero drift on My-Own-Star side (all values exact, triggers correct). Findings all hasB1-gated (cannot move sole-B1 comps): dropped Everyone's-Star heal (F1 crown consumer) + DEF (F2) + Max-HP grant (F3 HP-scaler consumer). Backfilled empty unmodeled"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/anis-star.json + scripts/kit-autonomy/manual-review/anis-star.md.",
+          "low FIDELITY (skill2): hasB1 Everyone's-Star full-charge heal (1.26% of final Max HP) is unmodeled, so no recovery events fire in a dual-B1 comp — an on-recovery consumer such as crown loses the uptime this cadence would drive.",
+          "low ENCODING (burst): Burst DEF ▲55.01% is recorded in unmodeled rather than shipped as an inert defPct buff, so the value is absent from the buff table if a final-DEF ranking is ever needed for the skill2 lower-DEF target set."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": true,
-      "evidence": "Solo gauge recording — standard-launcher row confirmed (A25/A3); run A 0.94",
+      "evidence": "Solo gauge recording — standard-launcher row confirmed (A25/A3); run A 0.94 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-5) converged on all load-bearing lines (formation noB1/hasB1 fork, per-attack 120.13 rider, 40-tick Shooting Stars, casterAtkPct/casterMaxHpPct flat-adds, projectileExplosionPct 92.03, recurring 7.48s CDR)",
       "date": "2026-07-13",
       "graded": {
         "teams": 10,
         "within3pct": 6
       },
       "reference": true,
+      "residual": "hasB1 full-charge heal (1.26% MaxHP) + burst DEF 55.01% documented UNMODELED (zero-damage in validated sole-B1 scope, judge low-severity); chargeSpeedPct 30 SUBTRACTIVE (sim.ts:2560, blind 42.86 was multiplicative RECON_ERROR); reenterStage hasB1 cadence + lower-DEF target + star crit measurement-gated",
       "unmodeled": {
         "skill1": [
           "If there are no other Burst 1 allies: Effect 1: Affects self. Cancels Everyone's Star.",
