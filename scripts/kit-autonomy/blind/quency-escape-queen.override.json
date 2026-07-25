@@ -1,0 +1,196 @@
+{
+  "slug": "quency-escape-queen",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 49.58,
+          "rampSec": 6
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 25.25,
+          "rampSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 16.73,
+          "rampSec": 14
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 13.6,
+          "durationSec": 2,
+          "rampSec": 6
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 24.5,
+          "durationSec": 2,
+          "rampSec": 6
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 27.1,
+          "durationSec": 1,
+          "rampSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 49,
+          "durationSec": 1,
+          "rampSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 20.4,
+          "durationSec": 0.5,
+          "rampSec": 14
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 36.8,
+          "durationSec": 0.5,
+          "rampSec": 14
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 57.08,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 25.87,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1736.31,
+          "flavor": "distributed",
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Effects vary for each stage. Each subsequent effect triggers all effects before it:"
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ STACK STEADY-STATE (skill2, all three stages): each stage's buffs are authored at MAX-stacks magnitude (per-stack% × maxStacks) with a rampSec haircut, NOT as engine stacks. The kit's stack windows are shorter than the accrual time at any plausible SMG cadence for stages 2-3 (1s and 0.5s windows, trigger every 2 normal attacks), so true steady-state stacks are almost certainly BELOW cap. The max-stacks encoding is an UPPER BOUND and likely OVER-CREDITS stages 2-3. Recipe: log buffApply stacks/expiresFrame for stat hitRatePct+atkPct over a 90s solo run and re-author value = perStack × observed mean stacks.",
+    "⚑ EXPLORE ROUTE STAGE MECHANIC IS KIT-SILENT: the prose gates skill1's three lines on 'Explore Route Stage N at max stacks' and skill2's stages 2/3 on the same, but never defines what Explore Route stacks are, how they accrue, or their caps. Stage 1's skill2 block (the only ungated one) is what BUILDS the ladder in-game; the higher stages presumably unlock as the lower stages saturate. Modeled here as always-on-after-ramp (rampSec staircase 6/10/14s) rather than as a real gate, which OVER-CREDITS early fight time and cannot express a stage that never reaches max. Recipe: read a solo recording's buff icons/timeline for when each stage's continuous buff first appears; convert to a resource pool + resourceGate if the accrual rule is recoverable.",
+    "⚑ skill2 TRIGGER IDENTITY: 'Activates after 2 normal attacks' encoded as hitCount:2. hitCount counts ROUNDS, and this unit has hitsPerShot 2 — so hitCount:2 fires once per trigger pull, not once per 2 pulls. If the kit means 2 PULLS, the correct value is 4. Unresolved from prose. Recipe: count buffApply events per shot event in a solo run; 1:1 with shots ⇒ keep 2, 1:2 ⇒ use 4.",
+    "⚑ HIT-RATE→CORE MAGNITUDE: hitRatePct feeds the engine's hrCoreMult conversion, which is a derived (unmeasured for this unit) lift. Total hitRatePct here is large at max-stacks encoding (13.6 + 27.1 + 20.4 = 61.1 pts) so any error in the conversion slope is amplified. Recipe: HRCORE=0 vs default A/B on a solo run; compare core-bucket share against a footage core-hit count.",
+    "⚑ CADENCE TUPLE: SMG pullsPerSec / reloadFrames 81 / hitsPerShot 2 come from the datamine, a known-unreliable field. Every skill2 activation count and every sub-1s stack window depends on it. Recipe: ammo-counter read (shots/sec) from a solo recording, per the datamined-nominal-vs-effective rate rule (effective = 60/ceil(60/nominal)).",
+    "⚑ BURST DISTRIBUTED NUKE noFb: set true per the standing rule that a burst-cast instant hit lands before the FB window opens. crit:true is the default rider convention (caster's sheet rate); no core (the text does not say core strike). Recipe: popup colour read on the burst frame — orange body ⇒ crit-eligible confirmed; compare magnitude against the pre-FB vs in-FB expectation to pin noFb.",
+    "Burst self-buffs keyed to burstCast (they sit in THIS unit's own burst block and affect self), not fullBurstEnter — she is a lone Burst III, so in a multi-B3 comp fullBurstEnter would over-credit rotations she does not cast."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose (S6). Structure: skill1 = three continuous self-buffs each gated on an Explore Route stage being at max stacks — the stage mechanic is never defined in the prose, so they are modeled as passives with a staircase rampSec (6/10/14s) standing in for progressive stage saturation. skill2 = a three-stage ladder on a 2-normal-attack trigger; per the 'each subsequent effect triggers all effects before it' line, all three blocks are authored as independently active (the ladder is cumulative, not exclusive), each at per-stack% × maxStacks with the same staircase ramp. Stage 2/3 windows (1s / 0.5s) are shorter than plausible accrual time, so those are UPPER BOUNDS. burst = self Attack Damage + Reload Speed for 10s on burstCast, plus a 1736.31% distributed-flavored instant hit on the enemy (crit-eligible, FB-exempt). Reload Speed is retained as a real damage lever (shots fired), not skipped as defensive. Nothing here is calibrated to any board or footage."
+}

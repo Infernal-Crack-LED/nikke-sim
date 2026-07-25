@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 33,
-      "authored": 16,
+      "unit-tested": 34,
+      "authored": 15,
       "audited": 24,
       "reconciled": 4
     },
@@ -2971,24 +2971,26 @@
       "weapon": "SMG",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "hitRatePct lines restored from unmodeled (hard rule 4) + S1 stage-gates no longer 100% uptime; still 0.546 COLD (separate under-model, hand-tune)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/quency-escape-queen.json + scripts/kit-autonomy/manual-review/quency-escape-queen.md.",
+          "low ENGINE (burst): The nuke's crit eligibility rides an engine default on a bucket the SSOT itself marks as disputed, and the override never says so.",
+          "low FIDELITY (note): The override note's cadence premise (24 pulls/s) contradicts the live engine default of 20 pulls/s for SMG."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "run H / N: 0.77-0.86",
+      "evidence": "run H / N: 0.77-0.86 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; S5 blind test GREEN vs shipped (16 passed/5 skip, zero RED)",
       "date": "2026-07-14",
       "graded": {
         "teams": 2,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "Cold; owns a timing-rule regression, untuned",
+      "residual": "Cold; owns a timing-rule regression, untuned | stage-gate timing + stage-unlock ordering proxies (need engine stack-count-gate primitive); passive 49.58% zero-error claim conditional on stage-1 pool at max at every cast (~0.65s reload margin); distributed-crit on nuke is engine-global disputed convention",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
@@ -2998,7 +3000,8 @@
         "skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate — rebuild timing after reloads is approximate (⚑)",
         "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
         "skill2: Hit Rate stacks modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19: feeds her SMG core rate via acrForHR); in-game magnitude of the core-rate lift unmeasured (⚑)",
-        "all: cadence = datamined 24 pulls/s (SHOT rate = rate_of_fire 1440rpm/60). muzzle_count 2 → 48 bullets/s, but the shot damage SPLITS over the 2 bullets (nAM 10.12 = per-bullet 5.06 × 2 muzzles, already baked in), so throughput = 24 shots × 10.12 is self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (⚑). Her flag-off HOT baseline is the kit (Explore-Route stage-2/3 parallel-build over-credit, ⚑2), not cadence — deferred to the kit audit."
+        "all: cadence = EFFECTIVE 20 pulls/s (SMG frame quantization DEFAULT-ON since 2026-07-23: rate_of_fire 1440rpm = 2.5 frames → ceil 3 = 20.0/s, ammo-counter MEASURED; 24/s is the un-quantized SMGRATE=24 revert arm only). muzzle_count 2 → 40 bullets/s, but the shot damage SPLITS over the 2 bullets (nAM 10.12 = per-bullet 5.06 × 2 muzzles, already baked in), so throughput = 20 shots × 10.12 is self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (⚑). Kit-autonomy gauntlet 2026-07-25 (S7 judge): every proxy + stack window re-derived at 20/s — all still saturate, encoding cadence-robust. Her flag-off HOT baseline is the kit (Explore-Route stage-2/3 parallel-build over-credit, ⚑2), not cadence.",
+        "burst: the 1736.31% distributed nuke carries no explicit crit field, so it inherits the engine crit-ON default for function damage (crit at the caster rate); damage-calculation §1 marks distributed-damage crit as disputed. Kit-autonomy gauntlet 2026-07-25 (S7 judge, low severity): documented, number unchanged. Resolution is engine-global (settle once for all distributed carriers): on a focus recording of her burst, read the nuke popup colour/icon across several casts — orange + icon = crit-eligible, white-only across many casts = crit-exempt; a crit/non-crit popup PAIR at ×1.5 settles it outright."
       ],
       "board": {
         "records": [
