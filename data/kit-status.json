@@ -1197,23 +1197,26 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "signature pellet-fix-1 consolidation modeled + engine-verified (regression anchor intact); all values verbatim. F3 note first-half STALE (contradicts model). F7 consolidated-shot gauge-gen per-shot-vs-per-pellet ⚑ (rotation-relevant)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/dorothy-serendipity.json + scripts/kit-autonomy/manual-review/dorothy-serendipity.md.",
+          "med FIDELITY (skill1): Landed-pellet accrual makes the consolidation episode count fall ~1.5–2× below the solo measurement the fired-pellet accrual was calibrated to; the conflict is recorded but unresolved.",
+          "low FIDELITY (skill1): Documentation-only: the override note's lead paragraph is superseded text that states 'Pellet count fixed at 1' and 'Gains Pierce' are NOT modeled, contradicting the consolidation block shipped below it."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "SG pellet-falloff calibrated on naga/dorothy/noir triple; run H 0.99",
+      "evidence": "SG pellet-falloff calibrated on naga/dorothy/noir triple; run H 0.99 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (10 FAITHFUL + 2 DOCUMENTED_GAP); cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-5) converged on all 11 load-bearing lines; consolidation primitive + measured pelletFraction 1.0 full-shot carry + fullBurstEnter-vs-burstCast keying confirmed; judge ruled driver strictly more faithful than blind",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
         "within3pct": 1
       },
       "reference": false,
+      "residual": "spot-check consolidation episode CADENCE: landed vs fired pellet accrual (~1.5-2x; solo re-validation; fix in BAND_SG_HIT_FRAC landing fraction, NOT the 80 threshold); SG-spray under-model residual is shared (noir-localized); note lead-paragraph documentation contradiction (low)",
       "unmodeled": {
         "skill1": [
           "Hit 160 pellets: Expands Pierce range 200% 3 rounds",
@@ -1230,12 +1233,12 @@
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.8683
+            "ratio": 0.8676
           }
         ],
         "n": 2,
-        "mean": 0.9152,
-        "mad": 0.0848,
+        "mean": 0.9148,
+        "mad": 0.0852,
         "band": "±15%",
         "temp": "COLD ▼"
       }
