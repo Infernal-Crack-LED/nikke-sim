@@ -1,0 +1,126 @@
+{
+  "slug": "naga",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "requiresShielded": true,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 85.17,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "coreDamagePct",
+          "value": 40.07,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 16.18,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "requiresShielded": true,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 31.02,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Restores 14.57% of Cover HP."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Both shield-gated blocks (S1 core +85.17%, burst ATK +31.02%) are INERT unless another unit sets a shield on naga — her own kit sets none. On a comp with no shielder the modeled contribution collapses to the S2 core buff + the 16.18% burst ATK. Uptime is entirely a function of the ally shielder's cadence; requiresShielded has no duration decay here because the shield source is external.",
+    "⚑ S1 trigger identity: the kit gives the core buff an activation clause ('when a Shield is set') but naga cannot self-satisfy it. Authored as passive+requiresShielded (continuous while shielded) rather than a shield-application trigger with a 10s window — these diverge whenever the ally shield is intermittent. If the engine has a shield-application trigger, the 10s duration implies the buff should REFRESH per shield application, not hold continuously.",
+    "⚑ hitCount semantics for a 10-pellet SG: 'after 12 / 5 normal attack(s)' is authored as ROUNDS (trigger pulls), per the schema's 'counts ROUNDS not pulls' note read as one-bullet-per-pull for a non-MG. If the engine counts SG pellet HITS instead, the 5-hit S2 fires ~10x more often (every ~half shot) and the buff becomes permanent uptime rather than intermittent — a large swing in the S2 core buff's effective value.",
+    "⚑ coreDamagePct stacking: S1 (85.17%) and S2 (40.07%) both land on the same stat for overlapping ally sets; assumed additive in the core bucket with no cap. Not stated in the kit."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Naga is a core-damage supporter: two coreDamagePct grants (S1 all-allies 85.17%/10s shield-gated, S2 top-2-ATK 40.07%/5s on every 5 normals) plus a burst caster-scaled ATK grant that doubles (16.18% → +31.02%) while shielded. Both shield-gated blocks use requiresShielded and are inert without an external shielder — this is the single largest uncertainty in the model. The S1 Cover-HP restore is unmodeled (v1 has no cover-HP pool and it is not a unit heal, so it emits no recovery event); the S2 lowest-HP heal IS modeled as a heal effect per the tandem rule, since it drives teammates' on-recovery triggers even though no HP pool exists. Burst Pierce is a gainPierce effect (10s, self) rather than the whole-fight hasPierce flag, because the kit scopes it to the burst window. FB-by-timing left default ON; noFb not set (unmeasured)."
+}

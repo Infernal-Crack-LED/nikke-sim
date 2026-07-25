@@ -1,18 +1,16 @@
 {
-  "note": "Tier audit (Bossing A). Naga's headline buffs are SHIELD-GATED and now ride the REAL shield machinery (owner ruling 2026-07-20: default OFF, require a shielder — replaces the old 'with shielder' default-on mode toggle; kit-audit 2026-07-20 gotchas 1+2). S1 'Activates when a Shield is set in front of this unit' = the {kind:'shielded'} event trigger: fires when ANY ally's 'shield' effect targets naga (emitters today: crown burst 15s, blanc hitCount-120 5s, delta-ninja-thief self-only [never naga], rei-ayanami Fire-allies [naga is Electric — never her]), granting all allies coreDamagePct 85.17 for 10s. Burst 'Activates if a Shield is set in front of this unit' = burstCast + requiresShielded (shield-state window from the emitter's durationSec) → casterAtkPct 31.02 rides her burst only while a shield window covers her; the 16.18 line stays unconditional. No shielder in comp → both blocks inert (the faithful default). ⚑ UPTIME PROXY: S1 uptime now inherits the shielder's shield cadence (crown: burstCast→~full rotation coverage; blanc: every 120 team hits, 5s windows) — unmeasured vs real in-game shield uptime; recipe: naga+crown focus video, compare the 85.17% buff-icon windows to crown's shield icon. S2 core-damage 40.07%/5s per 5 of her hits (SG ~1.5 pulls/s * 10 pellets... hitCount counts hits; kept parser-faithful) to 2 top-ATK allies. Heals/cover restore skipped. Her SG pellets: hitsPerShot from DB governs hitCount cadence. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "Tier audit (Bossing A). Naga's headline buffs are SHIELD-GATED and now ride the REAL shield machinery (owner ruling 2026-07-20: default OFF, require a shielder — replaces the old 'with shielder' default-on mode toggle; kit-audit 2026-07-20 gotchas 1+2). S1 'Activates when a Shield is set in front of this unit' = the {kind:'shielded'} event trigger: fires when ANY ally's 'shield' effect targets naga (emitters today: crown burst 15s, blanc hitCount-120 5s, delta-ninja-thief self-only [never naga], rei-ayanami Fire-allies [naga is Electric — never her]), granting all allies coreDamagePct 85.17 for 10s. Burst 'Activates if a Shield is set in front of this unit' = burstCast + requiresShielded (shield-state window from the emitter's durationSec) → casterAtkPct 31.02 rides her burst only while a shield window covers her; the 16.18 line stays unconditional. No shielder in comp → both blocks inert (the faithful default). ⚑ UPTIME PROXY: S1 uptime now inherits the shielder's shield cadence (crown: burstCast→~full rotation coverage; blanc: every 120 team hits, 5s windows) — unmeasured vs real in-game shield uptime; recipe: naga+crown focus video, compare the 85.17% buff-icon windows to crown's shield icon. S2 core-damage 40.07%/5s per 5 of her hits (SG ~1.5 pulls/s * 10 pellets... hitCount counts hits; kept parser-faithful) to 2 top-ATK allies. Cover restore skipped (cover-object repair, NOT unit HP — encoding it as a unit heal would spuriously feed on-recovery consumers; faithful = unmodeled verbatim). Her SG pellets: hitsPerShot from DB governs hitCount cadence. [materialized 2026-07-16: skill2 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] Kit-autonomy gauntlet 2026-07-25: discharged the prior audit's open hard-rule-2 finding — the S2 'recover 9.58% final Max HP' heal (every 5 of her hits, 2 lowest-HP allies) is NOW MODELED as a heal EVENT (trigger hitCount 5 → alliesLowestHp count 2 → heal), i.e. a tandem recovery feed: it fires teammates' on-recovery triggers (Crown-type 'when recovery takes effect'). Probe-verified load-bearing in crown comps (crown's 20.99 team Attack Damage recovery buff fires 24→1704×; carry +35.8M) and BYTE-IDENTICAL in the graded comp (N2 modernia wind — no recovery consumer there). Only the HP MAGNITUDE (9.58% of caster final Max HP) remains unencoded — the engine heal effect carries no HP amount (prika precedent). The burst self-Pierce 'Gains Pierce for 10 sec' is NOW MODELED as gainPierce durationSec:10 on burstCast/self (timed window, NOT a whole-fight hasPierce flag): it Pierce-tags naga's attacks for 10s post-cast so any Pierce Damage ▲ buff landing on her goes live. Damage-INERT at scope lock (naga is SG; the only pierceDamagePct source in her graded comp, d-killer-wife, targets SR allies only — verified byte-identical totals with the block removed), modeled for kit completeness per the alice/prika Pierce-tag convention.",
   "unmodeled": {
     "skill1": [
       "Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP."
     ],
-    "skill2": [
-      "Activates after landing 5 normal attack(s). Affects 2 ally unit(s) with the lowest HP percentage. Recovers 9.58% of the skill user's final Max HP as HP."
-    ],
-    "burst": [
-      "Affects self. Gains Pierce for 10 sec."
-    ]
+    "skill2": [],
+    "burst": []
   },
   "caveats": [
-    "skill1/burst: shield-gated lines (coreDamagePct 85.17, casterAtkPct 31.02) fire only off REAL shield events/state (owner-ruled default-off 2026-07-20) — uptime inherits the shielder's shield cadence, unmeasured vs in-game (⚑)"
+    "skill1/burst: shield-gated lines (coreDamagePct 85.17, casterAtkPct 31.02) fire only off REAL shield events/state (owner-ruled default-off 2026-07-20) — uptime inherits the shielder's shield cadence, unmeasured vs in-game (⚑)",
+    "skill2: the 9.58% heal is modeled as a recovery-feed EVENT only (tandem rule — fires teammates' on-recovery triggers); the HP MAGNITUDE (9.58% of caster final Max HP) is not encoded — the engine heal effect carries no HP amount (gauntlet 2026-07-25, prika precedent). 'lowest HP%' resolves to the leftmost 2 allies (v1 has no HP pool — documented stand-in; damage-inert except via the recovery feed)",
+    "burst: self-Pierce is modeled as a timed gainPierce window (10s post-cast); damage-INERT at scope lock — naga is SG and no pierceDamagePct source lands on her in the graded comp (d-killer-wife's targets SR allies only), verified byte-identical totals with the block removed (gauntlet 2026-07-25)"
   ],
   "skill1": [
     {
@@ -52,6 +50,22 @@
           "durationSec": 5
         }
       ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "heal"
+        }
+      ]
     }
   ],
   "burst": [
@@ -86,6 +100,21 @@
           "kind": "buff",
           "stat": "casterAtkPct",
           "value": 31.02,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
           "durationSec": 10
         }
       ]

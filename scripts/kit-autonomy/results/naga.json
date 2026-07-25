@@ -1,0 +1,116 @@
+{
+  "slug": "naga",
+  "kitDescription": "Naga is an Electric shotgun Supporter (Burst II) whose job is to make the team's core hits hurt more. While she fires, every few shots she hands the two highest-ATK allies a +40.07% core-damage buff for 5 seconds and heals the two lowest-HP allies for 9.58% of her own max HP, and every 12 shots she repairs the whole team's cover. If an ally puts a shield on her, she upgrades that support massively: all allies get +85.17% core damage for 10 seconds each time a shield lands on her. Her burst gives herself Pierce for 10 seconds and grants every ally a flat attack boost worth 16.18% of her own ATK for 10 seconds — plus a second boost worth another 31.02% of her ATK if a shield is on her at the moment she bursts. With no shielder in the squad, the two biggest lines of her kit (the +85.17% core damage and the +31.02% ATK) simply never turn on, and she is left as a modest core-damage and ATK support.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "s2a 'the trigger counts ROUNDS, not SG pellets' (procs = coreBuffs(40.07)/2 must be <= 120): REAL divergence. The driver's override is kit-literal (hitCount count:5), but the engine increments hitCount by hitsPerShot (SG = 10 landed pellets/shot, sim.ts:2905), so the block fires ~1.5x per SHOT (~300+ procs/180 s) instead of once per 5 shots (~45). Blind S5 and blind S6 and the S2b fable spec ALL independently read the prose as rounds; the driver kept the engine's SG convention and documented it. This is the only RED that maps to a real prose-vs-behavior gap.",
+      "s1b 'exists and is GATED, not absent' (delete requiresShielded -> 85.17 fires): fails because the driver keys s1b to the {kind:'shielded'} APPLICATION trigger, not a requiresShielded state gate. Not a driver defect — the blind S6 author flagged this exact alternative themselves ('if the engine has a shield-application trigger ... re-key skill1[0]'), and the cross-family S2b review independently ruled 'Activates WHEN a Shield is set' = application-triggered. RECON_ERROR against the driver.",
+      "'naga casts her own burst' (non-vacuity, >=4 casterAtkPct applies): fails on the PRISTINE fixture only — controlComp('naga') seats crown (cd 20, leftmost B2) ahead of naga, so naga takes 0 Burst-II casts and every burst assertion in the blind file is vacuous. Blind fixture defect; the driver's re-seating is the correct repair.",
+      "s1b 'is INERT with no shield source in the comp': fails on the PRISTINE fixture only — crown's burst emits a shield, contradicting the blind author's own stated premise that liter/crown/naga/helm contains no shielder. Blind fixture defect, self-contradictory as written."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "After 12 normal attacks: Cover HP 14.57%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim (unmodeled.skill1), reason in note: cover-object repair, not unit HP; encoding it as a heal would spuriously feed on-recovery consumers",
+        "blindSaid": "S6 blind: identical unmodeled entry. S2b: UNMODELED, and explicitly names OVER-modeling (as a unit heal) as the adversarial direction here.",
+        "formulaCheck": "v1 has no cover-HP pool; a `heal` effect would emit recovery EVENTS at a 12-hit cadence and over-credit Crown-type 'when recovery takes effect' consumers. Faithful = leave it out. Three-way agreement.",
+        "fireRateOk": true,
+        "explanation": "Correctly skipped, recorded verbatim, and the skip is the harder/adversarially-correct call. Nit only: the unmodeled string carries the older fan text ('after landing 12', \"Cover's Max HP\") rather than the current blablalink prose ('after 12', 'Cover HP') — accepted drift per the prose-migration convention, but it is not literally verbatim against data/characters.json."
+      },
+      {
+        "kitLine": "When Shield set: core dmg +85.17% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "{kind:'shielded'} event trigger -> target allies -> buff coreDamagePct 85.17 durationSec 10; inert with no shielder (owner-ruled default-off 2026-07-20); uptime ⚑-flagged with a measurement recipe",
+        "blindSaid": "S6 blind authored {kind:'passive'} + requiresShielded (continuous while shielded) but FLAGGED the alternative itself with the exact re-key recipe. S2b fable independently ruled 'Activates WHEN a Shield is set' = the application TRIGGER, 10 s from each application, refreshing — and warned the driver must not approximate it with a requiresShielded gate.",
+        "formulaCheck": "game-mechanics.md §9: 'when a Shield is set' lines fire on the shield-application EVENT (`shielded` trigger); 'if a Shield is set' lines use `requiresShielded`. The prose distinction is exactly the engine's two primitives, and the driver is the only one of the three that uses both correctly and distinctly (s1 = event, burst = state gate). coreDamagePct routes into the Major bucket's core term — correct bucket, and it is core-scoped, not generic damage.",
+        "fireRateOk": true,
+        "explanation": "Driver's encoding is endorsed by the cross-family S2b spec and by the blind author's own flag; the blind's shipped choice is the divergence, not the driver's. Verified to fire on all 4 allies for exactly 10 s in a blanc comp, and 0x in the shielder-less comp. ⚑ residual (documented): real in-game shield uptime vs the emitter's modeled shield cadence is unmeasured."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "After 5 normal attacks: core +40.07% 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "hitCount count:5 -> alliesTopAtk count:2 -> coreDamagePct 40.07 / 5 s; note records that the engine's hitCount counts HITS (SG hitsPerShot 10), i.e. ~1.5 procs per shot, 'kept parser-faithful'",
+        "blindSaid": "S6 blind: byte-identical block, plus a ⚑ caveat that if the engine counts pellet HITS the buff becomes near-permanent uptime. S2b fable: same block, and named pellet-counting as THE nearest-wrong model, demanding a test that pins absolute proc cadence to naga's shot events.",
+        "formulaCheck": "The encoded values (count 5, top-2-ATK, 40.07, 5 s, core-scoped) are kit-literal and route to the correct Major-bucket core term. The divergence is engine-side execution: hitCount increments by hitsPerShot, so the prose's '5 normal attacks' (5 trigger pulls, 40 frames apart) becomes 5 pellet-hits (~0.7 of one pull). Damage consequence is near-nil HERE: at ammo 9 / 40 f cadence / 111 f reload the worst rounds-based inter-proc gap is 4x40+111 = 271 f = 4.5 s, inside the 5 s window, so both readings give ~full uptime; the only real difference is the first proc landing at ~0.4 s instead of ~3.3 s.",
+        "fireRateOk": false,
+        "explanation": "Fires, and fires far MORE often than the prose implies (~10x), not less. Encoding is faithful; the deviation lives in the repo-wide SG hitCount convention and is documented by the driver in both the override note and the adapted-test header (A4). Ranked as gotcha #1 because two independent cross-family derivations both read the prose as ROUNDS — this deserves an owner ruling at the engine level, not a per-unit patch. Duration semantics verified as real (5 s pinned; 0.2 s counterfactual moves the board)."
+      },
+      {
+        "kitLine": "After 5 normal attacks: heal 9.58% MaxHP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "hitCount count:5 -> alliesLowestHp count:2 -> {kind:'heal'} (no amount); note + caveats record that the HP magnitude is unencoded (engine heal carries no amount, prika precedent) and that 'lowest HP%' resolves to the leftmost 2 as a documented stand-in; probe-verified load-bearing (crown recovery buff 24 -> 1704 fires, carry +35.8M) and byte-identical in the graded comp",
+        "blindSaid": "S6 blind: identical block (heal, no amount). S2b fable: FAITHFUL and LOAD-BEARING via the tandem rule, with the warning that the leftmost-2 stand-in becomes load-bearing whenever an on-recovery consumer sits outside those slots.",
+        "formulaCheck": "Correct per the tandem rule — a heal is never inert on isolation because the recovery EVENT drives Crown-type 'when recovery takes effect' consumers. Three residual gaps, all recorded: (a) the 9.58%-of-caster-final-MaxHP magnitude is unrepresentable (no HP pool, no amount field); (b) 'lowest HP percentage' is indeterminate in v1 (nothing takes damage) so the stand-in is arbitrary; (c) the same pellet-hit cadence inflates the feed ~10x (~450 vs ~45 events) — a ~10 s recovery buff is probably saturated either way, but that is unverified.",
+        "fireRateOk": false,
+        "explanation": "Modeled as an event feed and proven load-bearing by a real isolation (removing it collapses crown's recovery buff by ~70x), which discharges the prior audit's open hard-rule-2 finding. Categorised DOCUMENTED_GAP rather than FAITHFUL only because the HP magnitude and the target-resolution stand-in are unrepresentable in v1; both are recorded in `caveats`, not silently dropped."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Self: Gains Pierce for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> self -> {kind:'gainPierce', durationSec:10}; top-level hasPierce absent; caveat records it is damage-INERT at scope lock (verified byte-identical totals with the block removed)",
+        "blindSaid": "S6 blind: identical block. S2b: FAITHFUL, timed gainPierce NOT the static hasPierce flag, keyed to burstCast not fullBurstEnter. S5 blind skipped the damage-side check as a GAP for the same reason the driver did.",
+        "formulaCheck": "game-mechanics.md §11: Pierce Damage ▲ is a DamageUp-bucket entry that benefits a unit during a timed `gainPierce` window (pierceUntilFrame). No pierceDamagePct source reaches SG naga in the graded comp (d-killer-wife targets SR allies), so the tag is correctly inert — modeled for kit completeness per the alice/prika convention.",
+        "fireRateOk": true,
+        "explanation": "Structurally pinned three ways (trigger burstCast, target self, durationSec 10, hasPierce false). Both nearest-wrongs (whole-fight hasPierce; fullBurstEnter keying) are excluded structurally. The damage-side observable is a genuine v1 GAP, documented and independently skipped by the blind author."
+      },
+      {
+        "kitLine": "All allies: ATK +16.18% of user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> allies -> casterAtkPct 16.18 / 10 s, unconditional; tested to fire bursts x 4 allies in BOTH the shielded and shielder-less comps",
+        "blindSaid": "S6 blind: identical. S2b: FAITHFUL, and named `atkPct` (scaling off each TARGET's ATK) as the nearest-wrong that over-credits high-ATK carries.",
+        "formulaCheck": "damage-calculation.md §1a: 'ATK ▲ X% of caster's ATK' converts at apply time to a FLAT add of the caster's ATK x X, outside the recipient's (1+ATK%) sum — so it does not dilute. `casterAtkPct` is the correct stat; the driver's tests read the emitted value as a flat ATK number (~16.1k off naga's ~99.7k Supporter staticAtk), which is the harness-correct signature.",
+        "fireRateOk": true,
+        "explanation": "Fires once per ally per naga burst, 10 s duration pinned, all 4 targets (self included, matching 'Affects all allies'). Discriminated against the atkPct misencode by a counterfactual that moves ada's damage."
+      },
+      {
+        "kitLine": "If Shield set: ATK +31.02% of user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + requiresShielded -> allies -> casterAtkPct 31.02 / 10 s; 0 fires in the shielder-less comp (where naga still casts 12x), every-burst fires under a scaffolded shield window, leaks on every burst when the gate is deleted, and the flat value is exactly 31.02/16.18 x the 16.18 line",
+        "blindSaid": "S6 blind: identical block including requiresShielded. S2b: FAITHFUL — 'Activates IF a Shield is set' is a cast-time STATE GATE (requiresShielded), explicitly contrasted with skill1's application trigger; nearest-wrong is dropping the gate for a permanent 47.2% total.",
+        "formulaCheck": "game-mechanics.md §9 gives the exact two-primitive split, and the driver is the only derivation that applies BOTH primitives distinctly across the two shield clauses ('when' -> shielded event, 'if' -> requiresShielded state). Owner-ruled default-off (2026-07-20) is honoured: shieldless comps see zero contribution.",
+        "fireRateOk": true,
+        "explanation": "The strongest-tested line in the packet: gate-closed, gate-open, gate-deleted, and magnitude-ratio arms all present, and the cast-cadence confound is explicitly excluded (naga bursts 12x in the closed-gate comp and still emits zero). Nothing to fix."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2",
+      "summary": "The engine's hitCount counts LANDED PELLETS for a shotgun (increments by hitsPerShot), so naga's two 'after 5 normal attack(s)' blocks fire ~1.5x per SHOT instead of once per 5 shots — roughly 10x the prose cadence.",
+      "evidence": "Kit: 'Activates after 5 normal attack(s).' Engine: hitCount += hitsPerShot per shot (sim.ts:2905); naga hitsPerShot 10, rate_of_fire 90 (40 f/shot), ammo 9, reloadFrames 111. Driver: kept count:5 and documented 'hitCount counts hits; kept parser-faithful' (override note) + A4 in the adapted test header. Blind S6: authored count:5 as ROUNDS and ⚑-flagged the alternative ('if the engine counts SG pellet HITS instead, the 5-hit S2 fires ~10x more often'). S2b fable: named pellet-counting THE nearest-wrong misread and demanded a cadence pin against shot events — which is precisely the S5 assertion the driver had to remove (A4). Both cross-family derivations read the prose as ROUNDS.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "No per-unit patch — do NOT compensate by changing count:5, which is kit-literal. This is a repo-wide `hitCount` semantics question for multi-pellet weapons and needs an owner ruling: does 'after N normal attack(s)' mean N trigger pulls (rounds) or N landed hits? Naga's own damage exposure is ~nil (worst rounds-based inter-proc gap = 4x40+111 = 271 f = 4.5 s, inside the 5 s buff window; only the first proc shifts, ~3.3 s -> ~0.4 s), but the ruling is load-bearing for every SG/MG hitCount carrier and for the heal's recovery-feed rate. Recipe if measurement is wanted: focus-video naga, count buff-icon appearances of the 40.07% core buff against her ammo counter over one magazine — 1 appearance per ~5 rounds confirms ROUNDS, ~1-2 per round confirms HITS."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "The 9.58% heal is modeled as an amountless recovery EVENT, and 'the 2 allies with the lowest HP percentage' resolves to the leftmost 2 slots — so which teammates receive the recovery feed is a slot artifact, not a kit-driven choice.",
+      "evidence": "Kit: 'Affects 2 ally unit(s) with the lowest HP percentage. Recovers 9.58% of the skill user's final Max HP as HP.' Engine: the `heal` effect carries no HP amount (prika precedent) and v1 has no HP pool, so 'lowest HP%' is indeterminate. Driver caveat records both. S2b independently warned: 'the stand-in choice must be shown damage-inert UNLESS an on-recovery consumer sits in a specific slot — then which 2 units receive the heal IS load-bearing.'",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Leave as-is for naga (byte-identical in the graded comp, and the driver's crown probe puts the consumer inside the leftmost 2 by construction). Needs measurement/primitive work, not a number: (a) an HP-pool primitive before 'lowest HP%' can resolve honestly; (b) if any future comp seats an on-recovery consumer outside slots 0-1, re-verify the feed reaches it rather than assuming. Never pick recipients to move a total."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All seven kit lines are either FAITHFUL (4) or DOCUMENTED_GAP (3) — there is no SILENT_DROP, no ENCODING error, and no undocumented divergence anywhere in this override. Ranked findings: (1) the SG hitCount rounds-vs-pellets semantics, which is a real prose-vs-engine gap, is documented by the driver, is engine-wide rather than naga-specific, and is nearly damage-inert here because the rounds-based 4.5 s worst-case proc gap already sits inside the 5 s buff window; (2) the amountless heal + leftmost-2 stand-in for 'lowest HP%', documented and blocked on an HP-pool primitive. Convergence is mechanically RED, but it decomposes cleanly and none of it counts against the driver: two red assertions are defects in the blind author's own fixture (crown monopolises the Burst-II slot so naga never casts, and crown emits a shield that contradicts the blind's own 'no shield source' premise), one is the s1b trigger disagreement where the blind author FLAGGED their own choice as provisional and the cross-family S2b fable review independently ruled for the driver's shielded-application trigger, and only the cadence bound is a genuine finding — the one the driver had to relax (A4) and recorded for this packet rather than hiding. The driver is in fact the only one of the three derivations that applies both shield primitives distinctly ('when' -> shielded event trigger, 'if' -> requiresShielded state gate), which is exactly what the mechanics SSOT §9 specifies. Discrimination is sound: every load-bearing line carries a counterfactual that moves the board (gate delete leaks the 31.02 line; alliesTopAtk -> allies reaches 4 targets; casterAtkPct -> atkPct moves the carry; count 5 -> 200 drops the total; heal removal collapses crown's recovery buff ~70x), and the two skipped assertions are honest v1 GAPs (cover-HP pool, pierceDamagePct inert) that the blind author skipped for the same reasons. Nothing must change for GO. Same-model residual the owner should spot-check: both opus blinds AND the fable review read 'after 5 normal attack(s)' as trigger pulls while the shipped engine counts landed pellets — three derivations agreeing on the prose reading and the engine doing something else is the one place where agreement is not evidence, so the hitCount-for-multi-pellet-weapons convention deserves an explicit owner ruling (buff-icon-vs-ammo-counter read on a naga focus video is the cheap instrument); secondarily, the s1 85.17% uptime remains a ⚑ inherited from the modeled shielder cadence and is unmeasured against real in-game shield uptime.",
+  "model": "claude-opus-5"
+}

@@ -25,7 +25,7 @@
 | --- | --- | --- |
 | `advantageVs` | 1 | rapi-red-hood |
 | `alliesLowestAtk` | 1 | liberalio |
-| `alliesLowestHp` | 1 | blanc |
+| `alliesLowestHp` | 2 | blanc, naga |
 | `alliesOfClass` | 0 | _none_ |
 | `alliesOfElement` | 8 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, guillotine-winter-slayer, guilty, maiden-ice-rose, rei-ayanami |
 | `alliesOfElementWeapon` | 2 | ark-ranger-black, trina |
@@ -59,7 +59,7 @@
 | `flatDamage` | 47 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
-| `gainPierce` | 4 | ade-agent-bunny, asuka, grave, milk-blooming-bunny |
+| `gainPierce` | 5 | ade-agent-bunny, asuka, grave, milk-blooming-bunny, naga |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 4 | alice, mari, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |

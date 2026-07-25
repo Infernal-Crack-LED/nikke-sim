@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 38,
+      "unit-tested": 39,
       "authored": 14,
-      "audited": 21,
+      "audited": 20,
       "reconciled": 4
     },
     "tier": {
@@ -2652,36 +2652,37 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "1.175 HOT cause: shield-gated buffs (S1 core-dmg 85.17, burst casterAtk 31.02) gated by a MODE defaulting to 'with shielder' -> fire UNCONDITIONALLY unless comp set no-shielder (opposite of kit). Fix: {kind:shielded} event gate (primitive exists). F4 S2 heal in unmodeled violates hard rule 2 (crown consumer). Backfilled dropped Pierce line"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/naga.json + scripts/kit-autonomy/manual-review/naga.md.",
+          "med ENGINE (skill2): The engine's hitCount counts LANDED PELLETS for a shotgun (increments by hitsPerShot), so naga's two 'after 5 normal attack(s)' blocks fire ~1.5x per SHOT instead of once per 5 shots — roughly 10x the prose cadence.",
+          "low FIDELITY (skill2): The 9.58% heal is modeled as an amountless recovery EVENT, and 'the 2 allies with the lowest HP percentage' resolves to the leftmost 2 slots — so which teammates receive the recovery feed is a slot artifact, not a kit-driven choice."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "SG falloff + \"with shielder\" mode calibration; run C 1.06",
+      "evidence": "SG falloff + \"with shielder\" mode calibration; run C 1.06 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; 4 FAITHFUL / 3 DOCUMENTED_GAP, 0 silent drops; discharged prior hard-rule-2 finding (S2 heal tandem now modeled)",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 1
       },
       "reference": false,
+      "residual": "hitCount rounds-vs-pellets for SG (engine counts pellet-hits sim.ts:2905; 3 derivations read prose as rounds) — engine-wide owner ruling needed; S1 85.17 shield uptime unmeasured vs in-game",
       "unmodeled": {
         "skill1": [
           "Activates after landing 12 normal attack(s). Affects all allies. Restores 14.57% of Cover's Max HP."
         ],
-        "skill2": [
-          "Activates after landing 5 normal attack(s). Affects 2 ally unit(s) with the lowest HP percentage. Recovers 9.58% of the skill user's final Max HP as HP."
-        ],
-        "burst": [
-          "Affects self. Gains Pierce for 10 sec."
-        ]
+        "skill2": [],
+        "burst": []
       },
       "caveats": [
-        "skill1/burst: shield-gated lines (coreDamagePct 85.17, casterAtkPct 31.02) fire only off REAL shield events/state (owner-ruled default-off 2026-07-20) — uptime inherits the shielder's shield cadence, unmeasured vs in-game (⚑)"
+        "skill1/burst: shield-gated lines (coreDamagePct 85.17, casterAtkPct 31.02) fire only off REAL shield events/state (owner-ruled default-off 2026-07-20) — uptime inherits the shielder's shield cadence, unmeasured vs in-game (⚑)",
+        "skill2: the 9.58% heal is modeled as a recovery-feed EVENT only (tandem rule — fires teammates' on-recovery triggers); the HP MAGNITUDE (9.58% of caster final Max HP) is not encoded — the engine heal effect carries no HP amount (gauntlet 2026-07-25, prika precedent). 'lowest HP%' resolves to the leftmost 2 allies (v1 has no HP pool — documented stand-in; damage-inert except via the recovery feed)",
+        "burst: self-Pierce is modeled as a timed gainPierce window (10s post-cast); damage-INERT at scope lock — naga is SG and no pierceDamagePct source lands on her in the graded comp (d-killer-wife's targets SR allies only), verified byte-identical totals with the block removed (gauntlet 2026-07-25)"
       ],
       "board": {
         "records": [
