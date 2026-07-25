@@ -598,18 +598,25 @@
       "weapon": "AR",
       "class": "Defender",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/blanc.json + scripts/kit-autonomy/manual-review/blanc.md.",
+          "low ENCODING (burst): The override's `note` contradicts its own shipped JSON: it lists Max HP ▲31.68% under SKIPS as 'UNREPRESENTABLE ... encoding it wrong-basis on a nondeterministic target would be fudge>measured', while the burst array actually encodes it faithfully as targetMaxHpPct on alliesLowestHp. Stale text carried through the baseline merge.",
+          "med FIDELITY (skill1): The driver's B1 test asserts only that blanc fires ≥120 shots — it never proves the hitCount:120 trigger actually PROCS, nor at the right cadence. A silently mis-wired or non-firing shield block would still pass."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "same-squad gate reading (anti-death clause vs squad-membership); B1 trigger cadence unproven by driver test",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
