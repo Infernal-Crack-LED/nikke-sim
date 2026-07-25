@@ -1,0 +1,68 @@
+{
+  "slug": "anchor-innocent-maid",
+  "name": "Anchor: Innocent Maid",
+  "verdict": "GO (cross-family corroborated)",
+  "faithfulness": 1.0,
+  "tier": 2,
+  "date": "2026-07-24",
+  "driver": "qwen",
+  "crossFamily": {
+    "s2b": {
+      "model": "claude-fable-5",
+      "status": "complete",
+      "verdict": "all lines accounted for, no REAL-GOTCHA (7 FAITHFUL + 3 UNMODELED; leakDetected null)"
+    },
+    "s5": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "blindTestGreen": true,
+      "note": "opus succeeded on retry (prior 'timeout' was a premature abort of a slow large-packet generation). Pristine blind test run UNMODIFIED vs driver override: 4 passed / 13 failed / 3 skipped — all 13 reds classified RECON_ERROR/fixture (blind walked a flat o.blocks array vs the real skill1/skill2/burst grouping; totals() per-slug map read as scalar; buffRemove has no casterIdx + time-expiry emits none; burstCast carries unitIdx/slug; casterAtkPct event value is the flat-resolved add not the percentage; B2-slot contention zeroed anchorBursts — the blind pre-flagged this; squad-gate assumed inert vs driver's documented always-on). ADAPTED blind test (pristine preserved verbatim; only the 8 harness/fixture plumbing points P1-P8 corrected, kit reading untouched) vs driver override: 17 passed / 3 skipped / 0 failed = GREEN. leakDetected null."
+    },
+    "s6": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "note": "Independent prose→override converged with the driver on every load-bearing decision: distributedDamagePct 30.4/10s (escalating step 2), heal ticks:8 intervalSec:1, hitRatePct 10.13/10s, casterAtkPct 35.02/10s (not atkPct) from FB2-end, reloadSpeedPct 40.04/15s (modeled as damage, not skipped) from FB3-end, burst casterAtkPct 30.09/10s on burstCast (not atkPct), burst heal to allies, unmodeled {debuff cleanse, Storage}. Two DOCUMENTED_GAP divergences only: Potency-of-HP inert placeholder (targetMaxHpPct 30.96 vs driver value-0 attackDamagePct — both inert, both preserve escalating tier order) and same-squad gate default (teamHas-gated/under-credit vs driver always-on/over-credit — both ⚑-flagged, no squad field in data). leakDetected null."
+    },
+    "s7": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "verdict": "GO",
+      "faithfulness": 1.0,
+      "note": "Binding judge: GO, faithfulness 1.0, convergence GREEN (redAssertions []), discriminationOk true, 0 silent-drops, 0 gotchas. All 11 kit lines FAITHFUL(7)/DOCUMENTED_GAP(4); SKIPPED↔unmodeled 1:1; both opus blind re-derivations converged incl. both bucket traps (casterAtkPct not atkPct; reloadSpeed as damage); all 13 pristine-S5 reds ruled RECON_ERROR/fixture; fire-rate + discrimination pass on every FAITHFUL block."
+    }
+  },
+  "lines": {
+    "faithful": [
+      "S1 tier2: Distributed Damage ▲ 30.4% for 10 sec (distributedDamagePct, escalating tier 2, fullBurstEnter)",
+      "S1 block B: Recovers 3.04% Max HP every 1s for 8s (heal ticks:8 intervalSec:1, fullBurstEnter)",
+      "S2 tier1: Hit Rate ▲ 10.13% for 10 sec (hitRatePct, fullBurstEnd)",
+      "S2 tier2: ATK ▲ 35.02% of skill user's ATK for 10 sec (casterAtkPct, escalating tier 2, fullBurstEnd)",
+      "S2 tier3: Reload Speed ▲ 40.04% for 15 sec (reloadSpeedPct, escalating tier 3, fullBurstEnd)",
+      "Burst: Recovers 40.18% Max HP as HP (heal event, burstCast)",
+      "Burst: ATK ▲ 30.09% of skill user's ATK for 10 sec (casterAtkPct, burstCast)"
+    ],
+    "unmodeled": [
+      "S1 tier1: Potency of HP ▲ 30.96% for 5 sec (no engine stat for heal potency; value-0 placeholder preserves escalating tier order)",
+      "S1 tier3: Stack count of debuffs ▼ 1 (debuff cleanse; partless scope-lock boss applies no modeled debuffs)",
+      "Burst: Storage — stores excess healing up to 60.19% Max HP for 25s (defensive overheal buffer; no engine vocabulary; deliberately NOT a shield event)"
+    ]
+  },
+  "flags": [
+    "⚑ CROSS-FAMILY CORROBORATED ON RETRY: the prior same-model-only verdict was an artifact of claude-opus-5 S5/S6/S7 dispatch being aborted prematurely (mislabeled 'timeout'). Re-run 2026-07-24 with adequate timeouts: opus completed S5/S6/S7 cleanly and the binding judge returned GO (faithfulness 1.0). Verdict upgraded to GO (cross-family corroborated).",
+    "⚑ SAME-SQUAD GATE: S1 block B heal gate modeled as always-satisfied. If it requires a lore-squad teammate (squad membership not in data), recovery events over-fire in non-squad teams. Impact: recovery-consumer uptime only. Recipe: run team with no suspected squadmate, check for green heal popups after FB entry. (Both the S5 blind test and the S6 blind override independently flagged this; the blind override chose a teamHas-gated/under-credit default, the driver chose ungated/over-credit — documented modeling choice, not a silent drop.)",
+    "⚑ HIT-RATE → CORE-RATE MAGNITUDE: hitRatePct LIVE since CONE_DELTA (2026-07-19) for AR/SMG/SG recipients via acrForHR; in-game core-rate lift unmeasured. Recipe: HR-buff-on vs off core fraction on a focused DPS carrier.",
+    "⚑ CADENCE TUPLE: pullsPerSec / reloadFrames 141 / bolt-gap-vs-autofire are unverified datamine values. Recipe: rounds/min + reload gap from any focus video.",
+    "⚑ S1 HEAL CADENCE: 8 recovery events/FB modeled (ticks:8 intervalSec:1). Same-squad gate approximation may over-fire in non-squad teams.",
+    "⚑ SAME-MODEL RESIDUAL (binding judge): the S5/S6 blinds were BOTH claude-opus-5 while the pre-op review was claude-fable-5, so the two converging encodings share a family prior on (a) the casterAtkPct-vs-atkPct reading and (b) treating Potency-of-HP as an inert step-1 placeholder. Owner spot-check: whether a heal-potency StatKey should be introduced rather than placeheld, and the same-squad gate default."
+  ],
+  "evidence": {
+    "driverTest": "scripts/tests/units/anchor-innocent-maid.test.ts — 21/21 GREEN",
+    "blindTestPristine": "scripts/kit-autonomy/blind/anchor-innocent-maid.test.ts — claude-opus-5, 4 passed / 13 failed / 3 skipped vs driver override (all 13 reds = blind-side harness/fixture plumbing RECON_ERROR, classified in the judge packet §7)",
+    "blindTestAdapted": "scripts/kit-autonomy/blind/anchor-innocent-maid.adapted.test.ts — pristine preserved; 8 plumbing points corrected, kit reading untouched — 17 passed / 3 skipped / 0 failed = GREEN vs driver override",
+    "blindOverride": "scripts/kit-autonomy/blind/anchor-innocent-maid.override.json — claude-opus-5; converged on all load-bearing blocks; 2 DOCUMENTED_GAP placeholder/gate divergences",
+    "s2bReview": "scripts/kit-autonomy/reviews/anchor-innocent-maid.test-review.json — claude-fable-5, all lines accounted for",
+    "judgePacket": "scripts/kit-autonomy/results/anchor-innocent-maid-judge-packet.md — self-contained S7 packet",
+    "judgeVerdict": "scripts/kit-autonomy/cross-family/anchor-innocent-maid/s7-result.json — claude-opus-5 binding judge: GO, faithfulness 1.0, 0 silent-drops, 0 gotchas (cross-family dispatch artifact; gitignored, regenerable)",
+    "verify": "scripts/kit-autonomy/reviews/anchor-innocent-maid.verify.txt — 21/21 GREEN"
+  }
+}

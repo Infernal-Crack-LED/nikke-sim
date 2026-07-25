@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 7,
-      "authored": 29,
+      "unit-tested": 8,
+      "authored": 28,
       "audited": 36,
       "reconciled": 4,
       "pending": 1
@@ -200,18 +200,23 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/anchor-innocent-maid.json + scripts/kit-autonomy/manual-review/anchor-innocent-maid.md."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-24; GO (cross-family corroborated) faithfulness 1.0 (7 FAITHFUL/4 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge opus 0 silent-drops 0 gotchas; S6 blind byte-identical on all load-bearing blocks + both unmodeled lines; opus succeeded on retry (prior same-model fallback was a premature dispatch abort)",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "same-squad gate semantics; hitRatePct core-rate magnitude; cadence tuple (reloadFrames 141, bolt-gap)",
       "unmodeled": {
         "skill1": [
           "Once: Potency of HP ▲ 30.96% for 5 sec.",

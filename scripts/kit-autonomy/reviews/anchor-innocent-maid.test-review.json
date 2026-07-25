@@ -1,0 +1,167 @@
+{
+  "slug": "anchor-innocent-maid",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Once: Potency of HP ▲ 30.96% for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "healing potency (heal-amount amplifier), not a damage stat",
+      "durationSemantics": "5 s wall-clock (durationSec) — but no schema StatKey exists for heal potency",
+      "triggerIdentity": "fullBurstEnter (\"when entering Full Burst\" = ANY team FB), escalating step 1",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Dropping the line entirely AND shifting the escalation index — making Distributed Damage the step-1 effect so it fires from the FIRST Full Burst",
+      "distinguishingAssertion": "Even though this line is unmodeled, the escalating counter must still occupy step 1: assert ZERO buffApply with stat distributedDamagePct between t=0 and the SECOND fullBurstStart event. Red if the encoder collapsed the ladder.",
+      "inertness": "Toggling this line off via withPatchedOverride must move totals() by exactly 0 (heal amounts are unmodeled; potency has no consumer).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Twice: Distributed Damage ▲ 30.4% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "distributedDamagePct — boosts each holder's OWN distributed-flavor hits only, never generic Damage Up",
+      "durationSemantics": "10 s durationSec (seconds stated; not rounds)",
+      "triggerIdentity": "fullBurstEnter, escalating step 2 — first applies on the 2nd FB entry and on every FB thereafter (cumulative \"each subsequent triggers all before it\")",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Two plausible misreads: (a) encoding as attackDamagePct (generic Damage Up) — credits ALL damage of all four units; (b) applying all escalation steps from FB #1",
+      "distinguishingAssertion": "onEvent: first buffApply with stat===distributedDamagePct value 30.4 occurs at the 2nd fullBurstStart, none at the 1st (red under all-from-first). And with a carry that deals no distributed-flavor damage, totals() must be IDENTICAL with the buff present vs stripped (red under the attackDamagePct misread, which moves every bucket).",
+      "inertness": "Must move zero damage in any comp with no distributed-flavor dealer; must never touch normal/charge/core buckets.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Three times: Stack count of debuffs ▼ 1",
+      "disposition": "UNMODELED",
+      "scope": "ally debuff cleanse — defensive; v1 boss inflicts no debuffs",
+      "durationSemantics": "instant, no duration",
+      "triggerIdentity": "fullBurstEnter, escalating step 3",
+      "targetSet": "allies",
+      "nearestWrongModel": "Treating \"stack count ▼\" as a boss-debuff line (an enemy-targeted effect) or, worse, dropping step 3 and re-indexing the ladder",
+      "distinguishingAssertion": "No enemy-targeted effect and no targetStatus events from skill1; escalation steps 1-2 (esp. the 30.4% distributed buff) STILL apply at the 3rd and later FB entries (cumulative semantics — red under an only-the-Nth-step encoding, which would apply only the cleanse at FB #3).",
+      "inertness": "Zero board movement; verbatim line must appear in unmodeled.skill1.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB-enter + same-squad ally: HoT 3.04%/1s, 8s",
+      "disposition": "FAITHFUL",
+      "scope": "heal-over-time — heal AMOUNT is unmodeled but the recovery EVENTS are load-bearing (taxonomy #4: crown's on-recovery consumers sit in the control comp)",
+      "durationSemantics": "8 ticks at 1 s interval → heal effect with ticks:8, intervalSec:1 — NOT a single instant recovery event",
+      "triggerIdentity": "fullBurstEnter, statically gated by teamHas:{slugs:[same-squad members]} — the owner herself NEVER satisfies her own squad gate",
+      "targetSet": "allies (all, including self) — every ally receives the recovery events",
+      "nearestWrongModel": "Dropping the squad gate (block fires in every comp) — the HoT then pumps 8 recovery events per FB into crown's \"when recovery takes effect\" trigger and silently over-credits any comp containing crown; second misread: ticks:1 (one event instead of a sustained 8 s refresh train)",
+      "distinguishingAssertion": "In controlComp (liter/crown/carry/helm — no same-squad ally of this unit): ZERO recovery events sourced from this skill1 block, and crown's recovery-triggered buffApply count is identical with the unit present vs absent. With a same-squad slug patched into the team: exactly 8 recovery events per ally per FB, spaced 1 s (red under ticks:1).",
+      "inertness": "Must be fully inert (no events at all) in any squad-mate-less comp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Once: Hit Rate ▲ 10.13% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "hitRatePct — feeds the HR→core lift path; the STAT is kit-stated, the core-rate conversion magnitude is the ALWAYS-⚑ measured-only field",
+      "durationSemantics": "10 s durationSec",
+      "triggerIdentity": "fullBurstEnd (\"when Full Burst ends\") — NOT fullBurstEnter and NOT burstCast; escalating step 1, so it fires from the FIRST FB end",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Keying the whole skill2 ladder to fullBurstEnter — every 10 s window then covers the FB (+50%, aura-rich) interval instead of the post-FB downtime, systematically over-crediting all three effects",
+      "distinguishingAssertion": "onEvent: the first buffApply with stat===hitRatePct value 10.13 carries a timestamp ≥ the first fullBurstEnd event and its window overlaps ZERO frames where inFullBurst===true for the FB that just ended. Red under fullBurstEnter keying.",
+      "inertness": "No hitRatePct buffApply before the first fullBurstEnd.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Twice: ATK ▲ 35.02% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct — a FLAT add of 35.02% of THIS unit's (a supporter's) ATK, not a multiplier on the holder's own ATK",
+      "durationSemantics": "10 s durationSec",
+      "triggerIdentity": "fullBurstEnd, escalating step 2 — first applies at the 2nd FB end, cumulative thereafter",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Encoding as atkPct (scales each holder's OWN ATK) — for a high-ATK carry, 35.02% of their own ATK vastly exceeds 35.02% of this supporter's ATK → large over-credit; secondary misread: applying from FB end #1",
+      "distinguishingAssertion": "buffApply events show stat===casterAtkPct (value 35.02), zero atkPct buffApply from this slot; carry's post-buff effective ATK rises by the FLAT amount 0.3502 × this unit's staticAtk (identical absolute delta for every holder). First occurrence strictly after the 2nd fullBurstEnd.",
+      "inertness": "Absent entirely until the second FB has ended.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Three times: Reload Speed ▲ 40.04% for 15 sec",
+      "disposition": "FAITHFUL",
+      "scope": "reloadSpeedPct — a weapon-state modifier and therefore DAMAGE (taxonomy #6: it gates shots fired); must not be dropped as defensive/QoL",
+      "durationSemantics": "15 s durationSec (note: longer than the sibling 10 s windows — the encoder must not uniform them)",
+      "triggerIdentity": "fullBurstEnd, escalating step 3 — first applies at the 3rd FB end",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Skipping it as a \"defensive, no damage\" line (the documented Grave-class failure) — silently deflates every reload-bound carry's shot count in the post-FB windows",
+      "distinguishingAssertion": "After the 3rd fullBurstEnd, the carry's reload events inside the 15 s window are shorter (reload duration reduced by the 40.04% speed term), yielding a strictly higher shot count in that window vs the same window with the line stripped via withPatchedOverride. Red under a skip.",
+      "inertness": "No reload-duration change before the 3rd FB end.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Storage: stores excess healing, ≤60.19% MaxHP, 25s",
+      "disposition": "UNMODELED",
+      "scope": "defensive overheal-storage pool — v1 has no HP pool and the boss deals no damage; nothing consumes it",
+      "durationSemantics": "25 s pool lifetime — irrelevant while unmodeled",
+      "triggerIdentity": "burstCast (line lives in the unit's OWN burst block)",
+      "targetSet": "self (the pool is on the skill user despite the block header)",
+      "nearestWrongModel": "Encoding it as a shield effect — that would fire 'shielded' triggers on shield-synergy teammates and invent tandem credit from a pool that is storage, not a Shield",
+      "distinguishingAssertion": "ZERO shield-kind events sourced from this unit's burst in any comp; verbatim line present in unmodeled.burst.",
+      "inertness": "Must emit no events and move no totals.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 40.18% of user's Max HP as HP",
+      "disposition": "FAITHFUL",
+      "scope": "instant heal to all allies — amount unmodeled, but the recovery EVENT is the tandem payload (crown's on-recovery trigger in the control comp)",
+      "durationSemantics": "instant, single event (heal ticks:1)",
+      "triggerIdentity": "burstCast — fires ONLY on rotations THIS unit casts her burst; she is Burst II, so in any comp with another B2 (crown) the rotation may hand the B2 slot to the other unit and this line must stay silent those rotations",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Keying to fullBurstEnter — the heal (and crown's recovery-trigger refresh) then fires on EVERY team FB including rotations where the other B2 cast, over-crediting exactly per taxonomy #3",
+      "distinguishingAssertion": "onEvent: every recovery event from this burst block coincides with a burstCast event whose caster is this unit; on any rotation where the burst log shows the other B2 casting instead, ZERO recovery events from this block (red under fullBurstEnter keying).",
+      "inertness": "Silent on rotations she does not burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 30.09% of the skill user's ATK for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct — flat add of 30.09% of this unit's ATK, same caster-scaled shape as skill2 step 2",
+      "durationSemantics": "10 s durationSec — cast lands pre-FB (burst-cast timing), so the window covers the following FB",
+      "triggerIdentity": "burstCast (own burst only) — same divergence-vs-fullBurstEnter trap as the heal line; both burst lines must share the burstCast key",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "atkPct instead of casterAtkPct (multiplies each holder's own ATK — over-credits the carry), and/or fullBurstEnter keying (fires on the other B2's rotations)",
+      "distinguishingAssertion": "buffApply stat===casterAtkPct value 30.09 at the burstCast event (pre-FB timestamp), applied to all four units with the SAME flat delta; zero such buffApply on rotations the other B2 casts. Stacks additively with skill2's 35.02 casterAtkPct when windows overlap (two separate flat adds, not a merged multiplier).",
+      "inertness": "Absent on non-casting rotations.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Distributed Damage ▲30.4% (escalating step 2, FB-enter)",
+    "skill1:same-squad-gated HoT 3.04%/1s×8 (recovery-event train + teamHas gate)",
+    "skill2:Hit Rate ▲10.13% (fullBurstEnd, step 1)",
+    "skill2:ATK ▲35.02% of caster ATK (fullBurstEnd, step 2)",
+    "skill2:Reload Speed ▲40.04% 15s (fullBurstEnd, step 3)",
+    "burst:instant heal 40.18% (burstCast recovery event)",
+    "burst:ATK ▲30.09% of caster ATK 10s (burstCast)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Once: Potency of HP ▲ 30.96% for 5 sec.",
+      "Three times: Stack count of debuffs ▼ 1."
+    ],
+    "skill2": [],
+    "burst": [
+      "Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec."
+    ]
+  },
+  "notes": "Expected shared-prior misreads the driver must reconcile: (1) ESCALATION COLLAPSE — both skill1 and skill2 are Liter-style ladders ('each subsequent effect triggers all effects before it'); the two failure shapes are all-steps-from-activation-1 (over-credits the opening ~2 rotations) and only-the-Nth-step (drops earlier steps at later activations). Both must be encoded with the escalating kind, cumulative and capped at 3, and skill1's UNMODELED step 1 must still OCCUPY the ladder index (a no-op step) so the 30.4% distributed buff starts at FB #2. (2) TRIGGER SPLIT — skill1 = fullBurstEnter, skill2 = fullBurstEnd, burst = burstCast; a uniform key on any of the three is wrong, and the skill2-on-enter misread is the highest-damage one (moves all three buffs from post-FB downtime into the +50% FB window). (3) CASTER-ATK SHAPE — both ATK lines say 'of the skill user's ATK' → casterAtkPct flat adds from a supporter's ATK; atkPct would over-credit the carry substantially. (4) TANDEM HEALS — this unit is a heal battery next to crown (control comp): the burst heal is burstCast-gated and the skill1 HoT is same-squad-gated; either gate dropped turns crown's on-recovery consumers into a systematic over-credit. The HoT must be ticks:8/intervalSec:1 (a refresh train), not one event. As a B2 alongside crown, rotation B2-selection determines whether the burst block fires at all — the driver's comp choice for burst-line tests must force her to actually cast. (5) Reload Speed is damage (shot-count gate), never a defensive skip; its 15 s duration differs from the sibling 10 s windows. All magnitudes are kit-literal (DATAMINED); the only ⚑ is the systemic HR→core conversion behind hitRatePct, which is engine-global, not a per-unit guess.",
+  "model": "claude-fable-5"
+}
