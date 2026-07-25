@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 10,
-      "authored": 27,
+      "unit-tested": 11,
       "audited": 35,
+      "authored": 26,
       "reconciled": 4,
       "pending": 1
     },
@@ -377,22 +377,25 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "team buffs (180% AD / 180% casterATK) are DEAD without a B3 Electric caster present + her Wheel-of-Fortune status; grade only in mono-Electric comp"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/arcana.json + scripts/kit-autonomy/manual-review/arcana.md.",
+          "low FIDELITY (skill2): Death's 6s burstCdr is encoded and its block demonstrably fires, but NO artifact in this gauntlet demonstrates the cooldown reduction actually produces an effect — the one probe aimed at it measured zero movement."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — audit/review language only, not fight-validated",
+      "evidence": "Pure model — audit/review language only, not fight-validated | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0 (S7 opus binding judge); cross-family S2b(fable-5)/S5/S6/S7(opus-5) converged on 9 FAITHFUL + The Magician DOCUMENTED-GAP; gate FIX everyN:2off1 -> ownBurstGate:'cast' (corroborated by both blinds + engine code-verified); driver test 24/24 green",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "WoF window timing unmeasured; Death 6s burstCdr gauge-limited-inert in fixture (cadence unproven, CD-limited comp only); 180/180 grants team-conditional (need B3 Electric caster); cadence tuple datamined",
       "unmodeled": {
         "skill1": [
           "The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."
@@ -403,7 +406,7 @@
       "caveats": [
         "skill1: the 180% Attack Damage grant targets Burst 3 Electric allies who cast their Burst Skill this rotation — inert in teams without one (⚑ unmeasured team-conditional)",
         "skill2: the 180% caster-ATK 'Strength' grant has the same Burst-3-Electric-caster condition — inert in teams without one (⚑)",
-        "skill1/skill2: Wheel of Fortune gate approximated as every-2nd-Full-Burst-end (assumes she bursts every other rotation at her 40s cooldown) — unverified against a recording (⚑)",
+        "skill1/skill2: Wheel of Fortune gate modeled as ownBurstGate 'cast' on fullBurstEnd (fires iff arcana cast her burst this rotation — she is the sole Wheel-of-Fortune source); the precise WoF window timing vs FB-end is unverified against a recording (⚑). Replaced the parser-baseline everyN-2-offset-1 round-count proxy (kit-autonomy gauntlet 2026-07-24), which over-fired when she never burst and under-fired when she burst every rotation.",
         "cadence: RL fire cadence / reloadFrames 171 / 60-frame charge are unmeasured datamine values; bolt-recovery gap shipped ON, autofire unverified (⚑)"
       ],
       "board": null

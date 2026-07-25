@@ -1,0 +1,324 @@
+{
+  "slug": "arcana",
+  "leakDetected": null,
+  "override": {
+    "slug": "arcana",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "burstCasters",
+          "stage": 3,
+          "element": "Electric"
+        },
+        "ownBurstGate": "cast",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 180,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 5,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "burstCasters",
+          "stage": 3,
+          "element": "Electric"
+        },
+        "ownBurstGate": "cast",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 180,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "ownBurstGate": "cast",
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 6
+          },
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 50,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 7.5,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfElement",
+          "element": "Electric"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 10,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 300
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 10,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Wheel of Fortune status is modeled as ownBurstGate:'cast'. WoF is granted ONLY by arcana's own burst (burst block 1 targets all Electric Code allies; arcana is Electric, so she self-applies it). 'self is in Wheel of Fortune status' at Full-Burst end therefore == 'arcana cast her own burst into this rotation'. Note the literal-duration race: WoF is 10 s from the stage-2 cast, while Full Burst ends ~10 s after the FB window OPENS (which is after her cast) — read literally the status has already expired at FB end and the entire gated half of the kit would be dead. Kit intent is clearly that it is live, so the gate is modeled as satisfied; verify against footage before trusting.",
+      "⚑ ownBurstGate is documented in types.ts as composing with a fullBurstEnter trigger; here it is used with fullBurstEnd. Confirm the engine evaluates the rotationCasters set at FB end the same way before trusting the gated blocks.",
+      "⚑ VISIBILITY: both 180% blocks (skill1 attackDamagePct, skill2 casterAtkPct) resolve to burstCasters{stage:3, element:'Electric'}. On any comp with no Burst-III Electric ally that set is EMPTY and the two largest numbers in this kit are completely inert — a control-comp board read says nothing about them. Grade this unit on a comp containing a B3 Electric carry.",
+      "⚑ Burst-block ordering: the 300% nuke is placed BEFORE the Judgement damageTakenPct block, so the nuke does NOT benefit from its own +10% damage-taken debuff. Unverified — swap the block order if popups show the burst hit at the boosted value.",
+      "⚑ The 300% burst hit is left with default crit/FB handling (no crit/noFb flags): burst-cast damage lands before the FB window opens, so the engine's timing-based FB major should exempt it automatically, and flat-damage riders crit at the caster's sheet rate under RIDERCRIT. Not measured.",
+      "⚑ Cadence: base RL cadence (ammo 6, reloadFrames 171, chargeFrames 60) is datamine-sourced and known-unreliable; arcana's own normal-attack contribution rides on it. She is a supporter, so this is small relative to the team buffs, but it is unverified."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. Structure: arcana is a Burst-II Electric supporter whose entire payload fires on fullBurstEnd. Three of her blocks are gated on 'self is in Wheel of Fortune status', which is a self-applied status from her own burst (burst block 1 grants it to all Electric Code allies, and she is Electric) — modeled as ownBurstGate:'cast', so those blocks only fire on rotations she personally bursted (her 40 s burst CD means that is not every rotation, partly offset by her own 'Death' 6 s burst CDR to all allies). The two 180% lines are further scoped to Burst-3 Electric allies who cast their burst that rotation (burstCasters{stage:3,element:'Electric'}) and are INERT on any comp without such an ally. The ungated lines (skill1 casterAtkPct 5% / 10 s to all allies, skill2 attackDamagePct 7.5% / 10 s to all allies) fire on every FB end regardless. Only one kit line is unmodeled: 'Cooldown of Skill 2 ▼ 75%' has no effect-schema channel (there is burstCdr but no skill-CD reduction primitive) — it is a real damage channel for allies whose skill 2 is modeled as an interval trigger, and is recorded verbatim in unmodeled.skill1."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all Burst 3 Electric Code all",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block header → trigger fullBurstEnd + target burstCasters{stage:3,element:'Electric'} + ownBurstGate:'cast' (the Wheel of Fortune self-status gate)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "The Magician: Cooldown of Skill 2 ▼75%",
+      "status": "SKIPPED",
+      "effectOrReason": "No skill-cooldown-reduction primitive in the effect schema (burstCdr covers burst CD only). Recorded verbatim in unmodeled.skill1 — NOT a defensive/inert line; it would accelerate any ally whose skill 2 is modeled as an interval trigger."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack damage ▲ 180% for 15 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 180, durationSec 15 (Damage Up bucket, additive)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB ends. Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block header → trigger fullBurstEnd + target allies, NO Wheel of Fortune gate (this header has no status clause)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 5% of the skill user's ATK 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 5, durationSec 10 (flat add off caster ATK, not target-scaling atkPct)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all Burst 3 Electric Code all",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block header → trigger fullBurstEnd + target burstCasters{stage:3,element:'Electric'} + ownBurstGate:'cast'"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Strength: ATK ▲ 180% of user's ATK 15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 180, durationSec 15 ('of the skill user's ATK' → casterAtkPct, NOT atkPct)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB ends. All allies if Wheel of Fortune",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block header → trigger fullBurstEnd + target allies + ownBurstGate:'cast' (WoF gate, but no burst-caster/element scoping on this one)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Death: Cooldown of Burst Skill ▼ 6 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCdr seconds 6 (no oncePerBattle — the line is unqualified, so it repeats every gated FB end)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 50% of the skill user's ATK 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 50, durationSec 5"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB ends. Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block header → trigger fullBurstEnd + target allies, ungated (fires every FB end)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack damage ▲ 7.5% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 7.5, durationSec 10"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all Electric Code allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block header → trigger burstCast + target alliesOfElement{element:'Electric'} (self included — arcana is Electric, which is what makes her own WoF gates satisfiable)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Wheel of Fortune: Attack damage ▲ 10%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 10, durationSec 10. Also the SOURCE of the Wheel of Fortune status that skill1/skill2 gate on — the status itself is modeled as ownBurstGate rather than a targetStatus (targetStatus is enemy-only)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Split into two blocks: the damage line is emitted by the caster (target self, since resolveTargets{enemy} is empty) and the debuff line keeps target enemy (boss-held debuff channel)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 300% of final ATK as Burst dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 300, target self. No noFb/crit flags — burst-cast damage lands pre-FB (timing-automatic exemption) and rider crit is engine-global."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Judgement: Damage taken ▲ 10% for 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 10, durationSec 10, target enemy — a boss debuff benefiting the whole team, not a self buff"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].ownBurstGate / skill2[0].ownBurstGate / skill2[1].ownBurstGate",
+      "estimate": "'cast' — the Wheel of Fortune gate is treated as SATISFIED on every Full-Burst end of a rotation in which arcana cast her own burst, and unsatisfied otherwise.",
+      "reasoning": "WoF is granted only by arcana's own burst block, to all Electric Code allies; arcana is Electric so she self-applies it. Hence 'self is in Wheel of Fortune status' ⟺ 'arcana bursted this rotation'. The literal 10 s duration is a razor-thin race against FB end (cast → FB opens → 10 s FB → FB end is >10 s after the cast), so a strictly literal read would make the entire gated half of the kit permanently dead. Kit intent is obviously the opposite, so the gate is modeled as live. This is a HYPOTHESIS about status/window bookkeeping, not a fact derivable from the prose.",
+      "recipe": "Record a fight with arcana + a Burst-III Electric ally. On a rotation arcana bursts, watch the ally's buff bar at the FB-end frame for the 180% Attack Damage and 180%-of-caster-ATK grants; on a rotation she does NOT burst (her 40 s CD skips one), confirm they are ABSENT. If present on both, the gate is wrong (drop ownBurstGate); if absent on both, the WoF window truly expires before FB end and the blocks should be dropped entirely."
+    },
+    {
+      "field": "override.skill1[0] / skill2[0] / skill2[1] — trigger fullBurstEnd + ownBurstGate composition",
+      "estimate": "ownBurstGate is assumed to evaluate correctly against a fullBurstEnd trigger.",
+      "reasoning": "types.ts documents ownBurstGate as composing with fullBurstEnter ('the rotation leading into this Full Burst'). Whether the rotationCasters set is still populated/valid at the FB-END frame is an engine-implementation question the kit prose cannot answer. If the set is cleared at FB end, the gate silently evaluates false and three blocks go dark with no error.",
+      "recipe": "Code-read sim.ts where rotationCasters is populated/cleared relative to the fullBurstEnd dispatch; then run the control comp with cfg.onEvent and assert buffApply events for attackDamagePct 180 fire on the FB-end frame of arcana's own burst rotation. Modeled ≠ working."
+    },
+    {
+      "field": "override.skill1[0].target / override.skill2[0].target (burstCasters stage:3 element:'Electric')",
+      "estimate": "Empty target set on any comp lacking a Burst-III Electric ally → both 180% blocks contribute exactly ZERO.",
+      "reasoning": "The two largest magnitudes in the kit are double-scoped (Burst 3 AND Electric AND cast-this-rotation). A grade on a comp without a B3 Electric carry validates only the small ungated lines (5% caster-ATK, 7.5% attack damage, 10% WoF, 10% damage-taken, 300% nuke, 6 s burst CDR) and says nothing about the bulk of her value.",
+      "recipe": "Run runComp twice — once on the default control comp, once with a Burst-III Electric carry in the B3 slot — and diff arcana's team contribution. If the two runs are identical, the burstCasters resolution is returning empty as expected; grade her only on the second."
+    },
+    {
+      "field": "override.burst[1] vs override.burst[2] (block ordering)",
+      "estimate": "The 300% nuke is ordered BEFORE the Judgement damageTakenPct block, so it does not benefit from its own +10% damage-taken debuff.",
+      "reasoning": "The prose lists the damage line above the Judgement line within the same '■ Affects all enemies' block, and effect/block order within a slot is load-bearing in this engine. Whether the game applies the debuff before resolving the burst hit is not stated. A 10% swing on a single 300% hit — small, but it is a fabricated ordering choice, not a read.",
+      "recipe": "Popup-read arcana's burst hit in a recording where no other damage-taken debuff is live; compare the observed value against final ATK × 3.00 × (buff state) with and without the ×1.10. Swap the two blocks if the boosted value matches."
+    },
+    {
+      "field": "unmodeled.skill1 — 'Cooldown of Skill 2 ▼ 75% for 15 sec.'",
+      "estimate": "Modeled as zero contribution. True contribution is non-zero for any ally whose skill 2 is encoded as an interval trigger — a 75% CD cut would quadruple that block's fire rate for 15 s.",
+      "reasoning": "There is no skill-cooldown primitive in EffectDef, so it cannot be expressed without an engine change. Skipping it UNDER-credits arcana; the size depends entirely on which B3 Electric ally is in the comp and whether that ally's skill 2 is interval-triggered at all (many are event-triggered, in which case the true contribution really is ~0).",
+      "recipe": "Enumerate the intended partner unit's skill 2: if its override block uses trigger {kind:'interval'}, the omission is real and sized as (fires over 15 s at CD/4) − (fires at CD) × that block's per-fire damage. If the partner's skill 2 is event-triggered (fullBurstEnter/lastBullet/hitCount), record the omission as genuinely inert and close it. Requires an engine feature (per-ally interval-scaling) to model faithfully."
+    },
+    {
+      "field": "override.skill2[1].effects[0] (burstCdr seconds:6)",
+      "estimate": "6 s off every ally's burst cooldown, applied on every gated FB end, no oncePerBattle cap.",
+      "reasoning": "The prose qualifies neither the target's current-vs-next cooldown nor a per-battle cap, so the unqualified read is taken. This materially changes ROTATION CADENCE (and therefore FB count), which is the metric rotation changes must be judged on — a wrong read here moves the whole board, not just arcana.",
+      "recipe": "Count measured Full Bursts on a recorded arcana comp and compare to the sim's fullBurstStart event count. Judge this line by FB-count preservation, not by aggregate damage ratio."
+    },
+    {
+      "field": "base cadence tuple (ammo 6, reloadFrames 171, chargeFrames 60, hitsPerShot 1)",
+      "estimate": "Inherited datamined values, used unchanged; her own normal-attack output is a minor share of her contribution.",
+      "reasoning": "ALWAYS-⚑: datamined rate_of_fire / reloadFrames are known-unreliable, and nominal rates must be quantized to 60 fps frame boundaries. chargeFrames 60 implies a charge-shot RL cadence the override does not touch. She is a supporter, so the error is bounded, but it is not zero.",
+      "recipe": "Ammo-counter read on a recording of arcana firing: shots per magazine and magazine-to-magazine wall time give effective pulls/s and true reload duration directly. Use the ammo counter (measures the disputed quantity) rather than FB counts (downstream of it)."
+    }
+  ],
+  "model": "claude-opus-5"
+}

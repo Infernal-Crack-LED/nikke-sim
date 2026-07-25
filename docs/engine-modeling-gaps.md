@@ -40,7 +40,7 @@
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 4 | alice, liberalio, miranda, soda-twinkling-bunny |
-| `cast` | 2 | cinderella-crystal-wave, marciana-marine-study |
+| `cast` | 3 | arcana, cinderella-crystal-wave, marciana-marine-study |
 | `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 1 | scarlet-black-shadow |
@@ -52,8 +52,8 @@
 | `delaySec` | 2 | rapi-red-hood, snow-white |
 | `durationShots` | 1 | helm |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
-| `everyN` | 5 | arcana, mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
-| `everyNOffset` | 2 | arcana, neon-vision-eye |
+| `everyN` | 4 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny, zwei |
+| `everyNOffset` | 1 | neon-vision-eye |
 | `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
 | `fbGate` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
 | `flatDamage` | 47 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
@@ -81,7 +81,7 @@
 | `normalAttackPct` | 5 | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
 | `notCast` | 0 | _none_ |
 | `outFb` | 1 | velvet |
-| `ownBurstGate` | 2 | cinderella-crystal-wave, marciana-marine-study |
+| `ownBurstGate` | 3 | arcana, cinderella-crystal-wave, marciana-marine-study |
 | `pelletCountFlat` | 2 | arcana-fortune-mate, dorothy-serendipity |
 | `perResource` | 2 | marciana-marine-study, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
