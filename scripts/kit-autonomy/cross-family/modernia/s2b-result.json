@@ -1,0 +1,151 @@
+{
+  "slug": "modernia",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "when normal attack hits … 3.05%",
+      "disposition": "FAITHFUL",
+      "scope": "normal-attack hits ONLY (never skill/burst procs); per-HIT, and MG hitsPerShot=2 means 2 hits per trigger pull",
+      "durationSemantics": "permanent passive rider (no duration)",
+      "triggerIdentity": "per normal-attack hit — engine shape is a passive self-buff of the per-hit rider stat (extraHitDamagePct 3.05), NOT a shotFired flatDamage",
+      "targetSet": "damage to the enemy; the enabling buff sits on self",
+      "nearestWrongModel": "flatDamage 3.05% on a shotFired trigger — fires per trigger PULL, halving proc count vs per-hit on an hitsPerShot=2 MG; or letting the rider take core",
+      "distinguishingAssertion": "count damage events in the extra-hit bucket over a no-reload window: procs == 2 × shots fired (hitsPerShot=2), each valued 3.05% of final ATK; RED if procs == shots",
+      "inertness": "must add zero damage on frames with no normal attack (reload gaps, pre-first-shot); must not appear in charge/burst buckets",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "hits 200 time(s) … Crit Damage ▲14.25%",
+      "disposition": "FAITHFUL",
+      "scope": "generic Critical Damage (unscoped — applies to any crit), self only",
+      "durationSemantics": "durationSec 10 per stack, maxStacks 5, refresh on re-proc; NOT rounds",
+      "triggerIdentity": "hitCount count:200 — counts HITS/rounds (2 per MG pull → 200 hits = 100 pulls), cumulative, no FB gate on this line",
+      "targetSet": "self",
+      "nearestWrongModel": "hitCount interpreted as 200 trigger PULLS (doubles ramp time), or stacks applied instantly at max without the 200-hit cadence",
+      "distinguishingAssertion": "first buffApply {stat:critDamagePct, value:14.25} lands after exactly 100 MG pulls (200 hits ≈ a few seconds), then stacks 1→5 at 100-pull intervals with stacks field incrementing; RED if first apply at 200 pulls or stacks=5 at t≈0",
+      "inertness": "no crit-damage buffApply before the 200th hit; buff must lapse (expiresFrame) if firing pauses >10s (e.g. long reload/stun) — no buffRemove event expected on natural lapse",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▼ 5.04%",
+      "disposition": "FAITHFUL",
+      "scope": "self weapon-state DEBUFF — this IS damage-relevant (taxonomy #6): −25.2% ammo at 5 stacks shrinks the 300-round belt to ~224, raising reload frequency and cutting shots fired",
+      "durationSemantics": "durationSec 10 per stack, maxStacks 5 — same stack clock as the crit-damage line (they share the 200-hit trigger)",
+      "triggerIdentity": "same hitCount:200 block as the Critical Damage line",
+      "targetSet": "self",
+      "nearestWrongModel": "SKIPPED as 'defensive/no damage impact' — the classic weapon-state drop; or encoded with positive sign (ammo ▲)",
+      "distinguishingAssertion": "buffApply {stat:maxAmmoPct, value:-5.04 (negative)} present; with stacks live, reload events occur more often than the 300-round baseline cadence (compare inter-reload shot counts pre-stack vs at 5 stacks: ~300 vs ~224 rounds); RED if reload cadence is stack-invariant or value is positive",
+      "inertness": "must NOT change per-shot damage — only shots-fired economy; inert during the burst's unlimited-ammo window (no ammo consumed there)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all allies … Full Burst … Hit Rate ▲8.56%",
+      "disposition": "FAITHFUL",
+      "scope": "team-wide stat; in this engine hitRatePct = core-hit-rate lift (hrCoreMult)",
+      "durationSemantics": "durationSec 15 — note it OUTLASTS a base 10s FB; matches a 15s FB only when her own burst's +5s extension is live",
+      "triggerIdentity": "fullBurstEnter — ANY team Full Burst (text says 'entering Full Burst', not 'when using Burst Skill'); no ownBurstGate",
+      "targetSet": "allies including self (all 5 units get the buffApply)",
+      "nearestWrongModel": "keyed to burstCast (only her own rotations — under-credits every FB another B3 chains), or duration clipped to 10s, or Hit Rate treated as inert accuracy fluff",
+      "distinguishingAssertion": "on a Full Burst chained by the OTHER B3 (helm in controlComp), buffApply {stat:hitRatePct, value:8.56} still fires for all 5 targetIdx values with a 15s expiresFrame; RED under burstCast keying (no apply on helm's rotations) or under a 10s duration",
+      "inertness": "the 8.56 magnitude is kit-literal, but its damage effect flows ONLY through the HR→core conversion — with HRCORE disabled the line must move nothing",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "hits 200 … during … Hit Rate status → ATK",
+      "disposition": "FIX",
+      "scope": "self ATK ▲ 29.38%, generic",
+      "durationSemantics": "durationSec 10 — seconds, no stacking stated (single instance, refresh on re-proc)",
+      "triggerIdentity": "hitCount:200 GATED on the S2a Hit Rate buff being live on self ('during increasing Hit Rate status'). The schema has no requires-self-buff gate; nearest faithful proxy is fbGate:'inFb' + hitCount:200 — exact when her own burst extends FB to 15s (HR window == FB window), diverging only on 10s FBs where HR runs 5s past FB end. Hits should COUNT only inside the status window, resetting between windows",
+      "targetSet": "self",
+      "nearestWrongModel": "UNGATED hitCount:200 — the counter accrues from t=0 and the ATK buff cycles all fight, including the long pre-FB and inter-FB stretches (massive ATK-uptime over-credit)",
+      "distinguishingAssertion": "no buffApply {stat:atkPct, value:29.38} occurs before the first fullBurstStart despite >200 hits accruing pre-FB; first apply lands mid-FB after 200 in-status hits (~100 pulls into the window); RED if an ATK apply appears before any FB",
+      "inertness": "zero ATK procs in a hypothetical no-FB context; the buff must not persist stacking — one instance, value 29.38",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "all allies … Full Burst Duration ▲ 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "team FB window extension",
+      "durationSemantics": "one-shot window edit (+5s to the FB her cast opens), not a timed buff",
+      "triggerIdentity": "burstCast (it sits in HER burst block — fires only on rotations SHE bursts), effect kind fullBurstExtend seconds:5",
+      "targetSet": "allies/team (the shared FB window)",
+      "nearestWrongModel": "keyed to fullBurstEnter so EVERY FB (including the other B3's rotations) runs 15s — over-credits the whole team's FB uptime in any multi-B3 comp",
+      "distinguishingAssertion": "in controlComp (helm co-B3): fullBurstEnd − fullBurstStart == 15s only for windows following HER burstCast, and == 10s for windows following helm's; RED if all windows are 15s",
+      "inertness": "FBs she does not cast into must stay 10s; burst cd 40s paces her rotations",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self … Unlimited ammunition for 15 sec",
+      "disposition": "FAITHFUL",
+      "scope": "self weapon-state: no ammo consumption for 15s",
+      "durationSemantics": "durationSec 15 — outlasting even her extended 15s FB by cast-to-FB lead time",
+      "triggerIdentity": "burstCast, effect kind unlimitedAmmo",
+      "targetSet": "self",
+      "nearestWrongModel": "durationSec 10 (pattern-matched to base FB length), or unlimited shots still decrementing ammo (so lastBullet/reloads fire mid-window and the S1 maxAmmo▼ stays consequential inside it)",
+      "distinguishingAssertion": "zero reload events for self in [cast, cast+15s] even though 15s of MG fire vastly exceeds one ~224–300-round magazine; teamAmmo-style consumption from her is zero in-window; RED if a reload lands in-window or the window ends at 10s",
+      "inertness": "allies' ammo untouched; her reload cadence resumes normally after 15s",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Destroy Mode … 2.24% … damage for 15 sec",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "self-sourced extra damage active during the 15s Destroy Mode window",
+      "durationSemantics": "15s window; the CADENCE inside it is kit-silent — ALWAYS-⚑ field 2 (damage line with no stated trigger)",
+      "triggerIdentity": "⚑ AMBIGUOUS: (a) per-normal-attack-hit rider for 15s (extraHitDamagePct 2.24 self-buff, durationSec 15) — structurally parallel to S1's identically-phrased per-hit 3.05% and consistent with the unlimited-ammo spray; or (b) DoT 2.24%/s × 15 ticks. These differ by ~40–60× at MG hit rate. Must ship as a ⚑ with the per-hit reading as the estimate + a popup-count recipe to pin it",
+      "targetSet": "enemy (stage target as single entity)",
+      "nearestWrongModel": "dot {atkPct:2.24, durationSec:15, intervalSec:1} — 15 tiny ticks, ~2 orders of magnitude under the per-hit reading; OR silently shipping either cadence unflagged",
+      "distinguishingAssertion": "during [cast, cast+15s], count 2.24%-valued damage events: per-hit reading gives ≈ 2×(pulls in window) events tracking fire cadence; DoT reading gives exactly 15 at 1s spacing regardless of firing; the event-count-vs-shot-count ratio discriminates GREEN/RED",
+      "inertness": "zero 2.24% events outside the 15s window; never core-boosted; must be flagged ⚑, not silently calibrated",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Extends her line of sight and auto-aims",
+      "disposition": "UNMODELED",
+      "scope": "targeting/AI flavor; the single-enemy-regardless-of-parts clause is inert on the partless scope-lock boss (parts never change damage there anyway)",
+      "durationSemantics": "15s mode window",
+      "triggerIdentity": "burstCast (mode flavor)",
+      "targetSet": "self targeting behavior",
+      "nearestWrongModel": "inventing a partsDamagePct or multi-target model from this clause",
+      "distinguishingAssertion": "no damage event, buff, or bucket may be attributed to this clause — override's unmodeled field must carry it verbatim",
+      "inertness": "entire clause must move zero damage",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:per-hit 3.05% rider",
+    "skill1:200-hit Crit Damage ▲14.25% ×5",
+    "skill1:200-hit Max Ammunition ▼5.04% ×5",
+    "skill2:FB-enter Hit Rate ▲8.56% 15s (all allies)",
+    "skill2:200-hit-in-status ATK ▲29.38% 10s",
+    "burst:Full Burst Duration ▲5s",
+    "burst:Unlimited ammunition 15s",
+    "burst:Destroy Mode 2.24% damage (⚑ cadence)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Destroy Mode: Extends her line of sight and auto-aims at all enemies within range. The stage target is treated as a single enemy regardless of whether it has parts (including interruption parts)."
+    ]
+  },
+  "notes": "Five expected shared-prior misreads to reconcile: (1) the S1 Max Ammunition ▼ is the classic 'defensive, skip it' trap — it is a weapon-state damage mechanic (−25.2% belt at 5 stacks → more reloads → fewer shots) and must be encoded NEGATIVE; note it interacts with the burst (irrelevant during unlimited ammo, fully live outside it). (2) hitCount thresholds count HITS/rounds, and MG hitsPerShot=2 means 200 hits = 100 trigger pulls — a per-pull reading doubles every ramp. (3) Burst-block lines (FB +5s, unlimited ammo) are burstCast-keyed: in the controlComp helm-co-B3 fixture, only HER rotations get 15s windows; keying fullBurstExtend to fullBurstEnter is the over-credit to test hardest. (4) S2b's ATK proc is status-gated ('during increasing Hit Rate status'); no requires-self-buff gate exists in the schema, so expect an fbGate:'inFb' proxy — the divergence case is a 10s FB (other B3's rotation) where HR outlives FB by 5s; an UNGATED encoding is flatly wrong and shows up as pre-FB ATK applies. (5) The Destroy Mode 2.24% line has NO stated cadence — per-hit vs per-second differ by ~40–60×; it must ship as a ⚑ with a popup-count recipe, and any precise unflagged value is a guess. Also verify S2a's 15s duration is preserved (not clipped to FB length) and that unlimited-ammo shots emit no reload/lastBullet events. Cross-check: her 40s burst cd vs the standard rotation cadence determines how often the burstCast lines fire in the fixture.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,142 @@
+{
+  "slug": "modernia",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "extraHitDamagePct",
+          "value": 3.05
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 200
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 14.25,
+          "durationSec": 10,
+          "maxStacks": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -5.04,
+          "durationSec": 10,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 8.56,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 200
+      },
+      "target": {
+        "kind": "self"
+      },
+      "fbGate": "inFb",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 29.38,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": 5
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "unlimitedAmmo",
+          "durationSec": 15
+        },
+        {
+          "kind": "buff",
+          "stat": "extraHitDamagePct",
+          "value": 2.24,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Destroy Mode: Extends her line of sight and auto-aims at all enemies within range. The stage target is treated as a single enemy regardless of whether it has parts (including interruption parts)."
+    ]
+  },
+  "caveats": [
+    "⚑ MG cadence tuple (pullsPerSec / reloadFrames 159 / hitsPerShot 2) is datamine-sourced and unreliable; BOTH 200-hit triggers (S1 stacks, S2 ATK) and the maxAmmoPct feedback loop are cadence-driven, so the whole kit's proc rate inherits that uncertainty. Highest-leverage measurement for this unit.",
+    "⚑ hitCount:200 is authored as 200 ROUNDS (engine convention: an MG spends hitsPerShot rounds per pull), matching the kit's 'normal attack hits 200 time(s)'. If the engine counts trigger pulls instead, the threshold halves and both procs double in frequency — verify against a buffApply-event count before trusting stack uptime.",
+    "⚑ S2 rider gate: 'during increasing Hit Rate status' has no literal schema gate (no 'requiresBuff'). Modeled as fbGate:'inFb' because the Hit Rate window is opened at FB entry for 15 s and Full Burst with her own +5 s extension is 15 s, so the two windows coincide almost exactly. This UNDER-credits the tail whenever the team enters FB without her burst (FB 10 s, HR still live for 5 s more). Alternative encodings: ungated (over-credits every out-of-FB 200-hit proc) or a resource/status channel.",
+    "⚑ hitRatePct 8.56 → core-rate lift magnitude is engine-derived (sim.ts hrCoreMult), not kit-stated; measured-only. The kit percentage is transcribed literally, but its damage consequence is an unvalidated conversion.",
+    "⚑ Burst 'Deals 2.24% of final ATK as damage for 15 sec' is modeled as a PER-HIT rider (extraHitDamagePct) for the 15 s window, not a DoT. Whole-picture: a 1 s-interval DoT would total ~34% of ATK across an entire Burst III window — implausibly negligible for a burst skill — while the per-hit read matches the identical-shaped S1 line and MG hit density. Confirm by popup count (per-hit white numbers alongside normals vs a once-per-second tick).",
+    "⚑ Max Ammunition ▼5.04% ×5 is kept (weapon-state modifier = damage): it shrinks the belt from 300 toward ~225 and raises reload frequency. It is INERT during the 15 s unlimited-ammo burst window, so its net cost depends on the burst-uptime fraction.",
+    "⚑ noFb NOT set anywhere (default ON, i.e. riders take the +50% FB major by timing). Per-kit noFb is measured-only; leaving it off is the documented default, not a finding.",
+    "⚑ Destroy Mode auto-aim is unmodeled. It plausibly changes effective hit/core landing (the real reason her burst is strong), but the kit text states no rate, so nothing was invented. If a measured Destroy-Mode core rate exists, it belongs here rather than in the 2.24% line.",
+    "Stack steady-state for the S1 pair (5 stacks × 10 s, one stack per 200 hits) is left to the engine's native stacking rather than an authored time-average; no rampSec applied. If the engine refreshes rather than re-stacks, uptime will be wrong — check maxStacks on the buffApply events."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no board, no probe data, no committed override). Structure: S1 = an always-on per-hit rider (extraHitDamagePct 3.05) + a 200-hit self stack pair (Crit DMG ▲14.25 ×5 / Max Ammo ▼5.04 ×5, 10 s). S2 = team Hit Rate ▲8.56 for 15 s on FB entry + a self ATK ▲29.38 (10 s) 200-hit rider whose kit gate ('during increasing Hit Rate status') is approximated by fbGate:'inFb'. Burst = team Full Burst Duration ▲5 s, self unlimited ammo 15 s, and the Destroy Mode 2.24% line encoded as a 15 s per-hit rider (see caveats for the per-hit-vs-DoT reasoning). Destroy Mode's aim/line-of-sight/partless-target text is unmodeled (v1 boss is partless; no aim model). No `ignored` blocks."
+}
