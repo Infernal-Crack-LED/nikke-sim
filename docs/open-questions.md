@@ -32,6 +32,19 @@ override re-tune would be fitting overrides to a weapon-model landing error. Rel
 mid/midfar landing), the SG re-tune thread in CLAUDE.md, and **U32** (`folkwang` AR, same
 solo-re-record need for the AR class).
 
+**GATING FOLLOW-UP (owner direction 2026-07-24) — the instrument must be validated on a SECOND unit
+before it answers this question.** We intend to score the solo recording with
+`scripts/probe/read-pellets.ts` (CV pellet counter, `count-pellets.py`). It is currently tuned on
+`marciana-solo.MP4` ALONE, and on that video it detects **70 of ~90** expected shots, averages
+**7.6** pellets/shot against the lattice-measured ≈**8.45**, and reads `avgRed` 0.19 vs the ~0.5
+expected — i.e. its landing average is itself ~10% cold, in the same direction as the effect under
+test. Scoring U35 with it as-is would risk confirming the hypothesis with an instrument that shares
+its bias. **Requirement:** validate the counter against a second SG unit's footage (a different
+shooter, ideally a different band mix) and close the shot shortfall, then admit its per-shot histogram
+ONLY where it agrees with the running-total pellet lattice — the lattice is arithmetic closure and
+outranks the CV counter wherever they disagree. Build/validation plan:
+`docs/handoffs/2026-07-24-probe-reader-buildout-plan.md` (P3).
+
 ### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
 The engine clips the current belt to the new cap when a Max-Ammunition ▼ (`maxAmmoPct<0`) LANDS
 (measured/user-confirmed, `docs/data/game-mechanics.md` § "Max Ammunition ▼"; `src/engine/sim.ts`
