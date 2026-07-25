@@ -1136,30 +1136,28 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "0.831 COLD ROOT CAUSE CONFIRMED: she makes 0 bursts in graded comp N5 (Privaty/SWHA alternate, never reach slot 5) -> stays in HIGHLIGHT -> sustained should be 235.03% not hard-coded Intro 60.19% -> fixing = 0.831->~0.92 (+real FB ~0.96). COMP-DEPENDENT (Run D leftmost-B3 -> Intro was right there). Fix: chainGate selfCast/selfNotCast on fullBurstEnter+target self"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/diesel-winter-sweets.json + scripts/kit-autonomy/manual-review/diesel-winter-sweets.md.",
+          "med ENGINE (skill1): Intro/Highlight is a once-per-battle LATCH in the prose ('for the first time') but ownBurstGate is a PER-ROTATION gate, so on any rotation she skips her burst the tier flips 60.19 → 235.03 (a ~4× swing on her entire sustained bucket).",
+          "low ENGINE (burst): Highlight's ally cost (Noise Pollution, Hit Rate ▼100% for 1s) is unmodelable in the engine's hitRatePct channel and is documented rather than encoded, so a mixed comp that both grants the 235.03 tier and casts her burst would carry the upside without the downside."
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": false,
-      "evidence": "Run D: 1.01-1.06",
+      "evidence": "Run D: 1.01-1.06 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (8 FAITHFUL + 4 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; S1 revised to ownBurstGate cast/notCast both tiers (engine canonical, types.ts:368), fixing the 2026-07-16 comp-N5 Highlight root cause (board 0.79->0.88)",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "verify graded comps are clean (she casts into ALL or NONE of the Full Bursts) — ownBurstGate is per-rotation, the prose latch is once-per-battle; intermittent-burst comp = live ~4x over-credit, fix = a latch primitive. RL cadence tuple (chargeFrames 60/reloadFrames 141) unverified datamine. Highlight Noise-Pollution ally HR-100% cost is an engine-gap (documented, inert in the never-burst case).",
       "unmodeled": {
-        "skill1": [
-          "Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.",
-          "Highlight: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.",
-          "Activates when entering Full Burst. Affects self if in Highlight status.",
-          "Sustained damage ▲ 235.03% for 10 sec."
-        ],
+        "skill1": [],
         "skill2": [
           "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
           "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
@@ -1174,22 +1172,22 @@
         ]
       },
       "caveats": [
-        "skill2: unparsed effect \"Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.\"",
-        "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all allies (except self).\" — its effects are skipped",
-        "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
-        "burst: unparsed effect \"Mute stacks ▼ 1.\""
+        "skill1: Intro/Highlight sustained is gated by ownBurstGate ('cast'=Intro 60.19, 'notCast'=Highlight 235.03) on fullBurstEnter — the engine's canonical example for this line (types.ts:368). Comp-dependent and faithful: sole/actual burster -> Intro every FB; never-bursts (2026-07-16 comp N5) -> Highlight every FB. This FIXES the prior Intro-only hard-coding that was the confirmed root cause of the 0.793 COLD (>15%) on N5. The kit's 'for the first time' is a once-per-battle latch; ownBurstGate is per-rotation, exact on the clean graded comps and divergent only in an ungraded alternating multi-B3 comp (flag1)",
+        "skill1: the permanent Crit Damage +20.28% is a single ungated block (same value in both Intro and Highlight), re-applied every Full Burst but capped at maxStacks 1 -> never stacks (refresh); the Intro/Highlight choice moves only the sustained tier",
+        "skill2: the Full-Charge Sustained +318.14% x2 (3s) LAPSES across the reload+charge gap (~3.35s > 3s) so stacks reset to 1 each magazine; the RL cadence tuple (chargeFrames 60 / reloadFrames 141) is the unverified datamine driving this (flag3)",
+        "burst: the Highlight-gated Noise Pollution (ally Hit Rate -100% for 1s) is a real damage COST of the Highlight tier but is documented, not modeled — engine hitRatePct is the core-hit-lift channel R(hr)=(K*scale/2)(1-hr/100) and cannot express 'miss everything' (engine-gap; encoding -100 would model a different, smaller mechanic). Inert in the clean never-burst Highlight case (comp N5) because she never casts her burst there (flag2)"
       ],
       "board": {
         "records": [
           {
             "comp": "N5 snowwhite-HA fire (boss Fire)",
-            "ratio": 0.7934
+            "ratio": 0.8844
           }
         ],
         "n": 1,
-        "mean": 0.7934,
-        "mad": 0.2066,
-        "band": ">15%",
+        "mean": 0.8844,
+        "mad": 0.1156,
+        "band": "±15%",
         "temp": "COLD ▼"
       }
     },

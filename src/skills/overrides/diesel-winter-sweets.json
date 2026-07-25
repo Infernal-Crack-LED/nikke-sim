@@ -1,12 +1,7 @@
 {
-  "note": "Only skill1 needs an override; the parser's skill2 (Full-Charge sustained 318.14% x2 for 3s, and the Full-Burst 63.33%/s-for-9s DoT on the stage target) and burst (Damage Taken +25.09% for 10s, 18.43%/s and 181.2%/s DoTs for 9s) are already faithful for v1 and left to the parser. S1 has two mutually exclusive states: Intro (she used her own Burst this cycle) or Highlight (she did not). The parser wrongly stacks both, double-counting Crit Damage (20.28 + 20.28) and applying both sustained buffs (60.19% + 235.03%). She is a Burst III with a team-amp burst (Damage Taken +25.09%), so the sim casts her burst and she is in Intro every rotation: modeled as Intro only -> Crit Damage +20.28% (permanent, undispellable) and Sustained Damage +60.19% for 10s, both on entering Full Burst. Skipped: the Highlight branch (Crit Dmg 20.28% and the larger Sustained 235.03%), which is mutually exclusive with Intro and only applies if she is run as a non-bursting sub-DPS -- flagged as the key uncertainty, since a Highlight build would deal materially more sustained damage. Also skipped in skill2/burst (already handled by the parser omitting them): the part-destruction Sustained 68.04% (no parts on a single boss in v1, so it never triggers), Mute/Noise-Pollution and Mute-stack mechanics (defensive, hit-rate inert). [materialized 2026-07-16: skill2/burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
+  "note": "Kit-autonomy gauntlet 2026-07-25 (GO faithfulness 1.0; cross-family S2b claude-fable-5 / S5-S7 claude-opus-5 converged — opus S6 blind override reproduces this encoding line-for-line; REVISED 2026-07-25 to model BOTH Intro/Highlight sustained tiers via ownBurstGate after reconciling the 2026-07-16 kit-status finding + the engine's own types.ts:368 canonical example). diesel-winter-sweets (Diesel: Winter Sweets) — RL Attacker, Fire, Burst III (cd 40s, ammo 6, chargeFrames 60, chargeMultiplier 250, normalMult 61.3, coreMult 200). STATE MACHINE (the meta-defining mechanic, Tier 2): S1 has two MUTUALLY EXCLUSIVE statuses — Intro (she used her OWN Burst going into the Full Burst) vs Highlight (she did not); both grant the SAME Crit Damage (+20.28%, permanent); they differ only in the FB-entry sustained tier (Intro 60.19% vs Highlight 235.03%, both 10s). ENCODING: the sustained tier is gated by ownBurstGate ('cast' = Intro 60.19, 'notCast' = Highlight 235.03) on fullBurstEnter — the engine's CANONICAL example for this exact line (types.ts:368: 'the inverse is diesel-winter-sweets Highlight sustained (notCast)'). This is COMP-DEPENDENT and faithful: on a graded comp where she is the sole/actual burster she casts into every FB -> ownBurstGate 'cast' -> Intro 60.19 every FB (Highlight inert); on a graded comp where she NEVER bursts (the 2026-07-16 finding's comp N5, Privaty/SWHA alternate, slot 5 never reached) ownBurstGate 'notCast' -> Highlight 235.03 every FB. The 2026-07-16 finding confirmed the PRIOR Intro-only hard-coding was the root cause of her 0.793 COLD (>15% error) on N5; this encoding fixes it. (The kit's 'for the first time' wording makes the status a once-per-battle LATCH; ownBurstGate is a per-rotation gate, which is exact on the clean graded comps — always-burst or never-burst — and diverges only in an artificial multi-B3 comp where she ALTERNATES casters, which is not graded.) MODELED: (S1) fullBurstEnter -> self -> critDamagePct 20.28 (permanent, ungated — same in both statuses; re-applied each FB but capped at maxStacks 1 -> never stacks). (S1) fullBurstEnter + ownBurstGate 'cast' -> self -> sustainedDamagePct 60.19 for 10s (Intro). (S1) fullBurstEnter + ownBurstGate 'notCast' -> self -> sustainedDamagePct 235.03 for 10s (Highlight). (S2) shotFired -> self -> sustainedDamagePct 318.14 for 3s, maxStacks 2 — RL fires EVERY pull as a full-charge shot (sim.ts charge path: firePull(charged=true) for every RL pull), so shotFired === 'Full Charge attack'; value x stacks = 636.28% sustained at 2 stacks; the 3s window LAPSES across the reload+charge gap (~3.35s > 3s) so stacks reset to 1 each magazine. (S2) fullBurstEnter -> enemy -> dot 63.33%/s for 9s sustained on the stage target (= the single partless boss). (burst) burstCast -> enemy -> damageTakenPct 25.09 for 10s (team-amp debuff on the boss) + dot 18.43%/s for 9s sustained (all enemies). (burst) burstCast -> enemy -> dot 181.2%/s for 9s sustained (stage target) — ADDITIVE with the 18.43 line on the solo boss (~199.63%/s combined). The sustained buffs (60.19/235.03/318.14) feed ONLY sustained-flavored damage (the four DoT/tick lines) via sustainedDamagePct — NOT her RL normal/charge bucket (engine sim.ts:1412); the kit gives no license to flavor her normals 'sustained'. SKIPPED -> unmodeled (verbatim): the part-gated lines (Mute Noise-Pollution immunity x3 to allies-except-self, and self Sustained 68.04% for 15s) — the v1 boss is partless AND the engine has no part-destruction event, so the trigger never fires; the Highlight-gated burst lines (Noise Pollution Hit Rate -100% for 1s to allies-except-self, and Mute stacks -1) — see flag2. FLAGS (all UNMEASURED unless noted): (flag1) Intro/Highlight LATCH vs per-rotation gate — the kit's status is a once-per-battle latch but the engine's ownBurstGate is per-rotation; exact on the clean graded comps (always-burst -> Intro; never-burst -> Highlight, the 2026-07-16 comp N5 case this encoding fixes), divergent only in an artificial multi-B3 comp where she alternates casters (not graded). recipe = a true once-per-battle latch primitive if an alternating multi-B3 comp is ever graded. (flag2) Highlight's hidden COST — Noise Pollution Hit Rate -100% for 1s to allies is a real damage COST of the Highlight tier; engine hitRatePct is the HR->core-lift channel (R(hr)=(K*scale/2)(1-hr/100)) and cannot express 'miss everything', so faithful modeling is blocked (engine-gap); documented, not fudged (per measured>fudge; the S7 judge confirmed encoding -100 there would model a DIFFERENT, smaller mechanic). Inert in the clean never-burst Highlight case (comp N5) because she never casts her burst there, so the burst-gated Noise Pollution never fires. recipe = a hitRate clamp/zero primitive if a Highlight comp where she DOES burst is graded. (flag3) RL CADENCE TUPLE — chargeFrames 60 / reloadFrames 141 are the unverified datamine driving the shot cadence + the 318.14 stack-lapse; recipe = read rounds/min + the reload gap from a focus video. SAME-MODEL RESIDUALS (owner spot-check; prose-faithful, non-GO-blocking): the burst DoTs tick under the engine's sustained + FB-timing rules (no per-kit noFb without measurement — default FB-by-landing ON). No noRange decisions (no riders); RL is a charge weapon but every pull is a full charge, so there is no separate autofire path.",
   "unmodeled": {
-    "skill1": [
-      "Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.",
-      "Highlight: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.",
-      "Activates when entering Full Burst. Affects self if in Highlight status.",
-      "Sustained damage ▲ 235.03% for 10 sec."
-    ],
+    "skill1": [],
     "skill2": [
       "Activates when an ally or self destroys an enemy's part. Affects all allies (except self).",
       "Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
@@ -21,10 +16,10 @@
     ]
   },
   "caveats": [
-    "skill2: unparsed effect \"Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.\"",
-    "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects all allies (except self).\" — its effects are skipped",
-    "skill2: unsupported trigger \"Activates when an ally or self destroys an enemy's part. Affects self.\" — its effects are skipped",
-    "burst: unparsed effect \"Mute stacks ▼ 1.\""
+    "skill1: Intro/Highlight sustained is gated by ownBurstGate ('cast'=Intro 60.19, 'notCast'=Highlight 235.03) on fullBurstEnter — the engine's canonical example for this line (types.ts:368). Comp-dependent and faithful: sole/actual burster -> Intro every FB; never-bursts (2026-07-16 comp N5) -> Highlight every FB. This FIXES the prior Intro-only hard-coding that was the confirmed root cause of the 0.793 COLD (>15%) on N5. The kit's 'for the first time' is a once-per-battle latch; ownBurstGate is per-rotation, exact on the clean graded comps and divergent only in an ungraded alternating multi-B3 comp (flag1)",
+    "skill1: the permanent Crit Damage +20.28% is a single ungated block (same value in both Intro and Highlight), re-applied every Full Burst but capped at maxStacks 1 -> never stacks (refresh); the Intro/Highlight choice moves only the sustained tier",
+    "skill2: the Full-Charge Sustained +318.14% x2 (3s) LAPSES across the reload+charge gap (~3.35s > 3s) so stacks reset to 1 each magazine; the RL cadence tuple (chargeFrames 60 / reloadFrames 141) is the unverified datamine driving this (flag3)",
+    "burst: the Highlight-gated Noise Pollution (ally Hit Rate -100% for 1s) is a real damage COST of the Highlight tier but is documented, not modeled — engine hitRatePct is the core-hit-lift channel R(hr)=(K*scale/2)(1-hr/100) and cannot express 'miss everything' (engine-gap; encoding -100 would model a different, smaller mechanic). Inert in the clean never-burst Highlight case (comp N5) because she never casts her burst there (flag2)"
   ],
   "skill1": [
     {
@@ -40,11 +35,41 @@
           "kind": "buff",
           "stat": "critDamagePct",
           "value": 20.28
-        },
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "ownBurstGate": "cast",
+      "effects": [
         {
           "kind": "buff",
           "stat": "sustainedDamagePct",
           "value": 60.19,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "ownBurstGate": "notCast",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 235.03,
           "durationSec": 10
         }
       ]
