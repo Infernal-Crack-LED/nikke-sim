@@ -55,7 +55,7 @@
 | `everyN` | 3 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny |
 | `everyNOffset` | 1 | neon-vision-eye |
 | `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
-| `fbGate` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
+| `fbGate` | 5 | modernia, moran, soda-twinkling-bunny, velvet, zwei |
 | `flatDamage` | 47 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
@@ -66,7 +66,7 @@
 | `hitCount` | 33 | ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, … |
 | `hitRatePct` | 11 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
-| `inFb` | 6 | modernia, moran, soda-twinkling-bunny, takina, velvet, zwei |
+| `inFb` | 5 | modernia, moran, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
 | `interval` | 6 | helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
@@ -103,8 +103,8 @@
 | `stageEnter` | 8 | cinderella, ein, mast-romantic-maid, mihara-bonding-chain, mint, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
-| `swapGate` | 3 | laplace, snow-white-heavy-arms, zwei |
-| `swapped` | 3 | laplace, snow-white-heavy-arms, zwei |
+| `swapGate` | 4 | laplace, snow-white-heavy-arms, takina, zwei |
+| `swapped` | 4 | laplace, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
 | `targetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
 | `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |

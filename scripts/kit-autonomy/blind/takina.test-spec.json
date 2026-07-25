@@ -1,0 +1,62 @@
+{
+  "slug": "takina",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "start+FB-end: self ATK ▲80.04%/5s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply atkPct≈80.04 self, applied >=2x (start-of-battle + >=1 FB-end refresh); zeroing lowers takina but NOT liter/crown. Fails under nearest-wrong = ally-scoped (would move teammates) or single-trigger (would apply once)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB-enter: self True Dmg ▲35.05%/15s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply trueDamagePct≈35.05 present; zeroing lowers takina, teammate liter unchanged. Fails under nearest-wrong = all-allies scope (35.05 would then move liter) or generic atkPct encoding."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all enemies: Dmg Taken ▲10.09%/5s",
+      "disposition": "FAITHFUL (trigger MEASUREMENT-GATED ⚑)",
+      "assertion": "boss-held buffApply damageTakenPct≈10.09 (casterIdx/targetIdx null); zeroing lowers BOTH takina and liter (proves enemy-debuff/team-wide scope). Fails under nearest-wrong = self-only buff (would not move liter). Cadence not asserted — no stated trigger."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "enemies: Stun 2s",
+      "disposition": "GAP",
+      "assertion": "it.skip — immortal partless scope-lock boss yields no damage-scored consequence for a stun."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all allies: True Dmg ▲140.49%/10s",
+      "disposition": "FAITHFUL (trigger MEASUREMENT-GATED ⚑)",
+      "assertion": "buffApply trueDamagePct≈140.49 hits >=2 distinct ally targetIdx; zeroing lowers teammate liter. Fails under nearest-wrong = self-only (140.49 wouldn't move liter) — the discriminator vs the 35.05 self line."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self weaponSwap 200.64% ATK/10s",
+      "disposition": "FAITHFUL",
+      "assertion": "zeroing weaponSwap.damagePct lowers takina total; takina damage events fire inFullBurst==true (swap window opens). Non-vacuous because both swapped and base-fire states occur. Fails under nearest-wrong = swap unmodeled (no delta)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "self: normal attacks deal true dmg 10s",
+      "disposition": "GAP / UNMODELED",
+      "assertion": "it.skip — no schema primitive converts normal-attack damage TYPE to true (weaponSwap has no flavor field; trueDamagePct is a bucket buff, not a type flip). Belongs in note/unmodeled."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "targets hit: Dmg Taken ▲6.04%/5s",
+      "disposition": "FAITHFUL",
+      "assertion": "boss buffApply damageTakenPct≈6.04 present (distinct value from skill2's 10.09). Fails under nearest-wrong = merged into the 10.09 debuff or omitted."
+    }
+  ],
+  "fixtures": "controlComp('takina', true) — liter(B1)/crown(B2)/takina(B3)/helm(B3), boss Fire, focus takina. helm=true kept: none of takina's discriminators read a stat helm confounds (helm buffs are generic support and do not create false 80.04/35.05/140.49/10.09/6.04 magnitudes). The chain is REQUIRED so Full Bursts occur — otherwise skill1B (FB-enter), skill1A's FB-end refresh, and the entire burst branch are un-exercised (vacuous). Counterfactuals use withPatchedOverride('takina', …) mutating effects by stat/kind+value so they are robust to the driver's unseen block layout.",
+  "gaps": [
+    "skill2 'Stun for 2 sec' — it.skip: immortal partless scope-lock boss has no damage-scored consequence for enemy stun; presence-only, not discriminating.",
+    "burst 'Normal attacks deal true damage for 10 sec' — it.skip: no type-conversion primitive in the effect schema (weaponSwap lacks a flavor field; trueDamagePct is a Damage-Up bucket buff, not a normal-attack damage-TYPE flip). Belongs in the override note/unmodeled.",
+    "⚑ skill2 trigger cadence: kit gives skill2 NO activation clause. Taxonomy default -> interval, but the exact interval sec is datamine/measurement-gated. Tests assert effect PRESENCE + team-wide scope, deliberately NOT cadence/timing.",
+    "⚑ skill1A dual trigger: 'start of battle' (t=0 passive-like) AND 'when Full Burst ends' (fullBurstEnd). Modeled/asserted as >=2 applications; the exact split between start vs refresh count depends on FB frequency in the fixture and is not pinned to an absolute count."
+  ],
+  "model": "claude-opus-4-8"
+}

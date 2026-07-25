@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 19,
+      "unit-tested": 20,
       "authored": 22,
-      "audited": 31,
+      "audited": 30,
       "reconciled": 4,
       "pending": 1
     },
@@ -1041,7 +1041,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9788
+            "ratio": 0.979
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -1053,8 +1053,8 @@
           }
         ],
         "n": 3,
-        "mean": 0.9528,
-        "mad": 0.0472,
+        "mean": 0.9529,
+        "mad": 0.0471,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1883,7 +1883,7 @@
           },
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.1584
+            "ratio": 1.1589
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
@@ -1891,8 +1891,8 @@
           }
         ],
         "n": 4,
-        "mean": 0.979,
-        "mad": 0.1002,
+        "mean": 0.9792,
+        "mad": 0.1003,
         "band": "±15%",
         "temp": "OK  ·"
       }
@@ -2311,7 +2311,7 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.6407
+            "ratio": 0.6405
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -2320,7 +2320,7 @@
         ],
         "n": 2,
         "mean": 0.9032,
-        "mad": 0.2625,
+        "mad": 0.2626,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2431,12 +2431,12 @@
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 1.2248
+            "ratio": 1.2249
           }
         ],
         "n": 1,
-        "mean": 1.2248,
-        "mad": 0.2248,
+        "mean": 1.2249,
+        "mad": 0.2249,
         "band": ">15%",
         "temp": "HOT ▲"
       }
@@ -3660,23 +3660,26 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "true-damage buffs verified firing (trueNormals stamps trueFlavor on swap shots); values exact. F5 burst fbGate->swapGate; F6 swap-window shot economy unmeasured (~1.044 HOT)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/takina.json + scripts/kit-autonomy/manual-review/takina.md.",
+          "med ENGINE (burst): True swap normals still CRIT in the engine — the §2c 'true damage cannot crit' carve-out is not plumbed for swap normals",
+          "med FIDELITY (skill2): skill2 modeled as uptime-average permanents (3.36/93.66) rather than the engine-expressible interval pulse both blind agents chose; only steady-state-equivalent for time-uniform damage"
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "Solo sniper gauge recording (A22) + focus/unfocused gauge steps (A24); run G 1.01 after SR-gen fix",
+      "evidence": "Solo sniper gauge recording (A22) + focus/unfocused gauge steps (A24); run G 1.01 after SR-gen fix | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged — both blind re-derivations independently reproduced the structure + the swapGate FIX",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "Owner spot-check (manual-review/takina.md §4): (1) skill2 15s cooldown is COMMUNITY-sourced (Prydwen) — measure the real cooldown/pulse and consider switching the uptime-average permanents (3.36/93.66) to the engine-expressible interval-pulse (10.09/140.49 at 5s/10s); pulse-vs-swap-window alignment may matter for her burst-concentrated true damage. (2) ENGINE: true swap normals crit (sim.ts:2842 crit:true; §2c carve-out covers riders/RIDER_CRIT only, not swap normals) — broad blast radius (chisato/laplace), needs owner ruling, not changed here. (3) swap-shot economy kit-silent ⚑. (4) battle-start ATK activation UNMODELED (no battleStart trigger).",
       "unmodeled": {
         "skill1": [
           "Activates at the start of battle: ATK ▲ 80.04% for 5 sec (the battle-start activation only; the Full-Burst-end activation of the same line IS modeled as the fullBurstEnd block — engine has no battleStart trigger and passive-trigger buffs ignore durationSec, sim.ts:983-993, so this instance is not override-expressible today)"
@@ -3686,16 +3689,21 @@
         ],
         "burst": []
       },
+      "caveats": [
+        "⚑ S2 15s cooldown is COMMUNITY-sourced (Prydwen), NOT in the kit prose — the uptime-average values (damageTakenPct 3.36 = 10.09 x 5/15; trueDamagePct 93.66 = 140.49 x 10/15) depend on it. CALIBRATED; recipe: read the real skill2 cooldown + pulse shape from a focused Takina recording and rescale (value x uptime/CD). An interval-trigger pulse (10.09/140.49 for 5s/10s every CD) is the behavior-equivalent alternative the blind S2b reviewer independently proposed; both average to the same steady-state.",
+        "⚑ swap-shot economy (cadence / charge behaviour / ammo of the swapped 200.64% weapon) is kit-silent (ALWAYS-⚑ #3) — estimated optimistically by the engine's swap model; the kit gives no Full Charge line so no chargeMultPct.",
+        "⚑ true swap normals crit in the engine (sim.ts:2842 crit:true; §2c 'true damage cannot crit' carve-out covers riders/RIDER_CRIT only, not swap normals). Engine-fidelity gap; board impact unmeasured — owner spot-check, not an override encoding."
+      ],
       "board": {
         "records": [
           {
             "comp": "PG iron sweep (boss Electric)",
-            "ratio": 0.9158
+            "ratio": 0.9159
           }
         ],
         "n": 1,
-        "mean": 0.9158,
-        "mad": 0.0842,
+        "mean": 0.9159,
+        "mad": 0.0841,
         "band": "±15%",
         "temp": "COLD ▼"
       }

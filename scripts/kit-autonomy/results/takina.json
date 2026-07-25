@@ -1,0 +1,123 @@
+{
+  "slug": "takina",
+  "kitDescription": "Takina is a Burst II SR/Iron supporter whose value is almost entirely true-damage-scoped. Skill 1 gives her a self ATK ▲80.04% (at battle start and each time Full Burst ends) and a self True Damage ▲35.05% when Full Burst begins. Skill 2 is a periodic pulse that debuffs the boss (Damage Taken ▲10.09% + a 2s stun) and grants the whole team True Damage ▲140.49%. Her burst swaps her weapon to a 200.64%-per-shot normal attack for 10s and converts those normals to true damage, which is the mechanic that unlocks her own 35.05% and the team's 140.49% True-Damage buffs on her swap output; the swap shots also stack a per-hit Damage Taken ▲6.04% on the target. Because True-Damage buffs are flavor-gated in the engine, her kit's payoff is concentrated in her own 10s burst window and is largely inert on allies who deal no true damage.",
+  "convergence": {
+    "s2b_fable_preop": {
+      "model": "claude-fable-5",
+      "leakDetected": null,
+      "result": "7/8 lines converge on disposition and trigger identity. Independently derived skill1 ATK on fullBurstEnd (not fullBurstEnter), skill1 TrueDmg 35.05 on fullBurstEnter (not burstCast), weaponSwap 200.64 on burstCast, and — critically — the burst 6.04 debuff as shotFired-shaped with swapGate:'swapped' (matching the driver's FIX). Divergence: proposed an interval-trigger PULSE for skill2 (real 10.09/140.49 + 5s/10s durations at the skill CD) rather than the driver's uptime-average permanents; flagged the true-damage conversion as a schema GAP (trueNormals line was redacted from its packet)."
+    },
+    "s5_blind_tests": {
+      "model": "claude-opus-4-8",
+      "leakDetected": null,
+      "specConvergence": "Spec table converges with the driver on every line's disposition (ATK 80.04 self, TrueDmg 35.05 FB-enter self, boss Damage-Taken team-wide debuff, ally TrueDmg team buff, weaponSwap 200.64, 6.04 boss debuff, stun GAP). Only spec-level divergence is the skill2 VALUE (raw 10.09/140.49 interval-pulse vs the driver's uptime-average 3.36/93.66 — the documented ⚑) and the trueNormals line flagged as no-primitive (redaction artifact).",
+      "testRun": "SUITE ERROR — 16 tests, all 16 SKIPPED, 0 run. beforeAll threw TypeError: o.blocks is not iterable (the counterfactual helpers assume a `blocks` array; override shape is {skill1,skill2,burst}). Classified as a DOCUMENTED BLIND HARNESS ARTIFACT (identical to the tove S5 o.blocks no-op), NOT an override divergence; the controlComp B2-contention fixture and the u.total/totalDamage misread would further confound even if it loaded. Convergence is established by the fixture-independent spec table + S6 override, not this run."
+    },
+    "s6_blind_override": {
+      "model": "claude-opus-4-8",
+      "leakDetected": null,
+      "result": "Independently reproduced the skill1/skill2/burst structure AND the swapGate:'swapped' gate on the burst 6.04 debuff — cross-family corroboration of the driver's fbGate→swapGate FIX. Divergences adjudicated: (a) skill2 as interval(sec=20) pulse with raw magnitudes — behavior-equivalent steady-state to the driver's uptime-average, driver better-sourced (Prydwen 15s) + fight-validated; (b) trueNormals dropped as 'no type-conversion primitive' — a RECON_ERROR forced by the mandatory redaction of the trueNormals schema line, which caused S6 to UNDER-model takina (her swap shots never receive the 35.05/93.66 true-damage buffs); (c) battle-start ATK encoded as passive+durationSec — S6 itself flagged the over-credit risk, confirming the driver's UNMODELED is the safer/faithful choice."
+    },
+    "overall": "CONVERGENT — both cross-family re-derivations agree on every disposition and independently reproduced the swapGate FIX; the only substantive divergences (skill2 mechanism, trueNormals GAP) resolve in the driver's favor (better-sourced steady-state; redaction-forced recon error)."
+  },
+  "lineFindings": [
+    {
+      "slot": "skill1",
+      "kitLine": "battle-start ATK ▲80.04% 5s",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "Engine has no battleStart trigger and a passive-trigger buff ignores durationSec (sim.ts:983-993), so encoding it would over-credit a permanent 80.04% ATK. Driver documents it UNMODELED in override.unmodeled + the note; T1 pins NO frame-0 80.04. Faithful choice; S6's passive+durationSec alternative self-flagged the over-credit."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB-end ATK ▲80.04% 5s",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "fullBurstEnd → self atkPct 80.04, 5s. Cross-family corroborated (fable). Frame-discriminated vs fullBurstEnter (T2) and vs allies-target. Fires per Full Burst over 180s."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB-enter True Dmg ▲35.05% 15s",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "fullBurstEnter → self trueDamagePct 35.05, 15s (outlasts FB by 5s, not truncated to 10s). Both blind agents land fullBurstEnter NOT burstCast. Flavor-gated (sim.ts:1414) so live only on her true-flavored swap shots — correctly scoped by the engine."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "enemies Dmg Taken ▲10.09% 5s",
+      "disposition": "FAITHFUL",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "COMMUNITY",
+      "note": "Boss debuff, casterIdx/targetIdx null, team-wide benefit. Modeled as uptime-average permanent damageTakenPct 3.36 (=10.09×5/15) on a Prydwen-sourced 15s CD. Cadence + steady-state approximation is a documented CALIBRATED ⚑; magnitude is measurement-gated. See gotcha — the interval-pulse (blind) encoding is engine-expressible and arguably more faithful."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stuns for 2 sec",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "Boss-inert: the partless v1 boss does not fire/charge/reload, so a stun moves zero damage. Documented in unmodeled; T6 pins that skill2 emits exactly {damageTakenPct, trueDamagePct} and no stun stat — distinguished from a silent drop. Genuinely-skippable class; both blind agents agree."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "allies True Dmg ▲140.49% 10s",
+      "disposition": "FAITHFUL",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "COMMUNITY",
+      "note": "All allies incl. self, uptime-average permanent trueDamagePct 93.66 (=140.49×10/15) on the 15s CD. Flavor-gated so inert on non-true allies (defuses the '+140% unscoped Damage-Up' trap both blind agents warned of) and live on takina's swap shots. Same documented ⚑ mechanism divergence as the enemy debuff line."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "weaponSwap 200.64% 10s",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "burstCast → self weaponSwap damagePct 200.64, 10s. Per-shot multiplier over the window (not a one-time nuke). Fires on takina's ~10 casts. Swap-shot economy (cadence/ammo/charge) is kit-silent — documented ALWAYS-⚑ #2, measurement-gated."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "normals deal true damage 10s",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "trueNormals:true on the weaponSwap — the primitive EXISTS (types.ts:225; sim.ts:2848/2874). This is the load-bearing line that routes her 35.05 + the team 93.66 True-Damage buffs onto her swap output. Both blind agents flagged it as no-primitive only because the trueNormals schema line NAMING Takina was redacted from their packets (RECON_ERROR); the driver's encoding is faithful and correctly resolves the flavor conversion. S6's override under-models takina by dropping it."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "targets hit Dmg Taken ▲6.04% 5s",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "THE FIX: shotFired + swapGate:'swapped' (fires iff the swap weapon is live), replacing the shipped fbGate:'inFb'. For a focused sole-B2, swap windows and FB windows overlap but are NOT identical (5 of her ~10 swap windows have no FB); swapGate is the faithful gate for a debuff carried by the swap weapon's hits. Independently derived by BOTH fable S2b and opus S6 — cross-family corroborated. T8 discriminates it RED vs shipped fbGate and vs ungated."
+    }
+  ],
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "burst",
+      "summary": "True swap normals still CRIT in the engine — the §2c 'true damage cannot crit' carve-out is not plumbed for swap normals",
+      "evidence": "sim.ts:2842 hardcodes crit:true for normal shots (swap included); the §2c carve-out (owner ruling 2026-07-21) is plumbed only for riders via RIDER_CRIT (sim.ts:84/2891), not swap normals. Measured: takina's 200.64% swap shots have critEligible===true.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Engine-fidelity question with broad blast radius (chisato/laplace share the swap-normal path) — needs owner ruling, NOT a change to this override. Recipe: extend the RIDER_CRIT crit-suppression to weaponSwap.trueNormals shots if §2c should apply to them, then re-measure the affected units' boards. Board impact currently unmeasured; the trueNormals encoding itself is faithful regardless."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "skill2 modeled as uptime-average permanents (3.36/93.66) rather than the engine-expressible interval pulse both blind agents chose; only steady-state-equivalent for time-uniform damage",
+      "evidence": "Driver used passive+uptime-average (non-prose magnitudes 3.36/93.66 on a Prydwen 15s CD); an interval trigger DOES honor durationSec (unlike passive) and would pulse the prose magnitudes 10.09/140.49 for 5s/10s — the encoding both fable S2b and opus S6 independently reached. The two are only behavior-equivalent for uniformly-distributed damage; takina's own true damage is burst-concentrated in a 10s swap window, where a pulse's alignment vs a flat 93.66 can differ materially.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Not a fudge and correctly flagged CALIBRATED ⚑ with recipe/tier — acceptable for GO. But the interval-trigger pulse is the more faithful representation (models the real pulsing mechanic, uses prose magnitudes, engine-expressible). Recipe: measure the real skill2 cooldown + first-fire phase + pulse shape from a focused Takina recording; prefer re-encoding as interval(sec=measured) with 10.09/140.49 at 5s/10s durations, and verify the pulse-vs-burst alignment doesn't over/under-credit her swap-window true damage."
+    }
+  ],
+  "discriminationOk": true,
+  "discriminationNote": "§8 matrix: 22 tests, no vacuous test (no assertion is GREEN under both shipped and its counterfactual). Every FAITHFUL pin GREEN vs shipped; all 12 named counterfactuals RED (trigger/target/value/duration/gate all discriminated). The T8 FIX line is RED vs the shipped fbGate and GREEN vs swapGate. Fire-rate 'modeled≠working' check passes: burst blocks fire on takina's ~10 casts, skill1 FB-end/FB-enter blocks fire per Full Burst, skill2 passives apply at frame 0 and persist — each block fires at the prose-implied cadence over 180s. Fixture correctly avoids the controlComp B2-contention trap (sole-B2 liter/takina/helm; takina casts 10× vs 5 team FBs, exposing the swapGate-vs-fbGate asymmetry).",
+  "faithfulnessScore": 1.0,
+  "verdict": "GO",
+  "verdictRationale": "All 9 kit lines are FAITHFUL or DOCUMENTED_GAP — no SILENT_DROP, no REAL-GOTCHA in the override encoding. The three adjudicated driver-vs-blind divergences all resolve in the driver's favor: (1) the swapGate:'swapped' FIX on the burst 6.04 debuff is cross-family corroborated (independently derived by both fable S2b and opus S6) and is the faithful gate for a swap-weapon on-hit debuff; (2) trueNormals:true is a real, existing engine primitive that the blind agents only missed because the trueNormals schema line naming Takina was redacted from their packets (RECON_ERROR) — the driver's encoding correctly wires the 35.05/93.66 True-Damage buffs onto her swap output, and S6's override under-models her by dropping it; (3) the battle-start ATK is correctly UNMODELED because the engine has no battleStart trigger and a passive would over-credit (S6's passive+durationSec self-flagged this). Two documented, non-blocking issues remain for owner attention, ranked: (a) the true-swap-crit ENGINE gotcha — swap normals crit despite the §2c 'true damage cannot crit' carve-out, a broad-blast-radius engine-fidelity question (chisato/laplace share the path) that must NOT be changed inside this override; and (b) the skill2 FIDELITY divergence — the uptime-average permanents are a legitimately-flagged CALIBRATED ⚑ steady-state, but the interval-pulse encoding both blind agents chose is engine-expressible, uses the prose magnitudes, and is arguably more faithful given takina's burst-concentrated true damage; the owner should measure the real skill2 cadence/pulse and consider switching. Both residuals are measurement/engine-gated and out of the magnitude scope, so neither blocks GO. Same-model residual to spot-check: the true-swap-crit interaction and the skill2 pulse-vs-swap-window alignment against a focused Takina recording.",
+  "model": "claude-opus-4-8"
+}

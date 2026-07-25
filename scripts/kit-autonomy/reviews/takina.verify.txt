@@ -1,0 +1,38 @@
+S2d INDEPENDENT VERIFICATION GATE — takina (2026-07-24)
+Method: `npx vitest run scripts/tests/units/takina.test.ts` against (i) the unmodified SHIPPED override
+and (ii) each named counterfactual (withPatchedOverride). 22 tests.
+
+Fixture: liter(B1) / takina(B2,SR Iron) / helm(B3,SR Water), boss Fire, focus takina.
+Measured cadence: takina casts 10x, team completes 5 Full Bursts (focused sole-B2 fills gauge faster than
+the chain completes -> 5 non-FB swap windows; this is what makes the T8 swapGate-vs-fbGate gate observable).
+
+--- (i) vs SHIPPED override (fbGate:'inFb' on the burst 6.04 debuff) ---
+FAITHFUL pins (expect GREEN):
+  T1 battle-start ATK UNMODELED (no frame-0 80.04; first at first FB-end) ......... GREEN
+  T2 FB-end ATK 80.04 self 5s (fullBurstEnd frames) ............................... GREEN
+  T3 FB-enter TrueDmg 35.05 self 15s (fullBurstStart frames) ...................... GREEN
+  T4 enemy damageTakenPct 3.36 boss permanent (uptime-average) .................... GREEN
+  T5 ally trueDamagePct 93.66 all-allies permanent (uptime-average) ............... GREEN
+  T6 skill2 emits exactly {damageTakenPct, trueDamagePct} (stUN UNMODELED) ........ GREEN
+  T7 weaponSwap 200.64 swap shots exist + true-flavored (trueDamagePct in dmgUp) .. GREEN
+  T8 PIN every 6.04 application in a [cast,+10s] swap window ...................... GREEN (fbGate windows ⊆ cast windows here)
+FIX line (expect RED vs shipped — to be greened in S3):
+  T8 swapGate fires in non-FB swap windows fbGate cannot .......................... RED  <-- the FIX (fbGate->swapGate)
+
+--- (ii) each named counterfactual (expect RED = the assertion discriminates) ---
+  T2 trigger fullBurstEnter -> lands on FB-START not FB-END frames ................ RED (discriminated)
+  T2 target allies -> hits all 3 slots not just takina ............................ RED (discriminated)
+  T3 trigger burstCast -> lands on cast frames before FB-start .................... RED (discriminated)
+  T3 duration 5s -> not the prose 15s ............................................. RED (discriminated)
+  T4 value 10.09 (raw, no uptime-average) -> 3.36 absent, 10.09 present .......... RED (discriminated)
+  T4 target allies -> buffs team not boss ......................................... RED (discriminated)
+  T5 value 140.49 (raw) -> 93.66 absent, 140.49 present .......................... RED (discriminated)
+  T5 target enemy -> ally buff removed ............................................ RED (discriminated)
+  T7 weaponSwap removed -> no 200.64 shots ........................................ RED (discriminated)
+  T7 trueNormals:false -> swap dmgUp strictly lower (loses trueDamagePct) ......... RED (discriminated)
+  T8 ungated -> fires outside swap windows + more often ........................... RED (discriminated)
+  T8 fbGate (shipped) -> no application outside FB windows (vs swapGate which has)  RED (discriminated)
+
+VERDICT: no test is GREEN under both shipped and its counterfactual (none vacuous). Every FAITHFUL pin is
+GREEN vs shipped; every counterfactual is RED; the single FIX line (T8 swapGate) is RED vs shipped and is
+greened in S3 by changing the burst 6.04 debuff gate fbGate:'inFb' -> swapGate:'swapped'.
