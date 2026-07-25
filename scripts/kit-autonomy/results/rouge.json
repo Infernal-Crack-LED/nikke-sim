@@ -1,0 +1,140 @@
+{
+  "slug": "rouge",
+  "kitDescription": "Rouge is an Electric SR Supporter on Burst I whose entire kit is team support — she has no damage lines of her own anywhere in her three slots. Her biggest contribution is a repeating team-wide burst-cooldown cut: every 8 full-charge shots she shaves 7 seconds off every ally's Burst Skill cooldown (and hands out a small, short Max HP grant at the same time), which accelerates the whole squad's burst rotation. From the back row she grants herself and the two allies on each side a permanent Attack Damage +6.65% under her 'Sword Coin' state, and her burst gives every ally an ATK boost worth 15.07% of her own ATK for 10 seconds. As the fight goes on she upgrades her coin state — Shield Coin after 30 full charges (a 15.2% damage-reduction for her neighbours) and Double Sword Coin after her 5th burst — and each coin tier adds a bigger Max HP grant to her burst. Everything past the CDR, the Attack Damage aura and the burst ATK grant is defensive or Max-HP bookkeeping, which does nothing offensively on a boss that deals no damage and where ally-granted Max HP feeds no ATK conversion.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge 8x -> Max HP +5% caster, 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount{count:8} -> target allies -> buff casterMaxHpPct 5, durationSec 5",
+        "blindSaid": "S5/S6: chargeCounter{8} -> allies -> casterMaxHpPct 5, durationSec 5 (S6 self-flagged 'if chargeCounter is not a real TriggerDef, re-key to hitCount')",
+        "formulaCheck": "Caster-scaled Max HP resolves FLAT at apply time (maxHpFlat); ally-granted Max HP never feeds a teammate's atkOfMaxHpPct (damage-calculation.md 1a, MEASURED cinderella e3) and rouge carries no atkOfMaxHpPct herself -> offensively inert. 'without restoring HP' -> no heal event, correctly absent.",
+        "fireRateOk": true,
+        "explanation": "hitCount is the real engine primitive; chargeCounter is not in the TriggerDef union, so the driver's key is the correct one. An SR is hitsPerShot 1 and auto always full-charges (game-mechanics.md 4), so hits == full charges to within the ~2% early-release rate already documented as unmodeled engine-wide. Cadence: ~82f/shot + 161f reload over 6 rounds ~= 1.8s/shot -> ~99 shots/180s -> the 8-counter fires ~12x. S5 asserts flat-resolved maxHpFlat values >> the raw kit percent and a 5s expiry: GREEN."
+      },
+      {
+        "kitLine": "Cooldown of Burst Skill -7 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "second hitCount{count:8} block -> target allies -> burstCdr{seconds:7}",
+        "blindSaid": "S5 + S6 identical intent (burstCdr 7s, all allies, same 8-full-charge trigger); S2b named it the kit's biggest damage lever",
+        "formulaCheck": "Not a damage-bucket term — a rotation lever. Correctly burstCdr(seconds), not fillGauge(%); all-allies, not self-only; recurring, not oncePerBattle. Split into its own single-effect block (the same split S6 chose deliberately).",
+        "fireRateOk": true,
+        "explanation": "The one line in this kit that actually moves damage, and it is pinned by effect rather than by presence: both the driver's R3 and S5's cfNoCdr show strictly fewer rouge burstCasts over 180s with the effect deleted, so the block is not merely modeled but firing (~7s cut per ~14.5s of shooting against a 20s base CD)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "back row -> Sword Coin: Atk Damage +6.65%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive -> selfAndAdjacent{sides:2} -> buff attackDamagePct 6.65, no duration (continuous)",
+        "blindSaid": "S6 chose selfAndAdjacent sides:1 and self-flagged sides:2 as the alternative reading; S5 asserts only 'narrower than allies'; S2b specified sides:2",
+        "formulaCheck": "'Attack Damage' is the DamageUp bucket (attackDamagePct), NOT the ATK bucket — driver correct; a swap to atkPct is S5's counterfactual B and diverges. 'continuously' -> no expiresFrame (driver test pins expiresFrame === null).",
+        "fireRateOk": true,
+        "explanation": "'self and 2 allies on both sides' is 2 per side = up to 5 units, so the driver's sides:2 is the literal reading and S6's sides:1 is the blind's own flagged alternative (RECON note, not a finding). Positional scope is genuinely discriminated: rouge edge-slotted at index 0 covers {0,1,2} and provably misses slot 3, while the all-allies counterfactual reaches all 4. Back-row activation has no engine row axis — assumed satisfied (rouge is an SR Supporter, standard back-row placement) and documented; both families made the same assumption."
+      },
+      {
+        "kitLine": "FC 30x -> Shield Coin: Dmg Taken -15.2%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "hitCount{count:30} -> selfAndAdjacent{sides:2} -> buff damageTakenPct -15.2 (encoded for completeness, asserted inert); Sword-Coin prerequisite approximated (documented)",
+        "blindSaid": "S6 left it UNMODELED ('no ally damage-reduction stat'); S2b called it UNMODELED-but-status-tracking-required; S5 asserts it is a NEGATIVE ally-scoped value and never a positive boss debuff",
+        "formulaCheck": "damageTakenPct is a BOSS-side term in the Taken bucket (damage-calculation.md 1g) — an ally-held negative value is read by nothing, hence inert. The sign/target trap (flipping it to a positive enemy debuff) is exactly S5's counterfactual G and does move the board, so the faithful encoding is the one being exercised.",
+        "fireRateOk": true,
+        "explanation": "The 30-counter is reachable ~3x in 180s, so the Shield-Coin tier genuinely opens. Both families agree the effect is offensively inert; they differ only on whether to encode it at all. Driver's choice is kit-completeness plus a byte-identical inertness proof — acceptable, with the low-severity channel-semantics caveat in gotchas."
+      },
+      {
+        "kitLine": "Burst 5x -> Double Sword: Max HP +15.08%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCast + everyN:5 -> allies -> buff casterMaxHpPct 15.08, permanent; Shield-Coin prerequisite approximated (documented in note flag 3)",
+        "blindSaid": "S6 modeled it identically but behind a coinStage resourceGate proxy; S2b specified rouge's OWN 5th burstCast (not team full bursts) and warned against reading 'for 5 time(s)' as durationSec 5",
+        "formulaCheck": "Caster-scaled Max HP -> flat maxHpFlat on allies -> feeds no atkOfMaxHpPct -> zero damage. 'continuously' -> no durationSec: driver correct, the durationSec:5 misread is absent.",
+        "fireRateOk": true,
+        "explanation": "Trigger identity is right: rouge's own burstCast counter, not fullBurstEnter. She is the sole B1 in both fixtures so a 5th cast lands roughly two-thirds into the fight; no assertion pins that the 5th cast occurs, but the payload is inert either way so nothing rides on it. The Shield-Coin prerequisite is unexpressible (no self-status primitive) and is documented rather than silently dropped."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK +15.07% of skill user's ATK, 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> allies -> buff casterAtkPct 15.07, durationSec 10",
+        "blindSaid": "S5/S6 identical (casterAtkPct 15.07, allies, 10s); S5 additionally asserts the emitted value exceeds 15.07, proving flat resolution off rouge's staticAtk",
+        "formulaCheck": "'X% of caster's ATK' adds caster staticAtk x X as a FLAT term OUTSIDE the recipient's (1+ATK%) sum (damage-calculation.md 1a; engine uses owner.staticAtk) — casterAtkPct is the correct stat and plain atkPct would wrongly scale each target's own ATK. 10s wall-clock window, applied at cast (pre-FB by the boundary rule) and covering the whole Full Burst.",
+        "fireRateOk": true,
+        "explanation": "FAITHFUL, and load-bearing: deleting it drops the carry's total in both the driver's and S5's runs. One test-quality note (not an encoding fault): the driver's own discriminator for this line is linear magnitude scaling (15.07 -> 30.14 doubles the applied value), which is ALSO green under the atkPct nearest-wrong, so the driver's suite alone does not pin caster-scaling. S5's independent 'value > 15.07' assertion does, and it runs GREEN against the shipped override — the property is verified, just not by the driver's file."
+      },
+      {
+        "kitLine": "Sword Coin: MaxHP +10.15% no-restore, 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "documented verbatim in unmodeled.burst — coin-state-gated, engine tracks no coin state, firing it every cast would over-credit the cadence; offensively inert",
+        "blindSaid": "S6 modeled it behind a coinStage resourceGate proxy (and noted the proxy may be rejected by validate-overrides, damage-neutral either way); S2b marked it FAITHFUL-with-gate",
+        "formulaCheck": "Ally Max HP grant -> no damage path at all (no HP pool, no atkOfMaxHpPct consumer). 'without restoring HP' correctly produces no heal, so crown's on-recovery consumers are not spuriously armed.",
+        "fireRateOk": true,
+        "explanation": "Not modeling an inert, ungateable rider is the conservative choice and is recorded verbatim; S6's resource proxy is the more complete alternative but moves zero damage, so the two encodings are behaviourally identical."
+      },
+      {
+        "kitLine": "Shield Coin: Max HP +20.1%, 10s (restores)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst, verbatim, with the heal asymmetry raised as a tier-2 flag: estimate = inert/no-heal, recipe = focus video with a recovery consumer, does rouge's burst proc crown's recovery buff once Shield Coin is up",
+        "blindSaid": "S2b graded it MISSING and load-bearing (the only Max-HP line lacking 'without restoring HP' -> reads as a real heal, arming on-recovery consumers); S6 modeled it WITH heal{ticks:1} and flagged it unmeasured; S5 filed it as an it.skip GAP with the same recipe",
+        "formulaCheck": "A heal itself deals no damage, but a recovery event is a real cross-unit trigger channel (crown-class 'when recovery takes effect' consumers) — so this is the one non-damage line in the kit that could open a damage path, via a teammate, not via rouge.",
+        "fireRateOk": true,
+        "explanation": "All three families independently spotted the by-contrast reading, so it is not a blind spot — it is an open, correctly-flagged disagreement about a literal-word inference. The driver's conservatism is defensible (the heal only exists once Shield Coin is up, which the engine cannot express, and crown's recovery consumer is typically already saturated), but this is the highest-value residual for the owner: it is the difference between an entirely inert defensive kit and a tandem channel firing every late-fight burst."
+      },
+      {
+        "kitLine": "Double Sword: MaxHP +30.02% no-restore, 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "documented verbatim in unmodeled.burst — coin-state-gated, inert",
+        "blindSaid": "S6 modeled it behind resourceGate coinStage>=3 (cumulative reading); S2b flagged rider multiplicity (exclusive top tier vs stacking tiers) as measurement-gated",
+        "formulaCheck": "Inert ally Max HP; no heal (clause present).",
+        "fireRateOk": true,
+        "explanation": "By omitting all three riders the driver sidesteps the rider-multiplicity question entirely at zero damage cost — the multiplicity only becomes load-bearing if the Shield-Coin heal reading is later confirmed."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2 / burst",
+      "summary": "Coin exclusivity is unresolved and is the only flag that touches damage: if Shield Coin REPLACES Sword Coin at ~30 full charges, the permanent Attack Damage +6.65% dies mid-fight and the shipped model over-credits it for roughly three quarters of the run.",
+      "evidence": "Kit prose: 'Sword Coin: Attack Damage +6.65% continuously' then 'Shield Coin: ... continuously' with no removal or upgrade clause anywhere. attackDamagePct is a DamageUp-bucket term (damage-calculation.md 1e) applied to rouge + 4 neighbours for the whole fight under the shipped reading. Driver ships the permanent-passive reading and flags it (note flag 1); S6 ships the same cumulative reading and flags it identically; S2b pre-registered it as the shared-prior misread it expected both families to make.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Keep the permanent reading (the prose carries no removal clause, so it is the literal one) and leave the flag standing. NEEDS MEASUREMENT — recipe: focus-camera recording of a comp with rouge back-row and a neighbour carry; after ~30 full charges (~45-60s at her ~1.8s/shot cadence) check whether the neighbour's Attack Damage buff icon/value persists alongside Shield Coin. Do not adjust any magnitude to compensate."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "The Shield-Coin burst rider is the only Max-HP line in the kit that omits 'without restoring HP', so read literally it heals — which would fire on-recovery consumers (crown) every late-fight burst; the driver models no heal.",
+      "evidence": "Kit prose, four siblings: 'Max HP +5% ... without restoring HP', '+10.15% ... without restoring HP', '+30.02% ... without restoring HP', vs 'Max HP +20.1% of the skill user's Max HP for 10 sec' — clause absent. A heal deals no damage itself but arms recovery-triggered team buffs, i.e. a cross-unit damage channel. Driver: not modeled, tier-2 flag with recipe. S6 blind: modeled heal{ticks:1}. S2b: graded MISSING / load-bearing. S5: it.skip GAP with the same recipe.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Leave unmodeled pending measurement (it is Shield-Coin-gated, which the engine cannot track, so modeling it unconditionally would over-fire it from t=0). NEEDS MEASUREMENT — recipe: rouge + crown comp, focus crown, confirm Shield Coin is active (>=30 full charges), then check whether crown's 'when recovery takes effect' buff refreshes on rouge's burst cast. If it does, add heal{ticks:1} to that rider only, behind whatever coin-state primitive exists at that time."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2",
+      "summary": "The ally-side 'Damage Taken -15.2%' is encoded as a negative damageTakenPct held by allies, but damageTakenPct is defined by the SSOT as a boss-side term — the value is inert today only because nothing reads an ally-held one.",
+      "evidence": "damage-calculation.md 1g: 'Taken = 1 + (sum Damage Taken up ON THE BOSS ...)'. Driver encodes buff damageTakenPct -15.2 on selfAndAdjacent allies (cites moran.json precedent, not re-verified here) and proves inertness with byte-identical totals; S6 blind refused to encode it at all ('no ally damage-reduction stat'). Both agree the line moves zero damage.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "No change needed now — the inertness assertion is the guard. If a future engine change ever makes ally-held damageTakenPct live, this -15.2 would reduce the team's OUTGOING damage rather than the incoming damage it represents, so either introduce a distinct ally-side damage-reduction stat or move the line to `unmodeled` at that point."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All 9 kit lines are FAITHFUL (4) or DOCUMENTED_GAP (5), and every one of the three lines that can move damage — the S1 team burstCdr 7s per 8 full charges, the S2 Sword Coin attackDamagePct 6.65 on selfAndAdjacent sides:2, and the burst casterAtkPct 15.07 for 10s — is encoded in the right bucket with the right trigger, target and duration semantics, and is proven live rather than merely present (CDR pinned by burstCast-count collapse when deleted; Sword Coin pinned by the positional target set {0,1,2} vs the all-allies counterfactual reaching slot 3; burst ATK pinned by load-bearing deletion). Convergence is mechanical, not rhetorical: the S5 blind test, adapted only for three harness-API mismatches with assertion intent unchanged, is GREEN against the shipped override at 23 passed / 3 documented GAP skips. The three real residuals are all pre-flagged, all measurement-gated, and ranked: (1) coin exclusivity, the only flag that touches damage — if Shield Coin replaces Sword Coin at ~30 full charges the 6.65% Attack Damage should die mid-fight, and all three families independently defaulted to the cumulative reading the prose's missing removal clause supports; (2) the Shield-Coin burst rider's heal asymmetry, where the driver ships no-heal, S6 ships a heal, and S2b graded it MISSING — a genuine cross-family split on a literal-word inference, resolvable only by a crown-recovery focus video; (3) the ally-held negative damageTakenPct, inert today but semantically in the boss-side channel. None is undocumented, so none blocks GO. Two same-model residuals for the owner to spot-check: the driver's own R2 discriminator (linear magnitude scaling) is green under its named nearest-wrong plain-atkPct model, so caster-scaling is pinned only by S5's independent 'flat value > 15.07' assertion — worth folding that assertion into scripts/tests/units/rouge.test.ts; and no assertion pins that rouge reaches a 5th burst cast, so the S2 Double Sword everyN:5 block's firing is inferred from the expected 7-9 full bursts rather than observed (inert either way). The whole kit is zero-damage-line support, so the blast radius of every open flag except coin exclusivity is exactly zero.",
+  "model": "claude-opus-5"
+}

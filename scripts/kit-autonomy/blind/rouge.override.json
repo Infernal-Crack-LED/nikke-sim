@@ -1,0 +1,220 @@
+{
+  "slug": "rouge",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rouge (rouge, SR/Electric/Supporter/Burst I) carries ZERO damage lines — no flatDamage/dot/weaponSwap anywhere in the kit — so her whole contribution is (a) skill2 Sword Coin Attack Damage +6.65% to self+adjacent, (b) burst ATK +15.07% of HER ATK to all allies for 10s, and (c) the skill1 team burst-CDR 7s every 8 full charges, which is the single largest lever in the kit (it accelerates the whole team's rotation). Everything else is Max-HP / damage-taken bookkeeping that is offensively inert in v1 (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct; the boss deals no damage). The three 'Coin' statuses are modeled as a monotonic resource pool `coinStage` (1=Sword from t=0, 2=Shield after 30 full charges, 3=Double Sword after her 5th burst while at Shield), read by resourceGate on the burst tiers — that is a STATE PROXY, not a kit-stated mechanic. ⚑ Coin exclusivity is the load-bearing unknown: this baseline assumes each 'continuously' status PERSISTS once granted (cumulative), so the 6.65% Attack Damage runs the whole fight; if the coins instead REPLACE each other, that buff dies at ~30 full charges and this override over-credits. ⚑ The burst's Shield-Coin tier is the ONLY Max-HP line that omits 'without restoring HP', so it is modeled as also emitting a recovery event (heal) — that is what wires it into an on-recovery consumer such as crown, and it is unmeasured. ⚑ The back-row activation condition has no representation in the engine (no row axis) and is assumed SATISFIED. See caveats.",
+  "resources": [
+    {
+      "name": "coinStage",
+      "initial": 1,
+      "min": 0,
+      "max": 3
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 8
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 5,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 8
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "selfAndAdjacent",
+        "sides": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 6.65
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "coinStage",
+        "min": 1,
+        "max": 1
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "coinStage",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "everyN": 5,
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "coinStage",
+        "min": 2,
+        "max": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 15.08
+        },
+        {
+          "kind": "resource",
+          "name": "coinStage",
+          "delta": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 15.07,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "coinStage",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 10.15,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "coinStage",
+        "min": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 20.1,
+          "durationSec": 10
+        },
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "coinStage",
+        "min": 3
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 30.02,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Shield Coin: Damage Taken ▼15.2% continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ COIN EXCLUSIVITY (only damage-relevant unknown): modeled CUMULATIVE — each 'continuously' status persists once granted, so Sword Coin's Attack Damage ▲6.65% runs the whole fight and the burst Max-HP tiers stack once coinStage=3 (min-gates). If the coins instead REPLACE one another (Sword→Shield→Double Sword ladder), the 6.65% ends at ~30 full charges (~45-50s) and the burst tiers become mutually exclusive (change the burst resourceGates to exact min/max pairs). Kit text carries no removal/upgrade clause, hence the cumulative default.",
+    "⚑ BACK-ROW GATE DROPPED: 'Activates when assigned to the back row in battle' has no engine representation (no row/position axis, and no Block gate expresses it — `formation` only encodes noB1/hasB1). Assumed SATISFIED, so the Sword Coin block is a plain passive from t=0 and coinStage.initial=1. If the sim ever models placement, gate this block and set initial=0.",
+    "⚑ TARGET WIDTH: 'self and 2 allies on both sides' read as selfAndAdjacent sides:1 (self + 1 ally each side = 3 units). Alternative reading is 2 per side (sides:2, 5 units). Only affects who receives the 6.65% Attack Damage (and the inert Shield/Double-Sword HP lines).",
+    "⚑ FULL-CHARGE COUNTER ENCODING: 'attacking with Full Charge for N time(s)' modeled as `chargeCounter` with ONE effect per block — the two skill1 riders (Max HP, burst-CDR) are SPLIT into two single-effect blocks on purpose, because chargeCounter treats effects[P] as per-PHASE (a 2-effect block would fire them on alternating 8-charge cycles, not together). Verify the engine cycles a single-phase counter as 'every N charges'; if not, re-key to hitCount:{count:8} / {count:30} (an SR full-charges every shot, so hits ≈ full charges).",
+    "⚑ RECOVERY EVENT ON THE SHIELD-COIN BURST TIER: three of the four Max-HP lines say 'without restoring HP'; the Shield-Coin burst tier (20.1%) does NOT, so it is modeled with a `heal` effect (ticks:1) to fire allies' `recovery` triggers (crown-style on-recovery consumers). This is a deliberate tandem read of a kit-text distinction, NOT a measured mechanic — it is the only place this override can add damage through a teammate.",
+    "COIN STATE IS A PROXY: coinStage is not a kit-named currency; it exists solely so the burst tiers can be gated on Sword/Shield/Double-Sword status. On the 5th burst, slot ordering (skill2 blocks before burst blocks) may let the Double-Sword tier fire on the same cast that creates the status; in-game it more likely starts the FOLLOWING burst. Offensively inert either way.",
+    "Shield Coin's 'Damage Taken ▼15.2%' on ALLIES is unmodeled: the schema's damageTakenPct is a BOSS debuff (positive = boss takes more), so there is no ally damage-reduction stat to hold it, and the v1 boss deals no damage. The status itself is still tracked (coinStage=2) so the downstream gates stay faithful.",
+    "ALWAYS-⚑ items 5-7 are N/A here: the kit has no damage lines at all, so there is no noFb decision, no multi-projectile split/merge, no Hit-Rate→core magnitude, and no weapon-swap economy. noFb is not set anywhere; noRange is left to the engine.",
+    "Top-level `resources` on an override file is assumed supported (soda-twinkling-bunny precedent). If validate-overrides rejects it, drop the resourceGates and apply all three burst Max-HP tiers ungated — damage-neutral, since every Max-HP grant here is offensively inert."
+  ]
+}

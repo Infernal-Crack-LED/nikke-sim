@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 27,
+      "unit-tested": 28,
       "authored": 18,
-      "audited": 27,
+      "audited": 26,
       "reconciled": 4,
       "pending": 1
     },
@@ -3251,32 +3251,37 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "F1/F2 (P1) burst Max-HP grants DOUBLE-COUNTED (casterMaxHpPct 22 + 22.5 = 44.5% vs kit max 30.02; Double Sword Coin in both skill2+burst) — blast radius = atkOfMaxHpPct consumers (cinderella/maiden), consistent with ~1.060. Backfilled empty unmodeled"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/rouge.json + scripts/kit-autonomy/manual-review/rouge.md.",
+          "med FIDELITY (skill2 / burst): Coin exclusivity is unresolved and is the only flag that touches damage: if Shield Coin REPLACES Sword Coin at ~30 full charges, the permanent Attack Damage +6.65% dies mid-fight and the shipped model over-credits it for roughly three quarters of the run.",
+          "med FIDELITY (burst): The Shield-Coin burst rider is the only Max-HP line in the kit that omits 'without restoring HP', so read literally it heals — which would fire on-recovery consumers (crown) every late-fight burst; the driver models no heal.",
+          "low ENCODING (skill2): The ally-side 'Damage Taken -15.2%' is encoded as a negative damageTakenPct held by allies, but damageTakenPct is defined by the SSOT as a boss-side term — the value is inert today only because nothing reads an ally-held one."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "Positional + Max-HP grant rebuilt from run-E e/e2/e3 videos; coin values timeline-averaged; 1.02",
+      "evidence": "Positional + Max-HP grant rebuilt from run-E e/e2/e3 videos; coin values timeline-averaged; 1.02 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; 3 offensive lines (burstCdr 7s/8FC, attackDamagePct 6.65 selfAndAdjacent sides:2, casterAtkPct 15.07/10s) proven live; inert Max-HP grants (ally-granted, no atkOfMaxHpPct feed per damage-calc.md:106) asserted zero-damage; resolves prior F1/F2 double-count finding",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "coin-exclusivity (does 6.65% lapse at Shield Coin @30FC? med); Shield-Coin burst-rider heal asymmetry (20.1% omits no-restore clause, could arm crown recovery; med); ally-held negative damageTakenPct inert (low)",
       "unmodeled": {
-        "skill1": [
-          "Activates after landing 8 Full Charge attack(s): the Max HP granted (5% of caster's Max HP, 5 sec) cannot be restored — the no-restore qualifier is inert (no HP pool / healing modeled); the grant itself IS modeled (as a passive time-averaged 2.3 ⚑)"
-        ],
+        "skill1": [],
         "skill2": [
-          "Activates after landing 30 Full Charge attack(s) while in Sword Coin state: grants self and 2 ally unit(s) on both sides the Shield Coin — Damage Taken ▼ 15.2% continuously (defensive; boss deals no damage in v1)",
-          "Coin state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 Burst uses in Shield Coin) is not tracked as engine state; it is absorbed into ⚑ timeline-averaged values"
+          "Coin-state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 own bursts in Shield Coin) is not tracked as engine state; the coin-gated lines are encoded on their nearest trigger with the gate approximated (all inert — see note flag 3)"
         ],
-        "burst": []
+        "burst": [
+          "Activates when in Sword Coin status. Affects all allies. Max HP ▲ 10.15% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert AND coin-state-gated — the engine tracks no coin state, so the per-tier burst rider cannot be gated precisely; documented rather than fired every cast, which would over-credit the cadence)",
+          "Activates when in Shield Coin status. Affects all allies. Max HP ▲ 20.1% of the skill user's Max HP for 10 sec (casterMaxHpPct ALLY grant, offensively inert, coin-state-gated; HEAL ASYMMETRY ⚑ — this rider ALONE omits 'without restoring HP', so literally it also restores HP and could arm on-recovery consumers, but it is Shield-Coin-gated which the engine cannot track and the marginal recovery-consumer impact is small — see note flag 2)",
+          "Activates when in Double Sword Coin status. Affects all allies. Max HP ▲ 30.02% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert, coin-state-gated)"
+        ]
       },
       "board": {
         "records": [

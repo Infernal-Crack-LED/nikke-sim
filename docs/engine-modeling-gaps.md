@@ -52,7 +52,7 @@
 | `delaySec` | 3 | asuka-wille, rapi-red-hood, snow-white |
 | `durationShots` | 2 | helm, zwei |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
-| `everyN` | 3 | mast-romantic-maid, neon-vision-eye, soda-twinkling-bunny |
+| `everyN` | 4 | mast-romantic-maid, neon-vision-eye, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 1 | neon-vision-eye |
 | `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
 | `fbGate` | 5 | modernia, moran, soda-twinkling-bunny, velvet, zwei |
