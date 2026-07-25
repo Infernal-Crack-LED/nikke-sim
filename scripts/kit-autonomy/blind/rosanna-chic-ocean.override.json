@@ -1,0 +1,114 @@
+{
+  "slug": "rosanna-chic-ocean",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 24.26,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 15
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 24.26,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 15
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 70.4,
+          "durationSec": 15,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 20.32,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 32.23,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5 time(s) and lasts for 30 sec. — TriggerDef has no part-destruction kind and the v1 scope-lock boss is partless, so the condition is unreachable in scope; NOT a defensive skip. Would be worth up to +15% of caster ATK (flat) to all allies in parts content."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 cadence: the kit text gives NO activation clause for either skill2 line, so both are keyed to interval sec:15 (first fire t=15s) as a convention. The real datamined skillCooldownsSec was not available in blind mode. If the true CD is < 15s the 15s DoT instances OVERLAP (engine appends, never refreshes) and sustained damage MULTIPLIES; if > 15s there are DoT-free gaps. This is the single largest magnitude risk in this override.",
+    "⚑ skill2 DoT first-fire phase (t=CD vs t=0) is a convention, not a measurement — t=0 vs t=15 is one full 15-tick instance of total damage on a 3-minute fight.",
+    "⚑ DoT crit left OFF (global DOT_CRIT default-OFF; crit is opt-in only where measured). Not measured for this unit.",
+    "⚑ skill1 part-destruction ATK stack unmodeled (see unmodeled.skill1) — this is a real team-wide flat-ATK buff, inert only because the scope boss has no parts.",
+    "Both partsDamagePct buffs (skill1 + skill2, 24.26% each) are parsed but INERT in v1 (partless boss). Kept for kit completeness / future consumers; they move no damage today, so their trigger choice is damage-neutral.",
+    "skill1's parts buff is one-shot (\"Activates at the start of battle\") — modeled as a passive with durationSec 15, i.e. live only for t=0..15s, not re-applied.",
+    "noFb NOT set anywhere (FB-by-timing default ON); noRange not set (engine-automatic). No weapon-state, heal/shield/DEF/HP/lifesteal, Hit-Rate, pierce, resource/stack-currency, weapon-swap, or multi-projectile lines exist in this kit — nothing auto-skipped."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rosanna: Chic Ocean (AR/Wind/Supporter/Burst II) is a support with exactly one damage channel of her own: the skill2 sustained DoT (70.4% of final ATK/sec for 15s on the nearest enemy). Her offensive team contribution is the burst pair — Sustained Damage ▲20.32% to all allies (additive Damage-Up bucket, so it lifts every ally's sustained-flavored damage including her own DoT) and a boss debuff Damage Taken ▲32.23%, both 10s and both keyed to burstCast (her own burst block carries no \"entering Full Burst\" clause, so keying them to fullBurstEnter would over-credit in any multi-B2 rotation). The two Damage to Parts ▲24.26% lines are modeled but inert on the partless v1 boss. The skill1 part-destruction ATK-stack line (3% of caster ATK ×5, 30s, all allies) is unreachable in v1 scope and is recorded verbatim in unmodeled rather than approximated with an invented trigger. Load-bearing unknown: the skill2 cooldown, which sets both DoT cadence and whether DoT instances tile or overlap."
+}

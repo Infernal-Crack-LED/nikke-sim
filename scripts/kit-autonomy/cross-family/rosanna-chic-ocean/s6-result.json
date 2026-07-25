@@ -1,0 +1,213 @@
+{
+  "slug": "rosanna-chic-ocean",
+  "leakDetected": null,
+  "override": {
+    "slug": "rosanna-chic-ocean",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "partsDamagePct",
+            "value": 24.26,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 15
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "partsDamagePct",
+            "value": 24.26,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 15
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 70.4,
+            "durationSec": 15,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 20.32,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 32.23,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5 time(s) and lasts for 30 sec. — TriggerDef has no part-destruction kind and the v1 scope-lock boss is partless, so the condition is unreachable in scope; NOT a defensive skip. Would be worth up to +15% of caster ATK (flat) to all allies in parts content."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill2 cadence: the kit text gives NO activation clause for either skill2 line, so both are keyed to interval sec:15 (first fire t=15s) as a convention. The real datamined skillCooldownsSec was not available in blind mode. If the true CD is < 15s the 15s DoT instances OVERLAP (engine appends, never refreshes) and sustained damage MULTIPLIES; if > 15s there are DoT-free gaps. This is the single largest magnitude risk in this override.",
+      "⚑ skill2 DoT first-fire phase (t=CD vs t=0) is a convention, not a measurement — t=0 vs t=15 is one full 15-tick instance of total damage on a 3-minute fight.",
+      "⚑ DoT crit left OFF (global DOT_CRIT default-OFF; crit is opt-in only where measured). Not measured for this unit.",
+      "⚑ skill1 part-destruction ATK stack unmodeled (see unmodeled.skill1) — this is a real team-wide flat-ATK buff, inert only because the scope boss has no parts.",
+      "Both partsDamagePct buffs (skill1 + skill2, 24.26% each) are parsed but INERT in v1 (partless boss). Kept for kit completeness / future consumers; they move no damage today, so their trigger choice is damage-neutral.",
+      "skill1's parts buff is one-shot (\"Activates at the start of battle\") — modeled as a passive with durationSec 15, i.e. live only for t=0..15s, not re-applied.",
+      "noFb NOT set anywhere (FB-by-timing default ON); noRange not set (engine-automatic). No weapon-state, heal/shield/DEF/HP/lifesteal, Hit-Rate, pierce, resource/stack-currency, weapon-swap, or multi-projectile lines exist in this kit — nothing auto-skipped."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rosanna: Chic Ocean (AR/Wind/Supporter/Burst II) is a support with exactly one damage channel of her own: the skill2 sustained DoT (70.4% of final ATK/sec for 15s on the nearest enemy). Her offensive team contribution is the burst pair — Sustained Damage ▲20.32% to all allies (additive Damage-Up bucket, so it lifts every ally's sustained-flavored damage including her own DoT) and a boss debuff Damage Taken ▲32.23%, both 10s and both keyed to burstCast (her own burst block carries no \"entering Full Burst\" clause, so keying them to fullBurstEnter would over-credit in any multi-B2 rotation). The two Damage to Parts ▲24.26% lines are modeled but inert on the partless v1 boss. The skill1 part-destruction ATK-stack line (3% of caster ATK ×5, 30s, all allies) is unreachable in v1 scope and is recorded verbatim in unmodeled rather than approximated with an invented trigger. Load-bearing unknown: the skill2 cooldown, which sets both DoT cadence and whether DoT instances tile or overlap."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'passive'} (engine applies at frame 0 = start of battle); target allies (\"Affects all allies\", includes self)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage to Parts ▲ 24.26% for 15 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff partsDamagePct 24.26, durationSec 15 — one-shot window t=0..15s. Parsed-but-inert in v1 (partless boss); kept per prior 7 (keep the stat buff even where the engine treats it inert)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when an ally or self destroys a part",
+      "status": "SKIPPED",
+      "effectOrReason": "No part-destruction TriggerDef kind exists, and the v1 scope-lock boss has no destructible parts, so the activation condition can never be satisfied. Recorded verbatim in unmodeled.skill1 (not an `ignored` block — validator rejects those). Explicitly NOT auto-skipped as 'defensive': it is an offensive ATK grant, just unreachable in scope."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 3% of the skill user's ATK",
+      "status": "SKIPPED",
+      "effectOrReason": "Would be buff casterAtkPct 3, maxStacks 5, durationSec 30, target allies (flat ATK add scaled off Rosanna's own ATK, i.e. a caster-scaled grant, NOT atkPct). Blocked solely by the unmodelable trigger above; see unmodeled.skill1 + flags"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies. (no activation clause)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies; trigger interval sec:15 ⚑ (kit gives no activation clause → recurring skill-cooldown line per the interval convention)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage to Parts ▲ 24.26% for 15 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff partsDamagePct 24.26, durationSec 15 (duration == assumed CD ⇒ continuous once live). Inert on the partless boss"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects the enemy nearest to crosshair",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss fight, so 'nearest to crosshair' resolves to the only enemy; no targeting nuance to model"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "70.4% of final ATK sustained every 1 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot atkPct 70.4, durationSec 15, intervalSec 1, flavor 'sustained' — ONE instance per interval fire; appends (never refreshes), so instances tile back-to-back under the 15s/15s assumption. crit omitted (default-OFF, measured-only); noRange/noFb not set"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Sustained Damage ▲ 20.32% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (own burst block, no Full-Burst-entry clause), target allies, buff sustainedDamagePct 20.32, durationSec 10 — additive Damage-Up bucket, self-synergises with her own skill2 DoT"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▲ 32.23% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, target enemy, buff damageTakenPct 32.23, durationSec 10 — boss DEBUFF benefiting the whole team (prior 4), not a self buff; emits with casterIdx/targetIdx null"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger / skill2[1].trigger",
+      "estimate": "{kind:'interval', sec:15}, first fire t=15s",
+      "reasoning": "Neither skill2 ■ header carries an activation clause, so per the trigger-identity taxonomy it is an internal-cooldown (interval) line, not an event trigger. The kit does not state the cooldown; the base-stat block's 'cd 20s' is the Burst II burst cooldown, not the skill-2 CD, and the datamined skillCooldownsSec was withheld in blind mode. I chose sec=15 to match the stated 15s durations (self-tiling, no overlap, no gap) rather than guess a precise unknown. First-fire at t=sec per the interval convention (this is not a force-cast 'Forcefully uses Skill N' kit line, which would first-fire at t=0). CONSEQUENCE: this is the dominant magnitude lever on her whole output — a true CD < 15s makes the 15s DoT instances OVERLAP and multiply (the engine appends and never dedups), while a CD > 15s opens DoT-free gaps.",
+      "recipe": "Read the unit's datamined skillCooldownsSec (skill-2 entry) and set sec to it; if it is < 15 confirm the overlap is real rather than a refresh by counting concurrent sustained popups. Independent check: in footage, time the gaps between successive DoT-tick onsets (first tick of each new instance) and count how many distinct 70.4%-magnitude sustained popups land per second at steady state — 1/sec ⇒ single instance, N/sec ⇒ N-deep overlap. Also pin the first-fire phase off the timestamp of the very first sustained popup relative to the 03:00→02:59 frame."
+    },
+    {
+      "field": "skill1 — part-destruction ATK stack (unmodeled.skill1)",
+      "estimate": "buff casterAtkPct 3, maxStacks 5, durationSec 30, target allies — i.e. up to +15% of Rosanna's ATK as a flat add to every ally, if parts existed",
+      "reasoning": "TriggerDef has no part-destruction kind and the v1 boss is partless, so there is no honest trigger to attach. Inventing one (interval/hitCount) would fabricate a team-wide ATK buff that the real fight never grants — the exact fudge the prime directive forbids. Flagged rather than silently dropped because it is offensive (a caster-scaled ATK grant to all allies), the largest part of her support kit outside the boss, and it becomes load-bearing the moment destructible parts are modeled. Note it pairs with BOTH Damage-to-Parts buffs: her kit is a parts-content package that is largely inert in solo-raid scope.",
+      "recipe": "When destructible parts land in the engine, add a part-destruction trigger and re-enable this block as casterAtkPct 3 / maxStacks 5 / durationSec 30 / target allies, then derive the steady-state stack count from the measured part-destruction rate (per prior 10: sawtooth ⇒ ~cap/2, monotonic ramp ⇒ time-average respecting the stated 30s decay). Until then it must stay in `unmodeled`."
+    },
+    {
+      "field": "skill2[1].effects[0].crit",
+      "estimate": "omitted (non-crit)",
+      "reasoning": "The global DOT_CRIT gate is default-OFF and per-DoT crit is opt-in ONLY where measured (jill's acid tick video-confirmed 99.7% non-crit; mihara's Ensnaring validated 1.03 non-crit; isabel is the lone measured exception). No measurement exists for this unit's sustained DoT, so setting crit:true would be an unmeasured damage add of roughly (critRate × (critMult−1)) on her entire personal damage channel.",
+      "recipe": "In footage of a fight with Rosanna: Chic Ocean firing, classify the once-per-second sustained popups by colour (orange + crit icon vs white) over ≥30 ticks; set crit:true only if a nonzero orange fraction appears, and record the observed fraction in the note."
+    },
+    {
+      "field": "skill1[0] / skill2[0] — partsDamagePct 24.26",
+      "estimate": "modeled at face value, inert in v1",
+      "reasoning": "partsDamagePct is parsed-but-inert on the partless scope-lock boss, so both blocks contribute exactly zero damage today and their trigger/duration choices are damage-neutral. Kept (not skipped) because the stat is a real kit line and a future parts consumer would read it. Flagged so a later reader does not mistake the zero contribution for a modeling error, and does not mistake the buffs for live support value when comparing Rosanna: Chic Ocean against other supporters.",
+      "recipe": "Once parts damage is a live bucket, re-check whether the two 24.26% lines stack additively with each other (same stat, two sources, 15s each) or whether the game treats S1 and S2 as one refreshing buff — read two simultaneous buff icons vs one in footage."
+    },
+    {
+      "field": "burst[0] / burst[1] — trigger burstCast",
+      "estimate": "burstCast (not fullBurstEnter)",
+      "reasoning": "Both burst lines are plain 'Affects all allies / all enemies' with no 'when entering Full Burst' or 'during Full Burst' clause, so they fire on Rosanna: Chic Ocean's OWN cast. Keying them to fullBurstEnter would make them fire on every team Full Burst even on rotations where a different Burst II unit casts instead — a systematic over-credit. Residual uncertainty is only cast-vs-FB-window PHASE: a burstCast buff applies slightly before the FB window opens, so its 10s window and the 10s FB window are offset by the cast animation, which can shave the tail overlap with ally damage.",
+      "recipe": "Confirm from footage that the Sustained Damage ▲ / Damage Taken ▲ buff icons appear only on rotations Rosanna: Chic Ocean personally bursts (run a comp with a second Burst II unit and check the icons on the rotations she sits out). Measure the cast→icon-appearance offset against the FB banner frame if the 10s tail turns out to matter."
+    }
+  ],
+  "model": "claude-opus-5"
+}

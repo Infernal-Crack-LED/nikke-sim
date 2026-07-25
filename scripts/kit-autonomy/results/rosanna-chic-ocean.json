@@ -1,0 +1,89 @@
+{
+  "slug": "rosanna-chic-ocean",
+  "kitDescription": "Rosanna: Chic Ocean is a Wind AR Supporter on Burst II whose kit is built around fighting bosses that have destructible parts. Two separate lines (one firing at the start of battle, one on her Skill-2 cooldown) each give the whole team Damage to Parts ▲24.26% for 15 seconds, and a third line hands every ally a stacking ATK boost worth 3% of her own ATK (up to five stacks, 30 seconds) each time anyone destroys an enemy part. Her only personal damage is a Skill-2 sustained damage-over-time on the enemy nearest her crosshair — 70.4% of her final ATK once per second for 15 seconds. Her burst is pure amplification: Sustained Damage ▲20.32% to all allies plus Damage Taken ▲32.23% on all enemies, both for 10 seconds, which together roughly double the value of her own tick and boost anything else on the team that deals sustained damage. Against the partless scope-lock boss the parts buffs and the part-destroy ATK stacks do nothing at all, so almost all of her real kit value is invisible in this basis and she correctly looks weak here.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S5 'ticks ~1/sec and is MAINTAINED across the fight' (expects 100–200 DoT ticks) — driver ships 75. CADENCE: blind assumed continuous self-tiling because the datamined skillCooldownsSec was withheld in blind mode; the S6 blind writer flagged this exact field as its #1 lever with the recipe 'read the datamined skillCooldownsSec and set sec to it', which resolves to the driver's 30. Ground truth (Section 3) + owner ruling 2026-07-20 back the driver. NOT a divergence.",
+      "S5 'the DoT is real damage on her own row, and inert on teammates' — teammate totals are not byte-identical when the DoT is deleted. Engine-correct: DoT ticks feed the burst gauge (game-mechanics §6, 'skill hits and DoT ticks generate the caster's flat target value'), so deleting 75 ticks perturbs the rotation. Blind modeling assumption, not a driver fault.",
+      "S5 'NON-VACUITY: she is Burst II and actually casts in this fixture' — FIXTURE DEGENERACY: controlComp puts crown (B2) alongside her, crown takes all 10 stage-2 casts, rosanna-chic-ocean casts 0 times. The blind writer's own canary text says a RED here is 'a FIXTURE diagnosis, not a kit-model finding'.",
+      "S5 'the boss debuff benefits the WHOLE team' — vacuous under the same 0-cast fixture.",
+      "S5 'Sustained Damage ▲20.32% lands on all allies at its raw percentage' — vacuous under the same 0-cast fixture.",
+      "S5 'is SUSTAINED-flavored — her own Sustained Damage ▲ moves it' — vacuous under the same 0-cast fixture (no sustainedDamagePct ever applies, so the 400× boost is a no-op).",
+      "S5 'duration is a 10-SECOND wall-clock window, not permanent' — vacuous under the same 0-cast fixture."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Damage to Parts ▲24.26% for 15 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive / allies / buff partsDamagePct 24.26, durationSec 15 — one apply per ally at frame 0, never re-applied",
+        "blindSaid": "S6 identical (passive / allies / partsDamagePct 24.26 / 15s); S2b FAITHFUL ('inert vs partless; single t=0 apply')",
+        "formulaCheck": "partsDamagePct is a DamageUp-bucket term (damage-calculation §1e). The scope-lock boss is partless (memory: test-boss-has-no-parts), so the term is damage-inert; the driver ASSERTS the inertness rather than assuming it (noParts.totals === base.totals, byte-identical for every unit). 'Activates at the start of battle' → one-shot 15s window t=0..15, matching a passive with an explicit durationSec.",
+        "fireRateOk": true,
+        "explanation": "Encoding matches prose scope (all allies), magnitude (24.26, not the lvl-9 value), and duration. Fires: R4 pins exactly 3 frame-0 applies (3 allies) with buffDurSec 15."
+      },
+      {
+        "kitLine": "ATK ▲3% of skill user's ATK, ×5, 30s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim + caveat + ⚑3 with estimate (casterAtkPct 3 ×5 = 15% of HER ATK to all allies) and recipe (part-destroy-triggered casterAtkPct stack, maxStacks 5, durationSec 30); tier stated as out-of-domain. Test R5 is a documented it.skip.",
+        "blindSaid": "S6 unmodeled with the same reasoning and the same 'up to +15% of caster ATK' estimate; S2b independently ruled GAP→unmodeled and independently flagged the stat as casterAtkPct, not atkPct",
+        "formulaCheck": "'X% of the skill user's ATK' resolves to a FLAT add of the caster's base ATK outside the recipient's (1+ATK%) sum (damage-calculation §1a) — i.e. casterAtkPct, and the driver names the right stat. The trigger 'destroys an enemy's part' has no TriggerDef primitive AND cannot fire on a partless boss, so any proxy trigger would over-credit the whole team.",
+        "fireRateOk": true,
+        "explanation": "Genuinely-skippable class: unreachable in this basis, recorded verbatim with a magnitude estimate, correct stat, and a firing recipe. R5's it.skip is a documented skip, not a silent one. The driver's test additionally proves the line is NOT proxied: no casterAtkPct/atkPct/highestAllyAtkPct buff originates from her index."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Damage to Parts ▲24.26% for 15 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval sec:30 / allies / buff partsDamagePct 24.26, durationSec 15 — a DISTINCT block from S1's one-shot",
+        "blindSaid": "S6 identical except interval sec:15 (blind convention, datamined CD withheld); S2b FAITHFUL ('inert; recurring on CD, distinct from S1 one-shot')",
+        "formulaCheck": "No activation clause in the prose → internal-cooldown skill (game-mechanics §9, owner ruling 2026-07-20), cadence = datamined skillCooldownsSec.skill2 = 30, first fire t=CD because there is no 'Forcefully uses Skill 2' clause (memory: skill-cd-firstfire-convention). Same inert DamageUp parts term as S1.",
+        "fireRateOk": true,
+        "explanation": "The duplicated magnitude is kept as two independent sources rather than collapsed. R4 pins the two cadences separately: exactly 3 applies at frame 0 (S1) and recurring applies at t=30/60/90/120/150 (S2 interval:30) — so neither copy is a silent drop of the other."
+      },
+      {
+        "kitLine": "70.4% of final ATK sustained /1s, 15s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval sec:30 / enemy / dot atkPct 70.4, durationSec 15, intervalSec 1, flavor 'sustained' ⇒ 5 windows [31-45]…[151-165] = 75 ticks at exactly 1 tick/sec (42% uptime)",
+        "blindSaid": "S6 structurally identical but interval sec:15 (⇒ ~180 ticks, 100% self-tiling uptime), self-flagged as 'the single largest magnitude risk' with the recipe that resolves to the driver's 30; S5 asserted 100–200 ticks on the same blind assumption. S6 also claims 'DOT_CRIT default-OFF' — that is a RECON_ERROR against the SSOT (DoT crit has been ON by default since 2026-07-21); it changes nothing here because neither override sets a crit field.",
+        "formulaCheck": "Sustained-flavored function damage: crit ON by default, never core, never range, FB by landing time, ticks reference CURRENT buffs (damage-calculation §2c, game-mechanics §9). flavor 'sustained' is what makes the burst's Sustained Damage ▲ eligible via the DamageUp flavor gate (§1e). CD 30 > duration 15 ⇒ no instance overlap, so the 'engine appends, never refreshes' multiplication trap the blind writer warned about cannot fire. Single-target boss makes 'nearest to the crosshair' ≡ target enemy.",
+        "fireRateOk": true,
+        "explanation": "The only substantive S5/S6 divergence, and it resolves in the driver's favour on ground truth the blind agents were denied: the datamined re-activation CD (Section 3) plus the owner's 2026-07-20 ruling. R1 pins the absolute cadence (75 ticks, first at t=31, five 30s-spaced onsets), which is RED under both nearest-wrong models — the replaced invented passive-continuous dur999 encoding (179 ticks from t=1) and a sub-15s-CD overlap trap (~2 ticks/sec). Residual ⚑: the first-fire PHASE (t=CD vs t=0) is still a convention, worth ~15 ticks (~20% of her DoT output) — documented in ⚑2, pinnable only by a popup-cadence read."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Sustained Damage ▲20.32% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / allies / buff sustainedDamagePct 20.32, durationSec 10; applies on each of her 9 cast frames, cast[0]=9.50s < fbStart[0]=10.37s",
+        "blindSaid": "S6 identical, with the explicit reasoning that keying it to fullBurstEnter 'would over-credit in any multi-B2 rotation'; S2b FAITHFUL and independently named burstCast-vs-fullBurstEnter as its #1 damage-at-stake misread",
+        "formulaCheck": "Sustained Damage ▲ is a flavor-gated DamageUp term (§1e) — it lifts sustained-flavored instances only, which is exactly her own DoT here. The burst block carries no 'when entering Full Burst' clause, so burstCast is the right trigger; the cast landing before the FB window opens is the MEASURED boundary rule (game-mechanics §8, FB_PRE_DELAY_FRAMES 22f).",
+        "fireRateOk": true,
+        "explanation": "Trigger identity is discriminated by application-frame timing rather than by a co-B2 fixture (correctly diagnosed as degenerate — crown monopolizes every stage-2 cast). R2 pins apply-frames === her burstCast frames while the fullBurstEnter counterfactual applies on the 5 fullBurstStart frames — different count AND different timing. Flavor scoping is pinned two-sided: DoT dmgUp set {1.0000, 1.2032}, normal-shot dmgUp set exactly {1.0000} over 1648 normals, which kills the attackDamagePct misread. Value 20.32 not lvl-9 19.4."
+      },
+      {
+        "kitLine": "Damage Taken ▲32.23% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast / enemy / buff damageTakenPct 32.23, durationSec 10; boss-held with casterIdx AND targetIdx null; in-window DoT ticks carry mult.taken 1.3223",
+        "blindSaid": "S6 identical; S5 independently asserted the null-caster/null-target boss-held shape and it PASSED against the driver's override; S2b FAITHFUL ('boss-held debuff, casterIdx+targetIdx null; team-wide taken')",
+        "formulaCheck": "Damage Taken ▲ is a boss-side Taken-bucket entry (§1g), multiplying every ally's damage — not an ally-side ATK or Attack-Damage buff. Same burstCast trigger rule as the sustained line.",
+        "fireRateOk": true,
+        "explanation": "R3 pins value, both null indices, the 10s window, the burstCast-frame trigger identity, and liveness via mult.taken {1.0000, 1.3223}; removal collapses taken to 1.0 and drops her total, and the lvl-9 30.76 counterfactual moves the applied value. The team-wide benefit was independently corroborated GREEN in the driver's non-degenerate re-run of the S5 assertion (all allies drop on removal)."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdictRationale": "GO. Mechanically the S5 blind suite runs RED against the driver's shipped override (7 passed / 7 failed / 1 skipped), and I traced all 15 assertions rather than accepting the driver's triage: the failure set is exactly {#7 cadence, #8 gauge-coupling, #9/#10/#12/#13/#15 burst-block}, and the pass/fail/skip arithmetic reconciles, so the driver's classification is verified, not taken on faith. Five of the seven are the blind fixture's own diagnosed degeneracy — controlComp seats crown (B2) beside a Burst-II unit, crown takes all ten stage-2 casts, rosanna-chic-ocean casts zero times, and the blind writer's own non-vacuity canary states in-file that a RED there indicts the fixture, not the model; the driver re-ran those same assertions in a fixture where she owns B2 and got GREEN. One (#8) asserts byte-identical teammate totals when the DoT is deleted, which is wrong on engine grounds the SSOT states plainly (DoT ticks feed the burst gauge, §6), so deleting 75 ticks must perturb the rotation. That leaves exactly ONE substantive divergence — the DoT cadence, 75 ticks (5×15s windows, 42% uptime) vs the blind pair's ~180-tick continuous self-tiling — and it resolves in the driver's favour on ground truth both blind agents were denied: datamined skillCooldownsSec.skill2 = 30 plus the owner's 2026-07-20 internal-cooldown ruling. Critically, the S6 blind writer flagged that exact field as 'the dominant magnitude lever on her whole output' and wrote the recipe ('read the datamined skillCooldownsSec and set sec to it'), which resolves to 30 — so the blind divergence is a converged flag, not a contradiction. Every other line is structurally identical across the driver, the S6 blind override, and the cross-family (claude-fable-5) S2b spec: 6/6 kit lines FAITHFUL or DOCUMENTED_GAP, faithfulness 1.0, no REAL-GOTCHA of any subkind. Discrimination is genuine — eight counterfactuals go RED (invented dur999 continuous → 179 ticks from t=1; lvl-9 67.2/19.4/30.76; fullBurstEnter re-key → 5 FB-start frames vs 9 cast frames; sustained and taken removals; parts removal byte-identical) — and every FAITHFUL block is shown to FIRE at its prose cadence (3 frame-0 parts applies, S2 parts at 30/60/90/120/150, 75 DoT ticks first at t=31, burst pair on all 9 cast frames), so nothing here is modeled-but-inactive. Two residuals for owner spot-check, neither blocking: (1) the S2 first-fire PHASE is still a ⚑ convention — t=CD vs t=0 is one full 15-tick window, ~20% of her DoT output, and only a popup-cadence read pins it; (2) the same-model residual is thinner than usual because S2b came from claude-fable-5, but S5, S6 and this judge are all claude-opus-5, so their agreement on the burstCast trigger identity and the 'sustained' flavor tag proves stability rather than correctness — the flavor tag in particular is load-bearing (it is the sole reason her burst amplifies anything) and is worth one owner glance. Her low output on this board is faithful, not a defect: both Damage-to-Parts lines and the part-destroy ATK stacks are structurally inert against a partless boss, and the driver asserts that inertness byte-identically instead of assuming it.",
+  "model": "claude-opus-5"
+}

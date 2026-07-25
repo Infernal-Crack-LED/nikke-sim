@@ -1,0 +1,55 @@
+{
+  "slug": "rosanna-chic-ocean",
+  "stage": "S2b/S2c — cross-family test-faithfulness review (claude-fable-5) + driver reconciliation",
+  "date": "2026-07-25",
+  "reviewerModel": "claude-fable-5",
+  "reviewerPacket": "scripts/kit-autonomy/cross-family/rosanna-chic-ocean/s2b-packet.md",
+  "reviewerResult": "scripts/kit-autonomy/cross-family/rosanna-chic-ocean/s2b-result.json",
+  "leakDetected": null,
+  "reviewerDispositionSummary": {
+    "skill1_parts_battleStart": "FAITHFUL (inert vs partless; single t=0 apply)",
+    "skill1_partDestroy_stacks": "GAP -> unmodeled (trigger never fires partless; stat is casterAtkPct not atkPct)",
+    "skill2_parts_interval": "FAITHFUL (inert; recurring on CD, distinct from S1 one-shot)",
+    "skill2_sustained_dot_70_4": "FAITHFUL (dot flavor sustained, ~1 tick/sec, NOT overlapping)",
+    "burst_sustainedDamage_20_32": "FAITHFUL (burstCast not fullBurstEnter; feeds sustained DoT only)",
+    "burst_damageTaken_32_23": "FAITHFUL (burstCast; boss-held debuff, casterIdx+targetIdx null; team-wide taken)"
+  },
+  "driverAgreement": "CONVERGED — driver and reviewer agree on every line disposition. The shipped override JSON is the faithful resolved encoding (interval:30 DoT cadence first-fire t=30, sustained flavor, burstCast burst buffs, inert parts, part-destroy correctly unmodeled).",
+  "reviewerRecommendedStrengthenings": [
+    {
+      "id": 1,
+      "issue": "burstCast vs fullBurstEnter trigger identity is not discriminable in a solo-B2 fixture (the reviewer's #1 damage-at-stake misread).",
+      "driverAction": "ADOPTED via cast-frame timing (helm H7 fact: a burst cast lands BEFORE the FB window). A co-B2 divergence fixture was probed and is DEGENERATE — crown monopolizes all 10 B2 casts, leaving rosanna 0 casts — so it cannot test rosanna's own casts. Instead the test pins: sustainedDamagePct/damageTakenPct apply on rosanna's 9 burstCast frames (each < the FB-start frame), whereas a fullBurstEnter counterfactual applies on the 5 fullBurstStart frames (different count AND timing).",
+      "verified": "shipped apply-frames === burstCast frames [9.50,30.27,...]; fullBurstEnter CF apply-frames === fullBurstStart frames [10.37,51.13,...]; cast[0]=9.50 < fbStart[0]=10.37."
+    },
+    {
+      "id": 2,
+      "issue": "sustainedDamagePct must be flavor-scoped (lifts sustained DoT, NOT her AR normal shots) to kill the attackDamagePct misread.",
+      "driverAction": "ADOPTED — R2 asserts DoT dmgUp set {1.0000,1.2032} while normal-shot dmgUp set is exactly {1.0000} (1648 normals, never 1.2032).",
+      "verified": "normal-shot dmgUp set === ['1.0000']; DoT dmgUp set === ['1.0000','1.2032']."
+    },
+    {
+      "id": 3,
+      "issue": "The duplicated Damage-to-Parts line must stay two DISTINCT blocks (S1 one-shot t=0 vs S2 CD-recurring); inertness must be asserted, not assumed.",
+      "driverAction": "ADOPTED — R4 asserts exactly 3 applies at frame 0 (S1 battle-start, 3 allies) AND recurring applies at t=30/60/90/120/150 (S2 interval:30), plus byte-identical totals on removal of both.",
+      "verified": "frame-0 apply count = 3; recurring distinct frames (sec) = [30,60,90,120,150]; noParts.totals === base.totals (byte-identical)."
+    }
+  ],
+  "finalTestStatus": {
+    "file": "scripts/tests/units/rosanna-chic-ocean.test.ts",
+    "result": "17 passed | 1 documented skip (R5 unmodeled part-destroy) | 0 failed",
+    "verifyLog": "scripts/kit-autonomy/reviews/rosanna-chic-ocean.verify.txt",
+    "greenVsShipped": true,
+    "counterfactualsRed": [
+      "cfContinuous (invented passive dur999): 179 ticks from t=1 != 75/t=31",
+      "cfDotLvl9 (67.2): atkPct [67.2] != [70.4]",
+      "cfFbEnter (fullBurstEnter): apply on 5 FB-start frames != 9 burstCast frames",
+      "cfNoSust (sustained removed): DoT dmgUp {1.0} only, total drops",
+      "cfSustLvl9 (19.4): applied value [19.4] != [20.32]",
+      "cfNoTaken (taken removed): DoT taken {1.0} only, total drops",
+      "cfTakenLvl9 (30.76): applied value [30.76] != [32.23]",
+      "cfNoParts (both parts removed): totals byte-identical (inert proof)"
+    ]
+  },
+  "verdict": "GO (cross-family corroborated) — reviewer converged on all dispositions; 3 recommended discriminators adopted and verified GREEN vs shipped / RED vs counterfactual."
+}

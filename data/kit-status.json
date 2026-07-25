@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 28,
-      "authored": 18,
+      "unit-tested": 29,
+      "authored": 17,
       "audited": 26,
       "reconciled": 4,
       "pending": 1
@@ -3215,33 +3215,35 @@
       "weapon": "AR",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "removed fabricated permanent all-ally casterAtkPct 15 (part-destroy stacks can't fire on partless boss); S2 DoT re-encoded dur-15->maintained; S2 has NO activation clause (invented 100%-uptime trigger, TOP flag)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/rosanna-chic-ocean.json + scripts/kit-autonomy/manual-review/rosanna-chic-ocean.md."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded",
+      "evidence": "Pure model — never fielded | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "S2 first-fire phase (t=CD vs t=0, ~20% DoT, popup-cadence only); sustained flavor tag (owner glance)",
       "unmodeled": {
         "skill1": [
-          "■ Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5, 30s."
+          "■ Activates when an ally or self destroys an enemy's part. Affects all allies. ATK ▲ 3% of the skill user's ATK, stacks up to 5 time(s) and lasts for 30 sec."
         ],
         "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill1: part-destroy ATK stacks (3% caster ATK ×5 to all allies) are inert vs a partless boss and NOT modeled — big hidden lever on parts bosses",
-        "skill2: sustained DoT re-casts on its datamined 30s CD, 15s window each, first fire t=30 (no force-cast) — resolved 2026-07-20 (owner); was an invented 100%-uptime passive-continuous encoding",
-        "skill1/skill2: Damage to Parts ▲ 24.26% buffs are inert vs the partless boss (kept for fidelity)"
+        "skill1: part-destroy ATK stacks (casterAtkPct 3% ×5 to all allies) are inert vs a partless boss and NOT modeled — big hidden lever on parts bosses (⚑3 out-of-domain)",
+        "skill2: sustained DoT re-casts on its datamined 30s CD, 15s window each, first fire t=30 (no force-cast) — resolved 2026-07-20 (owner), validated 2026-07-25 (gauntlet); replaced an invented 100%-uptime passive-continuous encoding",
+        "skill1/skill2: Damage to Parts ▲ 24.26% buffs are inert vs the partless boss (kept for fidelity; asserted byte-identical on removal)"
       ],
       "board": null
     },
