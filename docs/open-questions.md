@@ -60,6 +60,14 @@ load-bearing in the ammo economy of any SMG-or-MG comp that pairs a Max-Ammuniti
 ▲ icon expires (immediate clip) or only later when the ▼ re-applies (lazy clip). Until measured, the
 engine's lazy-clip stands as the current model, not a validated mechanic. Surfaced by the SMG-cadence
 flip's implementation review (DECISIONS 2026-07-23).
+**INSTRUMENT NOW EXISTS (2026-07-24, still UNANSWERED — nothing measured yet):**
+`npx tsx scripts/probe/read-ammo.ts <video> --at <t> --dur 20 --out <dir>` reads the counter every
+0.1 s and emits `reads[]` + `reloads[]`, so the clip instant is a JSON diff rather than a frame hunt
+— an immediate clip shows as a step DOWN with no reload, a lazy clip shows the overhang persisting
+until the ▼ lands. Validated on SMG in two range bands (`docs/probe-runs.md` 2026-07-24), which is
+the relevant weapon class here. ⚠ It cannot yet read a small-magazine SG counter, so an SG-carrier
+variant of this question stays blocked. **Still needs the recording** — the comps in question have
+no focus footage yet.
 
 ### U33 — `idoll-ocean`'s ATK basis reads ~1.4% low against a popup (opened 2026-07-23)
 
