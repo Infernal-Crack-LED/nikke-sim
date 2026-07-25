@@ -1,0 +1,321 @@
+{
+  "slug": "scarlet-black-shadow",
+  "leakDetected": null,
+  "override": {
+    "slug": "scarlet-black-shadow",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullChargeCount",
+          "count": [
+            3,
+            6,
+            9
+          ]
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "fbGate": "outFb",
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 283.03,
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 565,
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 848.03,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullChargeCount",
+          "count": [
+            3,
+            6,
+            9
+          ]
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "fbGate": "inFb",
+        "ownBurstGate": "notCast",
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 283.03,
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 565,
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 848.03,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullChargeCount",
+          "count": [
+            1,
+            2,
+            3
+          ]
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "fbGate": "inFb",
+        "ownBurstGate": "cast",
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 283.03,
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 565,
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 848.03,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoPct",
+            "value": 60,
+            "durationSec": 10
+          },
+          {
+            "kind": "instantReload",
+            "fraction": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 115.12,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 169.63,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ TRIGGER IDENTIFIER UNVERIFIED: the full-charge phase-counter trigger's union member was REDACTED from the packet's types.ts copy (only its comment survived). Authored as {kind:'fullChargeCount', count:[3,6,9]}; the real identifier and field name/arity MUST be read from src/skills/types.ts before this file will pass validate-overrides.",
+      "⚑ COUNT SEMANTICS: counts written as the kit PRINTS them (cumulative full-charge count per phase: 3/6/9 base, 1/2/3 under burst). If the engine's array is per-phase INCREMENTS instead, base becomes [3,3,3] and the burst variant [1,1,1].",
+      "⚑ BURST COUNT-CHANGE ENCODING: no EffectDef can mutate the required charge count, so the burst line is modeled STRUCTURALLY as a third skill1 block (fbGate inFb + ownBurstGate cast) carrying the reduced counts, with the base counts split across outFb and inFb+notCast blocks. Consequence: the ONE real phase counter is fragmented into THREE independent counters, and the 10 s buff window is approximated by the Full Burst window.",
+      "⚑ PHASE CYCLE: kit is silent on what happens after the 9-charge phase. Assumed the phase counter WRAPS (next 3 charges re-fire phase 1). If it instead latches at phase 3, every post-wrap 283.03%/565% hit here is an over-credit.",
+      "⚑ DISTRIBUTED DAMAGE: 565% / 848.03% are 'Distributed Damage' lines; against the single partless scope-lock boss they are modeled at FULL magnitude with no split. Correct if distribution divides among enemies hit; an over-credit if the game applies a per-target fraction even at n=1.",
+      "⚑ CRIT ELIGIBILITY: all three riders set crit:true per the rider prior (riders crit at the caster's sheet rate). Distributed-damage crit behaviour is UNMEASURED — read popup colours before trusting it.",
+      "core:false on the 283.03% hit — the text says 'as damage', not 'core strike damage' (no core bucket for riders absent that wording).",
+      "noFb deliberately UNSET on all three riders: full-charge riders take Full Burst by TIMING (default ON). Only a measurement may turn it off.",
+      "noRange not set — the engine force-sets no-range on riders (engine-automatic, per methodology)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no board access, no driver artifacts). RL/Wind/Attacker/B3, ammo 9, chargeFrames 18, reloadFrames 152. Damage lives entirely in skill1's full-charge phase cycle (283.03% single-target → 565% distributed → 848.03% distributed); the burst contributes no damage of its own but triples phase throughput (charge count 3/6/9 → 1/2/3) on top of ATK ▲115.12% and Charge Damage ▲169.63% for 10 s, and skill2's Max Ammo ▲60% + full reload at Full Burst entry is a DAMAGE line (it buys extra full charges, i.e. extra phases). The burst's count-change is encoded structurally as an fbGate/ownBurstGate block split because no EffectDef can mutate a trigger threshold — see caveats for the counter-fragmentation cost. Full-charge cadence (chargeFrames/reloadFrames/ammo) is the single most load-bearing unmeasured input: it sets how many phases fire per fight, so a cadence error scales total damage almost linearly."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "full-charge phase-counter trigger (⚑ identifier redacted from packet); NOT interval, NOT shotFired — the activation clause is literal"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effects vary according to the number",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "per-phase effects array: effects[0]/[1]/[2] = phases 1/2/3 of the same block"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Only one effect is triggered at a time.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "phase semantics (one effect per activation) — NOT an 'escalating' effect (escalating would apply steps 1..N cumulatively, which this line explicitly forbids)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Three times: Affects the 1 enemy unit(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "phase-1 threshold = 3 full charges; target {kind:'enemy'} (lowest-final-DEF selection is degenerate vs the single boss)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 283.03% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 283.03, crit true, core false (no 'core strike' wording), noFb unset"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Six times: Affects enemies within range.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "phase-2 threshold = 6 full charges; target enemy"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 565% ... Distributed Damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 565, crit true; distribution modeled at full magnitude vs the single boss (⚑ caveat 5)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Nine times: Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "phase-3 threshold = 9 full charges; target enemy"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 848.03% ... Distributed Damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 848.03, crit true; same distribution treatment as phase 2"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (team-wide FB entry, NOT burstCast — 'entering Full Burst' is the literal FB-enter form)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition Capacity ▲ 60% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoPct 60 durationSec 10, self — a WEAPON-STATE/damage line (more rounds = more full charges = more skill1 phases); ⚑ 9 × 1.6 = 14.4 rounds, engine rounding unverified"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Reload 100% of the magazine(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload fraction 1, ordered AFTER the ammo buff so the refill fills the enlarged magazine"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} on the burstCast block"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes Full Charge attack count required",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "no EffectDef mutates a trigger threshold → modeled structurally as the third skill1 block (count [1,2,3], fbGate inFb + ownBurstGate cast) with the base-count blocks gated complementarily; ⚑ caveat 3"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 115.12% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 115.12 durationSec 10, self, trigger burstCast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Damage ▲ 169.63% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 169.63 (additive points in the charge bucket, NOT chargeDamageMultPct — the kit says plain 'Charge Damage ▲', not 'multiplier scaled by') durationSec 10, self"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[*].trigger.kind / .count",
+      "estimate": "{kind:'fullChargeCount', count:[3,6,9]} (and [1,2,3] for the burst-reduced block)",
+      "reasoning": "The packet's types.ts copy has the full-charge phase-counter trigger's union member REDACTED — only its comment survived ('each full charge advances a phase counter; phase P fires block.effects[P]... OR a per-phase array (PREFERRED — the datamined \"attack count required\"...)'). So the mechanic is certain but the identifier, field name and cumulative-vs-increment convention are guesses. Counts are written as the kit prints them (3/6/9 and 1/2/3), matching the 'attack count required' datamine phrasing.",
+      "recipe": "Read the redacted union member in src/skills/types.ts, rename the kind and field to match, then run validate-overrides. To pin the convention, log damage events and count full charges to the first 283.03% hit: 3 charges ⇒ cumulative array; 3 charges to phase 1 then 3 more to phase 2 is consistent with both, so use phase 3 as the discriminator (9 total charges ⇒ cumulative; 6 total ⇒ increments)."
+    },
+    {
+      "field": "skill1[1..2].fbGate / .ownBurstGate (burst count-change encoding)",
+      "estimate": "3-block split: outFb base / inFb+notCast base / inFb+cast reduced; 10 s buff window ≈ the FB window",
+      "reasoning": "The burst line changes a TRIGGER THRESHOLD, which no EffectDef can express. The split keeps the reduced counts scoped to rotations this unit actually bursts (ownBurstGate 'cast' — a bare inFb gate would over-credit in multi-B3 comps) and keeps base counts alive during teammate-driven FBs (a bare outFb gate would silently drop all skill1 phases there). Cost: the one real phase counter becomes three independent counters, so phases banked in one gate state do not carry into another.",
+      "recipe": "Confirm the engine truly has no threshold-mutating primitive (grep types.ts/sim.ts for the phase-counter field). If a first-class 'count override while buffed' path exists, collapse to a single block. Then measure: log full charges + skill1 damage events across one burst window on a comp where she is the sole B3, and check the phase sequence resumes rather than restarts at FB exit."
+    },
+    {
+      "field": "skill1[*] phase-cycle wrap behaviour",
+      "estimate": "counter wraps after phase 3 (charges 10-12 re-fire phase 1, etc.)",
+      "reasoning": "The kit states only three tiers and 'only one effect is triggered at a time'; it never says what happens past nine charges. A wrapping cycle is the standard reading of this kit shape, but a latch-at-max reading is possible and would REMOVE most 283.03%/565% procs in a long fight.",
+      "recipe": "Count skill1 popups over a full 3-minute fight and bucket them by magnitude. Wrap predicts roughly equal counts of the three tiers; latch predicts one 283.03%, one 565%, then 848.03% repeating."
+    },
+    {
+      "field": "base cadence (chargeFrames 18 / reloadFrames 152 / ammo 9 / pullsPerSec)",
+      "estimate": "as datamined: 18-frame full charge (0.30 s), 152-frame reload (2.53 s), 9-round magazine",
+      "reasoning": "ALWAYS-⚑: datamined cadence fields are known-unreliable, and here the cadence IS the damage curve — every phase proc is bought with full charges, so a 10% cadence error moves total damage ~10%. RL charge-shot cadence also has to respect 60 fps frame boundaries (effective = 60/ceil(60/nominal)), which the raw field does not.",
+      "recipe": "Read the ammo counter on a recorded fight to get shots/sec directly (the instrument that measures the disputed quantity), and time reload-start → first-shot for the reload frames; compare against the datamined tuple before tuning any magnitude."
+    },
+    {
+      "field": "skill1[*].effects[1..2] (Distributed Damage magnitude)",
+      "estimate": "full stated magnitude (565% / 848.03%) against the single boss, no split factor",
+      "reasoning": "'Distributed Damage' divides a total among the enemies hit; with exactly one enemy the whole amount should land, but the engine has no distributed-damage channel and the game may still apply a per-target fraction. This is the largest single magnitude risk in the file (848.03% is the biggest number in the kit).",
+      "recipe": "Read the popup value for a 565% proc off a recorded fight, divide by the sheet-computed 565%-of-final-ATK expectation with buffs snapshotted at that frame, and check whether the ratio is ~1.0 or a clean fraction."
+    },
+    {
+      "field": "skill1[*].effects[*].crit",
+      "estimate": "true on all three riders (crit at the caster's sheet rate)",
+      "reasoning": "Rider prior: function damage crits at the caster's rate and gets no core absent 'core strike' wording. Distributed-damage crit eligibility specifically is unmeasured, and crit:true is the over-crediting direction if distributed hits cannot crit.",
+      "recipe": "Popup colour read (orange + crit icon = crit) on the 565%/848.03% procs; if no orange bodies appear across many procs, drop crit on those two effects."
+    },
+    {
+      "field": "skill1[*].effects[*].noFb",
+      "estimate": "unset (riders take the +50% Full Burst major by timing)",
+      "reasoning": "ALWAYS-⚑ field, measured-only. Default is ON-by-timing and these procs fire on ordinary full charges both inside and outside FB, so no exemption is warranted without a measurement.",
+      "recipe": "Compare a phase-1 popup fired inside FB against one fired outside, same buff state; a ratio of 1.0 rather than 1.5 means the rider is FB-exempt and noFb should be set."
+    },
+    {
+      "field": "skill2 buff maxAmmoPct 60",
+      "estimate": "9 → 14.4 rounds, engine rounding unverified (14 assumed)",
+      "reasoning": "Fractional magazine capacity; whether the engine floors, rounds or keeps the fraction changes the number of full charges available per FB window by up to one — i.e. up to one extra skill1 phase per burst.",
+      "recipe": "Log reload/shot events across one FB window and count rounds fired before the next reload."
+    }
+  ],
+  "model": "claude-opus-5"
+}

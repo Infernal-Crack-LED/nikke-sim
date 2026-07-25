@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 24,
+      "unit-tested": 25,
       "authored": 20,
-      "audited": 28,
+      "audited": 27,
       "reconciled": 4,
       "pending": 1
     },
@@ -3385,32 +3385,35 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "1.049 HOT F2: charge cycle modeled 40f vs measured ~42f -> sim ~4.8% fast ~= the +4.9% HOT (per-unit +2f charFix, re-pinnable from N3/sbs-control footage). F3 in-burst 848% rate cumulative-vs-per-phase SPLIT (queued isolated-burst recording). F5 P0-ADJACENT: coreband-scarlet-ar.json tagged scarlet-black-shadow but records a 20-round AR (likely base scarlet footage misattributed — owner identity re-verify)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/scarlet-black-shadow.json + scripts/kit-autonomy/manual-review/scarlet-black-shadow.md.",
+          "low ENCODING (burst): caveats[0] still declares the burst count-change line 'unparsed' while it IS modeled (chargeCounter.countInFb) — caveats render as user-facing modeling warnings, so the shipped file warns against its own correct encoding.",
+          "low FIDELITY (skill1): The two Distributed phases (565% / 848.03%) inherit the default rider crit and FB-by-timing treatment with no caveat, but the damage SSOT marks crit, full-burst and element on distributed instances as DISPUTED."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "714noon: N3 popup localized heat to proc set, cadence hitCount 6->10 swept on N3+T1 -> T1 1.00, N3 1.07",
+      "evidence": "714noon: N3 popup localized heat to proc set, cadence hitCount 6->10 swept on N3+T1 -> T1 1.00, N3 1.07 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-5) converged; 11/11 kit lines FAITHFUL; binding judge GO (discriminationOk false only for a vacuous B1 comment, non-gating)",
       "date": "2026-07-14",
       "graded": {
         "teams": 2,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "MEASUREMENT-GATED proc-count knot: exact per-phase cadence (shipped scalar cumulative count3/countInFb1 vs kit-literal per-phase 3/6/9 & 1/2/3) needs an isolated-burst SBS recording (count the distinct ~3.2M 848% popups in one clean window; 9 charges to phase3=cumulative, 6=per-phase increments; resolve ATK/rotation confound first). Distributed-phase 565/848.03% crit/FB/element disputed per damage SSOT (rider default encoded; popup-colour read). Same-model residual: all agents except S2b are opus, so the cumulative reading is the shared-prior risk.",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
         "burst": []
       },
       "caveats": [
-        "burst: unparsed effect \"Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.\"",
         "skill1: phase-threshold semantics are a scalar 3 (outside) / 1 (in-burst) model = the CUMULATIVE '3rd/6th/9th charge' reading of the kit; the per-phase reading ([3,6,9]/[1,2,3], cycle 18/6 charges) tested ~22% cold and own-probe evidence is split (sbs-control: procs ~every charge in burst; N3 re-read: the 848% absent in one window) — isolated-burst recording queued to pin the in-burst 848% count",
-        "burst: the count-requirement line ('Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.') IS modeled — chargeCounter.countInFb gated on HER OWN burst cast for 10s (sim.ts:1745); the previous 'unparsed' caveat and unmodeled.burst entry were stale"
+        "burst: the count-requirement line ('Changes Full Charge attack count required for Skill 1 to 1 time/2 times/3 times for 10 sec.') IS modeled — chargeCounter.countInFb gated on HER OWN burst cast for 10s (sim.ts chargeCounter in-burst guard, lastBurstCastFrame >= 0)",
+        "skill1: the two Distributed phases (565% / 848.03%) inherit the default rider treatment — crit at caster rate + Full Burst +50% by landing timing, element applied. The damage SSOT (docs/data/damage-calculation.md §1 per-type table) marks crit / full-burst / element on distributed instances as DISPUTED; encoded at the rider default here. Settle from the same isolated-burst SBS clip: read popup COLOUR on the 565%/848.03% procs (crit = orange + icon) and their in-FB vs out-of-FB magnitude ratio. Board impact if crit is wrong is bounded (~base 15% x +50% on those instances). Kit-autonomy gauntlet 2026-07-25 (binding-judge gotcha)."
       ],
       "board": {
         "records": [

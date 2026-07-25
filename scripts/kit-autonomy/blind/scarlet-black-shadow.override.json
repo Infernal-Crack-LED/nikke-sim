@@ -1,0 +1,168 @@
+{
+  "slug": "scarlet-black-shadow",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullChargeCount",
+        "count": [
+          3,
+          6,
+          9
+        ]
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "outFb",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 283.03,
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 565,
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 848.03,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullChargeCount",
+        "count": [
+          3,
+          6,
+          9
+        ]
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "ownBurstGate": "notCast",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 283.03,
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 565,
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 848.03,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullChargeCount",
+        "count": [
+          1,
+          2,
+          3
+        ]
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 283.03,
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 565,
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 848.03,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 60,
+          "durationSec": 10
+        },
+        {
+          "kind": "instantReload",
+          "fraction": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 115.12,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 169.63,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ TRIGGER IDENTIFIER UNVERIFIED: the full-charge phase-counter trigger's union member was REDACTED from the packet's types.ts copy (only its comment survived). Authored as {kind:'fullChargeCount', count:[3,6,9]}; the real identifier and field name/arity MUST be read from src/skills/types.ts before this file will pass validate-overrides.",
+    "⚑ COUNT SEMANTICS: counts written as the kit PRINTS them (cumulative full-charge count per phase: 3/6/9 base, 1/2/3 under burst). If the engine's array is per-phase INCREMENTS instead, base becomes [3,3,3] and the burst variant [1,1,1].",
+    "⚑ BURST COUNT-CHANGE ENCODING: no EffectDef can mutate the required charge count, so the burst line is modeled STRUCTURALLY as a third skill1 block (fbGate inFb + ownBurstGate cast) carrying the reduced counts, with the base counts split across outFb and inFb+notCast blocks. Consequence: the ONE real phase counter is fragmented into THREE independent counters, and the 10 s buff window is approximated by the Full Burst window.",
+    "⚑ PHASE CYCLE: kit is silent on what happens after the 9-charge phase. Assumed the phase counter WRAPS (next 3 charges re-fire phase 1). If it instead latches at phase 3, every post-wrap 283.03%/565% hit here is an over-credit.",
+    "⚑ DISTRIBUTED DAMAGE: 565% / 848.03% are 'Distributed Damage' lines; against the single partless scope-lock boss they are modeled at FULL magnitude with no split. Correct if distribution divides among enemies hit; an over-credit if the game applies a per-target fraction even at n=1.",
+    "⚑ CRIT ELIGIBILITY: all three riders set crit:true per the rider prior (riders crit at the caster's sheet rate). Distributed-damage crit behaviour is UNMEASURED — read popup colours before trusting it.",
+    "core:false on the 283.03% hit — the text says 'as damage', not 'core strike damage' (no core bucket for riders absent that wording).",
+    "noFb deliberately UNSET on all three riders: full-charge riders take Full Burst by TIMING (default ON). Only a measurement may turn it off.",
+    "noRange not set — the engine force-sets no-range on riders (engine-automatic, per methodology)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no board access, no driver artifacts). RL/Wind/Attacker/B3, ammo 9, chargeFrames 18, reloadFrames 152. Damage lives entirely in skill1's full-charge phase cycle (283.03% single-target → 565% distributed → 848.03% distributed); the burst contributes no damage of its own but triples phase throughput (charge count 3/6/9 → 1/2/3) on top of ATK ▲115.12% and Charge Damage ▲169.63% for 10 s, and skill2's Max Ammo ▲60% + full reload at Full Burst entry is a DAMAGE line (it buys extra full charges, i.e. extra phases). The burst's count-change is encoded structurally as an fbGate/ownBurstGate block split because no EffectDef can mutate a trigger threshold — see caveats for the counter-fragmentation cost. Full-charge cadence (chargeFrames/reloadFrames/ammo) is the single most load-bearing unmeasured input: it sets how many phases fire per fight, so a cadence error scales total damage almost linearly."
+}

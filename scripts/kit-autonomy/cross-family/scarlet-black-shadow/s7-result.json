@@ -1,0 +1,155 @@
+{
+  "slug": "scarlet-black-shadow",
+  "kitDescription": "Scarlet: Black Shadow is a Wind rocket-launcher Attacker (Burst III, 40s cooldown, 9-round magazine) whose damage comes almost entirely from a full-charge counter. Every full charge advances a counter, and at set counts she fires exactly one of three escalating hits — 283.03% of final ATK on a single target at three charges, 565% as Distributed Damage at six, and 848.03% as Distributed Damage at nine — never more than one at a time. Whenever the team enters Full Burst she gives herself +60% magazine capacity for 10 seconds and instantly reloads, so she fires far more rockets inside the window than her tiny magazine would normally allow. Her own burst is pure self-buffing: for 10 seconds she gets +115.12% ATK, +169.63% Charge Damage, and the full-charge counts her Skill 1 needs drop to 1/2/3, so the whole three-hit ladder cycles roughly every charge instead of every nine. The net effect is a slow, sparse rocket cadence outside her burst and a dense burst of large skill hits during it.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "burst buffs 'they are 10-second windows, not round-counted': expect(e.durationShots).toBeUndefined() on the atkPct 115.12 / chargeDamagePct 169.63 applies — the engine's SimEvent types durationShots as number|null and emits null for a timed buff, so toBeNull is the correct assertion. RECON_ERROR (blind harness-type misread), not a kit divergence.",
+      "skill2 'is a percentage capacity buff on herself for a 10-second window': same expect(e.durationShots).toBeUndefined() on the maxAmmoPct 60 apply. RECON_ERROR, same cause.",
+      "NOTE: these are the only two it-blocks in the S5 file that assert durationShots, and the reported failure count is exactly two — the failure set is fully explained by the nullity misread. Every kit-faithfulness assertion (three payloads at 283.03/565/848.03, no core, no dot, per-tier damage deltas ordered 283<565<848, riders-per-charge in [0.15,0.8], riders-per-charge higher in FB, atkPct/chargeDamagePct counts equal and strictly below fullBurstStart count, maxAmmoPct count == fullBurstStart count, no maxAmmoFlat, instantReload present and damage-positive, ally inertness, no invented effect kinds) is GREEN against the shipped override. With the nullity corrected the S5 file is 21 pass / 4 skip / 0 fail."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when performing a Full Charge",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger {kind:'chargeCounter', count:3, countInFb:1} — only full charges advance the counter (sim.ts:2912)",
+        "blindSaid": "S6: {kind:'fullChargeCount'} (name a guess, identifier redacted); S2b: full-charge phase-counter, explicitly NOT hitCount / shotFired / interval",
+        "formulaCheck": "Auto always full-charges (mechanics §4/§7), hitsPerShot 1, chargeFrames 18 + 22f RL recovery = 40f cycle — the counter advances once per rocket, which is the kit's own unit of account.",
+        "fireRateOk": true,
+        "explanation": "Encoding matches the prose. DISCRIMINATION CAVEAT: because every one of her shots is a full charge and hitsPerShot is 1, a mis-keyed hitCount/shotFired counter is extensionally IDENTICAL here — S2b called this out ('every shot is a full charge, which HIDES a mis-keyed counter'). Driver test B1's stated discriminator ('an every-shot trigger would proc on non-charged pulls') therefore cannot fire; the assertion is true but vacuous. The encoding is still the right one, and the wrong one is unobservable in v1, so this is a test-comment defect, not a modeling defect."
+      },
+      {
+        "kitLine": "Only one effect is triggered at a time",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "one block, one effects[] of three; each accrual fires effects[phase] then phase=(phase+1)%3 — one proc per firing frame, cycling",
+        "blindSaid": "S6 same semantics but fragmented into 3 blocks (outFb / inFb+notCast / inFb+cast) purely because the native chargeCounter primitive was redacted; S2b: cycling 3-phase ladder that wraps",
+        "formulaCheck": "Independent per-instance resolution (damage-calculation §1) — three separate flatDamage instances would each take their own Major/Element buckets; the kit forbids co-firing and the engine emits exactly one.",
+        "fireRateOk": true,
+        "explanation": "Driver B2 pins both halves: no two procs share a frame, and the value sequence is the exact 283.03→565→848.03 cycle for the whole fight. That discriminates against the summed-1696.06% mis-model, the three-same-frame mis-model, and a mis-ordered or latching ladder. The blind's 3-block split is a representation artifact of the redaction, not a divergence."
+      },
+      {
+        "kitLine": "Three times: ... 283.03% ... as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 283.03, no flavor, no core, crit left at the rider default",
+        "blindSaid": "S6 identical value with crit:true explicit; S2b: no core, crits at sheet rate, target clause inert on the solo boss",
+        "formulaCheck": "'% of final ATK as damage' = function-type skill damage: crits at caster rate (default ON), NEVER core, NEVER range, FB by landing time (damage-calculation §2b). Driver omits crit (default-on) and omits core — both correct. Value is the level-10 entry of description_value_02.",
+        "fireRateOk": true,
+        "explanation": "Magnitude, bucket routing and flavor all correct. The 'affects the 1 enemy with the lowest final DEF' targeting clause is inert on the partless single boss — S5 skipped it explicitly as an unobservable-in-v1 gap."
+      },
+      {
+        "kitLine": "Six times: 565% as Distributed Damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 565, flavor 'distributed'; B4 shows the flavor is inert in this basis (no distributedDamagePct source, no damageTaken on a partless boss)",
+        "blindSaid": "S6 same value but NO distributed flavor, caveating that a per-target fraction at n=1 would be an over-credit; S2b: full 565% lands, any /N division is wrong",
+        "formulaCheck": "SSOT settles the blind's open worry: 'Distributed damage deals the same TOTAL against one target as against many (owner-verified)' — full magnitude at n=1 is CORRECT, not an over-credit. The distributed flavor routes into the Distributed bucket (1 + distributedDamagePct/100) and the distributed-taken term, which group with Damage-Taken, not Attack-Damage (damage-calculation §1g).",
+        "fireRateOk": true,
+        "explanation": "The driver encodes the flavor the blind omitted and proves it board-inert here — that is strictly more faithful (helm-H4 pattern: correctly encoded, moves nothing in THIS basis). Multi-enemy splitting stays an S5-documented gap (no multi-mob fixture exists)."
+      },
+      {
+        "kitLine": "Nine times: 848.03% Distributed",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 848.03, flavor 'distributed', phase 3, then wrap to phase 1",
+        "blindSaid": "S6 same value, flags the wrap-vs-latch question as kit-silent; S2b: the proc after an 848.03 is 283.03 — the cycle wraps",
+        "formulaCheck": "Same function-damage routing as the other two phases; the 848.03 instance is where the FB +50% and her burst ATK buff compound, which is why the in-burst count is the board-sensitive quantity.",
+        "fireRateOk": true,
+        "explanation": "Wrap semantics are asserted by driver B2 (the full-fight value sequence) and independently derived by S2b, so the kit-silent latch question is settled behaviourally rather than assumed. This is the phase whose in-burst frequency is the measurement-gated knot (see the burst count-change line)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates when entering Full Burst. self",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger fullBurstEnter, target self — fires on all 12 team Full Bursts vs her own 6 casts",
+        "blindSaid": "S6 fullBurstEnter; S5 asserts maxAmmo applies == fullBurstStart count AND > her burstCast count; S2b called this the sharpest discriminator in the kit",
+        "formulaCheck": "'Activates when entering Full Burst' is the entry-aura trigger (mechanics §8) — distinct from a burst-cast self-buff, and the two are separable only because helm is a co-B3 in the fixture.",
+        "fireRateOk": true,
+        "explanation": "All three artifacts converge, and the fixture makes the divergence live: driver B5 pins the buff frames equal to the fullBurstStart frames and adds an explicit burstCast counterfactual (which drops to 6). The blind test reaches the same conclusion by a different route (count equality plus strict inequality against the burst-slot applies)."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity 60% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff maxAmmoPct 60, durationSec 10, self; B6 pins value/600f window/targetIdx; damage-positive (zeroing it costs total)",
+        "blindSaid": "identical in S6; S5 additionally excludes maxAmmoFlat and asserts NO_AMMO.total < BASE.total",
+        "formulaCheck": "Not a defensive line — on a 9-round magazine with a 152f reload, capacity gates shots fired inside the +50% window (reload-speed/ammo effects are damage, per the standing rule). Increases never clip the belt (mechanics §11).",
+        "fireRateOk": true,
+        "explanation": "Correct primitive (pct not flat), correct duration semantics (wall-clock, not round-scoped), correct scope. The 9x1.6 rounding and the scope-lock gear ammo term (12 unboosted -> 17 boosted per the driver) are an engine-wide magazine convention, not a kit-line encoding; S5 skipped it as unobservable (no magazine-size event)."
+      },
+      {
+        "kitLine": "Reload 100% of the magazine(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "instantReload fraction 1, ORDERED AFTER the capacity buff so the refill fills the boosted magazine; pinned structurally and behaviourally (peak magazine and FB-window shot count both exceed the no-ammo-effects baseline)",
+        "blindSaid": "S6 identical (same block, ordered after); S5 asserts the effect exists and that dropping it costs damage; S2b explicitly demanded the ordering be pinned behaviourally, which the driver adopted",
+        "formulaCheck": "The engine snaps ammo silently (no reload event), so ordering can only be shown via the realized magazine — a reload resolved BEFORE the cap would leave the peak at the unboosted baseline, so the peak-vs-baseline assertion does discriminate the ordering.",
+        "fireRateOk": true,
+        "explanation": "This is the one place the driver strengthened the spec on reviewer feedback, and the strengthened assertion is genuinely discriminating rather than a presence check."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Changes Full Charge count to 1/2/3",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter.countInFb 1, gated on HER OWN lastBurstCastFrame (sim.ts:2921), not the team FB window; B10 shows own-cast windows strictly out-proc every helm-opened FB window, plus a no-lowering counterfactual",
+        "blindSaid": "S6 encodes it as a third skill1 block with the counts as the kit PRINTS them ([1,2,3] cumulative), approximating the 10s window with the FB window and caveating that per-phase increments would instead be [1,1,1]; S2b: 'the cycle completes within ~3 charges' in-burst",
+        "formulaCheck": "The line is a burst-slot self-buff with no activation clause, so it is burst-cast scoped for 10s (mechanics §8) — the driver's own-cast gate is more faithful than the blind's FB-window approximation, and B10 proves the gate is not team-FB.",
+        "fireRateOk": true,
+        "explanation": "KEY RECONCILIATION: the shipped scalar (count 3 outside / countInFb 1 in-burst) is SEMANTICALLY IDENTICAL to the blind's printed cumulative arrays — cumulative 3/6/9 means one phase every 3 charges, and cumulative 1/2/3 means one phase every charge. So S6's 'divergence' here is representational only, and all three agents (driver, S6, S2b) independently landed on the same cumulative reading. The genuinely open alternative is the per-phase-INCREMENT reading ([3,3,3]->18-charge cycle, [1,2,3]->6-charge cycle), which the driver tested and which grades ~0.78 (cold) against a ~1.13/1.18 baseline; one N3 video re-read (848% phase absent from a confirmed window) argues the truth is somewhat sparser than scalar-1. Documented in caveat[1] + the note with an explicit recipe; NOT re-fudged. Also: caveat[0] still declares this line 'unparsed', which is stale and user-visible — see gotchas."
+      },
+      {
+        "kitLine": "ATK 115.12% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff atkPct 115.12 / durationSec 10 / self on burstCast; B8 pins count == her own casts (6) < fullBurstStart (12), value, 600f window, targetIdx",
+        "blindSaid": "S6 identical; S5 asserts applies count < fbStarts and that teammate totals are byte-identical when the value is zeroed; S2b flagged fullBurstEnter keying as the over-crediting nearest-wrong",
+        "formulaCheck": "Plain 'ATK %' sums into the (1 + sum ATK%) term on staticAtk and dilutes against other ATK% sources — correctly NOT a caster-ATK flat grant (which would be worded '% of caster's ATK').",
+        "fireRateOk": true,
+        "explanation": "Trigger identity, bucket, magnitude, duration and scope all correct, and the multi-B3 fixture makes the burstCast-vs-fullBurstEnter split falsifiable rather than assumed."
+      },
+      {
+        "kitLine": "Charge Damage 169.63% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff chargeDamagePct 169.63 / 10s / self on burstCast (B9)",
+        "blindSaid": "S6 identical; S5 adds a restat counterfactual (chargeDamagePct -> attackDamagePct changes the total); S2b: '▲' wording is the additive bucket, chargeDamageMultPct is the wrong primitive",
+        "formulaCheck": "damage-calculation §1d: ordinary 'Charge Damage ▲' adds flat percentage points inside the charge bucket (her chargeMultiplier 150 -> Charge ~1.5 + 1.6963), whereas a 'multiplies base charge damage' line would scale the base term. Correctly does NOT lift the skill1 procs, which take no charge bucket.",
+        "fireRateOk": true,
+        "explanation": "Right primitive, right bucket, right scope; the S5 restat counterfactual is an independent check that the sim actually routes it through the charge bucket rather than Damage-Up."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "burst",
+      "summary": "caveats[0] still declares the burst count-change line 'unparsed' while it IS modeled (chargeCounter.countInFb) — caveats render as user-facing modeling warnings, so the shipped file warns against its own correct encoding.",
+      "evidence": "Kit line: 'Changes Full Charge attack count required...'. Override caveats[0] = 'burst: unparsed effect \"Changes Full Charge attack count...\"'; caveats[2] and the note both state it is modeled and that caveats[0] is stale. Neither blind agent could see the caveats. Mechanics SSOT: 'optional caveats shown as modeling warnings'.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Delete caveats[0] (and the now-redundant 'the previous unparsed caveat was stale' clause in caveats[2] / the note). No code or value change."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "The two Distributed phases (565% / 848.03%) inherit the default rider crit and FB-by-timing treatment with no caveat, but the damage SSOT marks crit, full-burst and element on distributed instances as DISPUTED.",
+      "evidence": "damage-calculation §1 per-type table: distributed row reads crit '⚠️ disputed', full-burst '⚠️', element '⚠️'. Driver effects carry only flavor:'distributed' (crit defaulted on, noFb unset). Blind S6 flagged exactly this ('⚑ CRIT ELIGIBILITY: distributed-damage crit behaviour is UNMEASURED — read popup colours before trusting it'); the driver's caveats cover only the cadence knot.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Needs measurement — no value change. Add a caveat recording the assumption, and settle it from the same isolated-burst SBS clip already queued for the cadence knot: read popup COLOUR on the 565%/848.03% procs (crit = orange + icon per the popup-colour convention) and check whether their in-FB vs out-of-FB magnitude ratio carries the +50%. Board impact if crit is wrong is bounded (base 15% x +50% = +0.075 in Major on those instances)."
+    }
+  ],
+  "discriminationOk": false,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Eleven of eleven kit lines are FAITHFUL; nothing is silently dropped (both unmodeled arrays are empty and every line maps to a real primitive), and the two gotchas are low-severity hygiene items, not behavioural defects. Convergence is effectively complete: the S5 blind file goes RED on exactly two assertions, both the same durationShots toBeUndefined-vs-toBeNull misread of the harness SimEvent type — the failure count matches the number of it-blocks containing that assertion exactly, so the red set is fully explained as RECON_ERROR, and every kit-faithfulness assertion passes against the shipped override untouched. The S6 blind override's headline 'divergence' also dissolves on inspection: printed-cumulative [3,6,9]/[1,2,3] and the shipped scalar count 3 / countInFb 1 are the SAME model (one phase per 3 charges outside, one per charge in-burst), so driver, S6 and the clean cross-family S2b all independently landed on the cumulative reading; S6's three-block split is an artifact of the redacted trigger identifier, and the driver's own-cast gate is strictly more faithful than S6's FB-window approximation. The one real open item is the measurement-gated cadence knot, and it is correctly framed: the live alternative is the per-phase-INCREMENT reading (18-charge / 6-charge cycles), which was tested at ~0.78 (cold) against a ~1.13/1.18 baseline while one N3 re-read shows the 848% phase missing from a confirmed window — i.e. evidence points somewhere between, and the driver shipped the structure that holds under both readings with an explicit recording recipe instead of tuning a number. discriminationOk is FALSE for one narrow reason: driver test B1 claims to exclude an every-shot/hitCount trigger, but with hitsPerShot 1 and auto always full-charging, that mis-model is extensionally identical for this unit — S2b independently flagged the same blind spot ('every shot is a full charge, which HIDES a mis-keyed counter'). The encoding is right and the wrong model is unobservable in v1, so this does not gate GO; the fix is to relabel B1's comment as a presence pin rather than a discriminator. All other groups discriminate, including the two that matter most (B5/B8/B9 separate fullBurstEnter from burstCast at 12-vs-6, and B7's peak-magazine assertion genuinely fails under a reload-resolved-before-the-cap ordering). SAME-MODEL RESIDUAL for the owner to spot-check: every agent in this gauntlet except S2b is Opus, so the shared prior most likely to be jointly wrong is the CUMULATIVE reading of the phase thresholds — it is the one place where convergence proves stability rather than correctness, and the isolated-burst SBS clip (count the distinct ~3.2M 848% popups in one clean window; 9 total charges to phase 3 = cumulative, 6 = per-phase increments) is the single measurement that settles it. Housekeeping, non-blocking: delete the stale caveats[0], add the distributed-crit caveat, and consider pruning the override note, which now carries several superseded 2026-07-15 status paragraphs alongside the current record.",
+  "model": "claude-opus-5"
+}
