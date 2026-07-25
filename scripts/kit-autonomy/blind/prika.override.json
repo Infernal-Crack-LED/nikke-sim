@@ -1,0 +1,117 @@
+{
+  "slug": "prika",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 20,
+          "durationSec": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 13.09,
+          "durationSec": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20,
+          "durationSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 25
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 19.98,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 25,
+          "intervalSec": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 25,
+          "durationSec": 25
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Outgoing healing ▲ 49.92% continuously."
+    ],
+    "skill2": [
+      "■ Activates when Sing Along takes effect while Prika is in Performance status.",
+      "Encore",
+      "Function: Extends the duration of Performance for Prika and strengthens allies.",
+      "Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.",
+      "Effect 2: Affects all allies. Performance duration ▲ 21 sec.",
+      "Effect 3: Affects all allies. Attack Damage ▲ 25.01% for 10 sec.",
+      "Effect 4: Affects self. Cooldown of Burst Skill ▲ 21 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 block 1 trigger: the kit says 'Full Charge attack'; there is no fullCharge TriggerDef. Modeled as shotFired (an SR full-charges every trigger pull). chargeCounter was REJECTED: its effects[] array is phase-indexed, so a 3-effect block would fire one buff per charge instead of all three per charge.",
+    "⚑ 'Performance status' is her own burst's named state; the sim has no ally-status channel (targetStatus is enemy-only), so the Performance-gated self-Pierce is keyed to burstCast with durationSec 25 (the burst's own window). Encore's +21 s Performance extension is NOT applied because Encore itself is unmodeled.",
+    "⚑ Encore is triggered by 'Sing Along', a mechanic that belongs to ANOTHER unit and has no trigger kind, no carrier, and no teamHas facet in this schema. All four Encore effects are skipped WHOLE — including the damage-bearing Effect 3 (Attack Damage ▲25.01%/10 s, all allies) and the burst-CD line. If a Sing Along carrier is ever added, Effect 3 is the piece that moves the board.",
+    "⚑ Buff uptime of the 3 s skill1 window is entirely cadence-driven (ammo 6, chargeFrames 60, reloadFrames 141 — all datamine-unreliable). Uptime is near-continuous while firing and lapses across the reload.",
+    "Heal magnitude (3.04% of caster final Max HP per tick) is not representable: the `heal` effect models no HP amount. What IS load-bearing is the RECOVERY-EVENT CADENCE — 25 events at 1 s — which keeps on-recovery consumers refreshed for the full window. Do not collapse to a single tick.",
+    "Max HP ▲19.98% (self) is offensively inert here — she carries no atkOfMaxHpPct conversion — but is kept per the HP/DEF-scaler prior (future consumer).",
+    "noFb / range / core flags: N/A — this kit has NO flatDamage, dot, or storedHit riders. hitRatePct: N/A (no Hit Rate line). No weapon swap, no stack/currency pool, no multi-projectile split."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Prika (SR/Water/Supporter/Burst II) is a pure support: her only damage contribution to the team is skill1's per-full-charge ally triad (Projectile Explosion 20%, Pierce Damage 13.09%, caster-ATK 20%, 3 s each) plus the burst's team Charge Damage ▲25%/25 s and a 25-tick recovery stream. Self-Pierce is Performance-gated (proxied to her own burst window), not whole-fight, so it is a gainPierce effect and NOT the top-level hasPierce flag. Encore is unmodeled in full — its trigger (Sing Along) is a cross-unit mechanic with no carrier and no schema representation; flagging it is correct, inventing a proxy trigger would over-credit +25.01% Attack Damage to the whole team."
+}

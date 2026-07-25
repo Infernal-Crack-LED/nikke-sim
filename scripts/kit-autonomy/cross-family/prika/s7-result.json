@@ -1,0 +1,187 @@
+{
+  "slug": "prika",
+  "kitDescription": "Prika is a Water-element Burst II Supporter with a sniper rifle whose contribution is almost entirely buffs, not her own damage. Every fully-charged shot she fires hands the whole team a short 3-second package — +20% Projectile Explosion damage, +13.09% Pierce damage, and a flat attack boost worth 20% of Prika's own ATK — so the team's attack feed pulses with her firing rhythm and briefly lapses while she reloads. Her burst puts everyone into 'Performance': a 25-second heal-over-time that restores HP once per second plus +25% Charge Damage for the team, which mainly pays off for charge weapons like snipers and rocket launchers. While Performance is running she personally gains Pierce and heals more effectively, and entering Full Burst gives her a small self Max HP bump. Her signature interaction is Encore: if a partner (Mint) uses Sing Along while Prika is performing, Performance is extended by 21 seconds and the whole team gains +25.01% Attack Damage for 10 seconds — paid for by Prika's own burst cooldown growing 21 seconds longer.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "FIXTURE ARTIFACT (root cause) — 'the control comp reaches Full Burst, prika deals damage, and Performance actually casts': the blind's own non-vacuity gate. controlComp('prika') = liter/crown/prika/helm seats crown (Burst II, slot idx 1) LEFT of prika (idx 2); game-mechanics.md §7 'auto burst priority is leftmost slot order, with waiting' ⇒ crown wins every B2 cast and prika NEVER casts Performance. Confirmed independently from the fixture + the SSOT, not taken on the driver's word.",
+      "FIXTURE ARTIFACT — 'Charge Damage ▲25% reaches all four allies with a bounded window': zero casts ⇒ zero applications. Vacuous, carries no evidence against the driver.",
+      "FIXTURE ARTIFACT — 'is CHARGE-bucket scoped: lifts prika, leaves the SMG ally byte-identical': same cause.",
+      "FIXTURE ARTIFACT + REAL DIVERGENCE — 'heals every 1 sec for 25 sec (25 ticks)': unreachable in the blind's fixture AND the driver ships no heal effect at all (documented omission; see gotcha 3).",
+      "DOCUMENTED OMISSION — 'S2 Max HP applies once per Full Burst ENTRY, to prika only': the driver leaves Max HP ▲19.98% verbatim-unmodeled (inert, no atkOfMaxHpPct scaler). The blind's companion assertion 'is offensively inert … removing it moves nobody' is GREEN both ways — both agree on zero damage.",
+      "MEANINGFUL RED (the real signal) — 'Encore does not leak: no Sing Along carrier is in this comp, so Attack Damage ▲25.01% must never apply': the driver's shipped solo-mode proxy DOES apply it on every fullBurstEnter. Corroborated by prose (Encore's gate is a cross-unit Sing Along event) and by the S6 blind override, which left all four Encore effects unmodeled for exactly this reason. See gotcha 2.",
+      "GREEN (cross-family corroboration of the driver's S1) — the three S1 assertions PASS unmodified against the driver's shipped override: casterAtkPct reaches all allies flat-resolved (>1000, never the raw 20), fires per full-charge shot at ≥50 applications/180s (not once, not per-FB), and carries projectileExplosionPct 20 + pierceDamagePct 13.09 at kit magnitude to every ally."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Projectile Explosion Damage ▲ 20%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff projectileExplosionPct 20, durationSec 3, target allies, trigger shotFired",
+        "blindSaid": "S6 byte-identical; S2b FAITHFUL; S5 assertion GREEN vs the driver override",
+        "formulaCheck": "damage-calculation.md §1f — Projectile bucket (RL/explosion-flavored hits); §1e routes plain RL normals through DamageUp. Stat identity is correct either way; damage-inert for non-explosion allies, which is why it is pinned on the buff EVENT, not a total.",
+        "fireRateOk": true,
+        "explanation": "Trigger identity: an SR auto-full-charges every pull (game-mechanics.md §7, einkk NikkeFullChargeMode.always), so shotFired ≡ 'Full Charge attack' for her; the engine has no fullCharge TriggerDef and S6 independently rejected chargeCounter (phase-indexed effects[] would fire one buff per charge). ~100+ applications/180s cross-confirmed by the blind's ≥50 assertion. Known universal ~2% over-count from unmodeled early releases — negligible, not unit-specific."
+      },
+      {
+        "kitLine": "Pierce Damage ▲ 13.09% for 3 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff pierceDamagePct 13.09, durationSec 3, target allies; asserted damage-INERT (byte-identical totals with the effect removed)",
+        "blindSaid": "S6 byte-identical; S2b FAITHFUL + 'must not move any damage bucket'; S5 GREEN",
+        "formulaCheck": "game-mechanics.md §11 — Pierce Damage ▲ is a DamageUp-bucket entry that DOES apply on the partless boss, but only for a Pierce-tagged recipient. No unit in the fixture carries a Pierce tag (prika's own 'Gains Pierce' is unmodeled), so the buff is correctly encoded and correctly spends nothing.",
+        "fireRateOk": true,
+        "explanation": "Magnitude pinned at level-10 13.09 vs the level-1 base 7.73 counterfactual. The verified inertness is itself the mechanism-level evidence for the 'Gains Pierce' residual (gotcha 4)."
+      },
+      {
+        "kitLine": "ATK ▲ 20% of the skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff casterAtkPct 20, durationSec 3, target allies; test pins ONE flat value >1000 shared by every ally",
+        "blindSaid": "S6 byte-identical; S2b FAITHFUL, names atkPct as nearest-wrong; S5 assertion GREEN (flat-resolved, all four allies)",
+        "formulaCheck": "damage-calculation.md §1a — \"X% of caster's ATK\" resolves against the caster's BASE (static) ATK and is added FLAT outside the recipient's (1+ATK%) sum; engine uses owner.staticAtk. Prika is a Supporter (staticAtk 98,367 at scope lock) ⇒ ~19.7k flat to each ally, identical per target. Correct bucket, correct dilution behaviour.",
+        "fireRateOk": true,
+        "explanation": "The strongest cross-family convergence on the board: three independent roles produced the same stat, value, target set and duration. Discriminated against atkPct (which emits the percentage 20 per target and dilutes) by the driver's counterfactual and by the blind's >1000 flat-value assertion."
+      },
+      {
+        "kitLine": "Outgoing healing ▲ 49.92% continuously",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill1 (heal-potency stat, no HP pool at scope)",
+        "blindSaid": "S2b UNMODELED; S6 UNMODELED; S5 it.skip GAP — unanimous",
+        "formulaCheck": "The engine's heal effect carries no HP magnitude, so a heal-amount multiplier has nothing to scale. Zero damage payload under any encoding.",
+        "fireRateOk": true,
+        "explanation": "Unanimous across all four roles. Correctly recorded verbatim rather than silently dropped."
+      },
+      {
+        "kitLine": "Gains Pierce. This is continuous.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED ⚑ measurement-gated on a pre-existing owner hold (probe-runs 2026-07-14 inconclusive); estimate ~+8% personal SR damage, recipe = Prika-focus popup pass, tier 2",
+        "blindSaid": "S2b AND S6 both MODEL it — gainPierce durationSec 25 keyed to burstCast (windowed to Performance), both explicitly rejecting top-level hasPierce; S5 skipped it as damage-inert-in-v1",
+        "formulaCheck": "game-mechanics.md §11 already RULES that Pierce Damage ▲ applies on the partless boss for a Pierce-tagged unit (it is ordinary damage-up, NOT the multi-part double-hit). So the mechanism is settled in the SSOT; the popup would verify, not enable.",
+        "fireRateOk": true,
+        "explanation": "Documented with estimate + recipe + tier, so it clears the bar as a gap — and an owner hold is not S7's to overrule. But the flag's stated blocker is partly mis-stated (see gotcha 4): the driver calls the gate 'an untracked partner status', when Performance is HER OWN burst state — both blinds window it at her burst's 25s independently. Severity is low because her personal damage share is small."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Max HP ▲ 19.98% for 10 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2 (defensive, inert)",
+        "blindSaid": "S6 models targetMaxHpPct 19.98/10s as a future-consumer stat; S2b FAITHFUL-but-offensively-inert; S5 asserts zero damage movement either way",
+        "formulaCheck": "damage-calculation.md §1a — Max HP feeds damage only via an atkOfMaxHpPct conversion, and prika carries none. Zero damage under both encodings; the blind's own inertness assertion is GREEN both ways.",
+        "fireRateOk": true,
+        "explanation": "Not a material divergence: all roles agree the line moves nothing. The taxonomy prior would keep the stat for a future HP consumer, but omitting it is a recorded, damage-neutral choice."
+      },
+      {
+        "kitLine": "Effect 1: Assigned Part: Singing",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2 (part assignment, inert)",
+        "blindSaid": "S2b + S6 unmodeled; S5 it.skip GAP (no assigned-part model)",
+        "formulaCheck": "The scope-lock boss is partless (memory: test-boss-has-no-parts); no part-assignment primitive exists. Zero payload.",
+        "fireRateOk": true,
+        "explanation": "Unanimous. Correctly recorded."
+      },
+      {
+        "kitLine": "Effect 2: Performance duration ▲ 21 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2 + caveat: in solo mode Charge Damage runs 25s, not an extended ~46s",
+        "blindSaid": "S2b unmodeled; S6 unmodeled ('no primitive extends a named ally status window'); S5 it.skip GAP",
+        "formulaCheck": "No status-window-extension primitive; fullBurstExtend is Full-Burst-only. Not representable.",
+        "fireRateOk": true,
+        "explanation": "Unanimous, documented, with the downstream consequence (shortened Performance-scoped windows) named in the caveat. Note this line IS the mechanism the duet mode leans on — see gotcha 1."
+      },
+      {
+        "kitLine": "Effect 3: Attack Damage ▲ 25.01%/10s",
+        "category": "REAL-GOTCHA",
+        "subkind": "ENCODING",
+        "driverSaid": "solo mode: attackDamagePct 25.01, durationSec 10, allies, on fullBurstEnter (documented proxy). DUET mode: attackDamagePct 25.01 with durationSec 9999 (permanent)",
+        "blindSaid": "S2b: 'any modeled Encore effect is an over-credit'; S6: left Encore wholly unmodeled — 'inventing a proxy trigger would over-credit +25.01% Attack Damage'; S5 test RED-flags the solo leak. Neither blind examined the duet block.",
+        "formulaCheck": "DamageUp bucket, correct stat. The MAGNITUDE and target set match the prose; the DURATION does not — the prose prints 'for 10 sec' and the duet block ships 9999 sec. This is the prose contradicting the override's own number, so it is in scope under rule F (not an owner-gated magnitude).",
+        "fireRateOk": true,
+        "explanation": "Two separate divergences on one line. (a) The DUET duration 9999s is justified in the note by 'Mint re-extends Performance forever' — but that argument covers Effect 2 (Performance duration), and Effect 3 is an ENCORE effect with its own fixed 10s window, not a Performance-scoped one. Permanent uptime is faithful only if Sing Along re-procs at ≤10s intervals, which is unresolved without Mint's kit prose (not in this packet, and I have no tool access to read it). (b) The SOLO proxy is documented but splits one Encore proc across two triggers — benefit on fullBurstEnter, price on burstCast — so they are not the same event count in any comp with a second Burst II. Ranked #1 and #2 in gotchas."
+      },
+      {
+        "kitLine": "Effect 4: Cooldown of Burst Skill ▲21s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCdr seconds:-21 on burstCast/self (solo) = cooldown INCREASE 40s→61s; pinned by cast COUNT (3 casts/180s vs 9 under the decrease misread)",
+        "blindSaid": "S2b agrees the ▲ is an INCREASE and names the decrease reading as the nearest-wrong; S6 did not encode Encore at all; S5 marked it a GAP claiming 'burstCdr models a reduction only' — a RECON_ERROR, the engine takes negative seconds (burstCdFrames -= round(seconds×FPS))",
+        "formulaCheck": "Sign verified against the engine primitive and against the kit's own logic (the CD increase is Encore's price for the Performance extension). Magnitude and sign are faithful to the prose.",
+        "fireRateOk": true,
+        "explanation": "The sign is right and cross-family corroborated, and the driver's cast-count discrimination (3 vs 9) is a genuinely falsifiable pin. Classified DOCUMENTED_GAP rather than FAITHFUL only because it inherits the same solo proxy trigger as Effect 3 — documented in the note and caveats."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Restores 3.04% … every 1 sec, 25s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.burst + caveat 'recovery consumers will not proc off Prika'; deferred as tier 2 with a recipe",
+        "blindSaid": "S2b FAITHFUL + LOAD-BEARING ('the biggest tandem lever' with crown in comp; nearest-wrong = ticks:1); S6 models heal {ticks:25, intervalSec:1} and warns 'do not collapse to a single tick'",
+        "formulaCheck": "The heal effect carries NO HP magnitude — the load-bearing payload is the 25 recovery EVENTS at 1s, which drive on-recovery consumer kits (crown-type). Zero direct prika damage either way.",
+        "fireRateOk": true,
+        "explanation": "Clears the bar as a documented gap, but the deferral RATIONALE is the weak part: both cadence numbers ('every 1 sec', 'for 25 sec') are printed in the prose and the engine models no HP amount, so there is nothing here to measure. Both blind roles converged on the same encoding unprompted. See gotcha 3."
+      },
+      {
+        "kitLine": "Charge Damage ▲ 25% for 25 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "solo: buff chargeDamagePct 25, durationSec 25, allies, on burstCast (duet variant: 9999s, riding the Performance extension)",
+        "blindSaid": "S6 byte-identical on the solo encoding; S2b FAITHFUL with burstCast keying and the 25s window",
+        "formulaCheck": "damage-calculation.md §1d — ordinary Charge Damage ▲ buffs add flat percentage points inside the CHARGE bucket, so they lift charge weapons (SR/RL, including prika's own full-charge shots) and leave non-charge carries untouched. Correct bucket, correct scope.",
+        "fireRateOk": true,
+        "explanation": "Fires 3×/180s under the shipped CD increase, 3 allies each = 9 applications, pinned by the driver's test. The duet 9999s variant is defensible here (unlike Effect 3) because Charge Damage IS a Performance-scoped effect and Encore Effect 2 extends Performance. Trigger identity burstCast is structurally certain for a unit's own burst skill."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2",
+      "summary": "Duet-mode Encore Attack Damage ships durationSec 9999 where the kit prints 'for 10 sec' — permanent uptime is justified by an argument that belongs to a different effect.",
+      "evidence": "Kit: 'Effect 3: Affects all allies. Attack Damage ▲ 25.01% for 10 sec.' Override duet block: {stat:'attackDamagePct', value:25.01, durationSec:9999}. The note's rationale is \"Mint's Sing Along re-extends Performance forever\" — but that extension is Encore EFFECT 2 (Performance duration ▲21 sec), and Effect 3 is an Encore effect with its own fixed 10s window, not a Performance-scoped one. The neighbouring duet chargeDamagePct 9999 IS defensible on that argument (Charge Damage is a Performance effect); Effect 3 is not. Permanent is faithful only if Encore re-procs at ≤10s intervals. Neither blind role examined the duet block, so this has no cross-family corroboration either way — it is my finding, PLAUSIBLE not CONFIRMED.",
+      "documentedByDriver": false,
+      "severity": "med",
+      "suggestedFix": "Read data/characters.json → characters.mint.skills and establish Sing Along's actual cadence. If Encore re-procs at ≤10s intervals, keep 9999 but re-label it a ⚑ with THAT reason recorded (not the Performance-extension one). If it procs on Mint's burst (~40s), encode Effect 3 at durationSec 10 on the duet Encore trigger and let the real uptime fall out of the rotation. Do NOT pick a duration that preserves the current board reading."
+    },
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2",
+      "summary": "Solo-mode Encore proxy fires a cross-unit-gated block with no Sing Along carrier present, and splits one Encore proc across two different triggers so benefit and price decouple.",
+      "evidence": "Kit: '■ Activates when Sing Along takes effect while Prika is in Performance status.' Shipped solo blocks key Effect 3 to fullBurstEnter and Effect 4 to burstCast. Both cross-family blinds independently ruled the block must stay wholly unmodeled — S6: 'inventing a proxy trigger would over-credit +25.01% Attack Damage'; S2b: 'any modeled Encore effect is an over-credit … Effect 4 is a self-NERF'. The S5 blind test's one meaningful RED is exactly this leak. Two further over-credits sit inside the proxy that the caveat does not name: (a) Effect 3 fires on EVERY Full Burst entry regardless of whether Performance (25s per cast, ~41% uptime at the shipped 61s CD) is even live; (b) in any comp with a second Burst II, fullBurstEnter fires on Full Bursts prika never cast in, while the burstCast-keyed CD price fires only on her own casts — so the benefit outruns the price by a factor the driver's sole-B2 fixture cannot expose.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Faithful representation: mode-gate BOTH Encore effects to 'duet (w/ Mint)' only, leaving solo prika with zero Encore — the converged S2b + S6 recommendation. Before landing, verify the premise the way memory/finding-inertness-is-a-premise requires: check the graded comp roster for any comp running prika WITHOUT mint. If every graded prika comp is duet, the change is board-inert and should just land. If a solo-prika comp is graded, this is a board-moving recalibration and is the owner's call — measure the movement first, and if solo Encore is retained for board reasons, at minimum key Effect 3 and Effect 4 to the SAME trigger so the proc's benefit and price stay coupled."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "The burst's 25-tick recovery stream is omitted, and the stated reason for deferring it (a measurement) does not apply — nothing about it needs measuring.",
+      "evidence": "Kit: 'Effect 1: Restores 3.04% … every 1 sec for 25 sec.' Both cadence numbers are printed in the prose, and the engine's heal effect carries no HP magnitude at all — so the only load-bearing content is the 25 recovery EVENTS, which is exactly what the prose states. S2b calls it load-bearing ('the biggest tandem lever' with a crown-type on-recovery consumer in comp, nearest-wrong ticks:1); S6 independently wrote heal {ticks:25, intervalSec:1} with 'do not collapse to a single tick'. The driver filed it as a tier-2 measurement-gated flag; there is no measurable quantity behind it.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Add {kind:'heal', ticks:25, intervalSec:1} to the burstCast/allies block — a structural, magnitude-free change that needs no measurement and matches both blind derivations byte-for-byte. Check the graded roster first for an on-recovery consumer (crown-type): with none present the change is board-inert and free; with one present it is a real under-credit being corrected, and the movement should be measured and recorded, not absorbed."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "The 'Gains Pierce' deferral misdescribes its own gate — Performance is Prika's OWN burst status, not an untracked partner status — which weakens the stated blocker.",
+      "evidence": "Kit: '■ Activates only while in Performance status. Affects self. … Gains Pierce.' Her burst skill is literally named Performance and runs 25s, so the window is directly expressible; S2b and S6 both windowed it at burstCast + 25s independently, and both explicitly rejected top-level hasPierce (whole-fight) as the nearest-wrong. The driver's flag instead says the gate 'rides an untracked partner status' — that describes Encore's Sing Along, not Performance. Separately, game-mechanics.md §11 already RULES that Pierce Damage ▲ applies on the partless boss, so the pending popup would verify the encoding rather than enable it (memory/derive-before-declaring-blocked).",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Not S7's to overrule — this is a standing owner hold and it stays held. But correct the flag's prose so the hold rests on its real question (does she read as Pierce-tagged in-game during Performance) rather than on an untracked-status claim that is factually wrong. If the owner discharges the hold, the faithful encoding is a gainPierce effect with durationSec 25 on burstCast (NOT hasPierce:true, which would tag her from frame 0); expected effect is the driver's ~+8% personal SR damage, small at the board level since she is a buffer."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "0.92",
+  "verdict": "GO",
+  "verdictRationale": "GO. Eleven of twelve kit lines are FAITHFUL or DOCUMENTED_GAP (0.92), and the five damage-relevant lines that carry the board are corroborated across three independent cross-family roles: S6's blind override is byte-identical to the driver on the S1 triad (projectileExplosionPct 20 / pierceDamagePct 13.09 / casterAtkPct 20, shotFired, allies, 3s) and on the burst chargeDamagePct 25/25s, S2b independently classified all five FAITHFUL with matching bucket routing, and — the one mechanical convergence result that is real evidence rather than same-model agreement — the S5 blind test's three S1 assertions PASS unmodified against the driver's shipped override, including the flat-caster-scoped >1000 check that would go RED under the named atkPct nearest-wrong. Every bucket routing checks out against the SSOT: casterAtkPct as a flat add on the caster's static ATK outside (1+ATK%) per §1a, chargeDamagePct as flat points inside the CHARGE bucket per §1d, attackDamagePct in DamageUp, and the burstCdr -21 sign correctly read as a cooldown INCREASE (40s→61s, 3 casts/180s) — a point where S5 was simply wrong about the engine primitive (RECON_ERROR, not a finding). The S5 run's RED status is dominated by one fixture defect I confirmed independently rather than on the driver's word: controlComp seats crown, a Burst II, to the LEFT of prika, and the SSOT's leftmost-priority rule means prika never casts, so every burst-keyed blind assertion is vacuous — the blind's own non-vacuity gate caught it. Four residuals stand, ranked: (1) the duet-mode Encore Attack Damage ships 9999s against a printed 'for 10 sec', justified by a Performance-extension argument that belongs to Effect 2 — this is the prose contradicting the override's own number, so it is in scope, but it is mode-gated, untouched by this pass, and unresolvable without Mint's kit prose I could not read (PLAUSIBLE, not confirmed); (2) the solo Encore proxy, which both blinds independently said should not exist at all and whose two halves ride different triggers so benefit outruns price in any two-Burst-II comp — documented and owner-deliberate, so not mine to remove, but it is the #1 spot-check; (3) the burst's 25-tick recovery stream, deferred as measurement-gated when nothing about it is measurable — the cheapest faithful improvement available; (4) the 'Gains Pierce' flag misnaming its own gate as a partner status when Performance is her own 25s burst window. None of these is a silent drop: every skipped line sits verbatim in unmodeled, and no ignored-effect blocks are present. Discrimination holds for every nearest-wrong the driver named (level-1 magnitudes, atkPct de-scoping, the CD-sign flip), but flag one blind spot for the owner: the sole-B2 fixture makes fullBurstEnter and burstCast produce identical event counts, so P4/P5 cannot discriminate those two triggers — harmless for P5 (a burst skill's own effects are structurally burstCast) but it means the solo Encore's 'fires on Full Bursts prika sat out' behaviour is unpinned and looks tamer in the fixture than it is in a real two-B2 comp. Same-model residual to spot-check by hand: every role here is Claude, so the convergence on the S1 triad proves stability, not truth — the value 25.01 and the 13.09/20 magnitudes are all datamined level-10 reads that no independent instrument in this packet touched.",
+  "model": "claude-opus-5"
+}

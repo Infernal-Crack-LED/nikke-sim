@@ -1,0 +1,270 @@
+{
+  "slug": "prika",
+  "leakDetected": null,
+  "override": {
+    "slug": "prika",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "projectileExplosionPct",
+            "value": 20,
+            "durationSec": 3
+          },
+          {
+            "kind": "buff",
+            "stat": "pierceDamagePct",
+            "value": 13.09,
+            "durationSec": 3
+          },
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 20,
+            "durationSec": 3
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "gainPierce",
+            "durationSec": 25
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 19.98,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 25,
+            "intervalSec": 1
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 25,
+            "durationSec": 25
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Outgoing healing ▲ 49.92% continuously."
+      ],
+      "skill2": [
+        "■ Activates when Sing Along takes effect while Prika is in Performance status.",
+        "Encore",
+        "Function: Extends the duration of Performance for Prika and strengthens allies.",
+        "Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.",
+        "Effect 2: Affects all allies. Performance duration ▲ 21 sec.",
+        "Effect 3: Affects all allies. Attack Damage ▲ 25.01% for 10 sec.",
+        "Effect 4: Affects self. Cooldown of Burst Skill ▲ 21 sec."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 block 1 trigger: the kit says 'Full Charge attack'; there is no fullCharge TriggerDef. Modeled as shotFired (an SR full-charges every trigger pull). chargeCounter was REJECTED: its effects[] array is phase-indexed, so a 3-effect block would fire one buff per charge instead of all three per charge.",
+      "⚑ 'Performance status' is her own burst's named state; the sim has no ally-status channel (targetStatus is enemy-only), so the Performance-gated self-Pierce is keyed to burstCast with durationSec 25 (the burst's own window). Encore's +21 s Performance extension is NOT applied because Encore itself is unmodeled.",
+      "⚑ Encore is triggered by 'Sing Along', a mechanic that belongs to ANOTHER unit and has no trigger kind, no carrier, and no teamHas facet in this schema. All four Encore effects are skipped WHOLE — including the damage-bearing Effect 3 (Attack Damage ▲25.01%/10 s, all allies) and the burst-CD line. If a Sing Along carrier is ever added, Effect 3 is the piece that moves the board.",
+      "⚑ Buff uptime of the 3 s skill1 window is entirely cadence-driven (ammo 6, chargeFrames 60, reloadFrames 141 — all datamine-unreliable). Uptime is near-continuous while firing and lapses across the reload.",
+      "Heal magnitude (3.04% of caster final Max HP per tick) is not representable: the `heal` effect models no HP amount. What IS load-bearing is the RECOVERY-EVENT CADENCE — 25 events at 1 s — which keeps on-recovery consumers refreshed for the full window. Do not collapse to a single tick.",
+      "Max HP ▲19.98% (self) is offensively inert here — she carries no atkOfMaxHpPct conversion — but is kept per the HP/DEF-scaler prior (future consumer).",
+      "noFb / range / core flags: N/A — this kit has NO flatDamage, dot, or storedHit riders. hitRatePct: N/A (no Hit Rate line). No weapon swap, no stack/currency pool, no multi-projectile split."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Prika (SR/Water/Supporter/Burst II) is a pure support: her only damage contribution to the team is skill1's per-full-charge ally triad (Projectile Explosion 20%, Pierce Damage 13.09%, caster-ATK 20%, 3 s each) plus the burst's team Charge Damage ▲25%/25 s and a 25-tick recovery stream. Self-Pierce is Performance-gated (proxied to her own burst window), not whole-fight, so it is a gainPierce effect and NOT the top-level hasPierce flag. Encore is unmodeled in full — its trigger (Sing Along) is a cross-unit mechanic with no carrier and no schema representation; flagging it is correct, inventing a proxy trigger would over-credit +25.01% Attack Damage to the whole team."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when performing a Full Char",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block 1 trigger {kind:'shotFired'} (full-charge proxy for an SR), target {kind:'allies'} — 'all allies' includes self."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Projectile Explosion Damage ▲ 20% 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff projectileExplosionPct 20, durationSec 3 (Damage Up bucket; inert on non-RL allies but kept)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Pierce Damage ▲ 13.09% for 3 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 13.09, durationSec 3 — parsed-but-inert in v1; kept for completeness."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 20% of the skill user's ATK 3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 20, durationSec 3 — 'of the skill USER's ATK' = flat add scaled off Prika, NOT atkPct."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates only while in Performance st",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block 2 gate: Performance = her own burst's state; no ally-status channel exists, so keyed trigger {kind:'burstCast'}, target self, durationSec 25."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Outgoing healing ▲ 49.92% continuously.",
+      "status": "SKIPPED",
+      "effectOrReason": "Healing-MAGNITUDE scaler. The engine models heals as amount-less recovery EVENTS (no HP pool, immortal boss), so a multiplier on healing has no representable quantity. Not an isolation skip — there is no field to hold it."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gains Pierce. This effect is continuous.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gainPierce durationSec 25 on the Performance-gated block. NOT top-level hasPierce — pierce is conditional on Performance, and a boolean cannot gate it."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} (literal 'entering Full Burst' = any team FB, NOT burstCast), target self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 19.98% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 19.98, durationSec 10 — bare 'Max HP ▲ X%' scales the TARGET's own Max HP; self-scoped so it would feed atkOfMaxHpPct if she had one."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Activates when Sing Along takes effect",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger is a CROSS-UNIT mechanic ('Sing Along', initiated by another member) with no TriggerDef, no named-ally-status channel, and no known carrier slug for teamHas. Whole Encore branch skipped rather than proxied."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Encore / Function: Extends the duration",
+      "status": "SKIPPED",
+      "effectOrReason": "Encore header — unreachable (see Sing Along)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: … Assigned Part: Singing.",
+      "status": "SKIPPED",
+      "effectOrReason": "Part-assignment bookkeeping on the Sing Along initiator; no stat, no damage, and the branch is unreachable."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: … Performance duration ▲21 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Would extend the burst-granted Performance window 25 s → 46 s (and thus skill1's self-Pierce). Unreachable branch; NOT folded into the gainPierce durationSec."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 3: … Attack Damage ▲ 25.01% 10 s",
+      "status": "SKIPPED",
+      "effectOrReason": "The one damage-bearing Encore line (buff attackDamagePct 25.01 / 10 s / allies). Unreachable — modeling it without the Sing Along gate would OVER-CREDIT the whole team every rotation."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 4: … Cooldown of Burst Skill ▲21s",
+      "status": "SKIPPED",
+      "effectOrReason": "Burst-CD change (a burstCdr-shaped line, sign ambiguous: ▲ on a cooldown reads as +21 s, a downside of the extension). Unreachable branch; sign unresolved from the text alone."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects all allies. / Performance",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Burst block trigger {kind:'burstCast'}, target {kind:'allies'}. Also the source of the 'Performance' status skill1 block 2 keys on."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 1: Restores 3.04% … every 1 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:25, intervalSec:1} — 25 recovery events over the 25 s window, which fire allies' on-recovery triggers. HP amount unrepresentable (no HP pool); the cadence is the modeled quantity."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 2: Charge Damage ▲ 25% for 25 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 25, durationSec 25, allies — additive points in the charge bucket."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].trigger",
+      "estimate": "{ kind: 'shotFired' }",
+      "reasoning": "The kit says 'when performing a Full Charge attack'. There is no fullCharge trigger in the schema. For an SR (chargeFrames 60) every trigger pull resolves as a full charge, so shotFired ≈ 1:1 with full charges. chargeCounter{count:1} is the literal full-charge counter but is phase-indexed over block.effects[] — with three effects it would fire one buff per charge in rotation instead of all three together, which is strictly wrong.",
+      "recipe": "cfg.onEvent: count buffApply events with key/stat projectileExplosionPct and compare to the shot-event count over a 180 s run — they must be equal (1 apply per shot), and all three stats must apply on the SAME frame. If the real unit can fire uncharged shots that do NOT proc, this over-fires and needs a charge-scoped trigger."
+    },
+    {
+      "field": "override.skill1[1] (trigger burstCast, gainPierce.durationSec = 25)",
+      "estimate": "burstCast-keyed, 25 s window",
+      "reasoning": "'Performance status' is not a schema concept — targetStatus is enemy-only and there is no ally-status window. Performance is granted by her own burst (the burst block is literally named Performance) with a 25 s stated duration, so keying the gate to her burstCast with durationSec 25 is the closest faithful proxy. Risk: if Performance is applied team-wide and can be (re)granted by anything other than her own cast, or if Encore's +21 s ever lands, real uptime is longer (25/40 s of her CD → up to 46 s).",
+      "recipe": "Record a fight with Prika and read Pierce-tagged popups on her own shots; measure the window from her burst banner to the last pierced shot. If uptime ≈ 46 s, Encore is firing and the Sing Along gate needs a carrier model. Alternatively assert on the gainPierce apply/expiry frames vs her burstCast frame in a harness run."
+    },
+    {
+      "field": "base cadence tuple (ammo 6 / chargeFrames 60 / reloadFrames 141)",
+      "estimate": "as datamined; ~1 full charge per ~1 s + 2.35 s reload every 6 shots",
+      "reasoning": "ALWAYS-⚑ #1 — datamined rate/reload fields are unreliable, and here they are the SOLE driver of skill1 uptime: a 3 s buff on a per-shot trigger is effectively continuous while firing but lapses across the reload gap. A wrong reload/charge time changes the team's ATK/Charge-Damage uptime, not just Prika's own (negligible) damage.",
+      "recipe": "Ammo-counter read from footage: count shots per magazine and time the reload gap (the instrument that measures the disputed quantity directly). Then check whether the casterAtkPct buff is ever absent on an ally's damage event mid-magazine."
+    },
+    {
+      "field": "override.unmodeled.skill2 (Encore, esp. Effect 3)",
+      "estimate": "inert — 0 uptime in v1",
+      "reasoning": "Sing Along has no carrier in the roster model and no trigger kind. Skipping the whole branch is the honest read, but it withholds a real +25.01% Attack Damage team buff (10 s) plus a Performance extension and a burst-CD change. If a Sing Along carrier is ever simSupported, this is the single largest missing piece of Prika's value and she will be under-modeled until then.",
+      "recipe": "When the Sing Along carrier lands, gate an Encore block with teamHas:{slugs:[<carrier>]} and key it to whatever trigger that carrier's status exposes; then re-grade. Do NOT enable it on a plain fullBurstEnter/burstCast proxy."
+    },
+    {
+      "field": "override.burst[0].effects[0] (heal ticks:25)",
+      "estimate": "25 recovery events, intervalSec 1",
+      "reasoning": "The kit says 'every 1 sec for 25 sec', so ticks:25 is text-derived, not invented. Flagged because the heal carries NO magnitude in the schema (3.04% of caster final Max HP is dropped), which makes the event CADENCE the entire modeled contribution — and that cadence is what keeps a teammate's on-recovery damage buff refreshed. A single-tick model would silently under-credit any such consumer.",
+      "recipe": "Run controlComp with an on-recovery consumer in the comp and count buffApply refreshes on that consumer's recovery-keyed buff across the 25 s window; expect ~25 refreshes, not 1. Compare its damage with ticks:25 vs ticks:1 to size the sensitivity."
+    },
+    {
+      "field": "override.skill2[0].effects[0] (targetMaxHpPct 19.98)",
+      "estimate": "modeled, expected offensively inert",
+      "reasoning": "Per the HP/DEF-scaler prior the stat is kept even when the engine treats it as inert: Prika has no atkOfMaxHpPct conversion, and ally-granted Max HP does not feed a teammate's conversion, so this should move zero damage today. Flagged so a future consumer (or a wrong self/ally scoping) is not mistaken for a regression.",
+      "recipe": "Toggle the block out via withPatchedOverride and confirm totals() is byte-identical for every slug; if it is not, the self-scoping or the stat choice (targetMaxHpPct vs maxHpPct) is wrong."
+    }
+  ],
+  "model": "claude-opus-5"
+}

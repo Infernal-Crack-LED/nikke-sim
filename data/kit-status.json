@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 34,
+      "unit-tested": 35,
       "authored": 15,
-      "audited": 24,
+      "audited": 23,
       "reconciled": 4
     },
     "tier": {
@@ -2859,24 +2859,28 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "re-materialized",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "~0.68 COLD hypotheses: F1 missing hasPierce (strongest, alice precedent +16-33%), F3 solo-Encore CD over-penalty, F5 Performance-duration under-credit"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 0.92 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/prika.json + scripts/kit-autonomy/manual-review/prika.md.",
+          "med ENCODING (skill2): Duet-mode Encore Attack Damage ships durationSec 9999 where the kit prints 'for 10 sec' — permanent uptime is justified by an argument that belongs to a different effect.",
+          "med ENGINE (skill2): Solo-mode Encore proxy fires a cross-unit-gated block with no Sing Along carrier present, and splits one Encore proc across two different triggers so benefit and price decouple.",
+          "med FIDELITY (burst): The burst's 25-tick recovery stream is omitted, and the stated reason for deferring it (a measurement) does not apply — nothing about it needs measuring.",
+          "low FIDELITY (skill1): The 'Gains Pierce' deferral misdescribes its own gate — Performance is Prika's OWN burst status, not an untracked partner status — which weakens the stated blocker."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "Duet burstFirst confirmed live in MiKa recording",
+      "evidence": "Duet burstFirst confirmed live in MiKa recording | kit-autonomy gauntlet 2026-07-25; GO faithfulness 0.92; cross-family S2b(fable)/S5/S6/S7(opus) converged on S1 triad + burst chargeDamage (S6 byte-identical) + burstCdr-increase sign; burst heal cadence enacted (judge gotcha 3, board-inert)",
       "date": "2026-07-14",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "Total 0.82 cold residual",
+      "residual": "Total 0.82 cold residual | Gains Pierce owner-hold (F1, ~+8% personal SR, popup-gated, gainPierce durationSec 25); solo Encore proxy over-credit (gotcha 2, mode-gate to duet); duet Encore attackDamagePct 9999 vs printed 10s (gotcha 1, read Mint Sing Along cadence)",
       "unmodeled": {
         "skill1": [
           "Outgoing healing ▲ 49.92% continuously.",
@@ -2888,13 +2892,13 @@
           "Effect 2: Affects all allies. Performance duration ▲ 21 sec."
         ],
         "burst": [
-          "Effect 1: Restores 3.04% of the skill user's final max HP as HP every 1 sec for 25 sec. This effect cannot be removed."
+          "Effect 1 HP MAGNITUDE: Restores 3.04% of the skill user's final max HP as HP — the recovery CADENCE (every 1 sec for 25 sec = 25 ticks) IS modeled (heal ticks:25 intervalSec:1, driving on-recovery consumers); only the HP amount is not (the engine's heal effect carries no HP value). This effect cannot be removed."
         ]
       },
       "caveats": [
         "Encore is a proxy: the real trigger is 'Sing Along takes effect while Prika is in Performance' (a partner mechanic, e.g. Mint) — solo mode fires it on EVERY Full Burst entry even in teams with no Sing Along caster (over-credits the ally Attack Damage ▲ 25.01% AND over-applies the self Burst-cooldown ▲ 21s).",
-        "Prika's kit grants her continuous Pierce while in Performance, but the override carries no Pierce tag (hasPierce) — her own Pierce Damage ▲ 13.09% and any partner Pierce buffs do not land on her (held pending a popup measurement, probe-runs 2026-07-14).",
-        "The burst Performance heal (3.04% of caster max HP per sec, 25s) is not emitted as recovery events — 'when recovery takes effect' consumer kits (Crown-type) will not proc off Prika.",
+        "Prika's kit grants her continuous Pierce while in Performance (her OWN burst's 25s status window), but the override carries no Pierce tag — her own Pierce Damage ▲ 13.09% and any partner Pierce buffs do not land on her. Held on a standing OWNER popup measurement (probe-runs 2026-07-14 inconclusive). Faithful encoding when discharged: gainPierce durationSec 25 on burstCast (windowed to Performance), NOT top-level hasPierce:true (which would tag her from frame 0). game-mechanics §11 rules Pierce Damage ▲ applies on the partless boss, so the popup verifies the encoding rather than enables it.",
+        "The burst Performance heal's recovery CADENCE (3.04% of caster max HP, every 1s for 25s = 25 ticks) IS emitted as recovery events (heal ticks:25 intervalSec:1) — 'when recovery takes effect' consumer kits (Crown-type) now proc off Prika across the full 25s window. Only the heal's HP MAGNITUDE (3.04%) is unmodeled (the engine's heal effect carries no HP amount).",
         "Encore's 'Performance duration ▲ 21 sec' is unmodeled — in solo mode the burst's Charge Damage ▲ 25% (and heal) run 25s instead of an extended ~46s when Encore fires."
       ],
       "board": {

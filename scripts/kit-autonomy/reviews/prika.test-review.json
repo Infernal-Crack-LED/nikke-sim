@@ -1,0 +1,190 @@
+{
+  "slug": "prika",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Projectile Explosion Damage ▲ 20%",
+      "disposition": "FAITHFUL",
+      "scope": "Damage-Up-bucket stat scoped to projectile-explosion-flavored damage only; schema notes only RL kits carry that flavor, so it moves only RL allies",
+      "durationSemantics": "durationSec: 3 (wall-clock), refreshed per full-charge shot; uptime is cadence-dependent (charge ~1s + fire interval, lapses across the 141f reload) ⚑ cadence tuple is datamine-unreliable",
+      "triggerIdentity": "shotFired on an always-full-charging SR (every pull = a Full Charge attack); NOT chargeCounter (no phase cycling stated), NOT interval",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Encoded as generic attackDamagePct 20% for the whole team — over-credits every non-RL ally on every shot",
+      "distinguishingAssertion": "After prika's first shot, buffApply {stat:'projectileExplosionPct', value:20} appears for all 5 units; zeroing this effect leaves totals(res) unchanged in an RL-free comp (RED if attackDamagePct: totals move)",
+      "inertness": "Must move NOTHING in a comp with no RL ally / no projectileExplosion-flavored damage",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Pierce Damage ▲ 13.09% for 3 sec",
+      "disposition": "FAITHFUL",
+      "scope": "pierceDamagePct — scoped to pierce-flavored damage; schema marks it parsed-but-inert in v1",
+      "durationSemantics": "durationSec: 3, refreshed per full-charge shot",
+      "triggerIdentity": "Same block as above: shotFired (full-charge attack)",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Silently dropped, or promoted to attackDamagePct because pierceDamagePct 'does nothing'",
+      "distinguishingAssertion": "buffApply {stat:'pierceDamagePct', value:13.09, durationSec≈3} emitted per shot; totals unchanged when zeroed (inert stat kept for completeness — RED if any damage moves)",
+      "inertness": "Must not move any damage bucket in v1 (partless boss)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 20% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Caster-scaled flat ATK add — 20% of PRIKA's ATK, not of each target's",
+      "durationSemantics": "durationSec: 3, refreshed per full-charge shot → near-continuous while firing, lapses during her 141f reload / any non-firing window",
+      "triggerIdentity": "shotFired (full-charge attack) — the ally ATK feed dies whenever prika stops shooting; NOT passive",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "atkPct 20 (scales each target's OWN ATK) — over-credits high-ATK carries since prika is a low-ATK SR supporter; second nearest: passive trigger (no reload lapse)",
+      "distinguishingAssertion": "buffApply {stat:'casterAtkPct'} whose value equals 0.20 × prika.staticAtk (a flat number, IDENTICAL on every target); RED under atkPct where value=20 and each target scales differently. Carry totals drop when prika's firing is suppressed",
+      "inertness": "No ATK feed before her first full-charge shot (t=0 pre-charge window)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Outgoing healing ▲ 49.92% continuously",
+      "disposition": "UNMODELED",
+      "scope": "Heal-amount modifier; engine's heal effect carries no HP magnitude, so there is nothing for it to scale",
+      "durationSemantics": "'continuously' = for the life of Performance status (her burst window), not permanent",
+      "triggerIdentity": "Status-gated passive: active only while Performance (own-burst status) is live",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoded as some damage/stat buff to make it 'do something', or the Performance gate dropped (whole-fight)",
+      "distinguishingAssertion": "No buffApply for any damage stat from this line; goes verbatim in unmodeled.skill1",
+      "inertness": "Must move zero damage; must not appear as a modeled block",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gains Pierce. This effect is continuous",
+      "disposition": "FAITHFUL",
+      "scope": "Pierce tag on her own shots, ONLY while in Performance status (her burst's 25s window)",
+      "durationSemantics": "'continuous' WITHIN Performance — i.e. windowed to Performance's duration (25s per cast, CD 40s → ~62% uptime), NOT whole-fight",
+      "triggerIdentity": "burstCast (Performance opens only when prika casts her own burst) + gainPierce effect with durationSec matching Performance (25); NOT top-level hasPierce:true, NOT fullBurstEnter",
+      "targetSet": "self",
+      "nearestWrongModel": "Top-level hasPierce:true (whole-fight pierce) — over-tags every pre-burst and between-Performance shot; the schema explicitly says a boolean cannot window pierce, use a gainPierce effect",
+      "distinguishingAssertion": "Shots BEFORE her first burstCast carry no pierce tag; shots inside the 25s post-cast window do; shots after Performance lapses (25–40s post-cast) do not. RED under hasPierce:true (pierce from frame 0)",
+      "inertness": "Pre-burst shots must be pierce-free; likely damage-inert vs the partless boss but the tag must still be windowed correctly",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 19.98% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self Max-HP stat; prika has no atkOfMaxHpPct scaler, so offensively inert (her HoT heals no modeled HP pool either); keep as a future-consumer stat per taxonomy §7",
+      "durationSemantics": "durationSec: 10 (wall-clock)",
+      "triggerIdentity": "fullBurstEnter — ANY team Full Burst, including rotations where prika did not burst; NOT burstCast",
+      "targetSet": "self (targetMaxHpPct — % of her OWN Max HP)",
+      "nearestWrongModel": "burstCast keying (fires only on her own rotations — under-fires in a comp where the other B2 bursts); or casterMaxHpPct/ally-scoped",
+      "distinguishingAssertion": "buffApply {stat:'maxHpFlat', value≈0.1998×prika.maxHp, targetSlug:'prika'} on EVERY fullBurstStart, even rotations another B2 cast; RED under burstCast (missing on those rotations). totals(res) identical with the effect zeroed",
+      "inertness": "Zero damage movement for any unit — pure stat bookkeeping",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Sing Along takes effect",
+      "disposition": "UNMODELED",
+      "scope": "Entire Encore block (Effects 1–4) is gated on a CROSS-UNIT event — another unit initiating 'Sing Along' while prika is in Performance. The engine has no Sing-Along event channel and (to my knowledge) no roster carrier",
+      "durationSemantics": "Effect 2: Performance duration ▲ 21 sec (window EXTENSION — would also extend the skill1 pierce/healing and burst 25s effects); Effect 3: 10 sec; Effect 4: permanent CD shift per proc",
+      "triggerIdentity": "Cross-unit status handshake — no TriggerDef exists for it; UNMODELED verbatim, never approximated by fullBurstEnter/interval",
+      "targetSet": "E1: the Sing-Along initiator; E2/E3: all allies; E4: self",
+      "nearestWrongModel": "Modeling Effect 3 (Attack Damage ▲ 25.01%) as an unconditionally-triggered team buff (e.g. on FB enter) — pure over-credit with no initiator present; or reading Effect 4 'Cooldown of Burst Skill ▲ 21 sec' as a cooldown REDUCTION (it is a self-NERF: 40s → 61s)",
+      "distinguishingAssertion": "No buffApply for attackDamagePct 25.01 ever appears in a comp without a Sing-Along initiator; prika's burstCast events stay on the base 40s cooldown cadence. RED if any Encore effect fires",
+      "inertness": "ALL four Encore effects must move nothing in any current comp",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Restores 3.04% … every 1 sec for 25 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Heal-over-time to ALL allies — HP amount unmodeled, but the recovery EVENTS are the payload: taxonomy §4, a heal inert alone drives teammates' on-recovery triggers (crown sits in the control comp)",
+      "durationSemantics": "ticks:25, intervalSec:1 — 25 discrete recovery events over 25s per cast; 'cannot be removed' is dispel text, no-op here",
+      "triggerIdentity": "burstCast (her own Burst II cast); heal effect with ticks — NOT a single instant heal, NOT fullBurstEnter",
+      "targetSet": "allies (all, including self) — each tick fires every recipient's 'recovery' trigger",
+      "nearestWrongModel": "kind:'heal' with default ticks:1 — one recovery event per cast instead of 25, starving on-recovery consumers (crown) for the other 24 seconds",
+      "distinguishingAssertion": "Per prika burstCast, exactly 25 recovery-driven activations spaced ~60 frames apart reach each ally; crown's recovery-triggered buffApply stream refreshes throughout the 25s window. RED under ticks:1 (crown's consumer fires once then lapses)",
+      "inertness": "Zero direct damage; movement comes ONLY via recovery-consumers — in a comp with no on-recovery kit, totals must not change",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Damage ▲ 25% for 25 sec",
+      "disposition": "FAITHFUL",
+      "scope": "chargeDamagePct — additive points in the CHARGE bucket only; moves charge-weapon allies (SR/RL, incl. prika's own full-charge shots), inert for non-charge carries",
+      "durationSemantics": "durationSec: 25, hard wall-clock; vs her 40s CD → ~62.5% uptime steady-state. NOT 10s, NOT permanent ('cannot be removed' = dispel-proof only)",
+      "triggerIdentity": "burstCast — fires ONLY on rotations prika herself bursts; she is Burst II, so in any comp with another B2 (e.g. crown in controlComp) burst-cast vs FB-enter genuinely diverge",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "fullBurstEnter keying — the buff would apply on EVERY team Full Burst including rotations the other B2 casts, roughly doubling uptime in a two-B2 comp",
+      "distinguishingAssertion": "buffApply {stat:'chargeDamagePct', value:25, durationSec 25→expiresFrame≈castFrame+1500} appears ONLY on rotations where a burstCast event from prika precedes it; on an FB where the other B2 cast, NO such buffApply. RED under fullBurstEnter",
+      "inertness": "Must not lift the normal/core buckets of non-charge weapons; no application on FBs prika sat out",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Projectile Explosion Damage ▲ 20% (allies, per full-charge, 3s)",
+    "skill1:Pierce Damage ▲ 13.09% (allies, per full-charge, 3s — inert-in-v1 stat, still encoded)",
+    "skill1:ATK ▲ 20% of skill user's ATK (casterAtkPct flat, allies, 3s refresh)",
+    "skill1:Gains Pierce while in Performance (gainPierce windowed to burst, NOT hasPierce)",
+    "skill2:Max HP ▲ 19.98% on fullBurstEnter (self, 10s, offensively inert)",
+    "burst:HoT 3.04%/1s×25 (ticks:25 recovery stream — tandem feed)",
+    "burst:Charge Damage ▲ 25% for 25 sec (burstCast-keyed)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Outgoing healing ▲ 49.92% continuously."
+    ],
+    "skill2": [
+      "■ Activates when Sing Along takes effect while Prika is in Performance status. Encore — Function: Extends the duration of Performance for Prika and strengthens allies.",
+      "Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.",
+      "Effect 2: Affects all allies. Performance duration ▲ 21 sec.",
+      "Effect 3: Affects all allies. Attack Damage ▲ 25.01% for 10 sec.",
+      "Effect 4: Affects self. Cooldown of Burst Skill ▲ 21 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Reconciliation points, highest-risk first. (1) BURST-SLOT FIXTURE: prika is Burst II — controlComp() already seats crown at B2, so a naive fixture may leave prika NEVER casting her burst (zero Performance, zero HoT, zero chargeDamagePct, zero pierce). Tests must build a comp where prika actually occupies/wins the B2 cast, and the burstCast-vs-fullBurstEnter distinction for the burst block is only observable in a comp where the OTHER B2 sometimes bursts — expect a shared-prior misread here (keying Charge Damage + Performance to fullBurstEnter over-credits ~2× uptime). (2) PERFORMANCE = her own burst status: the skill1 self block (healing + pierce) must be windowed to the 25s post-cast window; the classic misread is top-level hasPierce:true (whole-fight). Also note the burst's two 'cannot be removed' 25s effects and the Performance window share duration — if the driver modeled Performance as a mode or a 10s FB window instead of 25s, pierce and charge-damage uptime both break. (3) casterAtkPct vs atkPct on the skill1 ally feed — buffApply value must be a FLAT number equal on all targets. (4) The HoT must be ticks:25 — with crown in-comp this is the biggest tandem lever; ticks:1 is the near-certain misread. (5) Encore is entirely cross-unit-gated (Sing Along has no engine channel and, afaik, no roster initiator); any modeled Encore effect — especially the 25.01% Attack Damage team buff — is an over-credit, and Effect 4 is a burst-CD INCREASE (self-nerf), not a reduction; if a Sing-Along carrier ever lands, prika's effective CD becomes 61s while Encore procs, which also invalidates any 40s-cadence assertion. (6) Uptime of all three skill1 ally buffs rides her charge cadence (chargeFrames 60 ⚑ ALWAYS-flag) and lapses across the 141f reload — assert a refresh-per-shot pattern, not a permanent buff.",
+  "model": "claude-fable-5",
+  "driverReconciliation": {
+    "driver": "qwen",
+    "reviewer": "claude-fable-5",
+    "converged": [
+      "S1 projectileExplosionPct 20/3s/allies/shotFired — FAITHFUL, damage-inert at scope (RL-only flavor). P1 pins value/dur/target.",
+      "S1 pierceDamagePct 13.09/3s/allies — FAITHFUL, damage-inert in v1 (byte-identical totals w/o). P2 pins value + inertness.",
+      "S1 casterAtkPct (20% of CASTER ATK, flat, identical on all targets) — FAITHFUL; both name atkPct as nearest-wrong. P3 pins flat caster-scoped value + RED vs atkPct.",
+      "Burst chargeDamagePct 25/25s/allies, burstCast-keyed — FAITHFUL. P5 pins value/dur/target/cadence.",
+      "S2 Encore Effect 4 \"Cooldown ▲21s\" = INCREASE (burstCdr -21 → 40s→61s) — both agree on the sign. P6 pins via cast count (3 vs 9 for the decrease misread).",
+      "Max HP 19.98% — both agree damage-inert at scope (no atkOfMaxHpPct scaler). Driver keeps UNMODELED (reviewer notes load-bearing only for a hypothetical future HP-consumer; zero damage now).",
+      "Fixture: reviewer warned controlComp seats crown at B2 (prika would never cast); driver uses a custom liter/prika/ada chain (prika sole B2, casts 3×). Documented in header."
+    ],
+    "divergences": [
+      {
+        "line": "S1 \"Gains Pierce continuously while in Performance\"",
+        "reviewer": "FAITHFUL + load-bearing — model as gainPierce durationSec 25 on burstCast (windowed to Performance), NOT top-level hasPierce.",
+        "driver": "UNMODELED ⚑ MEASUREMENT-GATED. The owner EXPLICITLY held this line \"pending a popup measurement\" (probe-runs 2026-07-14 inconclusive); the gauntlet has no new measurement data. Per MEASURED>FUDGE + respect for the owner hold, driver FLAGS rather than enacts. Estimate (~+8% personal SR damage from her own 13.09% pierceDamagePct going live during the 25s Performance window, ~62% uptime), recipe (Prika-focus popup pass confirming the Pierce tag + in/out-window SR uplift), tier 2 — all in the test header. This is the F1 cold hypothesis; the test P2 inertness assertion captures the mechanism (pierceDamagePct applies but spends nothing until a Pierce tag exists).",
+        "resolution": "FLAG (⚑). Reviewer is mechanically correct that gainPierce is the faithful encoding IF enacted; driver defers enactment to the owner measurement the line is explicitly gated on."
+      },
+      {
+        "line": "Burst Effect 1 HoT (3.04% caster max HP / 1s × 25s, all allies)",
+        "reviewer": "FAITHFUL + load-bearing — model as heal ticks:25/intervalSec:1 (25 recovery events per cast) to drive crown-type on-recovery consumers; nearest-wrong ticks:1.",
+        "driver": "UNMODELED ⚑. Heal-only (zero direct damage to Prika); the shipped override documents the omission as a caveat (\"recovery consumers will not proc off Prika\"). No owner measurement-gate, but minimum-edit principle + no crown in the graded fixture keep it as a documented gap. Recipe: add heal ticks:25 on burstCast/allies if a crown-type consumer is graded. Tier 2.",
+        "resolution": "FLAG (⚑). Both agree the kit line exists and the engine could model it (helm precedent); driver keeps the shipped omission as a documented, recipe-backed flag rather than expanding scope into a heal that moves no Prika damage."
+      },
+      {
+        "line": "S2 Encore (Effects 1-4) trigger",
+        "reviewer": "Entire Encore block is cross-unit-gated (Sing Along has no engine channel / no roster initiator) → leave UNMODELED verbatim, NEVER approximated by fullBurstEnter; any modeled Encore effect is an over-credit.",
+        "driver": "Shipped override models Effect 3 (attackDamagePct 25.01/10s) + Effect 4 (burstCdr -21) as a SOLO-MODE PROXY on fullBurstEnter/burstCast — the owner deliberate, documented approximation (\"Sing Along/Performance is an untracked mechanic, so I approximate it as firing once per rotation on Full Burst entry\"). The test P4/P6 PIN this shipped encoding (value/dur/target/cadence/sign); the header ⚑ documents that the solo proxy OVER-CREDITS in non-Mint comps (the real trigger needs a Sing Along caster). Duet mode (w/ Mint) needs explicit mode selection and is inert in this harness.",
+        "resolution": "PIN shipped encoding + FLAG the proxy over-credit (⚑). Driver does not unilaterally remove the owner modeling choice; the test pins what ships and the flag names the approximation."
+      }
+    ],
+    "verdict": "CONVERGED on all 5 damage-relevant lines + burstCdr sign; 3 divergences resolved as documented ⚑ flags (Gains Pierce measurement-gated; burst HoT heal-only; Encore proxy over-credit). No REAL-GOTCHA in the modeled lines. Test is GREEN vs shipped (16/16)."
+  }
+}
