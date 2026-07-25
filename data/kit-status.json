@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24",
+  "generatedAt": "2026-07-25",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -16,8 +16,8 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 6,
-      "authored": 30,
+      "unit-tested": 7,
+      "authored": 29,
       "audited": 36,
       "reconciled": 4,
       "pending": 1
@@ -96,22 +96,24 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "hasPierce added (was note-dropped) → her own pierce buffs feed her Damage Up; board 0.85→0.996 (into +/-3%)"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/ade-agent-bunny.json + scripts/kit-autonomy/manual-review/ade-agent-bunny.md."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded; a focus A/B is batched",
+      "evidence": "Pure model — never fielded; a focus A/B is batched | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0 (6 FAITHFUL/2 DOCUMENTED_GAP); cross-family S2b(fable)/S5/S6/S7(opus) converged; binding judge opus 0 silent-drops 0 gotchas; S6 blind byte-identical on 3/4 dmg blocks + both unmodeled lines",
+      "date": "2026-07-24",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "spot-check: ⚑1 shotFired full-charge proxy (MEDIUM); ⚑2 Spy-Lens stack-expiry refresh-all vs per-stack (HIGH, both families' dominant uncertainty); ⚑3 SR cadence tuple datamine-default (LOW); 2 inert Min-Eff-Range lines unmodeled (no range StatKey)",
       "unmodeled": {
         "skill1": [
           "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec."

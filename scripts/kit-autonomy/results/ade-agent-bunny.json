@@ -1,0 +1,189 @@
+{
+  "slug": "ade-agent-bunny",
+  "unitName": "Ade: Agent Bunny",
+  "stage": "S7-RECONCILING-JUDGE",
+  "kitDescription": "Ade: Agent Bunny (SR/Iron/Supporter/Burst II, cd 20s, 6 ammo, 141 reload frames, 60 charge frames, normal 69.04 / charge 250) is a full-charge-cadence team buffer with a self-ramp. Every full-charge hit in effective range grants ALL allies +15.2% of HER OWN ATK as a flat ATK add (caster-sourced) for 5s (S1) and +18.36% Pierce Damage for 5s (S2). Each full charge also stacks Spy Lens on herself (Minimum Effective Range +4.44%, up to 10, 5s) — an inert stat in-engine, but the STACK COUNT is load-bearing: at max stacks she permanently gains Pierce and +16% ATK continuously (S2), which turns her own team-wide Pierce Damage buffs into a self-feed. Her Burst II grants herself +55.56% Minimum Effective Range (inert) and all allies +55.04% Attack Damage and +10.13% Pierce Damage for 10s. Net: a ramping supporter whose personal damage only comes online after 10 full charges (~16s), and whose Pierce Damage buffs are inert on non-Pierce teammates.",
+  "kitLineClassification": [
+    {
+      "skill": "skill1",
+      "line": "ATK ▲ 15.2% of the skill user's ATK for 5 sec (allies, on full-charge landing)",
+      "verdict": "FAITHFUL",
+      "encoding": "shotFired → allies → buff casterAtkPct 15.2, durationSec 5",
+      "evidence": "A1: one flat value (≈15159.57 = 0.152 × staticAtk 99734) uniform across all 4 allies, 5s, once per shot (count = shots×4); CF generic atkPct stores raw 15.2 AND moves ada's total (discriminates); CF shotFired→burstCast collapses cadence 420→48 (discriminates). S6 blind converged BYTE-IDENTICALLY.",
+      "flags": [
+        "shotFired-as-full-charge proxy (⚑1)"
+      ]
+    },
+    {
+      "skill": "skill1",
+      "line": "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10, 5 sec (self)",
+      "verdict": "DOCUMENTED_GAP",
+      "encoding": "unmodeled.skill1 verbatim (inert STAT — no range StatKey); STACK COUNT modeled via hitCount:10 step on skill2[1]",
+      "evidence": "A2 asserts the verbatim line is present in unmodeled.skill1. The load-bearing half (the count) IS modeled and is asserted by A4. Split-classification is correct: the stat is unmodelable, the counter is modeled.",
+      "flags": [
+        "Spy-Lens ramp + refresh-all stack reading (⚑2)"
+      ]
+    },
+    {
+      "skill": "skill2",
+      "line": "Pierce Damage ▲ 18.36% for 5 sec (allies, on full-charge landing)",
+      "verdict": "FAITHFUL",
+      "encoding": "shotFired → allies → buff pierceDamagePct 18.36, durationSec 5",
+      "evidence": "A3: raw magnitude, 5s, all 4 allies, once per shot; CF removal deletes the buff; INERTNESS — zeroing leaves liter/ada/helm BYTE-IDENTICAL and moves only ade (the sole pierce-tagged unit), matching engine fact (b) exactly. S6 converged identically.",
+      "flags": []
+    },
+    {
+      "skill": "skill2",
+      "line": "Gains Pierce, continuous (self, only at max Spy Lens stacks)",
+      "verdict": "FAITHFUL",
+      "encoding": "hitCount:10 → self → gainPierce, NO durationSec ⇒ pierceUntilFrame → ∞",
+      "evidence": "Engine fact (c): gainPierce is a real step-gateable primitive added 2026-07-20 for THIS unit precisely so Pierce can be gated on a stack threshold. A4 asserts the structural block, asserts NO top-level hasPierce, and discriminates twice: CF no-gainPierce drops ade total −12.9% (the pierce self-feed is load-bearing) and CF top-level hasPierce (always-on) moves ade +1.0% (over-credits the first ~16s).",
+      "flags": []
+    },
+    {
+      "skill": "skill2",
+      "line": "ATK ▲ 16% continuously (self, only at max Spy Lens stacks)",
+      "verdict": "FAITHFUL",
+      "encoding": "hitCount:10 → self → buff atkPct 16, NO durationSec ⇒ continuous (expiresFrame null)",
+      "evidence": "A4: first lands on the 10th shot (frame 955 / 15.9s), self-only, expiresFrame null; CF always-on (trigger→shotFired) lands it on the 1st shot (discriminates the gate). 'continuously' in the prose is read literally — no durationSec. Engine fact (d) confirms hitCount:10 first fires on shot 10 at hitsPerShot 1 and that re-application merely refreshes.",
+      "flags": []
+    },
+    {
+      "skill": "burst",
+      "line": "Minimum Effective Range ▲ 55.56% for 10 sec (self)",
+      "verdict": "DOCUMENTED_GAP",
+      "encoding": "unmodeled.burst verbatim (inert — no range StatKey)",
+      "evidence": "B1 asserts verbatim presence. No StatKey exists for minimum effective range; nothing in the engine consumes range (noRange is force-set). Genuinely unmodelable, correctly disclosed rather than silently dropped.",
+      "flags": []
+    },
+    {
+      "skill": "burst",
+      "line": "Attack Damage ▲ 55.04% for 10 sec (all allies)",
+      "verdict": "FAITHFUL",
+      "encoding": "burstCast → allies → buff attackDamagePct 55.04, durationSec 10",
+      "evidence": "B2: kit magnitude, 10s, all 4 allies, once per burstCast (count = bursts×4); structural trigger asserted as burstCast — NOT fullBurstEnter, which S2b named as the top shared-prior-misread candidate; CF removal deletes the buff. S6 converged identically.",
+      "flags": []
+    },
+    {
+      "skill": "burst",
+      "line": "Pierce Damage ▲ 10.13% for 10 sec (all allies)",
+      "verdict": "FAITHFUL",
+      "encoding": "burstCast → allies → buff pierceDamagePct 10.13, durationSec 10",
+      "evidence": "B3: kit magnitude, 10s, all 4 allies, once per burstCast; CF removal deletes; INERTNESS — zeroing ONLY the 10.13 leaves non-pierce teammates byte-identical and moves only ade. This is the S2b-REQUIRED strengthening, adopted.",
+      "flags": []
+    }
+  ],
+  "silentDrops": [],
+  "realGotchas": [],
+  "s5PristineRuling": {
+    "result": "2 passed / 22 failed / 3 skipped (27) UNMODIFIED vs shipped",
+    "ruling": "ALL 22 REDs are RECON_ERROR (test artifact). ZERO are REAL-GOTCHA.",
+    "causes": [
+      {
+        "cause": "Fixture vacuity — controlComp('ade-agent-bunny') = liter/crown/ade/helm; crown (B2) and ade (B2) contest the single B2 slot, ade wins 0 casts ⇒ ADE_CASTS.length===0 ⇒ every burst assertion vacuous",
+        "class": "RECON_ERROR",
+        "note": "The blind writer PRE-ANTICIPATED this failure in-file ('the fixture must be rebuilt without a second B2') — a self-diagnosed harness defect, not a claim about the override. Memory rule: a lone/contested B2 makes ZERO casts."
+      },
+      {
+        "cause": "casterAtkPct event value — pristine filters the event log for raw 15.2, engine emits flat-resolved ≈15159.57 (fact (a)) ⇒ ADE_IDX derives null ⇒ cascade",
+        "class": "RECON_ERROR",
+        "note": "The override DOES store raw 15.2; the blind writer could not know the event log carries the caster-resolved flat. Driver's A1 asserts BOTH halves (raw in override, flat in event)."
+      },
+      {
+        "cause": "Override schema — pristine blocksOf reads o.blocks; OverrideFile uses skill1/skill2/burst arrays ⇒ all structural reads and CF patches no-op",
+        "class": "RECON_ERROR",
+        "note": "Pure schema-shape guess; unverifiable from the de-contaminated packet."
+      },
+      {
+        "cause": "Pierce primitive — pristine asserts top-level hasPierce; driver uses step-gated gainPierce (fact (c))",
+        "class": "RECON_ERROR",
+        "note": "This RED indicts the TEST, not the override — and points the WRONG way: the driver's encoding is strictly MORE faithful (S6's own caveat concedes the ramp 'cannot be expressed' with hasPierce)."
+      },
+      {
+        "cause": "totals() shape — pristine teamDmg reads t.total; harness totals() is a per-slug map ⇒ undefined",
+        "class": "RECON_ERROR",
+        "note": "Harness API guess."
+      },
+      {
+        "cause": "overrides shape — pristine sets o.overrides = <file>; harness expects a per-slug map ⇒ CF patches silently fall back to disk",
+        "class": "RECON_ERROR",
+        "note": "Worst-class artifact (silent no-op CFs), but still a harness-API guess with zero bearing on prose fidelity."
+      }
+    ],
+    "adaptedResult": "24 passed / 3 skipped (27), 0 failed vs shipped — pristine preserved, only the 6 unverifiable engine/harness assumptions corrected, assertion INTENT unchanged. The 3 skips = the 2 unmodelable Min-Eff-Range GAPs + 1 conservative engine-gated pierce skip already covered by driver A3/A4.",
+    "conclusion": "An INDEPENDENT assertion set, written blind from prose, goes fully green against the shipped override once its guesses about engine internals are corrected. That is cross-family corroboration of the override, not of the driver's test."
+  },
+  "s6DiffRuling": [
+    {
+      "item": "Spy-Lens stack gate: S6 resource pool spyLens + resourceGate{min:10} vs driver hitCount:10",
+      "class": "ENCODING",
+      "ruling": "NO functional divergence — both gates open on the 10th full-charge hit. hitCount is the engine's native counter primitive (fact (d)); the resource pool is a hand-rolled equivalent. Driver's choice is the leaner of two correct encodings. Both families independently flagged the same refresh-all-vs-per-stack-expiry ambiguity as the dominant uncertainty, which is itself corroboration of ⚑2's scope."
+    },
+    {
+      "item": "Pierce step-gate: S6 top-level hasPierce:true (t=0) vs driver gainPierce at hitCount:10",
+      "class": "FIDELITY — in the DRIVER's favour",
+      "ruling": "The prose gates Pierce on max Spy Lens stacks. S6 encoded it unconditionally and its OWN caveat admits this 'over-credits her benefit from her S2/burst Pierce Damage ▲ buffs early… the ramp cannot be expressed', on the mistaken belief that no resource-gated form existed. gainPierce (fact (c)) IS that form, added specifically for this unit. Driver holds Pierce off for the first 10 shots (~16s, ≈9% of fight) — measured at +1.0% ade total when wrongly made always-on (driver A4 CF). Driver is more faithful; not a gotcha."
+    },
+    {
+      "item": "atkPct 16 duration: S6 durationSec 5 (refreshed while gated) vs driver continuous (no durationSec)",
+      "class": "ENCODING (driver more literal)",
+      "ruling": "Prose reads 'ATK ▲ 16% continuously'. Driver's no-durationSec matches the word literally; S6's 5s-refresh is functionally near-equivalent while she keeps firing but would lapse during a long reload/idle gap the prose does not license. Minor, driver correct."
+    }
+  ],
+  "convergenceSummary": "S6 blind converged BYTE-IDENTICALLY on 3 of the 4 damage-bearing blocks (S1 casterAtkPct 15.2/5s/allies; S2 pierceDamagePct 18.36/5s/allies; burst attackDamagePct 55.04 + pierceDamagePct 10.13/10s/allies) and on BOTH unmodeled Min-Eff-Range lines verbatim, from prose alone with leakDetected:null. The only two diffs are one encoding-equivalent gate and one place where the driver is strictly MORE faithful. Cross-family corroboration: CONFIRMED.",
+  "fireRateCheck": {
+    "result": "PASS",
+    "detail": "skill1[0] + skill2[0] fire on shotFired = once per full charge — an SR at chargeFrames 60 always fires full charge and the engine force-sets noRange (fact (e)), so the prose's 'landing Full Charge within effective range' is satisfied on every shot; A1/A3 assert count = shots×4 (105 shots, 420 buffApply events) and the shotFired→burstCast CF collapses it to 48 (the cadence is discriminated, not assumed). skill2[1] fires once at hitCount:10 = the 10th shot, frame 955 / 15.9s, consistent with hitsPerShot 1 and fact (d); duration-less so it never re-lapses. burst[0] fires once per burstCast (12 casts, 48 events) with ade the SOLE B2 in liter/ade/ada/helm so she casts every FB cycle — burst eligibility verified, not assumed. Cadences are mutually consistent with ammo 6 / reload 141f / charge 60f: no block fires faster or slower than the prose implies."
+  },
+  "discriminationCheck": {
+    "result": "PASS",
+    "detail": "Every FAITHFUL line is GREEN vs shipped AND RED vs its nearest-wrong counterfactual. S1 casterAtkPct: nearest-wrong generic atkPct (stores raw 15.2, moves ada) — CF RED; nearest-wrong trigger burstCast — CF RED (420→48). S2 pierceDamagePct 18.36: CF removal RED, plus a POSITIVE inertness discriminator (non-pierce teammates byte-identical). gainPierce: two CFs — absent (−12.9% ade) and always-on (+1.0% ade) — both RED, bracketing the gate from both sides. atkPct 16: CF trigger→shotFired lands it on shot 1 — RED. Burst attackDamagePct 55.04: structural burstCast asserted against the fullBurstEnter misread S2b named as the top shared-prior risk — RED under substitution; CF removal RED. Burst pierceDamagePct 10.13: CF removal RED + isolated inertness. No FAITHFUL assertion is vacuous or tautological; the two DOCUMENTED_GAPs are asserted as verbatim-presence-in-unmodeled, which is the only discriminating check available for an inert stat."
+  },
+  "preOpAdoption": {
+    "s2bRequiredStrengthening": "Both pierce buffs provably inert on non-pierce teammates",
+    "status": "ADOPTED — driver A3 and B3 each carry an INERTNESS assertion (zeroing leaves liter/ada/helm byte-identical, moves only ade)",
+    "s2bMisreads": "S2b labeled 'Gains Pierce' as FIX and Spy Lens as needing a resourceGate, both on the assumption the engine lacked the needed primitives. It HAS both (gainPierce, hitCount). The driver used them. S2b's dispositions on all 5 other lines (FAITHFUL/UNMODELED) match this judgment."
+  },
+  "flags": [
+    {
+      "id": "⚑1",
+      "tier": "MEDIUM",
+      "claim": "shotFired is used as the proxy for 'landing a Full Charge attack on a target within the effective range'",
+      "estimate": "In-sim exact (SR always full-charges at chargeFrames 60; engine force-sets noRange ⇒ every shot satisfies the clause). Divergence vs a real fight is bounded by real-fight uncharged/out-of-range shots; expected ≤5% of shots on a stationary partless boss, ≈0 with disciplined play. Buff uptime is refresh-dominated (5s duration vs sub-second shot cadence), so even a 10% miss rate would move ally uptime <1%.",
+      "recipe": "Record a partless-boss run with ade in slot; count full-charge shot popups vs total shot popups from the ammo counter + popup colour; compare the ratio to the sim's shotFired count over the same window. Deviation >5% reopens the proxy.",
+      "unmeasured": true
+    },
+    {
+      "id": "⚑2",
+      "tier": "HIGH",
+      "claim": "Spy-Lens ramp shape: (i) 10 stacks are reached on the 10th full charge, and (ii) the stack set refreshes wholesale rather than expiring per-stack at 5s each",
+      "estimate": "Under refresh-all (both families' reading) the gate opens at frame 955 / 15.9s and never closes — ade's Pierce + atkPct 16 are live for ~91% of a 3:00 fight. Under strict per-stack 5s expiry the gate would still open at the same shot (her cadence is well under 5s/shot) but would drop out during reloads (141 frames = 2.35s, under 5s ⇒ still no drop) — so the two readings likely coincide in practice; the divergence only appears if her shot cadence ever exceeds 5s. Estimated total-damage impact of the wrong reading: <1% on this fixture.",
+      "recipe": "Two probes: (a) confirm 10 stacks land on the 10th charge via the Spy Lens stack icon count against the shot counter; (b) force a >5s firing gap (deliberate idle after reload) and check whether the stack display drops to 0 (refresh-all) or decays stepwise (per-stack). Both families named this the dominant uncertainty independently.",
+      "unmeasured": true
+    },
+    {
+      "id": "⚑3",
+      "tier": "LOW",
+      "claim": "SR cadence tuple (ammo 6, reloadFrames 141, chargeFrames 60, hitsPerShot 1) drives the 105-shot / 10th-shot-at-frame-955 timeline",
+      "estimate": "Datamined nominal values; the 10th-shot step at 15.9s follows directly. A ±10% error in reload or charge frames shifts the gate open time by ~±1.6s ≈ ±0.9% of fight, i.e. sub-1% on ade's total.",
+      "recipe": "Ammo-counter read on a recording: time 10 full charges from t0 and compare to 15.9s. Note the nominal-vs-effective rule — a datamined rate is nominal and the game fires on 60fps frame boundaries; chargeFrames 60 and reloadFrames 141 are already frame-quantized, so no ceil correction applies here.",
+      "unmeasured": true
+    }
+  ],
+  "faithfulnessScore": 1.0,
+  "faithfulnessRationale": "8 kit lines total: 6 FAITHFUL, 2 DOCUMENTED_GAP (both genuinely unmodelable — no Minimum Effective Range StatKey exists — and both disclosed verbatim in `unmodeled`, with the load-bearing half of the Spy Lens line, the stack COUNT, actually modeled). 0 SILENT_DROP, 0 REAL-GOTCHA of any tier, 0 RECON_ERROR attributable to the override. Score = FAITHFUL / (total − legitimately-unmodelable) = 6/6 = 1.0.",
+  "verdict": "GO",
+  "verdictBasis": [
+    "Zero silent drops — every kit line is either modeled or disclosed verbatim in `unmodeled`.",
+    "Zero engine-core defects — no invented mechanics, no fudged magnitudes; every number is kit-datamined at lvl10.",
+    "Cross-family corroboration CONFIRMED — S6 blind (leakDetected:null) reproduced 3 of 4 damage-bearing blocks byte-identically and both unmodeled lines verbatim from prose alone.",
+    "All 22 pristine-S5 REDs adjudicated RECON_ERROR; the ADAPTED blind test (intent preserved) goes 24/0/3 against the shipped override.",
+    "Fire-rate check PASS; discrimination check PASS — every FAITHFUL line is RED against its nearest-wrong counterfactual, including the fullBurstEnter-vs-burstCast shared-prior trap.",
+    "The only fidelity-class diff found anywhere in the gauntlet (hasPierce vs gainPierce) resolves IN THE DRIVER'S FAVOUR, with S6's own caveat conceding the point.",
+    "S2b's required strengthening (pierce-buff inertness on non-pierce teammates) was adopted in both A3 and B3."
+  ],
+  "residualRisk": "Both flagged uncertainties (⚑1 proxy, ⚑2 stack-expiry semantics) are estimated at <1% total-damage impact on this fixture and both are measurable by the recipes above; neither is load-bearing for the GO. ⚑2 is tier-HIGH by convention (it is the dominant open question both families named) but its practical impact is bounded low because her shot cadence never exceeds the 5s stack window.",
+  "artifactWritten": false,
+  "artifactNote": "results/ade-agent-bunny.json could NOT be written — no file-write tool was available in this turn. This JSON object is the intended file contents verbatim; the orchestrator should persist it to scripts/kit-autonomy/results/ade-agent-bunny.json.",
+  "model": "claude-opus-5"
+}
