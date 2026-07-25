@@ -1,0 +1,62 @@
+{
+  "slug": "rei-ayanami",
+  "name": "Rei Ayanami",
+  "verdict": "GO (cross-family corroborated)",
+  "faithfulness": 1.0,
+  "tier": 2,
+  "date": "2026-07-25",
+  "driver": "qwen",
+  "crossFamily": {
+    "s2b": {
+      "model": "claude-fable-5",
+      "status": "complete",
+      "verdict": "all 6 kit lines FAITHFUL; S2A 'Damage dealt to Shield ▲700.5%' UNMODELED/inert (the ~8x over-credit trap — any generic-damage encoding is wrong); leakDetected null. Reviewer flagged the stageEnter-vs-burstCast trigger-identity triangle and the casterAtkPct flat-resolved event value — both adopted by the driver test."
+    },
+    "s5": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "blindTestGreen": false,
+      "note": "Pristine blind test (blind/rei-ayanami.test.ts) run UNMODIFIED vs driver override: 9 passed / 1 FAILED / 2 skipped (12 total). The 1 FAILURE is a BLIND-TEST ASSERTION BUG ruled RECON_ERROR by the binding judge: the blind asserted removing rei's S1B 112.37% rider leaves teammate totals byte-identical, but flatDamage riders call skillGauge() so the rider feeds burst gauge — removing it shifts rei's burst timing → team FB cadence → moves crown/liter ~0.02% (helm identical). The rider is pure personal damage but NOT gauge-neutral; prose + formula side with the driver. The 2 skips are documented magnitude GAPs (burst-shield magnitude — no HP pool; S1a elemAdvantage magnitude — the blind used a Fire boss so Rei is unadvantaged and only structure+inertness is pinnable; the driver instead used a Wind boss to make S1a LIVE — convergent). The 9 passing assertions independently corroborate the driver on every line. leakDetected null."
+    },
+    "s6": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "note": "Independent prose→override converged with the driver on EVERY load-bearing mechanical decision. skill2 EXACT MATCH: stageEnter{stage:3} → alliesOfElement Fire → casterAtkPct 25.03/10s (the kit's hardest, most-flagged line). burst EXACT MATCH: burstCast Fire [shield 13.44/10s + attackDamagePct 48.02/10s] + enemy flatDamage 990.2. skill1 EXACT MATCH: hitCount100 self elemAdvantageDamagePct 30.23/3s + enemy flatDamage 112.37. Only deltas: two explicit crit:true additions on the flatDamage riders (semantic NO-OP — engine default is crit !== false ⇒ ON) and a wording difference in the unmodeled.skill2 quote (both record the 700.5% shield-damage line as inert/unmodeled). NO real divergence. leakDetected null."
+    },
+    "s7": {
+      "model": "claude-opus-5",
+      "status": "complete",
+      "verdict": "GO",
+      "faithfulness": 1.0,
+      "note": "Binding judge: GO, faithfulness 1.0, discriminationOk true, 0 gotchas. All 7 kit lines FAITHFUL (5) or DOCUMENTED_GAP (2 — the 700.5% shield-damage passive in unmodeled.skill2, and the burst shield's unobservable magnitude as ⚑3). The single S5 RED ruled RECON_ERROR (gauge coupling), not a defect. S6 byte-equivalent on every load-bearing axis. Discrimination holds on every load-bearing line and not by construction: S1a proven three ways (LIVE vs Wind boss, byte-identical GATED vs Iron boss, ungated attackDamagePct counterfactual provably moves the Iron-boss total); S1b/RA5 vs core:true; S2b/RA4 vs generic-allies + atkPct; the helm co-B3 fixture resolves the stageEnter-vs-burstCast triangle in both directions (the judge named it the strongest discriminator in the suite). Fire-rate verified for every FAITHFUL block (proc counts == floor(shots/100), buff applies == burst-cast counts, windows == 180/600 frames)."
+    }
+  },
+  "lines": {
+    "faithful": [
+      "S1: Elemental Advantage Attack Damage ▲ 30.23% for 3 sec (elemAdvantageDamagePct, hitCount 100 → self; engine-gated on real Fire-vs-Wind advantage — inert vs a neutral boss)",
+      "S1: Deals 112.37% of final ATK as damage (flatDamage, hitCount 100 → enemy, crit at caster rate, no core, noRange, FB-by-timing; 'enemy nearest crosshair' collapses to the solo boss)",
+      "S2: ATK ▲ 25.03% of the skill user's ATK for 10 sec (casterAtkPct, stageEnter stage 3 → alliesOfElement Fire — fires on ANY B3 cast, flat caster-ATK add)",
+      "Burst: Attack damage ▲ 48.02% for 10 sec (attackDamagePct, burstCast → alliesOfElement Fire — additive Damage-Up bucket, own-cast-keyed)",
+      "Burst: Deals 990.2% of final ATK as damage (flatDamage, burstCast → enemy, FB-exempt by cast-instant timing, crit at caster rate, no core, noRange; 'all enemies' collapses to the solo boss)"
+    ],
+    "unmodeled": [
+      "S2: Damage dealt to Shield ▲ 700.5% continuously — no shield-damage StatKey in the schema; inert vs the partless scope-lock boss (no shield). Recorded verbatim in unmodeled.skill2 (the ~8x over-credit trap; all four independent reads agree it must be inert).",
+      "Burst: Shield = 13.44% of caster final Max HP for 10 sec — ENCODED as shield{maxHpPct 13.44, dur 10} but event-only/unobservable (no HP pool in v1, no log event, no shield-synergy consumer in the comp); fires shielded triggers only (⚑3). Present-but-unasserted, not dropped."
+    ]
+  },
+  "flags": [
+    "⚑1 elemAdvantageDamagePct 30.23 pays out ONLY under real Fire advantage (BEATS[Fire]=Wind) — inert on the neutral scope-lock boss; confirm the graded boss element before reading her board number.",
+    "⚑2 CADENCE TUPLE (measurement-gated): the hitCount-100 proc cadence of both skill1 lines depends on MG fire rate; reloadFrames 171 is unverified datamine. Estimate = engine MG wind-up ladder + full-spin (measured constants) + datamined reloadFrames 171. Recipe: focused solo video — rounds/min, reload gap, per-100-hit proc counter deltas.",
+    "⚑3 burst shield (13.44% caster Max HP, 10s) is event-only: no HP pool modeled in v1 and no shield-synergy consumer in the comp, so its magnitude is unobservable end-to-end and asserted nowhere; correctness rests on structural inspection until a shield-consuming teammate exists.",
+    "⚑ SAME-MODEL RESIDUAL (binding judge): S2b's insistence on an explicit noFb:true for the 990.2% nuke was correctly overridden by the driver on the basis of the engine's structural burst-cast FB exemption — the test verifies the OBSERVABLE (nukes.filter(fbMajorApplied) === []) rather than the flag, which is stronger; an owner who ever changes burst-cast ordering should re-read that assertion. All magnitudes are literal blablalink kit text (DATAMINED, out of scope); the only always-⚑ quantity in play is the MG cadence tuple (⚑2), which lives in base stats rather than any kit line."
+  ],
+  "evidence": {
+    "driverTest": "scripts/tests/units/rei-ayanami.test.ts — 25/25 GREEN",
+    "blindTestPristine": "scripts/kit-autonomy/blind/rei-ayanami.test.ts — claude-opus-5; 9 passed / 1 FAILED (gauge-coupling RECON_ERROR) / 2 skipped (documented magnitude GAPs) vs driver override",
+    "blindOverride": "scripts/kit-autonomy/blind/rei-ayanami.override.json — claude-opus-5; byte-equivalent to driver on every load-bearing axis (two crit:true no-ops + unmodeled wording only)",
+    "s2bReview": "scripts/kit-autonomy/reviews/rei-ayanami.test-review.json — claude-fable-5, all 6 lines FAITHFUL + S2A UNMODELED/inert",
+    "judgePacket": "scripts/kit-autonomy/results/rei-ayanami-judge-packet.md — self-contained S7 packet",
+    "judgeVerdict": "scripts/kit-autonomy/cross-family/rei-ayanami/s7-result.json — claude-opus-5 binding judge: GO, faithfulness 1.0, discriminationOk true, 0 gotchas (cross-family dispatch artifact; gitignored, regenerable)",
+    "verify": "scripts/kit-autonomy/reviews/rei-ayanami.verify.txt — 25/25 GREEN"
+  }
+}

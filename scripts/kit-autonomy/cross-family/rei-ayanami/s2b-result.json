@@ -1,0 +1,121 @@
+{
+  "slug": "rei-ayanami",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "after 100 normal attack(s) → self",
+      "disposition": "FAITHFUL",
+      "scope": "Elemental-advantage-scoped Attack Damage — active ONLY when the caster has elemental advantage over the boss (Fire > Wind). Rei is Fire; the controlComp boss is Fire, so this buff is INERT in the control fixture.",
+      "durationSemantics": "durationSec: 3 — genuine wall-clock seconds ('for 3 sec'), not rounds. With hitCount 100 on an MG (hitsPerShot 1, ammo 300), it fires ~3×/magazine, giving partial sawtooth uptime.",
+      "triggerIdentity": "hitCount count:100 (counts ROUNDS = bullets; MG hitsPerShot 1 so 100 pulls = 100 hits). No FB gate, no status gate.",
+      "targetSet": "self only",
+      "nearestWrongModel": "Encoding as generic attackDamagePct (unscoped Damage-Up) — over-credits +30.23% against ANY boss element including the no-advantage Fire control boss; secondarily, misreading the trigger as interval instead of hitCount.",
+      "distinguishingAssertion": "withPatchedOverride('rei-ayanami', o => strip this buff block) → totals(res)['rei-ayanami'] UNCHANGED vs baseline on the Fire control boss (faithful elemAdvantageDamagePct is inert without advantage); under the nearest-wrong attackDamagePct encoding the delta is nonzero. Also assert the buffApply events carry stat 'elemAdvantageDamagePct', value 30.23, targetIdx === casterIdx, and that apply frames track cumulative shot events crossing multiples of 100 (not a fixed clock).",
+      "inertness": "Must move ZERO damage on the Fire control boss; must never buffApply to any ally other than self.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "after landing 100 normal attack(s) → enemy",
+      "disposition": "FAITHFUL",
+      "scope": "Instant function-damage rider: flatDamage 112.37% of caster final ATK, single-target. Per rider rules: crits at caster's sheet rate, NO core (text lacks 'core strike'), noRange forced (riders excluded from +30% range), FB bonus by landing TIMING (default ON — no noFb).",
+      "durationSemantics": "Instant hit, no duration.",
+      "triggerIdentity": "hitCount count:100 — 'landing 100 normal attack(s)' counts landed ROUNDS. On a hitscan MG this coincides with skill1-a's counter (both every 100 bullets); they should proc on the same frames.",
+      "targetSet": "enemy (boss). resolveTargets({kind:'enemy'}) semantics: the flatDamage lands on the boss.",
+      "nearestWrongModel": "(a) Modeling it as an interval/CD trigger instead of hitCount — cadence then stops tracking reload downtime (no hits accrue during the 171-frame reload, so proc rate must dip around reloads); (b) granting core:true; (c) setting noFb:true, stripping the FB +50% from procs that land inside Full Burst.",
+      "distinguishingAssertion": "Collect damage events with mult 112.37: (1) inter-proc gaps stretch across reloads (gap in shot events ⇒ equal gap in proc timing) — RED under a fixed interval; (2) every such event has core rate 0 and rangeApplied false; (3) procs landing while inFullBurst===true have fbMajorApplied===true — RED if noFb was wrongly set.",
+      "inertness": "Proc count over the fight must equal floor(totalRoundsFired/100) — no extra procs during reloads or from non-normal hits.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "start of battle → self, Dmg to Shield ▲700.5%",
+      "disposition": "UNMODELED",
+      "scope": "'Damage dealt to Shield' scopes ONLY to enemy shield HP — the v1 partless scope-lock boss has no shield pool, so the line is mechanically inert. There is no StatKey for shield-damage; it belongs verbatim in `unmodeled`.",
+      "durationSemantics": "'continuously' = permanent passive (would be a passive trigger if it were modelable).",
+      "triggerIdentity": "passive (start of battle).",
+      "targetSet": "self",
+      "nearestWrongModel": "The catastrophic misread: encoding 700.5% as a generic damage buff (attackDamagePct / damageTakenPct) — a ~8× over-credit that would dominate the entire unit. Any nonzero encoding of this line is wrong.",
+      "distinguishingAssertion": "No buffApply event with value 700.5 (any stat) exists in the run; the override's skill2 array contains no block encoding this line, and unmodeled.skill2 quotes it verbatim. withPatchedOverride removal of skill2's other blocks must account for ALL skill2-attributable damage movement.",
+      "inertness": "Must move ZERO damage for anyone — this is the single biggest over-credit trap in the kit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "entering Burst stage 3 → all Fire allies",
+      "disposition": "FAITHFUL",
+      "scope": "Flat ATK grant scaled by the CASTER's ATK ('of the skill user's ATK') — casterAtkPct 25.03, NOT atkPct (which would scale each target's own ATK).",
+      "durationSemantics": "durationSec: 10 — genuine seconds.",
+      "triggerIdentity": "stageEnter stage:3 — 'when entering Burst stage 3' fires when ANY unit casts a stage-3 burst, not only Rei. This is neither burstCast (own-cast only) nor fullBurstEnter (FB window open). In controlComp the helm co-B3 makes these diverge: rotations where helm bursts must still fire this block.",
+      "targetSet": "alliesOfElement 'Fire' (self included — no 'except self' clause). In the control fixture Rei is plausibly the only Fire unit, so buffApply lands on her alone.",
+      "nearestWrongModel": "(a) Trigger as burstCast (Rei-only) — under-fires on every helm-burst rotation; or fullBurstEnter — shifts timing to FB open and fires even if the stage-3 cast semantics differ. (b) Stat as atkPct 25.03 (target-scaled) instead of casterAtkPct. (c) Target as all allies, over-crediting non-Fire teammates.",
+      "distinguishingAssertion": "Filter buffApply stat==='casterAtkPct' from casterIdx===rei's slot: (1) an application occurs on rotations where the burstCast event's caster is helm, NOT rei — GREEN under stageEnter, RED under burstCast(own); (2) the emitted value is a FLAT number ≈ 0.2503 × rei.staticAtk (flat-resolved at apply), not 25.03; (3) targetSlug set contains only Fire-element comp members (rei herself in controlComp) — no buffApply on liter/crown/helm.",
+      "inertness": "Non-Fire allies' totals must not move when this block is stripped via withPatchedOverride.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield = 13.44% caster Max HP, 10s → Fire allies",
+      "disposition": "FAITHFUL",
+      "scope": "shield effect {maxHpPct:13.44, durationSec:10} — no HP pool modeled, but it MUST be encoded (tandem rule: shields fire recipients' 'shielded' triggers and open requiresShielded gates on teammates; skipping as 'defensive' is the trap).",
+      "durationSemantics": "durationSec: 10.",
+      "triggerIdentity": "burstCast (Rei's own burst block — fires only on rotations Rei casts, never on helm's).",
+      "targetSet": "alliesOfElement 'Fire' (self included).",
+      "nearestWrongModel": "(a) Dropped entirely as a no-damage defensive line — kills any shield-synergy tandem; (b) targeted at all allies — would wrongly open a shield-gated teammate's block (e.g. a naga-style requiresShielded) for non-Fire units; (c) keyed to fullBurstEnter, emitting shields on helm-led rotations too.",
+      "distinguishingAssertion": "A shield event (with 'shielded' triggers firing on recipients) is emitted exactly once per REI burstCast event and never on helm's burstCast rotations; recipient set is Fire-only. RED under drop (zero shield events), RED under fullBurstEnter (events on helm rotations).",
+      "inertness": "Zero direct damage from this line; solo-comp totals unchanged whether present or stripped (its value is tandem-only).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack damage ▲ 48.02% for 10 sec → Fire allies",
+      "disposition": "FAITHFUL",
+      "scope": "attackDamagePct 48.02 — the additive Damage-Up bucket ('Attack damage'), NOT atkPct (ATK stat) and NOT crit/element scoped.",
+      "durationSemantics": "durationSec: 10 — spans the FB window.",
+      "triggerIdentity": "burstCast (own burst) — applied at cast, i.e. slightly BEFORE the FB window opens, so it covers the full 10s FB.",
+      "targetSet": "alliesOfElement 'Fire' (self included).",
+      "nearestWrongModel": "(a) atkPct 48.02 — wrong bucket, multiplies differently against existing ATK buffs (crown/liter support) and materially changes totals; (b) target all allies — over-credits every non-Fire teammate by ~48% Damage-Up for 10s.",
+      "distinguishingAssertion": "buffApply on Rei's burstCast frame with stat 'attackDamagePct', value 48.02 (raw percentage — plain % stats keep raw value), targets restricted to Fire slugs. Cross-check bucket: with the block stripped, Rei's per-hit damage during her burst window scales by the Damage-Up dilution factor, not the ATK factor.",
+      "inertness": "No buffApply of this key on non-Fire allies; nothing outside the 10s windows.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 990.2% of final ATK → all enemies",
+      "disposition": "FAITHFUL",
+      "scope": "flatDamage atkPct 990.2 on burst cast, single boss (all-enemies collapses to one target). Rider rules: crit at caster's sheet rate, NO core, noRange; and burst-cast/instant damage is ALWAYS FB-exempt (noFb:true) — the cast lands before the FB window opens.",
+      "durationSemantics": "Instant, once per own burst cast.",
+      "triggerIdentity": "burstCast — NOT fullBurstEnter. With helm co-B3 in controlComp, this nuke must fire only on Rei's burst rotations.",
+      "targetSet": "enemy.",
+      "nearestWrongModel": "(a) Omitting noFb — the hit picks up the +50% FB major it cannot have (cast pre-FB), a ~50% over-credit on a 990% hit; (b) keying to fullBurstEnter — fires on helm-led rotations too, roughly doubling nuke count in a 2×B3 comp.",
+      "distinguishingAssertion": "Every damage event with mult 990.2 has fbMajorApplied===false and its count over the fight equals Rei's burstCast event count (not the fullBurstStart count). RED under missing-noFb (fbMajorApplied true) and RED under fullBurstEnter keying (count == FB count > Rei's cast count).",
+      "inertness": "Zero events with mult 990.2 on rotations where helm is the B3 caster; core contribution of these events is 0.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:elemAdvantage-hitCount100-buff",
+    "skill1:hitCount100-flatDamage-112.37",
+    "skill2:stageEnter3-casterAtkPct-25.03-fireAllies",
+    "burst:shield-13.44-casterMaxHp-fireAllies",
+    "burst:attackDamagePct-48.02-fireAllies",
+    "burst:flatDamage-990.2-noFb"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Damage dealt to Shield ▲ 700.5% continuously."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to force-test: (1) skill2's 700.5% shield-damage line is the kit's dominant number and MUST be inert/unmodeled — any generic-damage encoding is an ~8× over-credit; assert no buff with value 700.5 exists. (2) skill1's elemAdvantageDamagePct is inert vs the Fire control boss (Fire has no advantage vs Fire) — a strip-the-block totals-unchanged assertion cleanly separates it from a generic attackDamagePct misread; if the test never varies boss element, that inertness check IS the discriminator. (3) Trigger-identity triangle: skill2-b is stageEnter:3 (any B3 cast — must fire on helm's rotations), while ALL three burst-slot lines are burstCast (Rei-only — must NOT fire on helm's rotations); controlComp's helm co-B3 makes both directions observable, so tests should assert both the presence (skill2-b on helm rotations) and the absence (burst lines on helm rotations). (4) The 990.2% nuke needs noFb:true (burst-cast pre-FB) — check fbMajorApplied===false explicitly. (5) casterAtkPct buffApply values are FLAT-resolved (0.2503×staticAtk), so an assertion expecting 25.03 raw would be wrong for skill2-b but right for the plain-percentage 48.02 attackDamagePct. (6) All magnitudes are literal kit text (DATAMINED); the only ALWAYS-⚑ field in play is the MG cadence tuple, which lives in base stats, not these lines.",
+  "model": "claude-fable-5"
+}

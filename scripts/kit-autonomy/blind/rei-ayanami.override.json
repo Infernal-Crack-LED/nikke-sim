@@ -1,0 +1,120 @@
+{
+  "slug": "rei-ayanami",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 100
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 30.23,
+          "durationSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 100
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 112.37,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Fire"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 25.03,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Fire"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 13.44,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 48.02,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 990.2,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "■ Activates at the start of battle. Affects self. Damage dealt to Shield ▲ 700.5% continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ CADENCE: both skill1 blocks key off hitCount:100 rounds. Real-world proc rate is set by the MG's datamined cadence (rate_of_fire is a known-unreliable field) and the 300-round belt + 171f reload — a 100-round threshold means roughly one proc per third of a magazine. Wall-clock proc rate is UNVERIFIED.",
+    "⚑ TWO COUNTERS, ONE THRESHOLD: the kit distinguishes 'after 100 normal attack(s)' (skill1a) from 'after landing 100 normal attack(s)' (skill1b). Modeled as two independent hitCount:100 blocks, i.e. both fire on the same round. If the sim ever models misses on normal attacks, the LANDED counter would lag the FIRED counter and the two would desync.",
+    "⚑ RIDER CRIT: skill1b (112.37%) and the burst nuke (990.2%) are authored crit:true per the rider prior (riders crit at the caster's sheet rate). No core (the text never says 'core strike damage'). noRange is engine-automatic and not authored.",
+    "⚑ noFb: NOT set on either damage rider (default OFF, measured-only). The burst 990.2% is cast-timed and should land pre-FB by timing; skill1b's 112.37% takes FB by timing. If popup reads show the burst nuke carrying/not carrying the +50% FB major, pin noFb from that.",
+    "ELEMENT GATE: elemAdvantageDamagePct is only live when the caster actually has elemental advantage. rei-ayanami is Fire, so on the Fire scope-lock boss this buff contributes ZERO — it is a real mechanic that happens to be inert on the graded fixture. Do not delete it on an 'it moves nothing' reading.",
+    "TRIGGER IDENTITY: skill2b reads 'when entering Burst stage 3' → stageEnter:{stage:3} (fires when ANY ally casts a stage-3 burst), NOT burstCast. In a comp with a second Burst III unit this fires on that unit's cast too; keying it to burstCast would UNDER-credit.",
+    "SHIELD/TANDEM: the burst shield is offensively inert alone (no HP pool modeled) but is kept because it emits a shield event that fires teammates' 'shielded' triggers and satisfies requiresShielded gates.",
+    "The skill2 'Damage dealt to Shield ▲ 700.5%' line is a large multiplier that is fully unmodeled — the v1 boss has no shield phase and StatKey has no shield-damage channel. If a shielded boss is ever in scope this is the single biggest missing piece of this kit."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no override/test/board access). MG/Fire/Attacker/Burst III. skill1 = two independent 100-normal-attack counters: a 3s self elemental-advantage damage window (inert vs a Fire boss) and a 112.37% single-target rider. skill2 = an unmodeled 700.5% damage-to-Shield passive (no shield in v1, no StatKey) plus a stage-3-entry 25.03%-of-caster-ATK grant to Fire allies for 10s. Burst = Fire-ally shield (13.44% of caster final Max HP) + 48.02% Attack Damage for 10s, and a 990.2% AoE nuke. No ignored blocks; every skipped line is verbatim in unmodeled."
+}
