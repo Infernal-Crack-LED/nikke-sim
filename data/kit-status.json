@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 21,
+      "unit-tested": 22,
       "authored": 21,
-      "audited": 30,
+      "audited": 29,
       "reconciled": 4,
       "pending": 1
     },
@@ -3563,38 +3563,39 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "Golden-Chip gating arithmetically CORRECT (pre-consume ordering honored). F2 engine target bug: top-ATK ally 'except self' but alliesTopAtk includes owner (no excludeSelf) -> if Soda ranks #1 the buff collides to self = ally gets nothing. F3 FB-extension shape wrong (cumulative +2/+5 not flat 4; measured 14.71s impossible under +4). F1 Hit Rate 38.91 dropped"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 1.0 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/soda-twinkling-bunny.json + scripts/kit-autonomy/manual-review/soda-twinkling-bunny.md.",
+          "med FIDELITY (skill2): Per-FB-normal rider modeled as a flat 130% with no Time-Extension state gating; kit reads 52.04% (TE-I) / +85.02% (TE-II, cumulative 137.06%) latched at Burst-Stage-3 entry",
+          "low FIDELITY (burst): Hit Rate ▲38.91% is kit-faithful, but its two downstream channels (core rate via acrForHR, pellet landing via coneSigmaFor) are over-credited vs the owner hand-count",
+          "low ENCODING (burst): Burst nuke lacks an explicit noFb flag (S6 blind set noFb:true); relies on natural pre-FB-window timing to stay FB-exempt"
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "N3: 0.77",
+      "evidence": "N3: 0.77 | kit-autonomy gauntlet 2026-07-24; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5/S6/S7(claude-opus-4-8) converged",
       "date": "2026-07-14",
       "graded": {
         "teams": 1,
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Chip-economy model, untuned",
+      "residual": "Chip-economy model, untuned | owner spot-check: (1) Golden-Chip rebuild fork - confirm the '3 normals in FB' trigger is the +1 rebuild source (driver+S2b converged, S6 dissented monotonic-decay, driver recording-validated sim 50/43/38 vs measured 50/44/40/38/31); (2) skill2 rider flat-130 magnitude + Time-Extension gating (no engine state-snapshot primitive) on a soda-focus recording; (3) HR downstream core/landing over-credit vs hand-count (coupled SG re-fit). See scripts/kit-autonomy/manual-review/soda-twinkling-bunny.md",
       "unmodeled": {
-        "skill1": [
-          "Activates at the start of battle. Affects self. Golden Chip stacks ▲ 50."
-        ],
+        "skill1": [],
         "skill2": [],
-        "burst": [
-          "Golden Chip stacks ▼ 17 after the effect is applied."
-        ]
+        "burst": []
       },
       "caveats": [
         "skill1/burst: FAITHFUL DYNAMIC Golden-Chip pool LANDED 2026-07-17 (engine resource-counter primitive) — replaces the flat crit-42 + every-burst-65.25 derivations. Pool: start 50 (cap 50), +1 per datamined '3 normal attacks during Full Burst' (the same trigger as the AD +10.51 block), −17 on her burst (spent AFTER the gates). Crit Damage is LIVE = goldenChip×1.32 (perResource); burst ATK ▲65.25 gated at ≥30 chips (pre-spend). VALIDATED vs soda tb control.mov: sim pre-consume 50/43/38… reproduces the measured 50/44/40/38/31 within 1-2 chips (the datamined per-3-normals generation MATCHES the recorded drain, not fit to it); crit major 2.66 at 50 chips = 1+base1.0+50×1.32/100 ✓. Now comp-correct: N3 no-burst comp chips stay 50 → crit 66% → 0.954→0.974 (matches the note's ~0.96 prediction the flat-42 under-credited); burst comps drain as measured.",
         "skill2: Full Burst extension is the datamined chip-gated CUMULATIVE ladder — Time Extension I +2s at >=10 Golden Chips, Time Extension II +3s more at >=20, so +5s at >=20 and +2s at 10-19 (two resourceGate blocks on stageEnter:3). It fires on EVERY Burst-Stage-3 cast, hers or an ally's, and reads HER chip count at that instant, so late-fight Full Bursts shorten as the pool drains.",
         "burst: Hit Rate ▲38.91% for 15s is LIVE, gated at >=20 Golden Chips pre-consume (burstCast + resourceGate, ordered before the -17 spend like the ATK gate). It drives TWO channels, not one: core-hit rate via acrForHR, AND pellet LANDING via coneSigmaFor -> pelletLandFrac (sim.ts ~1266 and ~2539). ⚑ BOTH are over-credited against the owner hand-count of this fight (docs/probe-data/soda-tb-sg-core-hr-windows.json). Core: measured HR-on .074/.029/.079/.022 (near/mid/midfar/far) vs the cone's .160/.133/.077/.051. Landing is the LARGER error: measured HR-on .931/.916/.778/.711 vs the model's .998/.995/.992/.971 — the sim reads near-total landing where the count says far tops out at .711. The cone's sigma is the shared cause (measured 38.6-41.6px at HR0 vs the frozen 32.0, shrinking 9-25% vs the frozen 35%). This block is faithful to the KIT; its two downstream layers are not yet faithful to the MEASUREMENT, and they are a coupled set to be re-fit together, never singly.",
-        "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected)."
+        "skill1: the in-FB +10.51% AD 'to the 1 highest-ATK ally (except self)' now carries excludeSelf:true (fixed 2026-07-17; alliesTopAtk was silently ignoring it). Self is already covered by its own self-block, so when Soda is top-ATK the ally-buff correctly redirects to the true carry instead of double-targeting her. Board-neutral on soda tb control (0.954 unchanged — grades Soda's own damage, which is unaffected).",
+        "kit-autonomy 2026-07-24: the two lines once listed under unmodeled are RE-ENCODED, not skipped — 'start of battle: Golden Chip stacks ▲50' is the resource pool seed (resources[0].initial=50), and 'Golden Chip stacks ▼17 after the effect is applied' is the trailing burst resource block (burstCast → goldenChip delta -17, ordered AFTER the ≥20/≥30 gates so they read the pre-consume pool). unmodeled is therefore empty (every kit line has a faithful encoding); both cross-family blind audits (fable S2b unmodeledVerbatim, opus S6 audit) independently concur that no line is unmodeled.",
+        "kit-autonomy 2026-07-24: skill2 in-FB rider is modeled as a FLAT 130% on every in-FB normal (⚑ recording-derived, Time-Ext-II-dominant), NOT gated on the Time-Extension state. The datamine reads 52.04% in TE-I / +85.02% in TE-II (cumulative 137.06%); the faithful encoding would latch the TE tier at Burst-Stage-3 entry and hold it for the whole FB (a state-snapshot primitive the engine lacks — a live resourceGate proxy is WRONG, it drops the rider post-consume when the pool dips below threshold). The flat 130 sidesteps the live-pool trap and approximates the TE-II-dominant case; refine the magnitude + TE gating on a soda-focus recording. Trigger/target/cadence (in-FB normal → 1 enemy, per pull not per pellet) are faithful; only the magnitude/state-gating is ⚑."
       ],
       "board": {
         "records": [

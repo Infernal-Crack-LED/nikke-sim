@@ -1,0 +1,150 @@
+{
+  "slug": "soda-twinkling-bunny",
+  "kitDescription": "Soda: Twinkling Bunny is a Burst-III shotgun attacker built around a Golden Chip pool that starts full at 50 and is spent 17 at a time when she bursts (rebuilding +1 for every 3 normal shots she fires inside Full Burst). Her Golden Chips convert live into crit damage (+1.32% each, so ~66% at a full pool, decaying as she spends). While in Full Burst she stacks a short 10.51% Attack-Damage buff onto herself and the single highest-ATK ally, and drops a small per-shot rider onto the nearest enemy. On entering Burst Stage 3 she extends the whole team's Full Burst window (+2s at ≥10 chips, +5s at ≥20), so a well-fed pool yields a 15-second Full Burst. Her burst itself is a 628.7%-ATK nuke, plus self Hit Rate +38.91% (≥20 chips) and self ATK +65.25% (≥30 chips), both gated on the pre-spend pool so the ATK boost lapses on later, drained bursts. The whole kit is a self-fueling loop: chips → crit + longer bursts + self-buffs, drained and rebuilt each rotation.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "start of battle: Golden Chip ▲50",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resources[0] {goldenChip, initial 50, min 0, max 50}",
+        "blindSaid": "S2b + S6 both encode initial 50 pool seed; agree it is a resource seed not a battleStart trigger",
+        "formulaCheck": "engine has no battleStart trigger; pool seed is the correct primitive (FACT 1/2)",
+        "fireRateOk": true,
+        "explanation": "Re-encoded from a former unmodeled entry to the pool seed; drives every downstream gate. Driver test STB1 confirms both burst gates clear on burst 1 and FB1 is 15s only because the pool opens at 50."
+      },
+      {
+        "kitLine": "Crit Dmg ▲1.32% cont, up to 50",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "perResource {goldenChip, mult 1.32} on a base-0 critDamagePct passive, read live at damage time",
+        "blindSaid": "S2b: live perResource off the pool (matches). S6: guessed a SEPARATE from-0 stacking buff, ⚑-flagged with a recipe to switch to perResource if crit starts high and declines",
+        "formulaCheck": "FACT 1 — perResource ignores base, contributes resource×mult×stacks live, folded into damage; buffApply carries base 0. Popup arithmetic (t=8 pre-burst ×2.160 = (150+50×1.32)/100) proves crit tracks the pool from 50, not a from-0 ramp",
+        "fireRateOk": true,
+        "explanation": "Driver's live-pool reading is the correct one; S6's from-0 dissent is a RECON uncertainty it flagged itself, resolved against it by FACT 1 + the measured popup. The unified currency (one pool feeding both crit and the gates) is measurement-validated."
+      },
+      {
+        "kitLine": "3 normals in FB → +1 chip (rebuild)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resource {goldenChip, delta +1} on shotFired+inFb+everyN:3 (same trigger as the AD block); counts PULLS not the 10 pellets",
+        "blindSaid": "S2b concurs (rounds not pellets, FB-only). S6 found NO rebuild source in prose and flagged the pool as monotonic-decay ⚑ with a HUD-read recipe",
+        "formulaCheck": "prose is terse on the gain wording, but the +1/3-pull rebuild is VALIDATED vs soda tb control.mov: sim pre-consume 50/43/38 reproduces measured 50/44/40/38/31 within 1-2 chips; SG '3 normal attacks' = trigger pulls (pellet-counting would 10× the rate)",
+        "fireRateOk": true,
+        "explanation": "The one genuine interpretive fork in the kit. Driver + S2b unify the currency and it is recording-validated; S6's monotonic-decay reading is refuted by the measured refill. FAITHFUL, but the owner should spot-check the popup-chip arithmetic (this is the same-model residual)."
+      },
+      {
+        "kitLine": "Atk Dmg ▲10.51% 2s self + top ATK ally",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "self block + alliesTopAtk {count 1, excludeSelf, byFinalAtk} attackDamagePct 10.51 durationSec 2, shotFired+inFb+everyN:3",
+        "blindSaid": "S2b + S6 both: self + exactly one highest-final-ATK ally excluding self, 2s, per-pull cadence",
+        "formulaCheck": "Damage-Up bucket; excludeSelf is load-bearing because Soda IS top final-ATK on this fixture (dropping it double-targets her, STB4 counterfactual: liter 27→0)",
+        "fireRateOk": true,
+        "explanation": "Measured AD targets: soda(self)×51, liter×27, helm×24 — the ally block never leaks onto Soda. Faithful target set, cadence, duration, ranking."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "enter BS3: FB Duration ▲ ladder",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "two stageEnter:3 blocks — min20 → fullBurstExtend 5; min10 max19 → fullBurstExtend 2 (collapsed cumulative ladder)",
+        "blindSaid": "S2b + S6 encode cumulative +2 (≥10) then +3 more (≥20) = +5; S6 used two additive blocks. Behaviorally identical to the driver's collapsed gates",
+        "formulaCheck": "FACT 3 — fullBurstExtend pushes the FB endFrame; stageEnter:3 fires on ANY B3 cast (team entry); cumulative → 15s at ≥20. Driver's non-overlapping min20→5 / [10,19]→2 yields the same +5/+2/0 ladder",
+        "fireRateOk": true,
+        "explanation": "All 9 FB windows measured at 15.00s INCLUDING the 4 helm-led FBs — confirms stageEnter keying (not burstCast) and the cumulative shape. Flat +2 counterfactual tops out at 12s (STB5 RED). Faithful."
+      },
+      {
+        "kitLine": "FB normal → enemy 52.04/85.02% TE-gated",
+        "category": "DOCUMENTED_GAP",
+        "subkind": "FIDELITY",
+        "driverSaid": "flat flatDamage atkPct 130 on every in-FB normal → 1 enemy; NO Time-Extension state gating (⚑ recording-derived, TE-II-dominant)",
+        "blindSaid": "S2b: cumulative 137.06% latched at BS3 entry (snapshot). S6: proxied via live resourceGate ≥10/≥20 but ⚑-flagged that a live proxy under-credits post-consume. Both independently flag the same TE-snapshot gap with the same recipe",
+        "formulaCheck": "FACT 4 — engine has NO state-snapshot primitive; a live resourceGate proxy is WRONG (drops the rider when the pool dips mid-FB). Trigger/target/cadence (in-FB normal → 1 enemy, per PULL not per pellet) are faithful; only magnitude + TE-state gating are ⚑",
+        "fireRateOk": true,
+        "explanation": "Measured 154 skill2 hits at flat 130%, all inFullBurst=true. The deliberate flat-130 sidesteps the live-pool trap the engine cannot avoid; magnitude and TE-tier gating are documented ⚑ with a soda-focus-recording recipe. Decision recorded → DOCUMENTED-GAP, not a silent divergence."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "628.7% Burst Skill dmg all enemies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 628.7 on burstCast → enemy",
+        "blindSaid": "S2b + S6 both 628.7 FB-exempt; S6 added explicit noFb:true",
+        "formulaCheck": "'when using Onward, Soda!' = Soda's OWN burstCast; burst-cast damage lands pre-FB-window so fbMajorApplied=false naturally (FACT trigger identities). S2d confirms burst-bucket, once per cast",
+        "fireRateOk": true,
+        "explanation": "Measured 5 nukes = 5 Soda casts (none on the 4 helm-led FBs), burst bucket. Driver omits an explicit noFb flag but the pre-window timing makes it FB-exempt regardless — behaviorally faithful (STB7 GREEN)."
+      },
+      {
+        "kitLine": "≥20 chips: Hit Rate ▲38.91% 15s self",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + resourceGate {goldenChip min 20}, hitRatePct 38.91 durationSec 15, self, ordered before the −17 spend",
+        "blindSaid": "S2b + S6 both ≥20 pre-consume, self, 15s; both note HR on an SG is a core-lift, damage-relevant, ⚑ measured slope",
+        "formulaCheck": "FACT 2 — resourceGate reads the live pre-consume pool; gate ordered before the spend. HR drives acrForHR (core) + coneSigmaFor (landing), both ⚑ over-credited vs the owner hand-count (documented caveat)",
+        "fireRateOk": true,
+        "explanation": "Measured HR fires on all 5 bursts (burst-5 pre-consume ∈ [20,30)). KIT-level encoding faithful; the two downstream magnitudes are a documented, coupled measurement residual (see gotcha 2)."
+      },
+      {
+        "kitLine": "≥30 chips: ATK ▲65.25% 15s self",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + resourceGate {goldenChip min 30}, atkPct 65.25 durationSec 15, self, ordered before the −17 spend",
+        "blindSaid": "S2b + S6 both ≥30 pre-consume, self, 15s; both warn an ungated/every-cast buff over-credits once the sawtooth drops below 30",
+        "formulaCheck": "FACT 2 — pre-consume gate read; the −17 is a trailing block so gates read the higher pool. Non-vacuity: the buff must exclude at least one late burst",
+        "fireRateOk": true,
+        "explanation": "Measured ATK fires on bursts 1-4, lapses on burst 5 (pool drains below 30) — exactly the sawtooth the prose implies. Spend-first counterfactual collapses it 4→1 (STB7 RED). Faithful."
+      },
+      {
+        "kitLine": "Golden Chip ▼17 after applied",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trailing burstCast resource {goldenChip delta −17}, placed AFTER the ≥20/≥30 gate blocks in array order",
+        "blindSaid": "S2b + S6 both: consume ordered after the threshold checks; S2b calls omitting it the single biggest over-credit",
+        "formulaCheck": "FACT 2 — the engine processes a slot's blocks in array order, so the −17 lands after the gates read the pre-consume pool ('▼17 after the effect is applied')",
+        "fireRateOk": true,
+        "explanation": "Re-encoded from a former unmodeled entry. The pre-consume ordering is behaviorally discriminable (STB7: reordering collapses ATK 4→1, HR 5→3). Faithful."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "Per-FB-normal rider modeled as a flat 130% with no Time-Extension state gating; kit reads 52.04% (TE-I) / +85.02% (TE-II, cumulative 137.06%) latched at Burst-Stage-3 entry",
+      "evidence": "Kit: 'deals 52.04% ... Stage 2 ... 85.02% ... Effects vary according to the state of Time Extension.' FACT 4: engine has no state-snapshot primitive and a live resourceGate proxy is provably wrong (drops the rider post-consume). Driver flat 130 vs S2b snapshot-137.06 vs S6 live-proxy-52/85 — all three flag the same TE gap",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement — refine magnitude + add TE-tier gating on a soda-focus recording; the faithful representation is an FB-entry-latched Time-Extension status (a state-snapshot primitive the engine lacks). Flat 130 approximates the TE-II-dominant case honestly in the interim."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Hit Rate ▲38.91% is kit-faithful, but its two downstream channels (core rate via acrForHR, pellet landing via coneSigmaFor) are over-credited vs the owner hand-count",
+      "evidence": "docs/probe-data/soda-tb-sg-core-hr-windows.json: measured HR-on core .074/.029/.079/.022 vs cone .160/.133/.077/.051; landing measured .931/.916/.778/.711 vs model .998/.995/.992/.971. Shared cause: cone sigma (measured 38.6-41.6px vs frozen 32.0)",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement — re-fit acrForHR core-lift and coneSigmaFor as a COUPLED set (never singly) against the hand-count windows. This is a shared-SG measurement residual, not a Soda faithfulness failure."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "burst",
+      "summary": "Burst nuke lacks an explicit noFb flag (S6 blind set noFb:true); relies on natural pre-FB-window timing to stay FB-exempt",
+      "evidence": "Kit: 'Deals 628.7% ... as Burst Skill damage.' burstCast fires pre-window so fbMajorApplied=false regardless; S2d confirms burst-bucket once per cast. No behavioral divergence measured",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Behaviorally inert on this fixture (the cast is pre-window). Add noFb:true for robustness/clarity if any future engine change could route a burstCast inside the FB window; not required for GO."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "GO at faithfulness 1.0 (9/9 kit lines FAITHFUL or DOCUMENTED-GAP). The S5 blind spec table converges GREEN with the driver's shipped override on every load-bearing assertion — its load-bearing HYPOTHESIS (Golden Chip is ONE pool with a live perResource crit) is exactly what the driver implemented, and is independently confirmed by FACT 1 plus the t=8 popup arithmetic. The three genuine divergences are all real but all measurement-gated: (1) the skill2 rider's Time-Extension state gating is dropped in favor of a flat-130 approximation — ranked first, documented ⚑ with a recipe, and independently flagged by BOTH cross-family blinds (S2b snapshot, S6 live-proxy) as an engine-primitive gap, not an encoding error; (2) the Hit-Rate downstream core/landing magnitudes are over-credited vs the owner hand-count — a coupled, documented SG measurement residual; (3) the burst nuke omits an explicit noFb flag but is behaviorally FB-exempt via pre-window timing. None is a SILENT_DROP or a prose-contradicting magnitude, so none blocks GO. Discrimination is clean: the S2d matrix shows every counterfactual RED and no test GREEN under both shipped and its nearest-wrong model. The same-model residual the owner should spot-check is the one interpretive fork — that the crit-stack '3 normals in FB' trigger IS the Golden Chip rebuild source (driver + S2b converged, S6 dissented and read the pool as monotonic decay); the driver's unified-currency reading is recording-validated (sim 50/43/38 vs measured 50/44/40/38/31), but since the post-op agents share a model family, the owner should confirm that popup-chip arithmetic and the flat-130 rider magnitude on a dedicated soda-focus recording.",
+  "model": "claude-opus-4-8"
+}
