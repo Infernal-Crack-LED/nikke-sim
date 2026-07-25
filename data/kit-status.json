@@ -683,21 +683,23 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "Wind-Code Damage-Taken debuffs (S1 15.12%, S2 12.12%) unmodeled — bossElement can't compose with fullBurstEnter/hitCount; inert vs non-Wind boss (engine extension: bossElementGate)",
-          "burst ATK+66.52% caster modeled on allies incl. self (kit: except self; no excludeSelf on plain allies) — minor self-inflation in bursting comps"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/brid-silent-track.json + scripts/kit-autonomy/manual-review/brid-silent-track.md."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; all 5 lines FAITHFUL; S2 675% rider measured every-5th-pull",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "SG spray/core magnitude under-model (FLAG c, weapon-model debt not a kit line); Wind-Code Damage-Taken debuffs inert vs non-Wind boss (modeled, ungraded); lowest-HP selector collapses to sole boss",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
@@ -706,7 +708,8 @@
       "caveats": [
         "skill1: Wind Code Damage Taken ▲ 15.12% (Full Burst entry, 10s) now modeled via bossElementGate 'Wind' — inert vs a non-Wind (incl. scope-lock) boss; a big team-wide lever if the boss is Wind.",
         "skill2: Wind Code Damage Taken ▲ 12.12% (every 10 normal attacks = hitCount 100 at 10 pellets/shot, 10s) now modeled via bossElementGate 'Wind' — inert vs a non-Wind boss; stacks with the skill1 debuff vs a Wind boss.",
-        "burst: ATK ▲ 66.52% of caster's ATK on all allies EXCEPT self (kit 'except self') — excludeSelf:true enforced on the `allies` target since 2026-07-17; no longer self-inflates her own SG-capped damage."
+        "burst: ATK ▲ 66.52% of caster's ATK on all allies EXCEPT self (kit 'except self') — excludeSelf:true enforced on the `allies` target since 2026-07-17; no longer self-inflates her own SG-capped damage.",
+        "skill2: kit targets '1 enemy with the lowest remaining HP' (both the 675% rider and the 12.12% Wind debuff); the engine has no HP pool, so the selector is indeterminate and resolves to the plain enemy target — identical to the sole partless scope-lock boss, board-inert today (gauntlet 2026-07-25)."
       ],
       "board": null
     },

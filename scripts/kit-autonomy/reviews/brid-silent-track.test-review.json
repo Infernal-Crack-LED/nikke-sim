@@ -1,0 +1,90 @@
+{
+  "slug": "brid-silent-track",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■FB enter → Wind: DmgTaken ▲15.12% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Boss debuff (Damage Taken ▲ benefits whole team, taxonomy #4) — not a self/ally buff; element-scoped to Wind Code enemies only",
+      "durationSemantics": "durationSec:10 — genuine wall-clock ('for 10 sec'), NOT rounds",
+      "triggerIdentity": "fullBurstEnter (ANY team FB — 'when entering Full Burst'), composed with bossElementGate:'Wind'",
+      "targetSet": "enemy (boss); buffApply emits casterIdx===null AND targetIdx===null — filter by stat+value",
+      "nearestWrongModel": "Dropping the element gate so damageTakenPct 15.12 applies to ANY boss — over-credits the entire team ~15% during FB windows on the Fire fixture boss",
+      "distinguishingAssertion": "On the standard Fire-boss fixture, ZERO buffApply events with stat 'damageTakenPct' value 15.12 across the whole run (gate closed); nearest-wrong emits one per fullBurstStart",
+      "inertness": "Must move NOTHING on a non-Wind boss: totals identical with this block deleted vs present on the Fire fixture",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■FB enter → all enemies: 636% ATK dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Instant flatDamage rider, atkPct 636, NO element gate ('all enemies' — deliberately broader than the sibling line); crit at caster rate, no core, noRange (engine forces no-range on riders)",
+      "durationSemantics": "Instant hit — none",
+      "triggerIdentity": "fullBurstEnter — fires once per team Full Burst, NOT burstCast; lands at FB start so takes the +50% FB major by timing (default ON; per-kit noFb is measured-only)",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Two plausible misreads: (a) bleeding the sibling line's Wind gate onto this damage line → zero rider damage on the Fire boss (under-credit); (b) keying to burstCast → fires pre-FB, silently losing the +50% FB major and any second-B2 divergence",
+      "distinguishingAssertion": "Exactly ONE damage event with mult 636 and srcSlot 'skill1' per fullBurstStart on the Fire-boss fixture, with inFullBurst===true / fbMajorApplied===true; red under (a) [zero events] and under (b) [inFullBurst false]",
+      "inertness": "Count must equal FB count exactly — no extra procs outside FB entries",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■10 normal atk → Wind: DmgTaken ▲12.12%",
+      "disposition": "FAITHFUL",
+      "scope": "Boss debuff, Wind-gated (same shape as skill1a); counts NORMAL attacks only — burst cast does not advance the counter",
+      "durationSemantics": "durationSec:10 wall-clock",
+      "triggerIdentity": "hitCount count:10 counting ROUNDS (1 round = 1 trigger pull for SG), composed with bossElementGate:'Wind'",
+      "targetSet": "enemy (boss); buffApply casterIdx/targetIdx null",
+      "nearestWrongModel": "hitCount counting PELLET hits — hitsPerShot is 10, so a pellet-counting model fires this every single pull (~10× over-frequency). The single biggest quantitative trap on this unit",
+      "distinguishingAssertion": "On the Fire fixture: zero damageTakenPct 12.12 buffApply events (gate closed). Cadence half (needs a Wind-boss or gate-lifted patched run): first proc strictly AFTER the 10th pull — i.e. after the first reload, since magazine is 9 — never after pull 1",
+      "inertness": "Inert on the Fire fixture; gate-lifted, proc count ≤ floor(totalPulls/10)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■5 normal atk → enemy: 675% ATK dmg",
+      "disposition": "FAITHFUL",
+      "scope": "Instant flatDamage rider, atkPct 675, ungated by element ('1 enemy unit(s) lowest HP' = the sole boss in v1); crit yes, core no, noRange forced; takes FB by landing timing",
+      "durationSemantics": "Instant — none",
+      "triggerIdentity": "hitCount count:5 counting ROUNDS (pulls, not pellets); its OWN counter, independent of the 10-count sibling",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Pellet-counting: every pull crosses 10 pellet-hits → 2 procs per pull instead of 1 per 5 pulls, a ~10× damage over-credit on a 675% line — enormous. Secondary misread: sharing one counter with the 10-count line (procs collide/reset)",
+      "distinguishingAssertion": "Total count of damage events with mult 675 === floor(shotsFired/5) for the run (count shot events to get shotsFired); pellet-counting yields ~2×shotsFired events — red by an order of magnitude",
+      "inertness": "No procs before the 5th pull; counter unaffected by burst casts or FB entries",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■allies (except self): ATK ▲66.52% caster",
+      "disposition": "FAITHFUL",
+      "scope": "Caster-scaled flat ATK grant — '66.52% of the SKILL USER'S ATK', i.e. casterAtkPct, NOT the target's own ATK",
+      "durationSemantics": "durationSec:10 wall-clock",
+      "triggerIdentity": "burstCast (her own Burst II block; fires only on rotations Brid herself bursts — as sole B2 in the fixture this is every rotation, but the trigger identity is still burstCast, cd 20s)",
+      "targetSet": "allies with excludeSelf:true — Brid herself must NOT receive it",
+      "nearestWrongModel": "Encoding as atkPct 66.52 (scaling each TARGET'S own ATK) — over-credits every carry whose staticAtk exceeds Brid's (she is a Supporter; carries out-stat her, so the misread inflates the board). Second misread: dropping excludeSelf, moving Brid's own damage",
+      "distinguishingAssertion": "buffApply events with stat 'casterAtkPct' (harness flat-resolves: value === 0.6652 × brid staticAtk, a FLAT number ≠ 66.52) on each burst cast, with NO event where targetIdx === casterIdx; atkPct misread emits stat 'atkPct' value 66.52 — red on both stat name and value shape",
+      "inertness": "Brid's own totalDamage identical with the burst block present vs deleted (self-exclusion); allies' buff value tracks Brid's staticAtk, not their own",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:FB-enter Wind DamageTaken 15.12%",
+    "skill1:FB-enter 636% damage rider",
+    "skill2:hitCount-10 Wind DamageTaken 12.12%",
+    "skill2:hitCount-5 675% damage rider",
+    "burst:casterAtkPct 66.52% allies-except-self"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of damage-at-stake: (1) SG PELLET vs ROUND counting on both hitCount triggers — hitsPerShot 10 makes the wrong reading fire skill2's procs ~10× too often; the 675% rider misread alone would dwarf her weapon damage. The distinguishing assertions are count-based (floor(shots/5), first-proc-after-reload) precisely to catch this. (2) Element-gate bleed: the kit deliberately pairs a Wind-gated debuff with an UNGATED damage line inside each skill — a lazy per-slot gate either kills the riders on the Fire boss or lets the debuffs leak onto it; assert both directions (riders fire, debuffs silent). (3) casterAtkPct vs atkPct on burst — 'of the skill user's ATK' is the flat caster-scaled add; harness flat-resolves the buffApply value, so asserting the emitted value ≈ 0.6652×staticAtk (not the raw 66.52) distinguishes structurally. (4) Both Damage Taken lines are BOSS debuffs (buffApply casterIdx/targetIdx null) — a reviewer expecting ally-targeted applies will write a filter that matches nothing. (5) All 'for 10 sec' durations here are genuine seconds — no round-count trap on this unit. (6) Both damage riders should be crit-eligible/no-core/noRange per rider defaults; the 636% takes FB major at FB-entry timing (fullBurstEnter ≠ the burstCast pre-FB exemption). Fixture note: Brid is Burst II — she replaces the B2 slot beside a B1+B3, and burstCast vs fullBurstEnter on her burst only diverges with a second B2 present; a divergence test needs that comp if the driver claims the distinction matters.",
+  "model": "claude-fable-5"
+}

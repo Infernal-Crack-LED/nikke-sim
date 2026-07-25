@@ -1,0 +1,109 @@
+{
+  "slug": "brid-silent-track",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "bossElementGate": "Wind",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 15.12,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 636
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "bossElementGate": "Wind",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 12.12,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 675
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies",
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 66.52,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ hitCount granularity: both skill2 blocks say 'normal attack(s)'. Authored as ROUNDS (trigger pulls) — for a SG one pull = one round (hitsPerShot 10 = pellets, ammo spend 1/pull). If the engine counts PELLET hits, both blocks fire 10x too often (huge over-credit). Must be confirmed against sim.ts hitCount accounting / a popup count before this override is trusted.",
+    "⚑ Both damage riders (636% FB-enter, 675% every-5) are authored WITHOUT noFb (FB-by-timing default ON) and WITHOUT core (no 'core strike damage' wording). Crit flag intentionally omitted so the engine's rider-crit convention governs.",
+    "Both 'Damage Taken ▲' lines are boss DEBUFFS benefiting the whole team, not self buffs — modeled as target:enemy damageTakenPct; the Wind Code scope is a bossElementGate, so BOTH are INERT on the neutral scope-lock boss and on the Fire-boss control fixture. This unit's entire skill1-a/skill2-a support value is therefore unobservable on graded comps.",
+    "'1 …enemy unit(s) with the lowest remaining HP' collapses to the single boss in v1 — no targeting model needed, no line dropped.",
+    "Not applicable to this kit (no ⚑ needed): weapon-swap economy, stack/currency steady-state, Hit-Rate→core magnitude, DoT encoding, HP/DEF scalers, round-count durations. No kit line lacks an activation clause, so no invented trigger.",
+    "noRange left unset on all riders (engine-automatic per methodology)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the raw kit prose only (S6 cross-family). Brid: Silent Track = SG/Fire/Supporter/Burst II. skill1 = two independent fullBurstEnter blocks: a Wind-Code-gated Damage Taken ▲15.12%/10s boss debuff and an all-enemy 636% instant hit. skill2 = two independent hitCount blocks at DIFFERENT thresholds (10 normals → Wind-gated Damage Taken ▲12.12%/10s; 5 normals → 675% hit) — deliberately NOT merged, the counts differ. burst = burstCast (own-burst keyed, NOT fullBurstEnter) casterAtkPct 66.52 to allies excluding self for 10s. ⚑ Open: hitCount round-vs-pellet granularity for a 10-pellet SG; SG cadence tuple (datamined ammo 9 / reloadFrames 111 / no fire rate in the prose) sets how often the every-5 and every-10 blocks fire; per-kit noFb unmeasured (defaulted OFF = riders take the +50% FB major by timing)."
+}

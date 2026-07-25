@@ -1,0 +1,232 @@
+{
+  "slug": "brid-silent-track",
+  "leakDetected": null,
+  "override": {
+    "slug": "brid-silent-track",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "bossElementGate": "Wind",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 15.12,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 636
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 10
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "bossElementGate": "Wind",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 12.12,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 5
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 675
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies",
+          "excludeSelf": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 66.52,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ hitCount granularity: both skill2 blocks say 'normal attack(s)'. Authored as ROUNDS (trigger pulls) — for a SG one pull = one round (hitsPerShot 10 = pellets, ammo spend 1/pull). If the engine counts PELLET hits, both blocks fire 10x too often (huge over-credit). Must be confirmed against sim.ts hitCount accounting / a popup count before this override is trusted.",
+      "⚑ Both damage riders (636% FB-enter, 675% every-5) are authored WITHOUT noFb (FB-by-timing default ON) and WITHOUT core (no 'core strike damage' wording). Crit flag intentionally omitted so the engine's rider-crit convention governs.",
+      "Both 'Damage Taken ▲' lines are boss DEBUFFS benefiting the whole team, not self buffs — modeled as target:enemy damageTakenPct; the Wind Code scope is a bossElementGate, so BOTH are INERT on the neutral scope-lock boss and on the Fire-boss control fixture. This unit's entire skill1-a/skill2-a support value is therefore unobservable on graded comps.",
+      "'1 …enemy unit(s) with the lowest remaining HP' collapses to the single boss in v1 — no targeting model needed, no line dropped.",
+      "Not applicable to this kit (no ⚑ needed): weapon-swap economy, stack/currency steady-state, Hit-Rate→core magnitude, DoT encoding, HP/DEF scalers, round-count durations. No kit line lacks an activation clause, so no invented trigger.",
+      "noRange left unset on all riders (engine-automatic per methodology)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the raw kit prose only (S6 cross-family). Brid: Silent Track = SG/Fire/Supporter/Burst II. skill1 = two independent fullBurstEnter blocks: a Wind-Code-gated Damage Taken ▲15.12%/10s boss debuff and an all-enemy 636% instant hit. skill2 = two independent hitCount blocks at DIFFERENT thresholds (10 normals → Wind-gated Damage Taken ▲12.12%/10s; 5 normals → 675% hit) — deliberately NOT merged, the counts differ. burst = burstCast (own-burst keyed, NOT fullBurstEnter) casterAtkPct 66.52 to allies excluding self for 10s. ⚑ Open: hitCount round-vs-pellet granularity for a 10-pellet SG; SG cadence tuple (datamined ammo 9 / reloadFrames 111 / no fire rate in the prose) sets how often the every-5 and every-10 blocks fire; per-kit noFb unmeasured (defaulted OFF = riders take the +50% FB major by timing)."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (team FB entry, NOT burstCast — text says 'entering Full Burst')"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all Wind Code enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy + bossElementGate:'Wind' (composes with the fullBurstEnter trigger; inert vs non-Wind boss)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▲ 15.12% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 15.12 durationSec 10 on the boss (team-wide benefit, not a self buff)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second, separate fullBurstEnter block (different target scope: all enemies, no element gate)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy, no bossElementGate"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 636% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 636; no core (no 'core strike' wording), noFb omitted (FB by timing, default ON), noRange engine-automatic"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after 10 normal attack(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count 10 (recurring conditional, counts rounds/pulls) ⚑ granularity"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 1 Wind Code enemy unit(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy + bossElementGate:'Wind'; 'lowest remaining HP' collapses to the single boss in v1"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage Taken ▲ 12.12% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 12.12 durationSec 10 on the boss"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after 5 normal attack(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "separate block, trigger hitCount count 5 — threshold differs from the 10-normals line, so NOT merged"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 1 enemy unit(s) lowest HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy, no element gate (this line is element-blind, unlike its sibling)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 675% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 675; no core, noFb omitted (takes FB when the proc lands inside a FB window)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies (except self).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies excludeSelf:true"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 66.52% of the skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 66.52 (caster-scaled flat ATK add, NOT atkPct) durationSec 10, trigger burstCast"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[0].trigger.count / skill2[1].trigger.count",
+      "estimate": "count = 10 and 5 ROUNDS (trigger pulls), i.e. ~1.1 and ~0.55 magazines of her 9-ammo SG",
+      "reasoning": "Kit says 'normal attack(s)'. Per the round convention a round is one bullet = 1 per trigger pull (hitsPerShot only equals rounds for an MG); this SG's hitsPerShot 10 is PELLETS and the ammo economy spends 1/pull. If the engine's hitCount instead counts pellet impacts, both blocks fire ~10x too often — the 675% rider would land every half-pull, a large over-credit that no kit text supports.",
+      "recipe": "Read sim.ts's hitCount accumulator for weapon SG (does it add 1 per shot or hitsPerShot per shot?), then confirm empirically: run the control comp with an onEvent counter over damage events with bucket=rider/srcSlot=brid and compare the proc count against shots fired ÷ 5. Cross-check against footage popup cadence (a 675% popup should appear roughly once per ~5 shots, not ~once per shot)."
+    },
+    {
+      "field": "cadence tuple (ammo 9 / reloadFrames 111 / pullsPerSec)",
+      "estimate": "Use the datamined SG tuple as-is; effective pulls/sec = 60/ceil(60/nominal). No fire rate was supplied in this packet, so the shot cadence is entirely unverified here.",
+      "reasoning": "ALWAYS-⚑: rate_of_fire and reloadFrames are known-unreliable datamine fields, and BOTH skill2 blocks are cadence-driven — the every-5 675% rider's DPS contribution is linear in shots/sec, and reload downtime (111f ≈ 1.85s per 9 rounds) directly sets how many procs fit in a fight. A 20% cadence error is a ~20% error on this unit's rider damage.",
+      "recipe": "Confirm shots/sec with the instrument that measures it directly — the ammo counter in a recording (rounds drained per second), not FB counts. Cross-check reload duration frame-by-frame from magazine-empty to refill, and pin the result in docs/probe-runs.md before tuning any magnitude."
+    },
+    {
+      "field": "override.skill1[1].effects[0].noFb / skill2[1].effects[0].noFb",
+      "estimate": "Both omitted (noFb OFF) → riders receive the +50% Full Burst major whenever they land inside a FB window. The 636% is FB-enter-triggered so it is effectively always FB-boosted.",
+      "reasoning": "Per-kit noFb is measured-only and defaults OFF; function-damage riders take FB by timing. Neither line is burst-cast/instant-pre-FB damage (the exempt case), so the default applies. Flagged because it is a ~1.5x swing on the 636% component and is not derivable from the prose.",
+      "recipe": "Popup-read the 636% hit at FB entry: compute expected non-FB damage from final ATK × 6.36 × buckets and compare against the observed orange/white value. If observed ≈ 1.5× expected, noFb stays off; if ≈ 1.0×, set noFb:true on that effect."
+    },
+    {
+      "field": "override.skill1[0].bossElementGate / skill2[0].bossElementGate",
+      "estimate": "'Wind' (string must match the engine's element vocabulary exactly)",
+      "reasoning": "'all Wind Code enemies' is an element-scoped debuff, so both Damage Taken ▲ lines are INERT on the neutral scope-lock boss and on the Fire-element control fixture. That means over half this supporter's kit value cannot be graded by the existing board — a mis-spelled gate string would silently look identical to a correct one (both inert). Not a magnitude guess, a visibility hazard.",
+      "recipe": "Grep an existing bossElementGate carrier (e.g. helm-aquamarine's burst) for the exact element casing, and validate by running the comp with a Wind boss configured: assert a buffApply with stat 'damageTakenPct' value 15.12 (casterIdx/targetIdx both null for boss-held debuffs) appears on Wind and is absent on Fire."
+    },
+    {
+      "field": "override.skill1[1].effects[0].crit / skill2[1].effects[0].crit",
+      "estimate": "Omitted — rely on the engine's rider-crit convention (RIDERCRIT makes flat-damage riders crit-eligible at the caster's sheet rate).",
+      "reasoning": "The kit text says nothing about crit for either rider, and rule 9 states riders crit at the caster's rate but get NO core. Writing crit:true explicitly would hardcode a convention that lives in the engine; writing crit:false would contradict it. Omission is the faithful choice but leaves the behaviour dependent on a global gate this blind read cannot inspect.",
+      "recipe": "Check whether dealDamage applies the crit roll to flatDamage riders unconditionally or only when crit:true is set; if the flag is required per-effect, add crit:true to both and confirm via popup colour (orange + icon = crit) on the 636%/675% hits in footage."
+    }
+  ],
+  "model": "claude-opus-5"
+}
