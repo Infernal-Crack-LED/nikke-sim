@@ -1,61 +1,50 @@
-Run a batch of 10 kit-autonomy gauntlets on an isolated worktree, orchestrating one
-foreground sub-agent per unit. You are a thin orchestrator — do NOT perform any
-gauntlet stages yourself; keep your own context minimal.
+Run a batch of 10 kit-autonomy gauntlets on an isolated worktree. You are a THIN
+ORCHESTRATOR — you perform NO gauntlet stage yourself; you spawn one kit-gauntlet-driver
+sub-agent per unit and read each outcome from its artifacts. Keep your context minimal.
+
+The gauntlet mechanics (lean recipe, instrumentation, subprocess kit-extract, dispatch
+patience, S7 judge-packet assembly, commit hygiene, model routing, same-model recovery,
+skip-and-flag) live in the kit-gauntlet-driver agent definition + the kit-autonomy skill's
+"Batch mode" section. Do NOT restate them in spawn prompts, and do NOT have the sub-agent
+read the full skill/protocol files (that causes stalls).
 
 SETUP
 
 1. git fetch origin.
-2. Create an isolated git worktree on a NEW branch based on the latest origin/main
-   (branch: kit-autonomy-batch-2026-07-24). It must be a clean checkout of remote
-   main — do NOT carry in the uncommitted ark-ranger-black work from the main tree.
-   Record its absolute path; all subsequent work happens inside it.
-3. Sanity-check: in the worktree, `git status` is clean and `git log -1` matches
-   origin/main. Report the worktree path and branch name to me.
+2. Create an isolated worktree on a NEW branch (kit-autonomy-batch-<YYYY-MM-DD>) from the
+   latest origin/main — a clean checkout; do NOT carry in uncommitted main-tree work.
+   Record its absolute path; all work happens inside it.
+3. Sanity-check: in the worktree `git status` is clean and `git log -1` matches origin/main.
+   Report the worktree path + branch.
 
-PER-UNIT LOOP 4. Read .claude/subagent-non-negotiables.md once and prepend its rules to every
-sub-agent prompt. 5. Pick the next slug: read <worktree>/data/kit-status.json, walk the `units` object
-in file order from the top, and take the first unit whose
-kitParse.provenance != "gauntlet" and that isn't already completed this run. 6. Spawn ONE fresh general-purpose sub-agent in the FOREGROUND with its working_dir
-pinned to the worktree (do NOT use isolation — every unit shares this one worktree
-so provenance flips and commits accumulate on the single branch). Its task:
+PER-UNIT LOOP 4. Next slug: in <worktree>/data/kit-status.json walk `units` in file order; take the first
+whose kitParse.provenance != "gauntlet" and not already done this run. 5. Spawn ONE fresh kit-gauntlet-driver sub-agent in the FOREGROUND, working_dir pinned to the
+worktree (NOT isolation — units share the worktree so provenance flips + commits accumulate
+on the one branch). Task: "Run the full kit-autonomy gauntlet on <slug> (<Full Name> —
+<weapon/class/element/burst>; for a variant, name its base counterpart). Follow your agent
+definition; one commit; return the tight RESULT line." Prepend a CONDENSED non-negotiables
+header (exact slug · measured>fudge · whole-picture · prove-it-differently · tread-lightly ·
+no `ignored` blocks · structured return). Do NOT override the skill's canonical model
+routing. Strictly sequential — one at a time. 6. The driver returns "(subagent produced no model-visible output)" — BENIGN. Read the outcome
+from <worktree>/scripts/kit-autonomy/results/<slug>.json (verdict/faithfulness),
+.gauntlet-progress-<slug>.txt, and `git log origin/main..HEAD`. Report one line:
+<slug> — <verdict> — faithfulness <x> — <sha>. Then step 4.
 
-- Run the full kit-autonomy gauntlet on <slug>: drive S0–S4 and S8–S9 yourself
-  following .qwen/skills/kit-autonomy/SKILL.md and the base protocol
-  scripts/kit-autonomy/SKILL.md; dispatch the blind roles via
-  scripts/kit-autonomy/dispatch-claude.sh (S2b → claude-fable-5;
-  S5/S6/S7 → claude-opus-4-8).
-- Produce all artifacts: override src/skills/overrides/<slug>.json, results under
-  scripts/kit-autonomy/..., the S9 manual-review doc
-  scripts/kit-autonomy/manual-review/<slug>.md, and unit test
-  scripts/tests/units/<slug>.test.ts.
-- Flip kitParse.provenance to "gauntlet" in data/kit-status.json (plus the status
-  fields the gauntlet sets).
-- Run the gauntlet's verification (grading, npm run typecheck, the unit test) and
-  capture the verdict (GO/NO-GO, faithfulness).
-- Make EXACTLY ONE commit on the branch with all of the above.
-- Return a TIGHT structured summary only: slug · verdict (GO/NO-GO) · faithfulness
-  · commit sha · flags. No prose.
-
-7. When it returns, report one line to me (<slug> — <verdict> — faithfulness <x> —
-   <sha>), then go to step 5 for the next unit. Strictly sequential, one at a time.
-
-BOUND 8. Process exactly 10 units this run. Authoritative count =
-`git rev-list --count origin/main..HEAD` in the worktree (one commit per completed
-unit, so this equals units done). Stop at 10. Restart-safe: if resumed, re-derive
-progress from this count and the provenance flips so you never exceed 10.
+BOUND 7. Exactly 10 units. Authoritative count = `git rev-list --count origin/main..HEAD` (one commit
+per unit). Stop at 10. Restart-safe: re-derive from this count + the provenance flips.
 
 SAFETY / STOP
 
-- Writes to src/skills/overrides/**, data/kit-status.json, and scripts/tests/units/**
-  are the intended, owner-authorized output of this task (the gauntlet's purpose),
-  notwithstanding the protected-paths note. They land only on this isolated branch.
-- Do NOT merge to main, push, or open a PR. I review the branch via the manual-review
-  docs and merge manually.
-- HALT and report (do not skip, continue, or guess) if a unit returns NO-GO, the
-  gauntlet or a Claude dispatch fails, or a unit needs human input. Leave completed
-  units committed and the problem unit uncommitted.
-- If fewer than 10 eligible units remain, stop when exhausted and say how many
-  completed.
+- Writes to src/skills/overrides/**, data/kit-status.json, scripts/tests/units/** are the
+  intended owner-authorized output (notwithstanding protected-paths); they land only here.
+- Do NOT merge, push, or open a PR. Owner reviews via manual-review docs and merges.
+- A SLOW opus dispatch is NOT a failure (2–5 min; the driver waits per the skill's
+  dispatch-patience rule). HALT and report (don't skip/guess) only on: a genuine NO-GO; a
+  dispatch genuinely unavailable after patient retries; or a unit needing human input. Leave
+  completed units committed, the problem unit uncommitted.
+- A "GO (same-model only)" is NOT a halt — it's committed and upgradeable later via the skill's
+  recovery (opus retry + amend). Surface it and continue (or upgrade), don't stop.
+- If fewer than 10 eligible units remain, stop when exhausted and say how many completed.
 
-DONE 9. On completion (10 done, halted, or exhausted), give a summary table:
-slug | verdict | faithfulness | commit. Restate the branch name and worktree path.
+DONE 8. On completion (10 / halted / exhausted): summary table slug | verdict | faithfulness | commit.
+Restate branch + worktree path.
