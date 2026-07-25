@@ -1,0 +1,166 @@
+{
+  "slug": "moran",
+  "kitDescription": "Moran is an Electric AR Defender on Burst I who plays as a taunt-tank and rotation accelerator rather than a damage carry. Her Skill 1 gives her a DEF bonus that grows as she loses HP, and — because Raptures are present from the start of a solo raid — permanently puts her in Fervor, cutting her own 40-second Burst cooldown by 20 seconds so she can burst roughly every rotation. Skill 2 taunts the three highest-ATK enemies when she empties her magazine, gives her tiered emergency Max-HP boosts the first three times she drops below 20% HP, and — while she is in Fervor — knocks 7.48 seconds off every ally's Burst cooldown each time the team enters Full Burst. Her Burst swaps her weapon for 10 seconds: the new weapon hits for 14.7% of final ATK per shot with unlimited ammunition, heals her for 36.14% of the damage she deals, and taunts every enemy. During those same 10 seconds the whole team takes 35.14% less damage and gains DEF and ATK scaled off Moran's own stats (14.85% of her DEF, 42.57% of her ATK). While the swapped weapon is out, every 5th normal attack she lands adds a 47.18%-of-final-ATK hit.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": [
+      "skill1/Fervor structural: `expect(FERVOR[0].block.trigger.kind).toBe('passive')` — driver encodes burstCdr 20 on her own burstCast (re-applied every cycle) rather than a battle-start passive. ENCODING-STYLE divergence, not a faithfulness failure: no engine primitive exists for a permanent CD floor (the blind writer conceded exactly this in its own it.skip note), and a passive one-shot burstCdr (which is what the blind OVERRIDE actually authored, with oncePerBattle:true) would reduce only the FIRST cooldown and under-fire every later rotation. Driver's per-cycle encoding reproduces the kit's 40s→20s continuous semantics and is corroborated frame-by-frame (override note, Run B).",
+      "skill1/Fervor behaviour: `castsIn(base) > castsIn(noFervor) || team(base) > team(noFervor)` — FIXTURE-INDUCED. controlComp('moran') = liter/crown/moran/helm fields liter AND moran as two Burst-I casters; .moran-probe3.ts proves moran is the SECONDARY B1 there (5 casts with or without Fervor), so the assertion cannot fire. In the driver's sole-B1 fixture (moran/crown/ada/helm) the same line reads 12 casts vs 6 with Fervor removed.",
+      "skill2/team-CDR behaviour: `fullBurstStart(base) > fullBurstStart(noFbCdr) || team(base) > team(noFbCdr)` — same fixture artifact (moran's rotation is pinned behind liter's B1 slot). Driver's sole-B1 fixture: crown 12 → 9 casts and moran 12 → 9 with the block removed."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "DEF ▲3.51% per 1% of HP lost",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1, verbatim; note records it as defensive/HP-gated",
+        "blindSaid": "S6 authored an inert placeholder defPct 17.55 and self-flagged 'TRUE in-sim value is 0; do NOT read 17.55 as measured'; S2b said UNMODELED",
+        "formulaCheck": "defPct has no offensive consumer at scope lock, and the partless boss deals no damage so HP-lost is identically 0 — the correct in-sim contribution is exactly 0 either way",
+        "fireRateOk": true,
+        "explanation": "Driver's omission is strictly cleaner than the blind's placeholder (which invents a 5%-HP-lost stand-in magnitude). Both move zero damage; S5's stripDefensive inertness test is GREEN."
+      },
+      {
+        "kitLine": "47.18% of final ATK per 5 normals",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1 hitCount:5 + swapGate:'swapped' + target enemy + flatDamage atkPct 47.18 (S3 fix: was fbGate:'inFb')",
+        "blindSaid": "S6 authored the IDENTICAL hitCount:5 + swapGate:'swapped' + flatDamage 47.18 (plus crit:true/noRange:true); S2b independently derived the same swapGate requirement and named the ungated-rider nearest-wrong",
+        "formulaCheck": "'while weapon is changed' = the burst weaponSwap window; as Burst I her swap opens at her OWN cast, which precedes the Full Burst window (B1→B2→B3 chain), so inFb both missed the head [cast, fbOpen) and over-ran the tail. swapGate:'swapped' (types.ts:332 / sim.ts:1684) is the exact primitive.",
+        "fireRateOk": true,
+        "explanation": "Cross-family triple convergence (driver + S2b + S6) on the exact gate. Fires 270× over 1369 swap shots = 1 per 5.07, matching floor(swappedShots/5) — so the counter is accruing swapped hits only, not a pre-accumulated global count (S2b's secondary misread is excluded). Probe: first riders at 4.70/5.12/5.53s, before FB opens at 5.73s; under the old inFb gate that count is ZERO. Board-neutral (~1% total delta) — a timing/faithfulness fix, correctly NOT sold as a fix for her 0.66 COLD. Residual: crit-eligibility of the rider is unset by the driver and set true by the blind (see gotchas, low)."
+      },
+      {
+        "kitLine": "Fervor: Burst CD ▼20 sec continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1 trigger burstCast → self burstCdr seconds:20 (re-applied every cycle)",
+        "blindSaid": "S6 authored passive burstCdr 20 with oncePerBattle:true and SELF-FLAGGED it unresolved ('whether the engine should model Fervor as a persistent CD-reduction state is unresolved'); S5 asserted trigger.kind==='passive'",
+        "formulaCheck": "'Activates when Raptures appear' resolves to battle-start-on in a solo boss sim (S2b agrees) — the danger was a dead spawn trigger. No engine primitive exists for a permanent cooldown FLOOR; subtracting 20s at each cast is the behaviourally faithful reconstruction of 40s→20s per cycle, and nothing precedes her first cast for a t=0 passive to reduce.",
+        "fireRateOk": true,
+        "explanation": "Driver's per-cycle encoding is the measured-correct reading (12 casts / 180s; removing it halves to 6). The blind's oncePerBattle passive is the exact nearest-wrong S2b named ('one-time burstCdr 20 affecting only the first cooldown') — the blind override falls into it while the blind TEST asserts against it, an internal contradiction in the blind pair. Corroborated externally by the Prydwen 'Burst Skill CD reduced to 20 seconds' note in the driver's override. Fervor as a named STATUS is not modeled; its only consumer (skill2's gate) is permanently satisfied and the driver documents that in the note."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Taunts 4 sec on final bullet",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2, verbatim",
+        "blindSaid": "S6 kept an empty-effects lastBullet block for auditability; S2b UNMODELED, 'fully inert'",
+        "formulaCheck": "No taunt/aggro primitive and no enemy-unit entities at scope lock; the target set is unrepresentable",
+        "fireRateOk": true,
+        "explanation": "Both inert. The driver's verbatim unmodeled entry satisfies S5's documented('taunt','attract') assertion; the blind's empty-effects block is a style preference the validator tolerates but which the repo convention (no ignored/empty carriers) argues against."
+      },
+      {
+        "kitLine": "HP<20% Perseverance Max HP tiers",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2, all four lines verbatim; note explains the HP-gate is unreachable on the immortal partless boss and that she has no atkOfMaxHpPct consumer",
+        "blindSaid": "S6 unmodeled verbatim; S2b UNMODELED, nearest-wrong = encoding it as an always-on maxHpFlat grant",
+        "formulaCheck": "Own-HP-threshold trigger is unreachable (boss deals no damage), and a self Max-HP grant feeds no ATK conversion on moran",
+        "fireRateOk": true,
+        "explanation": "Full convergence. Zero maxHp buffApply events sourced from moran — the always-on-91% nearest-wrong is avoided by all three agents."
+      },
+      {
+        "kitLine": "FB enter in Fervor: allies CD ▼7.48s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill2 trigger fullBurstEnter → target allies (excludeSelf unset) → burstCdr seconds:7.48, no oncePerBattle",
+        "blindSaid": "S6 authored the byte-identical block; S2b FAITHFUL with the same per-FB/all-allies semantics",
+        "formulaCheck": "Kit says 'entering Full Burst', not 'her own cast' — fullBurstEnter is correct; no oncePerBattle qualifier in the prose, so it repeats every FB. The Fervor gate is permanently satisfied via skill1.",
+        "fireRateOk": true,
+        "explanation": "Fires on every FB entry, not once. Rotation-economy discriminator is real in the sole-B1 fixture: crown 12→9 and moran 12→9 casts with the block removed. Corroborated independently by two real rotations recorded in the override note (Run B 16.4s; TB2T2 cinderella 40−7.48=32.5s effective). The S2b-named dead-Fervor coupling failure (skill1 trigger dead ⇒ this block dead) does not occur — both halves observably fire."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Changes weapon: 14.7%, 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst burstCast → self weaponSwap damagePct 14.7 durationSec 10 (REPLACIVE), no maxShots",
+        "blindSaid": "S6 identical (weaponSwap 14.7 / 10s, self); S2b FAITHFUL, hard 10s bound with NO maxShots, nearest-wrong = a normalAttackPct buff that loses the swap state",
+        "formulaCheck": "Kit states duration only, so durationSec with no shot cap is correct; the swap must be replacive (base AR mult 14.71 → swap 14.7), and it is the state that opens the skill1 swapGate",
+        "fireRateOk": true,
+        "explanation": "1369 swap shots at 14.7% in the normal bucket over 12 casts. Discriminated against the REFUTED additive-extraHitDamagePct model, which structurally produces ZERO 14.7% normal shots and over-credits her total by >5%. ⚑ swap cadence (pullsPerSec) is kit-silent and is flagged at length by all three agents with the same estimate (base AR 12/s, MEASURED from control.mov) and the same recipe (isolated moran-solo recording or datamined shot_count/muzzle_count for 1028102); the 24/s datamine was board-REFUTED (0.712 COLD → 1.325 HOT) and correctly backed out rather than fudged to an intermediate rate."
+      },
+      {
+        "kitLine": "Recovers 36.14% of dmg as HP, 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst, verbatim ('Recovers 36.14% of attack damage as HP over 10 sec.')",
+        "blindSaid": "S6 unmodeled verbatim; S2b preferred encoding it as a ticking SELF heal (tandem fuel) but pinned the observable as targetSlug=moran only",
+        "formulaCheck": "The heal lands on MORAN, and moran has no on-recovery consumer; recovery triggers fire on the RECEIVER, so it cannot reach crown or any teammate's on-recovery kit. Damage delta is exactly zero either way.",
+        "fireRateOk": true,
+        "explanation": "Reconciled on the observable rather than the encoding: driver's omission and S2b's self-heal encoding produce identical damage and identical (zero) ally recovery events. S5's heal test passes via the documented() branch on the verbatim unmodeled text. Worth re-opening only if a future tandem consumer of moran's own recovery is added."
+      },
+      {
+        "kitLine": "Attract: taunts all enemies 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst, verbatim",
+        "blindSaid": "S6 unmodeled verbatim; S2b UNMODELED, fully inert",
+        "formulaCheck": "No aggro model; boss takes no modeled aggro",
+        "fireRateOk": true,
+        "explanation": "Full convergence, no damage-adjacent encoding anywhere."
+      },
+      {
+        "kitLine": "Unlimited ammunition for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst self unlimitedAmmo durationSec 10, same block as the swap",
+        "blindSaid": "S6 identical; S2b FAITHFUL and explicitly warns it is NOT droppable QoL (a 60-round mag at AR cadence empties mid-window and a 111-frame reload eats swap uptime)",
+        "formulaCheck": "Weapon-state lines ARE damage (taxonomy #6): 60 ammo / ~12 shots-per-sec ≈ 5s of fire vs a 10s window, so without it roughly half the window is lost to a reload",
+        "fireRateOk": true,
+        "explanation": "The unlimited-ammo shot count equals the swap-shot count exactly (1369), i.e. the effect spans the whole window. S5's non-inertness counterfactual (drop it → reloads appear and/or damage drops) is GREEN."
+      },
+      {
+        "kitLine": "Damage Taken ▼35.14% (allies) 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst → target allies → buff damageTakenPct value -35.14 durationSec 10 (kept for fidelity, asserted inert)",
+        "blindSaid": "S6 omitted it, explicitly 'deliberately unmodeled, NOT mapped to damageTakenPct'; S2b UNMODELED and called the sign/target flip 'the single most important inertness pin on the kit'",
+        "formulaCheck": "The schema's positive damageTakenPct = boss takes more. The kit arrow is ▼ on ALLIES, so the faithful encoding is a NEGATIVE value held by the ally slots — which is offensively inert where the boss deals no damage. A positive boss-side debuff would hand the team a ×1.35-class multiplier every window.",
+        "fireRateOk": true,
+        "explanation": "THE trap on this kit, and the driver avoided it in both dimensions: sign is negative and the holder set is the four allies (48 applies = 12 casts × 4), never the boss. Empirically pinned inert — removing it leaves EVERY unit's total byte-identical (driver M12), and S5's independent stripDefensive test reaches the same equality. Driver's keep-for-fidelity and the blind's omit are equivalent on the board; the driver's is the stronger artifact because the inertness is asserted rather than assumed."
+      },
+      {
+        "kitLine": "DEF ▲14.85% of caster DEF, 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst, verbatim",
+        "blindSaid": "S6 unmodeled verbatim; S2b UNMODELED, nearest-wrong = shoehorning into defPct (target-scaled) or into a casterAtkPct-shaped ATK add",
+        "formulaCheck": "No casterDefPct StatKey exists and defPct is engine-inert at scope lock; encoding it into any ATK-family stat would be an outright fabrication",
+        "fireRateOk": true,
+        "explanation": "Full convergence. Crucially, the driver did NOT let the caster-scaled DEF line leak into the ATK family — the neighbouring casterAtkPct line is the only caster-scaled buff authored."
+      },
+      {
+        "kitLine": "ATK ▲42.57% of caster ATK, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst burstCast → allies (excludeSelf unset) → buff casterAtkPct 42.57 durationSec 10",
+        "blindSaid": "S6 identical (casterAtkPct, explicitly 'not atkPct'); S2b FAITHFUL with the same flat-resolution assertion",
+        "formulaCheck": "casterAtkPct is a FLAT add of the CASTER's ATK, not a target-scaled percentage. atkPct would scale off each recipient's own ATK and over-credit every high-ATK carry by the full gap to a Defender's ATK — the classic caster-scaled-vs-target-scaled misread.",
+        "fireRateOk": true,
+        "explanation": "48 applies (12 casts × 4 allies), each carrying the same flat value ≈ 0.4257 × moran.staticAtk regardless of recipient — the exact discriminator S2b specified. Driver discriminates against a self-only model (holder set collapses to moran); S5 independently discriminates against the atkPct model (raw 42.57 re-emitted, team total shifts) and against a 20s duration (strictly stronger). Trigger is her own burstCast, correct for a burst-block ally grant."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "The 47.18% rider's crit-eligibility is left unset by the driver while the blind override sets crit:true — a convention-dependent flavor divergence that is not resolved by the prose and not addressed in the note.",
+      "evidence": "Kit: 'Deals 47.18% of final ATK as additional damage.' — silent on crit. Driver override skill1 rider effect: {kind:'flatDamage', atkPct:47.18} (no crit field). S6 blind: {kind:'flatDamage', atkPct:47.18, crit:true, noRange:true}. S2b specified the routing as 'flatDamage 47.18% of final ATK; rider takes FB by landing timing, default noFb OFF; noRange forced' and did not adjudicate crit. Neither S5 nor the driver's test asserts on crit (S5 asserts only core===false, which both satisfy); the crit bucket is a separate multiplicative major in docs/data/damage-calculation.md, so if the engine default for flatDamage is non-crit the two encodings differ by the crit major on ~270 hits/fight.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Resolve against the repo-wide convention rather than by choice: grep the other shipped overrides for flatDamage riders derived from 'additional damage' prose and check the engine default in src/skills/types.ts / sim.ts. If skill-bucket flatDamage defaults to non-crit and sibling units set crit:true on equivalent lines, set crit:true here; if the default already permits crit, record that in the note so the blank field reads as deliberate. Do NOT pick the branch that moves her board ratio — she is 0.66 COLD and the temptation runs one way."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Every one of the 14 kit lines is either FAITHFUL (6: the swap-gated 47.18% rider, Fervor's −20s, the team 7.48s FB-entry CDR, the replacive 14.7%/10s weaponSwap, unlimitedAmmo, and the casterAtkPct 42.57% ally grant) or an explicitly DOCUMENTED_GAP (8: DEF-per-HP-lost, both taunts, Perseverance, lifesteal, no-cover, caster-DEF grant), giving faithfulness 1.0. The two catastrophic traps on this kit were both avoided and both PROVEN avoided, not merely asserted: 'Damage Taken ▼35.14%' is encoded as a NEGATIVE ally-held buff (48 applies across the four ally slots, never the boss) whose removal leaves all four unit totals byte-identical under two independently written tests, and 'ATK ▲42.57% of the skill user's ATK' resolves to a flat casterAtkPct add off a Defender's low ATK rather than a target-scaled atkPct. The S3 edit is a genuine faithfulness fix (rider gate fbGate:'inFb' → swapGate:'swapped', the previously-unused exact primitive at types.ts:332 / sim.ts:1684), correctly reported as board-neutral (270 vs 273 riders, ~1% delta) and explicitly NOT sold as a fix for her 0.66 COLD — that residual is documented as footage-blocked throughput with a measured estimate (base AR 12/s from control.mov), a refutation record for the 24/s datamine, and a concrete recipe. Convergence is strong and cross-family: S2b (claude-fable-5) and S6 (claude-opus-5) independently derived the identical load-bearing set AND the swapGate fix; the S5 blind suite runs 17 GREEN / 3 RED / 6 SKIP against the shipped override, and all three REDs are non-findings — two are provably fixture-induced (controlComp fields liter as a competing Burst I, pinning moran to 5 casts either way, so the cadence assertions cannot fire; the driver's sole-B1 fixture shows 12→6 and crown 12→9), and the third is a Fervor trigger-shape divergence where the driver's per-cast burstCdr is the measured-correct reconstruction and the blind's own oncePerBattle passive falls into the exact nearest-wrong S2b named. The single open item is low-severity and convention-dependent: crit-eligibility on the flatDamage rider, unset by the driver and set true by the blind, which the prose does not decide — it is listed as a gotcha but does not score against any line. Same-model residuals the owner should spot-check by hand: (1) the crit convention above, since all four agents share priors about flatDamage defaults; (2) that hitCount:5 under swapGate:'swapped' counts only swapped hits — the 270/1369 ratio and the 4.70s first proc are consistent with it but a global counter with output-gating would produce nearly the same count, so this is inferred rather than isolated; and (3) the unmodeled Fervor STATUS, which makes skill2's 'while in Fervor' gate unconditional — correct on a solo boss where Raptures are always present, but it would silently over-credit if Fervor ever became consumable or windowed. NOTE: this run had no tools, so scripts/kit-autonomy/results/moran.json was NOT written — this JSON is the deliverable and should be saved verbatim to that path.",
+  "model": "claude-opus-5"
+}

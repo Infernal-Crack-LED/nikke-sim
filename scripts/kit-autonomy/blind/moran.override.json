@@ -1,0 +1,146 @@
+{
+  "slug": "moran",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 17.55
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "swapGate": "swapped",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 47.18,
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 20,
+          "oncePerBattle": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": []
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 14.7,
+          "durationSec": 10
+        },
+        {
+          "kind": "unlimitedAmmo",
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 42.57,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Taunts for 4 sec.",
+      "Activates when HP falls below 20%. Affects self. Effect varies according to the number of uses. Perseverance: Only one effect is triggered at a time. Once: Max HP ▲ 91% for 3 sec. Activates once per battle. Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle. Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle."
+    ],
+    "burst": [
+      "Recovers 36.14% of attack damage as HP for 10 sec.",
+      "Attract: Taunts all enemies for 10 sec.",
+      "Damage Taken ▼ 35.14% for 10 sec.",
+      "DEF ▲ 14.85% of the skill user's DEF for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ S1 line 1 'DEF ▲3.51% per 1% HP lost' is HP-state-dependent. The v1 boss deals no damage, so HP loss is 0 and the true in-sim value is 0%. Authored at 17.55% (a nominal 5%-HP-lost stand-in) purely for kit completeness; defPct is inert in v1 so this moves no damage either way. Do NOT read 17.55 as a measured magnitude.",
+    "⚑ S1 line 2 trigger: 'landing 5 normal attack(s) while weapon is changed' encoded as hitCount:5 + swapGate:'swapped'. The swap is burst-only (10s), so the rider only fires inside the burst window — its total contribution is entirely governed by the ⚑ swap shot economy below.",
+    "⚑ Burst weapon-swap shot economy is kit-silent: no pullsPerSec, no maxAmmo, no maxShots authored, so the engine reuses the base AR cadence with unlimitedAmmo for the 10s window. This is the optimistic default per the priors and is the single largest unmeasured lever in this override.",
+    "⚑ S1 line 3 'Fervor: Cooldown of Burst Skill ▼20 sec continuously' — 'when Raptures appear' = battle start; encoded as a one-shot 20s CDR. Whether the engine should instead model Fervor as a persistent CD-reduction state (and whether it re-applies) is unresolved.",
+    "⚑ Fervor STATUS GATE NOT MODELED: S2's team-wide 7.48s CDR is kit-gated on 'while in Fervor status'. Fervor is granted by S1 at battle start with no stated expiry, so the gate is treated as permanently satisfied and the block fires on EVERY Full Burst. If Fervor is actually consumed or windowed, this OVER-CREDITS team burst-CDR for the whole fight — highest-leverage line to verify.",
+    "The S2 taunt block is authored with an empty effects array to keep the lastBullet trigger auditable; taunt/aggro has no engine primitive.",
+    "Burst 'ATK ▲42.57% of the skill user's ATK' → casterAtkPct (flat add from Moran's own ATK), not atkPct. Moran is a Defender with no ATK-scaling identity, so this is a real but modest team buff.",
+    "'Damage Taken ▼35.14%' is a DEFENSIVE ally buff (incoming damage), NOT the offensive damageTakenPct boss debuff — deliberately unmodeled, not mapped to damageTakenPct."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Moran is an AR/Electric/Defender/Burst I taunt-tank whose offensive footprint is almost entirely (a) the team ATK/burst-CDR support in her burst and S2, and (b) a 10s weapon-swap window at 14.7%/shot carrying a 47.18% every-5-hits rider. Her S1 DEF scaler and the entire Perseverance/taunt/lifesteal/damage-taken-down half of the kit are survivability-only and inert against the v1 immortal-boss scope. The two load-bearing unknowns are the swap shot economy and whether Fervor status persists all fight."
+}

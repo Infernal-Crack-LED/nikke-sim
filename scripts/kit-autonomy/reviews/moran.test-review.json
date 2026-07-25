@@ -1,0 +1,228 @@
+{
+  "slug": "moran",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▲ 3.51% ... every 1% of HP lost",
+      "disposition": "UNMODELED",
+      "scope": "generic self DEF, scaled by own HP lost",
+      "durationSemantics": "continuously (permanent while HP deficit exists); value is dynamic per 1% HP lost, not a fixed 3.51%",
+      "triggerIdentity": "passive (start of battle)",
+      "targetSet": "self",
+      "nearestWrongModel": "flat always-on defPct 3.51 (or worse, 3.51×100 assuming full HP loss) as a permanent self buff",
+      "distinguishingAssertion": "no defPct buffApply with nonzero damage consequence; totals(res) identical with the line present vs stripped — v1 boss deals no damage so HP lost is 0 and the correct contribution is exactly 0",
+      "inertness": "must move zero damage for every unit; defPct is engine-inert anyway",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 47.18% ... 5 normal attack(s) while weapon is changed",
+      "disposition": "FAITHFUL",
+      "scope": "normal attacks only, and ONLY those fired while her burst weaponSwap is live",
+      "durationSemantics": "instant hit per proc, no duration",
+      "triggerIdentity": "hitCount count:5 (counts ROUNDS; AR hitsPerShot 1) with swapGate:'swapped' — the counter must accrue swapped hits only",
+      "targetSet": "enemy (flatDamage 47.18% of final ATK; rider takes FB by landing timing, default noFb OFF; noRange forced)",
+      "nearestWrongModel": "ungated hitCount:5 running the whole fight on her base AR — 60-ammo AR firing continuously turns a ~2-procs-per-burst-window rider into a fight-long every-5-shots engine, a massive over-credit; secondary misread: counter accrues unswapped hits so pre-accumulated count procs instantly at swap start",
+      "distinguishingAssertion": "every skill1 flatDamage event (mult 47.18) has srcSlot=moran and a timestamp inside a [burstCast, +10s] swap window; count of such events per window == floor(swappedShotsInWindow/5); ZERO such events before her first burstCast",
+      "inertness": "zero procs outside swap windows; zero procs if her burst never casts",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Fervor: Cooldown of Burst Skill ▼ 20 sec continuously",
+      "disposition": "FIX",
+      "scope": "own burst cooldown only (40s base → 20s effective) + opens the named 'Fervor' status that gates skill2 block 3",
+      "durationSemantics": "continuously — a standing CD reduction on every cooldown cycle, not a one-shot CDR",
+      "triggerIdentity": "'when Raptures appear' — in the solo-boss sim the rapture is present at t=0, so this is a battle-start passive; it is NOT an unreachable spawn event",
+      "targetSet": "self",
+      "nearestWrongModel": "trigger kind 'unsupported' / never-fires (no rapture-spawn events in the engine) — which silently kills Fervor and therefore also deadens skill2's team-wide 7.48s CDR block; secondary misread: one-time burstCdr 20 affecting only the first cooldown",
+      "distinguishingAssertion": "gap between moran's 1st and 2nd burstCast events ≈ 20s-minus-ally-CDR, never ~40s; AND skill2's Fervor-gated block observably fires (see skill2 line 3) — RED if the trigger is modeled as a dead spawn event",
+      "inertness": "must not touch any other unit's cooldown",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Taunts for 4 sec (final bullet, 3 highest-ATK)",
+      "disposition": "UNMODELED",
+      "scope": "enemy-side aggro control",
+      "durationSemantics": "4 sec",
+      "triggerIdentity": "lastBullet (per 60-round magazine; unlimited-ammo swap shots never reach last bullet, so this pauses during her burst window)",
+      "targetSet": "enemy units (no enemy-unit entities exist in the v1 sim; the target set is unrepresentable)",
+      "nearestWrongModel": "inventing any damage/debuff carrier for the taunt",
+      "distinguishingAssertion": "no buffApply and no damage event attributable to this line; board totals unchanged when it is stripped",
+      "inertness": "fully inert — must move nothing",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "HP falls below 20% ... Max HP ▲ 91/69.84/51.09%, 3 sec",
+      "disposition": "UNMODELED",
+      "scope": "self Max HP, tiered by use count (Perseverance: one effect per activation, each tier once per battle)",
+      "durationSemantics": "3 sec per proc; NOT permanent; escalating-style tier selection by activation index",
+      "triggerIdentity": "own-HP-threshold trigger — unreachable in v1 (boss deals no damage, HP never falls below 20%)",
+      "targetSet": "self",
+      "nearestWrongModel": "encoding as a passive/battle-start maxHpFlat grant (always-on 91%) — over-credits any future HP-scaling consumer and pollutes the event log now",
+      "distinguishingAssertion": "zero maxHpFlat buffApply events sourced from moran skill2 across the whole run",
+      "inertness": "must emit nothing; even if fired, self Max HP feeds no ATK conversion on moran (she has no atkOfMaxHpPct)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "entering Full Burst while in Fervor ... CD ▼ 7.48 sec",
+      "disposition": "FAITHFUL",
+      "scope": "burst cooldown of every ally, applied at each Full Burst entry",
+      "durationSemantics": "instant CDR per activation, repeats EVERY Full Burst (no oncePerBattle)",
+      "triggerIdentity": "fullBurstEnter (any team FB — text says 'entering Full Burst', NOT her own cast) + a requires-Fervor gate; Fervor is continuously on from t=0 via skill1 line 3, so the gate is satisfied at every FB in the boss sim but must still be authored (name-keyed) so the coupling to skill1 is explicit",
+      "targetSet": "allies, all including self",
+      "nearestWrongModel": "burstCdr applied oncePerBattle, or keyed to burstCast (her own cast — under-fires whenever she is on CD for a rotation), or dead-on-arrival because 'when Raptures appear' was modeled as a never-firing trigger so Fervor never exists",
+      "distinguishingAssertion": "the effect activates on EVERY fullBurstStart event, not just the first; with the block patched out via withPatchedOverride, the fight's fullBurstStart count strictly drops (rotation decelerates) — RED under oncePerBattle (identical FB count after rotation 2) and RED under dead-Fervor",
+      "inertness": "no CDR outside FB entries; no effect on non-cooldown stats",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes the weapon: 14.7% ... Duration: 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "self weapon override; swap shots replace her base AR shots (base mult 14.71 → swap 14.7, near-identical per-shot)",
+      "durationSemantics": "hard 10 sec time bound (durationSec:10, NO maxShots — kit states duration only)",
+      "triggerIdentity": "burstCast (her own Burst I cast; a burst-block self mode is never fullBurstEnter)",
+      "targetSet": "self",
+      "nearestWrongModel": "modeling the swap as a normalAttackPct buff on the base weapon (loses the swap-state that gates skill1's 5-hit rider and skill2's whileSwapped semantics), or ending it on a shot count; ⚑ the swap's own fire cadence (pullsPerSec) is kit-silent — a silent unflagged cadence guess is itself a failure",
+      "distinguishingAssertion": "shot events inside [burstCast, +10s] carry the swap multiplier and the swapGate:'swapped' skill1 block is live exactly in that window; the swap terminates at +10s wall-clock regardless of shots fired",
+      "inertness": "no swap shots outside the window; skill1's rider dead outside it",
+      "evidenceTier": "DATAMINED (14.7/10s); CALIBRATED ⚑ (swap cadence)",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 36.14% of attack damage as HP for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "self lifesteal during the swap window",
+      "durationSemantics": "10 sec window, continuous recovery",
+      "triggerIdentity": "burstCast; encode as heal to self with ticks (e.g. ticks:10, intervalSec:1) so recovery events exist on the log",
+      "targetSet": "self — the recovery events land on MORAN, so only HER 'recovery' triggers could consume them (she has none); this does NOT fire a teammate's on-recovery kit (e.g. crown in the control comp), because recovery triggers fire on the heal RECEIVER",
+      "nearestWrongModel": "skipping the heal entirely as 'defensive' (taxonomy #4: heal lines are never silently dropped — they are tandem fuel), or conversely targeting the heal at allies and spuriously firing crown-style on-recovery kits team-wide",
+      "distinguishingAssertion": "heal/recovery events during the window have targetSlug=moran only; crown's recovery-triggered blocks show zero activations attributable to moran's burst",
+      "inertness": "zero damage delta in the control comp; no ally recovery events",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attract: Taunts all enemies for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "enemy aggro",
+      "durationSemantics": "10 sec",
+      "triggerIdentity": "burstCast",
+      "targetSet": "all enemies (unrepresentable; boss takes no modeled aggro)",
+      "nearestWrongModel": "any damage-adjacent encoding",
+      "distinguishingAssertion": "totals unchanged with the line stripped",
+      "inertness": "fully inert",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Unlimited ammunition for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "self ammo economy during the swap window",
+      "durationSemantics": "10 sec",
+      "triggerIdentity": "burstCast; effect kind unlimitedAmmo durationSec:10",
+      "targetSet": "self",
+      "nearestWrongModel": "dropping it as QoL — a weapon-state line IS damage (taxonomy #6): without it a 60-round magazine at AR cadence empties mid-window and a 111-frame reload eats swap uptime; it also suppresses lastBullet triggers (skill2 taunt) inside the window since infinite-ammo shots don't consume",
+      "distinguishingAssertion": "zero reload events for moran inside any [burstCast, +10s] window; with the effect stripped, at least one in-window reload appears whenever the magazine would empty",
+      "inertness": "no ammo effect outside the window; allies' ammo untouched",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▼ 35.14% for 10 sec (allies)",
+      "disposition": "UNMODELED",
+      "scope": "ALLY-side damage reduction — a defensive mitigation buff on the team",
+      "durationSemantics": "10 sec",
+      "triggerIdentity": "burstCast",
+      "targetSet": "all allies — NOT the enemy",
+      "nearestWrongModel": "THE trap on this kit: sign/target flip into damageTakenPct as a BOSS debuff (+35.14% boss takes more, per the schema comment 'positive = boss takes more') — that would hand the entire team a ×1.35-class multiplier every burst window, an enormous over-credit; the kit arrow is ▼ on ALLIES (they take less), which is offensively inert in a sim where the boss deals no damage",
+      "distinguishingAssertion": "ZERO damageTakenPct buffApply events in the entire run; boss-side damage math identical with the line stripped",
+      "inertness": "must move zero damage for every unit — this is the single most important inertness pin on the kit",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▲ 14.85% of the skill user's DEF for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "caster-DEF-scaled ally DEF grant",
+      "durationSemantics": "10 sec",
+      "triggerIdentity": "burstCast",
+      "targetSet": "all allies",
+      "nearestWrongModel": "shoehorning into defPct (target-scaled, not caster-scaled — no casterDefPct StatKey exists) or, worse, into a casterAtkPct-shaped flat add; either pollutes the log for a stat that is engine-inert",
+      "distinguishingAssertion": "no damage delta from the line; if recorded at all it must not appear as any ATK-family stat",
+      "inertness": "zero damage movement",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 42.57% of the skill user's ATK for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic ATK, caster-scaled ('of the skill user's ATK' — a FLAT add of 42.57% × MORAN's ATK, and moran is a low-ATK Defender)",
+      "durationSemantics": "10 sec per cast, refreshed each burst",
+      "triggerIdentity": "burstCast (in her own burst block; NOT fullBurstEnter — as sole B1 in the control comp the two coincide, so only an off-rotation or dual-B1 fixture separates them; the semantic pin still matters)",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "atkPct 42.57 (scales each TARGET's own ATK) — over-credits every high-ATK carry by the full gap between carry ATK and a Defender's ATK; the classic caster-scaled-vs-target-scaled misread",
+      "distinguishingAssertion": "buffApply events carry stat 'casterAtkPct' with value ≈ 0.4257 × moran.staticAtk (a flat ATK number, identical for every recipient regardless of the recipient's own ATK) — RED under atkPct, where no such flat-resolved value appears and the carry's damage jumps far harder",
+      "inertness": "buff value must not vary with the recipient's ATK",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:5-hits-while-swapped 47.18% flatDamage",
+    "skill1:Fervor continuous Burst CD ▼20s",
+    "skill2:FB-enter-in-Fervor allies Burst CD ▼7.48s",
+    "burst:weaponSwap 14.7% / 10s",
+    "burst:unlimitedAmmo 10s",
+    "burst:allies casterAtkPct 42.57% / 10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "DEF ▲ 3.51% continuously for every 1% of HP lost."
+    ],
+    "skill2": [
+      "Taunts for 4 sec.",
+      "Once: Max HP ▲ 91% for 3 sec. Activates once per battle.",
+      "Twice: Max HP ▲ 69.84% for 3 sec. Activates once per battle.",
+      "Three Times: Max HP ▲ 51.09% for 3 sec. Activates once per battle."
+    ],
+    "burst": [
+      "Attract: Taunts all enemies for 10 sec.",
+      "Damage Taken ▼ 35.14% for 10 sec.",
+      "DEF ▲ 14.85% of the skill user's DEF for 10 sec."
+    ]
+  },
+  "notes": "Expected shared-prior misreads to reconcile against the driver: (1) 'Damage Taken ▼ 35.14%' is an ALLY mitigation buff — if the driver encoded any damageTakenPct boss debuff the model is catastrophically over-credited; assert zero damageTakenPct buffApply events. (2) 'ATK ▲ 42.57% of the skill user's ATK' must be casterAtkPct (flat, off a Defender's low ATK), never atkPct. (3) 'Activates when Raptures appear' must resolve to battle-start-on in the boss sim — an unsupported/dead trigger silently kills Fervor AND the team-wide 7.48s CDR block downstream (a two-line coupling; test them together). (4) The skill2 CDR is per-FB, every FB, all allies — not oncePerBattle, not self-only; its board effect is rotation acceleration, so the cleanest pin is FB-count delta with the block patched out. (5) skill1's 47.18% rider is swap-gated AND its hit counter should accrue swapped hits only — assert first proc lands after exactly 5 in-window shots, not instantly at swap start from a pre-accumulated global counter. (6) ⚑ the swap weapon's fire cadence is kit-silent (ALWAYS-⚑ field 3): the driver must flag pullsPerSec with an estimate + recipe, not ship a silent guess; skill1 rider proc count per window inherits this ⚑. (7) Fervor's −20s makes her effective burst CD ~20s before ally CDR — burstCast event spacing is the observable. Cannot write scripts/kit-autonomy/reviews/moran.test-review.json (no tools in this run); this JSON is the deliverable.",
+  "model": "claude-fable-5",
+  "driverReconciliation": {
+    "driver": "qwen-driver",
+    "reviewer": "claude-fable-5",
+    "verdict": "GO (cross-family corroborated, pre-op)",
+    "convergence": "Load-bearing set IDENTICAL: S1 47.18/5hits rider, Fervor burstCdr20, S2 team burstCdr7.48, weaponSwap14.7/10s, unlimitedAmmo10s, casterAtkPct42.57/10s. Reviewer INDEPENDENTLY derived the F2 fix (rider must be swapGate:swapped, not fbGate:inFb) — the exact primitive the driver flagged (types.ts:332/sim.ts:1684). casterAtkPct-vs-atkPct trap, Fervor dead-trigger trap, and damageTaken boss-debuff trap all named by both.",
+    "reconciled": [
+      "M2 disposition label: driver=FIX (shipped inFb is the gap), reviewer=FAITHFUL (describes the swapGate target). Consistent — S3 lands swapGate:swapped; test assertion RED pre-S3 / GREEN post.",
+      "M8 lifesteal 36.14%: driver=UNMODELED(inert), reviewer=FAITHFUL(encode as self-heal tandem-fuel). RECONCILED on the observable: self-only heal lands on moran, moran has NO on-recovery consumer, and it does NOT reach crown (recovery fires on the receiver), so zero damage delta + zero ally recovery events either way. Driver keeps it omitted (conservative); reviewer inertness assertion (zero damage movement) is satisfied.",
+      "M12 Damage Taken -35.14%: driver=FAITHFUL-inert (shipped encodes ally buff -35.14, kept for fidelity), reviewer=UNMODELED (prefers zero events). RECONCILED: both agree it is offensively inert and the boss-debuff sign/target trap (x1.35 team mult) must be avoided. Driver test pins holders=allies(0,1,2,3) NOT boss + totals byte-identical when stripped — proves the trap is avoided and inertness holds."
+    ],
+    "flags": [
+      "swap cadence (pullsPerSec) kit-silent — ALWAYS-flag. Estimate: base AR 12/s (MEASURED from moran control.mov frame read; the 24/s datamine shot_id 1028102 rate_of_fire 1440 was board-REFUTED 0.712 COLD -> 1.325 HOT). Recipe: isolated moran-solo recording OR datamined shot_count/muzzle_count for swap weapon 1028102 to pin the throughput multiplier behind her 0.66 COLD. Tier: MEASURED-throughput (footage-blocked residual, NOT a per-shot value)."
+    ]
+  }
+}
