@@ -1,0 +1,227 @@
+{
+  "slug": "tove",
+  "leakDetected": null,
+  "override": {
+    "slug": "tove",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 10
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "instantReload",
+            "fraction": 0.0531
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 10
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoFlat",
+            "value": 2,
+            "durationSec": 5,
+            "maxStacks": 3
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 5.24,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 10.08
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesOfWeapon",
+          "weapon": "SG"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackSpeedPct",
+            "value": 42.24
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 6.96,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfWeapon",
+          "weapon": "SG"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 72.63,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Gate 'Only activates when Temporary Modification is at max stacks' modeled as an always-on passive (engine has no 'named buff at max stacks' block gate); both S2 buffs (Crit Rate 10.08% all allies, Attack Speed 42.24% SG allies) credited continuously on the steady-state assumption that Temporary Modification holds at 3 stacks."
+      ],
+      "burst": [
+        "'Mirrors the stack count of Temporary Modification for 15 sec' — the per-stack ATK scaling is baked in as a STATIC ×3 (assumed steady-state max stacks). Engine has no live stack-mirror for casterAtkPct, so an early burst (stacks < 3) is over-credited."
+      ]
+    },
+    "caveats": [
+      "⚑ Temporary Modification steady-state stacks: assumed pinned at 3 (max). It is +2 Max Ammo per stack, refreshed every 10 normal attacks (a ~5s window each) so a Water AR firing continuously should hold max — but the RAMP to 3 and any dry/reload gaps are unmeasured. Every S2 buff and both burst ATK magnitudes depend on this assumption.",
+      "⚑ Burst ATK magnitudes (casterAtkPct 6.96 / 72.63) = kit base (2.32 / 24.21) × 3 stacks. If real stacks during Tove's burst window are < 3, these are too high; scale linearly.",
+      "⚑ hitCount:10 refresh cadence depends on normal-attack fire rate (datamine-unreliable); how tightly Temporary Modification's 5s window is kept alive between refreshes is unverified.",
+      "maxAmmoFlat (+2 ×3 stacks, all allies) is a weapon-state / shot-economy buff — it raises magazine size and thus shots fired for the whole team; treated as damage-relevant, not skipped."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Tove is a pure Water/AR/Burst-I SUPPORTER: no self-damage riders, no weapon swap, no DoT. Core mechanic is the 'Temporary Modification' stack (built every 10 normal attacks via the Emergency-Crafted Bullets reload state) that gates S2's crit-rate/attack-speed auras and scales the burst ATK grant. The 'at max stacks' gates and the burst's stack-mirror are approximated as steady-state ×3 — the single largest source of error in this baseline."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 10 normal attack(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:10 (ROUNDS not pulls; hitsPerShot 1 so 10 shots)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload 5.31% of the magazine",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload fraction 0.0531 (self); weapon-state → affects shots fired"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates during Emergency-Crafted Bullets",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "same hitCount:10 co-fire (the reload state IS the trigger); target allies"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition ▲2, stacks 3, 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoFlat value 2 maxStacks 3 durationSec 5 (all allies; weapon-state, damage-relevant)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Damage ▲5.24% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 5.24 durationSec 5 (all allies)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when Temp Modification at max stacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gate approximated as always-on passive (⚑ no max-stack block gate); see unmodeled/caveats"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate ▲10.08% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "passive buff critRatePct 10.08 (all allies; unscoped/generic per text)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Speed ▲42.24% continuously (SG allies)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "passive buff attackSpeedPct 42.24, target alliesOfWeapon SG"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲2.32% of user ATK, mirrors stacks 15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast buff casterAtkPct 6.96 (=2.32×3) durationSec 15, target allies (⚑ static stack ×3)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲24.21% of user ATK, mirrors stacks 15s (SG)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast buff casterAtkPct 72.63 (=24.21×3) durationSec 15, target alliesOfWeapon SG (⚑ static ×3)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[0].effects[0].value",
+      "estimate": "6.96 (2.32 × 3 stacks)",
+      "reasoning": "Kit grants 2.32% of caster ATK PER Temporary Modification stack (max 3). Engine has no live stack-mirror for casterAtkPct, so magnitude is baked at assumed steady-state max stacks.",
+      "recipe": "Read the live Temporary Modification stack count on Tove's burst frame from footage; multiply 2.32 × observed stacks. If stacks ramp during her burst window, model with rampSec or a lower static value."
+    },
+    {
+      "field": "burst[1].effects[0].value",
+      "estimate": "72.63 (24.21 × 3 stacks)",
+      "reasoning": "SG-ally variant of the same per-stack ATK grant; same steady-state ×3 assumption.",
+      "recipe": "Same as burst[0]: pin observed stack count at Tove's burst and rescale 24.21 × stacks."
+    },
+    {
+      "field": "skill2 (both blocks) — max-stacks gate",
+      "estimate": "always-on passive (as if permanently at 3 stacks)",
+      "reasoning": "Both S2 auras only activate at max Temporary Modification stacks. Temporary Modification is +2 Max Ammo, rebuilt every 10 normal attacks with a 5s life, so a continuously-firing Water AR should hold 3 stacks — but ramp-up and reload gaps are unmodeled, so this over-credits the opening seconds.",
+      "recipe": "From footage, confirm Temporary Modification reaches and holds 3 stacks; measure time-to-max and any windows it drops below 3. If it dips, apply a rampSec / uptime haircut to critRatePct 10.08 and attackSpeedPct 42.24."
+    },
+    {
+      "field": "skill1 hitCount:10 refresh cadence",
+      "estimate": "fires roughly every 10 normal-attack rounds",
+      "reasoning": "The 10-round threshold is kit-stated, but how frequently it fires (and thus how tightly the 5s Temporary Modification / crit-damage windows stay alive) depends on the datamine-unreliable normal-attack fire cadence.",
+      "recipe": "Verify the base AR effective fire rate (60/ceil(60/nominal)) and confirm 10 rounds accrue inside each 5s window to keep the buffs continuous."
+    }
+  ],
+  "model": "claude-opus-4-8"
+}

@@ -1,0 +1,54 @@
+S2d INDEPENDENT VERIFICATION GATE — `tove` (kit-autonomy gauntlet 2026-07-24, driver Qwen)
+=========================================================================================
+
+Gate: run the S2a driver tests (scripts/tests/units/tove.test.ts) against (i) the UNMODIFIED shipped
+override — expect GREEN for every FAITHFUL pin — and (ii) each named nearest-wrong counterfactual
+(withPatchedOverride) — expect RED. A test GREEN under BOTH shipped and counterfactual asserts nothing
+(vacuous) and FAILS this gate.
+
+Command: npx vitest run scripts/tests/units/tove.test.ts
+Result:  Test Files 1 passed (1) · Tests 25 passed (25) · Duration ~0.7s
+
+Fixture: [tove(0,AR B1 Water) / crown(1,MG B2 Iron) / helm(2,SR B3 Water) / noir(3,SG B3 Wind) /
+isabel(4,SG B3 Electric)], boss Fire, focus tove, deterministic (no seed). Tove = sole B1 → 9 burst casts
+over 180s, casts === fullBurstStarts (9 === 9); burstCast frames (180,1380,…) NEVER coincide with
+fullBurstStart frames (262,1462,…) → burstCast vs fullBurstEnter is frame-discriminable. SG allies = [3,4].
+
+MATRIX (load-bearing line → GREEN vs shipped | RED under each named counterfactual)
+----------------------------------------------------------------------------------
+T2 S1 maxAmmoFlat 6 (all allies, passive steady-state)
+   GREEN vs shipped: maxAmmoFlat 6 → targets [0,1,2,3,4], frame 0, no expiry  ✓
+   RED cf stat   (maxAmmoFlat→maxAmmoPct 6):  no maxAmmoFlat 6; maxAmmoPct 6 appears  ✓
+   RED cf scope  (allies→alliesOfWeapon SG):  targets [3,4] only  ✓
+   RED cf dur    (add 5s expiry):             dursOf [300] not [null]  ✓
+T3 S1 critDamagePct 5.24 (all allies, passive steady-state)
+   GREEN vs shipped: critDamagePct 5.24 → [0,1,2,3,4], frame 0, no expiry  ✓
+   RED cf scope  (allies→SG):  targets [3,4]  ✓
+   RED cf dur    (5s expiry):  dursOf [300]  ✓
+T4 S2 critRatePct 10.08 (all allies, max-stack gate → passive steady-state)
+   GREEN vs shipped: critRatePct 10.08 → [0,1,2,3,4], frame 0, no expiry  ✓
+   RED cf scope  (allies→SG):  targets [3,4]  ✓
+T5 S2 attackSpeedPct 42.24 (SG allies, max-stack gate → passive steady-state)
+   GREEN vs shipped: attackSpeedPct 42.24 → [3,4] only, frame 0, no expiry  ✓
+   RED cf scope  (alliesOfWeapon SG→allies):  targets [0,1,2,3,4]  ✓
+T6 Burst casterAtkPct 6.96 (2.32×3, all allies, burstCast, 15s)
+   GREEN vs shipped: key :6.96 → [0,1,2,3,4], 9 casts×5 = 45 events, 15s (900f), cast frames, caster-keyed flat  ✓
+   RED cf trigger (burstCast→fullBurstEnter):  applies on FB-start frames, never on cast frames  ✓
+   RED cf scope   (allies→SG):                 targets [3,4]  ✓
+   RED cf stat    (casterAtkPct→atkPct):       no casterAtkPct :6.96; atkPct 6.96 (percentage) appears  ✓
+   RED cf dur     (15s→10s stale datamine):    dursOf [600]  ✓
+   RED cf mirror  (6.96→2.32 un-mirrored):     no :6.96; :2.32 appears  ✓
+T7 Burst casterAtkPct 72.63 (24.21×3, SG allies, burstCast, 15s; co-stacks with T6 → SG total 79.59%)
+   GREEN vs shipped: key :72.63 → [3,4], 9 casts×2 = 18 events, 15s; SG ally noir carries BOTH :6.96 and :72.63  ✓
+   RED cf scope   (alliesOfWeapon SG→allies):  targets [0,1,2,3,4]  ✓
+   RED cf stat    (casterAtkPct→atkPct):       no casterAtkPct :72.63; atkPct 72.63 appears  ✓
+T1 S1 self-reload (Reload 5.31% of magazine, self) — UNMODELED (no engine primitive)
+   ABSENCE-PIN: skill1 emits EXACTLY {critDamagePct, maxAmmoFlat} families, no reload/ammo-refill effect  ✓
+   ABSENCE-PIN: zero skill1-sourced damage  ✓
+
+VERDICT: GATE PASSES. Every load-bearing FAITHFUL pin is GREEN vs the shipped override AND RED under each
+named nearest-wrong counterfactual — no test is green-under-both (none vacuous). The UNMODELED S1 self-reload
+is absence-pinned within an active slot (skill1 fires its two modeled families), distinguishing a documented
+skip from a silent drop. Fire-rate "modeled≠working" check: each FAITHFUL burst block fires at the prose-implied
+cadence (T6 = 9 casts × 5 targets = 45; T7 = 9 casts × 2 SG targets = 18); the passive S1/S2 blocks fire at
+frame 0 and persist (steady-state max-stack).

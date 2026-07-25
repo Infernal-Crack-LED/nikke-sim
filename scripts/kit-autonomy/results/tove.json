@@ -1,0 +1,116 @@
+{
+  "slug": "tove",
+  "kitDescription": "Tove is a Water AR Supporter (Burst I, cd 20s) whose entire kit revolves around her 'Temporary Modification' stack (max 3), built by the Emergency-Crafted Bullets reload state every 10 normal attacks and — at ~12 shots/s — refreshed far inside its 5s window, so it sits pinned at 3 stacks for essentially the whole 180s fight. At max stacks she grants the whole team +2×3 = 6 flat max ammo (larger magazines → more shots/reload), +5.24% crit damage and +10.08% crit rate, and gives shotgun-wielding allies +42.24% attack speed. Her burst grants all allies flat ATK equal to a % of HER ATK scaled by stacks (2.32×3 = 6.96% of caster ATK) and grants shotgun allies an additional 24.21×3 = 72.63% caster ATK — an SG ally is hit by both lines and nets 79.59% of Tove's ATK. She is a pure SG-team enabler; her personal damage is irrelevant and only the self 5%-reload QoL proc is unmodeled.",
+  "convergence": {
+    "s2b_fable_preop": {
+      "model": "claude-fable-5",
+      "leakDetected": null,
+      "result": "Full structural convergence: all 7 lines FAITHFUL, correct casterAtkPct/maxAmmoFlat/alliesOfWeapon-SG/burstCast reads, and fable pre-flagged all four shared-prior traps (SG double-dip, ungated t=0 gate, fullBurstEnter, maxAmmoPct). Two divergences vs the shipped override, both resolved for the driver: (1) fable leaned the burst SG line to SUPERSEDE (72.63) — its own flagged trap that it then fell into; §2 + probe-confirmation + kit-status.json establish additive co-stack (79.59) as correct, so fable's supersede is the RECON_ERROR, not the driver's. (2) fable named an instantReload nearest-wrong for the self-reload — a primitive absent from v1, so the driver's UNMODELED skip is the faithful choice."
+    },
+    "s5_blind_tests": {
+      "model": "claude-opus-4-8",
+      "leakDetected": null,
+      "specConvergence": "Fixture-independent blind SPEC table converges fully with the driver: same stats/scopes/triggers/durations, both burst lines flagged as the highest-value untested GAP (Burst-I fixture cannot make Tove cast + has no SG ally), and the same ⚑ set (max-stacks gate, ×3 mirror, cadence).",
+      "testRun": "5 failed / 1 passed / 6 skipped — all 5 failures are DOCUMENTED BLIND HARNESS ARTIFACTS, not override divergences: (a) the patch helpers iterate `o.blocks` but the override shape is {skill1:[],skill2:[],burst:[]}, so every counterfactual is a silent NO-OP (patched run == base → 'expected N > N'); (b) nUnit reads `u.total ?? u.damage` but the harness row exposes `totalDamage`, so othersDamage is always 0 ('expected 0 > 0'). The 1 pass ('no boss debuff') is independent of both bugs. Convergence is mechanical: the driver's own T1–T7 (25/25 GREEN, §8 non-vacuous) verify every load-bearing line the blind harness could not reach."
+    },
+    "s6_blind_override": {
+      "model": "claude-opus-4-8",
+      "leakDetected": null,
+      "result": "Independent blind override reproduces the driver byte-for-behavior on the six modeled lines: maxAmmoFlat 6 all-allies, critDamagePct 5.24 all-allies (NOT stacked ×3), critRatePct 10.08 all-allies passive, attackSpeedPct 42.24 alliesOfWeapon-SG passive, casterAtkPct 6.96 all-allies burstCast, and — critically — casterAtkPct 72.63 as a SECOND alliesOfWeapon-SG block co-stacking additively (S6 landed the driver's two-block 79.59, refuting fable's supersede). One divergence: S6 encoded the self-reload as instantReload 0.0531, a primitive that does not exist in v1 (EffectDef has no instantReload/refillAmmo), so it would not validate/execute — the driver's UNMODELED is correct; S6 also independently modeled the max-stacks gate as an always-on passive with the same steady-state rationale and the same ⚑."
+    },
+    "overall": "CONVERGENT — two cross-family blind re-derivations reproduce all six modeled lines including the additive SG co-stack; the only cross-family divergences (supersede vs co-stack, instantReload vs UNMODELED) both resolve in the driver's favor."
+  },
+  "lineFindings": [
+    {
+      "slot": "skill1",
+      "kitLine": "self: Reload 5.31% of the magazine",
+      "disposition": "UNMODELED",
+      "classification": "DOCUMENTED_GAP",
+      "tier": "DATAMINED",
+      "note": "No instantReload/refillAmmo primitive in v1 (EffectDef = buff/resource/flatDamage/dot/weaponSwap/fillGauge/heal/shield/targetStatus/storedHit). Self-only, negligible on a Supporter; recorded verbatim in unmodeled.skill1. Both blind agents attempted a nonexistent instantReload — driver's skip is the faithful choice. Absence-pinned by T1 within an active slot."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammo +2 x3 = maxAmmoFlat 6, all allies",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "COMMUNITY",
+      "note": "maxAmmoFlat (FLAT rounds, theme-14 live path), value 6 = 2×3 steady-state, all 5 allies, frame 0, no expiry. Video-confirmed +6 on all allies (tove 60→66, nayuta 120→126, SG allies 9→15). maxAmmoPct would be a ~30× error on a 9-round SG magazine. T2 discriminates stat/scope/duration."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Damage +5.24%, all allies",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "critDamagePct 5.24 (NOT ×3 — the line carries no stack clause; fable's flagged 15.72 nearest-wrong avoided), all 5 allies, frame 0, no expiry. T3 discriminates scope + duration."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Crit Rate +10.08% cont., all allies",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "critRatePct 10.08, all 5 allies, generic/unscoped, passive. Max-stacks gate modeled as always-on (steady-state); refreshed from stale 3.32% datamine to current prose. T4 discriminates scope."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Speed +42.24% cont., SG allies",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "attackSpeedPct 42.24, alliesOfWeapon weapon:SG (noir+isabel = [3,4] only), passive. Avoids the signature scope-collapse (SG line as generic allies). T5 discriminates SG-scope vs all-allies; inert on SG-free comps."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK +2.32%×3 = 6.96% caster, all allies",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "casterAtkPct 6.96 (flat caster-keyed add, NOT atkPct percentage), burstCast (Tove's own B1, frame-discriminated from fullBurstStart ~82f later), all 5 allies, 15s (prose, not stale 10s). Static ×3 mirror = steady-state. T6 discriminates trigger/scope/stat/duration/mirror (5-way)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK +24.21%×3 = 72.63% caster, SG allies",
+      "disposition": "FAITHFUL",
+      "classification": "FAITHFUL",
+      "tier": "DATAMINED",
+      "note": "SECOND casterAtkPct block, value 72.63, alliesOfWeapon SG, 15s — distinct buff-key from the 6.96 line so it co-stacks ADDITIVELY (probe-confirmed: SG allies carry both :6.96 and :72.63) → 79.59% total, matching kit-status.json. This is the dominant trap; driver + S6 both land co-stack, fable's supersede is the RECON_ERROR. T7 discriminates scope + stat + pins the co-stack."
+    }
+  ],
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1",
+      "summary": "Self 5.31%/10-normals reload is UNMODELED — no instantReload/refillAmmo primitive in v1",
+      "evidence": "EffectDef kinds are buff/resource/flatDamage/dot/weaponSwap/fillGauge/heal/shield/targetStatus/storedHit; both fable and S6 attempted instantReload, which would not validate/execute. Recorded verbatim in unmodeled.skill1; absence-pinned by T1.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Leave UNMODELED until an engine ammo-refill primitive exists; self-only + negligible for a Supporter. If ever added: instantReload fraction 0.0531 on hitCount:10 self. Needs no board action."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "'At max stacks' gate modeled as an always-on frame-0 passive (no buff-stack gate primitive)",
+      "evidence": "v1 has no 'named-buff-at-max-stacks' block gate; the ~2.5s opening ramp to 3 stacks (~1.4% of a 180s fight) is credited as if maxed from t=0. Affects critRatePct 10.08 + attackSpeedPct 42.24. rampSec exists but is an unmeasured per-unit ⚑.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement: confirm from a focused Tove video that Temporary Modification reaches and holds 3 stacks continuously; if it dips or the ramp is material, apply rampSec≈2.5 haircut. Do NOT alter magnitudes to fit the board."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Burst 'mirrors the stack count' baked as a static ×3 (no live stack-mirror for casterAtkPct)",
+      "evidence": "casterAtkPct 6.96 / 72.63 = base ×3 snapshotted at cast; an early burst before the ~2.5s ramp (stacks<3) would be over-credited, and the grant does not re-track if stacks drop mid-window (moot at sustained max stacks; matters only if Tove is stunned/stalled).",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Needs measurement: read the live Temporary Modification stack count on Tove's burst frame from footage and rescale base × observed stacks. Faithful for a 180s fight; owner spot-check item, not a fudge."
+    }
+  ],
+  "discriminationOk": true,
+  "discriminationNote": "§8 matrix: all 25 driver tests GREEN vs the shipped override AND RED under every named nearest-wrong counterfactual (stat maxAmmoPct, scope SG↔allies, 5s expiry, fullBurstEnter trigger, atkPct, 10s stale duration, un-mirrored 2.32) — no test is green-under-both, so none is vacuous. The two burst blocks fire at the prose-implied cadence (T6 = 9 casts × 5 targets = 45 events; T7 = 9 casts × 2 SG targets = 18); the S1/S2 passives apply at frame 0 and persist (steady-state max-stack). Trigger identity is frame-discriminated (burstCast 180/1380… strictly precedes fullBurstStart 262/1462…), so casts===fbs does not make it vacuous. Fire-rate 'modeled≠working' check passes on all FAITHFUL blocks.",
+  "faithfulnessScore": 0.95,
+  "verdict": "GO",
+  "verdictRationale": "All 7 kit lines are FAITHFUL or DOCUMENTED_GAP: the six modeled lines carry correct stat/scope/trigger/duration and pass a fully non-vacuous discrimination matrix, and the one gap (self-reload) is an engine-primitive limitation the driver documented verbatim. No SILENT_DROP, ENCODING, or RECON_ERROR survives grading. The three real gotchas are all low-severity, engine-forced, and documented: the unmodeled self-reload (no ammo-refill primitive), the max-stacks gate approximated as an always-on passive (no buff-stack gate; ~1.4% ramp), and the static ×3 burst mirror (no live stack-mirror) — none is a fudged number and each has a measurement recipe. The two cross-family blind re-derivations converge: S6 independently reproduced the additive SG co-stack (79.59), confirming the driver over fable's own flagged-then-adopted supersede reading (the RECON_ERROR), and both blind agents' only structural divergence (instantReload for the self-reload) resolves in the driver's favor because that primitive does not exist in v1. The S5 blind test's 5 failures are all self-diagnosed harness artifacts (o.blocks patch-shape no-op + u.total row misread), not override divergences. Same-model residual the owner should spot-check: confirm from focused Tove footage that Temporary Modification actually holds at 3 stacks continuously (validates the steady-state gate) and read the live stack count on her burst frame (validates the ×3 mirror); both are CALIBRATED ⚑ approximations, not measured. Ranked most-material: (1) burst ×3 mirror / max-stacks steady-state — governs the biggest line (72.63% caster ATK) and the whole S2 aura; (2) unmodeled self-reload — negligible. GO.",
+  "model": "claude-opus-4-8"
+}

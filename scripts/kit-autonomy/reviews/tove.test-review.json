@@ -1,0 +1,120 @@
+{
+  "slug": "tove",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "After 10 normal attacks: Reload 5.31%",
+      "disposition": "FAITHFUL",
+      "scope": "normal attacks only feed the counter (AR rounds, 1/pull); the reload is a partial magazine refill, not a speed buff",
+      "durationSemantics": "instantaneous proc, no duration",
+      "triggerIdentity": "hitCount count:10 (counts ROUNDS, not seconds); recurring every 10 rounds for the whole fight",
+      "targetSet": "self only",
+      "nearestWrongModel": "instantReload with default fraction (full refill) — 60 rounds back every 10 shots means Tove NEVER hits lastBullet/reload again; or misread as a reloadSpeedPct buff; or shotFired trigger",
+      "distinguishingAssertion": "Tove still emits natural reload events; rounds-fired-per-magazine-cycle ≈ 60/(1-0.0531×6? no —) net drain is 10−(0.0531×maxAmmo≈3.5)/10-round block → cycle length ≈ 88–97 rounds (with the +6 stack ammo), strictly >66 and finite. Full-refill misread → zero reload events; no-proc misread → exactly 66-round cycles",
+      "inertness": "must not touch allies' ammo economy; must not change any damage bucket directly",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▲ 2, x3, 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic weapon-state buff — this IS damage (gates shot count / lastBullet frequency), never a 'defensive skip'",
+      "durationSemantics": "durationSec:5 per application, maxStacks:3; stacks sustained because the 10-round proc cadence (~0.8–1s at AR rate) refreshes well inside 5s; only a >5s firing gap drops them",
+      "triggerIdentity": "same hitCount:10 proc — 'during Emergency-Crafted Bullets' = at each proc instant, not a separate state window",
+      "targetSet": "all allies INCLUDING self (Tove's own magazine goes 60→66, which slightly stretches her own proc/reload pacing)",
+      "nearestWrongModel": "maxAmmoPct 2 (percent) instead of maxAmmoFlat 2 rounds — on a 9-round SG ally that's +0.18 rounds vs +6 rounds, a ~30x scoping error on exactly the allies this kit exists for",
+      "distinguishingAssertion": "at steady state an SG ally's effective max ammo = base+6 exactly (e.g. 9→15), and a reload-to-full refills base+6 rounds; percent misread gives base×1.06 (no integer +6 step)",
+      "inertness": "stack count 3 is the cap — a 4th proc must refresh, never grow the buff",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Damage ▲ 5.24% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic crit damage (no 'of normal attacks' scoping in the prose)",
+      "durationSemantics": "durationSec:5, refresh-on-reproc, NO stack clause — this line does not inherit Temporary Modification's 'stacks up to 3'",
+      "triggerIdentity": "same hitCount:10 proc as the ammo stack line",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "letting the crit-damage line stack ×3 alongside the ammo stacks (15.72% instead of 5.24%) because it shares the trigger block",
+      "distinguishingAssertion": "steady-state critDamagePct contribution from this line on any ally is exactly 5.24, with buffApply events refreshing ~every 10 Tove rounds; never a 10.48/15.72 stacked value",
+      "inertness": "must lapse (buffRemove) if Tove stops firing >5s (e.g. stunned)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "At max stacks: Crit Rate ▲ 10.08% cont.",
+      "disposition": "FAITHFUL",
+      "scope": "generic crit rate, all hit categories",
+      "durationSemantics": "'continuously' = active exactly while the gate (Temporary Modification at 3 stacks) holds — not permanent-from-t0, not a 5s buff",
+      "triggerIdentity": "stack-threshold gate on Tove's own S1 buff state; no schema primitive gates on another buff's stack count, so the driver must synthesize (resource-pool mirror, rampSec haircut, or co-triggered 5s buff applied only from the 3rd proc) — behavior, not encoding, is what the test must pin",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "unconditional passive live at t=0 — over-credits the opening ~2.5–3s (3 procs = 30 rounds needed) and survives any firing gap that should drop stacks",
+      "distinguishingAssertion": "no critRatePct 10.08 is in effect before Tove's 30th round (~t<2.5s); it is in effect at t=10s steady state. Ungated misread is GREEN at t=0.5s; faithful is RED there",
+      "inertness": "gate lives on TOVE's stacks — an ally's ammo state must never open/close it",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "SG allies: Attack Speed ▲ 42.24% cont.",
+      "disposition": "FAITHFUL",
+      "scope": "weapon-typed target scope, class-blind; attackSpeedPct (fire cadence), not fireRatePct confusion",
+      "durationSemantics": "continuous-while-gated, same max-stacks gate as the crit-rate line",
+      "triggerIdentity": "same stack-threshold gate",
+      "targetSet": "alliesOfWeapon SG only — Tove herself (AR) is excluded by weapon, not by an excludeSelf flag",
+      "nearestWrongModel": "applying 42.24% attack speed to ALL allies — a massive team-wide shot-count over-credit; this is the kit's signature SG-only line",
+      "distinguishingAssertion": "an SG ally's shots/sec rises ~42% at steady state vs control while a non-SG carry's shot cadence is BIT-IDENTICAL with the line zeroed via withPatchedOverride; on an SG-free comp the whole line must be board-inert",
+      "inertness": "non-SG units' shot timelines unchanged; inert on SG-free comps",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 2.32% of skill user's ATK, x stacks",
+      "disposition": "FAITHFUL",
+      "scope": "flat ATK add derived from CASTER's ATK (casterAtkPct), not a % of each target's own ATK",
+      "durationSemantics": "durationSec:15; magnitude 'mirrors the stack count' — value = 2.32 × current Temporary Modification stacks; stacks are reliably 3 by any realistic burst time (~2.5s ramp vs first burst ≥~4s), so a 3×-at-cast snapshot (6.96) is the faithful steady-state; whether the mirror re-tracks mid-window is a residual ambiguity to note, not silently pick",
+      "triggerIdentity": "burstCast — Tove's OWN B1 cast (20s cd), NOT fullBurstEnter. As a B1 she competes for the slot: in any comp with another B1 (e.g. the control comp's Liter) she may burst on some/no rotations; keying to fullBurstEnter over-credits every rotation",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "atkPct 2.32 (scales each target's own ATK — wrong magnitude on every differently-statted ally) or dropping the ×3 mirror (under-credits 3x); or fullBurstEnter trigger firing on rotations Tove never burst",
+      "distinguishingAssertion": "post-cast, every non-SG ally carries an identical flat ATK add equal to 3×2.32% of TOVE's ATK (same absolute number across allies regardless of their own ATK); zero applications on a run where Tove casts no burst",
+      "inertness": "no application on Full Bursts Tove did not open with her own cast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "SG allies: ATK ▲ 24.21% of user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "same casterAtkPct flat-add mechanic, SG-scoped tier of the SAME named buff (Miracle of Makeshifts)",
+      "durationSemantics": "durationSec:15, mirrors stacks (3× = 72.63% of Tove's ATK at cap — the kit's biggest line)",
+      "triggerIdentity": "burstCast, same cast as the 2.32% line",
+      "targetSet": "alliesOfWeapon SG",
+      "nearestWrongModel": "SG allies DOUBLE-DIP both same-named tiers (2.32+24.21 per stack = 79.59% at cap) instead of the SG tier superseding the generic one — same buff name from one cast should resolve to one value per target; this is the likeliest shared-prior misread on the whole kit",
+      "distinguishingAssertion": "an SG ally's flat ATK add from this burst equals exactly 3×24.21% of Tove's ATK (not 3×26.53%); a non-SG ally's equals exactly 3×2.32%; zero on SG-free targets beyond the generic tier",
+      "inertness": "must not leak the 24.21 tier onto non-SG allies; whole line board-inert on SG-free comps",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:hitCount10-partial-reload",
+    "skill1:maxAmmoFlat2-x3-5s",
+    "skill1:critDamage5.24-5s",
+    "skill2:critRate10.08-maxStackGate",
+    "skill2:attackSpeed42.24-SG-maxStackGate",
+    "burst:casterAtk2.32xStacks-allies-15s",
+    "burst:casterAtk24.21xStacks-SG-15s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Every line in this kit is offense-relevant (rule 6: the ammo-capacity and partial-reload lines gate shot count) — an empty unmodeled set is expected; any driver 'skip' on the reload/ammo lines is a red flag. The four places I expect a shared-prior misread: (1) burst SG double-dip — both 'Miracle of Makeshifts' tiers summed on SG allies instead of the SG tier superseding; (2) skill2 encoded as an ungated t=0 passive, hiding the ~30-round (~2.5–3s) stack ramp and the stall-lapse behavior; (3) burst keyed to fullBurstEnter instead of burstCast — Tove is a B1 who competes with Liter in the control comp, so fullBurstEnter silently over-fires on rotations she never cast; (4) maxAmmoPct-vs-maxAmmoFlat on the ▲2 line (a ~30x error on a 9-round SG magazine). Encoding freedom the driver legitimately has: the max-stacks gate has no direct schema primitive (buff-stack gates don't exist; resourceGate needs a mirrored resource pool), and the burst's stack-mirror is fairly snapshotted at 3× given the ramp completes long before any burst — tests should pin BEHAVIOR (activation timing, magnitudes, target sets), not the primitive chosen. Residual ambiguity to reconcile with the driver: whether the 15s burst buff live-tracks stack count mid-window (practically moot at sustained max stacks, but it matters if Tove is stunned/stalled mid-window). Cadence caveat: my ~2.5s ramp estimate assumes the AR frame-quantized pull rate (⚑ datamine-unreliable field); assertions should be written in ROUNDS-fired terms (30th round), not wall-clock, to stay cadence-robust.",
+  "model": "claude-fable-5"
+}

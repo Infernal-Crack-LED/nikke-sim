@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 18,
+      "unit-tested": 19,
       "authored": 22,
-      "audited": 32,
+      "audited": 31,
       "reconciled": 4,
       "pending": 1
     },
@@ -3706,22 +3706,27 @@
       "weapon": "AR",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-24",
         "findings": [
-          "FULL RECONCILIATION (owner-queued): 6 of 7 lines discrepant. S2 crit-rate STALE 3.32->10.08 (3x under); S2 SG attack-speed 42.24% MISSING (alliesOfWeapon SG); burst SG 24.21% MISSING (SG allies should get 2.32+24.21 = 79.59% caster ATK); burst duration STALE 10->15s; S1 reload 5.31% + Max-Ammo+2 skipped (hard rule 1). Backfilled"
+          "kit-autonomy gauntlet 2026-07-24: GO, faithfulness 0.95 (judge claude-opus-4-8). Artifacts: scripts/kit-autonomy/results/tove.json + scripts/kit-autonomy/manual-review/tove.md.",
+          "low ENGINE (skill1): Self 5.31%/10-normals reload is UNMODELED — no instantReload/refillAmmo primitive in v1",
+          "low FIDELITY (skill2): 'At max stacks' gate modeled as an always-on frame-0 passive (no buff-stack gate primitive)",
+          "low FIDELITY (burst): Burst 'mirrors the stack count' baked as a static ×3 (no live stack-mirror for casterAtkPct)"
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — bare override, never validated",
+      "evidence": "Pure model — bare override, never validated | kit-autonomy gauntlet 2026-07-24; GO faithfulness 0.95; provenance: cross-family S2b(fable)/S5/S6/S7(opus) converged on all six modeled lines incl. the additive SG burst co-stack 79.59",
+      "date": "2026-07-24",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "owner spot-check: confirm Temporary Modification holds at 3 stacks continuously + read live stack count on burst frame for the x3 mirror (steady-state CALIBRATED flags); S1 trigger cadence prose(10 attacks)-vs-datamine(2%); unmodeled self 5.31% reload (no engine primitive). See scripts/kit-autonomy/manual-review/tove.md",
       "unmodeled": {
         "skill1": [
           "■ Activates after 10 normal attack(s). Affects self. Emergency-Crafted Bullets: Reload 5.31% of the magazine."
