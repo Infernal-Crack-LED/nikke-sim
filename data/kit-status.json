@@ -1974,11 +1974,11 @@
       "weapon": "SMG",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
         "findings": [
-          "TDD step-3 spec test LANDED 2026-07-23 (scripts/tests/units/liter.test.ts, 11 assertions across her 4 kit lines). NO fix enacted -- the owner-driven line-by-line review found the shipped model faithful on all four lines, so these are regression PINS. L1 (the team burst-CDR ladder) is pinned END-TO-END per owner ruling: exact arithmetic on the fight's one cooldown-bound interval (baseCD - tier1 2.34s) plus dose-response against three counterfactual ladders (no CDR / flat 2.34 / flat 3.17 non-cumulative / flat 8.21 saturated). This is the high-blast-radius line: it sets the WHOLE team's rotation and nothing else gates it. L3 pins the 2026-07-21 cover-HP ruling by proving no recovery consumer fires with liter as the only possible source. HER 1.208 HOT IS NOT A KIT-ENCODING ERROR: her kit has zero self-damage lines, so her own damage is pure SMG weapon fire. SMG is the only weapon class with a board mean above 1.0 (1.058; chisato 1.15 / quency-escape-queen 1.17 / little-mermaid 1.04 / nayuta 0.86) -- corroborates the existing SMG geometry/cadence threads. Batch-and-stop: surfaced to the owner, nothing enacted."
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/liter.json + scripts/kit-autonomy/manual-review/liter.md."
         ]
       },
       "tier": "MODEL_ONLY",
@@ -2000,7 +2000,10 @@
         "skill2: NO-OP in the sim (owner ruling 2026-07-21) — cover-HP restore is not a unit heal and must not fire recovery consumers (e.g. Crown). Previously modeled as a heal→allies, which over-inflated the whole team via Crown's recovery buff.",
         "burst: team buffs are short (5 sec) by kit text — low uptime on a ~20 sec cycle is faithful, not a modeling gap"
       ],
-      "board": null
+      "board": null,
+      "date": "2026-07-26",
+      "evidence": "kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; all lines FAITHFUL (both S1 escalating ladders + burst ATK 66) or DOCUMENTED_GAP (skill2 cover-HP NO-OP owner ruling 2026-07-21)",
+      "residual": "spot-check: (a) engine escalating cap min(N,3) — correct, kit prints exactly 3 tiers; (b) burstCast-vs-fullBurstEnter keying for S1-B is count-degenerate in single-B1 comps (held by structural + per-cast-frame assertions; a two-B1 fixture would be sharper); (c) cover-HP-does-not-fire-recovery ruling is measurement-gated, regression pin in place"
     },
     "little-mermaid": {
       "name": "Little Mermaid",
