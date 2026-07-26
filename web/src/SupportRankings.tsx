@@ -37,10 +37,10 @@ const fmt = (n: number) =>
         : n.toFixed(0);
 
 const BOARDS: { id: BoardId; label: string; title: string }[] = [
-  { id: 'burstgen', label: 'Burst Gen', title: 'Burst Generation' },
-  { id: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
-  { id: 'sustain', label: 'Sustain', title: 'Sustain' },
   { id: 'buffer', label: 'Buffer', title: 'Buffer' },
+  { id: 'burstgen', label: 'Burst Gen', title: 'Burst Generation' },
+  { id: 'sustain', label: 'Sustain', title: 'Sustain' },
+  { id: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
 ];
 
 // Short chip label for a comp-profile variant (tooltip = the artifact's
@@ -108,7 +108,7 @@ function rampText(ramp: number[]): string {
 }
 
 export function SupportRankings() {
-  const [board, setBoard] = useState<BoardId>('burstgen');
+  const [board, setBoard] = useState<BoardId>('buffer');
   const [bufferBoard, setBufferBoard] = useState<BufferBoard>('generic');
   const [arts, setArts] = useState<Partial<Record<BoardId, AnyArtifact>>>({});
   const [err, setErr] = useState<string | null>(null);

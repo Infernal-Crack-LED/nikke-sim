@@ -6854,9 +6854,11 @@ export function App({ user }: { user: AuthUser | null }) {
 
       {/* Global boss options + Apply-to-all loadout: used by the Sim, DPS Test, and
           Overload Calc custom mode. The DPS Chart tab and the Overload matrix mode are
-          self-contained (their own matrix selector defines the boss), and the Charge
-          Speed tab is a pure calculator, so hide this block on those. */}
+          self-contained (their own matrix selector defines the boss), the Support
+          Rankings boards are precomputed (boss settings can't affect them), and the
+          Charge Speed tab is a pure calculator, so hide this block on those. */}
       {tab !== 'dpschart' &&
+        tab !== 'ranks' &&
         tab !== 'charge' &&
         tab !== 'olsim' &&
         tab !== 'doll' &&
