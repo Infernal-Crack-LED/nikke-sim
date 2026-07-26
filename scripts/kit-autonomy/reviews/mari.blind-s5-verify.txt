@@ -1,0 +1,50 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-26[39m
+
+ [31m❯[39m scripts/tests/units/_mari_blind_tmp.test.ts [2m([22m[2m25 tests[22m[2m | [22m[31m1 failed[39m[2m | [22m[33m7 skipped[39m[2m)[22m[32m 14[2mms[22m[39m
+     [32m✓[39m mari fires, deals damage, and the comp reaches Full Burst[32m 1[2mms[22m[39m
+     [32m✓[39m mari is identifiable as a buff caster in the event log[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m GAP: no shield-damage primitive — no StatKey for it and the v1 boss has no shield; belongs verbatim in `unmodeled`, not modeled as a generic damage stat
+     [32m✓[39m is not smuggled in as a generic damage buff at the shield magnitude[32m 0[2mms[22m[39m
+     [32m✓[39m fires (the core-hit trigger is exercised) with mari as the sole caster[32m 0[2mms[22m[39m
+     [32m✓[39m carries the raw kit percentage (a plain percentage stat, never flat-resolved)[32m 3[2mms[22m[39m
+     [32m✓[39m covers every ally, not just self[32m 0[2mms[22m[39m
+     [32m✓[39m is time-bounded, not permanent[32m 2[2mms[22m[39m
+     [32m✓[39m is load-bearing: collapsing the 10s window to 0.5s lowers mari damage[32m 0[2mms[22m[39m
+     [32m✓[39m grants the self ATK buff as the own-ATK stat, self-targeted, time-bounded[32m 2[2mms[22m[39m
+     [32m✓[39m repeats across the fight (a cooldown/interval trigger, not a one-shot passive)[32m 0[2mms[22m[39m
+     [32m✓[39m does not leak the self-branch ATK buff to teammates[32m 0[2mms[22m[39m
+     [32m✓[39m Gain Pierce is live: removing the gainPierce effect lowers mari damage[32m 0[2mms[22m[39m
+     [32m✓[39m Gain Pierce is self-scoped: removing it leaves every teammate byte-identical[32m 0[2mms[22m[39m
+[31m     [31m×[31m the pierce window is bounded, not whole-fight[39m[32m 2[2mms[22m[39m
+     [32m✓[39m emits a caster-scaled ATK grant to every ally[32m 0[2mms[22m[39m
+     [32m✓[39m is FLAT-resolved at apply time, not the raw kit percentage[32m 2[2mms[22m[39m
+     [32m✓[39m resolves to ONE identical flat value across targets, implying a plausible caster ATK[32m 0[2mms[22m[39m
+     [32m✓[39m re-applies over the fight, matching the self branch cadence[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m is live and LINEAR in atkPct (the magnitude is load-bearing)
+     [2m[90m↓[39m[22m resolves OUTSIDE Full Burst — flipping noFb moves nothing
+     [2m[90m↓[39m[22m is enemy-scoped: zeroing it leaves every teammate byte-identical
+     [2m[90m↓[39m[22m applies attackDamagePct at the kit magnitude to every ally
+     [2m[90m↓[39m[22m is time-bounded (10s window), not permanent
+     [2m[90m↓[39m[22m is the Damage-Up stat, not a mis-scoped ATK buff
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/_mari_blind_tmp.test.ts[2m > [22mmari — skill2a: self Gain Pierce 5s + ATK +30.78% 5s[2m > [22mthe pierce window is bounded, not whole-fight
+[31m[1mAssertionError[22m: expected 162307104.7319761 to be greater than 162307104.7319761[39m
+[36m [2m❯[22m scripts/tests/units/_mari_blind_tmp.test.ts:[2m244:49[22m[39m
+    [90m242|[39m     // Nearest-wrong: the top-level hasPierce boolean instead of a 5s …
+    [90m243|[39m     // more damage, i.e. an over-credit. GREEN only if the shipped mod…
+    [90m244|[39m     expect(totals(R_ALWAYS_PIERCE.res)['mari']).toBeGreaterThan(CTRL_T…
+    [90m   |[39m                                                 [31m^[39m
+    [90m245|[39m   })[33m;[39m
+    [90m246|[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m17 passed[39m[22m[2m | [22m[33m7 skipped[39m[90m (25)[39m
+[2m   Start at [22m 10:44:30
+[2m   Duration [22m 452ms[2m (transform 83ms, setup 0ms, import 348ms, tests 14ms, environment 0ms)[22m
+

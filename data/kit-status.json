@@ -2280,10 +2280,12 @@
       "weapon": "SR",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mari.json + scripts/kit-autonomy/manual-review/mari.md."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2297,18 +2299,18 @@
           "Activates when landing a Full Charge attack. Affects all allies.",
           "Damage dealt to Shield ▲ 100.09% for 3 sec."
         ],
-        "skill2": [
-          "Gain Pierce for 5 sec."
-        ],
+        "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill2: trigger is KIT-SILENT — modeled as refresh-on-shot (near-permanent while firing); an unmeasured ⚑ estimate — if the real trigger is burst-gated this over-credits out-of-Full-Burst uptime",
-        "skill2: 'Gain Pierce for 5 sec' modeled as static hasPierce (no timed-pierce primitive); tied to the same ⚑ trigger estimate",
-        "skill1: 'Damage dealt to Shield ▲ 100.09%' unmodeled — the raid boss is partless and never shields",
+        "skill2: trigger is KIT-SILENT — modeled as refresh-on-shot (near-permanent while firing); an unmeasured ⚑ estimate — if the real trigger is a CD interval this over-credits out-of-Full-Burst uptime (cross-family S2b flagged the interval reading)",
+        "skill1: 'Damage dealt to Shield ▲ 100.09%' unmodeled — the raid boss is partless and never shields (out-of-domain ⚑; resurface if a shielded boss enters scope)",
         "cadence: datamined charge/reload tuple + the SR 22-frame bolt-gap default are unmeasured ⚑ estimates (autofire would add ~15–20% shots)"
       ],
-      "board": null
+      "board": null,
+      "date": "2026-07-26",
+      "evidence": "kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on every load-bearing line",
+      "residual": "S2 trigger identity (kit-silent: shotFired vs interval) + pierceDamagePct-live-for-pierce-tagged prior + SR bolt-gap/autofire — one Mari-focus video resolves all three"
     },
     "mast-romantic-maid": {
       "name": "Mast: Romantic Maid",
