@@ -114,6 +114,7 @@ export interface TeamCalcInput {
   constraints?: {
     together?: string[][];
     companions?: { unit: string; anyOf: string[] }[];
+    requiredAny?: { label?: string; anyOf: string[] }[];
   };
   /** Cross-run sim cache (perf plan item 5). `'shared'` reuses a process-level
    *  cache bundle keyed by (cfg, loadout, loadouts) — a team's sim depends only on
@@ -709,6 +710,12 @@ export function makeCalc(input: TeamCalcInput) {
       unit: c.unit,
       anyOf: c.anyOf.filter((s) => s !== c.unit && availTo(s)),
     }));
+  const requiredAny = (input.constraints?.requiredAny ?? [])
+    .map((r) => ({
+      label: r.label,
+      anyOf: r.anyOf.filter(availTo),
+    }))
+    .filter((r) => r.anyOf.length > 0);
   const constraintsOk = (slugs: string[]): boolean => {
     for (const g of together) {
       const n = g.reduce((k, s) => k + (slugs.includes(s) ? 1 : 0), 0);
@@ -717,6 +724,9 @@ export function makeCalc(input: TeamCalcInput) {
     for (const { unit, anyOf } of companions) {
       if (slugs.includes(unit) && !anyOf.some((s) => slugs.includes(s)))
         return false;
+    }
+    for (const { anyOf } of requiredAny) {
+      if (!anyOf.some((s) => slugs.includes(s))) return false;
     }
     return true;
   };
@@ -993,7 +1003,7 @@ export function makeCalc(input: TeamCalcInput) {
         seedTarget !== undefined && prydwenScore
           ? { unitScore: prydwenScore, target: seedTarget, sigma: SPREAD_SIGMA }
           : undefined,
-      constraints: { together, companions },
+      constraints: { together, companions, requiredAny },
       cdShort: CD_SHORT,
       cdPair: CD_PAIR,
       topK: ENUM_TOP_K,
