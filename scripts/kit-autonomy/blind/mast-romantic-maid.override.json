@@ -1,0 +1,199 @@
+{
+  "slug": "mast-romantic-maid",
+  "resources": [
+    {
+      "name": "drunken",
+      "initial": 0,
+      "min": 0,
+      "max": 3
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "drunken",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": -20,
+          "perResource": {
+            "name": "drunken",
+            "mult": -20
+          }
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 1
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 20.05
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 35.02
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "drunken",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 15.03,
+          "durationSec": 10,
+          "perResource": {
+            "name": "drunken",
+            "mult": 15.03
+          }
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 15.04,
+          "durationSec": 10,
+          "perResource": {
+            "name": "drunken",
+            "mult": 15.04
+          }
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "drunken",
+        "min": 3
+      },
+      "effects": [
+        {
+          "kind": "stun",
+          "durationSec": 10
+        },
+        {
+          "kind": "resource",
+          "name": "drunken",
+          "delta": -3
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 40.04,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 15.04,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "drunken",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20.06,
+          "durationSec": 10,
+          "perResource": {
+            "name": "drunken",
+            "mult": 20.06
+          }
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Drunken is modeled as a named resource pool (0→3, +1 per Burst-stage-1 entry by ANY ally, cleared to 0 by the Hangover block at the first Full-Burst end where it sits at 3). Trajectory is kit-derived (start 0 + stated gain + stated consume), not measured: stacks read 1 / 2 / 3 at rotations 1 / 2 / 3, then reset — a sawtooth, NOT a steady 3.",
+    "⚑ Hit Rate ▼20%/stack is authored as a NEGATIVE hitRatePct (−20 × stacks, so −60 at cap) fed live by the resource pool. hitRatePct→core-rate magnitude is engine-derived and measured-only; the SIGN and the per-stack kit value are literal, the resulting core-rate loss is not.",
+    "⚑ FIDELITY GAP: skill1's ally block is keyed to the same stage-1 entry that grants Drunken, so it goes live at the first Burst-1 cast and never lapses. The kit's real gate is 'only while in Drunken status', which goes DARK from the Hangover clear until the next Burst-1 entry (~one FB tail per 3 rotations). The engine has no buff-removal primitive other than removeOnReload, so this window is over-credited. perResource cannot express it either — the ally Crit Rate / caster-ATK values are FLAT (no '× stacks' in the text), so scaling them by the pool would be a different, larger error.",
+    "⚑ perResource recomputes each frame from the caster's live pool, so a 10s window that is still open when the Hangover clear fires will drop to 0 for its remainder (skill2's stage-3 buffs and the burst ATK grant). In-game these are almost certainly cast-time snapshots. Effect is confined to the ~1s tail past FB end on the reset rotation.",
+    "⚑ perResource on casterAtkPct (burst block 2) assumes the engine still routes the computed value through the caster-ATK flat conversion. UNVERIFIED against the code. If it does not, the buff silently becomes a raw number instead of a % of caster ATK.",
+    "Burst block is keyed burstCast (she is a fixed Burst II; her own burst block carries no separate activation clause), so it fires only on rotations she actually casts — NOT fullBurstEnter, which would over-credit in a multi-Burst-II comp.",
+    "Reload Speed ▲ is modeled, not skipped: it is a weapon-state modifier and gates shots fired for every ally."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Mast: Romantic Maid (mast-romantic-maid) is an MG/Water/Supporter/Burst II whose whole kit hangs off one self status, Drunken, gained +1 per Burst-stage-1 entry to a cap of 3 and wiped (with a 10s self stun, Hangover) at the first Full-Burst end where it is at cap. Drunken is therefore modeled as a resource pool rather than a stacked buff, because two consumers need the LIVE count (skill2's ×stacks Distributed Damage / Reload Speed, and the burst's ×stacks caster-ATK grant) and one needs the clear-down (the Hangover stun gate). Skill1 trades her own core-hit rate (Hit Rate ▼20%/stack, a real MG damage cost at coreAttackMultiplier 200) for a permanent team Crit Rate + caster-scaled ATK aura; those two aura values are FLAT in the text and are authored flat. Nothing in the kit is unmodeled; the known divergences are the Drunken-dark window after Hangover and the frame-live (rather than snapshot) behaviour of the perResource-scaled windows — both in caveats."
+}

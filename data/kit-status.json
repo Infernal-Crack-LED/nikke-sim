@@ -2318,17 +2318,21 @@
       "weapon": "MG",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
         "findings": [
-          "all 7 values byte-exact; Drunken-stack scaling modeled statically (cycle-avg 2, exact sole-B2). F1 Hangover trigger her-cast vs prose FB-end (Q5 measured, keep); F4 miss-model gauge over-credit (normalAttackPct-40 is damage-only)"
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mast-romantic-maid.json + scripts/kit-autonomy/manual-review/mast-romantic-maid.md.",
+          "low FIDELITY (skill1): Drunken stack currency not modeled live: stack gain on stage-1 entry, ×stacks scaling, and the Hangover wipe are folded into static cycle-average (×2) magnitudes",
+          "low FIDELITY (skill1): Hit Rate ▼20%/stack modeled as normalAttackPct -40 self (damage-side miss emulation) rather than a hit-rate/core-path debuff; gauge feed is not reduced (kit-status F4)",
+          "low FIDELITY (skill1): 'Only when in Drunken status' gate dropped on the S1 team aura (crit 20.05 + caster-ATK 35.02): permanent from frame 0",
+          "low FIDELITY (skill2): Hangover trigger re-gated from literal 'max stacks at end of Full Burst' to every 3rd of her OWN burst casts"
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": true,
-      "evidence": "T1 0.95-1.06; Hangover-gate recalibration",
+      "evidence": "T1 0.95-1.06; Hangover-gate recalibration | kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; 3 burst lines byte-identical blind-vs-driver; board mean 1.000 n=2",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
@@ -2356,7 +2360,8 @@
         "mad": 0.0094,
         "band": "±3% ✓",
         "temp": "OK  ·"
-      }
+      },
+      "residual": "x2 cycle-avg + permanent-aura are cycle-total not per-rotation (spot-check within-cycle buff stepping vs a fine recording); normalAttackPct-40 miss model anchored to one 0.94 sample, gauge-side F4 unmeasured; Q5 Hangover burstCast-everyN:3 is the load-bearing owner ruling"
     },
     "maxwell": {
       "name": "Maxwell",
