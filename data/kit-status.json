@@ -2423,17 +2423,17 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
         "findings": [
-          "DoT encoding CORRECT (one passive instance); zero value drift; F1 skill1 chain-dump modeled unconditional fullBurstEnd but kit gates 'if she just bursted' (over-fires multi-B3, benign sole-B3)"
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1 (judge unspecified). Artifacts: scripts/kit-autonomy/results/mihara-bonding-chain.json + scripts/kit-autonomy/manual-review/mihara-bonding-chain.md."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "Stack-average (10.8->12) fit to real T3 sample; 1.19-1.51 -> 1.03",
+      "evidence": "Stack-average (10.8->12) fit to real T3 sample; 1.19-1.51 -> 1.03 | kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0 tier 2; cross-family S2b(fable)/S5+S6(opus)/S7(kimi-k3) converged; binding judge ACCEPT-DRIVER HIGH zero REAL-GOTCHA (11 S5 REDs = encoding-shape RECON_ERROR / documented fixed-mirror fidelity ceiling)",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
@@ -2477,7 +2477,8 @@
         "mad": 0.0593,
         "band": "±8%",
         "temp": "HOT ▲"
-      }
+      },
+      "residual": "fixed 700%/s burst delta assumes Ensnaring rebuilt to 20 cap before each burst (partial-stack-at-cast comp would over-credit burst window); sole-B3 graded-fixture convention load-bearing for the ungated fullBurstEnd dump (multi-B3 re-introduces documented benign over-fire)"
     },
     "milk-blooming-bunny": {
       "name": "Milk: Blooming Bunny",

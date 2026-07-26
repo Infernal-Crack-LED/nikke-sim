@@ -1,0 +1,151 @@
+{
+  "slug": "mihara-bonding-chain",
+  "leakDetected": "Two leaks in the supplied schema excerpt, both declared and set aside: (1) the `dot.crit` comment in the effect schema names this unit — \"mihara's Ensnaring validated at 1.03 non-crit\" — leaking a measured crit disposition for her DoT; (2) the `perResource` DoT comment describes \"stacks cancelled on burst + rebuilt\" driving a resource-scaled DoT, which is recognizably this unit's encoding pattern. I reasoned from the prose alone; where these could bias me (crit flag, encoding choice) I state the prose-only derivation and mark the tier accordingly.",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "start of battle: Restraint Chains +10",
+      "disposition": "FAITHFUL",
+      "scope": "Resource initialization only — no damage or stat scope.",
+      "durationSemantics": "Instant one-time charge; pool persists (cap 10).",
+      "triggerIdentity": "Battle-start — model as the resource pool's `initial: 10` (or a t=0 passive charge). Not interval, not FB-keyed.",
+      "targetSet": "self (own Restraint Chain pool)",
+      "nearestWrongModel": "Pool initialized at 0 and only charged by the Full-Burst-end line — the opening chain volley is then empty or absent.",
+      "distinguishingAssertion": "The FIRST chain-volley activation of the fight emits exactly 10 damage events at mult 50.06 (pool full from t=0). Under the wrong model the first volley emits 0 hits (or nothing) until the first post-burst recharge.",
+      "inertness": "Must not recharge again mid-fight from this line — exactly one +10 at t=0.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB ends if just used her Burst: +10",
+      "disposition": "FAITHFUL",
+      "scope": "Resource recharge only.",
+      "durationSemantics": "Instant +10, clamped to cap 10.",
+      "triggerIdentity": "fullBurstEnd COMPOSED WITH ownBurstGate:'cast' — the conditional clause \"if this unit has just used her Burst Skill\" is load-bearing. This is NOT a plain team fullBurstEnd.",
+      "targetSet": "self",
+      "nearestWrongModel": "Ungated fullBurstEnd — recharges after EVERY Full Burst, including rotations where the OTHER Burst III unit (helm in controlComp with helm=true) cast instead of this unit. Over-credits every alternated rotation.",
+      "distinguishingAssertion": "In controlComp(carry) with helm=true (two B3s alternating on cooldown), chain volleys of size 10 follow only Full Bursts whose burstCast event has this unit's srcSlot; after a helm-cast FB the pool stays empty and the next volley is 0-sized/absent. Under the ungated model, a 10-hit volley follows every FB end.",
+      "inertness": "A Full Burst this unit sat out must add zero chains.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "50.06% dmg, once per Restraint Chain",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Skill flat damage (not normal-attack-scoped); each hit 50.06% of final ATK; ⚑ crit/core default per rider convention (no core unless stated; crit default off unless measured).",
+      "durationSemantics": "Instant volley; consumes the pool — Restraint Chain ▼1 per attack, so volley size = live pool at fire time (sawtooth resource).",
+      "triggerIdentity": "\"at a specific timing\" = NO explicit activation clause → this is ALWAYS-⚑ field 2 (a damage line the text gives no trigger for). The charge structure (start +10, FB-end +10) strongly implies the volley is CHARGE-COUPLED — it fires when/after the pool charges — not a free-running interval. The cadence tuple is a ⚑ estimate; recipe: count volley popups per rotation in footage and anchor each volley to the preceding FB end.",
+      "targetSet": "enemy (random enemy units; solo boss → all hits on the boss)",
+      "nearestWrongModel": "A fixed 10-hit volley on a free-running `interval` trigger that neither reads nor decrements the pool — fires 10 hits even when chains were not recharged (e.g. after a helm-cast FB), and double-counts when interval and recharge misalign.",
+      "distinguishingAssertion": "Damage-event count per volley EQUALS the resource level at fire time, and resource events show ▼1 per hit down to 0. Concretely: after an FB this unit did not cast (helm rotation), the next volley emits 0 × 50.06% events; the fixed-10/interval model still emits 10.",
+      "inertness": "No volley damage while the pool is 0.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Ensnaring: 25.08% sustained/1s, 20 stk",
+      "disposition": "FAITHFUL",
+      "scope": "Sustained-flavor DoT on the boss — must carry flavor 'sustained' so sustainedDamagePct buffs (her own S2d 59.98%) scale it. Never core; crit default OFF from prose (no crit language) — prose-only derivation, independent of the leaked note.",
+      "durationSemantics": "\"continuously… cannot be removed\" = PERMANENT (until the burst's explicit cancel) — NOT a finite durationSec, and NOT one independent full-length instance per application. Stacks up to 20; per-tick value = stacks × 25.08%.",
+      "triggerIdentity": "Applied/stacked by the Restraint Chain attacks (\"Affects the same enemy units\" — each chain hit adds a stack). Correct encoding is ONE live stack-scaled DoT (a resource pool driving per-tick value), not repeated `dot` effect appends.",
+      "targetSet": "enemy (the same targets the chain volley hit)",
+      "nearestWrongModel": "Each chain attack appends an INDEPENDENT permanent 25.08%/s DoT instance with no 20-stack cap — the engine never dedups DoTs, so a repeating trigger with a long duration MULTIPLIES without bound (failure-mode 5). Damage grows past the cap as volleys repeat.",
+      "distinguishingAssertion": "Late-fight, total sustained tick damage per second from this effect equals min(stacks, 20) × 25.08% × ATK — assert it PLATEAUS at exactly 20 × 25.08% and never exceeds it. Under per-instance appends, per-second sustained damage keeps climbing past the 20-stack ceiling after the 3rd+ volley.",
+      "inertness": "Zero ticks before the first chain attack lands; also must NOT be removable by anything except the burst's cancel line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "40 normal atks during FB, target: +1",
+      "disposition": "FAITHFUL",
+      "scope": "Counts LANDED NORMAL ATTACKS only (MG rounds; hitsPerShot 1 so rounds == pulls here) — skill/burst/DoT hits must not advance the counter.",
+      "durationSemantics": "Instant +1 Ensnaring stack per 40-hit threshold, clamped by the 20-stack cap.",
+      "triggerIdentity": "hitCount:40 COMPOSED WITH fbGate:'inFb' AND requiresTargetStatus (target must already be in the Ensnaring Chains state). Three gates; dropping any one is a distinct wrong model.",
+      "targetSet": "the target (boss's Ensnaring stack count)",
+      "nearestWrongModel": "Ungated hitCount:40 — counts hits OUTSIDE Full Burst too (an MG at ~space-for-hundreds-of-rounds-per-magazine spends most rounds out of FB, so the ungated model adds several times more stacks), and/or increments even before any Ensnaring stack exists.",
+      "distinguishingAssertion": "Every +1 stack event from this line falls strictly inside a fullBurstStart..fullBurstEnd window, and the count of such events per FB ≈ floor(rounds landed in that FB / 40). Under the ungated model, stack increments appear between FB windows. Also: zero increments before the first chain volley opens the Ensnaring state.",
+      "inertness": "Out-of-FB firing must add zero stacks; pre-status firing must add zero stacks.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when skill user is incapacitated: +20",
+      "disposition": "UNMODELED",
+      "scope": "n/a — death trigger.",
+      "durationSemantics": "n/a",
+      "triggerIdentity": "Owner-incapacitated. The v1 sim has no HP pool and no unit ever dies — the trigger can never fire.",
+      "targetSet": "targets in Ensnaring Chains state",
+      "nearestWrongModel": "Modeling it on some reachable trigger (e.g. battle-end or an interval), silently granting +20 stacks it can never earn.",
+      "distinguishingAssertion": "NO event in any run is attributable to this line; removing it from the override changes no total. Record verbatim in `unmodeled.skill2`.",
+      "inertness": "Everything — the line must move nothing.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "enemy neutralized in state: Chain +1",
+      "disposition": "UNMODELED",
+      "scope": "n/a — kill trigger.",
+      "durationSemantics": "n/a",
+      "triggerIdentity": "Enemy-neutralized. The scope-lock boss is a single immortal partless target for the 180s fight; nothing is ever neutralized.",
+      "targetSet": "self (Restraint Chain pool)",
+      "nearestWrongModel": "Wiring it to boss-phase transitions or an interval as a proxy — invents chain income the fight cannot produce.",
+      "distinguishingAssertion": "Restraint Chain resource deltas come ONLY from the t=0 charge, the gated FB-end recharge, and volley consumption; no +1 singleton deltas appear anywhere. Record verbatim in `unmodeled.skill2`.",
+      "inertness": "Everything.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "entering Burst Stage 3: Sust ▲59.98%",
+      "disposition": "FAITHFUL",
+      "scope": "sustainedDamagePct — scales SUSTAINED-flavor damage only (her Ensnaring ticks, Dragging Chain ticks). Must NOT touch normal-attack or generic damage.",
+      "durationSemantics": "10 seconds, wall-clock (`durationSec: 10`), refreshed each activation.",
+      "triggerIdentity": "\"when entering Burst Stage 3\" = stageEnter:{stage:3} — fires when ANY unit's stage-3 burst window is entered, i.e. EVERY rotation, including rotations where helm (the other B3) casts. NOT burstCast (own-burst-only) and not fullBurstEnter.",
+      "targetSet": "self",
+      "nearestWrongModel": "Two plausible misreads: (a) burstCast — the buff then fires only on this unit's own rotations, halving uptime in the two-B3 fixture; (b) generic attackDamagePct — over-credits her MG normal attacks and volley hits for 10s each rotation.",
+      "distinguishingAssertion": "buffApply events with stat 'sustainedDamagePct', value 59.98, caster==target==this unit appear once per ROTATION (count == number of stage-3 entries, ≈ number of FBs), including helm-cast rotations — under (a) the count equals only this unit's burst casts. And during the 10s window, normal-attack damage events' effective multiplier is UNCHANGED while sustained tick values rise ×1.5998-in-bucket — under (b) normals move too.",
+      "inertness": "Normal-attack and chain-volley (non-sustained) damage during the window.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Dragging Chain 50.05%/1s mirrors stacks",
+      "disposition": "FAITHFUL",
+      "scope": "Sustained-flavor DoT; per-tick value = 50.05% × (Ensnaring stack count SNAPSHOT at cast) — the mirror is of the stack COUNT, so it scales with S2d's sustainedDamagePct window (which the same cast's stage-3 entry opens).",
+      "durationSemantics": "10 seconds fixed (\"for 10 sec\"); \"cannot be removed\" = no early strip. The stack count is mirrored AT TRIGGER TIME — a snapshot, not a live link (Ensnaring is cancelled immediately after, so a live link would read 0).",
+      "triggerIdentity": "burstCast (this unit's own Burst Skill — B3, 40s cd), gated on the target being in Ensnaring Chains status; damage is burst-sourced so the instant application is FB-exempt by cast timing, while the 10s of ticks land inside the FB window (⚑ FB-bonus treatment of ticks follows the default-ON rider timing rule).",
+      "targetSet": "enemy targets currently in Ensnaring Chains status",
+      "nearestWrongModel": "Casting the burst WITHOUT the cancel — Ensnaring keeps ticking at its full pre-cast stack count concurrently with Dragging Chain for the whole 10s (double-dip), and the next chain volley stacks on top of an uncancelled pool instead of rebuilding from 0. Secondary misread: flat 50.05%/s ignoring the stack mirror.",
+      "distinguishingAssertion": "In the 1s after burstCast: sustained tick damage equals 50.05% × S (S = pre-cast Ensnaring stacks) PLUS only a near-zero rebuilding Ensnaring contribution — NOT 25.08% × S + 50.05% × S. Equivalently, assert the Ensnaring stack pool reads 0 immediately post-cast and the SECOND burst's Dragging value reflects only stacks rebuilt in the interim (sawtooth), not a monotonically grown pool. Under no-cancel, post-cast per-second sustained damage is ≈ 75%×S-scaled and the second burst mirrors an inflated pool.",
+      "inertness": "With zero Ensnaring stacks at cast (hypothetical pre-volley cast), Dragging Chain deals nothing; no effect on any non-status target.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:start-of-battle Restraint Chains +10 (pool initial)",
+    "skill1:FB-end-after-own-burst recharge +10 (ownBurstGate)",
+    "skill1:50.06% per-chain volley, pool-consuming, ⚑ cadence",
+    "skill1:Ensnaring Chains stack-scaled permanent sustained DoT, cap 20",
+    "skill2:40-in-FB-hits status-gated stack +1",
+    "skill2:stage-3-entry self sustainedDamagePct 59.98% / 10s",
+    "burst:Dragging Chain 50.05%/s × stack snapshot / 10s + Ensnaring cancel"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state. Ensnaring Chains stacks ▲ 20.",
+      "Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self. Restraint Chain ▲ 1, up to 10."
+    ],
+    "burst": []
+  },
+  "notes": "Where I most expect a shared-prior misread: (1) the FB-end recharge's own-burst gate — the fixture's second B3 (helm, controlComp default helm=true) makes the ungated read over-recharge every alternated rotation, and a driver testing only sole-B3 comps would never see it diverge; insist on the two-B3 assertion. (2) Ensnaring Chains encoding — the engine appends DoT instances per fire and never dedups, so the ONLY faithful shape is one live stack-scaled instance (a resource pool driving per-tick value) with the 20 cap asserted as a PLATEAU; a per-application `dot` list passes short smoke tests and multiplies late-fight. (3) The burst's cancel is half the mechanic — the sawtooth (snapshot → cancel → rebuild via volley + S2a) must be asserted across TWO burst casts (second cast's Dragging value < first if rebuild time was short), not just one. (4) S2d 'entering Burst Stage 3' is a stageEnter (every rotation, any caster), not burstCast — the opposite direction of the usual over-credit trap, so a cautious driver may UNDER-key it. (5) The chain volley's timing is an ALWAYS-⚑ field (no activation clause) — a precise cadence shipped without a ⚑ + footage recipe is a red flag regardless of value. (6) DoT crit: from prose alone both DoTs default non-crit (no crit language); note the supplied schema excerpt leaked a measured non-crit disposition for this unit's Ensnaring — my derivation stands independent of it. (7) The sustainedDamagePct buff and both DoTs must share the 'sustained' flavor tag or S2d/burst-line interaction silently breaks — assert the tick value actually moves ×(1+0.5998 in-bucket) inside the 10s window.",
+  "model": "claude-fable-5"
+}
