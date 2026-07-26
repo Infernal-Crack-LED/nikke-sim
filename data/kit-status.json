@@ -1826,18 +1826,18 @@
       "weapon": "RL",
       "class": "Attacker",
       "kitParse": {
-        "status": "reconciled",
-        "provenance": "parser-baseline",
-        "date": "2026-07-17",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
         "findings": [
-          "burst re-authored to official prose (897.6/14.52/5s weaponSwap, only rider is true dmg) — current file traced to OLD fan text (1455.72/22.2/trueNormals); fbGate over-fire fixed",
-          "✅ RESOLVED 2026-07-17 (favorite-item sync): REVERTED the wave-6 downgrade — the 'old fan text' values were the TREASURE kit. Restored burst First 1455.72/Normal 22.2/10s + weaponSwap trueNormals + the 11.9 rider; S2a lastBullet 81.66 → shotFired full-charge 132.45. DBG-confirmed. Model-only."
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 0.9 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/laplace.json + scripts/kit-autonomy/manual-review/laplace.md.",
+          "high ENCODING (skill2): S2a 132.45% full-charge rider fires on the swap-beam ticks (no swapGate); both blind derivations and the burst text's 'Normal Damage' wording read exclusion; probe: -38.1% of her total if flipped"
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — bare override, never validated",
+      "evidence": "Pure model — bare override, never validated | kit-autonomy gauntlet 2026-07-26; GO faithfulness 0.9 (kimi-k3 judge NO-GO->GO after resolving the S2a swap-scope REAL-GOTCHA via its prescribed swapGate:unswapped fix, -38.1% vs the ruled-out every-shot reading); cross-family S2b(fable)/S5(opus)/S6(opus)/S7(kimi-k3) converged; Pierce swap-scoped hasPierce (blind catch, inert); driver test 17/17 green",
       "graded": {
         "teams": 0,
         "within3pct": 0
@@ -1851,18 +1851,19 @@
           "Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage."
         ],
         "burst": [
-          "Additional Effect 1: Gains Pierce.",
           "(Note: Unable to take cover.)"
         ]
       },
       "caveats": [
         "burst: bazooka beam economy is UNMEASURED — 0.25s/tick + reload-free are ⚑ estimates over the 10s window; count beam popups in any focus video",
         "burst: the swap beam (22.2%, true at max Hero Vision) and the 11.9% true rider both assume Hero Vision is at max stacks for the whole window (⚑ uptime haircut candidate)",
-        "burst: 'Gains Pierce' not modeled — no swap-gated pierce mechanism; inert at scope lock (no pierce-damage buffs in kit, pierce core-double disabled)",
-        "skill2: the 132.45% full-charge additional hit is modeled on shotFired (every RL pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger",
+        "burst: 'Gains Pierce' modeled as swap-scoped weaponSwap.hasPierce:true (kit-autonomy gauntlet 2026-07-26, blind-reviewer converged) — inert at scope lock (PIERCE_CORE_DOUBLE hard-off, no pierceDamagePct carrier → byte-identical totals); tagged for kit completeness, not damage",
+        "skill2: the 132.45% full-charge additional hit is shotFired + swapGate:'unswapped' — it fires on base full-charge pulls only, NOT the swap beam (gauntlet 2026-07-26 S7 ruling: the burst labels beam damage 'Normal Damage', and both blind derivations read exclusion; the prior every-shot reading was a circular cite of the kit-silent chargeTimeSec ⚑). Confirm with a focus video: 132.45%-class popups should appear outside the 10s swap window and stop inside it",
         "skill1: Explosion Radius ▲ is inert vs the partless boss; its stacks only gate the burst true damage (assumed maxed)"
       ],
-      "board": null
+      "board": null,
+      "date": "2026-07-26",
+      "residual": "S2a 132.45% swap-exclusion x swap beam economy (chargeTimeSec 0.25 / maxAmmo 999) interact multiplicatively, both kit-silent — owner spot-check via beam-popup count in a laplace focus video; S1 Hero Vision stack gate assumed maxed (inert, no engine primitive); trueNormals semantic tag inert in control comp"
     },
     "leona": {
       "name": "Leona",

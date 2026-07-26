@@ -1,0 +1,156 @@
+{
+  "slug": "laplace",
+  "resources": [
+    {
+      "name": "heroVision",
+      "initial": 0,
+      "min": 0,
+      "max": 5
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "swapGate": "unswapped",
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "heroVision",
+          "delta": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "swapGate": "unswapped",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 132.45,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "heroVision",
+        "max": 4
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 22.2,
+          "durationSec": 10,
+          "chargeTimeSec": 0,
+          "hasPierce": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "heroVision",
+        "min": 5
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 22.2,
+          "durationSec": 10,
+          "chargeTimeSec": 0,
+          "hasPierce": true,
+          "trueNormals": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1455.72,
+          "crit": true,
+          "pierce": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "swapGate": "swapped",
+      "resourceGate": {
+        "name": "heroVision",
+        "min": 5
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 11.9,
+          "flavor": "true",
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Hero Vision: Explosion Radius ▲ 3.57%, stacks up to 5 time(s) and lasts for 15 sec. (the STAT magnitude and the 15 sec decay are unmodeled — there is no Explosion-Radius StatKey and AoE radius moves no damage on a single partless boss; the 0-5 stack COUNT itself IS modeled, as the heroVision resource that gates the burst's true-damage branches)"
+    ],
+    "skill2": [
+      "Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage. (the scope-lock boss is partless and the engine has no parts-hit channel; NOT proxied by requiresCore — a core hit is not a parts hit, and proxying would fabricate damage)"
+    ],
+    "burst": [
+      "Note: Unable to take cover while using Burst Skill. (defensive-only; the v1 boss deals no damage, so cover state is inert)"
+    ]
+  },
+  "caveats": [
+    "⚑ Burst weapon-swap shot economy is KIT-SILENT and dominates burst damage: pullsPerSec and maxAmmo are left unset (engine inherits the base RL economy: 6 ammo / 161f reload) and chargeTimeSec is set to 0 on a reasoned read, not a measurement. Total swap-window damage is therefore UNTRUSTED until popups in a real 10s window are counted.",
+    "⚑ heroVision is modeled as a non-decaying 0-5 resource; the kit's 15 sec per-stack expiry is not expressible on a resource pool. Assumes she keeps the stack at cap between full charges (charge ≈ 60f, so 5 charges arrive well inside 15s).",
+    "⚑ 'Attacking with Full Charge' is proxied by trigger shotFired + swapGate unswapped (every base-weapon pull on a charge weapon is a full charge in the sim). Any partial-charge tap would over-fire both skill1 stacking and the skill2 132.45% rider.",
+    "⚑ The burst's 11.9% true-damage line carries NO activation clause; modeled as a per-swap-shot rider (shotFired + swapGate swapped) gated at max stacks. It could instead be a one-shot on-cast splash or scoped to the First Damage hit only.",
+    "⚑ First Damage 1455.72% is encoded as a burstCast flatDamage rider, so it gets crit at the sheet rate but NO core bucket — yet in-game it is the swap weapon's opening rocket and may well core. If footage shows a red CORE HIT popup at burst cast, this needs core handling.",
+    "⚑ crit:true on both true-damage riders follows the rider-crit convention, not a measurement for this unit.",
+    "noFb is deliberately unset everywhere (Full Burst by timing, default ON); noRange is left to the engine."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Laplace (Treasure) is an RL/Iron/Attacker Burst III charge unit modeled as: (1) skill1 — each full charge banks one Hero Vision stack (0-5), tracked as the heroVision resource because the stack COUNT is load-bearing (it gates the burst's true-damage branches) while the Explosion Radius ▲ 3.57% stat itself has no engine StatKey and moves no damage on a single partless boss; (2) skill2 — a 132.45% of final ATK rider on every full-charge hit (crit-eligible, no core, base weapon only); the parts-hit 14.78% branch is unmodeled because the boss has no parts; (3) burst — a 10s weapon swap at 22.2% per shot, Pierce-tagged on the swapped weapon (weaponSwap.hasPierce, NOT the whole-fight hasPierce flag), split into two mutually exclusive resource-gated blocks so trueNormals turns on only at 5 Hero Vision stacks, plus the 1455.72% First Damage as a burstCast hit (FB-exempt by cast timing) and an 11.9% true-damage per-shot rider gated at max stacks. The largest open risk is the swap window's shot count — the kit states no cadence or ammo for the swapped weapon, so the burst total is a floor, not a value."
+}
