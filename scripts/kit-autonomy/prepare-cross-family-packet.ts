@@ -62,16 +62,13 @@ const TEMPLATE: Record<string, string> = {
 };
 
 // ---- leak check (case-insensitive substring search) -------------------------------------------
-// `includeSlug=false` for the assembled-packet check: the kit prose legitimately names the unit (it is the
-// input), so the slug may appear in the header/prose. The thing that must NOT appear outside the prose block is
-// the ANSWER TOKENS (signature magnitudes + mechanic names) — those would hand the reviewer the encoding
-// decision without deriving it from the prose. Component checks (schema/methodology/template) keep includeSlug
-// true: those parts must not name the target at all.
-function leakCheck(label: string, text: string, includeSlug = true) {
+// `leakCheck` is passed an explicit needle list. Component parts (schema/methodology/template) are checked
+// against the FULL name set (slug + display name + safe nicknames + answer tokens) — they must not name the
+// target at all. The assembled-packet-outside-prose check drops the slug (it may sit in a path/header) but
+// still forbids the display name / nicknames / answer tokens outside the prose block. The kit prose itself
+// legitimately names the unit and is excluded from the assembled check by the caller.
+function leakCheck(label: string, text: string, needles: string[]) {
   const lower = text.toLowerCase();
-  const needles = includeSlug
-    ? [slug!.toLowerCase(), ...tokens.map((t) => t.toLowerCase())]
-    : tokens.map((t) => t.toLowerCase());
   const hits = needles.filter((tok) => lower.includes(tok));
   if (hits.length)
     fail(
@@ -90,6 +87,32 @@ const extractPath = join(
 const extract = JSON.parse(readFileSync(extractPath, 'utf8'));
 const unit = extract[slug] ?? Object.values(extract)[0];
 const u = unit as any;
+
+// De-contamination name set (hard-won 2026-07-25 bu-batch): redact + leak-check the unit's OTHER names, not just
+// the slug — types.ts comments name units by display name ("Neon: Vision Eye"), nickname ("RRH"), or abbreviation
+// ("Neon:VE"), none of which equal the slug, so a slug-only match leaked (rapi-red-hood "RRH", neon-vision-eye
+// "Neon:VE"). Nicknames are filtered to short alnum abbreviations (3–8 chars): word/phrase nicknames
+// ("idols (with prika)", "neo neon") and 2-char ones ("ra", "rh") are substring-common and would over-redact
+// legitimate schema vocabulary (the snow-white RECON_ERROR class) or false-fail the leak check. Abbreviation leaks
+// from the display-name stem (e.g. "Neon:VE") are surfaced ADVISORILY in the TOKEN HINT below, not hard-redacted —
+// a bare stem like "red" (red-hood) is a substring of "target"/"shared" and would starve the blind role.
+const safeNicknames = ((u.nicknames as string[] | undefined) ?? []).filter(
+  (n) => /^[a-z0-9]{3,8}$/i.test(n),
+);
+const tokLower = tokens.map((t) => t.toLowerCase());
+const displayNameLower = (u.name as string).toLowerCase();
+const nickLower = safeNicknames.map((n) => n.toLowerCase());
+// Component parts (schema/methodology/template) must not name the target AT ALL — slug + display name + safe
+// nicknames + answer tokens. (The assembled-packet check below is tokens-only: the assembled packet includes the
+// generic harnessNote, whose infrastructure terms collide with short nicknames — "removeOnReload" contains
+// "veon" — and the packet header names the unit by slug, which collides with the display name for base units.)
+const componentNeedles = [
+  slug!.toLowerCase(),
+  displayNameLower,
+  ...nickLower,
+  ...tokLower,
+];
+
 const prose = `=== KIT PROSE (legitimate input — ground truth; the answer tokens appear HERE by design) ===
 Unit: ${u.name} (${u.slug})
 Base: ${u.weapon}/${u.element}/${u.class}/Burst ${u.burst}, cd ${u.burstCooldownSec}s, ammo ${u.ammo}, reloadFrames ${u.reloadFrames}, chargeFrames ${u.chargeFrames}, hitsPerShot ${u.hitsPerShot}, normalAttackMultiplier ${u.normalAttackMultiplier}, coreAttackMultiplier ${u.coreAttackMultiplier}.
@@ -112,13 +135,10 @@ const schemaLines = readFileSync(
 const redactedSchema = schemaLines
   .filter((l) => {
     const low = l.toLowerCase();
-    return (
-      !low.includes(slug.toLowerCase()) &&
-      !tokens.some((t) => low.includes(t.toLowerCase()))
-    );
+    return !componentNeedles.some((n) => low.includes(n));
   })
   .join('\n');
-leakCheck('redacted schema (types.ts)', redactedSchema);
+leakCheck('redacted schema (types.ts)', redactedSchema, componentNeedles);
 
 // ---- 2b. TOKEN HINT (advisory — catches under-supplied --tokens) ------------------------------
 // The leak assertion only catches tokens the driver supplied. If a types.ts comment states one of the unit's
@@ -140,15 +160,34 @@ if (missingTokens.length) {
   );
 }
 
+// Advisory: display-name stem abbreviation leak (e.g. a "Neon:VE" comment for neon-vision-eye). The bare stem is
+// NOT a hard needle (over-redaction risk — "red" is a substring of "target"/"shared"), so surface it for the
+// driver to add the abbreviation as a token if a types.ts comment uses it for this unit.
+const baseStem = (u.name as string).includes(':')
+  ? (u.name as string).split(':')[0].trim().toLowerCase()
+  : '';
+if (
+  baseStem.length >= 4 &&
+  schemaText.toLowerCase().includes(baseStem) &&
+  !tokLower.some((t) => t.includes(baseStem))
+) {
+  console.warn(
+    `\n⚠ TOKEN HINT: the display-name stem "${baseStem}" appears in types.ts — a comment may abbreviate this\n  unit (e.g. "${baseStem}:XX"). If so, add the abbreviation to --tokens so redaction strips that line.\n`,
+  );
+}
+
 // ---- 3. redacted methodology (strip lines naming the target) ----------------------------------
 const methLines = readFileSync(
   join(HERE, 'redacted-methodology.md'),
   'utf8',
 ).split('\n');
 const redactedMeth = methLines
-  .filter((l) => !l.toLowerCase().includes(slug.toLowerCase()))
+  .filter((l) => {
+    const low = l.toLowerCase();
+    return !componentNeedles.some((n) => low.includes(n));
+  })
   .join('\n');
-leakCheck('redacted methodology', redactedMeth);
+leakCheck('redacted methodology', redactedMeth, componentNeedles);
 
 // ---- 4. assemble + leak-assert each role packet -----------------------------------------------
 const outDir = join(HERE, 'cross-family', slug);
@@ -208,7 +247,7 @@ for (const role of roles) {
       `unknown role '${role}' (expected s2b/s5/s6; s7 uses the judge-packet pattern)`,
     );
   const template = readFileSync(join(HERE, tmplFile), 'utf8');
-  leakCheck(`template ${tmplFile}`, template);
+  leakCheck(`template ${tmplFile}`, template, componentNeedles);
 
   const packet = `# CROSS-FAMILY BLIND PACKET — role ${role} — unit ${slug}
 # Built by prepare-cross-family-packet.ts. De-contaminated + leak-asserted at build time.
@@ -225,10 +264,18 @@ ${harnessNote}
 === REDACTED EFFECT SCHEMA (types.ts, target-naming comments stripped) ===
 ${redactedSchema}
 `;
-  // Final whole-packet leak check OUTSIDE the prose block: strip the prose, then search.
-  const nonProse =
-    packet.split('=== KIT PROSE')[0] + packet.split('=== END KIT PROSE ===')[1];
-  leakCheck(`assembled ${role} packet (outside prose)`, nonProse, false);
+  // Final whole-packet leak check OUTSIDE the prose block, ANSWER TOKENS only (matching the original
+  // includeSlug=false behavior). The header legitimately names the unit by slug, so strip the slug first —
+  // otherwise a token that is a substring of the slug (e.g. "neon" for neon-vision-eye, which the TOKEN HINT stem
+  // advisory may prompt the driver to add) false-fails on the header. Name leaks (display name / nickname) in the
+  // schema/methodology/template are caught by the component checks above; the assembled packet's harnessNote is
+  // generic infrastructure and is not name-checked.
+  const nonProse = (
+    packet.split('=== KIT PROSE')[0] + packet.split('=== END KIT PROSE ===')[1]
+  )
+    .split(slug!)
+    .join('');
+  leakCheck(`assembled ${role} packet (outside prose)`, nonProse, tokLower);
 
   const packetPath = join(outDir, `${role}-packet.md`);
   writeFileSync(packetPath, packet);
