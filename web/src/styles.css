@@ -2413,20 +2413,20 @@ footer {
 }
 
 /* sustain heal/shield/lifesteal split — stacked segments inside the fill.
-   Colors: accent (heal) / warn (shield) / the .adv green (lifesteal). */
+   Colors (owner 2026-07-26): green heal / blue shield / yellow lifesteal. */
 .ranks-seg {
   display: block;
   float: left;
   height: 100%;
 }
 .ranks-seg-heal {
-  background: var(--accent);
+  background: #4ecb71;
 }
 .ranks-seg-shield {
-  background: var(--warn);
+  background: var(--accent);
 }
 .ranks-seg-steal {
-  background: #4ecb71;
+  background: var(--warn);
 }
 
 .ranks-val {
