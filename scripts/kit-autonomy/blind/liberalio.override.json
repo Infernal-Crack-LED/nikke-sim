@@ -1,0 +1,152 @@
+{
+  "slug": "liberalio",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 160,
+          "durationSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "requiresCore": true,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20.83,
+          "durationSec": 60
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 40.5,
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesLowestAtk",
+        "count": 1,
+        "burst": "III",
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 12.74,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 231
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 50,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 925,
+          "crit": true,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Deals 40.5% of final ATK as additional damage. Activates 5 times. — the \"Activates 5 times\" per-battle/per-trigger use cap is NOT modeled (the engine has no per-battle activation counter); the rider fires on every full-charge shot, which OVER-CREDITS if the cap is per battle."
+    ],
+    "skill2": [
+      "Gentle Current: Fixes charge time at 1 sec continuously. Removes Raging Current. — requires a Rapture that is NOT the stage target; the solo-raid boss is the only enemy, so this branch can never activate and Raging Current is never removed.",
+      "Gains immunity to Increase Charge Speed effects. This effect is continuous and cannot be removed.",
+      "Gains immunity to Decrease Charge Speed effects. This effect is continuous and cannot be removed."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ CHARGE-SPEED IMMUNITY IS UNMODELED AND IS THE LARGEST KNOWN ERROR SOURCE. Skill 2 grants permanent immunity to BOTH Increase and Decrease Charge Speed effects, so every ally charge-speed buff (Liter/Crown/most B1-B2 support, cube, and her own S1 charge-speed grant if she were ever its target) must be BLOCKED on this unit. The engine has no per-unit stat-immunity primitive, so any comp containing a charge-speed buffer will over-credit her shots/sec. Recipe: add a stat-immunity gate (per-unit StatKey denylist) in the buff engine, or run her only in charge-speed-free comps until then.",
+    "⚑ Her own S1 charge-speed grant targets 'the 1 Burst III ally with the lowest final ATK' — she is Burst III herself, so she can be her own target. If she is, the immunity above voids it. As authored, the engine will apply it to whichever B3 ranks lowest (possibly her); treat the self-target case as a known over-credit.",
+    "⚑ 'Raging Current' Attack Damage ▲231% is authored as PERMANENT-once-triggered (no durationSec) with first application on her first full charge landing on the boss. Steady state for the whole fight is therefore ~231% Damage-Up minus the pre-first-charge window (~chargeFrames/60 + latency ≈ 1.5-2s). Same-caster-slot overwrite means repeat applications are idempotent.",
+    "⚑ The 'Activates 5 times' cap on the 40.5% rider is unrepresentable; over a 180s fight she lands far more than 5 full charges, so this rider is a substantial over-credit if the cap is per battle rather than per trigger/stack.",
+    "⚑ 'Full Charge attack' triggers are modeled as `shotFired` because she is a charge weapon (chargeFrames 90) and every shot she fires is assumed to be a FULL charge. If she fires uncharged shots in practice, all three full-charge-gated blocks over-fire.",
+    "⚑ Charge cadence (chargeFrames 90, reloadFrames 141, ammo 6) is datamine-sourced and unverified against footage."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. SR/Wind/Attacker/Burst III charge unit. S1: FB-enter self ATK ▲160%/3s; a core-gated full-charge Attack Damage ▲20.83%/60s (self, effectively permanent after the first core landing given the 60s window and repeated refresh); a 40.5%-of-final-ATK full-charge rider on the target (capped at 5 activations in kit — cap NOT modeled); and an FB-enter Charge Speed ▲12.74% to the lowest-final-ATK Burst III ally. S2: the 'Raging Current' branch (full charge vs the STAGE TARGET) grants Attack Damage ▲231% continuously — in a solo raid the boss IS the stage target, so this branch is the only reachable one and Gentle Current can never fire; the two charge-speed immunity lines are documented-unmodeled (no engine primitive) and are the dominant known divergence in any charge-speed-buffed comp. Burst: self Attack Damage ▲50%/10s plus a 925%-of-final-ATK instant hit to all enemies (FB-exempt — a burst cast lands before the Full Burst window opens). Riders are authored crit-eligible at her sheet rate, no-range, and no-core (the text says 'additional damage', not 'core strike damage')."
+}
