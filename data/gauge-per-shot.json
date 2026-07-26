@@ -289,10 +289,10 @@
   "targetPerTrigger": 400.0
  },
  "liberalio": {
-  "basePerTrigger": 1680.0,
+  "basePerTrigger": 280.0,
   "fullChargeBonus": 250.0,
-  "source": "datamined; x6 volley hits per trigger (rl3 arithmetic 33.6 = 2 triggers x 6 hits x 2.8, exact)",
-  "targetPerTrigger": 3360.0
+  "source": "datamined; target_burst_energy_pershot 56000 / 100 = 5.6% per shot (was 3360 due to a misread of rl3 as x6 volley hits; weapon has hitsPerShot=1 and burstGaugePerShot=2.8)",
+  "targetPerTrigger": 560.0
  },
  "liter": {
   "basePerTrigger": 10.0,
