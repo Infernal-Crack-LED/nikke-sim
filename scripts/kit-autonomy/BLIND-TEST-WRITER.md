@@ -14,9 +14,9 @@ faithfulness signal; a divergence you catch that the driver did not document is 
 - The **harness API** (`scripts/tests/lib/harness.ts`) + the **effect schema** (`src/skills/types.ts`) + the
   disposition vocabulary + the 4 per-line questions + the RECURRING FAILURE-MODE taxonomy (REDACTED of this
   unit's answer — declare `leakDetected` if you spot this unit's slug/magnitudes in it).
-- The exemplar `scripts/tests/units/helm.test.ts` for STRUCTURE only (header evidence comment, `run()` helper
-  collecting `cfg.onEvent`, `withPatchedOverride` counterfactuals, hoisted runs, discriminating + inertness
-  assertions). Copy the discipline, not the unit.
+- An already-audited unit's `scripts/tests/units/<unit>.test.ts` is the STRUCTURAL exemplar (header evidence
+  comment, `run()` helper collecting `cfg.onEvent`, `withPatchedOverride` counterfactuals, hoisted runs,
+  discriminating + inertness assertions). Copy the discipline, not the unit.
 
 ## You must NOT see
 
@@ -45,7 +45,8 @@ Shape cheat-sheet (verified against `harness.ts` / `types.ts` — the shapes bli
 - `totals(res)` → `Record<slug, number>` — a PER-SLUG MAP of total damage, NOT a scalar. Read one unit as
   `totals(res)['<slug>']`, or use `unitOf(res, '<slug>')` for the full result row (`.totalDamage`, per-bucket
   breakdown, events). `unitOf` THROWS if the slug isn't in the comp.
-- `controlComp(carry, helm?=true)` → `CompOptions`; `runComp(opts)` → `SimResult` (deterministic, no seed).
+- `controlComp(carry, fixedB3?=true)` → `CompOptions`; `runComp(opts)` → `SimResult` (deterministic, no seed).
+  (The fixed B3 slot is a set SR/Water unit; the exact signature is restated in the HARNESS API block below.)
 - `CompOptions.overrides` is a PER-SLUG MAP: `Record<slug, OverrideFile | undefined>`. There is NO top-level
   `blocks` on an override and NO `o.blocks`.
 - The `OverrideFile` is SLOT-KEYED: `{ skill1?, skill2?, burst? }`, each slot a `CharacterSkills` carrying its
@@ -68,7 +69,7 @@ Shape cheat-sheet (verified against `harness.ts` / `types.ts` — the shapes bli
    questions (scope / duration semantics / trigger identity / target set).
 2. Write `scripts/tests/units/<slug>.test.ts` (return its full source): one assertion group per kit line.
    - **Fixture:** `controlComp('<slug>', true)` (supplies B1/B2 so a B3 casts; a lone B3 makes ZERO Full
-     Bursts). Deterministic (no seed). Use `helm=false` if helm's buffs confound a reading.
+     Bursts). Deterministic (no seed). Pass the fixed-B3 flag `false` if the fixed B3 slot's buffs confound a reading.
    - **Discriminating assertion per FAITHFUL/FIX/MISSING line:** GREEN under the faithful reading, RED under
      the nearest-wrong model (built via `withPatchedOverride`). Event-log over totals wherever the claim is
      structural (`cfg.onEvent`; kinds shot/damage/buffApply/buffRemove/reload/burstCast/fullBurstStart/
