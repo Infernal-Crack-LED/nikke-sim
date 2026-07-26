@@ -79,8 +79,10 @@ const DOT_CRIT = ENV.DOTCRIT !== 'off';
 // caveat ⚑4 names this defect), nayuta (Memory Incineration 530.46%), neon-vision-eye (Super
 // Firepower 262.79%) — all three coefficients are kit-verbatim/datamined, NONE calibrated-absorbed,
 // so the U13 ÷1.075 de-crit trap does not apply here (provenance audit 2026-07-22).
-// Note the true-damage carve-out (§2c owner ruling 2026-07-21: true damage cannot crit) is plumbed
-// below even though no rider is `flavor:"true"` today — the guard, not a live behavior change.
+// True damage CAN crit (owner ruling 2026-07-25, in-game confirmed; reverses the 2026-07-21 §2c
+// "true damage cannot crit" ruling). No `crit && !trueFlavor` guard was ever implemented — the engine
+// has always critted true damage (dealDamage gates crit on `opts.crit` alone), so the rider path below
+// critting a true-flavored rider at the caster rate is CORRECT, not a mis-model needing exemption.
 const RIDER_CRIT = ENV.RIDERCRIT !== 'off';
 // FBRULE (2026-07-14): candidate HEURISTICS for when SKILL/rider/DoT damage gets the +50% Full Burst
 // major. (Range is settled — skills never get the +30% range bonus; noRange is universal.) The
@@ -2882,11 +2884,10 @@ export function runSim(
       // Function "additional damage" CRITs at the caster's rate and NEVER cores (SSOT
       // damage-calculation.md §2b; datamined FunctionTable, nikke-damage-formula.md §3). `core`
       // and `noRange` stay as they were; FB is by landing time (no noFb passed). See RIDER_CRIT.
-      // LIMITATION: `extraHitDamagePct` is a SUMMED buff stat, so an individual rider's flavor is
-      // not representable here — a true-damage rider (§2c: true damage cannot crit, owner ruling
-      // 2026-07-21) could not be exempted without promoting the stat to a per-source list. No
-      // override carries a true-flavored rider today (all 3 are plain "additional damage"), so
-      // nothing is mis-modeled; authoring one would require that refactor first.
+      // `extraHitDamagePct` is a SUMMED buff stat, so an individual rider's flavor is not representable
+      // here — but that is fine: true damage CAN crit (owner ruling 2026-07-25, in-game confirmed;
+      // reverses the 2026-07-21 §2c "cannot crit" ruling), so a true-flavored rider critting at the
+      // caster rate via RIDER_CRIT is CORRECT and needs no per-source flavor exemption.
       dealDamage(u, extraPerHit * u.char.hitsPerShot, frame, {
         crit: RIDER_CRIT, core: false, charge: false, category: 'burst', noRange: true,
       });

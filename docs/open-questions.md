@@ -301,11 +301,11 @@ divergences remain at the same call site. **They are not the same kind of open:*
    `per/2` each, ~+50% on top of her weapon's own generation — her override keeps that encoding
    specifically to preserve the economy her measured-exact rotation depends on. So re-encoding a unit
    between the two primitives silently changes its rotation.
-2. **Flavor — genuinely inert.** `extraHitDamagePct` is a SUMMED buff stat, so an individual rider has
-   no `flavor`. A true-damage rider therefore could not be exempted from crit (§2c owner ruling: true
-   damage cannot crit) without promoting the stat to a per-source list. No override carries a
-   true-flavored rider today, so this capability gap currently mis-models nothing — but authoring one
-   would require that refactor FIRST.
+2. **Flavor — moot for crit (2026-07-25).** `extraHitDamagePct` is a SUMMED buff stat, so an individual rider
+   has no `flavor`. This no longer matters for crit: true damage CAN crit (owner ruling 2026-07-25, in-game
+   confirmed; reverses §2c), so a true-flavored rider critting at the caster rate is CORRECT and needs no
+   per-source exemption. (The summed-stat flavor distinction could still matter for other flavor-gated
+   behavior, e.g. `trueDamagePct` buff gating.)
 
 **Also unmeasured (the reason this is a question, not just a TODO):** whether function additional
 damage *should* generate burst gauge at high hit rates. The `skillGauge` constant is anchored on ONE
@@ -915,9 +915,10 @@ comps. → DECISIONS 2026-07-22; live flag `docs/STATE.md` §1.
 `DOT_CRIT` default flipped OFF→ON: DoT ticks + stored-hit releases now roll crit universally (core stays
 OFF; `DOTCRIT=off` reverts; per-dot explicit `crit` still overrides). Owner-directed; full-board A/B + Fable
 APPROVE; faithful>fit, board-neutral. The ÷1.075 "de-crit the calibrated base" prep step was DROPPED (a
-provenance audit found ~15/17 dot bases are kit-datamined true multipliers, not crit-absorbed). **Carve-out:
-TRUE DAMAGE CANNOT CRIT** — a new `crit && !trueFlavor` engine guard exempts every true-flavored hit (ada's
-grenade DoT, ein/laplace/chisato true flatDamage + trueNormals windows). Open follow-ups (footage-gated):
+provenance audit found ~15/17 dot bases are kit-datamined true multipliers, not crit-absorbed). **Carve-out
+REVERSED 2026-07-25: TRUE DAMAGE CAN CRIT** (owner ruling, in-game confirmed). The `crit && !trueFlavor` guard
+noted here was never implemented in the engine — true-flavored hits (ada's grenade DoT, ein/laplace/chisato
+true flatDamage + trueNormals windows) crit at the caster rate, which is correct. Open follow-ups (footage-gated):
 mihara-bonding-chain suspected tuned-base double-count; the `extraHitDamagePct` function-rider path
 (modernia/nayuta/neon-vision-eye) stays separate/out-of-scope. Live flag: `docs/STATE.md` §1. → DECISIONS 2026-07-21.
 
