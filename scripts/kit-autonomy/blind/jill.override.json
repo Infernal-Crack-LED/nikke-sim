@@ -1,0 +1,146 @@
+{
+  "slug": "jill",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 30,
+          "durationShots": 9
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 30,
+          "durationShots": 9
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 34.99,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 192,
+          "durationSec": 180,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 40.03,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 99.96,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 80.78,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 75,
+          "durationSec": 10
+        },
+        {
+          "kind": "consumeAmmo",
+          "fraction": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Normal attacks deal True Damage for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ Acid Ammo DoT: kit gives no stack/refresh rule. Modeled as ONE maintained instance (192% of final ATK every 1 s, duration >= fight). A literal per-magazine re-application of a 30 s DoT would stack ~10 concurrent instances (~1920%/s) because the engine appends DoT instances without dedup — globally implausible against her normal-attack DPS, so the maintained reading is the working hypothesis, not a measurement.",
+    "⚑ Acid Ammo DoT crit: left OFF (engine default; DoT crit is opt-in only where measured). noFb also left unset, so ticks take the +50% Full Burst major by landing timing (schema default).",
+    "⚑ Cadence tuple: pulls/s is datamine-unreliable and ammo 9 / reloadFrames 81 set how often Magnum Ammo and (under the literal reading) Acid Ammo re-apply. Magazine cycle length is the single biggest lever on both.",
+    "⚑ Hit Rate ▲ 80.78%: magnitude is kit-stated, but the hit-rate -> core-hit lift is the engine's derived hrCoreMult — the resulting core-rate change during her 10 s burst window is UNMEASURED.",
+    "Magnum Ammo is authored as 9 ROUNDS (durationShots), not seconds. At base capacity 9 the battle-start application plus the reload re-application tile every magazine, so uptime is 100% and the model is numerically identical to a permanent normalAttackPct 30. It diverges (correctly) only if max ammo is raised above 9, where rounds 10+ are unbuffed. Both blocks grant the same stat from the same caster slot, so same-caster-slot overwrite prevents any double-count.",
+    "The reload re-applications are keyed to `lastBullet` (fires at reload START) because the schema has no reload-COMPLETE trigger. No shot fires between reload start and reload completion and the buff is round-counted, so the phase offset moves no damage; the DoT phase would shift by one reload if the literal per-magazine reading is ever adopted.",
+    "Burst reload line is a stat CLAMP ('fixed at a 99.96% increase'), which the schema cannot express; approximated as an additive reloadSpeedPct 99.96 for 10 s. Identical while nothing else buffs Jill's reload, OVER-credits if a teammate stacks reload speed on top (a clamp would cap it).",
+    "'Normal attacks deal True Damage for 10 sec' is UNMODELED: the schema carries trueNormals only on weaponSwap and Jill swaps no weapon. Consequence: during her burst window her normals are not true-flavored, so S1's True Damage ▲ 34.99% has nothing to boost and the DEF-ignoring behaviour of true damage is absent — her burst window is under-credited. This is a schema/engine gap, not a modeling choice."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Jill (jill) is AR/Electric/Attacker/Burst III, ammo 9, no weapon swap, no direct burst damage — her burst is pure self-buff plus an ammo dump. S1 Magnum Ammo is normalAttackPct 30 held for 9 ROUNDS (durationShots, never wall-clock), applied at battle start and re-applied on every reload-to-max; at base capacity the two applications tile the magazine, giving 100% uptime. S1's True Damage ▲ 34.99% is keyed to burstCast ('when using Burst Skill'), so it fires only on rotations Jill herself bursts, never on a teammate-completed Full Burst. S2 Acid Ammo is one maintained sustained-flavor DoT of 192% of final ATK every 1 s covering the fight, rather than one 30 s instance per magazine; S2's ATK ▲ 40.03% is fullBurstEnter and therefore fires on any team Full Burst. In the burst block the buffs are ordered before consumeAmmo so the forced reload runs at the boosted reload speed; consumeAmmo fraction 1 supplies both 'Removes 100% of ammo' and 'Forced Reload', and its forced reload re-fires the lastBullet-keyed Magnum Ammo application. Hit Rate ▲ 80.78% feeds the engine's derived hit-rate-to-core lift. The one kit line with no schema home is 'Normal attacks deal True Damage', recorded verbatim in unmodeled."
+}

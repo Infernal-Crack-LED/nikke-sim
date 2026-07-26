@@ -1768,17 +1768,17 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
         "findings": [
-          "compensating errors: F1 burst true-dmg conversion unmodeled -> makes trueDamagePct 34.99 engine-inert (needs weaponSwap trueNormals); F2 Hit-Rate 80.78 unmodeled, measured core 0.20->0.90 (x1.45 window); F4 cadence conflict (sim 2.5/s +18% hot vs probe). Per-hit/DoT measured-exact"
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/jill.json + scripts/kit-autonomy/manual-review/jill.md."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "tb2 test-4 focus video — popups 99.7% exact; 1.67 heat was cadence (150rpm) -> 1.02 (A21)",
+      "evidence": "tb2 test-4 focus video — popups 99.7% exact; 1.67 heat was cadence (150rpm) -> 1.02 (A21) | kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; 9 lines FAITHFUL(7)/DOCUMENTED_GAP(2), 0 gotchas",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
@@ -1817,7 +1817,8 @@
         "mad": 0.08,
         "band": "±15%",
         "temp": "COLD ▼"
-      }
+      },
+      "residual": "reload-clamp owner ruling (99.96 'fixed at'=lock vs boost); trueNormals conversion measurement-gate (would activate trueDamagePct 34.99); acid maintained-vs-stacking design-arithmetic"
     },
     "laplace": {
       "name": "Laplace (Treasure)",
