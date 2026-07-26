@@ -31958,7 +31958,7 @@
     }
    },
    "generatorSupported": false,
-   "simSupported": false,
+   "simSupported": true,
    "baseStats": {
     "hp": 15000,
     "atk": 500,

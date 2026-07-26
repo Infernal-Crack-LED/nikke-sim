@@ -69,7 +69,7 @@
 | `inFb` | 4 | modernia, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
-| `interval` | 9 | cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, … |
+| `interval` | 10 | cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, flora, helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, … |
 | `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 4 | grave, noir, tove, trina |
@@ -95,7 +95,7 @@
 | `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
 | `resourceGate` | 4 | elegg-boom-and-shock, guillotine-winter-slayer, mana, soda-twinkling-bunny |
-| `selfAndAdjacent` | 1 | rouge |
+| `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 1 | naga |
 | `shotFired` | 22 | ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, helm, helm-aquamarine, … |
