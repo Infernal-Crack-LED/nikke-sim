@@ -1,0 +1,59 @@
+{
+  "slug": "ludmilla-winter-owner",
+  "stage": "S2c-reconciliation",
+  "date": "2026-07-26",
+  "reviewerModel": "claude-fable-5",
+  "driverModel": "qwen",
+  "leakDetected": null,
+  "reconciliation": {
+    "converged": true,
+    "summary": "Blind claude-fable-5 re-derivation converges with the driver on EVERY kit line — dispositions, triggers, target sets, durations, and the nearest-wrong counterfactuals all match. No REAL-GOTCHA. The reviewer independently named the same traps the driver's test pins: (1) skill2's counter must count CORE hits (hitCount 63 = 60/0.95 proxy + requiresCore), the single biggest swing — driver pins floor(shots/63)=137 vs naive floor(shots/60)=144 AND coreHitRate:0 -> 0 riders; (2) the +20-round refill is damage (weapon-state), not droppable defensive — driver pins fewer reloads + strictly more shots vs the effect removed; (3) Damage Taken is a BOSS-held debuff (casterIdx null / targetIdx null) that benefits the team, not a self buff — driver pins targetIdx null + mult.taken reaching 1.1256; (4) trigger-identity split: skill2 crit is fullBurstEnter (fires on helm-led FBs, count==fbStarts 11 != her 6 casts) while BOTH burst buffs are burstCast (count==her 6 casts) — driver pins both directions in the 2xB3 control comp; (5) the two burst buffs carry different durations (ATK 10s / Reload Speed 20s) — driver pins both expiresFrames. Reviewer additionally flagged the rider core:true nearest-wrong; driver added inertness pins (coreEligible false, coreRate 0, rangeApplied false) on both riders and re-ran GREEN.",
+    "lineByLine": [
+      {
+        "line": "S1 — every 60 normal hits -> boss Damage Taken +12.56% / 3s",
+        "driver": "FAITHFUL (hitCount 60, target enemy, damageTakenPct 12.56/3s; boss debuff casterIdx/targetIdx null; mult.taken reaches 1.1256)",
+        "reviewer": "FAITHFUL, load-bearing (boss DEBUFF benefits all five units; hitCount:60; expiresFrame-apply===180; must lapse across her reloads)",
+        "agree": true
+      },
+      {
+        "line": "S1 — every 60 normal hits -> 158.43% final ATK additional damage",
+        "driver": "FAITHFUL (flatDamage 158.43, skill bucket, crit-eligible, NOT core, no range; cadence floor(shots/60)=144)",
+        "reviewer": "FAITHFUL, load-bearing (flatDamage % of her final ATK, crits at caster rate, NO core, no range, FB by timing; nearest-wrong core:true)",
+        "agree": true
+      },
+      {
+        "line": "S1 — every 60 normal hits -> self Reloads 20 rounds",
+        "driver": "FAITHFUL (instantReload fraction 0.0667 = 20/300, self; fewer reload-to-max + strictly more shots vs removed)",
+        "reviewer": "FAITHFUL, load-bearing (instantReload fraction 20/300, NOT maxAmmoFlat / NOT fraction:1; stretches 300-belt to ~450 shots; reload events stay >0)",
+        "agree": true
+      },
+      {
+        "line": "S2 — every 60 CORE hits -> 109.64% final ATK additional damage",
+        "driver": "FAITHFUL-with-flag (hitCount 63 = round(60/0.95 MG core rate) + requiresCore; cadence floor(shots/63)=137; naive-60 -> 144; coreHitRate:0 -> 0)",
+        "reviewer": "FAITHFUL, load-bearing (hitCount + requiresCore:true; proc count === floor(coreHits/60) < floor(totalHits/60); exactly 0 at zero core exposure; THE key trap)",
+        "agree": true,
+        "note": "Both agree the encoding is faithful to the kit's 'core hits' intent via the engine's flat MG core rate; the 63-vs-63 core-rate proxy and the requiresCore gate are both pinned. The 0.95 MG core rate itself is an engine-owned unmeasured estimate (flagged in override note), so the pin is cadence-relative, not a hardcoded proc count."
+      },
+      {
+        "line": "S2 — beginning of Full Burst -> self Crit Rate +14.6% / 10s",
+        "driver": "FAITHFUL (fullBurstEnter, self, critRatePct 14.6/10s; count==fbStarts 11 != her 6 casts; lifts normal crit 0.15->0.296)",
+        "reviewer": "FAITHFUL, load-bearing (GENERIC critRatePct, fullBurstEnter = ANY team FB incl. helm-led; nearest-wrong burstCast under-credits helm-led FBs; expires ~600f)",
+        "agree": true
+      },
+      {
+        "line": "Burst — self ATK +62.54% / 10s",
+        "driver": "FAITHFUL (burstCast, self, atkPct 62.54/10s; count==her 6 casts)",
+        "reviewer": "FAITHFUL, load-bearing (atkPct self, burstCast NOT fullBurstEnter; count===her burstCast count; never on allies; absent on helm-led rotations)",
+        "agree": true
+      },
+      {
+        "line": "Burst — self Reload Speed +67.2% / 20s",
+        "driver": "FAITHFUL (burstCast, self, reloadSpeedPct 67.2/20s; distinct 20s vs ATK 10s; load-bearing: removing it costs ~1900 shots)",
+        "reviewer": "FAITHFUL, load-bearing (reloadSpeedPct self, 20s = DOUBLE the ATK window; nearest-wrong duration collapsed to 10s; shortened reload in t in (cast+10s, cast+20s))",
+        "agree": true
+      }
+    ],
+    "verdict": "GO",
+    "verdictBasis": "All 7 kit lines accounted for (all FAITHFUL, one with a documented engine-core-rate proxy flag), dispositions converge cross-family, no REAL-GOTCHA, leak check clean, discrimination strong (driver test GREEN vs shipped and RED vs the exact counterfactuals the reviewer independently named). Inert UNMODELED set is empty (every line maps to an existing primitive)."
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "slug": "ludmilla-winter-owner",
+  "kitDescription": "Ludmilla: Winter Owner is a water-element machine-gun attacker whose whole kit rewards keeping the trigger held down. Every 60 landed shots she marks the boss with a short 3-second damage-taken debuff the whole team benefits from, lands a bonus hit worth 158% of her attack, and tops up 20 rounds of her 300-round belt so she spends less time reloading. Every 60 core hits she fires a second, smaller bonus hit. Whenever any Full Burst begins — hers or a teammate's — she gains critical rate for 10 seconds. Her own burst is purely a self-buff: a large attack increase for 10 seconds plus a much faster reload for 20 seconds, keeping her sustained fire rolling.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "F1 'S1a emits a boss-held debuff': expects buffApply.durationShots === undefined, engine emits null for timed buffs — serialization convention, blind-test artifact (RECON_ERROR), no faithfulness signal",
+      "F2 'S1a rider is self-sourced only': teammatesIdentical over-strict — SSOT §6: skill hits generate the caster's flat burst-gauge value, so removing the 158.43% rider legitimately shifts team rotation timing; helm stayed byte-identical while liter/crown moved 0.03%/0.002% — the blind's byte-identity premise contradicts the gauge SSOT (RECON_ERROR)",
+      "F3 'S1b refill raises her damage': sign assertion at +0.001% is rotation-alignment coupling, not a dead line — the robust observables confirm the refill is live and additive: reloads-to-max 18 vs 26, shots 8652 vs 8639 (more shots with the refill proves add-not-set semantics, resolving the S6 caveat empirically); blind over-strict (RECON_ERROR)",
+      "F4 'S2a rider is self-sourced only': same gauge-coupling artifact as F2 (RECON_ERROR)",
+      "F5 'Burst ATK durationShots': same null-vs-undefined convention as F1 (RECON_ERROR)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Damage Taken ▲12.56% for 3s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 60, enemy target, damageTakenPct 12.56/3s; pinned boss-held (targetIdx null), cadence floor(shots/60), 180f expiry, mult.taken reaches 1.1256",
+        "blindSaid": "S5: identical structure asserted (hitCount:60/enemy/3s/12.56, boss-debuff null indices, team-wide effect verified by counterfactual); S6: byte-identical block",
+        "formulaCheck": "SSOT §1g Taken bucket is boss-side and stacks — correct routing; §2b hitCount cadence correct",
+        "fireRateOk": true,
+        "explanation": "Right bucket, right target set (boss debuff benefiting the team), right magnitude/duration vs prose, fires ~144 times over 180s. The only S5 red on this line (F1) is a null-vs-undefined event-shape convention."
+      },
+      {
+        "kitLine": "Deals 158.43% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 158.43 on the same hitCount-60/enemy block; pinned skill bucket, critEligible, NOT coreEligible (coreRate 0), no range; cadence floor(shots/60)",
+        "blindSaid": "S5: identical structure + requiresCore-false assertion, removal drops her total −18.6%; S6: identical, adds explicit crit:true (same behaviour as engine default)",
+        "formulaCheck": "SSOT §2b/§9: function-type additional damage crits at caster rate, never cores, noRange, FB by landing timing — encoding matches exactly",
+        "fireRateOk": true,
+        "explanation": "Kit says plain 'additional damage' (not core strike); the inertness pins (coreEligible false, rangeApplied false) kill the reviewer's named core:true nearest-wrong. F2 red is the gauge-coupling artifact, not a divergence."
+      },
+      {
+        "kitLine": "Reloads 20 round(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "instantReload fraction 0.0667 (=20/300), self, hitCount 60; pinned fewer reloads-to-max (18 vs 26) and strictly more shots (8652 vs 8639) vs the effect removed",
+        "blindSaid": "S5: identical fraction-range assertion (0.04–0.11) + full-refill counterfactual; S6: identical fraction, ⚑ flagged additive-vs-set semantics and fraction-vs-flat-rounds edge",
+        "formulaCheck": "SSOT §2a reload economy: 20/300 = 0.0667 is exact at scope lock (no max-ammo sources in the control comp); the additive-vs-set question is empirically resolved by the shot-count direction (more shots ⇒ top-up, not set-to-20)",
+        "fireRateOk": true,
+        "explanation": "Live and load-bearing at the prose cadence. Residual: fraction-of-max over-refills if max ammo is ever buffed — out of scope at scope lock; tracked as a low gotcha below."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "60 CORE hits → 109.64% rider",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 63 (=round(60/0.95), the engine's flat MG core rate) + requiresCore:true; pinned floor(shots/63)=137 vs naive floor(shots/60)=144, and coreHitRate:0 → 0 riders; ⚑ documented in note/caveats with footage recipe",
+        "blindSaid": "S5: asserted core-conditioning (requiresCore OR count>60) and count >= S1's 60 — driver passes both; it.skips the exact cadence as a GAP. S6: chose hitCount 200 (assumed 0.30 core rate), explicitly self-flagged as a guess",
+        "formulaCheck": "SSOT §1b: MG/SR/RL → flat 0.95 core (no accuracy circle) — the driver's 63 is whole-picture consistent with how the engine cores her own normal hits; the blind's 200 contradicts the engine's own MG model and would under-credit the rider ~3× (43 vs 137 procs)",
+        "fireRateOk": true,
+        "explanation": "The engine has no core-hit counter, so a count conversion is the only tractable encoding; using the engine's own 0.95 rate is the principled choice, documented ⚑ with a measurement recipe. The S6 divergence is spurious (a blind guess at an engine-internal parameter), corroborated by the formula SSOT — RECON_ERROR on the blind, not a driver finding. The 0.95 MG rate itself is unmeasured per-band; tracked as the documented low gotcha."
+      },
+      {
+        "kitLine": "FB begin → Crit Rate ▲14.6%/10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter, self, critRatePct 14.6/10s; pinned count == fbStarts (11) != her casts (6), targetIdx == LWO, 600f expiry, normal crit 0.15 → 0.296",
+        "blindSaid": "S5: identical trigger/target/duration assertions incl. applies-on-every-FB and no ownBurstGate; S6: byte-identical block",
+        "formulaCheck": "SSOT §1b/§11: plain 'Critical Rate ▲' is the generic stat (lifts normals, both riders, burst); fullBurstEnter matches 'at the beginning of Full Burst' wording (any team FB), distinct from burstCast",
+        "fireRateOk": true,
+        "explanation": "The trigger-identity split (FB-entry vs own-cast) is the kit's sharpest trap and both the reviewer and the blinds independently named it; the 2×B3 fixture (helm shares the slot) makes it genuinely discriminating."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK ▲62.54% for 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, atkPct 62.54/10s; pinned count == her 6 casts, targetIdx == LWO, 600f expiry",
+        "blindSaid": "S5: identical assertions incl. casterIdx==targetIdx (self-scaling, not casterAtkPct); S6: byte-identical",
+        "formulaCheck": "SSOT §1a/§11: plain self ATK ▲ dilutes into the (1+ΣATK%) term on her own staticAtk — atkPct self is the right key; burstCast (not fullBurstEnter) matches 'Affects self' on the burst button",
+        "fireRateOk": true,
+        "explanation": "Fires once per own cast (6/180s), never on helm-led rotations — correct. F5 red is the null-vs-undefined convention only."
+      },
+      {
+        "kitLine": "Reload Speed ▲67.2% for 20s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, reloadSpeedPct 67.2/20s; pinned distinct 1200f expiry vs ATK's 600f, and load-bearing shot economy (removal costs ~1900 shots)",
+        "blindSaid": "S5: identical + the expiresFrame delta exactly 600f between the two halves; S6: byte-identical",
+        "formulaCheck": "SSOT §2a: reload speed is subtractive in reloadFramesNeeded against reloadFrames 201 — the shot-count channel is real damage; 20s deliberately outlasts the 10s ATK window per prose",
+        "fireRateOk": true,
+        "explanation": "Both halves burstCast-gated with the correct asymmetric durations; the 600f delta pin kills the copy-paste 10s/10s and permanent-buff nearest-wrongs."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "'60 core hits' proxied as hitCount 63 + requiresCore because the engine has no core-hit counter; cadence rides the unmeasured flat 0.95 MG core rate",
+      "evidence": "Kit: 'Activates when hitting the Core for 60 time(s)'. SSOT §1b: MG/SR/RL → flat 0.95 core (no accuracy circle). Driver: 63 = round(60/0.95) + requiresCore, ⚑-flagged with recipe; blind S6: 200 (assumed 0.30), self-flagged guess that contradicts the engine's own MG model.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "needs measurement: pin the real MG core-hit fraction from footage (red CORE HIT popup share in a clean window), set count = round(60/measuredRate); recompute if the MG core model is ever refit per-band"
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill1",
+      "summary": "'Reloads 20 round(s)' encoded as instantReload fraction 0.0667 of max belt — exact at scope lock (300 ammo) but over-refills under any max-ammo buff",
+      "evidence": "Kit: 'Reloads 20 round(s) of ammunition.' Fraction 20/300 is exact with no max-ammo sources (scope lock, control comp); S6 flagged the fraction-vs-flat edge; the driver's note documents the top-up economy but not this specific edge.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "faithful at scope lock — no change now; if max-ammo sources ever enter the fixture, this needs a flat-round reload primitive (GAP), not a retuned fraction"
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": 1,
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA: all 7 kit lines are FAITHFUL with kit-literal magnitudes, correct triggers (hitCount 60 / 63-proxy / fullBurstEnter / burstCast), correct target sets (boss debuff vs self), and correct asymmetric durations, and every block verifiably FIRES at the prose cadence over 180s. Convergence is mechanically RED on 5 of 29 S5 assertions, but all 5 classify as blind-test artifacts, not driver divergences: two are a null-vs-undefined event-shape convention, two rest on a byte-identical-teammates premise that contradicts SSOT §6 (skill hits generate burst gauge, so removing a rider legitimately perturbs team rotation — helm stayed byte-identical), and one is a 0.001% damage-sign assertion swamped by rotation-alignment coupling whose robust observables (reloads 18 vs 26, shots 8652 vs 8639) the driver pins directly. The one substantive blind divergence (S6's hitCount-200 for the core-hit rider) is spurious — it assumes a 0.30 core rate that contradicts the engine's own flat 0.95 MG model, while the driver's 63 + requiresCore is whole-picture consistent and documented with a measurement recipe; the S6 filename-level leak is ruled non-voiding precisely because this divergence proves the blind never saw the driver's encoding. Discrimination is strong: naive-60 vs 63, coreHitRate:0 silencing, FB-entry (11) vs own-cast (6), the 600f duration delta, and the rider inertness pins are all RED under their named counterfactuals, and the cross-family reviewer independently named the same traps. Nothing must change for GO. Same-model residual for the owner to spot-check: (a) every agent inherited the engine's unmeasured flat 0.95 MG core rate, so the 63-proxy is stable-but-unvalidated — one real core-fraction footage read settles it; (b) the F3 explanation (0.001% sign inversion as rotation-alignment noise) is driver-asserted — a seeded Monte Carlo spread or a second deterministic arm of the no-refill counterfactual would confirm it is alignment coupling and not a subtly mis-routed effect.",
+  "model": "kimi-code/k3"
+}

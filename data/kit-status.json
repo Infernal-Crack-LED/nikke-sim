@@ -2098,15 +2098,19 @@
       "weapon": "MG",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/ludmilla-winter-owner.json + scripts/kit-autonomy/manual-review/ludmilla-winter-owner.md.",
+          "low FIDELITY (skill2): '60 core hits' proxied as hitCount 63 + requiresCore because the engine has no core-hit counter; cadence rides the unmeasured flat 0.95 MG core rate",
+          "low ENCODING (skill1): 'Reloads 20 round(s)' encoded as instantReload fraction 0.0667 of max belt — exact at scope lock (300 ammo) but over-refills under any max-ammo buff"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded (not owned)",
+      "evidence": "Pure model — never fielded (not owned) | kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; 7/7 kit lines FAITHFUL, driver test 13/13 GREEN",
       "graded": {
         "teams": 0,
         "within3pct": 0
@@ -2121,7 +2125,9 @@
         "skill2: the '60 core hits' proc is proxied as every 63 normal hits (engine MG core rate 0.95) — unmeasured estimate",
         "skill1: MG cadence tuple (fire rate / wind-up / reloadFrames 201) is datamined, unverified"
       ],
-      "board": null
+      "board": null,
+      "date": "2026-07-26",
+      "residual": "MG flat 0.95 core rate unmeasured (S2 hitCount-63 proxy stable-but-unvalidated — pin real core-hit fraction from footage); S1 instantReload fraction-of-max over-refills under any max-ammo buff (faithful at scope lock)"
     },
     "maiden-ice-rose": {
       "name": "Maiden: Ice Rose",
