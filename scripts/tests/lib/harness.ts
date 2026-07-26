@@ -14,7 +14,12 @@
 // Runs are deterministic: no `seed` in the config, so runSim does an expected-value pass
 // and totals are byte-stable across runs (that is what makes equality assertions legal).
 import { readFileSync } from 'node:fs';
-import type { DataFile, Element, LevelMultiplier, SimConfig } from '../../../src/types.js';
+import type {
+  DataFile,
+  Element,
+  LevelMultiplier,
+  SimConfig,
+} from '../../../src/types.js';
 import { runSim, type SimResult } from '../../../src/engine/sim.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
 import type { OverrideFile } from '../../../src/skills/index.js';
@@ -27,10 +32,14 @@ import {
 import { scopeLockCfg } from '../../lib/scope-lock.js';
 
 const readJson = <T>(file: string): T =>
-  JSON.parse(readFileSync(new URL(`../../../data/${file}`, import.meta.url), 'utf8')) as T;
+  JSON.parse(
+    readFileSync(new URL(`../../../data/${file}`, import.meta.url), 'utf8'),
+  ) as T;
 
 export const data: DataFile = readJson<DataFile>('characters.json');
-export const mult: LevelMultiplier = readJson<LevelMultiplier>('level-multiplier.json');
+export const mult: LevelMultiplier = readJson<LevelMultiplier>(
+  'level-multiplier.json',
+);
 export const cubes: CubesFile = readJson<CubesFile>('cubes.json');
 export const olLines: OlLinesFile = readJson<OlLinesFile>('ol-lines.json');
 export const skillLevels: SkillLevelData = (() => {
@@ -40,8 +49,9 @@ export const skillLevels: SkillLevelData = (() => {
     return {}; // optional (synced artifact)
   }
 })();
-export const archetypeTags: Record<string, string[]> =
-  readJson<{ tags: Record<string, string[]> }>('archetype-tags.json').tags;
+export const archetypeTags: Record<string, string[]> = readJson<{
+  tags: Record<string, string[]>;
+}>('archetype-tags.json').tags;
 
 /** Every sim/generator fixture shares this dependency bundle. */
 export const deps = { skillLevels, cubes, olLines };
@@ -52,7 +62,10 @@ export const deps = { skillLevels, cubes, olLines };
  * Throws if the unit has no override (a stale fixture must fail loudly, not silently
  * test a default-parsed unit).
  */
-export function withPatchedOverride(slug: string, mutate: (ov: any) => void): OverrideFile {
+export function withPatchedOverride(
+  slug: string,
+  mutate: (ov: any) => void,
+): OverrideFile {
   const base = loadOverride(slug);
   if (!base) throw new Error(`${slug}: no override on disk — fixture is stale`);
   const clone = JSON.parse(JSON.stringify(base));
@@ -70,6 +83,13 @@ export interface CompOptions {
   overrides?: Record<string, OverrideFile | undefined>;
   /** Extra SimConfig fields (still on the scope-lock basis). */
   cfg?: Partial<SimConfig>;
+  /**
+   * Per-unit mode selection, by slug (e.g. `{ mint: 'duet (w/ Prika)' }`). Threads into
+   * `prepareTeam`'s per-unit `mode`; an unset slug keeps the override's default (`modes[0]`).
+   * Needed to exercise a mode-gated encoding (a Tier-2 mode system) behaviourally — without
+   * it every fixture runs the default mode and the alternate blocks are never observed.
+   */
+  modes?: Record<string, string>;
   /**
    * Per-unit Limit Break stars (0–3) / Core enhancement (0–7), by slug. Overrides the
    * scope-lock `copies: 10` (⇒ 3★ + core 7) for that unit only.
@@ -94,7 +114,12 @@ export function runComp(o: CompOptions): SimResult {
   });
   const prepared = prepareTeam(
     chars,
-    o.slugs.map((s) => ({ doll: false, ol: 'base5' as const, ...o.unitLimits?.[s] })),
+    o.slugs.map((s) => ({
+      doll: false,
+      ol: 'base5' as const,
+      mode: o.modes?.[s],
+      ...o.unitLimits?.[s],
+    })),
     { overrides, ...deps },
   );
   const cfg = scopeLockCfg(
@@ -177,7 +202,10 @@ export const CLEAN_WEAPON_TEAMS = {
   b: ['emma', 'claire', 'idoll-ocean'],
 } as const;
 
-export const CLEAN_WEAPON_SLUGS = [...CLEAN_WEAPON_TEAMS.a, ...CLEAN_WEAPON_TEAMS.b];
+export const CLEAN_WEAPON_SLUGS = [
+  ...CLEAN_WEAPON_TEAMS.a,
+  ...CLEAN_WEAPON_TEAMS.b,
+];
 
 /**
  * RARITY CEILINGS (owner, 2026-07-23). Scope lock's `copies: 10` encodes an SSR ceiling —
@@ -196,7 +224,10 @@ export const CLEAN_WEAPON_SLUGS = [...CLEAN_WEAPON_TEAMS.a, ...CLEAN_WEAPON_TEAM
  * ⚠ `data/characters.json` carries NO unit-rarity field (the only `rarity` in the repo is doll
  * rarity), so nothing derives or enforces these — they are owner-supplied and hand-maintained.
  */
-export const CLEAN_WEAPON_LIMITS: Record<string, { stars: number; core: number }> = {
+export const CLEAN_WEAPON_LIMITS: Record<
+  string,
+  { stars: number; core: number }
+> = {
   'idoll-ocean': { stars: 0, core: 0 },
   claire: { stars: 2, core: 0 },
 };
@@ -262,7 +293,10 @@ export function stageCovered(
   return short >= 1 || short + pair >= 2;
 }
 
-export const rotationLegal = (chars: Record<string, any>, slugs: string[]): boolean =>
+export const rotationLegal = (
+  chars: Record<string, any>,
+  slugs: string[],
+): boolean =>
   stageCovered(chars, slugs, 'I') && stageCovered(chars, slugs, 'II');
 
 /** A generated team is 5 distinct units. */

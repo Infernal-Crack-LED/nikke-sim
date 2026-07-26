@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 42,
+      "unit-tested": 43,
       "authored": 13,
-      "audited": 19,
+      "audited": 18,
       "reconciled": 3
     },
     "tier": {
@@ -2446,23 +2446,27 @@
       "weapon": "RL",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "0.768 likely a CONFIG BUG not model bug: mode defaults 'solo' (halved values) unless comp fields prika / sets modes.mint; synthetic A/B own-dmg = 0.777 = board. Values exact, cadence measured. F1: Dancing heal (1.8% MaxHP/s) dropped -> crown recovery consumer never procs (hard rule 2)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (10/10 kit lines FAITHFUL or DOCUMENTED_GAP — 4 FAITHFUL, 6 DOCUMENTED_GAP, 0 REAL-GOTCHA, 0 RECON_ERROR) (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/mint.json + scripts/kit-autonomy/manual-review/mint.md.",
+          "med FIDELITY (burst + skill1 + skill2 (the Singing gate)): The Assigned-Part duty cycle is modeled as a static value-HALVING proxy firing every rotation, not as a dynamic part-state gate at kit-literal magnitudes — so the shipped solo values (22.51 / 9.97 / 25 / 16.36) differ from the prose's own numbers (45.02 / 19.94 / 50 / 32.72), and the driver's justifying premise that no engine primitive expresses the flip is contradicted by two independent blinds.",
+          "low FIDELITY (skill1): The Dancing heal (1.8% of caster Max HP every 1 sec for 3 sec) is dropped entirely, so no recovery event is emitted and any on-recovery consumer in the comp goes unfed.",
+          "low ENCODING (skill1): 'Activates when attacking with Full Charge' is reduced to a bare shotFired trigger with no recorded assumption — convergent across all three models, but the driver alone never flags it."
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": false,
-      "evidence": "Run A; release-latency landed 1.21->0.91; duet mode fix",
+      "evidence": "Run A; release-latency landed 1.21->0.91; duet mode fix | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (S7 opus binding judge, discriminationOk); cross-family S2b(fable-5)/S5/S6/S7(opus-5) converged on all 9 damage-relevant lines (casterAtkPct 45.02 flat, S2 stageEnter:3 crit 19.94/projExpl 50/pierce 32.72, burst Sing Along 30.02/40/45.05 unconditional); driver test 10/10 green; board 1.015 OK unchanged",
       "date": "2026-07-13",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "Singing-gate 50%-uptime halving proxy (dynamic resourceGate/everyN:2 encoding IS available, code-verified — owner spot-check #1 to enact + re-grade); Dancing heal UNMODELED (no HP pool, recovery-consumer channel); Full-Charge->shotFired assumption",
       "unmodeled": {
         "skill1": [
           "Full Charge in Assigned Part: Dancing: all allies recover 1.8% of caster's Max HP every 1 sec, lasts 3 sec."

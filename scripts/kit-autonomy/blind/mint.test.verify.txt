@@ -1,0 +1,175 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-bu-batch-2026-07-25[39m
+
+ [31m❯[39m scripts/kit-autonomy/blind/mint.test.ts [2m([22m[2m27 tests[22m[2m | [22m[31m9 failed[39m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 17[2mms[22m[39m
+       [32m✓[39m A: mint casts her Burst II several times, so her Assigned Parts are exercised[32m 1[2mms[22m[39m
+       [32m✓[39m A: Burst Stage 3 is entered several times, on frames distinct from mint's own cast[32m 0[2mms[22m[39m
+       [32m✓[39m B: mint still wins the stage-2 slot with crown in the comp[32m 0[2mms[22m[39m
+[31m       [31m×[31m B: crown's recovery consumer is still identifiable at the pinned magnitude[39m[32m 2[2mms[22m[39m
+       [32m✓[39m is caster-scaled (flat ATK add), NOT a raw 45.02% self-scaling atkPct[32m 1[2mms[22m[39m
+       [32m✓[39m reaches all 4 allies (including mint) for exactly 3 sec[32m 4[2mms[22m[39m
+       [32m✓[39m fires at her FULL-CHARGE cadence, not once per burst[32m 0[2mms[22m[39m
+[31m       [31m×[31m is GATED on Assigned Part: Singing — it does NOT fire on every shot of the fight[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m reaches a recovery consumer at all (the Dancing branch is live, not dropped)[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m is a 3-TICK heal-over-time, not a single instant heal[39m[32m 1[2mms[22m[39m
+       [2m[90m↓[39m[22m cancels both Assigned Parts when Sing Along is not active
+[31m       [31m×[31m critRatePct = 19.94 to all 4 allies for 10 sec[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m projectileExplosionPct = 50 to all 4 allies for 10 sec[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m pierceDamagePct = 32.72 to all 4 allies for 10 sec[39m[32m 1[2mms[22m[39m
+       [32m✓[39m is keyed to STAGE-3 ENTRY, never to mint's own (stage-2) burst cast[32m 0[2mms[22m[39m
+[31m       [31m×[31m is GATED on Assigned Part: Singing — it does NOT fire on every stage-3 entry[39m[32m 0[2mms[22m[39m
+       [32m✓[39m M4 — the 19.94% Critical Rate is a live damage lever, not an inert stat[32m 0[2mms[22m[39m
+[31m       [31m×[31m produces isolated windows of each branch, not both at once[39m[32m 1[2mms[22m[39m
+       [32m✓[39m attackDamagePct = 30.02 to all 4 allies for 10 sec, once per mint burst[32m 1[2mms[22m[39m
+       [32m✓[39m maxAmmoPct = 40 to all 4 allies for 10 sec, once per mint burst[32m 0[2mms[22m[39m
+       [32m✓[39m critDamagePct = 45.05 to all 4 allies for 10 sec, once per mint burst[32m 0[2mms[22m[39m
+       [32m✓[39m fires on mint's burst CAST, not on Full Burst entry[32m 0[2mms[22m[39m
+       [32m✓[39m M9 — Max Ammunition ▲40% is a REAL damage lever (ammo gates shots fired)[32m 0[2mms[22m[39m
+       [32m✓[39m M9 — it is a PERCENTAGE capacity buff, not a flat round count[32m 0[2mms[22m[39m
+       [32m✓[39m deals no skill or burst damage of her own (a pure supporter kit)[32m 0[2mms[22m[39m
+       [32m✓[39m grants no core / element / sustained / true-damage stat she never mentions[32m 0[2mms[22m[39m
+       [32m✓[39m grants Critical Rate UNSCOPED, as the kit writes it[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 9 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mF — fixture guards (a vacuous fixture must fail loudly, not pass silently)[2m > [22mB: crown's recovery consumer is still identifiable at the pinned magnitude
+[31m[1mAssertionError[22m: crown emits no attackDamagePct at all — fixture is stale: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m245:9[22m[39m
+    [90m243|[39m         anyCrownAtk[33m.[39mlength[33m,[39m
+    [90m244|[39m         [32m'crown emits no attackDamagePct at all — fixture is stale'[39m[33m,[39m
+    [90m245|[39m       )[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m246|[39m       [34mexpect[39m(
+    [90m247|[39m         anyCrownAtk[33m.[39m[34msome[39m((b) [33m=>[39m b[33m.[39mvalue [33m===[39m [33mCROWN_RECOVERY_VALUE[39m)[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mM1 — S1 Singing: ATK ▲45.02% OF THE SKILL USER, all allies, 3 sec, per full charge[2m > [22mis GATED on Assigned Part: Singing — it does NOT fire on every shot of the fight
+[31m[1mAssertionError[22m: the Singing ATK buff fired on every one of mint's charged shots — the Assigned Part gate is missing (the burst toggles Singing on only every OTHER cast): expected 106 to be less than 106[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m320:9[22m[39m
+    [90m318|[39m         "the Singing ATK buff fired on every one of mint's charged sho…
+    [90m319|[39m           'Part gate is missing (the burst toggles Singing on only eve…
+    [90m320|[39m       )[33m.[39m[34mtoBeLessThan[39m(shots)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m321|[39m     })[33m;[39m
+    [90m322|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mM2 — S1 Dancing: 1.8% of caster Max HP every 1 sec FOR 3 SEC, all allies[2m > [22mreaches a recovery consumer at all (the Dancing branch is live, not dropped)
+[31m[1mAssertionError[22m: no recovery reached crown — mint's Dancing heal is missing, or the whole Dancing branch never activates: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m333:9[22m[39m
+    [90m331|[39m         "no recovery reached crown — mint's Dancing heal is missing, o…
+    [90m332|[39m           [32m'branch never activates'[39m[33m,[39m
+    [90m333|[39m       )[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m334|[39m     })[33m;[39m
+    [90m335|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mM2 — S1 Dancing: 1.8% of caster Max HP every 1 sec FOR 3 SEC, all allies[2m > [22mis a 3-TICK heal-over-time, not a single instant heal
+[31m[1mAssertionError[22m: every recovery landed within 0 frames of a mint shot — a one-shot heal (ticks:1), not "every 1 sec for 3 sec": expected 0 to be greater than or equal to 90[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m353:9[22m[39m
+    [90m351|[39m         `every recovery landed within ${maxLag} frames of a mint shot …
+    [90m352|[39m           [32m'(ticks:1), not "every 1 sec for 3 sec"'[39m[33m,[39m
+    [90m353|[39m       )[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m90[39m)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m354|[39m     })[33m;[39m
+    [90m355|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mM4/M5/M6 — S2 Singing trio on BURST STAGE 3 ENTRY, all allies, 10 sec[2m > [22mcritRatePct = 19.94 to all 4 allies for 10 sec
+[31m[1mAssertionError[22m: expected [ 9.97 ] to deeply equal [ 19.94 ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   19.94,[39m
+[31m+   9.97,[39m
+[2m  ][22m
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m384:59[22m[39m
+    [90m382|[39m         [35mconst[39m applied [33m=[39m [34mmintBuffs[39m(base[33m.[39mevents[33m,[39m stat)[33m;[39m
+    [90m383|[39m         expect(applied.length, `mint emits no ${stat}`).toBeGreaterTha…
+    [90m384|[39m         expect([...new Set(applied.map((b) => b.value))]).toEqual([val…
+    [90m   |[39m                                                           [31m^[39m
+    [90m385|[39m         [35mfor[39m ([35mconst[39m f [35mof[39m [34mframesOf[39m(applied)) {
+    [90m386|[39m           [35mconst[39m holders [33m=[39m [35mnew[39m [33mSet[39m(
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mM4/M5/M6 — S2 Singing trio on BURST STAGE 3 ENTRY, all allies, 10 sec[2m > [22mprojectileExplosionPct = 50 to all 4 allies for 10 sec
+[31m[1mAssertionError[22m: expected [ 25 ] to deeply equal [ 50 ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   50,[39m
+[31m+   25,[39m
+[2m  ][22m
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m384:59[22m[39m
+    [90m382|[39m         [35mconst[39m applied [33m=[39m [34mmintBuffs[39m(base[33m.[39mevents[33m,[39m stat)[33m;[39m
+    [90m383|[39m         expect(applied.length, `mint emits no ${stat}`).toBeGreaterTha…
+    [90m384|[39m         expect([...new Set(applied.map((b) => b.value))]).toEqual([val…
+    [90m   |[39m                                                           [31m^[39m
+    [90m385|[39m         [35mfor[39m ([35mconst[39m f [35mof[39m [34mframesOf[39m(applied)) {
+    [90m386|[39m           [35mconst[39m holders [33m=[39m [35mnew[39m [33mSet[39m(
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mM4/M5/M6 — S2 Singing trio on BURST STAGE 3 ENTRY, all allies, 10 sec[2m > [22mpierceDamagePct = 32.72 to all 4 allies for 10 sec
+[31m[1mAssertionError[22m: expected [ 16.36 ] to deeply equal [ 32.72 ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   32.72,[39m
+[31m+   16.36,[39m
+[2m  ][22m
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m384:59[22m[39m
+    [90m382|[39m         [35mconst[39m applied [33m=[39m [34mmintBuffs[39m(base[33m.[39mevents[33m,[39m stat)[33m;[39m
+    [90m383|[39m         expect(applied.length, `mint emits no ${stat}`).toBeGreaterTha…
+    [90m384|[39m         expect([...new Set(applied.map((b) => b.value))]).toEqual([val…
+    [90m   |[39m                                                           [31m^[39m
+    [90m385|[39m         [35mfor[39m ([35mconst[39m f [35mof[39m [34mframesOf[39m(applied)) {
+    [90m386|[39m           [35mconst[39m holders [33m=[39m [35mnew[39m [33mSet[39m(
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mM4/M5/M6 — S2 Singing trio on BURST STAGE 3 ENTRY, all allies, 10 sec[2m > [22mis GATED on Assigned Part: Singing — it does NOT fire on every stage-3 entry
+[31m[1mAssertionError[22m: the Singing trio fired on EVERY Burst Stage 3 entry — the Assigned Part gate is missing (the burst toggles Singing on only every OTHER cast): expected 12 to be less than 12[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m432:9[22m[39m
+    [90m430|[39m         'the Singing trio fired on EVERY Burst Stage 3 entry — the Ass…
+    [90m431|[39m           'missing (the burst toggles Singing on only every OTHER cast…
+    [90m432|[39m       )[33m.[39m[34mtoBeLessThan[39m(stage3Frames[33m.[39mlength)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m433|[39m     })[33m;[39m
+    [90m434|[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/mint.test.ts[2m > [22mmint — kit spec (blind)[2m > [22mM7 — burst Assigned Part TOGGLE: Singing and Dancing alternate and never coexist[2m > [22mproduces isolated windows of each branch, not both at once
+[31m[1mAssertionError[22m: the Dancing branch never fired in fixture B: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/mint.test.ts:[2m459:9[22m[39m
+    [90m457|[39m         recoveryFrames[33m.[39mlength[33m,[39m
+    [90m458|[39m         [32m'the Dancing branch never fired in fixture B'[39m[33m,[39m
+    [90m459|[39m       )[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m         [31m^[39m
+    [90m460|[39m       [34mexpect[39m(
+    [90m461|[39m         singFrames[33m.[39m[34msome[39m((f) [33m=>[39m [34mfarFrom[39m(f[33m,[39m recoveryFrames[33m,[39m [34m5[39m [33m*[39m [33mFPS[39m))[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m9 failed[39m[22m[2m | [22m[1m[32m17 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (27)[39m
+[2m   Start at [22m 17:58:17
+[2m   Duration [22m 349ms[2m (transform 89ms, setup 0ms, import 232ms, tests 17ms, environment 0ms)[22m
+

@@ -1,0 +1,130 @@
+{
+  "slug": "mint",
+  "modes": [
+    "singing",
+    "dancing"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "mode": "singing",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 45.02,
+          "durationSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "mode": "dancing",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 3,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "mode": "singing",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 19.94,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 50,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 32.72,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 30.02,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 40,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 45.05,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates when entering Burst Stage 3 while not in Sing Along status. Affects self.",
+      "Cancels Assigned Part: Singing.",
+      "Cancels Assigned Part: Dancing."
+    ],
+    "burst": [
+      "Only one Assigned Part is applied according to Mint's current status.",
+      "Status 1: If in the Assigned Part: Dancing status, Mint gains Assigned Part: Singing. This effect is continuous and cannot be removed.",
+      "Status 2: If not in the Assigned Part: Dancing status, Mint gains Assigned Part: Dancing. This effect is continuous and cannot be removed."
+    ]
+  },
+  "caveats": [
+    "⚑ STATUS TOGGLE IS THE WHOLE KIT AND THE ENGINE HAS NO DYNAMIC-STATUS PRIMITIVE. Her burst flips Assigned Part each cast (no status -> Dancing on the FIRST burst, then Singing, then Dancing...), so in a real fight each branch is live only ~50% of rotations. This override freezes one branch for the whole fight via the top-level `modes` gate (default 'singing'), which OVER-CREDITS the singing branch ~2x in uptime and zeroes the dancing branch (and vice versa). Do NOT read either mode as a fight-average.",
+    "⚑ skill2's 'not in Sing Along' cancel branch is unmodeled: on any rotation where Mint does NOT cast her own burst, the real unit loses BOTH Assigned Parts (skill1 and the skill2 stage-3 buffs both go dead). The model keeps the selected branch live unconditionally, so it over-credits comps where another Burst II unit takes the rotation.",
+    "⚑ 'attacking with Full Charge' is modeled as `shotFired` (RL is a charge weapon, so every trigger pull is assumed a full charge). Any partial-charge shots in the engine's RL path would over-fire this block.",
+    "⚑ 'Affects all allies' is read as INCLUDING self (standard NIKKE reading); no `excludeSelf`.",
+    "pierceDamagePct is inert in v1 (documented) — the 32.72% line is kept for kit completeness / future consumers, not for current damage.",
+    "heal has no HP amount in the schema; the 1.8%-of-caster-Max-HP-per-second magnitude is recorded here only. It fires 3 recovery events (ticks:3, intervalSec:1) so teammate 'on recovery' consumers stay driven."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no committed override, no board, no probe data). Mint (mint), RL/Iron/Supporter/Burst II. Structure: burst grants a 10s team aura (Attack Damage 30.02 / Max Ammo 40 / Crit Damage 45.05, all `burstCast`+allies) that is status-INDEPENDENT, plus a self status toggle; skill1 and skill2 are the two status branches. Branch selection is exposed as `modes: ['singing','dancing']` (default 'singing'); this is an APPROXIMATION of an alternating per-rotation status — see caveats. skill1 singing = casterAtkPct 45.02 for 3s to all allies on each full charge (shotFired); skill1 dancing = a 3-tick HoT (heal, ticks:3, intervalSec:1) to all allies on each full charge. skill2 singing = stageEnter stage 3 -> allies crit rate 19.94 / projectile explosion 50 / pierce damage 32.72 for 10s. Max Ammunition 40% is modeled as a real weapon-state (shot-count) buff per the hard rule, not skipped. No noFb / hasPierce set (nothing in the prose licenses either); cadence tuple left at datamine values and flagged."
+}
