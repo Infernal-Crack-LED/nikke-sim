@@ -1,0 +1,283 @@
+{
+  "slug": "miranda",
+  "leakDetected": null,
+  "override": {
+    "slug": "miranda",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 30
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 5.44,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 30
+        },
+        "target": {
+          "kind": "alliesOfWeapon",
+          "weapon": "SMG"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 3.79,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 30
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 50.06,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 32.99,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 30.1,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 23.7,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 1,
+          "excludeSelf": true,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 85.42,
+            "durationShots": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "excludeSelf": true,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 40.4,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 56.23,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Hit Rate ▲5.44% (all allies) and ▲3.79% (SMG allies) map to hitRatePct, whose core-hit lift (sim.ts hrCoreMult) is a DERIVED magnitude, not a kit quantity — the damage consequence of both lines is unmeasured for this unit.",
+      "⚑ Cadence/reload tuple is datamine-sourced (SMG; ammo 120, reloadFrames 107) and per modeling-priors is the #1 uniform-heat cause. SMG is also the one class where nominal rate does not divide 60fps evenly, so the effective rate differs from nominal — verify against an ammo-counter read before trusting any hitCount:30 proc frequency.",
+      "⚑ hitCount:30 is keyed to LANDED normal attacks ('after landing 30'). The engine's hitCount fires on the owner's hits; if SMG landing fraction < 1 in-game, the real proc interval is longer than the sim's. Unmeasured.",
+      "skill2 block 3 'for 1 round(s)' is encoded as durationShots:1 per the ROUND-count rule (expires after the HOLDER fires 1 round, spanning reloads) — NOT wall-clock. On a fast-firing holder this window is ~1 frame-interval and contributes almost nothing; a wall-clock misread would massively over-credit. Flagged for judge scrutiny, but the text is literal.",
+      "'except the skill user; including the skill user if there are not enough allies' is encoded as excludeSelf:true. The fallback self-inclusion branch is not expressible in TargetDef and is moot on a full 5-unit team (there are always enough allies).",
+      "'highest final ATK' is literal → byFinalAtk:true (live effectiveAtk ranking) on both the skill2 single-target block and the burst 2-target block, per the A3 literal-word rule.",
+      "Every skill1/skill2 line is a stat buff with no damage rider, DoT, weapon-swap, heal/shield, gauge, ammo, or reload component — there is nothing in this kit for the FB-timing (noFb) or range rules to apply to, and no ⚑ is owed for them.",
+      "Burst is keyed to burstCast (this unit's own Burst I cast), not fullBurstEnter — a Burst I buff block fires on the rotations THIS unit casts. skill2's three blocks say 'entering Full Burst' literally, so they are fullBurstEnter (any team Full Burst), not burstCast."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (BLIND-STUDY, VALUES-WITHHELD): no override, tests, DECISIONS, probe data, or board output consulted. Pure support kit — 7 kit lines, all stat buffs, zero damage riders, zero weapon-state modifiers, zero heal/shield/gauge lines, so `unmodeled` is empty for all three slots (no silent drops). The three load-bearing judgment calls: (1) skill1's three lines share ONE trigger ('after landing 30 normal attacks') but THREE distinct target sets (all allies / SMG allies / self), so they are three blocks, and the SMG-scoped Hit Rate stacks additively on top of the all-ally Hit Rate for SMG holders including this unit; (2) skill2's 'for 1 round(s)' crit-rate grant is a ROUND count (durationShots:1), never 1 second — a seconds misread would be a large over-credit; (3) skill2 uses fullBurstEnter (text: 'when entering Full Burst' — fires on ANY team Full Burst) while the burst slot uses burstCast, which is the burstCast-vs-fullBurstEnter fidelity split. Damage-relevant risk is concentrated in the two hitRatePct lines (derived core-lift magnitude) and in the SMG cadence that sets the hitCount:30 proc rate."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 30 normal attack",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:30} — 'landing N normal attacks' is the hit-count trigger (counts rounds landed, not trigger pulls). Shared by all three skill1 blocks."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies. Hit Rate ▲ 5.44% 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 5.44, durationSec 5, target {kind:'allies'} (no excludeSelf — 'all allies' includes the user). ⚑ core-lift magnitude derived, not kit-stated."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "allies with a Submachine Gun; HR ▲3.79%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 3.79, durationSec 5, target {kind:'alliesOfWeapon', weapon:'SMG'} — weapon-typed, class-blind; this unit is SMG so she receives it in addition to the all-ally line."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self. ATK ▲ 50.06% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 50.06, durationSec 5, target {kind:'self'} — scales the unit's own ATK (self-scaling, so atkPct not casterAtkPct)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} for all three skill2 blocks — text is literally 'entering Full Burst', so it fires on ANY team Full Burst, NOT gated on this unit's own burst cast. No ownBurstGate (the text carries no 'after this unit uses her Burst Skill' clause)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all allies; Critical Damage ▲ 32.99% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 32.99, durationSec 10, target {kind:'allies'}. Unscoped crit damage (no 'of normal attacks' qualifier), so generic."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self; Critical Rate ▲ 30.1% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 30.1, durationSec 10, target self. Unscoped → critRatePct, not critRateNormalPct (no 'of normal attacks' in the line)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self; Attack Damage ▲ 23.7% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 23.7, durationSec 10, target self — 'Attack Damage' is the Damage Up bucket."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "1 ally, highest final ATK, exc. user",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesTopAtk', count:1, excludeSelf:true, byFinalAtk:true} — 'final ATK' is literal so live effectiveAtk ranking (A3 rule); exclude-then-take-1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Rate ▲ 85.42% for 1 round(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 85.42, durationShots:1 — ROUND-count duration (expires after the HOLDER fires 1 round, spanning reloads), NOT durationSec. No durationSec set, so no time expiry at all."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "(no activation clause — burst slot)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — a Burst I unit's own burst block fires when SHE casts, which is the burstCast-vs-fullBurstEnter fidelity distinction (keying it to fullBurstEnter would over-credit rotations another B1 casts). No stage qualifier in the text, so no stage field."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "2 allies, highest final ATK, exc. user",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesTopAtk', count:2, excludeSelf:true, byFinalAtk:true} — same literal 'final ATK' ranking as skill2 block 3; exclude-then-take-2."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 40.4% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 40.4, durationSec 10 — scales each recipient's OWN ATK ('ATK ▲ x%', no 'of the skill user's ATK' clause), so atkPct not casterAtkPct/highestAllyAtkPct."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Damage ▲ 56.23% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 56.23, durationSec 10, same target block as the ATK line (one block, two effects — the kit groups them under a single Affects clause)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].value / skill1[1].effects[0].value (hitRatePct 5.44 / 3.79)",
+      "estimate": "Ship the kit-literal percentages 5.44 and 3.79 into hitRatePct; the resulting core-hit lift is whatever sim.ts hrCoreMult yields (HRCORE=1 default).",
+      "reasoning": "ALWAYS-⚑ #7: the Hit-Rate→core magnitude is measured-only. The kit gives a Hit Rate percentage, but the mapping from that percentage to actual core-hit frequency (and therefore damage) is an engine-derived relationship, not a kit quantity. Both lines are team-wide, so any error here scales across the whole comp, and the two stack additively on SMG holders (9.23% combined for this unit and any SMG ally) — the largest single damage lever in an otherwise pure stat-buff kit.",
+      "recipe": "Record a comp with and without this unit at fixed gear and count CORE HIT (red) popups per 100 landed rounds on an SMG ally during the 5s window vs outside it; the delta in core rate per point of Hit Rate calibrates hrCoreMult. Cross-check with the accuracy-circle geometry in docs/data/sg-calc/ (owner ruling: the geometry is ground truth and outranks damage-back-derived core rates)."
+    },
+    {
+      "field": "cadence tuple — pullsPerSec / reloadFrames (base stats: ammo 120, reloadFrames 107)",
+      "estimate": "Engine default SMG cadence + datamined reloadFrames 107. Note SMG's nominal 1440 rpm = 2.5 frames does not divide 60fps evenly, so the effective rate is 60/ceil(2.5)=20.0/s, not 24/s.",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and prior 1 names cadence as the #1 cause of uniform heat. For THIS unit the cadence is doubly load-bearing because it sets how often the hitCount:30 trigger fires — the entire skill1 buff uptime (three simultaneous buffs, two of them team-wide) is a direct function of shots/sec. A 20% cadence error becomes a ~20% error in skill1 proc frequency, which propagates to every ally.",
+      "recipe": "Two-frame ammo-counter read 0.5s apart in a no-reload window, repeated in a second range band (docs/modeling-priors.md 'Measuring fire cadence'). The ammo counter measures shots/sec directly; do NOT use FB counts, which measure gauge/sec and cannot discriminate the two. Separately time a full reload from empty to confirm 107f."
+    },
+    {
+      "field": "skill1[*].trigger — hitCount:30 semantics (landed hits vs rounds fired)",
+      "estimate": "hitCount:30 as written; assume ~100% landing so the proc interval ≈ 30 rounds ≈ 1.5s at 20/s.",
+      "reasoning": "The text says 'after LANDING 30 normal attack(s)', not 'after firing'. The engine's hitCount trigger counts the owner's hits. If real SMG landing fraction is below 1 (accuracy circle at range), the true interval is longer than the sim's and skill1 uptime is over-credited. With a 5s duration on a ~1.5s nominal interval the buffs are effectively permanent, which makes the model INSENSITIVE to moderate cadence error in one direction — but a large landing shortfall could break that saturation. Cannot be resolved from text.",
+      "recipe": "From a recording, count this unit's landed hits (popup count) over a 10s window and compare to rounds spent off the ammo counter; the ratio is the landing fraction. Then verify the buff actually saturates: tap buffApply events for stat hitRatePct/atkPct and confirm re-application interval < 5s over the whole fight (not just the opening)."
+    },
+    {
+      "field": "skill2[2].effects[0].durationShots (1)",
+      "estimate": "durationShots:1 — expires right after the recipient's next single round.",
+      "reasoning": "Not a value I invented, but a semantics call worth surfacing: 'for 1 round(s)' is the ROUND-count primitive, so an 85.42% crit-rate grant lasts exactly ONE bullet on the highest-final-ATK ally. That is a very large number attached to a near-zero window, which is the shape most likely to be misread as 1 second (a ~10-60x over-credit depending on the holder's fire rate). The engine decrements after the shot's blocks dispatch, so the recipient's first post-FB-entry round does benefit. Whether the in-game window is genuinely one bullet or has an implicit floor is not verifiable from text.",
+      "recipe": "Put a slow-firing high-ATK ally (SR/RL) in the comp, enter Full Burst, and check whether exactly one of that ally's shots crits at the elevated rate vs a sustained run of crits. Read the buffApply event's durationShots field and count damage events between apply and drop."
+    }
+  ],
+  "model": "claude-opus-5"
+}

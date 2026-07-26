@@ -1,0 +1,166 @@
+{
+  "slug": "miranda",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 5.44,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SMG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 3.79,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 50.06,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 32.99,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 30.1,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 23.7,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "excludeSelf": true,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 85.42,
+          "durationShots": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "excludeSelf": true,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 40.4,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 56.23,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Hit Rate ▲5.44% (all allies) and ▲3.79% (SMG allies) map to hitRatePct, whose core-hit lift (sim.ts hrCoreMult) is a DERIVED magnitude, not a kit quantity — the damage consequence of both lines is unmeasured for this unit.",
+    "⚑ Cadence/reload tuple is datamine-sourced (SMG; ammo 120, reloadFrames 107) and per modeling-priors is the #1 uniform-heat cause. SMG is also the one class where nominal rate does not divide 60fps evenly, so the effective rate differs from nominal — verify against an ammo-counter read before trusting any hitCount:30 proc frequency.",
+    "⚑ hitCount:30 is keyed to LANDED normal attacks ('after landing 30'). The engine's hitCount fires on the owner's hits; if SMG landing fraction < 1 in-game, the real proc interval is longer than the sim's. Unmeasured.",
+    "skill2 block 3 'for 1 round(s)' is encoded as durationShots:1 per the ROUND-count rule (expires after the HOLDER fires 1 round, spanning reloads) — NOT wall-clock. On a fast-firing holder this window is ~1 frame-interval and contributes almost nothing; a wall-clock misread would massively over-credit. Flagged for judge scrutiny, but the text is literal.",
+    "'except the skill user; including the skill user if there are not enough allies' is encoded as excludeSelf:true. The fallback self-inclusion branch is not expressible in TargetDef and is moot on a full 5-unit team (there are always enough allies).",
+    "'highest final ATK' is literal → byFinalAtk:true (live effectiveAtk ranking) on both the skill2 single-target block and the burst 2-target block, per the A3 literal-word rule.",
+    "Every skill1/skill2 line is a stat buff with no damage rider, DoT, weapon-swap, heal/shield, gauge, ammo, or reload component — there is nothing in this kit for the FB-timing (noFb) or range rules to apply to, and no ⚑ is owed for them.",
+    "Burst is keyed to burstCast (this unit's own Burst I cast), not fullBurstEnter — a Burst I buff block fires on the rotations THIS unit casts. skill2's three blocks say 'entering Full Burst' literally, so they are fullBurstEnter (any team Full Burst), not burstCast."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (BLIND-STUDY, VALUES-WITHHELD): no override, tests, DECISIONS, probe data, or board output consulted. Pure support kit — 7 kit lines, all stat buffs, zero damage riders, zero weapon-state modifiers, zero heal/shield/gauge lines, so `unmodeled` is empty for all three slots (no silent drops). The three load-bearing judgment calls: (1) skill1's three lines share ONE trigger ('after landing 30 normal attacks') but THREE distinct target sets (all allies / SMG allies / self), so they are three blocks, and the SMG-scoped Hit Rate stacks additively on top of the all-ally Hit Rate for SMG holders including this unit; (2) skill2's 'for 1 round(s)' crit-rate grant is a ROUND count (durationShots:1), never 1 second — a seconds misread would be a large over-credit; (3) skill2 uses fullBurstEnter (text: 'when entering Full Burst' — fires on ANY team Full Burst) while the burst slot uses burstCast, which is the burstCast-vs-fullBurstEnter fidelity split. Damage-relevant risk is concentrated in the two hitRatePct lines (derived core-lift magnitude) and in the SMG cadence that sets the hitCount:30 proc rate."
+}

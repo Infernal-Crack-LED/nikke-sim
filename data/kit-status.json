@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-25",
+  "generatedAt": "2026-07-26",
   "policy": "Per-unit single source of truth: kit-parse rollout status (kitParse.*), tuning provenance (tier/tuned/evidence — absorbed from data/hand-tuned.json 2026-07-16; tier definitions in docs/hand-tuned.md), unmodeled kit text (mirrored from the override), and board pass records (sim/real per recorded comp, >1 = HOT). AUTO fields regenerate via scripts/kit-status.ts --refresh; workflow/evidence fields are preserved. Board ratio convention: docs/CONVENTIONS.md \"Ratio direction\".",
   "tiers": {
     "MEASURED": "focus recording / frame-count / gauge-popup read set or confirmed the values",
@@ -16,10 +16,10 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 41,
+      "unit-tested": 42,
       "authored": 13,
       "audited": 19,
-      "reconciled": 4
+      "reconciled": 3
     },
     "tier": {
       "VALIDATED": 10,
@@ -2501,28 +2501,26 @@
       "weapon": "SMG",
       "class": "Supporter",
       "kitParse": {
-        "status": "reconciled",
-        "provenance": "hand-authored",
-        "date": "2026-07-17",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "F0 BASIS MISMATCH: override models the TREASURE kit (owner screenshot); base kit differs (treasure SSOT gap family — helm/moran/laplace/miranda). F1 burst target count 2 vs base 1. F2 both S1 Hit-Rate lines dropped (hard rule 4). MODEL_ONLY/unowned",
-          "✅ CONFIRMED 2026-07-17: DB favorite-item prose now matches the existing screenshot-derived treasure override line-for-line; no change needed. Residual: alliesTopAtk can't exclude-self (unowned/model-only)."
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/miranda.json + scripts/kit-autonomy/manual-review/miranda.md."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — never fielded (not owned)",
+      "evidence": "Pure model — never fielded (not owned) | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (judge claude-opus-5, no gotchas); cross-family S2b(fable-5)/S5/S6/S7(opus) converged — S6 blind override semantically identical, S5 blind test 15/15 non-skipped green vs driver; two fixes (S1 hitRatePct 5.44-allies/3.79-SMG un-dropped; S2 85.42 'for 1 round' durationSec1.5->durationShots1)",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "HR->core magnitude derived/R8/HRCORE-gated (popup-fraction recipe); hitCount:30 landing-fraction + SMG frame-quantized 20/s cadence unmeasured; byFinalAtk convergent-by-reading not proven-by-test",
       "unmodeled": {
-        "skill1": [
-          "Activates after landing 30 normal attack(s). Affects all allies: Hit Rate ▲ 5.44% for 5 sec.",
-          "Activates after landing 30 normal attack(s). Affects all SMG-wielding allies: Hit Rate ▲ 3.79% for 5 sec."
-        ],
+        "skill1": [],
         "skill2": [],
         "burst": []
       },

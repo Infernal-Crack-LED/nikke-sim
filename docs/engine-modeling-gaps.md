@@ -29,7 +29,7 @@
 | `alliesOfClass` | 0 | _none_ |
 | `alliesOfElement` | 8 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, guillotine-winter-slayer, guilty, maiden-ice-rose, rei-ayanami |
 | `alliesOfElementWeapon` | 2 | ark-ranger-black, trina |
-| `alliesOfWeapon` | 6 | arcana-fortune-mate, d-killer-wife, drake, leona, noir, tove |
+| `alliesOfWeapon` | 7 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, tove |
 | `alliesTopAtk` | 5 | alice, maxwell, miranda, naga, soda-twinkling-bunny |
 | `atkOfMaxHpPct` | 2 | cinderella, maiden-ice-rose |
 | `bossElement` | 2 | eve, helm-aquamarine |
@@ -50,7 +50,7 @@
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
 | `critRateNormalPct` | 1 | helm |
 | `delaySec` | 3 | asuka-wille, rapi-red-hood, snow-white |
-| `durationShots` | 2 | helm, zwei |
+| `durationShots` | 3 | helm, miranda, zwei |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
 | `everyN` | 4 | mast-romantic-maid, neon-vision-eye, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 1 | neon-vision-eye |
@@ -64,7 +64,7 @@
 | `hasPierce` | 4 | alice, mari, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
 | `hitCount` | 33 | ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, … |
-| `hitRatePct` | 11 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, modernia, … |
+| `hitRatePct` | 12 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 4 | modernia, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
@@ -112,7 +112,7 @@
 | `trueNormals` | 3 | chisato, laplace, takina |
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
 | `unswapped` | 0 | _none_ |
-| `weapon` | 9 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, nayuta, noir, tove, … |
+| `weapon` | 10 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
 | `weaponSwap` | 11 | ada, chisato, cinderella-crystal-wave, laplace, moran, nayuta, red-hood, snow-white-heavy-arms, … |
 | `whileSwapped` | 1 | snow-white-heavy-arms |
 

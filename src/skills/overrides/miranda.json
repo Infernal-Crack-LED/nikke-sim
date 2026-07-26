@@ -1,14 +1,48 @@
 {
-  "note": "TREASURE KIT (user-provided screenshot 2026-07-13; base weapon row matches). CONFIRMED 2026-07-17: the DB sync now carries miranda's favorite-item prose and it MATCHES this screenshot-derived model line-for-line (self ATK 50.06; S2 ally critDmg 32.99 + self critRate 30.1/AD 23.7 + 1-topAtk critRate 85.42; burst 2-topAtk ATK 40.4/critDmg 56.23) — no change needed. [2026-07-17 EXCLUDE-SELF FIX] alliesTopAtk gained excludeSelf (was silently ignored) — both her S2 (1 top-ATK) and burst (2 top-ATK) targets now carry excludeSelf:true per kit ('except the skill user'). Board-neutral (she is a low-ATK support so top-N almost never included her anyway; not board-measured), but now faithful. Bossing S buffer. S1 (Phase 3): per 30 of her normal attacks — Hit Rate buffs unmodeled — hitRatePct is live for AR/SMG/SG via acrForHR, so the 3.79% SMG-ally line would lift SMG-ally core rate; re-evaluation queued (kit-audit plan 2026-07-20); SELF ATK 50.06%/5s at SMG cadence (~1.5s per 30 hits) = effectively permanent, modeled hitCount 30. S2 (Phase 2) on FB enter: allies Crit Damage 32.99%/10s; self Crit Rate 30.1 + Attack Damage 23.7/10s; 1 highest-ATK ally (except caster): Crit Rate 85.42% 'for 1 round' -> modeled as 1.5s (one SR carry shot; the famous Miranda crit-snapshot for RH/Alice). Burst (20s): 2 highest-ATK allies (except caster): ATK 40.4% + Crit Damage 56.23%/10s. alliesTopAtk excludeSelf:true (fixed 2026-07-17); she is a low-ATK support so top-2 rarely included her anyway.",
+  "note": "TREASURE KIT (user-provided screenshot 2026-07-13; base weapon row matches). CONFIRMED 2026-07-17: the DB sync now carries miranda's favorite-item prose and it MATCHES this screenshot-derived model line-for-line (self ATK 50.06; S2 ally critDmg 32.99 + self critRate 30.1/AD 23.7 + 1-topAtk critRate 85.42; burst 2-topAtk ATK 40.4/critDmg 56.23) — no change needed. [2026-07-17 EXCLUDE-SELF FIX] alliesTopAtk gained excludeSelf (was silently ignored) — both her S2 (1 top-ATK) and burst (2 top-ATK) targets now carry excludeSelf:true per kit ('except the skill user'). Board-neutral (she is a low-ATK support so top-N almost never included her anyway; not board-measured), but now faithful. Bossing S buffer. S1 (Phase 3): per 30 of her normal attacks — Hit Rate buffs unmodeled — hitRatePct is live for AR/SMG/SG via acrForHR, so the 3.79% SMG-ally line would lift SMG-ally core rate; re-evaluation queued (kit-audit plan 2026-07-20); SELF ATK 50.06%/5s at SMG cadence (~1.5s per 30 hits) = effectively permanent, modeled hitCount 30. S2 (Phase 2) on FB enter: allies Crit Damage 32.99%/10s; self Crit Rate 30.1 + Attack Damage 23.7/10s; 1 highest-ATK ally (except caster): Crit Rate 85.42% 'for 1 round' -> modeled as 1.5s (one SR carry shot; the famous Miranda crit-snapshot for RH/Alice). Burst (20s): 2 highest-ATK allies (except caster): ATK 40.4% + Crit Damage 56.23%/10s. alliesTopAtk excludeSelf:true (fixed 2026-07-17); she is a low-ATK support so top-2 rarely included her anyway. Kit-autonomy gauntlet 2026-07-25: two FIXES, both independently re-derived by the cross-family S2b reviewer (claude-fable-5, zero divergences). FIX-A: the two S1 Hit Rate lines (5.44 all allies / 3.79 SMG-wielding allies) were dropped under hard rule 4 PENDING CONE_DELTA (note 2026-07-17: 're-evaluation queued (kit-audit plan 2026-07-20)'); CONE_DELTA landed 2026-07-19 and hitRatePct is now live-wired for accuracy-circle weapons (AR/SMG/SG; modernia ships the identical stat 2026-07-25), so both are now encoded (hitCount 30, allies / alliesOfWeapon SMG, 5s) and removed from unmodeled. Hard rule 4 = 'Hit Rate raises the CORE-HIT rate, magnitude measured-only' — it PERMITS the stat, it does not forbid it. Load-bearing on miranda herself: she is the only accuracy-circle unit in the audit fixture (crown MG / ada RL / helm SR keep the flat base core rate), so +9.23% (5.44+3.79) lifts her OWN core fraction; the team value is the AR/SMG/SG consumer. ⚑ HR->core MAGNITUDE is derived (acrForHR reticle regression; additive-in-pp composition UNVALIDATED R8; HRCORE-gated) — same caveat modernia's hitRatePct carries; recipe: CORE HIT popup fraction inside vs outside the ~5s post-30-hit window in a Miranda focus video, on an AR/SMG/SG ally. FIX-B: the S2 '1 highest-final-ATK ally Crit Rate 85.42% for 1 round' line was shipped as durationSec 1.5 ('one SR carry shot'); 'for 1 round(s)' is round-count language identical to helm's '10 round(s)' (durationShots 10, helm H9), and the engine decrements shotsLeft on the HOLDER's shots (sim.ts:2955), so re-encoded durationShots 1 / no wall-clock expiry = the buffed ally's next ONE shot at +85.42 crit for ANY carry cadence (1.5s was ~36 shots on an SMG, a 36x over-credit; ~1 on an SR, which is why the fudge survived). ⚑ '1 round' durationShots semantics for rapid-fire carries is the literal model but the in-game round definition is unverified; recipe: count the buffed ally's crit-boosted shots per FB window in a focus video (expect exactly 1). Every kit line now modeled; unmodeled fully empty.",
   "unmodeled": {
-    "skill1": [
-      "Activates after landing 30 normal attack(s). Affects all allies: Hit Rate ▲ 5.44% for 5 sec.",
-      "Activates after landing 30 normal attack(s). Affects all SMG-wielding allies: Hit Rate ▲ 3.79% for 5 sec."
-    ],
+    "skill1": [],
     "skill2": [],
     "burst": []
   },
   "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 5.44,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SMG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 3.79,
+          "durationSec": 5
+        }
+      ]
+    },
     {
       "slot": "skill1",
       "trigger": {
@@ -85,7 +119,7 @@
           "kind": "buff",
           "stat": "critRatePct",
           "value": 85.42,
-          "durationSec": 1.5
+          "durationShots": 1
         }
       ]
     }

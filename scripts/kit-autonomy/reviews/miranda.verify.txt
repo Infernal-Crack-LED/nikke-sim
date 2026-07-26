@@ -1,0 +1,145 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-bu-batch-2026-07-25[39m
+
+ [31m❯[39m scripts/tests/units/miranda.test.ts [2m([22m[2m22 tests[22m[2m | [22m[31m7 failed[39m[2m)[22m[32m 13[2mms[22m[39m
+       [32m✓[39m is self-scoped, 50.06%, for 5s, firing repeatedly at SMG cadence[32m 1[2mms[22m[39m
+       [32m✓[39m DISCRIMINATES the target: all-allies reaches 4 and moves the carry total[32m 1[2mms[22m[39m
+[31m       [31m×[31m reaches all four allies, 5.44%, for 5s[39m[32m 2[2mms[22m[39m
+[31m       [31m×[31m is LOAD-BEARING: zeroing the Hit Rate lines drops miranda (the sole accuracy-circle unit)[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m reaches exactly the SMG ally (miranda), not the MG/RL/SR allies[39m[32m 0[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATES the weapon scope: retargeting to all allies reaches 4 holders[39m[32m 2[2mms[22m[39m
+       [32m✓[39m reaches all four allies on every FB window, for 10s[32m 1[2mms[22m[39m
+       [32m✓[39m DISCRIMINATES the target: self-only reaches 1 holder[32m 0[2mms[22m[39m
+       [32m✓[39m both self-scoped, for 10s, on every FB window[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATES the bucket: Attack Damage is attackDamagePct, not atkPct (moves her damage)[32m 0[2mms[22m[39m
+       [32m✓[39m buffs exactly ONE ally, never miranda (excludeSelf), at 85.42%[32m 0[2mms[22m[39m
+[31m       [31m×[31m is a ROUND count (durationShots 1), with NO wall-clock expiry[39m[32m 1[2mms[22m[39m
+       [32m✓[39m is encoded alliesTopAtk/byFinalAtk/count 1/excludeSelf (structural pin)[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATES the count: count 2 reaches two allies[32m 1[2mms[22m[39m
+[31m       [31m×[31m DISCRIMINATES the duration: a 1.5s window changes the buffed carry's damage vs one shot[39m[32m 0[2mms[22m[39m
+       [32m✓[39m buffs exactly TWO allies, never miranda, once per burst, for 10s[32m 0[2mms[22m[39m
+       [32m✓[39m DISCRIMINATES the count: all-allies reaches 4 and moves the total[32m 1[2mms[22m[39m
+       [32m✓[39m DISCRIMINATES the stat: atkPct (% of target OWN) ≠ casterAtkPct (% of miranda low ATK)[32m 0[2mms[22m[39m
+       [32m✓[39m buffs exactly TWO allies, never miranda, once per burst, for 10s[32m 0[2mms[22m[39m
+       [32m✓[39m shares the burst block/target with M7 (structural pin)[32m 0[2mms[22m[39m
+       [32m✓[39m zeroing miranda's whole kit drops both carries[32m 0[2mms[22m[39m
+[31m       [31m×[31m every kit line is now modeled — all unmodeled slots empty after the FIX[39m[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 7 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/miranda.test.ts[2m > [22mmiranda (Treasure) — kit spec[2m > [22mM2 — S1 Hit Rate ▲5.44% to ALL allies (hitCount 30, 5s) [FIX][2m > [22mreaches all four allies, 5.44%, for 5s
+[31m[1mAssertionError[22m: no 5.44 Hit Rate buff applied — line still dropped: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/miranda.test.ts:[2m203:81[22m[39m
+    [90m201|[39m     [35mconst[39m list [33m=[39m [34mbyStat[39m(base[33m.[39mevents[33m,[39m [32m'hitRatePct'[39m[33m,[39m [34m5.44[39m)[33m;[39m
+    [90m202|[39m     [34mit[39m([32m'reaches all four allies, 5.44%, for 5s'[39m[33m,[39m () [33m=>[39m {
+    [90m203|[39m       expect(list.length, 'no 5.44 Hit Rate buff applied — line still …
+    [90m   |[39m                                                                                 [31m^[39m
+    [90m204|[39m       [34mexpect[39m([34mdistinctTargets[39m(list)[33m.[39msize[33m,[39m [32m'all allies'[39m)[33m.[39m[34mtoBe[39m([33mALLIES[39m)[33m;[39m
+    [90m205|[39m       [34mexpect[39m([[33m...[39m[34mdurationsSec[39m(list)])[33m.[39m[34mtoEqual[39m([[34m5[39m])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/miranda.test.ts[2m > [22mmiranda (Treasure) — kit spec[2m > [22mM2 — S1 Hit Rate ▲5.44% to ALL allies (hitCount 30, 5s) [FIX][2m > [22mis LOAD-BEARING: zeroing the Hit Rate lines drops miranda (the sole accuracy-circle unit)
+[31m[1mAssertionError[22m: expected 201700199.40135714 to be greater than 201700199.40135714[39m
+[36m [2m❯[22m scripts/tests/units/miranda.test.ts:[2m208:30[22m[39m
+    [90m206|[39m     })[33m;[39m
+    [90m207|[39m     it('is LOAD-BEARING: zeroing the Hit Rate lines drops miranda (the…
+    [90m208|[39m       [34mexpect[39m(base[33m.[39mt[33m.[39mmiranda)[33m.[39m[34mtoBeGreaterThan[39m(noHR[33m.[39mt[33m.[39mmiranda)[33m;[39m
+    [90m   |[39m                              [31m^[39m
+    [90m209|[39m     })[33m;[39m
+    [90m210|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/miranda.test.ts[2m > [22mmiranda (Treasure) — kit spec[2m > [22mM3 — S1 Hit Rate ▲3.79% to SMG-wielding allies only (hitCount 30, 5s) [FIX][2m > [22mreaches exactly the SMG ally (miranda), not the MG/RL/SR allies
+[31m[1mAssertionError[22m: no 3.79 Hit Rate buff applied — line still dropped: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/tests/units/miranda.test.ts:[2m215:81[22m[39m
+    [90m213|[39m     [35mconst[39m list [33m=[39m [34mbyStat[39m(base[33m.[39mevents[33m,[39m [32m'hitRatePct'[39m[33m,[39m [34m3.79[39m)[33m;[39m
+    [90m214|[39m     it('reaches exactly the SMG ally (miranda), not the MG/RL/SR allie…
+    [90m215|[39m       expect(list.length, 'no 3.79 Hit Rate buff applied — line still …
+    [90m   |[39m                                                                                 [31m^[39m
+    [90m216|[39m       expect([...distinctTargets(list)], 'only miranda is SMG in this …
+    [90m217|[39m     })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/miranda.test.ts[2m > [22mmiranda (Treasure) — kit spec[2m > [22mM3 — S1 Hit Rate ▲3.79% to SMG-wielding allies only (hitCount 30, 5s) [FIX][2m > [22mDISCRIMINATES the weapon scope: retargeting to all allies reaches 4 holders
+[31m[1mAssertionError[22m: expected +0 to be 4 // Object.is equality[39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 4[39m
+[31m+ 0[39m
+
+[36m [2m❯[22m scripts/tests/units/miranda.test.ts:[2m219:81[22m[39m
+    [90m217|[39m     })[33m;[39m
+    [90m218|[39m     it('DISCRIMINATES the weapon scope: retargeting to all allies reac…
+    [90m219|[39m       expect(distinctTargets(byStat(smgToAll.events, 'hitRatePct', 3.7…
+    [90m   |[39m                                                                                 [31m^[39m
+    [90m220|[39m     })[33m;[39m
+    [90m221|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/miranda.test.ts[2m > [22mmiranda (Treasure) — kit spec[2m > [22mM6 — S2 Critical Rate ▲85.42% to 1 highest-final-ATK ally, "for 1 round" [FIX][2m > [22mis a ROUND count (durationShots 1), with NO wall-clock expiry
+[31m[1mAssertionError[22m: 1 round → durationShots 1: expected [ null ] to deeply equal [ 1 ][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   1,[39m
+[31m+   null,[39m
+[2m  ][22m
+
+[36m [2m❯[22m scripts/tests/units/miranda.test.ts:[2m259:91[22m[39m
+    [90m257|[39m     })[33m;[39m
+    [90m258|[39m     it('is a ROUND count (durationShots 1), with NO wall-clock expiry'…
+    [90m259|[39m       expect([...new Set(list.map((b) => b.durationShots))], '1 round …
+    [90m   |[39m                                                                                           [31m^[39m
+    [90m260|[39m       [34mexpect[39m(
+    [90m261|[39m         [[33m...[39m[35mnew[39m [33mSet[39m(list[33m.[39m[34mmap[39m((b) [33m=>[39m b[33m.[39mexpiresFrame))][33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/miranda.test.ts[2m > [22mmiranda (Treasure) — kit spec[2m > [22mM6 — S2 Critical Rate ▲85.42% to 1 highest-final-ATK ally, "for 1 round" [FIX][2m > [22mDISCRIMINATES the duration: a 1.5s window changes the buffed carry's damage vs one shot
+[31m[1mAssertionError[22m: expected 586064700.8995075 not to be 586064700.8995075 // Object.is equality[39m
+[36m [2m❯[22m scripts/tests/units/miranda.test.ts:[2m282:41[22m[39m
+    [90m280|[39m     })[33m;[39m
+    [90m281|[39m     it('DISCRIMINATES the duration: a 1.5s window changes the buffed c…
+    [90m282|[39m       [34mexpect[39m(s2Crit85Seconds[33m.[39mt[33m.[39mada)[33m.[39mnot[33m.[39m[34mtoBe[39m(base[33m.[39mt[33m.[39mada)[33m;[39m
+    [90m   |[39m                                         [31m^[39m
+    [90m283|[39m     })[33m;[39m
+    [90m284|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/tests/units/miranda.test.ts[2m > [22mmiranda (Treasure) — kit spec[2m > [22munmodeled lines (structural pins)[2m > [22mevery kit line is now modeled — all unmodeled slots empty after the FIX
+[31m[1mAssertionError[22m: expected [ …(2) ] to deeply equal [][39m
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [][39m
+[31m+ [[39m
+[31m+   "Activates after landing 30 normal attack(s). Affects all allies: Hit Rate ▲ 5.44% for 5 sec.",[39m
+[31m+   "Activates after landing 30 normal attack(s). Affects all SMG-wielding allies: Hit Rate ▲ 3.79% for 5 sec.",[39m
+[31m+ ][39m
+
+[36m [2m❯[22m scripts/tests/units/miranda.test.ts:[2m338:35[22m[39m
+    [90m336|[39m     it('every kit line is now modeled — all unmodeled slots empty afte…
+    [90m337|[39m       [35mconst[39m ov [33m=[39m [34mwithPatchedOverride[39m([32m'miranda'[39m[33m,[39m () [33m=>[39m {}) [35mas[39m any[33m;[39m
+    [90m338|[39m       [34mexpect[39m(ov[33m.[39munmodeled[33m.[39mskill1)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m   |[39m                                   [31m^[39m
+    [90m339|[39m       [34mexpect[39m(ov[33m.[39munmodeled[33m.[39mskill2)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+    [90m340|[39m       [34mexpect[39m(ov[33m.[39munmodeled[33m.[39mburst)[33m.[39m[34mtoEqual[39m([])[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m7 failed[39m[22m[2m | [22m[1m[32m15 passed[39m[22m[90m (22)[39m
+[2m   Start at [22m 17:09:55
+[2m   Duration [22m 589ms[2m (transform 89ms, setup 0ms, import 482ms, tests 13ms, environment 0ms)[22m
+
