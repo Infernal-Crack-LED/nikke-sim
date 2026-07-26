@@ -21,7 +21,12 @@
     "test": "npm run web:build && node scripts/web-smoke.mjs",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "test:dpschart": "npm run dpschart && npm run build && node scripts/web-smoke-dpschart.mjs"
+    "test:dpschart": "npm run dpschart && npm run build && node scripts/web-smoke-dpschart.mjs",
+    "ranks:burstgen": "tsx scripts/build-burstgen.ts",
+    "ranks:burstcdr": "tsx scripts/build-burstcdr.ts",
+    "ranks:sustain": "tsx scripts/build-sustain.ts",
+    "ranks:buffer": "tsx scripts/build-bufferchart.ts",
+    "ranks:all": "npm run ranks:burstgen && npm run ranks:burstcdr && npm run ranks:sustain && npm run ranks:buffer"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.0",

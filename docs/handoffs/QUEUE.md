@@ -307,6 +307,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   lands / after re-measure. Passive carries: next sync applies 18 behaviour-neutral `burstGaugePerShot`
   diffs; D.4 RL splash (multi-part scope only); E class-mismatch core-row guard (no current violator).
 
+- **⇒ RANK BOARDS BEYOND DPS — BACKEND LANDED 2026-07-26** (methodology `docs/data/rank-boards.md`;
+  registry `docs/STATE.md` §8). Four boards: burstgen / burstcdr / sustain / buffer, sources
+  `src/ranks/`, `npm run ranks:all` → `web/public/*.json`. **OPEN follow-ups:** (1) frontend pass
+  (tabs + fetchers — artifacts mirror the dpschart.json conventions); (2) DPS ranks for B1/B2 →
+  `docs/handoffs/2026-07-26-dps-ranks-b1b2.md` (owner plans in a separate session); (3) composite
+  support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same). Known caveats to
+  carry into any owner review: buffer board under-reads trigger-gated kits (crown's recovery-gated
+  lines fire only with a healer present); `soline-frost-ticket` reads NEGATIVE (−32k) on the buffer
+  board — unexamined sim interaction; sustain lifesteal lines valued on own damage only.
+
 - **⇒ `unmodeled` BACKFILL (~40 hand-authored overrides)** (deferred, owner-approved) — their authored slots
   carry `unmodeled: []` (skips still note-only); fill per unit via a kit-parse audit pass. Hand-authored
   values tracing to OLD fan wording may disagree with the official prose — reconcile per-unit when touched,

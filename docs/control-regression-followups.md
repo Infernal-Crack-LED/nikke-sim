@@ -111,3 +111,18 @@ overrides were partly calibrated against the inflated crit, so this is fit-expos
   recordings. The sim currently reads 11-12 / 12 / 12 / 9. If a count is ever measured, pin it then.
 - `crown` and `helm` also carry many readings on the main board (`scripts/experiment.ts`), so any
   retune of either must be A/B'd on `scripts/board-read.ts`, not only on the control suite.
+
+## 5. Parser gaps found by the rank-board census (2026-07-26)
+
+Surfaced while building `src/ranks/` (burst-gen / burst-CDR census over all tagged kits) —
+**findings-only, not enacted**:
+
+- **`d` and `elegg` battle-start gauge fills are silently dropped.** Their S2 lines (*"Activates when
+  the stage target appears … Fills Burst Gauge by 98.56%/100%, once per battle"*) parse to
+  `trigger kind: 'unsupported'` — the kit-parser regex (`scripts/lib/kit-parser.ts:78`) matches
+  "when the target appears" but not "when **the stage** target appears" — so the fillGauge lands in
+  `unmodeled` and never fires. Both are `simSupported: false` today, so nothing live is wrong; fix
+  the regex when either unit joins the roster (it also gates their burst-gen board eligibility).
+- **`rupee-winter-shopper`'s FB-end gauge buff gate is dropped.** *"if Shopping is at max stacks when
+  Full Burst ends → filling speed ▲7.9% for 5 sec"* parses as an UNGATED `fullBurstEnd → burstGenPct
+  7.9` — overcounts whenever Shopping isn't stacked. Not simSupported; no board impact today.

@@ -316,3 +316,26 @@ Two structural facts that keep getting re-derived:
   window widths (~8.2 s for a nominal 10 s window) are comparable to each other, never absolute.
 - **The "team burst bar" and "solo BURST meter" crops are SUB-STRIPS of that same gauge crop**, so
   they are not an independent instrument — they are diagnostics only.
+
+## 8. Ranking boards beyond DPS (landed 2026-07-26)
+
+Four non-DPS ranked lists, backend only (frontend not started). Sources `src/ranks/`, builders
+`scripts/build-{burstgen,burstcdr,sustain,bufferchart}.ts` (`npm run ranks:all`), artifacts
+`web/public/{burstgen,burstcdr,sustain,bufferchart}.json` (gitignored build outputs, not in
+verify.sh), tests `scripts/tests/ranks/*.test.ts`. Methodology of record: `docs/data/rank-boards.md`.
+Handoffs for the two planned follow-ups: `docs/handoffs/2026-07-26-dps-ranks-b1b2.md`,
+`docs/handoffs/2026-07-26-support-rank-composite.md`.
+
+- **burstgen** — all sim-supported units, solo, `cfg.disableBursts`, ranked by UNCAPPED total gauge
+  over 180s via the engine's additive `UnitResult.gaugeGenerated` counter (pre-clamp in
+  `addGauge`/`fillGauge`; nothing branches on it → byte-identical damage). Profiles: little-mermaid
+  +2MG, cinderella-crystal-wave +1MG (the only two team-ammo-scaling kits).
+- **burstcdr** — the 15 burst-cdr-tagged units, nominal team CDR sec per 40s (static table in
+  `src/ranks/burstcdr.ts`; shot-triggered rows use solo sim cadence).
+- **sustain** — 50 candidates (healer/shield tags + nayuta), team-total HP restored+shielded: thin
+  analytic layer over one sim run (maxHp + `cfg.onEvent` timeline), curated lines in
+  `src/ranks/sustain-table.ts`. Profiles: prika+mint duet, anchor-innocent-maid+mast-romantic-maid.
+- **buffer** — 74 B1/B2 + B3-buffer units, added carry DPS vs a no-op baseline over two synthetic
+  standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
+  (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element).
+

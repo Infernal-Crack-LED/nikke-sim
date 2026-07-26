@@ -13,6 +13,10 @@ dist/
 
 # DPS-chart matrix artifact — regenerated on every build/deploy (npm prebuild)
 web/public/dpschart.json
+web/public/burstgen.json
+web/public/burstcdr.json
+web/public/sustain.json
+web/public/bufferchart.json
 
 # ephemeral probe-processing workspace (frame extractions, regenerable from the
 # videoSec anchors in docs/probe-data/*.json; never source of truth)

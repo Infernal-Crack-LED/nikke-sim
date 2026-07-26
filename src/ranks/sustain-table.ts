@@ -30,8 +30,6 @@
 //                      procs 'first' = only the first trigger carries it
 //                      (anchor-innocent-maid's "Once:" line); 'all' = every
 //                      trigger opens a window.
-import type { } from '../types.js';
-
 export type SustainTrigger =
   | 'burstCast'
   | 'fullBurstEnter'

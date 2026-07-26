@@ -52,11 +52,17 @@ Primary sources:
 - **No auto-play efficiency factor exists.** Both solo recordings match the datamined
   values with no loss; the old `AUTO_GEN_EFFICIENCY 0.7` was compensating for the chain
   mechanics in §3 (and partially the focus rule in §4), both now modeled directly.
+- Sim observability (2026-07-26): `UnitResult.gaugeGenerated` accumulates each unit's
+  UNCAPPED total contribution (counted before the 100% clamp, still locked during Full
+  Burst and the chain). It feeds the burst-generation ranking board
+  (`docs/data/rank-boards.md`); no engine path branches on it.
 
 ## 2. Per-unit values
 
 Per-unit data lives in **`data/gauge-per-shot.json`** (85 units datamined, 15
-weapon-class modal fallbacks, 1 estimate). Class-modal targets per trigger (energy):
+weapon-class modal fallbacks, 1 estimate, plus 10 class-modal rows for the
+synthetic no-op/carry units of `src/dpschart/noop.ts` and
+`src/ranks/synthetics.ts`). Class-modal targets per trigger (energy):
 MG 10 per belt round · SMG 20–30 · AR 40–50 · SG 400 (10 pellets × 40) · SR 510–580
 (modal 560) · RL 280 (modal; the "clip-reload" family runs 650–720).
 
