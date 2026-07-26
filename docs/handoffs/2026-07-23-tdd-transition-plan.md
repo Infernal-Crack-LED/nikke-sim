@@ -18,7 +18,7 @@
   gates **fit**; nothing automated gates **faithfulness**. Unit tests are the only instrument that
   can: they are stat-independent and footage-independent.
 - TDD's real value here is the **forcing function**: `expect(buff active on rounds 1..10 spanning
-  the reload, gone on round 11)` is unwritable from a vague reading. The owner-driven spec review
+the reload, gone on round 11)` is unwritable from a vague reading. The owner-driven spec review
   per unit is the defense against encoding a misreading into the test itself.
 
 ## Current state (verified 2026-07-23)
@@ -45,6 +45,7 @@
 ## Step 1 — test harness (vitest) + engine event-log hook
 
 **1a. Install + config.**
+
 - `npm i -D vitest` (root package.json — single package, `/web` has no separate manifest).
 - Root `vitest.config.ts`: `include: ['scripts/tests/**/*.test.ts']`, node environment, no globals
   needed (import `describe/it/expect`). Vitest runs TS natively; the repo's `.js`-suffixed ESM
@@ -79,6 +80,7 @@ decomposition. Test: `scripts/tests/engine/event-log.test.ts` (10 assertions; th
 are INERT seedless + under a seed, and the exact per-bucket damage fold).
 
 Three refinements of the sketch above, all deliberate:
+
 - **No `buffExpire` for time/round expiry.** Buff lapse is LAZY here — `sum()`/`stat()` skip lapsed
   entries at read time and nothing sweeps the list — so there is no moment to emit, and adding a
   sweep would put per-frame work in the engine to serve instrumentation. `buffApply` carries
@@ -95,6 +97,7 @@ plus the reviewer's independent 128-run SET-vs-UNSET A/B over 16 roster teams (2
 mismatches on totals/buckets/pulls/burstCasts/fullBursts/rotationLog).
 
 **Payload follow-ups (NOT built — additive, pick up in step 2 as tests need them):**
+
 1. `buffApply` cannot express three ways a buff goes inert: `perResource` (the reported `value` is
    the STATIC one `sum()` ignores — a Golden-Chip test would assert a number the engine never uses),
    `rampFrames`, and `whileSwappedIdx`. All three are in scope at the emit site.
@@ -175,16 +178,17 @@ landing checklist. The steps below stay as the rationale of record.
 Shape only — no unit ordering here; each dedicated session picks its unit from the live worklists.
 
 Per unit, in a **dedicated session with the owner driving the spec**:
+
 1. Read the unit's FULL kit line-by-line together (blablalink prose = SSOT; full-kit-audit rule).
    The owner manually reviews and drives the test spec — this is the guard against the helm class
    of misreads (a test written from a wrong reading passes wrongly).
 2. Write `scripts/tests/units/<slug>.test.ts` — one assertion per kit line: trigger, target, scope,
    magnitude, duration semantics; plus explicit `unmodeled` acknowledgments (a skipped line is a
-   *decision*, recorded, not an omission).
+   _decision_, recorded, not an omission).
 3. Red → implement: override edit (gated path, per-session approval; engine primitive gaps go
    through the isolated-worktree flow) → green.
 4. Post-validation: board A/B (`board-read` / control-regression) as the OUTER accuracy loop —
-   unit tests pin *faithful*, the board pins *accurate*; neither substitutes for the other.
+   unit tests pin _faithful_, the board pins _accurate_; neither substitutes for the other.
 5. Override `note`/`caveats` updated to current-state prose; DECISIONS entry if a ruling was made.
 
 ### Step-3 landed unit specs (slug → test file)
@@ -206,7 +210,7 @@ Per unit, in a **dedicated session with the owner driving the spec**:
       gaps — a reusable lesson for any CDR unit. Her 1.208 HOT is NOT kit-encoding (zero self-damage
       lines) → the SMG weapon-model thread; batch-and-stop, nothing enacted.
 
-**Pattern worth reusing:** a line whose only observable is a *consumer's* reaction (helm H8) needs a
+**Pattern worth reusing:** a line whose only observable is a _consumer's_ reaction (helm H8) needs a
 fixture that strips the unit's OTHER sources of that same signal — otherwise saturation hides it and
 the test passes under both models. Same shape as liter L3 (strip every other heal to prove her
 cover-HP restore emits nothing).
@@ -236,7 +240,7 @@ cover-HP restore emits nothing).
       Output byte-identical (whole-board A/B, not just the snapshots). 6 payload follow-ups above.
 - [ ] 2: primitive backfill by census priority (multi-session; findings-only discipline; checklist
       appended here)
-- [ ] 3: per-unit TDD sessions begin (owner-driven; ongoing — this bullet never "completes", it
+- [x] 3: per-unit TDD sessions begin (owner-driven; ongoing — this bullet never "completes", it
       replaces the old kit workflow)
 - [ ] 4: doc/skill reframe + `/skill-maintenance`
 

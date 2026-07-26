@@ -1,4 +1,4 @@
-Run a batch of 10 kit-autonomy gauntlets on an isolated worktree. You are a THIN
+Run a batch of (owner determined size) kit-autonomy gauntlets on an isolated worktree. You are a THIN
 ORCHESTRATOR — you perform NO gauntlet stage yourself; you spawn one kit-gauntlet-driver
 sub-agent per unit and read each outcome from its artifacts. Keep your context minimal.
 
@@ -30,8 +30,8 @@ from <worktree>/scripts/kit-autonomy/results/<slug>.json (verdict/faithfulness),
 .gauntlet-progress-<slug>.txt, and `git log origin/main..HEAD`. Report one line:
 <slug> — <verdict> — faithfulness <x> — <sha>. Then step 4.
 
-BOUND 7. Exactly 10 units. Authoritative count = `git rev-list --count origin/main..HEAD` (one commit
-per unit). Stop at 10. Restart-safe: re-derive from this count + the provenance flips.
+BOUND 7. Exactly (owner determined size) units. Authoritative count = `git rev-list --count origin/main..HEAD` (one commit
+per unit). Stop at (owner determined size). Restart-safe: re-derive from this count + the provenance flips.
 
 SAFETY / STOP
 
@@ -44,7 +44,7 @@ SAFETY / STOP
   completed units committed, the problem unit uncommitted.
 - A "GO (same-model only)" is NOT a halt — it's committed and upgradeable later via the skill's
   recovery (opus retry + amend). Surface it and continue (or upgrade), don't stop.
-- If fewer than 10 eligible units remain, stop when exhausted and say how many completed.
+- If fewer than (owner determined size) eligible units remain, stop when exhausted and say how many completed.
 
-DONE 8. On completion (10 / halted / exhausted): summary table slug | verdict | faithfulness | commit.
+DONE 8. On completion ((owner determined size) / halted / exhausted): summary table slug | verdict | faithfulness | commit.
 Restate branch + worktree path.
