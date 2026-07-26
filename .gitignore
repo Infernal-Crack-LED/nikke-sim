@@ -36,3 +36,5 @@ scripts/blind-rebuild/results/
 scripts/probe/__pycache__
 scripts/probe/.venv
 scripts/kit-autonomy/cross-family/**/*
+
+.kimi-code/local.toml

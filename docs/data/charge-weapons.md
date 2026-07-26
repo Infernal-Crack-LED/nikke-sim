@@ -4,6 +4,7 @@ Detail doc for [game-mechanics.md](game-mechanics.md) §4. Engine: the charge bl
 per-frame loop in `src/engine/sim.ts`.
 
 Primary sources:
+
 - Decoded game tables: https://github.com/rcasdzxc/SD (CharacterShotTable,
   CharacterSkillTable — StatChargeTime semantics)
 - Reference sim: https://github.com/d34d633f/nikke-einkk (frame-quantization +
@@ -42,6 +43,7 @@ effective_charge_time = base_charge_time × (1 − ΣChargeSpeed%)     [floor: 1
 ## 2. Fire cycle — autofire vs release-fired (user taxonomy, 2026-07-13)
 
 Charge weapons split into two firing styles (user knowledge):
+
 - **Autofiring** (newer mechanic; known: liberalio, anis: star, nayuta-in-burst): holding
   fire auto-releases each shot with only a BAKED frame delay between shots — no release
   latency. On auto these run at their bare cadence.
@@ -53,8 +55,8 @@ Charge weapons split into two firing styles (user knowledge):
   - Maiden:IR (RL): 81f effective cycle = 60f charge + **21f** average hold, releasing at
     156-212% displayed overcharge with jitter (docs/probes/"maiden solo neutral target
     probe.MP4"; `charFixes.chargeFrames 81`).
-  The matching 21≈22f strongly suggests ONE mechanism: auto release latency on
-  release-fired weapons, not an SR-specific bolt cycle.
+    The matching 21≈22f strongly suggests ONE mechanism: auto release latency on
+    release-fired weapons, not an SR-specific bolt cycle.
 
 Engine state (updated after user testing, 2026-07-13): the 22f latency applies to ALL
 SR + RL by default — the autofire system is SPARSE (user-tested old-style: diesel-WS,
@@ -64,9 +66,13 @@ exactly). Exempt via `charFixes.noBoltRecovery`: neon-VE (user-tested), anis: st
 liberalio (autofire), cinderella (whole-magazine dump, §2a), SWHA (DB
 cycle-inclusive), SBS (user-CONFIRMED autofire; her 150% charge cap also matches the DB
 chargeMultiplier column, validating the per-unit values), plus all weapon-swap states.
-Vesti: Tactical Upgrade is a custom post-charge volley (4 rockets over ~1s). The only
-unit still unclassified is tia (open-questions U12); any recording's charge meter answers
-it instantly (steady ~100% releases = autofire; 150%+ readings = release-fired).
+Vesti: Tactical Upgrade is a custom post-charge volley (4 rockets over ~1s).
+**Fully classified (2026-07-26):** the datamined `input_type` field
+(`role.weapon.shot_detail.input_type`) is now the SSOT — `DOWN_Charge` = autofire,
+`UP` = release-fired (engine `isAutofireCharge()`, sim.ts:155). Tia is `UP` (release-fired).
+No per-unit flags needed; the old `charFixes.noBoltRecovery` exemptions were removed 2026-07-17
+as redundant (answered-questions U12).
+
 - Reload begins immediately after the final shot (latency doesn't delay it); matches
   einkk's spot_first/last_delay structure (12f + 12f) within a frame.
 - **Partial charge** damage interpolates linearly:
@@ -79,8 +85,9 @@ it instantly (steady ~100% releases = autofire; 150%+ readings = release-fired).
 then autofires the entire 24-round magazine at her datamined `rate_of_fire` WITHOUT recharging;
 on empty she reloads and charges once again. MEASURED 2026-07-21 by reading her on-screen ammo
 counter frame-by-frame (`docs/probes/720-kit-audit/cindy solo neutral.MP4`):
+
 - charge ≈ 1.0s (datamined `charge_time 100`), then 24 rockets at ≈3/s (datamined `rate_of_fire
-  180` = 20f/rocket), then reload ≈2.1s (datamined `reload_time 200`), then re-charge.
+180` = 20f/rocket), then reload ≈2.1s (datamined `reload_time 200`), then re-charge.
 - Full cycle ≈ 10.75s / 24 rockets → **≈390 pulls / 180s** (≈2.2/s sustained). The old
   per-rocket-charge model fired ≈300 (via a `chargeSpeedPct +45` proxy), which under-fired her —
   the cause of her COLD 0.937 board reading.
@@ -124,8 +131,7 @@ this autofire-after-first-charge behaviour, not a per-rocket charge-speed buff.
 Swap states (Red Hood Red Wolf, SWHA Fully Active, Nayuta SR mode, eunhwa-TU railgun,
 cindy-CW Snipe, maxwell burst) replace the unit's shot data. Two decoded findings:
 
-- Swaps can be **fire-rate-gated, not charge-gated**: Red Wolf (skill 1470610 → weapon
-  1047002) fires at `rate_of_fire 200` rpm = exactly 1 shot/18 frames (0.3s), regardless
+- Swaps can be **fire-rate-gated, not charge-gated**: Red Wolf (skill 1470610 → weapon 1047002) fires at `rate_of_fire 200` rpm = exactly 1 shot/18 frames (0.3s), regardless
   of charge speed; 51.46%/shot, 250% full charge, innate pierce, max_ammo 99 (no reload
   for the 10s window) [SD tables; einkk DOWN_Charge implementation]. ≈33 shots/window.
 - Engine rule: swaps with an explicit cadence are **CS-immune** (their cycles were either

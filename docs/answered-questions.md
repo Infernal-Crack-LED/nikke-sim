@@ -12,10 +12,10 @@ and no new ones are issued.)
 
 ---
 
-
 ### A34 (U14) — +50% Full Burst on SKILL damage is a TIMING gate; `FBRULE` default flipped to `timing` 2026-07-23 (range was already settled)
 
 **ANSWERED 2026-07-23 (owner ruling; shipped as a verified no-op).** Both halves are settled and live:
+
 - **RANGE:** skill/rider/DoT damage NEVER takes the +30% range major (`noRange` universal) — settled
   long before this entry, unchanged.
 - **FULL BURST:** it is a TIMING/snapshot gate. Any NON-burst-cast skill/rider/DoT landing inside the
@@ -34,15 +34,14 @@ re-add `noFb`. → DECISIONS 2026-07-23, `docs/STATE.md` §1.
 
 **Original question + evidence trail retained below.**
 
-
 > **STATE CORRECTION 2026-07-22 (owner kit read) — the last live `noFb` carrier is a FABRICATED block.**
 > `privaty`'s `skill2` `dot atkPct 1687 durationSec 10 intervalSec 3 noFb` is not in her kit. The 1687% is
 > a **last-bullet rider gated on Designated Target status**; `durationSec 10` came from the Designated
-> Target debuff window, `intervalSec 3` from the burst's *"Stuns for 3 sec"*. Her burst's 1407.64% IS
+> Target debuff window, `intervalSec 3` from the burst's _"Stuns for 3 sec"_. Her burst's 1407.64% IS
 > instantaneous and already correct, and the two 10 s markers are the self buff + enemy debuff, also
 > already correct. So the U14 footage recipe ("read the DoT popup in vs out of Full Burst") measures a
->  **The rider hits ONCE per trigger event** (owner 2026-07-22) — *"Activates when the last bullet hits a
-> target in Designated Target status"*, like every trigger in her kit. **The only "3" in her kit is that
+> **The rider hits ONCE per trigger event** (owner 2026-07-22) — _"Activates when the last bullet hits a
+> target in Designated Target status"_, like every trigger in her kit. **The only "3" in her kit is that
 > 3-second stun.** So any re-encoding must be DRIVEN by the `lastBullet` trigger; a fixed hit count
 > **MEASURED 2026-07-23 — the "1687 is absent in the u7 comp" premise is FALSE, and the block's `noFb`
 > is refuted.** u7 focus video @ 15.503 s: one popup stack carries 571,999 (red CORE HIT), 367,714
@@ -62,8 +61,8 @@ re-add `noFb`. → DECISIONS 2026-07-23, `docs/STATE.md` §1.
 > so the primitive is no longer the blocker. **`privaty` IS NOW ENACTED (2026-07-23, DECISIONS):** her burst
 > applies `targetStatus 'Designated Target'` (10 s) and the rider is a `lastBullet` block gated on it —
 > trigger-driven, no hardcoded hit count, `noFb` gone. The measurement that was being waited on arrived
-> and dissolved the question it posed (an occluded popup, not comp-dependence). ⚠ The old claim that this is *"the same
-> machinery `prika`/`mint`/`milk-blooming-bunny` need"* is **REFUTED** (premise gate, kit text, 4-of-4
+> and dissolved the question it posed (an occluded popup, not comp-dependence). ⚠ The old claim that this is _"the same
+> machinery `prika`/`mint`/`milk-blooming-bunny` need"_ is **REFUTED** (premise gate, kit text, 4-of-4
 > census): the registry is necessary for all four but SUFFICIENT only for `privaty`, whose status is
 > enemy-carried. The other three each need different machinery — see
 > `docs/handoffs/2026-07-22-engine-work-plan.md` §5e.
@@ -76,8 +75,8 @@ re-add `noFb`. → DECISIONS 2026-07-23, `docs/STATE.md` §1.
 > **ZERO** hits. Consequence: `skillNoFb`'s shipped `'perkit'` branch returns `perKitNoFb`, which is
 > false for every unit, so **`FBRULE=perkit` and `FBRULE=timing` are now behaviourally IDENTICAL** for
 > the whole roster (burst-cast damage stays FB-exempt under both, U10). The condition `sim.ts` names in
-> place for flipping the default — *"once all 6 are green the default flips to 'timing' with zero
-> further drift"* — is therefore met, and the flip is provably a no-op (verifiable by regression
+> place for flipping the default — _"once all 6 are green the default flips to 'timing' with zero
+> further drift"_ — is therefore met, and the flip is provably a no-op (verifiable by regression
 > byte-identity). **NOT FLIPPED — engine default, owner-gated.** Queued as a zero-drift cleanup.
 
 Range is SETTLED: skill/rider/DoT damage NEVER gets the +30% range bonus (`noRange` universal; ein's
@@ -94,6 +93,7 @@ type — flatDamage procs (liberalio ×1.333, ein feathers) + DoT (ginmy ×1.5) 
 **HEURISTIC SETTLED 2026-07-14 by JP research (well-sourced, one MEASURED) — it's a TIMING/SNAPSHOT
 gate, not a damage-type rule.** FB +50% is a Boost-bucket conditional applied to whatever is evaluated
 while the FB STATE is active; per-type behavior falls out of WHEN each type snapshots its buffs:
+
 - normal fire → live per-frame → FB in the window;
 - **burst-cast damage → snapshots at USE-time (before FB flips on) → NO FB** (matches U10; our privaty
   nuke read 2,422,498 = FB-off);
@@ -102,20 +102,20 @@ while the FB STATE is active; per-type behavior falls out of WHEN each type snap
 - **DoT/sustained → per tick → FB** (MEASURED: ginmy Mana DoT 297,240 in-game = 297,243 predicted WITH ×1.5);
 - distributed → like additional, EXCEPT **Modernia's Paradise Lost (失楽園) → no crit, no FB** (the one
   genuine type-exemption).
-**KR cross-validation (independent, 2026-07-14) — CONFIRMS the timing rule with a different empirical
-anchor.** dcinside measured Cinderella's BURST: her front/instant hit misses +50% (+ misses FB-entry
-buffs) while her additional damage (28.9%×stacks) GETS +50% — SAME burst, opposite outcome, so it's
-TIMING not type. nikke.gg's formula marks Core-Hit & Range as normal-attack-ONLY (asterisked) but
-Full Burst as having NO type restriction; a Python community calc codifies it as "FB active AND not the
-burst skill's own instant hit." So the burst exemption is precisely the INSTANT/front cast hit (resolves
-before FB is live), not "all burst-slot damage" — burst ADDITIONAL damage that ticks during FB does get
-FB. Sources: JP — ginmy.net/nikke_dot_test, note.com/joyful_flax523/n/nec33793e37d6, daywrite.space/
-archives/2063; KR — dcinside/gov/2134716 (Cinderella), nikke.gg/damage-formula, arca calc 118418095.
-⇒ `FBRULE=timing` (burst INSTANT exempt, everything else FB by landing timing) is the MECHANICALLY-CORRECT rule.
-The 6 per-kit `noFb` flags (LM/privaty/jill/maiden/eve/scarlet) are RELICS (as liberalio's was — removed
-when measured). They grade the board fine only via offsetting errors (value co-calibrated to FB-off).
-LANDING (a dedicated per-unit increment, like the liberalio re-tune): remove each noFb, re-audit the
-compensating over-model (cadence/value — do NOT blind-scale a datamined coefficient), re-grade.
+  **KR cross-validation (independent, 2026-07-14) — CONFIRMS the timing rule with a different empirical
+  anchor.** dcinside measured Cinderella's BURST: her front/instant hit misses +50% (+ misses FB-entry
+  buffs) while her additional damage (28.9%×stacks) GETS +50% — SAME burst, opposite outcome, so it's
+  TIMING not type. nikke.gg's formula marks Core-Hit & Range as normal-attack-ONLY (asterisked) but
+  Full Burst as having NO type restriction; a Python community calc codifies it as "FB active AND not the
+  burst skill's own instant hit." So the burst exemption is precisely the INSTANT/front cast hit (resolves
+  before FB is live), not "all burst-slot damage" — burst ADDITIONAL damage that ticks during FB does get
+  FB. Sources: JP — ginmy.net/nikke_dot_test, note.com/joyful_flax523/n/nec33793e37d6, daywrite.space/
+  archives/2063; KR — dcinside/gov/2134716 (Cinderella), nikke.gg/damage-formula, arca calc 118418095.
+  ⇒ `FBRULE=timing` (burst INSTANT exempt, everything else FB by landing timing) is the MECHANICALLY-CORRECT rule.
+  The 6 per-kit `noFb` flags (LM/privaty/jill/maiden/eve/scarlet) are RELICS (as liberalio's was — removed
+  when measured). They grade the board fine only via offsetting errors (value co-calibrated to FB-off).
+  LANDING (a dedicated per-unit increment, like the liberalio re-tune): remove each noFb, re-audit the
+  compensating over-model (cadence/value — do NOT blind-scale a datamined coefficient), re-grade.
 
 **RETUNE ATTEMPTED 2026-07-15 — BLOCKED on measurement.** All 6 noFb'd coefficients are DATAMINED
 (eve 720% seq nuke; LM 253.44%=63.36%×4 DoT + 850%=85%×10 barrage; jill 192% DoT; scarlet
@@ -152,8 +152,8 @@ retired. → `docs/handoffs/2026-07-22-engine-work-plan.md` §Step 6f.
 
 ---
 
-
 ### A31 (U17) — SG pellet landing is PER-UNIT; the class table STANDS as the shipped compromise — CLOSED by owner override 2026-07-17 (re-filed here 2026-07-22)
+
 > **Re-filed to ANSWERED 2026-07-22** — this entry had been left sitting in UNANSWERED while its
 > header said CLOSED, so greps for open work kept surfacing it. The single genuinely-open thread was
 > split out to **U27**; everything below is the settled record.
@@ -176,6 +176,7 @@ retired. → `docs/handoffs/2026-07-22-engine-work-plan.md` §Step 6f.
 Outcome of the pre-registered SG range-landing corroboration campaign (guilty + Brid: Silent Track
 solo reads vs the isabel hypothesis; scientific-method 2-of-2 decision = **LOG, no engine change** —
 the pre-registered SPLIT branch fired):
+
 - **Far band, two clean anchors agree:** Isabel implied landing ~0.656, Brid: Silent Track ~0.649
   (her far M 0.709 vs the isabel-hypothesis prediction 0.710 — a 0.1% hit). The staged candidate
   **far 0.75 → ~0.66** (⚑ calibrated-with-measured-support) is parked pending either a third clean
@@ -191,27 +192,27 @@ the pre-registered SPLIT branch fired):
 - All nine range-band reads across the three units sit BELOW the current table's predictions
   (sign-unanimous, magnitude-inconsistent) — the table is, if anything, generous at range, but by a
   per-unit amount.
-**CONSOLIDATION 2026-07-16 (all measured SG units) → decision = HOLD, no per-unit landing overrides
-this pass.** Per-unit landing ratios-to-table (term-independent), from every SG read in the repo:
-noir near/mid/far/midfar r0.99/1.00/0.99/0.98 (it SET the table); isabel r1.01/0.94/0.87/0.95;
-guilty r0.89/0.92/0.93/0.97 (flat ~0.91, far her LEAST-deficient band); brid-silent-track
-r1.01/0.92/0.88/0.89; dorothy-serendipity landing not separable (consolidation confound);
-soda-twinkling-bunny no isolable data (its footage counter is a TEAM total). Cross-unit spread:
-near 12.9% / far 12.2% / mid 9.0% / midfar 9.0% — every cell ≤ the class table, but by a PER-UNIT
-amount, with NO datamined-stat correlate (far/near ratios non-monotonic vs normalMult & reloadFrames;
-class/element give no split). **Why HOLD:** encoding per-unit landing now improves ZERO measured units
-and REGRESSES two — the sim-LOW units (isabel real/sim 1.086; guilty 1.35) are low for OTHER reasons
-(isabel rider + the U18 term; guilty's unmodeled S1-duplicate/S2-stack self-buffs + term), and every
-landing factor is ≤1 so applying it drags them further down. noir/dorothy already sit on the table.
-FIX ORDER: (a) promote the SG baselines to engine-loaded overrides (guilty/isabel/brid-silent-track
-live only in overrides-baselines/ → any loadOverride harness falls back to the bare parser, which
-over-fires brid's riders to ~4.9× — a harness artifact, NOT a model bug; her baseline reconciles at
-0.94); (b) resolve U18 (the ~+1.6% term); (c) THEN revisit landing. The one durable staged candidate
-is a per-unit `sgFarScale≈0.88` for isabel+brid ONLY (far ~0.66), NOT a class-wide far cut; cleanest
-engine shape if ever built = per-unit `sgLandingScale` (guilty) + optional `sgFarScale` (isabel/brid),
-unlisted units keep the class table. Consolidation memo + machine table: session archive u17-work/.
-**2026-07-16 FAR-BAND RESOLVED (per-unit; class-wide 0.66 REJECTED).** Two developments closed
-open item (1) "a third ATK-clean solo SG read":
+  **CONSOLIDATION 2026-07-16 (all measured SG units) → decision = HOLD, no per-unit landing overrides
+  this pass.** Per-unit landing ratios-to-table (term-independent), from every SG read in the repo:
+  noir near/mid/far/midfar r0.99/1.00/0.99/0.98 (it SET the table); isabel r1.01/0.94/0.87/0.95;
+  guilty r0.89/0.92/0.93/0.97 (flat ~0.91, far her LEAST-deficient band); brid-silent-track
+  r1.01/0.92/0.88/0.89; dorothy-serendipity landing not separable (consolidation confound);
+  soda-twinkling-bunny no isolable data (its footage counter is a TEAM total). Cross-unit spread:
+  near 12.9% / far 12.2% / mid 9.0% / midfar 9.0% — every cell ≤ the class table, but by a PER-UNIT
+  amount, with NO datamined-stat correlate (far/near ratios non-monotonic vs normalMult & reloadFrames;
+  class/element give no split). **Why HOLD:** encoding per-unit landing now improves ZERO measured units
+  and REGRESSES two — the sim-LOW units (isabel real/sim 1.086; guilty 1.35) are low for OTHER reasons
+  (isabel rider + the U18 term; guilty's unmodeled S1-duplicate/S2-stack self-buffs + term), and every
+  landing factor is ≤1 so applying it drags them further down. noir/dorothy already sit on the table.
+  FIX ORDER: (a) promote the SG baselines to engine-loaded overrides (guilty/isabel/brid-silent-track
+  live only in overrides-baselines/ → any loadOverride harness falls back to the bare parser, which
+  over-fires brid's riders to ~4.9× — a harness artifact, NOT a model bug; her baseline reconciles at
+  0.94); (b) resolve U18 (the ~+1.6% term); (c) THEN revisit landing. The one durable staged candidate
+  is a per-unit `sgFarScale≈0.88` for isabel+brid ONLY (far ~0.66), NOT a class-wide far cut; cleanest
+  engine shape if ever built = per-unit `sgLandingScale` (guilty) + optional `sgFarScale` (isabel/brid),
+  unlisted units keep the class table. Consolidation memo + machine table: session archive u17-work/.
+  **2026-07-16 FAR-BAND RESOLVED (per-unit; class-wide 0.66 REJECTED).** Two developments closed
+  open item (1) "a third ATK-clean solo SG read":
 - The "datamined per-unit accuracy/spread stat" alternative is a DEAD END — the synergy-API
   characters.json carries NO per-unit accuracy/spread/reticle field (full per-unit field set is
   enumerable: ammo, baseStats, burst, burstCooldownSec, burstGaugePerShot, chargeFrames,
@@ -230,23 +231,25 @@ open item (1) "a third ATK-clean solo SG read":
   CIRCULARITY CAVEAT: noir SET the table's far=0.74, so she cannot independently re-confirm that
   absolute value — but she independently establishes noir-far >> isabel/brid-far, and THAT spread
   (term-independent) is the valid falsifier of class-wide-0.66.
-**Consequence:** the staged far ~0.66 (`sgFarScale≈0.88`) survives ONLY as an isabel/brid-specific
-per-unit candidate, NOT a class-wide value; it stays DOCUMENTED-but-UNENCODED (HOLD rationale
-unchanged: isabel/brid are sim-LOW for rider/term reasons, so a <1 landing factor drags them
-further down). No new footage needed. The ONE thread that did not close with this — re-deriving isabel's
-mid/midfar with clock-drift correction — is carried forward as **U27** in UNANSWERED.
-Full record:
-docs/probe-data/guilty-sg-band.json + brid-silent-track-sg-band.json (+ -events) + noir-solo-recon.json,
-the pre-registration in the session archive, DECISIONS 2026-07-16.
+  **Consequence:** the staged far ~0.66 (`sgFarScale≈0.88`) survives ONLY as an isabel/brid-specific
+  per-unit candidate, NOT a class-wide value; it stays DOCUMENTED-but-UNENCODED (HOLD rationale
+  unchanged: isabel/brid are sim-LOW for rider/term reasons, so a <1 landing factor drags them
+  further down). No new footage needed. The ONE thread that did not close with this — re-deriving isabel's
+  mid/midfar with clock-drift correction — is carried forward as **U27** in UNANSWERED.
+  Full record:
+  docs/probe-data/guilty-sg-band.json + brid-silent-track-sg-band.json (+ -events) + noir-solo-recon.json,
+  the pre-registration in the session archive, DECISIONS 2026-07-16.
 
 ### A30 (U22) — Snow White (`snow-white`, AR/Iron) "Full Charge Damage: 1000%" is ×10 MULTIPLICATIVE — owner re-ruled ON THE FOOTAGE 2026-07-20 (re-filed here 2026-07-22)
+
 **The owner overruled their own ADDITIVE ruling in favour of the control-footage measurement, the same day
 it was taken.** U22 sat in UNANSWERED describing additive as "left standing pending an owner re-rule" — that
 was stale from 2026-07-20 onward and mis-reported the live engine for two days. Both halves shipped then:
+
 - **Encoding:** `snow-white.json` `burst[0].effects[0]` = `atkPct 499.5, charge:true, chargeMultPct:1000`
-  (→ ×10 = **4995% of ATK**). Her note: *"RESOLVED 2026-07-20: owner re-ruled ×10 on this footage
-  (chargeMultPct reverted 300.2002→1000)"*; *"The prior ADDITIVE reading (1499.5% via chargeMultPct
-  300.2002) is REFUTED"*. Commit `ae68b90`.
+  (→ ×10 = **4995% of ATK**). Her note: _"RESOLVED 2026-07-20: owner re-ruled ×10 on this footage
+  (chargeMultPct reverted 300.2002→1000)"_; _"The prior ADDITIVE reading (1499.5% via chargeMultPct
+  300.2002) is REFUTED"_. Commit `ae68b90`.
 - **The AR-fires-during-cannon-charge gap** (the sim silently dropping ~5s of AR fire per burst window,
   ~30s/fight) is FIXED by exactly the re-encode U22 proposed: the `weaponSwap` was DROPPED — no
   `weaponSwap`/`maxShots`/`hasPierce` field survives in her override, `charFixes` is `{}` — and the cannon
@@ -271,6 +274,7 @@ remains nice-to-have, and she stays COLD post-landing — that residual is a per
 question. → DECISIONS 2026-07-20; `src/skills/overrides/snow-white.json` note.
 
 ### A27 (U25) — Charge Speed formula + cinderella's RL cadence — RESOLVED 2026-07-21
+
 Charge Speed is **ADDITIVE** (subtractive on charge time); the divisive-formula hypothesis is REJECTED —
 do not change the global CS formula. cinderella's (`cinderella`, RL/Electric) cadence is NOT a CS effect:
 her real fire pattern is a **whole-magazine dump** (charge once ~1.0s → autofire all 24 rockets at datamine
@@ -281,6 +285,7 @@ subtractive-vs-divisive CS question and the earlier intermediate "reverted, keep
 model: `docs/STATE.md` §5 (magDumpRof). → DECISIONS 2026-07-21; `src/skills/overrides/cinderella.json` note.
 
 ### A28 (U18) — Sim ATK term ~+1.63% low = the unmodeled RELATIONSHIP (bond) bonus — RESOLVED + IMPLEMENTED 2026-07-16
+
 The residual was the unmodeled relationship (bond) ATK bonus — a flat class×MANUFACTURER stat present in
 every recording (manufacturer sets the bond cap: Pilgrim/Overspec 40, others 30; class picks the stat),
 matched to the in-game bond table exactly at the manufacturer max. IMPLEMENTED: `src/relationship.ts` +
@@ -292,18 +297,18 @@ reopened — the term is bond, not gear. → DECISIONS 2026-07-16.
 
 ### A33 (U31) — `jill`'s `reloadFrames: 0` REMOVED + burst forced reload modelled; "is fixed at" = stat LOCK — owner enactment 2026-07-22
 
-**RESOLVED and LANDED** → `docs/DECISIONS.md` (2026-07-22). Kept here because the *"is fixed at"*
+**RESOLVED and LANDED** → `docs/DECISIONS.md` (2026-07-22). Kept here because the _"is fixed at"_
 semantics ruling is reusable across the roster.
 
 - **Ruling: `"X is fixed at V"` CLAMPS the stat at V.** It is not a delta applied on top. Corroborated
-  across the corpus — the same construction appears as *"fixed at a 50% **reduction**"*
-  (`milk-blooming-bunny`) and as plain set-tos elsewhere (*"Pellet count is fixed at 1"* —
-  `dorothy-serendipity`, already modelled that way as her `consolidation`; *"Charge time is fixed at
-  0.7 sec"* — `anis-star`; *"Reload time is fixed at 3 sec"* — `cinderella-crystal-wave`).
-- **Consequence for `jill`:** her burst's *"Reload speed is fixed at a 99.96% increase for 10 sec"*
+  across the corpus — the same construction appears as _"fixed at a 50% **reduction**"_
+  (`milk-blooming-bunny`) and as plain set-tos elsewhere (_"Pellet count is fixed at 1"_ —
+  `dorothy-serendipity`, already modelled that way as her `consolidation`; _"Charge time is fixed at
+  0.7 sec"_ — `anis-star`; _"Reload time is fixed at 3 sec"_ — `cinderella-crystal-wave`).
+- **Consequence for `jill`:** her burst's _"Reload speed is fixed at a 99.96% increase for 10 sec"_
   grants her nothing, so `charFixes.reloadFrames: 0` had no support (its other two grounds —
   `reload_start_ammo 8` and a rolling-reload reading — are void per **U30**). Dropped; her burst's
-  *"Removes 100% of ammo. Forced Reload."* modelled via the existing `consumeAmmo { fraction: 1 }`.
+  _"Removes 100% of ammo. Forced Reload."_ modelled via the existing `consumeAmmo { fraction: 1 }`.
   Board **1.031 HOT ▲ → 0.919 COLD ▼**; per-arm isolation proved the `reloadFrames` constant carried
   the whole effect (forced reload alone moved her 0.001). Owner accepted the break in advance —
   faithful > fit.
@@ -311,14 +316,16 @@ semantics ruling is reusable across the roster.
   N2/N4/N5 in the open burst-cycle increment. Pre-existing shortfall UNMASKED, not created.
 
 **Open remainder (do not treat as closed):**
+
 1. **The LOCK primitive itself is unbuilt** — 8 units, 3 stat families, no clamp vocabulary in the
    engine → `docs/engine-modeling-gaps.md` §1b. Inert for `jill` only while her comps carry no
    reload-speed support.
-2. **`jill` is now a re-tune candidate at 0.919 COLD**, and *"Normal attacks deal True Damage for
-   10 sec"* remains unmodelled on the same burst block.
+2. **`jill` is now a re-tune candidate at 0.919 COLD**, and _"Normal attacks deal True Damage for
+   10 sec"_ remains unmodelled on the same burst block.
 3. **N1's 12-vs-13 shortfall** is now visible and unexplained → same family as **U29**.
 
 ### A32 (U13) — the `extraHitDamagePct` function-rider half — RESOLVED 2026-07-22 (`RIDERCRIT` ON)
+
 A29 resolved the DoT/stored-hit half of U13 and explicitly left the `extraHitDamagePct` function-rider
 path out of scope. That half is now closed. The path dealt its hit `crit: false`, contradicting BOTH
 the damage-calculation SSOT §2b and the datamined FunctionTable rule (nikke-damage-formula.md §3),
@@ -334,6 +341,7 @@ comps. → DECISIONS 2026-07-22; live flag `docs/STATE.md` §1.
 **Open remainder split out — see U28** (the gauge/flavor asymmetry at the same call site).
 
 ### A29 (U13) — DoT / function-rider ticks crit — RESOLVED 2026-07-21 (`DOT_CRIT` flipped ON)
+
 `DOT_CRIT` default flipped OFF→ON: DoT ticks + stored-hit releases now roll crit universally (core stays
 OFF; `DOTCRIT=off` reverts; per-dot explicit `crit` still overrides). Owner-directed; full-board A/B + Fable
 APPROVE; faithful>fit, board-neutral. The ÷1.075 "de-crit the calibrated base" prep step was DROPPED (a
@@ -344,8 +352,8 @@ true flatDamage + trueNormals windows) crit at the caster rate, which is correct
 mihara-bonding-chain suspected tuned-base double-count; the `extraHitDamagePct` function-rider path
 (modernia/nayuta/neon-vision-eye) stays separate/out-of-scope. Live flag: `docs/STATE.md` §1. → DECISIONS 2026-07-21.
 
-
 ### A26 — Scope-lock boss DEF is negligible — MEASURED/BOUNDED 2026-07-14
+
 NIKKE enemy DEF is a small FLAT subtractive value (min-1 floor), applied inside the base before the
 skill coefficient. ginmy.net/nikke_def_test measures Union-Training mobs at 100 and boss-type
 enemies at ≈140; at scope-lock effective ATK that moves any unit's total ≤0.12% (`scripts/battery/
@@ -357,6 +365,7 @@ placement (baseAtk subtraction, +ATK inside the paren, charge/skill mult outside
 atkbuff/atkdamagebuff tests. See DECISIONS (Measured mechanics, 2026-07-14).
 
 ### A24 (U11b) — The x2.5 charge gauge bonus is CAMERA-FOCUS-ONLY — MEASURED 2026-07-13
+
 Test battery 3, parts A1/A2 (docs/probes/"burst tests"): a two-unit fight (takina slot 1,
 crown slot 2) recorded twice, identical except who held camera focus. Takina UNFOCUSED
 steps the gauge +5.6-6.5% per shot — her flat 560 target value, which also excludes the
@@ -368,6 +377,7 @@ middle slot holds focus by convention, WHICH unit sits in slot 3 is now a real d
 variable in team building.
 
 ### A25 (A3) — Anis: Star's shot row is a STANDARD launcher; her battery reputation is kit generation — MEASURED 2026-07-13
+
 Her solo gauge recording steps ~+10.7-11.3% per pull = 280x2.5 (focused shot) + 280 (her
 Skill-1 proc's skill-generation) x1.06 (her own +6% team fill aura) — the standard
 launcher row, NOT the 840 estimated from the synergy column. The user's hypothesis that
@@ -377,9 +387,11 @@ gauge consumed at stage-1 open, her Burst-1 cast, stage-2 window expiry, forced 
 the chain-consumption mechanic on camera.
 
 ### A22 (U11) — Burst gauge generation, fully rebuilt from datamined tables + solo recordings — 2026-07-13
+
 Two solo recordings vs the raid boss (Maiden: Ice Rose, and Takina with a plain sniper
 rifle), the datamined CharacterShotTable, and the einkk reference simulator together
 replaced the calibrated gauge model with a measured one:
+
 - Per trigger pull vs the boss the gauge gains the unit's **target_burst_energy_pershot**
   (datamined per unit; universally exactly 2x the non-target base — the old "boss x2"
   was this column, not a rule). Cap 10,000 energy.
@@ -407,16 +419,17 @@ replaced the calibrated gauge model with a measured one:
   16.4s rotation) requires both. Auto-burst selection is leftmost-ready (a round-robin
   theory was tried and rejected: it makes bench Burst-3 units cast when real fights
   never pick them).
-Remaining open knob: unfocused charge-weapon gen (U11b ⚑ x2.2). INDEPENDENT SUPPORT
-(JP): a wiki3 reader comment states the charge-gen bonus applies to "the one NIKKE the
-camera is focused on" (焦点当ててるニケ1体) — supporting focus-only, which would mean
-the x2.2 is really compensating for unmodeled per-unit skill-generation quirks
-(nikke-synergy's arena data catalogues them: Ein's orb adds 560 energy every ~2.8s,
-Helm's kit a fixed 1,431, Liberalio/Snow White: Heavy Arms per-shot-sequence bonuses).
-Moran's 7.48s team CDR is KR-corroborated (Vortex/dcinside describe the treasure-3
-"on Full Burst start while in combat-assist state: all allies' burst cooldown -7.48s").
+  Remaining open knob: unfocused charge-weapon gen (U11b ⚑ x2.2). INDEPENDENT SUPPORT
+  (JP): a wiki3 reader comment states the charge-gen bonus applies to "the one NIKKE the
+  camera is focused on" (焦点当ててるニケ1体) — supporting focus-only, which would mean
+  the x2.2 is really compensating for unmodeled per-unit skill-generation quirks
+  (nikke-synergy's arena data catalogues them: Ein's orb adds 560 energy every ~2.8s,
+  Helm's kit a fixed 1,431, Liberalio/Snow White: Heavy Arms per-shot-sequence bonuses).
+  Moran's 7.48s team CDR is KR-corroborated (Vortex/dcinside describe the treasure-3
+  "on Full Burst start while in combat-assist state: all allies' burst cooldown -7.48s").
 
 ### A21 (U8-jill) — Jill: datamined 150 rpm magnum + rolling reload — 2026-07-13
+
 Test battery 2 test 4 (run-I order, jill focus). Her opening-magazine popups matched the
 sim at 99.7% on ALL FOUR damage classes (body 180,633 vs 181,131 predicted; core hit
 319,582 vs 320,464; crit 250,107 vs 250,796; acid tick 288,662 vs 289,469) — her per-hit
@@ -433,6 +446,7 @@ reload-speed buffs as 0.2 seconds — which equals our subtractive reload formul
 per-shot gauge at 1.1 (= our datamined base 110).
 
 ### A20 (U4-final) — Projectile Explosion DOES buff plain launcher normal attacks — MEASURED 2026-07-13
+
 Test battery 2 test 2 (anis-star · trina · cinderella, cinderella focus) settled this
 with a buff-independent ratio test: during full burst her ROCKET core-hit popup (963,377)
 divided by her skill-proc popup (771,268) = 1.2491, exactly the model's prediction WITH
@@ -443,6 +457,7 @@ Bonus from the same video: trina's burst rider "Burst Skill damage of skills wit
 the parser's decision to skip that line is empirically correct for now.
 
 ### A23 — Pierce does NOT double-hit core+body on the partless boss — VIDEO-CONFIRMED 2026-07-13
+
 Test battery 2 test 5 (run-A order, Alice focus, sniper-scope camera): every Alice shot
 lands as ONE popup (763,961 / 2,269,805 core hits early), never two simultaneous values.
 Confirms the A/B result that kept PIERCE_CORE_DOUBLE = false; the core+body double-hit
@@ -451,6 +466,7 @@ is a multi-part-boss mechanic. Bonus: her scope's charge meter shows charge held
 on her 1.5s cycle.
 
 ### A19 (U10) — Burst-skill damage does NOT get the +50% Full Burst multiplier — MEASURED 2026-07-13
+
 Settled by a direct popup measurement (test battery 2, test 1: the electric-battery team in
 run-B order, Cinderella holding camera focus). Her burst nuke's sequential hits read
 **non-crit 4,066,936 / crit 6,100,403** — the ×1.5 crit ratio confirms the pair, and both
@@ -487,6 +503,7 @@ non-crit read exactly 98.7% of prediction) is a small unmodeled factor in her bu
 cast — noted, not yet attributed.
 
 ### A18 — Kit-wide target-scope audit — 2026-07-13
+
 After trina ("1 leftmost Electric ally with assault rifles"), rouge ("self and 2 allies on
 both sides" + caster-Max-HP grants feeding HP-scaled ATK), and ada ("all Burst 3 allies who
 previously used their Burst Skill") each explained a team-level residual, ALL roster kits
@@ -503,12 +520,14 @@ alliesOfElementWeapon, selfAndAdjacent, and stage/element-filtered burstCasters 
 Board after: both run-B configs 0.90-1.13, both run-E configs 0.83-1.10.
 
 ### U4 (resolved) — ADOPTED 2026-07-13: projExpl DOES buff regular RL normals
+
 User's masking hypothesis confirmed empirically: with projExplOnRlNormals ON (now default) AND
 the universal rider-range exemption, anis-star and RRH stay centered (their projectile riders
 lose range while their RL normals gain projExpl — the two errors had been cancelling). SBS
 needed her proc set moved to the noFb class (1.30 → 1.14), consistent with U1's taxonomy.
 
 ### U5 (resolved) — SUPERSEDED by the measured range-band model (2026-07-13, later)
+
 User measured the test boss's movement: range bands mid/near/far/mid-far on a fixed timeline,
 +30% bonus only for weapon classes inside their effective range per band (near=SG, mid=SMG+AR,
 mid-far=MG+SR, far=SR), and RL NEVER receives it. Implemented as BOSS_RANGE_SCRIPT +
@@ -522,16 +541,19 @@ shot; first shot needs only charge + projectile travel. SR_BOLT_RECOVERY_FRAMES 
 MEASURED constant (⚑ removed). Any SR still reading off owns the error in its kit model.
 
 ### U6 (resolved) — Fight-level warm spots — dissolved by the 2026-07-13 rules; any residue is tracked as U8
+
 Clarified: "T2-style" meant the specific T2 SAMPLE run read uniformly warm vs the same units
 in other fights — sample variance or comp-specific modeling, not an archetype. After the
 rider-range + projExpl + MG rules, the per-fight spreads mostly closed (board 0.89-1.18
 except maiden). Revisit only if probe runs reopen it.
 
 ### U7 (resolved) — Unvalidated new models → probe plan generated AND executed (docs/probe-runs.md)
+
 9 runs (A-I) covering 27 probe units with validated anchors in every run, honoring the paired
 comps (mint+prika duet, emma+eunhwa duo, tia→naga shielder, rouge→cindy, trina→elec).
 
 ### A17 — MG wind-DOWN curve + subtractive reload + buff-overwrite rule — 2026-07-13 (late)
+
 User ruling: ore-game's graded wind-up recovery is right; the binary >100% rule was the top
 of a curve. Fit (all four observations on one line): while an MG is not firing, spin holds
 for a ~0.27s grace then retraces the wind-up ladder at ~2.8x climb speed — fully gone after
@@ -540,12 +562,14 @@ the measured >100%-buff full skip, RELOAD must be subtractive like charge speed:
 actual = displayed x 0.975 x (1 - buff) + 0.21s tail (ore-game reload-limit; engine
 reloadFramesNeeded). That exposed a third fix: Crown's two identical S1 reload lines were
 STACKING to 88.7% — the KR same-buff-overwrite rule is now implemented (same caster + slot
-+ stat + value dedupes). NET RESULT: the water-weak validation fight's (T4, and its
-replicate) team-wide ~0.87 cold RESOLVED (privaty's +51% team reload buff was being
-under-credited by the divisive formula) — that fight now reads 0.89-1.11;
-dorothy: serendipity 0.99; the validated-fight anchors sit at 0.88-1.13.
+
+- stat + value dedupes). NET RESULT: the water-weak validation fight's (T4, and its
+  replicate) team-wide ~0.87 cold RESOLVED (privaty's +51% team reload buff was being
+  under-credited by the divisive formula) — that fight now reads 0.89-1.11;
+  dorothy: serendipity 0.99; the validated-fight anchors sit at 0.88-1.13.
 
 ### A11 (U1) — Proc-class rule — ANSWERED 2026-07-13 (deep-dive research)
+
 Datamined (FunctionTable via nikkecsvlibrary; nikke-einkk reference sim; Prydwen unit notes;
 JP verification): kit lines "deals X% as additional damage" are FUNCTION-type skill damage,
 and the universal rule is — **crit YES (rolls at caster's rate), core NEVER, range NEVER,
@@ -560,7 +584,9 @@ inside comps whose rotation is still unverified). DoT-tick crit is unverified (e
 kept OFF).
 
 ### A12 (U2) — Maiden ×0.68 — SOLVED 2026-07-13 (video-measured; was cadence, not value)
+
 Video (docs/probes/"maiden solo neutral target probe.MP4", neutral target, scope lock):
+
 - Popups: rider 437,296 non-crit / 655,945 crit vs ATK 80,118 → the FULL 547.62% kit value
   (matches to 0.33%, the same ATK-rounding offset as her 244,753 core-rocket popup). Procs
   on every pull. Crit multiplier x1.5 confirmed on both instance types.
@@ -570,10 +596,12 @@ Video (docs/probes/"maiden solo neutral target probe.MP4", neutral target, scope
   holding ~0.35s past full; 6-pull mag + ~2.9s reload. The old model's 60f charge gave
   126 pulls/180s vs ~102 real — THAT ratio (0.81 on pulls, compounding with rider share)
   was the whole ×0.68.
-Fix: charFixes.chargeFrames 81 (MEASURED) + rider restored to 547.62. Solo run now 1.017
-with no calibrated factors left in her model. NOTE: overcharge hold is NOT universal —
-Helm's measured SR cycle (1.37s) shows no hold; treat it as per-unit measured behavior.
+  Fix: charFixes.chargeFrames 81 (MEASURED) + rider restored to 547.62. Solo run now 1.017
+  with no calibrated factors left in her model. NOTE: overcharge hold is NOT universal —
+  Helm's measured SR cycle (1.37s) shows no hold; treat it as per-unit measured behavior.
+
 ### A13 — Burst gauge generation — ANSWERED 2026-07-13 (datamined, three corroborating sources)
+
 Gauge = 10,000 energy; fill counts HITS not damage; per-hit base values by weapon/reload
 variant (MG 5, SMG 10-15, AR 20/25/45, SG 20 or 45 PER PELLET, SR 265-290, RL 140-360, with
 real per-unit exceptions — the DB burstGaugePerShot column matches the datamined table,
@@ -585,8 +613,10 @@ AUTO_GEN_EFFICIENCY = 0.7 ⚑ (auto chain delays 0.433/0.533/0.533+0.1s, re-aim,
 note old GEN_SCALE 1.4 == 2 x 0.7 — the two independent calibrations agree exactly).
 
 ### A14 — Run-A cold (red-hood 0.36 / alice 0.59) — SOLVED 2026-07-13 (decoded game data)
+
 Three stacked mechanisms, all from the decoded tables (github.com/rcasdzxc/SD +
 github.com/d34d633f/nikke-einkk reference sim):
+
 1. **Charge Speed is SUBTRACTIVE on charge time** — effective = base x (1 - sumCS%), floored
    at 1 frame; NOT base/(1+CS). Engine-wide change. Kit-text CS values keep their in-game
    semantics; the two hand-averaged values (cinderella ramp 80→45, anis-star fixed-0.7s
@@ -603,10 +633,11 @@ github.com/d34d633f/nikke-einkk reference sim):
    cadences in, doubling overshoots grossly (alice 1.87, RH 1.46). Engine keeps
    PIERCE_CORE_DOUBLE=false as a switch for future part-ed boss support. hasPierce still
    gates Pierce Damage ▲ buffs (Mint's 32.72 lands on alice/RH in run A).
-Result (probe run A): anis 0.97 · mint 1.27 · prika 0.84 · alice 1.15 · red-hood 0.92.
-Charge Speed hard-caps at +100% (RH's "excess value over 100%" conversion establishes it).
+   Result (probe run A): anis 0.97 · mint 1.27 · prika 0.84 · alice 1.15 · red-hood 0.92.
+   Charge Speed hard-caps at +100% (RH's "excess value over 100%" conversion establishes it).
 
 ### A15 — Auto-aim core floor — CALIBRATED 2026-07-13 ⚑
+
 JP frame analysis: auto reticle floor ~12.5px vs ~1px manual (~18-20% effective accuracy
 loss); auto can never guarantee core hits even at 100% core exposure. Engine AUTO_CORE_RATE
 = 0.85 ⚑ multiplying coreHitRate; centered the validated-fight anchors (anis 0.97-1.06 x7
@@ -708,6 +739,7 @@ not a real bug. HR-off SMG-near baseline ≈ 0.28 now measured. Direction (HR ra
 underpowered; a significant slope needs a bigger HR magnitude on a standard weapon (see the hitrate-core plan).
 
 ### A26 — Shotgun pellet-landing ⚑ + Dorothy: Serendipity consolidation — SEQUENCED (2026-07-15, Fable-arbitrated)
+
 Two coupled SG items surfaced auditing dorothy-serendipity (owner-greenlit class-A fix). Fable ruled
 **Option C: a sequenced two-step increment**, NOT a one-shot dorothy fix. Both steps are Fable-pre-op
 APPROVED-WITH-REVISIONS; neither implemented yet.
@@ -808,6 +840,7 @@ permanent +72% attack (a measured-contradicted fudge) dominates → **PH 0.69→
 (c) "moves up" FAILED — but Fable ruled it SMUGGLED the explicitly-UNRELIABLE in-burst 1.1–1.55M reads into the
 rule as an assumption; the mechanism criteria (anchored to the reliable data) passed, the fudge removal is
 faithful, so the invariant compels landing over keeping a known fudge. Rotation pins EXACT (only dorothy drifted).
+
 - **BLOCKED-pending-measurement (Fable condition):** dorothy's 0.44/0.35 rows must NOT be chased with tuning —
   the residual is the shared SG spray under-model + the unresolved burst question below.
 - **RESOLVED PREMISE (owner, 2026-07-15): the dorothy solo video IS burst-isolated — she CANNOT burst.** A lone
@@ -835,6 +868,7 @@ faithful, so the invariant compels landing over keeping a known fudge. Rotation 
 **(Superseded implementation plan — kept for provenance.)** STEP 2 — implementation plan (Fable pre-op R1–R4):
 Config-driven consolidation state (mirror the `charFixes` threading: `override.consolidation` → `prepare.ts`
 lifts to char → engine reads it; NO dorothy branch in the engine). Design:
+
 - **Accumulator+state** (UnitState `landedAcc`,`consolShotsLeft`): in `firePull`, `landed = round(hitsPerShot×sgFalloff)`;
   if band===near `landedAcc += landed`; at ≥80 → enter consolidation (`consolShotsLeft = 3`, reset acc).
   `consolidating = consolShotsLeft>0 && band===near`. Literal near-gated accumulator → ~19% ≈ measured 17%
@@ -858,8 +892,8 @@ lifts to char → engine reads it; NO dorothy branch in the engine). Design:
   lands ~9 not 6 pellets, but +5 is modeled as normalAttackPct so `landedAcc` misses it — first-order,
   acceptable if frequency passes) + gate the burst `normalAttackPct 50` (=+5 pellets) OFF while consolidating.
   Label the near-gate MEASURED, the "80-landed-on-core" story INTERPRETIVE in the override note.
-Decision rule pre-committed: LAND iff (a) sim bullet within ±20% of 110k/1.1–1.55M; (b) near-only + ~15–20%
-of shots (DBG); (c) dorothy moves UP not past ~1.05; (d) rotation pins exact. Plan: scratchpad/dorothy-step2-plan.md.
+  Decision rule pre-committed: LAND iff (a) sim bullet within ±20% of 110k/1.1–1.55M; (b) near-only + ~15–20%
+  of shots (DBG); (c) dorothy moves UP not past ~1.05; (d) rotation pins exact. Plan: scratchpad/dorothy-step2-plan.md.
 
 **COUPLING NOTE (owner decision):** Step 2's R2 check (does the consolidated bullet reproduce 110k with NO
 residual credit?) is ITSELF a probe of the shared SG under-model. If it undershoots, that's evidence about
@@ -876,6 +910,7 @@ undercount vs ballistic landing fraction; (c) preserve the full consolidation me
 state) REJECTED (creates a never-real 10-credited-pellet × 1.72 near state + an unreferenced core ⚑).
 
 ### A16 — July 2 2026 distributed-damage patch — APPLIED 2026-07-13
+
 Solo raid Annihilio was suspended over the distributed-damage bug; fixed 2026-07-02 with
 compensating buffs: SBS S1 283.03/565/848.03 (from 250.47/500/750.47), burst charge dmg
 169.63; Elegg S1 158.65, burst 316.66. blablalink sync still serves PRE-patch values
@@ -884,6 +919,7 @@ compensating buffs: SBS S1 283.03/565/848.03 (from 250.47/500/750.47), burst cha
 after each future sync.
 
 ### A1 (Q2) — MG wind-up & the Privaty ammo-cut paradox — RESOLVED 2026-07-13
+
 (a) Wind-up is skipped when total reload-speed buffs exceed 100% at reload (the reload still
 happens, just fast) — implemented; crown-under-Privaty went 0.71 → 1.00. (b) The 3.75s cubic
 wind-up was stale community lore: the user measured the exact frame ladder
@@ -893,24 +929,29 @@ mgWindupSec/mgWindupExp knobs and A/B harness were removed. Also: Max Ammo ▼ c
 current belt; max-ammo sources stack ADDITIVELY (important for future OL ammo lines).
 
 ### A2 (Q4) — Maiden 547.62% trigger — ANSWERED 2026-07-13
+
 Procs on every normal attack where she full charged = every shot under sim conditions.
 Implemented as shotFired (twin rockets are one attack). Residual → U2.
 
 ### A3 (Q5) — Mast:RM split readings — RESOLVED 2026-07-13
+
 Correction from user: she WAS bursting (leftmost B2). Two fixes: Hangover stun re-gated from
 every-3rd-global-FB-end to every 3rd of HER OWN bursts (the sim was stunning her sober), plus
 the corrected MG wind-up. Now 1.03/1.10.
 
 ### A4 (Q6) — Little Mermaid Bubble Barrage — ANSWERED 2026-07-13
+
 Per-hit confirmed: barrage 85%×10 = 850%, FB attack 63.36%×4; this damage never cores.
 Driven by the new teamAmmo trigger (total ally ammo consumed; infinite ammo doesn't count —
 engine's consumption path matches the in-game rule naturally). With the U1 exemption: 1.03-1.07.
 
 ### A5 (Q7) — Nayuta — RESOLVED (1.03 in the wind-weak validation fight, T5)
+
 530.46%/shot stage rider (150 full-screen + 380.46 stage extra DO stack), ramp-averaged
 Memory-Absorption gates, 2.3s SR-mode cycle (bolt recovery).
 
 ### A6 (Q8) — SR bolt recovery — ANSWERED 2026-07-13 (later reframed as the auto release latency on release-fired charge weapons; see U12 and docs/data/charge-weapons.md §2)
+
 All standard SRs pause ~0.5s after each full-charge shot. Only exception: weapon-swap states —
 which covers Red Hood's own post-B3 10s window exactly (her Red Wolf swap), plus SWHA Fully
 Active and Nayuta SR mode. Units whose DB chargeFrames already bake the cycle in (SWHA
@@ -918,17 +959,20 @@ kit-fixed 1.2s, liberalio 90f) are exempt via charFixes.noBoltRecovery. Engine-w
 (SR_BOLT_RECOVERY_FRAMES = 30).
 
 ### A7 (Q10) — Pierce Damage ▲ — ANSWERED 2026-07-13
+
 Boosts pierce-TAGGED units' hits regardless of pierce surfaces existing. Only kit-confirmed
 pierce qualifies: red-hood permanent (hasPierce: true), CCW Snipe mode only (pierceModes),
 base Cinderella none (was wrongly assumed). Implemented: hasPierce/pierceModes on OverrideFile;
 pierceDamagePct joins the Damage Up bucket for tagged units.
 
 ### A8 (Q3) — CCW review — PROVIDED 2026-07-13
+
 User supplied the full review; mechanics reconciled (334.2%/s basic verified, swap semantics,
 nuke lands on FB-enter-after-her-burst which matches engine ordering, pierce Snipe-only).
 Residual heat → U3.
 
 ### A9 (Q11) — MG class heat after the measured ladder — CALIBRATED 2026-07-13 ⚑
+
 User estimates implemented (confirmation ask in U5): wind-up rounds before the 2-frame ladder
 portion don't core; MG normals get no range bonus. MG class centered (crown 1.18 → 1.04 avg).
 
@@ -940,17 +984,18 @@ and the `auto_*` variants are **byte-identical to the manual ones for every unit
 the auto-aim bloom our auto-core model (`sim.ts` `CORE_BY_WEAPON_BAND`, this thread + A15/A26) targets.
 `spot_radius` is 0 for all guns except RL (splash), so it is NOT a core-size field.
 
-| weapon | circle (start→end) | measured near-band core | how we model it |
-|---|---|---|---|
-| SR / RL | 10 → 10 (pinpoint) | ~100% | flat HI 0.95 |
-| MG | **250 → 10** (+7/shot, speed 150) | ~100% warmed | flat HI, **wind-up gated** |
-| AR | 75 → 75 | 0.40 | range table |
-| SMG | 110 → 110 | 0.28 | range table |
-| SG | 250 → 250 | 0.048 | range table + separate landing table |
+| weapon  | circle (start→end)                | measured near-band core | how we model it                      |
+| ------- | --------------------------------- | ----------------------- | ------------------------------------ |
+| SR / RL | 10 → 10 (pinpoint)                | ~100%                   | flat HI 0.95                         |
+| MG      | **250 → 10** (+7/shot, speed 150) | ~100% warmed            | flat HI, **wind-up gated**           |
+| AR      | 75 → 75                           | 0.40                    | range table                          |
+| SMG     | 110 → 110                         | 0.28                    | range table                          |
+| SG      | 250 → 250                         | 0.048                   | range table + separate landing table |
 
 Three independent corroborations of things we measured from footage the hard way:
+
 - **(a) The weapon ORDERING AR > SMG > SG is exactly `1/circle_scale`.** 75 < 110 < 250 inverts to
-  0.40 > 0.28 > 0.048. Anchoring on AR-near (0.40), a *linear* `core ∝ 1/circle` predicts
+  0.40 > 0.28 > 0.048. Anchoring on AR-near (0.40), a _linear_ `core ∝ 1/circle` predicts
   **SMG-near = 0.40·(75/110) = 0.273 vs measured 0.28** (2.5% off — near-exact). First-principles
   datamined basis for the ordering the engine comment asserts from footage alone.
 - **(b) MG/SR/RL = flat-HI is the pinpoint (circle 10) cluster**, and MG's **250→10 ramp @ +7/shot
@@ -967,7 +1012,7 @@ now precise): `1/circle` over-predicts SG-near 2.5× (0.12 vs 0.048). SG is the 
 geometric filters against the SAME 250 cone but DIFFERENT target sizes — **landing** (does a pellet hit
 the boss BODY at all? `SG_LANDING_BY_BAND`, boss-silhouette dependent) and **core** (of landed pellets,
 hit the core?). AR/SMG are single aimed shots → landing ≈ 1, so only the core filter applies, which is
-*why* only SG needs a landing table. No static field captures the boss silhouette, so the circle
+_why_ only SG needs a landing table. No static field captures the boss silhouette, so the circle
 predicts SPREAD but not the landing fraction — the SG row stays measured, not derived.
 
 **⇒ Status: corroboration, NOT a refit source.** The measured `CORE_BY_WEAPON_BAND` / `SG_LANDING_BY_BAND`
@@ -986,12 +1031,12 @@ per-unit variation): SG 0-25, SMG 15-35, AR 25-45, MG 35-55, SR 45-100, RL 0-0. 
 `RANGE_ELIGIBLE` bands and owner-confirmed distance semantics, the four range bands map MONOTONICALLY (near <
 mid < midfar < **far** = farthest):
 
-| band | distance | rings covering it |
-|---|---|---|
-| near | [0,15] | SG |
-| mid | [25,35] | SMG, AR |
-| midfar | [45,55] | SR, MG |
-| far | [55,100] | SR |
+| band   | distance | rings covering it |
+| ------ | -------- | ----------------- |
+| near   | [0,15]   | SG                |
+| mid    | [25,35]  | SMG, AR           |
+| midfar | [45,55]  | SR, MG            |
+| far    | [55,100] | SR                |
 
 Corroborated by three footage-calibrated tables that all order near→mid→midfar→far by decreasing closeness
 (`CORE_BY_WEAPON_BAND`, `SG_LANDING_BY_BAND`, the owner-authored `SG_LANDING_JITTER`). ⇒ This is the missing
@@ -1007,6 +1052,7 @@ so `RANGE_ELIGIBLE` stands; the datamined ring only re-states the superseded hyp
 `docs/handoffs/2026-07-17-role-object-audit.md` D.1.
 
 ### A10 — Resolved during the original validation passes (2026-07-12)
+
 - Distributed damage deals the same TOTAL vs 1 target as vs many — never model a split.
 - Frame-0 rule: all full-burst buffs apply before any burst damage — burst nukes get the +50%
   multiplier, FB-entry auras, and same-cast stage buffs (engine reordered; independently
@@ -1021,3 +1067,203 @@ so `RANGE_ELIGIBLE` stands; the datamined ring only re-states the superseded hyp
   OL0, per DECISIONS 2026-07-14 (owner in-game measurement; live code path `scripts/lib/scope-lock.ts`
   `ol: 'base5'`). This line was written 2026-07-12, two days before the correction, and is retained as
   provenance only. Every other term in it still stands.
+
+### U33 — `idoll-ocean`'s ATK basis reads ~1.4% low against a popup (opened 2026-07-23, ANSWERED 2026-07-26)
+
+**ANSWERED 2026-07-26 (owner ruling).** The ~1.44% gap is the **relationship (bond) bonus**: the
+recording was made without bond stats on `idoll-ocean`, which are worth ~1.4% of total ATK. The sim
+applies the manufacturer-max bond bonus by default (`src/relationship.ts`), so the modelled
+`baseAtk` 68,788 includes it while the in-fight ATK did not. The rarity ceiling (0★ / core 0) is
+correct; no code change needed.
+
+**Original question + evidence trail retained below.**
+
+> **The observation.** On `docs/probes/clean-weapons/emma-claire-idollocean.MP4` a plain ranged normal
+> pops **7694**, repeatedly, at t≈60.5–62.0. A plain ranged SMG normal should be
+> `baseAtk × 8.73% × 1.3`. The modelled `baseAtk` 68,788 predicts **7806.8**; 7694 implies
+> **baseAtk ≈ 67,795 — 1.44% BELOW the model.**
+>
+> **Why it matters.** `idoll-ocean` is not SSR, so the basis caps her at an owner-supplied
+> **0★ / core 0** (`CLEAN_WEAPON_LIMITS`). `data/characters.json` carries **no unit-rarity field**, so
+> nothing in the repo can check that ceiling — a popup is the only independent handle on her true
+> in-fight ATK. A 1.4% error is exactly the size a slightly-wrong ceiling would produce.
+>
+> **Why it is NOT enacted.** Three live explanations, undiscriminated: (a) the rarity ceiling is
+> slightly off; (b) the range-bonus term is not exactly +30% for SMG; (c) the popup is not the plain
+> ranged normal I took it for (crit/core colour was not rigorously confirmed, and instances overlapped
+> visually). Also note the opposite-signed prior: **U18** has the in-fight ATK term reading ~1.6%
+> _above_ the static reference on the SG probes.
+>
+> **How to settle it.** A proper lattice read on an SMG probe pins the in-fight ATK term to ~0.01%
+> (the counter-reconciliation method in `/probe-processing`). Do that before touching any ceiling.
+> Do NOT tune the ceiling to close the gap. Parse record: `docs/probe-data/clean-weapons-idoll-ocean.json`.
+
+### U24 — Do TRUE-flavored normal attacks retain CORE hits? (opened 2026-07-20, ANSWERED 2026-07-26)
+
+**ANSWERED 2026-07-26 (owner verification).** Yes — true-flavored normal attacks **retain core hits**.
+The engine already models this correctly (no true-damage-crit/core guard exists; swap normals hardcode
+`crit:true` at `sim.ts:2843`). Direct observation from `jill control.MP4` (~14–15 of 15 sampled shots
+showing red CORE HIT popups inside her true-damage window) corroborates. `chisato`'s SMG `coreMult 250`
+correctly applies inside her trueNormals window. No code change needed.
+
+**Original question + evidence trail retained below.**
+
+> The kit-audit flagged (chisato gotcha 1, jill gotcha 1) that whether true-damage normal attacks forfeit
+> core is unverified — a large lever, because `coreMult` is big. **Direct-observation finding (kit-audit
+> measurement pass, from the EXISTING `docs/probe-data/jill-hitrate-core.json` recon of `jill control.MP4`):
+> true normals DO retain core.** In `jill`'s own-burst window (her "Normal attacks deal True Damage for
+> 10s" is active) her bullet popups are red **"CORE HIT"** — ~14-15 of 15 sampled shots, with crit arrows,
+> and NO white/orange bullet popups. If true normals forfeited core, there would be zero CORE-HIT popups in
+> that window; instead they dominate (also lifted by her burst Hit Rate +80.78%). So the faithful direction
+> is **true normals keep core/crit** — `chisato`'s SMG `coreMult 250` and a `jill` trueNormals window should
+> NOT strip core. **This is a direct game-behavior observation (strong), but n=1 recording** → recorded here,
+> not stamped on the model.
+> **ENACTMENT STILL GATED for `jill` (do NOT blind-land the trueNormals window).** Separate risk: `jill`'s
+> per-hit popup values are ALREADY sim-matched at ~99.7% (her main note) WITHOUT the +34.99% `trueDamagePct`
+> being live (it is engine-inert today). If those matched values were read inside her burst window, adding a
+> trueNormals window (which activates +34.99%) would OVER-credit by ~35% and push her further HOT (she is
+> board HOT 1.041). Required before enacting: a per-hit reconciliation — does real jill burst-core reconstruct
+> as sim × 1.0 (no true bonus ⇒ do NOT enact / the +34.99% is not a per-hit add) or sim × 1.3499 (⇒ enact the
+> trueNormals window)? Recipe: reconcile `jill-hitrate-core.json` burst core popups (1.65–1.98M near-band)
+> against a sim burst-window per-shot core with vs without trueNormals. Trail: plan §jill / §chisato,
+> `docs/probe-data/jill-hitrate-core.json`.
+
+### U12 — Autofire vs release-fired classification (opened 2026-07-13, ANSWERED 2026-07-26)
+
+**ANSWERED 2026-07-26.** Fully resolved by the datamined `input_type` field
+(`role.weapon.shot_detail.input_type`): `DOWN_Charge` = autofire (no release latency),
+`UP` = release-fired (takes the 22f latency). The engine's `isAutofireCharge()` (sim.ts:155)
+reads this per unit — no per-unit `charFixes.noBoltRecovery` flags remain (removed 2026-07-17
+as redundant once the datamine was wired). **Tia is `input_type: "UP"` = release-fired**, the
+last unclassified unit. The owner-testing rounds (neon-VE, SBS, trina, laplace, a2, raven,
+rapunzel, noise, crust, anchor-IM, arcana, diesel-WS, mint, prika, ada, velvet) are historical
+provenance that corroborated the datamine.
+
+**Original question + evidence trail retained below.**
+
+> The autofire ("new") system is SPARSE. User-tested: autofire = neon-VE (+ known: anis: star,
+> liberalio, nayuta-in-burst); old-style release-fired = diesel-WS, mint, prika, ada, velvet;
+> cinderella has NO inter-rocket delay (custom 1s wind-up, already modeled). ENGINE: the 22f
+> release latency (one mechanism, measured on Helm SR + Maiden RL) now applies to ALL SR+RL
+> by default, autofire exempted via charFixes.noBoltRecovery. Board effects: mint 1.21→0.91 ✓,
+> trina 2.62→1.98, maiden default-reproduced (solo 1.01). UNTESTED + flagged:
+>
+> - SBS: AUTOFIRE CONFIRMED (user-tested, second round) — exemption now permanent. Bonus
+>   validation: her user-observed 150% charge cap matches the DB chargeMultiplier column
+>   exactly (the per-unit charge multipliers are trustworthy). Her 1.23 heat is a separate
+>   open item (see the residual list).
+> - tia: 1.09→0.85 with latency (kept latent) — needs charge-meter test.
+> - User-classified (2026-07-13, round 2): laplace, a2, raven, rapunzel, noise, crust,
+>   anchor-IM, arcana = ALL old-style (engine default latency already correct). vesti-TU =
+>   custom volley (4 rockets over ~1s post-charge, ~0.5s/rocket — modeled via charFixes).
+> - trina: CONFIRMED old-style (user-tested 2026-07-13, third round — 22 frames between
+>   shots, exactly the engine's default release latency; no change needed).
+>   REMAINING unclassified: tia only (currently latent per the sparse-autofire default;
+>   she reads 0.85 latent vs 1.09 bare — worth a charge-meter glance).
+
+### U20 — Does a unit's OWN same-cast self-buff apply to its OWN cast-instant burst damage? (opened 2026-07-20, ANSWERED 2026-07-26)
+
+**ANSWERED 2026-07-26 (owner ruling).** Yes — a unit's own same-cast self-buffs **do** apply to
+their own cast-instant burst damage. The engine's current behavior (same-slot-later damage eats
+the self-buff) is the correct direction; the "same-cast self-buff guard" proposed in the kit-audit
+plan §A2 is NOT needed. The block-array-ordering inconsistency noted in the original question
+(`ein`'s nuke eating the self-buff but her feather lump not) is an artifact of slot ordering,
+not a signal to exclude — the include direction is correct.
+
+**Original question + evidence trail retained below.**
+
+> **Owner ruling 2026-07-20: DEFER A2 entirely — blocked on an isolating measurement.** The kit-audit plan
+> (§A2) proposed a "same-cast self-buff guard": exclude a unit's own same-`burstCast` self-buff from its own
+> cast-instant burst nuke. **Premise gate (fresh-context, blind) came back CANNOT-VERIFY**, and undercut the
+> plan's stated basis:
+>
+> - **The leak is REAL and inconsistent (P1, CONFIRMED empirically).** `ein`'s 300.02% true nuke (burst slot)
+>   reads `dmgUp=1.9819` = baseline 1.4289 + her own same-cast +55.3% `trueDamagePct` (burst[0]), while her
+>   feather lump (skill2 slot, resolved earlier) at the same instant is `dmgUp=1.4289` — no self-buff. Pure
+>   block-array-ordering accident: same-slot-later damage eats the self-buff, earlier-slot damage doesn't.
+> - **The correctness DIRECTION is unmeasured (P2, CANNOT-VERIFY).** The SSOT's only "misses same-cast
+>   self-buffs" statement is scoped to **skill-slot** blocks ([damage-calculation.md:190-192], [game-mechanics.md:238-240]) —
+>   there is NO burst-slot rule. The one measured burst-slot anchor, Cinderella (`cinderella`) §5b
+>   ([damage-calculation.md:380-381]), actually **INCLUDES** her own cast-granted conversion in the matching
+>   FinalATK (it isolates the +50% FB and _another unit's_ entry aura as excluded — never the caster's own
+>   same-cast self-buff). No probe recording isolates this variable for any unit.
+> - **Blast radius:** 16 units carry a burstCast self-buff + cast-instant burst damage (`ein`,
+>   `elegg-boom-and-shock`, `arcana-fortune-mate`, `quency-escape-queen`, `soda-twinkling-bunny`, `privaty`,
+>   `liberalio`, `eve`, `raven`, `drake`, `scarlet`, `nayuta`, `asuka-wille`, `cinderella-crystal-wave`,
+>   `delta-ninja-thief`, `helm`[inert: `charge:false` nuke]). Several are board-CALIBRATED (soda/privaty/
+>   liberalio OK), so a board A/B cannot reveal the direction (co-calibration, same wall as U14). The two
+>   directions move `ein` OPPOSITE ways (exclude → colder; include-everywhere → hotter toward 1.0).
+>   **RESOLVER (the real test):** a focus-video that reads `ein`'s (or `elegg-boom-and-shock`'s) burst-nuke
+>   popup value and back-derives whether the same-cast self-buff is in it (× the buff factor or not). Until
+>   that measurement lands, NEITHER direction is enacted; the engine keeps its current (ordering-accidental)
+>   behavior. Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A2.
+
+### U16 — Per-unit rotation re-tune worklist (opened 2026-07-16, ANSWERED 2026-07-26)
+
+**ANSWERED 2026-07-26.** The rotation over-generation that spawned this item was RESOLVED 2026-07-21
+(`STAGE_WINDOW_FRAMES` 600→120 + first-ready stage selection; DECISIONS 2026-07-21). The fit-exposure
+worklist (chisato, trina, naga, soda-twinkling-bunny) was reframed 2026-07-21 as rotation-INDEPENDENT
+unit-level over-models needing footage-gated per-unit localization — those per-unit threads are tracked
+individually (chisato's #1 suspect resolved by U24; the rest are standard hand-tune queue items, not a
+single open mechanics question).
+
+**Original question + evidence trail retained below.**
+
+> The rotation over-generation / mis-allocation that spawned this item is RESOLVED (`STAGE_WINDOW_FRAMES`
+> 600→120 + first-ready stage selection; the live rotation model is `docs/STATE.md` §3, → DECISIONS 2026-07-21).
+> What remains OPEN is the fit-exposure worklist: the corrected rotation exposed per-cast over-credits in
+> overrides that were fit to the OLD (sometimes under-counted) rotation. **REFRAMED 2026-07-21: the "fit to the
+> old rotation" premise does NOT hold** — the residual over-credits are rotation-INDEPENDENT unit-level
+> over-models (chisato uniform ~1.2 across 13/13/10-FB comps; trina inversely correlated), so de-fitting
+> per-cast would fudge. Each needs footage-gated per-unit localization, NOT a rotation de-fit. chisato's #1
+> suspect is RESOLVED (her true-damage-window normals RETAIN core+crit — MEASURED, faithful, not the lever).
+> Worklist units: chisato, trina, naga, soda-twinkling-bunny et al. — footage-gated per-unit re-tunes.
+
+### U3 — CCW residual (opened 2026-07-13, ANSWERED 2026-07-26)
+
+**ANSWERED 2026-07-26.** Resolved by the 2026-07-16 re-tune (core-strike rider restored,
+~0.87 → 0.99/1.02 vs real T5/T8; DECISIONS 2026-07-16) and the ownBurstGate fix
+(T8 1.062→1.001, T5 1.009→0.978; engine-modeling-gaps #9). The original 1.15/1.27–1.31
+residual is closed; CCW grades ~1.0.
+
+**Original question + evidence trail retained below.**
+
+> The U1 rule fix (her 833.79% core-strike rider no longer receives the core bucket) plus
+> crit-on-procs roughly cancelled. Two remaining leads: (a) the ratio gap (~1.14) between the
+> iron-weak fight (T8, elemental advantage) and the wind-weak fight (T5, no advantage) says she
+> gained less from elemental advantage in reality than the sim's x1.1 — do function-damage riders
+> skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
+
+### U15 — Rapi: Red Hood explosion residual (opened 2026-07-16, ANSWERED 2026-07-26)
+
+**ANSWERED 2026-07-26 (owner rulings).** All sub-items resolved:
+
+- **Explosion crit** — landed 2026-07-16 (`storedHit.crit:true`; DECISIONS 2026-07-16).
+- **Crit/core bracket** — additive, owner ruling 2026-07-22 (DECISIONS 2026-07-22).
+- **Rocket attach generates burst gauge** — YES, confirmed by owner. The engine's blanket
+  skill-damage-generates-gauge rule is correct for her attaches.
+- **Meter carryover semantics** — the threshold switch (120→60) is CORRECT, confirmed by owner.
+- Residual remainder is generic MG-cold (board ~0.947), not a rapi-specific question.
+
+**Original question + evidence trail retained below.**
+
+> The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,
+> T8 0.84→0.90, N1 0.92→0.98) but left it EXPOSED as a prediction rather than fitting it away. Still open:
+>
+> - **Explosion CRIT — LANDED 2026-07-16 (`storedHit.crit:true`).** Enabled by CONSISTENCY (every other RRH
+>   hit already crits additively at her sheet rate; only the stored-hit release was crit-OFF, an artifact), NOT
+>   by the ×1.5 magnitude (which is confounded by overlapping sub-hit coefficients). T7 0.81→0.83, uniform
+>   +0.01–0.02, residual preserved. See DECISIONS 2026-07-16.
+> - **~~FOUNDATIONAL: is the crit/core bracket additive or multiplicative?~~ — RESOLVED 2026-07-22 (owner ruling:
+>   ADDITIVE).** The shipped additive bracket (`major += critRate×critBonus + coreRate×coreBonus`) is CORRECT and
+>   stays; no engine change. The measured RRH core+crit body (7,948,092 = base ×1.80) that raised this is now
+>   re-attributed to RRH-LOCAL causes — a distinct explosion core bonus or popup mis-association — NOT the shared
+>   bracket. Bounded consequence ~0.3–0.4% of her total; folded into the explosion residual below. → DECISIONS
+>   2026-07-22.
+> - **Does the rocket ATTACH actually generate burst gauge in-game?** The engine treats every skill-damage
+>   hit as gauge-generating (pre-existing blanket rule), so her attach cadence shifts FB timing. Not
+>   introduced by the reopen, but now load-bearing — worth a targeted check (meter/gauge co-read).
+> - **Meter carryover semantics.** Modeled as a threshold switch (120→60), not +2-fill-per-hit; these differ
+>   only at the FB boundary. A meter-carryover measurement (count meter-100% events across an FB entry) would
+>   discriminate.
+> - Residual remainder is likely generic MG-cold (board ~0.947).

@@ -107,9 +107,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   **Two small residuals now filed:** `folkwang` AR **0.963 COLD at n=2**, spread only ±0.8% — a
   stable AR weapon-model term, matching the board's AR class mean 0.965 (**open-questions U32**;
   needs a re-record with `folkwang` in SLOT 3, she was unfocused in both team-A runs); and
-  `idoll-ocean`'s ATK basis reading **~1.4% low** against a 7694 popup, which would mean her
-  owner-supplied 0★/core 0 ceiling is slightly off (**open-questions U33** — settle by lattice, never
-  by tuning the ceiling).
+  `idoll-ocean`'s ATK basis reading **~1.4% low** against a 7694 popup — **ANSWERED 2026-07-26**:
+  the recording lacked the relationship (bond) bonus (~1.4% of total ATK); the ceiling is correct
+  (**answered-questions U33**).
   **SG SIDE IS DONE — the cold-read is the PELLET-LANDING term** (`/probe-processing` on
   `snowcrane-folkwang-marciana.MP4`, n=2 = **0.850 COLD**; full record `docs/probe-runs.md` § SG SIDE,
   parse `docs/probe-data/marciana-sg-band.json`). Localized by elimination: ATK basis pinned **+0.23%**
@@ -153,7 +153,8 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   first has to be redone), while P2 primitives are additive and interleave freely. Order: (1) score the
   `CONE_DELTA` holdouts + revert-trigger check; **(2) LANDED 2026-07-22 — `RIDERCRIT` ON, see A32 (U13);
   remainder → U28**; (3) accuracy-circle geometry (3 owner rulings
-  open; take the one hard range measurement first); (4) A2/U20 same-cast self-buff (16 units, footage-gated);
+  open; take the one hard range measurement first); (4) A2/U20 same-cast self-buff — **ANSWERED 2026-07-26:
+  own same-cast self-buffs DO apply to cast-instant burst (answered-questions U20)**;
   (5) **P2 primitives — NOTHING BUILDABLE REMAINS** (verified 2026-07-22): pellet-count LANDED 07-21,
   eve bucket LANDED 07-20, snow-white charge-swap STRUCK, **"rolling reload" was a MIS-STATED MECHANIC
   → U30** (owner correction 2026-07-22: chunked units empty the mag then refill it in PARTS — they never
@@ -374,6 +375,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **AR-burst-window residual (moran/jill)** — footage-blocked. moran's swap coldness is THROUGHPUT
   (~1.3× more hits in the swap window), NOT per-shot (the '1440'=24/s datamine was measured-refuted; base
   ~12/s stands); needs an isolated moran-solo recording or the swap weapon's `shot_count` datamine.
-- **Per-unit rotation re-tunes (open-questions U16 worklist)** — the residual over-credits (chisato ~1.2,
-  trina inverse) are rotation-INDEPENDENT unit-level over-models → footage-gated per-unit localization,
-  NOT a rotation de-fit. (The rotation itself is settled — live model in `docs/STATE.md` §3.)
+- **Per-unit rotation re-tunes (answered-questions U16)** — RESOLVED 2026-07-26: the rotation
+  over-generation is settled (DECISIONS 2026-07-21); the per-unit over-models (chisato, trina, naga,
+  soda-twinkling-bunny) are rotation-independent and tracked as standard hand-tune queue items.

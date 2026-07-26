@@ -39,7 +39,7 @@ were `skill:core`/`skill:crit+core` (identity still unresolved: it fits a real c
 arithmetically, but the same run had the hallucination guard drop `6473333` and `17333`, and
 `108,189` recurs in the neighbouring frames, so a digit concatenation is equally likely — note it is
 NOT the top-centre team total, which sits outside the damage crop), and a 64,733 called "crit" when
-64,733 is that unit's *non-crit* normal. The two class conditions were added to catch exactly those.
+64,733 is that unit's _non-crit_ normal. The two class conditions were added to catch exactly those.
 
 **To answer it:** run the reader on a SHORT clip whose focus unit has a CLEAN, non-overlapping band
 (a big skill/burst hit well clear of its normal band and of that normal's crit/core images — check
@@ -88,6 +88,7 @@ outranks the CV counter wherever they disagree. Build/validation plan:
 `docs/handoffs/2026-07-24-probe-reader-buildout-plan.md` (P3).
 
 ### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
+
 The engine clips the current belt to the new cap when a Max-Ammunition ▼ (`maxAmmoPct<0`) LANDS
 (measured/user-confirmed, `docs/data/game-mechanics.md` § "Max Ammunition ▼"; `src/engine/sim.ts`
 ~1830). The contract is SILENT on the reverse: when a Max-Ammunition ▲ **expires** while the belt is
@@ -111,33 +112,11 @@ the relevant weapon class here. ⚠ It cannot yet read a small-magazine SG count
 variant of this question stays blocked. **Still needs the recording** — the comps in question have
 no focus footage yet.
 
-### U33 — `idoll-ocean`'s ATK basis reads ~1.4% low against a popup (opened 2026-07-23)
-
-**The observation.** On `docs/probes/clean-weapons/emma-claire-idollocean.MP4` a plain ranged normal
-pops **7694**, repeatedly, at t≈60.5–62.0. A plain ranged SMG normal should be
-`baseAtk × 8.73% × 1.3`. The modelled `baseAtk` 68,788 predicts **7806.8**; 7694 implies
-**baseAtk ≈ 67,795 — 1.44% BELOW the model.**
-
-**Why it matters.** `idoll-ocean` is not SSR, so the basis caps her at an owner-supplied
-**0★ / core 0** (`CLEAN_WEAPON_LIMITS`). `data/characters.json` carries **no unit-rarity field**, so
-nothing in the repo can check that ceiling — a popup is the only independent handle on her true
-in-fight ATK. A 1.4% error is exactly the size a slightly-wrong ceiling would produce.
-
-**Why it is NOT enacted.** Three live explanations, undiscriminated: (a) the rarity ceiling is
-slightly off; (b) the range-bonus term is not exactly +30% for SMG; (c) the popup is not the plain
-ranged normal I took it for (crit/core colour was not rigorously confirmed, and instances overlapped
-visually). Also note the opposite-signed prior: **U18** has the in-fight ATK term reading ~1.6%
-*above* the static reference on the SG probes.
-
-**How to settle it.** A proper lattice read on an SMG probe pins the in-fight ATK term to ~0.01%
-(the counter-reconciliation method in `/probe-processing`). Do that before touching any ceiling.
-Do NOT tune the ceiling to close the gap. Parse record: `docs/probe-data/clean-weapons-idoll-ocean.json`.
-
 ### U32 — `folkwang` (AR) sits stably ~3.7% COLD on the bare-weapon basis (opened 2026-07-23)
 
 **The reading.** `npx tsx scripts/clean-weapons-read.ts`: sim 23.91M vs real 24.82M = **0.963 COLD**,
 **n=2**, with a run-to-run spread of only **±0.8%**. Tightened from 0.956 at n=1. So it is a small,
-*stable* residual sitting just outside the ±3% goal — not noise, and not one of the two big weapon-model
+_stable_ residual sitting just outside the ±3% goal — not noise, and not one of the two big weapon-model
 errors this basis found (SG landing, SMG cadence).
 
 **Why it is interesting.** `folkwang` has **no override** and her kit deals **zero damage** (shields /
@@ -164,11 +143,11 @@ not any fire-during-reload behavior.
 
 **`reload_bullet` encodes it exactly, as `1 / chunks`:**
 
-| value | chunks | n | who |
-|---|---|---|---|
-| `10000` | 1 (whole mag) | 177 | everyone else |
-| `3300` | 3 | 14 | 9 SGs (9 ammo → 3 shells/chunk): `drake`, `maiden`, `neon`, `noir`, `pepper`, `product-23`, `soda-twinkling-bunny`, `sugar`, `viper` · 5 RLs (6 ammo → 2): `anis`, `centi`, `jackal`, `rumani`, `trina` |
-| `5000` | 2 | 1 | `grave` (60 ammo → 30/chunk) |
+| value   | chunks        | n   | who                                                                                                                                                                                                     |
+| ------- | ------------- | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `10000` | 1 (whole mag) | 177 | everyone else                                                                                                                                                                                           |
+| `3300`  | 3             | 14  | 9 SGs (9 ammo → 3 shells/chunk): `drake`, `maiden`, `neon`, `noir`, `pepper`, `product-23`, `soda-twinkling-bunny`, `sugar`, `viper` · 5 RLs (6 ammo → 2): `anis`, `centi`, `jackal`, `rumani`, `trina` |
+| `5000`  | 2             | 1   | `grave` (60 ammo → 30/chunk)                                                                                                                                                                            |
 
 **The datamined `reload_time` is PER CHUNK, and the shipped `reloadFrames` already multiplies it.**
 Two independent confirmations:
@@ -191,24 +170,24 @@ Two independent confirmations:
 measured reload — 3.35 s / **201 f** (n=19 clean gaps, range 2.85–3.52 s = 171–211 f, from
 `grave solo.MP4`, 2026-07-15). Effective frames (`round(f × 0.975) + 13`):
 
-| source | stored | effective | vs measured 201 f |
-|---|---|---|---|
-| shipped (× 1) | 81 | 92 f | −109 f, far too fast |
-| × 2 (what `5000` implies) | 141 | 150 f | −51 f, still below her measured floor (171 f) |
-| × 3 | 201 | 209 f | **inside the measured range** |
-| her hand-fit `charFixes.reloadFrames` | 193 | 201 f | = measured (fitted to it) |
+| source                                | stored | effective | vs measured 201 f                             |
+| ------------------------------------- | ------ | --------- | --------------------------------------------- |
+| shipped (× 1)                         | 81     | 92 f      | −109 f, far too fast                          |
+| × 2 (what `5000` implies)             | 141    | 150 f     | −51 f, still below her measured floor (171 f) |
+| × 3                                   | 201    | 209 f     | **inside the measured range**                 |
+| her hand-fit `charFixes.reloadFrames` | 193    | 201 f     | = measured (fitted to it)                     |
 
 **`grave` is 2 chunks — owner ruling 2026-07-22**, i.e. `reload_bullet 5000` is correct at face value and
 the ×3 fit above is NOT the explanation. So chunking takes her from 92 f to 150 f effective, and the
-remaining ~51 f to her measured 201 f is **something else** — her kit's *"Heat Emission: Reload Ratio
-▼50%"* and/or animation overhead, exactly the ambiguity her own note flags as *"attribution … inferred,
-not isolated."* Her measured `charFixes.reloadFrames 193` stays the operative value; this is a
+remaining ~51 f to her measured 201 f is **something else** — her kit's _"Heat Emission: Reload Ratio
+▼50%"_ and/or animation overhead, exactly the ambiguity her own note flags as _"attribution … inferred,
+not isolated."_ Her measured `charFixes.reloadFrames 193` stays the operative value; this is a
 data-provenance correction sitting underneath it, **board-inert today**.
 
 **Firing does NOT resume between chunks — measured twice.** `grave`: 61.5 shots per gap on a 60-round
 mag (n=19) — if she resumed at the halfway chunk the shots-per-gap would average ~30–45. `noir`:
-consecutive `009` → `009` mag-start frames bound *"EXACTLY one 9-shot mag,"* and the damage counter is
-*"identical at t53.0 and t53.8 → confirmed no firing during the preceding reload"*
+consecutive `009` → `009` mag-start frames bound _"EXACTLY one 9-shot mag,"_ and the damage counter is
+_"identical at t53.0 and t53.8 → confirmed no firing during the preceding reload"_
 (`docs/probe-data/noir-solo-recon.json`). Duration-only, on both a 2-chunk and a 3-chunk unit.
 
 **`reload_start_ammo` remains useless and is not this field.** It equals `max_ammo − 1` for **192 of
@@ -236,11 +215,11 @@ between gaps) with a gap ~2× a single part.
 **⚠ THE COMPOSITION IS NOT DETERMINED — do not guess it.** How N parts compose into a duration is
 contradicted by the only two units with measured reloads:
 
-| model | `grave` (measured **201 f**, range 171–211, n=19) | `noir` (measured **~36–54 f**) |
-|---|---|---|
-| shipped (one gap, tail once) | 92 f — far too fast | 73 f — already too SLOW |
-| chunk-derived, tail once | 150 f — 51 f short | 73 f — too slow |
-| per-chunk tail | **184 f — inside range ✓** | 141 f — wildly too slow |
+| model                        | `grave` (measured **201 f**, range 171–211, n=19) | `noir` (measured **~36–54 f**) |
+| ---------------------------- | ------------------------------------------------- | ------------------------------ |
+| shipped (one gap, tail once) | 92 f — far too fast                               | 73 f — already too SLOW        |
+| chunk-derived, tail once     | 150 f — 51 f short                                | 73 f — too slow                |
+| per-chunk tail               | **184 f — inside range ✓**                        | 141 f — wildly too slow        |
 
 No single model fits both. Per-chunk tail would also make all 9 chunked SGs ~40% slower
 (`soda-twinkling-bunny` 151 → 216 f), a large board move on calibrated units. **Independent finding worth
@@ -256,7 +235,7 @@ n=19) overrides the data value before it reaches the engine. She is now **pinned
 against a measured 201 f, and the 193 is measured truth (constraint 3). Revisit when the composition
 question is settled.
 
-**What remains open:** (1) `grave`'s true chunk count, 2 vs 3, and whether *"Reload Ratio ▼50%"* is the
+**What remains open:** (1) `grave`'s true chunk count, 2 vs 3, and whether _"Reload Ratio ▼50%"_ is the
 multiplier — one focus read of her reload split into visible chunks settles it; (2) whether the ×3 on
 the 14 should be made explicit in the sync (derive `reloadFrames` from `reload_time × 10000 ÷
 reload_bullet`) rather than inherited silently from the upstream table, which would fix `grave` as a
@@ -290,6 +269,7 @@ timestamps. First measurement: pull the 12 real FB timestamps from `5.mp4` (03:0
 against the sim's chain log to see WHERE the two missing chains fail to open.
 
 ### U28 — `extraHitDamagePct` vs `flatDamage` are not interchangeable: gauge + flavor asymmetry (split out of U13, 2026-07-22)
+
 A32 closed the crit divergence between the two encodings of function "additional damage". Two
 divergences remain at the same call site. **They are not the same kind of open:**
 
@@ -314,7 +294,7 @@ divergences remain at the same call site. **They are not the same kind of open:*
    behavior, e.g. `trueDamagePct` buff gating.)
 
 **Also unmeasured (the reason this is a question, not just a TODO):** whether function additional
-damage *should* generate burst gauge at high hit rates. The `skillGauge` constant is anchored on ONE
+damage _should_ generate burst gauge at high hit rates. The `skillGauge` constant is anchored on ONE
 measurement — `maiden-ice-rose`, RL, `hitsPerShot` 1, where "one hit" and "one trigger" coincide
 (`burst-gauge.md`:145, two visible bar sub-steps per pull: +9.1% weapon then +3.45% rider). The
 `/hitsPerShot` divisor — and the hardcoded `/10` for SG — generalizes from that single case and is
@@ -328,12 +308,14 @@ plus a `hitsPerShot > 1` bar read to pin the divisor. Until then: do NOT re-enco
 two primitives, and do NOT author a true-flavored rider. → A32 (U13), DECISIONS 2026-07-22.
 
 ### U27 — isabel's mid/midfar SG landing needs a clock-drift-corrected re-derive (split out of U17, 2026-07-22)
+
 **The one SG-landing thread still open.** The rest of the per-unit-landing investigation was CLOSED by owner
 override on 2026-07-17 — see **A31 (U17)** in ANSWERED: landing is per-unit, the class `SG_LANDING_BY_BAND`
 table STANDS as the shipped compromise, a class-wide far 0.66 is REJECTED, and the seeded pellet-count jitter
-+ `bossPelletProfile` landed instead. What remains: isabel's **mid** and **midfar** band reads rest on a
-SINGLE anchor whose measurement PREDATES the clock-drift discovery, so those two cells are not trustworthy at
-the precision the rest of the table now carries.
+
+- `bossPelletProfile` landed instead. What remains: isabel's **mid** and **midfar** band reads rest on a
+  SINGLE anchor whose measurement PREDATES the clock-drift discovery, so those two cells are not trustworthy at
+  the precision the rest of the table now carries.
 
 **Scope — deliberately narrow.** This is a re-derive of two existing cells from EXISTING footage. It is NOT
 new footage, and NOT a per-unit landing profile (that is precisely the part the owner closed). isabel's near
@@ -343,9 +325,11 @@ brid-silent-track r0.88, versus guilty r0.93 and noir r0.99 at/near table).
 **Do NOT re-open the closed part from this.** The per-unit `sgFarScale≈0.88` candidate for isabel +
 brid-silent-track stays DOCUMENTED-but-UNENCODED — both are sim-LOW for rider/term reasons, so a <1 landing
 factor drags them further down. Trail: A31, `docs/probe-data/` isabel/guilty/brid-silent-track sg-band files
-+ `noir-solo-recon.json`, DECISIONS 2026-07-16/17.
+
+- `noir-solo-recon.json`, DECISIONS 2026-07-16/17.
 
 ### U26 — "All-or-nothing" crit on sequential attacks + an Eve carve-out (2026-07-21)
+
 **Surfaced while modeling cinderella's burst** (a 10-hit "1365.92% × 10 sequential" nuke the engine
 represents as one flatDamage instance). The engine rolls crit ONCE per damage instance
 (`dealDamage`, `src/engine/sim.ts` ~1186–1191: a single Bernoulli `rng() < critRate` → full crit bonus
@@ -356,8 +340,9 @@ the round crits, the crit multiplier scales the whole round's damage; it does NO
 "crit, normal, crit, normal" across the micro-hits inside the round.
 
 **Open items for later review:**
+
 1. **Verify the engine's all-or-nothing crit is applied at the right granularity** for every sequential
-   attack — i.e. one crit determination per sequential *round*, not per micro-hit, and not per whole
+   attack — i.e. one crit determination per sequential _round_, not per micro-hit, and not per whole
    multi-round skill either. Confirm cinderella's nuke, Snow White: Heavy Arms' sequence, and Eve's
    sequential procs/burst are each rolled once per round as intended.
 2. **Eve (`eve`) is the exception and needs a carve-out.** Her kit is built around sequential attacks
@@ -374,28 +359,8 @@ Eve is currently **ungraded** (no board data, no focused Eve footage in the cata
 model-correctness note to settle when Eve footage is captured — do not fudge her to close it. Related:
 [[full-kit-audit-requirement]], sequential/`sequentialMultPct` bucket (Phase A4), U13 (DoT/rider crit).
 
-### U24 — Do TRUE-flavored normal attacks retain CORE hits? (chisato/jill shared; footage says YES, but jill enactment gated) (2026-07-20)
-The kit-audit flagged (chisato gotcha 1, jill gotcha 1) that whether true-damage normal attacks forfeit
-core is unverified — a large lever, because `coreMult` is big. **Direct-observation finding (kit-audit
-measurement pass, from the EXISTING `docs/probe-data/jill-hitrate-core.json` recon of `jill control.MP4`):
-true normals DO retain core.** In `jill`'s own-burst window (her "Normal attacks deal True Damage for
-10s" is active) her bullet popups are red **"CORE HIT"** — ~14-15 of 15 sampled shots, with crit arrows,
-and NO white/orange bullet popups. If true normals forfeited core, there would be zero CORE-HIT popups in
-that window; instead they dominate (also lifted by her burst Hit Rate +80.78%). So the faithful direction
-is **true normals keep core/crit** — `chisato`'s SMG `coreMult 250` and a `jill` trueNormals window should
-NOT strip core. **This is a direct game-behavior observation (strong), but n=1 recording** → recorded here,
-not stamped on the model.
-**ENACTMENT STILL GATED for `jill` (do NOT blind-land the trueNormals window).** Separate risk: `jill`'s
-per-hit popup values are ALREADY sim-matched at ~99.7% (her main note) WITHOUT the +34.99% `trueDamagePct`
-being live (it is engine-inert today). If those matched values were read inside her burst window, adding a
-trueNormals window (which activates +34.99%) would OVER-credit by ~35% and push her further HOT (she is
-board HOT 1.041). Required before enacting: a per-hit reconciliation — does real jill burst-core reconstruct
-as sim × 1.0 (no true bonus ⇒ do NOT enact / the +34.99% is not a per-hit add) or sim × 1.3499 (⇒ enact the
-trueNormals window)? Recipe: reconcile `jill-hitrate-core.json` burst core popups (1.65–1.98M near-band)
-against a sim burst-window per-shot core with vs without trueNormals. Trail: plan §jill / §chisato,
-`docs/probe-data/jill-hitrate-core.json`.
-
 ### U23 — milk-blooming-bunny's burst-window over-model, exposed by the (faithful) Gain-Pierce landing (2026-07-20)
+
 Enacting the kit-literal S1 "Gain Pierce for 6 sec" (`gainPierce` on `shotFired`; kit-audit Phase C
 ENACT-NOW, DECISIONS 2026-07-20) lit `milk-blooming-bunny`'s previously-dead Pierce package — her burst
 `pierceDamagePct +117.64%` now applies to her burst-window damage. Isolated A/B: **PG 0.653 COLD → 1.301
@@ -415,40 +380,15 @@ via her S2 447.7% dot now critting — a FAITHFUL mechanic, not new over-model. 
 finally taken, ~0.03 of her heat is now correctly attributed to dot-crit; do not re-chase it as part of the
 Embarrassment/pierce-window over-model.
 
-### U20 — Does a unit's OWN same-cast self-buff apply to its OWN cast-instant burst damage? (Phase A A2, DEFERRED 2026-07-20)
-**Owner ruling 2026-07-20: DEFER A2 entirely — blocked on an isolating measurement.** The kit-audit plan
-(§A2) proposed a "same-cast self-buff guard": exclude a unit's own same-`burstCast` self-buff from its own
-cast-instant burst nuke. **Premise gate (fresh-context, blind) came back CANNOT-VERIFY**, and undercut the
-plan's stated basis:
-- **The leak is REAL and inconsistent (P1, CONFIRMED empirically).** `ein`'s 300.02% true nuke (burst slot)
-  reads `dmgUp=1.9819` = baseline 1.4289 + her own same-cast +55.3% `trueDamagePct` (burst[0]), while her
-  feather lump (skill2 slot, resolved earlier) at the same instant is `dmgUp=1.4289` — no self-buff. Pure
-  block-array-ordering accident: same-slot-later damage eats the self-buff, earlier-slot damage doesn't.
-- **The correctness DIRECTION is unmeasured (P2, CANNOT-VERIFY).** The SSOT's only "misses same-cast
-  self-buffs" statement is scoped to **skill-slot** blocks ([damage-calculation.md:190-192], [game-mechanics.md:238-240]) —
-  there is NO burst-slot rule. The one measured burst-slot anchor, Cinderella (`cinderella`) §5b
-  ([damage-calculation.md:380-381]), actually **INCLUDES** her own cast-granted conversion in the matching
-  FinalATK (it isolates the +50% FB and *another unit's* entry aura as excluded — never the caster's own
-  same-cast self-buff). No probe recording isolates this variable for any unit.
-- **Blast radius:** 16 units carry a burstCast self-buff + cast-instant burst damage (`ein`,
-  `elegg-boom-and-shock`, `arcana-fortune-mate`, `quency-escape-queen`, `soda-twinkling-bunny`, `privaty`,
-  `liberalio`, `eve`, `raven`, `drake`, `scarlet`, `nayuta`, `asuka-wille`, `cinderella-crystal-wave`,
-  `delta-ninja-thief`, `helm`[inert: `charge:false` nuke]). Several are board-CALIBRATED (soda/privaty/
-  liberalio OK), so a board A/B cannot reveal the direction (co-calibration, same wall as U14). The two
-  directions move `ein` OPPOSITE ways (exclude → colder; include-everywhere → hotter toward 1.0).
-**RESOLVER (the real test):** a focus-video that reads `ein`'s (or `elegg-boom-and-shock`'s) burst-nuke
-popup value and back-derives whether the same-cast self-buff is in it (× the buff factor or not). Until
-that measurement lands, NEITHER direction is enacted; the engine keeps its current (ordering-accidental)
-behavior. Trail: `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A2.
-
 ### U21 — maxwell's "highest final ATK" buff recipient (A3, HELD 2026-07-20)
+
 **A3 landed `byFinalAtk` on 4 units but HELD `maxwell`** — her S1 grants atkPct 43.1 + chargeSpeed to the
 2 highest-FINAL-ATK allies on `fullBurstEnter`. Switching her to live-ATK ranking swings her only graded
 comp ("PG iron sweep" [d-killer-wife, `takina`, `milk-blooming-bunny`, `maxwell`, `liberalio`]): the +43.1%
 ATK lands on `takina` (Burst II — structurally the sole possible cause), pushing takina 0.988 OK → 1.280
 HOT. This is a **transient-snapshot artifact**: peak effective ATK in that comp is milk 446k > liberalio
 377k > takina 234k > maxwell 132k, so takina is NOT naturally top-2 — she only ranks up at maxwell's FB
-*instant* because milk's 446k (her own burst peak) is transiently at base then. Entangled with milk's known
+_instant_ because milk's 446k (her own burst peak) is transiently at base then. Entangled with milk's known
 COLD (0.681, pierce package inert) under-model, so the ranking there is untrustworthy. **RESOLVER:** a
 maxwell-focus video reading which 2 allies actually receive her ATK/charge-speed buff icon at FB entry
 (and whether the real game snapshots instantaneously or over the window). Until then maxwell stays on
@@ -458,6 +398,7 @@ would then reorder her pick) — verify apply order at that time. Trail: DECISIO
 `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md` §A3.
 
 ### U19 — grave's burst-window over-model, exposed by the (faithful) timed-pierce primitive (2026-07-17)
+
 **Surfaced by the `gainPierce` primitive (engine-modeling-gaps fix #7).** The timed-pierce window lets
 "Gain Pierce for N sec" wake a unit's Pierce Damage ▲ buffs. **MECHANISM (owner-confirmed 2026-07-17):**
 Pierce Damage ▲ is a real Damage-Up-bucket entry that DOES apply on the partless scope-lock boss (only
@@ -476,41 +417,11 @@ the 10s Prediction window + a Pierce-Damage-on/off popup to pin the real pierce 
 burst-window over-model (grave should land back near 1.0 with pierce ON). Links: grave override ⚑1,
 engine-modeling-gaps theme 5 / fix #7, damage-calculation.md dmgUp bucket.
 
-### U16 — Per-unit rotation re-tune worklist (2026-07-16; over-generation RESOLVED 2026-07-21)
-The rotation over-generation / mis-allocation that spawned this item is RESOLVED (`STAGE_WINDOW_FRAMES`
-600→120 + first-ready stage selection; the live rotation model is `docs/STATE.md` §3, → DECISIONS 2026-07-21).
-What remains OPEN is the fit-exposure worklist: the corrected rotation exposed per-cast over-credits in
-overrides that were fit to the OLD (sometimes under-counted) rotation. **REFRAMED 2026-07-21: the "fit to the
-old rotation" premise does NOT hold** — the residual over-credits are rotation-INDEPENDENT unit-level
-over-models (chisato uniform ~1.2 across 13/13/10-FB comps; trina inversely correlated), so de-fitting
-per-cast would fudge. Each needs footage-gated per-unit localization, NOT a rotation de-fit. chisato's #1
-suspect is RESOLVED (her true-damage-window normals RETAIN core+crit — MEASURED, faithful, not the lever).
-Worklist units: chisato, trina, naga, soda-twinkling-bunny et al. — footage-gated per-unit re-tunes.
-
-### U15 — Rapi: Red Hood explosion residual (after the 2026-07-16 reopen)
-The explosion-core reopen (DECISIONS 2026-07-16) narrowed her deficit (T3 0.84→0.91, T7 0.72→0.81,
-T8 0.84→0.90, N1 0.92→0.98) but left it EXPOSED as a prediction rather than fitting it away. Still open:
-- **Explosion CRIT — LANDED 2026-07-16 (`storedHit.crit:true`).** Enabled by CONSISTENCY (every other RRH
-  hit already crits additively at her sheet rate; only the stored-hit release was crit-OFF, an artifact), NOT
-  by the ×1.5 magnitude (which is confounded by overlapping sub-hit coefficients). T7 0.81→0.83, uniform
-  +0.01–0.02, residual preserved. See DECISIONS 2026-07-16.
-- **~~FOUNDATIONAL: is the crit/core bracket additive or multiplicative?~~ — RESOLVED 2026-07-22 (owner ruling:
-  ADDITIVE).** The shipped additive bracket (`major += critRate×critBonus + coreRate×coreBonus`) is CORRECT and
-  stays; no engine change. The measured RRH core+crit body (7,948,092 = base ×1.80) that raised this is now
-  re-attributed to RRH-LOCAL causes — a distinct explosion core bonus or popup mis-association — NOT the shared
-  bracket. Bounded consequence ~0.3–0.4% of her total; folded into the explosion residual below. → DECISIONS
-  2026-07-22.
-- **Does the rocket ATTACH actually generate burst gauge in-game?** The engine treats every skill-damage
-  hit as gauge-generating (pre-existing blanket rule), so her attach cadence shifts FB timing. Not
-  introduced by the reopen, but now load-bearing — worth a targeted check (meter/gauge co-read).
-- **Meter carryover semantics.** Modeled as a threshold switch (120→60), not +2-fill-per-hit; these differ
-  only at the FB boundary. A meter-carryover measurement (count meter-100% events across an FB entry) would
-  discriminate.
-- Residual remainder is likely generic MG-cold (board ~0.947).
-
 ### U8 — Probe-team residuals: what remains after the recorded re-runs
+
 Nine probe recordings (2026-07-13, docs/probes/u8 + docs/probes/tb2) have resolved almost
 everything here; per-run details in docs/probe-runs.md. STILL OPEN after test battery 2:
+
 - **ein 0.71-0.76** (both run-E configs) — she cooled when the burst-gauge model was
   rebuilt (gauge v4) and is now the largest team-fight residual; her kit (stored/stacked
   skill damage) needs a review or an ein-focused recording.
@@ -528,6 +439,7 @@ everything here; per-run details in docs/probe-runs.md. STILL OPEN after test ba
 UPDATE 2026-07-14 (714 noon probe, nine focused testing-request fights — docs/probe-runs.md).
 Every focused (middle-slot) unit in that batch is in the enikk top-100 supported set, so its
 read is meta-valid. New residuals / confirmations from the FOCUSED units:
+
 - **Scarlet: Black Shadow — RESOLVED 2026-07-14 (CALIBRATED ⛑).** Her tracked ~1.23 heat,
   confirmed by a second focused fight (N3 boss Iron, 1.31; T1 1.18) and localized by her N3
   popup read: her charged-normal popup reads 1.55M vs sim 1.60M (correct), so the excess was
@@ -558,40 +470,3 @@ read is meta-valid. New residuals / confirmations from the FOCUSED units:
   N5) is already calibrated (0.97 on T4) — her N5 heat is Arcana: Fortune Mate's team buff
   inflating the whole side (arcana 1.88 / privaty 1.58 / snow-white:HA 1.33 together), and
   Arcana is unfocused here.
-
-### U11b — Unfocused charge-weapon gauge generation (⚑ the one open gauge knob)
-The burst-gauge model is now datamined + solo-measured (see the answered gauge item), but
-no recording yet isolates an UNFOCUSED charge unit's full-charge generation (a solo unit
-is always camera-focused). Flat x1.0 makes every sniper/launcher-heavy 5-unit fight
-10-20% cold vs the anchored totals, so the engine keeps x2.2 ⚑ for unfocused charge
-units (between flat and the focused x2.5). One recording of a team fight with the gauge
-bar visible and a sniper NOT holding camera focus settles it. The datamined
-full_charge_burst_energy column (~250 = 2.5%) may be the true additive mechanism.
-
-### U12 — Autofire vs release-fired classification (USER-TESTED 2026-07-13; partial)
-The autofire ("new") system is SPARSE. User-tested: autofire = neon-VE (+ known: anis: star,
-liberalio, nayuta-in-burst); old-style release-fired = diesel-WS, mint, prika, ada, velvet;
-cinderella has NO inter-rocket delay (custom 1s wind-up, already modeled). ENGINE: the 22f
-release latency (one mechanism, measured on Helm SR + Maiden RL) now applies to ALL SR+RL
-by default, autofire exempted via charFixes.noBoltRecovery. Board effects: mint 1.21→0.91 ✓,
-trina 2.62→1.98, maiden default-reproduced (solo 1.01). UNTESTED + flagged:
-- SBS: AUTOFIRE CONFIRMED (user-tested, second round) — exemption now permanent. Bonus
-  validation: her user-observed 150% charge cap matches the DB chargeMultiplier column
-  exactly (the per-unit charge multipliers are trustworthy). Her 1.23 heat is a separate
-  open item (see the residual list).
-- tia: 1.09→0.85 with latency (kept latent) — needs charge-meter test.
-- User-classified (2026-07-13, round 2): laplace, a2, raven, rapunzel, noise, crust,
-  anchor-IM, arcana = ALL old-style (engine default latency already correct). vesti-TU =
-  custom volley (4 rockets over ~1s post-charge, ~0.5s/rocket — modeled via charFixes).
-- trina: CONFIRMED old-style (user-tested 2026-07-13, third round — 22 frames between
-  shots, exactly the engine's default release latency; no change needed).
-  REMAINING unclassified: tia only (currently latent per the sparse-autofire default;
-  she reads 0.85 latent vs 1.09 bare — worth a charge-meter glance).
-
-### U3 — CCW residual (1.15 no-advantage / 1.27-1.31 with elemental advantage)
-The U1 rule fix (her 833.79% core-strike rider no longer receives the core bucket) plus
-crit-on-procs roughly cancelled. Two remaining leads: (a) the ratio gap (~1.14) between the
-iron-weak fight (T8, elemental advantage) and the wind-weak fight (T5, no advantage) says she
-gained less from elemental advantage in reality than the sim's x1.1 — do function-damage riders
-skip the element bucket for HER delivery type?; (b) her every-5s 900% crosshair cadence.
-

@@ -15,7 +15,7 @@ lives. Newest first within each section.
   frames gives exactly **20.0 rounds/s**. Engine: `PULLS_PER_SEC.SMG = quantizeToFrames(24)` is now
   unconditional; `SMGRATE=<n>` pins a rate as the documented revert / A-B arm (`SMGRATE=24` restores
   the old behavior byte-identically). **Evidence — DIRECT MEASUREMENT of the quantity itself**, which
-  outranks the datamined *nominal* that D.2 relied on: the in-game ammo counter (the designated shot
+  outranks the datamined _nominal_ that D.2 relied on: the in-game ammo counter (the designated shot
   clock) on `docs/probes/clean-weapons/emma-claire-idollocean.MP4` with `idoll-ocean` camera-focused
   reads 076→066→056→046→036 across t=60.0–62.0 (mid band) and 020→010 across t=145.0–145.5 (far
   band) — exactly 10 rounds per 0.5 s, dead linear, in two separate range bands (n=1 unit; class
@@ -69,8 +69,8 @@ lives. Newest first within each section.
   **`idoll-ocean` stays despite not being SSR — the SMG slot has no alternative.** Of 30 SMG units
   exactly three have no damage-raising line in skill 1 + skill 2 (bursts being off makes the burst
   slot irrelevant): `idoll-ocean`; `rei` (SMG/Water — NOT `rei-ayanami`), clean but not owned; and
-  `mica-snow-buddy` (SMG/Iron — NOT `mica`, RL/Wind), which is NOT clean because *"Max Ammunition
-  Capacity ▲ 40% continuously"* raises fire uptime and therefore damage. Every other SMG carries an
+  `mica-snow-buddy` (SMG/Iron — NOT `mica`, RL/Wind), which is NOT clean because _"Max Ammunition
+  Capacity ▲ 40% continuously"_ raises fire uptime and therefore damage. Every other SMG carries an
   explicit offensive line.
 
 - **(2026-07-23) BASE-WEAPON FAITHFULNESS BASIS — `folkwang` replaces `kurumi` as the AR
@@ -80,13 +80,13 @@ lives. Newest first within each section.
   units whose kits contribute nothing to damage, so no kit encoding sits between sim and recording.
   Evidence tier: **kit prose (blablalink SSOT)**, a complete read of all three skill slots per unit;
   no measurement and no fitted value is involved.
-  **Why `kurumi` was rejected:** the owner's constraint was "never bursts", and her two *other*
-  damage lines do obey it (S1 block 2 is *"Activates when using Burst Skill"*, S2 is *"Activates
-  during Full Burst"*). But S1 block 1 — *"Activates after landing 36 normal attack(s) … Hacked:
-  Deals 52.24% of final ATK as sustained damage every 1 sec for 5 sec"* — fires off a NORMAL-ATTACK
+  **Why `kurumi` was rejected:** the owner's constraint was "never bursts", and her two _other_
+  damage lines do obey it (S1 block 2 is _"Activates when using Burst Skill"_, S2 is _"Activates
+  during Full Burst"_). But S1 block 1 — _"Activates after landing 36 normal attack(s) … Hacked:
+  Deals 52.24% of final ATK as sustained damage every 1 sec for 5 sec"_ — fires off a NORMAL-ATTACK
   COUNTER with no burst dependency at all, so she is not bare-weapon even under the constraint. At
   261.2% ATK per proc per 36 shots against a 13.65% normal multiplier it is not a rounding error.
-  `folkwang` (AR/Water/B2) is the only AR with zero damage-touching lines *including* her burst.
+  `folkwang` (AR/Water/B2) is the only AR with zero damage-touching lines _including_ her burst.
   The other five were confirmed clean: every non-burst line is heal / shield / Max HP /
   incoming-healing / DEF / taunt. ⚠ `snow-crane`'s BURST grants **Pierce for 10 sec** — she is the
   one unit for whom "never burst" is load-bearing rather than incidental.
@@ -114,9 +114,9 @@ lives. Newest first within each section.
   Owner ruling during the first `/kit-tdd` per-unit test-first session. Evidence tier: **kit prose
   (blablalink SSOT)** — the same tier that authorized the two 2026-07-23 helm fixes; no measurement and
   no fitted value is involved (`ticks: 10` is the kit's own "10 sec").
-  **Why it matters even though no HP pool is modeled:** a `heal` is an *event*, not an amount — it fires
-  the target's `recovery`-triggered blocks (crown's *"when recovery takes effect → all allies Attack
-  Damage ▲20.99%"*). Collapsing a 10-second window to one instant understates how long a recovery
+  **Why it matters even though no HP pool is modeled:** a `heal` is an _event_, not an amount — it fires
+  the target's `recovery`-triggered blocks (crown's _"when recovery takes effect → all allies Attack
+  Damage ▲20.99%"_). Collapsing a 10-second window to one instant understates how long a recovery
   consumer stays refreshed. The primitive already existed and has prior art (`blanc` `ticks: 8` on the
   same `burstCast`→`allies` shape); this is an encoding fix, not a new mechanic.
   **BOARD-NEUTRAL, verified by direct A/B** (`board-read` byte-identical with and without the change;
@@ -132,14 +132,14 @@ lives. Newest first within each section.
 
 - **(2026-07-23) `helm` — "for 10 round(s)" is now a REAL ROUND COUNT (`durationShots`
   primitive), replacing a `durationSec 13` approximation.** Owner directive during the helm kit review.
-  Her burst grants *Charge Damage Multiplier ▲158.4% for 10 round(s)*. A round count is not a timed
+  Her burst grants _Charge Damage Multiplier ▲158.4% for 10 round(s)_. A round count is not a timed
   window and cannot be expressed as one: her **magazine is 6**, so the ten rounds span a reload (~6
   charged shots → reload → ~4 more, ≈17.5s at her measured 90-frame bolt cycle), and the 13s stand-in
   truncated it at roughly the 7th round. The override's own caveat had admitted the gap since it was
   authored.
   **Prior art was not reusable, which is why this is a new primitive.** `dorothy-serendipity` does carry
   a real round count (`consolidation.shots: 3` → `consolShotsLeft`) but it is a field of her bespoke
-  pellet-consolidation state machine, reachable by nothing else; `jill`'s *"for 9 round(s)"* is modeled
+  pellet-consolidation state machine, reachable by nothing else; `jill`'s _"for 9 round(s)"_ is modeled
   as a permanent passive, which is **correct for her and must not be "fixed"** — her magazine is exactly
   9 and the buff re-triggers on every reload-to-max, so 9 rounds IS permanent. `BuffInstance` otherwise
   expired only on `expiresFrame`, its sole non-time scope being `whileSwappedIdx`.
@@ -151,8 +151,8 @@ lives. Newest first within each section.
   byte-identical.
   **Scope: `helm` ONLY** (owner ruling). The other simSupported carriers are inventoried in
   `docs/control-regression-followups.md` §1 and deliberately untouched — note `snow-white-heavy-arms`'
-  two "1 round" lines are ALREADY round-scoped via `whileSwapped`, and `asuka-wille`'s *"reload speed is
-  FIXED at…for 1 rounds"* is a stat CLAMP, a different primitive (`engine-modeling-gaps.md` §1b).
+  two "1 round" lines are ALREADY round-scoped via `whileSwapped`, and `asuka-wille`'s _"reload speed is
+  FIXED at…for 1 rounds"_ is a stat CLAMP, a different primitive (`engine-modeling-gaps.md` §1b).
   **Evidence tier: DATAMINED kit text** (structural, not empirical) + a functional test that proves the
   mechanism instead of inferring it from a ratio: `scripts/tests/duration-shots.test.ts` (in verify.sh)
   asserts strict monotonicity across N=1..10 (per-round decrement, not a time proxy), that 10 rounds
@@ -163,9 +163,9 @@ lives. Newest first within each section.
   → `docs/STATE.md` §5, `docs/control-regression-followups.md`.
 
 - **(2026-07-23) `helm` — Critical Rate is NORMAL-ATTACK-SCOPED (`critRateNormalPct` primitive).**
-  Owner directive during the helm kit review: *"the crit rate pct isn't a true crit rate pct buff, it
-  only buffs crit on normal attack damage (meaning not skills)"*. Her S1 reads *"Critical Rate of
-  **normal attacks** ▲14.64% for 5 sec"* and targets **all allies**, but the override used the unscoped
+  Owner directive during the helm kit review: _"the crit rate pct isn't a true crit rate pct buff, it
+  only buffs crit on normal attack damage (meaning not skills)"_. Her S1 reads _"Critical Rate of
+  **normal attacks** ▲14.64% for 5 sec"_ and targets **all allies**, but the override used the unscoped
   `critRatePct`, which `dealDamage` folds into the crit roll for every crit-eligible hit. So the sim was
   inflating crit on the **whole team's** skill procs and burst nukes, not just normals — an over-credit
   that grew when `RIDERCRIT` landed ON (2026-07-22) and flat-damage riders became crit-eligible.
@@ -174,7 +174,7 @@ lives. Newest first within each section.
   `category === 'normal'`. Opt-in and inert (sums to 0) for every non-carrier. **`helm` is the only
   simSupported carrier** of this kit line (`biscuit` carries it but is not simSupported).
   Also corrected: the override's `note` asserted a `shotFired → allies fillGauge 14.31` block the file
-  never contained. The *"Fills Burst Gauge by 14.31%"* line is real but lives in
+  never contained. The _"Fills Burst Gauge by 14.31%"_ line is real but lives in
   `data/gauge-per-shot.json` (`helm.flatPerTrigger 1431`, datamined with two independent confirmations),
   added per trigger pull in `gaugePerShot()` as a flat term the focus charge multiplier deliberately
   does not scale.
@@ -191,8 +191,8 @@ lives. Newest first within each section.
   non-burst-cast skill/rider/DoT landing inside the FB window takes the +50% (JP+KR research, empirical
   both sides). That was established 2026-07-14, but the default was held at `perkit` because six units
   still carried calibration-RELIC `noFb` flags masking cadence over-models — flipping early would have
-  made them run hot. `sim.ts` stated the exit condition in place: *"once all 6 are green the default
-  flips to 'timing' with zero further drift."*
+  made them run hot. `sim.ts` stated the exit condition in place: _"once all 6 are green the default
+  flips to 'timing' with zero further drift."_
   **That condition is now met.** Five relics went 2026-07-15; the last (`privaty`) went with her
   Designated-Target re-encode earlier today. With zero carriers, `skillNoFb`'s `perkit` branch returns
   `perKitNoFb` = false for every unit, so the two arms were already identical — the flip is provably a
@@ -207,11 +207,11 @@ lives. Newest first within each section.
 - **(2026-07-23, latest) `privaty` — the 1687% rider RE-ENCODED as a Designated-Target-gated last-bullet
   hit; the fabricated DoT and its `noFb` are GONE. Owner ruling, faithful > fit; DELIBERATE board cost
   0.937 COLD ▼ → 1.118 HOT ▲.** Her `skill2` carried `dot atkPct 1687 durationSec 10 intervalSec 3 noFb`,
-  an encoding with no kit support: the kit line is *"Activates when the last bullet hits a target in
-  **Designated Target status**. Deals 1687% of final ATK as additional damage"*, with `durationSec 10`
+  an encoding with no kit support: the kit line is _"Activates when the last bullet hits a target in
+  **Designated Target status**. Deals 1687% of final ATK as additional damage"_, with `durationSec 10`
   borrowed from the Designated-Target debuff window and `intervalSec 3` from her burst's unrelated
   3-second stun. **Now:** her burst applies `targetStatus {name:'Designated Target', durationSec:10}` on
-  the burst's *"Designated Target: ATK ▼5.02% for 10 sec"* line — that line IS the status, so its 10 s
+  the burst's _"Designated Target: ATK ▼5.02% for 10 sec"_ line — that line IS the status, so its 10 s
   is the status's own DATAMINED window, not an inferred one borrowed from a neighbouring effect (there
   is no separate ATK-down for it to bind to; the ATK-down is the status's content, inert in v1 because
   the boss never attacks and the engine drops non-`damageTaken` enemy buffs outright, so it now sits in
@@ -233,7 +233,7 @@ lives. Newest first within each section.
   the rider fires on **38.8%** of her last bullets in T4 (19 of 49) and 36.6% in N5 (15 of 41), against
   **~38.6%** predicted from ~34% of fight-time in status × ~1.25 in-window last-bullet density — 3 procs
   per window (4 in the opening one), in-window spacing 2.78 s ≈ a 30-round magazine ÷ 12 rps plus reload.
-  (An earlier draft of this entry quoted *"~47% vs ~44%, 5 bursts, ~2× density"*; all three inputs were
+  (An earlier draft of this entry quoted _"~47% vs ~44%, 5 bursts, ~2× density"_; all three inputs were
   wrong — 47% was damage-weighted rather than a count, she casts **7** times in T4 not 5, and
   `maxAmmoPct −50.66` is a `fullBurstEnter`→allies buff so it halves magazines in EVERY Full Burst,
   leaving her Designated windows no ammo advantage over the others. The corrected arithmetic reproduces
@@ -1675,7 +1675,7 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   burst gauge → full-burst counts → every unit's total in that comp); `PA MiKa` declares `modes` +
   `lambda`. **The `modes` half is the instructive one:** with modes dropped, `prika` and `mint` ran in
   SOLO mode, so `prika`'s duet-gated `burstFirst` + `burstCdr −9999` never fired and the measured duet
-  rotation — *prika takes the first burst, mint takes every burst after* (owner) — was simply absent.
+  rotation — _prika takes the first burst, mint takes every burst after_ (owner) — was simply absent.
   Both units then read exactly as cold as you would expect a missing rotation to make them.
   **Corrections:** `mint` 0.755 COLD → **1.015 OK** (board rank 41 → 3); `prika` 0.676 → **0.890**;
   `anis-star` 0.946 → 0.965. Board-wide within-±3% 5 → 6, ±5% 9 → 12, ±8% 17 → 19, worse 28 → 26 — the
@@ -2046,6 +2046,9 @@ visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–1
 - **(2026-07-13) Release latency (22 frames) applies to snipers AND launchers by default**;
   autofire is the sparse exception list (`charFixes.noBoltRecovery`). Classified by owner testing
   - the maiden/helm measurements; only tia remains unclassified. — charge-weapons.md §2.
+    **SUPERSEDED (2026-07-26):** classification now resolves from the datamined `input_type` field
+    (`isAutofireCharge()`, sim.ts:155); per-unit flags removed. Tia is `UP` (release-fired) — fully
+    classified. — answered-questions U12.
 - **(2026-07-13) Function-type additional damage crits at the caster's rate, never cores, never
   gets range** (datamined FunctionTable + Prydwen + JP). Crit-on-procs is default ON; dot tick
   crit unverified and kept OFF. — nikke-damage-formula.md §3.
@@ -2351,6 +2354,7 @@ visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–1
 (claude-opus-4-8) converged on all load-bearing lines.
 
 **Key rulings:**
+
 - S1 nuke (3789.25% ATK): `fullBurstEnter + ownBurstGate:'cast'` — fires only on Marciana's own
   burst FBs, not helm's alternating rotations. Two-B3 comp discrimination pins nuke count === her
   burstCast count (not total FB count). Nearest-wrong: plain `fullBurstEnter` (doubles the nuke)
@@ -2386,6 +2390,7 @@ unprompted in every arm.
 **What replaces them — CONDITIONS on being fielded, never reasons to field anyone**
 (`TeamCalcInput.constraints`, wired as `web/src/genCalc.ts` `TEAM_CONSTRAINTS`, enforced in team
 legality and inside the proxy enumeration):
+
 - `mint` + `prika` must share a team (all-or-none; relaxes only when one is unavailable to the
   search). Owner: their kit pairing is under-modeled today, so the rule carries what the sim
   cannot yet see; a kit fix is planned.
@@ -2402,6 +2407,7 @@ kit work, not with this change.
 
 **What the branch changes (web Team/Roster generators + `src/teamcalc.ts`; ZERO engine edits).**
 Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
+
 - **1a/1b — worker offload + pool, batched argmax refine.** Roster search runs in web workers
   (main thread never blocks); `refine` moved from first-improvement to per-slot argmax —
   a measured-quality-neutral search-trajectory change, gated byte-identical on the no-meta bench.
@@ -2421,7 +2427,7 @@ Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
   (measured 104× in-process; ~47× in-browser re-run).
 
 - **4 — cross-team polish pass + strongest-first display order (2026-07-24, branch `gen-item4`).**
-  Greedy builds team *i* from the pool minus teams 1..*i*−1, so a later team beating an earlier one
+  Greedy builds team _i_ from the pool minus teams 1..*i*−1, so a later team beating an earlier one
   (bench: team 4 2343M < team 5 2369M) PROVES the earlier team's search missed a team its own pool
   contained. Fix, in `src/teamcalc.ts`: after the greedy roster, re-run the whole sequential build
   with the previous roster's teams offered to every team as extra local-search starts
@@ -2430,8 +2436,8 @@ Plan: `docs/handoffs/closed/2026-07-24-roster-generator-perf-plan.md`. Items:
   caller row-pinned units (`pinnedByTeam` rows map to UI team indices — a sort would move a pin out
   from under its row; generic `mustUse` carries no row identity and still sorts).
   **Three deliberate deviations from the plan draft, all bench-measured** (artifact:
-  `docs/handoffs/closed/2026-07-24-gen-item4-polish-ab.md`): (1) the plan's "re-run team *i* with all
-  OTHER final teams excluded" is a strict SUBSET of team *i*'s greedy pool for every *i* — it cannot
+  `docs/handoffs/closed/2026-07-24-gen-item4-polish-ab.md`): (1) the plan's "re-run team _i_ with all
+  OTHER final teams excluded" is a strict SUBSET of team _i_'s greedy pool for every _i_ — it cannot
   reach the missed team by construction, so the seeded re-run replaces it; (2) the accept rule moved
   per-team → per-pass on the roster total, because a reclaim raises one team while the rebuilt tail
   drops (this is what makes "polish never lowers the roster" true); (3) a `POLISH_SEED_FRAC = 0.8`
@@ -2461,11 +2467,12 @@ instruments, and building one and validating it against known ground truth is or
 
 **Why.** `/probe-processing` was regularly burning 2–3 h producing nothing, because the numpy scans
 it described in prose were re-derived by hand every run and manual Opus frame-reading is slow and
-error-prone. The design rule the plan set — *prefer deterministic CV on a fixed crop over a VLM
-read; use a VLM only where the task is genuinely semantic* — held up: the two deterministic readers
+error-prone. The design rule the plan set — _prefer deterministic CV on a fixed crop over a VLM
+read; use a VLM only where the task is genuinely semantic_ — held up: the two deterministic readers
 are exact on their validation sets, and both remaining VLM readers needed an arithmetic gate.
 
 **What landed.**
+
 1. **`scripts/probe/scan.ts` + `scan-frames.py`** — deterministic CV Full-Burst instrument, no model.
    Three detectors merged: the Full-Burst **drain window**, the whole-frame golden **splash**, and
    the stage-3 **hexagon**. ~12 s per whole video on one ffmpeg decode.
@@ -2479,6 +2486,7 @@ are exact on their validation sets, and both remaining VLM readers needed an ari
    onto a shared **`hit-bands.ts`** so the printed table and the reader's in-band check cannot drift.
 
 **Evidence.** Full record in `docs/probe-runs.md` (2026-07-24).
+
 - FB counts: **exact on 8 of 8** recordings whose counts were measured independently and earlier
   (11/12/13/13/13/13/14 + the soda-twinkling-bunny control's 10), every burst corroborated by a
   second detector. The failure case that motivated the work is bounded too: on the `control/lm.MP4`
@@ -2489,6 +2497,7 @@ are exact on their validation sets, and both remaining VLM readers needed an ari
 
 **Two corrections to previously-documented premises** (both structural, both verified by direct
 pixel measurement — they change no constant, no default and no board value):
+
 - The burst-gauge crop renders a **draining Full-Burst window bar**, not a filling gauge; the burst
   gauge CHARGING is not in that crop at all. The `filling` state the VLM emitted was a prompt
   artifact — it was offered that option and had to pick something.
