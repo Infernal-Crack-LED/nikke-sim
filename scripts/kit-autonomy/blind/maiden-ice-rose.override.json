@@ -1,0 +1,216 @@
+{
+  "slug": "maiden-ice-rose",
+  "resources": [
+    {
+      "name": "mp",
+      "initial": 0,
+      "min": 0,
+      "max": 12
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 1
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "mp",
+        "max": 0
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "mp",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "mp",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "mp",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 6
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 6.34,
+          "durationSec": 15,
+          "maxStacks": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 1
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Electric",
+        "excludeSelf": true
+      },
+      "resourceGate": {
+        "name": "mp",
+        "max": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 40.9,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20.9,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Electric",
+        "excludeSelf": true
+      },
+      "resourceGate": {
+        "name": "mp",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 40.9,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20.9,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "mp",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 31.68,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkOfMaxHpPct",
+          "value": 3.2,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 547.62,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 4118.4,
+          "crit": true
+        },
+        {
+          "kind": "resource",
+          "name": "mp",
+          "delta": -12
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ MP economy: the kit's two replenish gates read literally as MP==0 (Burst Stage 1 entry) and MP>1 (Full Burst entry), which leaves MP permanently stuck at 1 and makes both the stated cap of 12 and the burst's MP-scaled repeat unreachable. Modeled as MP>=1 on the Full-Burst line (whole-picture: the derived cycle burst-consume→0, stage-1 re-seed→1, FB→2 is the only reading in which every kit clause is live). If footage shows MP never exceeding 1, revert to min:2.",
+    "⚑ Burst repeat count: 'Attacks repeatedly based on current MP' is modeled as a single flatDamage at 1372.8% × 3 (estimated MP-at-cast). The engine has no MP-scaled hit count for flatDamage, so the multiplier is baked in — it is an UNMEASURED steady-state estimate, not a mechanic.",
+    "⚑ Burst HP term: the kit multiplies 1372.8% against (10% of final Max HP + ATK). flatDamage can only express % of final ATK, so ONLY the ATK term is modeled; the 10%-Max-HP term is missing damage (grows with the S1 Max HP stacks and any HP gear). Needs an engine primitive or an ATK-equivalent conversion measured from a fight.",
+    "⚑ Max HP stacks do NOT reach cap: the 6-full-charge trigger fires roughly once per magazine (6 ammo × ~1s charge + ~2.35s reload ≈ 9s) while each stack lasts 15s, so steady state is ~1.7 stacks (~11% Max HP), not the 63.4% cap. Any tuning that assumes 10 stacks will over-credit atkOfMaxHpPct.",
+    "⚑ The two skill2 'MP is replenished' blocks mirror the skill1 replenish triggers/gates rather than keying a real replenish event; their resourceGates are written to be correct under either slot evaluation order, with one known edge (MP==1 at a Burst-Stage-1 entry, i.e. a rotation where the chain fails after her re-seed, fires the ally buff without an actual replenish).",
+    "⚑ crit:true on the 547.62% charge rider and the burst nuke follows the rider-crit convention (riders crit at the caster's sheet rate, no core); unverified for this unit.",
+    "⚑ Cadence: chargeFrames 60 / ammo 6 / reloadFrames 141 are datamined and drive BOTH the 547.62%-per-charge rider and the 6-charge stack trigger — a cadence error scales her whole non-burst output linearly."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Model: an MP resource pool (0..12) seeded +1 at Burst Stage 1 entry while empty and +1 per Full Burst entry, spent in full on her own burst cast. Skill 2 mirrors those replenish moments to grant Electric allies (excluding self) Elemental Advantage Attack Damage ▲40.9% + ATK ▲20.9% of caster ATK for 10s, and gives herself Elemental Advantage Attack Damage ▲31.68% + ATK ▲3.2% of her own final Max HP for 10s when MP is spent. Every full charge deals a 547.62% single-target rider; every 6th full charge stacks Max HP ▲6.34% for 15s (cap 10, realistically ~1.7 stacks). Burst is one crit-eligible instant hit at 1372.8% of ATK multiplied by an ESTIMATED 3 MP repeats, with the kit's 10%-Max-HP term absent from the multiplier."
+}

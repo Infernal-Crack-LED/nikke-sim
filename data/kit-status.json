@@ -2135,24 +2135,24 @@
       "weapon": "RL",
       "class": "Defender",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
         "findings": [
-          "1.13 HOT: F1 kit team buff is 'except self' but model uses alliesOfElement Electric w/o self-exclusion -> she self-buffs +40.9/+20.9 every FB (arcana-fortune-mate bug family; fix=excludeSelf on alliesOfElement); F2 burst stackedNuke undercounts a stack when she bursts every rotation (offsets cold). Reconcile F1+F2 together"
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/maiden-ice-rose.json + scripts/kit-autonomy/manual-review/maiden-ice-rose.md."
         ]
       },
       "tier": "MEASURED",
       "tuned": true,
       "control": false,
-      "evidence": "Solo neutral video — 547.62% rider popups exact, cadence measured (A12); solo 1.01",
+      "evidence": "Solo neutral video — 547.62% rider popups exact, cadence measured (A12); solo 1.01 | kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; rider popup-verified (547.62% exact, per-pull, crit pair)",
       "date": "2026-07-13",
       "graded": {
         "teams": 3,
         "within3pct": 1
       },
       "reference": false,
-      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound",
+      "residual": "Burst Max-HP scaling is a deliberate conservative lower-bound | engine-core r1-r6: MP init +1 dropped (first burst 0 stacks), stackedNuke hpPct reads base not live Max HP, stackedNuke forced non-crit, MP-replenish trigger fold, cast-frame ordering, MP-above-1 threshold; spot-check = burst repeat-hits per cast in footage",
       "unmodeled": {
         "skill1": [
           "Activates when entering Burst Stage 1 with MP at 0. MP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.",

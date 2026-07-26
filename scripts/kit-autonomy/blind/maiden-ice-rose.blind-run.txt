@@ -1,0 +1,190 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-26[39m
+
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - fixture sanity[2m > [22mfires and the team actually reaches Full Burst[32m 2[2mms[22m[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 MP economy[2m > [22mmodels MP as a pool capped at 12, starting empty[32m 3[2mms[22m[39m
+[31m   → kit states MP accumulates to a maximum of 12: expected undefined to be truthy[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 MP economy[2m > [22mgains MP on Burst Stage 1 entry, gated to MP === 0[32m 0[2mms[22m[39m
+[31m   → stage-1-entry MP block missing: expected 0 to be greater than 0[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 MP economy[2m > [22mgains MP on Full Burst entry behind a non-zero MP floor[32m 0[2mms[22m[39m
+[31m   → full-burst-entry MP block missing: expected 0 to be greater than 0[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 MP economy[2m > [22mspends the whole accumulated pool on her burst[32m 0[2mms[22m[39m
+[31m   → no MP spend modelled: expected 0 to be greater than 0[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 Max HP stacks on every 6th Full Charge[2m > [22mis a self 6.34% Max HP buff, 15s, 10 stacks, on a 6-full-charge counter[32m 1[2mms[22m[39m
+[31m   → kit says attacking with Full Charge, not hits/shots: expected 'hitCount' to be 'chargeCounter' // Object.is equality[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 Max HP stacks on every 6th Full Charge[2m > [22mapplies repeatedly over 180s and never exceeds 10 stacks[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 Max HP stacks on every 6th Full Charge[2m > [22mfires on every 6th full charge, not on every one[32m 1[2mms[22m[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 Max HP stacks on every 6th Full Charge[2m > [22mfeeds her own ATK-of-final-Max-HP conversion (the line is not defensive-only)[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP replenished (Electric allies except self)[2m > [22mtargets Electric allies excluding self, on an MP-replenish trigger[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP replenished (Electric allies except self)[2m > [22mcarries both 10s payloads, the ATK one scaled off the caster[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP replenished (Electric allies except self)[2m > [22mnever grants the ally buff to herself[32m 0[2mms[22m[39m
+ [2m[90m↓[39m[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP replenished (Electric allies except self)[2m > [22mgrants 40.9% / flat-resolved ATK to a real Electric teammate
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP used (self, own burst cast)[2m > [22mis a self block keyed to her own burst cast[32m 0[2mms[22m[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP used (self, own burst cast)[2m > [22mcarries ATK 3.2% of final Max HP and 31.68% advantage damage, both 10s[32m 0[2mms[22m[39m
+[31m   → 31.68% self advantage buff missing: expected undefined to be truthy[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP used (self, own burst cast)[2m > [22mapplies both self buffs together, as raw percentages[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP used (self, own burst cast)[2m > [22mfires per OWN burst cast, not per team Full Burst[32m 1[2mms[22m[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 547.62% Full Charge rider[2m > [22mis a per-full-charge enemy hit of 547.62%, with no core strike[32m 0[2mms[22m[39m
+[31m   → expected 'shotFired' to be 'chargeCounter' // Object.is equality[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 547.62% Full Charge rider[2m > [22mcarries a large share of her damage[32m 0[2mms[22m[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 547.62% Full Charge rider[2m > [22mfires once per full charge, not once per six[32m 0[2mms[22m[39m
+[31m   → expected 477016075.9636196 to be less than 477016075.9636196[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - burst nuke[2m > [22mis an enemy-targeted flat hit of at least 1372.8% of final ATK[32m 0[2mms[22m[39m
+[31m   → burst damage effect missing: expected 0 to be greater than 0[39m
+ [31m×[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - burst nuke[2m > [22mmaterially contributes to her total and moves no teammate[32m 0[2mms[22m[39m
+[31m   → expected 477016075.9636196 to be less than 477016075.9636196[39m
+ [2m[90m↓[39m[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - burst nuke[2m > [22mscales its hit COUNT with current MP at cast time
+ [2m[90m↓[39m[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - burst nuke[2m > [22madds 10% of her final Max HP to the per-hit ATK term
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - elemental-advantage scoping[2m > [22mencodes both advantage lines on the advantage-gated stat, not generic Damage Up[32m 0[2mms[22m[39m
+ [32m✓[39m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - elemental-advantage scoping[2m > [22mis damage-inert against the Fire control boss (Electric holds no advantage there)[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 10 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 MP economy[2m > [22mmodels MP as a pool capped at 12, starting empty
+[31m[1mAssertionError[22m: kit states MP accumulates to a maximum of 12: expected undefined to be truthy[39m
+
+[32m- Expected:[39m
+true
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m201:69[22m[39m
+    [90m199|[39m [34mdescribe[39m([32m'maiden-ice-rose - skill1 MP economy'[39m[33m,[39m () [33m=>[39m {
+    [90m200|[39m   [34mit[39m([32m'models MP as a pool capped at 12, starting empty'[39m[33m,[39m () [33m=>[39m {
+    [90m201|[39m     expect(MP_POOL, 'kit states MP accumulates to a maximum of 12').to…
+    [90m   |[39m                                                                     [31m^[39m
+    [90m202|[39m     [34mexpect[39m([33mMP_POOL[39m[33m.[39mmax)[33m.[39m[34mtoBe[39m([34m12[39m)[33m;[39m
+    [90m203|[39m     [34mexpect[39m([33mMP_POOL[39m[33m.[39minitial [33m??[39m [34m0[39m)[33m.[39m[34mtoBe[39m([34m0[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 MP economy[2m > [22mgains MP on Burst Stage 1 entry, gated to MP === 0
+[31m[1mAssertionError[22m: stage-1-entry MP block missing: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m212:61[22m[39m
+    [90m210|[39m       (b: any) => b.trigger?.kind === 'stageEnter' && b.trigger?.stage…
+    [90m211|[39m     )[33m;[39m
+    [90m212|[39m     expect(blocks.length, 'stage-1-entry MP block missing').toBeGreate…
+    [90m   |[39m                                                             [31m^[39m
+    [90m213|[39m     [35mconst[39m b [33m=[39m blocks[[34m0[39m][33m;[39m
+    [90m214|[39m     [34mexpect[39m(b[33m.[39mtarget[33m?.[39mkind)[33m.[39m[34mtoBe[39m([32m'self'[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 MP economy[2m > [22mgains MP on Full Burst entry behind a non-zero MP floor
+[31m[1mAssertionError[22m: full-burst-entry MP block missing: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m223:64[22m[39m
+    [90m221|[39m       (b: any) => b.trigger?.kind === 'fullBurstEnter' && resourceEffe…
+    [90m222|[39m     )[33m;[39m
+    [90m223|[39m     expect(blocks.length, 'full-burst-entry MP block missing').toBeGre…
+    [90m   |[39m                                                                [31m^[39m
+    [90m224|[39m     [35mconst[39m b [33m=[39m blocks[[34m0[39m][33m;[39m
+    [90m225|[39m     [34mexpect[39m(b[33m.[39mtarget[33m?.[39mkind)[33m.[39m[34mtoBe[39m([32m'self'[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 MP economy[2m > [22mspends the whole accumulated pool on her burst
+[31m[1mAssertionError[22m: no MP spend modelled: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m232:51[22m[39m
+    [90m230|[39m   [34mit[39m([32m'spends the whole accumulated pool on her burst'[39m[33m,[39m () [33m=>[39m {
+    [90m231|[39m     const spends = resourceEffects(allBlocks(OV)).filter((e: any) => e…
+    [90m232|[39m     [34mexpect[39m(spends[33m.[39mlength[33m,[39m [32m'no MP spend modelled'[39m)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                                                   [31m^[39m
+    [90m233|[39m     [34mexpect[39m(
+    [90m234|[39m       [33mMath[39m[33m.[39m[34mmin[39m([33m...[39mspends[33m.[39m[34mmap[39m((e[33m:[39m any) [33m=>[39m e[33m.[39mdelta))[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill1 Max HP stacks on every 6th Full Charge[2m > [22mis a self 6.34% Max HP buff, 15s, 10 stacks, on a 6-full-charge counter
+[31m[1mAssertionError[22m: kit says attacking with Full Charge, not hits/shots: expected 'hitCount' to be 'chargeCounter' // Object.is equality[39m
+
+Expected: [32m"[7mcharge[27mCount[7mer[27m"[39m
+Received: [31m"[7mhit[27mCount"[39m
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m246:84[22m[39m
+    [90m244|[39m     [35mconst[39m b [33m=[39m blocks[[34m0[39m][33m;[39m
+    [90m245|[39m     [34mexpect[39m(b[33m.[39mtarget[33m?.[39mkind)[33m.[39m[34mtoBe[39m([32m'self'[39m)[33m;[39m
+    [90m246|[39m     expect(b.trigger?.kind, 'kit says attacking with Full Charge, not …
+    [90m   |[39m                                                                                    [31m^[39m
+    [90m247|[39m     [34mexpect[39m([34mtriggerCount[39m(b))[33m.[39m[34mtoBe[39m([34m6[39m)[33m;[39m
+    [90m248|[39m     const e = (b.effects ?? []).find((x: any) => x.kind === 'buff' && …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 on MP used (self, own burst cast)[2m > [22mcarries ATK 3.2% of final Max HP and 31.68% advantage damage, both 10s
+[31m[1mAssertionError[22m: 31.68% self advantage buff missing: expected undefined to be truthy[39m
+
+[32m- Expected:[39m
+true
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m339:56[22m[39m
+    [90m337|[39m     [34mexpect[39m(hp[33m.[39mdurationSec)[33m.[39m[34mtoBe[39m([34m10[39m)[33m;[39m
+    [90m338|[39m     const elem = eff.find((e: any) => e.stat === 'elemAdvantageDamageP…
+    [90m339|[39m     [34mexpect[39m(elem[33m,[39m [32m'31.68% self advantage buff missing'[39m)[33m.[39m[34mtoBeTruthy[39m()[33m;[39m
+    [90m   |[39m                                                        [31m^[39m
+    [90m340|[39m     [34mexpect[39m(elem[33m.[39mvalue)[33m.[39m[34mtoBeCloseTo[39m([34m31.68[39m[33m,[39m [34m5[39m)[33m;[39m
+    [90m341|[39m     [34mexpect[39m(elem[33m.[39mdurationSec)[33m.[39m[34mtoBe[39m([34m10[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 547.62% Full Charge rider[2m > [22mis a per-full-charge enemy hit of 547.62%, with no core strike
+[31m[1mAssertionError[22m: expected 'shotFired' to be 'chargeCounter' // Object.is equality[39m
+
+Expected: [32m"chargeCounter"[39m
+Received: [31m"shotFired"[39m
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m367:29[22m[39m
+    [90m365|[39m     [35mconst[39m b [33m=[39m blocks[[34m0[39m][33m;[39m
+    [90m366|[39m     [34mexpect[39m(b[33m.[39mtarget[33m?.[39mkind)[33m.[39m[34mtoBe[39m([32m'enemy'[39m)[33m;[39m
+    [90m367|[39m     [34mexpect[39m(b[33m.[39mtrigger[33m?.[39mkind)[33m.[39m[34mtoBe[39m([32m'chargeCounter'[39m)[33m;[39m
+    [90m   |[39m                             [31m^[39m
+    [90m368|[39m     [34mexpect[39m([34mtriggerCount[39m(b)[33m,[39m [32m'kit says for 1 time(s)'[39m)[33m.[39m[34mtoBe[39m([34m1[39m)[33m;[39m
+    [90m369|[39m     const e = (b.effects ?? []).find((x: any) => x.kind === 'flatDamag…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - skill2 547.62% Full Charge rider[2m > [22mfires once per full charge, not once per six
+[31m[1mAssertionError[22m: expected 477016075.9636196 to be less than 477016075.9636196[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m382:42[22m[39m
+    [90m380|[39m
+    [90m381|[39m   [34mit[39m([32m'fires once per full charge, not once per six'[39m[33m,[39m () [33m=>[39m {
+    [90m382|[39m     expect(totals(RIDER_SLOW.res)[SLUG]).toBeLessThan(totals(BASE.res)…
+    [90m   |[39m                                          [31m^[39m
+    [90m383|[39m   })[33m;[39m
+    [90m384|[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - burst nuke[2m > [22mis an enemy-targeted flat hit of at least 1372.8% of final ATK
+[31m[1mAssertionError[22m: burst damage effect missing: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m389:55[22m[39m
+    [90m387|[39m   it('is an enemy-targeted flat hit of at least 1372.8% of final ATK',…
+    [90m388|[39m     const eff = effectsOf(OV.burst ?? []).filter((e: any) => e.kind ==…
+    [90m389|[39m     expect(eff.length, 'burst damage effect missing').toBeGreaterThan(…
+    [90m   |[39m                                                       [31m^[39m
+    [90m390|[39m     expect(Math.max(...eff.map((e: any) => e.atkPct))).toBeGreaterThan…
+    [90m391|[39m     expect(blocksWithKind(OV.burst ?? [], 'flatDamage')[0].target?.kin…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/10]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts[2m > [22mmaiden-ice-rose - burst nuke[2m > [22mmaterially contributes to her total and moves no teammate
+[31m[1mAssertionError[22m: expected 477016075.9636196 to be less than 477016075.9636196[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/maiden-ice-rose.adapted.test.ts:[2m395:38[22m[39m
+    [90m393|[39m
+    [90m394|[39m   it('materially contributes to her total and moves no teammate', () =…
+    [90m395|[39m     expect(totals(BURST0.res)[SLUG]).toBeLessThan(totals(BASE.res)[SLU…
+    [90m   |[39m                                      [31m^[39m
+    [90m396|[39m     [34mexpectAlliesUnmoved[39m([33mBASE[39m[33m,[39m [33mBURST0[39m)[33m;[39m
+    [90m397|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/10]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m10 failed[39m[22m[2m | [22m[1m[32m13 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (26)[39m
+[2m   Start at [22m 09:06:05
+[2m   Duration [22m 478ms[2m (transform 85ms, setup 0ms, import 372ms, tests 12ms, environment 0ms)[22m
+
