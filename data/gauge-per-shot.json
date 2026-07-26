@@ -438,6 +438,48 @@
   "source": "class-modal-RL (synthetic Solo-framework no-op control)",
   "targetPerTrigger": 280.0
  },
+ "noop-mg": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-MG (synthetic ammo-burn partner, src/ranks/synthetics.ts)",
+  "targetPerTrigger": 10.0
+ },
+ "carry-mg": {
+  "basePerTrigger": 5.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-MG (synthetic standard carry, src/ranks/synthetics.ts)",
+  "targetPerTrigger": 10.0
+ },
+ "carry-rl": {
+  "basePerTrigger": 140.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-RL (synthetic standard carry, src/ranks/synthetics.ts)",
+  "targetPerTrigger": 280.0
+ },
+ "carry-sg": {
+  "basePerTrigger": 200.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-SG (synthetic standard carry, src/ranks/synthetics.ts)",
+  "targetPerTrigger": 400.0
+ },
+ "carry-ar": {
+  "basePerTrigger": 20.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-AR (synthetic standard carry, src/ranks/synthetics.ts)",
+  "targetPerTrigger": 40.0
+ },
+ "carry-sr": {
+  "basePerTrigger": 280.0,
+  "fullChargeBonus": 250.0,
+  "source": "class-modal-SR (synthetic standard carry, src/ranks/synthetics.ts)",
+  "targetPerTrigger": 560.0
+ },
+ "carry-smg": {
+  "basePerTrigger": 10.0,
+  "fullChargeBonus": 0.0,
+  "source": "class-modal-SMG (synthetic standard carry, src/ranks/synthetics.ts)",
+  "targetPerTrigger": 20.0
+ },
  "phantom": {
   "basePerTrigger": 25.0,
   "fullChargeBonus": 0.0,
