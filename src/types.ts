@@ -8,8 +8,8 @@ export interface BaseStats {
   atk: number;
   hp: number;
   def: number;
-  critRate: number;    // percent, e.g. 15
-  critDamage: number;  // percent multiplier, e.g. 150
+  critRate: number; // percent, e.g. 15
+  critDamage: number; // percent multiplier, e.g. 150
   maxLevel: number;
   grade: { ratio: number; atk: number; hp: number; def: number };
   core: { atk: number; hp: number; def: number };
@@ -43,28 +43,28 @@ export interface CharacterData {
   // case of a unit that only counts as its own code. Read it via unitElements() (src/elements.ts),
   // never bare — the engine resolves advantage from the effect itself and ignores this field.
   countsAsElements?: Element[];
-  manufacturer: string | null;    // Elysion/Missilis/Tetra/Pilgrim/Abnormal — drives the relationship
-                                   // (bond) ATK bonus, which is a class×manufacturer stat (Pilgrims cap higher)
+  manufacturer: string | null; // Elysion/Missilis/Tetra/Pilgrim/Abnormal — drives the relationship
+  // (bond) ATK bonus, which is a class×manufacturer stat (Pilgrims cap higher)
   normalAttackMultiplier: number; // % of ATK per trigger pull (all pellets/hits included)
-  coreAttackMultiplier: number;   // % — 200 = core hits deal 2x
+  coreAttackMultiplier: number; // % — 200 = core hits deal 2x
   ammo: number;
-  reloadFrames: number;           // wall-clock reload, 60fps frames
-  chargeFrames: number;           // RL/SR frames to full charge (0 otherwise)
-  chargeMultiplier: number;       // % — total charge factor, e.g. 250
-  hitsPerShot: number;            // hits per trigger pull (for hit-count skill triggers)
-  rl3: number | null;             // burst gen: % of gauge generated per 3 seconds
+  reloadFrames: number; // wall-clock reload, 60fps frames
+  chargeFrames: number; // RL/SR frames to full charge (0 otherwise)
+  chargeMultiplier: number; // % — total charge factor, e.g. 250
+  hitsPerShot: number; // hits per trigger pull (for hit-count skill triggers)
+  rl3: number | null; // burst gen: % of gauge generated per 3 seconds
   burstGaugePerShot: number | null;
-  treasure: boolean;              // has a Treasure (favorite item); DB prydwen_slug ends -treasure
+  treasure: boolean; // has a Treasure (favorite item); DB favorite_item_id or prydwen_slug -treasure
   // Support tags (sync.ts second stage). Independent — a unit can be one, both, or
   // neither. Neither = "unsupported": pulled in for Team Builder browsing only, never
   // offered by the sim/roster-sim engine tabs or the DPS chart/generator tabs.
-  generatorSupported: boolean;    // enikk top-100-proven (data/enikk-supported.json) — DPS
-                                   // chart + the Team/Roster/Custom-DPS generator tabs
-  simSupported: boolean;          // has a hand-tuned kit override (src/skills/overrides/) —
-                                   // Team Sim, Roster Sim, Optimize Overload, Overload
-                                   // Breakpoints. Today == generatorSupported (74/74 overrides
-                                   // authored); will outgrow it as more kits get overrides.
-  nicknames?: string[];           // APPROVED community nicknames (src/data/nicknames.ts derivation)
+  generatorSupported: boolean; // enikk top-100-proven (data/enikk-supported.json) — DPS
+  // chart + the Team/Roster/Custom-DPS generator tabs
+  simSupported: boolean; // has a hand-tuned kit override (src/skills/overrides/) —
+  // Team Sim, Roster Sim, Optimize Overload, Overload
+  // Breakpoints. Today == generatorSupported (74/74 overrides
+  // authored); will outgrow it as more kits get overrides.
+  nicknames?: string[]; // APPROVED community nicknames (src/data/nicknames.ts derivation)
   skills: { skill1: string; skill2: string; burst: string };
   // Raw, UNPRUNED blablalink roledata snapshot (game source-of-truth), passed through verbatim
   // from the DB `role_*` jsonb columns. Field names inside are blablalink snake_case. Nothing in
@@ -77,13 +77,13 @@ export interface CharacterData {
 // One key per DB `role_*` column, prefix stripped. Deliberately loose (`unknown`) — this is an
 // unpruned passthrough; do not model it until a field is promoted to a real engine input.
 export interface RoleSnapshot {
-  weapon?: unknown;       // role_weapon: shot_id, bonusrange_min/max, shot_detail (firing model)
-  burstMeta?: unknown;    // role_burst_meta: use_burst_skill, change_burst_step, burst_apply_delay, burst_duration
+  weapon?: unknown; // role_weapon: shot_id, bonusrange_min/max, shot_detail (firing model)
+  burstMeta?: unknown; // role_burst_meta: use_burst_skill, change_burst_step, burst_apply_delay, burst_duration
   skillDetails?: unknown; // role_skill_details: ulti/skill1/skill2 ids + tables + full skill-detail blocks
-  statScaling?: unknown;  // role_stat_scaling: grade_core_id, grow_grade, stat_enhance_detail
-  element?: unknown;      // role_element: element_id, element_details
-  piece?: unknown;        // role_piece: piece_id, piece_detail (Limit-Break item)
-  meta?: unknown;         // role_meta: original_rare, class, corporation, critical_*, categories
+  statScaling?: unknown; // role_stat_scaling: grade_core_id, grow_grade, stat_enhance_detail
+  element?: unknown; // role_element: element_id, element_details
+  piece?: unknown; // role_piece: piece_id, piece_detail (Limit-Break item)
+  meta?: unknown; // role_meta: original_rare, class, corporation, critical_*, categories
 }
 
 export interface LevelMultiplier {
@@ -169,7 +169,7 @@ export type SimEvent =
        *  normal-attack-scoped buff like critRateNormalPct is directly assertable per bucket. */
       critRate: number;
       coreRate: number;
-      inFullBurst: boolean;   // an FB window was live at this frame
+      inFullBurst: boolean; // an FB window was live at this frame
       fbMajorApplied: boolean; // ...and this instance actually took the +50% (noFb units/lines do not)
       rangeApplied: boolean;
       /** The multiplier decomposition, exactly as the damage formula composes it
@@ -198,8 +198,8 @@ export type SimEvent =
       /** Slot index of the holder; null = the BOSS (an enemy debuff). */
       targetIdx: number | null;
       targetSlug: string | null;
-      refresh: boolean;             // true = refreshed/re-stacked an existing entry
-      expiresFrame: number | null;  // null = no wall-clock expiry
+      refresh: boolean; // true = refreshed/re-stacked an existing entry
+      expiresFrame: number | null; // null = no wall-clock expiry
       durationShots: number | null; // round-count budget ("for N round(s)"), null = none
     })
   /** A buff genuinely REMOVED from a unit's list (see the no-buffExpire note above). */
@@ -239,17 +239,17 @@ export type SimEvent =
 export type GearLevel = 'base5' | 0 | 5;
 
 export interface SimConfig {
-  slugs: string[];          // 5 slugs, slot order 1..5
+  slugs: string[]; // 5 slugs, slot order 1..5
   bossElement: Element | null;
-  bossDef: number;          // flat enemy DEF subtracted from effective ATK
+  bossDef: number; // flat enemy DEF subtracted from effective ATK
   level: number;
-  copies: number;           // 0-10 → grade = min(3, c), core = clamp(c-3, 0, 7)
+  copies: number; // 0-10 → grade = min(3, c), core = clamp(c-3, 0, 7)
   doll: boolean;
   ol: GearLevel;
-  coreHitRate: number;      // 0..1, default 0
-  rangeBonus: boolean;      // +0.3 major modifier
+  coreHitRate: number; // 0..1, default 0
+  rangeBonus: boolean; // +0.3 major modifier
   bossRange?: 'near' | 'mid' | 'midfar' | 'far'; // override scripted range transitions to a fixed band
-  durationSec: number;      // 180
+  durationSec: number; // 180
   // --- experimental / A-B knobs (undefined = current default behaviour) ---
   projExplOnRlNormals?: boolean; // U4: RL normals get projExpl in Damage Up (default ON per user, 2026-07-13)
   // camera-focused unit (charge weapons on the focused unit generate x2.5 gauge).

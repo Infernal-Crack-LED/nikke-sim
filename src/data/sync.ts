@@ -11,8 +11,12 @@ import { countsAsElements } from '../elements.js';
 import { deriveNicknames } from './nicknames.js';
 import { deriveWeaponFields, type WeaponShotDetail } from './weapon-fields.js';
 
-const SYNERGY_API = 'https://api.nikke-synergy.com/rest/v1/attack_damage_characters';
-const SYNERGY_HEADERS = { apikey: 'dummy-key', Authorization: 'Bearer dummy-key' };
+const SYNERGY_API =
+  'https://api.nikke-synergy.com/rest/v1/attack_damage_characters';
+const SYNERGY_HEADERS = {
+  apikey: 'dummy-key',
+  Authorization: 'Bearer dummy-key',
+};
 
 // The DB matched these slugs to the PLAIN synergy entry, but the Treasure (宝)
 // entry is the kit players actually run (favorite-item upgrade of the same
@@ -36,9 +40,9 @@ const TREASURE_SYNERGY_IDS: Record<string, number> = {
 // for exactly these slugs. (owner, 2026-07-16; open-questions U18.)
 const OVERSPEC_SLUGS = new Set<string>([
   'mihara-bonding-chain', // Missilis → "Missilis Overspec"
-  'rapi-red-hood',        // Elysion  → "Elysion Overspec"
-  'anis-star',            // Tetra    → "Tetra Overspec"
-  'neon-vision-eye',      // Missilis → "Missilis Overspec"
+  'rapi-red-hood', // Elysion  → "Elysion Overspec"
+  'anis-star', // Tetra    → "Tetra Overspec"
+  'neon-vision-eye', // Missilis → "Missilis Overspec"
 ]);
 
 // Second-stage roster TAGGING (DECISIONS 2026-07-14, expanded 2026-07-19): every character
@@ -56,14 +60,19 @@ const normalizeName = (n: string) => n.replace(' (Treasure)', '').trim();
 
 function loadSupportPolicy() {
   const proven = new Set<string>(
-    (JSON.parse(
-      readFileSync(new URL('../../data/enikk-supported.json', import.meta.url), 'utf8')
-    ).names as string[]).map(normalizeName)
+    (
+      JSON.parse(
+        readFileSync(
+          new URL('../../data/enikk-supported.json', import.meta.url),
+          'utf8',
+        ),
+      ).names as string[]
+    ).map(normalizeName),
   );
   const overrideSlugs = new Set(
     readdirSync(new URL('../skills/overrides/', import.meta.url))
       .filter((f) => f.endsWith('.json'))
-      .map((f) => f.replace(/\.json$/, ''))
+      .map((f) => f.replace(/\.json$/, '')),
   );
   // slug → parsed override, so the second stage can DERIVE the counts-as elements from the kit
   // (an `advantageVs` effect) rather than carrying a hand-tag that this rebuild would clobber.
@@ -72,8 +81,11 @@ function loadSupportPolicy() {
     overrides.set(
       slug,
       JSON.parse(
-        readFileSync(new URL(`../skills/overrides/${slug}.json`, import.meta.url), 'utf8')
-      ) as OverrideFile
+        readFileSync(
+          new URL(`../skills/overrides/${slug}.json`, import.meta.url),
+          'utf8',
+        ),
+      ) as OverrideFile,
     );
   return { proven, overrideSlugs, overrides };
 }
@@ -94,18 +106,21 @@ async function main() {
     // prose-free migration) — after syncing a NEW unit, run scripts/materialize-overrides.ts --write
     // to seed its override, or the verify gate / runtime will fail loudly on the missing file.
     `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug, aliases,
-            skill_descriptions,
+            skill_descriptions, favorite_item_id,
             role_weapon, role_burst_meta, role_skill_details, role_stat_scaling, role_element, role_piece, role_meta
-       from nikke_characters order by id`
+       from nikke_characters order by id`,
   );
   const metaRow = await client.query(
-    `select value from bot_meta where key = 'nikke_level_multiplier'`
+    `select value from bot_meta where key = 'nikke_level_multiplier'`,
   );
   await client.end();
-  if (!metaRow.rows.length) throw new Error('bot_meta.nikke_level_multiplier missing');
+  if (!metaRow.rows.length)
+    throw new Error('bot_meta.nikke_level_multiplier missing');
   const levelMultiplier = JSON.parse(metaRow.rows[0].value);
 
-  const apiRes = await fetch(`${SYNERGY_API}?limit=500`, { headers: SYNERGY_HEADERS });
+  const apiRes = await fetch(`${SYNERGY_API}?limit=500`, {
+    headers: SYNERGY_HEADERS,
+  });
   if (!apiRes.ok) throw new Error(`synergy API ${apiRes.status}`);
   const apiRows: any[] = await apiRes.json();
   const bySynergyId = new Map(apiRows.map((r) => [r.id, r]));
@@ -150,11 +165,22 @@ async function main() {
     // Weapon-timing fields now derive from the raw datamined WeaponTable (role.weapon.shot_detail),
     // the source-of-truth UPSTREAM of the lossy synergy weapon columns (audit A+B, 2026-07-17).
     // Synergy stays only as a fallback for a unit whose roledata hasn't been fetched.
-    const shot = (row.role_weapon as { shot_detail?: WeaponShotDetail } | null)?.shot_detail;
+    const shot = (row.role_weapon as { shot_detail?: WeaponShotDetail } | null)
+      ?.shot_detail;
     const wf = shot ? deriveWeaponFields(row.id, shot, api) : null;
+    // Treasure (favorite-item upgrade) status: favorite_item_id (stamped by
+    // bakery-bot's CDN derivation) is the authoritative signal; prydwen_slug
+    // "-treasure" is a fallback for units Prydwen flags but bakery hasn't
+    // processed yet. Either one is sufficient.
+    const isTreasure =
+      row.favorite_item_id != null ||
+      (row.prydwen_slug ?? '').endsWith('-treasure');
     const char: CharacterData & { baseStats: any } = {
       slug: row.id,
-      name: row.name,
+      name:
+        isTreasure && !row.name.endsWith(' (Treasure)')
+          ? `${row.name} (Treasure)`
+          : row.name,
       imageUrl: a.imageUrl ?? row.image_url ?? api?.image_public_url ?? null,
       weapon: a.weapon,
       burst: a.burst,
@@ -172,10 +198,21 @@ async function main() {
           ? `${a.manufacturer} Overspec`
           : a.manufacturer
         : null,
-      normalAttackMultiplier: wf?.normalAttackMultiplier ?? a.normalAttackMultiplier ?? api?.normal_attack_multiplier ?? 0,
-      coreAttackMultiplier: wf?.coreAttackMultiplier ?? a.coreAttackMultiplier ?? api?.core_attack_multiplier ?? 200,
+      normalAttackMultiplier:
+        wf?.normalAttackMultiplier ??
+        a.normalAttackMultiplier ??
+        api?.normal_attack_multiplier ??
+        0,
+      coreAttackMultiplier:
+        wf?.coreAttackMultiplier ??
+        a.coreAttackMultiplier ??
+        api?.core_attack_multiplier ??
+        200,
       ammo: wf?.ammo ?? a.ammo ?? api?.ammo ?? 60,
-      reloadFrames: wf?.reloadFrames ?? api?.reload_time ?? Math.round((a.reloadSeconds ?? 2) * 60 + 21),
+      reloadFrames:
+        wf?.reloadFrames ??
+        api?.reload_time ??
+        Math.round((a.reloadSeconds ?? 2) * 60 + 21),
       chargeFrames: wf?.chargeFrames ?? api?.charge_time ?? 0,
       chargeMultiplier: wf?.chargeMultiplier ?? api?.charge_multiplier ?? 0,
       // hitsPerShot = datamined shot_count × muzzle_count, with modernia/anis-star carve-outs
@@ -185,10 +222,10 @@ async function main() {
       hitsPerShot: wf?.hitsPerShot ?? api?.hits_per_shot ?? 1,
       rl3: a.rl3 ?? null,
       // Clean datamined burst gauge — reference only; the engine reads data/gauge-per-shot.json.
-      burstGaugePerShot: wf ? wf.burstGaugePerShot : (api?.burst_gauge_per_shot ?? null),
-      // Treasure (favorite-item upgrade) status: the DB's prydwen_slug ends
-      // "-treasure" for units whose Treasure is released.
-      treasure: (row.prydwen_slug ?? '').endsWith('-treasure'),
+      burstGaugePerShot: wf
+        ? wf.burstGaugePerShot
+        : (api?.burst_gauge_per_shot ?? null),
+      treasure: isTreasure,
       ...(nick.byId[row.id] ? { nicknames: nick.byId[row.id] } : {}),
       // Prose now comes from blablalink (DB skill_descriptions) — accurate to the game source.
       // bakery removed attributes.skill*En, so the old `a.skill*En` reads are dead; Synergy stays
@@ -221,9 +258,15 @@ async function main() {
       // Nothing reads it yet; staged for a later api.* -> role.* migration. Omit empty keys.
       role: {
         ...(row.role_weapon != null ? { weapon: row.role_weapon } : {}),
-        ...(row.role_burst_meta != null ? { burstMeta: row.role_burst_meta } : {}),
-        ...(row.role_skill_details != null ? { skillDetails: row.role_skill_details } : {}),
-        ...(row.role_stat_scaling != null ? { statScaling: row.role_stat_scaling } : {}),
+        ...(row.role_burst_meta != null
+          ? { burstMeta: row.role_burst_meta }
+          : {}),
+        ...(row.role_skill_details != null
+          ? { skillDetails: row.role_skill_details }
+          : {}),
+        ...(row.role_stat_scaling != null
+          ? { statScaling: row.role_stat_scaling }
+          : {}),
         ...(row.role_element != null ? { element: row.role_element } : {}),
         ...(row.role_piece != null ? { piece: row.role_piece } : {}),
         ...(row.role_meta != null ? { meta: row.role_meta } : {}),
@@ -249,8 +292,10 @@ async function main() {
     // counts-as elements: only tagged when the kit grants advantage against a SECOND boss code
     // (an `advantageVs` effect) — the plain single-code case stays untagged, see CharacterData.
     const counts = countsAsElements(c.element, overrides.get(slug));
-    if (counts.length > 1) { c.countsAsElements = counts; multiElement.push(`${slug} (${counts.join('+')})`); }
-    else delete c.countsAsElements;
+    if (counts.length > 1) {
+      c.countsAsElements = counts;
+      multiElement.push(`${slug} (${counts.join('+')})`);
+    } else delete c.countsAsElements;
     if (c.generatorSupported) generatorCount++;
     if (c.simSupported) simCount++;
     if (!c.generatorSupported && !c.simSupported) unsupported.push(slug);
@@ -258,7 +303,10 @@ async function main() {
 
   mkdirSync(new URL('../../data/', import.meta.url), { recursive: true });
   const out: DataFile = { syncedAt: new Date().toISOString(), characters };
-  writeFileSync(new URL('../../data/characters.json', import.meta.url), JSON.stringify(out, null, 1));
+  writeFileSync(
+    new URL('../../data/characters.json', import.meta.url),
+    JSON.stringify(out, null, 1),
+  );
   writeFileSync(
     new URL('../../data/bossing-tiers.json', import.meta.url),
     JSON.stringify(
@@ -268,23 +316,36 @@ async function main() {
         tiers: Object.fromEntries(Object.entries(bossingTiers).sort()),
       },
       null,
-      1
-    )
+      1,
+    ),
   );
   writeFileSync(
     new URL('../../data/level-multiplier.json', import.meta.url),
-    JSON.stringify(levelMultiplier)
+    JSON.stringify(levelMultiplier),
   );
 
   const total = Object.keys(characters).length;
   const noStats = Object.values(characters).filter((c) => !c.baseStats).length;
-  const noApi = rows.filter((r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id)).length;
-  console.log(`synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API)`);
-  console.log(`support tags: ${generatorCount} generatorSupported, ${simCount} simSupported, ${unsupported.length} unsupported (Team Builder only)`);
-  console.log(`counts-as elements: ${multiElement.length ? multiElement.join(', ') : 'none'}`);
-  const nickKept = Object.values(characters).filter((c) => c.nicknames?.length).length;
-  console.log(`nicknames: ${nickKept} units with approved nicknames; ${nick.dropped.length} aliases dropped as unsafe:`);
-  for (const d of nick.dropped) console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);
+  const noApi = rows.filter(
+    (r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id),
+  ).length;
+  console.log(
+    `synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API)`,
+  );
+  console.log(
+    `support tags: ${generatorCount} generatorSupported, ${simCount} simSupported, ${unsupported.length} unsupported (Team Builder only)`,
+  );
+  console.log(
+    `counts-as elements: ${multiElement.length ? multiElement.join(', ') : 'none'}`,
+  );
+  const nickKept = Object.values(characters).filter(
+    (c) => c.nicknames?.length,
+  ).length;
+  console.log(
+    `nicknames: ${nickKept} units with approved nicknames; ${nick.dropped.length} aliases dropped as unsafe:`,
+  );
+  for (const d of nick.dropped)
+    console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);
   if (skipped.length) console.log('skipped:', skipped.join(', '));
 }
 
