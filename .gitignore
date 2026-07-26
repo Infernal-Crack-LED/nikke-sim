@@ -19,18 +19,12 @@ web/public/dpschart.json
 scratchpad/
 
 docs/probes
-docs/handoffs
-docs/closed
 docs/data/ranks
-# Claude harness (proprietary — skills, hooks, settings, root handoff)
-.claude/
-CLAUDE.md
+docs/handoffs/closed
+docs/closed
 
-# Qwen harness (methodology skills — gitignored like .claude/skills/)
-.qwen/skills/
-
-# private-repo git dir (harness + AI docs tracked separately)
-.git-private/
+# local-only agent settings
+.claude/settings.local.json
 
 # blind kit-rebuild test — generated artifacts (regenerable from build-packet.ts);
 # only the script + prompt templates + README are tracked

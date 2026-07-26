@@ -15,9 +15,9 @@ done < <(find "$BK" -type f)
 
 echo "blind-restore: files restored from $BK"
 echo "=== verify: committed scrub-targets should be CLEAN (no diff vs HEAD) ==="
-# overrides + the public-tracked docs must show no diff; CLAUDE.md is private-tracked (skip)
-git diff --stat -- src/skills/overrides docs/DECISIONS.md docs/open-questions.md docs/modeling-priors.md || true
-if git diff --quiet -- src/skills/overrides docs/DECISIONS.md docs/open-questions.md docs/modeling-priors.md; then
+# overrides + the public-tracked docs (including CLAUDE.md) must show no diff
+git diff --stat -- src/skills/overrides docs/DECISIONS.md docs/open-questions.md docs/modeling-priors.md CLAUDE.md || true
+if git diff --quiet -- src/skills/overrides docs/DECISIONS.md docs/open-questions.md docs/modeling-priors.md CLAUDE.md; then
   echo "CLEAN — restore verified for public-tracked scrub targets."
 else
   echo "!!! DIRTY — restore INCOMPLETE, inspect before proceeding."

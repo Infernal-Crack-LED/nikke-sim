@@ -180,11 +180,15 @@ table + ⚑ list. Save to `scripts/kit-autonomy/blind/<slug>.override.json` (+ `
 ## Stage 7 — reconciling judge → binding go/no-go (separate subagent)
 
 Spawn with `scripts/kit-autonomy/RECONCILING-JUDGE.md` (prepend non-negotiables + the `/context` mechanics
-pack: `docs/data/damage-calculation.md` + `docs/data/game-mechanics.md`). Hand it: the kit prose; the S2b
-pre-op review; the S5 blind tests; the S6 blind override; the driver's tests + override + any engine change;
-the formula SSOT. It grades **artifacts vs ground truth** (it does NOT trust the author's self-report; it is
-not "blind to reasoning" — the artifacts embody it). **Convergence is mechanical:** run the S5 blind tests,
-UNMODIFIED, against the driver's shipped override — GREEN = convergence, any RED = a divergence to classify.
+pack: `docs/data/damage-calculation.md` + `docs/data/game-mechanics.md`). **Canonical dispatch (since
+2026-07-26): the judge runs on the THIRD family — `kimi-code/k3` via `scripts/kit-autonomy/dispatch-kimi.sh`
+(`s7-packet.md` → `results/<slug>.json`)** — so the binding verdict is graded by a model that shares no priors
+with the driver or the S5/S6 writers (canonical names: `CROSS-FAMILY-PROTOCOL.md`). Hand it: the kit prose;
+the S2b pre-op review; the S5 blind tests; the S6 blind override; the driver's tests + override + any engine
+change; the formula SSOT. It grades **artifacts vs ground truth** (it does NOT trust the author's
+self-report; it is not "blind to reasoning" — the artifacts embody it). **Convergence is mechanical:** run
+the S5 blind tests, UNMODIFIED, against the driver's shipped override — GREEN = convergence, any RED = a
+divergence to classify.
 It classifies every line FAITHFUL / DOCUMENTED-GAP / REAL-GOTCHA{SILENT_DROP, ENGINE/FIDELITY, ENCODING},
 runs the fire-rate "modeled≠working" check (each FAITHFUL block fires at the prose-implied cadence over
 180s), and returns ranked gotchas + `kitDescription` + `faithfulnessScore` + a verdict
@@ -218,7 +222,7 @@ reason to revert). Unit tests pin _faithful_; the board pins _accurate_; report 
 - **Record the outcome in `data/kit-status.json`** (the per-unit SSOT) — this is the gauntlet's last step:
   ```sh
   npx tsx scripts/kit-status.ts --gauntlet <slug> \
-    --evidence "kit-autonomy gauntlet <date>; GO faithfulness <score>; <provenance: 'cross-family S2b(fable)/S5/S6/S7(opus) converged' — OR 'same-model only (Qwen reviewers)'>" \
+    --evidence "kit-autonomy gauntlet <date>; GO faithfulness <score>; <provenance: 'cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged' — OR 'same-model only (Qwen reviewers)'>" \
     --residual "<the owner spot-check cluster from manual-review/<slug>.md>"
   npx tsx scripts/kit-status.ts --refresh   # regenerate AUTO mirrors (provenance/unmodeled/caveats/board) + counts
   ```
@@ -247,11 +251,12 @@ When running the gauntlet for a BATCH of units on one shared worktree (one commi
   commit is the durable record and the orchestrator keys off commit-exists (`git rev-list origin/main..HEAD`),
   not the progress file, so removing it post-commit is safe; leaving it behind pollutes the worktree for the
   next unit.
-- **Dispatch FOREGROUND, never background.** Run `scripts/kit-autonomy/dispatch-claude.sh` as a foreground
-  shell with a LONG timeout (~480000–600000 ms): opus S5/S6/S7 take 2–5 min. A backgrounded dispatch can
-  outlive the agent's turn and leak (a result JSON landing after the unit is already committed). Dispatch is the
-  explicit EXCEPTION to any 60s "stop-don't-wait" rule — only a real error / no-valid-JSON after a long wait is
-  a failure; suspect impatience before suspecting the bridge.
+- **Dispatch FOREGROUND, never background.** Run `scripts/kit-autonomy/dispatch-claude.sh` /
+  `dispatch-kimi.sh` as a foreground shell with a LONG timeout (~480000–600000 ms): opus S5/S6 and kimi S7
+  take 2–5 min. A backgrounded dispatch can outlive the agent's turn and leak (a result JSON landing after
+  the unit is already committed). Dispatch is the explicit EXCEPTION to any 60s "stop-don't-wait" rule —
+  only a real error / no-valid-JSON after a long wait is a failure; suspect impatience before suspecting the
+  bridge.
 - **Commit only this unit's artifacts — never `git add -A`.** In a shared worktree, prior units'
   `cross-family/<slug>/` dirs accumulate. The cross-family packets + results are an EVIDENCE TRAIL and batch
   drivers force-commit them (`git add -f scripts/kit-autonomy/cross-family/<slug>/`) — fine for THIS unit's dir
@@ -276,6 +281,13 @@ bash scripts/verify.sh                              # the canonical repo gate
   `/kit-tdd` (test-writing discipline), `/audit-kit` (triangulation), `/kit-parse` (blind override authoring).
 
 ## Change log
+
+- 2026-07-26 — S7 (reconciling judge) moved off `claude-opus-5` onto the third family: canonical dispatch is
+  now `kimi-code/k3` via the new `scripts/kit-autonomy/dispatch-kimi.sh` (same packet/result contract as
+  `dispatch-claude.sh`, tools structurally disabled via an agent profile with `tools: []`). Rationale: the
+  binding go/no-go is now graded by a model family that shares no priors with either the driver or the
+  S5/S6 writers. S2b stays `claude-fable-5`, S5/S6 stay `claude-opus-5`; canonical names updated in
+  `CROSS-FAMILY-PROTOCOL.md` + `QWEN.md` together, per the protocol's own rule.
 
 - 2026-07-24 (post-batch hardening, 10-unit bottom-up batch) — rolled the batch's recurring re-derivations
   into the skill: (1) harness import boilerplate + structural shape cheat-sheet (totals/unitOf per-slug maps,

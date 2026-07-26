@@ -3,7 +3,6 @@
     "**/docs/probes/**": true,
     "**/node_modules/**": true,
     "**/.git/objects/**": true,
-    "**/.git-private/objects/**": true,
     "**/dist/**": true,
     "**/web/dist/**": true,
     "**/.turbo/**": true
@@ -19,8 +18,5 @@
   },
   "search.followSymlinks": false,
   "git.autofetch": false,
-  "git.scanRepositories": [],
-  "files.exclude": {
-    "**/.git-private": true
-  }
+  "git.scanRepositories": []
 }

@@ -38,14 +38,25 @@ The dispatch bridge (`scripts/kit-autonomy/dispatch-claude.sh`) passes the model
 **similar-looking names are DIFFERENT models, not aliases**.
 
 - **S2b (pre-op adversarial reviewer) → `claude-fable-5`**
-- **S5 / S6 / S7 (post-op test-writer / override-writer / reconciling judge) → `claude-opus-5`** (REQUIRED)
+- **S5 / S6 (post-op test-writer / override-writer) → `claude-opus-5`** (REQUIRED)
+- **S7 (reconciling judge) → `kimi-code/k3`** (REQUIRED since 2026-07-26 — the binding judge moved off
+  `claude-opus-5` onto the third family via `dispatch-kimi.sh`, so the verdict that gates landing is graded
+  by a model family that shares no priors with either the driver or the S5/S6 writers)
 
-`claude-opus-5` is required for the post-op roles (matches `QWEN.md`). **`claude-opus-4-8` is a different
+`claude-opus-5` is required for S5/S6 (matches `QWEN.md`). **`claude-opus-4-8` is a different
 model and is NOT a substitute** — do not dispatch the post-op roles to it. An ad-hoc batch prompt may carry a
 wrong/older name; the dispatcher must follow THIS protocol, not the ad-hoc name, and flag the conflict. Every
-result JSON records the name it was dispatched with (`model` field), so a post-op result whose `model` is not
-`claude-opus-5` (or an S2b result not on `claude-fable-5`) is off-protocol and must be re-dispatched on the
-correct model. Change the canonical names only by editing THIS file AND `QWEN.md` together.
+result JSON records the name it was dispatched with (`model` field), so an S5/S6 result whose `model` is not
+`claude-opus-5`, an S2b result not on `claude-fable-5`, or an S7 result not on `kimi-code/k3` is off-protocol
+and must be re-dispatched on the correct model. Change the canonical names only by editing THIS file AND
+`QWEN.md` together.
+
+**Kimi bridge (added 2026-07-26):** `scripts/kit-autonomy/dispatch-kimi.sh` is the Kimi equivalent of
+the Claude bridge — same packet/result contract, tools structurally disabled (agent profile with `tools: []`,
+verified it cannot read files). Canonical Kimi model: **`kimi-code/k3`** (the strongest configured alias;
+`kimi-code/kimi-for-coding` is a different, weaker model). Kimi counts as a separate FAMILY from both Qwen and
+Claude for cross-family purposes; besides owning S7, it is a valid second reviewer for the tier-2 **×2 models**
+requirement on any role (e.g. S2b reviewed by both `claude-fable-5` and `kimi-code/k3`).
 
 ## Neither family natively calls the other → handoff-based dispatch
 
@@ -110,5 +121,6 @@ The driver combines same-family + cross-family results:
 Designed 2026-07-23. The Qwen side (packet prep + same-family dispatch + handoff + reconciliation) is
 implemented in `.claude/skills/kit-autonomy-qwen/` + `scripts/kit-autonomy/prepare-cross-family-packet.ts`. The
 Claude side (model-pinned same-family reviewers + the cross-family handoff to Qwen) is the work order in the
-Claude handoff. True cross-family calls still require the owner (or a multi-provider bridge) to run the packets
-through the other family — automating that bridge is future work.
+Claude handoff. Two automated bridges now exist: `dispatch-claude.sh` (Claude) and, since 2026-07-26,
+`dispatch-kimi.sh` (Kimi) — both take `<packet.md> <model> <result-out.json>` and enforce the blindness
+boundary with tools disabled. A Qwen-side bridge remains future work.

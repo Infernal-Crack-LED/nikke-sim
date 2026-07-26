@@ -5,11 +5,10 @@
 > branch `worktree-agent-ae475c5f53840ac9b` (merged from main at 31d31b9 before work began).
 > All engine work behind `ENV.UNIGEO`, DEFAULT OFF; no default flipped, no snapshot regenerated.
 > `bash scripts/verify.sh` GREEN with the flag off (run after the final engine edit).
-> NOTE on file placement: `docs/handoffs/` is gitignored in the public repo (private-tracked via
-> `gitp` from the main tree only) and plain `git add -f` on those paths is forbidden by CLAUDE.md,
-> so the pre-registered table and this deliverable are COMMITTED under `scripts/unigeo/`
+> NOTE on file placement: `docs/handoffs/` was gitignored in the public repo at the time this work
+> ran, so the pre-registered table and this deliverable are COMMITTED under `scripts/unigeo/`
 > (`w5-predictions-table.md`, this file); an uncommitted copy of the predictions table also sits at
-> `docs/handoffs/2026-07-22-unigeo-w5-predictions.md` in the worktree for the owner to `gitp save`.
+> `docs/handoffs/2026-07-22-unigeo-w5-predictions.md` in the worktree for the owner to commit.
 
 ## W1 — M1 fallback: core-size series fit-selection (⚑ FIT-SELECTED)
 

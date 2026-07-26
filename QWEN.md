@@ -41,8 +41,10 @@ executes the blind roles (S2b/S5/S6/S7) via the CLI dispatch bridge.
 - **Trigger:** "run the kit-autonomy gauntlet on `<slug>`"
 - **Skill:** `.qwen/skills/kit-autonomy/SKILL.md` (Qwen driver + model router)
 - **Base protocol + templates:** `scripts/kit-autonomy/SKILL.md` (tracked, shared)
-- **Dispatch bridge:** `scripts/kit-autonomy/dispatch-claude.sh` (packet → `claude -p` → result JSON)
-- **Model routing:** S2b (pre-op) → `claude-fable-5` · S5/S6/S7 (post-op) → `claude-opus-5`
+- **Dispatch bridges:** `scripts/kit-autonomy/dispatch-claude.sh` (packet → `claude -p` → result JSON) and
+  `scripts/kit-autonomy/dispatch-kimi.sh` (packet → `kimi -p`, tools disabled → result JSON)
+- **Model routing:** S2b (pre-op) → `claude-fable-5` · S5/S6 (post-op) → `claude-opus-5` · S7 (judge) →
+  `kimi-code/k3` (via `dispatch-kimi.sh`, since 2026-07-26)
 - **Artifacts:** `scripts/kit-autonomy/cross-family/<slug>/` (packets + results), `scripts/kit-autonomy/manual-review/<slug>.md` (owner review doc — Stage 9, always generate)
 
 ## Protected paths — DO NOT EDIT without explicit owner approval

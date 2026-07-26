@@ -1,0 +1,99 @@
+{
+  "//": "PROPOSED .claude/settings.json (owner installs — GUARD-locked to Claude). r4 2026-07-25 changes vs installed: (1) BUG FIX — the `deny` block was a TOP-LEVEL key, outside `permissions`, so it was INERT: Edit(.claude/hooks/**) and Edit(.claude/settings*.json) were never actually denied by the permission layer and only enforce-protected-paths.sh was holding that lock (single-layered, not the defense-in-depth the comments claim). Moved inside `permissions`. (2) NEW hook autonomous-blast-radius.py on its own Edit|Write|MultiEdit matcher (NOT Agent/Task — it caps uncommitted diff size, which a spawn does not change). (3) unchanged otherwise: hook order on Bash and the Edit|Write|MultiEdit|Agent|Task matcher are as installed.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-protected-paths.sh\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/destructive-bash-guard.py\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-pr-patch-notes.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/commit-state-hygiene.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/allow-safe-reads.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-protected-paths.sh\""
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-write-discipline.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/autonomous-blast-radius.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/autonomous-image-budget.py\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-doc-drift.sh\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(ls:*)",
+      "Bash(npm run typecheck)",
+      "Bash(npm run typecheck:*)",
+      "Bash(bash scripts/verify.sh)",
+      "Bash(npx tsx scripts/regression.ts)",
+      "Bash(npx tsx scripts/experiment.ts)",
+      "Bash(npx tsx scripts/validate-overrides.ts:*)",
+      "Bash(npx vitest run)",
+      "Bash(npx vitest run:*)"
+    ],
+    "deny": [
+      "Edit(.claude/hooks/**)",
+      "Write(.claude/hooks/**)",
+      "Edit(.claude/settings*.json)",
+      "Write(.claude/settings*.json)"
+    ],
+    "additionalDirectories": ["/Users/maxwellsutton/bakery-bot"]
+  }
+}
