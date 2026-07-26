@@ -1,3 +1,8 @@
+---
+name: sim-battery
+description: Full-roster, sim-only test batteries + blast-radius diffing (scripts/battery/). Use to run the whole roster through a sim config change and diff the per-unit damage impact before/after.
+---
+
 # Sim battery — full-roster, sim-only test batteries
 
 ## What this is for

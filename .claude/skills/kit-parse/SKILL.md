@@ -1,3 +1,8 @@
+---
+name: kit-parse
+description: Baseline override authoring from raw kit text — parses a unit's kit into a candidate src/skills/overrides/<slug>.json for units that have no hand-tuned override yet. Demoted to untuned-unit baselines since the TDD transition (kit-tdd is the primary path); findings-only.
+---
+
 # kit-parse — baseline override authoring from raw kit text
 
 ## When to use

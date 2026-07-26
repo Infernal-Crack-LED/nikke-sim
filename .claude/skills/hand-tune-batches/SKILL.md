@@ -1,3 +1,8 @@
+---
+name: hand-tune-batches
+description: Build batches of teams for someone to record in-game (owner's own roster or the community Testing Requests page) so the sim can be hand-tuned against real fights. Use when asked for recording batches, hand-tune teams, or testing-request teams.
+---
+
 # Hand-tune testing batches — teams to record for override tuning
 
 ## What this is for

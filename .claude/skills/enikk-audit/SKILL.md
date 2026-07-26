@@ -1,3 +1,8 @@
+---
+name: enikk-audit
+description: Top-ranker team + roster snapshots from enikk.app (scripts/enikk/). Regenerates the enikk-supported roster doc + data/enikk-supported.json in lockstep, which sync.ts uses as a roster keep-filter. Use when the owner references 'the enikk list' / 'enikk-supported', or to refresh the top-100 audit.
+---
+
 # enikk audit — top-ranker team + roster snapshots
 
 ## "the enikk list" — what it means

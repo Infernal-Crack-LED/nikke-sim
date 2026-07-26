@@ -13,8 +13,9 @@
 - **Hooks:** Kimi's hooks live in `~/.kimi-code/config.toml` and route to the same hook scripts
   Claude uses under `.claude/hooks/` (commit-state-hygiene, stop-doc-drift, pre-write-discipline,
   pre-pr-patch-notes) — one copy, both harnesses.
-- **Skills:** Kimi-scope copies live under `.agents/skills/` and mirror `.claude/skills/`
-  (kit-autonomy is a router shim — the procedure of record is `scripts/kit-autonomy/SKILL.md`).
+- **Skills:** `.agents/skills` is a SYMLINK to `.claude/skills/` — one canonical copy, both
+  harnesses (kit-autonomy is a router shim — the procedure of record is
+  `scripts/kit-autonomy/SKILL.md`).
 - **Subagents:** before spawning any empirical subagent, paste
   `.claude/subagent-non-negotiables.md` at the top of the prompt (exact slugs, measured>fudge,
   structured findings return) and verify your own premises first.

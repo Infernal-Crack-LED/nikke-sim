@@ -1,3 +1,8 @@
+---
+name: testing-requests
+description: Publishing recording asks for owner-unowned units to the community Testing Requests web page (uses hand-tune-batches rules). Use when the owner wants to ask the community for specific unit recordings.
+---
+
 # Testing requests — the community recording board
 
 ## What this is for
