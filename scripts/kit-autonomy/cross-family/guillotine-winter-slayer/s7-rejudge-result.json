@@ -1,0 +1,165 @@
+{
+  "slug": "guillotine-winter-slayer",
+  "kitDescription": "Guillotine: Winter Slayer is a Water-element AR attacker who builds her own power over the course of a fight. Her normal attacks earn EXP (one EXP per 3 core hits, or per 6 non-core hits), and each EXP stack permanently raises her own ATK by 1.81% up to 100 stacks; every 10 EXP she also gains a Hero Level, capped at Level 11, and each level-up instantly tops up part of her magazine and heals her a little. Because the EXP pool itself caps at 100, exactly ten level-ups happen in a fight and then the rewards stop. Every Hero Level she gains makes her stronger for the whole Water side of the team: all Water Code allies (herself included) get Elemental Advantage Attack Damage and a flat ATK boost drawn from her own ATK, both scaling with her current Hero Level, and from Level 2 on she keeps an extra personal +7.46% Elemental Advantage Attack Damage. Her Burst III gives all Water Code allies +10.14% Attack Damage and +18.75% Elemental Advantage Attack Damage for 10 seconds, and plants a 10-second damage-over-time on the biggest enemy that ticks once a second for 20.87% of her final ATK multiplied by her Hero Level — so the same burst hits far harder late in a fight than at the start.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "T10 'EXP accrues on BOTH the 6-non-core path and the 3-core path': the driver still ships only a hitCount:3 block, no hitCount:6 and no requiresCore. CLASSIFIED DOCUMENTED_GAP — the engine resolves core as a per-shot rate (coreExposure × ACR) folded into the Major bucket, not as discrete core/non-core hit events, so a hitCount trigger cannot be routed to exactly one branch; authoring both would double-feed the counter. Three independent agents hit the same wall and all flagged rather than silently picked. ⚑2 carries the blend recipe.",
+      "T12 '7.46% line is level-gated (not a t=0 passive)': the behavioural half (self-only, helm excluded, permanent) PASSES; only the structural `trigger.kind !== 'passive' || resourceGate != null` check fails. CLASSIFIED DOCUMENTED_GAP — quantified at ~3s of 180s on one buff ≈ 0.1% of carry, named in note + caveats.",
+      "RESOLVED THIS PASS: T9 'Hero Level scaling is live' flipped GREEN — the new resources[heroLevel]{initial 1, max 11} pool satisfies the blind's declared-pool branch. Blind tally moved 13/3/2 → 14/2/2."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "every time EXP stacks 10 … max Lv 11",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resources[{heroLevel, initial 1, min 1, max 11}]; hitCount:30 increment block {kind:'resource', heroLevel, delta:1} ordered AFTER the two gated reward blocks; resourceGate{heroLevel, max 10} on both rewards.",
+        "blindSaid": "S6 specified exactly this encoding (pool initial 1 / max 11 + resourceGate max 10) with the warning 'without that gate the hitCount trigger would keep paying rewards forever past Level 11'; S2b pre-registered 'rewards stop firing at cap'. The shipped fix is now byte-equivalent to the blind's independent derivation.",
+        "formulaCheck": "Kit arithmetic self-closes: S2 caps EXP at 100, S1 levels per 10 EXP → 100/10 = 10 level-ups → Level 1→11 = the stated cap. Block-order semantics give the gated rewards the PRE-increment value, so they admit heroLevel ∈ {1..10} = exactly 10 firings, then the pool reaches 11 and the gate closes. Corroborated independently of the code path by the engine DBG resource log: 10 real increases (1→2 @2.62s … 10→11 @27.97s), clamped '11+1 → 11' thereafter.",
+        "fireRateOk": true,
+        "explanation": "The prior REAL-GOTCHA is closed at the mechanism level, not papered over. The cap is now the kit's own arithmetic expressed in the engine's own primitive, and the DBG count (10, terminating at 27.97s) is an independent confirmation of the array-order reasoning rather than a restatement of it. The unsupported 'rewards KEEP TRIGGERING at max level (review-confirmed)' note claim is retracted."
+      },
+      {
+        "kitLine": "Hero Level Up Reward: Reloads 10.26%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "instantReload fraction 0.1026, hitCount:30, self, resourceGate{heroLevel max 10}.",
+        "blindSaid": "S6 same effect + fraction + gate; S2b FAITHFUL and load-bearing with 'stops firing once Level 11 is reached'.",
+        "formulaCheck": "Reload economy is shot economy is damage. Carry moved 1881 → 1846 shots (−35) and 269.7M → 266.2M damage on the fix. Cross-check: at ~0.82 shots per firing (the pre-fix G2 measurement of ~46 shots across ~56 firings), removing 46 firings predicts ≈ −38 shots — observed −35, consistent. Note the damage delta is −1.30%, not the −1.7% the driver's self-report states; that is marginally BELOW my prior 1.5–1.7% band, which is expected since the shots removed are spread outside Full-Burst windows. Direction and order of magnitude both check out; no contradiction, only a slightly overstated self-report number.",
+        "fireRateOk": true,
+        "explanation": "Fraction, routing, target and now CADENCE are all faithful. The block fires 10× at the prose-implied level-up rate, and the shot-count delta proves the gate is live rather than a decorative field."
+      },
+      {
+        "kitLine": "Recovers 2.44% of final Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal event block (no value), self, hitCount:30, resourceGate{heroLevel max 10}; G3 asserts the gate is present and that the block moves zero damage in this comp.",
+        "blindSaid": "S6 identical event-only heal under the same gate; S2b flagged it as the on-recovery inertness pin.",
+        "formulaCheck": "Damage-inert here (no HP pool, no recovery-consumer in the control comp) — `base.totals` equals `noHeal.totals` exactly. The omitted 2.44% magnitude is an engine-shape consequence (no HP pool exists to apply it to) and is recorded in the note, not hidden; the observable the engine does carry — the recovery PROC on a cross-unit channel — now fires the kit-permitted 10 times instead of ~56.",
+        "fireRateOk": true,
+        "explanation": "Represented (hard rule 2 satisfied), correctly inert on this board, and now correctly counted for any future comp that consumes ally-recovery events."
+      },
+      {
+        "kitLine": "Elem Adv Atk Dmg ▲1.16% * Hero Level",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "passive alliesOfElement Water, elemAdvantageDamagePct 12.76 = 1.16 × 11, permanent; ramp collapsed to the Level-11 steady state under ⚑3 with a refit recipe.",
+        "blindSaid": "S6 encoded perResource{heroLevel, mult 1.16} off a live pool but flagged its own unresolved risk that perResource may not resolve for ally targets; S2b called the collapse the nearest-wrong and asked for a ramp.",
+        "formulaCheck": "elemAdvantageDamagePct is the Element bucket (superior-element term), live only under advantage; the control boss is Fire so it is genuinely live. Magnitude is the kit's own per-level value × the kit's own cap — no prose number contradicted (contract F). The DBG log now DATES the ramp precisely: Level 11 at 27.97s, so ~15.5% of the 180s fight is held above the true value. Unchanged from the prior ruling except that the ramp's endpoint is now measured rather than estimated.",
+        "fireRateOk": true,
+        "explanation": "Stat key, scope (two-sided: target set exactly {gws, helm}, Fire crown byte-identical under the counterfactual) and permanence faithful; the trajectory approximation is a recorded ⚑ with estimate + recipe. Ruled FAITHFUL-as-calibrated in the prior packet and nothing in the fix disturbs it."
+      },
+      {
+        "kitLine": "ATK ▲0.91% of skill user's ATK * Level",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 10.01 (= 0.91 × 11), passive, alliesOfElement Water, permanent.",
+        "blindSaid": "S6 perResource{heroLevel, mult 0.91} on casterAtkPct — same stat, same scope, same excludeSelf:false judgment.",
+        "formulaCheck": "Correct basis: casterAtkPct resolves at application to a FLAT add of the caster's static ATK × pct, OUTSIDE each recipient's (1+ΣATK%) sum — the S2b nearest-wrong (atkPct, i.e. target-own-ATK scaled) is avoided. The S5 blind's value-grouping assertion finds a casterAtkPct group whose target set is exactly {gws, helm} and passes.",
+        "fireRateOk": true,
+        "explanation": "Same ⚑3 steady-state collapse, same documentation. Basis, bucket and scope faithful."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "after landing 6 normal attack(s) w/o core",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Modeled jointly via the hitCount:3 core-branch block. The note prose is now CORRECTED as requested: 'the core branch DOMINATES at scope-lock core exposure 1.0; the 6-non-core-hit branch is folded in at an unmeasured blend — the realised core-hit fraction is exposure × ACR, and ACR < 1 for an AR without hit-rate support, so non-core hits DO occur and the true cadence is slower than 3 hits/EXP'.",
+        "blindSaid": "S6 hit the SAME engine wall independently and merged to hitCount:5 at coreRate≈0.30 with an explicit ⚑ CADENCE MERGE caveat; S2b pre-registered it as a GAP for the same reason.",
+        "formulaCheck": "Engine limitation confirmed: core is a per-shot RATE (coreExposure × ACR) folded into the Major bucket, not a discrete hit event, so a hitCount trigger cannot be partitioned. The overstated premise I flagged last pass is retired — the note now states the exposure-vs-realised-fraction distinction correctly and names the consequence (Level 11 arrives LATER than modeled, lengthening the ⚑3 over-credit window).",
+        "fireRateOk": true,
+        "explanation": "The documentation defect I raised is fixed in the SSOT (the override note). RESIDUAL, non-blocking: the TEST file header still carries the old prose — 'scope-lock = 100% core exposure, so the 6-non-core-hit branch never fires' — and separately still asserts 'the first burst lands at 40s CD, so level 11 is guaranteed by then', which the note itself now contradicts (first burst ~5s on an early B1→B2→B3 chain, Level 11 at 27.97s). Comment-only, no encoding effect; listed as a low gotcha for cleanup."
+      },
+      {
+        "kitLine": "when hitting the Core for 3 time(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:3, self, grants the EXP atkPct stack.",
+        "blindSaid": "S6 merged this branch into hitCount:5; S2b specified requiresCore hitCount:3.",
+        "formulaCheck": "Threshold and target match the prose exactly; the missing requiresCore flag is the ⚑2 merge artifact, not a separate defect. Internal consistency now measured rather than estimated: the DBG log shows level-ups every ~2.5–2.8s, i.e. ~30 hits per level at the shipped cadence, exactly the hitCount:30 the S1 blocks assume.",
+        "fireRateOk": true,
+        "explanation": "Encoded literally and self-consistent with the S1 level cadence, which the resource log now independently confirms."
+      },
+      {
+        "kitLine": "EXP: ATK ▲1.81%, stacks up to 100",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "buff atkPct 1.81, maxStacks 100, self, no durationSec (permanent).",
+        "blindSaid": "S6 identical; S2b identical, flagging 'durationSec on the stack buff' and 'cap conflated with Level 11' as the nearest-wrongs.",
+        "formulaCheck": "atkPct is the diluting (1+ΣATK%) term — correct for a plain 'ATK ▲' line, distinct from the casterAtkPct grant. +181% at cap. G4 asserts the observed stack count tops out at exactly 100 and never expires; the S5 blind's independent cap/self-scope assertions also pass.",
+        "fireRateOk": true,
+        "explanation": "Magnitude, bucket, cap, scope and permanence faithful; the ramp is native (engine-accrued), not pre-collapsed."
+      },
+      {
+        "kitLine": "when Hero Level is 2 or above",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "passive self buff elemAdvantageDamagePct 7.46; note + caveats state Level 2 is reached early and call the opening over-credit negligible.",
+        "blindSaid": "S6 keyed it to hitCount:50 + resourceGate{min 2}, while noting the passive alternative fires at setup when heroLevel is still 1; S2b required 'no 7.46 apply before the FIRST level-up event'.",
+        "formulaCheck": "Correct stat (Element bucket, advantage-only) and correct self-only scope — G5 proves helm never holds 7.46 while it DOES hold the 12.76 S1 aura. The gate error is now EXACTLY dated by the DBG log: Level 2 at 2.62s, so 2.62s of 180s on one buff ≈ 0.07% of carry. Note: the heroLevel pool the fix introduces would now make a resourceGate{min: 2} encoding trivially available — the remaining gap is a choice, not a missing primitive.",
+        "fireRateOk": true,
+        "explanation": "Divergence named in note + caveats with magnitude quantified, and now measured smaller than the prior ~0.1% estimate. Recorded decision; non-blocking. Cheap future tightening noted above."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attack Damage ▲10.14% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast trigger, alliesOfElement Water (excludeSelf false), attackDamagePct 10.14, durationSec 10.",
+        "blindSaid": "S6 byte-equivalent; S2b flagged fullBurstEnter as the high-damage nearest-wrong because helm is a co-Burst-III in this fixture.",
+        "formulaCheck": "attackDamagePct is the DamageUp bucket ✓. burstCast is the correct trigger identity: with helm as a second Burst III, fullBurstEnter would fire the payload on rotations she did not cast. The S5 blind independently asserts trigger.kind === 'burstCast' on every burst block and passes; G6 asserts applies == casts × 2 Water allies and 600-frame windows.",
+        "fireRateOk": true,
+        "explanation": "Scope, stat, trigger identity and duration semantics verified in a fixture where burstCast and fullBurstEnter genuinely diverge."
+      },
+      {
+        "kitLine": "Elem Adv Atk Dmg ▲18.75% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "same burstCast block, elemAdvantageDamagePct 18.75, durationSec 10.",
+        "blindSaid": "S6 identical; S2b warned against folding it into attackDamagePct or generic elementDamagePct.",
+        "formulaCheck": "Kept in the Element bucket, so it is inert without elemental advantage — the S5 blind explicitly checks that no attackDamagePct of 18.75 and no merged 28.89 is ever emitted; both pass.",
+        "fireRateOk": true,
+        "explanation": "Correctly separated from the Damage-Up line it shares a block with."
+      },
+      {
+        "kitLine": "20.87% of final ATK * Hero Level /s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCast dot, atkPct 229.57 (= 20.87 × 11), durationSec 10, intervalSec 1, target enemy; ⚑3 explicitly admits the FIRST burst lands at ~5s, well before Level 11, and is over-credited.",
+        "blindSaid": "S6 dot atkPct 20.87 + perResource{heroLevel, mult 20.87}; S2b called flat 20.87 an 11× under-model and asked for a cast-time level snapshot.",
+        "formulaCheck": "DoT routing correct: sustained flavor, no core, no range, FB by tick timing, crit at the DOT_CRIT default; one instance per cast is correct for a burst-keyed DoT. 229.57 is the kit's own per-level value × the kit's own cap, contradicting no prose number. The fix SHARPENS this residual rather than changing it: the DBG log now dates the true level trajectory (L2 @2.62s … L11 @27.97s), so a ~5s first burst fires at roughly Level 2–3, i.e. the first cast's ten ticks are over-credited by ~4×, not the ~2–3× I estimated last pass. Confined to cast 1 of ~6; low-single-digit percentage of her fight total.",
+        "fireRateOk": true,
+        "explanation": "Documented precisely, including naming the first-burst case. It remains the single largest quantitative approximation on the file and stays at the top of the owner spot-check list — and the fix's own DBG evidence makes it MORE measurable, since the level-vs-time curve is now printed."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "The test-file header comment still carries two claims the corrected override note now contradicts: 'scope-lock = 100% core exposure, so the 6-non-core-hit branch never fires', and 'the first burst lands at 40s CD, so level 11 is guaranteed by then'. Documentation-only; no encoding effect.",
+      "evidence": "Override note (corrected): 'the realised core-hit fraction is exposure × ACR, and ACR < 1 … so non-core hits DO occur' and 'the FIRST burst lands at ~5s on an early B1->B2->B3 chain, NOT at 40s CD'. Test header (scripts/tests/units/guillotine-winter-slayer.test.ts, MODELING ABSTRACTION paragraph + the S2 kit listing) still states both originals. The DBG resource log settles it empirically: Level 11 is reached at 27.97s, so a ~5s first burst is NOT at level 11. Two artifacts in the same unit's file set assert opposite things about the same load-bearing rationale.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Mirror the two corrected sentences from the override note into the test header (the header is the spec a future reader trusts). No encoding change, no refit, no measurement."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill1",
+      "summary": "G2's structural cap assertion pins pool.max === 11 and gate.max === 10 but never asserts pool.initial === 1 — so an off-by-one in the pool's starting value (initial 0 → 11 firings) would pass every test in both suites.",
+      "evidence": "Test G2 reads `pool = (ov.resources ?? []).find(r => r.name === 'heroLevel')` then asserts only `pool.max === 11`. The shipped file is correct (initial 1, min 1) and the DBG log confirms 10 increments 1→11, so this is a test-completeness hole, not a live defect. The behavioural counterfactual (gwsNoGate) discriminates gate-present from gate-absent but not gate-at-10 from gate-at-9-or-11.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "One line in G2: `expect(pool).toMatchObject({ initial: 1, min: 1, max: 11 })`. Kit-literal, no measurement."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "The REAL-GOTCHA is fixed faithfully and at the mechanism level. The driver implemented the exact encoding both blind agents independently specified — resources[heroLevel]{initial 1, min 1, max 11}, an increment on the hitCount:30 level-up, and resourceGate{heroLevel, max 10} on BOTH reward blocks — so the kit's own self-closing arithmetic (100 EXP ÷ 10 per level = 10 level-ups = Level 1→11) is now expressed in the engine's own primitive rather than asserted in prose. Three independent lines of evidence agree that the cap is live and lands on exactly 10: the block-order argument (gated rewards read the pre-increment value, admitting heroLevel ∈ {1..10}), the engine DBG resource log (10 increases, 1→2 @2.62s … 10→11 @27.97s, clamped thereafter), and the carry movement (1881→1846 shots), which matches the ~38-shot loss predicted from the pre-fix G2 measurement of ~46 shots across ~56 firings. One self-report correction, immaterial to the verdict: the damage delta is −1.30% (269.7M→266.2M), marginally under the 1.5–1.7% band I predicted, not the −1.7% the driver states — expected, since the removed shots fall largely outside Full-Burst windows. On discrimination I asked for an event count and accept the substitute: the engine emits no countable reload or heal event (instantReload adjusts ammo inline, heal calls fireRecovery internally), so 'exactly 10' is not directly assertable, and the driver instead pins the cap structurally (pool max 11 + two gates at max 10 + an increment block) and discriminates it behaviourally against the named nearest-wrong model — the gwsNoGate counterfactual strips both gates and the test requires shipped shots AND damage to be strictly less. That test throws 'fixture is stale' under the pre-fix uncapped override and passes under the fix, which is precisely the fail-under-nearest-wrong property the contract demands; discriminationOk flips to true. Both note corrections landed: the unsupported 'review-confirmed keep triggering at max level' claim is retracted with the S7 finding cited, and the skill2 prose now states the exposure × ACR distinction and its consequence (Level 11 arrives later than modeled, lengthening the ⚑3 window). All twelve kit lines are now FAITHFUL or DOCUMENTED_GAP → 1.0. The blind suite improved to 14/2/2 with T9 flipping green off the new pool; the two remaining reds are the ones I already ruled — T10 (engine cannot partition core from non-core per hit; three agents converged on the same wall and all flagged) and T12 (structural-only, behavioural half green, now measured at 2.62s of 180s ≈ 0.07% of carry). Two low findings remain, neither blocking and neither an encoding defect on the shipped model: the test-file header still carries the two sentences the note just corrected (including 'the first burst lands at 40s CD', which the DBG log now falsifies outright), and G2 pins pool.max but not pool.initial, so an off-by-one starting value would pass both suites. Same-model residual for the owner to spot-check, ranked: (1) the first burst's DoT — the fix's own DBG trajectory tightens this rather than resolving it, since a ~5s first cast is at roughly Level 2–3, making that cast's ten ticks a ~4× over-credit, not the ~2–3× I estimated before; a solo footage read should settle it first. (2) Whether the ⚑1 normal-fire cadence (pullsPerSec 12 / reloadFrames 81, measured ~26% hot) is silently absorbing part of the steady-state over-credit — a hot fire rate and an early-peaked ATK ramp compensate each other, both are unmeasured, and the level-up cadence now depends on the same shot rate. (3) That the resourceGate comparison is inclusive at max as the block-order argument assumes; the DBG count corroborates it here, but it is an engine-semantics premise worth one direct read if the primitive gets reused.",
+  "model": "claude-opus-5"
+}

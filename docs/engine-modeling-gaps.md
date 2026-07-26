@@ -94,7 +94,7 @@
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
-| `resourceGate` | 2 | elegg-boom-and-shock, soda-twinkling-bunny |
+| `resourceGate` | 3 | elegg-boom-and-shock, guillotine-winter-slayer, soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 1 | naga |
