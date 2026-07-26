@@ -2343,6 +2343,142 @@ footer {
   }
 }
 
+/* ---- rank boards ---- */
+.ranks-page header h1 {
+  font-size: 26px;
+  margin: 6px 0 8px;
+}
+.ranks-page header .muted {
+  max-width: 720px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+.ranks-page header a {
+  color: var(--accent);
+}
+.ranks-boards {
+  margin: 14px 0 6px;
+}
+.ranks-subboards {
+  margin: 0 0 6px;
+}
+.ranks-card {
+  margin-top: 8px;
+}
+
+/* row: rank, portrait, name+sub column, track, value (name column sized like
+   .ol-row's label column so long names truncate instead of starving the bar) */
+.ranks-row {
+  grid-template-columns: 18px 33px minmax(9em, 14em) minmax(0, 1fr) auto;
+}
+.ranks-name {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.25;
+}
+.ranks-sub {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ranks-badge {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+.ranks-cond {
+  margin-left: 2px;
+  color: var(--warn);
+  font-weight: 700;
+  cursor: help;
+}
+.ranks-info {
+  margin-left: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: help;
+}
+.ranks-no-portrait {
+  display: inline-block;
+}
+
+/* zero axis + negative bars (buffer board) */
+.ranks-track {
+  position: relative;
+}
+.ranks-zero {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--muted);
+}
+
+/* sustain heal/shield/lifesteal split — stacked segments inside the fill.
+   Colors: accent (heal) / warn (shield) / the .adv green (lifesteal). */
+.ranks-seg {
+  display: block;
+  float: left;
+  height: 100%;
+}
+.ranks-seg-heal {
+  background: var(--accent);
+}
+.ranks-seg-shield {
+  background: var(--warn);
+}
+.ranks-seg-steal {
+  background: #4ecb71;
+}
+
+.ranks-val {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+.ranks-val-sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+/* methodology disclosure reuses .dpschart-frameworks; body text spacing only */
+.ranks-method {
+  margin-top: 10px;
+}
+.ranks-method p {
+  margin: 10px 0 4px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  /* mobile restack: bar drops to its own row under rank/portrait/name/value */
+  .ranks-row {
+    grid-template-columns: 18px 33px minmax(0, 1fr) auto;
+  }
+  .ranks-row .dpschart-track {
+    grid-column: 2 / -1;
+  }
+  /* the value stays on row 1 (explicit placement — it follows the track in
+     DOM, so auto-placement would otherwise drop it to a third row) */
+  .ranks-row .ranks-val {
+    grid-row: 1;
+    grid-column: 4;
+  }
+}
+
 /* ---- Roster sync page ---- */
 .roster-sync-page header h1 {
   font-size: 26px;

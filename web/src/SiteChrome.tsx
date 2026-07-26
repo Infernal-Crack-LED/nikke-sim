@@ -103,6 +103,11 @@ export function SiteNav({
     setMenuOpen(false);
   };
 
+  // /ranks is a standalone page route but has NO nav item of its own (owner
+  // decision) — it belongs to the Rankings section, so the Rankings item
+  // highlights while on it.
+  const activeRoute: Route = current === 'ranks' ? 'rankings' : current;
+
   return (
     <nav className='site-nav'>
       <div className='site-nav-inner'>
@@ -113,7 +118,7 @@ export function SiteNav({
               items={NAV.map((n) => ({
                 key: n.route,
                 label: n.label,
-                active: current === n.route,
+                active: activeRoute === n.route,
                 href: hrefFor(n.route),
                 onSelect: (e) => navClick(e, n.route),
               }))}
@@ -124,7 +129,7 @@ export function SiteNav({
                 key={n.route}
                 href={hrefFor(n.route)}
                 onClick={(e) => navClick(e, n.route)}
-                className={current === n.route ? 'on' : ''}
+                className={activeRoute === n.route ? 'on' : ''}
               >
                 {n.label}
               </a>

@@ -19,6 +19,7 @@ import type {
   SkillLevelData,
 } from '../src/prepare.js';
 import { rankBurstGen, BURSTGEN_PROFILES, type RanksCtx } from '../src/ranks/burstgen.js';
+import type { BurstGenArtifact, BurstGenRow } from '../src/ranks/types.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -52,7 +53,7 @@ for (const [slug, c] of Object.entries(data.characters)) {
 
 const ranked = rankBurstGen(population, ctx);
 
-const artifact = {
+const artifact: BurstGenArtifact = {
   generatedAt: new Date().toISOString(),
   methodology:
     'Solo 180s fight, bursts disabled (bar pinned at 100): uncapped total burst ' +
@@ -79,7 +80,7 @@ const artifact = {
   profiles: Object.fromEntries(
     Object.values(BURSTGEN_PROFILES).map((p) => [p.id, p.note]),
   ),
-  entries: ranked.map((r) => [
+  entries: ranked.map((r): BurstGenRow => [
     r.slug,
     Math.round(r.gaugeTotal * 100) / 100,
     r.profile, // null = plain solo run

@@ -18,6 +18,7 @@ import type {
 import { sustainRank, SUSTAIN_PROFILES } from '../src/ranks/sustain.js';
 import { SUSTAIN_TABLE } from '../src/ranks/sustain-table.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
+import type { SustainArtifact, SustainRow } from '../src/ranks/types.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -57,7 +58,7 @@ for (const slug of population) {
 
 const ranked = sustainRank(population, ctx);
 
-const artifact = {
+const artifact: SustainArtifact = {
   generatedAt: new Date().toISOString(),
   methodology:
     'Total effective HP restored + shielded over a 180s scope-lock fight, team ' +
@@ -88,7 +89,7 @@ const artifact = {
   profiles: Object.fromEntries(
     Object.values(SUSTAIN_PROFILES).map((p) => [p.id, p.note]),
   ),
-  entries: ranked.map((r) => [
+  entries: ranked.map((r): SustainRow => [
     r.slug,
     Math.round(r.totalHp),
     Math.round(r.totalPct * 10) / 10, // % of caster maxHp

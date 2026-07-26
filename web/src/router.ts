@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 export type Route =
   | 'sim'
   | 'rankings'
+  | 'ranks'
   | 'overload'
   | 'tools'
   | 'howto'
@@ -23,6 +24,7 @@ export type Route =
 export const ROUTES: Route[] = [
   'sim',
   'rankings',
+  'ranks',
   'overload',
   'tools',
   'howto',
@@ -38,6 +40,7 @@ export const ROUTES: Route[] = [
 // (/dpschart, /overload, …); any segment that isn't a page or a section path
 // resolves to sim.
 const PAGE_ROUTES: Route[] = [
+  'ranks',
   'howto',
   'mechanics',
   'dev',

@@ -18,6 +18,7 @@ import type {
 } from '../src/prepare.js';
 import { CDR_TABLE, rankCdr, FB_CYCLE_SEC } from '../src/ranks/burstcdr.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
+import type { BurstCdrArtifact, BurstCdrRow } from '../src/ranks/types.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -53,7 +54,7 @@ for (const slug of Object.keys(CDR_TABLE)) {
 
 const ranked = rankCdr(population, ctx);
 
-const artifact = {
+const artifact: BurstCdrArtifact = {
   generatedAt: new Date().toISOString(),
   methodology:
     `Nominal team Burst Skill cooldown reduction (seconds) per 40s of fight. ` +
@@ -79,10 +80,10 @@ const artifact = {
       ];
     }),
   ),
-  entries: ranked.map((e) => [
+  entries: ranked.map((e): BurstCdrRow => [
     e.slug,
     Math.round(e.cdrPer40s * 100) / 100,
-    ...(e.ramp ? [e.ramp.map((v) => Math.round(v * 100) / 100)] : [null]),
+    e.ramp ? e.ramp.map((v) => Math.round(v * 100) / 100) : null,
     e.condition ?? null,
     e.selfCdr ?? null,
     null, // profile — no profiles on this board (uniform row shape)

@@ -19,6 +19,7 @@ import type {
 } from '../src/prepare.js';
 import { rankBuffers, COMP_PROFILES, type BufferValue } from '../src/ranks/buffer.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
+import type { BufferChartArtifact, BufferRow } from '../src/ranks/types.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -54,17 +55,17 @@ population.sort();
 
 const boards = { generic: rankBuffers(population, 'generic', ctx), typed: rankBuffers(population, 'typed', ctx) };
 
-const pack = (ranked: BufferValue[]): Record<string, unknown>[] =>
+const pack = (ranked: BufferValue[]): BufferRow[] =>
   // fixed arity 5: [slug, addedDps, carryDps, rules, profile] — profile null = plain run
-  ranked.map((r) => [
+  ranked.map((r): BufferRow => [
     r.slug,
     Math.round(r.value),
     Math.round(r.carryDps),
     r.rules,
     r.profile,
-  ] as unknown as Record<string, unknown>);
+  ]);
 
-const artifact = {
+const artifact: BufferChartArtifact = {
   generatedAt: new Date().toISOString(),
   methodology:
     'Added carry DPS: two standard carries (synthetic class-modal MG + RL, ' +
