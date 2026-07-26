@@ -313,7 +313,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   plan written: `docs/handoffs/2026-07-26-rank-boards-frontend.md` (one `/ranks` page, pill-switched
   boards, profile badges; artifacts carry a `profile` flag with plain+profiled dual entries); (2) DPS ranks for B1/B2 →
   `docs/handoffs/2026-07-26-dps-ranks-b1b2.md` (owner plans in a separate session); (3) composite
-  support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same). Known caveats to
+  support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same); **(4) Mint/Prika duo
+  profiles on the buffer rank — plan written 2026-07-26:
+  `docs/handoffs/2026-07-26-buffer-rank-mint-prika-plan.md`. The pair's duet modes already encode the
+  rotation; the buffer-rank team assembler just needs a partner-unit profile path (Sustain already
+  ships pair profiles). Known caveats to
   carry into any owner review: buffer board under-reads trigger-gated kits (crown's recovery-gated
   lines fire only with a healer present); `soline-frost-ticket` reads NEGATIVE (−32k) on the buffer
   board — unexamined sim interaction; sustain lifesteal lines valued on own damage only.
