@@ -16,10 +16,10 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 44,
-      "authored": 13,
-      "audited": 17,
-      "reconciled": 3
+      "unit-tested": 64,
+      "audited": 7,
+      "reconciled": 1,
+      "authored": 5
     },
     "tier": {
       "VALIDATED": 10,
@@ -28,11 +28,11 @@
       "CALIBRATED": 10
     },
     "band": {
-      "±3% ✓": 5,
-      "±5%": 8,
+      "±3% ✓": 7,
+      "±5%": 6,
       "±15%": 15,
-      "±8%": 7,
-      ">15%": 10
+      "±8%": 8,
+      ">15%": 9
     }
   },
   "units": {
@@ -75,16 +75,16 @@
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.9957
+            "ratio": 1.0025
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 0.9898
+            "ratio": 0.9873
           }
         ],
         "n": 2,
-        "mean": 0.9927,
-        "mad": 0.0073,
+        "mean": 0.9949,
+        "mad": 0.0076,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -766,12 +766,12 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9866
+            "ratio": 0.9925
           }
         ],
         "n": 3,
-        "mean": 0.9747,
-        "mad": 0.0253,
+        "mean": 0.9767,
+        "mad": 0.0233,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
@@ -831,11 +831,11 @@
           },
           {
             "comp": "PB elec battery (boss Water)",
-            "ratio": 0.9452
+            "ratio": 0.9334
           },
           {
             "comp": "PB2 elec battery RERUN w/ video (boss Water)",
-            "ratio": 0.9275
+            "ratio": 0.9159
           },
           {
             "comp": "TB2T2 anis-star projExpl probe (boss Water)",
@@ -843,16 +843,16 @@
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.8798
+            "ratio": 0.878
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0093
+            "ratio": 1.0134
           }
         ],
         "n": 7,
-        "mean": 0.8886,
-        "mad": 0.1141,
+        "mean": 0.8856,
+        "mad": 0.1183,
         "band": "±15%",
         "temp": "COLD ▼"
       }
@@ -981,19 +981,19 @@
           },
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.9594
+            "ratio": 0.9602
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0148
+            "ratio": 1.021
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 0.9983
+            "ratio": 1.0057
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.0147
+            "ratio": 1.0168
           },
           {
             "comp": "C-SW control (neutral, focus snow-white)",
@@ -1017,8 +1017,8 @@
           }
         ],
         "n": 17,
-        "mean": 0.9998,
-        "mad": 0.0458,
+        "mean": 1.0008,
+        "mad": 0.0464,
         "band": "±5%",
         "temp": "OK  ·"
       }
@@ -1076,12 +1076,12 @@
           },
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.9835
+            "ratio": 0.985
           }
         ],
         "n": 3,
-        "mean": 0.9529,
-        "mad": 0.0471,
+        "mean": 0.9534,
+        "mad": 0.0466,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -1229,17 +1229,17 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 0.9621
+            "ratio": 0.9821
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.8676
+            "ratio": 0.868
           }
         ],
         "n": 2,
-        "mean": 0.9148,
-        "mad": 0.0852,
-        "band": "±15%",
+        "mean": 0.9251,
+        "mad": 0.0749,
+        "band": "±8%",
         "temp": "COLD ▼"
       }
     },
@@ -1395,12 +1395,12 @@
         "records": [
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.7968
+            "ratio": 0.7949
           }
         ],
         "n": 1,
-        "mean": 0.7968,
-        "mad": 0.2032,
+        "mean": 0.7949,
+        "mad": 0.2051,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -1940,7 +1940,7 @@
           },
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 0.9248
+            "ratio": 0.9247
           },
           {
             "comp": "PG iron sweep (boss Electric)",
@@ -1952,7 +1952,7 @@
           }
         ],
         "n": 4,
-        "mean": 0.9792,
+        "mean": 0.9791,
         "mad": 0.1003,
         "band": "±15%",
         "temp": "OK  ·"
@@ -2042,7 +2042,7 @@
           },
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 0.9972
+            "ratio": 1.0055
           },
           {
             "comp": "N6 mihara/maiden wind (boss Wind)",
@@ -2070,8 +2070,8 @@
           }
         ],
         "n": 9,
-        "mean": 0.9665,
-        "mad": 0.0335,
+        "mean": 0.9674,
+        "mad": 0.0338,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -2640,12 +2640,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8361
+            "ratio": 0.8343
           }
         ],
         "n": 1,
-        "mean": 0.8361,
-        "mad": 0.1639,
+        "mean": 0.8343,
+        "mad": 0.1657,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2706,12 +2706,12 @@
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 0.6576
+            "ratio": 0.6581
           }
         ],
         "n": 3,
-        "mean": 0.6612,
-        "mad": 0.3388,
+        "mean": 0.6614,
+        "mad": 0.3386,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -2758,12 +2758,12 @@
         "records": [
           {
             "comp": "N2 modernia wind (boss Wind)",
-            "ratio": 0.8386
+            "ratio": 0.8443
           }
         ],
         "n": 1,
-        "mean": 0.8386,
-        "mad": 0.1614,
+        "mean": 0.8443,
+        "mad": 0.1557,
         "band": ">15%",
         "temp": "COLD ▼"
       }
@@ -3089,7 +3089,7 @@
         "records": [
           {
             "comp": "PH water B3s (boss Fire)",
-            "ratio": 1.0498
+            "ratio": 1.0632
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -3097,9 +3097,9 @@
           }
         ],
         "n": 2,
-        "mean": 1.0463,
-        "mad": 0.0463,
-        "band": "±5%",
+        "mean": 1.053,
+        "mad": 0.053,
+        "band": "±8%",
         "temp": "HOT ▲"
       }
     },
@@ -3162,7 +3162,7 @@
           },
           {
             "comp": "T8 iron-weak (boss Electric)",
-            "ratio": 0.9551
+            "ratio": 0.955
           },
           {
             "comp": "N1 rapi/quency wind (boss Wind)",
@@ -3269,12 +3269,12 @@
           },
           {
             "comp": "N9 redhood/elegg electric (boss Electric)",
-            "ratio": 1.0078
+            "ratio": 1.0121
           }
         ],
         "n": 2,
-        "mean": 0.9673,
-        "mad": 0.0404,
+        "mean": 0.9695,
+        "mad": 0.0426,
         "band": "±5%",
         "temp": "COLD ▼"
       }
@@ -3395,11 +3395,11 @@
         "records": [
           {
             "comp": "PE2 elec DPS RERUN w/ video (boss Water)",
-            "ratio": 0.9618
+            "ratio": 0.9628
           },
           {
             "comp": "PE elec DPS (boss Water)",
-            "ratio": 1.0722
+            "ratio": 1.0715
           },
           {
             "comp": "N3 scarlet/liberalio iron (boss Iron)",
@@ -3407,8 +3407,8 @@
           }
         ],
         "n": 3,
-        "mean": 1.0343,
-        "mad": 0.0598,
+        "mean": 1.0344,
+        "mad": 0.0592,
         "band": "±8%",
         "temp": "HOT ▲"
       }
@@ -4001,12 +4001,12 @@
         "records": [
           {
             "comp": "T5 wind-weak probe (boss Iron)",
-            "ratio": 1.017
+            "ratio": 1.0171
           }
         ],
         "n": 1,
-        "mean": 1.017,
-        "mad": 0.017,
+        "mean": 1.0171,
+        "mad": 0.0171,
         "band": "±3% ✓",
         "temp": "OK  ·"
       }
