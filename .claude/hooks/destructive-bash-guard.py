@@ -7,8 +7,6 @@
 # irrecoverably discards uncommitted changes another session may own. Read-only git, stash
 # save/list/pop/apply, commit, and `worktree add` all PASS.
 #
-# Wire it (settings.json PreToolUse, matcher "Bash"), ALONGSIDE enforce-protected-paths.sh:
-#   command: python3 "$CLAUDE_PROJECT_DIR/.claude/hooks/destructive-bash-guard.py"
 #
 # r2 hardening over the first draft:
 #   - quoted strings stripped before matching (a commit message MENTIONING `git restore` no longer trips)

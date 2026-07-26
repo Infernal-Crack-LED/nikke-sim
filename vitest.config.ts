@@ -6,7 +6,7 @@ import { defineConfig } from 'vitest/config';
 // tests went unwatched for months.
 //
 // Tests live under scripts/tests/, NEVER under src/engine/ — that is a protected path
-// (CLAUDE.md guard), and test authoring must never trip the content guard.
+// , and test authoring must never trip the content guard.
 //   scripts/tests/engine/      — engine primitive tests (step 2 backfill)
 //   scripts/tests/units/<slug> — per-unit kit specs (step 3, owner-driven)
 //   scripts/tests/generators/  — roster/team generator + web-logic tests

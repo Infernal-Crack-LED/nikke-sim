@@ -43,7 +43,7 @@ against those measurements.
   buff engine, damage buckets, seeded Monte Carlo (`cfg.seed`), structured event log
   (`cfg.onEvent`). Geometry helpers live alongside it (`sg-geometry.ts`, `unigeo*.ts`).
 - `src/skills/` — kit model types + **`overrides/<slug>.json`**: one hand-authored/validated
-  JSON per supported unit that is the *complete* description of its kit (the engine never
+  JSON per supported unit that is the _complete_ description of its kit (the engine never
   parses skill prose at runtime). `validate-overrides.ts` (in `scripts/`) checks them all.
 - `src/data/` — data sync scripts (DB + APIs → `data/*.json`).
 - `src/` top level — CLI (`cli.ts`), stat/team prep (`stats.ts`, `prepare.ts`, `teamcalc.ts`),
@@ -100,7 +100,7 @@ Run this before considering any change done. Tiers:
 - `verify.sh deploy` — adds the DPS-chart artifact build + chart smoke. CI/deploy only.
 
 **Regression snapshot discipline:** `scripts/regression.ts --update` regenerates snapshots
-only *together with the change it reflects* — never to silence an unexplained failure.
+only _together with the change it reflects_ — never to silence an unexplained failure.
 Measured-truth asserts (recorded full-burst counts) are never updated without a new
 measurement.
 
@@ -127,7 +127,7 @@ on multi-run averages with a declared camera-focus unit.
 
 ### Doc authority order
 
-1. `docs/STATE.md` — what is landed *right now* (default first read; derived index — on
+1. `docs/STATE.md` — what is landed _right now_ (default first read; derived index — on
    conflict with code, STATE.md is the bug).
 2. `docs/DECISIONS.md` — settled WHY (append-only; do not re-litigate without same-tier
    new evidence).
@@ -165,11 +165,6 @@ it is the correct validation, not a shortcut.
 - **NEVER discard working-tree changes** with `git restore` / `git checkout -- <path>` /
   `git reset --hard` — this worktree is shared by concurrent sessions and those commands
   destroy others' uncommitted work. Use `git stash` or surgically reverse your own edits.
-- **Protected paths:** edits to `src/engine/**`, `data/**`, and `src/skills/overrides/**`
-  require express per-session permission (enforced by `.claude/hooks/enforce-protected-paths.sh`).
-  Engine edits happen on an **isolated git worktree** (`git worktree add ../nikke-sim-wt-<topic>
-  -b <topic>`), get verified there, and come back via merge/cherry-pick — never edit the
-  engine directly in the shared main tree mid-session.
 
 ## Security considerations
 

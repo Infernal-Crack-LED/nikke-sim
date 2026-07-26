@@ -31,16 +31,16 @@ rotation (full-burst counts) measured-exact on all graded comps.
    script, bar-render calibration, post-full-burst 3s chain delay, popup-verified values).
    Calibrated ⚑ values are the refit candidates — see evidence tiers in
    [docs/CONVENTIONS.md](docs/CONVENTIONS.md).
-4. **Human-facing docs use no invented abbreviations** (docs/data/*, open-questions, probe-runs,
+4. **Human-facing docs use no invented abbreviations** (docs/data/\*, open-questions, probe-runs,
    DECISIONS); AI-facing docs (handoffs, override notes) may use shorthand.
 5. **`bash scripts/verify.sh` green before any _push_** (commit freely without it — see #2 — but the
    tree must be green before it leaves the machine); snapshot regeneration (`scripts/regression.ts
-   --update`) only together with the change it reflects, never to silence an ununderstood failure.
+--update`) only together with the change it reflects, never to silence an ununderstood failure.
    Measured-truth asserts are never updated without a new measurement.
 6. **Do not re-litigate [docs/DECISIONS.md](docs/DECISIONS.md)** — reversing an entry needs new
    evidence of at least the same tier.
 7. **NEVER discard working-tree changes with `git restore` / `git checkout -- <path>` / `git reset
-   --hard`.** This worktree is SHARED by multiple concurrent sessions; those commands reset files to
+--hard`.** This worktree is SHARED by multiple concurrent sessions; those commands reset files to
    HEAD/index and **irrecoverably destroy other sessions' uncommitted work** (on 2026-07-21 a
    `git restore src/engine/sim.ts` provably wiped a concurrent session's in-flight pellet code — no
    reflog recovers unstaged discards). To undo YOUR OWN uncommitted changes, use `git stash` (recoverable
@@ -48,7 +48,7 @@ rotation (full-burst counts) measured-exact on all graded comps.
    tracked file may hold another session's uncommitted work; prefer committing/stashing over discarding.
 8. **Engine (and other high-contention protected-content) edits happen on an ISOLATED worktree, not the
    shared main tree.** For any change to `src/engine/**` — and generally any `data/**` / `src/skills/
-   overrides/**` edit while other sessions may be active — do the work in a dedicated git worktree/branch,
+overrides/**` edit while other sessions may be active — do the work in a dedicated git worktree/branch,
    verify it there (`scripts/verify.sh`), then bring it back by commit/merge/cherry-pick. Create it via the
    Agent tool's `isolation: "worktree"`, or `git worktree add ../nikke-sim-wt-<topic> -b <topic>` (public
    `.git`), and remove it when done. The shared main directory is for reads and for landing already-isolated,
@@ -92,51 +92,8 @@ rotation (full-burst counts) measured-exact on all graded comps.
   probe-runs (measurement log), DECISIONS/CONVENTIONS, handoffs (AI-facing),
   probes/ (recordings, gitignored media).
 
-
 ## Discipline forcing-functions (2026-07-16)
 
-Hard rules were being skipped under long-session momentum (a P0 Snow White↔Snow White: Heavy Arms
-conflation; an unverified "SG bands are HR-contaminated" premise). Guardrails now ENFORCE, not remind:
-- **⛔ PROTECTED-PATH GUARD (2026-07-18, owner-directed) — engine/data/override edits require express
-  per-session permission; the guard files are hard-locked.** Enforced by `.claude/hooks/enforce-protected-paths.sh`
-  (PreToolUse, wired on BOTH the Bash and the Edit|Write|MultiEdit matchers), in two tiers:
-  - **CONTENT** (`src/engine/**`, `data/**`, `src/skills/overrides/**`) → the hook returns `permissionDecision:"ask"`,
-    i.e. a **per-session approval prompt** (renders in the VSCode extension UI; no file change to unlock). Approve
-    ONLY with the evidence to back it (point 7). These edits can never be made SILENTLY, even in an auto-accept session.
-  - **🤖 AUTONOMOUS carve-out:** an unanswered `ask` would HANG an unattended run. If the run is marked autonomous
-    — env **`NIKKE_AUTONOMOUS=1`** (set at launch for terminal autonomous runs) — the hook returns a clean **`deny`**
-    for CONTENT instead of a prompt. **BEHAVIORAL RULE (do this even when only TOLD it's autonomous, no env var):
-    do NOT attempt protected-path edits in an autonomous session** — append the intended change to
-    `docs/handoffs/autonomous-edit-queue.md` (proposal, not a changelog) and CONTINUE forward; the owner reviews +
-    enacts later through the gated path.
-  - **📎 CAPTURE-ON-DENY (2026-07-25) — a deny no longer throws away the work.** Every GUARD deny, and every
-    autonomous CONTENT deny, first writes the **attempted payload verbatim** (path, `old_string`/`new_string`/
-    full `content`, every MultiEdit entry, the Bash command) to
-    `docs/handoffs/autonomous-edit-queue/<ts>-<class>-<slug>.md` and appends an index line to
-    `docs/handoffs/autonomous-edit-queue.md`. The deny reason names that file. ⇒ **When you are denied, do NOT
-    re-derive, re-type, or re-describe the diff in prose — it is already saved.** Your entire obligation is to
-    open the capture file and fill in the RATIONALE block the hook cannot know (what/why, evidence tier + n,
-    expected board effect, how verified), then CONTINUE forward. Do not retry the edit and do not stop the run.
-  - **🔓 SESSION-UNLOCK SENTINEL — when it is set, STOP ASKING.** If the owner-only file
-    `.claude/hooks/.session-unlock` exists (only they can create it — the GUARD tier blocks every Claude route
-    to it), the hook returns **`permissionDecision:"allow"`** and protected CONTENT edits are **pre-authorized
-    for the session**. If the sentinel has text in it, its first line is an owner SCOPE NOTE, surfaced in the
-    allow reason — respect it. **Do not ask for confirmation in prose either** ("this is a protected path, shall
-    I proceed?"): the "express per-session permission" requirement above is *satisfied by the sentinel*, and
-    re-asking is precisely the friction it exists to remove. The substantive bars still apply and are yours to
-    enforce silently — measured>fudge, evidence tier ≥ the change, engine edits on an ISOLATED worktree
-    (constraint 8), `verify.sh` green before anything leaves the machine. Autonomous deny OUTRANKS the sentinel.
-    (Before 2026-07-25 the unlocked path `exit 0`'d, which is *abstain*, not *approve* — the harness then still
-    prompted for every edit, so the sentinel appeared not to work and had to be re-authorized verbally each
-    session. Fixed by emitting an explicit `allow`.)
-  - **GUARD** (`.claude/hooks/**`, `.claude/settings*.json`) → hard `deny` (the hook + `permissions.deny` in
-    `.claude/settings.json`). Self-protecting: no session can disable the guard or self-unlock. Only the owner edits
-    these (their own editor, or by lifting the rule themselves).
-  - Reads and script-driven regens (which name a SCRIPT, not the protected file) pass. Known conservative
-    false-positive: a `python3 -c`/`node -e` that merely NAMES a protected path is treated as a possible write —
-    use the Read tool, or `npx tsx` whose command doesn't name the path.
-  - **To make an approved engine/data/override change interactively:** just attempt the edit and approve the
-    prompt (or "yes for this session"). No settings edit needed.
 - **PreToolUse discipline hook** (`.claude/hooks/pre-write-discipline.sh`, wired for Edit/Write/Agent):
   on any load-bearing write or subagent spawn, injects an 8-point checklist — exact-slug (runs
   `scripts/lint-slug-disambiguation.ts`, which flags a bare base-name + lists the variants),
@@ -169,7 +126,7 @@ conflation; an unverified "SG bands are HR-contaminated" premise). Guardrails no
   hook's verdict-verb escalation are the guard.)
 - **⚖ SUFFICIENCY / REUSE BEFORE YOU DERIVE (2026-07-25, owner-directed) — the OTHER HALF of the rule above,
   and it is equally binding.** Every evidence rule in this file states a FLOOR and, until now, no CEILING —
-  so the compliant reading of "prove it differently" was always *"not yet, go derive more"*, with no
+  so the compliant reading of "prove it differently" was always _"not yet, go derive more"_, with no
   stopping point. That is a real and expensive failure mode, not a hypothetical: on 2026-07-24 a review of
   the local VLM/OCR reader spent ~5 hours and ~6% of a weekly quota hand-reading 7 videos frame-by-frame to
   re-derive validation data **the regression harness already held**, instead of running the reader script
@@ -186,14 +143,26 @@ conflation; an unverified "SG bands are HR-contaminated" premise). Guardrails no
   3. **When the bar is MET, the instruction is ACT** — land it with the tier stated. "A further experiment is
      conceivable" is not "the evidence is insufficient". Do not escalate a met bar into a larger investigation.
   4. **State what would be sufficient, up front**, so the question is decidable instead of open-ended.
-  ⇒ The `/scientific-method` pipeline gates **damage-model values**. Tooling, scripts, readers, tests and docs
-  are NOT that surface and never require it — `verify.sh` + the existing fixtures are their gate.
+     ⇒ The `/scientific-method` pipeline gates **damage-model values**. Tooling, scripts, readers, tests and docs
+     are NOT that surface and never require it — `verify.sh` + the existing fixtures are their gate.
 - **Batch-and-stop (hook point 8)**: a roster / multi-unit sweep (kit audits, board reads, the 70-unit pass)
   produces FINDINGS-ONLY per unit — like the kit-status AUDIT (none enacted); it does NOT edit shared/load-bearing
   artifacts (engine, DECISIONS, plan docs, snapshot). A cross-cutting signal across several units is a reason to
   STOP and surface ONE batched proposal to the owner, never to enact a sweeping shared change mid-sweep.
 - Habit: do P0-sensitive work (measurements, DECISIONS overturns, "which unit is the anchor") in
   fresh/recently-compacted sessions, not 500k deep; open plans/measurements with a verified-facts block.
+
+  ## Protected paths — DO NOT EDIT without explicit owner approval
+
+These paths are load-bearing for the sim's accuracy guarantees. **Never modify them** unless the owner explicitly asks:
+
+| Path                                | Why protected                                               |
+| ----------------------------------- | ----------------------------------------------------------- |
+| `.claude/**`                        | Claude Code's own config, hooks, skills — hands off         |
+| `src/engine/**`                     | Frame-tick sim core — any change shifts every unit's damage |
+| `data/**`                           | Datamined/game-DB source of truth                           |
+| `src/skills/overrides/**`           | Hand-verified per-unit kit models                           |
+| `scripts/regression-snapshot*.json` | Pinned regression baselines                                 |
 
 ## Conventions
 
@@ -210,11 +179,11 @@ conflation; an unverified "SG bands are HR-contaminated" premise). Guardrails no
   `/mechanics-doc-upkeep`; after any non-trivial change → `/skill-maintenance`; before a PR/push
   to `main` → `/patch-notes` (drafts player-facing patch notes from DECISIONS for the web Dev
   page; a PreToolUse hook nudges on `git push` / `gh pr create`); full-roster sim-only batteries
-  + blast-radius diffing → `/sim-battery` (scripts/battery/); top-ranker team/roster snapshots
-  from enikk.app → `/enikk-audit` (scripts/enikk/); building teams to record for override tuning
-  → `/hand-tune-batches`; publishing recording asks for owner-unowned units → `/testing-requests`
-  (web Testing Requests page; uses `/hand-tune-batches`); mining recurring patterns ACROSS
-  hand-tunes into reusable modeling priors → `/tuning-priors` (docs/modeling-priors.md).
+  - blast-radius diffing → `/sim-battery` (scripts/battery/); top-ranker team/roster snapshots
+    from enikk.app → `/enikk-audit` (scripts/enikk/); building teams to record for override tuning
+    → `/hand-tune-batches`; publishing recording asks for owner-unowned units → `/testing-requests`
+    (web Testing Requests page; uses `/hand-tune-batches`); mining recurring patterns ACROSS
+    hand-tunes into reusable modeling priors → `/tuning-priors` (docs/modeling-priors.md).
 
 ## Doc taxonomy (two classes — hygiene attaches to the class, see docs/CONVENTIONS.md)
 
@@ -265,30 +234,28 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### 🤖 AUTONOMOUS WORK QUEUE — read this INSTEAD of the pointer list below if unattended
 
-> **Why this exists (2026-07-25).** The pointer list below is an excellent *attended* handoff and a poor
-> *autonomous* task list: ~15 threads, most gated on recordings the run cannot obtain, owner rulings it
-> cannot get, or protected paths it cannot touch. An unattended session reading it finds no unambiguous
+> **Why this exists (2026-07-25).** The pointer list below is an excellent _attended_ handoff and a poor
+> _autonomous_ task list: ~15 threads, most gated on recordings the run cannot obtain, owner rulings it
+> cannot get. An unattended session reading it finds no unambiguous
 > next action and wanders — burning a night for near-zero landed output. This queue is the opposite: a
-> short, ordered list where every item is **(a) unblocked, (b) outside protected paths, (c) verifiable by
+> short, ordered list where every item is **(a) unblocked, (b) verifiable by
 > a script that already exists.** Owner maintains it; keep it SHORT (≤5) and delete items as they land.
 >
 > **Rules for an unattended run:**
+>
 > 1. **Take the topmost unblocked item and finish it.** Do not survey the whole list, do not re-plan the
 >    phase, do not "improve" an area you were not sent to.
 > 2. **Land in committed slices.** A slice = a coherent change + its gate green (`bash scripts/verify.sh`
 >    or `npx vitest run`) + a commit whose message names the premise it rests on and how it was verified.
 >    Committing is encouraged and cheap (constraint 2); pushing stays owner-gated. The autonomous
 >    blast-radius cap enforces this mechanically at 300 uncommitted lines.
-> 3. **PRODUCTIVITY STOP.** Every ~45 min, ask: *what have I committed with a green gate?* Two consecutive
+> 3. **PRODUCTIVITY STOP.** Every ~45 min, ask: _what have I committed with a green gate?_ Two consecutive
 >    checkpoints with no commit ⇒ **STOP the thread**, write findings to a handoff doc, and either move to
 >    the next queue item or end the run. A night that produces one honest committed slice plus a clear
 >    handoff beats a night of exploration with nothing landed.
-> 4. **Protected paths: never attempt, never retry.** Anything touching `src/engine/**`, `data/**`,
->    `src/skills/overrides/**` is queue-only — the hook denies it and CAPTURES your payload
->    (see CAPTURE-ON-DENY); fill in the rationale block and move on.
-> 5. **Reuse before you derive** (the SUFFICIENCY rule) — search for an existing labeled set before
+> 4. **Reuse before you derive** (the SUFFICIENCY rule) — search for an existing labeled set before
 >    generating ground truth. An unattended run is exactly where the 5-hour re-derivation happens.
-> 6. **One unvalidated fact is not a mandate.** If a finding implies a broad rewrite, that is a STOP-and-
+> 5. **One unvalidated fact is not a mandate.** If a finding implies a broad rewrite, that is a STOP-and-
 >    propose, not a green light: write the proposal, commit it, continue. Sweeps are FINDINGS-ONLY.
 
 **QUEUE (owner-maintained; empty = do a survey pass and propose, do not invent work):**
@@ -303,27 +270,27 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `scripts/probe/scan.ts` + `scan-frames.py` (deterministic CV, no model) is now the FB-count
   instrument — **exact on 8 recordings** with independently measured counts, every burst
   corroborated by a 2nd detector; `read-burst-gauge.ts` gained `--classifier cv|vlm` (cv default)
-  + `--t0`; `read-ammo.ts` + `count-pellets.py --ammo-digits` + `ammo-atlas/` close the cadence hand
-  read (SMG 20.3/s in two bands); `read-battle-records.ts` reads the end-of-fight screen with an
-  arithmetic checksum (37/37 exact); `read-popups-vlm.ts` scores popup confidence; `hit-values.ts`
-  moved onto a shared `hit-bands.ts`.
-  **Open tail, all small:** (a) `read-popups-vlm.ts`'s **auto-accept path is UNEXERCISED** — 0 of 30
-  popups auto-accepted on the one hand-read probe because `little-mermaid`'s bands overlap; it stays
-  unproven until a CLEAN-band focus unit trips it, and that first firing should be checked against a
-  hand read → **open-questions U36** (opened 2026-07-24, carries the how-to). (b) `read-ammo.ts` cannot yet read a **small-magazine SG** counter (~29% of frames on
-  `marciana-solo`, 1–2 digits, weak template lock) — SG cadence still goes via the pellet counter;
-  ⇒ this also means **U34** (Max-Ammo ▲-expiry belt clip) is answerable for SMG/AR/MG but not SG.
-  (c) **P3** was never a build — it is the `read-pellets.ts` validation obligation, still filed
-  into **U35**. ⚠ Re-running a VLM reader is NOT a confirmation route: two runs over the same video
-  agreed 100% (190/190) — the decoder is deterministic, so it repeats its own mistakes. Cross-checks
-  must be method-diverse.
-  **⚠⚠ SCOPE OF THAT WARNING (added 2026-07-25 after it was misapplied at ~5h cost): it governs
-  CONFIRMING A MEASURED VALUE — "is this popup really 7694?" — where a second run of the same decoder
-  adds nothing. It does NOT govern VALIDATING OR REVIEWING A READER.** For reader/tooling work the
-  instrument is the **existing labeled set** — run the script over it and report the score/confusion
-  matrix. Those labels were produced independently of the reader, so that IS a method-diverse check and
-  it is the CORRECT and SUFFICIENT one. Hand-reading frames to re-derive labels the repo already holds
-  is the failure mode, not the rigorous option. See the SUFFICIENCY rule in Discipline forcing-functions.
+  - `--t0`; `read-ammo.ts` + `count-pellets.py --ammo-digits` + `ammo-atlas/` close the cadence hand
+    read (SMG 20.3/s in two bands); `read-battle-records.ts` reads the end-of-fight screen with an
+    arithmetic checksum (37/37 exact); `read-popups-vlm.ts` scores popup confidence; `hit-values.ts`
+    moved onto a shared `hit-bands.ts`.
+    **Open tail, all small:** (a) `read-popups-vlm.ts`'s **auto-accept path is UNEXERCISED** — 0 of 30
+    popups auto-accepted on the one hand-read probe because `little-mermaid`'s bands overlap; it stays
+    unproven until a CLEAN-band focus unit trips it, and that first firing should be checked against a
+    hand read → **open-questions U36** (opened 2026-07-24, carries the how-to). (b) `read-ammo.ts` cannot yet read a **small-magazine SG** counter (~29% of frames on
+    `marciana-solo`, 1–2 digits, weak template lock) — SG cadence still goes via the pellet counter;
+    ⇒ this also means **U34** (Max-Ammo ▲-expiry belt clip) is answerable for SMG/AR/MG but not SG.
+    (c) **P3** was never a build — it is the `read-pellets.ts` validation obligation, still filed
+    into **U35**. ⚠ Re-running a VLM reader is NOT a confirmation route: two runs over the same video
+    agreed 100% (190/190) — the decoder is deterministic, so it repeats its own mistakes. Cross-checks
+    must be method-diverse.
+    **⚠⚠ SCOPE OF THAT WARNING (added 2026-07-25 after it was misapplied at ~5h cost): it governs
+    CONFIRMING A MEASURED VALUE — "is this popup really 7694?" — where a second run of the same decoder
+    adds nothing. It does NOT govern VALIDATING OR REVIEWING A READER.** For reader/tooling work the
+    instrument is the **existing labeled set** — run the script over it and report the score/confusion
+    matrix. Those labels were produced independently of the reader, so that IS a method-diverse check and
+    it is the CORRECT and SUFFICIENT one. Hand-reading frames to re-derive labels the repo already holds
+    is the failure mode, not the rigorous option. See the SUFFICIENCY rule in Discipline forcing-functions.
 
 - **⇒ BASE-WEAPON FAITHFULNESS TEST — sim side LANDED 2026-07-23, RECORDINGS OPEN →
   `docs/data/clean-weapons.md`** (ruling + rationale in DECISIONS 2026-07-23). The six clean-weapon
@@ -370,19 +337,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `docs/handoffs/2026-07-23-tdd-transition-plan.md`.** Kit work switches from batch-BDD (kit-parse →
   audit → board-fit) to test-first. **Step 1a–1c LANDED 2026-07-23** — vitest is the gate
   (`npx vitest run`, ONE verify.sh step globbing `scripts/tests/**/*.test.ts`; engine/ + generators/
-  + units/ + lib/harness.ts; all 9 bespoke tests migrated, the 6 orphans now wired in). **Step 1d
-  LANDED 2026-07-23** — the `cfg.onEvent` structured event hook (the plan's one gated engine edit:
-  isolated worktree, `/scientific-method` step-7 reviewed, merged; output byte-identical on a
-  whole-board A/B, not just the snapshots), so event-level kit assertions are live for steps 2–3.
-  6 payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on `buffApply`, …) are
-  listed under §1d in the plan doc — build them as step-2 tests need them. Open:
-  (2) engine-primitive test backfill by census priority (before
-  per-unit work); (3) per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text —
-  **run them with the `/kit-tdd` skill** (created 2026-07-23; the operational form of the plan's step 3:
-  slug gate → owner-driven spec table → RED test against the SHIPPED override → gated fix → board A/B);
-  (4) audit-kit/blind-rebuild demoted to post-validation sampling. Rationale: the board gates
-  FIT only; faithfulness errors of a few % (helm's `critRateNormalPct` mis-scoped generic, her
-  round count faked as `durationSec`) are absorbed by calibration and only unit tests can gate them.
+  - units/ + lib/harness.ts; all 9 bespoke tests migrated, the 6 orphans now wired in). **Step 1d
+    LANDED 2026-07-23** — the `cfg.onEvent` structured event hook (the plan's one gated engine edit:
+    isolated worktree, `/scientific-method` step-7 reviewed, merged; output byte-identical on a
+    whole-board A/B, not just the snapshots), so event-level kit assertions are live for steps 2–3.
+    6 payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on `buffApply`, …) are
+    listed under §1d in the plan doc — build them as step-2 tests need them. Open:
+    (2) engine-primitive test backfill by census priority (before
+    per-unit work); (3) per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text —
+    **run them with the `/kit-tdd` skill** (created 2026-07-23; the operational form of the plan's step 3:
+    slug gate → owner-driven spec table → RED test against the SHIPPED override → gated fix → board A/B);
+    (4) audit-kit/blind-rebuild demoted to post-validation sampling. Rationale: the board gates
+    FIT only; faithfulness errors of a few % (helm's `critRateNormalPct` mis-scoped generic, her
+    round count faked as `durationSec`) are absorbed by calibration and only unit tests can gate them.
 
 - **⇒ SMG OVERRIDE RE-TUNE WORKLIST (follow-up to the LANDED SMG cadence flip).** The SMG cadence
   flip 24→20.0/s (frame quantization) LANDED default-ON 2026-07-23 (DECISIONS; `docs/STATE.md`
@@ -514,14 +481,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   LATENT on main, not live** — main's union loop awaits each `genBestTeam` fully, so only one
   coordinator ever exists at a time. It becomes reachable only with the multi-coordinator driver, so
   the fix travels WITH the union work; there is nothing to cherry-pick. ⚠ Union does NOT need the
-  mint/prika post-pass — already a TEAM_CONSTRAINT.
+  mint/prika post-pass — already a TEAM*CONSTRAINT.
   ⚠ **This branch was cut from `gen-item4`, which is now merged into main (`7ebc77b`) and its branch
   deleted** — so `gen-union-item3` rebases cleanly onto main whenever the work resumes.
   **⇒ UNION-RAID POLISH (open follow-up, spec written) → `docs/handoffs/2026-07-24-gen-item4-union-polish.md`**
   — findings half + the union build spec. `runUnionTopTeams` runs its own greedy loop over
   `genBestTeam` (one cfg PER BOSS), so it inherited nothing from item 4; the plan is to extract the
   polish driver out of `topTeams` and parameterize it per row. One hard constraint: **union must
-  NEVER be sorted** (row *i* is bound to boss *i* — `shareUnionRoster` zips by index, so a sort
+  NEVER be sorted** (row \_i* is bound to boss _i_ — `shareUnionRoster` zips by index, so a sort
   mislabels bosses). The cross-boss accept rule is RESOLVED (raw sum — the app already reports the
   union roster as a plain damage sum, which IS union scoring); only score-vs-teamDamage remains, one
   line. Cheap pre-check before building any of it: does union greedy leave a team on the table on a
@@ -562,6 +529,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   silhouette → profile before any board use.
 
 ### Tier-0 open threads
+
 - **`liter` 1.208 HOT ▲ — the new CONTROL REGRESSION suite (`npx tsx scripts/control-regression.ts`).**
   Four 720-kit-audit recordings sharing a constant support core (liter B1 / crown B2 / carry B3 / helm B3,
   slot 5 empty, boss Fire, focus = the slot-3 carry; carries = ada / maiden-ice-rose /
@@ -604,7 +572,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   the spread is explained.
 - **`jill` re-tune at 0.919 COLD ▼** — her kit-faithful reload landed 2026-07-22 (DECISIONS; **A33 (U31)**),
   moving her 1.031 HOT → 0.919 COLD, so she is now the top per-unit re-tune candidate. Two riders: her
-  burst's *"Normal attacks deal True Damage for 10 sec"* is unmodelled, and the reload-speed **LOCK** she
+  burst's _"Normal attacks deal True Damage for 10 sec"_ is unmodelled, and the reload-speed **LOCK** she
   carries needs the clamp primitive (`docs/engine-modeling-gaps.md` §1b, same build as the 5e
   target-status gate). **`N1 rapi/quency wind` is now UNPINNED** (sim 12 vs video-measured 13, value kept
   in-comment in `scripts/regression.ts`) — a pre-existing burst-generation shortfall her fix UNMASKED,

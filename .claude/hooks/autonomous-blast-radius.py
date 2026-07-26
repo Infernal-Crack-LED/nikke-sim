@@ -2,11 +2,7 @@
 # autonomous-blast-radius.py — NEW PreToolUse hook (2026-07-25), Edit|Write|MultiEdit matcher.
 #
 # THE PROBLEM IT SOLVES. An autonomous session finds one "fact" — real or hallucinated — and, without
-# validating it, begins a large-scale rewrite. enforce-protected-paths.sh already makes this
-# structurally impossible for src/engine/**, data/** and src/skills/overrides/**. It does NOT cover
-# scripts/**, web/**, src/skills/*.ts, docs/** or scripts/tests/**, so an unattended run can still spend
-# a night rewriting the probe readers or the web client off a single unverified premise, and the only
-# evidence next morning is a huge uncommitted diff nobody can review.
+# validating it, begins a large-scale rewrite.
 #
 # THE MECHANISM. Prose does not hold under long-session momentum — that is the documented lesson behind
 # every guard in this directory. So this is a hard cap, not a nudge: in an AUTONOMOUS run only, once the
