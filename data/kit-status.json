@@ -2192,10 +2192,13 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mana.json + scripts/kit-autonomy/manual-review/mana.md.",
+          "low ENCODING (skill2): Charge Time ▼0.18s modeled as chargeSpeedPct 18 to ALL allies — value is a comp-dependent flat-seconds→percent stand-in and the 'longest basic Charge Time' single-target selection is not engine-expressible"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -2211,21 +2214,20 @@
           "Activates when an ally is out of action. Affects self.",
           "Removes Metal γ."
         ],
-        "skill2": [
-          "Removes Metal σ.",
-          "Activates if the skill user has cast Burst Skill before Full Burst ends. Affects self.",
-          "Metal σ: Burst Gauge filling speed ▲ 70.4% continuously."
-        ],
+        "skill2": [],
         "burst": []
       },
       "caveats": [
-        "skill2: FB self buffs (Attack Damage +21.12% / ATK +63.36%) keyed to her OWN burst cast — the Metal σ economy approximation. Exact when she is the sole Burst III; a multi-B3 team's true σ state machine (battle-start grant, remove-on-FB, re-grant-on-her-cast) is phase-shifted vs this encoding.",
-        "skill2: Metal σ burst-gauge +70.4% modeled permanent — overstated in multi-B3 rotations where she skips bursts (σ drops until her next burst).",
-        "skill2: Charge Time ▼0.18 sec ally support approximated as chargeSpeedPct 18 to all allies — magnitude is an unmeasured ⚑ (0.18s ÷ the target's basic charge time) and the 'longest basic Charge Time' single-target selection is not engine-expressible (inert on non-charge allies).",
-        "skill1: hitCount-10 team heal is an event-only synergy hook (Crown-style recovery consumers); it adds no damage alone.",
+        "skill2: Metal σ is a live resource pool (initial 1, max 1). The FB-entry AD/ATK buff is resourceGate(sigma>=1) on fullBurstEnter and spends sigma -1; sigma is re-granted (+1) only by mana's OWN burstCast. In a multi-B3 team the buff procs on the FBs mana casts (sigma held) and not on FBs another B3 completes while sigma is down; FB1 procs from the initial sigma regardless of who casts. Faithful to the σ state machine (kit-autonomy 2026-07-26, adopting the blind S2b derivation); replaces the prior burstCast-keyed approximation which matched only the firing COUNT.",
+        "skill2: Metal σ burst-gauge +70.4% is perResource (sigma x 70.4) — live only while σ is held. Cadence-INERT for mana specifically: her 40s burst CD (not gauge fill) gates her casts (verified 6 casts/180s with or without σ), so the gating is damage-equivalent to always-on for her; kept perResource for literal σ fidelity.",
+        "skill2: Charge Time ▼0.18 sec ally support approximated as chargeSpeedPct 18 to all allies on fullBurstEnter (NOT σ-gated). Magnitude is a flat-seconds→percent stand-in (0.18s ÷ target basic charge time; exact for helm at 1.0s, comp-dependent ⚑) and the 'longest basic Charge Time' single-target selection is not engine-expressible (inert on non-charge allies).",
+        "skill1: hitCount-10 team heal is an event-only synergy hook (Crown-style recovery consumers); it adds no damage alone but is a live cross-unit channel when a recovery consumer is present.",
         "cadence: pullsPerSec / reloadFrames 121 are unverified datamine (mandatory ⚑)."
       ],
-      "board": null
+      "board": null,
+      "date": "2026-07-26",
+      "evidence": "kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; sigma economy re-encoded as live resource pool (blind-corroborated)",
+      "residual": "sigma regain timing on rotations mana skips (burstCast vs fullBurstEnd, off-by-one-cycle); chargeSpeedPct-18 magnitude (exact only for helm 1.0s base charge, comp-dependent) + longest-charge-target selection unexpressible; DoT crit follows engine DOT_CRIT default"
     },
     "marciana-marine-study": {
       "name": "Marciana: Marine Study",
