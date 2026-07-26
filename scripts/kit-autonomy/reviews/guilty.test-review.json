@@ -1,0 +1,53 @@
+{
+  "slug": "guilty",
+  "driverModel": "qwen",
+  "reviewerModel": "claude-fable-5",
+  "verdict": "GO (same-model only)",
+  "reconciliation": {
+    "G1_S1_highestAllyAtkPct": {
+      "driver": "FAITHFUL — test asserts casterAtkPct events with 8.81 in key, maxStacks 5, dur 10s, target self; removing S1 reduces damage",
+      "reviewer": "FAITHFUL — confirms casterAtkPct flat value, targetSlug guilty, stacks 1→5",
+      "agreement": "CONVERGED"
+    },
+    "G2_S2_stackCountBoost": {
+      "driver": "UNMODELED — no engine primitive for cross-buff stack-count amplifier; documented in override unmodeled.skill2 + caveats; no assertion",
+      "reviewer": "GAP — self-side portion (bumping own S1 stacks) theoretically expressible via resource pool; ally-side inexpressible",
+      "agreement": "PARTIAL — reviewer flags self-side as potentially expressible, but engine has no resource-pool primitive; override correctly documents as UNMODELED; no test assertion needed"
+    },
+    "G3_S2_atkPct": {
+      "driver": "FAITHFUL — test asserts atkPct 4.13, dur 10s, Wind-only targets; removing S2 reduces damage",
+      "reviewer": "FAITHFUL — confirms atkPct 4.13, Wind-only, fires after reload (cumulative counter)",
+      "agreement": "CONVERGED"
+    },
+    "G4_burst_284": {
+      "driver": "FAITHFUL — test asserts 284.32% burst damage, once per burstCast, fbMajorApplied false",
+      "reviewer": "FAITHFUL — confirms burstCast trigger, FB-exempt, count == burstCast events",
+      "agreement": "CONVERGED"
+    },
+    "G5_burst_defDown": {
+      "driver": "FAITHFUL (recognized-INERT) — test asserts removing only defPct shifts totals <0.1%; no buffApply event emitted by engine for enemy debuffs",
+      "reviewer": "GAP — DEF debuff benefits whole team; stack gate not modeled; should not be silently dropped",
+      "agreement": "PARTIAL — reviewer's stack-gate concern is valid but documented in override caveats; at scope lock (bossDef=140) the effect is <0.1%; override correctly models defPct -20.25 (engine applies it, just doesn't emit events); test verifies inertness"
+    },
+    "G6_burst_277": {
+      "driver": "FAITHFUL — test asserts 277.71% burst damage, once per burstCast; removing it reduces damage",
+      "reviewer": "FAITHFUL — confirms burstCast trigger, max-stack gate not modeled (documented), count == burstCast events",
+      "agreement": "CONVERGED"
+    },
+    "fixtureTrap": {
+      "reviewer": "Guilty must be in B2 slot to cast bursts; controlComp(carry) seats carry at B3 — she would never cast",
+      "driver": "AVOIDED — test uses custom comp liter/guilty/helm (B1/B2/B3), NOT controlComp; diagnostic confirmed 10 burst casts"
+    }
+  },
+  "testDiscrimination": {
+    "G1": "casterAtkPct key contains 8.81 (not generic atkPct); removing S1 reduces damage",
+    "G3": "atkPct 4.13 targets Wind-only (not all allies); removing S2 reduces damage",
+    "G4": "284.32% count == burstCast count (not fullBurstEnter); fbMajorApplied false",
+    "G5": "removing only defPct (keeping 277.71%) shifts totals <0.1% (inert at scope lock)",
+    "G6": "277.71% count == burstCast count; removing it reduces damage"
+  },
+  "residualFlags": [
+    "G2: self-side stack bump theoretically expressible via resource pool (no engine primitive today)",
+    "G5/G6: max-stack gate not modeled (always-on); over-credits first burst only; documented in caveats"
+  ]
+}

@@ -1571,21 +1571,24 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "S2 '+1 stack count of stackable buffs' UNMODELED (no schema); measured real, modeling it runs ~0.6% hotter solo + amplifies allies' stacks — owner-triage",
-          "burst 'at max stacks' gate on DEF-20.25%/277.71% riders modeled always-on (over-credits a pre-ramp first burst)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/guilty.json + scripts/kit-autonomy/manual-review/guilty.md.",
+          "low ENGINE (burst): The 'at max stacks' gate on both burst riders is unmodelable in the current schema, so they fire always-on. Documented — this does NOT count against faithfulness — but the driver's stated bound ('the very first burst') understates it by roughly 2x: the S1 ramp needs ~30s while casts land every ~20s from t~0, so casts 1 AND 2 of ~10 land pre-cap."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S7(opus) converged; S6 VOID (leak)",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "max-stack gate over-credits first ~2 casts (~1% of 180s total); DEF▼ verification gap (no enemy debuff events); stale note prose (casterAtkPct→highestAllyAtkPct)",
       "unmodeled": {
         "skill1": [],
         "skill2": [
