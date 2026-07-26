@@ -1,0 +1,63 @@
+{
+  "slug": "mari",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge -> Dmg to Shield +100.09%/3s",
+      "disposition": "GAP",
+      "assertion": "it.skip — no shield-damage StatKey and no shield entity on the v1 boss, so no assertion can discriminate a faithful model from its absence; belongs verbatim in `unmodeled`. Paired with a LIVE inertness test that no mari-cast buffApply carries a value near 100.09, which fails under the nearest-wrong 'smuggle it in as attackDamagePct/atkPct because the schema lacks a shield stat'."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "core hit -> Pierce Damage +40.99%/10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat pierceDamagePct exists, value === 40.99 raw (fails under a flat-resolved encoding), sole caster is mari (fails under a boss-debuff encoding with casterIdx null), distinct targetSlugs === roster size (fails under self-only targeting), expiresFrame finite (fails under a permanent no-durationSec encoding), and shrinking durationSec to 0.5s strictly lowers mari damage (fails if the buff is inert or the window length is not doing work)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self: Gain Pierce 5 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "gainPierce emits no event, so it is proven by differential: stripping every gainPierce effect strictly lowers mari damage (fails if pierce was dropped as defensive/inert), teammates stay byte-identical (fails under allies-scoped pierce), and patching hasPierce:true strictly INCREASES her damage (fails if the shipped model is a whole-fight boolean rather than a bounded 5s window — the over-credit nearest-wrong)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self: ATK +30.78% for 5 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat atkPct value 30.78 with targetSlug mari and casterIdx === targetIdx and finite expiresFrame (fails under a casterAtkPct encoding of the self branch, which would emit flat ATK); >=2 applications over 180s (fails under a trigger `passive` one-shot, since a 5s duration on a passive expires forever); and no atkPct 30.78 lands on a teammate (fails if the two skill2 branches are collapsed into one allies-scoped atkPct)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "allies: ATK +30.78% of user's ATK 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat casterAtkPct from mari to every ally; value > 1000 and NOT 30.78 (fails under the atkPct nearest-wrong that scales each target's own ATK); exactly one distinct flat value across all targets with implied caster ATK in 10k..600k (fails if the value is target-scaled or highest-ally-scaled); >1 distinct expiresFrame (fails under a one-shot trigger). Cadence deliberately not pinned — see ALWAYS-⚑ note."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "enemies: 639.36% of final ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "Formula-agnostic linearity: atkPct zeroed / shipped / doubled must give equal deltas within 2% and shipped > zeroed (fails if the line is missing, mis-magnituded, or non-linearly bucketed). Flipping noFb must move nothing (fails if the burst-cast nuke resolves inside the Full Burst window and takes the +50% major, contradicting the burst-lands-pre-FB fact). Zeroing it leaves teammates byte-identical (fails under an ally-scoped mis-target)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "allies: Attack damage +40.99%/10s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply stat attackDamagePct value 40.99 cast by mari to every ally with finite expiresFrame (fails under self-only targeting or a permanent encoding), plus an inertness check that no atkPct 40.99 is emitted by mari (fails under the 'Attack damage read as ATK' nearest-wrong, which lands in the wrong bucket with different dilution)."
+    },
+    {
+      "slot": "meta",
+      "kitLine": "skill2 activation cadence (absent)",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "⚑ The kit prose gives skill2 NO activation clause, so its interval / skill-cooldown length is not in the input domain (datamined only). No assertion pins a cadence; the tests assert only that the trigger REPEATS (>=2 applications in 180s), which discriminates interval-vs-passive without guessing a ⚑ value."
+    }
+  ],
+  "fixtures": "controlComp('mari', true) only — liter B1 / crown B2 / mari / helm B3, boss Fire, focus mari; deterministic, no seed. 7 hoisted 180s runs: control + 6 counterfactuals (gainPierce stripped, hasPierce forced true, pierceDamagePct window cut to 0.5s, burst flatDamage zeroed, burst flatDamage doubled, burst noFb flipped). The B1+B2 supports are required so bursts actually cast. IMPORTANT FIXTURE CAVEAT: mari is Burst II and the fixture's crown is also Burst II, so stage 2 may be monopolised by crown and mari may never cast; both burst-slot groups are gated by a computed MARI_BURSTS flag (nuke-zeroing differential OR an attributable burstCast event) via it.skipIf, so a skip signals a needed mari-as-sole-B2 fixture rather than an override defect. Override counterfactuals go through a blocksOf() helper that accepts BOTH documented slot shapes (bare Block[] or CharacterSkills.blocks) so a patch can never silently no-op into a false green.",
+  "gaps": [
+    "skill1a 'Damage dealt to Shield ▲100.09% for 3 sec' — it.skip: no shield-damage StatKey in the schema and the v1 boss has no shield, so the payload is unobservable; must be recorded in `unmodeled`. A live inertness test guards against it being smuggled in as a generic damage stat.",
+    "skill1a trigger 'landing a Full Charge attack' — even if a shield stat existed, the schema has no full-charge trigger kind (shotFired / chargeCounter{count:1} are the available proxies); untestable here because the effect is unobservable.",
+    "burst slot (both lines) — it.skipIf gated on MARI_BURSTS: mari is Burst II and competes with the fixture's crown for stage 2. If skipped, the burst lines are UNVERIFIED and need a comp whose only Burst II is mari.",
+    "skill2 cadence — the kit text supplies no activation clause; the interval/skill-CD length is a datamined ⚑ deliberately left unasserted (only trigger-repetition is proven).",
+    "All pierce DIFFERENTIAL assertions assume pierceDamagePct is live for pierce-tagged hits (per the gainPierce / flatDamage.pierce schema comments; types.ts still carries a 'parsed but inert in v1' comment on the stat). If the stat is genuinely inert, the event-level pierce assertions still hold and only the three damage-differential ones fall — that outcome is itself a finding about the stat, not about mari's model."
+  ],
+  "model": "claude-opus-5"
+}

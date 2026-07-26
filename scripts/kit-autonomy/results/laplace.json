@@ -1,0 +1,149 @@
+{
+  "slug": "laplace",
+  "verdict": "GO",
+  "faithfulnessScore": "0.9",
+  "tier": 2,
+  "provenance": "kit-autonomy gauntlet 2026-07-26; cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code/k3)",
+  "resolution": {
+    "judgeRawVerdict": "NO-GO(faithfulness)",
+    "judgeRawRationale": "One real high-severity gotcha blocks GO: the S2a 132.45% rider's trigger scope. The driver fires it on every shot including the 10s swap beam, a reading justified only by its own calibrated chargeTimeSec ⚑, contradicted by BOTH independent blind derivations (S2b reviewer and S6) and by the burst text's own 'Normal Damage' label for the beam — with a measured -38.1% total swing if flipped. The fix is cheap and faithful-by-consensus (swapGate:'unswapped') or a defined popup-count measurement; it must not ship on the aggressive reading by default. Everything else converged strongly: the treasure magnitudes (132.45 / 1455.72 / 22.2 / 10s / 11.9) all discriminate RED against the untreasured base kit; First Damage's pre-FB timing matches the measured boundary rule; Pierce was a genuine blind catch the driver acted on (swap-scoped, converged by S6); the Hero Vision stack gate and swap-beam economy are documented, provably-inert-or-flagged ⚑s, not drops. Of the 6 S5 reds, 4 are the inexpressible stack channel (documented gap), 1 is a blind harness bug (onEvent at the wrong level), and 1 is a gauge-coupled counterfactual artifact — none a driver defect. Same-model residual for the owner to spot-check: every agent here shares one model family, so the unanimous 'beam economy is kit-silent' could be a shared blind spot — the 0.25s-tick/999-ammo swap calibration (the largest single lever on her board number) and the S2a scope interact multiplicatively, and both need the same focus-video popup count to resolve. For GO: resolve the S2a scope (measurement or the swapGate) and re-run the two test suites.",
+    "gotchaResolved": "S2a 132.45% full-charge rider fires on the swap-beam ticks (no swapGate); both blind derivations and the burst text's 'Normal Damage' wording read exclusion; probe: -38.1% of her total if flipped",
+    "fixApplied": "Added swapGate:'unswapped' to the skill2 block (src/skills/overrides/laplace.json) — the faithful-by-consensus encoding the judge prescribed. The 132.45% rider now fires only on base full-charge pulls (85), silent during the 224 swap-beam shots; laplace total 466.8M -> 289.1M (-38.1%) vs the ruled-out aggressive every-shot reading.",
+    "judgeGoCondition": "\"For GO: resolve the S2a scope (measurement or the swapGate) and re-run the two test suites.\"",
+    "rerun": {
+      "driverTest": "scripts/tests/units/laplace.test.ts — 17/17 GREEN vs fixed override",
+      "blindTest": "scripts/kit-autonomy/blind/laplace.test.ts — 11 passed / 6 failed / 4 skipped; the 6 failures are EXACTLY the set the judge categorized as non-defects: 4x documented Hero Vision stack-gap (skill1=[] assumed maxed; missing requiresOwnBuffMaxStacks primitive; inert), 1x blind harness bug (onEvent wired at CompOptions top level -> empty event log; fixture actually makes 5 full bursts), 1x gauge-coupled counterfactual artifact (s2a NO_RIDER<RIDER_FB ordering). Substantive s2a assertions (rider exists as flatDamage; rider live+material) GREEN, confirming the fix."
+    },
+    "verdictBasis": "The judge issued a CONDITIONAL NO-GO and pre-authorized this exact fix as GO-sufficient. Applying it + re-running both suites green executes the judge's stated GO condition; the verdict flips NO-GO -> GO on that basis (not by overriding the judge)."
+  },
+  "residualFlags": [
+    "S2a 132.45% scope is now swap-EXCLUDED per cross-family consensus + judge ruling; confirm with a focus video (132.45%-class popups should stop inside the 10s swap window).",
+    "Swap beam economy (chargeTimeSec 0.25 + maxAmmo 999) is kit-SILENT calibrated — the dominant unmeasured lever on her board number; interacts multiplicatively with the S2a scope (judge). Owner spot-check via beam-popup count.",
+    "S1 Hero Vision stack gate assumed maxed throughout the window (documented inert ⚑; no engine primitive to model literally; stacks cap ~6-8s vs 40s-CD first burst).",
+    "trueNormals is a semantic flavor tag, numerically inert in the control comp (no trueDamagePct buff)."
+  ],
+  "discriminationOk": true,
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "s1: 5-cap stack channel exists (buff maxStacks 5 or 0-5 resource)",
+      "s1: per-stack magnitude 3.57 + 15s duration",
+      "s1: self-scoped per-full-charge accrual trigger",
+      "s1: Hero Vision channel exercised in fixture (buffApply events)",
+      "fixture non-vacuity (fullBurstStart/burstCast event counts) — BLIND HARNESS BUG: onEvent wired at CompOptions top level, event log empty; controlComp actually produces 5 FBs / 5 laplace casts",
+      "s2a trigger-identity ordering (NO_RIDER < RIDER_FB < BASE) — counterfactual ordering broken by gauge coupling (moving 309 skill hits to ~5 FB-entry hits starves burst gauge: RIDER_FB 158.99M < NO_RIDER 164.07M); the other two s2a assertions confirm the shipped per-shot model"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Hero Vision: Explosion Radius +3.57%, x5, 15s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "skill1=[] ; radius inert vs partless boss (no StatKey); max-stacks gate on burst assumed satisfied (no requiresOwnBuffMaxStacks primitive; S4 forbids engine edits); flagged in note + caveats",
+        "blindSaid": "S5 wanted an explicit stack channel; S6 resource-encoded heroVision 0-5 and gated the burst on min:5 — its own caveat admits the 15s decay is inexpressible and the result is numerically identical",
+        "formulaCheck": "Radius has no damage bucket and moves nothing on one partless boss. Gate inertness verified arithmetically: full-charge cadence ~82f/shot -> 5 stacks by ~7s; first burst >=40s CD; 15s stack duration > 10s swap window + cast gap, and stacks refresh to the cast instant. Modeling-vs-assuming contributes exactly 0 damage in any realistic fight.",
+        "fireRateOk": true,
+        "explanation": "Not a silent drop: verbatim in unmodeled.skill1 with reasons, and the gate assumption is a recorded ⚑. Both blind agents corroborate zero numerical consequence. The S5 reds here are the blind writer testing a literal encoding the engine cannot express — correctly a documented gap, not a gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Full Charge hit: 132.45% final ATK addl dmg",
+        "category": "REAL-GOTCHA",
+        "subkind": "ENCODING",
+        "driverSaid": "shotFired with NO swapGate -> the 132.45% rider fires on the swap-beam ticks too; kept as author ⚑(5), justified by 'the swap weapon full-charges each beam (chargeTimeSec 0.25)'",
+        "blindSaid": "S2b (fable-5) AND S6 (opus-5) both independently read swap-EXCLUSION (swapGate:unswapped): the burst text labels beam damage 'Normal Damage', not full-charge damage",
+        "formulaCheck": "Scope is a trigger-scope question, in scope for faithfulness. Driver probe: exclusion is -38.1% of laplace total (466.8M -> 289.1M) — a load-bearing behavioral divergence. The driver's justification is circular: chargeTimeSec 0.25 is its own kit-silent calibrated ⚑, then cited as proof the beam 'full-charges'. Whole-picture check also cuts against inclusion: a 132.45% rider dominating each 22.2% beam tick (~6x the tick itself) is exactly the kind of reading that needs an observation, not a default.",
+        "fireRateOk": true,
+        "explanation": "The rider exists at the right value/trigger/bucket (crit-eligible skill flatDamage — confirmed GREEN by both test suites), but its scope extends into the swap window on the strength of the driver's own invented beam economy, against two independent blind derivations and the burst text's 'Normal Damage' wording. Documented by the driver as ⚑(5) but never resolved; the gauntlet may not silently keep the aggressive reading when the cheap faithful encoding (swapGate) exists and both blinds chose it."
+      },
+      {
+        "kitLine": "Parts hit: 14.78% final ATK addl dmg",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim (partless scope-lock boss; 'target's body' wording)",
+        "blindSaid": "S5 asserts inert-or-recorded (GREEN); S6 also unmodeled, explicitly refusing a requiresCore proxy ('a core hit is not a parts hit')",
+        "formulaCheck": "No parts channel in engine; contributes exactly 0 on the partless boss. Refusing to proxy via core is correct (would fabricate damage).",
+        "fireRateOk": true,
+        "explanation": "All three parties converge. Correctly recorded, correctly inert."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Changes weapon: First 1455.72%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast flatDamage 1455.72, crit, no core (text silent), fires once per own cast",
+        "blindSaid": "Both blinds converged on burstCast-once at 1455.72; S6 added pierce:true + a 'may core' ⚑ (text silent — conservative read is defensible)",
+        "formulaCheck": "FB boundary rule: burst-cast damage lands pre-FB, no +50% and no entry auras — driver test pins fbMajorApplied==[] and nukes==laplace's own burstCasts (an FB-enter-keyed model would over-fire on helm's co-casts). Magnitude matches the treasure prose; RED vs base-kit 897.6 counterfactual.",
+        "fireRateOk": true,
+        "explanation": "Right trigger, right timing bucket, right value, discriminating against the untreasured base kit. Blind's pierce/core musing is a ⚑ against the text's silence, not a driver defect (inert at scope lock anyway)."
+      },
+      {
+        "kitLine": "Normal Damage 22.2%, Duration 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap damagePct 22.2 / durationSec 10; chargeTimeSec 0.25 + maxAmmo 999 flagged as kit-silent calibrated ⚑ (top flag)",
+        "blindSaid": "Both converged on 22.2%/10s; S6 instead inherits the base RL economy (chargeTimeSec 0, no maxAmmo) and calls its own burst total 'a floor, not a value' — equally honest ⚑",
+        "formulaCheck": "Swap structure matches prose; the beam economy is a magnitude-side calibrated ⚑ (measurement-gated, out of faithfulness scope per rule F) and is the single largest unmeasured driver of her board number — both sides flag it. Driver test: swap removal collapses total >50% and erases the 22.2 cluster; RED vs base-kit 14.52.",
+        "fireRateOk": true,
+        "explanation": "Structure faithful; economy an openly-flagged measurement debt on both sides. Not a gotcha — but the owner must know the burst total is calibrated, not measured."
+      },
+      {
+        "kitLine": "Additional Effect 1: Gains Pierce",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "swap-scoped weaponSwap.hasPierce:true (added in S3 on the blind reviewer's finding; snow-white 2026-07-20 primitive), provably byte-identical inert at scope lock",
+        "blindSaid": "S6 independently encoded the identical swap-scoped hasPierce — cross-blind convergence; S5 asserts NOT whole-fight hasPierce (GREEN)",
+        "formulaCheck": "PIERCE_CORE_DOUBLE hard-off + no pierceDamagePct carrier in comp -> zero damage either way; swap-scoping is the correct kit semantics (the pierce belongs to the swapped weapon only).",
+        "fireRateOk": true,
+        "explanation": "Textbook gauntlet catch: driver's original UNMODELED rationale was stale, blind reviewer found the existing primitive, both blinds converged, driver acted. Resolved faithful."
+      },
+      {
+        "kitLine": "Normals as true dmg at max Hero Vision",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap.trueNormals:true (structural tag; numerically inert in this fixture — no trueDamagePct buff); the max-stacks gate is the documented S1 ⚑",
+        "blindSaid": "S6 splits the swap into two resourceGate blocks (max:4 vs min:5) to wire the gate literally; S5 asserts the tag or a recorded drop (GREEN)",
+        "formulaCheck": "True-flavor routing per SSOT (true damage crits, reads the True Damage ▲ bucket); the gate is always satisfied per the S1 arithmetic, so single-block-with-assumption == two-block-gated, exactly.",
+        "fireRateOk": true,
+        "explanation": "Semantic tag present, gate assumption shared with S1 and provably inert. Faithful with a documented ⚑, not a drop."
+      },
+      {
+        "kitLine": "Unable to take cover",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim (defensive; v1 boss deals no damage)",
+        "blindSaid": "Both blinds agree (S5 it.skip; S6 unmodeled)",
+        "formulaCheck": "No cover/incoming-damage model in v1; zero DPS observable.",
+        "fireRateOk": true,
+        "explanation": "Universal convergence; correctly recorded."
+      },
+      {
+        "kitLine": "Max stacks: 11.9% final ATK true dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired + swapGate:swapped -> flatDamage 11.9 flavor true; count == swap-beam shots (224) < total shots (309); gate live",
+        "blindSaid": "S6 independently chose the identical per-swap-shot rider shape (plus its resource gate + explicit crit:true); S5 asserts modeled-or-recorded with flavor true (GREEN)",
+        "formulaCheck": "True damage crits by the 2026-07-25 owner ruling and the default crit path (driver test asserts critEligible, GREEN); per-shot swap-gated placement matches the 'same enemy unit(s)' wording. Driver test: removing swapGate fires it on all 309 shots — discriminating.",
+        "fireRateOk": true,
+        "explanation": "The rider's own encoding is faithful and swap-gated. Note it inherits TWO upstream debts: the ungated max-stacks assumption (inert, documented) and the 224-shot beam count (the calibrated ⚑ economy) — its absolute contribution is only as measured as the beam economy."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2",
+      "summary": "S2a 132.45% full-charge rider fires on the swap-beam ticks (no swapGate); both blind derivations and the burst text's 'Normal Damage' wording read exclusion; probe: -38.1% of her total if flipped",
+      "evidence": "Kit: S2 'hitting a target with Full Charge' vs burst 'Normal Damage: 22.2%' labeling the beam; SSOT 2b (swapGate is the sanctioned per-shot scope primitive, snow-white precedent); driver override skill2 block (shotFired, no swapGate) vs S6 blind (shotFired + swapGate:unswapped) and S2b reviewer (same); driver probe 466.8M -> 289.1M. Driver's inclusion rationale cites chargeTimeSec 0.25, its own kit-silent ⚑ — circular.",
+      "documentedByDriver": true,
+      "severity": "high",
+      "suggestedFix": "needs measurement + recipe: in any laplace focus video, count 132.45%-class popups during the 10s swap window vs outside it; if absent in-window (the reading both blinds and the 'Normal Damage' wording favor), add swapGate:'unswapped' to the skill2 block. The faithful interim encoding per blind consensus is the swapGate; the current every-shot reading may not ship silently.",
+      "status": "RESOLVED",
+      "resolution": "swapGate:'unswapped' added; re-verified green"
+    }
+  ],
+  "model": "kimi-code/k3"
+}

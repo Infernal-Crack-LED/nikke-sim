@@ -1,0 +1,121 @@
+{
+  "slug": "ludmilla-winter-owner",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 12.56,
+          "durationSec": 3
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 158.43,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "instantReload",
+          "fraction": 0.0667
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 200
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 109.64,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 14.6,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 62.54,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 67.2,
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 rider cadence: the kit trigger is 60 CORE hits, but the schema has no core-hit counter. Encoded as hitCount count 200 normal hits = 60 ÷ ~0.30 assumed MG core rate. The real core rate sets this cadence 1:1 — a 0.20 rate means 300, a 0.45 rate means 133. UNMEASURED.",
+    "⚑ skill2 rider deliberately does NOT set requiresCore, to avoid double-discounting on top of the count conversion. If requiresCore is a per-activation core-hit check rather than a fight-level core-exposure gate, the correct encoding is count 60 + requiresCore:true instead.",
+    "⚑ skill1 partial reload: 'Reloads 20 round(s)' encoded as instantReload fraction 0.0667 (= 20/300, the BASE belt). Any Max-Ammo increase (cube/OL/ally maxAmmoPct or maxAmmoFlat) makes this refill MORE than the kit's 20 rounds; a flat-round primitive would be faithful.",
+    "⚑ instantReload semantics assumed ADDITIVE (tops the belt up by fraction×max, capped at max), not 'set the belt to fraction×max'. If the engine sets rather than adds, this line becomes a damage LOSS instead of a gain.",
+    "⚑ MG cadence tuple: pulls/sec is not supplied, and reloadFrames 201 is a datamine field on the known-unreliable list. Every hitCount cadence here (and the value of the 67.2% Reload Speed buff) is downstream of the real shots/sec and the MG wind-up ladder.",
+    "⚑ Both flat riders: noFb is UNSET (Full Burst by timing, the default) and crit:true is set (riders crit at the caster's sheet rate). Both are project conventions, not measurements on this unit. Neither rider sets core — the kit text says 'additional damage', not 'core strike damage'.",
+    "Damage Taken ▲ 12.56% is a BOSS debuff (whole-team benefit, not a self buff), and it lasts only 3 s against a ~60-normal-hit refresh cadence — expect low duty-cycle uptime, so its board footprint is team-wide but small and cadence-sensitive.",
+    "skill1's two ■ headers both read 'landing 60 normal attack(s)'. Modeled as two independent hitCount:60 blocks; whether the game runs ONE shared counter feeding both, or two, is kit-silent (damage-identical either way at hitsPerShot 1, but it matters if a future ammo/uptime change desynchronizes them)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. MG/Water/Attacker/Burst III, 40 s burst CD, 300-round belt, hitsPerShot 1. Skill 1: a 60-normal-hit counter drives (a) a boss-side Damage Taken ▲ 12.56% / 3 s debuff plus a 158.43%-of-final-ATK rider, and (b) a self partial reload of 20 rounds. Skill 2: a 60-CORE-hit 109.64% rider (encoded as a normal-hit count via an assumed core rate — see caveats), plus a self Critical Rate ▲ 14.6% / 10 s on Full Burst ENTRY (team FB-enter as the text states, NOT own-burst-gated). Burst: self ATK ▲ 62.54% / 10 s and Reload Speed ▲ 67.2% / 20 s — the reload buff is modeled because reload speed gates shots fired and is therefore damage, and its 20 s duration deliberately outlasts the 10 s ATK window. Crit Rate is unscoped in the prose ('Critical Rate ▲'), so it is generic critRatePct, not critRateNormalPct. Nothing in the kit is skipped: all three unmodeled arrays are empty. No Pierce, no elemental-advantage damage buff (Water vs a Fire boss is the clean ×1.10), no stacks, no weapon swap, no DoT, no heal/shield, no gauge manipulation, no burst-eligibility change."
+}

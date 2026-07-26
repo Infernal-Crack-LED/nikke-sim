@@ -1,0 +1,48 @@
+{
+  "slug": "laplace",
+  "stage": "S2c",
+  "reviewerModel": "claude-fable-5",
+  "driverModel": "qwen (gauntlet driver)",
+  "reviewerVerdict": "GO (test-faithfulness layer)",
+  "reconciledVerdict": "GO (cross-family corroborated, test layer)",
+  "agreements": [
+    "L3 S2a 132.45% is a per-full-charge on-hit rider (shotFired), treasure value not base 81.66, crit-eligible, skill bucket. Driver test pins count==shots + atkPct[132.45] + RED vs 81.66 and vs lastBullet.",
+    "L4 S2b 14.78% parts rider is UNMODELED-inert vs the partless boss; must contribute exactly 0; verbatim in unmodeled.skill2. Both agree; no assertion (harness rule for inert UNMODELED).",
+    "L6 burst First Damage 1455.72% keys to laplace's OWN burstCast (NOT team fullBurstEnter — helm co-bursts in controlComp), fires once per cast pre-FB (fbMajorApplied false), treasure value not base 897.6. Driver test pins nukes==laplace-burstCasts(6) + atkPct[1455.72] + fbMajorApplied[]==[] + RED vs 897.6. The reviewer's mandatory burstCast<fullBurstStart inequality is implied by nukes==laplace-burstCasts (an FB-keyed model would fire on helm's casts too and exceed laplace's own burst count).",
+    "L7/L5/L8 weaponSwap Normal 22.2% / 10s is live + load-bearing; driver test pins the 22.2 normal cluster (normalScale=1) + durationSec/chargeTimeSec/maxAmmo structurally + RED vs base 14.52 + collapse >50% when swap removed (466.8M -> 216.2M).",
+    "L12 11.9% true rider rides per-swap-shot (shotFired + swapGate swapped), gated; driver test pins atkPct[11.9] + count==swap-beam-normal-count(224) < total shots(309) + RED vs no-gate (fires on all 309).",
+    "L11 'Unable to take cover' is UNMODELED-defensive; verbatim in unmodeled.burst; both agree.",
+    "Swap fire cadence (chargeTimeSec 0.25) + reload-free economy (maxAmmo 999) are kit-SILENT calibrated ⚑ values, not kit truth — driver test pins the encoding structurally and the override note + kit-status flag them as ⚑. Both agree these stay ⚑."
+  ],
+  "divergences": [
+    {
+      "line": "L9 burst 'Gains Pierce'",
+      "reviewer": "FAITHFUL load-bearing; model as swap-scoped pierce (weaponSwap.hasPierce), NOT top-level hasPierce (which mis-tags ~97% non-swap uptime). Nearest-wrong is the unconditional boolean.",
+      "driver": "AGREE + ACT. Shipped override left it UNMODELED citing 'no swap-gated pierce mechanism' — that rationale is STALE: weaponSwap.hasPierce exists since the snow-white 2026-07-20 ruling. Probe confirms weaponSwap.hasPierce:true is byte-identical inert in controlComp (totals delta 0 all units; PIERCE_CORE_DOUBLE=false hard-off; no pierceDamagePct carrier). S3 adds hasPierce:true to the swap and moves the line out of unmodeled — a faithful, zero-impact improvement the blind reviewer independently converged on. Test pins it structurally + asserts inertness (no behavioral observable: damage event carries no pierce field and the comp has no pierce-damage buff)."
+    },
+    {
+      "line": "L3 S2a 132.45% scope during the 10s swap window",
+      "reviewer": "The swapped beam shots are 'Normal Damage', not 'Full Charge', so the 132.45% rider must go SILENT during the swap (swapGate unswapped). A per-shot encoding without the swap distinction leaks the rider into the swap window and over-credits.",
+      "driver": "DIVERGE — keep shipped, flag as residual ⚑. This is a GENUINE kit-text ambiguity: the swap weapon full-charges each beam shot (chargeTimeSec 0.25), so 'hitting with Full Charge' plausibly INCLUDES beam shots under one reading and EXCLUDES them under the reviewer's. The override author explicitly chose shotFired (every shot incl swap) and flagged it as ⚑(5) 'verify the 132.45% popup lands once per rocket'. Probe: swap-exclusion is a -38.1% total change (466.8M -> 289.1M) — a substantive modeling decision that is MEASUREMENT-GATED, not a faithfulness bug the gauntlet may silently flip. Driver keeps the documented ⚑ reading and surfaces the dissent to the S7 judge. Faithful = transparent about the assumption (the override is); the kit text does not decide it."
+    },
+    {
+      "line": "L1/L2 S1 Hero Vision stack counter as an explicit gate",
+      "reviewer": "FAITHFUL load-bearing; model the 5-cap/15s/full-charge-only stack counter and gate trueNormals + 11.9% on stacks===5; test must patch skill1 out and assert the gated burst effects die (compound stack-drop failure).",
+      "driver": "DIVERGE — keep shipped ⚑ (assumed maxed). Two reasons: (1) the radius MAGNITUDE is inert (both agree; zero damage). (2) Wiring trueNormals/11.9% to a self-buff-max-stacks gate requires an engine PRIMITIVE that does not exist (Block has requiresShielded/requiresTargetStatus/requiresCore/fbGate/swapGate, no requiresOwnBuffMaxStacks), and S4 forbids engine edits — so the literal gate is NOT modelable today. The override's 'assumed Hero Vision maxed throughout the window' is a DOCUMENTED ⚑ (not a silent drop), and the reviewer confirms stacks cap at ~6-8s vs a 40s-CD first burst with a 15s stack duration — i.e. the gate is ALWAYS satisfied in any realistic fight, so modeling-vs-assuming contributes exactly 0 damage. Correctly ⚑/UNMODELED per S4 (inert + missing primitive), not NO-GO. The reviewer's patch-skill1-out test is not achievable because skill1 is already [] and the gated effects are not wired to it."
+    }
+  ],
+  "testLayerCheck": {
+    "allLoadBearingLinesPinned": true,
+    "faithfulPinsGreenVsShipped": true,
+    "counterfactualsRed": true,
+    "inertUnmodeledDocumentedNotAsserted": true,
+    "testCount": 15,
+    "verifyResult": "15/15 GREEN vs shipped (pre-S3); re-verified post-S3 Pierce edit"
+  },
+  "residualFlagsForJudge": [
+    "S2a 132.45% swap-window inclusion (driver keeps every-shot ⚑(5); reviewer wants swap-excluded; -38.1% if flipped; measurement-gated)",
+    "S1 Hero Vision stack gate assumed maxed (documented ⚑; missing engine primitive to model literally; inert — always satisfied in practice)",
+    "swap cadence 0.25s/tick + reload-free maxAmmo 999 (kit-silent calibrated ⚑)"
+  ],
+  "note": "Reviewer's leakDetected was null (no leak). Cross-family convergence is strong: 6 of 8 kit lines agree outright; the 3 divergences are (a) one ACTED-ON faithful improvement (Pierce) and (b) two documented ⚑ judgment calls the driver keeps and surfaces to the judge rather than silently flipping."
+}

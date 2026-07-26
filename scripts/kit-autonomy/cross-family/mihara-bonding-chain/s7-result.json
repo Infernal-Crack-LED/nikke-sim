@@ -1,0 +1,91 @@
+{
+  "slug": "mihara-bonding-chain",
+  "overallVerdict": "ACCEPT-DRIVER — all 11 REDs are encoding-shape divergence or documented gaps; zero REAL-GOTCHA found. The steady-state throughput decomposition is internally consistent, kit-faithful at the CALIBRATED tier, and empirically anchored (1.03 vs the real T3 sample).",
+  "redAdjudication": [
+    {
+      "test": "opens fight at 10 chains capped at 10",
+      "ruling": "RECON_ERROR",
+      "rationale": "Probe accepts only three shapes (resource init/max 10, +10 resource delta, >=10 discrete 50.06% effects). The driver's single consolidated 500.6% passive flatDamage at t=0 IS behaviorally the full opening pool (10 x 50.06). Driver M1 pins exactly-1 start dump + 1-per-FB-end cadence and discriminates the single-chain wrong model. Behaviorally satisfied; structurally invisible to the probe."
+    },
+    {
+      "test": "chain volley exists/fires/NOT core",
+      "ruling": "RECON_ERROR",
+      "rationale": "isVolley keys on atkPct~=50.06; the consolidated 500.6 never matches, so the probe reads an empty set. The driver's flatDamage carries no core flag (default non-core, correct for a function-type hit) and M1's single-chain counterfactual proves it load-bearing."
+    },
+    {
+      "test": "carries a repeating cadence trigger",
+      "ruling": "RECON_ERROR",
+      "rationale": "Vacuous RED: the carrier set is empty under the 50.06 magnitude key, so 'repeats' evaluates false. The driver volley does repeat (fullBurstEnd), and both sides flag the cadence as an invented timing for the kit-silent 'at a specific timing' clause (driver caveat ⚑, S6 caveat ⚑) — the honest treatment S2b demanded."
+    },
+    {
+      "test": "Ensnaring is 1-sec sustained DoT continuous",
+      "ruling": "RECON_ERROR",
+      "rationale": "Probe keys on the per-stack 25.08 magnitude; the driver emits the calibrated 12-stack rebuild average 301%/s — same intervalSec 1, same sustained flavor, permanent (999s). Driver M2 pins the value/permanence and discriminates both the hot 501.6 (old 20-stack reading, 1.19-1.51 hot vs real) and the single-stack parser miss. Surrendered: per-stack granularity — folded by design, disclosed."
+    },
+    {
+      "test": "Ensnaring load-bearing/touches no teammate",
+      "ruling": "RECON_ERROR",
+      "rationale": "Harness artifact: the strip predicate (atkPct~=25.08) matched nothing in the driver override, so noEns was a no-op clone and the diff read zero. This is probe blindness to the consolidated encoding, not inertness — the driver's own hot20 and removal counterfactuals (M2, all-GREEN vs shipped) prove the DoT load-bearing, and all driver blocks target enemy/self so no teammate is touched. Per non-negotiable 4, the existing green driver-suite check is the independent method; the bar is met."
+    },
+    {
+      "test": "caps at 20 stacks somewhere",
+      "ruling": "RECON_ERROR",
+      "rationale": "The 20 cap is real kit, deliberately folded into the calibrated rebuild average (driver note: 'cap 20 folded into the time-weighted average'; caveat: S2 generation 'folded into the steady-state 20-stack cap'). Residual limitation: the model cannot express cap-saturation dynamics — acceptable at CALIBRATED tier with the disclosure present."
+    },
+    {
+      "test": "40-normal rider threshold-40 AND gated to FB",
+      "ruling": "RECON_ERROR",
+      "rationale": "No hitCount block exists by design; rider income is folded into the 12-stack average with an explicit caveat. Whole-picture arithmetic supports the fold: an MG at up to 60 rounds/s lands hundreds of rounds per 10s Full Burst, so floor(rounds/40) income alone reaches double digits per window and saturates the 20 cap well before the next cast — the discrete gate's outcome and the fold's outcome coincide in-scope."
+    },
+    {
+      "test": "40-normal rider adds stacks",
+      "ruling": "RECON_ERROR",
+      "rationale": "Same no-op-strip artifact as the Ensnaring load-bearing RED: noRider stripped zero blocks (no hitCount kind exists), so the diff trivially read zero. Not evidence about the kit model."
+    },
+    {
+      "test": "burst exists as 10s 1-sec sustained DoT",
+      "ruling": "RECON_ERROR",
+      "rationale": "Probe keys on per-stack 50.05; the driver emits the 700%/s delta (1001 - 301). Every other structural expectation is met verbatim: burstCast trigger, durationSec 10, intervalSec 1, flavor sustained, non-core. Driver M3 pins all of these plus the naive-double-count discrimination (700 delta reads below 1001-on-top)."
+    },
+    {
+      "test": "MIRRORS stack count not flat DoT (draggingStarved < 0.25*draggingFull FAILS)",
+      "ruling": "DOCUMENTED-GAP(FIDELITY) — not a REAL-GOTCHA",
+      "rationale": "The one substantive divergence. The probe is a valid mirror-mechanic probe and the driver's fixed 700 is genuinely not stack-responsive — in the starved world it over-credits. But: (a) no engine encoding can express a true live mirror (S6's own caveat: a perResource DoT reads 0 after the cancel; values cannot be copied pool-to-pool), so EVERY available encoding freezes a constant — this is an engine-expressiveness limit, not a driver shortcut; (b) the frozen value equals the live mirror value in the in-scope fight (see mirrorAdjudication arithmetic); (c) the assumption is disclosed in the override note and empirically anchored at 1.03 vs the real T3 sample. The starved world is one the in-scope fight never produces. Ruled a documented fidelity gap, with the note's rebuild-assumption caveat treated as load-bearing documentation."
+    },
+    {
+      "test": "cancels Ensnaring after trigger",
+      "ruling": "RECON_ERROR",
+      "rationale": "The cancel is implicit in the delta decomposition: during the burst window the driver emits 301 + 700 = 1001%/s, exactly the true Dragging Chain value with zero double-count, and the 301 baseline is the rebuild-aware average calibrated excluding the window. The 999s duration literally contradicts the kit's cancel semantics at the encoding level, but the decomposition nets the mechanic correctly and the calibration (1.03) confirms it against reality. Disclosed in the note; acceptable shape divergence."
+    }
+  ],
+  "mirrorAdjudication": {
+    "question": "Fixed 700%/s delta (20-stack mirror) vs S6's fixed 500.5%/s (10-stack mirror) vs the kit's literal stack-responsive mirror; and is the fixed-delta simplification a DOCUMENTED-GAP or REAL-GOTCHA(FIDELITY).",
+    "fixtureArithmetic": "Rotation = her 40s burst cooldown. Per rotation Ensnaring rebuilds: +10 from the Restraint dump at Full Burst end, plus floor(in-FB MG rounds / 40) from S2a — at up to 60 rounds/s over the ~10s Full Burst that is on the order of +10 to +15 stacks. Combined income exceeds 20; the pool re-reaches the 20 cap before her next cast. So the stack count at cast IS 20 in the in-scope fight, and a fixed 20-stack mirror equals the live mirror.",
+    "driverVsS6": "Driver's 20-stack mirror (1001%/s total) is MORE kit-faithful: S6's 10-stack mirror ignores the S2a in-FB rider income entirely and is a self-caveated conservative under-credit of ~50% on the burst window, while the driver's value matches the stack count the kit's own economy produces at cast AND is the value calibrated to the real T3 sample (1.03). S6's choice would read materially cold.",
+    "ruling": "Driver's 20-stack mirror UPHELD. The fixed-delta simplification is a DOCUMENTED-GAP(FIDELITY): an engine-expressiveness ceiling (no encoding can mirror-then-cancel), disclosed in the note, and exact in-fixture. Validity condition, already documented: any comp or fight where Ensnaring sits partial at cast (short rotations, missed FB windows, adds dying) over-credits the burst window — the mirror image of S6's under-credit caveat."
+  },
+  "additionalFindings": [
+    {
+      "severity": "DOCUMENTED-GAP (disclosed, kept visible)",
+      "finding": "The driver's fullBurstEnd dump carries no ownBurstGate. In any multi-B3 comp — including the S5 fixture controlComp(SLUG, true) with helm — the 500.6% dump fires after Full Bursts she did not cast, over-crediting every alternated rotation. The kit's pool would be empty there and the volley would not fire. This is the driver's own documented 'benign multi-B3 over-fire' kit-status finding. Note: the S5 gate test ('refills... gated to rotations this unit bursted') passed VACUOUSLY — it only asserts ownBurstGate on blocks with resource-delta refill effects, which the driver does not emit — so that PASS overstates the discrimination. Real coverage = the sole-B3 graded fixture (where the gate is exact) + the disclosure. Acceptable under scope; the sole-B3 fixture convention for this unit's graded comps is load-bearing and should not be relaxed."
+    },
+    {
+      "severity": "NOTE (no action)",
+      "finding": "S6's note claims DoT crit 'engine default (off)' — that contradicts the SSOT (DOT_CRIT ON since 2026-07-21; DoT ticks roll crit universally). Immaterial to this adjudication (the driver leaves crit unset, so its DoTs crit at caster rate, and the 1.03 calibration was produced with the engine as-shipped, absorbing whichever behavior was live), but the blind override's caveat misstates the engine."
+    },
+    {
+      "severity": "CONFIRMED-CORRECT",
+      "finding": "The driver's S2d trigger is stageEnter:3 (any caster's stage-3 entry), matching S2b's read of 'when entering Burst Stage 3' — the under-keying trap S2b explicitly warned a cautious driver would fall into (burstCast). Driver got it right; S5's behavioral check (applies >= fbStarts, self-scoped, real 10s expiry) passed."
+    },
+    {
+      "severity": "CONFIRMED-CORRECT",
+      "finding": "Whole-picture arithmetic closes: 500.6 = 10 x 50.06; 301 = 12 x 25.08 (12-stack calibrated rebuild average, inside the kit-derived 10-12 window, re-fit 2026-07-13 after riders lost range); 1001 = 20 x 50.05; 700 = 1001 - 301. Window output 301 + 700 = 1001 = true Dragging value, no double-count; the naive 1001-on-top counterfactual reads strictly hotter (driver M3, GREEN). The inert S2 pair (incapacitated +20, enemy-neutralized +1) is carried verbatim in unmodeled.skill2 by BOTH encodings; the 2 S5 skips are the agreed GAPs."
+    }
+  ],
+  "findings": {
+    "result": "ACCEPT the shipped driver override. 11/11 REDs ruled RECON_ERROR (9 pure encoding-shape, of which 3 are no-op-strip harness artifacts) or DOCUMENTED-GAP (the fixed-mirror fidelity ceiling + the disclosed multi-B3 gate absence). Zero REAL-GOTCHA. The S5 suite is a faithful probe of the discrete two-pool encoding and correctly Red against a different legal shape; its 5 Green + 2 Skip results are the encoding-agnostic core and they hold. No change to the override, the driver test, or kit-status is warranted; the fixed-mirror validity condition and the sole-B3 fixture convention remain load-bearing documentation.",
+    "confidence": "HIGH — every ruling is traceable to (a) the probe's own magnitude-keyed predicates, (b) the driver's all-GREEN 13-test spec with discriminating counterfactuals, and (c) closed-form arithmetic against the kit prose; the one judgment call (fixed mirror) is constrained by the fact that no engine encoding can do better and by the 1.03 real-sample calibration.",
+    "verified": "Each of the 11 failing probes decomposed to its failing predicate and checked whether the failure tracks a kit mechanic or the encoding shape; the consolidation arithmetic (500.6 / 301 / 700 / 1001) recomputed from kit values; the burst-window decomposition checked for double-count against the cancel semantics; the rebuild-to-20-cap assumption re-derived from MG in-FB round income; S2b's seven load-bearing lines cross-walked to the driver override (all present or documented-fold); the vacuous-pass on the S5 own-burst-gate check identified and re-scoped; S6's engine-default crit claim checked against the SSOT and found stale (noted, immaterial). Reviewed against the packet only — no repo or artifact access, per the blindness boundary."
+  },
+  "model": "kimi-code/k3"
+}

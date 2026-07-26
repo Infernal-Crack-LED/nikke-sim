@@ -55,7 +55,12 @@ describe('cross-team polish (item 4)', () => {
     // greedy stalls one team short of what the Burst-I count allows
     expect(greedy).toHaveLength(3);
     expect(polished).toHaveLength(4);
-    expect(total(polished) / total(greedy)).toBeGreaterThan(1.1);
+    // Floor is 1.09, not 1.1: the laplace (Treasure) kit-autonomy gauntlet (2026-07-26) made her
+    // S2 132.45% rider swap-excluded (faithful, cross-family-ruled), dropping her damage ~38% and
+    // shifting THIS fixture's polish recovery from ~13% to ~9.53% (measured 1.0953). The polish pass
+    // still recovers the stranded fourth team (the assertions above + 'strands nobody' below); only
+    // the magnitude floor moved. laplace is in this pool (Burst-III index 19).
+    expect(total(polished) / total(greedy)).toBeGreaterThan(1.09);
   });
 
   it('strands nobody it could have fielded', async () => {

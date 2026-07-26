@@ -1,0 +1,161 @@
+{
+  "slug": "mast-romantic-maid",
+  "kitDescription": "Mast: Romantic Maid is a Water MG Supporter (Burst II) whose kit revolves around a self-applied 'Drunken' status: each time any ally enters Burst stage 1 she gains a stack (max 3), and each stack cuts her own Hit Rate by 20%, costing her MG spray accuracy. While she holds at least one stack, the whole team gets a continuous +20.05% Critical Rate and a flat ATK grant equal to 35.02% of her ATK. When any ally enters Burst stage 3 while she is Drunken, the team gains Distributed Damage and Reload Speed scaled by her current stack count for 10 seconds. Her burst gives all allies +40.04% Critical Damage and +15.04% Attack Damage for 10 seconds, plus — if she is Drunken — another flat ATK grant of 20.06% of her ATK per stack. The catch: when Drunken reaches 3 stacks at the end of a Full Burst, she wipes all stacks and stuns herself (Hangover) for 10 seconds, losing her own fire and the team aura until she re-stacks.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1a 'applies a NEGATIVE hitRatePct self-buff' — driver encodes the line as normalAttackPct -40, no hitRatePct exists (documented choice C1)",
+      "S1a 'non-vacuity: accrues stacks' — no live stack counter exists by design (C1/C3)",
+      "S1a 'Hit Rate down is load-bearing: zeroing hitRatePct changes her damage' — nothing to zero under the driver's primitive (C1)",
+      "S1b 'is GATED: no grant before first Drunken stack' — driver models the aura permanent from frame 0 (documented choice C2)",
+      "S1b 'removing the gate over-credits' — driver is already ungated, alt==base (C2)",
+      "S2b 'stun raises her damage vs stun-less' — blind fixture defect A: crown out-picks mrm for every B2 slot, 0 casts, no stun (S2b predicted this exactly)",
+      "S2b 'stun window present as >=9s gap in shot log' — blind reader bug B: selfShots filters srcSlot, which shot events do not carry (returns []), compounded by A",
+      "S2b 'stacks CONSUMED: return to 1 after Hangover' — no live stack counter (C3)",
+      "S2b 'non-vacuity: reaches max stacks' — no live stack counter (C1/C3)",
+      "burst 'grants both to every ally at literal magnitudes' — blind fixture defect A: mrm casts 0 times under controlComp(mrm) with crown",
+      "burst branch2 'per-stack flat casterAtk grant' — blind fixture defect A: 0 casts"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "stage-1 entry → Drunken: Hit Rate ▼20%/stack, ≤3",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "No live stack counter; Hit Rate ▼ modeled as normalAttackPct -40 on self (the ~40% miss rate at the 2-stack cycle average), validated vs real sample 149M vs 140M modeled",
+        "blindSaid": "S5/S6: live drunken resource +1 on stageEnter:1, hitRatePct -20×stacks feeding the hrCoreMult core-rate path; S6 ⚑ flags the core-rate magnitude as measurement-gated",
+        "formulaCheck": "Hit Rate is not itself a damage bucket; it acts through accuracy/core geometry. MG is flat-0.95 core (no accuracy circle), so the hrCoreMult path the blind assumed does not obviously bind an MG; the driver's damage-side miss emulation is a documented ⚑ with a real-fight anchor (0.94 ratio). Residual: kit-status F4 — normalAttackPct is damage-only, so her burst-gauge feed is NOT reduced the way truly missed shots would be (documented over-credit).",
+        "fireRateOk": true,
+        "explanation": "Same kit line, different primitive, both recorded. Driver's choice is data-validated and owner-known; the gauge-side over-credit is flagged in kit-status. Not silent."
+      },
+      {
+        "kitLine": "while Drunken → allies Crit Rate ▲20.05%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Permanent passive, gate dropped: 'slight overcount during the ~1 rotation after each Hangover before she re-stacks'",
+        "blindSaid": "S5: gated, dark before first stack and during post-Hangover gap. S6 caveat 3 independently quantifies the identical over-credit (~one FB tail per 3 rotations) and notes the engine lacks a buff-removal primitive to express the dark window",
+        "formulaCheck": "Unscoped critRatePct is the correct stat (no 'normal attacks' scoping in the prose); value 20.05 flat (no ×stacks in the text) matches both blind authors. Only the gate timing differs.",
+        "fireRateOk": true,
+        "explanation": "Routing, stat, scope, and flat magnitude all converged three ways; the divergence is solely the gate, which is documented in the override note and independently cost-quantified by the blind S6 author as small."
+      },
+      {
+        "kitLine": "while Drunken → allies ATK ▲35.02% of user ATK",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 35.02, permanent passive (same dropped gate)",
+        "blindSaid": "S5: casterAtkPct flat-resolved ≈0.3502×staticAtk, gated. S6: identical stat/value, keyed live from first B1",
+        "formulaCheck": "SSOT: '% of caster's ATK' = caster's static ATK added FLAT outside the recipient's (1+ATK%) — driver test pins the flat value ≈34,927, identical across targets. Correct bucket, correct resolution. Gate caveat as above.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on casterAtkPct flat resolution; only the documented gate approximation differs."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "stage-3 entry while Drunken → Distributed Dmg ▲15.03%×stacks 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "stageEnter:3, allies, 10s, static 30.06 = 15.03×2 cycle average (stacks run 1,2,3 then wipe; mean 2; 'exact sole-B2', board mean 0.9996)",
+        "blindSaid": "S5: per-rotation ×1/×2/×3 live scaling (its lenient multiple-check ACCEPTS the driver's 30.06 as a valid k=2 — that assertion is GREEN). S6: perResource live scaling, but flag 2 independently confirms the time-average ≈ 2 stacks",
+        "formulaCheck": "distributedDamagePct is correctly scoped to recipients' own distributed-flavored hits (SSOT: Distributed groups with Taken, not Attack Damage; inert for non-distributed allies). Trigger stageEnter:3 (any ally's B3 cast) is correct — Mast is B2 and never casts B3. 10s wall-clock correct. Only per-rotation shape vs cycle-average differs; cycle totals equal.",
+        "fireRateOk": true,
+        "explanation": "Trigger, target, duration, and bucket all converged; the static ×2 is a documented, cycle-exact average the blind S6 author independently derived as the correct time-average."
+      },
+      {
+        "kitLine": "Reload Speed ▲15.04%×stacks 10s (same trigger)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "stageEnter:3, allies, 10s, static 30.08 = 15.04×2 cycle average",
+        "blindSaid": "S5/S6: perResource live 15.04/30.08/45.12; both blind authors affirm reload speed is damage-bearing (shots-fired), not skippable utility",
+        "formulaCheck": "Reload Speed ▲ is subtractive on reload time (SSOT §11/§2a) and raises shots fired — modeled, correctly not skipped. Same documented cycle-average caveat as the distributed line.",
+        "fireRateOk": true,
+        "explanation": "Modeled with correct routing; static ×2 documented and blind-confirmed as the time-average."
+      },
+      {
+        "kitLine": "max stacks at FB end → wipe + Hangover stun 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCast everyN:3 on HER OWN casts (Q5 RECALIBRATION, owner-ruled 'her own Drunken' + data: a never-bursting Mast was being stunned 5× for 0.84 cold under fullBurstEnd; bursting Mast validated). No counter to wipe — none exists.",
+        "blindSaid": "S5/S6: literal prose — fullBurstEnd + max-stacks gate, stun + resource wipe. Both were blind to the owner ruling by design.",
+        "formulaCheck": "Stun stops her MG fire ~600 frames (shots-fired sink) — driver test behaviorally pins exactly ONE ~10s gap after the 3rd of 5 casts, matching the prose's cycle (stacks hit 3 at FB-end 3; wipe; rotations 4-5 sit at 1-2, no second hangover in 5 casts). everyN:3 is cycle-equivalent over this fight AND fixes the pathological never-bursting-Mast behavior the literal reading produced. Engine semantics let her still cast while stunned, consistent with S2b.",
+        "fireRateOk": true,
+        "explanation": "Owner-ruled re-gate, documented in the override note and kit-status (F1, measured, keep). The blind re-derived the literal prose because they could not see the ruling — a RECON_ERROR-class divergence against an owner adjudication, not a driver defect."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "allies: Critical Damage ▲40.04% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, allies, critDamagePct 40.04, 10s",
+        "blindSaid": "S6: byte-identical encoding. S5: magnitude/scope assertions (red only via the blind fixture defect A — 0 mrm casts under crown)",
+        "formulaCheck": "critDamagePct is generic (all hit categories) — correct; burstCast (her own casts only) is correct per the SSOT chain model and S2b's two-B2 discrimination warning; 10s wall-clock correct.",
+        "fireRateOk": true,
+        "explanation": "Three-way byte-level convergence. The blind red is the blind test's own fixture defect (S2b explicitly pre-warned of crown out-picking mrm), which the driver's sole-B2 fixture avoids."
+      },
+      {
+        "kitLine": "allies: Attack Damage ▲15.04% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, allies, attackDamagePct 15.04, 10s",
+        "blindSaid": "S6: byte-identical. S5 red is fixture defect A only",
+        "formulaCheck": "attackDamagePct sits in the additive Damage-Up bucket — correct bucket, correct trigger, correct duration.",
+        "fireRateOk": true,
+        "explanation": "Converged with the blind override exactly."
+      },
+      {
+        "kitLine": "if Drunken: ATK ▲(20.06%×stacks) of user ATK 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 40.12 = 20.06×2 cycle average, burstCast, allies, 10s; Drunken gate dropped (always-on when she casts — with any B1 in the team she always has ≥1 stack at her own cast, so the gate is de-facto satisfied)",
+        "blindSaid": "S5: per-stack flat grant ×1/×2/×3 (lenient check accepts driver's k=2 — GREEN). S6: perResource 20.06 live, flag 3 independently derives the static fallback as exactly 40.12% (2-stack time-average)",
+        "formulaCheck": "casterAtkPct flat resolution off her static ATK is correct per SSOT (driver pins ≈0.4012×staticAtk ≈ 40k flat, identical across targets). The gate is satisfied at every real cast in any chained comp, so dropping it costs nothing in-fixture; the ×2 average is cycle-exact.",
+        "fireRateOk": true,
+        "explanation": "Stat routing and flat resolution converged three ways; the static ×2 is documented and independently confirmed by the blind S6 author as the correct time-average."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "Drunken stack currency not modeled live: stack gain on stage-1 entry, ×stacks scaling, and the Hangover wipe are folded into static cycle-average (×2) magnitudes",
+      "evidence": "Kit: 'stacks up to 3 times continuously', '15.03% x number of Drunken stacks', 'Removes all stacks'. Driver: static 30.06/30.08/40.12. Blind S6: live resource pool with perResource scaling — but S6 flag 2/3 independently confirm ×2 is the exact time-average of the 1,2,3 sawtooth. Cycle-total damage identical; only within-cycle rotation-to-rotation shape differs.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Optional fidelity upgrade, not a correctness fix: adopt the S6 resource-pool shape (resources:[{drunken, max:3}], +1 on stageEnter:1, perResource scaling, wipe on the Hangover block) if the engine's perResource path is verified — S6 itself flags perResource-on-casterAtkPct as UNVERIFIED against the engine and warns perResource recomputes per frame rather than snapshotting at cast, which would mis-drop open windows on the reset rotation. Current static form is cycle-exact; any change needs the stack trajectory pinned from a recording first."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "Hit Rate ▼20%/stack modeled as normalAttackPct -40 self (damage-side miss emulation) rather than a hit-rate/core-path debuff; gauge feed is not reduced (kit-status F4)",
+      "evidence": "Kit: 'Hit Rate ▼ 20%, stacks up to 3 times'. Driver: normalAttackPct -40, validated 149M real vs 140M modeled. Blind: hitRatePct -20×stacks feeding hrCoreMult — but the SSOT gives MG a flat 0.95 core with no accuracy circle, so the blind's assumed path is itself not obviously binding for an MG. Driver's primitive is the data-validated one; the known residual is gauge over-credit (damage-only stat), documented in kit-status F4.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Keep the validated damage-side model; if refined, the gauge side should scale by the same miss fraction (skillGauge/gaugePerShot haircut while Drunken) — needs measurement: count her real burst-gauge contribution Drunken vs sober, e.g. a solo gauge-fill read per burst-gauge.md §5c."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "'Only when in Drunken status' gate dropped on the S1 team aura (crit 20.05 + caster-ATK 35.02): permanent from frame 0",
+      "evidence": "Kit: 'Activates only when in Drunken status.' Driver note: 'slight overcount during the ~1 rotation after each Hangover before she re-stacks' plus the pre-first-B1 opening seconds. Blind S6 caveat 3 independently quantifies the same over-credit (~one FB tail per 3 rotations) and records that the engine has no buff-removal primitive to express the dark window.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Conservative over-credit, bounded and quantified by both sides. Faithful representation requires an engine primitive (status-gated aura or buff removal on the Hangover wipe); if ever added, gate both S1 ally buffs on drunken≥1. Not worth a fudge — current form is documented."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "Hangover trigger re-gated from literal 'max stacks at end of Full Burst' to every 3rd of her OWN burst casts",
+      "evidence": "Kit: 'when Drunken is at max stacks at the end of Full Burst.' Driver (Q5 RECALIBRATION): burstCast everyN:3, owner-ruled ('her own Drunken') + data (never-bursting Mast stunned 5× for 0.84 cold under fullBurstEnd). Blind S5/S6 re-derived the literal prose, blind to the ruling.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Owner-ruled and data-validated; cycle-equivalent over the 5-cast fight (one stun after cast 3 in both models). Keep. The flag for manual review is already carried in the override note."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented divergence exists: every blind-vs-driver delta is either (i) a defect in the blind artifacts themselves — the S5 fixture (controlComp pins crown into the B2 slot so mrm casts 0 times, the exact failure S2b pre-warned about in writing) and the S5 srcSlot shot-event reader bug — or (ii) a documented, owner-ruled, or data-validated driver approximation (static ×2 cycle-average stacks, permanent S1 aura, normalAttackPct -40 Hit-Rate model, burstCast-everyN:3 Hangover), each of which the two blind authors independently corroborate in substance: S6's own flags derive the ×2 time-average (flags 2/3) and the permanent-aura over-credit size (caveat 3), and the Hangover re-gate is an owner ruling the blinds were structurally unable to see. Routing converged three ways on every load-bearing structural claim — casterAtkPct flat resolution, distributed-own-hits scoping, stageEnter:3 (not her own cast) keying, reloadSpeed/stun as shots-fired mechanics, burstCast (not fullBurstEnter) burst triggering — and the driver's 20 pins are green with working counterfactuals (self-only collapse, ×1-stack, stun-removal each discriminate). The three burst lines are byte-identical between the independent blind override and the driver. Residual same-model risk the owner should spot-check: (a) all convergence on the ×2/permanent-aura approximations is cycle-total, not per-rotation — if a fine-grained recording ever shows within-cycle buff magnitudes stepping ×1→×3 (e.g. an ally's distributed proc popup growing across rotations), the static model needs the S6 resource-pool upgrade; (b) the normalAttackPct -40 miss model is anchored to one real sample at 0.94 and its gauge-side over-credit (F4) is unmeasured; (c) the Q5 Hangover owner ruling is the single load-bearing human adjudication — if the owner revisits it, the everyN:3 encoding and its pin must move together.",
+  "model": "kimi-code/k3"
+}

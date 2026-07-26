@@ -1,0 +1,235 @@
+{
+  "slug": "liter",
+  "leakDetected": "BENIGN — no answer leak, override stands. The harness API doc names `liter` as the fixed B1 slot of controlComp (\"liter B1 / crown B2 / carry B3 / helm B3\"). That discloses only her burst tier (already in the given base stats); no kit line, effect, magnitude, trigger, or override content for liter appeared in any methodology section. The redacted schema comments name `liberalio` (a different unit, `liberalio` ≠ `liter`) — not a leak of the target.",
+  "override": {
+    "slug": "liter",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 8.21
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoPct",
+            "value": 45.17,
+            "durationSec": 5
+          },
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 12.46,
+            "durationSec": 5
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 14.42,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 2
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 66,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it:",
+        "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:"
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Both S1 ladders are modeled at their STEADY-STATE (3rd-activation-onward) magnitude; the schema has no 'from the Nth activation onward' gate, so activations 1 and 2 are over-credited.",
+      "⚑ FB-enter burstCdr: true ladder is 2.34 s (1st entry) / 5.04 s (2nd) / 8.21 s (3rd+). Flat 8.21 s over-grants 5.87 s + 3.17 s = 9.04 s of team CDR across the first two Full Bursts — enough to shift early rotation timing and possibly a Full-Burst count.",
+      "⚑ Burst-cast ladder: true set is Max Ammo only (1st cast) / +Crit Damage (2nd) / +ATK (3rd+). All three are granted from her first cast.",
+      "⚑ S2 has NO activation clause in the kit text — trigger identity is an inference (interval, first fire at t=sec), and the 20 s period is an unmeasured estimate.",
+      "⚑ S2 restores COVER HP, not unit HP. It is encoded as a `heal` effect, which emits a recovery event and will fire teammates' `recovery` triggers. Whether an in-game Cover-HP restore satisfies an on-recovery consumer is UNVERIFIED and is the load-bearing risk in this file — if it does not, this block must not emit a recovery event.",
+      "⚑ 'lowest remaining cover HP' has no sim analogue (no cover/HP pool); `alliesLowestHp:2` resolves to the leftmost 2 allies as a documented stand-in. The 52.5% restore amount is not modeled (no pool to restore).",
+      "⚑ SMG cadence tuple (pulls/s, wind-up) is engine/datamine-side, not an override field, and is datamine-unreliable — a nominal rate_of_fire must be floored to 60fps frame boundaries before use.",
+      "No damage riders in any slot: no flatDamage/dot/storedHit, so noFb, noRange, core and crit-eligibility decisions do not arise for this unit."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Liter (SMG/Iron/Supporter/Burst I, ammo 120) is a pure support — she carries no damage rider in any slot, so every value here is a buff/utility magnitude. S1 has two ladders keyed to activation count ('each subsequent effect triggers all effects before it'); both are modeled at their steady-state (3rd-activation-onward) magnitude because the schema has no 'from the Nth activation onward' gate. Ladder A (fullBurstEnter, all allies) grants burstCdr 2.34 + 2.70 + 3.17 = 8.21 s. Ladder B (her OWN burst cast — 'when using Burst Skill' is owner-scoped, hence burstCast not fullBurstEnter) grants all allies Max Ammunition ▲45.17%, Critical Damage ▲12.46% and ATK ▲14.42%, each for 5 s; the Max Ammunition line is a weapon-state modifier and is damage-relevant (it stretches the magazine and delays reloads). S2 is a Cover-HP restore to 2 allies with no activation clause in the kit text, modeled as an interval trigger at a ⚑ 20 s estimated period against `alliesLowestHp:2`, emitting a recovery event only — v1 models no cover or HP pool, so the 52.5% amount is inert and the block exists for its tandem on-recovery coupling. Burst is a flat ATK ▲66% to all allies for 5 s (her cast lands before the Full Burst window opens, so the 5 s window covers roughly the first half of it)."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block 1 trigger {kind:'fullBurstEnter'} + target {kind:'allies'} (team event, fires on ANY team Full Burst; 'all allies' includes self)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effects vary according to the number",
+      "status": "SKIPPED",
+      "effectOrReason": "Activation-count escalation is not expressible: no 'Nth-activation-onward' gate exists (everyN/everyNOffset is periodic, not monotone-step). Steady-state tier used; verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Once: Cooldown of Burst Skill ▼ 2.34 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Summed into burstCdr seconds 8.21 (cumulative tier 3)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Twice: Cooldown ▼ 2.7 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Summed into burstCdr seconds 8.21"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Three times: Cooldown ▼ 3.17 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Summed into burstCdr seconds 8.21"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when using Burst Skill.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Block 2 trigger {kind:'burstCast'} (owner-scoped, no stage gate) + target {kind:'allies'}"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effects vary according to times used",
+      "status": "SKIPPED",
+      "effectOrReason": "Same count-ladder limitation as above; all three buffs granted from the 1st cast. Verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Once: Max Ammunition ▲ 45.17%, 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoPct 45.17 durationSec 5 — weapon-state modifier, gates shots fired (NOT skipped as defensive)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Twice: Critical Damage ▲ 12.46%, 5s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 12.46 durationSec 5 (unscoped — kit text carries no normal-attack scope)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Three times: ATK ▲ 14.42% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 14.42 durationSec 5 (plain 'ATK ▲ x%' → target's own ATK, not casterAtkPct)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Affects 2 allies, lowest cover HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesLowestHp', count:2} as the documented stand-in (no cover/HP pool in v1); trigger {kind:'interval', sec:20} ⚑ — kit gives no activation clause"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores 52.5% of Cover HP.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect {kind:'heal', ticks:1} — emits a recovery event to fire teammates' 'recovery' triggers (heal/shield lines are never skipped on isolation); the 52.5% amount is inert with no pool modeled ⚑ cover-HP-vs-HP recovery coupling unverified"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'}, trigger {kind:'burstCast'}"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 66% for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 66 durationSec 5"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].seconds",
+      "estimate": "8.21 (= 2.34 + 2.70 + 3.17, the 3rd-entry-onward cumulative tier)",
+      "reasoning": "The kit ladder is monotone-stepped by cumulative Full-Burst-entry count (2.34 / 5.04 / 8.21), but the Block schema offers only periodic gates (everyN/everyNOffset) — there is no 'from the Nth activation onward' gate, so no encoding reproduces the step. Steady state is the correct single value because entries 3..N dominate a 180 s fight, but it over-grants 5.87 s on entry 1 and 3.17 s on entry 2 (9.04 s of team burst CDR total), which lands squarely on the early rotation and can manufacture a Full Burst.",
+      "recipe": "Add a `fromNthActivation?: number` block gate (or an activation-count resource + resourceGate) and split into three blocks at 2.34 / 2.70 / 3.17. Validate by MEASURED full-burst count preservation on the graded comps in scripts/regression.ts (rotation changes are judged by FB count, not aggregate ratio) — an FB-count shift on a Liter comp between flat-8.21 and the true ladder is the discriminator."
+    },
+    {
+      "field": "skill1[1].effects[0..2]",
+      "estimate": "All three buffs (maxAmmoPct 45.17 / critDamagePct 12.46 / atkPct 14.42) active from her 1st burst cast",
+      "reasoning": "Identical count-ladder limitation: the true grant is ammo-only on cast 1, ammo+crit-damage on cast 2, all three on cast 3+. As a Burst I unit she casts every rotation, so casts 1–2 occur in the first ~40 s; the over-credit is a real early-fight ATK/crit-damage inflation on every ally, not a rounding detail.",
+      "recipe": "Same gate as the flag above, keyed to her own burstCast count. Pending that, quantify the error by A/B-ing this override against one whose ATK/crit-damage buffs are suppressed for the first two casts, and read the per-unit delta on a Liter-led graded comp."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "{kind:'interval', sec:20}, first fire at t=20 s",
+      "reasoning": "ALWAYS-⚑ class: the kit text gives S2 NO activation clause ('Affects 2 ally unit(s)…' with no '■ Activates when…' header), so the trigger identity is inferred, not read. Per the classification rule, absence of an activation clause ⇒ interval trigger with first fire at t=sec (a force-cast 'Forcefully uses Skill N' line would first-fire at t=0; there is none). The 20 s period is a guess anchored to nothing in the prose — her listed 20 s cooldown is the BURST cooldown, a different quantity, and must not be borrowed for it.",
+      "recipe": "Read liter's skill-2 cooldown from the datamined skillCooldownsSec table in data/ and set sec to it; if absent, the cadence is unresolvable from files and needs a recording (count cover-heal popups on the two lowest-cover allies over a full fight). Note the block is damage-inert on isolation, so this only matters via the recovery coupling below."
+    },
+    {
+      "field": "skill2[0].effects[0] (kind:'heal')",
+      "estimate": "Modeled as emitting a recovery event (ticks:1) per activation",
+      "reasoning": "Load-bearing tandem risk and the single most consequential unknown in this file. The kit restores COVER HP, which is a distinct resource from unit HP. The engine's `heal` effect exists to fire teammates' `recovery` triggers (the Helm→Crown channel); if an in-game Cover-HP restore does NOT satisfy an on-recovery consumer, this block silently pumps a teammate's damage buff on a Liter team. I cannot resolve cover-HP-vs-HP recovery semantics from the kit text alone, and the honest position is HYPOTHESIS, not fact. The inverse error (dropping the line for being 'defensive') is also forbidden — heal/shield/DEF/HP/lifesteal lines are never skipped on isolation.",
+      "recipe": "Independent-method check first (reuse before derive): grep scripts/tests/units/ and docs/probe-data/ for an existing recovery-trigger fixture pairing a cover-heal carrier with an on-recovery consumer — if one exists, run it and you are DONE. If none exists, the discriminator is a recorded fight of Liter + an on-recovery consumer with NO other heal source in the comp: if the consumer's on-recovery buff never applies, remove the heal effect and record the line in unmodeled.skill2 instead."
+    },
+    {
+      "field": "skill2[0].target",
+      "estimate": "{kind:'alliesLowestHp', count:2}",
+      "reasoning": "'lowest remaining cover HP' has no sim analogue — v1 has an immortal boss, no incoming damage, and no cover pool, so the ranking is indeterminate and resolves to the leftmost 2 allies. Which 2 allies receive the event is arbitrary today, and becomes load-bearing the moment the recovery coupling above is confirmed live (it decides WHICH teammate's on-recovery buff fires).",
+      "recipe": "Only resolvable alongside a cover-damage model. Until then, if the recovery coupling is confirmed, sanity-check whether the choice of recipients moves the board by A/B-ing count:2 leftmost vs an all-allies target on a Liter + on-recovery-consumer comp; if the delta is non-zero, the stand-in is no longer damage-neutral and must be documented as such."
+    },
+    {
+      "field": "n/a — engine cadence (not an override field)",
+      "estimate": "SMG base weapon; effective pulls/s = 60/ceil(60/nominal), not the raw datamined rate_of_fire",
+      "reasoning": "ALWAYS-⚑ cadence tuple. A datamined rate_of_fire is NOMINAL; shots resolve on 60 fps frame boundaries, so the effective rate is floored (e.g. a nominal 24/s at 2.5 frames becomes 3 frames = 20/s). Liter's own damage contribution is negligible for a Supporter, but her cadence drives her burst-gauge generation and therefore team rotation timing — the same channel her S1 CDR feeds.",
+      "recipe": "Do not refit from Full-Burst counts (that instrument measures gauge/s, downstream of cadence). Measure shots/sec directly off the ammo counter in footage, or confirm the frame-floored value against data/gauge-per-shot.json."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,115 @@
+{
+  "slug": "mari",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "requiresCore": true,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 40.99,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 30.78,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 30.78,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 639.36
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 40.99,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Damage dealt to Shield ▲ 100.09% for 3 sec. (trigger: landing a Full Charge attack; affects all allies)"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 has NO activation clause in the kit text — the interval:10s trigger is an INVENTED cadence, not kit-stated. Both skill2 blocks share it; if the real trigger is a full-charge/hit-count event the uptime of the 5s ATK window changes materially.",
+    "⚑ skill1's 'landing a Full Charge attack' / 'landing an attack on a target's core' triggers are proxied by shotFired (+ requiresCore for the core branch). On a charge SR every trigger pull is intended as a full charge, but shotFired does not verify charge level, and requiresCore is a boolean fight-level gate rather than a per-shot core roll — so the Pierce Damage buff is credited at 100% uptime wherever core exposure exists.",
+    "⚑ Base cadence (chargeFrames 60 / reloadFrames 141 / ammo 6) is datamined and unverified; shot count per fight — and therefore the refresh cadence of every shotFired-keyed block — rides on it.",
+    "skill2's ally block is authored as targets {kind:'allies'} with no excludeSelf, so the caster receives BOTH the self atkPct 30.78% and the casterAtkPct 30.78% grant. That is the literal NIKKE reading of 'Affects all allies', but it is a stacking assumption worth confirming against a fight.",
+    "Burst damage carries no explicit noFb and no explicit crit: FB exemption is left to burst-cast timing (a burst cast resolves before the Full Burst window opens), and crit eligibility is left to the engine's rider-crit path. Neither is measured for this unit.",
+    "pierceDamagePct is only live for Pierce-tagged hits; mari's own hits are Pierce-tagged solely inside skill2's 5s gainPierce windows (no whole-fight hasPierce flag is set)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Mari (SR/Electric/Supporter/Burst II) is modeled as a pure support: skill1 grants the team Pierce Damage ▲40.99%/10s on core-landing shots (shotFired + requiresCore, allies); skill2 self-grants Pierce for 5s plus ATK ▲30.78%/5s and grants all allies a flat ATK add of 30.78% of mari's own ATK for 5s, both on an ⚑ invented interval trigger because the kit text gives skill2 no activation clause; her burst deals 639.36% of final ATK as burst-cast damage to the enemy and grants all allies Attack Damage ▲40.99% for 10s. The shield-damage line is deliberately unmodeled — the schema has no shield-damage StatKey and the scope-lock boss carries no shield. Top-level hasPierce is deliberately NOT set: her Pierce is a timed 5s window, expressed as a gainPierce effect."
+}

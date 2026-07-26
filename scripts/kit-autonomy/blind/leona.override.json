@@ -1,0 +1,113 @@
+{
+  "slug": "leona",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 2.62,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 20.28,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "pelletCountFlat",
+          "value": 5,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 34.64,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 21.32,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates after 15 normal attack(s). Affects all allies with a Shotgun. Maximum Effective Range ▲ 20% for 10 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⛑ Maximum Effective Range ▲20% (skill1b) is UNMODELED: the schema has no max-range StatKey and range-band eligibility is engine-automatic from the boss range script. On a SG team this is a real damage line (it moves allies' falloff band and therefore SG pellet landing), so this override UNDER-credits Leona on shotgun comps. Recipe: needs an engine range-band primitive before it can be expressed.",
+    "⛑ skill2b target is approximated. The kit says '2 ally unit(s) with the highest final ATK AND a Shotgun' — a weapon filter composed with a top-N final-ATK rank. No single TargetDef expresses that conjunction (alliesTopAtk has no weapon facet; alliesOfWeapon has no count/ranking). Modeled as alliesTopAtk{count:2,byFinalAtk:true}, which mis-targets on mixed-weapon teams. pelletCountFlat is documented SG-only/inert on non-SG, which likely absorbs the error, but that is an unverified engine assumption.",
+    "⛑ burst-b's 'when Roar is at max stacks' precondition is NOT gated in this model. Roar is +1 stack per 5 normal attacks with a 5s per-stack life, so 5 stacks requires ~25 normal attacks inside a rolling 5s window; with a 9-round magazine and 111-frame reload that threshold may be unreachable in practice, in which case this 21.32% Critical Rate line is DEAD in game and this override OVER-credits it. No block gate reads a buff's live stack count (resourceGate reads declared resources only). Recipe: instrument buffApply stacks for the Roar key over a real rotation; if max stacks is never observed, drop the block or re-express Roar as a declared resource + resourceGate{min:5}.",
+    "⛑ Both burst lines are keyed burstCast (no 'entering Full Burst' clause in the burst block). Burst-cast damage/auras land BEFORE the Full Burst window opens, so these buffs' 10s windows start early relative to a fullBurstEnter model. If footage shows the crit windows aligned to FB entry rather than the cast banner, re-key. Recipe: popup-read the first crit-orange rate change against the FB banner frame."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Leona is a pure support buffer — no damage effect of her own in any slot; her whole contribution is team crit rate, crit damage, hit rate, and SG pellet count. Modeled: S1a Roar stacking Critical Rate (hitCount 5, 5 stacks, 5s each, all allies); S2a Hit Rate on FB entry (all allies, 10s); S2b +5 pellets on FB entry (2 highest-final-ATK allies, 10s); burst Critical Damage (all allies, 10s) and the Roar-max-stacks Critical Rate for shotgun allies (10s). Deliberately unmodeled: S1b Maximum Effective Range ▲20% — no schema StatKey exists for it and range banding is engine-derived. Measurement-gated: the Roar max-stacks precondition on the burst's second line, the pellet-grant target set on mixed-weapon teams, and the burstCast-vs-fullBurstEnter keying of both burst lines. All magnitudes are verbatim kit values, not calibrated."
+}

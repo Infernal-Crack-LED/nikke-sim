@@ -1,0 +1,106 @@
+{
+  "slug": "liter",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 8.21
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 45.17,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 12.46,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 14.42,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 2
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 66,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Effects vary according to the number of times entered. Each subsequent effect triggers all effects before it:",
+      "Effects vary according to the number of times used. Each subsequent effect triggers all effects before it:"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Both S1 ladders are modeled at their STEADY-STATE (3rd-activation-onward) magnitude; the schema has no 'from the Nth activation onward' gate, so activations 1 and 2 are over-credited.",
+    "⚑ FB-enter burstCdr: true ladder is 2.34 s (1st entry) / 5.04 s (2nd) / 8.21 s (3rd+). Flat 8.21 s over-grants 5.87 s + 3.17 s = 9.04 s of team CDR across the first two Full Bursts — enough to shift early rotation timing and possibly a Full-Burst count.",
+    "⚑ Burst-cast ladder: true set is Max Ammo only (1st cast) / +Crit Damage (2nd) / +ATK (3rd+). All three are granted from her first cast.",
+    "⚑ S2 has NO activation clause in the kit text — trigger identity is an inference (interval, first fire at t=sec), and the 20 s period is an unmeasured estimate.",
+    "⚑ S2 restores COVER HP, not unit HP. It is encoded as a `heal` effect, which emits a recovery event and will fire teammates' `recovery` triggers. Whether an in-game Cover-HP restore satisfies an on-recovery consumer is UNVERIFIED and is the load-bearing risk in this file — if it does not, this block must not emit a recovery event.",
+    "⚑ 'lowest remaining cover HP' has no sim analogue (no cover/HP pool); `alliesLowestHp:2` resolves to the leftmost 2 allies as a documented stand-in. The 52.5% restore amount is not modeled (no pool to restore).",
+    "⚑ SMG cadence tuple (pulls/s, wind-up) is engine/datamine-side, not an override field, and is datamine-unreliable — a nominal rate_of_fire must be floored to 60fps frame boundaries before use.",
+    "No damage riders in any slot: no flatDamage/dot/storedHit, so noFb, noRange, core and crit-eligibility decisions do not arise for this unit."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Liter (SMG/Iron/Supporter/Burst I, ammo 120) is a pure support — she carries no damage rider in any slot, so every value here is a buff/utility magnitude. S1 has two ladders keyed to activation count ('each subsequent effect triggers all effects before it'); both are modeled at their steady-state (3rd-activation-onward) magnitude because the schema has no 'from the Nth activation onward' gate. Ladder A (fullBurstEnter, all allies) grants burstCdr 2.34 + 2.70 + 3.17 = 8.21 s. Ladder B (her OWN burst cast — 'when using Burst Skill' is owner-scoped, hence burstCast not fullBurstEnter) grants all allies Max Ammunition ▲45.17%, Critical Damage ▲12.46% and ATK ▲14.42%, each for 5 s; the Max Ammunition line is a weapon-state modifier and is damage-relevant (it stretches the magazine and delays reloads). S2 is a Cover-HP restore to 2 allies with no activation clause in the kit text, modeled as an interval trigger at a ⚑ 20 s estimated period against `alliesLowestHp:2`, emitting a recovery event only — v1 models no cover or HP pool, so the 52.5% amount is inert and the block exists for its tandem on-recovery coupling. Burst is a flat ATK ▲66% to all allies for 5 s (her cast lands before the Full Burst window opens, so the 5 s window covers roughly the first half of it)."
+}

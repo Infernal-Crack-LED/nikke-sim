@@ -1,0 +1,41 @@
+{
+  "slug": "liter",
+  "stage": "S2c-reconciliation",
+  "date": "2026-07-26",
+  "reviewerModel": "claude-fable-5",
+  "driverModel": "qwen",
+  "leakDetected": null,
+  "reconciliation": {
+    "converged": true,
+    "summary": "Blind claude-fable-5 re-derivation converges with the driver on EVERY kit line — dispositions, triggers, target sets, durations, cumulative-ladder semantics, and the nearest-wrong counterfactuals all match. No REAL-GOTCHA. The reviewer independently named the same traps the driver's test pins: non-cumulative 3.17s-vs-8.21s CDR misread, burstCast-vs-fullBurstEnter timing (count-coincident in the 4-unit controlComp because liter is the sole B1, separable only by frame-level assertion), the maxAmmo weapon-state line that must not be dropped as defensive, the 5s-vs-10s duration inflation trap, and the skill2 cover-restore-must-not-be-a-heal trap (would fire crown's on-recovery consumers).",
+    "lineByLine": [
+      {
+        "line": "S1 block A — FB-enter burst-CD ladder 2.34/2.7/3.17s cumulative",
+        "driver": "FAITHFUL (escalating burstCdr [2.34,2.7,3.17], trigger fullBurstEnter, target allies, cumulative-with-cap min(N,3) -> 8.21s from 3rd FB)",
+        "reviewer": "FAITHFUL, load-bearing (cumulative 2.34/5.04/8.21s, fullBurstEnter, all allies incl. self, saturates at tier 3 but keeps firing every FB)",
+        "agree": true
+      },
+      {
+        "line": "S1 block B — burstCast escalating buffs maxAmmo 45.17% / critDmg 12.46% / atk 14.42%, 5s",
+        "driver": "FAITHFUL (escalating buff steps, trigger burstCast, target allies, each 5s, cumulative; ramps to all three by 3rd cast)",
+        "reviewer": "FAITHFUL, load-bearing (burstCast, all allies, 5s durationSec, cumulative; 3rd cast emits all three in the same frame; atkPct raw % not caster-flat)",
+        "agree": true
+      },
+      {
+        "line": "S2 — 2 lowest cover-HP allies restore 52.5% cover",
+        "driver": "UNMODELED NO-OP (owner ruling 2026-07-21: cover HP not unit HP, no sim HP pool, must not fire recovery consumers; recorded verbatim in unmodeled)",
+        "reviewer": "UNMODELED (cover durability only, no cover-HP pool in v1, must NOT be encoded as a heal — would fire crown's on-recovery consumers; no activation clause in prose so any modeled trigger would be invented)",
+        "agree": true
+      },
+      {
+        "line": "Burst — all allies ATK ▲ 66% for 5s",
+        "driver": "FAITHFUL (buff atkPct 66, 5s, trigger burstCast, target allies)",
+        "reviewer": "FAITHFUL, load-bearing (atkPct 66 raw %, burstCast stage 1, all allies, durationSec 5 NOT the 10s FB window — lapses mid-FB)",
+        "agree": true
+      }
+    ],
+    "blindFixtureSizeSlip": "Reviewer guessed 'all 5 units' / '5 targets' in two distinguishingAssertions; the harness controlComp is 4 units (liter/crown/carry/helm). A blind fixture-size guess, NOT a kit-faithfulness divergence — the driver's test correctly uses TEAM_SIZE=4 and asserts all 4 allies. No action.",
+    "verdict": "GO",
+    "verdictBasis": "All lines accounted for (7 FAITHFUL pinned + 1 UNMODELED-with-ruling), dispositions converge cross-family, no REAL-GOTCHA, leak check clean, discrimination strong (driver test is GREEN vs shipped and RED vs the exact counterfactuals the reviewer independently named)."
+  }
+}

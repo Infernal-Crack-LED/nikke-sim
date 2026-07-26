@@ -1,0 +1,282 @@
+{
+  "slug": "little-mermaid",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7.48
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 4,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "teamAmmo",
+        "count": 400
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fillGauge",
+          "pct": 37
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Bubble",
+          "durationSec": 180
+        },
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 5.05
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresTargetStatus": "Bubble",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 5.05
+        },
+        {
+          "kind": "stun",
+          "durationSec": 3
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 63.36,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 63.36,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 63.36,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 63.36,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "teamAmmo",
+        "count": 500
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 85,
+          "flavor": "sequential",
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10.13,
+          "durationSec": 10
+        },
+        {
+          "kind": "instantReload",
+          "fraction": 0.3326
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 17.28,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates only when in Focusing status. Affects all allies. Focuses fire continuously."
+    ],
+    "skill2": [
+      "Removes Bubble."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 block 1 Bubble status durationSec=180 is a stand-in for \"continuously\" (fight length); the paired Damage Taken ▲5.05% is authored as a permanent (no-duration) boss debuff. If the engine's status window must outlast the fight, raise it.",
+    "⚑ skill2 block 2 (Explosive Bubble) is modeled as an ADDITIVE SECOND Damage Taken ▲5.05% stacking on top of block 1's, because the kit says \"Removes Bubble\" only (it never says it removes the Damage Taken debuff). If the real behaviour is a REPLACEMENT (net 5.05% total, not 10.10%), this over-credits ~5% team-wide damage for the rest of the fight — measure a popup pair before/after the 50th normal attack.",
+    "⚑ \"Removes Bubble\" is unmodeled: the engine has no status-removal primitive, so the Bubble window stays open after the explosive proc. Consequence: if the 50-hit trigger could re-arm (kit does not say it repeats — read as once-per-battle by the absence of \"each time\"), a same-status re-fire would be wrongly gated OPEN. Modeled as a single fire; verify whether it repeats every 50 normals.",
+    "⚑ skill2 block 3 trigger \"every 1 sec only during Full Burst\" is authored as interval sec=1 + fbGate inFb — the interval's first fire is at t=1s of battle-relative ticks, NOT 1s after FB entry, and the gate merely suppresses out-of-FB ticks. That yields ~10 fires per 10s FB window but the PHASE inside the window is a convention (worst case ±1 fire per FB). Pin from popup timing.",
+    "⚑ The two multi-hit lines (4× 63.36%, 10× 85%) are authored as SPLIT hits (N separate flatDamage effects) rather than one merged hit, per the sequential-attack reading of \"Attacks sequentially N times\". Split vs merge is damage-identical for a flat rider but differs for popup counting and for any per-hit core/crit roll — read popups to confirm N distinct numbers.",
+    "⚑ Both damage riders are authored crit:true / noRange:true / core-absent (no \"core strike\" wording) and take Full Burst by TIMING (noFb NOT set, per the default-ON rule). \"Affects random enemy units\" is single-target on a solo boss, so no target-count division is applied.",
+    "⚑ burst \"Reloads 33.26% magazine(s)\" is modeled as instantReload fraction=0.3326 (a fraction of MAX capacity) on all allies. If the game instead grants 33.26% of a magazine as a whole-magazine count (i.e. rounds up to a partial belt differently), the shot economy shifts slightly; the literal reading is a fractional refill.",
+    "⚑ Both teamAmmo thresholds (400 / 500) count TOTAL ally ammo expended and re-arm each time (\"each time … reaches\"); infinite-ammo shots do not consume. Cadence of these procs is therefore a function of the whole team's fire economy, not this unit's — expect high comp sensitivity.",
+    "⚑ Cadence tuple (SMG 120 ammo / 81 reloadFrames / normalAttackMultiplier 10.12) comes from the datamine and is unverified for this unit; the effective SMG rate is frame-quantized (60/ceil(60/nominal)). It gates the 50-normal-attack trigger's timing."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Little Mermaid (little-mermaid, SMG/Wind/Supporter/Burst I) is modeled as a team-wide damage/gauge support with two boss debuff layers and two multi-hit riders. S1: an FB-end team burst-CDR of 7.48s, an FB-enter team Attack Damage ▲4%/10s, and a team-ammo-400 gauge fill of 37%; the \"Focusing status\" line is unmodeled (a targeting/aim behaviour with no damage primitive — the sim has no aim state, and \"focuses fire continuously\" grants no stat). S2: a battle-start permanent Damage Taken ▲5.05% boss debuff paired with a named 'Bubble' targetStatus, a 50-normal-attack Explosive Bubble adding a second 5.05% plus a 3s stun (Bubble-gated via requiresTargetStatus), an in-FB 1s interval 4×63.36% rider, and a team-ammo-500 10×85% Bubble Barrage. Burst: team Attack Damage ▲10.13%/10s + a 33.26%-magazine reload, and a self ATK ▲17.28% of own ATK for 10s (authored casterAtkPct on a self target — the kit says \"of the skill user's ATK\", so it resolves flat, not as a self-scaling atkPct). Damage Taken ▲ is treated as a boss debuff benefiting the whole team, never a self buff; the stun and the reload are kept as real weapon-state/economy effects, not skipped as defensive."
+}

@@ -59,9 +59,9 @@
 | `flatDamage` | 47 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
-| `gainPierce` | 5 | ade-agent-bunny, asuka, grave, milk-blooming-bunny, naga |
+| `gainPierce` | 6 | ade-agent-bunny, asuka, grave, mari, milk-blooming-bunny, naga |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
-| `hasPierce` | 4 | alice, mari, red-hood, zwei |
+| `hasPierce` | 4 | alice, laplace, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
 | `hitCount` | 33 | ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, … |
 | `hitRatePct` | 12 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
@@ -78,12 +78,12 @@
 | `modes` | 6 | bready, cinderella-crystal-wave, delta-ninja-thief, milk-blooming-bunny, mint, prika |
 | `noB1` | 2 | anis-star, rapi-red-hood |
 | `nonBurstCasters` | 1 | crown |
-| `normalAttackPct` | 5 | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
+| `normalAttackPct` | 4 | arcana-fortune-mate, asuka-wille, jill, mast-romantic-maid |
 | `notCast` | 1 | diesel-winter-sweets |
 | `outFb` | 1 | velvet |
 | `ownBurstGate` | 5 | arcana, asuka-wille, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
-| `pelletCountFlat` | 2 | arcana-fortune-mate, dorothy-serendipity |
-| `perResource` | 2 | marciana-marine-study, soda-twinkling-bunny |
+| `pelletCountFlat` | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
+| `perResource` | 3 | mana, marciana-marine-study, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
 | `pullsPerSec` | 1 | jill |
 | `rampSec` | 3 | arcana-fortune-mate, cinderella, scarlet |
@@ -94,7 +94,7 @@
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
-| `resourceGate` | 3 | elegg-boom-and-shock, guillotine-winter-slayer, soda-twinkling-bunny |
+| `resourceGate` | 4 | elegg-boom-and-shock, guillotine-winter-slayer, mana, soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 1 | naga |
@@ -111,7 +111,7 @@
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
-| `unswapped` | 0 | _none_ |
+| `unswapped` | 1 | laplace |
 | `weapon` | 10 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
 | `weaponSwap` | 11 | ada, chisato, cinderella-crystal-wave, laplace, moran, nayuta, red-hood, snow-white-heavy-arms, … |
 | `whileSwapped` | 0 | _none_ |

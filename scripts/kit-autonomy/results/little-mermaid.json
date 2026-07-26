@@ -1,0 +1,149 @@
+{
+  "slug": "little-mermaid",
+  "kitDescription": "Little Mermaid is a Burst-I Wind supporter whose kit is a team rotation engine: every time a Full Burst ends she cuts 7.48 seconds off all allies' burst cooldowns, and every 400 rounds the whole team expends she instantly fills 37% of the burst gauge. On Full Burst entry she grants the team 4% Attack Damage for 10 seconds, and during each Full Burst she deals 63.36% of her ATK to enemies four times per second; separately, every 500 team rounds fired triggers a ten-hit 85% Bubble Barrage. She permanently keeps a Bubble debuff on the boss raising all damage it takes by 5.05%, and after she lands 50 normal attacks the bubble pops into an Explosive Bubble that re-applies the same 5.05% debuff and stuns the boss for 3 seconds. Her own burst gives all allies 10.13% Attack Damage for 10 seconds, reloads 33.26% of everyone's magazine, and grants herself an ATK buff equal to 17.28% of her own ATK for 10 seconds.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill2 e/f 'BOTH bubbles are modelled — two independent 5.05% sources' — blind expects TWO damageTakenPct 5.05 blocks (passive + hitCount-50); driver carries ONE (kit-literal relocation: Removes Bubble + same 5.05% re-applied), matching S2b's required net-5.05 semantics; ⚑ F1 measurement-gated",
+      "skill2 e/f 'Explosive Bubble is gated on Bubble status and arrives LATER' — same blind additive-stack expectation; only one 5.05 application exists in the shipped model",
+      "skill2 g 'the block is interval 1s, FB-gated, 4 hits of 63.36' — structural dialect: driver ships a 253.44%/s dot on fullBurstEnter (video-verified), not the blind's interval+fbGate+4×flatDamage encoding",
+      "skill2 h 'SECOND, independent teamAmmo trigger at 500, 10 hits of 85' — same dialect: driver ships a single flatDamage 850 (user-confirmed per-hit value)",
+      "skill2 g deletion-delta test — the blind's patch filters flatDamage off an interval-trigger block the driver does not have; the patch no-ops, so the strict less-than assertion fails against unchanged totals",
+      "skill2 h deletion-delta test — same no-op patch class; also assumes byte-identical teammate totals, ignoring the skillGauge feed from the 850 procs",
+      "burst 'casterAtkPct 17.28 emitted FLAT-resolved' — blind hard-coded 0.1728 × 98,367 (its guessed Supporter static ATK); the scope-lock fixture ATK is 100,317, so the emitted 17,334.78 is correct and the blind constant is wrong"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Focusing status: focuses fire",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; no numeric payload, targeting flavor",
+        "blindSaid": "S2b UNMODELED (no engine analog, meaningless vs single partless boss); S5 it.skip; S6 unmodeled verbatim",
+        "formulaCheck": "no damage/buff term exists in the line; nothing to route through any bucket",
+        "fireRateOk": true,
+        "explanation": "Full three-way convergence; the skip is recorded verbatim, not silent."
+      },
+      {
+        "kitLine": "FB ends: Burst CD ▼ 7.48s allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd → allies → burstCdr 7.48; behavioural pin: 12 LM casts / 12 FBs with it vs 9/9 without",
+        "blindSaid": "S2b/S5/S6 all identical: fullBurstEnd, allies, 7.48s, recurring (oncePerBattle absent)",
+        "formulaCheck": "rotation/cadence effect, not a damage bucket; trigger identity (END not ENTER/cast) is the crux and is correct",
+        "fireRateOk": true,
+        "explanation": "Converged; discriminates against both burstCast-keying and once-per-battle; the cadence delta (12 vs 9) proves it fires every FB end."
+      },
+      {
+        "kitLine": "FB enter: Atk Dmg ▲ 4% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → allies → attackDamagePct 4 / 10s; buffApply frames equal fullBurstStart frames exactly; 4 allies, expiresFrame − frame = 600",
+        "blindSaid": "S2b/S5/S6 identical encoding; S2b named atkPct-substitution and burstCast-keying as nearest-wrong",
+        "formulaCheck": "attackDamagePct is the DamageUp bucket per the SSOT — correct (atkPct would sit in the FinalATK term); FB-ENTER trigger lands the aura at window open per the timing rule",
+        "fireRateOk": true,
+        "explanation": "Frame-exact on every FB entry; the burstCast counterfactual demonstrably shifts the application frames. Converged."
+      },
+      {
+        "kitLine": "Team ammo 400: gauge 37%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "teamAmmo(400) → fillGauge(37) → allies; removal lowers her 180s total (faster gauge → more buff/DoT uptime)",
+        "blindSaid": "S2b/S5/S6 identical; all three named the own-hitCount proxy as the nearest-wrong (driver's note documents exactly that pre-Q6 underfill fix)",
+        "formulaCheck": "gauge economy effect; teamAmmo counts total ally expenditure, matching 'total ammo expended by allies'; not a damage bucket",
+        "fireRateOk": true,
+        "explanation": "Converged; live and load-bearing for the rotation."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Enemy appears: Bubble DT ▲ 5.05%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → enemy → damageTakenPct 5.05, no duration; exactly one boss debuff; mult.taken uniformly 1.0505 on every damage instance fight-wide",
+        "blindSaid": "S2b/S5/S6 all agree on the passive 5.05 boss debuff (S6 adds a targetStatus:Bubble channel the driver omits — see M6)",
+        "formulaCheck": "damageTakenPct sits in the Taken bucket (boss-side), benefits the whole team — correct placement; 'continuously' = permanent, correct",
+        "fireRateOk": true,
+        "explanation": "Converged on the observable; the 1.0505-uniform pin is the strongest possible whole-fight assertion."
+      },
+      {
+        "kitLine": "50 normals: Explosive Bubble",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "deliberately not added: kit-literal RELOCATION reading — Removes Bubble + re-applies the SAME 5.05%, net single stack; stun inert (no boss-action model); both lines in unmodeled.skill2; ⚑ F1 coexistence hypothesis (10.1%) flagged MEASUREMENT-GATED with estimate + recipe + tier",
+        "blindSaid": "S2b: GAP with the SAME net-5.05 one-time-swap semantics required — stacking to 10.1% explicitly named the nearest-WRONG model. S5/S6 instead encoded an additive second 5.05% + stun (S6 itself flagged the replacement-reading risk as a ⚑). The S5/S6 stacking read is spurious — a blind-side RECON_ERROR against the S2b spec, not a driver finding",
+        "formulaCheck": "if relocation holds, boss Taken stays 1.0505 (shipped, pinned); if coexistence holds, 1.101 — the driver's counterfactual quantifies exactly that branch; only an in-game debuff-icon/popup read resolves it",
+        "fireRateOk": true,
+        "explanation": "Driver's semantics match the pre-op spec's requirement and the kit text ('Removes Bubble'); the additive alternative is the named wrong model. The honest ⚑ with a concrete ~5s-into-fight measurement recipe is the correct handling — MEASURED > FUDGE."
+      },
+      {
+        "kitLine": "Every 1s in FB: 63.36% ×4",
+        "category": "REAL-GOTCHA",
+        "subkind": "FIDELITY",
+        "driverSaid": "dot 253.44%/s on fullBurstEnter, 10s, 1s interval, noRange — VIDEO-VERIFIED (control/lm.MP4 2026-07-15: measured sub-hit 337,736 = the FB-boosted value to 2.2%; all 4 sub-hits land on the single boss; ticks crit in-game, consistent with DOT_CRIT ON); 10 ticks per full window, 9 FB-boosted (boundary tick loses the major by the engine's timing FBRULE)",
+        "blindSaid": "S2b/S5/S6: interval{sec:1} + fbGate:inFb + 4× flatDamage 63.36 with flavor 'sequential'",
+        "formulaCheck": "magnitude (253.44 = 63.36×4), trigger timing, crit-on/core-never/no-range and FB-by-landing-time all match the SSOT function-damage rules and the measurement; the sole deviation is flavor: a dot is SUSTAINED-flavored, but the kit's 'attacks sequentially' marks the hits SEQUENTIAL-flavored — with a sequentialDamagePct source on the team the shipped encoding mis-gates. Unobservable at scope lock (no such buff in any fixture). The fixed-10s DoT also does not track shortened/extended FB windows — but that IS documented in caveats",
+        "fireRateOk": true,
+        "explanation": "Substance is measurement-backed and correct; the gotcha is confined to the undocumented sequential-flavor drop on an otherwise faithful, video-verified encoding."
+      },
+      {
+        "kitLine": "Team ammo 500: 85% ×10",
+        "category": "REAL-GOTCHA",
+        "subkind": "FIDELITY",
+        "driverSaid": "teamAmmo(500) → flatDamage 850, noRange, core:false — 850 = 85×10 PER HIT user-confirmed; core:false user-confirmed; FB major by landing timing pinned per-instance; 18 procs vs ~6 under the own-hitCount proxy",
+        "blindSaid": "S2b/S5/S6: 10× flatDamage 85 with flavor 'sequential'",
+        "formulaCheck": "magnitude, trigger (independent second teamAmmo counter), core/crit/range routing all correct per SSOT; same flavor deviation as M7 — the merged 850 flatDamage carries no 'sequential' tag, so a teammate's sequentialDamagePct would not apply though the kit marks the volley sequential. Unobservable at scope lock",
+        "fireRateOk": true,
+        "explanation": "Same low-severity flavor omission on a user-confirmed encoding; everything load-bearing (cadence, magnitude, core-exclusion, FB timing) is pinned and discriminated."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Allies: atk dmg 10.13% + reload 33.26%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → attackDamagePct 10.13/10s + instantReload 0.3326; buffApply count = casts × 4, 600-frame duration; the refill is behaviourally live (25 reloads / 3115 shots with it vs 28 / 3048 without)",
+        "blindSaid": "S2b/S5/S6 line-for-line identical, including the partial-refill fraction (all three named full-refill as the nearest-wrong)",
+        "formulaCheck": "attackDamagePct → DamageUp bucket ✓; burst-cast aura resolves pre-FB per the boundary rule ✓; fractional magazine refill is a shot-economy effect, correctly encoded as instantReload 0.3326",
+        "fireRateOk": true,
+        "explanation": "Converged; the ammo-economy delta proves the reload fires at every one of her casts."
+      },
+      {
+        "kitLine": "Self: ATK ▲17.28% of user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self → casterAtkPct 17.28/10s; exactly one buffApply per cast, target LM only; no generic team attackDamagePct 17.28 exists",
+        "blindSaid": "S2b/S5/S6 identical encoding; the one S5 red here is the blind's own hard-coded static-ATK constant (98,367 vs the fixture's 100,317) — a blind test artifact, RECON_ERROR, not a driver finding",
+        "formulaCheck": "'X% of the skill user's ATK' = flat add off the caster's static ATK, outside the recipient's (1+ATK%) — casterAtkPct on a self target is exactly the SSOT rule",
+        "fireRateOk": true,
+        "explanation": "Converged; self-scope and flat-resolution both pinned, team-widening counterfactual produces the absent misread."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2 (FB 1s proc, 63.36% ×4)",
+      "summary": "Sequential flavor dropped: modeled as a sustained-flavored DoT (253.44%/s); the kit's 'attacks sequentially 4 times' marks the hits sequential-flavored, so a teammate's Sequential Damage ▲ buff would not gate onto them",
+      "evidence": "Kit: 'Deals 63.36% of final ATK as damage. Attacks sequentially 4 times.' SSOT: Sustained/Sequential Damage ▲ buffs gate on hit flavor (damage-calculation.md §1e); dots are sustained-flavored function damage (§2c). Driver: dot 253.44 noRange (magnitude/cadence video-verified, control/lm.MP4 2026-07-15). Blind S2b/S5/S6: all three carry flavor 'sequential'. Unobservable at scope lock — no sequentialDamagePct source in any fixture.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Re-express as interval{sec:1} + fbGate:'inFb' with 4× flatDamage 63.36 flavor:'sequential' (fbGate and flavor are schema-supported; this preserves the measured 10-ticks-per-window cadence and the measured magnitude), or add flavor:'sequential' to the dot effect if the schema permits and document the boundary-tick convention. Magnitudes unchanged — the measurement stands."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2 (Bubble Barrage, 85% ×10)",
+      "summary": "Sequential flavor dropped: the merged flatDamage 850 carries no 'sequential' tag, so Sequential Damage ▲ buffs would not gate onto the volley the kit marks sequential",
+      "evidence": "Kit: 'Bubble Barrage: Deals 85% of final ATK as damage. Attacks sequentially 10 times.' SSOT §1e flavor gating. Driver: teamAmmo(500) → flatDamage 850 core:false (850 = 85×10 per hit user-confirmed; core:false user-confirmed). Blind S2b/S5/S6: 10× flatDamage 85 flavor 'sequential'. Unobservable at scope lock.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Add flavor:'sequential' to the flatDamage 850 effect (schema-supported per the blind's usage), keeping atkPct 850 and core:false — the user-confirmed values are unchanged. Alternatively split to 10× 85 flavor:'sequential'; the merged form is fine once flavored."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "0.8",
+  "verdict": "GO",
+  "verdictRationale": "Eight of ten kit lines converged across the driver and both blind families — all of skill1, both burst blocks, and the Bubble passive are line-for-line identical, and the driver's 22-test matrix is green-vs-shipped / red-vs-nearest-wrong on every one (S2d verified). The two real divergences classify cleanly. First, Explosive Bubble: the S5/S6 blinds stacked a second additive 5.05% to reach 10.1% — but the S2b pre-op spec had pre-registered exactly that stacking as the nearest-WRONG model, and the driver's kit-literal relocation reading (Removes Bubble + the same 5.05% re-applied, net single stack, gate closed) is what S2b required; the driver also holds the 10.1% coexistence branch as an explicit ⚑ MEASUREMENT-GATED flag with a concrete recipe, which is the correct non-fudge handling — the blind read here is the recon error, not the driver. Second, the sequential-granularity dialect on the two damage riders: the driver's folded encodings (253.44%/s DoT, flatDamage 850) are independently video-verified (measured FB-boosted sub-hit 337,736 to 2.2%; all four sub-hits land on the single boss) and user-confirmed (850 per hit, core:false), so the substance is right and the measurement bar is met — the only genuine finds are two low-severity FIDELITY gotchas: the undocumented dropped 'sequential' flavor tag on both riders, unobservable at scope lock and fixable with a schema-supported one-word tag. The remaining S5 reds are blind-side plumbing artifacts (two no-op delta patches targeting the blind's own expected encoding, one hard-coded 98,367 static-ATK constant vs the fixture's 100,317). Nothing blocks GO; fix the two flavor tags forward and keep F1 gated. Same-model residual for the owner to spot-check: the 5.05%-vs-10.1% Explosive-Bubble coexistence question is a shared prose prior across every agent — only the prescribed in-game debuff-icon/popup read ~5s into a fight settles it, and the separate ~22% normals over-credit is a board-level SMG range-dependent-core residual, not an LM kit encoding issue.",
+  "model": "kimi-code/k3"
+}

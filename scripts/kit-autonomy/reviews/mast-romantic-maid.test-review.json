@@ -1,0 +1,183 @@
+{
+  "slug": "mast-romantic-maid",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ entering Burst stage 1 → self",
+      "disposition": "FAITHFUL",
+      "scope": "Drunken stack acquisition + self Hit Rate ▼ 20% per stack; Hit Rate feeds the hrCoreMult core-rate path (her own MG core hits), not a generic damage stat",
+      "durationSemantics": "'continuously' = no expiry; stacks persist until the Hangover wipe. maxStacks 3, +1 per activation",
+      "triggerIdentity": "stageEnter stage:1 — fires when ANY unit casts a Stage-1 burst (Mast is Burst II and can never cast B1 herself, so a self burstCast reading fires ZERO times). Fires BEFORE her own B2 cast in the chain (B1 → 30f → B2), so her burst always sees the freshly-added stack",
+      "targetSet": "self only (Drunken is a self status; the Hit Rate ▼ debuffs only Mast)",
+      "nearestWrongModel": "Stack gain keyed to fullBurstEnter instead of stageEnter:1 — FB entry lands AFTER B2 and B3, so rotation-1 would show 0 stacks at her burst cast and at the skill2 B3-entry check; alternatively the Hit Rate ▼ dropped entirely as 'defensive/inert'",
+      "distinguishingAssertion": "On rotation 1, a Drunken stack exists BEFORE Mast's burstCast event (her stack-scaled burst ATK line emits buffApply with 1-stack value ~19,732 flat, and skill2's stageEnter:3 block fires with 1 stack) — RED if stacks key to fullBurstEnter (0 stacks at those moments). For the HR line: Mast's own damage events show reduced core rate after the first stack vs a pre-stack baseline",
+      "inertness": "Must NOT touch allies' core/crit rates; must NOT add stacks on B2 or B3 casts; stack count must never exceed 3",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "only when in Drunken → allies, Critical Rate ▲",
+      "disposition": "FAITHFUL",
+      "scope": "Generic (unscoped) Critical Rate — applies to all hit categories; NOT critRateNormalPct (no 'normal attacks' scoping in the text)",
+      "durationSemantics": "'continuously' = status-tracked, not a timed window: active while Drunken stacks ≥ 1, DROPS when the Hangover wipe zeroes stacks, returns on the next B1 cast. Does NOT scale with stack count (flat 20.05% at any 1–3 stacks)",
+      "triggerIdentity": "Status-conditional passive gated on Mast's own Drunken status (a resourceGate-on-stacks shape), NOT a timed re-application",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "Permanent passive from t=0 — active before the first Stage-1 cast and straight through the post-Hangover gap, over-crediting team crit for ~the opening seconds plus every 10s+ hangover window",
+      "distinguishingAssertion": "No critRatePct 20.05 buffApply (and no crit-rate lift on ally damage events) before the first Stage-1 burst cast; after the FB-end that wipes stacks, ally damage events in the gap before the next B1 show sheet crit rate — RED under an always-on passive",
+      "inertness": "Value must not scale with stack count; must not apply to the boss",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 35.02% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct — flat ATK add scaled off MAST's ATK, not each ally's own (an atkPct misread under-credits high-ATK carries and over-credits nobody consistently)",
+      "durationSemantics": "'continuously' = status-tracked like the crit line: live while stacks ≥ 1, drops on Hangover wipe, no stack scaling",
+      "triggerIdentity": "Same Drunken-status-gated passive as the crit line",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "Encoded as atkPct 35.02 (scales each target's own ATK) instead of casterAtkPct, or made permanent from t=0",
+      "distinguishingAssertion": "buffApply emits stat 'casterAtkPct' with FLAT value ≈ 0.3502 × 98,367 ≈ 34,448 on every ally (identical flat number regardless of the target's own ATK) — RED if the value equals 35.02 (raw pct = atkPct misread) or if it appears before the first B1 cast",
+      "inertness": "Flat value identical across targets; absent during the post-Hangover zero-stack gap",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ entering Burst Stage 3 while Drunken",
+      "disposition": "FAITHFUL",
+      "scope": "distributedDamagePct — boosts each RECIPIENT's own distributed-flavored hits only; inert on any ally with no distributed damage (do not re-bucket as generic Damage Up)",
+      "durationSemantics": "Genuine wall-clock 'for 10 sec' (durationSec 10); value snapshots the LIVE stack count at trigger time — 15.03 × stacks, so 15.03 / 30.06 / 45.09 across rotations 1/2/3 of a cycle",
+      "triggerIdentity": "stageEnter stage:3 (ANY ally casting a Stage-3 burst; Mast is B2 and never casts B3 herself) + Drunken gate (stacks ≥ 1). Given a B1 in team the gate is de-facto always satisfied at B3 time — the load-bearing part is the ×stacks scaling",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "Authored flat at the max-stack magnitude 45.09 every rotation (the calibration-hiding classic), or given no duration ('continuously')",
+      "distinguishingAssertion": "Rotation-1 buffApply value = 15.03 and rotation-3 value = 45.09, each with a 10s expiresFrame — RED if every rotation emits 45.09 or if expiresFrame implies no expiry",
+      "inertness": "Must not move a comp with zero distributed-damage dealers (bucket check); must not fire pre-B3",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Reload Speed ▲ 15.04% x stacks for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "reloadSpeedPct — a weapon-state modifier that IS damage (shortens reload, raises shots fired; taxonomy #6 — never 'skip, defensive')",
+      "durationSemantics": "Wall-clock 10s; value = 15.04 × live stacks at B3 entry (15.04 / 30.08 / 45.12)",
+      "triggerIdentity": "Same stageEnter:3 + Drunken-gate block as the distributed line",
+      "targetSet": "all allies including self (Mast's own 171-frame MG reload benefits too)",
+      "nearestWrongModel": "Skipped as a non-damage utility line, or authored flat at 45.12",
+      "distinguishingAssertion": "An ally whose reload falls inside the 10s window shows a shortened reload (reload events closer together / more shot events per fight) vs the override with this block nulled via withPatchedOverride; buffApply values step 15.04 → 30.08 → 45.12 across the first three rotations",
+      "inertness": "No reload change outside the 10s windows",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "max stacks at end of Full Burst → Hangover",
+      "disposition": "FAITHFUL",
+      "scope": "Self stun 10s + full stack wipe. NOT defensive-inert: the stun stops Mast's MG fire for ~600 frames (shot-count loss) AND the wipe drops every Drunken-gated effect (S1 ally crit + flat-ATK buffs go dark; her Hit Rate ▼ recovers) until the next B1 cast",
+      "durationSemantics": "Stun durationSec 10; stack removal is instantaneous and total ('Removes all stacks'). The skill2 10s buffs already applied at B3 run out their own clocks independently",
+      "triggerIdentity": "fullBurstEnd trigger + a max-stacks gate (fires ONLY when stacks = 3 at FB end — rotations 1–2 of each cycle must NOT trigger it). Per the engine's stun semantics she can still cast her burst while stunned; she cannot fire/charge/reload",
+      "targetSet": "self only",
+      "nearestWrongModel": "Omitted entirely (stacks then saturate at 3 forever → S1 buffs become permanent and skill2/burst always read ×3 — systematic over-credit), or stacks wiped without the stun, or triggered at EVERY FB end regardless of stack count",
+      "distinguishingAssertion": "After the FB end where stacks first hit 3 (≈ rotation 3), Mast emits zero shot events for ~10s and the next stageEnter:1 re-grants a 1-stack (not 3-stack) state — subsequent stack-scaled buffApply values restart at the ×1 magnitude. RED if rotation-4 values are still ×3 or her fire is uninterrupted",
+      "inertness": "Must NOT fire at FB ends with stacks < 3; must not stun allies; must not block her burst cast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "allies: Critical Damage ▲ 40.04% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Generic critDamagePct, all hit categories",
+      "durationSemantics": "Wall-clock durationSec 10",
+      "triggerIdentity": "burstCast — fires ONLY on rotations MAST herself casts her Burst II, never on another unit's cast. She is B2: in any fixture with a second B2 (e.g. controlComp's fixed crown slot) burst selection may pick the other unit, and this block must stay silent those rotations",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "Keyed to fullBurstEnter (or stageEnter:2) — fires every Full Burst even on rotations another B2 casts, over-crediting team crit damage in any two-B2 comp",
+      "distinguishingAssertion": "In a comp where another Burst-II unit wins a rotation's B2 slot, that rotation has NO critDamagePct 40.04 buffApply; every rotation Mast's own burstCast event appears, the buffApply follows it (pre-FB timing) — RED under fullBurstEnter keying",
+      "inertness": "Zero applications on rotations she does not cast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 15.04% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "attackDamagePct — the additive Damage-Up bucket (diluted by co-active Damage-Up sources), not a true multiplier",
+      "durationSemantics": "Wall-clock durationSec 10",
+      "triggerIdentity": "Same burstCast block as the crit-damage line",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "Same fullBurstEnter mis-keying as above, or mis-bucketed as atkPct",
+      "distinguishingAssertion": "buffApply stat 'attackDamagePct' value 15.04 only on Mast-cast rotations; ally damage events inside the window carry the enlarged Damage-Up bucket",
+      "inertness": "Silent on non-Mast B2 rotations",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "if in Drunken: ATK ▲ 20.06% * stacks",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct — flat add off MAST's ATK, scaled by her live Drunken stack count at cast time. The 'if in Drunken' condition is on the CASTER's status (Drunken is her self-status); all allies receive it when she is Drunken",
+      "durationSemantics": "Wall-clock 10s; magnitude snapshots stacks at cast: because stageEnter:1 precedes her B2 in every chain, a team with a B1 gives her ≥1 stack at every cast — expected sequence ×1, ×2, ×3, (hangover) ×1 …",
+      "triggerIdentity": "burstCast + Drunken gate (stacks ≥ 1)",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "Flat max-stack value 60.18% every cast, OR encoded as atkPct (percent of each target's own ATK), OR gated per-ally (only 'drunken units' — i.e. self-only)",
+      "distinguishingAssertion": "Rotation-1 cast emits buffApply stat 'casterAtkPct' with FLAT value ≈ 0.2006 × 1 × 98,367 ≈ 19,732 on all five units; rotation-3 cast emits ≈ 59,197 — RED if constant across rotations, if the value equals the raw percentage, or if only Mast receives it",
+      "inertness": "Identical flat value across all targets within one cast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:drunken-stack-gain+hitrate-down",
+    "skill1:drunken-gated-ally-critRate",
+    "skill1:drunken-gated-ally-casterAtk-flat",
+    "skill2:stage3-distributed-x-stacks",
+    "skill2:stage3-reloadSpeed-x-stacks",
+    "skill2:hangover-stun+stack-wipe",
+    "burst:critDamage-10s",
+    "burst:attackDamage-10s",
+    "burst:casterAtk-x-stacks-10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in descending damage risk: (1) HANGOVER OMITTED OR DEFANGED — without the FB-end wipe+stun, stacks saturate at 3 and the S1 'continuously' buffs become de-facto permanent while every ×stacks magnitude reads ×3; the stun itself is a shots-fired mechanic (taxonomy #6), not defensive flavor. (2) STACK-GAIN TRIGGER — 'entering Burst stage 1' is stageEnter:1 (any B1 cast; Mast is B2 and cannot self-generate it). Keying to fullBurstEnter shifts the grant to AFTER B2/B3, zeroing rotation-1 stack-scaled values; keying to her own burstCast yields zero stacks ever. (3) MAX-STACK FLATTENING — three separate lines scale ×stacks and must snapshot the live count (1/2/3 cycling), not 3. (4) HIT RATE ▼ dropped as inert — it is a self core-rate reduction via the hrCoreMult path; the HR→core slope magnitude is the CALIBRATED ⚑ piece (ALWAYS-⚑ field 7) even though the 20% stat is kit-literal. (5) casterAtkPct vs atkPct on both flat-ATK lines — assert the emitted value is a flat ATK number (~34,448 S1; ~19,732×stacks burst), identical across targets. FIXTURE WARNING: Mast is Burst II — controlComp pins crown into the B2 slot, so a naive controlComp(mast) fixture may never let her cast; the driver must verify a burstCast event for her slug exists before trusting any burst-block assertion, and a two-B2 comp is exactly the configuration where burstCast-vs-fullBurstEnter diverges. Encoding shape I'd expect: a Drunken resource pool (initial 0, max 3) with +1 on stageEnter:1, resourceGate min:1 on the gated blocks, wipe (delta -3) + stun on a max-gated fullBurstEnd block; but any encoding passing the assertions above is acceptable — I am blind to the shipped override by design.",
+  "model": "claude-fable-5",
+  "driverReconciliation": {
+    "driver": "qwen (kit-gauntlet-driver)",
+    "date": "2026-07-26",
+    "agreement": "Reviewer independently re-derived all 9 kit lines as FAITHFUL + load-bearing, matching the driver disposition exactly. Reviewer corroborated: (a) the fixture must make mrm the SOLE B2 (their FIXTURE WARNING re crown out-picking her in a two-B2 comp is exactly the bug the driver hit and worked around); (b) casterAtkPct resolves to a FLAT caster-ATK grant on both flat-ATK lines; (c) distributedDamagePct boosts only each recipient own distributed hits; (d) reloadSpeedPct is damage (shots-fired), not defensive; (e) the Hangover stun is a shots-fired mechanic, not defensive-inert; (f) the burst buffs key to burstCast (her own casts), NOT fullBurstEnter.",
+    "divergences": [
+      {
+        "line": "stack-scaled magnitudes (S2 distributed/reload, burst ATK)",
+        "reviewer": "live Drunken resource pool, x1/x2/x3 snapshotted per rotation",
+        "shipped": "static cycle-average x2 (30.06/30.08/40.12) every rotation",
+        "resolution": "SHIPPED IS OWNER-RULED + DOCUMENTED: kit-status finding \"Drunken-stack scaling modeled statically (cycle-avg 2, exact sole-B2)\"; override note (a). Exact for the sole-B2 rotation over a full cycle (stacks run 1,2,3 then wipe => mean 2); board-validated mean 0.9996. Reviewer live-stack assertions would be RED vs shipped BY DESIGN (documented approximation, not a faithfulness bug). Driver test pins the shipped x2."
+      },
+      {
+        "line": "S1 while-Drunken team buffs (crit 20.05, casterAtk 35.02)",
+        "reviewer": "status-tracked, drop during post-Hangover zero-stack gap",
+        "shipped": "permanent passive (gate dropped)",
+        "resolution": "SHIPPED IS DOCUMENTED: override note (b) \"modeled permanent -- slight overcount during the ~1 rotation after each Hangover before she re-stacks\". Conservative, owner-known approximation. Driver test pins permanent (expiresFrame null)."
+      },
+      {
+        "line": "Hangover trigger",
+        "reviewer": "fullBurstEnd + max-stacks(=3) gate (literal prose)",
+        "shipped": "burstCast everyN:3 (every 3rd of HER OWN casts)",
+        "resolution": "SHIPPED IS OWNER-RULED (Q5 RECALIBRATION): override note (d) + kit-status — re-gated per owner (\"her own Drunken\") and data (a never-bursting Mast was being stunned 5x for 0.84 cold under fullBurstEnd; bursting Mast validated). Reviewer is blind to this ruling by design, so re-derived the literal prose. Driver test pins the shipped burstCast-everyN:3 (one 10s shot gap after the 3rd of 5 casts). Flag carried to S7 judge."
+      },
+      {
+        "line": "Hit Rate down modeling",
+        "reviewer": "feeds hrCoreMult core-rate path (self core-rate reduction); HR->core slope is the calibrated flag",
+        "shipped": "normalAttackPct -40 on self (~40% of MG rounds miss at avg 2 stacks)",
+        "resolution": "SHIPPED IS DATA-VALIDATED: override note (c) \"validated vs the user real sample: 149M real vs 140M modeled\". The normalAttackPct encoding reproduces the measured fight; driver test pins -40 self-only + LIVE (removing it raises her normal total >30%, allies byte-identical)."
+      }
+    ],
+    "testChangesNeeded": "none — all 9 driver pins are GREEN vs shipped and discriminate their nearest-wrong model; divergences are documented owner-ruled approximations the test correctly pins, not faithfulness defects.",
+    "verdict": "GO (pending S5/S6/S7 cross-family confirmation)"
+  }
+}
