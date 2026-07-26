@@ -626,7 +626,7 @@ unverified branch — e.g. naga's default was `with shielder` (fires `coreDamage
 verify.sh stayed green (board/regression comps pin their mode explicitly). Still branch-default (owner
 review pending): cinderella-crystal-wave (`MG`_/`Snipe`, pierce only in Snipe), the mint↔prika duet pair
 (`solo`_/`duet` — mutually referencing, flip both together), milk-blooming-bunny (`auto (no Embarrassment)`\*
-already a no-op-style default). Full action item + per-unit mode inventory: CLAUDE.md NEXT INCREMENT
+already a no-op-style default). Full action item + per-unit mode inventory: `docs/handoffs/QUEUE.md`
 backlog (new item 6).
 
 ### 18. Kill-gated / revive / boss-death effects that never fire — ~4 units

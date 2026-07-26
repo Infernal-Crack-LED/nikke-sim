@@ -15,6 +15,3 @@ description: <one paragraph: what this playbook does AND when to reach for it â€
 ```sh
 bash scripts/verify.sh
 ```
-
-## Change log
-- <date> â€” created.

@@ -44,8 +44,3 @@ Two documents must let a human reconstruct the sim's math without reading code:
 bash scripts/verify.sh
 ```
 Plus: the worked examples in damage-calculation.md recompute correctly.
-
-## Change log
-- 2026-07-13 — created.
-- 2026-07-21 — two-class doc taxonomy: SSOT pair is current-state (delete stale, reversed history →
-  DECISIONS); step 2 now also updates `docs/STATE.md` when a flag/constant/primitive changes.

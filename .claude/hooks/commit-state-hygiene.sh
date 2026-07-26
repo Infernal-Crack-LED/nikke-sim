@@ -15,6 +15,11 @@
 #      next-increment-state-hygiene memory. Now it points instead of restating, and explicitly says the
 #      reconciliation may be BATCHED to the end of the session rather than done per commit — the
 #      mechanically-checkable half is already gated by scripts/doc-drift.ts in verify.sh.
+# ─── r3 (2026-07-26) — SLIMMED TO TWO DUTIES ────────────────────────────────────────────────────
+# Owner ruling 2026-07-26 (docs-and-audit-workflow-review §5.4): the queue moved out of CLAUDE.md
+# into docs/handoffs/QUEUE.md (duty 1 now points there), and the open-questions re-filing duty is
+# DELETED — single U-numbering + the doc-drift.ts UNANSWERED lint carry it mechanically. What
+# remains: queue/handoff closure + STATE.md sync.
 set -u
 input="$(cat 2>/dev/null)" || exit 0
 [ -n "$input" ] || exit 0
@@ -29,7 +34,7 @@ marker="${TMPDIR:-/tmp}/nikke-state-hygiene-${sid}"
 [ -f "$marker" ] && exit 0
 : > "$marker" 2>/dev/null || true
 
-msg="[state-hygiene · once per session] Before this session's work leaves the machine, reconcile the living state docs — this may be BATCHED to the end of the session, not done per commit: (1) CLAUDE.md NEXT INCREMENT — delete items that LANDED and are recorded in docs/DECISIONS.md, keep only genuinely-open ones; (2) finished handoffs → 'CLOSED (date)' + mv to docs/handoffs/closed/; (3) if a live engine flag/default/constant/rotation rule/geometry model changed, update docs/STATE.md (derived index, must track the engine); (4) RE-FILE THE QUESTION — if something was RESOLVED/REFUTED/SUPERSEDED, close it in the doc that POSES it too (docs/open-questions.md UNANSWERED→ANSWERED as 'A<n> (U<n>)', plus any status table or 'open owner rulings' section), not only in DECISIONS + the code; a resolution recorded only in DECISIONS leaves every future session reading the stale question as live. Full rules: docs/CONVENTIONS.md + the next-increment-state-hygiene memory. The mechanically-checkable half is already gated by scripts/doc-drift.ts in verify.sh."
+msg="[state-hygiene · once per session] Before this session's work leaves the machine, reconcile the living state docs — this may be BATCHED to the end of the session, not done per commit: (1) docs/handoffs/QUEUE.md — delete items that LANDED and are recorded in docs/DECISIONS.md / docs/STATE.md, keep only genuinely-open ones; finished handoffs → 'CLOSED (date)' + mv to docs/handoffs/closed/; (2) if a live engine flag/default/constant/rotation rule/geometry model changed, update docs/STATE.md (derived index, must track the engine). Resolved open-questions are gated mechanically by scripts/doc-drift.ts in verify.sh (move them to docs/answered-questions.md, single U-numbering). Full rules: docs/CONVENTIONS.md."
 printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"%s"}}\n' "$msg"
 echo "$msg" >&2
 exit 0

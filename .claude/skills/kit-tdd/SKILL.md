@@ -200,6 +200,3 @@ bash scripts/verify.sh
   `block-gates.test.ts` (event-log probing of a synthetic block), `event-log.test.ts` (payload contract)
 - Related skills: `/audit-kit` (post-validation sampling), `/kit-parse` (baseline authoring for untuned
   units), `/scientific-method` (any measurement or engine-constant change), `/tuning-priors`
-
-## Change log
-- 2026-07-23 — created; encodes step 3 of the TDD transition plan as the primary per-unit kit workflow.

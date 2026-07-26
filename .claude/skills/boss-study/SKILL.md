@@ -67,8 +67,3 @@ infinite HP / time-based triggers, DEF deferred to v2).
 re-calibration (the box geometry constants live at the top of scan.py). MG counter fact: ticks
 ~30/s hot (settled-frame validated); other weapons need their own change-rate sanity check
 before trusting digit-stability = holding fire.
-
-## Change log
-- 2026-07-16 — created for the blind validation test (crown.MP4 vs the known scope-lock
-  profile), per the Fable-approved pre-registration in
-  docs/handoffs/2026-07-16-boss-study-blind-test.md.

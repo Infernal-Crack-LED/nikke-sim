@@ -97,7 +97,3 @@ other override field. Never write it into `src/skills/overrides/*.json` directly
 npx tsx scripts/blind-rebuild/build-packet.ts <slug>   # packet builds + leak assertion passes
 ```
 (No engine/snapshot change — this skill produces findings, not edits.)
-
-## Change log
-- 2026-07-17 — created. Wraps the `scripts/blind-rebuild/` machinery (build-packet + RECONSTRUCT +
-  FULL-CONTEXT-REVIEW + RECONCILE) into a three-agent audit. POC validated on `dorothy-serendipity`.

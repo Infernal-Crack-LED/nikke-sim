@@ -20,7 +20,7 @@ small correction, not a from-scratch fit.
 1. **Gather the correction corpus.** For each tuned unit pull (symptom → root cause → fix):
    - `docs/hand-tuned.md` + `data/hand-tuned.json` (the evidence column names the fix);
    - the override `note` in `src/skills/overrides/<slug>.json`;
-   - `docs/DECISIONS.md` calibration entries and `docs/open-questions.md` ANSWERED items;
+   - `docs/DECISIONS.md` calibration entries and `docs/answered-questions.md` items;
    - `docs/probe-runs.md` (what a recording overturned).
 
 2. **Cluster by CORRECTION TYPE, not by unit.** The clusters (extend as new ones appear):
@@ -57,6 +57,3 @@ small correction, not a from-scratch fit.
 ```sh
 bash scripts/verify.sh   # only if a prior was promoted to an engine default
 ```
-
-## Change log
-- 2026-07-14 — created; seeded `docs/modeling-priors.md` from the 2026-07-13/14 tuning corpus.

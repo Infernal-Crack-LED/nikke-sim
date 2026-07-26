@@ -223,7 +223,7 @@ for (const chunk of unanswered.split(/\n(?=### )/)) {
   if (stamped) {
     problems.push(
       `open-questions.md: "${header.slice(4, 80)}…" is filed under UNANSWERED but carries ${stamped}` +
-        ` — re-file the settled record to ANSWERED (append-only) and leave only what is genuinely open.`,
+        ` — move the settled record to docs/answered-questions.md (append-only, single U-numbering) and leave only what is genuinely open.`,
     );
   }
 }

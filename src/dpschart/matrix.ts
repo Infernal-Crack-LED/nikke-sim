@@ -234,7 +234,7 @@ export interface TestedUnit {
 // players in the "Custom Profiles" disclosure on the DPS Rankings tab. Keep the two in sync.
 //   bready          — run in her Distributed taste (Recommended Taste; the distributed-buff branch)
 // NOTE (backend TODO): diesel-winter-sweets "bursts second / Highlight" is NOT encoded here
-// yet — it needs real burst-order/Highlight modeling; see NEXT INCREMENT. It is documented in
+// yet — it needs real burst-order/Highlight modeling; see docs/handoffs/QUEUE.md. It is documented in
 // the Custom Profiles note only, so the chart keeps her faithful Intro numbers for now.
 export const CHART_PROFILES: Record<string, Partial<UnitOptions>> = {
   bready: { mode: 'distributed' },

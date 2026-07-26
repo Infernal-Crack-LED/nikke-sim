@@ -22,7 +22,7 @@ community-readable notes that file holds.
 
 2. **Collect what changed.** Read `docs/DECISIONS.md` and take the dated entries
    (`**(YYYY-MM-DD) …**`, newest first) with a date after the last published note. Cross-check the
-   session's own work and the current handoff (`docs/handoffs/*`, `CLAUDE.md` NEXT INCREMENT) for
+   session's own work and the current handoff (`docs/handoffs/*`, `docs/handoffs/QUEUE.md`) for
    anything player-visible that didn't land a DECISIONS entry (e.g. a board/accuracy move, a new
    modeled unit or mechanic). Skip pure-internal churn (refactors, test harness, doc plumbing).
 
@@ -54,8 +54,3 @@ npm run web:build && node scripts/web-smoke.mjs   # site still builds + renders 
 bash scripts/verify.sh
 ```
 Then eyeball `/patch-notes` in `npm run web` — the new entry shows at the top of Patch notes.
-
-## Change log
-- 2026-07-16 — notes moved off the Dev page to their own Patch Notes page (`/patch-notes`,
-  `PatchNotesPage.tsx`); references updated.
-- 2026-07-14 — created. Sources notes from docs/DECISIONS.md → web/src/patch-notes.json (Dev page).

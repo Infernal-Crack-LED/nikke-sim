@@ -155,7 +155,7 @@ change re-litigating a DECISIONS entry needs same-tier new evidence or it is dea
   step 7 reviews.
 - **LOG** — 2-of-2 ACCEPT but either judge is below HIGH, OR control-team validation is pending (Q3),
   OR it is a plausible one-character quirk (Q4) not hard-proven. Record as **approved-by-judges + an
-  owner action item** (decision log + `docs/DECISIONS.md` pending, or the CLAUDE.md NEXT INCREMENT).
+  owner action item** (decision log + `docs/DECISIONS.md` pending, or `docs/handoffs/QUEUE.md`).
   **Do NOT touch the engine.**
 - **REJECT** — not 2-of-2 ACCEPT. Log the rationale so it is not re-run blind. No engine change.
 
@@ -224,17 +224,3 @@ keep this summary in sync with it). **HIGH+HIGH → Implement; anything less →
 bash scripts/verify.sh          # only on an IMPLEMENT decision (with the snapshot regen)
 ```
 LOG and REJECT decisions touch no code — their deliverable is the appended decision-log entry.
-
-## Change log
-- 2026-07-22 — **step 7 added: `implementation-reviewer` (opus, sighted/PR-style)**, an owner-directed
-  review of code that has ALREADY landed on the worktree — explicitly not another pre-write gate.
-  Closes the two residuals the earlier gates leave: board-SILENT errors (the snapshot only covers the
-  graded comps) and right-outcome/wrong-mechanism errors (a value in the wrong bucket moves the right
-  units the right way). Its PR description is the post-op judge's accepted-claim wording, not the
-  implementer's summary.
-- 2026-07-22 — created. Absorbs the procedure from `docs/handoffs/scientific-method-harness.md` (which
-  is now the append-only DECISION LOG only) and wires the three durable agents in `.claude/agents/`
-  (`premise-verifier`, `preop-judge`, `postop-judge`) so each run is identical rather than
-  re-improvised. Hook enforcement INSTALLED + live-fire verified the same day (`r3` in
-  `.claude/hooks/pre-write-discipline.py`: P5 names this skill, `TEST_AGENT` scans `subagent_type`,
-  new R5 enactment gate) — provenance in `docs/handoffs/closed/2026-07-22-sci-method-hook-proposal.md`.

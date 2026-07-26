@@ -79,8 +79,3 @@ recording.
 ```sh
 bash scripts/verify.sh   # if any script/data changed
 ```
-
-## Change log
-
-- 2026-07-14 — created. Folds in the enikk-audit anchors, the random sampler, and
-  the owner's focus-centering + B3-main-burst refinements.

@@ -80,7 +80,3 @@ Per the `scientific-method-test-approval` methodology, every new empirical test'
 `model:'fable'` subagent BEFORE running. Paste the SECTIONS here that the plan touches (with file:line
 anchors) INTO the Fable prompt so it judges the METHODOLOGY (discriminates H1 from H0/confounds? sound
 pre-committed decision rule?) without opening the repo. Update anchors when referenced code moves.
-
-## Change log
-- 2026-07-15 — created; expanded same day to cover ALL major mechanics (rotation, gauge, MG wind-up,
-  range, cadence, buffs, DEF, MC, anchors), not just charge (owner directive).

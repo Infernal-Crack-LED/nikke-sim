@@ -3,7 +3,8 @@
 Settled tradeoffs and rulings, dated, with the evidence that settled them. A future session that
 wants to reverse an entry needs NEW evidence of at least the same tier (see
 [CONVENTIONS.md](CONVENTIONS.md) for evidence tiers). Backfilled 2026-07-13 from the session record
-and the ANSWERED trail in [open-questions.md](open-questions.md); each entry cites where its proof
+and the answered trail (since 2026-07-26 in [answered-questions.md](answered-questions.md), formerly
+the ANSWERED section of open-questions.md); each entry cites where its proof
 lives. Newest first within each section.
 
 ## Modeling rulings (owner)
@@ -1625,6 +1626,44 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   attribution across units is forbidden — it burned us twice. — u8 processing; owner corrections.
 
 ## Engine/data-architecture decisions
+
+- **(2026-07-26) DOCS + AGENT-AUDIT WORKFLOW SLIMMING — nine owner rulings on the review doc
+  `docs/handoffs/2026-07-26-docs-and-audit-workflow-review.md` (CLOSED, in `docs/handoffs/closed/`).**
+  The review mapped the documentation/audit apparatus and priced its duplication (one model-routing
+  change cost 5 coordinated file edits; landed work recorded 3–5 times; per-unit status in 3 stores).
+  Rulings + landings:
+  **(1) One canonical instruction file.** `CLAUDE.md` is THE handoff/instruction file; `QWEN.md` and
+  `AGENTS.md` are thin shims (read CLAUDE.md + a harness-specific block only — Qwen: front-end role +
+  dispatch bridges; Kimi: hook wiring + skill mirrors). A rule edit is now a 1-file edit.
+  **(2) The work queue is session state, not instruction.** The NEXT INCREMENT section moved out of
+  `CLAUDE.md` into `docs/handoffs/QUEUE.md` (live TODO + autonomous queue + tier-0 threads, with the
+  pointers-only hygiene rule); CLAUDE.md keeps durable rules + verified facts (654→~230 lines).
+  **(3) Open-questions single numbering.** A question keeps its U-number for life — no new A-numbers;
+  closing = moving the entry to the NEW `docs/answered-questions.md` (CHANGELOG class) with the
+  resolution inline; DECISIONS references U-numbers. `open-questions.md` holds UNANSWERED only
+  (CURRENT-STATE). The dual `A<n> (U<n>)` numbering on pre-2026-07-26 entries is historical. This
+  deletes the commit-hook re-filing duty; the `scripts/doc-drift.ts` UNANSWERED lint is the mechanical
+  guard.
+  **(4) Commit-state-hygiene hook slimmed** to two duties as a consequence of (2)+(3): prune landed
+  QUEUE.md items / close finished handoffs, and STATE.md sync.
+  **(5) Kit-autonomy artifact economy.** `manual-review/<slug>.md` owner-review docs are OPT-IN
+  (NO-GO/escalated units only — the review surface for a GO is the kit-status findings +
+  `results/<slug>.json`); cross-family RESULT JSONs stay force-committed but the packets are
+  regenerable scratch and are no longer committed; a DECISIONS entry only when an actual
+  ruling/tradeoff occurred (certify-only runs decide nothing). The ~540 already-committed artifact
+  files stay as history.
+  **(6) The gauntlet procedure has ONE source.** `scripts/kit-autonomy/SKILL.md` is the only stage
+  protocol; the `.claude`/`.agents`/`.qwen` skill copies are router shims deferring to it;
+  `CROSS-FAMILY-PROTOCOL.md` keeps only the routing policy + canonical model names (a routing change
+  is again a 1-file edit).
+  **(7) Skill-local dated change logs abolished** — git history is the record; operational knowledge
+  (dispatch patience, trust gates, capture formats) was folded into the skill bodies first, then the
+  logs deleted across all skills.
+  **(8) The validation-catalog overlap is documented, not cut:** `docs/VALIDATION-INDEX.md` = where
+  ground truth lives; `docs/STATE.md` §7 = what instruments exist + trust; `docs/probe-runs.md` =
+  the chronological measurement log.
+  **(9) The CHANGELOG/CURRENT-STATE taxonomy itself is KEPT** — the problem was too many stores
+  within each class, not the taxonomy.
 
 - **(2026-07-23) BOARD-DASHBOARD BUG: `collectBoardReadings` dropped each comp's `focus` / `modes` /
   `lambda`, misreporting ~45% of the graded board.** `scripts/lib/board-readings.ts` called

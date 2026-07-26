@@ -74,14 +74,3 @@ the owner builds the form and pastes its `viewform` URL into `testingFormUrl`.
 npm run web:build && node scripts/web-smoke.mjs   # page renders the JSON
 ```
 Then eyeball `#testing-requests`.
-
-## Change log
-
-- 2026-07-14 — created. Publishes hand-tune teams for owner-unowned surviving
-  units; treasure `(T)` sourced from the synced `treasure` field; focus-centering
-  per `/hand-tune-batches`.
-- 2026-07-14 — methodology now requires captures from the **phone client in
-  landscape** (the screenshot reader is calibrated to the mobile UI horizontal).
-- 2026-07-14 — submission moved from Discord posts to a **Google Form**
-  (`dev.testingFormUrl`); form file-uploads collect screenshot + video, so the
-  shared upload folder was retired.

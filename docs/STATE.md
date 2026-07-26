@@ -293,6 +293,10 @@ The measurement toolchain in `scripts/probe/`. Tier matters: a deterministic-CV 
 and cannot hallucinate; a VLM reader is a survey until something independent confirms it. Procedure:
 `/probe-processing`. Validation record: `docs/probe-runs.md` (2026-07-24).
 
+Division of labor (owner ruling 2026-07-26): THIS section registers **what instruments exist** and how
+far each is trusted. Where their labeled ground truth lives → `docs/VALIDATION-INDEX.md`; the
+chronological measurement log → `docs/probe-runs.md`.
+
 | instrument | measures | method | trust |
 |---|---|---|---|
 | `scan.ts` + `scan-frames.py` | **Full-Burst counts + timings**, burst chain anatomy, nuke signatures | deterministic CV, **no model**; 3 detectors merged (FB drain window / whole-frame golden splash / stage-3 hexagon) | ✅ EXACT on 8 recordings with independently measured FB counts; every burst corroborated by a 2nd detector |

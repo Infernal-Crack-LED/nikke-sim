@@ -70,6 +70,11 @@ have. When applying the audit:
    overrides specifically, NOT parse-only `characters.json` units — the sim can
    parse-run any character without an override, so "modeled" alone is ambiguous.)
 
+This policy is already applied to `data/characters.json`: the 16 parse-only
+units that were neither enikk-proven nor hand-tuned have been pruned (101→85
+units), and the `sync.ts` keep-filter (above) keeps the prune durable across
+re-syncs.
+
 Note the audit's `*` flag means "no hand-tuned override" — that unit may still be
 parse-runnable (in `characters.json`) or genuinely absent; check which before
 modeling vs. treating as new.
@@ -131,15 +136,3 @@ MD=docs/enikk-top100-audit.md SUPPORTED=data/enikk-supported.json \
 npx tsx scripts/enikk/roster-audit.ts   # exits 0, prints the per-raid + union report
 ```
 
-## Change log
-
-- 2026-07-14 — created. Top-ranker roster audit + anchor-sourcing procedure
-  over enikk.app SRRankings.
-- 2026-07-14 — added "the enikk list" definition (→ `## All raids — NIKKE
-  union`) so owner shorthand resolves. Applied the support policy to
-  `data/characters.json`: pruned 16 parse-only units that are neither
-  enikk-proven nor hand-tuned (101→85).
-- 2026-07-14 — made the prune durable across re-syncs: audit script now emits
-  `data/enikk-supported.json` (`SUPPORTED=` env), and `src/data/sync.ts` reads
-  it as a second-stage keep-filter (enikk-proven OR has an override). The old
-  "sync re-adds pruned units" caveat is resolved.

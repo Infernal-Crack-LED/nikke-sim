@@ -276,29 +276,3 @@ measurable.)
    `PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned.`
    This banner is a STATE MARKER: its presence means "raw parser baseline, no recording yet." Whoever
    later hand-tunes the unit against a recording removes the banner (and logs the ⚑ deltas — see below).
-
-## Change log
-- 2026-07-15 — created. Encodes the full-kit-audit requirement, the effect schema (via types.ts), the
-  9 modeling priors, the hard non-skip rules (weapon-state/heal-trigger/hit-rate/DoT), and the
-  needs-measurement-with-initial-estimate contract. Runs in an Opus subagent via scripts/kit-parse/parse.ts.
-- 2026-07-16 — process-hardening (dual-read confidence assessment, owner-directed). Closed three gaps
-  before scaling to unmodeled units: (Fix 1) ⚑ deltas now logged to `docs/handoffs/kit-parse-flag-deltas.md`
-  (the self-correction loop that wasn't being kept); (Fix 2) a mandatory new-unit mechanism-capture review
-  gate — grade.ts has NO case for genuinely-unmodeled units, so accuracy review is manual; (Fix 3) the
-  note MUST open with the HYPOTHESIS banner (state marker: raw baseline, un-measured, remove when tuned).
-  Assessment verdict: Use A (baselines for unmodeled units) GO-guardrailed; Use B (A/B-driven changes to
-  trusted models) detector-only, never a change-authority. Next hardening: SG/pellet zero-shot, then a
-  retrospective Use-B diff signal-to-noise dry-run.
-- 2026-07-16 (later) — PROSE-FREE RUNTIME migration. The engine no longer parses skill prose at
-  runtime; `src/skills/overrides/<slug>.json` is now the COMPLETE kit description. Contract changes:
-  all three slots always present; new REQUIRED `unmodeled` field (verbatim skipped kit-text lines per
-  slot — the machine-checkable twin of the audit table); new optional `caveats` field (display-only
-  warnings, replaces runtime parser warnings); `ignored`/`unsupported` blocks now hard-rejected by the
-  validator. The offline parser lives at `scripts/lib/kit-parser.ts`; `scripts/materialize-overrides.ts`
-  seeds new synced units. Blind-prepped units THROW in sims until the candidate override is written.
-- 2026-07-16 (rollout) — PRODUCTION MODES for the roster-wide kit-parse upgrade: AUTHOR (parser-origin
-  slots; merge staged baseline; preserve hand-authored slots verbatim) and AUDIT (hand-authored slots;
-  unmodeled backfill + structured findings, NO block edits). Values-withheld rule (never read grade/
-  sweep-grade/experiment COMPS/board output/other units' probe-data). Staging-dir output only; the
-  driver promotes serially. Progress SSOT: data/kit-status.json (scripts/kit-status.ts). Runbook:
-  docs/handoffs/2026-07-16-kit-parse-rollout.md.

@@ -11,6 +11,11 @@
 > bar is MET: say so and act.** (CLAUDE.md → Discipline forcing-functions → SUFFICIENCY.)
 >
 > CURRENT-STATE doc: rewrite freely, delete stale rows. If you add a labeled artifact, add its row here.
+>
+> **Division of labor (owner ruling 2026-07-26):** THIS index = **where ground truth lives** (the
+> labeled corpus + what scores against it). `docs/STATE.md` §7 = **what instruments exist** (and how
+> far each is trusted). `docs/probe-runs.md` = **the chronological measurement log**. The three
+> overlap by design; maintain each in its own role.
 
 ## The 30-second lookup
 

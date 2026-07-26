@@ -108,8 +108,3 @@ Raid element: `soloraids { raid_number monster_obj }` → `weak_element_id`.
 ```sh
 bash scripts/verify.sh
 ```
-
-## Change log
-
-- 2026-07-14 — created: lib + auto matrix battery + six realistic batteries
-  (enikk raids 31/34/35/36/37 anchors, full-roster fill).

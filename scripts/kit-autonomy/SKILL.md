@@ -219,12 +219,16 @@ reason to revert). Unit tests pin _faithful_; the board pins _accurate_; report 
 
 - Override prose = current-state, and the override `note` carries the `Kit-autonomy gauntlet <YYYY-MM-DD>`
   marker (S3 wrote it).
-- `docs/DECISIONS.md` entry per ruling.
+- `docs/DECISIONS.md` entry **only when an actual ruling/tradeoff occurred** (a certify-only run decides
+  nothing — no entry).
+- **Owner review surface:** `data/kit-status.json` findings + `scripts/kit-autonomy/results/<slug>.json`.
+  A `manual-review/<slug>.md` owner-review doc is **OPT-IN — write one only for a NO-GO / escalated unit**
+  (owner ruling 2026-07-26; the doc restates the judge JSON, so a clean GO does not need one).
 - **Record the outcome in `data/kit-status.json`** (the per-unit SSOT) — this is the gauntlet's last step:
   ```sh
   npx tsx scripts/kit-status.ts --gauntlet <slug> \
     --evidence "kit-autonomy gauntlet <date>; GO faithfulness <score>; <provenance: 'cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged' — OR 'same-model only (Qwen reviewers)'>" \
-    --residual "<the owner spot-check cluster from manual-review/<slug>.md>"
+    --residual "<the owner spot-check cluster — the systematic-prior-prone lines (scope / duration / trigger-identity) from the judge result>"
   ```
   `--gauntlet` syncs the unit's AUTO mirrors (provenance/unmodeled/caveats) ITSELF, so `kit-status.ts --check`
   passes with no further step. **Do NOT run a full `--refresh` per-unit** — it rewrites the global `counts` +
@@ -265,16 +269,17 @@ When running the gauntlet for a BATCH of units on one shared worktree (one commi
   only a real error / no-valid-JSON after a long wait is a failure; suspect impatience before suspecting the
   bridge.
 - **Commit only this unit's artifacts — never `git add -A`.** In a shared worktree, prior units'
-  `cross-family/<slug>/` dirs accumulate. The cross-family packets + results are an EVIDENCE TRAIL and batch
-  drivers force-commit them (`git add -f scripts/kit-autonomy/cross-family/<slug>/`) — fine for THIS unit's dir
-  (the result JSONs are not regenerable without an expensive re-dispatch), but `git add -A` would sweep every
-  prior unit's accumulated `cross-family/` dir too. Add paths explicitly: this unit's override + test +
-  `results/` + `manual-review/` + `cross-family/<slug>/` + the `kit-status.json` flip.
+  `cross-family/<slug>/` dirs accumulate. The cross-family **result JSONs** are the evidence (not regenerable
+  without an expensive re-dispatch) — force-commit ONLY those
+  (`git add -f scripts/kit-autonomy/cross-family/<slug>/*.json`). The **packets are regenerable** from the
+  templates + kit prose and stay untracked scratch (owner ruling 2026-07-26 — stop force-committing them).
+  `git add -A` would sweep every prior unit's accumulated `cross-family/` dir too. Add paths explicitly: this
+  unit's override + test + `results/` + `cross-family/<slug>/*.json` + the `kit-status.json` flip.
 
 ## Reconciling concurrent batches
 
 Multiple gauntlet batches run concurrently on separate branches (one batch per worktree). The PER-UNIT work
-is disjoint — different slugs' overrides / tests / `results/` / `manual-review/` / `cross-family/<slug>/` never
+is disjoint — different slugs' overrides / tests / `results/` / `cross-family/<slug>/` never
 collide. Conflicts are confined to the DERIVED aggregate files, and only because they carry repo-wide state:
 
 - `data/kit-status.json` — the global `counts` object + every unit's `board` row (the per-unit `kitParse` /
@@ -325,45 +330,3 @@ bash scripts/verify.sh                              # the canonical repo gate
 - Reused machinery: `scripts/blind-rebuild/build-packet.ts` (redaction + leak-assertion model);
   `/kit-tdd` (test-writing discipline), `/audit-kit` (triangulation), `/kit-parse` (blind override authoring).
 
-## Change log
-
-- 2026-07-25 (concurrent-batch hardening, 20-unit blanc..isabel batch) — two batches ran concurrently and
-  collided on the derived aggregate files. (1) `kit-status.ts --gauntlet` now syncs the gauntleted unit's AUTO
-  mirrors (provenance/unmodeled/caveats) itself, so the Land step needs NO per-unit `--refresh` — a full
-  `--refresh` rewrites the global `counts` + every unit's board row, which guaranteed a merge conflict on every
-  commit when batches share `kit-status.json`. Verified: a stale mirror fails `--check`, `--gauntlet` re-syncs
-  it, `--check` passes with no `--refresh`. (2) New "Reconciling concurrent batches" section: rebase + overlay
-  the batch unit's `kit-status.json` entry (never union-merge the whole file — it clobbers the other batch's
-  gauntlet data on shared bystander units) + regenerate aggregates (`kit-status --refresh`, `regression
---update`, `doc-drift --update`) + `verify.sh` + one reconciliation commit. (3) `dispatch-claude.sh` JSON
-  extraction switched from a hand-rolled brace-matcher (desynced on large embedded-code `testSource` payloads,
-  truncating the response) to `json.raw_decode`.
-- 2026-07-26 — S7 (reconciling judge) moved off `claude-opus-5` onto the third family: canonical dispatch is
-  now `kimi-code/k3` via the new `scripts/kit-autonomy/dispatch-kimi.sh` (same packet/result contract as
-  `dispatch-claude.sh`, tools structurally disabled via an agent profile with `tools: []`). Rationale: the
-  binding go/no-go is now graded by a model family that shares no priors with either the driver or the
-  S5/S6 writers. S2b stays `claude-fable-5`, S5/S6 stay `claude-opus-5`; canonical names updated in
-  `CROSS-FAMILY-PROTOCOL.md` + `QWEN.md` together, per the protocol's own rule.
-
-- 2026-07-24 (post-batch hardening, 10-unit bottom-up batch) — rolled the batch's recurring re-derivations
-  into the skill: (1) harness import boilerplate + structural shape cheat-sheet (totals/unitOf per-slug maps,
-  slot-keyed OverrideFile with NO top-level `blocks`, `gainPierce` effect vs `hasPierce` flag, flat-resolved
-  caster buff events, no `buffRemove` on time-lapse) added to `BLIND-TEST-WRITER.md` AND restored to the
-  `prepare-cross-family-packet.ts` harnessNote — the #1 blind-test failure was guessing these shapes; (2) the
-  `scripts/kit-autonomy/blind/**` typecheck exclude documented (Stage 5) — blind files are an evidence trail,
-  not run by vitest; (3) Batch-hygiene section + `kit-gauntlet-driver` rules: clean up `.gauntlet-progress-*`/
-  `.<slug>-extract.json` post-commit, dispatch `dispatch-claude.sh` FOREGROUND (never background; it leaks),
-  commit only this unit's tracked artifacts; (4) canonical model names now live in `CROSS-FAMILY-PROTOCOL.md`
-  (S2b `claude-fable-5`; S5/S6/S7 `claude-opus-5` REQUIRED — `claude-opus-4-8` is a different model, not an
-  alias); (5) `prepare-cross-family-packet.ts` prints an advisory TOKEN HINT for prose magnitudes that appear in
-  `types.ts` but are missing from `--tokens` (catches under-redaction) + over-redaction guidance; (6) S1 now
-  points drivers at the `docs/engine-modeling-gaps.md` themes to RECOGNIZE known gaps instead of re-deriving
-  (batch cross-check + 2 new owner-flagged engine questions recorded there); (7) standard `⚑ cadence tuple`
-  (theme 1) flag + recipe; (8) explicit certify-only fast path for already-faithful units.
-- 2026-07-24 — Land step now records the GO in `data/kit-status.json` via `kit-status.ts --gauntlet <slug>`
-  (kitParse.status `unit-tested`, provenance `gauntlet` from the S3 note marker, findings/evidence/residual/
-  date/graded). The gauntlet certifies STRUCTURE, not tuning, so `tier`/`tuned` stay `MODEL_ONLY`/`false`
-  (there is no GAUNTLET tier).
-- 2026-07-23 — created. Encodes the autonomous test-first gauntlet (docs/kit-autonomy-decisions.md §14,
-  red-team-hardened): test-centric gate, independent re-derivation (S2b/S5/S6), binding judge (S7),
-  de-contaminated blind packets, independent RED gate, bounded no-go loop + webhook escalation.

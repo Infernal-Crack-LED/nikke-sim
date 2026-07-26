@@ -13,8 +13,9 @@ or a data-source discovery.
 ## The loop (run all four checks)
 
 1. **Did this teach a repeatable procedure or gotcha?**
-   - Refines an existing playbook → update the matching `.claude/skills/*/SKILL.md` + dated
-     `## Change log` line.
+   - Refines an existing playbook → update the matching `.claude/skills/*/SKILL.md` body (dated
+     change-log sections were abolished 2026-07-26 — git history is the record; operational
+     knowledge goes in the body itself).
    - New repeatable procedure → new skill from `_TEMPLATE`.
    - A WHY (settled tradeoff, rejected alternative, owner ruling) → append to `docs/DECISIONS.md`
      with its evidence tier and where the proof lives. **If the ruling changed the LANDED state** (a
@@ -36,8 +37,3 @@ or a data-source discovery.
 ```sh
 bash scripts/verify.sh
 ```
-
-## Change log
-- 2026-07-13 — created (adapted from devenv-boilerplate-for-claude-code).
-- 2026-07-21 — loop item 1 now also updates `docs/STATE.md` when a ruling changed the landed state
-  (flag/constant/rotation/geometry/primitive); part of the two-class doc taxonomy.

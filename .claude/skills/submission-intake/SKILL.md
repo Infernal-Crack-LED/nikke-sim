@@ -134,8 +134,8 @@ audit the slug mapping.
   - ⚠ <needsReview reason, if any>
   ```
 - Add the row key to `seen[]` in `.sync-state.json` (so it isn't re-downloaded).
-- Update the CLAUDE.md → NEXT INCREMENT pointer's **count** of pending submissions
-  (the durable, tracked handoff — QUEUE.md itself is gitignored).
+- Update the `docs/handoffs/QUEUE.md` **submission-intake count** of pending submissions
+  (the durable, tracked handoff — `docs/probes/submissions/QUEUE.md` itself is gitignored).
 
 ### 7. Report
 
@@ -152,10 +152,3 @@ here unless asked.
 - **Idempotent**: re-running must not re-download or re-queue a seen row.
 - Discord handles are for credit/follow-up; keep them in the (gitignored) queue,
   not in any public-facing doc.
-
-## Change log
-
-- 2026-07-16 — created. Drains the Nikke Sim Data Submission form: MCP reads the
-  linked responses sheet; rclone `copyid` (read-only `gdrive` remote) pulls
-  screenshot + video into gitignored per-submission folders; Q&A columns map to
-  `metadata.json`; new rows queue in QUEUE.md with a tracked count in CLAUDE.md.

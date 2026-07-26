@@ -92,7 +92,8 @@ without flipping it. (Root case 2026-07-16: the SG model pass read board `arcana
 
 ## Doc audience rule
 
-- **Human-facing docs** (`docs/data/*`, `docs/open-questions.md`, `docs/probe-runs.md`,
+- **Human-facing docs** (`docs/data/*`, `docs/open-questions.md`, `docs/answered-questions.md`,
+  `docs/probe-runs.md`,
   `docs/DECISIONS.md`, this file): no invented abbreviations — write fight/probe names out;
   widely-known game terms (B1, MG, SBS) are fine. These may be published to the community.
 - **AI-facing docs** (`docs/handoffs/*`, override JSON notes, scratch): any shorthand.
@@ -113,17 +114,25 @@ logs from poisoning agent context with stale-but-retained narration.
 
 - **CHANGELOG class — append-only, immutable, never delete.** Outdated content is marked
   **`SUPERSEDED (date) — disregard`** or struck through IN PLACE — this is the provenance trail.
-  Members: `docs/DECISIONS.md`, the **ANSWERED** section of `docs/open-questions.md`,
+  Members: `docs/DECISIONS.md`, `docs/answered-questions.md`,
   `docs/probe-runs.md`, `web/src/patch-notes.json` (prepend-only), `data/sources.json` (cumulative
   accreditation), and the `docs/handoffs/closed/` + `docs/closed/` archives.
 - **CURRENT-STATE class — freely rewritten; stale content is DELETED, not marked.** History lives in
   the changelog class, so deletion loses nothing. **Capture-first rule:** before deleting a
-  still-true-but-resolved block, confirm the fact is in a changelog doc (DECISIONS / ANSWERED); if
+  still-true-but-resolved block, confirm the fact is in a changelog doc (DECISIONS /
+  answered-questions); if
   not, append it there first, then delete. Members: `docs/STATE.md`, `docs/data/*.md` (incl.
   sg-calc), `docs/CONVENTIONS.md`, `docs/modeling-priors.md`, `docs/engine-modeling-gaps.md`,
-  `CLAUDE.md`, open `docs/handoffs/*`, the **UNANSWERED** section of `docs/open-questions.md`, the
+  `CLAUDE.md`, open `docs/handoffs/*` (incl. `docs/handoffs/QUEUE.md`, the live work queue),
+  `docs/open-questions.md` (UNANSWERED only), the
   backlog/ledger docs, and **the prose fields of every override** — `src/skills/overrides/*.json`
   `note` / `caveats` / `unmodeled`.
+
+**Open-questions single numbering (since 2026-07-26):** a question keeps its U-number for life —
+no A-number is minted. Resolving one = MOVING its entry from `docs/open-questions.md` to
+`docs/answered-questions.md` with the resolution + date inline; DECISIONS and other docs reference
+the U-number. (Entries answered before 2026-07-26 carry the legacy `A<n> (U<n>)` numbering; the
+A-numbers are historical.)
 
 **Enforced by `scripts/doc-drift.ts`** (in `verify.sh`, so drift fails the gate rather than being
 nudged about): it (a) LINTS `docs/STATE.md` §5 for **false members** — a slug listed under a primitive

@@ -1,5 +1,9 @@
 # Probe run plan (U7) — validate the unmeasured overrides in minimum runs
 
+> Role (owner ruling 2026-07-26): this file is **the chronological measurement log** (CHANGELOG class
+> — append-only). Where the labeled ground truth lives → `docs/VALIDATION-INDEX.md`; what reader
+> instruments exist + trust tiers → `docs/STATE.md` §7.
+
 Standard conditions: scope lock preset, 10/10/10, treasure on, full auto, 180s, partless boss.
 The CLI supports 4-unit comps (site slots can simply be left empty).
 Slot order below is exact (leftmost-first burst priority depends on it). "Boss" names the

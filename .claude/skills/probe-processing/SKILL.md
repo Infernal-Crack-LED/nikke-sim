@@ -92,7 +92,8 @@ Running them all on a whole video by default is wasted wall-clock. NOTE the asym
   summons (boss hits on cinderella's Decoy show in her stream). Never attribute a popup to a unit
   by value coincidence.
 - **Popup COLOUR + POSITION convention (owner-confirmed 2026-07-14):**
-  - **crit** = ORANGE number + crit icon to the left (orange outline / white centre).
+  - **crit** = ORANGE number + crit icon to the left (orange outline / white centre). Orange WITHOUT
+    the icon is NOT a crit — e.g. liberalio's orange reads are a ×1.3333 FB factor, not crits.
   - **core hit** = RED number + "CORE HIT" above (red numbers are cores even when small — size scales
     with visual distance to the target, not damage).
   - **crit + core** = RED + "CORE HIT" + crit icon (red outline / black centre).
@@ -443,8 +444,9 @@ confound).
 - **VARIANT/TREASURE pre-check before any RECONCILIATION** (2026-07-15): confirm the sim unit's variant + `treasure` state (characters.json) matches what was recorded. `treasure:true` = the sim models the unit WITH its Treasure/favorite item (stat/skill boost); if the owner recorded WITHOUT it (doesn't own it), totals aren't comparable and the reconciliation is confounded (e.g. sim `drake` is treasure=true vs a base-Drake recording). Direct core-RATE popup counts are treasure-INDEPENDENT (aim geometry); only TOTALS are affected.
 
 ## After measuring
-- Results go in `docs/probe-runs.md` (human-facing, no invented codes); open-questions entries
-  move to ANSWERED with the measurement; settled rulings go to `docs/DECISIONS.md`.
+- Results go in `docs/probe-runs.md` (human-facing, no invented codes); resolved open-questions
+  move to `docs/answered-questions.md` with the measurement (single U-numbering); settled rulings go
+  to `docs/DECISIONS.md`.
 - **State the instrument and its tier** in whatever you write: "VLM reader, unconfirmed" and
   "popup-confirmed on frame X" are different evidence. A reader-only number is an observation, never
   an enactment trigger (CLAUDE.md point 7).
@@ -487,66 +489,3 @@ isabel/guilty/brid-silent-track solo band-read campaign (docs/probe-data/*-sg-ba
   OUTRANKS `pellets.json` where they disagree (it is arithmetic closure; the counter is a CV heuristic).
 - **Riders separate cleanly:** deterministic fixed values that sit OFF the pellet grid; count-closure
   them exactly (brid-silent-track: 43 = floor(215 pulls/5), fires ~6f after the triggering pull).
-
-## Change log
-- 2026-07-13 — created; distilled from the u8 + test-battery-2/3 processing sessions.
-- 2026-07-14 — step 4 recalibrated for whole-frame splash scan (0.11 threshold + ≥10 s min-gap
-  cut-in filter), from the 9-team 714 noon batch.
-- 2026-07-14 — added the MANDATORY full kit audit (line-by-line, code + run validated) from the
-  control-frame session: Helm's "defensive" heal was the trigger for Crown's team ATK buff, and
-  LM's teamAmmo effects were present-but-inert. "Modeled" ≠ "working."
-- 2026-07-14 — added the popup COLOUR convention (white/orange/red-core/green=HEAL) and the
-  MANDATORY parse-persistence step (`docs/probe-data/`, params↔file-paths map) from the DoT-crit
-  test. Green misread as DoT twice (it was Helm-B3 life-leech heals); orange ≠ always crit
-  (liberalio's is a ×1.3333 FB factor).
-- 2026-07-14 — after the owner detailed the combat UI: added the SPATIAL rule (damage@crosshair,
-  heal@character; cyan=Crown-shield boss hits; bottom total=team cumulative), the crit-icon detail,
-  and the full video-reading TOOLCHAIN (hit-values/frames/classify/catalog). Made the hit-value
-  table a required FIRST step — value-band entanglement caused two misattributions (LM DoT≠64733,
-  liberalio proc overlaps her normal). Core-hit rate (AUTO_CORE_RATE 0.85 ⚑) researched: weakly
-  sourced, really weapon/range-dependent — see open-questions A9.
-- 2026-07-15 — added the Battle-Records FIELD MAP (⚔ = Combat Power, NOT ATK), the class-based-ATK
-  invariant (same-class ⇒ identical ATK; `data/reference-stats.json`), the SCREEN-NUMBER discipline
-  (name + anchor before use), and the scope-lock TEST HARNESS SSOT (`scripts/lib/scope-lock.ts` +
-  `scripts/sim/<element>.ts` + `sanityCheck`). All four came from a misread Combat-Power number +
-  a hand-rolled core-0 config compounding into a phantom "13% ATK confound" — the guardrails now
-  catch that class of error automatically.
-- 2026-07-16 — added the counter-reconciliation hardened rules (lattice basis pinning, multi-anchor
-  clock-drift discipline, per-shot landing decomposition, rider count-closure) from the guilty +
-  brid-silent-track SG band campaign.
-- 2026-07-24 — EFFICIENCY PASS (after a session burned ~3 h frame-stepping the 03:00 countdown to
-  find t0). `frames.ts` gained `--times "t1,t2,…"` single-process batch mode + `timer`/`total`/
-  `ammoband` region presets; added the EXTRACTION EFFICIENCY rules + the fast one-sheet t0 recipe.
-- 2026-07-24 — READER-FIRST PASS. The VLM/CV readers (`read-pellets.ts` + `count-pellets.py`,
-  `read-total-damage.ts`, `read-burst-gauge.ts`, `read-popups-vlm.ts`) now produce the candidate
-  timeline and `probe-scaffold` RUNS them instead of deferring every read to Opus; Opus's job moved
-  from manual frame reads to CONFIRMATION + analysis. Corrections applied against the scripts
-  themselves while landing this (a draft rewrite had over-claimed them): the ammo-counter cadence
-  recipe is RETAINED — `read-pellets.ts` uses the ammo box only as a crosshair locator and reads no
-  digits, and its shot detection is SG-only + currently under-detecting (70/~90 shots, avgTotal 7.6 vs
-  the lattice's ≈8.45); `burst-gauge.json` `transitions[]` are all state changes, not full bursts;
-  the timer spine is SINGLE-anchored; the FB splash / burst-bar / nuke scans are RETAINED as the
-  independent cross-check for measured-truth FB counts; the Battle-Records screenshot and the popup
-  expectation-form arithmetic are RETAINED as Opus work (no reader covers them). Added the TIER RULE,
-  the resolution gate, per-run `--out`, and per-reader trust gates.
-- 2026-07-24 — COST DISCIPLINE (owner: the old skill regularly burned 2–3 h producing nothing, and
-  manual LLM frame-reading has a poor track record here). Added the zero-frame-read default, a hard
-  **≤3 `frames.ts` calls per video** budget with an explicit STOP-and-report rule, confirmation routes
-  RANKED cheapest-first (arithmetic closure > a second script > a frame read) and required only for
-  values that will be ENACTED, the FB scans reassigned to `probe-scaffold` (they are pixel scans, not
-  Opus work), and a **MISSING READERS** worklist so each remaining hand read gets replaced by a script
-  instead of recurring every session. The prose-described numpy scans being re-derived by hand every
-  run is named as the largest recurring token sink.
-- 2026-07-24 — READER BUILD-OUT (plan: `docs/handoffs/2026-07-24-probe-reader-buildout-plan.md`).
-  Four of the five MISSING READERS are now scripts. **`scan.ts` + `scan-frames.py`** (deterministic
-  CV, no VLM) replaces the hand-rolled FB scans and is EXACT on 8 independently-measured recordings;
-  the burst-indicator crop was found to render a **draining Full-Burst window bar** (not a filling
-  gauge), which is the sturdiest of its three detectors. `read-burst-gauge.ts` gained
-  **`--classifier cv|vlm`** (cv default) and **`--t0`** so the timer is exact arithmetic instead of a
-  single-anchored VLM spine. **`read-ammo.ts`** + `count-pellets.py --ammo-digits` + `ammo-atlas/`
-  close the ammo-counter hand read (SMG validated in two bands). **`read-battle-records.ts`** reads
-  the end-of-fight screen with an arithmetic checksum. `read-popups-vlm.ts` gained per-popup
-  confidence + `needsConfirmation[]`; its auto-accept path is built but UNEXERCISED. `hit-values.ts`
-  was refactored onto a shared `hit-bands.ts` so the printed table and the reader's in-band check
-  cannot drift. Also corrected here: the "team burst bar" and "solo meter" crops are SUB-STRIPS of
-  the gauge crop, so they were never an independent second instrument.
