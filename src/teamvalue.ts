@@ -183,11 +183,13 @@ export interface EnumerateInput {
   spread?: { unitScore: (slug: string) => number; target: number; sigma: number };
   /** hard roster rules (owner ruling 2026-07-24; teamcalc folds the same rules
    *  into legal()): `together` groups are all-or-none per team; `companions`
-   *  requires ≥1 of `anyOf` on the team whenever `unit` is fielded. Compiled to
-   *  bitmasks so the hot loop pays a few ORs, not array scans. */
+   *  requires ≥1 of `anyOf` on the team whenever `unit` is fielded; `requiredAny`
+   *  requires ≥1 of `anyOf` on every team. Compiled to bitmasks so the hot loop
+   *  pays a few ORs, not array scans. */
   constraints?: {
     together?: string[][];
     companions?: { unit: string; anyOf: string[] }[];
+    requiredAny?: { label?: string; anyOf: string[] }[];
   };
   cdShort?: number;
   cdPair?: number;
@@ -213,6 +215,7 @@ interface UnitInfo {
   cg: number; // together-group membership (one distinct bit per group member)
   need: number; // companion rules this unit TRIGGERS (bit per rule)
   prov: number; // companion rules this unit SATISFIES (bit per rule)
+  reqAny: number; // requiredAny groups this unit SATISFIES (bit per rule)
 }
 
 /** Bounded min-heap over proxy score — O(log K) insert, keeps the best K. */
@@ -310,6 +313,19 @@ export function enumerateTeams(input: EnumerateInput): EnumeratedTeam[] {
     for (const s of anyOf)
       if (s !== unit) provOf.set(s, (provOf.get(s) ?? 0) | (1 << j));
   });
+  const requiredAny = input.constraints?.requiredAny ?? [];
+  const reqAnyAll: number[] = [];
+  const reqAnyOf = new Map<string, number>();
+  let raBit = 0;
+  for (const group of requiredAny) {
+    let all = 0;
+    for (const s of new Set(group.anyOf)) {
+      const bit = 1 << raBit++;
+      all |= bit;
+      reqAnyOf.set(s, (reqAnyOf.get(s) ?? 0) | bit);
+    }
+    reqAnyAll.push(all);
+  }
   const info = (slug: string): UnitInfo => ({
     slug,
     v: input.value(slug),
@@ -325,6 +341,7 @@ export function enumerateTeams(input: EnumerateInput): EnumeratedTeam[] {
     cg: cgOf.get(slug) ?? 0,
     need: needOf.get(slug) ?? 0,
     prov: provOf.get(slug) ?? 0,
+    reqAny: reqAnyOf.get(slug) ?? 0,
   });
   // A lone >cdShort B1 can never cover its stage in these shapes (only one B1
   // slot exists), so filter it out of the dimension entirely.
@@ -363,19 +380,24 @@ export function enumerateTeams(input: EnumerateInput): EnumeratedTeam[] {
     if (mustAcc !== mustFull) return;
     if (needAdv && !adv) return;
     // hard roster rules: together groups all-or-none; companion needs satisfied
-    if (groupAll.length || companions.length) {
+    if (groupAll.length || companions.length || reqAnyAll.length) {
       let cg = 0;
       let need = 0;
       let prov = 0;
+      let reqAny = 0;
       for (const u of units) {
         cg |= u.cg;
         need |= u.need;
         prov |= u.prov;
+        reqAny |= u.reqAny;
       }
       if (need & ~prov) return;
       for (const all of groupAll) {
         const got = cg & all;
         if (got && got !== all) return;
+      }
+      for (const all of reqAnyAll) {
+        if ((reqAny & all) === 0) return;
       }
     }
     let proxy = v * (1 + metaW * Math.min(1, p / 5)) * (1 + synW * pairsSat(mask));

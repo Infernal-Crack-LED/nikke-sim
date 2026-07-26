@@ -9,6 +9,15 @@ import type { AuthUser } from './auth';
 
 const data = charactersJson as unknown as DataFile;
 
+type BossRange = 'near' | 'mid' | 'midfar' | 'far';
+const BOSS_RANGE_OPTIONS: { id: BossRange | null; label: string }[] = [
+  { id: null, label: 'Auto' },
+  { id: 'near', label: 'Near' },
+  { id: 'mid', label: 'Mid' },
+  { id: 'midfar', label: 'Mid-far' },
+  { id: 'far', label: 'Very far' },
+];
+
 // Per-team boss options for Union Raid (mirrors App.tsx UnionBossOpts)
 export interface UnionBossOpts {
   weakness: Element | null;
@@ -16,6 +25,7 @@ export interface UnionBossOpts {
   core: number;
   coreCustom: boolean;
   coreCustomVal: string;
+  bossRange: BossRange | null;
 }
 const defaultUnionBossOpts = (): UnionBossOpts => ({
   weakness: null,
@@ -23,6 +33,7 @@ const defaultUnionBossOpts = (): UnionBossOpts => ({
   core: 0,
   coreCustom: false,
   coreCustomVal: '10',
+  bossRange: null,
 });
 
 const ELEMENTS: (Element | null)[] = [
@@ -314,6 +325,20 @@ export function TeamBuilderPage({
                 onClick={() => setUnionBossOpt(ti, { weakness: e })}
               >
                 {e ?? 'None'}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className='union-boss-row'>
+          <span className='union-boss-label'>Range</span>
+          <div className='pills small'>
+            {BOSS_RANGE_OPTIONS.map((opt) => (
+              <button
+                key={opt.id ?? 'auto'}
+                className={o.bossRange === opt.id ? 'on' : ''}
+                onClick={() => setUnionBossOpt(ti, { bossRange: opt.id })}
+              >
+                {opt.label}
               </button>
             ))}
           </div>

@@ -277,6 +277,52 @@ header h1 {
 .global.bulk .field label {
   color: var(--accent);
 }
+.global-details {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 18px 0;
+}
+.global-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+.global-summary::-webkit-details-marker {
+  display: none;
+}
+.global-summary::after {
+  content: '▾';
+  color: var(--muted);
+  font-size: 12px;
+  transition: transform 0.15s ease;
+}
+.global-details[open] > .global-summary::after {
+  transform: rotate(180deg);
+}
+.global-details-content {
+  padding: 0 16px 14px;
+}
+.global-details-content .global,
+.global-details-content .global.bulk {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 14px 0;
+}
+.global-details-content .global.bulk {
+  border-top: 1px dashed var(--border);
+  background: transparent;
+  margin-top: 0;
+  padding-top: 12px;
+}
 .pills button.scope-lock {
   border-color: var(--accent);
   color: var(--text);
@@ -319,6 +365,9 @@ header h1 {
 .pills.small button {
   padding: 2px 9px;
   font-size: 12px;
+}
+.gen-options-pills {
+  margin: 8px 0;
 }
 /* inline icon inside a pill button (boss weakness element badges, etc.).
    16px (not smaller): the element badges carry fine vector detail that

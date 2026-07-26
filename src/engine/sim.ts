@@ -871,9 +871,12 @@ export function runSim(
           };
         })();
   // Boss transition jitter: each transition shifts by up to ±2s, order preserved.
-  const rangeScript = BOSS_RANGE_SCRIPT.map((r, i) =>
-    rng && i > 0 ? { ...r, fromSec: r.fromSec + (rng() * 4 - 2) } : { ...r }
-  ).sort((a, b) => a.fromSec - b.fromSec);
+  // When the caller pins a fixed range band, skip the scripted transitions entirely.
+  const rangeScript = cfg.bossRange
+    ? [{ fromSec: 0, band: cfg.bossRange }]
+    : BOSS_RANGE_SCRIPT.map((r, i) =>
+        rng && i > 0 ? { ...r, fromSec: r.fromSec + (rng() * 4 - 2) } : { ...r }
+      ).sort((a, b) => a.fromSec - b.fromSec);
 
   // burst gauge v4 (2026-07-13, test battery 2 test 3 — two solo gauge recordings vs the
   // RAID boss + the datamined CharacterShotTable + the einkk reference formula):

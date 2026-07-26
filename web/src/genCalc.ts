@@ -139,6 +139,8 @@ export interface GenCalcParams {
   loadout?: UnitOptions;
   poolB3?: number;
   rounds?: number;
+  /** Require at least one healer in the generated team. */
+  healerNeeded?: boolean;
 }
 
 /** Rebuild the generator's makeCalc instance from serializable params. Identical
@@ -171,7 +173,19 @@ export function buildGenCalc(
       pairs: SYNERGY_PAIRS,
       weight: SYNERGY_WEIGHT,
     },
-    constraints: TEAM_CONSTRAINTS,
+    constraints: params.healerNeeded
+      ? {
+          ...TEAM_CONSTRAINTS,
+          requiredAny: [
+            {
+              label: 'healer',
+              anyOf: Object.entries(archetypeTags)
+                .filter(([, tags]) => tags.includes('healer'))
+                .map(([slug]) => slug),
+            },
+          ],
+        }
+      : TEAM_CONSTRAINTS,
     evaluator,
   });
 }

@@ -503,6 +503,15 @@ const ELEMENTS: (Element | null)[] = [
   'Iron',
 ];
 
+type BossRange = 'near' | 'mid' | 'midfar' | 'far';
+const BOSS_RANGE_OPTIONS: { id: BossRange | null; label: string }[] = [
+  { id: null, label: 'Auto' },
+  { id: 'near', label: 'Near' },
+  { id: 'mid', label: 'Mid' },
+  { id: 'midfar', label: 'Mid-far' },
+  { id: 'far', label: 'Very far' },
+];
+
 // Per-team boss options for Union Raid (each of the 3 teams fights a different boss)
 interface UnionBossOpts {
   weakness: Element | null;
@@ -510,6 +519,7 @@ interface UnionBossOpts {
   core: number;
   coreCustom: boolean;
   coreCustomVal: string;
+  bossRange: BossRange | null;
 }
 const defaultUnionBossOpts = (): UnionBossOpts => ({
   weakness: null,
@@ -517,6 +527,7 @@ const defaultUnionBossOpts = (): UnionBossOpts => ({
   core: 0,
   coreCustom: false,
   coreCustomVal: '10',
+  bossRange: null,
 });
 // Compact label for the share card, e.g. "Fire-weak · DEF 140 · 100% core"
 const unionBossLabel = (o: UnionBossOpts): string => {
@@ -524,6 +535,7 @@ const unionBossLabel = (o: UnionBossOpts): string => {
   parts.push(o.weakness ? `${o.weakness}-weak` : 'no element');
   const def = Number(o.bossDef) || 0;
   if (def) parts.push(`DEF ${def}`);
+  if (o.bossRange) parts.push(o.bossRange);
   parts.push(
     o.coreCustom
       ? `${o.coreCustomVal}% core`
@@ -1304,6 +1316,14 @@ export function App({ user }: { user: AuthUser | null }) {
     boot ? coerceWeakness(boot.g.weakness) : null,
   );
   const [bossDef, setBossDef] = useState(boot?.g.bossDef ?? '0');
+  const [bossRange, setBossRange] = useState<BossRange | null>(() => {
+    const fromBuild = (boot?.g.bossRange as BossRange | null) ?? null;
+    if (fromBuild) return fromBuild;
+    const p = new URLSearchParams(window.location.search).get('br');
+    return p && BOSS_RANGE_OPTIONS.some((o) => o.id === p)
+      ? (p as BossRange)
+      : null;
+  });
   const [core, setCore] = useState<number>(boot?.g.core ?? 0);
   const [coreCustom, setCoreCustom] = useState(boot?.g.coreCustom ?? false);
   const [coreCustomVal, setCoreCustomVal] = useState(
@@ -1478,13 +1498,19 @@ export function App({ user }: { user: AuthUser | null }) {
     const bw = p.get('bw')?.split(',') ?? [];
     const bd = p.get('bd')?.split(',') ?? [];
     const cv = p.get('cv')?.split(',') ?? [];
-    return Array.from({ length: 3 }, (_, i) => ({
-      weakness: (bw[i] as Element) || null,
-      bossDef: bd[i] ?? '0',
-      core: cv[i] ? Number(cv[i]) : 0,
-      coreCustom: false,
-      coreCustomVal: '10',
-    }));
+    const br = p.get('br')?.split(',') ?? [];
+    return Array.from({ length: 3 }, (_, i) => {
+      const r = br[i] as BossRange | undefined;
+      return {
+        weakness: (bw[i] as Element) || null,
+        bossDef: bd[i] ?? '0',
+        core: cv[i] ? Number(cv[i]) : 0,
+        coreCustom: false,
+        coreCustomVal: '10',
+        bossRange:
+          r && BOSS_RANGE_OPTIONS.some((o) => o.id === r) ? r : null,
+      };
+    });
   });
   const [unionRosterActive, setUnionRosterActive] = useState<
     [number, number] | null
@@ -1501,6 +1527,9 @@ export function App({ user }: { user: AuthUser | null }) {
   const [unionGenResults, setUnionGenResults] = useState<TeamResult[] | null>(
     null,
   );
+  // Healer requirement for the roster/team generator: when on, every generated
+  // team must include at least one unit tagged as a healer.
+  const [healerNeeded, setHealerNeeded] = useState(false);
   // Generator "lock-in" picks — Nikkes the generator must include. The Team
   // Generator locks a strip of up to 5 (forced into the one team). The Roster
   // Generator distinguishes units PINNED to a specific team row from generic
@@ -1633,6 +1662,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // reflow to a second row; above it all five cards show side by side.
   const compactTeam = useMediaQuery('(max-width: 900px)');
   const mobileNav = useMediaQuery('(max-width: 640px)'); // tabs → focused dropdown
+  const [settingsOpen, setSettingsOpen] = useState(!mobileNav);
   const [expandedSlot, setExpandedSlot] = useState(0);
 
   // reorder a team slot (drives the sim: position sets camera focus / burst
@@ -1895,7 +1925,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // ---- build code (full team + loadout + globals) ----
   const buildFromState = (): Build => ({
     v: BUILD_VERSION,
-    g: { weakness, bossDef, core, coreCustom, coreCustomVal, level },
+    g: { weakness, bossDef, core, coreCustom, coreCustomVal, level, bossRange },
     blocked: blocked.length ? blocked : undefined,
     s: slots.map((s) => ({
       slug: s.slug,
@@ -1924,6 +1954,7 @@ export function App({ user }: { user: AuthUser | null }) {
     setSlots(b.s.map(slotFromBuild));
     setWeakness(coerceWeakness(b.g.weakness));
     setBossDef(b.g.bossDef ?? '0');
+    setBossRange((b.g.bossRange as BossRange | null) ?? null);
     setCore(typeof b.g.core === 'number' ? b.g.core : 0);
     setCoreCustom(!!b.g.coreCustom);
     setCoreCustomVal(b.g.coreCustomVal ?? '10');
@@ -2043,6 +2074,7 @@ export function App({ user }: { user: AuthUser | null }) {
             core: o.core,
             coreCustom: o.coreCustom,
             coreCustomVal: o.coreCustomVal,
+            bossRange: o.bossRange,
           })),
         }),
       );
@@ -2080,6 +2112,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     core: Number(o.core ?? d.core),
                     coreCustom: !!o.coreCustom,
                     coreCustomVal: String(o.coreCustomVal ?? d.coreCustomVal),
+                    bossRange: (o.bossRange as BossRange | null) ?? null,
                   }
                 : d;
             }),
@@ -2159,22 +2192,40 @@ export function App({ user }: { user: AuthUser | null }) {
     }
   }, [rosterSimMode]);
 
+  // Manual run trigger for the Team Sim tab. The sim no longer auto-recomputes on
+  // every change; the user clicks Run sim to bump this nonce and execute a run.
+  const [simRunNonce, setSimRunNonce] = useState(0);
+
   // Snapshot of everything the live Team-Sim result depends on. Memoized so its
   // identity changes ONLY when an input changes (preserves useDeferredValue's
   // bail-out). `active` gates it to the Sim tab — the 25-seed sim never runs on
-  // the roster/team/DPS tabs, which don't display this result.
+  // the roster/team/DPS tabs, which don't display this result. `runNonce` is 0
+  // until the user explicitly clicks Run sim, so the initial load stays idle.
   const simInput = useMemo(
     () => ({
       slots,
       weakness,
       bossDef,
+      bossRange,
       core,
       coreCustom,
       coreCustomVal,
       level,
       active: tab === 'sim',
+      runNonce: simRunNonce,
     }),
-    [slots, weakness, bossDef, core, coreCustom, coreCustomVal, level, tab],
+    [
+      slots,
+      weakness,
+      bossDef,
+      bossRange,
+      core,
+      coreCustom,
+      coreCustomVal,
+      level,
+      tab,
+      simRunNonce,
+    ],
   );
   // Defer the expensive recompute: an edit (e.g. clicking a bulk pill) paints the
   // urgent UI — the pill's selected state — immediately, and the ~25-fight sim
@@ -2192,13 +2243,15 @@ export function App({ user }: { user: AuthUser | null }) {
       slots,
       weakness,
       bossDef,
+      bossRange,
       core,
       coreCustom,
       coreCustomVal,
       level,
       active,
+      runNonce,
     } = deferredSimInput;
-    if (!active) return {};
+    if (!active || runNonce === 0) return {};
     if (slots.some((s) => !s.slug))
       return { error: 'pick 5 nikkes to run the sim' };
     const chars = slots.map((s) => data.characters[s.slug!]);
@@ -2213,6 +2266,7 @@ export function App({ user }: { user: AuthUser | null }) {
       slugs: slots.map((s) => s.slug!),
       bossElement: weakness ? WEAKNESS_TO_BOSS[weakness] : null,
       bossDef: Number(bossDef) || 0,
+      bossRange: bossRange ?? undefined,
       level: Math.min(1200, Math.max(1, Number(level) || 400)),
       copies: 0, // dupes are per-unit now (stars + core); this global fallback is unused
       doll: false,
@@ -2406,6 +2460,10 @@ export function App({ user }: { user: AuthUser | null }) {
           .map((o) => (o.coreCustom ? o.coreCustomVal : String(o.core)))
           .join(','),
       );
+      u.searchParams.set(
+        'br',
+        unionBossOpts.map((o) => o.bossRange ?? '').join(','),
+      );
     } else {
       u.searchParams.set(
         'roster',
@@ -2414,6 +2472,7 @@ export function App({ user }: { user: AuthUser | null }) {
           .map((s) => s ?? '')
           .join(','),
       );
+      if (bossRange) u.searchParams.set('br', bossRange);
     }
     await copyLink(u.toString());
   };
@@ -2517,6 +2576,10 @@ export function App({ user }: { user: AuthUser | null }) {
           .map((o) => (o.coreCustom ? o.coreCustomVal : String(o.core)))
           .join(','),
       );
+      u.searchParams.set(
+        'br',
+        tbUnionBossOpts.map((o) => o.bossRange ?? '').join(','),
+      );
     } else if (rows.length > 1) {
       u.pathname = '/rostersim';
       u.searchParams.set(
@@ -2526,9 +2589,11 @@ export function App({ user }: { user: AuthUser | null }) {
           .map((s) => s ?? '')
           .join(','),
       );
+      if (bossRange) u.searchParams.set('br', bossRange);
     } else {
       u.pathname = '/';
       u.searchParams.set('team', rows[0].map((s) => s ?? '').join(','));
+      if (bossRange) u.searchParams.set('br', bossRange);
     }
     await copyLink(u.toString());
   };
@@ -2870,6 +2935,7 @@ export function App({ user }: { user: AuthUser | null }) {
   const calcCfg = () => ({
     bossElement: weakness ? WEAKNESS_TO_BOSS[weakness] : null,
     bossDef: Number(bossDef) || 0,
+    bossRange: bossRange ?? undefined,
     level: Math.min(1200, Math.max(1, Number(level) || 400)),
     copies: 0,
     doll: false,
@@ -2955,6 +3021,7 @@ export function App({ user }: { user: AuthUser | null }) {
     cfg,
     loadout: calcLoadout(),
     loadouts: materializeLoadouts(),
+    healerNeeded,
   });
 
   // Whether a unit can be fielded by the generator right now (in the pool, not
@@ -3319,6 +3386,7 @@ export function App({ user }: { user: AuthUser | null }) {
   const unionCalcCfg = (o: UnionBossOpts) => ({
     bossElement: o.weakness ? WEAKNESS_TO_BOSS[o.weakness] : null,
     bossDef: Number(o.bossDef) || 0,
+    bossRange: o.bossRange ?? undefined,
     level: Math.min(1200, Math.max(1, Number(level) || 400)),
     copies: 0,
     doll: false,
@@ -3844,6 +3912,20 @@ export function App({ user }: { user: AuthUser | null }) {
           value={o.bossDef}
           onChange={(e) => setOpt({ bossDef: e.target.value })}
         />
+      </div>
+      <div className='union-boss-row'>
+        <span className='union-boss-label'>Boss range</span>
+        <div className='pills small'>
+          {BOSS_RANGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.id ?? 'auto'}
+              className={o.bossRange === opt.id ? 'on' : ''}
+              onClick={() => setOpt({ bossRange: opt.id })}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className='union-boss-row'>
         <span className='union-boss-label'>Core</span>
@@ -4405,6 +4487,15 @@ export function App({ user }: { user: AuthUser | null }) {
             {teamGenLockPanel}
             {blockedPanel}
           </div>
+          <div className='pills small gen-options-pills'>
+            <button
+              className={healerNeeded ? 'on' : ''}
+              onClick={() => setHealerNeeded((v) => !v)}
+              title='Require at least one healer on the generated team'
+            >
+              Healer needed
+            </button>
+          </div>
           <button
             className='calc-run'
             onClick={runBestTeam}
@@ -4457,6 +4548,15 @@ export function App({ user }: { user: AuthUser | null }) {
                 seconds — it runs hundreds of fights.
               </p>
               {syncedGenPanel}
+              <div className='pills small gen-options-pills'>
+                <button
+                  className={healerNeeded ? 'on' : ''}
+                  onClick={() => setHealerNeeded((v) => !v)}
+                  title='Require at least one healer in every generated team'
+                >
+                  Healer needed
+                </button>
+              </div>
               <div className='genpanels'>
                 {rosterGenLockPanel}
                 {blockedPanel}
@@ -6416,7 +6516,7 @@ export function App({ user }: { user: AuthUser | null }) {
         // Build a minimal Build payload from the slugs (default loadout)
         const build: Build = {
           v: BUILD_VERSION,
-          g: { weakness, bossDef, core, coreCustom, coreCustomVal, level },
+          g: { weakness, bossDef, core, coreCustom, coreCustomVal, level, bossRange },
           s: Array.from({ length: 5 }, (_, i) => ({
             slug: slugs[i] ?? null,
             cubeId: 'other',
@@ -6714,8 +6814,14 @@ export function App({ user }: { user: AuthUser | null }) {
         tab !== 'resources' &&
         tab !== 'teambuilder' &&
         !(tab === 'overload' && olMode === 'matrix') && (
-          <>
-            <section className='global'>
+          <details
+            className='global-details'
+            open={settingsOpen}
+            onToggle={(e) => setSettingsOpen(e.currentTarget.open)}
+          >
+            <summary className='global-summary'>Boss & team settings</summary>
+            <div className='global-details-content'>
+              <section className='global'>
               {/* Boss weakness / DEF / core are per-team in Union Raid mode */}
               {!(tab === 'rostersim' && rosterSimMode === 'union') && (
                 <>
@@ -6790,6 +6896,22 @@ export function App({ user }: { user: AuthUser | null }) {
                         placeholder='%'
                       />
                     )}
+                  </div>
+                  <div className='field'>
+                    <label title='Fix the boss at one range band for the whole fight; Auto uses the scripted boss movement'>
+                      Boss range
+                    </label>
+                    <PillGrid>
+                      {BOSS_RANGE_OPTIONS.map((o) => (
+                        <button
+                          key={o.id ?? 'auto'}
+                          className={bossRange === o.id ? 'on' : ''}
+                          onClick={() => setBossRange(o.id)}
+                        >
+                          {o.label}
+                        </button>
+                      ))}
+                    </PillGrid>
                   </div>
                 </>
               )}
@@ -7024,7 +7146,8 @@ export function App({ user }: { user: AuthUser | null }) {
                 </PillGrid>
               </div>
             </section>
-          </>
+            </div>
+          </details>
         )}
 
       {tab === 'sim' && (
@@ -7036,6 +7159,14 @@ export function App({ user }: { user: AuthUser | null }) {
               onClick={openTeamPicker}
             >
               ▦ Browse Nikkes
+            </button>
+            <button
+              className='calc-run'
+              onClick={() => setSimRunNonce((n) => n + 1)}
+              disabled={!slots.every((s) => s.slug) || simStale}
+              title='run the 25-fight sim with the current team and boss settings'
+            >
+              {simStale ? 'Simming…' : 'Run sim'}
             </button>
           </div>
           {compactTeam ? (
@@ -7236,6 +7367,9 @@ export function App({ user }: { user: AuthUser | null }) {
             <div className='banner warn'>{sim.compWarning}</div>
           )}
 
+          {!r && simRunNonce === 0 && (
+            <div className='banner'>click Run sim to compute the team result</div>
+          )}
           {r && (
             <section
               className='results'
@@ -7246,8 +7380,7 @@ export function App({ user }: { user: AuthUser | null }) {
             >
               {simStale && (
                 <div className='stale-chip'>
-                  inputs changed — showing the last sim; edit-complete results
-                  re-run automatically
+                  inputs changed — showing the last sim; click Run sim to refresh
                 </div>
               )}
               <div className='summary muted'>
