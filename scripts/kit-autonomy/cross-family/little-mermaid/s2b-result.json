@@ -1,0 +1,168 @@
+{
+  "slug": "little-mermaid",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Focusing status: Focuses fire",
+      "disposition": "UNMODELED",
+      "scope": "Targeting/aggro behavior while a 'Focusing' status is held; no stat or damage payload.",
+      "durationSemantics": "continuously (while Focusing status held)",
+      "triggerIdentity": "status-gated passive (Focusing) — no engine analog; targeting is meaningless vs a single partless boss",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Inventing a damage/buff payload for a pure fire-focus line, or encoding a phantom 'Focusing' mode gate that suppresses other blocks",
+      "distinguishingAssertion": "No buffApply and no damage event attributable to this line in any comp; totals identical with the line present vs absent",
+      "inertness": "Must move nothing — zero events, zero damage delta",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB ends: Burst Skill CD ▼ 7.48 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill cooldowns only; no damage stat",
+      "durationSemantics": "instant one-shot CDR per activation, not a timed buff",
+      "triggerIdentity": "fullBurstEnd (every team Full Burst end — she is B1 but the trigger is team-FB-keyed, not burstCast)",
+      "targetSet": "all allies (all 5 including self)",
+      "nearestWrongModel": "Keyed to fullBurstEnter (CDR lands ~10s early each cycle, compressing rotation beyond kit) or authored oncePerBattle",
+      "distinguishingAssertion": "After EVERY fullBurstEnd event each unit's next burstCast readiness is (baseCD − 7.48)s; on a fixed comp the measured FB count matches the shortened-cycle arithmetic for all cycles, not just the first (red under once-only and under enter-keyed timing)",
+      "inertness": "No CDR event before the first fullBurstEnd",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter: Attack Damage ▲ 4%, 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Attack Damage (Damage Up bucket, attackDamagePct) — generic, all attack types",
+      "durationSemantics": "durationSec 10 (wall-clock; spans the whole FB window)",
+      "triggerIdentity": "fullBurstEnter (ANY team Full Burst), NOT burstCast",
+      "targetSet": "all allies (5 targets)",
+      "nearestWrongModel": "Encoded as atkPct (ATK bucket — multiplies differently against flat-ATK adds) or keyed burstCast so it drops on rotations another B1 completes the chain",
+      "distinguishingAssertion": "At every fullBurstStart event, 5 buffApply events with stat 'attackDamagePct', value 4, expiring 10s later; present even on a rotation where a different B1 cast (red under burstCast keying); zero buffApply with stat 'atkPct' from this slot",
+      "inertness": "No application outside FB entries",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Team ammo 400: fills Burst Gauge 37%",
+      "disposition": "FAITHFUL",
+      "scope": "Burst gauge economy only, no damage stat",
+      "durationSemantics": "instant fill per threshold crossing, repeating every 400 cumulative team rounds",
+      "triggerIdentity": "teamAmmo count:400 (TOTAL ally ammo expended; infinite-ammo shots don't consume and must not count)",
+      "targetSet": "team gauge ('all allies' phrasing resolves to the shared gauge fill)",
+      "nearestWrongModel": "hitCount on the OWNER's own rounds (her SMG alone ≈ 20/s → wildly wrong cadence) or a burstGenPct buff instead of a discrete fillGauge",
+      "distinguishingAssertion": "fillGauge(37%) events land exactly when cumulative team-wide ammo expenditure crosses 400·k — cadence tracks the whole team's fire rates; removing one teammate's fire slows the fill cadence (red under own-ammo counting, which would be invariant)",
+      "inertness": "No fill while allies hold fire; no fills fed by unlimitedAmmo shots",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Enemy appears: Bubble, DT ▲ 5.05% cont.",
+      "disposition": "FAITHFUL",
+      "scope": "Boss DEBUFF (damageTakenPct — benefits the entire team's damage), not a self/ally buff",
+      "durationSemantics": "continuously = permanent while Bubble status held (until removed by Explosive Bubble)",
+      "triggerIdentity": "'when the enemy appears' = fight start ⇒ passive at t=0; must ALSO open the named targetStatus 'Bubble' that gates the 50-hit line",
+      "targetSet": "enemy (boss); buffApply emitted with casterIdx===null, targetIdx===null",
+      "nearestWrongModel": "Read as a self/ally 'Damage Taken' defensive line and skipped, or applied without the named 'Bubble' status so the Explosive-Bubble gate can never fire",
+      "distinguishingAssertion": "From frame 0 a boss-held buffApply {stat:'damageTakenPct', value:5.05} exists (filter by stat+value, casterIdx null); every unit's damage is lifted by the shared DT bucket; and the hitCount-50 block is able to fire (proves the status channel was opened)",
+      "inertness": "Not a stat on any ally; no per-unit buffApply rows",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "50 normal attacks + Bubble: Explosive",
+      "disposition": "GAP",
+      "scope": "Boss debuff swap: Explosive Bubble DT ▲ 5.05% continuously + 3s stun + REMOVES Bubble — net boss DT stays 5.05%, never 10.1%",
+      "durationSemantics": "Explosive Bubble 'continuously' = permanent; stun 3 sec; the swap is effectively ONE-TIME (Bubble is removed and the kit gives no re-application, so the status gate closes forever after)",
+      "triggerIdentity": "hitCount count:50 on the OWNER's normal attacks (counts ROUNDS — SMG hitsPerShot 1, so 50 rounds), gated requiresTargetStatus:'Bubble'",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "Stacking Explosive on top of Bubble → 10.10% boss DT, and/or letting the hitCount re-fire every 50 rounds adding a fresh 5.05% instance each time (unbounded ramp)",
+      "distinguishingAssertion": "Total live damageTakenPct on the boss equals 5.05 at ALL times — before the 50th round, at it, and after; NO additional damageTakenPct buffApply at the 100/150/… round marks (the Bubble gate must be closed once consumed). Red under both stacking and re-fire misreads",
+      "inertness": "Boss DT magnitude must NOT move at the swap; the stun must move nothing (boss deals no damage and its script is measured — a boss 'stun' is inert in v1)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Every 1 sec during FB: 63.36% ×4 seq",
+      "disposition": "FAITHFUL",
+      "scope": "Function damage, sequential-flavored — 4 sequential hits of 63.36% final ATK per activation (253.44% per tick total), NOT one 63.36% hit",
+      "durationSemantics": "repeats each second, only while Full Burst is live",
+      "triggerIdentity": "interval sec:1 with fbGate:'inFb' ('only during Full Burst' is a state gate on the tick, not a fullBurstEnter one-shot); FB +50% applies by landing timing (ticks land inside FB → fbMajorApplied), noFb stays default-OFF; rider gets no range bonus, crits at caster rate per engine defaults, no core",
+      "targetSet": "enemy (random units collapses to the single boss)",
+      "nearestWrongModel": "Ungated interval ticking the whole fight (FB uptime ~50% ⇒ ~2× over-credit, and out-of-FB ticks also lose the +50%), or 'sequentially 4 times' collapsed to a single hit",
+      "distinguishingAssertion": "flatDamage events with mult 63.36 and flavor 'sequential' appear in groups of 4 per second, ALL with inFullBurst:true and fbMajorApplied:true; ZERO such events between fullBurstEnd and the next fullBurstStart",
+      "inertness": "No ticks outside FB windows",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Team ammo 500: 85% ×10 sequential",
+      "disposition": "FAITHFUL",
+      "scope": "Function damage — 10 sequential hits of 85% final ATK (850% per proc), sequential-flavored",
+      "durationSemantics": "instant volley per threshold crossing, repeating every 500 cumulative team rounds",
+      "triggerIdentity": "teamAmmo count:500 — a SEPARATE counter/threshold from the skill1 400-ammo gauge trigger (they interleave: fires at 500·k while gauge fills at 400·k); FB bonus by landing timing only",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "Sharing one counter/threshold with the 400-ammo gauge line (procs at the wrong cadence), or counting only the owner's own ammo, or one 85% hit instead of 10",
+      "distinguishingAssertion": "Groups of 10 flatDamage events at mult 85 land exactly at team-ammo 500·k crossings, offset from and independent of the fillGauge events at 400·k (assert both cadences coexist at their own multiples); volley count per fight matches totalTeamRounds/500",
+      "inertness": "No procs driven by her ammo alone; unlimitedAmmo shots don't advance the counter",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Allies: Atk dmg ▲10.13% 10s; reload 33.26%",
+      "disposition": "FAITHFUL",
+      "scope": "attackDamagePct (Damage Up bucket) + a PARTIAL magazine refill (33.26% of max) — the refill is a shot-economy effect (delays lastBullet/reload for every ally), not cosmetic",
+      "durationSemantics": "buff durationSec 10; reload instant, fraction 0.3326",
+      "triggerIdentity": "burstCast (her OWN Burst I cast) — NOT fullBurstEnter; lands pre-FB (burst-cast damage/effects resolve before the FB window opens)",
+      "targetSet": "all allies (5)",
+      "nearestWrongModel": "instantReload with fraction omitted (FULL refill — materially shifts every ally's lastBullet cadence and reload count), or the buff keyed to fullBurstEnter (fires even on rotations another B1 casts)",
+      "distinguishingAssertion": "On each of HER burstCast events only: 5 buffApply {stat:'attackDamagePct', value:10.13} + each ally's ammo rises by exactly 33.26% of that ally's max (clamped), not to full; an ally at 20% ammo ends at ~53%, not 100% (red under full-refill)",
+      "inertness": "Nothing fires on a rotation where a different B1 casts the stage-1 burst",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Self: ATK ▲17.28% of user's ATK, 10s",
+      "disposition": "FAITHFUL",
+      "scope": "casterAtkPct — flat ATK add computed off the SKILL USER's (her own) static ATK; self-only",
+      "durationSemantics": "durationSec 10",
+      "triggerIdentity": "burstCast (own burst block, self mode)",
+      "targetSet": "self ONLY",
+      "nearestWrongModel": "Target widened to allies (a Supporter-static flat-ATK grant to the whole team — large over-credit on Attacker carries), or encoded as plain atkPct on a non-self target",
+      "distinguishingAssertion": "Exactly ONE buffApply per cast with stat 'casterAtkPct', targetIdx === her slot, value flat-resolved ≈ 0.1728 × her staticAtk (Supporter 98,367 ⇒ ≈ 16,998 — assert the emitted value is the flat number, not 17.28)",
+      "inertness": "No casterAtkPct buffApply on any other slot from this block",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:fullBurstEnd burstCdr 7.48s allies",
+    "skill1:fullBurstEnter attackDamagePct 4 (10s) allies",
+    "skill1:teamAmmo 400 → fillGauge 37%",
+    "skill2:passive Bubble damageTakenPct 5.05 boss + status open",
+    "skill2:hitCount 50 gated Explosive swap (net DT stays 5.05, one-time)",
+    "skill2:interval 1s fbGate inFb flatDamage 63.36 ×4 sequential",
+    "skill2:teamAmmo 500 → flatDamage 85 ×10 sequential",
+    "burst:burstCast attackDamagePct 10.13 (10s) + instantReload 0.3326 allies",
+    "burst:burstCast self casterAtkPct 17.28 (10s)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Focuses fire continuously."
+    ],
+    "skill2": [
+      "Stuns for 3 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to check hardest: (1) BOTH team-ammo triggers read as owner-only hitCount — the kit says 'total ammo expended by allies' twice, with DIFFERENT thresholds (400 gauge / 500 barrage); they need two independent teamAmmo counters, and unlimitedAmmo shots must not feed either. (2) Bubble/Explosive-Bubble stacked to 10.1% or re-proc'd every 50 rounds — 'Removes Bubble' caps the boss DT at a single 5.05% instance for the whole fight and closes the status gate permanently; the schema has no removeStatus effect kind (hence GAP), so the driver must express one-time-swap semantics some other way (e.g. permanent 5.05% + a gate that can only fire once) and the test must pin the 5.05-not-10.1 invariant plus no re-fire at 100/150 rounds. (3) The FB-only 1s interval left ungated (≈2× over-credit plus wrongly-earned non-FB landings). (4) Burst reload 33.26% treated as a full instantReload — this shifts every ally's lastBullet/reload cadence, a team-wide shot-economy error. (5) The fullBurstEnd 7.48s CDR mis-keyed to fullBurstEnter or made once-per-battle — as a B1 rotation engine this plus the 400-ammo 37% gauge fill IS the unit's identity; judge it by measured FB-count arithmetic on a fixed comp. (6) 'Attacks sequentially N times' collapsed into one hit — hit COUNT matters both for totals and because sequential flavor makes these hits eligible for teammates' sequentialDamagePct/sequentialMultPct buffs. Fixture note: she is Burst I — controlComp fixes liter in the B1 slot, so tests must place little-mermaid AS the B1 (analog of the lone-B3 zero-FB trap: a comp with her wedged into a non-castable slot never exercises her burst blocks). The boss stun is inert in v1 (boss deals no damage, movement script is measured) but must be listed in unmodeled, not silently dropped.",
+  "model": "claude-fable-5"
+}

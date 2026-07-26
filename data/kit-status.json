@@ -2011,17 +2011,19 @@
       "weapon": "SMG",
       "class": "Supporter",
       "kitParse": {
-        "status": "audited",
-        "provenance": "re-materialized",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
         "findings": [
-          "F1 Explosive Bubble may coexist with Bubble = 10.1% team damage-taken (vs modeled 5.05) — measure before touch"
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 0.8 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/little-mermaid.json + scripts/kit-autonomy/manual-review/little-mermaid.md.",
+          "low FIDELITY (skill2 (FB 1s proc, 63.36% ×4)): Sequential flavor dropped: modeled as a sustained-flavored DoT (253.44%/s); the kit's 'attacks sequentially 4 times' marks the hits sequential-flavored, so a teammate's Sequential Damage ▲ buff would not gate onto them",
+          "low FIDELITY (skill2 (Bubble Barrage, 85% ×10)): Sequential flavor dropped: the merged flatDamage 850 carries no 'sequential' tag, so Sequential Damage ▲ buffs would not gate onto the volley the kit marks sequential"
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": true,
-      "evidence": "T3/T6 ~1.0, run H 1.03; Q1-family exempt-proc calibration",
+      "evidence": "T3/T6 ~1.0, run H 1.03; Q1-family exempt-proc calibration | kit-autonomy gauntlet 2026-07-26; GO faithfulness 0.8; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; sequential flavor tags added per judge",
       "date": "2026-07-13",
       "graded": {
         "teams": 4,
@@ -2040,7 +2042,7 @@
         "burst": []
       },
       "caveats": [
-        "Explosive Bubble (skill 2) is not modeled: the override carries a single permanent Damage Taken ▲ 5.05% (Bubble). If Bubble re-applies after the explosion and Explosive Bubble's debuff persists, the boss would carry BOTH stacks (10.1%) in steady state — unverified, needs an in-game debuff-icon / popup-delta measurement before any change.",
+        "Explosive Bubble (skill 2) is not modeled: the override carries a single permanent Damage Taken ▲ 5.05% (Bubble). If Bubble re-applies after the explosion and Explosive Bubble's debuff persists, the boss would carry BOTH stacks (10.1%) in steady state — unverified, needs an in-game debuff-icon / popup-delta measurement before any change. ⚑ MEASUREMENT-GATED (kit-status F1; independently re-derived by the blind cross-family reviewer, gauntlet 2026-07-26 — the kit-literal reading is a one-time RELOCATION: 'Removes Bubble' + the same 5.05% re-applied, so boss DT stays 5.05% and the 50-hit gate closes forever; the 3s stun is inert, no boss-action model). Estimate: 5.05% (shipped, kit-literal) vs 10.1% (coexistence). Recipe: read the boss debuff icons / popup delta ~5s into a fight (she lands the 50 normals in ~2s at 1440 rpm); if coexistence holds, add a second passive damageTakenPct 5.05 block. Tier: MEASUREMENT-GATED.",
         "The 'every 1 sec only during Full Burst' nuke is encoded as a 10-second damage-over-time started at Full Burst entry — tick count assumes the nominal 10s Full Burst window and does not track shortened or extended Full Bursts."
       ],
       "board": {
@@ -2087,7 +2089,8 @@
         "mad": 0.0338,
         "band": "±5%",
         "temp": "COLD ▼"
-      }
+      },
+      "residual": "F1 Explosive-Bubble 5.05-vs-10.1 coexistence measurement-gated (debuff-icon read ~5s in); SMG normals ~22% over = board-level range-dependent-core residual, not an LM encoding issue"
     },
     "ludmilla-winter-owner": {
       "name": "Ludmilla: Winter Owner",
