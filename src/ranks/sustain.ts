@@ -37,17 +37,20 @@ import { SUSTAIN_TABLE, type SustainLine } from './sustain-table.js';
 // ---- pair profiles ----------------------------------------------------------
 
 export interface SustainProfile {
+  id: string;
   partners: string[];                    // extra real units on the team
   modes?: Record<string, string>;        // per-slug override mode selection
-  note: string;
+  note: string;                          // player-facing, in the artifact's profiles map
 }
 export const SUSTAIN_PROFILES: Record<string, SustainProfile> = {
   prika: {
+    id: 'with-mint',
     partners: ['mint'],
     modes: { prika: 'duet (w/ Mint)', mint: 'duet (w/ Prika)' },
     note: 'mint duet: prika opens once, Sing Along keeps Performance (HoT + potency) permanent',
   },
   'anchor-innocent-maid': {
+    id: 'with-mast-rm',
     partners: ['mast-romantic-maid'],
     note: 'mast satisfies the same-squad gate on her Full-Burst-enter regen; the 40s B2s alternate',
   },
@@ -76,7 +79,7 @@ export interface SustainResult {
   healPct: number;               // split: HP-scaled heals
   shieldPct: number;             //       shields (face value)
   lifestealPct: number;          //       damage-scaled heals (own-damage basis)
-  profile?: string;              // partner note when a profile ran
+  profile: string | null;        // profile id; null = plain run
   rank: number;
 }
 
@@ -86,22 +89,24 @@ function charFor(ctx: RanksCtx, slug: string) {
   return ctx.characters[slug] ?? syntheticFor(slug) ?? (NOOP_CHARACTERS as any)[slug];
 }
 
-// tested + no-op stage fillers (+ profile partners), two no-op B3s so the
-// rotation cycles ~20s for B1/B2-tested comps.
-export function sustainTeam(slug: string, burst: string): string[] {
-  const partners = SUSTAIN_PROFILES[slug]?.partners ?? [];
+// tested + no-op stage fillers (+ profile partners when withProfile), two
+// no-op B3s so the rotation cycles ~20s for B1/B2-tested comps.
+export function sustainTeam(slug: string, burst: string, withProfile = true): string[] {
+  const partners = withProfile ? (SUSTAIN_PROFILES[slug]?.partners ?? []) : [];
   if (burst === 'I') return [slug, ...partners, NOOP_B2, NOOP_B3, NOOP_B3];
   if (burst === 'II') return [NOOP_B1, slug, ...partners, NOOP_B3, NOOP_B3];
   return [NOOP_B1, NOOP_B2, slug, NOOP_B3]; // B3 tested alternates with the no-op B3
 }
 
 // Run the board comp, capture the timeline, value the kit lines.
-export function sustainFor(slug: string, ctx: RanksCtx): SustainResult {
+// withProfile=false forces the plain run for a profiled unit (the board emits
+// both variants — owner ruling 2026-07-26).
+export function sustainFor(slug: string, ctx: RanksCtx, withProfile = true): SustainResult {
   const char = ctx.characters[slug];
   if (!char) throw new Error(`${slug}: not in characters.json`);
-  const slugs = sustainTeam(slug, char.burst);
+  const slugs = sustainTeam(slug, char.burst, withProfile);
   const chars = slugs.map((s) => charFor(ctx, s));
-  const profile = SUSTAIN_PROFILES[slug];
+  const profile = withProfile ? SUSTAIN_PROFILES[slug] : undefined;
   const unitOpts: UnitOptions[] = slugs.map((s) => ({
     ol: 'base5',
     stars: 3,
@@ -177,7 +182,9 @@ export function sustainFor(slug: string, ctx: RanksCtx): SustainResult {
   tl.maxHp = res.units[testedIdx].maxHp;
 
   const custom = PER_UNIT[slug];
-  const parts = custom ? custom(tl) : evaluateLines(SUSTAIN_TABLE[slug] ?? [], tl);
+  const parts = custom
+    ? custom(tl, withProfile)
+    : evaluateLines(SUSTAIN_TABLE[slug] ?? [], tl, withProfile);
 
   const totalPct = parts.heal + parts.shield + parts.lifesteal;
   return {
@@ -188,14 +195,19 @@ export function sustainFor(slug: string, ctx: RanksCtx): SustainResult {
     healPct: parts.heal,
     shieldPct: parts.shield,
     lifestealPct: parts.lifesteal,
-    ...(profile ? { profile: profile.note } : {}),
+    profile: profile?.id ?? null,
     rank: 0,
   };
 }
 
-// Rank a population by absolute team-total HP restored + shielded.
+// Rank a population by absolute team-total HP restored + shielded. Profiled
+// units appear TWICE (plain + profiled — owner ruling 2026-07-26).
 export function sustainRank(slugs: string[], ctx: RanksCtx): SustainResult[] {
-  const results = slugs.map((slug) => sustainFor(slug, ctx));
+  const results = slugs.flatMap((slug) => {
+    const rows = [sustainFor(slug, ctx, false)];
+    if (SUSTAIN_PROFILES[slug]) rows.push(sustainFor(slug, ctx, true));
+    return rows;
+  });
   results.sort((a, b) => b.totalHp - a.totalHp);
   return results.map((r, i) => ({ ...r, rank: i + 1 }));
 }
@@ -208,11 +220,14 @@ interface Parts {
   lifesteal: number;
 }
 
-// % of caster maxHp sustained by one unit's lines across the fight.
-function evaluateLines(lines: SustainLine[], tl: Timeline): Parts {
+// % of caster maxHp sustained by one unit's lines across the fight. Lines
+// marked requiresProfile count only when the unit's pair profile ran (e.g.
+// anchor-innocent-maid's same-squad regen gate).
+function evaluateLines(lines: SustainLine[], tl: Timeline, withProfile: boolean): Parts {
   const parts: Parts = { heal: 0, shield: 0, lifesteal: 0 };
   for (const line of lines) {
     if (line.zero) continue;
+    if (line.requiresProfile && !withProfile) continue;
     const procs = procTimes(line, tl);
     if (procs.length === 0) continue;
     const pct = line.maxHpPct ?? 0;
@@ -314,16 +329,28 @@ function damageInWindows(
 // ---- per-unit hooks ---------------------------------------------------------
 // Kits whose sustain depends on state the generic triggers can't see.
 
-const PER_UNIT: Record<string, (tl: Timeline) => Parts> = {
-  // The board runs her mint-duet profile (owner spec): one opening cast, then
-  // Sing Along from mint keeps Performance — and with it the 3.04%/s HoT and
-  // the +49.92% Outgoing-healing potency — live for the rest of the fight.
-  // Team-total: all allies (×5).
-  prika: (tl) => {
-    const first = tl.burstCasts.find((c) => c.slug === 'prika')?.sec;
-    if (first === undefined) return { heal: 0, shield: 0, lifesteal: 0 };
-    const ticks = Math.floor(tl.durationSec - first) + 1;
-    return { heal: ticks * 3.04 * 1.4992 * 5, shield: 0, lifesteal: 0 };
+const PER_UNIT: Record<string, (tl: Timeline, withProfile: boolean) => Parts> = {
+  // Performance HoT 3.04%/s (all allies, ×5) + Outgoing-healing ▲49.92% while
+  // in Performance. Solo: each cast opens a 25s HoT and a 25s Performance
+  // window (potency applies inside it). Duet (with-mint profile): one opening
+  // cast, then Sing Along keeps Performance — and with it the HoT and the
+  // potency — live for the rest of the fight.
+  prika: (tl, withProfile) => {
+    const casts = tl.burstCasts.filter((c) => c.slug === 'prika').map((c) => c.sec);
+    if (casts.length === 0) return { heal: 0, shield: 0, lifesteal: 0 };
+    if (withProfile) {
+      const ticks = Math.floor(tl.durationSec - casts[0]) + 1;
+      return { heal: ticks * 3.04 * 1.4992 * 5, shield: 0, lifesteal: 0 };
+    }
+    let heal = 0;
+    for (const cast of casts) {
+      for (let k = 0; k < 25; k++) {
+        const t = cast + k;
+        if (t > tl.durationSec) break;
+        heal += 3.04 * 1.4992 * 5; // the HoT runs inside its own Performance window
+      }
+    }
+    return { heal, shield: 0, lifesteal: 0 };
   },
 
   // Dancing Effect: Full Charge while in Dancing → 1.8%/s×3 (all allies).

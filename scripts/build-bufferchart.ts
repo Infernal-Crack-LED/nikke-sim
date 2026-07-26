@@ -17,7 +17,7 @@ import type {
   PrepareDeps,
   SkillLevelData,
 } from '../src/prepare.js';
-import { rankBuffers, type BufferValue } from '../src/ranks/buffer.js';
+import { rankBuffers, COMP_PROFILES, type BufferValue } from '../src/ranks/buffer.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
 
 const load = <T>(rel: string): T =>
@@ -55,11 +55,13 @@ population.sort();
 const boards = { generic: rankBuffers(population, 'generic', ctx), typed: rankBuffers(population, 'typed', ctx) };
 
 const pack = (ranked: BufferValue[]): Record<string, unknown>[] =>
+  // fixed arity 5: [slug, addedDps, carryDps, rules, profile] — profile null = plain run
   ranked.map((r) => [
     r.slug,
     Math.round(r.value),
     Math.round(r.carryDps),
-    ...(r.rules.length ? [r.rules] : []),
+    r.rules,
+    r.profile,
   ] as unknown as Record<string, unknown>);
 
 const artifact = {
@@ -90,6 +92,9 @@ const artifact = {
         },
       ];
     }),
+  ),
+  profiles: Object.fromEntries(
+    Object.values(COMP_PROFILES).map((p) => [p.id, p.note]),
   ),
   cells: { generic: pack(boards.generic), typed: pack(boards.typed) },
 };

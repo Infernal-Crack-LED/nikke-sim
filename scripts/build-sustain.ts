@@ -86,7 +86,7 @@ const artifact = {
     }),
   ),
   profiles: Object.fromEntries(
-    Object.entries(SUSTAIN_PROFILES).map(([k, v]) => [k, v.note]),
+    Object.values(SUSTAIN_PROFILES).map((p) => [p.id, p.note]),
   ),
   entries: ranked.map((r) => [
     r.slug,
@@ -95,6 +95,7 @@ const artifact = {
     Math.round(r.healPct * 10) / 10,
     Math.round(r.shieldPct * 10) / 10,
     Math.round(r.lifestealPct * 10) / 10,
+    r.profile, // null = plain run
   ]),
 };
 
@@ -109,7 +110,7 @@ process.stderr.write(
   `sustain: ${ranked.length} units ranked → ${out}\n` +
     ranked
       .slice(0, 15)
-      .map((r) => `  #${r.rank} ${r.slug} ${(r.totalHp / 1e6).toFixed(1)}M HP (${r.totalPct.toFixed(0)}% of maxHP)${r.profile ? ' [profile]' : ''}`)
+      .map((r) => `  #${r.rank} ${r.slug} ${(r.totalHp / 1e6).toFixed(1)}M HP (${r.totalPct.toFixed(0)}% of maxHP)${r.profile ? ` [${r.profile}]` : ''}`)
       .join('\n') +
     '\n',
 );

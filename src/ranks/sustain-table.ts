@@ -52,6 +52,7 @@ export interface SustainLine {
   targets?: number;
   ramp?: number[];
   potency?: { mult: number; windowSec: number; procs: 'first' | 'all' };
+  requiresProfile?: boolean; // counts only when the unit's pair profile ran (anchor's same-squad gate)
   note?: string;
   zero?: string;
 }
@@ -67,6 +68,7 @@ export const SUSTAIN_TABLE: Record<string, SustainLine[]> = {
   'anchor-innocent-maid': [
     { slot: 'skill1', kind: 'heal', trigger: 'fullBurstEnter', maxHpPct: 3.04, ticks: 8, targets: 5,
       potency: { mult: 1.3096, windowSec: 5, procs: 'first' },
+      requiresProfile: true,
       note: 'same-squad gate satisfied by the mast-romantic-maid profile; Potency of HP ▲30.96% (first FB only) boosts the first 5 ticks' },
     { slot: 'burst', kind: 'heal', trigger: 'burstCast', maxHpPct: 40.18, targets: 5 },
     { slot: 'burst', kind: 'heal', trigger: 'burstCast', maxHpPct: 0, targets: 1,

@@ -2,7 +2,7 @@
 // is analytic over one sim run per unit — these pin the valuation rules
 // (interval procs, duet profile, lifesteal windows, zero-lines), not game truth.
 import { describe, expect, it } from 'vitest';
-import { sustainFor, sustainRank, SUSTAIN_PROFILES } from '../../../src/ranks/sustain.js';
+import { sustainFor, sustainRank } from '../../../src/ranks/sustain.js';
 import { SUSTAIN_TABLE } from '../../../src/ranks/sustain-table.js';
 import type { RanksCtx } from '../../../src/ranks/burstgen.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
@@ -28,18 +28,30 @@ describe('sustain board', () => {
 
   it('prika (mint-duet profile): permanent Performance HoT, potency included', () => {
     const r = sustainFor('prika', ctx);
-    expect(r.profile).toBe(SUSTAIN_PROFILES.prika.note);
+    expect(r.profile).toBe('with-mint');
     // ~165 ticks × 3.04 × 1.4992 × 5 — band-pinned, cast time is rotation-dependent
     expect(r.totalPct).toBeGreaterThan(3000);
     expect(r.totalPct).toBeLessThan(4500);
     expect(r.lifestealPct).toBe(0);
   });
 
-  it('anchor-innocent-maid (mast profile): regen + burst heal, no shields', () => {
-    const r = sustainFor('anchor-innocent-maid', ctx);
-    expect(r.profile).toBe(SUSTAIN_PROFILES['anchor-innocent-maid'].note);
-    expect(r.healPct).toBeGreaterThan(1500);
-    expect(r.shieldPct).toBe(0);
+  it('prika solo (plain run): only her own 25s Performance windows', () => {
+    const r = sustainFor('prika', ctx, false);
+    expect(r.profile).toBeNull();
+    // a few casts × 25 ticks × 3.04 × 1.4992 × 5 — well below the duet
+    expect(r.totalPct).toBeGreaterThan(200);
+    expect(r.totalPct).toBeLessThan(2000);
+  });
+
+  it('anchor-innocent-maid: regen gate holds without the mast profile', () => {
+    const plain = sustainFor('anchor-innocent-maid', ctx, false);
+    expect(plain.profile).toBeNull();
+    // plain: burst heal only (the FB-enter regen is requiresProfile)
+    const profiled = sustainFor('anchor-innocent-maid', ctx, true);
+    expect(profiled.profile).toBe('with-mast-rm');
+    expect(profiled.healPct).toBeGreaterThan(plain.healPct);
+    expect(profiled.healPct).toBeGreaterThan(1500);
+    expect(profiled.shieldPct).toBe(0);
   });
 
   it('helm: per-full-charge heals plus burst lifesteal on her own damage', () => {
@@ -77,11 +89,13 @@ describe('sustain board', () => {
     expect(cands.size).toBe(50);
   });
 
-  it('sustainRank sorts by absolute HP and numbers ranks', () => {
-    const ranked = sustainRank(['nayuta', 'liter', 'blanc'], ctx);
+  it('sustainRank dual-enters profiled units with the flag', () => {
+    const ranked = sustainRank(['nayuta', 'liter', 'prika'], ctx);
     for (let i = 1; i < ranked.length; i++)
       expect(ranked[i].totalHp).toBeLessThanOrEqual(ranked[i - 1].totalHp);
-    expect(ranked.map((r) => r.rank)).toEqual([1, 2, 3]);
+    expect(ranked.map((r) => r.rank)).toEqual(ranked.map((_, i) => i + 1));
+    const prika = ranked.filter((r) => r.slug === 'prika');
+    expect(prika.map((r) => r.profile).sort()).toEqual([null, 'with-mint'].sort());
     expect(ranked.find((r) => r.slug === 'liter')!.totalHp).toBe(0);
   });
 });

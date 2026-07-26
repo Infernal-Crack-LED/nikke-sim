@@ -52,14 +52,19 @@ describe('burst-gen board', () => {
     expect(helm / swha).toBeGreaterThan(1.3);
   });
 
-  it('rankBurstGen ranks descending and attaches profiles', () => {
+  it('rankBurstGen ranks descending and dual-enters profiled units', () => {
     const ranked = rankBurstGen(['liter', 'little-mermaid', 'modernia'], ctx);
     for (let i = 1; i < ranked.length; i++)
       expect(ranked[i].gaugeTotal).toBeLessThanOrEqual(ranked[i - 1].gaugeTotal);
-    expect(ranked.map((r) => r.rank)).toEqual([1, 2, 3]);
-    const lm = ranked.find((r) => r.slug === 'little-mermaid')!;
-    expect(lm.profile).toEqual([NOOP_MG, NOOP_MG]);
-    expect(lm.barsPerFight).toBeCloseTo(lm.gaugeTotal / 100, 10);
+    expect(ranked.map((r) => r.rank)).toEqual(ranked.map((_, i) => i + 1));
+    // little-mermaid appears twice: plain (null) and with-2mg — the frontend
+    // differentiates on the profile flag (owner ruling 2026-07-26)
+    const lm = ranked.filter((r) => r.slug === 'little-mermaid');
+    expect(lm.map((r) => r.profile).sort()).toEqual([null, 'with-2mg'].sort());
+    const plain = lm.find((r) => r.profile === null)!;
+    const profiled = lm.find((r) => r.profile === 'with-2mg')!;
+    expect(profiled.gaugeTotal).toBeGreaterThan(plain.gaugeTotal);
+    expect(plain.barsPerFight).toBeCloseTo(plain.gaugeTotal / 100, 10);
   });
 
   it('profiles cover exactly the two team-ammo-scaling kits', () => {
@@ -67,5 +72,7 @@ describe('burst-gen board', () => {
       'cinderella-crystal-wave',
       'little-mermaid',
     ]);
+    expect(BURSTGEN_PROFILES['little-mermaid'].id).toBe('with-2mg');
+    expect(BURSTGEN_PROFILES['cinderella-crystal-wave'].id).toBe('with-1mg');
   });
 });

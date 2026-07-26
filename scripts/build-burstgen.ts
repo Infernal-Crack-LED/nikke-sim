@@ -18,7 +18,7 @@ import type {
   PrepareDeps,
   SkillLevelData,
 } from '../src/prepare.js';
-import { rankBurstGen, type RanksCtx } from '../src/ranks/burstgen.js';
+import { rankBurstGen, BURSTGEN_PROFILES, type RanksCtx } from '../src/ranks/burstgen.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -76,10 +76,13 @@ const artifact = {
       ];
     }),
   ),
+  profiles: Object.fromEntries(
+    Object.values(BURSTGEN_PROFILES).map((p) => [p.id, p.note]),
+  ),
   entries: ranked.map((r) => [
     r.slug,
     Math.round(r.gaugeTotal * 100) / 100,
-    r.profile,
+    r.profile, // null = plain solo run
   ]),
 };
 
@@ -94,7 +97,7 @@ process.stderr.write(
   `burstgen: ${ranked.length} units ranked → ${out}\n` +
     ranked
       .slice(0, 10)
-      .map((r) => `  #${r.rank} ${r.slug} ${r.barsPerFight.toFixed(1)} bars${r.profile.length ? ' (+' + r.profile.join('+') + ')' : ''}`)
+      .map((r) => `  #${r.rank} ${r.slug} ${r.barsPerFight.toFixed(1)} bars${r.profile ? ` [${r.profile}]` : ''}`)
       .join('\n') +
     '\n',
 );

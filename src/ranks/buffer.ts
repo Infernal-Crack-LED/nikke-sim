@@ -54,6 +54,50 @@ const PLAIN_SPEC: CarrySpec = { weapon: null, pierce: false, element: null };
 // spec). Keep each entry justified by a kit line.
 export const BUFFER_PROFILES: Record<string, Partial<CarrySpec>> = {};
 
+// ---- comp profiles (with-healer / with-shielder) -----------------------------
+// Some headline buffs are gated on a teammate the standard comp doesn't field:
+// crown's team Attack Damage ▲ fires on 'when recovery takes effect', naga's
+// core/ATK lines require a shield covering her. The plain run shows the floor
+// (crown's own Relax self-heal gives ~27% uptime; naga's lines stay inert); the
+// profile run gives the stage-filler no-op a synthetic kit that holds the gate
+// at ~100% uptime (owner ruling 2026-07-26). Profiled units are ranked BOTH
+// ways — the `profile` field on each entry tells the frontend which is which.
+export interface BufferCompProfile {
+  id: string;
+  note: string;        // player-facing, in the artifact's profiles map
+  noopSkill1: object[]; // synthetic skill1 blocks injected on the no-op fillers
+}
+export const COMP_PROFILES: Record<string, BufferCompProfile> = {
+  'with-healer': {
+    id: 'with-healer',
+    note: 'a healing teammate keeps recovery-triggered buffs at full uptime',
+    noopSkill1: [
+      {
+        slot: 'skill1',
+        trigger: { kind: 'interval', sec: 1 },
+        target: { kind: 'allies' },
+        effects: [{ kind: 'heal' }],
+      },
+    ],
+  },
+  'with-shielder': {
+    id: 'with-shielder',
+    note: 'a shielding teammate keeps shield-gated buffs at full uptime',
+    noopSkill1: [
+      {
+        slot: 'skill1',
+        trigger: { kind: 'interval', sec: 5 },
+        target: { kind: 'allies' },
+        effects: [{ kind: 'shield', durationSec: 10 }],
+      },
+    ],
+  },
+};
+export const BUFFER_COMP_PROFILES: Record<string, string> = {
+  crown: 'with-healer', // S2: team Attack Damage ▲ 20.99% (7s) on 'recovery takes effect'
+  naga: 'with-shielder', // S1/burst: coreDamagePct 85.17 + casterAtkPct 31.02 require a shield on her
+};
+
 // Walk every {target, effects} block in the override JSON (any nesting — skill
 // slots, modes, steps) and derive what the carries must provide for the unit's
 // ALLY-FACING typed buffs to apply. Returns the spec + an audit trail.
@@ -160,19 +204,22 @@ export interface BufferValue {
   carryDps: number;   // Σ carry DPS with the buffer
   baselineDps: number;
   testedBurstCasts: number; // pin: a tested B3 must be 0 (rightmost rule)
+  profile: string | null;   // comp profile id (with-healer/with-shielder); null = plain
   rules: string[];    // typed-board adaptation audit trail ([] on generic)
   rank: number;
 }
 
 // One value run. Returns Σ carry DPS for the comp plus the tested slot's cast
 // count; the baseline swaps the tested unit for its stage-matched no-op (same
-// carries).
+// carries). When `profile` is set, every no-op filler also carries the
+// profile's synthetic kit (the with-healer/with-shielder gate opener).
 function carryDpsSum(
   team: AssembledBufferTeam,
   ctx: RanksCtx,
   spec: CarrySpec,
   pierceOverride: boolean,
   testedSlug?: string,
+  profile?: string | null,
 ): { sum: number; testedBurstCasts: number } {
   const chars = team.slugs.map((s) => charFor(ctx, s, team.chars as any));
   const element = (chars[team.carryIdxs[0]] as CharacterData).element as Element;
@@ -192,19 +239,22 @@ function carryDpsSum(
     durationSec: 180,
     focusSlug: team.slugs[team.carryIdxs[1]], // the right carry (RL on generic)
   };
-  const deps = pierceOverride
-    ? {
-        ...ctx.deps,
-        overrides: {
-          ...ctx.deps.overrides,
-          ...Object.fromEntries(
-            team.carryIdxs.map((i) => [
-              team.slugs[i],
-              { slug: team.slugs[i], hasPierce: true, skill1: [], skill2: [], burst: [] } as any,
-            ]),
-          ),
-        },
-      }
+  const compProfile = profile ? COMP_PROFILES[profile] : undefined;
+  const extraOverrides: Record<string, any> = {};
+  if (pierceOverride) {
+    for (const i of team.carryIdxs)
+      extraOverrides[team.slugs[i]] = {
+        slug: team.slugs[i], hasPierce: true, skill1: [], skill2: [], burst: [],
+      };
+  }
+  if (compProfile) {
+    for (const s of team.slugs) {
+      if (!(NOOP_CHARACTERS as any)[s]) continue; // no-op fillers only
+      extraOverrides[s] = { slug: s, skill1: compProfile.noopSkill1, skill2: [], burst: [] };
+    }
+  }
+  const deps = Object.keys(extraOverrides).length
+    ? { ...ctx.deps, overrides: { ...ctx.deps.overrides, ...extraOverrides } }
     : ctx.deps;
   const prepared = prepareTeam(chars, unitOpts, deps);
   const r = runSim(chars, ctx.mult, cfg, prepared);
@@ -216,47 +266,58 @@ function carryDpsSum(
 }
 
 // Value of one buffer on one board. Baselines are memoized per (burst, board,
-// spec) — every buffer of the same burst stage + adaptation shares one.
+// spec, profile) — every buffer of the same burst stage + adaptation shares one.
+// `profile` forces a comp-profile variant (null = plain); when omitted the
+// unit's own BUFFER_COMP_PROFILES entry is used (rankBuffers passes both).
 export function bufferValueFor(
   slug: string,
   board: BufferBoard,
   ctx: RanksCtx,
   baselineMemo: Map<string, number> = new Map(),
+  profile?: string | null,
 ): Omit<BufferValue, 'rank'> {
   const char = ctx.characters[slug];
   if (!char) throw new Error(`${slug}: not in characters.json`);
   const burst = char.burst === 'Λ' ? 'III' : char.burst;
+  const activeProfile = profile === undefined ? (BUFFER_COMP_PROFILES[slug] ?? null) : profile;
   const { spec, rules } = board === 'typed'
     ? deriveCarrySpec(ctx.deps.overrides[slug])
     : { spec: { ...PLAIN_SPEC }, rules: [] };
 
   const team = assemble(slug, burst, board, spec);
   const baselineTeam = assemble(team.noopSlot, burst, board, spec);
-  const baselineKey = `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}`;
+  const baselineKey = `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}`;
   let baseline = baselineMemo.get(baselineKey);
   if (baseline === undefined) {
-    baseline = carryDpsSum(baselineTeam, ctx, spec, board === 'typed' && spec.pierce).sum;
+    baseline = carryDpsSum(baselineTeam, ctx, spec, board === 'typed' && spec.pierce, undefined, activeProfile).sum;
     baselineMemo.set(baselineKey, baseline);
   }
-  const run = carryDpsSum(team, ctx, spec, board === 'typed' && spec.pierce, slug);
+  const run = carryDpsSum(team, ctx, spec, board === 'typed' && spec.pierce, slug, activeProfile);
   return {
     slug,
     value: run.sum - baseline,
     carryDps: run.sum,
     baselineDps: baseline,
     testedBurstCasts: run.testedBurstCasts,
+    profile: activeProfile,
     rules,
   };
 }
 
-// Rank a population on one board.
+// Rank a population on one board. Units with a comp profile appear TWICE —
+// plain (profile: null) and profiled — so the two standings compare at a
+// glance (owner ruling 2026-07-26).
 export function rankBuffers(
   population: string[],
   board: BufferBoard,
   ctx: RanksCtx,
 ): BufferValue[] {
   const memo = new Map<string, number>();
-  const results = population.map((slug) => bufferValueFor(slug, board, ctx, memo));
+  const results = population.flatMap((slug) => {
+    const rows = [bufferValueFor(slug, board, ctx, memo, null)];
+    if (BUFFER_COMP_PROFILES[slug]) rows.push(bufferValueFor(slug, board, ctx, memo, BUFFER_COMP_PROFILES[slug]));
+    return rows;
+  });
   results.sort((a, b) => b.value - a.value);
   return results.map((r, i) => ({ ...r, rank: i + 1 }));
 }

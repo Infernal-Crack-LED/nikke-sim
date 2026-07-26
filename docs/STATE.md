@@ -339,3 +339,11 @@ Handoffs for the two planned follow-ups: `docs/handoffs/2026-07-26-dps-ranks-b1b
   standard carries (`src/ranks/synthetics.ts`, class-modal MG+RL). Two arms: generic and typed
   (carries auto-adapt to the kit: weapon swap / pierce / projectile-explosion / element).
 
+**Comp profiles (all boards, 2026-07-26):** profiled units are ranked BOTH plain and profiled, each
+entry flagged `profile: null | <id>` (the frontend differentiator). burstgen: little-mermaid
+`with-2mg`, cinderella-crystal-wave `with-1mg`. sustain: prika `with-mint`, anchor-innocent-maid
+`with-mast-rm`. buffer: crown `with-healer` (recovery-triggered AD buff at ~100% uptime vs ~27% off
+her own Relax self-heal), naga `with-shielder` (shield-gated core/ATK lines live vs inert) — both
+via a synthetic heal/shield kit on the no-op fillers (`COMP_PROFILES` in `src/ranks/buffer.ts`).
+Frontend build plan: `docs/handoffs/2026-07-26-rank-boards-frontend.md`.
+

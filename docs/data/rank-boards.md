@@ -21,7 +21,10 @@ Two units run with partners because their fills scale with team ammunition
 burn: **Little Mermaid with two machine-gun partners** (her 400-ammunition
 fill procs far more often) and **Cinderella: Crystal Wave with one**. A 2026-07-26
 census of every burst-gauge-tagged kit confirmed these are the only two
-team-scaling mechanics; every other kit works identically solo.
+team-scaling mechanics; every other kit works identically solo. Both units are
+ranked **both ways** — plain solo and profiled — with a `profile` flag on each
+entry (`with-2mg` / `with-1mg` / `null`) so the two standings compare at a
+glance (same convention on every board).
 
 Consequence to know: gauge effects that require a Full Burst to have happened
 read zero (none exist among sim-supported units today).
@@ -54,7 +57,8 @@ Multi-ally lines count per target at the caster's Max HP basis.
 Pair profiles: **Prika runs with Mint** (their duet keeps Prika's Performance
 — and with it her heal-over-time and outgoing-healing potency — up
 permanently), and **Anchor: Innocent Maid runs with Mast: Romantic Maid**
-(satisfies the same-squad condition on her Full-Burst recovery).
+(satisfies the same-squad condition on her Full-Burst recovery). Both are
+ranked with and without the profile (`with-mint` / `with-mast-rm` / `null`).
 
 Two honest limitations: "recover X% of attack damage" lines are valued on the
 unit's **own** damage only (in a real team, allies' damage counts too, so
@@ -87,5 +91,14 @@ Two boards per unit:
 
 Read generic as plug-and-play value and typed as built-around value. Purely
 defensive kits read near zero — the scope-lock boss deals no damage, so there
-is nothing to mitigate. Buffs gated on external triggers the comp lacks (for
-example recovery-triggered lines with no healer present) also read low.
+is nothing to mitigate.
+
+**Comp profiles** (`with-healer` / `with-shielder`): some headline buffs are
+gated on a teammate the standard comp doesn't field — Crown's team Attack
+Damage buff fires only "when recovery takes effect" (her own Relax self-heal
+holds it at roughly 27% uptime alone), and Naga's core-damage and ATK lines
+require a shield covering her (inert without a shielder). Profiled runs give a
+no-op teammate a synthetic heal/shield kit that holds the gate at full uptime.
+Profiled units are ranked **both ways** — plain and profiled — flagged
+`null` / `with-healer` / `with-shielder`. Buffs gated on other missing
+triggers also read low on the plain board.

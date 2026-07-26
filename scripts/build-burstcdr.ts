@@ -85,7 +85,9 @@ const artifact = {
     ...(e.ramp ? [e.ramp.map((v) => Math.round(v * 100) / 100)] : [null]),
     e.condition ?? null,
     e.selfCdr ?? null,
+    null, // profile — no profiles on this board (uniform row shape)
   ]),
+  profiles: {}, // no comp profiles on this board (uniform artifact shape)
 };
 
 const outArg = process.argv.indexOf('--out');

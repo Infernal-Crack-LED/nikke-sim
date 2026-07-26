@@ -309,8 +309,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 - **⇒ RANK BOARDS BEYOND DPS — BACKEND LANDED 2026-07-26** (methodology `docs/data/rank-boards.md`;
   registry `docs/STATE.md` §8). Four boards: burstgen / burstcdr / sustain / buffer, sources
-  `src/ranks/`, `npm run ranks:all` → `web/public/*.json`. **OPEN follow-ups:** (1) frontend pass
-  (tabs + fetchers — artifacts mirror the dpschart.json conventions); (2) DPS ranks for B1/B2 →
+  `src/ranks/`, `npm run ranks:all` → `web/public/*.json`. **OPEN follow-ups:** (1) frontend pass —
+  plan written: `docs/handoffs/2026-07-26-rank-boards-frontend.md` (one `/ranks` page, pill-switched
+  boards, profile badges; artifacts carry a `profile` flag with plain+profiled dual entries); (2) DPS ranks for B1/B2 →
   `docs/handoffs/2026-07-26-dps-ranks-b1b2.md` (owner plans in a separate session); (3) composite
   support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same). Known caveats to
   carry into any owner review: buffer board under-reads trigger-gated kits (crown's recovery-gated
