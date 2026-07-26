@@ -1871,10 +1871,14 @@
       "weapon": "SG",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/leona.json + scripts/kit-autonomy/manual-review/leona.md.",
+          "low ENCODING (skill2 (pellet line target)): Top-2-highest-final-ATK-within-SG cap is dropped: +5 pellets applies to ALL shotgun allies, over-applying in 3+-SG teams",
+          "med FIDELITY (burst (Roar-max gate)): The 'when Roar is at max stacks' precondition is modeled unconditional, over-crediting the 21.32% crit line on casts where Roar sits below 5 stacks"
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
@@ -1894,10 +1898,13 @@
       "caveats": [
         "skill1: 'Maximum Effective Range ▲ 20%' to shotgun allies is not modeled — the engine has no range stat and shotgun pellet landing is a fixed measured table; real effect (better far-band landing) is a known under-model",
         "skill2: Hit Rate ▲ 20.28% is modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19): feeds acrForHR core rate for AR/SMG/SG recipients; the in-game magnitude of the lift is unmeasured",
-        "skill2: '+5 pellets' is modeled as Normal Attack +50% to ALL shotgun allies (kit: only the 2 highest-ATK shotgun allies) — over-applies in teams running 3 or more shotguns, including Leona herself",
+        "skill2: '+5 pellets' is modeled with the real pelletCountFlat 5 primitive (A4 2026-07-21; superseded the prior Normal Attack +50% proxy on 2026-07-26) but applies to ALL shotgun allies (kit: only the 2 highest-ATK shotgun allies) — over-applies in teams running 3 or more shotguns, including Leona herself",
         "burst: the 21.32% crit-rate line assumes Roar is fully stacked at her burst cast (the stack-count gate is not modeled and may not always hold)"
       ],
-      "board": null
+      "board": null,
+      "date": "2026-07-26",
+      "evidence": "kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0 (kimi-k3 binding judge, discriminationOk, 0 REAL-GOTCHA); cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; one FIX landed (pelletCountFlat 5 superseded normalAttackPct+50 proxy, blind-derived independently); residuals flag3 (pellet top-2 scope) + flag4 (Roar-max gate ungated)",
+      "residual": "SG-team blast radius unmeasured: pellet top-2-highest-final-ATK cap dropped (alliesOfWeapon SG over-applies in 3+-SG teams, flag3 low); Roar-max-stacks burst gate modeled unconditional (flag4 med, may over-credit if stacks reset across reloads); effective-range+20% unmodeled (flag5, no StatKey); SG cadence tuple unverified (flag1)"
     },
     "liberalio": {
       "name": "Liberalio",

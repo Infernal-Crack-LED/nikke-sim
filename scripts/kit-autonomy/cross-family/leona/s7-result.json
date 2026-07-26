@@ -1,0 +1,101 @@
+{
+  "slug": "leona",
+  "kitDescription": "Leona is a Water Supporter who buffs her team, especially shotgun allies. As she fires, every 5 shots she stacks a small team-wide Critical Rate buff (Roar, up to 5 stacks, 5 seconds each), and every 15 shots she extends the maximum effective range of all shotgun allies for 10 seconds. Whenever the team enters Full Burst she raises all allies' Hit Rate for 10 seconds and grants +5 pellets for 10 seconds to the two highest-final-ATK shotgun allies. Her own Burst II gives the whole team a large Critical Damage buff for 10 seconds, and — when Roar is fully stacked — an additional large Critical Rate buff for shotgun allies only. She has no personal damage mechanics; her entire value is the crit, hit-rate, range, and pellet support she provides to a shotgun-heavy team.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "after 5 normal attacks: Roar Crit Rate ▲2.62%, ×5",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount{count:50} → critRatePct 2.62, maxStacks 5, 5s, all allies",
+        "blindSaid": "S6: hitCount{count:5}; S2b: 'hitCount count:5 — rounds, not pellets'",
+        "formulaCheck": "Engine SSOT (sim.ts:2899-2912): the hitCount counter adds hitsPerShot (=10 pellets) PER PULL. count:50 therefore fires on the 5th pull = the kit's '5 normal attacks'; count:5 fires on the FIRST pull (10 ≥ 5) and is exactly the pellet-counting misread S2b named as the nearest-wrong model. The S6 blind's own recipe converges on count:50. The blind agents misread the engine's counter semantics — a RECON_ERROR on their side, not a driver divergence. Driver's L1 pin (first proc after the 4th pull, counterfactual count:5 procs on pull 1) discriminates this correctly.",
+        "fireRateOk": true,
+        "explanation": "Encoding is correct for this engine's pellet-per-pull counter; generic critRatePct (not critRateNormalPct) matches the unscoped 'Critical Rate' wording; both blinds converged on stat/value/stacks/duration/target. The count:50-vs-count:5 divergence is attributed to the blind side."
+      },
+      {
+        "kitLine": "after 15 attacks: Max Effective Range ▲20% (SG)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim + ⚑5 (no range StatKey; landing is the fixed SG_LANDING_BY_BAND table; recipe: far-band per-mag landing deltas)",
+        "blindSaid": "S6 identical: unmodeled verbatim, no StatKey, needs engine range-band primitive; S5 asserts presence in unmodeled/note (passed) and it.skips behavior",
+        "formulaCheck": "Range is a +30% additive major-bucket term by band; no StatKey exists, so no faithful block is possible today. Both sides independently classified it as a GAP, not a defensive skip — it is damage-relevant (SG landing fraction).",
+        "fireRateOk": true,
+        "explanation": "Converged DOCUMENTED-GAP; recorded with recipe by both driver and blind. Not a silent drop."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "entering Full Burst: Hit Rate ▲20.28%, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter, allies, hitRatePct 20.28, 10s; magnitude ⚑2 (engine-owned hrCoreMult), stat value never fudged",
+        "blindSaid": "S6 identical encoding; S5 asserts one apply per fullBurstStart on the FB-start frame (passed)",
+        "formulaCheck": "fullBurstEnter fires on ANY team FB (emitFbEnter fires fullBurstEnter triggers same frame as fullBurstStart) — matches 'when entering Full Burst'. burstCast would be the taxonomy-#3 misread; driver's counterfactual pin (burstCast → zero applies on FB-start frames) discriminates it.",
+        "fireRateOk": true,
+        "explanation": "Triple-converged (driver + S5 behavior + S6 encoding). Magnitude of HR→core lift is measurement-gated per scope rule F; the 20.28 stat value matches prose exactly."
+      },
+      {
+        "kitLine": "FB enter: pellets ▲5, 2 top-final-ATK SG allies",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "pelletCountFlat 5 (faithful stat; both rejected the normalAttackPct+50% proxy) but target alliesOfWeapon SG — top-2 cap dropped, ⚑3 documented (over-applies in 3+-SG teams, bounded within-class)",
+        "blindSaid": "S6: same stat/trigger/duration but alliesTopAtk{count:2, byFinalAtk:true} — rank-then-filter, wrong on mixed teams (2nd SG loses buff to a non-SG top-2 unit); S6 flagged its own approximation too",
+        "formulaCheck": "Kit is filter-then-rank ('highest final ATK AND a Shotgun'); the schema (types.ts:90-106) has no TargetDef composing weapon filter + top-N rank, so NEITHER encoding is exact. effectivePellets is SG-only, so the blind's version silently mis-grants inert buffs and drops the intended 2nd SG recipient; the driver's over-applies inside the SG class only. Both are flagged approximations of the same inexpressible conjunction; the blind corroborates the schema read.",
+        "fireRateOk": true,
+        "explanation": "Stat primitive is faithful and converged (pelletCountFlat 5, engine-threaded through the SG landing path, gauge base-capped — matches S5's 'moves leona only, not gauge, not others' assertions). The residual is the documented ⚑3 scope approximation; driver's within-class over-application is the bounded-error choice (arcana-fortune-mate precedent) and S5's single-SG fixture cannot discriminate the two readings — S5 itself documents this."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Burst: Critical Damage ▲34.64%, all allies, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, allies, critDamagePct 34.64, 10s; pin: applies land on her cast frame, strictly before the FB window (fixture: sole B2, casts every rotation)",
+        "blindSaid": "S6 identical; S5: applies must precede fbStart by 10-180f (runIf deferred to structural ENCODED check since crown wins B2 in the blind fixture — passed)",
+        "formulaCheck": "No activation clause in the burst block → own burstCast; per the measured chain the B2 cast precedes FB start (~52f), so the buff legitimately lands pre-window. fullBurstEnter keying is the nearest-wrong and is pinned RED by the driver's counterfactual.",
+        "fireRateOk": true,
+        "explanation": "Converged and discriminating. Driver's sole-B2 fixture is the stronger isolation (behavioral, not just structural)."
+      },
+      {
+        "kitLine": "Roar at max stacks: Crit Rate ▲21.32% (SG)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCast, alliesOfWeapon SG, critRatePct 21.32, 10s, UNGATED — ⚑4 (no buff-stack-count gate exists; reload-straddle resets mean the gate may not always hold; recipe: buff icon at <5 stacks on cast)",
+        "blindSaid": "S6 identical encoding, same ungated flag with the same reasoning ('may be unreachable... override OVER-credits'); S5 it.skips the gate (no primitive) and passed the SG-scope assertions",
+        "formulaCheck": "The gate ('when Roar is at max stacks') is a real kit precondition with no Block primitive; resourceGate reads declared resources and Roar's 5s-refresh stack cannot be mirrored as a pool — both sides independently reached this. SG-only target is the exact fit (converged, discriminated vs unscoped-allies counterfactual).",
+        "fireRateOk": true,
+        "explanation": "Target scope FAITHFUL; the gate is a converged DOCUMENTED-GAP (⚑4). Direction of error is known (optimistic/over-credit) and measured-gated, not fudged."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2 (pellet line target)",
+      "summary": "Top-2-highest-final-ATK-within-SG cap is dropped: +5 pellets applies to ALL shotgun allies, over-applying in 3+-SG teams",
+      "evidence": "Kit: '2 ally unit(s) with the highest final ATK and a Shotgun' vs driver alliesOfWeapon{SG} (no count/rank). Schema types.ts:90-106 has no TargetDef composing weapon filter + top-N rank; S6 blind's alliesTopAtk{2,byFinalAtk} is the opposite (rank-then-filter) error and equally inexact. Driver documented as ⚑3; S6 corroborates the schema gap.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Schema/engine work: add a TargetDef composing weapon filter with top-N final-ATK ranking (filter-then-rank, byFinalAtk per the literal 'final ATK'); then re-encode with count:2. No value change — do not proxy."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst (Roar-max gate)",
+      "summary": "The 'when Roar is at max stacks' precondition is modeled unconditional, over-crediting the 21.32% crit line on casts where Roar sits below 5 stacks",
+      "evidence": "Kit: 'Activates when Roar is at max stacks' vs driver ungated burstCast block (⚑4). No buff-stack-count gate exists in Block; both driver and S6 blind converged on ungated + flagged. Driver's own cadence note (9-round mag, 111f reload → ~5.2s across-reload gap vs 5s Roar expiry) means the gate genuinely may not hold at cast time.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "needs measurement: at her burst cast on footage, check the 21.32% crit-rate buff icon when Roar is visibly <5 stacks (e.g. right after a reload). If the gate ever fails, engine work: a stacksAtMax gate on a named buff key (or Roar-as-resource with expiry semantics that survive reloads) — never a haircut on the 21.32 value."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA exists: every divergence between driver and blinds is either a blind-side recon error or a converged, documented gap. The headline divergence (Roar hitCount count:50 vs count:5) resolves FOR the driver — the engine SSOT adds hitsPerShot=10 per pull, so count:50 is precisely the kit's '5 normal attacks' and count:5 is the pellet-counting misread S2b itself named as nearest-wrong; the S6 blind's own recipe converges on count:50, making this a RECON_ERROR by the blind agents, not a finding. The remaining two approximations (pellet top-2 scope ⚑3, Roar-max gate ⚑4) are documented identically and independently by driver AND blind, both rooted in real schema/engine gaps (no weapon-filter+top-N TargetDef; no buff-stack gate), with honest error directions and measurement recipes rather than fudges. Convergence is strong where it matters: S5's 22 behavioral assertions run GREEN against the shipped override unmodified, and driver + S5 + S6 triple-converged on every stat, value, trigger keying (fullBurstEnter vs burstCast split), and scope — including the pelletCountFlat-5-over-proxy fix the blind derived independently. Discrimination holds: each load-bearing driver pin is paired with a counterfactual that fails it (count:5 first-proc timing, burstCast/fullBurstEnter frame separation, unscoped-target leaks), and S5's cadence band independently rejects pellet-counted Roar. Residual same-model risk for the owner to spot-check: (1) the shared assumption that 'normal attack' = trigger pull rather than pellet for SG hit-count lines — all agents read it the same way, and it is the load-bearing premise behind count:50; (2) whether Roar actually sustains 5 stacks across reloads in game (⚑1 cadence + ⚑4 gate both ride on the unmeasured SG cadence tuple) — if stacks reset each reload, the burst rider is partly dead in game and the override over-credits it; both are flagged with footage recipes, none blocking.",
+  "model": "kimi-code/k3"
+}

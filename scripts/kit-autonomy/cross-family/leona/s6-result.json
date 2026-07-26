@@ -1,0 +1,254 @@
+{
+  "slug": "leona",
+  "leakDetected": null,
+  "override": {
+    "slug": "leona",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 5
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 2.62,
+            "durationSec": 5,
+            "maxStacks": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 20.28,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 2,
+          "byFinalAtk": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "pelletCountFlat",
+            "value": 5,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 34.64,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfWeapon",
+          "weapon": "SG"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 21.32,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates after 15 normal attack(s). Affects all allies with a Shotgun. Maximum Effective Range ▲ 20% for 10 sec."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⛑ Maximum Effective Range ▲20% (skill1b) is UNMODELED: the schema has no max-range StatKey and range-band eligibility is engine-automatic from the boss range script. On a SG team this is a real damage line (it moves allies' falloff band and therefore SG pellet landing), so this override UNDER-credits Leona on shotgun comps. Recipe: needs an engine range-band primitive before it can be expressed.",
+      "⛑ skill2b target is approximated. The kit says '2 ally unit(s) with the highest final ATK AND a Shotgun' — a weapon filter composed with a top-N final-ATK rank. No single TargetDef expresses that conjunction (alliesTopAtk has no weapon facet; alliesOfWeapon has no count/ranking). Modeled as alliesTopAtk{count:2,byFinalAtk:true}, which mis-targets on mixed-weapon teams. pelletCountFlat is documented SG-only/inert on non-SG, which likely absorbs the error, but that is an unverified engine assumption.",
+      "⛑ burst-b's 'when Roar is at max stacks' precondition is NOT gated in this model. Roar is +1 stack per 5 normal attacks with a 5s per-stack life, so 5 stacks requires ~25 normal attacks inside a rolling 5s window; with a 9-round magazine and 111-frame reload that threshold may be unreachable in practice, in which case this 21.32% Critical Rate line is DEAD in game and this override OVER-credits it. No block gate reads a buff's live stack count (resourceGate reads declared resources only). Recipe: instrument buffApply stacks for the Roar key over a real rotation; if max stacks is never observed, drop the block or re-express Roar as a declared resource + resourceGate{min:5}.",
+      "⛑ Both burst lines are keyed burstCast (no 'entering Full Burst' clause in the burst block). Burst-cast damage/auras land BEFORE the Full Burst window opens, so these buffs' 10s windows start early relative to a fullBurstEnter model. If footage shows the crit windows aligned to FB entry rather than the cast banner, re-key. Recipe: popup-read the first crit-orange rate change against the FB banner frame."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Leona is a pure support buffer — no damage effect of her own in any slot; her whole contribution is team crit rate, crit damage, hit rate, and SG pellet count. Modeled: S1a Roar stacking Critical Rate (hitCount 5, 5 stacks, 5s each, all allies); S2a Hit Rate on FB entry (all allies, 10s); S2b +5 pellets on FB entry (2 highest-final-ATK allies, 10s); burst Critical Damage (all allies, 10s) and the Roar-max-stacks Critical Rate for shotgun allies (10s). Deliberately unmodeled: S1b Maximum Effective Range ▲20% — no schema StatKey exists for it and range banding is engine-derived. Measurement-gated: the Roar max-stacks precondition on the burst's second line, the pellet-grant target set on mixed-weapon teams, and the burstCast-vs-fullBurstEnter keying of both burst lines. All magnitudes are verbatim kit values, not calibrated."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 5 normal attack(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:5}; kit-literal activation threshold. ⛑ engine round-vs-pull counting on a 10-pellet SG is unverified."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (Leona included — no 'except self' clause)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Roar: Critical Rate ▲ 2.62%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 2.62. Unscoped in the prose (not 'Critical Rate of normal attacks'), so generic critRatePct, NOT critRateNormalPct."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "stacks up to 5 time(s), lasts 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks 5 + durationSec 5. Wall-clock seconds, not round-count ('sec' is literal). Max value 13.1% crit rate."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 15 normal attack(s)",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger is expressible (hitCount{count:15}) but its sole effect is not — see next row; a block with no representable effect is not authored."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "all allies with a Shotgun",
+      "status": "SKIPPED",
+      "effectOrReason": "Target IS expressible as alliesOfWeapon{weapon:'SG'}; skipped only because its effect is not. Recorded in unmodeled."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Maximum Effective Range ▲ 20% for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey for maximum effective range in types.ts; range-band eligibility + falloff are engine-automatic from the boss range script. This is a REAL damage line on SG comps (it shifts pellet landing), so the skip is an under-credit, not an inert line. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter — literal 'entering Full Burst' clause, fires on ANY team Full Burst, not only rotations Leona bursts."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies, self included."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Hit Rate ▲ 20.28% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 20.28, durationSec 10. Hit-Rate→core lift is the engine's hrCoreMult path; the kit magnitude is used verbatim, the CORE-lift conversion is the engine's derived ⛑ (not restated here)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "2 allies highest final ATK + Shotgun",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesTopAtk{count:2, byFinalAtk:true} — byFinalAtk set because the kit literally says 'final ATK'. The AND-a-Shotgun facet is NOT expressible on alliesTopAtk; ⛑ flagged as an approximation."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Number of pellets ▲ 5 for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pelletCountFlat 5, durationSec 10 — the dedicated flat SG pellet-count StatKey (threads the per-pellet landing fraction / falloff / shot-level core), not a normalAttackPct proxy."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies (no activation clause)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast + target allies. No 'entering Full Burst' text in the burst block → keyed to Leona's own cast, so it cannot over-fire on another Burst II's rotation."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Damage ▲ 34.64% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 34.64, durationSec 10. Unscoped — applies to all crit-eligible damage, not normal-attack-only."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Roar is at max stacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Precondition NOT gated — no block gate reads a buff's live stack count (resourceGate reads declared resources only). Block fires unconditionally on burstCast, which OVER-credits if 5 Roar stacks are unreachable. ⛑ flagged; the alternative encoding is Roar-as-resource + resourceGate{min:5}."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies with shotguns",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesOfWeapon{weapon:'SG'} — weapon-typed, class-blind. Leona is SG herself, so she is included."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Critical Rate ▲ 21.32% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 21.32, durationSec 10. Same unscoped-crit reading as S1a; stacks additively with Roar in the crit-rate bucket."
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[1] (Critical Rate 21.32% block)",
+      "estimate": "Modeled as ungated — fires on every Leona burst cast. TRUE behaviour may be: never fires.",
+      "reasoning": "The kit gates this on 'Roar is at max stacks'. Roar accrues +1 per 5 normal attacks and each stack lives only 5 sec, so 5 concurrent stacks needs ~25 normal attacks within a rolling 5 sec window. Leona's magazine is 9 rounds with a 111-frame (~1.85s) reload, so a full magazine plus reload cannot plausibly deliver 25 rounds in 5 sec — unless the engine counts a 10-pellet SG shot as 10 hits toward hitCount, in which case 5 stacks is trivially reachable. The two readings differ by 10x on the ramp and flip this block between dead and always-on. This is the single largest correctness risk in the override.",
+      "recipe": "Run controlComp with Leona and tap cfg.onEvent for buffApply where key matches the S1a Roar buff; log the peak `stacks` value observed across the fight. If peak stacks reaches 5, keep the block ungated (the gate is satisfied in practice). If it never reaches 5, either delete the block or re-express Roar as a declared resource (resources:[{name:'roar',initial:0,max:5}]) with a resource effect on the hitCount:5 block and resourceGate{name:'roar',min:5} on this burst block. Same tap answers the round-vs-pull question in flag 2."
+    },
+    {
+      "field": "skill1[0].trigger (hitCount count:5) — and by extension the 15-attack line",
+      "estimate": "count:5 taken literally as kit-stated 'normal attacks'.",
+      "reasoning": "The schema documents hitCount as counting ROUNDS, not trigger pulls. Leona is a shotgun with hitsPerShot:10. If the engine credits 10 per trigger pull, 'after 5 normal attacks' is satisfied every single shot; if it credits 1, it takes 5 shots (~most of a 9-round magazine). Kit prose says 'normal attack(s)', which in-game conventionally means one trigger pull for a shotgun, but I cannot confirm the engine's convention blind. This changes the Roar ramp rate by 10x.",
+      "recipe": "Tap shot events and buffApply events in one run; count shot events between consecutive Roar buffApply events. 5 shots between applications = pull-counting (matches the literal kit reading); 1 shot between = round-counting (Roar is at cap almost immediately, and flag 1 resolves to always-on). If round-counting, consider count:50 to preserve the kit-intended 5-shot cadence."
+    },
+    {
+      "field": "skill2[1].target (alliesTopAtk count:2 byFinalAtk:true)",
+      "estimate": "Weapon filter dropped; top-2 final-ATK rank kept over the whole ally pool.",
+      "reasoning": "The kit target is a CONJUNCTION: 'the 2 allies with the highest final ATK AND a Shotgun'. The correct pool is SG allies only, then rank by final ATK, then take 2. No TargetDef composes those (alliesTopAtk lacks a weapon facet; alliesOfWeapon lacks count/byFinalAtk). My encoding ranks the full ally pool, so on a mixed team it can grant pellets to non-SG allies while a lower-ATK SG ally that SHOULD receive them gets nothing. pelletCountFlat is documented as SG-only and inert at 0 on non-SG, which would make the misdirected grants harmless — but 'the wrong ally is skipped' is NOT absorbed by that, since the intended SG recipient still loses the buff.",
+      "recipe": "Two-comp differential: run controlComp with an all-SG team (where the conjunction and my approximation coincide) and again with a 2-AR/3-SG team (where they diverge), tapping buffApply for stat pelletCountFlat and recording targetSlug. If targetSlug ever lands on a non-SG unit while an SG unit is skipped, the approximation is materially wrong and the schema needs a weapon facet on alliesTopAtk (or an alliesOfWeaponTopAtk TargetDef) before this line can be modeled faithfully."
+    },
+    {
+      "field": "burst[0].trigger and burst[1].trigger (burstCast vs fullBurstEnter)",
+      "estimate": "burstCast for both burst-slot buffs.",
+      "reasoning": "Trigger-identity rule: only skill2 carries the literal 'Activates when entering Full Burst' clause; the burst block has no activation clause, so its effects key to Leona's own cast. This matters because burst-cast fires BEFORE the Full Burst window opens — a 10 sec buff started at cast covers slightly less of the FB window than one started at FB entry, and in a comp with a second Burst II unit the two encodings diverge completely (fullBurstEnter would fire on rotations Leona does not cast). burstCast is the conservative, non-over-crediting choice.",
+      "recipe": "Compare the buffApply frame for critDamagePct 34.64 against the fullBurstStart event frame in the same run. A ~1-2 sec lead confirms the cast-keyed model matches the engine's burst-cast timing. To validate against reality, popup-read a recording for when team crit damage visibly steps up relative to the FB banner frame."
+    },
+    {
+      "field": "unmodeled.skill1 (Maximum Effective Range ▲ 20%)",
+      "estimate": "Zero contribution modeled; true contribution is positive and possibly significant on SG comps.",
+      "reasoning": "The schema has no max-range StatKey, and range-band eligibility / falloff is computed by the engine from the boss range script rather than from per-unit stats. But a shotgun's damage is dominated by how many pellets land, which is a direct function of effective range vs the boss's current distance — so a +20% max-range window on all SG allies is a genuine damage line, not a defensive one. Omitting it makes this override a floor on Leona's SG-comp value.",
+      "recipe": "Requires an engine primitive first (a per-unit effective-range multiplier threaded into the range-band / pellet-landing path). Until then, quantify the ceiling: check docs/data/range-data.md for the boss range script and the band breakpoints, and determine whether a +20% max-range shift crosses any breakpoint during the 10 sec windows this would be active. If it crosses none at the scope-lock boss distances, the omission is provably inert on graded comps and can be downgraded from a caveat to a note."
+    }
+  ],
+  "model": "claude-opus-5"
+}
